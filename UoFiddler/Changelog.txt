@@ -7,6 +7,7 @@ Version : 4.11.24 #XG1
 - Discord Link fixed
 - Added Main Images 5 New
 - Incorporated mirror function for the context, allowing for individual image loading and bulk image loading.
+- Added a Gump Edit new System.
 
 Version : 4.11.23 #XG1
 - Fixed an issue in Texturecutter regarding the input of hex addresses so that it works with and without the "#" symbol.
