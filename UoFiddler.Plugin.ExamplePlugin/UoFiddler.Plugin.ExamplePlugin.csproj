@@ -1,0 +1,55 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<AssemblyName>TestPlugin</AssemblyName>
+		<TargetFramework>net7.0-windows</TargetFramework>
+		<UseWindowsForms>true</UseWindowsForms>
+		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+		<AssemblyTitle>FiddlerPlugin</AssemblyTitle>
+		<Product>FiddlerPlugin</Product>
+		<Copyright>Copyright © 2023</Copyright>
+	</PropertyGroup>
+	<PropertyGroup>
+		<EnableNETAnalyzers>true</EnableNETAnalyzers>
+	</PropertyGroup>
+	<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+		<DebugType>portable</DebugType>
+		<OutputPath>..\UoFiddler\bin\$(Configuration)\plugins\</OutputPath>
+	</PropertyGroup>
+	<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+		<DebugType>none</DebugType>
+		<OutputPath>..\UoFiddler\bin\$(Configuration)\plugins\</OutputPath>
+		<GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
+	</PropertyGroup>
+	<ItemGroup>
+		<Compile Update="Forms\ExampleForm.cs">
+			<SubType>Form</SubType>
+		</Compile>
+		<Compile Update="Forms\ExampleForm.Designer.cs">
+			<DependentUpon>ExampleForm.cs</DependentUpon>
+		</Compile>
+		<Compile Update="UserControls\ExampleControl.cs">
+			<SubType>UserControl</SubType>
+		</Compile>
+		<Compile Update="UserControls\ExampleControl.Designer.cs">
+			<DependentUpon>ExampleControl.cs</DependentUpon>
+		</Compile>
+	</ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\Ultima\Ultima.csproj">
+			<Private>false</Private>
+			<ExcludeAssets>runtime</ExcludeAssets>
+		</ProjectReference>
+		<ProjectReference Include="..\UoFiddler.Controls\UoFiddler.Controls.csproj">
+			<Private>false</Private>
+			<ExcludeAssets>runtime</ExcludeAssets>
+		</ProjectReference>
+	</ItemGroup>
+	<ItemGroup>
+		<EmbeddedResource Update="Forms\ExampleForm.resx">
+			<DependentUpon>ExampleForm.cs</DependentUpon>
+		</EmbeddedResource>
+		<EmbeddedResource Update="UserControls\ExampleControl.resx">
+			<DependentUpon>ExampleControl.cs</DependentUpon>
+		</EmbeddedResource>
+	</ItemGroup>
+</Project>

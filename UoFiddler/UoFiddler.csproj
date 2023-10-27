@@ -1,0 +1,333 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<OutputType>WinExe</OutputType>
+		<ApplicationIcon>Resources\UOFiddlerIcon.ico</ApplicationIcon>
+		<StartupObject>UoFiddler.Program</StartupObject>
+		<TargetFramework>net7.0-windows</TargetFramework>
+		<UseWindowsForms>true</UseWindowsForms>
+		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+		<AssemblyTitle>UoFiddler</AssemblyTitle>
+		<Product>UoFiddler</Product>
+		<Copyright>Copyright © 2023</Copyright>
+		<AssemblyVersion>4.11.24</AssemblyVersion>
+		<FileVersion>4.11.24</FileVersion>
+		<Version>4.11.24</Version>
+		<GenerateResourceUsePreserializedResources>true</GenerateResourceUsePreserializedResources>
+	</PropertyGroup>
+	<PropertyGroup>
+		<EnableNETAnalyzers>true</EnableNETAnalyzers>
+	</PropertyGroup>
+	<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+		<DebugType>portable</DebugType>
+		<OutputPath>bin\$(Configuration)\</OutputPath>
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+	</PropertyGroup>
+	<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+		<DebugType>none</DebugType>
+		<OutputPath>bin\$(Configuration)\</OutputPath>
+		<GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
+	</PropertyGroup>
+	<ItemGroup>
+		<None Remove="Resources\UOFiddler.jpg" />
+		<None Remove="Resources\UOFiddler1.jpg" />
+		<None Remove="Resources\UOFiddler2.jpg" />
+		<None Remove="Resources\UOFiddlerIcon.ico" />
+	</ItemGroup>
+	<ItemGroup>
+		<Compile Update="Forms\AboutBoxForm.cs">
+			<SubType>Form</SubType>
+		</Compile>
+		<Compile Update="Forms\AboutBoxForm.Designer.cs">
+			<DependentUpon>AboutBoxForm.cs</DependentUpon>
+		</Compile>
+		<Compile Update="Forms\ExceptionForm.cs">
+			<SubType>Form</SubType>
+		</Compile>
+		<Compile Update="Forms\ExceptionForm.Designer.cs">
+			<DependentUpon>ExceptionForm.cs</DependentUpon>
+		</Compile>
+		<Compile Update="Forms\LoadProfileForm.cs">
+			<SubType>Form</SubType>
+		</Compile>
+		<Compile Update="Forms\LoadProfileForm.Designer.cs">
+			<DependentUpon>LoadProfileForm.cs</DependentUpon>
+		</Compile>
+		<Compile Update="Forms\ManagePluginsForm.cs">
+			<SubType>Form</SubType>
+		</Compile>
+		<Compile Update="Forms\ManagePluginsForm.Designer.cs">
+			<DependentUpon>ManagePluginsForm.cs</DependentUpon>
+		</Compile>
+		<Compile Update="Forms\ManageToolsForm.cs">
+			<SubType>Form</SubType>
+		</Compile>
+		<Compile Update="Forms\ManageToolsForm.Designer.cs">
+			<DependentUpon>ManageToolsForm.cs</DependentUpon>
+		</Compile>
+		<Compile Update="Forms\OptionsForm.cs">
+			<SubType>Form</SubType>
+		</Compile>
+		<Compile Update="Forms\OptionsForm.Designer.cs">
+			<DependentUpon>OptionsForm.cs</DependentUpon>
+		</Compile>
+		<Compile Update="Forms\PathSettingsForm.cs">
+			<SubType>Form</SubType>
+		</Compile>
+		<Compile Update="Forms\PathSettingsForm.Designer.cs">
+			<DependentUpon>PathSettingsForm.cs</DependentUpon>
+		</Compile>
+		<Compile Update="Forms\UnDockedForm.cs">
+			<SubType>Form</SubType>
+		</Compile>
+		<Compile Update="Forms\UnDockedForm.Designer.cs">
+			<DependentUpon>UnDockedForm.cs</DependentUpon>
+		</Compile>
+		<Compile Update="Forms\MainForm.cs" />
+		<Compile Update="Forms\MainForm.Designer.cs">
+			<DependentUpon>MainForm.cs</DependentUpon>
+		</Compile>
+		<Compile Update="Properties\Settings.Designer.cs">
+		  <DesignTimeSharedInput>True</DesignTimeSharedInput>
+		  <AutoGen>True</AutoGen>
+		  <DependentUpon>Settings.settings</DependentUpon>
+		</Compile>
+		<EmbeddedResource Update="Forms\AboutBoxForm.resx">
+			<DependentUpon>AboutBoxForm.cs</DependentUpon>
+			<SubType>Designer</SubType>
+		</EmbeddedResource>
+		<EmbeddedResource Update="Forms\ExceptionForm.resx">
+			<SubType>Designer</SubType>
+			<DependentUpon>ExceptionForm.cs</DependentUpon>
+		</EmbeddedResource>
+		<EmbeddedResource Update="Forms\LoadProfileForm.resx">
+			<DependentUpon>LoadProfileForm.cs</DependentUpon>
+		</EmbeddedResource>
+		<EmbeddedResource Update="Forms\ManagePluginsForm.resx">
+			<DependentUpon>ManagePluginsForm.cs</DependentUpon>
+			<SubType>Designer</SubType>
+		</EmbeddedResource>
+		<EmbeddedResource Update="Forms\ManageToolsForm.resx">
+			<DependentUpon>ManageToolsForm.cs</DependentUpon>
+			<SubType>Designer</SubType>
+		</EmbeddedResource>
+		<EmbeddedResource Update="Forms\OptionsForm.resx">
+			<DependentUpon>OptionsForm.cs</DependentUpon>
+			<SubType>Designer</SubType>
+		</EmbeddedResource>
+		<EmbeddedResource Update="Forms\PathSettingsForm.resx">
+			<DependentUpon>PathSettingsForm.cs</DependentUpon>
+			<SubType>Designer</SubType>
+		</EmbeddedResource>
+		<EmbeddedResource Update="Properties\Resources.resx">
+			<Generator>PublicResXFileCodeGenerator</Generator>
+			<LastGenOutput>Resources.Designer.cs</LastGenOutput>
+			<SubType>Designer</SubType>
+		</EmbeddedResource>
+		<EmbeddedResource Update="Forms\UnDockedForm.resx">
+			<DependentUpon>UnDockedForm.cs</DependentUpon>
+			<SubType>Designer</SubType>
+		</EmbeddedResource>
+		<EmbeddedResource Update="Forms\MainForm.resx">
+			<SubType>Designer</SubType>
+			<DependentUpon>MainForm.cs</DependentUpon>
+		</EmbeddedResource>
+		<Compile Update="Properties\Resources.Designer.cs">
+			<AutoGen>True</AutoGen>
+			<DependentUpon>Resources.resx</DependentUpon>
+			<DesignTime>True</DesignTime>
+		</Compile>
+	</ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\Ultima\Ultima.csproj" />
+		<ProjectReference Include="..\UoFiddler.Controls\UoFiddler.Controls.csproj" />
+	</ItemGroup>
+	<ItemGroup>
+		<Content Include="Multilist.xml">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+		<EmbeddedResource Include="Resources\UOFiddler.jpg">
+		  <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+		</EmbeddedResource>
+		<EmbeddedResource Include="Resources\UOFiddler1.jpg">
+		  <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+		</EmbeddedResource>
+		<EmbeddedResource Include="Resources\UOFiddler2.jpg">
+		  <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+		</EmbeddedResource>
+		<EmbeddedResource Include="Resources\UOFiddlerIcon.ico">
+		  <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+		</EmbeddedResource>
+		<None Include="Options_default.xml">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+		<None Include="Animationlist.xml">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Microsoft.Web.WebView2" Version="1.0.2088.41" />
+		<PackageReference Include="Octokit" Version="8.1.1" />
+		<PackageReference Include="Serilog" Version="3.0.1" />
+		<PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
+		<PackageReference Include="System.Resources.Extensions" Version="7.0.0" />
+	</ItemGroup>
+	<ItemGroup>
+	  <None Update="Changelog.txt">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Properties\Settings.settings">
+	    <Generator>SettingsSingleFileGenerator</Generator>
+	    <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+	  </None>
+	  <None Update="Resources\pngegg.png">
+	    <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Resources\UOFiddler3.jpg">
+	    <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Resources\UOFiddler4.jpg">
+	    <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Resources\UOFiddler5.jpg">
+	    <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Resources\UOFiddler6.jpg">
+	    <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Sound.wav">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="UOFiddlerHelp\images\animationsfindnew.webp">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
+	  <None Update="UOFiddlerHelp\images\animationsmain.webp">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
+	  <None Update="UOFiddlerHelp\images\animationsremove.webp">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
+	  <None Update="UOFiddlerHelp\images\animationssettings.webp">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
+	  <None Update="UOFiddlerHelp\images\animdata.webp">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
+	  <None Update="UOFiddlerHelp\images\clilocmain.webp">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
+	  <None Update="UOFiddlerHelp\images\ComponentList.webp">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
+	  <None Update="UOFiddlerHelp\images\dressanim.webp">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
+	  <None Update="UOFiddlerHelp\images\dresspaper.webp">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
+	  <None Update="UOFiddlerHelp\images\fonts.webp">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
+	  <None Update="UOFiddlerHelp\images\gumps.webp">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
+	  <None Update="UOFiddlerHelp\images\header_bg.jpg">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
+	  <None Update="UOFiddlerHelp\images\hueedit.webp">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
+	  <None Update="UOFiddlerHelp\images\huemain.webp">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
+	  <None Update="UOFiddlerHelp\images\itemsdetail.webp">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
+	  <None Update="UOFiddlerHelp\images\itemsmain.webp">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
+	  <None Update="UOFiddlerHelp\images\landtiles.webp">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
+	  <None Update="UOFiddlerHelp\images\light.webp">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
+	  <None Update="UOFiddlerHelp\images\mainoptions.webp">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
+	  <None Update="UOFiddlerHelp\images\mainpathsettings.webp">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
+	  <None Update="UOFiddlerHelp\images\mainplugins.webp">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
+	  <None Update="UOFiddlerHelp\images\maintools.webp">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
+	  <None Update="UOFiddlerHelp\images\mainundock.webp">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
+	  <None Update="UOFiddlerHelp\images\mapclient.webp">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
+	  <None Update="UOFiddlerHelp\images\mapmain.webp">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
+	  <None Update="UOFiddlerHelp\images\miniheader_bg.jpg">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
+	  <None Update="UOFiddlerHelp\images\multimap.webp">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
+	  <None Update="UOFiddlerHelp\images\multisedit.webp">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
+	  <None Update="UOFiddlerHelp\images\multisgraphic.webp">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
+	  <None Update="UOFiddlerHelp\images\multisimport.webp">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
+	  <None Update="UOFiddlerHelp\images\MutliEdit.webp">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
+	  <None Update="UOFiddlerHelp\images\sectionheader_bg.jpg">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
+	  <None Update="UOFiddlerHelp\images\sectionheader_gold_bg.jpg">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
+	  <None Update="UOFiddlerHelp\images\sectionheader_small_bg.jpg">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
+	  <None Update="UOFiddlerHelp\images\sectionheader_small_gold_bg.jpg">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
+	  <None Update="UOFiddlerHelp\images\skills.webp">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
+	  <None Update="UOFiddlerHelp\images\sounds.webp">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
+	  <None Update="UOFiddlerHelp\images\speech.webp">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
+	  <None Update="UOFiddlerHelp\images\start.webp">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
+	  <None Update="UOFiddlerHelp\images\texture.webp">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
+	  <None Update="UOFiddlerHelp\images\tiledata.webp">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
+	  <None Update="UOFiddlerHelp\js\png.js">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
+	  <None Update="UOFiddlerHelp\Style\style.css">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
+	  <None Update="UOFiddlerHelp\UOFiddler.htm">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
+	</ItemGroup>
+</Project>

@@ -1,0 +1,1112 @@
+Version : 4.11.24 #XG1
+- Added ItemControl a Built-in image swap function
+- Added a notepad that saves information into an XML file, serving as a reminder that can be edited later.
+- Added a Notes form in the main menu to display messages.
+- Added a Animtionen Edit
+- Octokit 8.1.1
+- Discord Link fixed
+- Added Main Images 5 New
+- Incorporated mirror function for the context, allowing for individual image loading and bulk image loading.
+
+Version : 4.11.23 #XG1
+- Fixed an issue in Texturecutter regarding the input of hex addresses so that it works with and without the "#" symbol.
+- Added a checkbox that, when active, moves the input from one textbox to another.
+- Octokit Update 8.0.1
+- Added an alarm clock feature where you can set a time for the alarm to go off.
+- Settings are now saved, including the size of the MainForm and whether it's maximized, in the personalized settings. Positioning, however, is still not exact.
+- The AlarmClock now has the feature to load an alternative wave file as an alarm sound.
+- The Dec Hex Bin Converter now also saves the position where it was placed.
+- TextureCutter now saves its position as well.
+- Added a mask in TextureCutter for alignment during cutting and unloading the mask.
+- Added a checkbox for the ideal height and width of image measurements.
+- Added functionality to the Graphic Cutter to mark areas on images and copy the marked area of the graphic to the clipboard.
+- CompareItems - Fixed the System.NullReferenceException error.
+- Added a ruler for pictureBox1 in GraphicCutter.
+- Added CheckBoxLines to fill textures within lines.
+- Fix NullReferenceException CompareMapControl  load Button
+- Added a function to MapControl that allows drawing on the map, and the coordinates are displayed in a MessageBox for the respective area.
+- Added a label to Animation that displays information about the .vd file, import details, and the last ID slot address.
+- Added a button and a form to Convert MultiTextControl.
+- The method OnClickSelectTiledata in the ItemsControl class now attempts to update a PictureBox in the TileDataControl class when a certain ID is selected.
+- Added Texturecutter PaintBox
+
+Version : 4.11.22 #XG1
+- Added a ContextMenuStrip button for the hex address to export the selected items to the clipboard. In the AminData function, implemented logic to pass the hex address to the TextBox in the ContextMenuStrip when there is a hex address in the clipboard.
+- Added images for the Gumps and tooltips.
+- In GraphicCutter, added a checkbox and a transparency function, as well as an import function via the clipboard.
+- Assigned the arrow keys for moving in the GraphicCutter. Added the ability to copy the image from PictureBox2 to the clipboard, and a sound plays when copying with Ctrl+X.
+- Added Mapmaker form and a button.
+- Added a "Circle" checkbox and a "Freehand" checkbox to draw shapes in the graphic frame. The default selection is a rectangle.
+- Added a function to fill the marked area with a texture or graphic.
+- Added a zoom button to allow zooming in on the image.
+- Added a reset button that clears the selections and resets the zoom level.
+- Added a button to open the tempGrafic in the main directory.
+- Expanded and redesigned functions in TextureCutter, added optimization, brightness, gamma, and contrast adjustment with increments of 0.01. Also added an RGB checkbox that, when active, adjusts the values by 0.01 when moved up or down.
+- Added a Trackbar to control the entire process.
+- "TextureCutter" Drawing function now directly calculates on the cursor with zoom functionality.
+- "TextureCutter" Added a fill function so that you can include rectangle, circle, or freehand textures here as well.
+- Panels now display the color that will be applied to the image when using the pipette, which takes the color from the TextBox.
+- Revised the zoom function for Textcutter and added a label to display the zoom factor.
+- In Tiledata, added a button that clears all values, with a sound when activated.
+- In Tiledata, added a new listing for "tree" and a "clear" function.
+- Revised the "Sharp" button, added a Trackbar to control the sharpness level.
+- Improved the White Balance function, refined the values, and added a Trackbar to set values from 1 to 10%.
+- The mode now has a label, and when applied, the image is sent to the PictureBox. Brightness has been refined to be more precise.
+- Added a second textbox for color values, along with a second ColorDialog to select values for the textbox.
+- The drawing function now allows you to draw with a second color when it is set in the textbox and activated with the checkbox.
+- Added a "Draken" checkbox to reverse the White Balance and make it darker.
+- The design has been updated.
+- New icons have been added.
+- TextureCutter Two buttons for coloring have been added.
+- For the Gumps and Landtiles, the image is adjusted in the clipboard with black, and the color d3d3d3 is converted.
+
+Version : 4.11.21 #XG1
+- Added graphics for "Compare Items."
+- Added "Compare Items." two buttons for individual and bulk imports.
+- Expanded the left textbox with a preview feature so that when you click on the item, it gets imported to the selected position and removed from the list of choices.
+- Expanded the left key binding so that when a key is pressed, it triggers the btLeftMoveItem method in listBoxSec, moving the selected item.
+- The last selected ID address is added to the search textbox.
+- Added a "Remove" button to clear the ID slot, and this method is also triggered with the right arrow key.
+- Added two buttons, "Insert Items" and "Remove Items," to the "Compare Land" feature. The arrow keys are also assigned for this purpose.
+- Added "Compare Land" a hex address search feature.
+- Added "Compare Land" a decimal listing for the list boxes.
+- Added "Compare Land" a "Move Multiple" button to move multiple selected graphics.
+- "Compare Land" You can select multiple items in listBoxSec by holding the Ctrl key and either clicking with the mouse or using the arrow keys to move up and down.
+- Added two buttons, "Insert" and "Remove," to the "Compare Texture" feature, and assigned them to the left and right arrow keys.
+- Expanded listBoxOrg and listBoxSec to display decimal values as well.
+- The listBoxOrg and listBoxSec in Compare Items were also expanded to display decimal values.
+- Added a ColorWithTolerance function to replace color values within a specified tolerance range "Texturecutter".
+- Added a Textcutter button in a form that lists all colors, including a label, a button to set the hex value into the textbox, and a refresh function to reread.
+- Added a button in Textcutter that reads the most common color values from the image, listing the top 20.
+- In Texturecutter, a form was added with a mode that includes the following functions: grayscale conversion of the image, changing brightness, adjusting contrast, gamma correction, modifying saturation, and altering color.
+- Added a checkbox to prevent colors from being affected (i.e., #FFFFFF and #000000), as well as a reset button that sets the TrackBars and labels to 0.
+
+Version : 4.11.20 #XG1
+- Added textboxes to TextureCutter to clear color values from an image and added a context menu to copy the image to the clipboard.
+- Added an import function to Texturecutter to insert the image into the PictureBox.
+- Added a refresh function to Texturecutter to update the image when color is replaced; this can be repeated as needed.
+- Added a dropper tool to Texturecutter to retrieve the color code from the image in the PictureBox.
+- Added a mirror function to Texturecutter that horizontally mirrors the image in the PictureBox.
+- Added Ctrl+V and Ctrl+X functionality to Texturecutter to copy and import the image from the PictureBox.
+- Added zoom in and zoom out buttons to Texturecutter, as well as zoom functionality using the mouse wheel.
+- Added a reset button to Texturecutter to restore the original size.
+- Added a ColorDialog to Texturecutter that places the color values into the textbox.
+- Added coordinates that are displayed on a label.
+- Expanded the ToUpdate function to work with the zoom function and refresh properly.
+- Added indexed colors.
+- Added Label Colorcode
+- Added a "Draw" button to allow drawing on the image with the respective color.
+- Added an "Erase" button to allow using the mouse to erase a specific area.
+
+Version : 4.11.19 #XG1
+- Add Decripter Client (ConverterMultiPlugin)
+- Add Zoom function Mouseweel Plugin Compare Map
+- Add Radarcolor Label Items and Land Name.
+- Add Radarcolor Updatebutton TreeView
+- Change Design Radarcolor ColorTreeView = DrawAll
+- I added the function to AminData that transmits the current hexadecimal address to the textbox, the Add button is modified to include the function that sends the next hexadecimal address to the textbox with "Add," so that you only need to press "Add."
+- Update Octokit package.
+- Add Links (Servuo, Discord)
+- Added two context menu functions to the texture control: "Copy Hex Address" and "Copy Decimal Address" to clipboard.
+- Add Icons
+- F1-F12 keys reserved for tabs
+- Page up page down also changes the tabs
+- Textures: Added a sound function that allows only the sound to be heard while deactivating the MessageBox when the sound function is active.
+- TileData LandTile: Sound enabled during caching.
+- Added a label that continuously displays the decimal ID of the position. Clicking on the label will insert the ID into the textbox.
+- Font: Added functions for importing and exporting to the clipboard via the context menu or Ctrl+V and Ctrl+X, along with an optional sound function that can be activated.
+- Font: The function replaces #d3d3d3 with #ffffff when copying to the clipboard.
+
+Version : 4.11.18 #XG1
+- Added a Performzoomstep to the map.
+- Map - Getmapinfo: Added Getmapinfo view for textures and static items. Map details now also work with the texture.
+- Zoom factor increased to 16 on the map
+- Added Map Replace Tiles PictureBoxes to display the tiles and static elements. An update function has been implemented to refresh the RichTextBox for displaying XML data. This also enables the XML to be saved to an external directory. An 'Open Directory' button has been included to facilitate directory access. Graphics have been incorporated, along with buttons to navigate and view between the statics and tiles.
+- UOP Packer CheckBox added, which allows the file to be overwritten if active.
+
+Version : 4.11.17 #XG1
+- Animation: Made frames visible again.
+- Frames highlighting added.
+- Export to clipboard added for graphics.
+- Import from clipboard added for graphics, save function is still missing.
+- Rewrite the Animation.xml function again to save it in an external directory.
+- Added a label that shows the source of the animations.
+- AnimationEdit has received an import function to import graphics from the clipboard.
+- AnimationEdit has received a function to copy graphics to the clipboard.
+- AnimationEdit has received a Mirror function to flip the graphics horizontally.
+- AnimationEdit KeyDown functions have been added to enable importing with Ctrl+V and copying with Ctrl+X.
+- AnimationEdit has been given a function to highlight the selected frames.
+- AnimationEdit has received a 90-degree rotation of the graphic to the left.
+- Added calculator for Binary, Decimal, and Hexadecimal.
+- Added a Delete button to the LoadProfile that deletes the selected entries.
+- Added "Find Empty IDs" functionality to AnimationEdit.
+- AnimationEdit added a feature to display only animations with specific IDs in the context menu.
+- The middle mouse button has been assigned the function of copying the settings in the tiledata. This function is only active when a setting has been selected, and the Ctrl+Y also enables this function now.
+
+Version : 4.11.16 #XG1
+- Design and graphics adjusted for the methods.
+- The Multi has been equipped with an index search feature.
+- Downgarde net7 (Net 8.0 has been tested so far, it works on Win10 and Win11 for me, but some are having issues with the animation, so I downgraded it for testing purposes.), texturecutter image reloaded.
+
+Version : 4.11.15 #XG1
+- TextureCutter: I have added a texture cutter that trims textures to the respective size of an image, such as 44x44, 64x64, 128x128, and 256x256, all in a sequence of multiple images.
+- TextureCutter: Added that it is allowed to crop only smaller than 5x5 by enabling the checkbox, but it is at your own risk as it can easily create over 1000+ images from a single image.
+- TextureCutter: has added a new feature to create tiles for LandTiles from textures. It also includes a resolution function to enhance graphics, a sharp function, color enhancement, white balance, and a save button.
+- Tiledata: The idea Taken over with the search directly from #XG2, The design here was set to graphics. (The old search forms have been kept and not removed.)
+- Soundmultab Great job on incorporating the Sound tab from version 4.10.8 #XG2
+- Removed color definition from the "draw default" for background tabs.
+- Adjusted the default name of the Arts.mul file in the UOPPackerControl to include it in the "convert to mul" process and in the creation of the "artLegacyMUL.uop" file.
+
+Version : 4.11.14 #XG1
+- #XC3 LandTiles has received another function, which allows importing using the keyboard shortcut Ctrl+V and to copy using Ctrl+X.
+- The #XC3 items have gained the function to import using the keyboard shortcut Ctrl+V and to copy using Ctrl+X.
+- The #XC5 textures have also gained the function to import graphics using the keyboard shortcut Ctrl+V and to copy graphics using Ctrl+X.
+- #XC3 Gumps has also received the keyboard shortcut Ctrl+V for importing and Ctrl+X for copying.
+- #XC3 TileData has received a button that saves the settings on the selected ID repeatedly with each click. This function is only active when there are settings loaded from memory.
+- MainForm has received a new function that opens the selected directory, specified in the options path, in Explorer.
+- Added tooltips Tab Hues.mul
+- Added Icons and to Contextmenu
+- Updated to net 8 release.
+
+Version : 4.11.13 #XG1
+- Added Multis contextMenuStrip1 #XC2 Copy Image to clipboard.
+- #XC1 Admin tool form set up to be opened only once.
+- #XC6 ChangeLog extended to #XC1 display #XC2 colors #XC7 when I define them with #XC5 abbreviations in the #XC3 colors. Here you now set the #XC4 colors with the text.
+- #XC1 Graphics added and replaced, function added for selection
+- Gumps: I have added a button "Show all Free Slots" that displays all empty IDs in the Gump.mul. I have also modified the method "PopulateListBox" accordingly.
+- ToolTip Text added
+
+Version : 4.11.12 #XG1
+- Added a mirror function to items.
+- Added tooltips to items.
+- GraficCutter: toolStrip ComboBox Added green, water clear.
+- GraficCutter: Added the "changeBorder" function that makes the graphics transparent.
+- GraficCutter: Added graphics.
+- GraficCutter: Added Color selection added for grid
+- MultiControl:  tabPage6 add contextMenuStrip3 and Copy Text
+
+Version : 4.11.11 #XG1
+- A new link has been added to uodev.uo-freeshards.de.
+- A new tool has been added: a graphic cutter for arts.
+
+Version : 4.11.10 #XG1
+- Documentation now available.
+- Added logo selection in the main menu under the context menu, with multiple graphics to choose from.
+- The logo selection is now being saved, and it will be displayed again upon restarting with the selected logo.
+- Two links to the German community focusing on development, graphics, and design have been added.
+
+Version : 4.11.9 #XG1
+- Changelog added.
+- Changelog.txt added.
+- Changelog Search feature added.
+- System.NullReferenceException: Sound Button Add\Replace is fixed (If no file is selected).
+- AdminTool Added a ping and tracert button.
+- Help link removed, a documentation form created with Help Doku so that the application description is local, the whole thing is made possible with WebView, the cache is stored in %LOCALAPPDATA%, and when UOFiddler is closed, the UoFiddler.exe.WebView2 folder is deleted.
+
+Version : 4.11.8 #XG1
+- LandTile added: a 90-degree rotation to the left.
+
+Version : 4.11.7 #XG1
+- For the MainForm, a TabPanel_DrawItem event was added. The tabs are being reloaded and sorted differently. Additionally, the tabs have been assigned their own colors for identification purposes.
+- Texture - Another function added: a 90-degree rotation to the left. It works with all sizes, such as 64x64, 128x128, or larger.
+
+Version : 4.11.6 #XG1
+- The Light has received another extension. It now includes two forms, each containing LandTiles and StaticItems, allowing for browsing and previewing them in advance. The forms can be positioned flexibly and function across tabs, enabling scrolling up and down.
+
+Version : 4.11.5 #XG1
+- Enable multiple selection for saving in Items and LandTiles by pressing the Ctrl key, then selecting the desired items, and finally clicking on the Save button with the respective format.
+- Light has received the functions of copying and importing from the clipboard, as well as copying from the clipboard to the ID slot.
+
+Version : 4.11.4 #XG1
+- Multiple functions have been added to Radarcolor, expanding the graphical representation. Loading of data now utilizes ColorTreeView for graphical display. When saving the Color Palette, it is also displayed with colors. 
+By activating the checkbox, the Color Palette's hex code is copied to the clipboard. Another textbox lists the hex codes, and there is a textbox for the 15-bit color depth per channel. In this case, the color code represents the intensities of the red, 
+green, and blue color channels, each with 5 bits, making it compatible with Photoshop's color code. Additionally, the Photoshop textbox has a clipboard function that stores the color code when clicked.
+
+Version : 4.11.3 #XG1
+- A copy function has been added to the Controls, Items, LandTiles, Textures, and Gumps, allowing the graphics to be copied to the clipboard for direct use with copy and paste.
+- Import function revised again, direct import through buffer added, existing SelectImageFormatForm class retained for outsourcing to Temp to store the graphics there and addressed this with new importByTempToolStripMenuItem.
+- Import clipboard - Import graphics from clipboard (Items, LandTile, Gumps, Texture)
+
+Version : 4.11.2 #XG1
+- Added a new ConverterMultiText to convert Decimal to Hex. This allows for converting old Sphere Multitexts, enabling their import into the Multi.mul file in UoFiddler. Additionally, for the sake of preserving the old scripts, they are automatically placed in a folder named "Oldscript".
+- The Tiledata has received a copy button that copies the selected settings from the selected location. You can now place them at any location by pressing again, save and you’re done.
+- An XML editor has been added to the multis that edits, saves and recreates the Multilist.xml. A reload button has been added that reads in the Multilist.xml again without having to restart the program. A save button that copies the Multilist.xml and stores it in the OLDScript directory.
+
+Version : 4.11.1 #XG1
+- CompareItems expanded.
+- Multi-selection added for saving images (Bmp, Tiff).
+- Graphics can now be placed at any hexadecimal address.
+- Display of the placed graphic.
+- Hexadecimal address search added.
+- The selected directory is now exported to its own directory called 'DirectoryisSettings' and saved as 'CompareiItemsDirectoryisSettings.txt'. It will be loaded on the next startup until a new directory is set."
+- Added combo box for multiple selection of directories to quickly switch between them.
+- Tiledata now has a ToolStripComboBox that sets predefined patterns for selecting settings.
+- Tiledata now has a sound button that disables and enables the message box and plays a sound located in the main directory. This feature works for both items and land tiles, so no more messages and the Windows sound.
+
+Version : 4.10.8 #XG2
+- Tiledata: Tiledata: Search has been added to the control screen.
+- Removed obsolete setting to collapse right panel in sounds tab.
+
+Version : 4.10.7 #XG2 
+- Fixed search ranges. Updated land tiles control layout. #XG1 (The old search forms have been kept and not removed.)
+
+Version : 4.10.6 #XG2
+- The search functionality has been moved to the Item Tabs control screen. #XG1 (The old search forms have been kept and not removed.)
+
+Version : 4.10.5 #XG2
+- Added option to export hue names and ids to file - in case you need all hues list for some reason.
+- Updated nuget packages to latest.
+
+Version : 4.10.4 #XG2
+- Updated map file unpacking process in UOP Packer plugin. When unpacking maps plugin will remove extra bytes from end of the mul files as some of the UOP maps contain additional 196 bytes. This extra bytes break some of the tooling
+- Extracting maps no longer requires setting index file path.
+
+Version : 4.10.3 #XG2
+- Fixed art.mul/idx unpacking in UOP Packer plugin.
+
+Version : 4.10.2 #XG2
+- Fixed preview coloring in hue editor.
+
+Version : 4.10.1 #XG2
+- Fixed invalid value for tiledata flag `Unused8`. As tiledata csv export is positional this fix may affect files exported before this version. You'll have to compare files on your own. To fix older files just reorder columns later in file so this part `artused,noshadow,pixelbleed,playanimonce,unused8` should be `artused,unused8,noshadow,pixelbleed,playanimonce`.
+
+Version : 4.10.0 #XG2
+- Migrate to .net 7.
+
+Version : 4.9.28 #XG2
+- Fixed applying hues to items and animations.
+- Updated map replace tiles form to better indicate progress and possible issues with XML file.
+
+Version : 4.9.27 #XG2
+- Added "Remove tile border" option that makes tile borders invisible (tabs: items, land tiles, textures, fonts).
+- Added "Set background color same as tile background". When you select custom tile background color it will be applied to whole control too when this option is checked (currently limited to Items tab only).
+
+Version : 4.9.26 #XG2
+- Added "Export all sounds" option to Sounds tab.
+
+Version : 4.9.25 #XG2
+- Fixed multi editor plugin import range (maximum multi id was lower than in multi tab). 
+- Minor cleanup.
+
+Version : 4.9.24 #XG2
+- Added UOX3 multi export. It's very basic Version : so expect some features to be missing.
+
+Version : 4.9.23 #XG2
+- Import multi dialog will now run as modal.
+- Added import/export for multi as csv. To be used with punt's multi utilities.
+- Added import multi to "Mass import" plug-in
+- Fixed hue format saving to match original format better.
+
+Version : 4.9.22 #XG2
+- Fixed focusing of an item after search on Items, Land tiles and Textures tabs.
+
+Version : 4.9.21 #XG2
+- Added export to JPG and PNG on item detail form.
+- Added export to JPG and PNG on animation edit form.
+
+Version : 4.9.20 #XG2
+- Removed source file locking when importing or replacing assets.
+
+Version : 4.9.19 #XG2
+- Fixed update checker exception handling.
+
+Version : 4.9.18 #XG2
+- Fixed crash when exporting animation frames where action has missing frame.
+
+Version : 4.9.17 #XG2
+- Updated client window enumeration logic to look for alternative clients first to fix Client.SendText() on OrionUO client.
+
+Version : 4.9.16 #XG2
+- Gump list will now select last inserted index when using "Insert at..." and "Insert starting from..." while "Show free slots" is enabled.
+
+Version : 4.9.15 #XG2
+- Fixed problems with "Replace starting from.." in Items, Land tiles and Textures tabs. It now replaces tiles as it should. Stops when index reaches max index value.
+- Fixed "Show free slots" menu item not clearing its state after reloading files.
+
+Version : 4.9.14 #XG2
+- Fixed crash when browsing Textures with "show free slots" enabled.
+- Fixed crash when browsing SkillGrp that uses nonexistent skill id.
+
+Version : 4.9.13 #XG2
+- Fix for multi (multi tab) region export/import. MultiRegion should now have same coordinates after import.
+- Added "Replace starting from.." to Items tab. Allows replacing multiple items starting from selected index.
+- Renamed "Insert Starting From.." to "Replace starting from.." as it reflects actual function better.
+- Extended Ultima.Client with method to enumerate multiple ultima windows. Author: NaphalAXT. Source: https://github.com/NaphalAXT/ultimasVos/commit/5f2847739e8c690f8caa5e41c26075f64b930c0b
+- Minor code fixes and cleanups.
+
+Version : 4.9.12 #XG2
+- Added search items on Dress tab.
+
+Version : 4.9.11 #XG2
+- Added "Show Free Slots" option to Land Tiles tab.
+- Added "Show Free Slots" option to Textures tab.
+
+Version : 4.9.10 #XG2
+- Send item plug-in should now register itself only once and not twice.
+- Send item to client plug-in should work with ClassicUO (thanks to Xuri)
+
+Version : 4.9.9 #XG2
+- Fixed Items tab - some larger statics items were not visible by default.
+- Updated Sounds tab to use 0-based indexes by default. There is new option "Offset Sound Id by 1 (POL emulator)" for POL users. POL starts sound ids from 1.
+- Added search by text to Hues control.
+
+Version : 4.9.8 #XG2
+- Updated animationlist.xml (you need to copy updated file from UOFiddler directory to your profile folder and override existing animationlist.xml)
+- Fixed speech.mul Id value reading - no longer limited to 256.
+
+Version : 4.9.7 #XG2
+"Select in Gump" tab option added to context menus in Items and Tiledata tabs.
+Minor updates in projects to fix building using `dotnet build` command.
+Fixed wrong map size pre-selection when using .uop format.
+"Insert starting from" option added to Gumps, Land Tiles and Textures tabs - allows to insert range of items in sequence (author Maybacco). 
+Added "Set textures" option for Tiledata tab - sets texture id for all land tiles without it but having corresponding texture. Assumption is that land tile index value is equal to texture index. Option will only update tiles where TexID is 0. You can also enable option to set individual landtile TexID to land tile index via double click in TexID text box (default is off). (author Maybacco).
+Default controls for items, land tiles and textures were removed. Alternative controls were renamed and are now main and only controls available.
+Removed obsolete hash file usage.
+"Replace" button on animation edit form has been hidden until its implementation is finished.
+Fixed inability to map animation body id values over 1696. It works now up to body id 2048 which is UO client limit. #58 
+New button "Average All" in RadarColor tab which checks all items and land tiles and sets all black non empty ones to average color. It's batch update command (author DiPaolaMarco).
+Fixed invalid marking of AnimData as modified when user only browse contents of the tab.
+Fixed 'Show Free Slots' on Items tab when using UOP file format.
+Fixed 'Show Free Slots' on Gumps tab.
+New options. You can now select selection color and focus color for tile view controls (items, land tiles, textures and fonts).
+Fixed crash when providing invalid regular expression pattern string in items, land tiles, tiledata and cliloc tabs. 
+Cliloc tab. "Goto text" uses case insensitive string comparison by default. You can switch to regular expressions if needed.
+Renamed Hue tab to Hues. Hues control - added quick Search option. You can now jump to hue by it's index. Displayed hue index values are now 0-based same as stored in hues.mul.
+Updated animation editor layout.
+Added action names to animation list in animation editor.
+Updated Serilog.Sinks.File package to latest versi
+
+Version : 4.8 #XG2
+
+    AsYlum added multiple selection in items tab using <ctrl> left-click used to with the test plug-in for exporting multiple items to an itemdesc.cfg file.
+    AsYlum added graphic size & offset information to Item details box.
+    AsYlum added export all item's graphic offsets to offset.cfg. This is useful for properly positioning art tiles displayed in a gump using the TilePic gump command.
+
+
+Version : 4.7 #XG3 (Fiddler 4.6.1.4 Merge)
+
+    Fixed Art saving hash algorithm for duplicate finding was applied to odd data.
+    Improved search usability: multiple enter results in search next
+    Added Shortcut CTRL+F to open search dialog
+    Added Cliloc import for current TileData
+    Complete Rework of Sounds Tab for more usability
+    Fixed sound indexes to correct game indexes
+    Fixed translation indexes also support 4 digits
+    Fixed sound name sorting with multiple whitespaces
+    Fixed exporting sounds ensures extension
+    Added showing translated sounds (marked blue and underlined)
+    Added sound file cleaning from unsupported wave headers and format checks
+    Added sound playback progress and stop-button
+    Added capability for renaming sounds
+    Fixed a possible crash condition when loading profiles
+    Fixed light index files were saved invalid and caused client crashes for empty indexes
+    Fixed light resolution was saved in wrong order so non-quadratic lights are supported now.
+    Fixed light transparency saving should now work correctly.
+    Added tif files in file selectors
+    Fixed tile selection in tile data when tile data was not already open
+    Fixed performance issue with showing free slots in Items Tab
+    Added TileData Save directly on Change state now is saved in settings
+    Fixed TileData save directly on change performance issue when changing name
+    Added jump to gump option at items tab
+    Added Search to gump tab
+    Added Quick switch between Male/Female Gumps in Gump Tab
+    Added some keyboard tweaks
+
+
+Version : 4.6
+
+    Switched to .NET 4
+    Added option Outputpath
+    Fiddler now uses %APPDATA%\uofiddler for the xml files
+    Fixed ColorPalette Import for animations
+    Changed textbox to numericUpDown for color in RadarColor tab
+    Added Ilshenar to MapCopy
+    Fixed display of AnimData tab
+
+
+Version : 4.5g
+
+    fixed some bugs
+    About.. Added checkbox to store the MainForm window state on close (Maximised,Location,Size)
+
+
+Version : 4.5f
+
+    Added ability to define a tooltip for multis inside multilist.xml
+    Multis get now stored in a more intelligent way it tries to find a non-invis centeritem
+    Added support for facet0*.mul in MultiMap tab
+    UO:HSA support
+    and more stuff i already forgot
+
+
+Version : 4.5e
+
+    Map Replace: now capable of copying between different map ids
+
+
+Version : 4.5d
+
+    MultiEditor: Fixed bug with inserting center tile while saving
+
+
+Version : 4.5c
+
+    Fixed bug with static saving
+
+
+Version : 4.5b
+
+    Fixed bug with art saving
+    Filled SkillGroup tab with sense:
+        added Add/Rename/Remove to contextmenu
+        activated Drag & Drop
+
+
+Version : 4.5
+
+    added UOArchitect binary file for import
+    speedups
+    MultiEditor: like maptab scrolling with right mouse
+    Animation Editor:
+        replaced with Soulblighter Version : big thx for his work, I only did a few speedups
+        tutorial is available @ Sphereserver Forum
+
+
+Version : 4.4
+
+    Crashfix in Animtab ... again
+    Hues: added contextmenu Import,Export (simple txtfile)
+    Map: added support for 7.x clients thx to Andreew
+    MassImportPlugin: added support for hues
+    TileData:
+        fixed direct save
+        renamed Unk1 to MiscData (old UO Demo weapontemplate def)
+        "save directly on changes" no more needs enter key
+    ComparePlugin Map: preload diffs for speedup
+    ComparePlugin added Texture (thx to nibbio)
+    AnimationEdit:
+        can now add multiple frame images (thx to nibbio)
+        added "Misc->Generate Palette" generates a new palette txtfile for given images
+        added "Misc->Export All To VD" exports every valid animation of selected file
+    various Crashfixes
+
+
+Version : 4.3
+
+    RenderEngine of Multis fixed
+    MultiEditor:
+        Added Misc->"Show double surface" highlights every tile with flag Surface on the same spot (to get rid of senseless items)
+        Added Mouse right/middle click hit a spot where more then one item is placed it shows at the top a list (can be removed with the "rubber")
+    Texture bugfixes
+
+
+Version : 4.2d
+
+    TileData: Added Misc->Set Filter
+    Fix of UO:SA animdata save
+    Minor fixes
+    ComparePlugin UO:SA compatible
+    TileData flag NoDiagonal (unused) is HoverOver in UO:SA renamed it
+    Added skillgrp.mul tab currently without edit feature
+    MultiEditor Plugin:
+        Added new button "Switch Transparent" makes a tile transparent
+        Added Misc->"Reset transparent tiles"
+        Added Misc->"Show Walkable tiles" highlights all walkable tiles (checks if a player with height 16 can stand there)
+
+
+Version : 4.2c
+
+    Fix for anim saving
+    Fix animationlist sorting
+    Fix ReloadFile for animationedit
+
+
+Version : 4.2b
+
+    Cliloc: Added Import from csv
+    AnimEdit:
+        Export/Import to mulpatcher .vd format
+        Misc->Show Only Valid added
+    4.2 introduced bug with art saving fixed
+    Gumps: Added ShowFreeSlots
+    Minor Fixes
+
+
+Version : 4.2
+
+    UO:SA support
+    Added Animation edit (Animations->Settings->Animation Edit):
+        Mul Save
+        Action remove
+        Frame replace/insert/remove/export CenterX/Y change
+        Palette export/import
+        Note:
+            unlike mulpatcher saving makes a complete rewrite, slower but no leftovers (smaller .mul size)
+            mulpatcher import/export compatibility on todo list
+    Map:
+        Added Replace Tiles (xmlbased)
+        Changed MapReplace you can now define target X/Y
+    Speech: csv import/export
+    Minor fixes
+
+
+Version : 4.1c
+
+    MultiEditor:
+        Heightbar fix
+        Added Import from UOArchitect design file
+        Added Checkbox to mark Component invisible
+    art.mul index length changed to 0x10000
+    Map: Added Clear Statics
+    Dress: Added textbox to test mount anim
+
+
+Version : 4.1b
+
+    MultiEditor save Bugfix
+    Cleanups
+
+
+Version : 4.1
+
+    Bugfixes, Cleanup, Speedups
+    ComparePlugin:
+        compare Gump added
+        crash fixes
+    MultiEditor:
+        Import from multicache.dat added
+        Tile picker selects Tile also in Tileselect tab
+        added contextmenuentry inside Itemstab to select tile
+        optimization/cleanup
+    Light tab:
+        Added ContextMenu for switching to IG Preview
+        with the ContextMenu you can also change Background Landtile + "Light"-Art
+    Added MassImportPlugin:
+        xml based MassImport
+    TileData tab:
+        Added Import from CSV file
+
+
+Version : 4.0a
+
+    MultiEditor changes:
+        some fixes
+        added Tile picker
+        added Undo list (last 10)
+
+
+Version : 4.0
+
+    Added MultiEditor plugin!!!
+    Multilist.xml added for naming conventions on Multis tab
+    Added Melt/Freeze Statics
+    Redesigned Tiledata tab option to change directly (Textfields on Enter press)
+    True Black and true White are now considered as transparent for bmp's
+    Added Jpg for all Export All in tabs.
+    Added more Jpg export for single export of images.
+    Renamed Map and Diff copy menu names for better explanation in menu.
+    Fixed crashes in Compare Plugin for Land and Item compare.
+    Changed Max length for Name field in TileData Editing to 20 length as Client will cut it off at this point anyway.
+    Fixed Odd Crashes on some Windows XP installs with Export in Texture Tabs
+    Fixed Crash if idx lookup entry > mul length
+
+
+Version : 3.9
+
+    Fixed Sound Export (not played in WMP) + mul save
+    Fixed Odd Gumps Export As crash
+    Added Export All Images for Multis, Gumps, Items, LandTiles, and Texture tab.
+    Added Export All Parts for Txt, UOA, and WSC formats to Multis tab
+    Fixed Odd Multis Crash
+    Fixed Crash on different tabs minimize
+    Tool Menus added to LandTiles and Texture Tabs.
+    Moved Cliloc Export context menu item to Button in toolbar for Cliloc Control.
+    some crashes/problems fixed.
+    PluginInterface changed a bit.
+    Map tab added Insert Diff Data.. to write from definied region map/static diff file data into mapfiles.
+    Added View Menu to hide docked tabs.
+    View toggle states are now saved to file.
+    Optimized Dock/UnDock code.
+    Help button changed to load Docs from website.
+
+
+Version : 3.8
+
+    Redesigned Items Tab a bit
+    Added Export All Images to Items tab
+    Fixed a problem with map1 recognition
+    Animation tab added new Contextmenu "Export Frame.." to frames tab
+    Map tab: added Replace form to Misc menu to replace statics/map of given map/rectangle to current map
+    ComparePlugin now also compares 2 Map files (static/map) if Zoom>=2 Tooltip of difference on current coords is given
+
+
+Version : 3.7b
+
+    Contextmenus enhanced to select in Item/LandTile/Tiledata/Radarcolor tab
+    ComparePlugin now also compares 2 Hue files (with Apply Color)
+    Map tab
+        Option to rewrite static and removing duplicate statics
+        Option to rewrite map file
+        Option to create an report of possible invisible statics (below map)
+        Note: both static and map rewrite can be used to change map width (uses Settings->Use New Map Width flag)
+    Fixed some problems inside Dress tab
+
+
+Version : 3.7
+
+    Map tab:
+        Redesigned a bit (moved Contextmenu options to (collapsible)menu bar)
+        Added Marker feature you can now Add Markers to map (written in extra xml file)
+        Marker list is accessible through right sided collapsible bar
+        Through contextmenu inside the Marker list you can remove/goto/switch visibility marker
+        Option to rewrite static file (defrags it and removes illegal graphics)
+    Dress tab:
+        Added new contextmenu entry to directly define hue color
+
+
+Version : 3.6c
+
+    added Contextmenuentry "Export to csv" in Cliloctab
+    ComparePlugin can now compare 2 clilocs (new Tab)
+
+
+Version : 3.6b
+
+    crash fix for "Find new Animations" and vista
+    Dress tab new button Export Report
+    generates a html table overview (work in progress)
+
+
+Version : 3.6
+
+    all textsearches are now Regexp (with preset ignorecase)
+    UnDress All added to Dress Tab contextmenu
+    Added RadarColor tab(with editing)
+    Added new Option MapUseDiff to control if diff files should be used
+
+
+Version : 3.5c
+
+    Warning dialog if there are unsafed changes
+    Multi tab now shows Sphere MultiRegion and used Surface
+    Items/Landtiles contextmenu added "Select in Tiledata"
+
+
+Version : 3.5b
+
+    rewrote Multi Import
+        shows extra form with (current) txt,uoa,wsc format
+        checkbox to insert (client needed) center item
+
+
+Version : 3.5
+
+    Fixed Crash in Speech tab
+    Added Copy CliLoc Number/Text to CliLocTab contextmenu
+    Added editor features in multi tab
+        Show Free Slots
+        Import from txt file
+        Import from wsc file
+        Import from wsc file and create an invisible center item
+        Export to txt file
+        Export to wsc file
+        Remove
+        Save
+    (more file formates tobedone)
+
+
+Version : 3.4
+
+    Updated AutoUpdater/Check for Updates
+    Fixed Sound playing crash
+    Added Extract Soundlist to csv
+    Added Import/Export to bmp
+    Added Extract Image to Tab Items Contextmenu
+    Tiledata Tab:
+    Checkbox to disable Warning Msg
+    Color Highlight for (in Memory) changed Entries
+
+
+Version : 3.3
+
+    Fixed art.mul Staticart header (to fix issue with InsideUO)
+    Added ComparePlugin to compare 2 art.mul's
+    Added senseless Helpbutton
+
+
+Version : 3.2b
+
+    Added SendItem Plugin (with option to override DoubleClick behavior)
+    Added PluginInterface OnDesignChange()
+    Added PluginHost function GetItemShowAltPictureBox()
+    Added Msgbox for Tiledata Save Changes
+
+
+Version : 3.2
+
+    Fixes in Map tab
+    Dress tab added contextmenu entry to hue layer
+    Dress tab added contextmenu entry to extract gif animation
+    (used GD-Sharp libary http://gd-sharp.sourceforge.net/)
+
+
+Version : 3.1e
+
+    Fixed AnimData tab (hopefully ;) )
+
+Version : 3.1d
+
+    Colorhighlight for verdata entries wasnt working correctly with CacheFile
+    Added RootPath, you can now define relative and absolute filepathes. If you reset rootpath absolut filepathes are ignored
+    AnimData/Fonts bug fixed (hope so)
+
+
+Version : 3.1c
+
+    Bugfixes in FindNextFreeSlot
+
+
+Version : 3.1b
+
+    Added AnimData Tab with editing features
+    (Color Red = Animdefinition for a non valid art
+    Color Blue = Animdefinition but no Anim flag)
+
+
+Version : 3.1
+
+    Editor for skills (contextmenu save)
+    Editor for sound
+    Colorhighlight for verdata entries in
+    Item,Landtile,Texture,Gump
+    Plugin Interface
+    see Testplugin for current implemented interfaces if you want more tell me :)
+
+
+Version : 3.0b
+
+    Bugfixes in ItemDetail form
+
+
+Version : 3.0
+
+    Select on Click in Texture/Landtile
+    Tiledata Decimalnumbers..
+    Hue tab:
+    Double click opens HueEdit
+    Change color via SystemDialog or direct
+    Range features (select second index via right mouse):
+    linear Gradient, exp Gradient, Inverse, add rgb value
+    preview picturebox for art,gumps,animation
+    Added contextmenu Save, Replace with..
+
+
+Version : 2.9b
+
+    Added Tabpages contextmenu to Undock Tabpage
+    Landtiles Decimalnumbers...
+
+
+Version : 2.9
+
+    map tab: Added checkboxes to show Crosses (Currcenter, ClientPos)
+    Added contextmenu entry Goto..
+    Added "Send Client to current Pos", "Send Client to current Center"
+    Added option to define Mapnames
+    Added option to define Clientcommand
+    (cmd name and args)
+    Args:
+    {1} = x, {2} = y, {3} = z, {4} = mapid, {5} = mapname
+
+
+Version : 2.8b
+
+    rewrote Huetab to speed it up
+
+
+Version : 2.8
+
+    Added new Settings Menu to control xml Options
+    Added editor features to lights tab
+    (contextmenu export,replace,insert,remove & save)
+
+
+Version : 2.7b
+
+    fixed Hue only gray in Animations
+    Added ShowFreeSlots in Itemstab
+
+
+Version : 2.7
+
+    renamed UoFiddler.xml to Animationlist.xml
+    Animationlist:
+    Entries can now be renamed
+    Entries can now be removed (contextmenu)
+    Added new Settings:
+    "Rewrite xml"
+    "Try to find new Graphics":
+    reads mobtypes.txt, body.def,bodyconv.def and displays every non added entries
+    define Animationtype, Name and "Add" to Animationlist
+    (for example shipped Animationlist does not have client 6.X added Crimsondragons and Lords [197,198,689,704])
+
+
+Version : 2.6
+
+    Added Extern Tools Dropdown
+
+
+Version : 2.5 aka "new horizon"
+
+    Renamed to UOFiddler
+    Added more Editing Features:
+    Art, Landtiles, Textures, Gump (through contextmenu (replace,insert,remove & save))
+    Note: saving will complete rewrite the mul files so it is a bit slow in comparison with other tools, but you get clean defragged mul files. Verdata entries are also saved to mul.
+    Speedup in multimap, fonts
+
+
+Version : 2.4
+
+    Font tab
+    Unicode loads complete list
+    added Contextmenu:
+    "Write Text" : Preview Image of given text
+    "Extract Character" : exports Character to tiff
+    "Import Character" : imports Character from tiff
+    "Save" : Saves mul file
+    "Set Offsets" : (Unicode only) modify x/y offset of Character
+    Cliloc tab
+    added 2 custom cliloc entries (options.xml or via selection in Combobox)
+
+
+Version : 2.3
+
+    Added new Option "UpdateCheck" (Should an Updatecheck be performed on startup)
+    Added About form Changelog
+    Checkbox for option UpdateCheck
+    Manuall UpdateCheck Button (with direct download option)
+    Added option to extract images in dress tab
+
+
+Version : 2.2
+
+    last but not least added speech.mul tab (with editing features)
+    no crash if selecting a tab using a non definied filepath
+
+
+Version : 2.1
+
+    Sound tab:
+    Play on double click
+    Rewrote sound length
+    added Extract Sound
+    ItemDetail now with additional integer objtype
+    Code cleanup and optimation
+
+
+Version : 2.0f
+
+    fixed Crash when no registryentry was found
+
+
+Version : 2.0e
+
+    Unicode support in skills.mul and tiledata.mul
+
+
+Version : 2.0d
+
+    Searches searches searches... (LandTile,Texture,Sound,Tiledata)
+
+
+Version : 2.0c
+
+    switched from visual studio 2005 to 2008
+    new Settings Menuoption Reload Files so no restart is needed if you change pathsettings
+    Preload in gumps,items,map is now a backworker thread
+
+
+Version : 2.0b
+
+    fixed crash in Cliloc tab when saving
+    dress tab: it seems that the gump.def is only used if the gumpentry is invalid (still not 100% sure if the other def files have comparable "features")
+
+
+Version : 2.0
+
+    new options.xml setting "UseHashFile" True/False
+    if set (current) the Items tabs generates a hashfile with valid art indices to speed up loading. md5 checksum on art.mul is used to check if new hashfile should be generated.
+    if CacheData is activ new button Preload in item,gump,map tab to speed up viewing
+    changed method in gumps tab to check if valid index (height and width >0)
+    dress tab body.def reader now can read tabs
+    new tab TileData:
+    export to cvs file
+    alter and save Entries
+    cliloc tab
+    editor features
+    Columnheader sorting
+
+
+Version : 1.9c
+
+    Map tab:
+    extract Map now generates based on "Show Statics" setting
+    support of new Trammel if map1.mul is existent Trammel uses map1,statics1,staidx1
+
+
+Version : 1.9b
+
+    Added skills tab
+    minor code cleanup
+
+
+Version : 1.9
+
+    Added multimap.rle tab
+    Option to export and generate
+    Added new options.xml entry "AlternativeDesign" true/false controls how Items/Landtiles/Texture tab is displayed
+    Items tab now additionally displays decimal value
+
+
+Version : 1.8b
+
+    Added new options.xml entry "NewMapSize" true/false (Trammel/Felucca width 7168?)
+
+
+Version : 1.8
+
+    Map tab:
+    Added Zoom context menu option
+    Added Show Statics context menu option
+    Added navigation via mouse movement plus left mousebutton
+
+
+Version : 1.7c aka "ode to OldnGrey"
+
+    Added 64bit Vista Registry keys
+    Added new path setting to set the client path manual
+
+
+Version : 1.7b
+
+    Added SE Registry recognition
+    Supported Entries are now: (HKEY_LOCAL_MACHINE)
+    SOFTWARE\Origin Worlds Online\Ultima Online\1.0 key="ExePath"
+    SOFTWARE\Origin Worlds Online\Ultima Online Third Dawn\1.0 key="ExePath"
+    SOFTWARE\EA GAMES\Ultima Online Samurai Empire key="Install Dir"
+    (tests if client.exe is existent)
+
+
+Version : 1.7
+
+    Settings menu was lost
+    Renamed Mobtab to Animations (added Equipment)
+
+
+Version : 1.6
+
+    serious programs need a startpic :)
+    Dress tab new color Darkred=invalid Layer (+additional Text ValidLayer true/false)
+
+
+Version : 1.5 aka Yukiko keeping me busy
+
+    added "detail frame" in itemtab
+
+
+Version : 1.4
+
+    Pimp my Itemdetails:
+    New contextmenu item animate, if item has animation data (animdata.mul)
+
+
+Version : 1.3d aka "Wali-Build"
+
+    fixed another crash in Dress tab
+
+
+Version : 1.3c
+
+    fixed a crash in Dress tab
+    Fonts tab: added statusbar with ASCIIcode of selected char, increased darkness of real char
+
+
+Version : 1.3b
+
+    added Always On Top setting
+
+
+Version : 1.3
+
+    added comments in the xml files
+    added unifont*.mul support to the Fonts tab
+    Mobs tooltip with mulfile
+    sorted options.xml pathsettings
+
+
+Version : 1.2
+
+    new options.xml Setting: CacheData true/false if set to false prevents the ultima.sdk to cache the infos. Thus the ramusage shouldn't grow so much
+    ever wanted to know which equipment has correct paperdollgraphic and ig-graphic?
+    New tab "Dress" added
+        List of all items which have the wearable flag
+        - red entry: no animation and no gump was found
+        - orange entry: no animation, but gumpgraphic
+        - blue entry: animation found, but no gump
+        to get the animation and gump infos it reads not only the tiledata, but also the body.def and equipconv.def
+        Infotext of selected item:
+        Objecttype, layer, effective gumpid (and gumpid in tiledata), hue, effective animation (and animation in tiledata)
+        Checkboxes to switch between male/female human/elf and Objtype/Layer sorting
+        Checkboxlist to control which item should be displayed
+        Sliders to control facing and action
+        Usage:
+        - select item in itemlist and click the dressbutton
+        - to undress rightclick in layerlist the layerentry and choose Undress
+        - to switch between Paperdoll and IG graphic rightclick the picturebox and choose "Show Animation/Paperdoll"
+        - in the IG graphic mode
+        rightclick has also an animate option and two sliders to change facing and action
+
+
+Version : 1.1b
+
+    Changed Pathsettings to save also filename instead of only path
+    Ability to sort MobGraphic alphabetically
+
+
+Version : 1.1
+
+    Versioninfo :)
+    Itemdetail Tiledatainfos reworked
+
+
+Version : 1.0
+
+    Added two options to options.xml:
+    ItemSize : spezifies the width and height of the items in the itemlist
+    ItemClip : True - like InsideUO original size clipped
+    False - shrink image to fit (should now proportionally shrink)
+
+
+Initial Version
+
+    Misc
+    extract Images, Pathsettings
+    Multis
+    Component List, MaxHeight slidebar
+    Mobs
+    xml based entries, true graphic number, reads body.def and bodyconv.def, thumbnail list, animate, dye mob, frame pictures, direction slidebar
+    Items
+    detail view with tiledata settings, search for graphic or name
+    Landtiles
+    flagsettings
+    Textures
+    Gumps
+    Sounds
+    Name or nr sorting, play button, length display
+    Hue
+    ASCIIFont
+    CliLoc
+    current english and german, goto entry, search for text
+    Map
+    can sync pos with active client
+    Light
