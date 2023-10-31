@@ -63,6 +63,7 @@ namespace UoFiddler.Controls.UserControls
             toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
             copyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             importToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            addIDNamesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             topMenuToolStrip = new System.Windows.Forms.ToolStrip();
             IndexToolStripLabel = new System.Windows.Forms.ToolStripLabel();
             searchByIdToolStripTextBox = new System.Windows.Forms.ToolStripTextBox();
@@ -85,6 +86,7 @@ namespace UoFiddler.Controls.UserControls
             Preload = new System.Windows.Forms.ToolStripButton();
             toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
             PreLoader = new System.ComponentModel.BackgroundWorker();
+            toolStripSeparator7 = new System.Windows.Forms.ToolStripSeparator();
             ((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
             splitContainer1.Panel1.SuspendLayout();
             splitContainer1.Panel2.SuspendLayout();
@@ -137,9 +139,9 @@ namespace UoFiddler.Controls.UserControls
             // 
             // contextMenuStrip
             // 
-            contextMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { extractImageToolStripMenuItem, toolStripSeparator2, AddShowAllFreeSlotsButton, findNextFreeSlotToolStripMenuItem, jumpToMaleFemale, replaceGumpToolStripMenuItem, removeToolStripMenuItem, insertToolStripMenuItem, toolStripMenuItem1, toolStripSeparator1, saveToolStripMenuItem, toolStripSeparator4, copyToolStripMenuItem, importToolStripMenuItem });
+            contextMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { extractImageToolStripMenuItem, toolStripSeparator2, AddShowAllFreeSlotsButton, findNextFreeSlotToolStripMenuItem, jumpToMaleFemale, replaceGumpToolStripMenuItem, removeToolStripMenuItem, insertToolStripMenuItem, toolStripMenuItem1, toolStripSeparator1, saveToolStripMenuItem, toolStripSeparator4, copyToolStripMenuItem, importToolStripMenuItem, toolStripSeparator7, addIDNamesToolStripMenuItem });
             contextMenuStrip.Name = "contextMenuStrip1";
-            contextMenuStrip.Size = new System.Drawing.Size(190, 264);
+            contextMenuStrip.Size = new System.Drawing.Size(190, 314);
             // 
             // extractImageToolStripMenuItem
             // 
@@ -295,6 +297,14 @@ namespace UoFiddler.Controls.UserControls
             importToolStripMenuItem.Text = "Import";
             importToolStripMenuItem.ToolTipText = "Paste graphic from clipboard.";
             importToolStripMenuItem.Click += importToolStripMenuItem_Click;
+            // 
+            // addIDNamesToolStripMenuItem
+            // 
+            addIDNamesToolStripMenuItem.Image = Properties.Resources.Add;
+            addIDNamesToolStripMenuItem.Name = "addIDNamesToolStripMenuItem";
+            addIDNamesToolStripMenuItem.Size = new System.Drawing.Size(189, 22);
+            addIDNamesToolStripMenuItem.Text = "Add ID Names";
+            addIDNamesToolStripMenuItem.Click += addIDNamesToolStripMenuItem_Click;
             // 
             // topMenuToolStrip
             // 
@@ -473,6 +483,11 @@ namespace UoFiddler.Controls.UserControls
             PreLoader.ProgressChanged += PreLoaderProgressChanged;
             PreLoader.RunWorkerCompleted += PreLoaderCompleted;
             // 
+            // toolStripSeparator7
+            // 
+            toolStripSeparator7.Name = "toolStripSeparator7";
+            toolStripSeparator7.Size = new System.Drawing.Size(186, 6);
+            // 
             // GumpControl
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -544,5 +559,7 @@ namespace UoFiddler.Controls.UserControls
         private System.Windows.Forms.ToolStripButton saveToolStripButton;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator5;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator6;
+        private System.Windows.Forms.ToolStripMenuItem addIDNamesToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator7;
     }
 }

@@ -489,5 +489,15 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Properties {
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Ressource vom Typ System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap Zeichnen {
+            get {
+                object obj = ResourceManager.GetObject("Zeichnen", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
     }
 }
