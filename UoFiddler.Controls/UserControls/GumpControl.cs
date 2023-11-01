@@ -424,9 +424,18 @@ namespace UoFiddler.Controls.UserControls
                     ListBox_SelectedIndexChanged(this, EventArgs.Empty);
 
                     Options.ChangedUltimaClass["Gumps"] = true;
+
+                    // Play sound if isSoundMessageActive is true
+                    if (isSoundMessageActive)
+                    {
+                        SoundPlayer player = new SoundPlayer();
+                        player.SoundLocation = "sound.wav";
+                        player.Play();
+                    }
                 }
             }
         }
+
         #endregion
 
         #region OnClickSave
@@ -473,6 +482,14 @@ namespace UoFiddler.Controls.UserControls
             pictureBox.BackgroundImage = null;
             listBox.Invalidate();
             Options.ChangedUltimaClass["Gumps"] = true;
+
+            // Play sound if isSoundMessageActive is true
+            if (isSoundMessageActive)
+            {
+                SoundPlayer player = new SoundPlayer();
+                player.SoundLocation = "sound.wav";
+                player.Play();
+            }
         }
         #endregion
 
@@ -514,6 +531,14 @@ namespace UoFiddler.Controls.UserControls
                 int newId = Gumps.GetCount();
                 listBox.Items.Add(newId);
                 listBox.SelectedIndex = listBox.Items.Count - 1;
+            }
+
+            // Play sound if isSoundMessageActive is true
+            if (isSoundMessageActive)
+            {
+                SoundPlayer player = new SoundPlayer();
+                player.SoundLocation = "sound.wav";
+                player.Play();
             }
         }
         #endregion
@@ -1123,9 +1148,9 @@ namespace UoFiddler.Controls.UserControls
                         // Define the colors to ignore
                         Color[] colorsToIgnore = new Color[]
                         {
-                            Color.FromArgb(211, 211, 211), // #D3D3D3
-                            Color.FromArgb(0, 0, 0),       // #000000
-                            Color.FromArgb(255, 255, 255)  // #FFFFFF
+                    Color.FromArgb(211, 211, 211), // #D3D3D3
+                    Color.FromArgb(0, 0, 0),       // #000000
+                    Color.FromArgb(255, 255, 255)  // #FFFFFF
                         };
 
                         // Iterate through each pixel of the image
@@ -1158,6 +1183,14 @@ namespace UoFiddler.Controls.UserControls
                         ListBox_SelectedIndexChanged(this, EventArgs.Empty);
 
                         Options.ChangedUltimaClass["Gumps"] = true;
+
+                        // Play sound if isSoundMessageActive is true
+                        if (isSoundMessageActive)
+                        {
+                            SoundPlayer player = new SoundPlayer();
+                            player.SoundLocation = "sound.wav";
+                            player.Play();
+                        }
                     }
                     else
                     {
@@ -1170,7 +1203,6 @@ namespace UoFiddler.Controls.UserControls
                 MessageBox.Show("No image in the clipboard.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
-
 
         // Import und Export Strg+V and Strg+X
         private void GumpControl_KeyDown(object sender, KeyEventArgs e)
