@@ -143,13 +143,13 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // 
             contextMenuStripPicturebBox.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { paintToolStripMenuItem, toolStripSeparator6, undoToolStripMenuItem, redoToolStripMenuItem, toolStripSeparator7, importImageToolStripMenuItem, CopyImagePictureBoxDrawToolStripMenuItem, toolStripSeparator8, rotateImageToolStripMenuItem });
             contextMenuStripPicturebBox.Name = "contextMenuStripPicturebBox";
-            contextMenuStripPicturebBox.Size = new System.Drawing.Size(145, 154);
+            contextMenuStripPicturebBox.Size = new System.Drawing.Size(181, 176);
             // 
             // paintToolStripMenuItem
             // 
             paintToolStripMenuItem.Image = Properties.Resources.Zeichnen;
             paintToolStripMenuItem.Name = "paintToolStripMenuItem";
-            paintToolStripMenuItem.Size = new System.Drawing.Size(144, 22);
+            paintToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             paintToolStripMenuItem.Text = "Paint";
             paintToolStripMenuItem.ToolTipText = "Startet das Zeichnen";
             paintToolStripMenuItem.Click += paintToolStripMenuItem_Click;
@@ -157,13 +157,13 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // toolStripSeparator6
             // 
             toolStripSeparator6.Name = "toolStripSeparator6";
-            toolStripSeparator6.Size = new System.Drawing.Size(141, 6);
+            toolStripSeparator6.Size = new System.Drawing.Size(177, 6);
             // 
             // undoToolStripMenuItem
             // 
             undoToolStripMenuItem.Image = Properties.Resources.Cut;
             undoToolStripMenuItem.Name = "undoToolStripMenuItem";
-            undoToolStripMenuItem.Size = new System.Drawing.Size(144, 22);
+            undoToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             undoToolStripMenuItem.Text = "Undo";
             undoToolStripMenuItem.ToolTipText = "Undo funktion auch mit Strg+Rücktaste";
             undoToolStripMenuItem.Click += undoToolStripMenuItem_Click;
@@ -172,7 +172,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // 
             redoToolStripMenuItem.Image = Properties.Resources.Rotate;
             redoToolStripMenuItem.Name = "redoToolStripMenuItem";
-            redoToolStripMenuItem.Size = new System.Drawing.Size(144, 22);
+            redoToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             redoToolStripMenuItem.Text = "Redo";
             redoToolStripMenuItem.ToolTipText = "Stelle die Linie wieder her. Strg + R";
             redoToolStripMenuItem.Click += redoToolStripMenuItem_Click;
@@ -180,13 +180,13 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // toolStripSeparator7
             // 
             toolStripSeparator7.Name = "toolStripSeparator7";
-            toolStripSeparator7.Size = new System.Drawing.Size(141, 6);
+            toolStripSeparator7.Size = new System.Drawing.Size(177, 6);
             // 
             // importImageToolStripMenuItem
             // 
             importImageToolStripMenuItem.Image = Properties.Resources.import;
             importImageToolStripMenuItem.Name = "importImageToolStripMenuItem";
-            importImageToolStripMenuItem.Size = new System.Drawing.Size(144, 22);
+            importImageToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             importImageToolStripMenuItem.Text = "Import";
             importImageToolStripMenuItem.ToolTipText = "Grafik einfügen";
             importImageToolStripMenuItem.Click += importImageToolStripMenuItem_Click;
@@ -195,7 +195,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // 
             CopyImagePictureBoxDrawToolStripMenuItem.Image = Properties.Resources.Copy;
             CopyImagePictureBoxDrawToolStripMenuItem.Name = "CopyImagePictureBoxDrawToolStripMenuItem";
-            CopyImagePictureBoxDrawToolStripMenuItem.Size = new System.Drawing.Size(144, 22);
+            CopyImagePictureBoxDrawToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             CopyImagePictureBoxDrawToolStripMenuItem.Text = "Copy";
             CopyImagePictureBoxDrawToolStripMenuItem.ToolTipText = "Grafik in Zwischenspeicher kopieren";
             CopyImagePictureBoxDrawToolStripMenuItem.Click += CopyImagePictureBoxDrawToolStripMenuItem_Click;
@@ -203,13 +203,13 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // toolStripSeparator8
             // 
             toolStripSeparator8.Name = "toolStripSeparator8";
-            toolStripSeparator8.Size = new System.Drawing.Size(141, 6);
+            toolStripSeparator8.Size = new System.Drawing.Size(177, 6);
             // 
             // rotateImageToolStripMenuItem
             // 
             rotateImageToolStripMenuItem.Image = Properties.Resources.reload;
             rotateImageToolStripMenuItem.Name = "rotateImageToolStripMenuItem";
-            rotateImageToolStripMenuItem.Size = new System.Drawing.Size(144, 22);
+            rotateImageToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             rotateImageToolStripMenuItem.Text = "Rotate Image";
             rotateImageToolStripMenuItem.ToolTipText = "Dreht das Image in Uhrzeigersinn um 90 Grad";
             rotateImageToolStripMenuItem.Click += rotateImageToolStripMenuItem_Click;
