@@ -22,6 +22,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin
             InitializeComponent();
         }
 
+        #region FormClosin
         private void AltitudeToolForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             // Beende den externen Prozess, wenn das Formular geschlossen wird
@@ -30,7 +31,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin
                 externalProcess.Kill();
             }
         }
-
+        #endregion
+        #region Dir
         private void BtSelectDirectory_Click(object sender, EventArgs e)
         {
             using (folderBrowserDialog1 = new FolderBrowserDialog())
@@ -45,35 +47,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin
                 }
             }
         }
-        /*private async void BtStartCommand_Click(object sender, EventArgs e)
-        {
-            if (comboBoxCommand.SelectedItem != null) // Überprüfen Sie, ob ein Element ausgewählt wurde
-            {
-                var psi = new ProcessStartInfo
-                {
-                    FileName = selectedDirectory + "\\AltitudeTool.exe",
-                    Arguments = comboBoxCommand.SelectedItem.ToString(),
-                    RedirectStandardOutput = true,
-                    CreateNoWindow = true,
-                    UseShellExecute = false,
-                    WorkingDirectory = selectedDirectory
-                };
-
-                var process = Process.Start(psi);
-
-                if (process != null)
-                {
-                    string result = await process.StandardOutput.ReadToEndAsync();
-                    textBoxOutput.Text = result;
-                }
-            }
-            else
-            {
-                // Zeigen Sie dem Benutzer eine Meldung an, dass keine Auswahl getroffen wurde.
-                MessageBox.Show("Bitte wählen Sie ein Element aus der ComboBox aus.");
-            }
-        }*/
-
+        #endregion
+        #region Button Start
         private async void BtStartCommand_Click(object sender, EventArgs e)
         {
             string command;
@@ -114,7 +89,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin
                 textBoxOutput.Text = result;
             }
         }
-
+        #endregion
+        #region Button Copy
         private void btCopyMul_Click(object sender, EventArgs e)
         {
             using (var openFileDialog = new OpenFileDialog())
@@ -156,7 +132,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin
                 }
             }
         }
-
+        #endregion
+        #region CheckBox
         private void checkBoxCopyText_CheckedChanged(object sender, EventArgs e)
         {
             // Überprüfen, ob die CheckBox aktiviert ist
@@ -171,8 +148,27 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin
                 textBoxManuel.Clear();
             }
         }
+        #endregion
+        #region Help
+        private void buttonHelp_Click(object sender, EventArgs e)
+        {
+            // Text für die verschiedenen Befehle und ihre Verwendung
+            string helpText = "Befehle und ihre Verwendung:" + Environment.NewLine +
+                              "  extract <mapX.mul> <mapheight> <heightmap.bmp>" + Environment.NewLine +
+                              "      generiert <heightmap.bmp> aus <mapX.mul>, welches" + Environment.NewLine +
+                              "      <mapheight> Blöcke hoch ist." + Environment.NewLine +
+                              Environment.NewLine +
+                              "  apply <heightmap.bmp> <mapX.mul> <mapheight> [<staticsX.mul> <staidxX.mul>]" + Environment.NewLine +
+                              "      wendet die Höhe von <heightmap.bmp> auf <mapX.mul> an, welches" + Environment.NewLine +
+                              "      <mapheight> Blöcke hoch ist, und passt optional auch die Statics an." + Environment.NewLine +
+                              Environment.NewLine +
+                              "  modify <mapX.mul> <mapheight> <offset> [<staticsX.mul> <staidxX.mul>]" + Environment.NewLine +
+                              "      erhöht/verringert die Höhe jeder Kachel in <mapX.mul> mit" + Environment.NewLine +
+                              "      <mapheight> Höhe um <offset>. Optional wird der Offset auch auf die Statics angewendet.";
 
-
+            // Den Text in die textBoxOutput einblenden
+            textBoxOutput.Text = helpText;
+        }
+        #endregion
     }
-
 }

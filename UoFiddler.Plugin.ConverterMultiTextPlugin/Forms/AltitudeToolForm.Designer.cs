@@ -51,6 +51,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin
             openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             lbTxt = new System.Windows.Forms.Label();
             checkBoxCopyText = new System.Windows.Forms.CheckBox();
+            buttonHelp = new System.Windows.Forms.Button();
             SuspendLayout();
             // 
             // comboBoxCommand
@@ -82,7 +83,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin
             // 
             // button1
             // 
-            button1.Location = new System.Drawing.Point(456, 14);
+            button1.Location = new System.Drawing.Point(456, 13);
             button1.Name = "button1";
             button1.Size = new System.Drawing.Size(74, 23);
             button1.TabIndex = 3;
@@ -109,7 +110,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin
             // 
             // btCopyMul
             // 
-            btCopyMul.Location = new System.Drawing.Point(456, 46);
+            btCopyMul.Location = new System.Drawing.Point(456, 42);
             btCopyMul.Name = "btCopyMul";
             btCopyMul.Size = new System.Drawing.Size(74, 23);
             btCopyMul.TabIndex = 6;
@@ -141,11 +142,22 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin
             checkBoxCopyText.UseVisualStyleBackColor = true;
             checkBoxCopyText.CheckedChanged += checkBoxCopyText_CheckedChanged;
             // 
+            // buttonHelp
+            // 
+            buttonHelp.Location = new System.Drawing.Point(536, 13);
+            buttonHelp.Name = "buttonHelp";
+            buttonHelp.Size = new System.Drawing.Size(41, 23);
+            buttonHelp.TabIndex = 9;
+            buttonHelp.Text = "Help";
+            buttonHelp.UseVisualStyleBackColor = true;
+            buttonHelp.Click += buttonHelp_Click;
+            // 
             // AltitudeToolForm
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             ClientSize = new System.Drawing.Size(594, 450);
+            Controls.Add(buttonHelp);
             Controls.Add(checkBoxCopyText);
             Controls.Add(lbTxt);
             Controls.Add(btCopyMul);
@@ -175,5 +187,6 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin
         private System.Windows.Forms.OpenFileDialog openFileDialog1;
         private System.Windows.Forms.Label lbTxt;
         private System.Windows.Forms.CheckBox checkBoxCopyText;
+        private System.Windows.Forms.Button buttonHelp;
     }
 }
