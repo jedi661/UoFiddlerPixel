@@ -40,8 +40,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         {
             InitializeComponent();
 
-            this.Load += GumpsEdit_Load; // Fügen Sie das Load-Ereignis hinzu            
-            //pictureBox.SizeMode = PictureBoxSizeMode.StretchImage;
+            this.Load += GumpsEdit_Load; // Add the Load event            
 
             xmlFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "IDGumpNames.xml");
             XDocument doc;
@@ -68,23 +67,23 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         #region PopulateListBox
         private void PopulateListBox(bool showFreeSlots = false)
         {
-            listBox.BeginUpdate(); // Deaktivieren Sie ListBox-Aktualisierungen
+            listBox.BeginUpdate(); // Disable ListBox updates
 
             for (int i = 0; i < Gumps.GetCount(); i++)
             {
-                string hexValue = i.ToString("X"); // Konvertiert die ID in eine Hexadezimalzeichenfolge
+                string hexValue = i.ToString("X"); // Converts the ID to a hexadecimal string
                 if (Gumps.IsValidIndex(i))
                 {
                     string idName = idNames.ContainsKey(i) ? idNames[i] : "";
-                    listBox.Items.Add($"ID: {i} (0x{hexValue}) - {idName}"); // Fügt sowohl die Dezimal- als auch die Hexadezimalrepräsentation der ID zur ListBox hinzu
+                    listBox.Items.Add($"ID: {i} (0x{hexValue}) - {idName}"); // Adds both the decimal and hexadecimal representations of the ID to the ListBox
                 }
                 else if (showFreeSlots)
                 {
-                    listBox.Items.Add($"ID: {i} (0x{hexValue}) - Freier Platz");
+                    listBox.Items.Add($"ID: {i} (0x{hexValue}) - Free space");
                 }
             }
 
-            listBox.EndUpdate(); // Aktivieren Sie ListBox-Aktualisierungen
+            listBox.EndUpdate(); // Enable ListBox updates
         }
         #endregion
 
@@ -94,17 +93,17 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             string searchText = searchByIdToolStripTextBox.Text.Trim();
             int id;
 
-            // Versuchen Sie, den Suchtext als Ganzzahl zu interpretieren
+            // Try to interpret the search text as an integer
             if (int.TryParse(searchText, out id) ||
                 (searchText.StartsWith("0x") && int.TryParse(searchText.Substring(2), NumberStyles.HexNumber, null, out id)))
             {
-                // Durchsuchen Sie die ListBox nach dem Element mit der entsprechenden ID
+                // Search the ListBox for the item with the corresponding ID
                 for (int i = 0; i < listBox.Items.Count; i++)
                 {
                     string item = listBox.Items[i].ToString();
                     if (item.Contains($"ID: {id}"))
                     {
-                        // Wählen Sie das gefundene Element aus und beenden Sie die Suche
+                        // Select the found item and end the search
                         listBox.SelectedIndex = i;
                         break;
                     }
@@ -112,18 +111,18 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             }
             else if (!string.IsNullOrEmpty(searchText) && !searchText.All(char.IsDigit))
             {
-                // Wenn der Suchtext keine Ganzzahl ist und mindestens ein Zeichen enthält, das kein Ziffer ist,
-                // suchen Sie nach dem Namen in idNames
+                // If the search text is not an integer and contains at least one character that is not a digit,
+                // search for the name in idNames
                 var matchingIds = idNames.Where(kv => kv.Value.Equals(searchText)).Select(kv => kv.Key).ToList();
                 if (matchingIds.Count > 0)
                 {
-                    // Durchsuchen Sie die ListBox nach dem Element mit dem entsprechenden Namen
+                    // Search the ListBox for the item with the corresponding name
                     for (int i = 0; i < listBox.Items.Count; i++)
                     {
                         string item = listBox.Items[i].ToString();
                         if (item.Contains(searchText))
                         {
-                            // Wählen Sie das gefundene Element aus und beenden Sie die Suche
+                            // Select the found item and end the search
                             listBox.SelectedIndex = i;
                             break;
                         }
@@ -137,67 +136,67 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         #region Load ListBox
         private void ListBox_SelectedIndexChanged(object sender, EventArgs e)
         {
-            // Überprüfen Sie, ob ein Element in der ListBox ausgewählt ist
+            // Check if an item in the ListBox is selected
             if (listBox.SelectedIndex == -1)
             {
                 return;
             }
 
-            // Holen Sie sich das ausgewählte Element in der ListBox und konvertieren Sie es in eine Zeichenfolge
+            // Get the selected item in the ListBox and convert it to a string
             string selectedItem = listBox.Items[listBox.SelectedIndex].ToString();
 
-            // Finden Sie den Startindex und die Länge des Ganzzahlwerts in der Zeichenfolge
+            // Find the starting index and length of the integer value in the string
             int startIdx = selectedItem.IndexOf("ID: ") + 4;
             int length = selectedItem.IndexOf(" (") - startIdx;
 
-            // Extrahieren Sie den Ganzzahlwert aus der Zeichenfolge
+            // Extract the integer value from the string
             string intValueStr = selectedItem.Substring(startIdx, length);
 
-            // Konvertieren Sie den Ganzzahlwert in eine Ganzzahl
+            // Convert the integer value to an integer
             int i = int.Parse(intValueStr);
 
             // Überprüfen Sie, ob die ID gültig ist
             if (Gumps.IsValidIndex(i))
             {
-                // Holen Sie sich das Gump für die ID
+                // Get the Gump for the ID
                 Bitmap bmp = Gumps.GetGump(i);
 
-                // Überprüfen Sie, ob das Gump vorhanden ist
+                // Check if the Gump is present
                 if (bmp != null)
                 {
-                    // Setzen Sie das Hintergrundbild der PictureBox auf das Gump
+                    // Set the PictureBox's background image to the Gump
                     pictureBox.BackgroundImage = bmp;
 
-                    // Aktualisieren Sie die Labels mit der ID und der Größe des Gumps
+                    // Update the labels with the Gump's ID and size
                     IDLabel.Text = $"ID: 0x{i:X} ({i})";
                     SizeLabel.Text = $"Size: {bmp.Width},{bmp.Height}";
                 }
                 else
                 {
-                    // Setzen Sie das Hintergrundbild der PictureBox auf null, wenn das Gump nicht vorhanden ist
+                    // Set the PictureBox's background image to null if the gump is not present
                     pictureBox.BackgroundImage = null;
                 }
             }
             else
             {
-                // Setzen Sie das Hintergrundbild der PictureBox auf null, wenn die ID ungültig ist
+                // Set the PictureBox's background image to null if the ID is invalid
                 pictureBox.BackgroundImage = null;
             }
 
-            // Aktualisieren Sie die ListBox
+            // Update the ListBox
             listBox.Invalidate();
         }
         private void GumpsEdit_Load(object sender, EventArgs e)
         {
-            PopulateListBox(); // Rufen Sie die Methode zum Füllen der ListBox auf
+            PopulateListBox(); // Call the method to fill the ListBox
 
-            // Wählen Sie den Index 0 in der ListBox aus
+            // Select index 0 in the ListBox
             if (listBox.Items.Count > 0)
             {
                 listBox.SelectedIndex = 0;
             }
 
-            // Zeigen Sie das entsprechende Bild in der PictureBox an
+            // Display the corresponding image in the PictureBox
             if (Gumps.IsValidIndex(0))
             {
                 pictureBox.BackgroundImage = Gumps.GetGump(0);
@@ -211,9 +210,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             if (listBox.SelectedIndex != -1)
             {
                 string selectedItem = listBox.Items[listBox.SelectedIndex].ToString();
-                int startIdx = selectedItem.IndexOf("ID: ") + 4; // Startindex des Ganzzahlwerts
-                int length = selectedItem.IndexOf(" (") - startIdx; // Länge des Ganzzahlwerts
-                string intValueStr = selectedItem.Substring(startIdx, length); // Extrahieren des Ganzzahlwerts
+                int startIdx = selectedItem.IndexOf("ID: ") + 4; // Starting index of the integer value
+                int length = selectedItem.IndexOf(" (") - startIdx; //Length of the integer value
+                string intValueStr = selectedItem.Substring(startIdx, length); // Extract the integer value
                 int i = int.Parse(intValueStr);
 
                 //int i = int.Parse(listBox.Items[listBox.SelectedIndex].ToString());
@@ -222,10 +221,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                     Bitmap originalBmp = Gumps.GetGump(i);
                     if (originalBmp != null)
                     {
-                        // Erstellen Sie eine Kopie des Originalbildes
+                        // Make a copy of the original image
                         Bitmap bmp = new Bitmap(originalBmp);
 
-                        // Farbänderungsfunktion direkt eingebaut
+                        // Color change function built in
                         for (int y = 0; y < bmp.Height; y++)
                         {
                             for (int x = 0; x < bmp.Width; x++)
@@ -275,20 +274,20 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 // Retrieve the image from the clipboard
                 using (Bitmap bmp = new Bitmap(Clipboard.GetImage()))
                 {
-                    // Überprüfen Sie, ob ein Element in der ListBox ausgewählt ist
+                    // Check if an item in the ListBox is selected
                     if (listBox.SelectedIndex != -1)
                     {
-                        // Holen Sie sich das ausgewählte Element in der ListBox und konvertieren Sie es in eine Zeichenfolge
+                        // Get the selected item in the ListBox and convert it to a string
                         string selectedItem = listBox.Items[listBox.SelectedIndex].ToString();
 
-                        // Finden Sie den Startindex und die Länge des Ganzzahlwerts in der Zeichenfolge
-                        int startIdx = selectedItem.IndexOf('(') + 3; // Startindex des Ganzzahlwerts
-                        int length = selectedItem.IndexOf(')') - startIdx; // Länge des Ganzzahlwerts
+                        // Find the starting index and length of the integer value in the string
+                        int startIdx = selectedItem.IndexOf('(') + 3; // Starting index of the integer value
+                        int length = selectedItem.IndexOf(')') - startIdx; // Length of the integer value
 
-                        // Extrahieren Sie den Ganzzahlwert aus der Zeichenfolge
+                        // Extract the integer value from the string
                         string intValueStr = selectedItem.Substring(startIdx, length);
 
-                        // Konvertieren Sie den Ganzzahlwert in eine Ganzzahl
+                        // Convert the integer value to an integer
                         int index = int.Parse(intValueStr);
 
                         if (index >= 0 && index < Gumps.GetCount())
@@ -380,19 +379,19 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             if (listBox.SelectedIndex != -1)
             {
                 string selectedItem = listBox.Items[listBox.SelectedIndex].ToString();
-                int startIdx = selectedItem.IndexOf("ID: ") + 4; // Startindex des Ganzzahlwerts
-                int length = selectedItem.IndexOf(" (") - startIdx; // Länge des Ganzzahlwerts
-                string intValueStr = selectedItem.Substring(startIdx, length); // Extrahieren des Ganzzahlwerts
+                int startIdx = selectedItem.IndexOf("ID: ") + 4; // Starting index of the integer value
+                int length = selectedItem.IndexOf(" (") - startIdx; // Length of the integer value
+                string intValueStr = selectedItem.Substring(startIdx, length); // Extract the integer value
 
                 int i = int.Parse(intValueStr);
 
                 if (Gumps.IsValidIndex(i))
                 {
-                    // Entfernen Sie die Grafik
+                    // Remove the graphic
                     Gumps.RemoveGump(i);
                     ControlEvents.FireGumpChangeEvent(this, i);
 
-                    // Entfernen Sie das Bild aus der PictureBox
+                    // Remove the image from the PictureBox
                     pictureBox.Image = null;
 
                     listBox.Invalidate();
@@ -455,25 +454,25 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 
         #region Show Free Slots
 
-        private bool isShowingFreeSlots = false; // Zustandsvariable hinzufügen
+        private bool isShowingFreeSlots = false; // Add state variable
         private void showFreeIdsToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            listBox.Items.Clear(); // Löschen Sie zuerst alle vorhandenen Elemente in der ListBox
+            listBox.Items.Clear(); // First delete all existing items in the ListBox
 
             if (!isShowingFreeSlots)
             {
-                // Wenn der Button das erste Mal geklickt wird, zeigen Sie alle IDs an und färben Sie den Hintergrund grün
-                PopulateListBox(true); // Rufen Sie dann die Methode zum Füllen der ListBox auf
+                // When the button is clicked for the first time, show all IDs and color the background green
+                PopulateListBox(true); // Then call the method to fill the ListBox
                 showFreeIdsToolStripMenuItem.BackColor = Color.Green;
             }
             else
             {
-                // Wenn der Button erneut geklickt wird, zeigen Sie nur die gültigen IDs an und setzen Sie die Hintergrundfarbe zurück
+                // When the button is clicked again, show only the valid IDs and reset the background color
                 PopulateListBox();
                 showFreeIdsToolStripMenuItem.BackColor = SystemColors.Control;
             }
 
-            // Den Zustand umschalten
+            // Toggle the state
             isShowingFreeSlots = !isShowingFreeSlots;
         }
         #endregion
@@ -505,8 +504,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                     }
                 }
 
-                // Falls keine leere ID gefunden wurde und isShowingFreeSlots aktiviert ist,
-                // wird eine neue ID am Ende der ListBox hinzugefügt
+                // If no empty ID was found and isShowingFreeSlots is enabled,
+                // a new ID is added to the end of the ListBox
                 if (listBox.SelectedIndex == -1 && isShowingFreeSlots)
                 {
                     int newId = Gumps.GetCount();
@@ -520,10 +519,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         #region Add Names ID Gumps XML
         public void SetIDName(int id, string name)
         {
-            // Fügen Sie den Namen zur ID im Dictionary hinzu oder aktualisieren Sie ihn
+            // Add or update the name to the ID in the dictionary
             idNames[id] = name;
 
-            // Speichern Sie die Änderungen in der XML-Datei
+            // Save the changes to the XML file
             XDocument doc = new XDocument(
                 new XElement("IDNames",
                     idNames.Select(kv => new XElement("ID", new XAttribute("value", kv.Key), new XAttribute("name", kv.Value)))
@@ -546,17 +545,17 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                     var idTextBox = new System.Windows.Forms.TextBox { Text = id.ToString(), Location = new Point(10, 10) };
                     var nameTextBox = new System.Windows.Forms.TextBox { Text = idNames.ContainsKey(id) ? idNames[id] : "", Location = new Point(10, 40) };
                     var okButton = new System.Windows.Forms.Button { Text = "OK", Location = new Point(10, 70) };
-                    var deleteButton = new System.Windows.Forms.Button { Text = "Löschen", Location = new Point(nameTextBox.Location.X + nameTextBox.Width + 4, nameTextBox.Location.Y) };
+                    var deleteButton = new System.Windows.Forms.Button { Text = "Delete", Location = new Point(nameTextBox.Location.X + nameTextBox.Width + 4, nameTextBox.Location.Y) };
 
                     deleteButton.Click += (s, e) =>
                     {
-                        // Leeren Sie den Text des nameTextBox
+                        // Empty the text of the nameTextBox
                         nameTextBox.Text = "";
                     };
 
                     okButton.Click += (s, e) =>
                     {
-                        // Aktualisieren Sie den Namen der ID in idNames und speichern Sie die Änderungen in der XML-Datei
+                        // Update the name of the ID in idNames and save the changes in the XML file
                         idNames[int.Parse(idTextBox.Text)] = nameTextBox.Text;
 
                         XDocument doc = new XDocument(
@@ -576,13 +575,13 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 
                     if (form.ShowDialog() == DialogResult.OK)
                     {
-                        // Aktualisieren Sie die ListBox
+                        // Update the ListBox
                         listBox.Items.Clear();
                         PopulateListBox();
                     }
                 }
             }
-            // Aktualisieren Sie die Labels
+            // Update the labels
             UpdateTotalIDsLabel();
             UpdateFreeIDsLabel();
         }
@@ -610,121 +609,156 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         #region ID Name Counter
         private void UpdateTotalIDsLabel()
         {
-            // Zählen Sie die Anzahl der belegten IDs
+            // Count the number of occupied IDs
             int totalIDs = idNames.Count;
 
-            // Aktualisieren Sie das Label
+            // Update the label
             IDLabelinortotal.Text = $"Named ID Total: {totalIDs}";
         }
 
         private void UpdateFreeIDsLabel()
         {
-            // Berechnen Sie die Anzahl der freien IDs
+            // Calculate the number of free IDs
             int freeIDs = Gumps.GetCount() - idNames.Count;
 
-            // Aktualisieren Sie das Label
+            // Update the label
             LabelFreeIDs.Text = $"Total Free IDs: {freeIDs}";
         }
         #endregion
 
         #region Paint
 
-        // Zustandsvariable hinzufügen
+        // Add state variable
         private bool isDrawing = false;
         private Color drawingColor = Color.Black;
         private Stack<Bitmap> previousImages = new Stack<Bitmap>();
-        private Bitmap originalImage;
-        private Bitmap originalImageDraw;
+        private Bitmap originalImage; // Original image
+        private Bitmap originalImageDraw; // Drawing Image
         private Bitmap currentImage;
-        // Erstellen Sie eine Liste, um die Linien zu speichern
+        // Create a list to store the lines
         List<List<Point>> lines = new List<List<Point>>();
-        // Erstellen Sie eine temporäre Liste, um die aktuelle Linie zu speichern
+        // Create a temporary list to save the current line
         List<Point> currentLine;
-        // Erstellen Sie einen zweiten Stapel für die Redo-Funktion
+        // Create a second batch for the redo function
         Stack<Bitmap> redoImages = new Stack<Bitmap>();
+
+
+        private bool removeColor = false; // Removes colors
+        private bool isSelecting = false;
+        private Rectangle selectionRectangle = new Rectangle(); //selection rectangle
+        private System.Drawing.Image loadedImage; //Extra for inserting rectangle characters 
+
+        private bool isSelectingCircle = false; // Add state variable
+        private Rectangle selectionCircle = new Rectangle(); // selection circle
 
         #region LoadImage
         private void LoadImageIntopictureBoxDraw(System.Drawing.Image image)
         {
             tbPinselSize.Text = "2";
 
-            // Überprüfen Sie, ob das Bild nicht null ist
+            // Check if the image is not null
             if (image != null)
             {
-                // Speichern Sie das Originalbild und erstellen Sie eine veränderbare Kopie
+                // Save the original image and create a modifiable copy
                 originalImage = new Bitmap(image);
                 originalImageDraw = new Bitmap(originalImage);
 
-                // Weisen Sie die veränderbare Kopie der pictureBoxDraw zu
+                // Assign the resizable copy to the pictureBoxDraw
                 pictureBoxDraw.Image = originalImageDraw;
             }
             else
             {
-                MessageBox.Show("Das Bild konnte nicht geladen werden.");
+                MessageBox.Show("The image could not be loaded.");
             }
         }
         #endregion
 
         #region MouseMove
-
         private void pictureBoxDraw_MouseMove(object sender, MouseEventArgs e)
         {
-            // Zeichnen Sie nur, wenn die linke Maustaste gedrückt wird und die Zeichenfunktion aktiviert ist
+            // Only draw when the left mouse button is pressed and the drawing function is activated
             if (e.Button == MouseButtons.Left && isDrawing)
             {
-                // Stellen Sie sicher, dass das Bild nicht null ist, bevor Sie darauf zeichnen
+                // Make sure the image is not null before drawing on it
                 if (originalImageDraw != null)
                 {
-                    // Holen Sie sich die Pinselgröße aus der TextBox
+                    // Get the brush size from the TextBox
                     float pinselSize = float.Parse(tbPinselSize.Text);
 
-                    // Zeichnen Sie nur, wenn die Pinselgröße größer als 0 ist
+                    // Only draw if the brush size is greater than 0
                     if (pinselSize > 0)
                     {
                         using (Graphics g = Graphics.FromImage(originalImageDraw))
                         {
-                            // Berechnen Sie den Offset durch das Zentrieren des Bildes
+                            // Calculate the offset by centering the image
                             int offsetX = (pictureBoxDraw.Width - originalImageDraw.Width) / 2;
                             int offsetY = (pictureBoxDraw.Height - originalImageDraw.Height) / 2;
 
-                            // Berechnen Sie die korrekten Koordinaten auf dem Bild
+                            // Calculate the correct coordinates on the image
                             int imageX = e.X - offsetX;
                             int imageY = e.Y - offsetY;
 
-                            // Stellen Sie sicher, dass die Koordinaten innerhalb der Grenzen des Bildes liegen
+                            // Make sure the coordinates are within the boundaries of the image
                             if (imageX >= 0 && imageX < originalImageDraw.Width && imageY >= 0 && imageY < originalImageDraw.Height)
                             {
-                                // Zeichnen Sie auf dem Graphics-Objekt mit der angegebenen Pinselgröße
+                                // Draw on the Graphics object with the specified brush size
                                 g.FillEllipse(new SolidBrush(drawingColor), imageX, imageY, pinselSize, pinselSize);
 
-                                // Fügen Sie den aktuellen Punkt zur aktuellen Linie hinzu
+                                // Add the current point to the current line
                                 currentLine.Add(new Point(imageX, imageY));
 
-                                // Aktualisieren Sie das pictureBoxDraw-Steuerelement
+                                // Update the pictureBoxDraw control
                                 pictureBoxDraw.Invalidate();
                             }
                         }
                     }
                 }
             }
-        }
+            if (e.Button == MouseButtons.Left && checkBoxRectangle.Checked)
+            {
+                // Update the size of the rectangle selection box
+                selectionRectangle.Width = e.X - selectionRectangle.X;
+                selectionRectangle.Height = e.Y - selectionRectangle.Y;
 
+                // Draw the selection box
+                pictureBoxDraw.Invalidate();
+            }
+            if (e.Button == MouseButtons.Left && isSelectingCircle)
+            {
+                // Update the size of the Circle selection box
+                selectionCircle.Width = e.X - selectionCircle.X;
+                selectionCircle.Height = e.Y - selectionCircle.Y;
+
+                // Draw the selection box
+                pictureBoxDraw.Invalidate();
+            }
+        }
         #endregion
 
         #region MouseDown
         private void pictureBoxDraw_MouseDown(object sender, MouseEventArgs e)
         {
+            if (e.Button == MouseButtons.Left && checkBoxRectangle.Checked)
+            {
+                // Initialize the selection field
+                selectionRectangle = new Rectangle(e.X, e.Y, 0, 0);
+                isSelecting = true;
+            }
+            if (e.Button == MouseButtons.Left && isSelectingCircle)
+            {
+                // Initialize the selection field
+                selectionCircle = new Rectangle(e.X, e.Y, 0, 0);
+                isSelecting = true;
+            }
             if (e.Button == MouseButtons.Left && isDrawing)
             {
-                // Fügen Sie den aktuellen Zustand des Bildes zum Stapel hinzu, bevor Sie anfangen zu zeichnen
+                // Add the current state of the image to the stack before you start drawing
                 previousImages.Push((Bitmap)originalImageDraw.Clone());
 
-                // Initialisieren Sie die aktuelle Linie
+                // Initialize the current line
                 currentLine = new List<Point>();
             }
         }
-
-
         #endregion
 
         #region MouseUp
@@ -732,7 +766,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         {
             if (e.Button == MouseButtons.Left && isDrawing)
             {
-                // Zeichnen Sie die gesamte Linie auf dem Bild
+                // Draw the entire line on the picture
                 using (Graphics g = Graphics.FromImage(originalImageDraw))
                 {
                     float pinselSize = float.Parse(tbPinselSize.Text);
@@ -746,30 +780,34 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                     pictureBoxDraw.Invalidate();
                 }
 
-                // Fügen Sie den geänderten Zustand des Bildes zum Stapel hinzu
+                // Add the changed state of the image to the stack
                 previousImages.Push((Bitmap)originalImageDraw.Clone());
 
-                // Leeren Sie die aktuelle Linie
+                // Empty the current line
                 currentLine.Clear();
             }
+            if (e.Button == MouseButtons.Left && isSelecting)
+            {
+                // Complete the selection
+                isSelecting = false;
+            }
         }
-
         #endregion
 
         #region Textbox Color Change
         private void TextBoxColor_TextChanged(object sender, EventArgs e)
         {
-            // Ändern Sie die Zeichenfarbe, wenn der Text in TextBoxColor geändert wird
+            // Change character color when text is changed in TextBoxColor
             string colorText = TextBoxColor.Text.TrimStart('#');
 
-            // Überprüfen Sie, ob der Text ein gültiger Hexadezimalwert ist
+            // Check that the text is a valid hexadecimal value
             if (int.TryParse("FF" + colorText, System.Globalization.NumberStyles.HexNumber, null, out int argb))
             {
                 drawingColor = Color.FromArgb(argb);
             }
             else
             {
-                MessageBox.Show("Bitte geben Sie einen gültigen Farbcode ein.");
+                MessageBox.Show("Please enter a valid color code.");
             }
         }
         #endregion
@@ -777,13 +815,13 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         #region Undo
         private void undoToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            // Führen Sie die "Undo"-Aktion zweimal aus
+            // Perform the "Undo" action twice
             for (int i = 0; i < 2; i++)
             {
-                // Stellen Sie das Bild auf den vorherigen Zustand zurück, wenn der Stapel nicht leer ist
+                // Restore the image to its previous state if the stack is not empty
                 if (previousImages.Count > 0)
                 {
-                    // Fügen Sie den aktuellen Zustand zum Redo-Stapel hinzu
+                    // Add the current state to the redo stack
                     redoImages.Push(originalImageDraw);
 
                     originalImageDraw = previousImages.Pop();
@@ -821,22 +859,22 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         #region Paint
         private void paintToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            // Den Zustand umschalten
+            // Toggle the state
             isDrawing = !isDrawing;
 
-            // Den Hintergrund ändern und eine Nachricht anzeigen
+            // Change the background and display a message
             if (isDrawing)
             {
                 contextMenuStripPicturebBox.Renderer = new MyRenderer(this);
-                MessageBox.Show("Sie können jetzt zeichnen.");
+                MessageBox.Show("You can now draw.");
 
-                // Laden Sie das Bild in die pictureBoxDraw
+                // Load the image into the pictureBoxDraw
                 LoadImageIntopictureBoxDraw(pictureBoxDraw.Image);
             }
             else
             {
                 contextMenuStripPicturebBox.Renderer = new ToolStripProfessionalRenderer();
-                MessageBox.Show("Zeichnen ist jetzt deaktiviert.");
+                MessageBox.Show("Drawing is now disabled.");
             }
         }
         #endregion
@@ -844,22 +882,22 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         #region Import Clipbord
         private void importImageToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            // Überprüfen Sie, ob ein Bild im Zwischenspeicher vorhanden ist
+            // Check if there is an image in the cache
             if (Clipboard.ContainsImage())
             {
-                // Holen Sie das Bild aus dem Zwischenspeicher
+                // Get the image from the cache
                 System.Drawing.Image clipboardImage = Clipboard.GetImage();
 
-                // Speichern Sie das Bild und erstellen Sie eine veränderbare Kopie
+                // Save the image and create a modifiable copy
                 originalImage = new Bitmap(clipboardImage);
                 originalImageDraw = new Bitmap(originalImage);
 
-                // Laden Sie das Bild in die PictureBoxDraw
+                // Load the image into the PictureBoxDraw
                 pictureBoxDraw.Image = originalImageDraw;
             }
             else
             {
-                MessageBox.Show("Es gibt kein Bild im Zwischenspeicher.");
+                MessageBox.Show("There is no image in the buffer.");
             }
         }
         #endregion
@@ -867,16 +905,16 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         #region Color Dialog
         private void btColorDialog_Click(object sender, EventArgs e)
         {
-            // Erstellen Sie ein neues ColorDialog-Objekt
+            // Create a new ColorDialog object
             ColorDialog colorDialog = new ColorDialog();
 
-            // Zeigen Sie den Dialog an und überprüfen Sie, ob der Benutzer auf OK geklickt hat
+            // Display the dialog and verify that the user clicked OK
             if (colorDialog.ShowDialog() == DialogResult.OK)
             {
-                // Konvertieren Sie die ausgewählte Farbe in einen Hexadezimalwert
+                // Convert the selected color to a hexadecimal value
                 string hexColor = colorDialog.Color.R.ToString("X2") + colorDialog.Color.G.ToString("X2") + colorDialog.Color.B.ToString("X2");
 
-                // Fügen Sie den Hexadezimalwert in die TextBoxColor ein
+                // Insert the hexadecimal value into the TextBoxColor
                 TextBoxColor.Text = hexColor;
             }
         }
@@ -884,7 +922,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 
         private void tbPinselSize_KeyPress(object sender, KeyPressEventArgs e)
         {
-            // Erlauben Sie nur die Eingabe von Zahlen
+            // Only allow numbers to be entered
             if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar))
             {
                 e.Handled = true;
@@ -894,19 +932,19 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         #region Pinsel Size
         private void tbPinselSize_TextChanged(object sender, EventArgs e)
         {
-            // Stellen Sie sicher, dass der Wert nicht größer als 60 ist
+            // Make sure the value is not greater than 60
             if (int.TryParse(tbPinselSize.Text, out int value))
             {
                 if (value > 60)
                 {
-                    // Ändern Sie den Wert in der TextBox auf 60
+                    // Change the value in the TextBox to 60
                     tbPinselSize.Text = "60";
                 }
             }
             else if (tbPinselSize.Text != string.Empty)
             {
-                // Wenn der Text keine gültige Zahl ist und nicht leer ist,
-                // setzen Sie ihn auf den Standardwert zurück
+                // If the text is not a valid number and is not empty,
+                // reset it to the default value
                 tbPinselSize.Text = "2";
             }
         }
@@ -935,7 +973,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             }
             else
             {
-                MessageBox.Show("Es gibt kein Bild zum Kopieren.");
+                MessageBox.Show("There is no image to copy.");
             }
         }
         #endregion
@@ -946,9 +984,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             if (listBox.SelectedIndex != -1)
             {
                 string selectedItem = listBox.Items[listBox.SelectedIndex].ToString();
-                int startIdx = selectedItem.IndexOf("ID: ") + 4; // Startindex des Ganzzahlwerts
-                int length = selectedItem.IndexOf(" (") - startIdx; // Länge des Ganzzahlwerts
-                string intValueStr = selectedItem.Substring(startIdx, length); // Extrahieren des Ganzzahlwerts
+                int startIdx = selectedItem.IndexOf("ID: ") + 4; // Starting index of the integer value
+                int length = selectedItem.IndexOf(" (") - startIdx; // Length of the integer value
+                string intValueStr = selectedItem.Substring(startIdx, length); // Extract the integer value
                 int i = int.Parse(intValueStr);
 
                 if (Gumps.IsValidIndex(i))
@@ -956,10 +994,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                     Bitmap originalBmp = Gumps.GetGump(i);
                     if (originalBmp != null)
                     {
-                        // Erstellen Sie eine Kopie des Originalbildes
+                        // Make a copy of the original image
                         Bitmap bmp = new Bitmap(originalBmp);
 
-                        // Farbänderungsfunktion direkt eingebaut
+                        // Color change function built in
                         for (int y = 0; y < bmp.Height; y++)
                         {
                             for (int x = 0; x < bmp.Width; x++)
@@ -979,10 +1017,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                             g.DrawImage(bmp, new Rectangle(0, 0, bmp24bit.Width, bmp24bit.Height));
                         }
 
-                        // Speichern Sie das Bild und erstellen Sie eine veränderbare Kopie
+                        // Save the image and create a modifiable copy
                         originalImageDraw = bmp24bit;
 
-                        // Laden Sie das Bild in die pictureBoxDraw
+                        // Load the image into the pictureBoxDraw
                         pictureBoxDraw.Image = originalImageDraw;
                     }
                     else
@@ -1004,13 +1042,13 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 
         private void redoToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            // Stellen Sie das Bild auf den nächsten Zustand vor, wenn der Redo-Stapel nicht leer ist
+            // Advance the image to the next state if the redo stack is not empty
             if (redoImages.Count > 0)
             {
-                // Fügen Sie den aktuellen Zustand zum Undo-Stapel hinzu
+                // Add the current state to the undo stack
                 previousImages.Push(originalImageDraw);
 
-                // Stellen Sie das Bild auf den nächsten Zustand vor
+                // Advance the image to the next state
                 originalImageDraw = redoImages.Pop();
                 pictureBoxDraw.Image = originalImageDraw;
             }
@@ -1018,32 +1056,32 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 
         private void rotateImageToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            // Überprüfen Sie, ob ein Bild in der pictureBoxDraw vorhanden ist
+            // Check if an image exists in the pictureBoxDraw
             if (pictureBoxDraw.Image != null)
             {
-                // Drehen Sie das Bild um 90 Grad gegen den Uhrzeigersinn
+                // Rotate the image 90 degrees counterclockwise
                 pictureBoxDraw.Image.RotateFlip(RotateFlipType.Rotate270FlipNone);
 
-                // Aktualisieren Sie das pictureBoxDraw-Steuerelement
+                // Update the pictureBoxDraw control
                 pictureBoxDraw.Invalidate();
             }
         }
 
         #region trackBarBrightness
 
-        // Zustandsvariable hinzufügen
+        // Add state variable
         private bool ignoreColors = false;
 
         private void trackBarBrightness_Scroll(object sender, EventArgs e)
         {
-            // Aktualisieren Sie das Label mit dem aktuellen Wert der TrackBar
+            // Update the label with the current value of the TrackBar
             labelBrightnessValue.Text = trackBarBrightness.Value.ToString();
 
-            // Erstellen Sie eine temporäre Kopie des Originalbildes
+            // Create a temporary copy of the original image
             Bitmap tempBmp = new Bitmap(originalImageDraw);
 
-            // Erstellen Sie eine ColorMatrix und ändern Sie den Helligkeitswert
-            float brightness = trackBarBrightness.Value * 0.01f; // Skalieren Sie den Wert auf einen Bereich von -0.3 bis 0.3
+            // Create a ColorMatrix and change the brightness value
+            float brightness = trackBarBrightness.Value * 0.01f; // Scale the value to a range of -0.3 to 0.3
             float[][] matrixItems = {
         new float[] {1, 0, 0, 0, 0},
         new float[] {0, 1, 0, 0, 0},
@@ -1053,11 +1091,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
     };
             ColorMatrix colorMatrix = new ColorMatrix(matrixItems);
 
-            // Erstellen Sie ein ImageAttributes-Objekt und setzen Sie die ColorMatrix
+            // Create an ImageAttributes object and set the ColorMatrix
             ImageAttributes imageAttr = new ImageAttributes();
             imageAttr.SetColorMatrix(colorMatrix);
 
-            // Zeichnen Sie das Bild mit den neuen ImageAttributes
+            // Draw the image with the new ImageAttributes
             using (Graphics g = Graphics.FromImage(tempBmp))
             {
                 if (checkBoxBrightness.Checked)
@@ -1070,7 +1108,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                             if (pixelColor.ToArgb() != Color.White.ToArgb() && pixelColor.ToArgb() != Color.Black.ToArgb())
                             {
                                 g.DrawImage(originalImageDraw,
-                                    new Rectangle(x, y, 1, 1), // Zielrechteck
+                                    new Rectangle(x, y, 1, 1), // Target rectangle
                                     x, y, 1, 1,
                                     GraphicsUnit.Pixel,
                                     imageAttr);
@@ -1081,14 +1119,14 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 else
                 {
                     g.DrawImage(originalImageDraw,
-                        new Rectangle(0, 0, originalImageDraw.Width, originalImageDraw.Height), // Zielrechteck
+                        new Rectangle(0, 0, originalImageDraw.Width, originalImageDraw.Height), // Target rectangle
                         0, 0, originalImageDraw.Width, originalImageDraw.Height,
                         GraphicsUnit.Pixel,
                         imageAttr);
                 }
             }
 
-            // Setzen Sie das geänderte Bild in die PictureBoxDraw
+            // Put the modified image into the PictureBoxDraw
             if (currentImage != null)
             {
                 currentImage.Dispose();
@@ -1098,7 +1136,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         }
 
 
-        // Event-Handler für die CheckBox
+        // Event handler for the CheckBox
         private void checkBoxBrightness_CheckedChanged(object sender, EventArgs e)
         {
             ignoreColors = checkBoxBrightness.Checked;
@@ -1106,26 +1144,26 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         #endregion
 
         #region ContrastColors
-        // Zustandsvariable hinzufügen
+        // Add state variable
         private bool ignoreContrastColors = false;
 
         private void trackBarContrast_Scroll(object sender, EventArgs e)
         {
-            // Aktualisieren Sie das Label mit dem aktuellen Wert der TrackBar
+            // Update the label with the current value of the TrackBar
             labelContrastValue.Text = trackBarContrast.Value.ToString();
 
-            // Erstellen Sie eine temporäre Kopie des Originalbildes
+            // Create a temporary copy of the original image
             Bitmap tempBmp = new Bitmap(originalImageDraw);
 
             if (trackBarContrast.Value == 0)
             {
-                // Setzen Sie das Bild auf das ursprüngliche Bild zurück
+                // Reset the image to the original image
                 pictureBoxDraw.Image = new Bitmap(originalImageDraw);
                 return;
             }
 
-            // Erstellen Sie eine ColorMatrix und ändern Sie den Kontrastwert
-            float contrast = 1 + trackBarContrast.Value * 0.02f; // Skalieren Sie den Wert auf einen Bereich von 1 bis 1.6
+            // Create a ColorMatrix and change the contrast value
+            float contrast = 1 + trackBarContrast.Value * 0.02f; // Scale the value to a range of 1 to 1.6
             float translate = 0.5f * (1.0f - contrast);
             float[][] matrixItems = {
         new float[] {contrast, 0, 0, 0, 0},
@@ -1136,11 +1174,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
     };
             ColorMatrix colorMatrix = new ColorMatrix(matrixItems);
 
-            // Erstellen Sie ein ImageAttributes-Objekt und setzen Sie die ColorMatrix
+            // Create an ImageAttributes object and set the ColorMatrix
             ImageAttributes imageAttr = new ImageAttributes();
             imageAttr.SetColorMatrix(colorMatrix);
 
-            // Zeichnen Sie das Bild mit den neuen ImageAttributes
+            // Draw the image with the new ImageAttributes
             using (Graphics g = Graphics.FromImage(tempBmp))
             {
                 if (checkBoxContrast.Checked)
@@ -1153,7 +1191,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                             if (pixelColor.ToArgb() != Color.White.ToArgb() && pixelColor.ToArgb() != Color.Black.ToArgb())
                             {
                                 g.DrawImage(originalImageDraw,
-                                    new Rectangle(x, y, 1, 1), // Zielrechteck
+                                    new Rectangle(x, y, 1, 1), // Target rectangle
                                     x, y, 1, 1,
                                     GraphicsUnit.Pixel,
                                     imageAttr);
@@ -1164,14 +1202,14 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 else
                 {
                     g.DrawImage(originalImageDraw,
-                        new Rectangle(0, 0, originalImageDraw.Width, originalImageDraw.Height), // Zielrechteck
+                        new Rectangle(0, 0, originalImageDraw.Width, originalImageDraw.Height), // Target rectangle
                         0, 0, originalImageDraw.Width, originalImageDraw.Height,
                         GraphicsUnit.Pixel,
                         imageAttr);
                 }
             }
 
-            // Setzen Sie das geänderte Bild in die PictureBoxDraw
+            // Put the modified image into the PictureBoxDraw
             if (currentImage != null)
             {
                 currentImage.Dispose();
@@ -1180,7 +1218,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             pictureBoxDraw.Image = currentImage;
         }
 
-        // Event-Handler für die CheckBox
+        // Event handler for the CheckBox
         private void checkBoxContrast_CheckedChanged(object sender, EventArgs e)
         {
             ignoreContrastColors = checkBoxContrast.Checked;
@@ -1188,21 +1226,21 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         #endregion
 
         #region Color
-        // Zustandsvariable hinzufügen
+        // Add state variable
 
         private void trackBarColorR_Scroll(object sender, EventArgs e)
         {
 
-            // Aktualisieren Sie das Label mit dem aktuellen Wert der TrackBar
+            // Update the label with the current value of the TrackBar
             labelColorRValue.Text = trackBarColorR.Value.ToString();
 
-            // Erstellen Sie eine temporäre Kopie des Originalbildes
+            // Create a temporary copy of the original image
             Bitmap tempBmp = new Bitmap(originalImageDraw);
 
-            // Erstellen Sie eine ColorMatrix und ändern Sie den Rotwert
+            // Create a ColorMatrix and change the red value
             float colorScaleR = trackBarColorR.Value * 0.01f;
             float[][] matrixItems = {
-        new float[] {1 + colorScaleR, 0, 0, 0, 0}, // Rotwert anpassen
+        new float[] {1 + colorScaleR, 0, 0, 0, 0}, // Adjust red value
         new float[] {0, 1, 0, 0, 0},
         new float[] {0, 0, 1, 0, 0},
         new float[] {0, 0, 0, 1, 0},
@@ -1210,59 +1248,59 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
     };
             ColorMatrix colorMatrix = new ColorMatrix(matrixItems);
 
-            // Erstellen Sie ein ImageAttributes-Objekt und setzen Sie die ColorMatrix
+            // Create an ImageAttributes object and set the ColorMatrix
             ImageAttributes imageAttr = new ImageAttributes();
             imageAttr.SetColorMatrix(colorMatrix);
 
-            // Zeichnen Sie das Bild mit den neuen ImageAttributes
+            // Draw the image with the new ImageAttributes
             using (Graphics g = Graphics.FromImage(tempBmp))
             {
                 g.DrawImage(originalImageDraw,
-                    new Rectangle(0, 0, originalImageDraw.Width, originalImageDraw.Height), // Zielrechteck
+                    new Rectangle(0, 0, originalImageDraw.Width, originalImageDraw.Height), // Target rectangle
                     0, 0, originalImageDraw.Width, originalImageDraw.Height,
                     GraphicsUnit.Pixel,
                     imageAttr);
             }
 
-            // Setzen Sie das geänderte Bild in die PictureBoxDraw
+            // Put the modified image into the PictureBoxDraw
             pictureBoxDraw.Image = tempBmp;
         }
 
         private void trackBarColorG_Scroll(object sender, EventArgs e)
         {
 
-            // Aktualisieren Sie das Label mit dem aktuellen Wert der TrackBar
+            // Update the label with the current value of the TrackBar
             labelColorGValue.Text = trackBarColorG.Value.ToString();
 
-            // Erstellen Sie eine temporäre Kopie des Originalbildes
+            // Create a temporary copy of the original image
             Bitmap tempBmp = new Bitmap(originalImageDraw);
 
-            // Erstellen Sie eine ColorMatrix und ändern Sie den Grünwert
+            // Create a ColorMatrix and change the green value
             float colorScaleG = trackBarColorG.Value * 0.01f;
             float[][] matrixItems = {
         new float[] {1, 0, 0, 0, 0},
-        new float[] {0, 1 + colorScaleG, 0, 0, 0}, // Grünwert anpassen
+        new float[] {0, 1 + colorScaleG, 0, 0, 0}, // Adjust green value
         new float[] {0, 0, 1, 0, 0},
         new float[] {0, 0, 0, 1, 0},
         new float[] {0, 0, 0, 1, 1}
         };
             ColorMatrix colorMatrix = new ColorMatrix(matrixItems);
 
-            // Erstellen Sie ein ImageAttributes-Objekt und setzen Sie die ColorMatrix
+            // Create an ImageAttributes object and set the ColorMatrix
             ImageAttributes imageAttr = new ImageAttributes();
             imageAttr.SetColorMatrix(colorMatrix);
 
-            // Zeichnen Sie das Bild mit den neuen ImageAttributes
+            // Draw the image with the new ImageAttributes
             using (Graphics g = Graphics.FromImage(tempBmp))
             {
                 g.DrawImage(originalImageDraw,
-                    new Rectangle(0, 0, originalImageDraw.Width, originalImageDraw.Height), // Zielrechteck
+                    new Rectangle(0, 0, originalImageDraw.Width, originalImageDraw.Height), // Target rectangle
                     0, 0, originalImageDraw.Width, originalImageDraw.Height,
                     GraphicsUnit.Pixel,
                     imageAttr);
             }
 
-            // Setzen Sie das geänderte Bild in die PictureBoxDraw
+            // Put the modified image into the PictureBoxDraw
             pictureBoxDraw.Image = tempBmp;
         }
 
@@ -1303,26 +1341,208 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             pictureBoxDraw.Image = tempBmp;
         }
 
-        // Event-Handler für die CheckBox
+        // Event handler for the CheckBox
         #endregion
 
         #region Reset RGB
         private void resetButtonRGB_Click(object sender, EventArgs e)
         {
-            // Setzen Sie die Werte der TrackBars auf 0
+            // Set the TrackBars values ​​to 0
             trackBarColorR.Value = 0;
             trackBarColorG.Value = 0;
             trackBarColorB.Value = 0;
 
-            // Setzen Sie die Texte der Labels zurück
+            // Reset the label texts
             labelColorRValue.Text = "0";
             labelColorGValue.Text = "0";
             labelColorBValue.Text = "0";
 
-            // Lösen Sie die Scroll-Ereignisse der TrackBars aus
+            // Trigger the TrackBars scroll events
             trackBarColorR_Scroll(sender, e);
             trackBarColorG_Scroll(sender, e);
             trackBarColorB_Scroll(sender, e);
+        }
+        #endregion
+
+        #region Remove Color #000000 #ffffff
+        private void checkBoxRemoveColor_CheckedChanged(object sender, EventArgs e)
+        {
+            // Update the state
+            removeColor = checkBoxRemoveColor.Checked;
+
+            // Create a temporary copy of the original image
+            Bitmap tempBmp = new Bitmap(originalImageDraw);
+
+            if (removeColor)
+            {
+                // Loop through every pixel in the image
+                for (int y = 0; y < tempBmp.Height; y++)
+                {
+                    for (int x = 0; x < tempBmp.Width; x++)
+                    {
+                        // Get the color of the current pixel
+                        Color pixelColor = tempBmp.GetPixel(x, y);
+
+                        // Check whether the color of the pixel is black or white
+                        if (pixelColor.ToArgb() == Color.Black.ToArgb() || pixelColor.ToArgb() == Color.White.ToArgb())
+                        {
+                            // Change the color of the pixel to Transparent
+                            tempBmp.SetPixel(x, y, Color.Transparent);
+                        }
+                    }
+                }
+            }
+
+            // Put the modified image into the PictureBoxDraw
+            pictureBoxDraw.Image = tempBmp;
+        }
+        #endregion
+
+        #region CheckBox Rechteck
+        private void checkBoxRectangle_CheckedChanged(object sender, EventArgs e)
+        {
+            // If checkBoxRectangle is enabled, disable checkBoxDrawCircle
+            if (checkBoxRectangle.Checked)
+            {
+                checkBoxDrawCircle.Checked = false;
+            }
+
+            // Update the state
+            isSelecting = checkBoxRectangle.Checked;
+
+        }
+
+        private void checkBoxDrawCircle_CheckedChanged(object sender, EventArgs e)
+        {
+            // If checkBoxDrawCircle is enabled, disable checkBoxRectangle
+            if (checkBoxDrawCircle.Checked)
+            {
+                checkBoxRectangle.Checked = false;
+            }
+
+            // Update the state
+            isSelectingCircle = checkBoxDrawCircle.Checked;
+        }
+        #endregion
+
+        #region PictureBox_Paint
+        private void pictureBoxDraw_Paint(object sender, PaintEventArgs e)
+        {
+            if (checkBoxRectangle.Checked)
+            {
+                // Draw the selection box with a dashed yellow line
+                using (Pen pen = new Pen(Color.Yellow))
+                {
+                    pen.DashStyle = System.Drawing.Drawing2D.DashStyle.Dash;
+                    e.Graphics.DrawRectangle(pen, selectionRectangle);
+                }
+            }
+            if (isSelectingCircle)
+            {
+                // Draw the selection circle with a dashed yellow line
+                using (Pen pen = new Pen(Color.Yellow))
+                {
+                    pen.DashStyle = System.Drawing.Drawing2D.DashStyle.Dash;
+                    e.Graphics.DrawEllipse(pen, selectionCircle);
+                }
+            }
+        }
+        #endregion
+
+        #region ContextMenu Texture fill       
+
+        private void SelectingRectangleCircleToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            openFileDialog.Filter = "Image files|*.bmp;*.jpg;*.jpeg;*.png";
+            if (openFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                // Load the image and save it in loadedImage
+                loadedImage = new Bitmap(System.Drawing.Image.FromFile(openFileDialog.FileName));
+
+                // Scale the loaded image to the size of the selected rectangle or circle
+                Bitmap scaledImage = isSelectingCircle ? new Bitmap(loadedImage, selectionCircle.Size) : new Bitmap(loadedImage, selectionRectangle.Size);
+
+                // Draw the scaled image on originalImageDraw at the position of the selection box
+                using (Graphics g = Graphics.FromImage(originalImageDraw))
+                {
+                    for (int y = 0; y < scaledImage.Height; y++)
+                    {
+                        for (int x = 0; x < scaledImage.Width; x++)
+                        {
+                            Color pixelColor = scaledImage.GetPixel(x, y);
+
+                            // Check that the color of the pixel is neither black nor white
+                            if (pixelColor != Color.FromArgb(255, 0, 0, 0) && pixelColor != Color.FromArgb(255, 255, 255, 255))
+                            {
+                                // Draw the pixel on originalImageDraw
+                                int drawX = isSelectingCircle ? selectionCircle.X + x : selectionRectangle.X + x;
+                                int drawY = isSelectingCircle ? selectionCircle.Y + y : selectionRectangle.Y + y;
+
+                                // Check if the point is inside the circle when circle selection mode is active
+                                if (!isSelectingCircle || Math.Pow(x - selectionCircle.Width / 2, 2) + Math.Pow(y - selectionCircle.Height / 2, 2) <= Math.Pow(selectionCircle.Width / 2, 2))
+                                {
+                                    // Calculate the position on the image based on the position and size of the image in the PictureBox
+                                    int imageX = drawX - (pictureBoxDraw.Width - originalImageDraw.Width) / 2;
+                                    int imageY = drawY - (pictureBoxDraw.Height - originalImageDraw.Height) / 2;
+
+                                    // Make sure the coordinates are within the boundaries of the image
+                                    if (imageX >= 0 && imageX < originalImageDraw.Width && imageY >= 0 && imageY < originalImageDraw.Height)
+                                    {
+                                        g.FillRectangle(new SolidBrush(pixelColor), imageX, imageY, 1, 1);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // Update the pictureBoxDraw control with originalImageDraw
+                pictureBoxDraw.Image = originalImageDraw;
+                pictureBoxDraw.Invalidate();
+
+                // Only remove the selection field if no checkbox is active
+                if (!checkBoxRectangle.Checked)
+                {
+                    isSelecting = false;
+                    selectionRectangle = new Rectangle();
+                }
+                if (!checkBoxDrawCircle.Checked)
+                {
+                    isSelectingCircle = false;
+                    selectionCircle = new Rectangle();
+                }
+            }
+        }
+        #endregion
+
+        #region Save Image
+        private void saveToolStripMenuItemPictureBoxDraw_Click(object sender, EventArgs e)
+        {
+            SaveFileDialog saveFileDialog = new SaveFileDialog();
+            saveFileDialog.Filter = "Bitmap Image|*.bmp|TIFF Image|*.tiff|PNG Image|*.png|JPEG Image|*.jpg";
+            saveFileDialog.Title = "Speichern Sie das Bild als...";
+            saveFileDialog.FilterIndex = 1; // Set .bmp as the default format
+
+            if (saveFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                // Save the image in the PictureBox in the selected format
+                switch (saveFileDialog.FilterIndex)
+                {
+                    case 1: // .bmp
+                        pictureBoxDraw.Image.Save(saveFileDialog.FileName, System.Drawing.Imaging.ImageFormat.Bmp);
+                        break;
+                    case 2: // .tiff
+                        pictureBoxDraw.Image.Save(saveFileDialog.FileName, System.Drawing.Imaging.ImageFormat.Tiff);
+                        break;
+                    case 3: // .png
+                        pictureBoxDraw.Image.Save(saveFileDialog.FileName, System.Drawing.Imaging.ImageFormat.Png);
+                        break;
+                    case 4: // .jpg
+                        pictureBoxDraw.Image.Save(saveFileDialog.FileName, System.Drawing.Imaging.ImageFormat.Jpeg);
+                        break;
+                }
+            }
         }
         #endregion
     }
