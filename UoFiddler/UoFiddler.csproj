@@ -197,6 +197,9 @@
 	  <None Update="Sound.wav">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </None>
+	  <None Update="Tools\AltitudeTool\AltitudeTool.exe">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
 	  <None Update="UOFiddlerHelp\images\animationsfindnew.webp">
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	  </None>

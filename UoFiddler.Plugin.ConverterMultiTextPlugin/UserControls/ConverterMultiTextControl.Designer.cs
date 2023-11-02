@@ -52,6 +52,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             label3 = new System.Windows.Forms.Label();
             tabControl1 = new System.Windows.Forms.TabControl();
             tabPageMain = new System.Windows.Forms.TabPage();
+            btAltitudeTool = new System.Windows.Forms.Button();
             tabPageAnimation = new System.Windows.Forms.TabPage();
             btAnimationVDForm = new System.Windows.Forms.Button();
             btAnimationEditFormButton = new System.Windows.Forms.Button();
@@ -67,6 +68,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             menuStrip1 = new System.Windows.Forms.MenuStrip();
             contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(components);
             tabControl1.SuspendLayout();
+            tabPageMain.SuspendLayout();
             tabPageAnimation.SuspendLayout();
             tabPageGraphic.SuspendLayout();
             tabPageMap.SuspendLayout();
@@ -179,6 +181,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             // 
             // tabPageMain
             // 
+            tabPageMain.Controls.Add(btAltitudeTool);
             tabPageMain.Location = new System.Drawing.Point(4, 24);
             tabPageMain.Name = "tabPageMain";
             tabPageMain.Padding = new System.Windows.Forms.Padding(3);
@@ -186,6 +189,16 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             tabPageMain.TabIndex = 0;
             tabPageMain.Text = "Main";
             tabPageMain.UseVisualStyleBackColor = true;
+            // 
+            // btAltitudeTool
+            // 
+            btAltitudeTool.Image = Properties.Resources.altitude_tool;
+            btAltitudeTool.Location = new System.Drawing.Point(6, 269);
+            btAltitudeTool.Name = "btAltitudeTool";
+            btAltitudeTool.Size = new System.Drawing.Size(55, 55);
+            btAltitudeTool.TabIndex = 0;
+            btAltitudeTool.UseVisualStyleBackColor = true;
+            btAltitudeTool.Click += btAltitudeTool_Click;
             // 
             // tabPageAnimation
             // 
@@ -343,6 +356,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             Name = "ConverterMultiTextControl";
             Size = new System.Drawing.Size(974, 417);
             tabControl1.ResumeLayout(false);
+            tabPageMain.ResumeLayout(false);
             tabPageAnimation.ResumeLayout(false);
             tabPageGraphic.ResumeLayout(false);
             tabPageMap.ResumeLayout(false);
@@ -381,5 +395,6 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
         private System.Windows.Forms.TabPage tabPageClient;
         private System.Windows.Forms.Button btDecriptClient;
         private System.Windows.Forms.Button btGumpsEdit;
+        private System.Windows.Forms.Button btAltitudeTool;
     }
 }

@@ -304,11 +304,47 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
 
         private void GumpsEditClosed(object sender, EventArgs e)
         {
-            if(isFormOpen) 
+            if (isFormOpen)
             {
                 isFormOpen = false;
                 btGumpsEdit.Enabled = true;
             }
         }
+
+        private void btAltitudeTool_Click(object sender, EventArgs e)
+        {
+            if (isFormOpen)
+            {
+                return;
+            }
+
+            // Erstellen Sie eine neue Instanz von ToolTip.
+            ToolTip toolTip1 = new ToolTip();
+
+            // Setzen Sie die Verzögerungseigenschaften.
+            toolTip1.AutoPopDelay = 5000;
+            toolTip1.InitialDelay = 1000;
+            toolTip1.ReshowDelay = 500;
+
+            // Zwingen Sie den Text, rechtsbündig angezeigt zu werden.
+            toolTip1.ShowAlways = true;
+
+            // Legen Sie den Text fest, der angezeigt wird, wenn der Mauszeiger auf dem Button steht.
+            toolTip1.SetToolTip(this.btAltitudeTool, "Altitude Tool Frontend");
+
+            AltitudeToolForm form = new AltitudeToolForm();
+            form.FormClosed += AltitudeTool_FormClosed;
+            form.Show();
+            isFormOpen = true;
+
+            btAltitudeTool.Enabled = false;
+        }
+
+        private void AltitudeTool_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            isFormOpen = false;
+            btAltitudeTool.Enabled = true;
+        }
+
     }
 }
