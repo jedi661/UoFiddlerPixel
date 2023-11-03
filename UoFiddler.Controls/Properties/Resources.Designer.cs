@@ -433,6 +433,16 @@ namespace UoFiddler.Controls.Properties {
         /// <summary>
         ///   Sucht eine lokalisierte Ressource vom Typ System.Drawing.Bitmap.
         /// </summary>
+        public static System.Drawing.Bitmap mark_item {
+            get {
+                object obj = ResourceManager.GetObject("mark-item", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Ressource vom Typ System.Drawing.Bitmap.
+        /// </summary>
         public static System.Drawing.Bitmap Mark2 {
             get {
                 object obj = ResourceManager.GetObject("Mark2", resourceCulture);
