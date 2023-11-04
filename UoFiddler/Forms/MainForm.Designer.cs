@@ -50,6 +50,7 @@ namespace UoFiddler.Forms
             directoryToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             tempDirToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             NotesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            screenshotToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             StartTab = new System.Windows.Forms.TabPage();
             Versionlabel = new System.Windows.Forms.Label();
             MultisTab = new System.Windows.Forms.TabPage();
@@ -206,9 +207,9 @@ namespace UoFiddler.Forms
             // 
             // contextMenuStripMainForm
             // 
-            contextMenuStripMainForm.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { unDockToolStripMenuItem, switchLogoImageToolStripMenuItem, directoryToolStripMenuItem, tempDirToolStripMenuItem, NotesToolStripMenuItem });
+            contextMenuStripMainForm.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { unDockToolStripMenuItem, switchLogoImageToolStripMenuItem, directoryToolStripMenuItem, tempDirToolStripMenuItem, NotesToolStripMenuItem, screenshotToolStripMenuItem });
             contextMenuStripMainForm.Name = "contextMenuStrip1";
-            contextMenuStripMainForm.Size = new System.Drawing.Size(176, 114);
+            contextMenuStripMainForm.Size = new System.Drawing.Size(176, 136);
             // 
             // unDockToolStripMenuItem
             // 
@@ -255,6 +256,15 @@ namespace UoFiddler.Forms
             NotesToolStripMenuItem.Size = new System.Drawing.Size(175, 22);
             NotesToolStripMenuItem.Text = "Notes";
             NotesToolStripMenuItem.Click += NotesToolStripMenuItem_Click;
+            // 
+            // screenshotToolStripMenuItem
+            // 
+            screenshotToolStripMenuItem.Image = Properties.Resources.animation_edit_3_;
+            screenshotToolStripMenuItem.Name = "screenshotToolStripMenuItem";
+            screenshotToolStripMenuItem.Size = new System.Drawing.Size(175, 22);
+            screenshotToolStripMenuItem.Text = "Screenshot";
+            screenshotToolStripMenuItem.ToolTipText = "Takes a screenshot of the application and copies it to clipbord";
+            screenshotToolStripMenuItem.Click += screenshotToolStripMenuItem_Click;
             // 
             // StartTab
             // 
@@ -1325,6 +1335,7 @@ namespace UoFiddler.Forms
         private System.Windows.Forms.ToolStripMenuItem alarmClockToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem notPadToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem NotesToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem screenshotToolStripMenuItem;
     }
 }
 

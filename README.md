@@ -10,6 +10,7 @@ Version : 4.11.25
 - Search function adjusted to include names as well.
 - Added sound button and disabled messages
 - Gumps Added a tagging function for IDs in the Gumps.
+- Add a Scréenshoot Button Main Contextmenu.
 
 Version : 4.11.24
 - Added ItemControl a Built-in image swap function

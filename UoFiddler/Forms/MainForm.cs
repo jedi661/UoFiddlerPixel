@@ -1434,5 +1434,24 @@ namespace UoFiddler.Forms
             notesForm.Show();
         }
         #endregion
+
+        #region Screenshot
+        private void screenshotToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // Create a new Bitmap object with the dimensions of your form
+            using (Bitmap bmp = new Bitmap(this.Width, this.Height))
+            {
+                // Create a new Graphics object from the bitmap
+                using (Graphics g = Graphics.FromImage(bmp))
+                {
+                    // Machen Sie einen Screenshot des Formulars und speichern Sie ihn im Bitmap
+                    g.CopyFromScreen(this.Location, Point.Empty, this.Size);
+                }
+
+                // Copy the bitmap to the clipboard
+                Clipboard.SetImage(bmp);
+            }
+        }
+        #endregion
     }
 }

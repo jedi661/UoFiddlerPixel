@@ -21,6 +21,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
 {
     public partial class ConverterMultiTextControl : UserControl
     {
+        Timer timer = new Timer();
+
         private string originalFileName;
 
         //One Form
@@ -32,6 +34,20 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
 
             label1.Text = "";
             label2.Text = "";
+
+            timer.Interval = 1000;
+
+            // Add the event handler
+            timer.Tick += new EventHandler(timer_Tick);
+
+            // Start the timer
+            timer.Start();
+        }
+
+        void timer_Tick(object sender, EventArgs e)
+        {
+            // Update the text of the ToolStripStatusLabel with the current time
+            toolStripStatusLabelTime.Text = DateTime.Now.ToString("HH:mm:ss") + " Uhr";
         }
 
         private void BtnMultiOpen_Click(object sender, EventArgs e)
@@ -162,7 +178,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             {
                 return; // Exit the method if the form is already open.
             }
-                        
+
             ToolTip toolTip1 = new ToolTip();
             toolTip1.AutoPopDelay = 5000;
             toolTip1.InitialDelay = 1000;
@@ -222,13 +238,13 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             {
                 return; // Exit the method if the form is already open.
             }
-            
+
             ToolTip toolTip1 = new ToolTip();
-            
+
             toolTip1.AutoPopDelay = 5000;
             toolTip1.InitialDelay = 1000;
-            toolTip1.ReshowDelay = 500;            
-            toolTip1.ShowAlways = true;            
+            toolTip1.ReshowDelay = 500;
+            toolTip1.ShowAlways = true;
             toolTip1.SetToolTip(this.btDecriptClient, "Decript");
 
             DecriptClientForm form = new DecriptClientForm();
@@ -253,13 +269,13 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             {
                 return; // Exit the method if the form is already open.
             }
-            
+
             ToolTip toolTip1 = new ToolTip();
-            
+
             toolTip1.AutoPopDelay = 5000;
             toolTip1.InitialDelay = 1000;
-            toolTip1.ReshowDelay = 500;            
-            toolTip1.ShowAlways = true;            
+            toolTip1.ReshowDelay = 500;
+            toolTip1.ShowAlways = true;
             toolTip1.SetToolTip(this.btMapMaker, "Map Maker");
 
             MapMaker form = new MapMaker();
@@ -281,13 +297,13 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             {
                 return; // Exit the method if the form is already open.
             }
-            
+
             ToolTip toolTip1 = new ToolTip();
-            
+
             toolTip1.AutoPopDelay = 5000;
             toolTip1.InitialDelay = 1000;
-            toolTip1.ReshowDelay = 500;            
-            toolTip1.ShowAlways = true;            
+            toolTip1.ReshowDelay = 500;
+            toolTip1.ShowAlways = true;
             toolTip1.SetToolTip(this.btAnimationVDForm, "VD Animation");
 
             AnimationVDForm form = new AnimationVDForm();
@@ -314,12 +330,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
                 return; // Exit the method if the form is already open.
             }
 
-            
-            ToolTip toolTip1 = new ToolTip();            
+
+            ToolTip toolTip1 = new ToolTip();
             toolTip1.AutoPopDelay = 5000;
             toolTip1.InitialDelay = 1000;
-            toolTip1.ReshowDelay = 500;            
-            toolTip1.ShowAlways = true;            
+            toolTip1.ReshowDelay = 500;
+            toolTip1.ShowAlways = true;
             toolTip1.SetToolTip(this.btAnimationEditFormButton, "Animation Edit");
 
             AnimationEditFormButton form = new AnimationEditFormButton();
@@ -345,12 +361,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
                 return;
             }
 
-            
-            ToolTip toolTip1 = new ToolTip();            
+
+            ToolTip toolTip1 = new ToolTip();
             toolTip1.AutoPopDelay = 5000;
             toolTip1.InitialDelay = 1000;
-            toolTip1.ReshowDelay = 500;            
-            toolTip1.ShowAlways = true;            
+            toolTip1.ReshowDelay = 500;
+            toolTip1.ShowAlways = true;
             toolTip1.SetToolTip(this.btGumpsEdit, "Gump Edit");
 
             GumpsEdit form = new GumpsEdit();
@@ -377,8 +393,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
                 return;
             }
 
-            
-            ToolTip toolTip1 = new ToolTip();            
+
+            ToolTip toolTip1 = new ToolTip();
             toolTip1.AutoPopDelay = 5000;
             toolTip1.InitialDelay = 1000;
             toolTip1.ReshowDelay = 500;
