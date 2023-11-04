@@ -162,6 +162,13 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             {
                 return; // Exit the method if the form is already open.
             }
+                        
+            ToolTip toolTip1 = new ToolTip();
+            toolTip1.AutoPopDelay = 5000;
+            toolTip1.InitialDelay = 1000;
+            toolTip1.ReshowDelay = 500;
+            toolTip1.ShowAlways = true;
+            toolTip1.SetToolTip(this.buttonGraficCutterForm, "Graphic Cutter");
 
             GraphicCutterForm form = new GraphicCutterForm();
             form.FormClosed += GraphicCutterForm_FormClosed; // Subscribe to the FormClosed event.
@@ -183,6 +190,18 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
                 return; // Exit the method if the form is already open.
             }
 
+            // Create a new instance of ToolTip.
+            ToolTip toolTip1 = new ToolTip();
+
+            // Set the delay properties.
+            toolTip1.AutoPopDelay = 5000;
+            toolTip1.InitialDelay = 1000;
+            toolTip1.ReshowDelay = 500;
+            // Force the text to appear right-aligned.
+            toolTip1.ShowAlways = true;
+            // Set the text that will be displayed when the mouse pointer is over the button.
+            toolTip1.SetToolTip(this.TextureCutter, "Texture Cutter");
+
             TextureCutter form = new TextureCutter();
             form.FormClosed += TextureCutter_FormClosed;
             form.Show();
@@ -203,6 +222,14 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             {
                 return; // Exit the method if the form is already open.
             }
+            
+            ToolTip toolTip1 = new ToolTip();
+            
+            toolTip1.AutoPopDelay = 5000;
+            toolTip1.InitialDelay = 1000;
+            toolTip1.ReshowDelay = 500;            
+            toolTip1.ShowAlways = true;            
+            toolTip1.SetToolTip(this.btDecriptClient, "Decript");
 
             DecriptClientForm form = new DecriptClientForm();
             form.FormClosed += DecriptClientForm_FormClosed;
@@ -226,6 +253,14 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             {
                 return; // Exit the method if the form is already open.
             }
+            
+            ToolTip toolTip1 = new ToolTip();
+            
+            toolTip1.AutoPopDelay = 5000;
+            toolTip1.InitialDelay = 1000;
+            toolTip1.ReshowDelay = 500;            
+            toolTip1.ShowAlways = true;            
+            toolTip1.SetToolTip(this.btMapMaker, "Map Maker");
 
             MapMaker form = new MapMaker();
             form.FormClosed += MapMaker_FormClosed;
@@ -246,6 +281,14 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             {
                 return; // Exit the method if the form is already open.
             }
+            
+            ToolTip toolTip1 = new ToolTip();
+            
+            toolTip1.AutoPopDelay = 5000;
+            toolTip1.InitialDelay = 1000;
+            toolTip1.ReshowDelay = 500;            
+            toolTip1.ShowAlways = true;            
+            toolTip1.SetToolTip(this.btAnimationVDForm, "VD Animation");
 
             AnimationVDForm form = new AnimationVDForm();
             form.FormClosed += AnimationVDForm_FormClosed;
@@ -271,6 +314,14 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
                 return; // Exit the method if the form is already open.
             }
 
+            
+            ToolTip toolTip1 = new ToolTip();            
+            toolTip1.AutoPopDelay = 5000;
+            toolTip1.InitialDelay = 1000;
+            toolTip1.ReshowDelay = 500;            
+            toolTip1.ShowAlways = true;            
+            toolTip1.SetToolTip(this.btAnimationEditFormButton, "Animation Edit");
+
             AnimationEditFormButton form = new AnimationEditFormButton();
             form.FormClosed += AnimationEditFormButton_FormClosed;
             form.Show();
@@ -293,6 +344,14 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             {
                 return;
             }
+
+            
+            ToolTip toolTip1 = new ToolTip();            
+            toolTip1.AutoPopDelay = 5000;
+            toolTip1.InitialDelay = 1000;
+            toolTip1.ReshowDelay = 500;            
+            toolTip1.ShowAlways = true;            
+            toolTip1.SetToolTip(this.btGumpsEdit, "Gump Edit");
 
             GumpsEdit form = new GumpsEdit();
             form.FormClosed += GumpsEditClosed;
@@ -318,18 +377,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
                 return;
             }
 
-            // Erstellen Sie eine neue Instanz von ToolTip.
-            ToolTip toolTip1 = new ToolTip();
-
-            // Setzen Sie die Verzögerungseigenschaften.
+            
+            ToolTip toolTip1 = new ToolTip();            
             toolTip1.AutoPopDelay = 5000;
             toolTip1.InitialDelay = 1000;
             toolTip1.ReshowDelay = 500;
-
-            // Zwingen Sie den Text, rechtsbündig angezeigt zu werden.
             toolTip1.ShowAlways = true;
-
-            // Legen Sie den Text fest, der angezeigt wird, wenn der Mauszeiger auf dem Button steht.
             toolTip1.SetToolTip(this.btAltitudeTool, "Altitude Tool Frontend");
 
             AltitudeToolForm form = new AltitudeToolForm();

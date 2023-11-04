@@ -67,6 +67,14 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             tabPageTextureConverter = new System.Windows.Forms.TabPage();
             menuStrip1 = new System.Windows.Forms.MenuStrip();
             contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(components);
+            lbDecriptClient = new System.Windows.Forms.Label();
+            lbMapMaker = new System.Windows.Forms.Label();
+            lbGraficCutter = new System.Windows.Forms.Label();
+            lbTextureCutter = new System.Windows.Forms.Label();
+            lbGumpsEdit = new System.Windows.Forms.Label();
+            lbAnimationEdit = new System.Windows.Forms.Label();
+            lbAnimationVD = new System.Windows.Forms.Label();
+            lbAltitudeTool = new System.Windows.Forms.Label();
             tabControl1.SuspendLayout();
             tabPageMain.SuspendLayout();
             tabPageAnimation.SuspendLayout();
@@ -181,6 +189,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             // 
             // tabPageMain
             // 
+            tabPageMain.Controls.Add(lbAltitudeTool);
             tabPageMain.Controls.Add(btAltitudeTool);
             tabPageMain.Location = new System.Drawing.Point(4, 24);
             tabPageMain.Name = "tabPageMain";
@@ -193,7 +202,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             // btAltitudeTool
             // 
             btAltitudeTool.Image = Properties.Resources.altitude_tool;
-            btAltitudeTool.Location = new System.Drawing.Point(6, 269);
+            btAltitudeTool.Location = new System.Drawing.Point(3, 243);
             btAltitudeTool.Name = "btAltitudeTool";
             btAltitudeTool.Size = new System.Drawing.Size(55, 55);
             btAltitudeTool.TabIndex = 0;
@@ -202,6 +211,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             // 
             // tabPageAnimation
             // 
+            tabPageAnimation.Controls.Add(lbAnimationVD);
+            tabPageAnimation.Controls.Add(lbAnimationEdit);
             tabPageAnimation.Controls.Add(btAnimationVDForm);
             tabPageAnimation.Controls.Add(btAnimationEditFormButton);
             tabPageAnimation.Location = new System.Drawing.Point(4, 24);
@@ -213,26 +224,29 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             // 
             // btAnimationVDForm
             // 
-            btAnimationVDForm.Location = new System.Drawing.Point(3, 194);
+            btAnimationVDForm.Image = Properties.Resources.animation_edit_3_;
+            btAnimationVDForm.Location = new System.Drawing.Point(3, 94);
             btAnimationVDForm.Name = "btAnimationVDForm";
-            btAnimationVDForm.Size = new System.Drawing.Size(92, 23);
+            btAnimationVDForm.Size = new System.Drawing.Size(59, 56);
             btAnimationVDForm.TabIndex = 16;
-            btAnimationVDForm.Text = "VD Edit";
             btAnimationVDForm.UseVisualStyleBackColor = true;
             btAnimationVDForm.Click += btAnimationVDForm_Click;
             // 
             // btAnimationEditFormButton
             // 
-            btAnimationEditFormButton.Location = new System.Drawing.Point(3, 165);
+            btAnimationEditFormButton.Image = Properties.Resources.animation_edit;
+            btAnimationEditFormButton.Location = new System.Drawing.Point(3, 12);
             btAnimationEditFormButton.Name = "btAnimationEditFormButton";
-            btAnimationEditFormButton.Size = new System.Drawing.Size(92, 23);
+            btAnimationEditFormButton.Size = new System.Drawing.Size(59, 56);
             btAnimationEditFormButton.TabIndex = 15;
-            btAnimationEditFormButton.Text = "Amin Edit";
             btAnimationEditFormButton.UseVisualStyleBackColor = true;
             btAnimationEditFormButton.Click += btAnimationEditFormButton_Click;
             // 
             // tabPageGraphic
             // 
+            tabPageGraphic.Controls.Add(lbGumpsEdit);
+            tabPageGraphic.Controls.Add(lbTextureCutter);
+            tabPageGraphic.Controls.Add(lbGraficCutter);
             tabPageGraphic.Controls.Add(btGumpsEdit);
             tabPageGraphic.Controls.Add(buttonGraficCutterForm);
             tabPageGraphic.Controls.Add(TextureCutter);
@@ -245,36 +259,37 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             // 
             // btGumpsEdit
             // 
-            btGumpsEdit.Location = new System.Drawing.Point(3, 70);
+            btGumpsEdit.Image = Properties.Resources.gump_edit_1_;
+            btGumpsEdit.Location = new System.Drawing.Point(3, 193);
             btGumpsEdit.Name = "btGumpsEdit";
-            btGumpsEdit.Size = new System.Drawing.Size(92, 23);
+            btGumpsEdit.Size = new System.Drawing.Size(56, 64);
             btGumpsEdit.TabIndex = 13;
-            btGumpsEdit.Text = "Gump";
             btGumpsEdit.UseVisualStyleBackColor = true;
             btGumpsEdit.Click += btGumpsEdit_Click;
             // 
             // buttonGraficCutterForm
             // 
-            buttonGraficCutterForm.Location = new System.Drawing.Point(3, 14);
+            buttonGraficCutterForm.Image = Properties.Resources.grafic_cutter_1_;
+            buttonGraficCutterForm.Location = new System.Drawing.Point(3, 19);
             buttonGraficCutterForm.Name = "buttonGraficCutterForm";
-            buttonGraficCutterForm.Size = new System.Drawing.Size(92, 23);
+            buttonGraficCutterForm.Size = new System.Drawing.Size(56, 64);
             buttonGraficCutterForm.TabIndex = 11;
-            buttonGraficCutterForm.Text = "Grafik Cutter";
             buttonGraficCutterForm.UseVisualStyleBackColor = true;
             buttonGraficCutterForm.Click += buttonGraficCutterForm_Click;
             // 
             // TextureCutter
             // 
-            TextureCutter.Location = new System.Drawing.Point(3, 41);
+            TextureCutter.Image = Properties.Resources.texture_cutter;
+            TextureCutter.Location = new System.Drawing.Point(3, 106);
             TextureCutter.Name = "TextureCutter";
-            TextureCutter.Size = new System.Drawing.Size(92, 23);
+            TextureCutter.Size = new System.Drawing.Size(56, 64);
             TextureCutter.TabIndex = 12;
-            TextureCutter.Text = "Texture Cutter";
             TextureCutter.UseVisualStyleBackColor = true;
             TextureCutter.Click += TextureCutter_Click;
             // 
             // tabPageMap
             // 
+            tabPageMap.Controls.Add(lbMapMaker);
             tabPageMap.Controls.Add(btMapMaker);
             tabPageMap.Location = new System.Drawing.Point(4, 24);
             tabPageMap.Name = "tabPageMap";
@@ -285,16 +300,17 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             // 
             // btMapMaker
             // 
-            btMapMaker.Location = new System.Drawing.Point(3, 122);
+            btMapMaker.Image = Properties.Resources.map_maker;
+            btMapMaker.Location = new System.Drawing.Point(6, 10);
             btMapMaker.Name = "btMapMaker";
-            btMapMaker.Size = new System.Drawing.Size(92, 23);
+            btMapMaker.Size = new System.Drawing.Size(59, 57);
             btMapMaker.TabIndex = 13;
-            btMapMaker.Text = "MapMaker";
             btMapMaker.UseVisualStyleBackColor = true;
             btMapMaker.Click += btMapMaker_Click;
             // 
             // tabPageClient
             // 
+            tabPageClient.Controls.Add(lbDecriptClient);
             tabPageClient.Controls.Add(btDecriptClient);
             tabPageClient.Location = new System.Drawing.Point(4, 24);
             tabPageClient.Name = "tabPageClient";
@@ -305,11 +321,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             // 
             // btDecriptClient
             // 
-            btDecriptClient.Location = new System.Drawing.Point(3, 132);
+            btDecriptClient.Image = Properties.Resources.decript;
+            btDecriptClient.Location = new System.Drawing.Point(3, 13);
             btDecriptClient.Name = "btDecriptClient";
-            btDecriptClient.Size = new System.Drawing.Size(92, 23);
+            btDecriptClient.Size = new System.Drawing.Size(56, 59);
             btDecriptClient.TabIndex = 12;
-            btDecriptClient.Text = "Decript";
             btDecriptClient.UseVisualStyleBackColor = true;
             btDecriptClient.Click += btDecriptClient_Click;
             // 
@@ -345,6 +361,78 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             contextMenuStrip1.Name = "contextMenuStrip1";
             contextMenuStrip1.Size = new System.Drawing.Size(61, 4);
             // 
+            // lbDecriptClient
+            // 
+            lbDecriptClient.AutoSize = true;
+            lbDecriptClient.Location = new System.Drawing.Point(3, 75);
+            lbDecriptClient.Name = "lbDecriptClient";
+            lbDecriptClient.Size = new System.Drawing.Size(76, 15);
+            lbDecriptClient.TabIndex = 13;
+            lbDecriptClient.Text = "DecriptClient";
+            // 
+            // lbMapMaker
+            // 
+            lbMapMaker.AutoSize = true;
+            lbMapMaker.Location = new System.Drawing.Point(6, 70);
+            lbMapMaker.Name = "lbMapMaker";
+            lbMapMaker.Size = new System.Drawing.Size(67, 15);
+            lbMapMaker.TabIndex = 14;
+            lbMapMaker.Text = "Map Maker";
+            // 
+            // lbGraficCutter
+            // 
+            lbGraficCutter.AutoSize = true;
+            lbGraficCutter.Location = new System.Drawing.Point(3, 86);
+            lbGraficCutter.Name = "lbGraficCutter";
+            lbGraficCutter.Size = new System.Drawing.Size(74, 15);
+            lbGraficCutter.TabIndex = 14;
+            lbGraficCutter.Text = "Grafic Cutter";
+            // 
+            // lbTextureCutter
+            // 
+            lbTextureCutter.AutoSize = true;
+            lbTextureCutter.Location = new System.Drawing.Point(3, 173);
+            lbTextureCutter.Name = "lbTextureCutter";
+            lbTextureCutter.Size = new System.Drawing.Size(81, 15);
+            lbTextureCutter.TabIndex = 15;
+            lbTextureCutter.Text = "Texture Cutter";
+            // 
+            // lbGumpsEdit
+            // 
+            lbGumpsEdit.AutoSize = true;
+            lbGumpsEdit.Location = new System.Drawing.Point(3, 260);
+            lbGumpsEdit.Name = "lbGumpsEdit";
+            lbGumpsEdit.Size = new System.Drawing.Size(68, 15);
+            lbGumpsEdit.TabIndex = 16;
+            lbGumpsEdit.Text = "Gumps Edit";
+            // 
+            // lbAnimationEdit
+            // 
+            lbAnimationEdit.AutoSize = true;
+            lbAnimationEdit.Location = new System.Drawing.Point(3, 71);
+            lbAnimationEdit.Name = "lbAnimationEdit";
+            lbAnimationEdit.Size = new System.Drawing.Size(86, 15);
+            lbAnimationEdit.TabIndex = 17;
+            lbAnimationEdit.Text = "Animation Edit";
+            // 
+            // lbAnimationVD
+            // 
+            lbAnimationVD.AutoSize = true;
+            lbAnimationVD.Location = new System.Drawing.Point(3, 153);
+            lbAnimationVD.Name = "lbAnimationVD";
+            lbAnimationVD.Size = new System.Drawing.Size(81, 15);
+            lbAnimationVD.TabIndex = 18;
+            lbAnimationVD.Text = "Animation VD";
+            // 
+            // lbAltitudeTool
+            // 
+            lbAltitudeTool.AutoSize = true;
+            lbAltitudeTool.Location = new System.Drawing.Point(3, 301);
+            lbAltitudeTool.Name = "lbAltitudeTool";
+            lbAltitudeTool.Size = new System.Drawing.Size(71, 15);
+            lbAltitudeTool.TabIndex = 1;
+            lbAltitudeTool.Text = "AltitudeTool";
+            // 
             // ConverterMultiTextControl
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -357,10 +445,15 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             Size = new System.Drawing.Size(974, 417);
             tabControl1.ResumeLayout(false);
             tabPageMain.ResumeLayout(false);
+            tabPageMain.PerformLayout();
             tabPageAnimation.ResumeLayout(false);
+            tabPageAnimation.PerformLayout();
             tabPageGraphic.ResumeLayout(false);
+            tabPageGraphic.PerformLayout();
             tabPageMap.ResumeLayout(false);
+            tabPageMap.PerformLayout();
             tabPageClient.ResumeLayout(false);
+            tabPageClient.PerformLayout();
             tabPageTextureConverter.ResumeLayout(false);
             tabPageTextureConverter.PerformLayout();
             ResumeLayout(false);
@@ -396,5 +489,13 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
         private System.Windows.Forms.Button btDecriptClient;
         private System.Windows.Forms.Button btGumpsEdit;
         private System.Windows.Forms.Button btAltitudeTool;
+        private System.Windows.Forms.Label lbGraficCutter;
+        private System.Windows.Forms.Label lbMapMaker;
+        private System.Windows.Forms.Label lbDecriptClient;
+        private System.Windows.Forms.Label lbAltitudeTool;
+        private System.Windows.Forms.Label lbAnimationVD;
+        private System.Windows.Forms.Label lbAnimationEdit;
+        private System.Windows.Forms.Label lbGumpsEdit;
+        private System.Windows.Forms.Label lbTextureCutter;
     }
 }
