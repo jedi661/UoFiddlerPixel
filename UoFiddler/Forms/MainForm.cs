@@ -1455,6 +1455,8 @@ namespace UoFiddler.Forms
         }
         #endregion
 
+        #region Calendarform
+
         private CalendarForm calendarForm; // Declare an instance of NotepadForm
         private void calendarToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -1471,5 +1473,6 @@ namespace UoFiddler.Forms
                 calendarForm.Focus();
             }
         }
+        #endregion
     }
 }
