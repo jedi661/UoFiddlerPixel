@@ -19,20 +19,22 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Xml.Linq;
+using System.IO;
+using System.Xml;
 
 namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 {
     public partial class CalendarForm : Form
     {
+        private ToolTip toolTip;
+
         public CalendarForm()
         {
             InitializeComponent();
 
             // Displays the current calendar week when the application starts
             lbCalendarWeek.Text = "Calendar Week: " + GetCalendarWeek(DateTime.Now).ToString();
-
-            // Adds an event handler that is called when the selected date changes
-            monthCalendar1.DateChanged += new DateRangeEventHandler(this.monthCalendar_DateChanged);
 
             // Displays the current date when the application starts
             lbDate.Text = "Current Date: " + DateTime.Now.ToShortDateString();
@@ -41,6 +43,37 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             timer1.Interval = 1000; // Sets the interval to 1 second
             timer1.Tick += new EventHandler(this.timer1_Tick); // Adds an event handler
             timer1.Start(); // Starts the timer
+
+            // Sets the highlighted data
+            monthCalendar1.BoldedDates = GetNotedDates().ToArray();
+
+            // Creates a new ToolTip control
+            toolTip = new ToolTip();
+            toolTip.OwnerDraw = true;
+            toolTip.Draw += new DrawToolTipEventHandler(toolTip_Draw);
+            toolTip.Popup += new PopupEventHandler(toolTip_Popup);
+
+            // Erstellt einen neuen Timer
+            Timer timer = new Timer();
+            timer.Interval = 1000; // Sets the interval to 1 second
+            timer.Tick += (sender, e) =>
+            {
+                // Gets the selected date
+                string date = monthCalendar1.SelectionStart.ToShortDateString();
+
+                // Gets the note for the selected date
+                string note = GetNoteForDate(date);
+
+                // Sets the tooltip text
+                toolTip.SetToolTip(monthCalendar1, note);
+
+                // Stops the timer
+                timer.Stop();
+            };
+
+            // Fügt den MouseHover- und MouseLeave-Ereignishandler hinzu
+            monthCalendar1.MouseHover += (sender, e) => timer.Start();
+            monthCalendar1.MouseLeave += (sender, e) => timer.Stop();
         }
 
         #region calendar week
@@ -71,6 +104,153 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         {
             // Updates the lbTime label with the current time every second
             lbTime.Text = "Time: " + DateTime.Now.ToString("HH:mm:ss");
+        }
+        #endregion
+
+        #region monthCalendarForm_DateSelected
+        private void monthCalendarForm_DateSelected(object sender, DateRangeEventArgs e)
+        {            
+            // Creates a new shape
+            Form noteForm = new Form();
+            noteForm.Text = "Note for " + monthCalendar1.SelectionStart.ToShortDateString();
+
+            // Always puts the form in the foreground
+            noteForm.TopMost = true;
+
+            // Creates a new RichTextBox
+            RichTextBox richTextBox = new RichTextBox();
+            richTextBox.Dock = DockStyle.Fill;
+            noteForm.Controls.Add(richTextBox);
+
+            // Loads the text from the XML file if it exists or creates a new one if it does not exist
+            string date = monthCalendar1.SelectionStart.ToShortDateString();
+            XDocument doc;
+            if (File.Exists("CalendarDateNotes.xml"))
+            {
+                doc = XDocument.Load("CalendarDateNotes.xml");
+            }
+            else
+            {
+                doc = new XDocument(new XElement("notes"));
+            }
+            XElement note = doc.Root.Descendants("note").FirstOrDefault(n => n.Element("date").Value == date);
+            if (note != null)
+            {
+                richTextBox.Text = note.Element("text").Value;
+            }
+
+            // Creates a new save button
+            Button saveButton = new Button();
+            saveButton.Text = "Save";
+            saveButton.Dock = DockStyle.Bottom;
+            saveButton.Click += (sender, e) =>
+            {
+                // Saves the text from the RichTextBox to an XML file
+                if (note == null)
+                {
+                    doc.Root.Add(new XElement("note",
+                        new XElement("date", date),
+                        new XElement("text", richTextBox.Text)
+                    ));
+                }
+                else
+                {
+                    note.Element("text").Value = richTextBox.Text;
+                }
+                doc.Save("CalendarDateNotes.xml");
+
+                // Updates the highlighted dates in the MonthCalendar control
+                monthCalendar1.BoldedDates = GetNotedDates().ToArray();
+
+                // Closes the form
+                noteForm.Close();
+            };
+            noteForm.Controls.Add(saveButton);
+
+            // Creates a new delete button
+            Button deleteButton = new Button();
+            deleteButton.Text = "Delete";
+            deleteButton.Dock = DockStyle.Bottom;
+            deleteButton.Click += (sender, e) =>
+            {
+                // Deletes the entry from the XML file if it exists
+                if (note != null)
+                {
+                    note.Remove();
+                    doc.Save("CalendarDateNotes.xml");
+                }
+
+                // Closes the form
+                noteForm.Close();
+            };
+            noteForm.Controls.Add(deleteButton);
+
+            // Displays the shape
+            noteForm.Show();
+        }
+        #endregion
+
+        #region Hervorgehobene daten
+        private List<DateTime> GetNotedDates()
+        {
+            List<DateTime> notedDates = new List<DateTime>();
+
+            XDocument doc;
+            if (File.Exists("CalendarDateNotes.xml"))
+            {
+                doc = XDocument.Load("CalendarDateNotes.xml");
+                foreach (XElement note in doc.Root.Descendants("note"))
+                {
+                    DateTime date = DateTime.Parse(note.Element("date").Value);
+                    notedDates.Add(date);
+                }
+            }
+
+            return notedDates;
+        }
+        #endregion
+
+        #region monthCalendar1_MouseHover
+        private void monthCalendar1_MouseHover(object sender, EventArgs e)
+        {
+            // Gets the selected date
+            string date = monthCalendar1.SelectionStart.ToShortDateString();
+
+            // Gets the note for the selected date
+            string note = GetNoteForDate(date);
+
+            // Sets the tooltip text
+            toolTip.SetToolTip(monthCalendar1, note);
+        }
+        #endregion
+
+        #region Tooltip
+        private string GetNoteForDate(string date)
+        {
+            XDocument doc;
+            if (File.Exists("CalendarDateNotes.xml"))
+            {
+                doc = XDocument.Load("CalendarDateNotes.xml");
+                XElement note = doc.Root.Descendants("note").FirstOrDefault(n => n.Element("date").Value == date);
+                if (note != null)
+                {
+                    return note.Element("text").Value;
+                }
+            }
+
+            return null;
+        }
+        private void toolTip_Draw(object sender, DrawToolTipEventArgs e)
+        {
+            e.DrawBackground();
+            e.DrawBorder();
+            e.DrawText();
+        }
+
+        private void toolTip_Popup(object sender, PopupEventArgs e)
+        {
+            string toolTipText = toolTip.GetToolTip(e.AssociatedControl);
+            e.ToolTipSize = TextRenderer.MeasureText(toolTipText, new Font("Arial", 16));
         }
         #endregion
     }

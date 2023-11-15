@@ -53,6 +53,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             monthCalendar1.Location = new System.Drawing.Point(7, 8);
             monthCalendar1.Name = "monthCalendar1";
             monthCalendar1.TabIndex = 0;
+            monthCalendar1.DateChanged += monthCalendar_DateChanged;
+            monthCalendar1.DateSelected += monthCalendarForm_DateSelected;
+            monthCalendar1.MouseHover += monthCalendar1_MouseHover;
             // 
             // lbCalendarWeek
             // 
@@ -90,6 +93,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             Controls.Add(lbDate);
             Controls.Add(lbCalendarWeek);
             Controls.Add(monthCalendar1);
+            FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             Icon = (System.Drawing.Icon)resources.GetObject("$this.Icon");
             MaximizeBox = false;
             MinimizeBox = false;
