@@ -11,6 +11,12 @@ Version : 4.11.25
 - Added sound button and disabled messages
 - Gumps Added a tagging function for IDs in the Gumps.
 - Add a Scréenshoot Button Main Contextmenu.
+- Octokit 9.0.0
+- Serilog 3.1.1
+- System Resources Extension 8.00
+- Microsoft Web WebView2 1.0.2151
+- Button Binary Code
+- Button Morse Code
 
 Version : 4.11.24
 - Added ItemControl a Built-in image swap function

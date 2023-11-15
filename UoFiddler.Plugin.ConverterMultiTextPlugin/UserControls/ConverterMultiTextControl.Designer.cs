@@ -73,8 +73,15 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             lbDecriptClient = new System.Windows.Forms.Label();
             btDecriptClient = new System.Windows.Forms.Button();
             tabPageTextureConverter = new System.Windows.Forms.TabPage();
+            btclear = new System.Windows.Forms.Button();
+            btMorseCode = new System.Windows.Forms.Button();
+            checkBoxASCII = new System.Windows.Forms.CheckBox();
+            btBinaryCode = new System.Windows.Forms.Button();
             menuStrip1 = new System.Windows.Forms.MenuStrip();
             contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(components);
+            copyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            clearToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            importClipboardToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             statusStrip1 = new System.Windows.Forms.StatusStrip();
             toolStripStatusLabelTime = new System.Windows.Forms.ToolStripStatusLabel();
             timer1 = new System.Windows.Forms.Timer(components);
@@ -85,6 +92,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             tabPageMap.SuspendLayout();
             tabPageClient.SuspendLayout();
             tabPageTextureConverter.SuspendLayout();
+            contextMenuStrip1.SuspendLayout();
             statusStrip1.SuspendLayout();
             SuspendLayout();
             // 
@@ -148,6 +156,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             // 
             // textBox1
             // 
+            textBox1.ContextMenuStrip = contextMenuStrip1;
             textBox1.Location = new System.Drawing.Point(6, 6);
             textBox1.Multiline = true;
             textBox1.Name = "textBox1";
@@ -188,7 +197,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             tabControl1.Location = new System.Drawing.Point(3, 27);
             tabControl1.Name = "tabControl1";
             tabControl1.SelectedIndex = 0;
-            tabControl1.Size = new System.Drawing.Size(968, 358);
+            tabControl1.Size = new System.Drawing.Size(968, 365);
             tabControl1.TabIndex = 15;
             // 
             // tabPageMain
@@ -198,7 +207,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             tabPageMain.Location = new System.Drawing.Point(4, 24);
             tabPageMain.Name = "tabPageMain";
             tabPageMain.Padding = new System.Windows.Forms.Padding(3);
-            tabPageMain.Size = new System.Drawing.Size(960, 330);
+            tabPageMain.Size = new System.Drawing.Size(960, 337);
             tabPageMain.TabIndex = 0;
             tabPageMain.Text = "Main";
             tabPageMain.UseVisualStyleBackColor = true;
@@ -230,7 +239,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             tabPageAnimation.Controls.Add(btAnimationEditFormButton);
             tabPageAnimation.Location = new System.Drawing.Point(4, 24);
             tabPageAnimation.Name = "tabPageAnimation";
-            tabPageAnimation.Size = new System.Drawing.Size(960, 330);
+            tabPageAnimation.Size = new System.Drawing.Size(960, 337);
             tabPageAnimation.TabIndex = 3;
             tabPageAnimation.Text = "Animation";
             tabPageAnimation.UseVisualStyleBackColor = true;
@@ -283,7 +292,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             tabPageGraphic.Controls.Add(TextureCutter);
             tabPageGraphic.Location = new System.Drawing.Point(4, 24);
             tabPageGraphic.Name = "tabPageGraphic";
-            tabPageGraphic.Size = new System.Drawing.Size(960, 330);
+            tabPageGraphic.Size = new System.Drawing.Size(960, 337);
             tabPageGraphic.TabIndex = 2;
             tabPageGraphic.Text = "Graphic";
             tabPageGraphic.UseVisualStyleBackColor = true;
@@ -351,7 +360,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             tabPageMap.Controls.Add(btMapMaker);
             tabPageMap.Location = new System.Drawing.Point(4, 24);
             tabPageMap.Name = "tabPageMap";
-            tabPageMap.Size = new System.Drawing.Size(960, 330);
+            tabPageMap.Size = new System.Drawing.Size(960, 337);
             tabPageMap.TabIndex = 4;
             tabPageMap.Text = "Map";
             tabPageMap.UseVisualStyleBackColor = true;
@@ -381,7 +390,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             tabPageClient.Controls.Add(btDecriptClient);
             tabPageClient.Location = new System.Drawing.Point(4, 24);
             tabPageClient.Name = "tabPageClient";
-            tabPageClient.Size = new System.Drawing.Size(960, 330);
+            tabPageClient.Size = new System.Drawing.Size(960, 337);
             tabPageClient.TabIndex = 5;
             tabPageClient.Text = "Client";
             tabPageClient.UseVisualStyleBackColor = true;
@@ -407,6 +416,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             // 
             // tabPageTextureConverter
             // 
+            tabPageTextureConverter.Controls.Add(btclear);
+            tabPageTextureConverter.Controls.Add(btMorseCode);
+            tabPageTextureConverter.Controls.Add(checkBoxASCII);
+            tabPageTextureConverter.Controls.Add(btBinaryCode);
             tabPageTextureConverter.Controls.Add(textBox1);
             tabPageTextureConverter.Controls.Add(BtnMultiOpen);
             tabPageTextureConverter.Controls.Add(btnSpeichernTxt);
@@ -419,10 +432,50 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             tabPageTextureConverter.Location = new System.Drawing.Point(4, 24);
             tabPageTextureConverter.Name = "tabPageTextureConverter";
             tabPageTextureConverter.Padding = new System.Windows.Forms.Padding(3);
-            tabPageTextureConverter.Size = new System.Drawing.Size(960, 330);
+            tabPageTextureConverter.Size = new System.Drawing.Size(960, 337);
             tabPageTextureConverter.TabIndex = 1;
             tabPageTextureConverter.Text = "Text Converter";
             tabPageTextureConverter.UseVisualStyleBackColor = true;
+            // 
+            // btclear
+            // 
+            btclear.Location = new System.Drawing.Point(284, 290);
+            btclear.Name = "btclear";
+            btclear.Size = new System.Drawing.Size(40, 23);
+            btclear.TabIndex = 12;
+            btclear.Text = "clear";
+            btclear.UseVisualStyleBackColor = true;
+            btclear.Click += btclear_Click;
+            // 
+            // btMorseCode
+            // 
+            btMorseCode.Location = new System.Drawing.Point(338, 84);
+            btMorseCode.Name = "btMorseCode";
+            btMorseCode.Size = new System.Drawing.Size(92, 23);
+            btMorseCode.TabIndex = 11;
+            btMorseCode.Text = "Morse code";
+            btMorseCode.UseVisualStyleBackColor = true;
+            btMorseCode.Click += btMorseCode_Click;
+            // 
+            // checkBoxASCII
+            // 
+            checkBoxASCII.AutoSize = true;
+            checkBoxASCII.Location = new System.Drawing.Point(338, 149);
+            checkBoxASCII.Name = "checkBoxASCII";
+            checkBoxASCII.Size = new System.Drawing.Size(94, 19);
+            checkBoxASCII.TabIndex = 10;
+            checkBoxASCII.Text = "back original";
+            checkBoxASCII.UseVisualStyleBackColor = true;
+            // 
+            // btBinaryCode
+            // 
+            btBinaryCode.Location = new System.Drawing.Point(338, 55);
+            btBinaryCode.Name = "btBinaryCode";
+            btBinaryCode.Size = new System.Drawing.Size(92, 23);
+            btBinaryCode.TabIndex = 9;
+            btBinaryCode.Text = "Binary Code";
+            btBinaryCode.UseVisualStyleBackColor = true;
+            btBinaryCode.Click += btBinaryCode_Click;
             // 
             // menuStrip1
             // 
@@ -434,8 +487,30 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             // 
             // contextMenuStrip1
             // 
+            contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { copyToolStripMenuItem, clearToolStripMenuItem, importClipboardToolStripMenuItem });
             contextMenuStrip1.Name = "contextMenuStrip1";
-            contextMenuStrip1.Size = new System.Drawing.Size(61, 4);
+            contextMenuStrip1.Size = new System.Drawing.Size(166, 70);
+            // 
+            // copyToolStripMenuItem
+            // 
+            copyToolStripMenuItem.Name = "copyToolStripMenuItem";
+            copyToolStripMenuItem.Size = new System.Drawing.Size(165, 22);
+            copyToolStripMenuItem.Text = "Copy";
+            copyToolStripMenuItem.Click += btnCopyTBox2_Click;
+            // 
+            // clearToolStripMenuItem
+            // 
+            clearToolStripMenuItem.Name = "clearToolStripMenuItem";
+            clearToolStripMenuItem.Size = new System.Drawing.Size(165, 22);
+            clearToolStripMenuItem.Text = "Clear";
+            clearToolStripMenuItem.Click += btclear_Click;
+            // 
+            // importClipboardToolStripMenuItem
+            // 
+            importClipboardToolStripMenuItem.Name = "importClipboardToolStripMenuItem";
+            importClipboardToolStripMenuItem.Size = new System.Drawing.Size(165, 22);
+            importClipboardToolStripMenuItem.Text = "Import Clipboard";
+            importClipboardToolStripMenuItem.Click += importClipboardToolStripMenuItem_Click;
             // 
             // statusStrip1
             // 
@@ -476,6 +551,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             tabPageClient.PerformLayout();
             tabPageTextureConverter.ResumeLayout(false);
             tabPageTextureConverter.PerformLayout();
+            contextMenuStrip1.ResumeLayout(false);
             statusStrip1.ResumeLayout(false);
             statusStrip1.PerformLayout();
             ResumeLayout(false);
@@ -522,5 +598,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
         private System.Windows.Forms.StatusStrip statusStrip1;
         private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabelTime;
         private System.Windows.Forms.Timer timer1;
+        private System.Windows.Forms.Button btBinaryCode;
+        private System.Windows.Forms.CheckBox checkBoxASCII;
+        private System.Windows.Forms.Button btMorseCode;
+        private System.Windows.Forms.Button btclear;
+        private System.Windows.Forms.ToolStripMenuItem copyToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem clearToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem importClipboardToolStripMenuItem;
     }
 }

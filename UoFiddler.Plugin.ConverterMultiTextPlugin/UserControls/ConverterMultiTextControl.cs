@@ -10,7 +10,9 @@
  ***************************************************************************/
 
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using Ultima;
@@ -386,6 +388,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             }
         }
 
+        #region AltitudeButton
         private void btAltitudeTool_Click(object sender, EventArgs e)
         {
             if (isFormOpen)
@@ -408,12 +411,105 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
 
             btAltitudeTool.Enabled = false;
         }
-
         private void AltitudeTool_FormClosed(object sender, FormClosedEventArgs e)
         {
             isFormOpen = false;
             btAltitudeTool.Enabled = true;
         }
+        #endregion
 
+        #region Button binary code
+        private void btBinaryCode_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (checkBoxASCII.Checked)
+                {
+                    string binary = textBox2.Text;
+                    binary = binary.Replace("\n", "").Replace("\r", "").Replace("\t", "");
+                    List<Byte> byteList = new List<Byte>();
+
+                    foreach (var bin in binary.Split(' '))
+                    {
+                        byteList.Add(Convert.ToByte(bin, 2));
+                    }
+
+                    textBox1.Text = Encoding.UTF8.GetString(byteList.ToArray());
+                }
+                else
+                {
+                    string text = textBox1.Text;
+                    byte[] textBytes = Encoding.UTF8.GetBytes(text);
+                    string binary = String.Join(" ", textBytes.Select(b => Convert.ToString(b, 2).PadLeft(8, '0')));
+                    textBox2.Text = binary;
+                }
+            }
+            catch (FormatException ex)
+            {
+                MessageBox.Show("Fehler beim Umwandeln der Zeichenkette in eine Zahl: " + ex.Message);
+            }
+        }
+
+        #endregion
+
+        #region MorseCode
+        private void btMorseCode_Click(object sender, EventArgs e)
+        {
+            Dictionary<char, string> morseCodeDictionary = new Dictionary<char, string>()
+            {
+                {'A', ".-"}, {'B', "-..."}, {'C', "-.-."}, {'D', "-.."}, {'E', "."}, {'F', "..-."},
+                {'G', "--."}, {'H', "...."}, {'I', ".."}, {'J', ".---"}, {'K', "-.-"}, {'L', ".-.."},
+                {'M', "--"}, {'N', "-."}, {'O', "---"}, {'P', ".--."}, {'Q', "--.-"}, {'R', ".-."},
+                {'S', "..."}, {'T', "-"}, {'U', "..-"}, {'V', "...-"}, {'W', ".--"}, {'X', "-..-"},
+                {'Y', "-.--"}, {'Z', "--.."}, {'0', "-----"}, {'1', ".----"}, {'2', "..---"},
+                {'3', "...--"}, {'4', "....-"}, {'5', "....."}, {'6', "-...."}, {'7', "--..."},
+                {'8', "---.."}, {'9', "----."}, {' ', "/"}, {'Ä', ".-.-"}, {'Ö', "---."}, {'Ü', "..--"}
+            };
+
+            if (checkBoxASCII.Checked)
+            {
+                string morseCode = textBox2.Text;
+                string text = "";
+
+                foreach (var word in morseCode.Split(new string[] { " / " }, StringSplitOptions.None))
+                {
+                    foreach (var letter in word.Split(' '))
+                    {
+                        text += morseCodeDictionary.FirstOrDefault(x => x.Value == letter).Key;
+                    }
+                    text += " ";
+                }
+
+                textBox1.Text = text.Trim();
+            }
+            else
+            {
+                string text = textBox1.Text.ToUpper();
+                string morseCode = String.Join(" ", text.Select(c => morseCodeDictionary.ContainsKey(c) ? morseCodeDictionary[c] : ""));
+                textBox2.Text = morseCode;
+            }
+        }
+        #endregion
+
+        #region Clear
+        private void btclear_Click(object sender, EventArgs e)
+        {
+            textBox1.Text = string.Empty;
+        }
+        #endregion
+
+        #region Clipboard Text
+        private void importClipboardToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (Clipboard.ContainsText())
+            {
+                textBox1.Text = Clipboard.GetText();
+            }
+            else
+            {
+                MessageBox.Show("The clipboard contains no text.");
+            }
+        }
+        #endregion
     }
 }

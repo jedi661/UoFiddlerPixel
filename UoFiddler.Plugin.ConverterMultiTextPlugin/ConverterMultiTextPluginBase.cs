@@ -35,12 +35,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin
         /// <summary>
         /// Name of the plugin
         /// </summary>
-        public override string Name { get; } = "ConverterMultiText";
+        public override string Name { get; } = "Tool Box";
 
         /// <summary>
         /// Description of the Plugin's purpose
         /// </summary>
-        public override string Description { get; } = "This is ConverterMultiText plugin and AdminTool, Imagecutter and Texturecutter, Converter, Alarm Clock, and more.";
+        public override string Description { get; } = "This is Tool Box plugin and AdminTool, Imagecutter and Texturecutter, Converter, Alarm Clock, and more.";
 
         /// <summary>
         /// Author of the plugin
@@ -50,7 +50,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin
         /// <summary>
         /// Version of the plugin
         /// </summary>
-        public override string Version { get; } = "1.0.3";
+        public override string Version { get; } = "1.0.4";
 
         /// <summary>
         /// Host of the plugin.
@@ -72,7 +72,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin
             TabPage page = new TabPage
             {
                 Tag = tabControl.TabCount + 1, // at end used for undock/dock feature to define the order
-                Text = "ConverterMultiText"
+                Text = "Tool Box"
             };
             page.Controls.Add(new ConverterMultiTextControl());
             tabControl.TabPages.Add(page);
