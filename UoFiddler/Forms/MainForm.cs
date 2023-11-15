@@ -22,6 +22,7 @@ using Ultima.Helpers;
 using UoFiddler.Classes;
 using UoFiddler.Controls.Classes;
 using UoFiddler.Controls.Plugin;
+using UoFiddler.Plugin.ConverterMultiTextPlugin.Forms;
 
 namespace UoFiddler.Forms
 {
@@ -1453,5 +1454,22 @@ namespace UoFiddler.Forms
             }
         }
         #endregion
+
+        private CalendarForm calendarForm; // Declare an instance of NotepadForm
+        private void calendarToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (calendarForm == null || calendarForm.IsDisposed)
+            {
+                calendarForm = new CalendarForm()
+                {
+                    TopMost = true
+                };
+                calendarForm.Show();
+            }
+            else
+            {
+                calendarForm.Focus();
+            }
+        }
     }
 }

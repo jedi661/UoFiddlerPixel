@@ -40,6 +40,9 @@
 		<Compile Update="Forms\AboutBoxForm.Designer.cs">
 			<DependentUpon>AboutBoxForm.cs</DependentUpon>
 		</Compile>
+		<Compile Update="Forms\CalendarForm.cs">
+		  <SubType>Form</SubType>
+		</Compile>
 		<Compile Update="Forms\ExceptionForm.cs">
 			<SubType>Form</SubType>
 		</Compile>
