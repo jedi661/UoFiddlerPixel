@@ -2377,6 +2377,13 @@ namespace UoFiddler.Controls.UserControls
 
         private void zoomToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            // Check if an image is selected
+            if (pictureBoxItem.Image == null)
+            {
+                MessageBox.Show("Please select an image first.");
+                return;
+            }
+
             if (originalImage == null) // If the original image has not been saved yet
             {
                 originalImage = pictureBoxItem.Image; // Save the original image
@@ -2472,6 +2479,13 @@ namespace UoFiddler.Controls.UserControls
         // ZoomImage
         private void zoomImageToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            // Check if an image is selected
+            if (pictureBoxItem.Image == null)
+            {
+                MessageBox.Show("Please select an image first.");
+                return;
+            }
+
             if (originalImage == null) // If the original image has not been saved yet
             {
                 originalImage = pictureBoxItem.Image; // Save the original image
