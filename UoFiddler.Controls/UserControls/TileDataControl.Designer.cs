@@ -95,6 +95,9 @@ namespace UoFiddler.Controls.UserControls
             splitContainer2 = new System.Windows.Forms.SplitContainer();
             treeViewItem = new System.Windows.Forms.TreeView();
             pictureBoxItem = new System.Windows.Forms.PictureBox();
+            contextMenuStripBoxItem = new System.Windows.Forms.ContextMenuStrip(components);
+            zoomToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            zoomImageToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             splitContainer3 = new System.Windows.Forms.SplitContainer();
             textBoxName = new System.Windows.Forms.TextBox();
             label9 = new System.Windows.Forms.Label();
@@ -149,6 +152,7 @@ namespace UoFiddler.Controls.UserControls
             splitContainer2.Panel2.SuspendLayout();
             splitContainer2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)pictureBoxItem).BeginInit();
+            contextMenuStripBoxItem.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)splitContainer3).BeginInit();
             splitContainer3.Panel1.SuspendLayout();
             splitContainer3.Panel2.SuspendLayout();
@@ -441,7 +445,7 @@ namespace UoFiddler.Controls.UserControls
             tabPageLand.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             tabPageLand.Name = "tabPageLand";
             tabPageLand.Padding = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            tabPageLand.Size = new System.Drawing.Size(725, 331);
+            tabPageLand.Size = new System.Drawing.Size(725, 488);
             tabPageLand.TabIndex = 1;
             tabPageLand.Text = "Land Tiles";
             tabPageLand.UseVisualStyleBackColor = true;
@@ -462,7 +466,7 @@ namespace UoFiddler.Controls.UserControls
             splitContainer5.Panel2.Controls.Add(label23);
             splitContainer5.Panel2.Controls.Add(textBoxNameLand);
             splitContainer5.Panel2.Controls.Add(splitContainer7);
-            splitContainer5.Size = new System.Drawing.Size(717, 325);
+            splitContainer5.Size = new System.Drawing.Size(717, 482);
             splitContainer5.SplitterDistance = 235;
             splitContainer5.SplitterWidth = 5;
             splitContainer5.TabIndex = 1;
@@ -482,8 +486,8 @@ namespace UoFiddler.Controls.UserControls
             // splitContainer6.Panel2
             // 
             splitContainer6.Panel2.Controls.Add(pictureBoxLand);
-            splitContainer6.Size = new System.Drawing.Size(235, 325);
-            splitContainer6.SplitterDistance = 195;
+            splitContainer6.Size = new System.Drawing.Size(235, 482);
+            splitContainer6.SplitterDistance = 289;
             splitContainer6.SplitterWidth = 5;
             splitContainer6.TabIndex = 0;
             // 
@@ -495,7 +499,7 @@ namespace UoFiddler.Controls.UserControls
             treeViewLand.Location = new System.Drawing.Point(0, 0);
             treeViewLand.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             treeViewLand.Name = "treeViewLand";
-            treeViewLand.Size = new System.Drawing.Size(235, 195);
+            treeViewLand.Size = new System.Drawing.Size(235, 289);
             treeViewLand.TabIndex = 0;
             treeViewLand.AfterSelect += AfterSelectTreeViewLand;
             treeViewLand.KeyUp += TileData_KeyUp;
@@ -506,7 +510,7 @@ namespace UoFiddler.Controls.UserControls
             pictureBoxLand.Location = new System.Drawing.Point(0, 0);
             pictureBoxLand.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             pictureBoxLand.Name = "pictureBoxLand";
-            pictureBoxLand.Size = new System.Drawing.Size(235, 125);
+            pictureBoxLand.Size = new System.Drawing.Size(235, 188);
             pictureBoxLand.TabIndex = 0;
             pictureBoxLand.TabStop = false;
             // 
@@ -550,7 +554,7 @@ namespace UoFiddler.Controls.UserControls
             // splitContainer7.Panel2
             // 
             splitContainer7.Panel2.Controls.Add(checkedListBox2);
-            splitContainer7.Size = new System.Drawing.Size(477, 325);
+            splitContainer7.Size = new System.Drawing.Size(477, 482);
             splitContainer7.SplitterDistance = 27;
             splitContainer7.SplitterWidth = 2;
             splitContainer7.TabIndex = 25;
@@ -602,7 +606,7 @@ namespace UoFiddler.Controls.UserControls
             checkedListBox2.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             checkedListBox2.MultiColumn = true;
             checkedListBox2.Name = "checkedListBox2";
-            checkedListBox2.Size = new System.Drawing.Size(477, 296);
+            checkedListBox2.Size = new System.Drawing.Size(477, 453);
             checkedListBox2.TabIndex = 0;
             checkedListBox2.ItemCheck += OnFlagItemCheckLandTiles;
             // 
@@ -613,7 +617,7 @@ namespace UoFiddler.Controls.UserControls
             tabPageItems.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             tabPageItems.Name = "tabPageItems";
             tabPageItems.Padding = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            tabPageItems.Size = new System.Drawing.Size(725, 331);
+            tabPageItems.Size = new System.Drawing.Size(725, 488);
             tabPageItems.TabIndex = 0;
             tabPageItems.Text = "Items";
             tabPageItems.UseVisualStyleBackColor = true;
@@ -632,8 +636,8 @@ namespace UoFiddler.Controls.UserControls
             // splitContainer1.Panel2
             // 
             splitContainer1.Panel2.Controls.Add(splitContainer3);
-            splitContainer1.Size = new System.Drawing.Size(717, 325);
-            splitContainer1.SplitterDistance = 235;
+            splitContainer1.Size = new System.Drawing.Size(717, 482);
+            splitContainer1.SplitterDistance = 279;
             splitContainer1.SplitterWidth = 5;
             splitContainer1.TabIndex = 0;
             // 
@@ -652,8 +656,8 @@ namespace UoFiddler.Controls.UserControls
             // splitContainer2.Panel2
             // 
             splitContainer2.Panel2.Controls.Add(pictureBoxItem);
-            splitContainer2.Size = new System.Drawing.Size(235, 325);
-            splitContainer2.SplitterDistance = 198;
+            splitContainer2.Size = new System.Drawing.Size(279, 482);
+            splitContainer2.SplitterDistance = 250;
             splitContainer2.SplitterWidth = 5;
             splitContainer2.TabIndex = 0;
             // 
@@ -665,7 +669,7 @@ namespace UoFiddler.Controls.UserControls
             treeViewItem.Location = new System.Drawing.Point(0, 0);
             treeViewItem.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             treeViewItem.Name = "treeViewItem";
-            treeViewItem.Size = new System.Drawing.Size(235, 198);
+            treeViewItem.Size = new System.Drawing.Size(279, 250);
             treeViewItem.TabIndex = 0;
             treeViewItem.BeforeExpand += OnItemDataNodeExpanded;
             treeViewItem.AfterSelect += AfterSelectTreeViewItem;
@@ -675,13 +679,34 @@ namespace UoFiddler.Controls.UserControls
             // 
             // pictureBoxItem
             // 
+            pictureBoxItem.ContextMenuStrip = contextMenuStripBoxItem;
             pictureBoxItem.Dock = System.Windows.Forms.DockStyle.Fill;
             pictureBoxItem.Location = new System.Drawing.Point(0, 0);
             pictureBoxItem.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             pictureBoxItem.Name = "pictureBoxItem";
-            pictureBoxItem.Size = new System.Drawing.Size(235, 122);
+            pictureBoxItem.Size = new System.Drawing.Size(279, 227);
             pictureBoxItem.TabIndex = 0;
             pictureBoxItem.TabStop = false;
+            // 
+            // contextMenuStripBoxItem
+            // 
+            contextMenuStripBoxItem.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { zoomToolStripMenuItem, zoomImageToolStripMenuItem });
+            contextMenuStripBoxItem.Name = "contextMenuStripBoxItem";
+            contextMenuStripBoxItem.Size = new System.Drawing.Size(181, 70);
+            // 
+            // zoomToolStripMenuItem
+            // 
+            zoomToolStripMenuItem.Name = "zoomToolStripMenuItem";
+            zoomToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            zoomToolStripMenuItem.Text = "Zoom Form";
+            zoomToolStripMenuItem.Click += zoomToolStripMenuItem_Click;
+            // 
+            // zoomImageToolStripMenuItem
+            // 
+            zoomImageToolStripMenuItem.Name = "zoomImageToolStripMenuItem";
+            zoomImageToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            zoomImageToolStripMenuItem.Text = "Zoom";
+            zoomImageToolStripMenuItem.Click += zoomImageToolStripMenuItem_Click;
             // 
             // splitContainer3
             // 
@@ -723,7 +748,7 @@ namespace UoFiddler.Controls.UserControls
             // splitContainer3.Panel2
             // 
             splitContainer3.Panel2.Controls.Add(checkedListBox1);
-            splitContainer3.Size = new System.Drawing.Size(477, 325);
+            splitContainer3.Size = new System.Drawing.Size(433, 482);
             splitContainer3.SplitterDistance = 157;
             splitContainer3.SplitterWidth = 2;
             splitContainer3.TabIndex = 25;
@@ -965,7 +990,7 @@ namespace UoFiddler.Controls.UserControls
             checkedListBox1.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             checkedListBox1.MultiColumn = true;
             checkedListBox1.Name = "checkedListBox1";
-            checkedListBox1.Size = new System.Drawing.Size(477, 166);
+            checkedListBox1.Size = new System.Drawing.Size(433, 323);
             checkedListBox1.TabIndex = 0;
             checkedListBox1.ItemCheck += OnFlagItemCheckItems;
             // 
@@ -978,7 +1003,7 @@ namespace UoFiddler.Controls.UserControls
             tabcontrol.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             tabcontrol.Name = "tabcontrol";
             tabcontrol.SelectedIndex = 0;
-            tabcontrol.Size = new System.Drawing.Size(733, 359);
+            tabcontrol.Size = new System.Drawing.Size(733, 516);
             tabcontrol.TabIndex = 0;
             // 
             // TileDataControl
@@ -990,7 +1015,7 @@ namespace UoFiddler.Controls.UserControls
             DoubleBuffered = true;
             Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             Name = "TileDataControl";
-            Size = new System.Drawing.Size(733, 384);
+            Size = new System.Drawing.Size(733, 541);
             Load += OnLoad;
             KeyUp += TileData_KeyUp;
             ItemsContextMenuStrip.ResumeLayout(false);
@@ -1023,6 +1048,7 @@ namespace UoFiddler.Controls.UserControls
             ((System.ComponentModel.ISupportInitialize)splitContainer2).EndInit();
             splitContainer2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)pictureBoxItem).EndInit();
+            contextMenuStripBoxItem.ResumeLayout(false);
             splitContainer3.Panel1.ResumeLayout(false);
             splitContainer3.Panel1.PerformLayout();
             splitContainer3.Panel2.ResumeLayout(false);
@@ -1116,5 +1142,8 @@ namespace UoFiddler.Controls.UserControls
         private System.Windows.Forms.Label LabelDecimalAdress;
         private System.Windows.Forms.Label label13;
         private System.Windows.Forms.ToolStripButton toolStripButton8Clear;
+        private System.Windows.Forms.ContextMenuStrip contextMenuStripBoxItem;
+        private System.Windows.Forms.ToolStripMenuItem zoomToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem zoomImageToolStripMenuItem;
     }
 }

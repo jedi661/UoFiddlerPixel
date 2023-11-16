@@ -639,6 +639,9 @@ namespace UoFiddler.Controls.UserControls
 
                 pictureBoxItem.Image?.Dispose();
                 pictureBoxItem.Image = newBit;
+
+                originalImage = pictureBoxItem.Image; // Update the original image -> Zoom
+                UpdateZoomFormImage(); // Update Zoom -> Form
             }
             else
             {
@@ -2360,6 +2363,145 @@ namespace UoFiddler.Controls.UserControls
                 SoundPlayer player = new SoundPlayer();
                 player.SoundLocation = "sound.wav";
                 player.Play();
+            }
+        }
+        #endregion
+
+
+        #region Zoom
+
+        private bool isZoomed = false; // State of the zoom
+        private Image originalImage; // Original image
+        private Form zoomForm; // The zoom form
+        private PictureBox zoomPictureBox; // The PictureBox in zoom form
+
+        private void zoomToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (originalImage == null) // If the original image has not been saved yet
+            {
+                originalImage = pictureBoxItem.Image; // Save the original image
+            }
+
+            if (!isZoomed) // If not zoomed
+            {
+                // Enlarge the image to twice its original size
+                Bitmap zoomedImage = new Bitmap(originalImage, originalImage.Width * 2, originalImage.Height * 2);
+
+                // Draw the original image onto the new bitmap, resizing it
+                using (Graphics g = Graphics.FromImage(zoomedImage))
+                {
+                    g.DrawImage(originalImage, 0, 0, zoomedImage.Width, zoomedImage.Height);
+                }
+
+                // Create the Zoom Shape and PictureBox if they are not already created
+                if (zoomForm == null)
+                {
+                    zoomForm = new Form();
+                    zoomPictureBox = new PictureBox
+                    {
+                        Dock = DockStyle.Fill,
+                        SizeMode = PictureBoxSizeMode.Normal // Set the SizeMode property to Normal
+                    };
+                    zoomForm.Controls.Add(zoomPictureBox);
+                    zoomForm.FormClosed += (s, ev) => { zoomForm = null; zoomPictureBox = null; }; // Reset zoomForm and zoomPictureBox to null when the form is closed
+
+                    // Set the size of the shape to 690, 580
+                    zoomForm.Size = new Size(690, 580);
+                }
+
+                // Set the PictureBox's image in the zoom form to the new bitmap
+                zoomPictureBox.Image = zoomedImage;
+
+                // Adjust the size of the shape to the size of the PictureBox
+                zoomForm.ClientSize = zoomPictureBox.Size;
+
+                // Display the zoom shape
+                if (!zoomForm.Visible)
+                {
+                    zoomForm.Show(this); // Display the shape as a modal dialog
+                }
+
+                isZoomed = true; // Update the zoom state
+
+                // Add a click event handler that resizes the shape
+                zoomPictureBox.Click += (s, ev) =>
+                {
+                    if (zoomForm.Size.Width == 690 && zoomForm.Size.Height == 580)
+                    {
+                        zoomForm.Size = new Size(1432, 870);
+                    }
+                    else
+                    {
+                        zoomForm.Size = new Size(690, 580);
+                    }
+                };
+            }
+            else // When zoomed
+            {
+                // Reset the image to its original size
+                pictureBoxItem.Image = originalImage;
+                isZoomed = false; // Update the zoom state
+
+                // Close the zoom shape
+                if (zoomForm != null)
+                {
+                    zoomForm.Close();
+                }
+            }
+        }
+
+        // UpdateZoomFormImage
+        private void UpdateZoomFormImage()
+        {
+            if (zoomForm != null && zoomPictureBox != null && originalImage != null && isZoomed)
+            {
+                // Enlarge the image to twice its original size
+                Bitmap zoomedImage = new Bitmap(originalImage, originalImage.Width * 2, originalImage.Height * 2);
+
+                // Draw the original image onto the new bitmap, resizing it
+                using (Graphics g = Graphics.FromImage(zoomedImage))
+                {
+                    g.DrawImage(originalImage, 0, 0, zoomedImage.Width, zoomedImage.Height);
+                }
+
+                // Set the PictureBox's image in the zoom form to the new bitmap
+                zoomPictureBox.Image = zoomedImage;
+            }
+        }
+
+        // ZoomImage
+        private void zoomImageToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (originalImage == null) // If the original image has not been saved yet
+            {
+                originalImage = pictureBoxItem.Image; // Save the original image
+            }
+
+            if (!isZoomed) // If not zoomed
+            {
+                // Enlarge the image to twice its original size
+                Bitmap zoomedImage = new Bitmap(originalImage.Width * 2, originalImage.Height * 2);
+
+                // Draw the original image onto the new bitmap, resizing it
+                using (Graphics g = Graphics.FromImage(zoomedImage))
+                {
+                    g.DrawImage(originalImage, 0, 0, zoomedImage.Width, zoomedImage.Height);
+                }
+
+                // Set the PictureBox's image to the new bitmap
+                pictureBoxItem.Image = zoomedImage;
+
+                // Zentrieren Sie die PictureBox im Panel
+                pictureBoxItem.Left = (splitContainer2.Panel2.Width - pictureBoxItem.Width) / 2;
+                pictureBoxItem.Top = (splitContainer2.Panel2.Height - pictureBoxItem.Height) / 2;
+
+                isZoomed = true; // Update the zoom state
+            }
+            else // When zoomed
+            {
+                // Reset the image to its original size
+                pictureBoxItem.Image = originalImage;
+                isZoomed = false; // Update the zoom state
             }
         }
         #endregion
