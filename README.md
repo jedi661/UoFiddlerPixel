@@ -18,7 +18,7 @@ Version : 4.11.25
 - Button Binary Code
 - Button Morse Code
 - Calendar
-- Added zoom function in the tildedata
+- Added zoom function in the tildedata -> Items
 
 Version : 4.11.24
 - Added ItemControl a Built-in image swap function

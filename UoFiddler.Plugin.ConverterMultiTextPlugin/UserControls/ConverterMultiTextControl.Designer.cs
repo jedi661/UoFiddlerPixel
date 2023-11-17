@@ -47,6 +47,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             label1 = new System.Windows.Forms.Label();
             label2 = new System.Windows.Forms.Label();
             textBox1 = new System.Windows.Forms.TextBox();
+            contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(components);
+            copyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            clearToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            importClipboardToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             textBox2 = new System.Windows.Forms.TextBox();
             openFileDialog = new System.Windows.Forms.OpenFileDialog();
             label3 = new System.Windows.Forms.Label();
@@ -78,13 +82,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             checkBoxASCII = new System.Windows.Forms.CheckBox();
             btBinaryCode = new System.Windows.Forms.Button();
             menuStrip1 = new System.Windows.Forms.MenuStrip();
-            contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(components);
-            copyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            clearToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            importClipboardToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             statusStrip1 = new System.Windows.Forms.StatusStrip();
             toolStripStatusLabelTime = new System.Windows.Forms.ToolStripStatusLabel();
             timer1 = new System.Windows.Forms.Timer(components);
+            tabPageScript = new System.Windows.Forms.TabPage();
+            contextMenuStrip1.SuspendLayout();
             tabControl1.SuspendLayout();
             tabPageMain.SuspendLayout();
             tabPageAnimation.SuspendLayout();
@@ -92,7 +94,6 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             tabPageMap.SuspendLayout();
             tabPageClient.SuspendLayout();
             tabPageTextureConverter.SuspendLayout();
-            contextMenuStrip1.SuspendLayout();
             statusStrip1.SuspendLayout();
             SuspendLayout();
             // 
@@ -164,6 +165,33 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             textBox1.Size = new System.Drawing.Size(318, 267);
             textBox1.TabIndex = 6;
             // 
+            // contextMenuStrip1
+            // 
+            contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { copyToolStripMenuItem, clearToolStripMenuItem, importClipboardToolStripMenuItem });
+            contextMenuStrip1.Name = "contextMenuStrip1";
+            contextMenuStrip1.Size = new System.Drawing.Size(166, 70);
+            // 
+            // copyToolStripMenuItem
+            // 
+            copyToolStripMenuItem.Name = "copyToolStripMenuItem";
+            copyToolStripMenuItem.Size = new System.Drawing.Size(165, 22);
+            copyToolStripMenuItem.Text = "Copy";
+            copyToolStripMenuItem.Click += btnCopyTBox2_Click;
+            // 
+            // clearToolStripMenuItem
+            // 
+            clearToolStripMenuItem.Name = "clearToolStripMenuItem";
+            clearToolStripMenuItem.Size = new System.Drawing.Size(165, 22);
+            clearToolStripMenuItem.Text = "Clear";
+            clearToolStripMenuItem.Click += btclear_Click;
+            // 
+            // importClipboardToolStripMenuItem
+            // 
+            importClipboardToolStripMenuItem.Name = "importClipboardToolStripMenuItem";
+            importClipboardToolStripMenuItem.Size = new System.Drawing.Size(165, 22);
+            importClipboardToolStripMenuItem.Text = "Import Clipboard";
+            importClipboardToolStripMenuItem.Click += importClipboardToolStripMenuItem_Click;
+            // 
             // textBox2
             // 
             textBox2.Location = new System.Drawing.Point(441, 6);
@@ -193,6 +221,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             tabControl1.Controls.Add(tabPageGraphic);
             tabControl1.Controls.Add(tabPageMap);
             tabControl1.Controls.Add(tabPageClient);
+            tabControl1.Controls.Add(tabPageScript);
             tabControl1.Controls.Add(tabPageTextureConverter);
             tabControl1.Location = new System.Drawing.Point(3, 27);
             tabControl1.Name = "tabControl1";
@@ -485,33 +514,6 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             menuStrip1.TabIndex = 16;
             menuStrip1.Text = "menuStrip1";
             // 
-            // contextMenuStrip1
-            // 
-            contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { copyToolStripMenuItem, clearToolStripMenuItem, importClipboardToolStripMenuItem });
-            contextMenuStrip1.Name = "contextMenuStrip1";
-            contextMenuStrip1.Size = new System.Drawing.Size(166, 70);
-            // 
-            // copyToolStripMenuItem
-            // 
-            copyToolStripMenuItem.Name = "copyToolStripMenuItem";
-            copyToolStripMenuItem.Size = new System.Drawing.Size(165, 22);
-            copyToolStripMenuItem.Text = "Copy";
-            copyToolStripMenuItem.Click += btnCopyTBox2_Click;
-            // 
-            // clearToolStripMenuItem
-            // 
-            clearToolStripMenuItem.Name = "clearToolStripMenuItem";
-            clearToolStripMenuItem.Size = new System.Drawing.Size(165, 22);
-            clearToolStripMenuItem.Text = "Clear";
-            clearToolStripMenuItem.Click += btclear_Click;
-            // 
-            // importClipboardToolStripMenuItem
-            // 
-            importClipboardToolStripMenuItem.Name = "importClipboardToolStripMenuItem";
-            importClipboardToolStripMenuItem.Size = new System.Drawing.Size(165, 22);
-            importClipboardToolStripMenuItem.Text = "Import Clipboard";
-            importClipboardToolStripMenuItem.Click += importClipboardToolStripMenuItem_Click;
-            // 
             // statusStrip1
             // 
             statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { toolStripStatusLabelTime });
@@ -527,6 +529,16 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             toolStripStatusLabelTime.Size = new System.Drawing.Size(33, 17);
             toolStripStatusLabelTime.Text = "Time";
             // 
+            // tabPageScript
+            // 
+            tabPageScript.Location = new System.Drawing.Point(4, 24);
+            tabPageScript.Name = "tabPageScript";
+            tabPageScript.Padding = new System.Windows.Forms.Padding(3);
+            tabPageScript.Size = new System.Drawing.Size(960, 337);
+            tabPageScript.TabIndex = 6;
+            tabPageScript.Text = "Scripts";
+            tabPageScript.UseVisualStyleBackColor = true;
+            // 
             // ConverterMultiTextControl
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -538,6 +550,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             Name = "ConverterMultiTextControl";
             Size = new System.Drawing.Size(974, 417);
+            contextMenuStrip1.ResumeLayout(false);
             tabControl1.ResumeLayout(false);
             tabPageMain.ResumeLayout(false);
             tabPageMain.PerformLayout();
@@ -551,7 +564,6 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             tabPageClient.PerformLayout();
             tabPageTextureConverter.ResumeLayout(false);
             tabPageTextureConverter.PerformLayout();
-            contextMenuStrip1.ResumeLayout(false);
             statusStrip1.ResumeLayout(false);
             statusStrip1.PerformLayout();
             ResumeLayout(false);
@@ -605,5 +617,6 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
         private System.Windows.Forms.ToolStripMenuItem copyToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem clearToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem importClipboardToolStripMenuItem;
+        private System.Windows.Forms.TabPage tabPageScript;
     }
 }

@@ -436,6 +436,7 @@ namespace UoFiddler.Controls.UserControls
             toolStripButton8Clear.ImageTransparentColor = System.Drawing.Color.Magenta;
             toolStripButton8Clear.Name = "toolStripButton8Clear";
             toolStripButton8Clear.Size = new System.Drawing.Size(23, 22);
+            toolStripButton8Clear.ToolTipText = "deletes input";
             toolStripButton8Clear.Click += toolStripButton8Clear_Click;
             // 
             // tabPageLand
@@ -692,19 +693,19 @@ namespace UoFiddler.Controls.UserControls
             // 
             contextMenuStripBoxItem.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { zoomToolStripMenuItem, zoomImageToolStripMenuItem });
             contextMenuStripBoxItem.Name = "contextMenuStripBoxItem";
-            contextMenuStripBoxItem.Size = new System.Drawing.Size(181, 70);
+            contextMenuStripBoxItem.Size = new System.Drawing.Size(138, 48);
             // 
             // zoomToolStripMenuItem
             // 
             zoomToolStripMenuItem.Name = "zoomToolStripMenuItem";
-            zoomToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            zoomToolStripMenuItem.Size = new System.Drawing.Size(137, 22);
             zoomToolStripMenuItem.Text = "Zoom Form";
             zoomToolStripMenuItem.Click += zoomToolStripMenuItem_Click;
             // 
             // zoomImageToolStripMenuItem
             // 
             zoomImageToolStripMenuItem.Name = "zoomImageToolStripMenuItem";
-            zoomImageToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            zoomImageToolStripMenuItem.Size = new System.Drawing.Size(137, 22);
             zoomImageToolStripMenuItem.Text = "Zoom";
             zoomImageToolStripMenuItem.Click += zoomImageToolStripMenuItem_Click;
             // 

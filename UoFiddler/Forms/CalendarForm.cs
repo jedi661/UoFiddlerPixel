@@ -33,6 +33,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         {
             InitializeComponent();
 
+            // Update the lbDaysTo and lbWeekendDays and lbWorkingDays labels when the application starts
+            UpdateDaysTo();
+            UpdateWeekendDays();
+            UpdateWorkingDays();
+
             // Displays the current calendar week when the application starts
             lbCalendarWeek.Text = "Calendar Week: " + GetCalendarWeek(DateTime.Now).ToString();
 
@@ -96,6 +101,15 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // Calculates the calendar week of the selected date and displays it in the label
             int calendarWeek = GetCalendarWeek(monthCalendar1.SelectionStart);
             lbCalendarWeek.Text = "Calendar Week: " + calendarWeek.ToString();
+
+            // Update the lbDaysTo label
+            UpdateDaysTo();
+
+            // Update the lbWeekendDays label
+            UpdateWeekendDays();
+
+            // Update the lbWorkingDays label
+            UpdateWorkingDays();
         }
         #endregion
 
@@ -109,7 +123,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 
         #region monthCalendarForm_DateSelected
         private void monthCalendarForm_DateSelected(object sender, DateRangeEventArgs e)
-        {            
+        {
             // Creates a new shape
             Form noteForm = new Form();
             noteForm.Text = "Note for " + monthCalendar1.SelectionStart.ToShortDateString();
@@ -253,5 +267,74 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             e.ToolTipSize = TextRenderer.MeasureText(toolTipText, new Font("Arial", 16));
         }
         #endregion
+
+        #region lbDaysTo
+        private void UpdateDaysTo()
+        {
+            // Get the selected date
+            DateTime selectedDate = monthCalendar1.SelectionStart;
+
+            // Calculate the difference between the current date and the selected date
+            TimeSpan difference = selectedDate - DateTime.Now;
+
+            // Update the lbDaysTo label
+            lbDaysTo.Text = "Days to Selected Date: " + difference.Days.ToString();
+        }
+        #endregion
+
+        #region lbWeekendDays
+        private void UpdateWeekendDays()
+        {
+            // Get the current date
+            DateTime currentDate = DateTime.Now;
+
+            // Get the end of the year
+            DateTime endOfYear = new DateTime(currentDate.Year, 12, 31);
+
+            // Initialize a counter for the weekend days
+            int weekendDays = 0;
+
+            // Iterate through all days until the end of the year
+            for (DateTime date = currentDate; date <= endOfYear; date = date.AddDays(1))
+            {
+                // Check if the day is a weekend day
+                if (date.DayOfWeek == DayOfWeek.Saturday || date.DayOfWeek == DayOfWeek.Sunday)
+                {
+                    weekendDays++;
+                }
+            }
+
+            // Update the lbWeekendDays label
+            lbWeekendDays.Text = "Remaining Weekend Days: " + weekendDays.ToString();
+        }
+        #endregion
+
+        #region lbWorkingDays
+        private void UpdateWorkingDays()
+        {
+            // Get the current date
+            DateTime currentDate = DateTime.Now;
+
+            // Get the end of the year
+            DateTime endOfYear = new DateTime(currentDate.Year, 12, 31);
+
+            // Initialize a counter for the working days
+            int workingDays = 0;
+
+            // Iterate through all days until the end of the year
+            for (DateTime date = currentDate; date <= endOfYear; date = date.AddDays(1))
+            {
+                // Check if the day is a working day
+                if (date.DayOfWeek != DayOfWeek.Saturday && date.DayOfWeek != DayOfWeek.Sunday)
+                {
+                    workingDays++;
+                }
+            }
+
+            // Update the lbWorkingDays label
+            lbWorkingDays.Text = "Remaining Working Days: " + workingDays.ToString();
+        }
+        #endregion
+
     }
 }

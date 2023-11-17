@@ -2269,6 +2269,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
+        #region Label Tile Decimal
         private void LabelDecimalAdress_Click(object sender, EventArgs e)
         {
             if (treeViewLand.SelectedNode?.Tag == null)
@@ -2279,6 +2280,8 @@ namespace UoFiddler.Controls.UserControls
             int index = (int)treeViewLand.SelectedNode.Tag;
             textBoxTexID.Text = index.ToString();
         }
+        #endregion
+
         #region Delete Button
         private void toolStripButton8Clear_Click(object sender, EventArgs e)
         {
@@ -2366,7 +2369,6 @@ namespace UoFiddler.Controls.UserControls
             }
         }
         #endregion
-
 
         #region Zoom
 
