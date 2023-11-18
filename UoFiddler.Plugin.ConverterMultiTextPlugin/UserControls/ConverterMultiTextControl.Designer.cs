@@ -71,11 +71,13 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             buttonGraficCutterForm = new System.Windows.Forms.Button();
             TextureCutter = new System.Windows.Forms.Button();
             tabPageMap = new System.Windows.Forms.TabPage();
+            btMapReplace = new System.Windows.Forms.Button();
             lbMapMaker = new System.Windows.Forms.Label();
             btMapMaker = new System.Windows.Forms.Button();
             tabPageClient = new System.Windows.Forms.TabPage();
             lbDecriptClient = new System.Windows.Forms.Label();
             btDecriptClient = new System.Windows.Forms.Button();
+            tabPageScript = new System.Windows.Forms.TabPage();
             tabPageTextureConverter = new System.Windows.Forms.TabPage();
             btclear = new System.Windows.Forms.Button();
             btMorseCode = new System.Windows.Forms.Button();
@@ -85,7 +87,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             statusStrip1 = new System.Windows.Forms.StatusStrip();
             toolStripStatusLabelTime = new System.Windows.Forms.ToolStripStatusLabel();
             timer1 = new System.Windows.Forms.Timer(components);
-            tabPageScript = new System.Windows.Forms.TabPage();
+            lbCopyMapReplace = new System.Windows.Forms.Label();
             contextMenuStrip1.SuspendLayout();
             tabControl1.SuspendLayout();
             tabPageMain.SuspendLayout();
@@ -385,6 +387,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             // 
             // tabPageMap
             // 
+            tabPageMap.Controls.Add(lbCopyMapReplace);
+            tabPageMap.Controls.Add(btMapReplace);
             tabPageMap.Controls.Add(lbMapMaker);
             tabPageMap.Controls.Add(btMapMaker);
             tabPageMap.Location = new System.Drawing.Point(4, 24);
@@ -393,6 +397,16 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             tabPageMap.TabIndex = 4;
             tabPageMap.Text = "Map";
             tabPageMap.UseVisualStyleBackColor = true;
+            // 
+            // btMapReplace
+            // 
+            btMapReplace.Image = Properties.Resources.copy_a_map_and_replace;
+            btMapReplace.Location = new System.Drawing.Point(6, 91);
+            btMapReplace.Name = "btMapReplace";
+            btMapReplace.Size = new System.Drawing.Size(59, 57);
+            btMapReplace.TabIndex = 15;
+            btMapReplace.UseVisualStyleBackColor = true;
+            btMapReplace.Click += btMapReplace_Click;
             // 
             // lbMapMaker
             // 
@@ -442,6 +456,16 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             btDecriptClient.TabIndex = 12;
             btDecriptClient.UseVisualStyleBackColor = true;
             btDecriptClient.Click += btDecriptClient_Click;
+            // 
+            // tabPageScript
+            // 
+            tabPageScript.Location = new System.Drawing.Point(4, 24);
+            tabPageScript.Name = "tabPageScript";
+            tabPageScript.Padding = new System.Windows.Forms.Padding(3);
+            tabPageScript.Size = new System.Drawing.Size(960, 337);
+            tabPageScript.TabIndex = 6;
+            tabPageScript.Text = "Scripts";
+            tabPageScript.UseVisualStyleBackColor = true;
             // 
             // tabPageTextureConverter
             // 
@@ -529,15 +553,14 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             toolStripStatusLabelTime.Size = new System.Drawing.Size(33, 17);
             toolStripStatusLabelTime.Text = "Time";
             // 
-            // tabPageScript
+            // lbCopyMapReplace
             // 
-            tabPageScript.Location = new System.Drawing.Point(4, 24);
-            tabPageScript.Name = "tabPageScript";
-            tabPageScript.Padding = new System.Windows.Forms.Padding(3);
-            tabPageScript.Size = new System.Drawing.Size(960, 337);
-            tabPageScript.TabIndex = 6;
-            tabPageScript.Text = "Scripts";
-            tabPageScript.UseVisualStyleBackColor = true;
+            lbCopyMapReplace.AutoSize = true;
+            lbCopyMapReplace.Location = new System.Drawing.Point(6, 151);
+            lbCopyMapReplace.Name = "lbCopyMapReplace";
+            lbCopyMapReplace.Size = new System.Drawing.Size(106, 15);
+            lbCopyMapReplace.TabIndex = 16;
+            lbCopyMapReplace.Text = "Copy Map Replace";
             // 
             // ConverterMultiTextControl
             // 
@@ -618,5 +641,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
         private System.Windows.Forms.ToolStripMenuItem clearToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem importClipboardToolStripMenuItem;
         private System.Windows.Forms.TabPage tabPageScript;
+        private System.Windows.Forms.Button btMapReplace;
+        private System.Windows.Forms.Label lbCopyMapReplace;
     }
 }

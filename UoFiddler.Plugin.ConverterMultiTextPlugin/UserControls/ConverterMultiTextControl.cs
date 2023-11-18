@@ -1,11 +1,11 @@
 ﻿/***************************************************************************
  *
- * $Author: Turley
+ * $Author: Nikodemus
  * 
  * "THE BEER-WARE LICENSE"
  * As long as you retain this notice you can do whatever you want with 
  * this stuff. If we meet some day, and you think this stuff is worth it,
- * you can buy me a beer in return.
+ * you can buy me a Wine in return.
  *
  ***************************************************************************/
 
@@ -508,6 +508,44 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             else
             {
                 MessageBox.Show("The clipboard contains no text.");
+            }
+        }
+        #endregion
+
+        #region Button Copy Replace Map
+
+        private void btMapReplace_Click(object sender, EventArgs e)
+        {
+            if (isFormOpen)
+            {
+                return; // Verlassen Sie die Methode, wenn das Formular bereits geöffnet ist.
+            }
+
+            ToolTip toolTip1 = new ToolTip();
+
+            toolTip1.AutoPopDelay = 5000;
+            toolTip1.InitialDelay = 1000;
+            toolTip1.ReshowDelay = 500;
+            toolTip1.ShowAlways = true;
+            toolTip1.SetToolTip(this.btMapReplace, "Copy Replace Map");
+
+            // Das Formular, das geöffnet werden soll, heißt 'MapReplaceNewForm'.
+            MapReplaceNewForm form = new MapReplaceNewForm();
+            form.FormClosed += btMapReplace_FormClosed;
+            form.Show();
+            isFormOpen = true;
+
+            // Deaktivieren Sie die Schaltfläche 'btMapReplace'.
+            this.btMapReplace.Enabled = false;
+        }
+
+        private void btMapReplace_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            if (isFormOpen)
+            {
+                isFormOpen = false;
+                // Aktivieren Sie die Schaltfläche 'btMapReplace' erneut.
+                this.btMapReplace.Enabled = true;
             }
         }
         #endregion
