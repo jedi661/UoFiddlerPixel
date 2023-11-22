@@ -1,5 +1,6 @@
 Version : 4.11.26 #XG1
 - Add Map Tools
+- Added XML debugging hexcode
 
 Version : 4.11.25 #XG1
 - New feature added: Names outsourced to Gumps and stored in an XML file, with custom formatting and editing based on ID.
