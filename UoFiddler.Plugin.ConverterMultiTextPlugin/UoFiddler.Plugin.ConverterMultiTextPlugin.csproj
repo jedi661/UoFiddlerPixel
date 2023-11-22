@@ -24,6 +24,11 @@
 		<TreatWarningsAsErrors>False</TreatWarningsAsErrors>
 	</PropertyGroup>
 	<ItemGroup>
+	  <Compile Remove="DLL\**" />
+	  <EmbeddedResource Remove="DLL\**" />
+	  <None Remove="DLL\**" />
+	</ItemGroup>
+	<ItemGroup>
 		<Compile Update="Forms\AdminToolForm.cs" />
 		<Compile Update="Forms\AdminToolForm.Designer.cs">
 			<DependentUpon>AdminToolForm.cs</DependentUpon>
@@ -55,6 +60,10 @@
 		</Compile>
 	</ItemGroup>
 	<ItemGroup>
+		<ProjectReference Include="..\DLL\Elevation\DLLSource\Elevation.csproj" />
+		<ProjectReference Include="..\DLL\Logger\DLLSource\Logger.csproj" />
+		<ProjectReference Include="..\DLL\Terrain\DLLSource\Terrain.csproj" />
+		<ProjectReference Include="..\DLL\Transition\DLLSource\Transition.csproj" />
 		<ProjectReference Include="..\Ultima\Ultima.csproj">
 			<Private>false</Private>
 			<ExcludeAssets>runtime</ExcludeAssets>

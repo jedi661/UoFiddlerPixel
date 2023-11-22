@@ -1,0 +1,9 @@
+8-20-05 Updated Common.xml to work with grass embankment.
+8-20-05 Added Rough terrian support
+8-26-05 Added support for Tokuno maps and Mondains legacy trammel // Thanks Kirax2
+8-26-05 Added basic support for ML terrians.
+9-11-05 Added Support for Grass/Forest/Sand Embankments, Thanks Kirax2
+9-21-06 Fixed problems with Golbin Forest, Vyskey Forest, Sand Static files.
+9-21-06 Added datalist program for release.
+9-21-06 Published current transistion list.
+9-21-06 Released 1.3 Version to Khaybel.

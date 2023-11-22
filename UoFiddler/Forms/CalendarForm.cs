@@ -124,7 +124,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         #region monthCalendarForm_DateSelected
         private void monthCalendarForm_DateSelected(object sender, DateRangeEventArgs e)
         {
-            // Creates a new shape
+            // Creates a new shape Form
             Form noteForm = new Form();
             noteForm.Text = "Note for " + monthCalendar1.SelectionStart.ToShortDateString();
 
@@ -136,17 +136,31 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             richTextBox.Dock = DockStyle.Fill;
             noteForm.Controls.Add(richTextBox);
 
-            // Loads the text from the XML file if it exists or creates a new one if it does not exist
+            // Get the path of the executable file
+            string exePath = System.Reflection.Assembly.GetExecutingAssembly().Location;
+            // Get the directory of the executable file
+            string exeDirectory = Path.GetDirectoryName(exePath);
+
+            // Define the directory path
+            string directoryPath = Path.Combine(exeDirectory, "Data", "Calendar");
+            Directory.CreateDirectory(directoryPath); // Creates the directory if it does not exist
+
+            // Define the file path
+            string filePath = Path.Combine(directoryPath, "CalendarDateNotes.xml");
+
+            // Define the date
             string date = monthCalendar1.SelectionStart.ToShortDateString();
+
             XDocument doc;
-            if (File.Exists("CalendarDateNotes.xml"))
+            if (File.Exists(filePath))
             {
-                doc = XDocument.Load("CalendarDateNotes.xml");
+                doc = XDocument.Load(filePath);
             }
             else
             {
                 doc = new XDocument(new XElement("notes"));
             }
+
             XElement note = doc.Root.Descendants("note").FirstOrDefault(n => n.Element("date").Value == date);
             if (note != null)
             {
@@ -162,16 +176,21 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 // Saves the text from the RichTextBox to an XML file
                 if (note == null)
                 {
-                    doc.Root.Add(new XElement("note",
-                        new XElement("date", date),
-                        new XElement("text", richTextBox.Text)
-                    ));
+                    doc.Root.Add(new XElement("note", new XElement("date", date), new XElement("text", richTextBox.Text)));
                 }
                 else
                 {
                     note.Element("text").Value = richTextBox.Text;
                 }
-                doc.Save("CalendarDateNotes.xml");
+                try
+                {
+                    doc.Save(filePath);// Save to the specified file path
+                }
+                catch (Exception ex)
+                {
+                    // Handle the exception
+                    MessageBox.Show("An error occurred while saving the file: " + ex.Message);
+                }
 
                 // Updates the highlighted dates in the MonthCalendar control
                 monthCalendar1.BoldedDates = GetNotedDates().ToArray();
@@ -191,7 +210,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 if (note != null)
                 {
                     note.Remove();
-                    doc.Save("CalendarDateNotes.xml");
+                    doc.Save(filePath); // Save to the specified file path
+
+                    // Updates the highlighted dates in the MonthCalendar control
+                    monthCalendar1.BoldedDates = GetNotedDates().ToArray();
                 }
 
                 // Closes the form
@@ -204,20 +226,46 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         }
         #endregion
 
-        #region Hervorgehobene daten
+        #region Hervorgehobene daten 
         private List<DateTime> GetNotedDates()
         {
             List<DateTime> notedDates = new List<DateTime>();
 
-            XDocument doc;
-            if (File.Exists("CalendarDateNotes.xml"))
+            // Get the path of the executable file
+            string exePath = System.Reflection.Assembly.GetExecutingAssembly().Location;
+            // Get the directory of the executable file
+            string exeDirectory = Path.GetDirectoryName(exePath);
+
+            // Define the directory path
+            string directoryPath = Path.Combine(exeDirectory, "Data", "Calendar");
+
+            // Define the file path
+            string filePath = Path.Combine(directoryPath, "CalendarDateNotes.xml");
+
+            try
             {
-                doc = XDocument.Load("CalendarDateNotes.xml");
-                foreach (XElement note in doc.Root.Descendants("note"))
+                if (File.Exists(filePath))
                 {
-                    DateTime date = DateTime.Parse(note.Element("date").Value);
-                    notedDates.Add(date);
+                    XDocument doc = XDocument.Load(filePath);
+                    foreach (XElement note in doc.Root.Descendants("note"))
+                    {
+                        try
+                        {
+                            DateTime date = DateTime.Parse(note.Element("date").Value);
+                            notedDates.Add(date);
+                        }
+                        catch (FormatException ex)
+                        {
+                            // Handle the exception
+                            MessageBox.Show("Ein Fehler ist aufgetreten beim Parsen des Datums: " + ex.Message);
+                        }
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                // Handle the exception
+                MessageBox.Show("Ein Fehler ist aufgetreten beim Laden der XML-Datei: " + ex.Message);
             }
 
             return notedDates;
@@ -241,10 +289,21 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         #region Tooltip
         private string GetNoteForDate(string date)
         {
+            // Get the path of the executable file
+            string exePath = System.Reflection.Assembly.GetExecutingAssembly().Location;
+            // Get the directory of the executable file
+            string exeDirectory = Path.GetDirectoryName(exePath);
+
+            // Define the directory path
+            string directoryPath = Path.Combine(exeDirectory, "Data", "Calendar");
+
+            // Define the file path
+            string filePath = Path.Combine(directoryPath, "CalendarDateNotes.xml");
+
             XDocument doc;
-            if (File.Exists("CalendarDateNotes.xml"))
+            if (File.Exists(filePath))
             {
-                doc = XDocument.Load("CalendarDateNotes.xml");
+                doc = XDocument.Load(filePath);
                 XElement note = doc.Root.Descendants("note").FirstOrDefault(n => n.Element("date").Value == date);
                 if (note != null)
                 {
@@ -335,6 +394,5 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             lbWorkingDays.Text = "Remaining Working Days: " + workingDays.ToString();
         }
         #endregion
-
     }
 }

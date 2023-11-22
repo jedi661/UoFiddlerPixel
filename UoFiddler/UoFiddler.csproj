@@ -9,9 +9,9 @@
 		<AssemblyTitle>UoFiddler</AssemblyTitle>
 		<Product>UoFiddler</Product>
 		<Copyright>Copyright © 2023</Copyright>
-		<AssemblyVersion>4.11.25</AssemblyVersion>
-		<FileVersion>4.11.25</FileVersion>
-		<Version>4.11.25</Version>
+		<AssemblyVersion>4.11.26</AssemblyVersion>
+		<FileVersion>4.11.26</FileVersion>
+		<Version>4.11.26</Version>
 		<GenerateResourceUsePreserializedResources>true</GenerateResourceUsePreserializedResources>
 	</PropertyGroup>
 	<PropertyGroup>
@@ -27,6 +27,9 @@
 		<OutputPath>bin\$(Configuration)\</OutputPath>
 		<GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
 	</PropertyGroup>
+	<ItemGroup>
+	  <Compile Remove="Data\ExportUOL\ExportUOL.cs" />
+	</ItemGroup>
 	<ItemGroup>
 		<None Remove="Resources\UOFiddler.jpg" />
 		<None Remove="Resources\UOFiddler1.jpg" />
@@ -160,6 +163,9 @@
 		<EmbeddedResource Include="Resources\UOFiddlerIcon.ico">
 		  <CopyToOutputDirectory>Never</CopyToOutputDirectory>
 		</EmbeddedResource>
+		<None Include="Data\ExportUOL\ExportUOL.cs">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
 		<None Include="Options_default.xml">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
@@ -177,6 +183,1329 @@
 	<ItemGroup>
 	  <None Update="Changelog.txt">
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Developer\Readmes\Development Checklist.txt">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Developer\Readmes\Irro Updates from 8-15-05.txt">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Developer\Readmes\UOL Data Created By Irro.doc">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Developer\Readmes\UOL Re-Release of ver.1.4.docx">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Developer\Tutorials\Develop UOL\3way Transitions\2Way_Template.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Developer\Tutorials\Develop UOL\3way Transitions\3Way_Template Shallow Water Main.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Developer\Tutorials\Develop UOL\3way Transitions\3Way_Template Shallow water.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Developer\Tutorials\Develop UOL\3way Transitions\3Way_Template.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Developer\Tutorials\Develop UOL\3way Transitions\External 3Way_Template.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Developer\Tutorials\Develop UOL\3way Transitions\Internal 3Way_Template.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Developer\Tutorials\Develop UOL\XML Help Topics\Adding Statics To Terrain Types.txt">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Developer\Tutorials\Drawing UOL\Import Files\Altitude.bmp">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Developer\Tutorials\Drawing UOL\Import Files\Import Files\1stcity1stbuildingthirdfloordeco.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Developer\Tutorials\Drawing UOL\Import Files\Import Files\1stcitybuilding1secondfloordeco.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Developer\Tutorials\Drawing UOL\Import Files\Import Files\1stcitydockfinished.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Developer\Tutorials\Drawing UOL\Import Files\Import Files\1stcityeasternexpansion.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Developer\Tutorials\Drawing UOL\Import Files\Import Files\1stcityextradeco.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Developer\Tutorials\Drawing UOL\Import Files\Import Files\1stcitygarden.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Developer\Tutorials\Drawing UOL\Import Files\Import Files\1stcityhealers.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Developer\Tutorials\Drawing UOL\Import Files\Import Files\1stcitymainbuildingbottomfloordeco.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Developer\Tutorials\Drawing UOL\Import Files\Import Files\1stcitymainbuildingextradeco.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Developer\Tutorials\Drawing UOL\Import Files\Import Files\1stcityshipwrightdecoration.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Developer\Tutorials\Drawing UOL\Import Files\Import Files\1stcityshipwrightgarden.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Developer\Tutorials\Drawing UOL\Import Files\Import Files\2ndcitywall.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Developer\Tutorials\Drawing UOL\Import Files\Import Files\building1build2.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Developer\Tutorials\Drawing UOL\Import Files\Import Files\building1build3.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Developer\Tutorials\Drawing UOL\Import Files\Import Files\city1bankroof.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Developer\Tutorials\Drawing UOL\Import Files\Import Files\city1merchantshopaddition.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Developer\Tutorials\Drawing UOL\Import Files\Import Files\city1northbasebankbridge.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Developer\Tutorials\Drawing UOL\Import Files\Import Files\city1shipwrightbone.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Developer\Tutorials\Drawing UOL\Import Files\Import Files\CompassionBasic.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Developer\Tutorials\Drawing UOL\Import Files\Import Files\firstcity1.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Developer\Tutorials\Drawing UOL\Import Files\Import Files\maindungeonbasicbridges.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Developer\Tutorials\Drawing UOL\Import Files\Import Files\pyrimidcomplex.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Developer\Tutorials\Drawing UOL\Import Files\Import Files\woodenbridge.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Developer\Tutorials\Drawing UOL\Import Files\Terrain.bmp">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\ExportUOL\ExportUOL.cs Readme, Ravenel.htm">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Import Files\RunUO_010920041250.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Photoshop\Altitude.ACT">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Photoshop\Land Creator.atn">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Photoshop\Map Drawing.abr">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Photoshop\Map Markers.abr">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Photoshop\Map Refining.abr">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Photoshop\Terrain.ACT">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Photoshop\Ultima Online.abr">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Photoshop\UOL 1.5 - Altitude.aco">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Photoshop\UOL 1.5 - Altitude.ACT">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Photoshop\UOL 1.5 - Terrain.aco">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Photoshop\UOL 1.5 - Terrain.ACT">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Statics\Beach.xml">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Statics\Cave.xml">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Statics\Forest.xml">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Statics\Furrows.xml">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Statics\Goblin Forest Vyseky.xml">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Statics\Goblin Forest.xml">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Statics\Grass.xml">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Statics\Jungle.xml">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Statics\Lava.xml">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Statics\Sand.xml">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Statics\Snow.xml">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Statics\Swamp.xml">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Statics\Yew  Forest.xml">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\System\2Way_Template.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\System\3Way_Template.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\System\Altitude.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\System\MapInfo.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\System\MapTrans\BackUp\Mod11.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\System\MapTrans\Mod10.txt">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\System\MapTrans\Mod10.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\System\MapTrans\Mod11.txt">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\System\MapTrans\Mod11.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\System\MapTrans\Mod11b.txt">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\System\MapTrans\Mod9.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\System\MapTrans\TransInfo.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\System\RoughEdge\Corner.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\System\RoughEdge\Left.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\System\RoughEdge\Top.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\System\Template.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\System\Templates\2Way_Template.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\System\Templates\3Way_Template Shallow Water Main.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\System\Templates\3Way_Template Shallow water.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\System\Templates\3Way_Template.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\System\Templates\External 3Way_Template.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\System\Templates\Internal 3Way_Template.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\System\Terrain.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Citified Terrains\3way\Cobblestones\Cobblestones ↔ DarkWoodenFloor %28East-West%29 ↔ Grass.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Citified Terrains\3way\Cobblestones\Cobblestones ↔ DarkWoodenFloor %28North-South%29 ↔ Grass.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Citified Terrains\3way\Cobblestones\Cobblestones ↔ LightWoodenFloor %28East-West%29 ↔ Grass.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Citified Terrains\BlueTile\BlueTile ↔ Cobblestones.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Citified Terrains\BlueTile\BlueTile ↔ Grass.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Citified Terrains\BlueTile\BlueTile ↔ LargeDirt.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Citified Terrains\BlueTile\BlueTile ↔ Rock.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Citified Terrains\BlueTile\BlueTile ↔ SmallDirt.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Citified Terrains\Cobblestones\Cobblestones ↔ Grass %28NoStatics%29.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Citified Terrains\Cobblestones\Cobblestones ↔ Grass.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Citified Terrains\DarkWoodenFloor\DarkWoodenFloor %28East-West%29 ↔  Rock.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Citified Terrains\DarkWoodenFloor\DarkWoodenFloor %28East-West%29 ↔ Cobblestones.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Citified Terrains\DarkWoodenFloor\DarkWoodenFloor %28East-West%29 ↔ Grass.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Citified Terrains\DarkWoodenFloor\DarkWoodenFloor %28East-West%29 ↔ Large Dirt.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Citified Terrains\DarkWoodenFloor\DarkWoodenFloor %28East-West%29 ↔ SmallDirt.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Citified Terrains\DarkWoodenFloor\DarkWoodenFloor %28North-South%29 ↔ Cobblestones.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Citified Terrains\DarkWoodenFloor\DarkWoodenFloor %28North-South%29 ↔ Grass.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Citified Terrains\DarkWoodenFloor\DarkWoodenFloor %28North-South%29 ↔ Large Dirt.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Citified Terrains\DarkWoodenFloor\DarkWoodenFloor %28North-South%29 ↔ Rock.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Citified Terrains\DarkWoodenFloor\DarkWoodenFloor %28North-South%29 ↔ Small Dirt.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Citified Terrains\LightWoodenFloor\LightWoodenFloor %28East-West%29 ↔ Cobblestones.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Citified Terrains\LightWoodenFloor\LightWoodenFloor %28East-West%29 ↔ Grass.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Citified Terrains\LightWoodenFloor\LightWoodenFloor %28East-West%29 ↔ Large Dirt.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Citified Terrains\LightWoodenFloor\LightWoodenFloor %28East-West%29 ↔ Rock.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Citified Terrains\LightWoodenFloor\LightWoodenFloor %28East-West%29 ↔ Small Dirt.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Citified Terrains\LightWoodenFloor\LightWoodenFloor %28North-South%29 ↔ Cobblestones.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Citified Terrains\LightWoodenFloor\LightWoodenFloor %28North-South%29 ↔ Grass.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Citified Terrains\LightWoodenFloor\LightWoodenFloor %28North-South%29 ↔ Large Dirt.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Citified Terrains\LightWoodenFloor\LightWoodenFloor %28North-South%29 ↔ Rock.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Citified Terrains\LightWoodenFloor\LightWoodenFloor %28North-South%29 ↔ Small Dirt.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Citified Terrains\RedBrick\RedBrick ↔ DungeonCave.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Citified Terrains\RedTile\RedTile ↔ Cobblestones.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Citified Terrains\RedTile\RedTile ↔ Grass.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Citified Terrains\RedTile\RedTile ↔ Large Dirt.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Citified Terrains\RedTile\RedTile ↔ Rock.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Citified Terrains\RedTile\RedTile ↔ Small Dirt.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Common.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\3way\CaveEntrance\CaveEntrance ↔ Rock ↔ MountainCave %28NoStatics%29.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\3way\Forest\Forest ↔ Rock ↔ SmallDirt.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\3way\Grass\Grass %28NoStatics%29 ↔ Forest ↔ SmallDirt.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\3way\Grass\Grass %28NoStatics%29 ↔ SmallDirt ↔ Cobblestones.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\3way\Grass\Grass ↔ Cobblestones ↔ LightWoodenFloor %28North-South%29.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\3way\Grass\Grass ↔ Cobblestones ↔ ShallowWater.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\3way\Grass\Grass ↔ DarkForest ↔ ShallowWater.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\3way\Grass\Grass ↔ Forest %28NoStatics%29 ↔ ShallowWater.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\3way\Grass\Grass ↔ Forest ↔ ShallowWater %28Main%29.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\3way\Grass\Grass ↔ Forest ↔ ShallowWater.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\3way\Grass\Grass ↔ Forest ↔ SmallDirt.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\3way\Grass\Grass ↔ GoblinForest ↔ ShallowWater.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\3way\Grass\Grass ↔ GoblinForestVyseky ↔ ShallowWater.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\3way\Grass\Grass ↔ Grass %28NoStatics%29 ↔ ShallowWater.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\3way\Grass\Grass ↔ Grass %28NoStatics%29 ↔ SmallDirt.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\3way\Grass\Grass ↔ Jungle %28NoStatics%29 ↔ ShallowWater.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\3way\Grass\Grass ↔ Jungle ↔ ShallowWater %28Main%29.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\3way\Grass\Grass ↔ Jungle ↔ ShallowWater.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\3way\Grass\Grass ↔ LargeDirt ↔ ShallowWater %28Main%29.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\3way\Grass\Grass ↔ LargeDirt ↔ ShallowWater.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\3way\Grass\Grass ↔ Rock ↔ ShallowWater %28Main%29.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\3way\Grass\Grass ↔ Rock ↔ ShallowWater.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\3way\Grass\Grass ↔ Rock ↔ SmallDirt.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\3way\Grass\Grass ↔ RoughForest ↔ ShallowWater.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\3way\Grass\Grass ↔ RoughGrass ↔ ShallowWater.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\3way\Grass\Grass ↔ RoughJungle ↔ ShallowWater.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\3way\Grass\Grass ↔ RoughSand ↔ ShallowWater.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\3way\Grass\Grass ↔ RoughSnow ↔ ShallowWater.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\3way\Grass\Grass ↔ Sand %28NoStatics%29 ↔ ShallowWater.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\3way\Grass\Grass ↔ Sand ↔ ShallowWater %28Main%29.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\3way\Grass\Grass ↔ Sand ↔ ShallowWater.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\3way\Grass\Grass ↔ SmallDirt ↔ Cobblestones.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\3way\Grass\Grass ↔ SmallDirt ↔ Shallow Water %28Main%29.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\3way\Grass\Grass ↔ SmallDirt ↔ ShallowWater.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\3way\Grass\Grass ↔ Snow %28NoStatics%29 ↔ ShallowWater.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\3way\Grass\Grass ↔ Snow ↔ ShallowWater %28Main%29.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\3way\Grass\Grass ↔ Snow ↔ ShallowWater.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\3way\Grass\Grass ↔ Swamp %28NoStatics%29 ↔ ShallowWater.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\3way\Grass\Grass ↔ Swamp ↔ ShallowWater %28Main%29.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\3way\Grass\Grass ↔ Swamp ↔ ShallowWater.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\3way\Grass\Grass ↔ YewForest ↔ ShallowWater.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\3way\Jungle\Jungle ↔ Rock ↔ SmallDirt.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\3way\LavaDepth\LavaDepth ↔ Rock ↔ DungeonCave %28NoStatics%29.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\3way\LavaDepth\LavaDepth ↔ Rock ↔ SmallDirt.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\3way\Lava\Lava ↔ DungeonCave %28NoStatics%29 ↔ SmallDirt.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\3way\Lava\Lava ↔ DungeonCave ↔ DungeonCave %28NoStatics%29.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\3way\Lava\Lava ↔ DungeonCave ↔ Small Dirt.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\3way\Lava\Lava ↔ Rock ↔ Death Forest.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\3way\Lava\Lava ↔ Rock ↔ DungeonCave %28NoStatics%29.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\3way\Lava\Lava ↔ Rock ↔ DungeonCave.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\3way\MountainCave\MountainCave ↔ MountainCave %28NoStatics%29 ↔ Rock.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\3way\Sand\Sand ↔ Rock ↔ ShallowWater %28Main%29.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\3way\Sand\Sand ↔ Rock ↔ ShallowWater.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\3way\Sand\Sand ↔ Rock ↔ SmallDirt.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\3way\ShallowWater\ShallowWater ↔ Dungeon Cave %28NoStatics%29 ↔ WorldCave.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\3way\ShallowWater\ShallowWater ↔ Dungeon Cave ↔ Lava.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\3way\ShallowWater\ShallowWater ↔ DungeonCave %28NoStatics%29 ↔ Lava.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\3way\ShallowWater\ShallowWater ↔ Rock ↔ DungeonCave %28NoStatics%29.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\3way\ShallowWater\ShallowWater ↔ Rock ↔ DungeonCave.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\3way\ShallowWater\ShallowWater ↔ Rock ↔ Lava.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\3way\ShallowWater\ShallowWater ↔ Rock ↔ SmallDirt.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\3way\ShallowWater\ShallowWater ↔ SmallDirt ↔ DungeonCave %28NoStatics%29.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\3way\ShallowWater\ShallowWater ↔ SmallDirt ↔ DungeonCave.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\3way\ShallowWater\ShallowWater ↔ SmallDirt ↔ Lava.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\3way\SmallDirt\SmallDirt ↔ Rock ↔ DungeonCave %28NoStatics%29.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\3way\SmallDirt\SmallDirt ↔ Rock ↔ DungeonCave.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\3way\Snow\Snow ↔ Grass ↔ SmallDirt.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\3way\Snow\Snow ↔ Rock ↔ SmallDirt.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\3way\Snow\Snow ↔ RoughGrass ↔ SmallDirt.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Beach\Beach ↔ BrownBrick %28East-West%29.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Beach\Beach ↔ BrownBrick %28North-South%29.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Beach\Beach ↔ Forest.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Beach\Beach ↔ Grass %28NoStatics%29.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Beach\Beach ↔ Jungle.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Beach\Beach ↔ Planks %28East-West%29.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Beach\Beach ↔ Planks %28North-South%29.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Beach\Beach ↔ ShallowWater.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Blank\Blank ↔ Cobblestone.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Blank\Blank ↔ DarkGrayStone.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Blank\Blank ↔ DarkSandstone.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Blank\Blank ↔ DungeonCave.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Blank\Blank ↔ GrayFlagstone.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Blank\Blank ↔ Lava.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Blank\Blank ↔ LightGrayStone.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Blank\Blank ↔ Marble.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Blank\Blank ↔ RedBrick.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Blank\Blank ↔ SandstoneBrick.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\CaveEntrance\CaveEntrance ↔ DungeonCave %28NoStatics%29.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\CaveEntrance\CaveEntrance ↔ Grass %28NoStatics%29.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\CaveEntrance\CaveEntrance ↔ Grass.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\CaveEntrance\CaveEntrance ↔ LargeDirt.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\CaveEntrance\CaveEntrance ↔ MountainCave %28NoStatics%29.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\CaveEntrance\CaveEntrance ↔ MountainCave.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\CaveEntrance\CaveEntrance ↔ Rock.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\CaveEntrance\CaveEntrance ↔ Sand.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\CaveEntrance\CaveEntrance ↔ SmallDirt.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\CaveEntrance\CaveEntrance ↔ Snow.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Cave\Cave ↔ Death Forest %28NoStatics%29.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Cave\Cave ↔ GrayFlagstone.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Cave\Cave ↔ GreenMarble.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Cave\Cave ↔ HighCoast.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Cave\Cave ↔ Lava %28NoStatics%29.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Cave\Cave ↔ Lava.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Cave\Cave ↔ Marble.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Cave\Cave ↔ Rock %28NoStatics%29.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Cave\Cave ↔ Rock.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Cave\Cave ↔ ShallowWater %28NoStatics%29.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Cave\Cave ↔ ShallowWater.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Cave\Cave ↔ SmallDirt %28NoStatics%29.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Cave\Cave ↔ SmallDirt.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Cave\Cave ↔ Swamp.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\DeepWater\DeepWater ↔ HighCoast.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\DeepWater\DeepWater ↔ ShallowWater.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\ForestEmbankment\ForestEmbankment ↔ Forest.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\ForestEmbankment\ForestEmbankment ↔ RoughForest.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Forest\Forest %28NoStatics%29 ↔ Grass %28NoStatics%29.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Forest\Forest %28NoStatics%29 ↔ Grass.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Forest\Forest %28NoStatics%29 ↔ ShallowWater.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Forest\Forest ↔ ForestEmbankment.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Forest\Forest ↔ Grass %28NoStatics%29.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Forest\Forest ↔ Grass.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Forest\Forest ↔ HighCoast.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Forest\Forest ↔ ShallowWater.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Forest\Forest ↔ Snow.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\GoblinForestVyseky\GoblinForestVyseky ↔ ShallowWater.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\GoblinForest\GoblinForest ↔ ShallowWater.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\GrassEmbankment\GrassEmbankment ↔ Grass.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Grass\Grass %28NoStatics%29 ↔ Cobblestones.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Grass\Grass %28NoStatics%29 ↔ Forest.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Grass\Grass %28NoStatics%29 ↔ Furrows %28East-West%29.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Grass\Grass %28NoStatics%29 ↔ Furrows %28North-South%29.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Grass\Grass %28NoStatics%29 ↔ GoblinForest.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Grass\Grass %28NoStatics%29 ↔ GoblinForestVyseky.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Grass\Grass %28NoStatics%29 ↔ Jungle.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Grass\Grass %28NoStatics%29 ↔ Moss.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Grass\Grass %28NoStatics%29 ↔ Rock.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Grass\Grass %28NoStatics%29 ↔ Sand.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Grass\Grass %28NoStatics%29 ↔ Sandstone Floor.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Grass\Grass %28NoStatics%29 ↔ Shallow Water.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Grass\Grass %28NoStatics%29 ↔ Small Dirt.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Grass\Grass %28NoStatics%29 ↔ Snow.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Grass\Grass %28NoStatics%29 ↔ Swamp.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Grass\Grass ↔ Beach.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Grass\Grass ↔ Cobblestones.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Grass\Grass ↔ Forest.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Grass\Grass ↔ Furrows %28East-West%29.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Grass\Grass ↔ Furrows %28North-South%29.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Grass\Grass ↔ GoblinForest.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Grass\Grass ↔ GoblinForestVyseky.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Grass\Grass ↔ Grass %28NoStatics%29.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Grass\Grass ↔ Grass Embankment.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Grass\Grass ↔ HighCoast.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Grass\Grass ↔ Jungle.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Grass\Grass ↔ LargeDirt.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Grass\Grass ↔ Moss.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Grass\Grass ↔ RoughBeach.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Grass\Grass ↔ RoughSand.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Grass\Grass ↔ Sand.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Grass\Grass ↔ SandstoneFloor.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Grass\Grass ↔ ShallowWater.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Grass\Grass ↔ SmallDirt.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Grass\Grass ↔ Snow.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Grass\Grass ↔ Stars.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Grass\Grass ↔ Swamp.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Grass\Grass ↔ YewForest.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\HighCoast\HighCoast ↔ DeepWater.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\HighCoast\HighCoast ↔ DungeonCave.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\HighCoast\HighCoast ↔ Forest.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\HighCoast\HighCoast ↔ Grass.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\HighCoast\HighCoast ↔ Jungle.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\HighCoast\HighCoast ↔ LargeDirt.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\HighCoast\HighCoast ↔ Moss.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\HighCoast\HighCoast ↔ Rock.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\HighCoast\HighCoast ↔ Sand.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\HighCoast\HighCoast ↔ ShallowWater.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\HighCoast\HighCoast ↔ SmallDirt.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\HighCoast\HighCoast ↔ Snow.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Jungle\Jungle ↔ Forest.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Jungle\Jungle ↔ HighCoast.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Jungle\Jungle ↔ ShallowWater.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\LargeDirt\LargeDirt ↔ Beach.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\LargeDirt\LargeDirt ↔ Cobblestones.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\LargeDirt\LargeDirt ↔ Forest.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\LargeDirt\LargeDirt ↔ Grass %28NoStatics%29.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\LargeDirt\LargeDirt ↔ Grass.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\LargeDirt\LargeDirt ↔ HighCoast.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\LargeDirt\LargeDirt ↔ Jungle.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\LargeDirt\LargeDirt ↔ RoughBeach.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\LargeDirt\LargeDirt ↔ Sand.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\LargeDirt\LargeDirt ↔ ShallowWater.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\LargeDirt\LargeDirt ↔ Snow.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\LavaDepth\LavaDepth ↔ Rock.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Lava\Lava ↔ Cave.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Lava\Lava ↔ Dungeon.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Lava\Lava ↔ Rock.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Lava\Lava ↔ ShallowWater.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Lava\Lava ↔ Small Dirt.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Moss\Moss ↔ HighCoast.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Moss\Moss ↔ ShallowWater.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Moss\Moss ↔ Swamp.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\MountainCave\MountainCave %28NoStatics%29 ↔ Rock.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\MountainCave\MountainCave ↔ MountainCave %28NoStatics%29.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\MountainCave\MountainCave ↔ Rock.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Rock\Rock ↔ Beach.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Rock\Rock ↔ Forest %28NoStatics%29.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Rock\Rock ↔ Forest.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Rock\Rock ↔ GoblinForest.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Rock\Rock ↔ GoblinForestVyseky.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Rock\Rock ↔ Grass %28NoStatics%29.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Rock\Rock ↔ Grass.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Rock\Rock ↔ HighCoast.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Rock\Rock ↔ Jungle.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Rock\Rock ↔ LargeDirt.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Rock\Rock ↔ Lava.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Rock\Rock ↔ LavaDepth.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Rock\Rock ↔ RoughBeach.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Rock\Rock ↔ Sand.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Rock\Rock ↔ ShallowWater.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Rock\Rock ↔ Snow %28NoStatics%29.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Rock\Rock ↔ Snow.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\RoughBeach\RoughBeach ↔ BrownBrick %28East-West%29.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\RoughBeach\RoughBeach ↔ BrownBrick %28North-South%29.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\RoughBeach\RoughBeach ↔ Forest.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\RoughBeach\RoughBeach ↔ Grass %28NoStatics%29.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\RoughBeach\RoughBeach ↔ Jungle.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\RoughBeach\RoughBeach ↔ Planks %28East-West%29.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\RoughBeach\RoughBeach ↔ Planks %28North-South%29.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\RoughBeach\RoughBeach ↔ ShallowWater.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\RoughForest\RoughForest ↔ ForestEmbankment.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\RoughForest\RoughForest ↔ Grass %28NoStatics%29.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\RoughForest\RoughForest ↔ Grass.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\RoughForest\RoughForest ↔ HighCoast.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\RoughForest\RoughForest ↔ ShallowWater.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\RoughGrass\RoughGrass ↔ Beach.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\RoughGrass\RoughGrass ↔ Cobblestones.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\RoughGrass\RoughGrass ↔ Forest.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\RoughGrass\RoughGrass ↔ Furrows %28North-South%29.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\RoughGrass\RoughGrass ↔ GoblinForest.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\RoughGrass\RoughGrass ↔ GoblinForestVyseky.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\RoughGrass\RoughGrass ↔ Jungle.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\RoughGrass\RoughGrass ↔ Moss.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\RoughGrass\RoughGrass ↔ Sand.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\RoughGrass\RoughGrass ↔ SandstoneFloor.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\RoughGrass\RoughGrass ↔ ShallowWater.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\RoughJungle\RoughJungle ↔ Forest.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\RoughJungle\RoughJungle ↔ HighCoast.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\RoughJungle\RoughJungle ↔ ShallowWater.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\RoughSand\RoughSand ↔ BrownBrick %28East-West%29.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\RoughSand\RoughSand ↔ BrownBrick %28North-South%29.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\RoughSand\RoughSand ↔ Forest.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\RoughSand\RoughSand ↔ HighCoast.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\RoughSand\RoughSand ↔ Jungle.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\RoughSand\RoughSand ↔ Planks %28East-West%29.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\RoughSand\RoughSand ↔ Planks %28North-South%29.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\RoughSand\RoughSand ↔ SandEmbankment.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\RoughSand\RoughSand ↔ ShallowWater.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\RoughSand\RoughSand ↔ Stars.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\RoughSnow\RoughSnow ↔ HighCoast.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\RoughSnow\RoughSnow ↔ ShallowWater.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\SandEmbankment\SandEmbankment ↔ Forest.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\SandEmbankment\SandEmbankment ↔ Jungle.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\SandEmbankment\SandEmbankment ↔ RoughSand.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\SandEmbankment\SandEmbankment ↔ Sand.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Sand\Sand ↔ BrownBrick %28East-West%29.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Sand\Sand ↔ BrownBrick %28North-South%29.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Sand\Sand ↔ Forest.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Sand\Sand ↔ HighCoast.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Sand\Sand ↔ Jungle.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Sand\Sand ↔ Planks %28East-West%29.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Sand\Sand ↔ Planks %28North-South%29.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Sand\Sand ↔ SandEmbankment.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Sand\Sand ↔ ShallowWater.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Sand\Sand ↔ Stars.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\ShallowWater\ShallowWater ↔ Beach.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\ShallowWater\ShallowWater ↔ DeepWater.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\ShallowWater\ShallowWater ↔ DungeonCave %28NoStatics%29.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\ShallowWater\ShallowWater ↔ DungeonCave.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\ShallowWater\ShallowWater ↔ Forest.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\ShallowWater\ShallowWater ↔ GoblinForest.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\ShallowWater\ShallowWater ↔ GoblinForestVyseky.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\ShallowWater\ShallowWater ↔ Grass %28NoStatics%29.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\ShallowWater\ShallowWater ↔ Grass.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\ShallowWater\ShallowWater ↔ HighCoast.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\ShallowWater\ShallowWater ↔ Jungle.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\ShallowWater\ShallowWater ↔ LargeDirt.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\ShallowWater\ShallowWater ↔ Lava.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\ShallowWater\ShallowWater ↔ Moss.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\ShallowWater\ShallowWater ↔ Rock.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\ShallowWater\ShallowWater ↔ RoughBeach.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\ShallowWater\ShallowWater ↔ Sand.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\ShallowWater\ShallowWater ↔ SmallDirt.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\ShallowWater\ShallowWater ↔ Snow %28NoStatics%29.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\ShallowWater\ShallowWater ↔ Snow.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\SmallDirt\SmallDirt ↔ Beach.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\SmallDirt\SmallDirt ↔ Cobblestones.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\SmallDirt\SmallDirt ↔ DungeonCave %28NoStatics%29.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\SmallDirt\SmallDirt ↔ DungeonCave.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\SmallDirt\SmallDirt ↔ Forest %28NoStatics%29.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\SmallDirt\SmallDirt ↔ Forest.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\SmallDirt\SmallDirt ↔ GoblinForest.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\SmallDirt\SmallDirt ↔ GoblinForestVyseky.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\SmallDirt\SmallDirt ↔ Grass %28NoStatics%29.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\SmallDirt\SmallDirt ↔ Grass.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\SmallDirt\SmallDirt ↔ HighCoast.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\SmallDirt\SmallDirt ↔ Jungle.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\SmallDirt\SmallDirt ↔ Lava.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\SmallDirt\SmallDirt ↔ Rock.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\SmallDirt\SmallDirt ↔ RoughBeach.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\SmallDirt\SmallDirt ↔ RoughForest.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\SmallDirt\SmallDirt ↔ Sand.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\SmallDirt\SmallDirt ↔ ShallowWater.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\SmallDirt\SmallDirt ↔ Snow %28NoStatics%29.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\SmallDirt\SmallDirt ↔ Snow.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Snow\Snow %28NoStatics%29 ↔ ShallowWater.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Snow\Snow ↔ HighCoast.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Snow\Snow ↔ ShallowWater.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Stars\Stars ↔ Grass.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Stars\Stars ↔ Sand.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\Transitions\Natural Terrains\Swamp\Swamp ↔ DungeonCave.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </None>
 	  <None Update="Properties\Settings.settings">
 	    <Generator>SettingsSingleFileGenerator</Generator>
@@ -335,5 +1664,8 @@
 	  <None Update="UOFiddlerHelp\UOFiddler.htm">
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	  </None>
+	</ItemGroup>
+	<ItemGroup>
+	  <Folder Include="Data\Statics\" />
 	</ItemGroup>
 </Project>

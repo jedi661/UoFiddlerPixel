@@ -1,3 +1,6 @@
+Version : 4.11.26 #XG1
+- Add Map Tools
+
 Version : 4.11.25 #XG1
 - New feature added: Names outsourced to Gumps and stored in an XML file, with custom formatting and editing based on ID.
 - Search function adjusted to include names as well.

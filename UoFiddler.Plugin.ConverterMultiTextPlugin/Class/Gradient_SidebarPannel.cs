@@ -5,9 +5,9 @@ using System.Drawing.Drawing2D;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Windows.Controls;
 using System.Windows.Forms;
-using System.Windows.Media;
+//using System.Windows.Media;
+//using System.Windows.Controls;
 
 namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Class
 {

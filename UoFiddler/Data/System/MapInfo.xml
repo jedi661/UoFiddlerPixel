@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8" ?> 
+<Maps>	
+	<Map Name="Felucca (896x512) | (7168x4096)" Num="0" XSize="7168" YSize="4096" />
+	<Map Name="Felucca (768x512) | (6144x4096)" Num="0" XSize="6144" YSize="4096" />
+	<Map Name="--------------------------------------------------------" Num="0" XSize="0000" YSize="0000" />
+	<Map Name="Trammel (896x512) | (7168x4096)" Num="1" XSize="7168" YSize="4096" />
+	<Map Name="Trammel (768x512) | (6144x4096)" Num="0" XSize="6144" YSize="4096" />			
+	<Map Name="--------------------------------------------------------" Num="0" XSize="0000" YSize="0000" />
+	<Map Name="Ilshenar (288x200) | (2034x1600)" Num="2" XSize="2304" YSize="1600" />
+	<Map Name="--------------------------------------------------------" Num="0" XSize="0000" YSize="0000" />
+	<Map Name="Malas (320x256) | (2560x2048)" Num="3" XSize="2560" YSize="2048" />
+	<Map Name="--------------------------------------------------------" Num="0" XSize="0000" YSize="0000" />
+	<Map Name="Tokuno (181x181) | (1448x1448)" Num="4" XSize="1448" YSize="1448" />	
+	<Map Name="--------------------------------------------------------" Num="0" XSize="0000" YSize="0000" />
+	<Map Name="Ter Mur (160x512) | (1280x4096)" Num= "5" XSize="1280" YSize="4096" />
+</Maps>

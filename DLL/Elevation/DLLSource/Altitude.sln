@@ -1,0 +1,21 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Express 2013 for Windows Desktop
+VisualStudioVersion = 12.0.30723.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Altitude", "Altitude.csproj", "{2DB14F29-B468-41FD-AB78-A5FA986CEBD1}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|AnyCPU = Debug|AnyCPU
+		Release|AnyCPU = Release|AnyCPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{2DB14F29-B468-41FD-AB78-A5FA986CEBD1}.Debug|AnyCPU.ActiveCfg = Debug|Any CPU
+		{2DB14F29-B468-41FD-AB78-A5FA986CEBD1}.Debug|AnyCPU.Build.0 = Debug|Any CPU
+		{2DB14F29-B468-41FD-AB78-A5FA986CEBD1}.Release|AnyCPU.ActiveCfg = Release|Any CPU
+		{2DB14F29-B468-41FD-AB78-A5FA986CEBD1}.Release|AnyCPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
