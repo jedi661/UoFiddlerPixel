@@ -40,6 +40,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Helper
         private void InitializeComponent()
         {
             components = new System.ComponentModel.Container();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(XMLHEXSearchForm));
             richTextBox = new System.Windows.Forms.RichTextBox();
             menuStrip1 = new System.Windows.Forms.MenuStrip();
             fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -85,14 +86,14 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Helper
             // loadToolStripMenuItem
             // 
             loadToolStripMenuItem.Name = "loadToolStripMenuItem";
-            loadToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            loadToolStripMenuItem.Size = new System.Drawing.Size(100, 22);
             loadToolStripMenuItem.Text = "Load";
             loadToolStripMenuItem.Click += loadToolStripMenuItem_Click;
             // 
             // saveXMLToolStripMenuItem
             // 
             saveXMLToolStripMenuItem.Name = "saveXMLToolStripMenuItem";
-            saveXMLToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            saveXMLToolStripMenuItem.Size = new System.Drawing.Size(100, 22);
             saveXMLToolStripMenuItem.Text = "Save";
             saveXMLToolStripMenuItem.Click += saveXMLToolStripMenuItem_Click;
             // 
@@ -157,8 +158,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Helper
             // toolStripLabelHexError
             // 
             toolStripLabelHexError.Name = "toolStripLabelHexError";
-            toolStripLabelHexError.Size = new System.Drawing.Size(86, 22);
-            toolStripLabelHexError.Text = "toolStripLabel1";
+            toolStripLabelHexError.Size = new System.Drawing.Size(39, 22);
+            toolStripLabelHexError.Text = "Name";
             // 
             // XMLHEXSearchForm
             // 
@@ -172,6 +173,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Helper
             Controls.Add(richTextBox);
             Controls.Add(menuStrip1);
             FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
+            Icon = (System.Drawing.Icon)resources.GetObject("$this.Icon");
             MainMenuStrip = menuStrip1;
             Name = "XMLHEXSearchForm";
             Text = "XMLHEXSearchForm";
