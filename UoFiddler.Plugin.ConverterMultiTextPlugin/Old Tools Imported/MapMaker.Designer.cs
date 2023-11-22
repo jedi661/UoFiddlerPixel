@@ -39,6 +39,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MapMaker));
             menuStrip1 = new System.Windows.Forms.MenuStrip();
             MenuPath = new System.Windows.Forms.ToolStripMenuItem();
             MenuTerrain = new System.Windows.Forms.ToolStripMenuItem();
@@ -811,6 +812,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             Controls.Add(toolStrip1);
             Controls.Add(menuStrip2);
             Controls.Add(tabControl1);
+            Icon = (System.Drawing.Icon)resources.GetObject("$this.Icon");
             MainMenuStrip = menuStrip1;
             Name = "MapMaker";
             Text = "MapMaker and More";
