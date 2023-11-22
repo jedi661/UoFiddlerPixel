@@ -868,9 +868,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             this.Location = point;
             this.tbProjectPath.Text = AppDomain.CurrentDomain.BaseDirectory;
         }
-
-
         #endregion
+
 
         private void toolStripMenuItemPath_Click(object sender, EventArgs e)
         {
@@ -884,15 +883,24 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             }
         }
 
+        #region randomStaticOn
         private void randomStaticOnToolStripMenuItem_Click(object sender, EventArgs e)
         {
             this.i_RandomStatic = true;
+            this.randomStaticOnToolStripMenuItem.Checked = true; // Set the Checked property to true
+            this.randomStaticOffToolStripMenuItem.Checked = false; // Set the Checked property to false
         }
+        #endregion
 
+        #region randomStaticOff
         private void randomStaticOffToolStripMenuItem_Click(object sender, EventArgs e)
         {
             this.i_RandomStatic = false;
+            this.randomStaticOnToolStripMenuItem.Checked = false; // Set the Checked property to false
+            this.randomStaticOffToolStripMenuItem.Checked = true; // Set the Checked property to true
         }
+        #endregion
+
 
         #region MakeUOMap
         private void toolStripMenuItemMakeUOMap_Click(object sender, EventArgs e)
@@ -906,31 +914,51 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         #endregion
 
         #region Create Data Index
+        private CreateDataIndexForm createDataIndexForm = null; // Variable to store the instance of CreateDataIndexForm
         private void createDataIndexToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            // Erstellen Sie eine Instanz der Form, die Sie öffnen möchten
-            CreateDataIndexForm form = new CreateDataIndexForm();
-
-            // Öffnen Sie die Form
-            form.Show();
+            if (createDataIndexForm == null || createDataIndexForm.IsDisposed)
+            {
+                createDataIndexForm = new CreateDataIndexForm();
+                createDataIndexForm.Show();
+            }
+            else
+            {
+                createDataIndexForm.BringToFront(); // Bring the form to the front if it's already open
+            }
         }
         #endregion
 
         #region Create Statics XML
+        private CreateStaticsForm createStaticsForm = null; // Variable to store the instance of CreateStaticsForm
         private void createStaticToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            CreateStaticsForm form = new CreateStaticsForm();
-
-            form.Show();
+            if (createStaticsForm == null || createStaticsForm.IsDisposed)
+            {
+                createStaticsForm = new CreateStaticsForm();
+                createStaticsForm.Show();
+            }
+            else
+            {
+                createStaticsForm.BringToFront(); // Bring the form to the front if it's already open
+            }
         }
         #endregion
 
         #region XMLHexSearch
+
+        private XMLHEXSearchForm xmlHexSearchForm = null; // Variable to store the instance of XMLHEXSearchForm
         private void xMLHexSearchToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            XMLHEXSearchForm form = new XMLHEXSearchForm();
-
-            form.Show();
+            if (xmlHexSearchForm == null || xmlHexSearchForm.IsDisposed)
+            {
+                xmlHexSearchForm = new XMLHEXSearchForm();
+                xmlHexSearchForm.Show();
+            }
+            else
+            {
+                xmlHexSearchForm.BringToFront(); // Bring the form to the front if it's already open
+            }
         }
         #endregion
     }

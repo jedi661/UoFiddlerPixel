@@ -53,7 +53,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Helper
             }
             while (num2 <= 12);
 
-            // Stellen Sie sicher, dass das erste Element in der PictureBox1 angezeigt wird
+            // Make sure the first item is displayed in PictureBox1
             UpdateVScrollBar1();
         }
 
@@ -257,39 +257,13 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Helper
             }
             else
             {
-                // Das Fenster ist bereits geöffnet, also bringen wir es in den Vordergrund
+                // The window is already open, so let's bring it to the foreground
                 rStaticZoomWindow.BringToFront();
             }
         }
         #endregion
 
         #region ToolBar1_ButtonClick
-        /*private void ToolBar1_ButtonClick(object sender, EventArgs e)
-        {
-            ToolStripButton button = sender as ToolStripButton;
-            if (button == null)
-            {
-                return;
-            }
-
-            RandomStaticCollection selectedItem = (RandomStaticCollection)this.ListBox1.SelectedItem;
-            if (selectedItem != null)
-            {
-                object tag = button.Tag;
-                if (ObjectType.ObjTst(tag, "Add", false) == 0)
-                {
-                    selectedItem.Add(new RandomStatic(ShortType.FromString(this.TileID.Text), Convert.ToInt16(this.Xaxis.Value), Convert.ToInt16(this.Yaxis.Value), Convert.ToInt16(this.Zaxis.Value), ShortType.FromString(this.HueID.Text)));
-                    selectedItem.Display(this.ListBox2);
-                    this.Panel3.Refresh();
-                }
-                else if (ObjectType.ObjTst(tag, "Delete", false) == 0)
-                {
-                    selectedItem.Remove((RandomStatic)this.ListBox2.SelectedItem);
-                    selectedItem.Display(this.ListBox2);
-                    this.Panel3.Refresh();
-                }
-            }
-        }*/
         private void ToolBar1_ButtonClick(object sender, EventArgs e)
         {
             ToolStripButton button = sender as ToolStripButton;
@@ -353,31 +327,31 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Helper
         #region ToolBar_NavClick
         private void ToolBar_NavClick(object sender, EventArgs e)
         {
-            // Das geklickte Steuerelement wird in ein ToolStripButton-Objekt umgewandelt.
+            // The clicked control is transformed into a ToolStripButton object.
             ToolStripButton button = sender as ToolStripButton;
-            // Wenn die Umwandlung fehlschlägt (d.h., das geklickte Steuerelement ist kein ToolStripButton), wird die Methode beendet.
+            // If the transformation fails (that is, the clicked control is not a ToolStripButton), the method exits.
             if (button == null)
             {
                 return;
             }
 
-            // Die aktuellen Werte der Xaxis- und Yaxis-Steuerelemente werden in den Variablen num und y gespeichert.
+            // The current values ​​of the Xaxis and Yaxis controls are stored in the num and y variables.
             short num = Convert.ToInt16(this.Xaxis.Value);
             short y = Convert.ToInt16(this.Yaxis.Value);
 
-            // Das aktuell ausgewählte Element aus ListBox2 wird geholt.
+            // The currently selected element from ListBox2 is fetched.
             RandomStatic selectedItem = (RandomStatic)this.ListBox2.SelectedItem;
 
-            // Wenn ein Element in ListBox2 ausgewählt ist, werden die X- und Y-Werte dieses Elements in den Variablen num und y gespeichert.
+            // When an item is selected in ListBox2, the X and Y values ​​of that item are stored in the num and y variables.
             if (selectedItem != null)
             {
                 num = selectedItem.X;
                 y = selectedItem.Y;
             }
 
-            // Das Tag-Eigenschaft des geklickten ToolStripButton wird überprüft und die Werte von num und y werden entsprechend geändert.
+            // The Tag property of the clicked ToolStripButton is checked and the values ​​of num and y are changed accordingly.
             object tag = button.Tag;
-            if (ObjectType.ObjTst(tag, 1, false) == 0) // Nordwesten
+            if (ObjectType.ObjTst(tag, 1, false) == 0) // Northwest
             {
                 if (y > -6 && num > -6)
                 {
@@ -385,14 +359,14 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Helper
                     num = checked((short)(checked(num - 1)));
                 }
             }
-            else if (ObjectType.ObjTst(tag, 2, false) == 0) // Norden
+            else if (ObjectType.ObjTst(tag, 2, false) == 0) // north
             {
                 if (y > -6)
                 {
                     y = checked((short)(checked(y - 1)));
                 }
             }
-            else if (ObjectType.ObjTst(tag, 3, false) == 0) // Nordosten
+            else if (ObjectType.ObjTst(tag, 3, false) == 0) // Northeast
             {
                 if (y > -6 && num < 6)
                 {
@@ -400,7 +374,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Helper
                     num = checked((short)(checked(num + 1)));
                 }
             }
-            else if (ObjectType.ObjTst(tag, 4, false) == 0) // Westen
+            else if (ObjectType.ObjTst(tag, 4, false) == 0) //west
             {
                 if (num > -6)
                 {
@@ -409,14 +383,14 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Helper
             }
             else if (ObjectType.ObjTst(tag, 5, false) != 0)
             {
-                if (ObjectType.ObjTst(tag, 6, false) == 0) // Osten
+                if (ObjectType.ObjTst(tag, 6, false) == 0) // east
                 {
                     if (num < 6)
                     {
                         num = checked((short)(checked(num + 1)));
                     }
                 }
-                else if (ObjectType.ObjTst(tag, 7, false) == 0) // Südwesten
+                else if (ObjectType.ObjTst(tag, 7, false) == 0) // southwest
                 {
                     if (y < 6 && num > -6)
                     {
@@ -424,14 +398,14 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Helper
                         num = checked((short)(checked(num - 1)));
                     }
                 }
-                else if (ObjectType.ObjTst(tag, 8, false) == 0) // Süden
+                else if (ObjectType.ObjTst(tag, 8, false) == 0) // south
                 {
                     if (y < 6)
                     {
                         y = checked((short)(checked(y + 1)));
                     }
                 }
-                else if (ObjectType.ObjTst(tag, 9, false) == 0) // Südosten
+                else if (ObjectType.ObjTst(tag, 9, false) == 0) // southeast
                 {
                     if (y < 6 && num < 6)
                     {
@@ -441,18 +415,18 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Helper
                 }
             }
 
-            // Die Werte der Xaxis- und Yaxis-Steuerelemente werden basierend auf den neuen Werten von num und y aktualisiert.
+            // The values ​​of the Xaxis and Yaxis controls are updated based on the new values ​​of num and y.
             this.Xaxis.Value = new decimal(num);
             this.Yaxis.Value = new decimal(y);
 
-            // Wenn ein Element in ListBox2 ausgewählt ist, werden dessen X- und Y-Werte auf die neuen Werte von num und y gesetzt.
+            // When an item in ListBox2 is selected, its X and Y values ​​are set to the new values ​​of num and y.
             if (selectedItem != null)
             {
                 selectedItem.X = num;
                 selectedItem.Y = y;
             }
 
-            // Panel3 wird dazu aufgefordert, sich neu zu zeichnen, um die Änderungen anzuzeigen.
+            // Panel3 will be prompted to redraw itself to reflect the changes.
             this.Panel3.Refresh();
         }
         #endregion

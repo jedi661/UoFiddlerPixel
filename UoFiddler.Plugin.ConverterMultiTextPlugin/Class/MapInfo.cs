@@ -10,15 +10,13 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Class
 {
     internal class MapInfo
     {
-        private string m_Name;
+        private string m_Name; // Holds the name of the map
+        private byte m_Num; // Holds the number of the map
+        private int m_XSize; // Holds the size of the map in the X direction
+        private int m_YSize; // Holds the size of the map in the Y direction
 
-        private byte m_Num;
-
-        private int m_XSize;
-
-        private int m_YSize;
-
-        public string MapName
+        // Public properties to access the private member variables
+        public string MapName // Property to get the name of the map
         {
             get
             {
@@ -26,7 +24,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Class
             }
         }
 
-        public byte MapNumber
+        public byte MapNumber // Property to get the number of the map
         {
             get
             {
@@ -34,7 +32,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Class
             }
         }
 
-        public int XSize
+        public int XSize // Property to get the size of the map in the X direction
         {
             get
             {
@@ -42,7 +40,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Class
             }
         }
 
-        public int YSize
+        public int YSize // Property to get the size of the map in the Y direction
         {
             get
             {
@@ -50,14 +48,16 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Class
             }
         }
 
+        // Constructor that takes an XmlElement and initializes the member variables
         public MapInfo(XmlElement iXml)
         {
-            this.m_Name = iXml.GetAttribute("Name");
-            this.m_Num = ByteType.FromString(iXml.GetAttribute("Num"));
-            this.m_XSize = IntegerType.FromString(iXml.GetAttribute("XSize"));
-            this.m_YSize = IntegerType.FromString(iXml.GetAttribute("YSize"));
+            this.m_Name = iXml.GetAttribute("Name"); // Get the name attribute
+            this.m_Num = ByteType.FromString(iXml.GetAttribute("Num")); // Get the number attribute
+            this.m_XSize = IntegerType.FromString(iXml.GetAttribute("XSize")); // Get the X size attribute
+            this.m_YSize = IntegerType.FromString(iXml.GetAttribute("YSize")); // Get the Y size attribute
         }
 
+        // Override of the ToString method to return the name of the map
         public override string ToString()
         {
             return string.Format("{0}", this.m_Name);

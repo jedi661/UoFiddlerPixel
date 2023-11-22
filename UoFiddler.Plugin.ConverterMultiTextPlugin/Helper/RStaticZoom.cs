@@ -26,17 +26,17 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Helper
         #region Panel2 Mousedown
         private void Panel2_MouseDown(object sender, MouseEventArgs e)
         {
-            int num = 0; // Variable für die horizontale Position der ausgewählten Kachel
-            int num1 = 0; // Variable für die vertikale Position der ausgewählten Kachel
+            int num = 0; // Variable for the horizontal position of the selected tile
+            int num1 = 0; // Variable for the vertical position of the selected tile
 
-            // Überprüfen, ob die linke Maustaste geklickt wurde
+            // Check whether the left mouse button was clicked
             if (e.Button == System.Windows.Forms.MouseButtons.Left)
             {
-                // Die horizontale Position des Mausklicks
+                // The horizontal position of the mouse click
                 int x = e.X;
 
-                // Überprüfen, in welchem Bereich der horizontale Mausklick liegt, und entsprechend die Variable 'num' setzen
-                // Sie müssen diese Bedingungen anpassen, wenn Sie die Anzahl der horizontalen Kacheln erhöhen
+                // Check in which area the horizontal mouse click lies and set the variable 'num' accordingly
+                // You will need to adjust these conditions as you increase the number of horizontal tiles
                 if (x >= 0 && x <= 49) { num = 0; }
                 else if (x >= 50 && x <= 99) { num = 1; }
                 else if (x >= 100 && x <= 149) { num = 2; }
@@ -53,11 +53,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Helper
                 else if (x >= 650 && x <= 699) { num = 13; }
                 else if (x >= 700 && x <= 749) { num = 14; }
 
-                // Die vertikale Position des Mausklicks
+                // The vertical position of the mouse click
                 int y = e.Y;
 
-                // Überprüfen, in welchem Bereich der vertikale Mausklick liegt, und entsprechend die Variable 'num1' setzen
-                // Sie müssen diese Bedingungen anpassen, wenn Sie die Anzahl der vertikalen Kacheln erhöhen
+                // Check in which area the vertical mouse click lies and set the variable 'num1' accordingly
+                // You will need to adjust these conditions as you increase the number of vertical tiles
                 if (y >= 0 && y <= 59) { num1 = 0; }
                 else if (y >= 60 && y <= 119) { num1 = 1; }
                 else if (y >= 120 && y <= 179) { num1 = 2; }
@@ -69,10 +69,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Helper
                 else if (y >= 480 && y <= 539) { num1 = 8; }
                 else if (y >= 540 && y <= 599) { num1 = 9; }
 
-                // Berechnen des ausgewählten Index basierend auf den Werten von 'num' und 'num1'
+                // Calculating the selected index based on the values ​​of 'num' and 'num1'
                 this.iSelected = checked(checked(this.VScrollBar1.Value + checked(num1 * 15)) + num);
 
-                // Setzen des ausgewählten Index als Wert des 'Tag'-Attributs
+                // Setting the selected index as the value of the 'Tag' attribute
                 object tag = this.Tag;
                 object[] objArray = new object[] { this.iSelected };
                 LateBinding.LateSetComplex(tag, null, "Value", objArray, null, false, true);
@@ -109,9 +109,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Helper
                         value++;
                     }
                     num1++;
-                } while (num1 <= 14); // Erhöhen Sie diesen Wert auf 9 für 10 Kacheln nebeneinander
+                } while (num1 <= 14); // Increase this value to 9 for 10 tiles next to each other
                 num++;
-            } while (num <= 9); // Erhöhen Sie diesen Wert auf 9 für 10 Kacheln untereinander
+            } while (num <= 9); // Increase this value to 9 for 10 tiles one below the other
             graphics = null;
         }
         #endregion
