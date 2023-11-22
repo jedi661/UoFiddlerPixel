@@ -4,6 +4,7 @@ using System;
 using System.Collections;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.Runtime.ConstrainedExecution;
 using System.Xml;
 using Terrain;
 using Ultima;
@@ -28,7 +29,8 @@ namespace Transition
 				this.m_File = value;
 			}
 		}
-		public string Description
+        #region Description
+        public string Description
 		{
 			get
 			{
@@ -39,7 +41,9 @@ namespace Transition
 				this.m_Description = value;
 			}
 		}
-		public string HashKey
+        #endregion
+        #region HashKey
+        public string HashKey
 		{
 			get
 			{
@@ -56,7 +60,9 @@ namespace Transition
 				while (b <= 8);
 			}
 		}
-		public MapTileCollection GetMapTiles
+        #endregion
+        #region MapTileCollection
+        public MapTileCollection GetMapTiles
 		{
 			get
 			{
@@ -67,7 +73,9 @@ namespace Transition
 				this.m_MapTiles = value;
 			}
 		}
-		public StaticTileCollection GetStaticTiles
+        #endregion
+        #region StaticTileCollection
+        public StaticTileCollection GetStaticTiles
 		{
 			get
 			{
@@ -78,18 +86,24 @@ namespace Transition
 				this.m_StaticTiles = value;
 			}
 		}
-		public HashKeyCollection GetHaskKeyTable
+        #endregion
+        #region HashKeyCollection
+        public HashKeyCollection GetHaskKeyTable
 		{
 			get
 			{
 				return this.m_HashKey;
 			}
 		}
-		public byte GetKey(int Index)
+        #endregion
+        #region GetKey
+        public byte GetKey(int Index)
 		{		
 				return this.m_HashKey[Index].Key;
 		}
-		public virtual MapTile GetRandomMapTile()
+        #endregion
+        #region virtual MapTile
+        public virtual MapTile GetRandomMapTile()
 		{
             MapTile randomTile = null;
 			if (this.GetMapTiles.Count > 0)
@@ -98,7 +112,9 @@ namespace Transition
 			}
 			return randomTile;
 		}
-		public virtual void GetRandomStaticTiles(short X, short Y, short Z, Collection[,] StaticMap, bool iRandom)
+        #endregion
+        #region GetRandomStaticTiles
+        public virtual void GetRandomStaticTiles(short X, short Y, short Z, Collection[,] StaticMap, bool iRandom)
 		{
 			if (this.m_StaticTiles.Count > 0)
 			{
@@ -113,7 +129,9 @@ namespace Transition
 				}
 			}
 		}
-		public void Clone(ClsTerrain iGroupA, ClsTerrain iGroupB)
+        #endregion
+        #region Clone ClsTerrain
+        public void Clone(ClsTerrain iGroupA, ClsTerrain iGroupB)
 		{
 			this.m_Description = this.m_Description.Replace(iGroupA.Name, iGroupB.Name);
 			int num = 0;
@@ -130,38 +148,57 @@ namespace Transition
 				while (num <= 8);
 			}
 		}
-		public void SetHashKey(int iKey, byte iKeyHash)
+        #endregion
+
+        #region SetHashKey
+        public void SetHashKey(int iKey, byte iKeyHash)
 		{
 			this.m_HashKey[iKey].Key = iKeyHash;
 		}
-		public void AddMapTile(short TileID, short AltIDMod)
+        #endregion
+        #region AddMapTile
+        public void AddMapTile(short TileID, short AltIDMod)
 		{
 			this.m_MapTiles.Add(new MapTile(TileID, AltIDMod));
 		}
-		public void RemoveMapTile(MapTile iMapTile)
+        #endregion
+        #region RemoveMapTile
+        public void RemoveMapTile(MapTile iMapTile)
 		{
 			this.m_MapTiles.Remove(iMapTile);
 		}
-		public void AddStaticTile(short TileID, short AltIDMod)
+        #endregion
+        #region AddStaticTile
+        public void AddStaticTile(short TileID, short AltIDMod)
 		{
 			this.m_StaticTiles.Add(new StaticTile(TileID, AltIDMod));
 		}
-		public void RemoveStaticTile(StaticTile iStaticTile)
+        #endregion
+        #region RemoveStaticTile
+        public void RemoveStaticTile(StaticTile iStaticTile)
 		{
 			this.m_StaticTiles.Remove(iStaticTile);
 		}
-		public override string ToString()
+        #endregion
+        #region override string
+        public override string ToString()
 		{
 			return string.Format("[{0}] {1}", this.m_HashKey.ToString(), this.m_Description);
 		}
-		public Bitmap TransitionImage(ClsTerrainTable iTerrain)
+        #endregion
+
+        #region Bitmap TransitionImage
+        public Bitmap TransitionImage(ClsTerrainTable iTerrain)
 		{
-			Bitmap bitmap = new Bitmap(400, 168, PixelFormat.Format16bppRgb555);
-			Graphics graphics = Graphics.FromImage(bitmap);
-			Font font = new Font("Arial", 10f);
-			Graphics graphics2 = graphics;
-			graphics2.Clear(Color.White);
-			Graphics arg_5E_0 = graphics2;
+            // Create a new bitmap with specific dimensions and pixel format
+            Bitmap bitmap = new Bitmap(400, 168, PixelFormat.Format16bppRgb555);
+			Graphics graphics = Graphics.FromImage(bitmap); // Create a Graphics object from the bitmap
+            Font font = new Font("Arial", 10f); // Create a new font
+            Graphics graphics2 = graphics;
+			graphics2.Clear(Color.White); // Clear the graphics to white
+            // Draw the terrain groups on the graphics using the Art.GetLand method
+            // The terrain groups are positioned at specific points on the graphics
+            Graphics arg_5E_0 = graphics2;
 			Image arg_5E_1 = Art.GetLand((int)iTerrain.TerrianGroup(0).TileID);
 			Point point = new Point(61, 15);
 			arg_5E_0.DrawImage(arg_5E_1, point);
@@ -197,264 +234,327 @@ namespace Transition
             Image arg_196_1 = Art.GetLand((int)iTerrain.TerrianGroup(8).TileID);
 			point = new Point(61, 107);
 			arg_196_0.DrawImage(arg_196_1, point);
-			graphics2.DrawString(this.ToString(), font, Brushes.Black, 151f, 2f);
-			graphics.Dispose();
-			return bitmap;
-		}
-		public void Save(XmlTextWriter xmlInfo)
+
+            // Draw the string representation of the transition on the graphics
+            graphics2.DrawString(this.ToString(), font, Brushes.Black, 151f, 2f);
+			graphics.Dispose(); // Dispose the graphics object
+            return bitmap; // Return the bitmap
+        }
+        #endregion
+
+        #region Save XmlTextWriter
+        public void Save(XmlTextWriter xmlInfo)
 		{
-			xmlInfo.WriteStartElement("TransInfo");
-			xmlInfo.WriteAttributeString("Description", this.m_Description);
-			xmlInfo.WriteAttributeString("HashKey", this.m_HashKey.ToString());
-			if (this.m_File != null)
+			xmlInfo.WriteStartElement("TransInfo"); // Start a new element "TransInfo" in the XML
+            xmlInfo.WriteAttributeString("Description", this.m_Description); // Write the description attribute to the XML
+            xmlInfo.WriteAttributeString("HashKey", this.m_HashKey.ToString()); // Write the hash key attribute to the XML
+            // If the file is not null, write the file attribute to the XML
+            if (this.m_File != null)
 			{
 				xmlInfo.WriteAttributeString("File", this.m_File);
 			}
-			this.m_MapTiles.Save(xmlInfo);
-			this.m_StaticTiles.Save(xmlInfo);
-			xmlInfo.WriteEndElement();
-		}
-		public Transition(XmlElement xmlInfo)
+			this.m_MapTiles.Save(xmlInfo); // Save the MapTiles to the XML
+            this.m_StaticTiles.Save(xmlInfo); // Save the StaticTiles to the XML
+            xmlInfo.WriteEndElement(); // End the "TransInfo" element in the XML
+        }
+        #endregion
+
+        #region Transition xmlInfo
+        public Transition(XmlElement xmlInfo)
 		{
-			this.m_HashKey = new HashKeyCollection();
-			this.m_StaticTiles = new StaticTileCollection();
-			this.m_MapTiles = new MapTileCollection();
-			this.m_RandomTiles = null;
-			this.m_File = null;
-			this.m_Description = xmlInfo.GetAttribute("Description");
-			this.m_HashKey.AddHashKey(xmlInfo.GetAttribute("HashKey"));
-			if (StringType.StrCmp(xmlInfo.GetAttribute("File"), string.Empty, false) != 0)
+			this.m_HashKey = new HashKeyCollection(); // Initialize the HashKeyCollection
+            this.m_StaticTiles = new StaticTileCollection(); // Initialize the StaticTileCollection
+            this.m_MapTiles = new MapTileCollection();  // Initialize the MapTileCollection
+            this.m_RandomTiles = null; // Set the RandomTiles to null
+            this.m_File = null; // Set the File to null
+            // Set the description of the transition from the XmlElement attribute
+            this.m_Description = xmlInfo.GetAttribute("Description");
+            // Add the hash key from the XmlElement attribute to the HashKeyCollection
+            this.m_HashKey.AddHashKey(xmlInfo.GetAttribute("HashKey"));
+            // If the File attribute of the XmlElement is not empty
+            if (StringType.StrCmp(xmlInfo.GetAttribute("File"), string.Empty, false) != 0)
 			{
-				this.m_RandomTiles = new RandomStatics(xmlInfo.GetAttribute("File"));
-				this.m_File = xmlInfo.GetAttribute("File");
-			}
-			this.m_MapTiles.Load(xmlInfo);
-			this.m_StaticTiles.Load(xmlInfo);
-		}
-		public Transition()
+                // Initialize the RandomStatics with the File attribute
+                this.m_RandomTiles = new RandomStatics(xmlInfo.GetAttribute("File"));
+				this.m_File = xmlInfo.GetAttribute("File"); // Set the File to the File attribute of the XmlElement
+            }
+			this.m_MapTiles.Load(xmlInfo); // Load the MapTileCollection from the XmlElement
+            this.m_StaticTiles.Load(xmlInfo); // Load the StaticTileCollection from the XmlElement
+        }
+        #endregion
+        #region Transition
+        public Transition()
 		{
-			this.m_HashKey = new HashKeyCollection();
-			this.m_StaticTiles = new StaticTileCollection();
-			this.m_MapTiles = new MapTileCollection();
-			this.m_RandomTiles = null;
-			this.m_File = null;
-			this.m_Description = "<New Transition>";
-			this.m_HashKey.Clear();
-			byte b = 0;
-			do
-			{
-				this.m_HashKey.Add(new HashKey());
-				b += 1;
-			}
-			while (b <= 8);
-		}
-		public Transition(string iDescription, string iHashKey, MapTileCollection iMapTiles, StaticTileCollection iStaticTiles)
+			this.m_HashKey = new HashKeyCollection(); // Initialize the HashKeyCollection
+            this.m_StaticTiles = new StaticTileCollection(); // Initialize the StaticTileCollection
+            this.m_MapTiles = new MapTileCollection(); // Initialize the MapTileCollection
+            this.m_RandomTiles = null; // Set the RandomTiles to null
+            this.m_File = null; // Set the File to null
+            this.m_Description = "<New Transition>"; // Set the description of the transition to "<New Transition>"
+            this.m_HashKey.Clear(); // Clear the HashKeyCollection
+            byte b = 0; // Initialize a counter
+            do // Loop to add new HashKeys to the HashKeyCollection
+            {
+				this.m_HashKey.Add(new HashKey()); // Add a new HashKey to the HashKeyCollection
+                b += 1; // Increment the counter
+            }
+			while (b <= 8); // Continue the loop until the counter is greater than 8
+        }
+        #endregion
+
+        #region Transition iDescription
+        public Transition(string iDescription, string iHashKey, MapTileCollection iMapTiles, StaticTileCollection iStaticTiles)
 		{
-			this.m_HashKey = new HashKeyCollection();
-			this.m_StaticTiles = new StaticTileCollection();
-			this.m_MapTiles = new MapTileCollection();
-			this.m_RandomTiles = null;
-			this.m_File = null;
-			this.m_Description = iDescription;
+			this.m_HashKey = new HashKeyCollection(); // Initialize the HashKeyCollection
+            this.m_StaticTiles = new StaticTileCollection();  // Initialize the StaticTileCollection
+            this.m_MapTiles = new MapTileCollection(); // Initialize the MapTileCollection
+            this.m_RandomTiles = null; // Set the RandomTiles to null
+            this.m_File = null; // Set the File to null
+            this.m_Description = iDescription;
 			this.m_HashKey.AddHashKey(iHashKey);
 
             IEnumerator enumerator = iMapTiles.GetEnumerator();
 
 			try
 			{
-				while (enumerator.MoveNext())
-				{
-					MapTile value = (MapTile)enumerator.Current;
-					this.m_MapTiles.Add(value);
-				}
+				while (enumerator.MoveNext()) // Loop through the MapTileCollection
+                {
+					MapTile value = (MapTile)enumerator.Current; // Get the current MapTile
+                    this.m_MapTiles.Add(value); // Add the MapTile to the MapTileCollection
+                }
 			}
 			finally
 			{
-				if (enumerator is IDisposable)
-				{
+				if (enumerator is IDisposable) // Dispose the enumerator if it implements IDisposable
+                {
 					((IDisposable)enumerator).Dispose();
-				}
+                }
 			}
 
+            // Get an enumerator for the StaticTileCollection
             IEnumerator enumerator2 = iStaticTiles.GetEnumerator();
 
 			try
 			{
-				while (enumerator2.MoveNext())
-				{
-					StaticTile value2 = (StaticTile)enumerator2.Current;
-					this.m_StaticTiles.Add(value2);
-				}
+				while (enumerator2.MoveNext()) // Loop through the StaticTileCollection
+                {
+					StaticTile value2 = (StaticTile)enumerator2.Current; // Get the current StaticTile
+                    this.m_StaticTiles.Add(value2); // Add the StaticTile to the StaticTileCollection
+                }
 			}
 			finally
 			{
-				if (enumerator2 is IDisposable)
-				{
+				if (enumerator2 is IDisposable) // Dispose the enumerator if it implements IDisposable
+                {
 					((IDisposable)enumerator2).Dispose();
 				}
 			}
 		}
-		public Transition(string iDescription, ClsTerrain iGroupA, ClsTerrain iGroupB, string iHashKey)
+        #endregion
+        #region Transition Constructor
+        public Transition(string iDescription, ClsTerrain iGroupA, ClsTerrain iGroupB, string iHashKey)
 		{
-			this.m_HashKey = new HashKeyCollection();
-			this.m_StaticTiles = new StaticTileCollection();
-			this.m_MapTiles = new MapTileCollection();
-			this.m_RandomTiles = null;
-			this.m_File = null;
-			this.m_Description = iDescription;
-			byte b = 0;
-			do
-			{
-				string sLeft = Strings.Mid(iHashKey, (int)checked(b + 1), 1);
+			this.m_HashKey = new HashKeyCollection(); // Initialize the HashKeyCollection
+            this.m_StaticTiles = new StaticTileCollection(); // Initialize the StaticTileCollection
+            this.m_MapTiles = new MapTileCollection(); // Initialize the MapTileCollection
+            this.m_RandomTiles = null; // Set the RandomTiles to null
+            this.m_File = null; // Set the File to null
+            this.m_Description = iDescription; // Set the description of the transition
+            byte b = 0; // Initialize a counter
+            // Loop through the characters in the hash key
+            do
+            {
+                // If the character is 'A', add the group ID of group A to the hash key collection
+                string sLeft = Strings.Mid(iHashKey, (int)checked(b + 1), 1);
 				if (StringType.StrCmp(sLeft, "A", false) == 0)
 				{
 					this.m_HashKey.Add(new HashKey(iGroupA.GroupID));
 				}
 				else
 				{
-					if (StringType.StrCmp(sLeft, "B", false) == 0)
+                    // If the character is 'B', add the group ID of group B to the hash key collection
+                    if (StringType.StrCmp(sLeft, "B", false) == 0)
 					{
 						this.m_HashKey.Add(new HashKey(iGroupB.GroupID));
 					}
 				}
-				b += 1;
-			}
-			while (b <= 8);
-		}
-		public Transition(string iDescription, string iHashKey, ClsTerrain iGroupA, ClsTerrain iGroupB, MapTileCollection iMapTiles, StaticTileCollection iStaticTiles)
+				b += 1; // Increment the counter
+            }
+			while (b <= 8); // Continue the loop until the counter is greater than 8
+        }
+        #endregion
+
+        #region Transition Constructor
+        public Transition(string iDescription, string iHashKey, ClsTerrain iGroupA, ClsTerrain iGroupB, MapTileCollection iMapTiles, StaticTileCollection iStaticTiles)
 		{
-			this.m_HashKey = new HashKeyCollection();
-			this.m_StaticTiles = new StaticTileCollection();
-			this.m_MapTiles = new MapTileCollection();
-			this.m_RandomTiles = null;
-			this.m_File = null;
-			this.m_Description = iDescription;
-			byte b = 0;
-			do
-			{
-				string sLeft = Strings.Mid(iHashKey, (int)checked(b + 1), 1);
-				if (StringType.StrCmp(sLeft, "A", false) == 0)
+			this.m_HashKey = new HashKeyCollection(); // Initialize the HashKeyCollection
+            this.m_StaticTiles = new StaticTileCollection();  // Initialize the StaticTileCollection
+            this.m_MapTiles = new MapTileCollection();  // Initialize the MapTileCollection
+            this.m_RandomTiles = null; // Set the RandomTiles to null
+            this.m_File = null; // Set the File to null
+            this.m_Description = iDescription; // Set the description of the transition
+            byte b = 0; // Initialize a counter
+            do // Loop through the characters in the hash key
+            {
+                // Get the current character in the hash key
+                string sLeft = Strings.Mid(iHashKey, (int)checked(b + 1), 1);
+                // If the character is 'A', add the group ID of group A to the hash key collection
+                if (StringType.StrCmp(sLeft, "A", false) == 0)
 				{
 					this.m_HashKey.Add(new HashKey(iGroupA.GroupID));
 				}
-				else
-				{
+                else // If the character is 'B', add the group ID of group B to the hash key collection
+                {
 					if (StringType.StrCmp(sLeft, "B", false) == 0)
 					{
 						this.m_HashKey.Add(new HashKey(iGroupB.GroupID));
 					}
 				}
-				b += 1;
-			}
-			while (b <= 8);
-			if (iMapTiles != null)
+				b += 1; // Increment the counter
+            }
+            // Continue the loop until the counter is greater than 8
+            while (b <= 8);
+            // Get an enumerator for the MapTileCollection
+            if (iMapTiles != null)
 			{
                 IEnumerator enumerator = iMapTiles.GetEnumerator();
 				try
 				{
-					while (enumerator.MoveNext())
+                    // Loop through the MapTileCollection
+                    while (enumerator.MoveNext())
 					{
-						MapTile value = (MapTile)enumerator.Current;
-						this.m_MapTiles.Add(value);
-					}
+						MapTile value = (MapTile)enumerator.Current; // Get the current MapTile
+                        this.m_MapTiles.Add(value); // Add the MapTile to the MapTileCollection
+                    }
 				}
 				finally
 				{
-					if (enumerator is IDisposable)
+                    // Dispose the enumerator if it implements IDisposable
+                    if (enumerator is IDisposable)
 					{
 						((IDisposable)enumerator).Dispose();
 					}
 				}
 			}
-			if (iStaticTiles != null)
+            // If the StaticTileCollection is not null
+            if (iStaticTiles != null)
 			{
+                // Get an enumerator for the StaticTileCollection
                 IEnumerator enumerator2 = iStaticTiles.GetEnumerator();
 
 				try
 				{
-					while (enumerator2.MoveNext())
+                    // Loop through the StaticTileCollection
+                    while (enumerator2.MoveNext())
 					{
-						StaticTile value2 = (StaticTile)enumerator2.Current;
-						this.m_StaticTiles.Add(value2);
-					}
+						StaticTile value2 = (StaticTile)enumerator2.Current; // Get the current StaticTile
+                        this.m_StaticTiles.Add(value2); // Add the StaticTile to the StaticTileCollection
+                    }
 				}
 				finally
 				{
-					if (enumerator2 is IDisposable)
+                    // Dispose the enumerator if it implements IDisposable
+                    if (enumerator2 is IDisposable)
 					{
 						((IDisposable)enumerator2).Dispose();
 					}
 				}
 			}
 		}
-		public Transition(string iDescription, ClsTerrain iGroupA, ClsTerrain iGroupB, ClsTerrain iGroupC, string iHashKey)
+        #endregion
+
+        #region Transition Constructor
+        public Transition(string iDescription, ClsTerrain iGroupA, ClsTerrain iGroupB, ClsTerrain iGroupC, string iHashKey)
 		{
-			this.m_HashKey = new HashKeyCollection();
-			this.m_StaticTiles = new StaticTileCollection();
-			this.m_MapTiles = new MapTileCollection();
-			this.m_RandomTiles = null;
-			this.m_File = null;
-			this.m_Description = iDescription;
-			byte b = 0;
-			do
-			{
-				string sLeft = Strings.Mid(iHashKey, (int)checked(b + 1), 1);
-				if (StringType.StrCmp(sLeft, "A", false) == 0)
+			this.m_HashKey = new HashKeyCollection(); // Initialize the HashKeyCollection
+            this.m_StaticTiles = new StaticTileCollection(); // Initialize the StaticTileCollection
+            this.m_MapTiles = new MapTileCollection(); // Initialize the MapTileCollection
+            this.m_RandomTiles = null;// Set the RandomTiles to null
+			this.m_File = null; // Set the File to null
+            this.m_Description = iDescription; // Set the description of the transition
+            byte b = 0; // Initialize a counter
+            // Loop through the characters in the hash key
+            do
+            {
+                // Get the current character in the hash key
+                string sLeft = Strings.Mid(iHashKey, (int)checked(b + 1), 1);
+                // If the character is 'A', add the group ID of group A to the hash key collection
+                if (StringType.StrCmp(sLeft, "A", false) == 0)
 				{
 					this.m_HashKey.Add(new HashKey(iGroupA.GroupID));
 				}
 				else
 				{
-					if (StringType.StrCmp(sLeft, "B", false) == 0)
+                    // If the character is 'B', add the group ID of group B to the hash key collection
+                    if (StringType.StrCmp(sLeft, "B", false) == 0)
 					{
 						this.m_HashKey.Add(new HashKey(iGroupB.GroupID));
 					}
 					else
 					{
-						if (StringType.StrCmp(sLeft, "C", false) == 0)
+                        // If the character is 'C', add the group ID of group C to the hash key collection
+                        if (StringType.StrCmp(sLeft, "C", false) == 0)
 						{
 							this.m_HashKey.Add(new HashKey(iGroupC.GroupID));
 						}
 					}
 				}
-				b += 1;
-			}
-			while (b <= 8);
+				b += 1; // Increment the counter
+            }
+            // Continue the loop until the counter is greater than 8
+            while (b <= 8);
 		}
-		public Transition(string iDescription, string iHashKey)
+        #endregion
+
+        #region Transition Constructor
+        public Transition(string iDescription, string iHashKey)
 		{
-			this.m_HashKey = new HashKeyCollection();
+			this.m_HashKey = new HashKeyCollection(); // Initialize the HashKeyCollection
+            this.m_StaticTiles = new StaticTileCollection(); // Initialize the StaticTileCollection
+            this.m_MapTiles = new MapTileCollection(); // Initialize the MapTileCollection
+            this.m_RandomTiles = null; // Set the RandomTiles to null
+            this.m_File = null; // Set the File to null
+            // Set the description of the transition
+            this.m_Description = iDescription;
+            // Initialize a counter
+            byte b = 0;
+            // Loop through the characters in the hash key
+            do
+            {
+                // Add a new HashKey to the HashKeyCollection for each character in the hash key
+                this.m_HashKey.Add(new HashKey(Strings.Mid(iHashKey, (int)checked(b * 2 + 1), 2)));
+                // Increment the counter
+                b += 1;
+			}
+            // Continue the loop until the counter is greater than 8
+            while (b <= 8);
+		}
+        #endregion
+
+        #region Transition Constructor
+        public Transition(string iDescription, ClsTerrain iGroupA, ClsTerrain iGroupB, string iHashKey, MapTile iMapTile)
+		{
+            // Initialize collections and variables
+            this.m_HashKey = new HashKeyCollection();
 			this.m_StaticTiles = new StaticTileCollection();
 			this.m_MapTiles = new MapTileCollection();
 			this.m_RandomTiles = null;
 			this.m_File = null;
-			this.m_Description = iDescription;
-			byte b = 0;
+            // Set the description of the transition
+            this.m_Description = iDescription;
+            // Loop through the characters in the hash key
+            byte b = 0;
 			do
 			{
-				this.m_HashKey.Add(new HashKey(Strings.Mid(iHashKey, (int)checked(b * 2 + 1), 2)));
-				b += 1;
-			}
-			while (b <= 8);
-		}
-		public Transition(string iDescription, ClsTerrain iGroupA, ClsTerrain iGroupB, string iHashKey, MapTile iMapTile)
-		{
-			this.m_HashKey = new HashKeyCollection();
-			this.m_StaticTiles = new StaticTileCollection();
-			this.m_MapTiles = new MapTileCollection();
-			this.m_RandomTiles = null;
-			this.m_File = null;
-			this.m_Description = iDescription;
-			byte b = 0;
-			do
-			{
-				string sLeft = Strings.Mid(iHashKey, (int)checked(b + 1), 1);
-				if (StringType.StrCmp(sLeft, "A", false) == 0)
+                // Get the current character in the hash key
+                string sLeft = Strings.Mid(iHashKey, (int)checked(b + 1), 1);
+                // If the character is 'A', add the group ID of group A to the hash key collection
+                if (StringType.StrCmp(sLeft, "A", false) == 0)
 				{
 					this.m_HashKey.Add(new HashKey(iGroupA.GroupID));
 				}
-				else
-				{
+                else // If the character is 'B', add the group ID of group B to the hash key collection
+                {
 					if (StringType.StrCmp(sLeft, "B", false) == 0)
 					{
 						this.m_HashKey.Add(new HashKey(iGroupB.GroupID));
@@ -463,7 +563,9 @@ namespace Transition
 				b += 1;
 			}
 			while (b <= 8);
-			this.m_MapTiles.Add(iMapTile);
+            // Add the map tile to the map tiles collection
+            this.m_MapTiles.Add(iMapTile);
 		}
-	}
+        #endregion
+    }
 }

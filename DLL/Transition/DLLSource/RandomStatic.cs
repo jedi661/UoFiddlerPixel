@@ -5,9 +5,8 @@ using System.Xml;
 namespace Transition
 {
 	public class RandomStatic
-	{
-        //private short m_TileID;
-        private int m_TileID;
+	{        
+        private int m_TileID; //changed from short to int
         private short m_XMod;
 		private short m_YMod;
 		private short m_ZMod;
@@ -70,7 +69,7 @@ namespace Transition
 		public RandomStatic()
 		{
 		}
-        public RandomStatic(int iTileID, short iXMod, short iYMod, short iZMod, int iHueMod)  // Ändern Sie den Datentyp von short zu int für iTileID und iHueMod
+        public RandomStatic(int iTileID, short iXMod, short iYMod, short iZMod, int iHueMod)  // Change the data type from short to int for iTileID and iHueMod
         {
             this.m_TileID = iTileID;
             this.m_XMod = iXMod;
@@ -79,43 +78,7 @@ namespace Transition
             this.m_HueMod = iHueMod;
         }
 
-        //Gestern
-        /*public RandomStatic(XmlElement xmlInfo)
-        {
-            try
-            {
-                this.m_TileID = XmlConvert.ToInt32(xmlInfo.GetAttribute("TileID"));  // Ändern Sie ToInt16 zu ToInt32
-                this.m_XMod = XmlConvert.ToInt16(xmlInfo.GetAttribute("X"));
-                this.m_YMod = XmlConvert.ToInt16(xmlInfo.GetAttribute("Y"));
-                this.m_ZMod = XmlConvert.ToInt16(xmlInfo.GetAttribute("Z"));
-                this.m_HueMod = XmlConvert.ToInt32(xmlInfo.GetAttribute("Hue"));  // Ändern Sie ToInt16 zu ToInt32
-            }
-            catch (Exception expr_AC)
-            {
-                ProjectData.SetProjectError(expr_AC);
-                Interaction.MsgBox(string.Format("Error\r\n{0}", xmlInfo.OuterXml), MsgBoxStyle.OkOnly, null);
-                ProjectData.ClearProjectError();
-            }
-        }*/
-
-        /*public RandomStatic(XmlElement xmlInfo)
-        {
-            try
-            {
-                this.m_TileID = Convert.ToInt32(xmlInfo.GetAttribute("TileID"), 16); // Änderung hier
-                this.m_XMod = XmlConvert.ToInt16(xmlInfo.GetAttribute("X"));
-                this.m_YMod = XmlConvert.ToInt16(xmlInfo.GetAttribute("Y"));
-                this.m_ZMod = XmlConvert.ToInt16(xmlInfo.GetAttribute("Z"));
-                this.m_HueMod = XmlConvert.ToInt32(xmlInfo.GetAttribute("Hue")); // Ändern Sie ToInt16 zu ToInt32
-            }
-            catch (Exception expr_AC)
-            {
-                ProjectData.SetProjectError(expr_AC);
-                Interaction.MsgBox(string.Format("Error\r\n{0}", xmlInfo.OuterXml), MsgBoxStyle.OkOnly, null);
-                ProjectData.ClearProjectError();
-            }
-        }*/
-
+        #region XML Static Int and hex addresses decimal
         public RandomStatic(XmlElement xmlInfo)
         {
             try
@@ -123,16 +86,16 @@ namespace Transition
                 string tileID = xmlInfo.GetAttribute("TileID");
                 if (tileID.StartsWith("0x") || tileID.StartsWith("&H"))
                 {
-                    this.m_TileID = Convert.ToInt32(tileID.Substring(2), 16); // Überspringen Sie das Präfix und konvertieren Sie von Hex
+                    this.m_TileID = Convert.ToInt32(tileID.Substring(2), 16); // Skip the prefix and convert from hex
                 }
                 else
                 {
-                    this.m_TileID = Convert.ToInt32(tileID); // Konvertieren Sie von Dezimal
+                    this.m_TileID = Convert.ToInt32(tileID); // Convert from decimal
                 }
                 this.m_XMod = XmlConvert.ToInt16(xmlInfo.GetAttribute("X"));
                 this.m_YMod = XmlConvert.ToInt16(xmlInfo.GetAttribute("Y"));
                 this.m_ZMod = XmlConvert.ToInt16(xmlInfo.GetAttribute("Z"));
-                this.m_HueMod = XmlConvert.ToInt32(xmlInfo.GetAttribute("Hue")); // Ändern Sie ToInt16 zu ToInt32
+                this.m_HueMod = XmlConvert.ToInt32(xmlInfo.GetAttribute("Hue")); // Change ToInt16 to ToInt32
             }
             catch (Exception expr_AC)
             {
@@ -141,7 +104,7 @@ namespace Transition
                 ProjectData.ClearProjectError();
             }
         }
-
+        #endregion
 
         public override string ToString()
 		{
