@@ -961,5 +961,21 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             }
         }
         #endregion
+
+        #region CreateTransitions
+        private CreateTransitions createTransitions = null;
+        private void transitionEditorToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (createTransitions == null || createTransitions.IsDisposed)
+            {
+                createTransitions = new CreateTransitions();
+                createTransitions.Show();
+            }
+            else
+            {
+                createTransitions.BringToFront();
+            }
+        }
+        #endregion
     }
 }

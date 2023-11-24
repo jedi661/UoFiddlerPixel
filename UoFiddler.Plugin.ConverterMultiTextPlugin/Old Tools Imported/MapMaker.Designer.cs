@@ -117,6 +117,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             createDataIndexToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             createStaticToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             xMLHexSearchToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            transitionEditorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
             menuStrip1.SuspendLayout();
             groupBoxMakenNewMap.SuspendLayout();
             tabControl1.SuspendLayout();
@@ -778,7 +780,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // 
             // ToolsToolStripMenuItem
             // 
-            ToolsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { createDataIndexToolStripMenuItem, createStaticToolStripMenuItem, xMLHexSearchToolStripMenuItem });
+            ToolsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { createDataIndexToolStripMenuItem, createStaticToolStripMenuItem, xMLHexSearchToolStripMenuItem, toolStripSeparator3, transitionEditorToolStripMenuItem });
             ToolsToolStripMenuItem.Name = "ToolsToolStripMenuItem";
             ToolsToolStripMenuItem.Size = new System.Drawing.Size(46, 20);
             ToolsToolStripMenuItem.Text = "Tools";
@@ -803,6 +805,18 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             xMLHexSearchToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             xMLHexSearchToolStripMenuItem.Text = "XML Hex Search";
             xMLHexSearchToolStripMenuItem.Click += xMLHexSearchToolStripMenuItem_Click;
+            // 
+            // transitionEditorToolStripMenuItem
+            // 
+            transitionEditorToolStripMenuItem.Name = "transitionEditorToolStripMenuItem";
+            transitionEditorToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            transitionEditorToolStripMenuItem.Text = "Transition Editor";
+            transitionEditorToolStripMenuItem.Click += transitionEditorToolStripMenuItem_Click;
+            // 
+            // toolStripSeparator3
+            // 
+            toolStripSeparator3.Name = "toolStripSeparator3";
+            toolStripSeparator3.Size = new System.Drawing.Size(177, 6);
             // 
             // MapMaker
             // 
@@ -924,5 +938,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private System.Windows.Forms.ToolStripMenuItem createDataIndexToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem createStaticToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem xMLHexSearchToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
+        private System.Windows.Forms.ToolStripMenuItem transitionEditorToolStripMenuItem;
     }
 }

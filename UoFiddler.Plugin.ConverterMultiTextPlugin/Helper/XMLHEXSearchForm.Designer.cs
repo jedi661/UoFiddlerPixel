@@ -176,7 +176,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Helper
             Icon = (System.Drawing.Icon)resources.GetObject("$this.Icon");
             MainMenuStrip = menuStrip1;
             Name = "XMLHEXSearchForm";
-            Text = "XMLHEXSearchForm";
+            Text = "XML HEX Search Edit";
             menuStrip1.ResumeLayout(false);
             menuStrip1.PerformLayout();
             contextMenuStrip1.ResumeLayout(false);
