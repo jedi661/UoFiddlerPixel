@@ -167,6 +167,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Helper
             // 
             // MenuSave
             // 
+            MenuSave.Image = Properties.Resources.uomc30;
             MenuSave.Name = "MenuSave";
             MenuSave.Size = new System.Drawing.Size(189, 22);
             MenuSave.Text = "Save Transition Table";
@@ -227,28 +228,31 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Helper
             // clearToolStripMenuItem
             // 
             clearToolStripMenuItem.Name = "clearToolStripMenuItem";
-            clearToolStripMenuItem.Size = new System.Drawing.Size(107, 22);
+            clearToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             clearToolStripMenuItem.Text = "Clear";
             clearToolStripMenuItem.Click += MenuItem1_Click;
             // 
             // addToolStripMenuItem
             // 
+            addToolStripMenuItem.Image = Properties.Resources.uomc01;
             addToolStripMenuItem.Name = "addToolStripMenuItem";
-            addToolStripMenuItem.Size = new System.Drawing.Size(107, 22);
+            addToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             addToolStripMenuItem.Text = "Add";
             addToolStripMenuItem.Click += MenuAddKey_Click;
             // 
             // deleteToolStripMenuItem
             // 
+            deleteToolStripMenuItem.Image = Properties.Resources.uomc02;
             deleteToolStripMenuItem.Name = "deleteToolStripMenuItem";
-            deleteToolStripMenuItem.Size = new System.Drawing.Size(107, 22);
+            deleteToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             deleteToolStripMenuItem.Text = "Delete";
             deleteToolStripMenuItem.Click += MenuDelKey_Click;
             // 
             // copyToolStripMenuItem
             // 
+            copyToolStripMenuItem.Image = Properties.Resources.Copy;
             copyToolStripMenuItem.Name = "copyToolStripMenuItem";
-            copyToolStripMenuItem.Size = new System.Drawing.Size(107, 22);
+            copyToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             copyToolStripMenuItem.Text = "Copy";
             copyToolStripMenuItem.Click += MenuCopyKey_Click;
             // 
@@ -313,6 +317,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Helper
             // 
             // MenuItem3
             // 
+            MenuItem3.Image = Properties.Resources.uomc31;
             MenuItem3.Name = "MenuItem3";
             MenuItem3.Size = new System.Drawing.Size(187, 22);
             MenuItem3.Text = "Print Table";

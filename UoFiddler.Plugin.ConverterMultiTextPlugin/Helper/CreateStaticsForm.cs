@@ -23,6 +23,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Helper
         //private Art UOArt;
         //private TileData UOStatic;
         private Point[,] StaticGrid;
+
+        // Erstellen Sie eine Klassenvariable, um den letzten Bewegungsbefehl zu speichern.
+        private string lastMoveCommand = "";
         public CreateStaticsForm()
         {
             InitializeComponent();
@@ -55,6 +58,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Helper
 
             // Make sure the first item is displayed in PictureBox1
             UpdateVScrollBar1();
+
         }
 
         #region
@@ -204,7 +208,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Helper
                 num++;
             }
             while (num <= 12);
-            pen = new Pen(Color.Red);
+            //pen = new Pen(Color.Red);
+            pen = new Pen(selectedColor);
             int num4 = Convert.ToInt32(decimal.Add(new decimal(6L), this.Yaxis.Value));
             int num5 = Convert.ToInt32(decimal.Add(new decimal(6L), this.Xaxis.Value));
             e.Graphics.DrawLine(pen, checked(this.StaticGrid[num4, num5].X - 22), this.StaticGrid[num4, num5].Y, this.StaticGrid[num4, num5].X, checked(this.StaticGrid[num4, num5].Y + 22));
@@ -325,7 +330,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Helper
         #endregion
 
         #region ToolBar_NavClick
-        private void ToolBar_NavClick(object sender, EventArgs e)
+        /*private void ToolBar_NavClick(object sender, EventArgs e)
         {
             // The clicked control is transformed into a ToolStripButton object.
             ToolStripButton button = sender as ToolStripButton;
@@ -428,7 +433,142 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Helper
 
             // Panel3 will be prompted to redraw itself to reflect the changes.
             this.Panel3.Refresh();
+        }*/
+
+        private void ToolBar_NavClick(object sender, EventArgs e)
+        {
+            // The clicked control is transformed into a ToolStripButton object.
+            ToolStripButton button = sender as ToolStripButton;
+            // If the transformation fails (that is, the clicked control is not a ToolStripButton), the method exits.
+            if (button == null)
+            {
+                return;
+            }
+
+            // The current values ​​of the Xaxis and Yaxis controls are stored in the num and y variables.
+            short num = Convert.ToInt16(this.Xaxis.Value);
+            short y = Convert.ToInt16(this.Yaxis.Value);
+
+            // The currently selected element from ListBox2 is fetched.
+            RandomStatic selectedItem = (RandomStatic)this.ListBox2.SelectedItem;
+
+            // When an item is selected in ListBox2, the X and Y values ​​of that item are stored in the num and y variables.
+            if (selectedItem != null)
+            {
+                num = selectedItem.X;
+                y = selectedItem.Y;
+            }
+
+            // The Tag property of the clicked ToolStripButton is checked and the values ​​of num and y are changed accordingly.
+            object tag = button.Tag;
+            if (ObjectType.ObjTst(tag, 1, false) == 0) // Northwest
+            {
+                if (y > -6 && num > -6)
+                {
+                    y = checked((short)(checked(y - 1)));
+                    num = checked((short)(checked(num - 1)));
+                }
+                lastMoveCommand = "Northwest";
+            }
+            else if (ObjectType.ObjTst(tag, 2, false) == 0) // north
+            {
+                if (y > -6)
+                {
+                    y = checked((short)(checked(y - 1)));
+                }
+                lastMoveCommand = "North";
+            }
+            else if (ObjectType.ObjTst(tag, 3, false) == 0) // Northeast
+            {
+                if (y > -6 && num < 6)
+                {
+                    y = checked((short)(checked(y - 1)));
+                    num = checked((short)(checked(num + 1)));
+                }
+                lastMoveCommand = "Northeast";
+            }
+            else if (ObjectType.ObjTst(tag, 4, false) == 0) //west
+            {
+                if (num > -6)
+                {
+                    num = checked((short)(checked(num - 1)));
+                }
+                lastMoveCommand = "West";
+            }
+            else if (ObjectType.ObjTst(tag, 5, false) == 0) // center
+            {
+                // Code for the center button (tag 5)
+                num = 0; // Set X-axis to center
+                y = 0; // Set Y-axis to center
+
+                // Update the selected item in ListBox2
+                if (selectedItem != null)
+                {
+                    selectedItem.X = num;
+                    selectedItem.Y = y;
+                }
+
+                // Invalidate the panels to reflect the changes
+                // this.Panel3.Invalidate();
+                // this.panel1.Invalidate();
+
+                // Force an immediate update
+                // this.Panel3.Update();
+                // this.panel1.Update();
+            }
+            else if (ObjectType.ObjTst(tag, 6, false) == 0) // east
+            {
+                if (num < 6)
+                {
+                    num = checked((short)(checked(num + 1)));
+                }
+                lastMoveCommand = "East";
+            }
+            else if (ObjectType.ObjTst(tag, 7, false) == 0) // southwest
+            {
+                if (y < 6 && num > -6)
+                {
+                    y = checked((short)(checked(y + 1)));
+                    num = checked((short)(checked(num - 1)));
+                }
+                lastMoveCommand = "Southwest";
+            }
+            else if (ObjectType.ObjTst(tag, 8, false) == 0) // south
+            {
+                if (y < 6)
+                {
+                    y = checked((short)(checked(y + 1)));
+                }
+                lastMoveCommand = "South";
+            }
+            else if (ObjectType.ObjTst(tag, 9, false) == 0) // southeast
+            {
+                if (y < 6 && num < 6)
+                {
+                    y = checked((short)(checked(y + 1)));
+                    num = checked((short)(checked(num + 1)));
+                }
+                lastMoveCommand = "Southeast";
+            }
+
+            // The values ​​of the Xaxis and Yaxis controls are updated based on the new values ​​of num and y.
+            this.Xaxis.Value = new decimal(num);
+            this.Yaxis.Value = new decimal(y);
+
+            // When an item in ListBox2 is selected, its X and Y values ​​are set to the new values ​​of num and y.
+            if (selectedItem != null)
+            {
+                selectedItem.X = num;
+                selectedItem.Y = y;
+            }
+
+            // Panel3 will be prompted to redraw itself to reflect the changes.
+            this.Panel3.Refresh();
+
+            // Update the direction label with the last move command
+            this.directionLabel.Text = "Last movement command: " + lastMoveCommand;
         }
+
         #endregion
 
         #region VScrollBar1
@@ -469,6 +609,24 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Helper
         private void Yaxis_ValueChanged(object sender, EventArgs e)
         {
             this.Panel3.Refresh();
+        }
+        #endregion
+
+        #region Color
+        private Color selectedColor = Color.Red;
+        private void colorButton_Click(object sender, EventArgs e)
+        {
+            // Erstellen Sie ein neues ColorDialog-Fenster.
+            ColorDialog colorDialog = new ColorDialog();
+
+            // Zeigen Sie das Dialogfenster an und speichern Sie das Ergebnis.
+            DialogResult result = colorDialog.ShowDialog();
+
+            // Wenn der Benutzer auf "OK" geklickt hat, aktualisieren Sie die ausgewählte Farbe.
+            if (result == DialogResult.OK)
+            {
+                selectedColor = colorDialog.Color;
+            }
         }
         #endregion
     }

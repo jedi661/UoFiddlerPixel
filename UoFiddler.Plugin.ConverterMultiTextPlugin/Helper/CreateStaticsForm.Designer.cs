@@ -65,6 +65,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Helper
             VScrollBar1 = new System.Windows.Forms.VScrollBar();
             panel1 = new System.Windows.Forms.Panel();
             Panel2 = new System.Windows.Forms.Panel();
+            directionLabel = new System.Windows.Forms.Label();
+            colorButton = new System.Windows.Forms.Button();
             lbNameArts = new System.Windows.Forms.Label();
             ToolBar3 = new System.Windows.Forms.ToolStrip();
             ToolBarButton5 = new System.Windows.Forms.ToolStripButton();
@@ -342,6 +344,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Helper
             // 
             // Panel2
             // 
+            Panel2.Controls.Add(directionLabel);
+            Panel2.Controls.Add(colorButton);
             Panel2.Controls.Add(lbNameArts);
             Panel2.Controls.Add(ToolBar3);
             Panel2.Controls.Add(StaticZoom);
@@ -352,6 +356,25 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Helper
             Panel2.Size = new System.Drawing.Size(224, 810);
             Panel2.TabIndex = 20;
             Panel2.Paint += Panel2_Paint;
+            // 
+            // directionLabel
+            // 
+            directionLabel.AutoSize = true;
+            directionLabel.Location = new System.Drawing.Point(3, 626);
+            directionLabel.Name = "directionLabel";
+            directionLabel.Size = new System.Drawing.Size(150, 15);
+            directionLabel.TabIndex = 20;
+            directionLabel.Text = "Last movement command:";
+            // 
+            // colorButton
+            // 
+            colorButton.Location = new System.Drawing.Point(165, 720);
+            colorButton.Name = "colorButton";
+            colorButton.Size = new System.Drawing.Size(56, 23);
+            colorButton.TabIndex = 19;
+            colorButton.Text = "Color";
+            colorButton.UseVisualStyleBackColor = true;
+            colorButton.Click += colorButton_Click;
             // 
             // lbNameArts
             // 
@@ -833,5 +856,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Helper
         private System.Windows.Forms.ImageList ImageList1;
         private System.Windows.Forms.Panel Panel3;
         private System.Windows.Forms.Label lbNameArts;
+        private System.Windows.Forms.Button colorButton;
+        private System.Windows.Forms.Label directionLabel;
     }
 }
