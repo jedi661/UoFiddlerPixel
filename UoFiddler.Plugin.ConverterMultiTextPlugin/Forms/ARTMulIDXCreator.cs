@@ -85,10 +85,15 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 artIndexFile.AddEntry(indexEntry);
             }
 
+            string artidxPath = textBox1.Text + "\\artidx.MUL";
             artIndexFile.SaveToFile(textBox1.Text + "\\artidx.MUL");
 
             // Erstellen Sie eine leere art.mul Datei
+            string artPath = textBox1.Text + "\\art.MUL";
             using (var fs = File.Create(textBox1.Text + "\\art.MUL")) { }
+
+            // Aktualisieren Sie das Label mit dem Pfad der erstellten Dateien
+            lbCreatedMul.Text = $"Die Dateien wurden erfolgreich erstellt in: {artidxPath} und {artPath}";
         }
         #endregion
 
@@ -149,8 +154,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         }
         #endregion
 
-        #region btnReadArtIdx
-        private void btnReadArtIdx_Click(object sender, EventArgs e)
+        #region Long
+        /*private void btnReadArtIdx_Click(object sender, EventArgs e)
         {
             using (var folderBrowserDialog = new FolderBrowserDialog())
             {
@@ -174,9 +179,223 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                     }
                 }
             }
+        }*/
+
+        private void btnReadArtIdx_Click(object sender, EventArgs e)
+        {
+            using (var folderBrowserDialog = new FolderBrowserDialog())
+            {
+                if (folderBrowserDialog.ShowDialog() == DialogResult.OK)
+                {
+                    textBox1.Text = folderBrowserDialog.SelectedPath;
+
+                    var artIndexFile = new ArtIndexFile();
+                    string filePath = Path.Combine(folderBrowserDialog.SelectedPath, "artidx.MUL");
+                    artIndexFile.LoadFromFile(filePath); // Angenommen, Sie haben eine LoadFromFile-Methode
+
+                    int indexToRead;
+                    if (!int.TryParse(textBoxIndex.Text, out indexToRead)) // Verwenden Sie TryParse anstelle von Parse
+                    {
+                        indexToRead = 0; // Setzen Sie einen Standardwert, wenn textBoxIndex leer ist oder keinen gültigen int-Wert enthält
+                    }
+
+                    if (indexToRead >= 0 && indexToRead < artIndexFile.CountEntries())
+                    {
+                        var entry = artIndexFile.GetEntry(indexToRead); // Angenommen, Sie haben eine GetEntry-Methode
+                        textBoxInfo.Text = $"Eintrag {indexToRead}: Lookup={entry.Lookup}, Size={entry.Size}, Unknown={entry.Unknown}"; // Angenommen, textBoxInfo ist die TextBox, in der Sie die Informationen anzeigen möchten
+                    }
+                    else
+                    {
+                        textBoxInfo.Text = "Ungültiger Index";
+                    }
+                }
+            }
         }
+
+        #endregion
+
+        #region Unit
+        private void btCreateARTIDXMul_uint_Click(object sender, EventArgs e)
+        {
+            var artIndexFile = new ArtIndexFile();
+
+            uint numEntries;
+            if (!uint.TryParse(textBox2.Text, out numEntries))
+            {
+                numEntries = 65500; // Standardwert, wenn textBox2 leer ist
+            }
+
+            for (uint i = 0; i < numEntries; i++)
+            {
+                // Erstellen Sie einen leeren ArtIndexEntry und fügen Sie ihn zu artIndexFile hinzu
+                var indexEntry = new ArtIndexEntry(0xFFFFFFFF, 0, 0);
+                artIndexFile.AddEntry(indexEntry);
+            }
+
+            string artidxPath = textBox1.Text + "\\artidx.MUL";
+            artIndexFile.SaveToFile(textBox1.Text + "\\artidx.MUL");
+
+            // Erstellen Sie eine leere art.mul Datei
+            string artPath = textBox1.Text + "\\art.MUL";
+            using (var fs = File.Create(textBox1.Text + "\\art.MUL")) { }
+
+            // Aktualisieren Sie das Label mit dem Pfad der erstellten Dateien
+            lbCreatedMul.Text = $"Die Dateien wurden erfolgreich erstellt in: {artidxPath} und {artPath}";
+        }
+        #endregion
+
+        #region int
+        private void btCreateARTIDXMul_Int_Click(object sender, EventArgs e)
+        {
+            var artIndexFile = new ArtIndexFile();
+
+            int numEntries;
+            if (!int.TryParse(textBox2.Text, out numEntries))
+            {
+                numEntries = 65500; // Standardwert, wenn textBox2 leer ist
+            }
+
+            for (int i = 0; i < numEntries; i++)
+            {
+                // Erstellen Sie einen leeren ArtIndexEntry und fügen Sie ihn zu artIndexFile hinzu
+                var indexEntry = new ArtIndexEntry(0xFFFFFFFF, 0, 0);
+                artIndexFile.AddEntry(indexEntry);
+            }
+
+            string artidxPath = textBox1.Text + "\\artidx.MUL";
+            artIndexFile.SaveToFile(textBox1.Text + "\\artidx.MUL");
+
+            // Erstellen Sie eine leere art.mul Datei
+            string artPath = textBox1.Text + "\\art.MUL";
+            using (var fs = File.Create(textBox1.Text + "\\art.MUL")) { }
+
+            // Aktualisieren Sie das Label mit dem Pfad der erstellten Dateien
+            lbCreatedMul.Text = $"Die Dateien wurden erfolgreich erstellt in: {artidxPath} und {artPath}";
+        }
+        #endregion
+
+        #region Ushort
+        private void btCreateARTIDXMul_Ushort_Click(object sender, EventArgs e)
+        {
+            var artIndexFile = new ArtIndexFile();
+
+            ushort numEntries;
+            if (!ushort.TryParse(textBox2.Text, out numEntries))
+            {
+                numEntries = 65500; // Standardwert, wenn textBox2 leer ist
+            }
+
+            for (ushort i = 0; i < numEntries; i++)
+            {
+                // Erstellen Sie einen leeren ArtIndexEntry und fügen Sie ihn zu artIndexFile hinzu
+                var indexEntry = new ArtIndexEntry(0xFFFFFFFF, 0, 0);
+                artIndexFile.AddEntry(indexEntry);
+            }
+
+            string artidxPath = textBox1.Text + "\\artidx.MUL";
+            artIndexFile.SaveToFile(textBox1.Text + "\\artidx.MUL");
+
+            // Erstellen Sie eine leere art.mul Datei
+            string artPath = textBox1.Text + "\\art.MUL";
+            using (var fs = File.Create(textBox1.Text + "\\art.MUL")) { }
+
+            // Aktualisieren Sie das Label mit dem Pfad der erstellten Dateien
+            lbCreatedMul.Text = $"Die Dateien wurden erfolgreich erstellt in: {artidxPath} und {artPath}";
+        }
+        #endregion
+
+        #region Short
+        private void btCreateARTIDXMul_Short_Click(object sender, EventArgs e)
+        {
+            var artIndexFile = new ArtIndexFile();
+
+            short numEntries;
+            if (!short.TryParse(textBox2.Text, out numEntries) || numEntries > 32767)
+            {
+                numEntries = 32767; // Standardwert, wenn textBox2 leer ist oder einen Wert größer als 32767 enthält
+                textBox2.Text = numEntries.ToString(); // Aktualisieren Sie textBox2 mit dem Standardwert
+            }
+
+            for (short i = 0; i < numEntries; i++)
+            {
+                // Erstellen Sie einen leeren ArtIndexEntry und fügen Sie ihn zu artIndexFile hinzu
+                var indexEntry = new ArtIndexEntry(0xFFFFFFFF, 0, 0);
+                artIndexFile.AddEntry(indexEntry);
+            }
+            string artidxPath = textBox1.Text + "\\artidx.MUL";
+            artIndexFile.SaveToFile(textBox1.Text + "\\artidx.MUL");
+
+            // Erstellen Sie eine leere art.mul Datei
+            string artPath = textBox1.Text + "\\art.MUL";
+            using (var fs = File.Create(textBox1.Text + "\\art.MUL")) { }
+
+            // Aktualisieren Sie das Label mit dem Pfad der erstellten Dateien
+            lbCreatedMul.Text = $"Die Dateien wurden erfolgreich erstellt in: {artidxPath} und {artPath}";
+        }
+        #endregion
+
+        #region Byte
+        private void btCreateARTIDXMul_Byte_Click(object sender, EventArgs e)
+        {
+            var artIndexFile = new ArtIndexFile();
+
+            byte numEntries;
+            if (!byte.TryParse(textBox2.Text, out numEntries) || numEntries > 255)
+            {
+                numEntries = 255; // Standardwert, wenn textBox2 leer ist oder einen Wert größer als 255 enthält
+                textBox2.Text = numEntries.ToString(); // Aktualisieren Sie textBox2 mit dem Standardwert
+            }
+
+            for (byte i = 0; i < numEntries; i++)
+            {
+                // Erstellen Sie einen leeren ArtIndexEntry und fügen Sie ihn zu artIndexFile hinzu
+                var indexEntry = new ArtIndexEntry(0xFFFFFFFF, 0, 0);
+                artIndexFile.AddEntry(indexEntry);
+            }
+
+            string artidxPath = textBox1.Text + "\\artidx.MUL";
+            artIndexFile.SaveToFile(textBox1.Text + "\\artidx.MUL");
+
+            // Erstellen Sie eine leere art.mul Datei
+            string artPath = textBox1.Text + "\\art.MUL";
+            using (var fs = File.Create(textBox1.Text + "\\art.MUL")) { }
+
+            // Aktualisieren Sie das Label mit dem Pfad der erstellten Dateien
+            lbCreatedMul.Text = $"Die Dateien wurden erfolgreich erstellt in: {artidxPath} und {artPath}";
+        }
+        #endregion
+
+        #region Ulong
+        private void btCreateARTIDXMul_Ulong_Click(object sender, EventArgs e)
+        {
+            var artIndexFile = new ArtIndexFile();
+
+            ulong numEntries;
+            if (!ulong.TryParse(textBox2.Text, out numEntries))
+            {
+                numEntries = 65500; // Standardwert, wenn textBox2 leer ist
+            }
+
+            for (ulong i = 0; i < numEntries; i++)
+            {
+                // Erstellen Sie einen leeren ArtIndexEntry und fügen Sie ihn zu artIndexFile hinzu
+                var indexEntry = new ArtIndexEntry(0xFFFFFFFF, 0, 0);
+                artIndexFile.AddEntry(indexEntry);
+            }
+
+            string artidxPath = textBox1.Text + "\\artidx.MUL";
+            artIndexFile.SaveToFile(textBox1.Text + "\\artidx.MUL");
+
+            // Erstellen Sie eine leere art.mul Datei
+            string artPath = textBox1.Text + "\\art.MUL";
+            using (var fs = File.Create(textBox1.Text + "\\art.MUL")) { }
+
+            // Aktualisieren Sie das Label mit dem Pfad der erstellten Dateien
+            lbCreatedMul.Text = $"Die Dateien wurden erfolgreich erstellt in: {artidxPath} und {artPath}";
+        }
+        #endregion
     }
-    #endregion
+
 
 
     #region Class ArtIndexEntry
