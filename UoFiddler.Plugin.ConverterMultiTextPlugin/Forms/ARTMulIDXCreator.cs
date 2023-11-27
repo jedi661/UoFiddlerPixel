@@ -394,6 +394,36 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             lbCreatedMul.Text = $"Die Dateien wurden erfolgreich erstellt in: {artidxPath} und {artPath}";
         }
         #endregion
+
+        #region Rename
+        private void comboBoxMuls_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            string selectedValue = comboBoxMuls.SelectedItem.ToString();
+
+            if (selectedValue == "Texture")
+            {
+                string directoryPath = textBox1.Text;
+
+                string oldArtMulPath = Path.Combine(directoryPath, "Art.mul");
+                string newArtMulPath = Path.Combine(directoryPath, "texmaps.mul");
+
+                string oldArtIdxMulPath = Path.Combine(directoryPath, "Artidx.mul");
+                string newArtIdxMulPath = Path.Combine(directoryPath, "texidx.mul");
+
+                if (File.Exists(oldArtMulPath) && File.Exists(oldArtIdxMulPath))
+                {
+                    File.Move(oldArtMulPath, newArtMulPath);
+                    File.Move(oldArtIdxMulPath, newArtIdxMulPath);
+
+                    lbCreatedMul.Text = $"Die Dateien wurden erfolgreich umbenannt zu: {newArtMulPath} und {newArtIdxMulPath}";
+                }
+                else
+                {
+                    lbCreatedMul.Text = "Die Dateien Art.mul und Artidx.mul konnten nicht gefunden werden.";
+                }
+            }
+        }
+        #endregion
     }
 
 

@@ -75,6 +75,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             btCreateARTIDXMul_uint = new System.Windows.Forms.Button();
             comboBoxMuls = new System.Windows.Forms.ComboBox();
             tabPage2 = new System.Windows.Forms.TabPage();
+            label14 = new System.Windows.Forms.Label();
             tabControl1.SuspendLayout();
             tabPage1.SuspendLayout();
             tabPage2.SuspendLayout();
@@ -219,6 +220,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // 
             // tabPage1
             // 
+            tabPage1.Controls.Add(label14);
             tabPage1.Controls.Add(lbCreatedMul);
             tabPage1.Controls.Add(label13);
             tabPage1.Controls.Add(btCreateARTIDXMul_Ulong);
@@ -413,10 +415,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // comboBoxMuls
             // 
             comboBoxMuls.FormattingEnabled = true;
-            comboBoxMuls.Location = new System.Drawing.Point(6, 339);
+            comboBoxMuls.Items.AddRange(new object[] { "Texture" });
+            comboBoxMuls.Location = new System.Drawing.Point(412, 34);
             comboBoxMuls.Name = "comboBoxMuls";
             comboBoxMuls.Size = new System.Drawing.Size(121, 23);
             comboBoxMuls.TabIndex = 16;
+            comboBoxMuls.SelectedIndexChanged += comboBoxMuls_SelectedIndexChanged;
             // 
             // tabPage2
             // 
@@ -431,10 +435,19 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             tabPage2.Location = new System.Drawing.Point(4, 24);
             tabPage2.Name = "tabPage2";
             tabPage2.Padding = new System.Windows.Forms.Padding(3);
-            tabPage2.Size = new System.Drawing.Size(424, 398);
+            tabPage2.Size = new System.Drawing.Size(539, 398);
             tabPage2.TabIndex = 1;
             tabPage2.Text = "Read Muls";
             tabPage2.UseVisualStyleBackColor = true;
+            // 
+            // label14
+            // 
+            label14.AutoSize = true;
+            label14.Location = new System.Drawing.Point(412, 16);
+            label14.Name = "label14";
+            label14.Size = new System.Drawing.Size(53, 15);
+            label14.TabIndex = 34;
+            label14.Text = "Rename:";
             // 
             // ARTMulIDXCreator
             // 
@@ -491,5 +504,6 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private System.Windows.Forms.Button btCreateARTIDXMul_Ulong;
         private System.Windows.Forms.Label label13;
         private System.Windows.Forms.Label lbCreatedMul;
+        private System.Windows.Forms.Label label14;
     }
 }
