@@ -549,5 +549,37 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             }
         }
         #endregion
+
+        private void btArtMul_Click(object sender, EventArgs e)
+        {
+            if (isFormOpen) // Wenn das Formular bereits geöffnet ist, beende die Methode.
+            {
+                return;
+            }
+
+            ToolTip toolTip1 = new ToolTip();
+            toolTip1.AutoPopDelay = 5000;
+            toolTip1.InitialDelay = 1000;
+            toolTip1.ReshowDelay = 500;
+            toolTip1.ShowAlways = true;
+            toolTip1.SetToolTip(this.btArtMul, "ART Mul IDX Creator");
+
+            var artMulIdxCreatorForm = new ARTMulIDXCreator();
+            artMulIdxCreatorForm.FormClosed += ArtMulIdxCreatorFormClosed;
+            artMulIdxCreatorForm.Show();
+            isFormOpen = true;
+
+            btArtMul.Enabled = false;
+        }
+
+        private void ArtMulIdxCreatorFormClosed(object sender, EventArgs e)
+        {
+            if (isFormOpen)
+            {
+                isFormOpen = false;
+                btArtMul.Enabled = true;
+            }
+        }
+
     }
 }

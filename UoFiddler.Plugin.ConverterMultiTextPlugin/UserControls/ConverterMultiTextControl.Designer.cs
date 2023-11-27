@@ -71,10 +71,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             buttonGraficCutterForm = new System.Windows.Forms.Button();
             TextureCutter = new System.Windows.Forms.Button();
             tabPageMap = new System.Windows.Forms.TabPage();
+            lbCopyMapReplace = new System.Windows.Forms.Label();
             btMapReplace = new System.Windows.Forms.Button();
             lbMapMaker = new System.Windows.Forms.Label();
             btMapMaker = new System.Windows.Forms.Button();
             tabPageClient = new System.Windows.Forms.TabPage();
+            btArtMul = new System.Windows.Forms.Button();
             lbDecriptClient = new System.Windows.Forms.Label();
             btDecriptClient = new System.Windows.Forms.Button();
             tabPageScript = new System.Windows.Forms.TabPage();
@@ -87,7 +89,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             statusStrip1 = new System.Windows.Forms.StatusStrip();
             toolStripStatusLabelTime = new System.Windows.Forms.ToolStripStatusLabel();
             timer1 = new System.Windows.Forms.Timer(components);
-            lbCopyMapReplace = new System.Windows.Forms.Label();
+            label4 = new System.Windows.Forms.Label();
             contextMenuStrip1.SuspendLayout();
             tabControl1.SuspendLayout();
             tabPageMain.SuspendLayout();
@@ -398,6 +400,15 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             tabPageMap.Text = "Map";
             tabPageMap.UseVisualStyleBackColor = true;
             // 
+            // lbCopyMapReplace
+            // 
+            lbCopyMapReplace.AutoSize = true;
+            lbCopyMapReplace.Location = new System.Drawing.Point(6, 151);
+            lbCopyMapReplace.Name = "lbCopyMapReplace";
+            lbCopyMapReplace.Size = new System.Drawing.Size(106, 15);
+            lbCopyMapReplace.TabIndex = 16;
+            lbCopyMapReplace.Text = "Copy Map Replace";
+            // 
             // btMapReplace
             // 
             btMapReplace.Image = Properties.Resources.copy_a_map_and_replace;
@@ -429,6 +440,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             // 
             // tabPageClient
             // 
+            tabPageClient.Controls.Add(label4);
+            tabPageClient.Controls.Add(btArtMul);
             tabPageClient.Controls.Add(lbDecriptClient);
             tabPageClient.Controls.Add(btDecriptClient);
             tabPageClient.Location = new System.Drawing.Point(4, 24);
@@ -437,6 +450,16 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             tabPageClient.TabIndex = 5;
             tabPageClient.Text = "Client";
             tabPageClient.UseVisualStyleBackColor = true;
+            // 
+            // btArtMul
+            // 
+            btArtMul.Image = Properties.Resources.create_art_abd_mul_file2;
+            btArtMul.Location = new System.Drawing.Point(92, 13);
+            btArtMul.Name = "btArtMul";
+            btArtMul.Size = new System.Drawing.Size(56, 59);
+            btArtMul.TabIndex = 14;
+            btArtMul.UseVisualStyleBackColor = true;
+            btArtMul.Click += btArtMul_Click;
             // 
             // lbDecriptClient
             // 
@@ -553,14 +576,14 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             toolStripStatusLabelTime.Size = new System.Drawing.Size(33, 17);
             toolStripStatusLabelTime.Text = "Time";
             // 
-            // lbCopyMapReplace
+            // label4
             // 
-            lbCopyMapReplace.AutoSize = true;
-            lbCopyMapReplace.Location = new System.Drawing.Point(6, 151);
-            lbCopyMapReplace.Name = "lbCopyMapReplace";
-            lbCopyMapReplace.Size = new System.Drawing.Size(106, 15);
-            lbCopyMapReplace.TabIndex = 16;
-            lbCopyMapReplace.Text = "Copy Map Replace";
+            label4.AutoSize = true;
+            label4.Location = new System.Drawing.Point(92, 75);
+            label4.Name = "label4";
+            label4.Size = new System.Drawing.Size(65, 15);
+            label4.TabIndex = 15;
+            label4.Text = "Create Mul";
             // 
             // ConverterMultiTextControl
             // 
@@ -643,5 +666,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
         private System.Windows.Forms.TabPage tabPageScript;
         private System.Windows.Forms.Button btMapReplace;
         private System.Windows.Forms.Label lbCopyMapReplace;
+        private System.Windows.Forms.Button btArtMul;
+        private System.Windows.Forms.Label label4;
     }
 }
