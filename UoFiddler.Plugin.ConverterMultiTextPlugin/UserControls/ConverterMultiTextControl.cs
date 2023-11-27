@@ -550,9 +550,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
         }
         #endregion
 
+        #region Art Mul Creator
+
         private void btArtMul_Click(object sender, EventArgs e)
         {
-            if (isFormOpen) // Wenn das Formular bereits geöffnet ist, beende die Methode.
+            if (isFormOpen) // If the form is already open, exit the method.
             {
                 return;
             }
@@ -580,6 +582,6 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
                 btArtMul.Enabled = true;
             }
         }
-
+        #endregion
     }
 }

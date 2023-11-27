@@ -67,6 +67,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             artDataFile.SaveToFile(textBox1.Text + "\\art.MUL");
         }*/
 
+        #region btCreateARTIDXMul
         private void btCreateARTIDXMul_Click(object sender, EventArgs e)
         {
             var artIndexFile = new ArtIndexFile();
@@ -89,7 +90,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // Erstellen Sie eine leere art.mul Datei
             using (var fs = File.Create(textBox1.Text + "\\art.MUL")) { }
         }
+        #endregion
 
+        #region btFileOrder
         private void btFileOrder_Click(object sender, EventArgs e)
         {
             using (var folderBrowserDialog = new FolderBrowserDialog())
@@ -117,9 +120,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 }
             }
         }
+        #endregion
 
 
-
+        #region btnShowInfo
         private void btnShowInfo_Click(object sender, EventArgs e)
         {
             using (var folderBrowserDialog = new FolderBrowserDialog())
@@ -143,7 +147,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 }
             }
         }
+        #endregion
 
+        #region btnReadArtIdx
         private void btnReadArtIdx_Click(object sender, EventArgs e)
         {
             using (var folderBrowserDialog = new FolderBrowserDialog())
@@ -170,8 +176,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             }
         }
     }
+    #endregion
 
 
+    #region Class ArtIndexEntry
     public class ArtIndexEntry
     {
         public uint Lookup { get; set; }
@@ -194,7 +202,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             writer.Write(Unknown);
         }
     }
+    #endregion
 
+    #region class ArtIndexFile
     public class ArtIndexFile
     {
         private List<ArtIndexEntry> entries;
@@ -261,7 +271,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             }
         }
     }
+    #endregion
 
+    #region class ArtDataEntry
     public class ArtDataEntry
     {
         public Bitmap Image { get; set; }
@@ -289,7 +301,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             }
         }
     }
+    #endregion
 
+
+    #region class ArtDataFile
     public class ArtDataFile
     {
         private List<ArtDataEntry> entries;
@@ -516,5 +531,6 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             }
         }
     }
+    #endregion
 }
 
