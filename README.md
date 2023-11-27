@@ -9,6 +9,7 @@ Version : 4.11.26
 - Add Map Tools
 - Added XML debugging hexcode
 - Add Create Art and Artidx Mul tool
+- Load Menu : Saves the last selected profile, reselecting it upon startup
 
 Version : 4.11.25
 - New feature added: Names outsourced to Gumps and stored in an XML file, with custom formatting and editing based on ID.

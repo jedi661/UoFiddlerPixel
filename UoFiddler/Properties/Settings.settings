@@ -14,5 +14,8 @@
     <Setting Name="FormBinDecHexConverter" Type="System.Drawing.Point" Scope="User">
       <Value Profile="(Default)">0, 0</Value>
     </Setting>
+    <Setting Name="LastSelectedProfile" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
   </Settings>
 </SettingsFile>

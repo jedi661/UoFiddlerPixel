@@ -24,19 +24,18 @@ namespace UoFiddler.Forms
         public LoadProfileForm()
         {
             InitializeComponent();
-
             Icon = Options.GetFiddlerIcon();
             _profiles = GetProfiles();
             FiddlerOptions.Logger.Information("Found profiles: {Profiles}", _profiles);
-
             foreach (string profile in _profiles)
             {
                 string name = profile.Substring(8);
                 comboBoxLoad.Items.Add(name);
                 comboBoxBasedOn.Items.Add(name);
             }
-
-            comboBoxLoad.SelectedIndex = 0;
+            string lastSelectedProfile = Properties.Settings.Default.LastSelectedProfile; //Profile Load
+            int index = Array.IndexOf(_profiles, lastSelectedProfile);
+            comboBoxLoad.SelectedIndex = index != -1 ? index : 0;
             comboBoxBasedOn.SelectedIndex = 0;
         }
 
@@ -57,6 +56,8 @@ namespace UoFiddler.Forms
         private void OnClickLoad(object sender, EventArgs e)
         {
             LoadSelectedProfile();
+            Properties.Settings.Default.LastSelectedProfile = _profiles[comboBoxLoad.SelectedIndex];
+            Properties.Settings.Default.Save(); //Profile Save Propeties
         }
 
         private void LoadSelectedProfile()
@@ -133,5 +134,29 @@ namespace UoFiddler.Forms
             }
         }
         #endregion
+
+        public class ProfileManager
+{
+    private const string LastSelectedProfileKey = "LastSelectedProfile";
+
+    public string LastSelectedProfile
+    {
+        get
+        {
+            if (Properties.Settings.Default[LastSelectedProfileKey] is string profile)
+            {
+                return profile;
+            }
+
+            return null;
+        }
+        set
+        {
+            Properties.Settings.Default[LastSelectedProfileKey] = value;
+            Properties.Settings.Default.Save();
+        }
+    }
+}
+
     }
 }
