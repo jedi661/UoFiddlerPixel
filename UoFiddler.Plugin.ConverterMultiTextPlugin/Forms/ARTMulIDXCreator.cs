@@ -75,12 +75,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             long numEntries;
             if (!long.TryParse(textBox2.Text, out numEntries))
             {
-                numEntries = 65500; // Standardwert, wenn textBox2 leer ist
+                numEntries = 65500; // Default value if textBox2 is empty
             }
 
             for (long i = 0; i < numEntries; i++)
             {
-                // Erstellen Sie einen leeren ArtIndexEntry und fügen Sie ihn zu artIndexFile hinzu
+                // Create an empty ArtIndexEntry and add it to artIndexFile
                 var indexEntry = new ArtIndexEntry(0xFFFFFFFF, 0, 0);
                 artIndexFile.AddEntry(indexEntry);
             }
@@ -88,12 +88,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             string artidxPath = textBox1.Text + "\\artidx.MUL";
             artIndexFile.SaveToFile(textBox1.Text + "\\artidx.MUL");
 
-            // Erstellen Sie eine leere art.mul Datei
+            // Create an empty art.mul file
             string artPath = textBox1.Text + "\\art.MUL";
             using (var fs = File.Create(textBox1.Text + "\\art.MUL")) { }
 
-            // Aktualisieren Sie das Label mit dem Pfad der erstellten Dateien
-            lbCreatedMul.Text = $"Die Dateien wurden erfolgreich erstellt in: {artidxPath} und {artPath}";
+            // Update the label with the path of the created files
+            lbCreatedMul.Text = $"The files were successfully created in: {artidxPath} and {artPath}";
         }
         #endregion
 
@@ -117,11 +117,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 {
                     var artIndexFile = new ArtIndexFile();
                     string filePath = Path.Combine(folderBrowserDialog.SelectedPath, "artidx.MUL");
-                    artIndexFile.LoadFromFile(filePath); // Angenommen, Sie haben eine LoadFromFile-Methode
+                    artIndexFile.LoadFromFile(filePath); // Suppose you have a LoadFromFile method
 
                     int numEntries = artIndexFile.CountEntries();
 
-                    lblEntryCount.Text = "Die Anzahl der Indexeinträge ist: " + numEntries;
+                    lblEntryCount.Text = "The number of index entries is: " + numEntries;
                 }
             }
         }
@@ -139,16 +139,16 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 
                     var artIndexFile = new ArtIndexFile();
                     string filePath = Path.Combine(folderBrowserDialog.SelectedPath, "artidx.MUL");
-                    artIndexFile.LoadFromFile(filePath); // Angenommen, Sie haben eine LoadFromFile-Methode
+                    artIndexFile.LoadFromFile(filePath); // Suppose you have a LoadFromFile method
 
                     StringBuilder sb = new StringBuilder();
                     for (int i = 0; i < artIndexFile.CountEntries(); i++)
                     {
-                        var entry = artIndexFile.GetEntry(i); // Angenommen, Sie haben eine GetEntry-Methode
+                        var entry = artIndexFile.GetEntry(i); // Suppose you have a GetEntry method
                         sb.AppendLine($"Eintrag {i}: Lookup={entry.Lookup}, Size={entry.Size}, Unknown={entry.Unknown}");
                     }
 
-                    textBoxInfo.Text = sb.ToString(); // Angenommen, textBoxInfo ist die TextBox, in der Sie die Informationen anzeigen möchten
+                    textBoxInfo.Text = sb.ToString(); // Assume textBoxInfo is the TextBox where you want to display the information
                 }
             }
         }
@@ -191,22 +191,22 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 
                     var artIndexFile = new ArtIndexFile();
                     string filePath = Path.Combine(folderBrowserDialog.SelectedPath, "artidx.MUL");
-                    artIndexFile.LoadFromFile(filePath); // Angenommen, Sie haben eine LoadFromFile-Methode
+                    artIndexFile.LoadFromFile(filePath); // Suppose you have a LoadFromFile method
 
                     int indexToRead;
-                    if (!int.TryParse(textBoxIndex.Text, out indexToRead)) // Verwenden Sie TryParse anstelle von Parse
+                    if (!int.TryParse(textBoxIndex.Text, out indexToRead)) // Use TryParse instead of Parse
                     {
-                        indexToRead = 0; // Setzen Sie einen Standardwert, wenn textBoxIndex leer ist oder keinen gültigen int-Wert enthält
+                        indexToRead = 0; // Set a default value if textBoxIndex is empty or does not contain a valid int value
                     }
 
                     if (indexToRead >= 0 && indexToRead < artIndexFile.CountEntries())
                     {
-                        var entry = artIndexFile.GetEntry(indexToRead); // Angenommen, Sie haben eine GetEntry-Methode
+                        var entry = artIndexFile.GetEntry(indexToRead); // Suppose you have a GetEntry method
                         textBoxInfo.Text = $"Eintrag {indexToRead}: Lookup={entry.Lookup}, Size={entry.Size}, Unknown={entry.Unknown}"; // Angenommen, textBoxInfo ist die TextBox, in der Sie die Informationen anzeigen möchten
                     }
                     else
                     {
-                        textBoxInfo.Text = "Ungültiger Index";
+                        textBoxInfo.Text = "Invalid index";
                     }
                 }
             }
@@ -222,12 +222,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             uint numEntries;
             if (!uint.TryParse(textBox2.Text, out numEntries))
             {
-                numEntries = 65500; // Standardwert, wenn textBox2 leer ist
+                numEntries = 65500; // Default value if textBox2 is empty
             }
 
             for (uint i = 0; i < numEntries; i++)
             {
-                // Erstellen Sie einen leeren ArtIndexEntry und fügen Sie ihn zu artIndexFile hinzu
+                // Create an empty ArtIndexEntry and add it to artIndexFile
                 var indexEntry = new ArtIndexEntry(0xFFFFFFFF, 0, 0);
                 artIndexFile.AddEntry(indexEntry);
             }
@@ -235,12 +235,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             string artidxPath = textBox1.Text + "\\artidx.MUL";
             artIndexFile.SaveToFile(textBox1.Text + "\\artidx.MUL");
 
-            // Erstellen Sie eine leere art.mul Datei
+            // Create an empty art.mul file
             string artPath = textBox1.Text + "\\art.MUL";
             using (var fs = File.Create(textBox1.Text + "\\art.MUL")) { }
 
             // Aktualisieren Sie das Label mit dem Pfad der erstellten Dateien
-            lbCreatedMul.Text = $"Die Dateien wurden erfolgreich erstellt in: {artidxPath} und {artPath}";
+            lbCreatedMul.Text = $"The files were successfully created in: {artidxPath} and {artPath}";
         }
         #endregion
 
@@ -252,12 +252,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             int numEntries;
             if (!int.TryParse(textBox2.Text, out numEntries))
             {
-                numEntries = 65500; // Standardwert, wenn textBox2 leer ist
+                numEntries = 65500; // Default value if textBox2 is empty
             }
 
             for (int i = 0; i < numEntries; i++)
             {
-                // Erstellen Sie einen leeren ArtIndexEntry und fügen Sie ihn zu artIndexFile hinzu
+                // Create an empty ArtIndexEntry and add it to artIndexFile
                 var indexEntry = new ArtIndexEntry(0xFFFFFFFF, 0, 0);
                 artIndexFile.AddEntry(indexEntry);
             }
@@ -265,12 +265,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             string artidxPath = textBox1.Text + "\\artidx.MUL";
             artIndexFile.SaveToFile(textBox1.Text + "\\artidx.MUL");
 
-            // Erstellen Sie eine leere art.mul Datei
+            // Create an empty art.mul file
             string artPath = textBox1.Text + "\\art.MUL";
             using (var fs = File.Create(textBox1.Text + "\\art.MUL")) { }
 
-            // Aktualisieren Sie das Label mit dem Pfad der erstellten Dateien
-            lbCreatedMul.Text = $"Die Dateien wurden erfolgreich erstellt in: {artidxPath} und {artPath}";
+            // Update the label with the path of the created files
+            lbCreatedMul.Text = $"The files were successfully created in: {artidxPath} and {artPath}";
         }
         #endregion
 
@@ -282,12 +282,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             ushort numEntries;
             if (!ushort.TryParse(textBox2.Text, out numEntries))
             {
-                numEntries = 65500; // Standardwert, wenn textBox2 leer ist
+                numEntries = 65500; // Default value if textBox2 is empty
             }
 
             for (ushort i = 0; i < numEntries; i++)
             {
-                // Erstellen Sie einen leeren ArtIndexEntry und fügen Sie ihn zu artIndexFile hinzu
+                // Create an empty ArtIndexEntry and add it to artIndexFile
                 var indexEntry = new ArtIndexEntry(0xFFFFFFFF, 0, 0);
                 artIndexFile.AddEntry(indexEntry);
             }
@@ -295,12 +295,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             string artidxPath = textBox1.Text + "\\artidx.MUL";
             artIndexFile.SaveToFile(textBox1.Text + "\\artidx.MUL");
 
-            // Erstellen Sie eine leere art.mul Datei
+            // Create an empty art.mul file
             string artPath = textBox1.Text + "\\art.MUL";
             using (var fs = File.Create(textBox1.Text + "\\art.MUL")) { }
 
-            // Aktualisieren Sie das Label mit dem Pfad der erstellten Dateien
-            lbCreatedMul.Text = $"Die Dateien wurden erfolgreich erstellt in: {artidxPath} und {artPath}";
+            // Update the label with the path of the created files
+            lbCreatedMul.Text = $"The files were successfully created in: {artidxPath} and {artPath}";
         }
         #endregion
 
@@ -312,25 +312,25 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             short numEntries;
             if (!short.TryParse(textBox2.Text, out numEntries) || numEntries > 32767)
             {
-                numEntries = 32767; // Standardwert, wenn textBox2 leer ist oder einen Wert größer als 32767 enthält
-                textBox2.Text = numEntries.ToString(); // Aktualisieren Sie textBox2 mit dem Standardwert
+                numEntries = 32767; // Default value if textBox2 is empty or contains a value greater than 32767
+                textBox2.Text = numEntries.ToString(); // Update textBox2 with default value
             }
 
             for (short i = 0; i < numEntries; i++)
             {
-                // Erstellen Sie einen leeren ArtIndexEntry und fügen Sie ihn zu artIndexFile hinzu
+                // Create an empty ArtIndexEntry and add it to artIndexFile
                 var indexEntry = new ArtIndexEntry(0xFFFFFFFF, 0, 0);
                 artIndexFile.AddEntry(indexEntry);
             }
             string artidxPath = textBox1.Text + "\\artidx.MUL";
             artIndexFile.SaveToFile(textBox1.Text + "\\artidx.MUL");
 
-            // Erstellen Sie eine leere art.mul Datei
+            // Create an empty art.mul file
             string artPath = textBox1.Text + "\\art.MUL";
             using (var fs = File.Create(textBox1.Text + "\\art.MUL")) { }
 
-            // Aktualisieren Sie das Label mit dem Pfad der erstellten Dateien
-            lbCreatedMul.Text = $"Die Dateien wurden erfolgreich erstellt in: {artidxPath} und {artPath}";
+            // Update the label with the path of the created files
+            lbCreatedMul.Text = $"The files were successfully created in: {artidxPath} and {artPath}";
         }
         #endregion
 
@@ -342,13 +342,13 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             byte numEntries;
             if (!byte.TryParse(textBox2.Text, out numEntries) || numEntries > 255)
             {
-                numEntries = 255; // Standardwert, wenn textBox2 leer ist oder einen Wert größer als 255 enthält
-                textBox2.Text = numEntries.ToString(); // Aktualisieren Sie textBox2 mit dem Standardwert
+                numEntries = 255; // Default value if textBox2 is empty or contains a value greater than 255
+                textBox2.Text = numEntries.ToString(); // Update textBox2 with default value
             }
 
             for (byte i = 0; i < numEntries; i++)
             {
-                // Erstellen Sie einen leeren ArtIndexEntry und fügen Sie ihn zu artIndexFile hinzu
+                // Create an empty ArtIndexEntry and add it to artIndexFile
                 var indexEntry = new ArtIndexEntry(0xFFFFFFFF, 0, 0);
                 artIndexFile.AddEntry(indexEntry);
             }
@@ -356,12 +356,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             string artidxPath = textBox1.Text + "\\artidx.MUL";
             artIndexFile.SaveToFile(textBox1.Text + "\\artidx.MUL");
 
-            // Erstellen Sie eine leere art.mul Datei
+            // Create an empty art.mul file
             string artPath = textBox1.Text + "\\art.MUL";
             using (var fs = File.Create(textBox1.Text + "\\art.MUL")) { }
 
-            // Aktualisieren Sie das Label mit dem Pfad der erstellten Dateien
-            lbCreatedMul.Text = $"Die Dateien wurden erfolgreich erstellt in: {artidxPath} und {artPath}";
+            // Update the label with the path of the created files
+            lbCreatedMul.Text = $"The files were successfully created in: {artidxPath} and {artPath}";
         }
         #endregion
 
@@ -373,12 +373,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             ulong numEntries;
             if (!ulong.TryParse(textBox2.Text, out numEntries))
             {
-                numEntries = 65500; // Standardwert, wenn textBox2 leer ist
+                numEntries = 65500; // Default value if textBox2 is empty
             }
 
             for (ulong i = 0; i < numEntries; i++)
             {
-                // Erstellen Sie einen leeren ArtIndexEntry und fügen Sie ihn zu artIndexFile hinzu
+                // Create an empty ArtIndexEntry and add it to artIndexFile
                 var indexEntry = new ArtIndexEntry(0xFFFFFFFF, 0, 0);
                 artIndexFile.AddEntry(indexEntry);
             }
@@ -386,12 +386,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             string artidxPath = textBox1.Text + "\\artidx.MUL";
             artIndexFile.SaveToFile(textBox1.Text + "\\artidx.MUL");
 
-            // Erstellen Sie eine leere art.mul Datei
+            // Create an empty art.mul file
             string artPath = textBox1.Text + "\\art.MUL";
             using (var fs = File.Create(textBox1.Text + "\\art.MUL")) { }
 
-            // Aktualisieren Sie das Label mit dem Pfad der erstellten Dateien
-            lbCreatedMul.Text = $"Die Dateien wurden erfolgreich erstellt in: {artidxPath} und {artPath}";
+            // Update the label with the path of the created files
+            lbCreatedMul.Text = $"The files were successfully created in: {artidxPath} and {artPath}";
         }
         #endregion
 
@@ -415,11 +415,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                     File.Move(oldArtMulPath, newArtMulPath);
                     File.Move(oldArtIdxMulPath, newArtIdxMulPath);
 
-                    lbCreatedMul.Text = $"Die Dateien wurden erfolgreich umbenannt zu: {newArtMulPath} und {newArtIdxMulPath}";
+                    lbCreatedMul.Text = $"The files have been successfully renamed: {newArtMulPath} and {newArtIdxMulPath}";
                 }
                 else
                 {
-                    lbCreatedMul.Text = "Die Dateien Art.mul und Artidx.mul konnten nicht gefunden werden.";
+                    lbCreatedMul.Text = "The Art.mul and Artidx.mul files could not be found.";
                 }
             }
         }
@@ -471,7 +471,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             }
             else
             {
-                return null; // oder werfen Sie eine Ausnahme
+                return null; // or throw an exception
             }
         }
 
@@ -482,13 +482,13 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 
         public void LoadFromFile(string filename)
         {
-            entries.Clear(); // Löschen Sie alle vorhandenen Einträge
+            entries.Clear(); // Delete all existing entries
 
             using (var fs = new FileStream(filename, FileMode.Open))
             {
                 using (var reader = new BinaryReader(fs))
                 {
-                    while (reader.BaseStream.Position != reader.BaseStream.Length) // Lesen Sie bis zum Ende der Datei
+                    while (reader.BaseStream.Position != reader.BaseStream.Length) // Read to the end of the file
                     {
                         uint lookup = reader.ReadUInt32();
                         uint size = reader.ReadUInt32();
@@ -534,10 +534,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 
         public void WriteToStream(BinaryWriter writer)
         {
-            // Konvertieren Sie das Bild in ein Byte-Array
+            // Convert the image to a byte array
             byte[] imageData = ImageToByteArray(Image);
 
-            // Schreiben Sie die Bilddaten in den Stream
+            // Write the image data to the stream
             writer.Write(imageData);
         }
 
@@ -571,7 +571,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             }
             else
             {
-                return null; // oder werfen Sie eine Ausnahme
+                return null; // or throw an exception
             }
         }
 
@@ -625,40 +625,40 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 
         public void LoadFromFile(string filename)
         {
-            entries.Clear(); // Löschen Sie alle vorhandenen Einträge
+            entries.Clear(); // Delete all existing entries
 
             using (var fs = new FileStream(filename, FileMode.Open))
             {
                 using (var reader = new BinaryReader(fs))
                 {
-                    while (reader.BaseStream.Position != reader.BaseStream.Length) // Lesen Sie bis zum Ende der Datei
+                    while (reader.BaseStream.Position != reader.BaseStream.Length) // Read to the end of the file
                     {
-                        // Lesen Sie die Metadaten für das Bild
+                        // Read the metadata for the image
                         uint lookup = reader.ReadUInt32();
                         uint size = reader.ReadUInt32();
                         uint unknown = reader.ReadUInt32();
 
-                        // Setzen Sie die Position des Readers auf den Anfang des Bildes
+                        // Set the position of the reader to the beginning of the image
                         reader.BaseStream.Position = lookup;
 
-                        // Lesen Sie die Bilddaten aus der Datei
+                        // Read the image data from the file
                         byte[] imageData = reader.ReadBytes((int)size);
 
-                        // Überprüfen Sie, ob genügend Daten für die Flagge vorhanden sind
+                        // Check if there is enough data for the flag
                         if (imageData.Length >= 4)
                         {
-                            // Lesen Sie die Flagge
+                            // Read the flag
                             uint flag = BitConverter.ToUInt32(imageData, 0);
 
                             Bitmap image;
                             if (flag > 0xFFFF || flag == 0)
                             {
-                                // Das Bild ist roh
+                                // The image is raw
                                 image = LoadRawImage(imageData);
                             }
                             else
                             {
-                                // Das Bild ist ein Laufbild
+                                // The image is a moving image
                                 image = LoadRunImage(imageData);
                             }
 
@@ -667,7 +667,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                         }
                         else
                         {
-                            // Behandeln Sie den Fehler
+                            // Handle the error
                         }
                     }
                 }
@@ -680,7 +680,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             int width = 44;
             int height = 44;
             Bitmap image = new Bitmap(width, height);
-            int index = 4; // überspringen Sie die Flagge
+            int index = 4; // skip the flag
 
             for (int i = 0; i < height; i++)
             {
@@ -708,7 +708,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             int width = BitConverter.ToUInt16(imageData, 4);
             int height = BitConverter.ToUInt16(imageData, 6);
             Bitmap image = new Bitmap(width, height);
-            int index = 8 + height * 2; // überspringen Sie die Flagge, Breite, Höhe und LStart
+            int index = 8 + height * 2; // skip the flag, width, height and LStart
 
             int x = 0;
             int y = 0;
@@ -762,7 +762,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             }
             else
             {
-                return null; // oder werfen Sie eine Ausnahme
+                return null; // or throw an exception
             }
         }
 
