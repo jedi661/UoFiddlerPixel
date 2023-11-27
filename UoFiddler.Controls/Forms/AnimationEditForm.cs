@@ -4403,5 +4403,20 @@ namespace UoFiddler.Controls.Forms
             AnimationListTreeView.Invalidate();
         }
         #endregion
+
+        #region Search Animation
+        private void toolStripTextBoxSearch_TextChanged(object sender, EventArgs e)
+        {
+            var searchText = toolStripTextBoxSearch.Text;
+            foreach (TreeNode node in AnimationListTreeView.Nodes)
+            {
+                if (node.Tag.ToString() == searchText)
+                {
+                    AnimationListTreeView.SelectedNode = node;
+                    break;
+                }
+            }
+        }
+        #endregion
     }
 }
