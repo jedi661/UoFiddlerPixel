@@ -15,58 +15,6 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             InitializeComponent();
         }
 
-        /*private void btCreateARTIDXMul_Click(object sender, EventArgs e)
-        {
-            var artIndexFile = new ArtIndexFile();
-            var artDataFile = new ArtDataFile();
-
-            int numEntries;
-            if (!int.TryParse(textBox2.Text, out numEntries))
-            {
-                numEntries = 65500; // Standardwert, wenn textBox2 leer ist
-            }
-
-            for (int i = 0; i < numEntries; i++)
-            {
-                // Erstellen Sie einen leeren ArtIndexEntry und fügen Sie ihn zu artIndexFile hinzu
-                var indexEntry = new ArtIndexEntry(0xFFFFFFFF, 0, 0);
-                artIndexFile.AddEntry(indexEntry);
-
-                // Erstellen Sie einen leeren ArtDataEntry und fügen Sie ihn zu artDataFile hinzu
-                var dataEntry = new ArtDataEntry(new Bitmap(1, 1));
-                artDataFile.AddEntry(dataEntry);
-            }
-
-            artIndexFile.SaveToFile(textBox1.Text + "\\artidx.MUL");
-            artDataFile.SaveToFile(textBox1.Text + "\\art.MUL");
-        }*/
-
-        /*private void btCreateARTIDXMul_Click(object sender, EventArgs e)
-        {
-            var artIndexFile = new ArtIndexFile();
-            var artDataFile = new ArtDataFile();
-
-            long numEntries;
-            if (!long.TryParse(textBox2.Text, out numEntries))
-            {
-                numEntries = 65500; // Standardwert, wenn textBox2 leer ist
-            }
-
-            for (long i = 0; i < numEntries; i++)
-            {
-                // Erstellen Sie einen leeren ArtIndexEntry und fügen Sie ihn zu artIndexFile hinzu
-                var indexEntry = new ArtIndexEntry(0xFFFFFFFF, 0, 0);
-                artIndexFile.AddEntry(indexEntry);
-
-                // Erstellen Sie einen leeren ArtDataEntry und fügen Sie ihn zu artDataFile hinzu
-                var dataEntry = new ArtDataEntry(new Bitmap(1, 1));
-                artDataFile.AddEntry(dataEntry);
-            }
-
-            artIndexFile.SaveToFile(textBox1.Text + "\\artidx.MUL");
-            artDataFile.SaveToFile(textBox1.Text + "\\art.MUL");
-        }*/
-
         #region btCreateARTIDXMul
         private void btCreateARTIDXMul_Click(object sender, EventArgs e)
         {
@@ -126,7 +74,6 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             }
         }
         #endregion
-
 
         #region btnShowInfo
         private void btnShowInfo_Click(object sender, EventArgs e)
@@ -424,362 +371,1176 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             }
         }
         #endregion
-    }
 
 
-
-    #region Class ArtIndexEntry
-    public class ArtIndexEntry
-    {
-        public uint Lookup { get; set; }
-        public uint Size { get; set; }
-        public uint Unknown { get; set; }
-
-        public Bitmap Image { get; set; }
-
-        public ArtIndexEntry(uint lookup, uint size, uint unknown)
+        #region CreateTiledata
+        private void btCreateTiledata_Click(object sender, EventArgs e)
         {
-            Lookup = lookup;
-            Size = size;
-            Unknown = unknown;
-        }
-
-        public void WriteToStream(BinaryWriter writer)
-        {
-            writer.Write(Lookup);
-            writer.Write(Size);
-            writer.Write(Unknown);
-        }
-    }
-    #endregion
-
-    #region class ArtIndexFile
-    public class ArtIndexFile
-    {
-        private List<ArtIndexEntry> entries;
-
-        public ArtIndexFile()
-        {
-            entries = new List<ArtIndexEntry>();
-        }
-
-        public ArtIndexEntry GetEntry(int index)
-        {
-            if (index >= 0 && index < entries.Count)
+            using (var fbd = new FolderBrowserDialog())
             {
-                return entries[index];
-            }
-            else
-            {
-                return null; // or throw an exception
-            }
-        }
+                DialogResult result = fbd.ShowDialog();
 
-        public void AddEntry(ArtIndexEntry entry)
-        {
-            entries.Add(entry);
-        }
-
-        public void LoadFromFile(string filename)
-        {
-            entries.Clear(); // Delete all existing entries
-
-            using (var fs = new FileStream(filename, FileMode.Open))
-            {
-                using (var reader = new BinaryReader(fs))
+                if (result == DialogResult.OK && !string.IsNullOrWhiteSpace(fbd.SelectedPath))
                 {
-                    while (reader.BaseStream.Position != reader.BaseStream.Length) // Read to the end of the file
-                    {
-                        uint lookup = reader.ReadUInt32();
-                        uint size = reader.ReadUInt32();
-                        uint unknown = reader.ReadUInt32();
+                    tbDirTileData.Text = fbd.SelectedPath;
+                    TileDataCreator creator = new TileDataCreator();
 
-                        var entry = new ArtIndexEntry(lookup, size, unknown);
-                        entries.Add(entry);
-                    }
+                    // Lesen Sie die Werte aus den Textboxen oder verwenden Sie Standardwerte
+                    int landTileGroups = string.IsNullOrWhiteSpace(tblandTileGroups.Text) ? 16383 : int.Parse(tblandTileGroups.Text);
+                    int staticTileGroups = string.IsNullOrWhiteSpace(tbstaticTileGroups.Text) ? 65535 : int.Parse(tbstaticTileGroups.Text);
+
+                    // Erstellen Sie den vollständigen Pfad zur Datei
+                    string filePath = Path.Combine(fbd.SelectedPath, "Tiledata.mul");
+
+                    // Überprüfen Sie, ob die Checkbox aktiviert ist
+                    bool createEmptyFile = checkBoxTileData.Checked;
+
+                    creator.CreateTileData(filePath, landTileGroups, staticTileGroups, createEmptyFile);
+
+                    // Aktualisieren Sie das Label, um anzuzeigen, dass die Datei erfolgreich erstellt wurde
+                    lbTileDataCreate.Text = $"Die Tiledata.mul-Datei wurde erfolgreich erstellt in: {filePath}";
                 }
             }
         }
+        #endregion
 
-        public int CountEntries()
-        {
-            return entries.Count;
-        }
 
-        public void SaveToFile(string filename)
+        #region  Tiledatainfo
+        private void btTiledatainfo_Click(object sender, EventArgs e)
         {
-            using (FileStream fs = new FileStream(filename, FileMode.Create))
+            using (var fbd = new FolderBrowserDialog())
             {
-                using (BinaryWriter writer = new BinaryWriter(fs))
+                DialogResult result = fbd.ShowDialog();
+
+                if (result == DialogResult.OK && !string.IsNullOrWhiteSpace(fbd.SelectedPath))
                 {
-                    foreach (var entry in entries)
+                    tbDirTileData.Text = fbd.SelectedPath;
+
+                    // Erstellen Sie den vollständigen Pfad zur Datei
+                    string filePath = Path.Combine(fbd.SelectedPath, "Tiledata.mul");
+
+                    // Überprüfen Sie, ob die Datei existiert
+                    if (!File.Exists(filePath))
                     {
-                        entry.WriteToStream(writer);
+                        textBoxTileDataInfo.Text = "Die Datei Tiledata.mul konnte nicht gefunden werden.";
+                        return;
                     }
-                }
-            }
-        }
-    }
-    #endregion
 
-    #region class ArtDataEntry
-    public class ArtDataEntry
-    {
-        public Bitmap Image { get; set; }
-
-        public ArtDataEntry(Bitmap image)
-        {
-            Image = image;
-        }
-
-        public void WriteToStream(BinaryWriter writer)
-        {
-            // Convert the image to a byte array
-            byte[] imageData = ImageToByteArray(Image);
-
-            // Write the image data to the stream
-            writer.Write(imageData);
-        }
-
-        private byte[] ImageToByteArray(Bitmap image)
-        {
-            using (var stream = new MemoryStream())
-            {
-                image.Save(stream, System.Drawing.Imaging.ImageFormat.Png);
-                return stream.ToArray();
-            }
-        }
-    }
-    #endregion
-
-
-    #region class ArtDataFile
-    public class ArtDataFile
-    {
-        private List<ArtDataEntry> entries;
-
-        public ArtDataFile()
-        {
-            entries = new List<ArtDataEntry>();
-        }
-
-        public ArtDataEntry GetEntry(int index)
-        {
-            if (index >= 0 && index < entries.Count)
-            {
-                return entries[index];
-            }
-            else
-            {
-                return null; // or throw an exception
-            }
-        }
-
-        public int CountEntries()
-        {
-            return entries.Count;
-        }
-
-        /*public void LoadFromFile(string filename)
-        {
-            entries.Clear(); // Löschen Sie alle vorhandenen Einträge
-
-            using (var fs = new FileStream(filename, FileMode.Open))
-            {
-                using (var reader = new BinaryReader(fs))
-                {
-                    while (reader.BaseStream.Position != reader.BaseStream.Length) // Lesen Sie bis zum Ende der Datei
+                    // Lesen Sie die Daten aus der Datei
+                    using (var fs = File.OpenRead(filePath))
                     {
-                        // Lesen Sie die Metadaten für das Bild
-                        uint lookup = reader.ReadUInt32();
-                        uint size = reader.ReadUInt32();
-                        uint unknown = reader.ReadUInt32();
-
-                        // Setzen Sie die Position des Readers auf den Anfang des Bildes
-                        reader.BaseStream.Position = lookup;
-
-                        // Lesen Sie die Bilddaten aus der Datei
-                        byte[] imageData = reader.ReadBytes((int)size);
-
-                        // Lesen Sie die Flagge
-                        uint flag = BitConverter.ToUInt32(imageData, 0);
-
-                        Bitmap image;
-                        if (flag > 0xFFFF || flag == 0)
+                        using (var reader = new BinaryReader(fs))
                         {
-                            // Das Bild ist roh
-                            image = LoadRawImage(imageData);
+                            // Lesen Sie die Anzahl der Land Tile Groups
+                            int landTileGroups = reader.ReadInt32();
+
+                            // Lesen Sie die Anzahl der Static Tile Groups
+                            int staticTileGroups = reader.ReadInt32();
+
+                            // Zeigen Sie die Informationen in der Textbox an
+                            textBoxTileDataInfo.Text = $"Land Tile Groups: {landTileGroups}\nStatic Tile Groups: {staticTileGroups}";
                         }
-                        else
-                        {
-                            // Das Bild ist ein Laufbild
-                            image = LoadRunImage(imageData);
-                        }
-
-                        var entry = new ArtDataEntry(image);
-                        entries.Add(entry);
                     }
                 }
             }
-        }*/
+        }
+        #endregion
 
-        public void LoadFromFile(string filename)
+        #region Create Button Empty
+        private void btCreateTiledataEmpty_Click(object sender, EventArgs e)
         {
-            entries.Clear(); // Delete all existing entries
-
-            using (var fs = new FileStream(filename, FileMode.Open))
+            using (var fbd = new FolderBrowserDialog())
             {
-                using (var reader = new BinaryReader(fs))
+                DialogResult result = fbd.ShowDialog();
+
+                if (result == DialogResult.OK && !string.IsNullOrWhiteSpace(fbd.SelectedPath))
                 {
-                    while (reader.BaseStream.Position != reader.BaseStream.Length) // Read to the end of the file
+                    tbDirTileData.Text = fbd.SelectedPath;
+                    TileDataCreator creator = new TileDataCreator();
+
+                    // Lesen Sie die Werte aus den Textboxen oder verwenden Sie Standardwerte
+                    int landTileGroups = string.IsNullOrWhiteSpace(tblandTileGroups.Text) ? 16383 : int.Parse(tblandTileGroups.Text);
+                    int staticTileGroups = string.IsNullOrWhiteSpace(tbstaticTileGroups.Text) ? 65535 : int.Parse(tbstaticTileGroups.Text);
+
+                    // Erstellen Sie den vollständigen Pfad zur Datei
+                    string filePath = Path.Combine(fbd.SelectedPath, "Tiledata.mul");
+
+                    // Erstellen Sie eine leere Tiledata.mul-Datei
+                    creator.CreateTileData(filePath, landTileGroups, staticTileGroups, true);
+
+                    // Aktualisieren Sie das Label, um anzuzeigen, dass die Datei erfolgreich erstellt wurde
+                    lbTileDataCreate.Text = $"Die leere Tiledata.mul-Datei wurde erfolgreich erstellt in: {filePath}";
+                }
+            }
+        }
+        #endregion
+
+
+        #region Crete Button Emtpy2
+        private void btCreateTiledataEmpty2_Click(object sender, EventArgs e)
+        {
+            using (var fbd = new FolderBrowserDialog())
+            {
+                DialogResult result = fbd.ShowDialog();
+
+                if (result == DialogResult.OK && !string.IsNullOrWhiteSpace(fbd.SelectedPath))
+                {
+                    TileDataCreator creator = new TileDataCreator();
+
+                    // Setzen Sie die Anzahl der Land- und Static-Tile-Gruppen auf Standardwerte
+                    int landTileGroups = 16383;
+                    int staticTileGroups = 65535;
+
+                    // Erstellen Sie den vollständigen Pfad zur Datei
+                    string filePath = Path.Combine(fbd.SelectedPath, "Tiledata.mul");
+
+                    // Erstellen Sie eine leere Tiledata.mul-Datei
+                    creator.CreateTileData(filePath, landTileGroups, staticTileGroups, true);
+
+                    // Zeigen Sie eine Meldung an, um anzuzeigen, dass die Datei erfolgreich erstellt wurde
+                    MessageBox.Show($"Die leere Tiledata.mul-Datei wurde erfolgreich erstellt in: {filePath}");
+                }
+            }
+        }
+        #endregion
+
+        #region ReadIndexTiledata
+        private void btReadIndexTiledata_Click(object sender, EventArgs e)
+        {
+            using (var fbd = new FolderBrowserDialog())
+            {
+                DialogResult result = fbd.ShowDialog();
+
+                if (result == DialogResult.OK && !string.IsNullOrWhiteSpace(fbd.SelectedPath))
+                {
+                    TileDataCreator creator = new TileDataCreator();
+                    string filePath = Path.Combine(fbd.SelectedPath, "Tiledata.mul");
+                    int index = int.Parse(textBoxTiledataIndex.Text);
+                    //string tileDataInfo = creator.ReadTileData(filePath, index);
+                    string tileDataInfo = creator.ReadTileData(filePath, index, "Land"); // Zum Lesen von Land Tiles
+                    string tileDataInfo2 = creator.ReadTileData(filePath, index, "Static"); // Zum Lesen von Static Tiles
+
+                    textBoxTileDataInfo.Text = tileDataInfo;
+                }
+            }
+        }
+        #endregion
+
+        #region Button Hex
+        public void btTReadHexAndSelectDirectory_Click(object sender, EventArgs e)
+        {
+            using (var fbd = new FolderBrowserDialog())
+            {
+                DialogResult result = fbd.ShowDialog();
+
+                if (result == DialogResult.OK && !string.IsNullOrWhiteSpace(fbd.SelectedPath))
+                {
+                    string filePath = Path.Combine(fbd.SelectedPath, "Tiledata.mul");
+
+                    // Überprüfen Sie, ob der Index in Hexadezimalform vorliegt
+                    bool isHex = textBoxTiledataIndex.Text.StartsWith("0x");
+                    int index;
+                    if (isHex)
                     {
-                        // Read the metadata for the image
-                        uint lookup = reader.ReadUInt32();
-                        uint size = reader.ReadUInt32();
-                        uint unknown = reader.ReadUInt32();
+                        // Wenn der Index in Hexadezimalform vorliegt, konvertieren Sie ihn in eine Dezimalzahl
+                        index = Convert.ToInt32(textBoxTiledataIndex.Text.Substring(2), 16);
+                    }
+                    else
+                    {
+                        index = int.Parse(textBoxTiledataIndex.Text);
+                    }
 
-                        // Set the position of the reader to the beginning of the image
-                        reader.BaseStream.Position = lookup;
+                    // Multiplizieren Sie den Index mit der Größe des Blocks, um die richtige Position in der Datei zu erreichen
+                    index *= 836; // Ersetzen Sie 836 durch die tatsächliche Größe des Blocks
 
-                        // Read the image data from the file
-                        byte[] imageData = reader.ReadBytes((int)size);
+                    using (var fs = File.OpenRead(filePath))
+                    {
+                        fs.Position = index;
+                        byte[] buffer = new byte[836]; // Lesen Sie 836 Bytes ab der angegebenen Position
+                        fs.Read(buffer, 0, buffer.Length);
+                        string hex = BitConverter.ToString(buffer).Replace("-", " "); // Konvertieren Sie die Bytes in einen Hexadezimal-String
 
-                        // Check if there is enough data for the flag
-                        if (imageData.Length >= 4)
+                        // Konvertieren Sie die Bytes in ASCII-Zeichen
+                        string ascii = Encoding.ASCII.GetString(buffer);
+
+                        textBoxTileDataInfo.Text = $"Die Bytes an der Position {index} in der Datei {filePath} sind:\n{hex}\n\nASCII:\n{ascii}";
+                    }
+                }
+            }
+        }
+        #endregion
+
+        #region Button Land
+        public void btReadLandTile_Click(object sender, EventArgs e)
+        {
+            ReadTileData("Land");
+        }
+        #endregion
+
+        #region Button Static
+        public void btReadStaticTile_Click(object sender, EventArgs e)
+        {
+            ReadTileData("Static");
+        }
+        #endregion
+
+        #region ReadTileData
+        public void ReadTileData(string tileType)
+        {
+            using (var fbd = new FolderBrowserDialog())
+            {
+                DialogResult result = fbd.ShowDialog();
+
+                if (result == DialogResult.OK && !string.IsNullOrWhiteSpace(fbd.SelectedPath))
+                {
+                    TileDataCreator creator = new TileDataCreator();
+                    string filePath = Path.Combine(fbd.SelectedPath, "Tiledata.mul");
+                    int index = int.Parse(textBoxTiledataIndex.Text);
+                    //string tileDataInfo = creator.ReadTileData(filePath, index, tileType);
+                    string tileDataInfo = creator.ReadTileData(filePath, index, tileType);
+                    textBoxTileDataInfo.Text = tileDataInfo;
+                }
+            }
+        }
+        #endregion
+
+        #region btnCountTileDataEntries
+        private void btnCountTileDataEntries_Click(object sender, EventArgs e)
+        {
+            using (var folderBrowserDialog = new FolderBrowserDialog())
+            {
+                if (folderBrowserDialog.ShowDialog() == DialogResult.OK)
+                {
+                    var artDataFile = new ArtDataFile();
+                    string filePath = Path.Combine(folderBrowserDialog.SelectedPath, "Tiledata.mul");
+                    artDataFile.LoadFromFileForCounting(filePath);
+                    int numEntries = artDataFile.CountEntries();
+                    lblTileDataEntryCount.Text = "Die Anzahl der Einträge ist: " + numEntries;
+                }
+            }
+        }
+        #endregion
+
+        #region Button SimpleTiledata
+        private void btCreateSimpleTiledata_Click(object sender, EventArgs e)
+        {
+            using (var fbd = new FolderBrowserDialog())
+            {
+                DialogResult result = fbd.ShowDialog();
+
+                if (result == DialogResult.OK && !string.IsNullOrWhiteSpace(fbd.SelectedPath))
+                {
+                    string filePath = Path.Combine(fbd.SelectedPath, "Tiledata.mul");
+
+                    // Überprüfen Sie, ob die Datei bereits existiert. Wenn ja, löschen Sie sie.
+                    if (File.Exists(filePath))
+                    {
+                        File.Delete(filePath);
+                    }
+
+                    // Erstellen Sie die Datei.
+                    using (var fs = File.Create(filePath))
+                    {
+                        using (var writer = new BinaryWriter(fs))
                         {
-                            // Read the flag
+                            int landTileGroups = string.IsNullOrWhiteSpace(tblandTileGroups.Text) ? 16383 : int.Parse(tblandTileGroups.Text);
+                            int staticTileGroups = string.IsNullOrWhiteSpace(tbstaticTileGroups.Text) ? 65535 : int.Parse(tbstaticTileGroups.Text);
+
+                            for (int i = 0; i < landTileGroups + staticTileGroups; i++)
+                            {
+                                var tileData = new SimpleTileData("Tile" + i, (uint)i, (uint)(i % 32));
+                                tileData.WriteToStream(writer);
+                            }
+                        }
+                    }
+
+                    MessageBox.Show($"Die Tiledata.mul-Datei wurde erfolgreich erstellt in: {filePath}");
+                }
+            }
+        }
+        #endregion
+
+        #region ReadTileFlags Button
+        private void btReadTileFlags_Click(object sender, EventArgs e)
+        {
+            /*using (var fbd = new FolderBrowserDialog())
+            {
+                DialogResult result = fbd.ShowDialog();
+
+                if (result == DialogResult.OK && !string.IsNullOrWhiteSpace(fbd.SelectedPath))
+                {
+                    tbDirTileData.Text = fbd.SelectedPath;
+
+                    // Erstellen Sie den vollständigen Pfad zur Datei
+                    string filePath = Path.Combine(fbd.SelectedPath, "Tiledata.mul");
+
+                    // Überprüfen Sie, ob die Datei existiert
+                    if (!File.Exists(filePath))
+                    {
+                        textBoxTileDataInfo.Text = "Die Datei Tiledata.mul konnte nicht gefunden werden.";
+                        return;
+                    }
+
+                    // Lesen Sie die Daten aus der Datei
+                    using (var fs = File.OpenRead(filePath))
+                    {
+                        using (var reader = new BinaryReader(fs))
+                        {
+                            // Lesen Sie die Anzahl der Land Tile Groups
+                            int landTileGroups = reader.ReadInt32();
+
+                            // Lesen Sie die Anzahl der Static Tile Groups
+                            int staticTileGroups = reader.ReadInt32();
+
+                            // Erstellen Sie eine neue Instanz von TileDataFlags
+                            TileDataFlags flags = new TileDataFlags();
+
+                            // Lesen Sie die Flags für jedes Tile
+                            while (reader.BaseStream.Position != reader.BaseStream.Length)
+                            {
+                                // Lesen Sie die Flags aus der Datei
+                                ulong flagValue = reader.ReadUInt64();
+
+                                // Interpretieren Sie die Flags mit der TileDataFlags-Klasse
+                                flags.Value = flagValue;
+
+                                // Verwenden Sie die Flags hier...
+                            }
+
+                            // Zeigen Sie die Informationen in der Textbox an
+                            textBoxTileDataInfo.Text = $"Land Tile Groups: {landTileGroups}\nStatic Tile Groups: {staticTileGroups}";
+                        }
+                    }
+                }
+            }*/
+        }        
+        #endregion
+
+        #region Class ArtIndexEntry
+        public class ArtIndexEntry
+        {
+            public uint Lookup { get; set; }
+            public uint Size { get; set; }
+            public uint Unknown { get; set; }
+
+            public Bitmap Image { get; set; }
+
+            #region ArtIndexEntry
+            public ArtIndexEntry(uint lookup, uint size, uint unknown)
+            {
+                Lookup = lookup;
+                Size = size;
+                Unknown = unknown;
+            }
+            #endregion
+
+            #region WriteToStream
+            public void WriteToStream(BinaryWriter writer)
+            {
+                writer.Write(Lookup);
+                writer.Write(Size);
+                writer.Write(Unknown);
+            }
+            #endregion
+        }
+        #endregion
+
+        #region class ArtIndexFile
+        public class ArtIndexFile
+        {
+            private List<ArtIndexEntry> entries;
+
+            #region
+            public ArtIndexFile()
+            {
+                entries = new List<ArtIndexEntry>();
+            }
+            #endregion
+
+            #region ArtIndexEntry GetEntry
+            public ArtIndexEntry GetEntry(int index)
+            {
+                if (index >= 0 && index < entries.Count)
+                {
+                    return entries[index];
+                }
+                else
+                {
+                    return null; // or throw an exception
+                }
+            }
+            #endregion
+
+            #region
+            public void AddEntry(ArtIndexEntry entry)
+            {
+                entries.Add(entry);
+            }
+            #endregion
+
+            #region LoadFromFile
+            public void LoadFromFile(string filename)
+            {
+                entries.Clear(); // Delete all existing entries
+
+                using (var fs = new FileStream(filename, FileMode.Open))
+                {
+                    using (var reader = new BinaryReader(fs))
+                    {
+                        while (reader.BaseStream.Position != reader.BaseStream.Length) // Read to the end of the file
+                        {
+                            uint lookup = reader.ReadUInt32();
+                            uint size = reader.ReadUInt32();
+                            uint unknown = reader.ReadUInt32();
+
+                            var entry = new ArtIndexEntry(lookup, size, unknown);
+                            entries.Add(entry);
+                        }
+                    }
+                }
+            }
+            #endregion
+
+            #region CountEntries
+            public int CountEntries()
+            {
+                return entries.Count;
+            }
+            #endregion
+
+            #region  SaveToFile
+            public void SaveToFile(string filename)
+            {
+                using (FileStream fs = new FileStream(filename, FileMode.Create))
+                {
+                    using (BinaryWriter writer = new BinaryWriter(fs))
+                    {
+                        foreach (var entry in entries)
+                        {
+                            entry.WriteToStream(writer);
+                        }
+                    }
+                }
+            }
+            #endregion
+        }
+        #endregion
+
+        #region class ArtDataEntry
+        public class ArtDataEntry
+        {
+            public Bitmap Image { get; set; }
+
+            public ArtDataEntry(Bitmap image)
+            {
+                Image = image;
+            }
+
+            #region  WriteToStream
+            public void WriteToStream(BinaryWriter writer)
+            {
+                // Convert the image to a byte array
+                byte[] imageData = ImageToByteArray(Image);
+
+                // Write the image data to the stream
+                writer.Write(imageData);
+            }
+            #endregion
+            #region
+            private byte[] ImageToByteArray(Bitmap image)
+            {
+                using (var stream = new MemoryStream())
+                {
+                    image.Save(stream, System.Drawing.Imaging.ImageFormat.Png);
+                    return stream.ToArray();
+                }
+            }
+            #endregion
+        }
+        #endregion
+
+        #region SimpleTileData
+        public class SimpleTileData
+        {
+            public string Name { get; set; }
+            public uint Value { get; set; }
+            public uint Flags { get; set; }
+
+            public SimpleTileData(string name, uint value, uint flags)
+            {
+                Name = name;
+                Value = value;
+                Flags = flags;
+            }
+
+            public void WriteToStream(BinaryWriter writer)
+            {
+                // Write the Name to the stream
+                writer.Write(Name);
+
+                // Write the Value to the stream
+                writer.Write(Value);
+
+                // Write the Flags to the stream
+                writer.Write(Flags);
+            }
+        }
+        #endregion
+
+        #region TiledataFlags
+        public class TileDataFlags
+        {
+            private Dictionary<string, ulong> flagNameMasks = new Dictionary<string, ulong>
+            {
+                {"background", 0x1},
+                {"weapon", 0x2},
+                {"transparent", 0x4},
+                {"translucent", 0x8},
+                {"wall", 0x10},
+                {"damaging", 0x20},
+                {"impassable", 0x40},
+                {"wet", 0x80},
+                {"unknown", 0x100},
+                {"surface", 0x200},
+                {"climbable", 0x400},
+                {"stackable", 0x800},
+                {"window", 0x1000},
+                {"noShoot", 0x2000},
+                {"articleA", 0x4000},
+                {"articleAn", 0x8000},
+                {"internal", 0x10000},
+                {"foliage", 0x20000},
+                {"partialHue", 0x40000},
+                {"unknown1", 0x80000},
+                {"map", 0x100000},
+                {"container", 0x200000},
+                {"wearable", 0x400000},
+                {"lightSource", 0x800000},
+                {"animation", 0x1000000},
+                {"noDiagonal", 0x2000000},
+                {"unknown2", 0x4000000},
+                {"armor", 0x8000000},
+                {"roof", 0x10000000},
+                {"door", 0x20000000},
+                {"stairBack", 0x40000000},
+                {"stairRight", 0x80000000},
+                {"noShadow", 0x100000000},
+                {"pixelBleed", 0x200000000},
+                {"playAnimOnce", 0x400000000},
+                {"multiMovable", 0x800000000},
+                {"unknown3", 0x1000000000},
+                {"fullBright", 0x2000000000},
+                {"unknown4", 0x4000000000},
+                {"unknown5", 0x8000000000},
+                {"unknown6", 0x10000000000},
+                {"unknown7", 0x20000000000},
+                {"unknown8", 0x40000000000},
+                {"hoverOver", 0x80000000000},
+                {"unknown9", 0x100000000000},
+                {"unknown10", 0x200000000000},
+                {"unknown11", 0x400000000000},
+                {"unknown12", 0x800000000000},
+                {"gumpArt", 0x1000000000000},
+                {"gumpArtUsed", 0x2000000000000},
+                {"unknown13", 0x4000000000000},
+                {"tileArt", 0x8000000000000},
+                {"tileArtUsed", 0x10000000000000},
+                {"unknown14", 0x20000000000000},
+                {"unknown15", 0x40000000000000},
+                {"unknown16", 0x80000000000000},
+                {"unknown17", 0x100000000000000},
+                {"unknown18", 0x200000000000000},
+                {"unknown19", 0x400000000000000},
+                {"unknown20", 0x800000000000000},
+                {"unknown21", 0x1000000000000000},
+                {"unknown22", 0x2000000000000000},
+                {"unknown23", 0x4000000000000000},
+                {"unknown24", 0x8000000000000000}
+            };
+
+            private ulong value;
+
+            public TileDataFlags(string flagValue)
+            {
+                // Zerlegen Sie den Eingabestring in einzelne Flag-Namen
+                var flagNames = flagValue.Split(',');
+
+                // Durchlaufen Sie jeden Flag-Namen
+                foreach (var flagName in flagNames)
+                {
+                    // Entfernen Sie Leerzeichen
+                    var trimmedFlagName = flagName.Trim();
+
+                    // Überprüfen Sie, ob der Flag-Name gültig ist
+                    if (flagNameMasks.ContainsKey(trimmedFlagName))
+                    {
+                        // Wenn ja, setzen Sie das entsprechende Bit in `value`
+                        value |= flagNameMasks[trimmedFlagName];
+                    }
+                    else
+                    {
+                        // Wenn nicht, werfen Sie eine Ausnahme oder behandeln Sie den Fehler auf geeignete Weise
+                        throw new ArgumentException("Ungültiger Flag-Name: " + trimmedFlagName);
+                    }
+                }
+            }
+
+
+            public ulong MaskForName(string flagName)
+            {
+                if (flagNameMasks.TryGetValue(flagName, out ulong mask))
+                {
+                    return mask;
+                }
+                else
+                {
+                    throw new ArgumentOutOfRangeException("Flag name: " + flagName + " not valid");
+                }
+            }
+
+            public void SetBit(int bit, bool value)
+            {
+                ulong mask = (ulong)1 << bit;
+                if (value)
+                {
+                    this.value |= mask;
+                }
+                else
+                {
+                    this.value &= ~mask;
+                }
+            }
+
+            public bool BitValue(int bit)
+            {
+                ulong mask = (ulong)1 << bit;
+                return (value & mask) != 0;
+            }
+        }
+        #endregion
+
+        #region class ArtDataFile
+        public class ArtDataFile
+        {
+            private List<ArtDataEntry> entries;
+
+            public ArtDataFile()
+            {
+                entries = new List<ArtDataEntry>();
+            }
+
+            public ArtDataEntry GetEntry(int index)
+            {
+                if (index >= 0 && index < entries.Count)
+                {
+                    return entries[index];
+                }
+                else
+                {
+                    return null; // or throw an exception
+                }
+            }
+
+            #region CountEntries
+            public int CountEntries()
+            {
+                return entries.Count;
+            }
+            #endregion
+
+            /*public void LoadFromFile(string filename)
+            {
+                entries.Clear(); // Löschen Sie alle vorhandenen Einträge
+
+                using (var fs = new FileStream(filename, FileMode.Open))
+                {
+                    using (var reader = new BinaryReader(fs))
+                    {
+                        while (reader.BaseStream.Position != reader.BaseStream.Length) // Lesen Sie bis zum Ende der Datei
+                        {
+                            // Lesen Sie die Metadaten für das Bild
+                            uint lookup = reader.ReadUInt32();
+                            uint size = reader.ReadUInt32();
+                            uint unknown = reader.ReadUInt32();
+
+                            // Setzen Sie die Position des Readers auf den Anfang des Bildes
+                            reader.BaseStream.Position = lookup;
+
+                            // Lesen Sie die Bilddaten aus der Datei
+                            byte[] imageData = reader.ReadBytes((int)size);
+
+                            // Lesen Sie die Flagge
                             uint flag = BitConverter.ToUInt32(imageData, 0);
 
                             Bitmap image;
                             if (flag > 0xFFFF || flag == 0)
                             {
-                                // The image is raw
+                                // Das Bild ist roh
                                 image = LoadRawImage(imageData);
                             }
                             else
                             {
-                                // The image is a moving image
+                                // Das Bild ist ein Laufbild
                                 image = LoadRunImage(imageData);
                             }
 
                             var entry = new ArtDataEntry(image);
                             entries.Add(entry);
                         }
-                        else
+                    }
+                }
+            }*/
+
+            #region LoadFromFile
+            public void LoadFromFile(string filename)
+            {
+                entries.Clear(); // Delete all existing entries
+
+                using (var fs = new FileStream(filename, FileMode.Open))
+                {
+                    using (var reader = new BinaryReader(fs))
+                    {
+                        while (reader.BaseStream.Position != reader.BaseStream.Length) // Read to the end of the file
                         {
-                            // Handle the error
+                            // Read the metadata for the image
+                            uint lookup = reader.ReadUInt32();
+                            uint size = reader.ReadUInt32();
+                            uint unknown = reader.ReadUInt32();
+
+                            // Set the position of the reader to the beginning of the image
+                            reader.BaseStream.Position = lookup;
+
+                            // Read the image data from the file
+                            byte[] imageData = reader.ReadBytes((int)size);
+
+                            // Check if there is enough data for the flag
+                            if (imageData.Length >= 4)
+                            {
+                                // Read the flag
+                                uint flag = BitConverter.ToUInt32(imageData, 0);
+
+                                Bitmap image;
+                                if (flag > 0xFFFF || flag == 0)
+                                {
+                                    // The image is raw
+                                    image = LoadRawImage(imageData);
+                                }
+                                else
+                                {
+                                    // The image is a moving image
+                                    image = LoadRunImage(imageData);
+                                }
+
+                                var entry = new ArtDataEntry(image);
+                                entries.Add(entry);
+                            }
+                            else
+                            {
+                                // Handle the error
+                            }
                         }
                     }
                 }
             }
-        }
+            #endregion
 
 
-        private Bitmap LoadRawImage(byte[] imageData)
-        {
-            int width = 44;
-            int height = 44;
-            Bitmap image = new Bitmap(width, height);
-            int index = 4; // skip the flag
-
-            for (int i = 0; i < height; i++)
+            /*private Bitmap LoadRawImage(byte[] imageData)
             {
-                int rowWidth = 2 + i;
-                if (rowWidth > width) rowWidth = width;
+                int width = 44;
+                int height = 44;
+                Bitmap image = new Bitmap(width, height);
+                int index = 4; // skip the flag
 
-                for (int j = 0; j < rowWidth; j++)
+                for (int i = 0; i < height; i++)
                 {
-                    ushort pixelData = BitConverter.ToUInt16(imageData, index);
-                    Color pixelColor = Color.FromArgb(
-                        ((pixelData >> 10) & 0x1F) * 0xFF / 0x1F,
-                        ((pixelData >> 5) & 0x1F) * 0xFF / 0x1F,
-                        (pixelData & 0x1F) * 0xFF / 0x1F);
-                    image.SetPixel(j, i, pixelColor);
+                    int rowWidth = 2 + i;
+                    if (rowWidth > width) rowWidth = width;
 
-                    index += 2;
-                }
-            }
-
-            return image;
-        }
-
-        private Bitmap LoadRunImage(byte[] imageData)
-        {
-            int width = BitConverter.ToUInt16(imageData, 4);
-            int height = BitConverter.ToUInt16(imageData, 6);
-            Bitmap image = new Bitmap(width, height);
-            int index = 8 + height * 2; // skip the flag, width, height and LStart
-
-            int x = 0;
-            int y = 0;
-
-            while (y < height)
-            {
-                ushort xOffs = BitConverter.ToUInt16(imageData, index);
-                ushort run = BitConverter.ToUInt16(imageData, index + 2);
-
-                index += 4;
-
-                if (xOffs + run != 0)
-                {
-                    x += xOffs;
-
-                    for (int i = 0; i < run; i++)
+                    for (int j = 0; j < rowWidth; j++)
                     {
                         ushort pixelData = BitConverter.ToUInt16(imageData, index);
                         Color pixelColor = Color.FromArgb(
                             ((pixelData >> 10) & 0x1F) * 0xFF / 0x1F,
                             ((pixelData >> 5) & 0x1F) * 0xFF / 0x1F,
                             (pixelData & 0x1F) * 0xFF / 0x1F);
-                        image.SetPixel(x + i, y, pixelColor);
+                        image.SetPixel(j, i, pixelColor);
 
                         index += 2;
                     }
+                }
 
-                    x += run;
+                return image;
+            }*/
+
+            #region LoadRawImage
+            private Bitmap LoadRawImage(byte[] imageData)
+            {
+                int width = 44;
+                int height = 44;
+                Bitmap image = new Bitmap(width, height);
+                int index = 4; // skip the flag
+
+                for (int i = 0; i < height; i++)
+                {
+                    int rowWidth = 2 + i;
+                    if (rowWidth > width) rowWidth = width;
+
+                    for (int j = 0; j < rowWidth; j++)
+                    {
+                        // Überprüfen Sie, ob der Index innerhalb des gültigen Bereichs liegt
+                        if (index + 2 <= imageData.Length)
+                        {
+                            ushort pixelData = BitConverter.ToUInt16(imageData, index);
+                            Color pixelColor = Color.FromArgb(
+                                ((pixelData >> 10) & 0x1F) * 0xFF / 0x1F,
+                                ((pixelData >> 5) & 0x1F) * 0xFF / 0x1F,
+                                (pixelData & 0x1F) * 0xFF / 0x1F);
+                            image.SetPixel(j, i, pixelColor);
+                            index += 2;
+                        }
+                        else
+                        {
+                            // Handle the error
+                            // Zum Beispiel könnten Sie eine Ausnahme auslösen oder einen Standardwert zuweisen
+                        }
+                    }
+                }
+
+                return image;
+            }
+            #endregion
+
+            #region LoadRunImage
+            private Bitmap LoadRunImage(byte[] imageData)
+            {
+                int width = BitConverter.ToUInt16(imageData, 4);
+                int height = BitConverter.ToUInt16(imageData, 6);
+                Bitmap image = new Bitmap(width, height);
+                int index = 8 + height * 2; // skip the flag, width, height and LStart
+
+                int x = 0;
+                int y = 0;
+
+                while (y < height)
+                {
+                    ushort xOffs = BitConverter.ToUInt16(imageData, index);
+                    ushort run = BitConverter.ToUInt16(imageData, index + 2);
+
+                    index += 4;
+
+                    if (xOffs + run != 0)
+                    {
+                        x += xOffs;
+
+                        for (int i = 0; i < run; i++)
+                        {
+                            ushort pixelData = BitConverter.ToUInt16(imageData, index);
+                            Color pixelColor = Color.FromArgb(
+                                ((pixelData >> 10) & 0x1F) * 0xFF / 0x1F,
+                                ((pixelData >> 5) & 0x1F) * 0xFF / 0x1F,
+                                (pixelData & 0x1F) * 0xFF / 0x1F);
+                            image.SetPixel(x + i, y, pixelColor);
+
+                            index += 2;
+                        }
+
+                        x += run;
+                    }
+                    else
+                    {
+                        x = 0;
+                        y++;
+                        index = 8 + height * 2 + BitConverter.ToUInt16(imageData, 8 + y * 2) * 2;
+                    }
+                }
+
+                return image;
+            }
+            #endregion
+
+            #region AddEntry
+            public void AddEntry(ArtDataEntry entry)
+            {
+                entries.Add(entry);
+            }
+            #endregion
+
+            #region GetImage
+            public Bitmap GetImage(int index)
+            {
+                if (index >= 0 && index < entries.Count)
+                {
+                    return entries[index].Image;
                 }
                 else
                 {
-                    x = 0;
-                    y++;
-                    index = 8 + height * 2 + BitConverter.ToUInt16(imageData, 8 + y * 2) * 2;
+                    return null; // or throw an exception
                 }
             }
+            #endregion
 
-            return image;
-        }
-
-        public void AddEntry(ArtDataEntry entry)
-        {
-            entries.Add(entry);
-        }
-
-        public Bitmap GetImage(int index)
-        {
-            if (index >= 0 && index < entries.Count)
+            #region SaveToFile
+            public void SaveToFile(string filename)
             {
-                return entries[index].Image;
-            }
-            else
-            {
-                return null; // or throw an exception
-            }
-        }
-
-        public void SaveToFile(string filename)
-        {
-            using (FileStream fs = new FileStream(filename, FileMode.Create))
-            {
-                using (BinaryWriter writer = new BinaryWriter(fs))
+                using (FileStream fs = new FileStream(filename, FileMode.Create))
                 {
-                    foreach (var entry in entries)
+                    using (BinaryWriter writer = new BinaryWriter(fs))
                     {
-                        entry.WriteToStream(writer);
+                        foreach (var entry in entries)
+                        {
+                            entry.WriteToStream(writer);
+                        }
                     }
                 }
             }
-        }
-    }
-    #endregion
-}
+            #endregion
 
+            /*public void LoadFromFileForCounting(string filename)
+            {
+                entries.Clear(); // Delete all existing entries
+
+                using (var fs = new FileStream(filename, FileMode.Open))
+                {
+                    using (var reader = new BinaryReader(fs))
+                    {
+                        // Read Land Tile Groups
+                        for (int i = 0; i < 512; i++)
+                        {
+                            if (reader.BaseStream.Position + 836 <= reader.BaseStream.Length)
+                            {
+                                reader.BaseStream.Position += 836; // Skip Land Tile Group
+                                entries.Add(new ArtDataEntry(null));
+                            }
+                            else
+                            {
+                                break;
+                            }
+                        }
+
+                        // Read Static Tile Groups until the end of the file
+                        while (reader.BaseStream.Position + 1188 <= reader.BaseStream.Length)
+                        {
+                            reader.BaseStream.Position += 1188; // Skip Static Tile Group
+                            entries.Add(new ArtDataEntry(null));
+                        }
+                    }
+                }
+            }*/
+            #region LoadFromFileForCounting
+            public void LoadFromFileForCounting(string filename)
+            {
+                entries.Clear(); // Delete all existing entries
+
+                using (var fs = new FileStream(filename, FileMode.Open))
+                {
+                    long fileSize = fs.Length;
+                    int landTileGroupSize = 836; // Size of a Land Tile Group
+                    int staticTileGroupSize = 1188; // Size of a Static Tile Group
+
+                    // Calculate the number of Land Tile Groups
+                    int numLandTileGroups = 0;
+                    while (fs.Position + landTileGroupSize <= fileSize)
+                    {
+                        fs.Position += landTileGroupSize; // Skip Land Tile Group
+                        entries.Add(new ArtDataEntry(null));
+                        numLandTileGroups++;
+                    }
+
+                    // Calculate the number of Static Tile Groups
+                    int numStaticTileGroups = 0;
+                    while (fs.Position + staticTileGroupSize <= fileSize)
+                    {
+                        fs.Position += staticTileGroupSize; // Skip Static Tile Group
+                        entries.Add(new ArtDataEntry(null));
+                        numStaticTileGroups++;
+                    }
+
+                    Console.WriteLine("Number of Land Tile Groups: " + numLandTileGroups);
+                    Console.WriteLine("Number of Static Tile Groups: " + numStaticTileGroups);
+                }
+                #endregion
+            }
+        }
+        #endregion
+
+        #region Class Tiledata   
+        public class TileDataCreator
+        {
+            #region  CreateTileData
+            public void CreateTileData(string filePath, int landTileGroups, int staticTileGroups, bool createEmptyFile)
+            {
+                // Überprüfen Sie, ob die Datei bereits existiert. Wenn ja, löschen Sie sie.
+                if (File.Exists(filePath))
+                {
+                    File.Delete(filePath);
+                }
+
+                // Erstellen Sie die Datei.
+                using (var fs = File.Create(filePath))
+                {
+                    for (int i = 0; i < landTileGroups; i++)
+                    {
+                        // Schreiben Sie die Land Tile Group in die Datei.
+                        WriteLandTileGroup(fs, createEmptyFile);
+                    }
+
+                    for (int i = 0; i < staticTileGroups; i++)
+                    {
+                        // Schreiben Sie die Static Tile Group in die Datei.
+                        WriteStaticTileGroup(fs, createEmptyFile);
+                    }
+                }
+            }
+            #endregion
+
+            #region WriteLandTileGroup
+            private void WriteLandTileGroup(FileStream fs, bool createEmptyFile)
+            {
+                using (var writer = new BinaryWriter(fs, Encoding.Default, true))
+                {
+                    writer.Write((uint)0); // Unknown DWORD
+
+                    for (int i = 0; i < 32; i++)
+                    {
+                        if (createEmptyFile)
+                        {
+                            writer.Write(new string('\0', 26)); // Empty Land Tile Data
+                        }
+                        else
+                        {
+                            writer.Write((uint)0); // Flags
+                            writer.Write((ushort)0); // Texture ID
+                            writer.Write(new string('\0', 20)); // Tile Name
+                        }
+                    }
+                }
+            }
+            #endregion
+
+            #region WriteStaticTileGroup
+            private void WriteStaticTileGroup(FileStream fs, bool createEmptyFile)
+            {
+                using (var writer = new BinaryWriter(fs, Encoding.Default, true))
+                {
+                    writer.Write((uint)0); // Unknown DWORD
+
+                    for (int i = 0; i < 32; i++)
+                    {
+                        if (createEmptyFile)
+                        {
+                            writer.Write(new string('\0', 37)); // Empty Static Tile Data
+                        }
+                        else
+                        {
+                            writer.Write((uint)0); // Flags
+                            writer.Write((byte)0); // Weight
+                            writer.Write((byte)0); // Quality
+                            writer.Write((ushort)0); // Unknown
+                            writer.Write((byte)0); // Unknown1
+                            writer.Write((byte)0); // Quantity
+                            writer.Write((ushort)0); // Anim ID
+                            writer.Write((byte)0); // Unknown2
+                            writer.Write((byte)0); // Hue
+                            writer.Write((ushort)0); // Unknown3
+                            writer.Write((byte)0); // Height
+                            writer.Write(new string('\0', 20)); // Tile Name
+                        }
+                    }
+                }
+            }
+            #endregion
+
+            #region ReadTileData2(
+            // nicht genützt
+            public string ReadTileData2(string filePath, int index)
+            {
+                using (var fs = File.OpenRead(filePath))
+                {
+                    // Berechnen Sie die Position des angegebenen Index in der Datei
+                    long position = index * 26; // Jedes Tile ist 26 Bytes groß
+
+                    // Stellen Sie sicher, dass die Position innerhalb der Datei liegt
+                    if (position < fs.Length)
+                    {
+                        fs.Position = position;
+
+                        using (var reader = new BinaryReader(fs))
+                        {
+                            uint flags = reader.ReadUInt32();
+                            byte weight = reader.ReadByte();
+                            byte quality = reader.ReadByte();
+                            ushort unknown = reader.ReadUInt16();
+                            byte unknown1 = reader.ReadByte();
+                            byte quantity = reader.ReadByte();
+                            ushort animId = reader.ReadUInt16();
+                            byte unknown2 = reader.ReadByte();
+                            byte hue = reader.ReadByte();
+                            ushort unknown3 = reader.ReadUInt16();
+                            byte height = reader.ReadByte();
+                            char[] tileName = reader.ReadChars(20);
+
+                            // Konvertieren Sie die Flags in eine Sequenz von Bit-Werten
+                            string flagString = Convert.ToString(flags, 2).PadLeft(32, '0');
+
+                            // Erzeugen Sie die Ausgabe
+                            StringBuilder output = new StringBuilder($"0x{index:X4};{new string(tileName)};{weight};{quality};0x{unknown:X4};{unknown1};{quantity};0x{animId:X4};{unknown2};{hue};0x{unknown3:X4};{height};{flagString}");
+
+                            return output.ToString();
+                        }
+                    }
+                    else
+                    {
+                        return $"Index {index} is out of range.";
+                    }
+                }
+            }
+            #endregion
+
+            #region  ReadTileData
+            public string ReadTileData(string filePath, int index, string tileType)
+            {
+                using (var fs = File.OpenRead(filePath))
+                {
+                    // Berechnen Sie die Position des angegebenen Index in der Datei
+                    long position;
+                    if (tileType == "Land")
+                    {
+                        position = index * 26; // Jedes Land Tile ist 26 Bytes groß
+                    }
+                    else // Static
+                    {
+                        position = index * 37; // Jedes Static Tile ist 37 Bytes groß
+                    }
+
+                    // Stellen Sie sicher, dass die Position innerhalb der Datei liegt
+                    if (position < fs.Length)
+                    {
+                        fs.Position = position;
+
+                        using (var reader = new BinaryReader(fs))
+                        {
+                            uint flags = reader.ReadUInt32();
+                            // ... (restlicher Code zum Lesen anderer Attribute) ...
+
+                            // Konvertieren Sie die Flags in eine Sequenz von Bit-Werten
+                            string flagString = Convert.ToString(flags, 2).PadLeft(32, '0');
+
+                            // Erzeugen Sie die Ausgabe
+                            StringBuilder output = new StringBuilder($"0x{index:X4}; ... ;{flagString}");
+
+                            return output.ToString();
+                        }
+                    }
+                    else
+                    {
+                        return $"Index {index} is out of range.";
+                    }
+                }
+            }
+            #endregion
+
+        }
+        #endregion
+    }
+}

@@ -56,6 +56,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             label4 = new System.Windows.Forms.Label();
             tabControl1 = new System.Windows.Forms.TabControl();
             tabPage1 = new System.Windows.Forms.TabPage();
+            label14 = new System.Windows.Forms.Label();
             lbCreatedMul = new System.Windows.Forms.Label();
             label13 = new System.Windows.Forms.Label();
             btCreateARTIDXMul_Ulong = new System.Windows.Forms.Button();
@@ -75,10 +76,36 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             btCreateARTIDXMul_uint = new System.Windows.Forms.Button();
             comboBoxMuls = new System.Windows.Forms.ComboBox();
             tabPage2 = new System.Windows.Forms.TabPage();
-            label14 = new System.Windows.Forms.Label();
+            tabPage3 = new System.Windows.Forms.TabPage();
+            btCreateSimpleTiledata = new System.Windows.Forms.Button();
+            lblTileDataEntryCount = new System.Windows.Forms.Label();
+            groupBoxInfo = new System.Windows.Forms.GroupBox();
+            btnCountTileDataEntries = new System.Windows.Forms.Button();
+            lbIndexTiledata = new System.Windows.Forms.Label();
+            btReadLandTile = new System.Windows.Forms.Button();
+            textBoxTiledataIndex = new System.Windows.Forms.TextBox();
+            btReadIndexTiledata = new System.Windows.Forms.Button();
+            btSelectDirectory = new System.Windows.Forms.Button();
+            btReadStaticTile = new System.Windows.Forms.Button();
+            btCreateTiledataEmpty2 = new System.Windows.Forms.Button();
+            btCreateTiledataEmpty = new System.Windows.Forms.Button();
+            label17 = new System.Windows.Forms.Label();
+            checkBoxTileData = new System.Windows.Forms.CheckBox();
+            textBoxTileDataInfo = new System.Windows.Forms.TextBox();
+            btTiledatainfo = new System.Windows.Forms.Button();
+            label16 = new System.Windows.Forms.Label();
+            label15 = new System.Windows.Forms.Label();
+            tbstaticTileGroups = new System.Windows.Forms.TextBox();
+            tblandTileGroups = new System.Windows.Forms.TextBox();
+            lbTileDataCreate = new System.Windows.Forms.Label();
+            tbDirTileData = new System.Windows.Forms.TextBox();
+            btCreateTiledata = new System.Windows.Forms.Button();
+            btReadTileFlags = new System.Windows.Forms.Button();
             tabControl1.SuspendLayout();
             tabPage1.SuspendLayout();
             tabPage2.SuspendLayout();
+            tabPage3.SuspendLayout();
+            groupBoxInfo.SuspendLayout();
             SuspendLayout();
             // 
             // textBox1
@@ -212,6 +239,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // 
             tabControl1.Controls.Add(tabPage1);
             tabControl1.Controls.Add(tabPage2);
+            tabControl1.Controls.Add(tabPage3);
             tabControl1.Location = new System.Drawing.Point(3, 12);
             tabControl1.Name = "tabControl1";
             tabControl1.SelectedIndex = 0;
@@ -252,6 +280,15 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             tabPage1.TabIndex = 0;
             tabPage1.Text = "Create Muls";
             tabPage1.UseVisualStyleBackColor = true;
+            // 
+            // label14
+            // 
+            label14.AutoSize = true;
+            label14.Location = new System.Drawing.Point(412, 16);
+            label14.Name = "label14";
+            label14.Size = new System.Drawing.Size(53, 15);
+            label14.TabIndex = 34;
+            label14.Text = "Rename:";
             // 
             // lbCreatedMul
             // 
@@ -440,14 +477,257 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             tabPage2.Text = "Read Muls";
             tabPage2.UseVisualStyleBackColor = true;
             // 
-            // label14
+            // tabPage3
             // 
-            label14.AutoSize = true;
-            label14.Location = new System.Drawing.Point(412, 16);
-            label14.Name = "label14";
-            label14.Size = new System.Drawing.Size(53, 15);
-            label14.TabIndex = 34;
-            label14.Text = "Rename:";
+            tabPage3.Controls.Add(btReadTileFlags);
+            tabPage3.Controls.Add(btCreateSimpleTiledata);
+            tabPage3.Controls.Add(lblTileDataEntryCount);
+            tabPage3.Controls.Add(groupBoxInfo);
+            tabPage3.Controls.Add(btCreateTiledataEmpty2);
+            tabPage3.Controls.Add(btCreateTiledataEmpty);
+            tabPage3.Controls.Add(label17);
+            tabPage3.Controls.Add(checkBoxTileData);
+            tabPage3.Controls.Add(textBoxTileDataInfo);
+            tabPage3.Controls.Add(btTiledatainfo);
+            tabPage3.Controls.Add(label16);
+            tabPage3.Controls.Add(label15);
+            tabPage3.Controls.Add(tbstaticTileGroups);
+            tabPage3.Controls.Add(tblandTileGroups);
+            tabPage3.Controls.Add(lbTileDataCreate);
+            tabPage3.Controls.Add(tbDirTileData);
+            tabPage3.Controls.Add(btCreateTiledata);
+            tabPage3.Location = new System.Drawing.Point(4, 24);
+            tabPage3.Name = "tabPage3";
+            tabPage3.Size = new System.Drawing.Size(539, 398);
+            tabPage3.TabIndex = 2;
+            tabPage3.Text = "TileData";
+            tabPage3.UseVisualStyleBackColor = true;
+            // 
+            // btCreateSimpleTiledata
+            // 
+            btCreateSimpleTiledata.Location = new System.Drawing.Point(379, 164);
+            btCreateSimpleTiledata.Name = "btCreateSimpleTiledata";
+            btCreateSimpleTiledata.Size = new System.Drawing.Size(116, 23);
+            btCreateSimpleTiledata.TabIndex = 20;
+            btCreateSimpleTiledata.Text = "Simple Tiledata";
+            btCreateSimpleTiledata.UseVisualStyleBackColor = true;
+            btCreateSimpleTiledata.Click += btCreateSimpleTiledata_Click;
+            // 
+            // lblTileDataEntryCount
+            // 
+            lblTileDataEntryCount.AutoSize = true;
+            lblTileDataEntryCount.Location = new System.Drawing.Point(21, 349);
+            lblTileDataEntryCount.Name = "lblTileDataEntryCount";
+            lblTileDataEntryCount.Size = new System.Drawing.Size(43, 15);
+            lblTileDataEntryCount.TabIndex = 19;
+            lblTileDataEntryCount.Text = "Count:";
+            // 
+            // groupBoxInfo
+            // 
+            groupBoxInfo.Controls.Add(btnCountTileDataEntries);
+            groupBoxInfo.Controls.Add(lbIndexTiledata);
+            groupBoxInfo.Controls.Add(btReadLandTile);
+            groupBoxInfo.Controls.Add(textBoxTiledataIndex);
+            groupBoxInfo.Controls.Add(btReadIndexTiledata);
+            groupBoxInfo.Controls.Add(btSelectDirectory);
+            groupBoxInfo.Controls.Add(btReadStaticTile);
+            groupBoxInfo.Location = new System.Drawing.Point(379, 193);
+            groupBoxInfo.Name = "groupBoxInfo";
+            groupBoxInfo.Size = new System.Drawing.Size(157, 199);
+            groupBoxInfo.TabIndex = 18;
+            groupBoxInfo.TabStop = false;
+            groupBoxInfo.Text = "Infos:";
+            // 
+            // btnCountTileDataEntries
+            // 
+            btnCountTileDataEntries.Location = new System.Drawing.Point(6, 22);
+            btnCountTileDataEntries.Name = "btnCountTileDataEntries";
+            btnCountTileDataEntries.Size = new System.Drawing.Size(94, 23);
+            btnCountTileDataEntries.TabIndex = 19;
+            btnCountTileDataEntries.Text = "Count Zähler";
+            btnCountTileDataEntries.UseVisualStyleBackColor = true;
+            btnCountTileDataEntries.Click += btnCountTileDataEntries_Click;
+            // 
+            // lbIndexTiledata
+            // 
+            lbIndexTiledata.AutoSize = true;
+            lbIndexTiledata.Location = new System.Drawing.Point(4, 76);
+            lbIndexTiledata.Name = "lbIndexTiledata";
+            lbIndexTiledata.Size = new System.Drawing.Size(39, 15);
+            lbIndexTiledata.TabIndex = 18;
+            lbIndexTiledata.Text = "Index:";
+            // 
+            // btReadLandTile
+            // 
+            btReadLandTile.Location = new System.Drawing.Point(4, 152);
+            btReadLandTile.Name = "btReadLandTile";
+            btReadLandTile.Size = new System.Drawing.Size(44, 23);
+            btReadLandTile.TabIndex = 16;
+            btReadLandTile.Text = "Land";
+            btReadLandTile.UseVisualStyleBackColor = true;
+            btReadLandTile.Click += btReadLandTile_Click;
+            // 
+            // textBoxTiledataIndex
+            // 
+            textBoxTiledataIndex.Location = new System.Drawing.Point(4, 94);
+            textBoxTiledataIndex.Name = "textBoxTiledataIndex";
+            textBoxTiledataIndex.Size = new System.Drawing.Size(116, 23);
+            textBoxTiledataIndex.TabIndex = 13;
+            // 
+            // btReadIndexTiledata
+            // 
+            btReadIndexTiledata.Location = new System.Drawing.Point(4, 123);
+            btReadIndexTiledata.Name = "btReadIndexTiledata";
+            btReadIndexTiledata.Size = new System.Drawing.Size(75, 23);
+            btReadIndexTiledata.TabIndex = 14;
+            btReadIndexTiledata.Text = "Index Read";
+            btReadIndexTiledata.UseVisualStyleBackColor = true;
+            btReadIndexTiledata.Click += btReadIndexTiledata_Click;
+            // 
+            // btSelectDirectory
+            // 
+            btSelectDirectory.Location = new System.Drawing.Point(106, 152);
+            btSelectDirectory.Name = "btSelectDirectory";
+            btSelectDirectory.Size = new System.Drawing.Size(40, 23);
+            btSelectDirectory.TabIndex = 15;
+            btSelectDirectory.Text = "Hex";
+            btSelectDirectory.UseVisualStyleBackColor = true;
+            btSelectDirectory.Click += btTReadHexAndSelectDirectory_Click;
+            // 
+            // btReadStaticTile
+            // 
+            btReadStaticTile.Location = new System.Drawing.Point(50, 152);
+            btReadStaticTile.Name = "btReadStaticTile";
+            btReadStaticTile.Size = new System.Drawing.Size(50, 23);
+            btReadStaticTile.TabIndex = 17;
+            btReadStaticTile.Text = "Static";
+            btReadStaticTile.UseVisualStyleBackColor = true;
+            btReadStaticTile.Click += btReadStaticTile_Click;
+            // 
+            // btCreateTiledataEmpty2
+            // 
+            btCreateTiledataEmpty2.Location = new System.Drawing.Point(379, 135);
+            btCreateTiledataEmpty2.Name = "btCreateTiledataEmpty2";
+            btCreateTiledataEmpty2.Size = new System.Drawing.Size(116, 23);
+            btCreateTiledataEmpty2.TabIndex = 12;
+            btCreateTiledataEmpty2.Text = "Tile Data Empty2";
+            btCreateTiledataEmpty2.UseVisualStyleBackColor = true;
+            btCreateTiledataEmpty2.Click += btCreateTiledataEmpty2_Click;
+            // 
+            // btCreateTiledataEmpty
+            // 
+            btCreateTiledataEmpty.Location = new System.Drawing.Point(379, 106);
+            btCreateTiledataEmpty.Name = "btCreateTiledataEmpty";
+            btCreateTiledataEmpty.Size = new System.Drawing.Size(116, 23);
+            btCreateTiledataEmpty.TabIndex = 11;
+            btCreateTiledataEmpty.Text = "Tiledata Empty";
+            btCreateTiledataEmpty.UseVisualStyleBackColor = true;
+            btCreateTiledataEmpty.Click += btCreateTiledataEmpty_Click;
+            // 
+            // label17
+            // 
+            label17.AutoSize = true;
+            label17.Location = new System.Drawing.Point(21, 12);
+            label17.Name = "label17";
+            label17.Size = new System.Drawing.Size(34, 15);
+            label17.TabIndex = 10;
+            label17.Text = "Path:";
+            // 
+            // checkBoxTileData
+            // 
+            checkBoxTileData.AutoSize = true;
+            checkBoxTileData.Location = new System.Drawing.Point(214, 59);
+            checkBoxTileData.Name = "checkBoxTileData";
+            checkBoxTileData.Size = new System.Drawing.Size(65, 19);
+            checkBoxTileData.TabIndex = 9;
+            checkBoxTileData.Text = "Orginal";
+            checkBoxTileData.UseVisualStyleBackColor = true;
+            // 
+            // textBoxTileDataInfo
+            // 
+            textBoxTileDataInfo.Location = new System.Drawing.Point(21, 106);
+            textBoxTileDataInfo.Multiline = true;
+            textBoxTileDataInfo.Name = "textBoxTileDataInfo";
+            textBoxTileDataInfo.Size = new System.Drawing.Size(352, 237);
+            textBoxTileDataInfo.TabIndex = 8;
+            // 
+            // btTiledatainfo
+            // 
+            btTiledatainfo.Location = new System.Drawing.Point(298, 349);
+            btTiledatainfo.Name = "btTiledatainfo";
+            btTiledatainfo.Size = new System.Drawing.Size(75, 23);
+            btTiledatainfo.TabIndex = 7;
+            btTiledatainfo.Text = "Read";
+            btTiledatainfo.UseVisualStyleBackColor = true;
+            btTiledatainfo.Click += btTiledatainfo_Click;
+            // 
+            // label16
+            // 
+            label16.AutoSize = true;
+            label16.Location = new System.Drawing.Point(420, 12);
+            label16.Name = "label16";
+            label16.Size = new System.Drawing.Size(86, 15);
+            label16.TabIndex = 6;
+            label16.Text = "landTileGroups";
+            // 
+            // label15
+            // 
+            label15.AutoSize = true;
+            label15.Location = new System.Drawing.Point(299, 12);
+            label15.Name = "label15";
+            label15.Size = new System.Drawing.Size(91, 15);
+            label15.TabIndex = 5;
+            label15.Text = "staticTileGroups";
+            // 
+            // tbstaticTileGroups
+            // 
+            tbstaticTileGroups.Location = new System.Drawing.Point(299, 30);
+            tbstaticTileGroups.Name = "tbstaticTileGroups";
+            tbstaticTileGroups.Size = new System.Drawing.Size(100, 23);
+            tbstaticTileGroups.TabIndex = 4;
+            // 
+            // tblandTileGroups
+            // 
+            tblandTileGroups.Location = new System.Drawing.Point(420, 30);
+            tblandTileGroups.Name = "tblandTileGroups";
+            tblandTileGroups.Size = new System.Drawing.Size(100, 23);
+            tblandTileGroups.TabIndex = 3;
+            // 
+            // lbTileDataCreate
+            // 
+            lbTileDataCreate.AutoSize = true;
+            lbTileDataCreate.Location = new System.Drawing.Point(21, 79);
+            lbTileDataCreate.Name = "lbTileDataCreate";
+            lbTileDataCreate.Size = new System.Drawing.Size(86, 15);
+            lbTileDataCreate.TabIndex = 2;
+            lbTileDataCreate.Text = "Create TileData";
+            // 
+            // tbDirTileData
+            // 
+            tbDirTileData.Location = new System.Drawing.Point(21, 30);
+            tbDirTileData.Name = "tbDirTileData";
+            tbDirTileData.Size = new System.Drawing.Size(187, 23);
+            tbDirTileData.TabIndex = 1;
+            // 
+            // btCreateTiledata
+            // 
+            btCreateTiledata.Location = new System.Drawing.Point(214, 30);
+            btCreateTiledata.Name = "btCreateTiledata";
+            btCreateTiledata.Size = new System.Drawing.Size(75, 23);
+            btCreateTiledata.TabIndex = 0;
+            btCreateTiledata.Text = "Create Tiledata";
+            btCreateTiledata.UseVisualStyleBackColor = true;
+            btCreateTiledata.Click += btCreateTiledata_Click;
+            // 
+            // btReadTileFlags
+            // 
+            btReadTileFlags.Location = new System.Drawing.Point(214, 349);
+            btReadTileFlags.Name = "btReadTileFlags";
+            btReadTileFlags.Size = new System.Drawing.Size(75, 23);
+            btReadTileFlags.TabIndex = 21;
+            btReadTileFlags.Text = "Flags Read";
+            btReadTileFlags.UseVisualStyleBackColor = true;
+            btReadTileFlags.Click += btReadTileFlags_Click;
             // 
             // ARTMulIDXCreator
             // 
@@ -464,6 +744,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             tabPage1.PerformLayout();
             tabPage2.ResumeLayout(false);
             tabPage2.PerformLayout();
+            tabPage3.ResumeLayout(false);
+            tabPage3.PerformLayout();
+            groupBoxInfo.ResumeLayout(false);
+            groupBoxInfo.PerformLayout();
             ResumeLayout(false);
         }
 
@@ -505,5 +789,30 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private System.Windows.Forms.Label label13;
         private System.Windows.Forms.Label lbCreatedMul;
         private System.Windows.Forms.Label label14;
+        private System.Windows.Forms.TabPage tabPage3;
+        private System.Windows.Forms.Button btCreateTiledata;
+        private System.Windows.Forms.TextBox tbDirTileData;
+        private System.Windows.Forms.Label lbTileDataCreate;
+        private System.Windows.Forms.TextBox tbstaticTileGroups;
+        private System.Windows.Forms.TextBox tblandTileGroups;
+        private System.Windows.Forms.TextBox textBoxTileDataInfo;
+        private System.Windows.Forms.Button btTiledatainfo;
+        private System.Windows.Forms.Label label16;
+        private System.Windows.Forms.Label label15;
+        private System.Windows.Forms.CheckBox checkBoxTileData;
+        private System.Windows.Forms.Label label17;
+        private System.Windows.Forms.Button btCreateTiledataEmpty;
+        private System.Windows.Forms.Button btCreateTiledataEmpty2;
+        private System.Windows.Forms.TextBox textBoxTiledataIndex;
+        private System.Windows.Forms.Button btReadIndexTiledata;
+        private System.Windows.Forms.Button btSelectDirectory;
+        private System.Windows.Forms.Button btReadStaticTile;
+        private System.Windows.Forms.Button btReadLandTile;
+        private System.Windows.Forms.GroupBox groupBoxInfo;
+        private System.Windows.Forms.Label lbIndexTiledata;
+        private System.Windows.Forms.Button btnCountTileDataEntries;
+        private System.Windows.Forms.Label lblTileDataEntryCount;
+        private System.Windows.Forms.Button btCreateSimpleTiledata;
+        private System.Windows.Forms.Button btReadTileFlags;
     }
 }
