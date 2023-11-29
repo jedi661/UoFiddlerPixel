@@ -78,14 +78,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             tabPage2 = new System.Windows.Forms.TabPage();
             tabPage3 = new System.Windows.Forms.TabPage();
             btnCountTileDataEntries = new System.Windows.Forms.Button();
-            btReadTileFlags = new System.Windows.Forms.Button();
             btCreateSimpleTiledata = new System.Windows.Forms.Button();
             lblTileDataEntryCount = new System.Windows.Forms.Label();
             btCreateTiledataEmpty2 = new System.Windows.Forms.Button();
             btCreateTiledataEmpty = new System.Windows.Forms.Button();
             label17 = new System.Windows.Forms.Label();
             checkBoxTileData = new System.Windows.Forms.CheckBox();
-            btTiledatainfo = new System.Windows.Forms.Button();
             label16 = new System.Windows.Forms.Label();
             label15 = new System.Windows.Forms.Label();
             tbstaticTileGroups = new System.Windows.Forms.TextBox();
@@ -99,6 +97,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             buttonReadStaticTileData = new System.Windows.Forms.Button();
             groupBoxInfo = new System.Windows.Forms.GroupBox();
             btReadLandTile = new System.Windows.Forms.Button();
+            btTiledatainfo = new System.Windows.Forms.Button();
+            btReadTileFlags = new System.Windows.Forms.Button();
             textBoxTiledataIndex = new System.Windows.Forms.TextBox();
             btReadStaticTile = new System.Windows.Forms.Button();
             lbIndexTiledata = new System.Windows.Forms.Label();
@@ -518,16 +518,6 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             btnCountTileDataEntries.UseVisualStyleBackColor = true;
             btnCountTileDataEntries.Click += btnCountTileDataEntries_Click;
             // 
-            // btReadTileFlags
-            // 
-            btReadTileFlags.Location = new System.Drawing.Point(131, 70);
-            btReadTileFlags.Name = "btReadTileFlags";
-            btReadTileFlags.Size = new System.Drawing.Size(75, 23);
-            btReadTileFlags.TabIndex = 21;
-            btReadTileFlags.Text = "Flags Read";
-            btReadTileFlags.UseVisualStyleBackColor = true;
-            btReadTileFlags.Click += btReadTileFlags_Click;
-            // 
             // btCreateSimpleTiledata
             // 
             btCreateSimpleTiledata.Location = new System.Drawing.Point(214, 155);
@@ -585,16 +575,6 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             checkBoxTileData.TabIndex = 9;
             checkBoxTileData.Text = "Orginal";
             checkBoxTileData.UseVisualStyleBackColor = true;
-            // 
-            // btTiledatainfo
-            // 
-            btTiledatainfo.Location = new System.Drawing.Point(212, 70);
-            btTiledatainfo.Name = "btTiledatainfo";
-            btTiledatainfo.Size = new System.Drawing.Size(75, 23);
-            btTiledatainfo.TabIndex = 7;
-            btTiledatainfo.Text = "Read";
-            btTiledatainfo.UseVisualStyleBackColor = true;
-            btTiledatainfo.Click += btTiledatainfo_Click;
             // 
             // label16
             // 
@@ -723,6 +703,26 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             btReadLandTile.UseVisualStyleBackColor = true;
             btReadLandTile.Click += btReadLandTile_Click;
             // 
+            // btTiledatainfo
+            // 
+            btTiledatainfo.Location = new System.Drawing.Point(212, 70);
+            btTiledatainfo.Name = "btTiledatainfo";
+            btTiledatainfo.Size = new System.Drawing.Size(75, 23);
+            btTiledatainfo.TabIndex = 7;
+            btTiledatainfo.Text = "Read";
+            btTiledatainfo.UseVisualStyleBackColor = true;
+            btTiledatainfo.Click += btTiledatainfo_Click;
+            // 
+            // btReadTileFlags
+            // 
+            btReadTileFlags.Location = new System.Drawing.Point(131, 70);
+            btReadTileFlags.Name = "btReadTileFlags";
+            btReadTileFlags.Size = new System.Drawing.Size(75, 23);
+            btReadTileFlags.TabIndex = 21;
+            btReadTileFlags.Text = "Flags Read";
+            btReadTileFlags.UseVisualStyleBackColor = true;
+            btReadTileFlags.Click += btReadTileFlags_Click;
+            // 
             // textBoxTiledataIndex
             // 
             textBoxTiledataIndex.Location = new System.Drawing.Point(6, 41);
@@ -786,7 +786,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             listViewTileData.Size = new System.Drawing.Size(432, 267);
             listViewTileData.TabIndex = 25;
             listViewTileData.UseCompatibleStateImageBehavior = false;
-            listViewTileData.KeyDown += YourForm_KeyDown;
+            listViewTileData.KeyDown += TiledataHex_KeyDown;
             listViewTileData.MouseClick += listViewTileData_MouseClick;
             // 
             // buttonReadTileData
@@ -797,7 +797,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             buttonReadTileData.TabIndex = 24;
             buttonReadTileData.Text = "Hexadressen";
             buttonReadTileData.UseVisualStyleBackColor = true;
-            buttonReadTileData.Click += buttonReadTileData_Click_1;
+            buttonReadTileData.Click += buttonReadTileData_Click;
             // 
             // ARTMulIDXCreator
             // 

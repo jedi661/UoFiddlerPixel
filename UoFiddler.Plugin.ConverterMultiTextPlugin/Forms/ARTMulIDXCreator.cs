@@ -1605,7 +1605,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         }
 
 
-        private void YourForm_KeyDown(object sender, KeyEventArgs e)
+        private void TiledataHex_KeyDown(object sender, KeyEventArgs e)
         {
             // Prüfen Sie, ob die Leertaste gedrückt wurde
             if (e.KeyCode == Keys.Space)
@@ -1621,7 +1621,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             }
         }
 
-        private void buttonReadTileData_Click_1(object sender, EventArgs e)
+        private void buttonReadTileData_Click(object sender, EventArgs e)
         {
             OpenFileDialog openFileDialog = new OpenFileDialog();
             if (openFileDialog.ShowDialog() == DialogResult.OK)
@@ -1634,6 +1634,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private int landItemsLoaded = 0;
         private int staticItemsLoaded = 0;
 
+        #region LoadLandTiles
         private void LoadLandTiles()
         {
             // Laden Sie bis zu 50 Elemente
@@ -1660,7 +1661,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 landItemsLoaded++;
             }
         }
+        #endregion
 
+        #region LoadStaticTiles
         private void LoadStaticTiles()
         {
             // Laden Sie bis zu 50 Elemente
@@ -1703,7 +1706,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 staticItemsLoaded++;
             }
         }
+        #endregion
 
+        #region buttonReadLandTileData
         private void buttonReadLandTileData_Click(object sender, EventArgs e)
         {
             OpenFileDialog openFileDialog = new OpenFileDialog();
@@ -1713,7 +1718,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 LoadLandTiles();
             }
         }
+        #endregion
 
+        #region buttonReadStaticTileData
         private void buttonReadStaticTileData_Click(object sender, EventArgs e)
         {
             OpenFileDialog openFileDialog = new OpenFileDialog();
@@ -1723,7 +1730,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 LoadStaticTiles();
             }
         }
+        #endregion
 
+        #region listViewTileData
         private void listViewTileData_MouseClick(object sender, MouseEventArgs e)
         {
             if (listViewTileData.SelectedItems.Count > 0)
@@ -1743,6 +1752,6 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 }
             }
         }
-
+        #endregion
     }
 }
