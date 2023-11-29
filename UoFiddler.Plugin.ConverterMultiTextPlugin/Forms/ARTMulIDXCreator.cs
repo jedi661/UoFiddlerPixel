@@ -1566,7 +1566,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private int itemsLoaded = 0;
 
 
-
+        #region LoadItems
         private void LoadItems()
         {
             // Leeren Sie das ListView, wenn es das erste Mal geladen wird
@@ -1603,8 +1603,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 itemsLoaded++;
             }
         }
+        #endregion
 
-
+        #region TiledataHex Keydown
         private void TiledataHex_KeyDown(object sender, KeyEventArgs e)
         {
             // Prüfen Sie, ob die Leertaste gedrückt wurde
@@ -1620,7 +1621,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 }
             }
         }
+        #endregion
 
+        #region buttonReadTileData
         private void buttonReadTileData_Click(object sender, EventArgs e)
         {
             OpenFileDialog openFileDialog = new OpenFileDialog();
@@ -1630,6 +1633,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 LoadItems();
             }
         }
+        #endregion
 
         private int landItemsLoaded = 0;
         private int staticItemsLoaded = 0;
