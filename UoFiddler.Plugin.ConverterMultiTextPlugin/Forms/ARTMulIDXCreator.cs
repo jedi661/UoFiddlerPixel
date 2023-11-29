@@ -663,7 +663,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         #region ReadTileFlags Button
         private void btReadTileFlags_Click(object sender, EventArgs e)
         {
-            /*using (var fbd = new FolderBrowserDialog())
+            using (var fbd = new FolderBrowserDialog())
             {
                 DialogResult result = fbd.ShowDialog();
 
@@ -704,7 +704,15 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                                 // Interpretieren Sie die Flags mit der TileDataFlags-Klasse
                                 flags.Value = flagValue;
 
+                                // Fügen Sie die Flags zu einer Liste hinzu
+                                List<ulong> flagList = new List<ulong>();
+                                flagList.Add(flagValue);
+
                                 // Verwenden Sie die Flags hier...
+                                foreach (ulong flag in flagList)
+                                {
+                                    // Verarbeiten Sie jedes Flag...
+                                }
                             }
 
                             // Zeigen Sie die Informationen in der Textbox an
@@ -712,8 +720,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                         }
                     }
                 }
-            }*/
-        }        
+            }
+        }
         #endregion
 
         #region Class ArtIndexEntry
@@ -959,6 +967,17 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             };
 
             private ulong value;
+            public ulong Value { get; set; }
+
+            public TileDataFlags()
+            {
+                // Initialisieren Sie Ihre Flags hier, falls erforderlich
+            }
+
+            public TileDataFlags(ulong flagValue)
+            {
+                this.Value = flagValue;
+            }
 
             public TileDataFlags(string flagValue)
             {
@@ -1542,5 +1561,188 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 
         }
         #endregion
+
+        private BinaryReader reader;
+        private int itemsLoaded = 0;
+
+
+
+        private void LoadItems()
+        {
+            // Leeren Sie das ListView, wenn es das erste Mal geladen wird
+            if (itemsLoaded == 0)
+            {
+                listViewTileData.Items.Clear();
+            }
+
+            // Laden Sie bis zu 50 Elemente
+            for (int i = 0; i < 50 && reader.BaseStream.Position < reader.BaseStream.Length; i++)
+            {
+                // Lesen Sie die Daten für jede Land-Kachel-Gruppe
+                ulong flags = reader.ReadUInt64();
+                ushort textureId = reader.ReadUInt16();
+                string tileName = Encoding.Default.GetString(reader.ReadBytes(20));
+
+                // Fügen Sie die Informationen als neuen Eintrag in das ListView ein
+                ListViewItem item = new ListViewItem(new string[]
+                {
+            reader.BaseStream.Position.ToString("X"),
+            tileName,
+            textureId.ToString(),
+            Convert.ToString((long)flags, 2).PadLeft(33, '0')
+                });
+
+                // Füge die Flag-Werte hinzu
+                for (int j = 0; j < 33; j++)
+                {
+                    bool flagJ = (flags & (1UL << j)) != 0;
+                    item.SubItems.Add(flagJ.ToString());
+                }
+
+                listViewTileData.Items.Add(item);
+                itemsLoaded++;
+            }
+        }
+
+
+        private void YourForm_KeyDown(object sender, KeyEventArgs e)
+        {
+            // Prüfen Sie, ob die Leertaste gedrückt wurde
+            if (e.KeyCode == Keys.Space)
+            {
+                if (landItemsLoaded < 16000)
+                {
+                    LoadLandTiles();
+                }
+                else if (staticItemsLoaded < 65500)
+                {
+                    LoadStaticTiles();
+                }
+            }
+        }
+
+        private void buttonReadTileData_Click_1(object sender, EventArgs e)
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            if (openFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                reader = new BinaryReader(File.Open(openFileDialog.FileName, FileMode.Open));
+                LoadItems();
+            }
+        }
+
+        private int landItemsLoaded = 0;
+        private int staticItemsLoaded = 0;
+
+        private void LoadLandTiles()
+        {
+            // Laden Sie bis zu 50 Elemente
+            for (int i = 0; i < 50 && reader.BaseStream.Position < reader.BaseStream.Length; i++)
+            {
+                // Lesen Sie die Daten für jede Land-Kachel-Gruppe
+                uint flags = reader.ReadUInt32();
+                Console.WriteLine("Flags: " + flags);
+                ushort textureId = reader.ReadUInt16();
+                Console.WriteLine("Texture ID: " + textureId);
+                string tileName = Encoding.Default.GetString(reader.ReadBytes(20));
+                Console.WriteLine("Tile Name: " + tileName);
+
+                // Fügen Sie die Informationen als neuen Eintrag in das ListView ein
+                ListViewItem item = new ListViewItem(new string[]
+                {
+            reader.BaseStream.Position.ToString("X"),
+            flags.ToString(),
+            textureId.ToString(),
+            tileName
+                });
+
+                listViewTileData.Items.Add(item);
+                landItemsLoaded++;
+            }
+        }
+
+        private void LoadStaticTiles()
+        {
+            // Laden Sie bis zu 50 Elemente
+            for (int i = 0; i < 50 && reader.BaseStream.Position < reader.BaseStream.Length; i++)
+            {
+                uint unknown = reader.ReadUInt32();
+                uint flags = reader.ReadUInt32();
+                byte weight = reader.ReadByte();
+                byte quality = reader.ReadByte();
+                ushort unknown1 = reader.ReadUInt16();
+                byte unknown2 = reader.ReadByte();
+                byte quantity = reader.ReadByte();
+                ushort animId = reader.ReadUInt16();
+                byte unknown3 = reader.ReadByte();
+                byte hue = reader.ReadByte();
+                ushort unknown4 = reader.ReadUInt16();
+                byte height = reader.ReadByte();
+                string tileName = Encoding.Default.GetString(reader.ReadBytes(20));
+
+                // Fügen Sie die Informationen als neuen Eintrag in das ListView ein
+                ListViewItem item = new ListViewItem(new string[]
+                {
+            reader.BaseStream.Position.ToString("X"),
+            unknown.ToString(),
+            flags.ToString(),
+            weight.ToString(),
+            quality.ToString(),
+            unknown1.ToString(),
+            unknown2.ToString(),
+            quantity.ToString(),
+            animId.ToString(),
+            unknown3.ToString(),
+            hue.ToString(),
+            unknown4.ToString(),
+            height.ToString(),
+            tileName
+                });
+
+                listViewTileData.Items.Add(item);
+                staticItemsLoaded++;
+            }
+        }
+
+        private void buttonReadLandTileData_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            if (openFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                reader = new BinaryReader(File.Open(openFileDialog.FileName, FileMode.Open));
+                LoadLandTiles();
+            }
+        }
+
+        private void buttonReadStaticTileData_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            if (openFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                reader = new BinaryReader(File.Open(openFileDialog.FileName, FileMode.Open));
+                LoadStaticTiles();
+            }
+        }
+
+        private void listViewTileData_MouseClick(object sender, MouseEventArgs e)
+        {
+            if (listViewTileData.SelectedItems.Count > 0)
+            {
+                ListViewItem selectedItem = listViewTileData.SelectedItems[0];
+                foreach (ListViewItem item in listViewTileData.Items)
+                {
+                    string details = "";
+                    // Iterieren Sie durch alle SubItems des aktuellen Elements
+                    foreach (ListViewItem.ListViewSubItem subItem in item.SubItems)
+                    {
+                        // Fügen Sie den Text des SubItems zu den Details hinzu
+                        details += subItem.Text + "\n";
+                    }
+                    // Fügen Sie die Details zur TextBox hinzu
+                    textBoxOutput.AppendText(details);
+                }
+            }
+        }
+
     }
 }
