@@ -447,6 +447,8 @@ namespace UoFiddler.Forms
         /// <summary>
         /// Reloads the Extern Tools DropDown <see cref="FiddlerOptions.ExternTools"/>
         /// </summary>
+        /// 
+        #region LoadExternToolsStripMenu
         public void LoadExternToolStripMenu()
         {
             ExternToolsDropDown.DropDownItems.Clear();
@@ -498,6 +500,7 @@ namespace UoFiddler.Forms
                 ExternToolsDropDown.DropDownItems.Add(item);
             }
         }
+        #endregion
 
         #region ExternTool
         private static void ExternTool_ItemClicked(object sender, ToolStripItemClickedEventArgs e)
@@ -576,6 +579,8 @@ namespace UoFiddler.Forms
         /// <summary>
         /// Updates all tile view tabs
         /// </summary>
+        /// 
+        #region UpdateAllTilesViews
         private void UpdateAllTileViews()
         {
             UpdateItemsTab();
@@ -583,42 +588,57 @@ namespace UoFiddler.Forms
             UpdateTexturesTab();
             UpdateFontsTab();
         }
+        #endregion
 
         /// <summary>
         /// Updates Item tab
         /// </summary>
+        /// 
+        #region UpdateItemsTab
         private void UpdateItemsTab()
         {
             itemShowControl.UpdateTileView();
         }
+        #endregion
 
         /// <summary>
         /// Updates Land tiles tab
         /// </summary>
+        /// 
+        #region UpdateTileTab
         private void UpdateLandTilesTab()
         {
             landTilesControl.UpdateTileView();
         }
+        #endregion
 
         /// <summary>
         /// Updates Textures tab
         /// </summary>
+        /// 
+        #region UpdateTextureTab
         private void UpdateTexturesTab()
         {
             textureControl.UpdateTileView();
         }
+        #endregion
 
         /// <summary>
         /// Updates Fonts tab
         /// </summary>
+        /// 
+        #region UpdateFontsTab
         private void UpdateFontsTab()
         {
             fontsControl.UpdateTileView();
         }
+        #endregion
 
         /// <summary>
         /// Updates Map tab
         /// </summary>
+        /// 
+        #region UpdateMapTab
         private void UpdateMapTab()
         {
             if (Options.LoadedUltimaClass["Map"])
@@ -628,14 +648,18 @@ namespace UoFiddler.Forms
 
             ControlEvents.FireMapSizeChangeEvent();
         }
+        #endregion
 
         /// <summary>
         /// Updates Sounds tab
         /// </summary>
+        /// 
+        #region UpdateSoundTab
         private void UpdateSoundTab()
         {
             soundControl.Reload();
         }
+        #endregion
 
         #region Dock and Undock
         private void OnClickUnDock(object sender, EventArgs e)
