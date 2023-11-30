@@ -1562,6 +1562,101 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         }
         #endregion
 
+        #region Class Tiledata2 !!
+        public class TileData2
+        {
+            private string directory;
+            private string filePath;
+
+            public TileData2(string directory)
+            {
+                this.directory = directory;
+                this.filePath = Path.Combine(this.directory, "TileData.mul");
+            }
+
+            public void CreateTileData(int landBlockCount, int staticBlockCount)
+            {
+                using (BinaryWriter writer = new BinaryWriter(File.Open(this.filePath, FileMode.Create)))
+                {
+                    for (int i = 0; i < landBlockCount; i++)
+                    {
+                        WriteLandBlock(writer, i);
+                    }
+                    for (int i = 0; i < staticBlockCount; i++)
+                    {
+                        WriteStaticBlock(writer);
+                    }
+                }
+            }
+
+            private void WriteLandBlock(BinaryWriter writer, int index)
+            {
+                writer.Write(index);  // header
+                for (int i = 0; i < 32; i++)
+                {
+                    writer.Write(i);  // flags
+                    writer.Write((short)i);  // TextureID
+                    writer.Write(Encoding.ASCII.GetBytes("name"));  // name
+                }
+            }
+
+            private void WriteStaticBlock(BinaryWriter writer)
+            {
+                writer.Write(0);  // header
+                for (int i = 0; i < 32; i++)
+                {
+                    writer.Write(i);  // flags
+                    writer.Write((byte)i);  // weight
+                    writer.Write((byte)i);  // quality
+                    writer.Write((short)i);  // unknown1
+                    writer.Write((byte)i);  // unknown2
+                    writer.Write((byte)i);  // quantity
+                    writer.Write((short)i);  // animation
+                    writer.Write((byte)i);  // unknown3
+                    writer.Write((byte)i);  // hue
+                    writer.Write((byte)i);  // unknown4
+                    writer.Write((byte)i);  // unknown5
+                    writer.Write((byte)i);  // height
+                    writer.Write(Encoding.ASCII.GetBytes("name"));  // name
+                }
+            }
+            public int CountIndices()
+            {
+                int count = 0;
+                using (BinaryReader reader = new BinaryReader(File.Open(this.filePath, FileMode.Open)))
+                {
+                    while (reader.BaseStream.Position != reader.BaseStream.Length)
+                    {
+                        if (reader.BaseStream.Length - reader.BaseStream.Position >= 4)
+                        {
+                            reader.ReadInt32();  // header
+                            for (int i = 0; i < 32; i++)
+                            {
+                                if (reader.BaseStream.Length - reader.BaseStream.Position >= 26)
+                                {
+                                    reader.ReadInt32();  // flags
+                                    reader.ReadInt16();  // TextureID or animation
+                                    reader.ReadBytes(20);  // name
+                                    count++;
+                                }
+                                else
+                                {
+                                    break;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            break;
+                        }
+                    }
+                }
+                return count;
+            }
+
+        }
+        #endregion
+
         private BinaryReader reader;
         private int itemsLoaded = 0;
 
@@ -1757,5 +1852,35 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             }
         }
         #endregion
+
+        #region Create Tiledata
+        private void CreateTiledataMul_Click(object sender, EventArgs e)
+        {
+            FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog();
+            if (folderBrowserDialog.ShowDialog() == DialogResult.OK)
+            {
+                int landCount = string.IsNullOrEmpty(landBlockCount.Text) ? 512 : int.Parse(landBlockCount.Text);
+                int staticCount = int.Parse(staticBlockCount.Text);
+                TileData2 tileData = new TileData2(folderBrowserDialog.SelectedPath);
+                tileData.CreateTileData(landCount, staticCount);
+                int totalIndices = landCount * 32 + staticCount * 32;
+                indexCount.Text = $"Erstellte Landblöcke: {landCount * 32}\n" +
+                                  $"Erstellte statische Blöcke: {staticCount * 32}\n" +
+                                  $"Gesamtzahl der erstellten Indizes: {totalIndices}";
+            }
+        }
+        #endregion
+
+        private void CountIndices_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            openFileDialog.Filter = "mul files (*.mul)|*.mul";
+            if (openFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                TileData2 tileData = new TileData2(Path.GetDirectoryName(openFileDialog.FileName));
+                int count = tileData.CountIndices();
+                indexCount.Text = $"Anzahl der Indizes: {count}";
+            }
+        }
     }
 }

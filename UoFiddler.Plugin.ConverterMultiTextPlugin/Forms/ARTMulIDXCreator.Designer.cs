@@ -77,6 +77,16 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             comboBoxMuls = new System.Windows.Forms.ComboBox();
             tabPage2 = new System.Windows.Forms.TabPage();
             tabPage3 = new System.Windows.Forms.TabPage();
+            groupBoxTiledata = new System.Windows.Forms.GroupBox();
+            CountIndices = new System.Windows.Forms.Button();
+            label19 = new System.Windows.Forms.Label();
+            CreateTiledataMul = new System.Windows.Forms.Button();
+            label18 = new System.Windows.Forms.Label();
+            staticBlockCount = new System.Windows.Forms.TextBox();
+            indexCount = new System.Windows.Forms.Label();
+            landBlockCount = new System.Windows.Forms.TextBox();
+            labelLand = new System.Windows.Forms.Label();
+            labelStatic = new System.Windows.Forms.Label();
             btnCountTileDataEntries = new System.Windows.Forms.Button();
             btCreateSimpleTiledata = new System.Windows.Forms.Button();
             lblTileDataEntryCount = new System.Windows.Forms.Label();
@@ -84,11 +94,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             btCreateTiledataEmpty = new System.Windows.Forms.Button();
             label17 = new System.Windows.Forms.Label();
             checkBoxTileData = new System.Windows.Forms.CheckBox();
+            lbTileDataCreate = new System.Windows.Forms.Label();
             label16 = new System.Windows.Forms.Label();
             label15 = new System.Windows.Forms.Label();
             tbstaticTileGroups = new System.Windows.Forms.TextBox();
             tblandTileGroups = new System.Windows.Forms.TextBox();
-            lbTileDataCreate = new System.Windows.Forms.Label();
             tbDirTileData = new System.Windows.Forms.TextBox();
             btCreateTiledata = new System.Windows.Forms.Button();
             tabPage4 = new System.Windows.Forms.TabPage();
@@ -107,12 +117,15 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             buttonReadLandTileData = new System.Windows.Forms.Button();
             listViewTileData = new System.Windows.Forms.ListView();
             buttonReadTileData = new System.Windows.Forms.Button();
+            groupBox1 = new System.Windows.Forms.GroupBox();
             tabControl1.SuspendLayout();
             tabPage1.SuspendLayout();
             tabPage2.SuspendLayout();
             tabPage3.SuspendLayout();
+            groupBoxTiledata.SuspendLayout();
             tabPage4.SuspendLayout();
             groupBoxInfo.SuspendLayout();
+            groupBox1.SuspendLayout();
             SuspendLayout();
             // 
             // textBox1
@@ -487,18 +500,17 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // 
             // tabPage3
             // 
+            tabPage3.Controls.Add(groupBox1);
+            tabPage3.Controls.Add(groupBoxTiledata);
             tabPage3.Controls.Add(btnCountTileDataEntries);
-            tabPage3.Controls.Add(btCreateSimpleTiledata);
             tabPage3.Controls.Add(lblTileDataEntryCount);
-            tabPage3.Controls.Add(btCreateTiledataEmpty2);
-            tabPage3.Controls.Add(btCreateTiledataEmpty);
             tabPage3.Controls.Add(label17);
             tabPage3.Controls.Add(checkBoxTileData);
+            tabPage3.Controls.Add(lbTileDataCreate);
             tabPage3.Controls.Add(label16);
             tabPage3.Controls.Add(label15);
             tabPage3.Controls.Add(tbstaticTileGroups);
             tabPage3.Controls.Add(tblandTileGroups);
-            tabPage3.Controls.Add(lbTileDataCreate);
             tabPage3.Controls.Add(tbDirTileData);
             tabPage3.Controls.Add(btCreateTiledata);
             tabPage3.Location = new System.Drawing.Point(4, 24);
@@ -508,9 +520,108 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             tabPage3.Text = "TileData";
             tabPage3.UseVisualStyleBackColor = true;
             // 
+            // groupBoxTiledata
+            // 
+            groupBoxTiledata.Controls.Add(CountIndices);
+            groupBoxTiledata.Controls.Add(label19);
+            groupBoxTiledata.Controls.Add(CreateTiledataMul);
+            groupBoxTiledata.Controls.Add(label18);
+            groupBoxTiledata.Controls.Add(staticBlockCount);
+            groupBoxTiledata.Controls.Add(indexCount);
+            groupBoxTiledata.Controls.Add(landBlockCount);
+            groupBoxTiledata.Controls.Add(labelLand);
+            groupBoxTiledata.Controls.Add(labelStatic);
+            groupBoxTiledata.Location = new System.Drawing.Point(21, 175);
+            groupBoxTiledata.Name = "groupBoxTiledata";
+            groupBoxTiledata.Size = new System.Drawing.Size(405, 183);
+            groupBoxTiledata.TabIndex = 29;
+            groupBoxTiledata.TabStop = false;
+            groupBoxTiledata.Text = "Create Tiledata";
+            // 
+            // CountIndices
+            // 
+            CountIndices.Location = new System.Drawing.Point(176, 39);
+            CountIndices.Name = "CountIndices";
+            CountIndices.Size = new System.Drawing.Size(75, 23);
+            CountIndices.TabIndex = 29;
+            CountIndices.Text = "Indexe";
+            CountIndices.UseVisualStyleBackColor = true;
+            CountIndices.Click += CountIndices_Click;
+            // 
+            // label19
+            // 
+            label19.AutoSize = true;
+            label19.Location = new System.Drawing.Point(176, 74);
+            label19.Name = "label19";
+            label19.Size = new System.Drawing.Size(146, 15);
+            label19.TabIndex = 28;
+            label19.Text = "5000 x 32 = 160.000 Indexe";
+            // 
+            // CreateTiledataMul
+            // 
+            CreateTiledataMul.Location = new System.Drawing.Point(59, 39);
+            CreateTiledataMul.Name = "CreateTiledataMul";
+            CreateTiledataMul.Size = new System.Drawing.Size(100, 23);
+            CreateTiledataMul.TabIndex = 21;
+            CreateTiledataMul.Text = "Create Tiledata";
+            CreateTiledataMul.UseVisualStyleBackColor = true;
+            CreateTiledataMul.Click += CreateTiledataMul_Click;
+            // 
+            // label18
+            // 
+            label18.AutoSize = true;
+            label18.Location = new System.Drawing.Point(176, 103);
+            label18.Name = "label18";
+            label18.Size = new System.Drawing.Size(134, 15);
+            label18.TabIndex = 27;
+            label18.Text = "512 x 32 = 16.384 Indexe";
+            // 
+            // staticBlockCount
+            // 
+            staticBlockCount.Location = new System.Drawing.Point(59, 71);
+            staticBlockCount.Name = "staticBlockCount";
+            staticBlockCount.Size = new System.Drawing.Size(100, 23);
+            staticBlockCount.TabIndex = 22;
+            staticBlockCount.Text = "5000";
+            // 
+            // indexCount
+            // 
+            indexCount.AutoSize = true;
+            indexCount.Location = new System.Drawing.Point(59, 136);
+            indexCount.Name = "indexCount";
+            indexCount.Size = new System.Drawing.Size(43, 15);
+            indexCount.TabIndex = 26;
+            indexCount.Text = "Count:";
+            // 
+            // landBlockCount
+            // 
+            landBlockCount.Location = new System.Drawing.Point(59, 100);
+            landBlockCount.Name = "landBlockCount";
+            landBlockCount.Size = new System.Drawing.Size(100, 23);
+            landBlockCount.TabIndex = 23;
+            landBlockCount.Text = "512";
+            // 
+            // labelLand
+            // 
+            labelLand.AutoSize = true;
+            labelLand.Location = new System.Drawing.Point(20, 103);
+            labelLand.Name = "labelLand";
+            labelLand.Size = new System.Drawing.Size(33, 15);
+            labelLand.TabIndex = 25;
+            labelLand.Text = "Land";
+            // 
+            // labelStatic
+            // 
+            labelStatic.AutoSize = true;
+            labelStatic.Location = new System.Drawing.Point(17, 74);
+            labelStatic.Name = "labelStatic";
+            labelStatic.Size = new System.Drawing.Size(36, 15);
+            labelStatic.TabIndex = 24;
+            labelStatic.Text = "Static";
+            // 
             // btnCountTileDataEntries
             // 
-            btnCountTileDataEntries.Location = new System.Drawing.Point(21, 191);
+            btnCountTileDataEntries.Location = new System.Drawing.Point(21, 112);
             btnCountTileDataEntries.Name = "btnCountTileDataEntries";
             btnCountTileDataEntries.Size = new System.Drawing.Size(94, 23);
             btnCountTileDataEntries.TabIndex = 19;
@@ -520,7 +631,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // 
             // btCreateSimpleTiledata
             // 
-            btCreateSimpleTiledata.Location = new System.Drawing.Point(214, 155);
+            btCreateSimpleTiledata.Location = new System.Drawing.Point(84, 73);
             btCreateSimpleTiledata.Name = "btCreateSimpleTiledata";
             btCreateSimpleTiledata.Size = new System.Drawing.Size(110, 23);
             btCreateSimpleTiledata.TabIndex = 20;
@@ -531,7 +642,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // lblTileDataEntryCount
             // 
             lblTileDataEntryCount.AutoSize = true;
-            lblTileDataEntryCount.Location = new System.Drawing.Point(21, 217);
+            lblTileDataEntryCount.Location = new System.Drawing.Point(129, 116);
             lblTileDataEntryCount.Name = "lblTileDataEntryCount";
             lblTileDataEntryCount.Size = new System.Drawing.Size(43, 15);
             lblTileDataEntryCount.TabIndex = 19;
@@ -539,7 +650,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // 
             // btCreateTiledataEmpty2
             // 
-            btCreateTiledataEmpty2.Location = new System.Drawing.Point(214, 126);
+            btCreateTiledataEmpty2.Location = new System.Drawing.Point(84, 44);
             btCreateTiledataEmpty2.Name = "btCreateTiledataEmpty2";
             btCreateTiledataEmpty2.Size = new System.Drawing.Size(110, 23);
             btCreateTiledataEmpty2.TabIndex = 12;
@@ -549,7 +660,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // 
             // btCreateTiledataEmpty
             // 
-            btCreateTiledataEmpty.Location = new System.Drawing.Point(214, 97);
+            btCreateTiledataEmpty.Location = new System.Drawing.Point(99, 14);
             btCreateTiledataEmpty.Name = "btCreateTiledataEmpty";
             btCreateTiledataEmpty.Size = new System.Drawing.Size(95, 23);
             btCreateTiledataEmpty.TabIndex = 11;
@@ -575,6 +686,15 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             checkBoxTileData.TabIndex = 9;
             checkBoxTileData.Text = "Orginal";
             checkBoxTileData.UseVisualStyleBackColor = true;
+            // 
+            // lbTileDataCreate
+            // 
+            lbTileDataCreate.AutoSize = true;
+            lbTileDataCreate.Location = new System.Drawing.Point(21, 78);
+            lbTileDataCreate.Name = "lbTileDataCreate";
+            lbTileDataCreate.Size = new System.Drawing.Size(86, 15);
+            lbTileDataCreate.TabIndex = 2;
+            lbTileDataCreate.Text = "Create TileData";
             // 
             // label16
             // 
@@ -607,15 +727,6 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             tblandTileGroups.Name = "tblandTileGroups";
             tblandTileGroups.Size = new System.Drawing.Size(100, 23);
             tblandTileGroups.TabIndex = 3;
-            // 
-            // lbTileDataCreate
-            // 
-            lbTileDataCreate.AutoSize = true;
-            lbTileDataCreate.Location = new System.Drawing.Point(21, 79);
-            lbTileDataCreate.Name = "lbTileDataCreate";
-            lbTileDataCreate.Size = new System.Drawing.Size(86, 15);
-            lbTileDataCreate.TabIndex = 2;
-            lbTileDataCreate.Text = "Create TileData";
             // 
             // tbDirTileData
             // 
@@ -799,6 +910,18 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             buttonReadTileData.UseVisualStyleBackColor = true;
             buttonReadTileData.Click += buttonReadTileData_Click;
             // 
+            // groupBox1
+            // 
+            groupBox1.Controls.Add(btCreateSimpleTiledata);
+            groupBox1.Controls.Add(btCreateTiledataEmpty);
+            groupBox1.Controls.Add(btCreateTiledataEmpty2);
+            groupBox1.Location = new System.Drawing.Point(526, 21);
+            groupBox1.Name = "groupBox1";
+            groupBox1.Size = new System.Drawing.Size(200, 182);
+            groupBox1.TabIndex = 30;
+            groupBox1.TabStop = false;
+            groupBox1.Text = "Test";
+            // 
             // ARTMulIDXCreator
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -816,10 +939,13 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             tabPage2.PerformLayout();
             tabPage3.ResumeLayout(false);
             tabPage3.PerformLayout();
+            groupBoxTiledata.ResumeLayout(false);
+            groupBoxTiledata.PerformLayout();
             tabPage4.ResumeLayout(false);
             tabPage4.PerformLayout();
             groupBoxInfo.ResumeLayout(false);
             groupBoxInfo.PerformLayout();
+            groupBox1.ResumeLayout(false);
             ResumeLayout(false);
         }
 
@@ -892,5 +1018,16 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private System.Windows.Forms.Button buttonReadLandTileData;
         private System.Windows.Forms.Button buttonReadStaticTileData;
         private System.Windows.Forms.TextBox textBoxOutput;
+        private System.Windows.Forms.Button CreateTiledataMul;
+        private System.Windows.Forms.TextBox staticBlockCount;
+        private System.Windows.Forms.Label labelLand;
+        private System.Windows.Forms.Label labelStatic;
+        private System.Windows.Forms.TextBox landBlockCount;
+        private System.Windows.Forms.Label label18;
+        private System.Windows.Forms.Label indexCount;
+        private System.Windows.Forms.Label label19;
+        private System.Windows.Forms.GroupBox groupBoxTiledata;
+        private System.Windows.Forms.Button CountIndices;
+        private System.Windows.Forms.GroupBox groupBox1;
     }
 }
