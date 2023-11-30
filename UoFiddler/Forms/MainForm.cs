@@ -1028,14 +1028,20 @@ namespace UoFiddler.Forms
         #region Polserver Link
         private void ToolStripMenuItemHelp_Click(object sender, EventArgs e)
         {
-            /*Process.Start(new ProcessStartInfo
-            {
-                FileName = "http://uofiddler.polserver.com/help.html",
-                UseShellExecute = true
-            });*/
-
             using (HelpDokuForm helpDokuForm = new HelpDokuForm())
             {
+                helpDokuForm.FileName = "UOFiddler.htm";
+                helpDokuForm.ShowDialog();
+            }
+        }
+        #endregion
+
+        #region FileFormatGerman Html
+        private void ToolStripMenuItemFileFormatsGerman_Click(object sender, EventArgs e)
+        {
+            using (HelpDokuForm helpDokuForm = new HelpDokuForm())
+            {
+                helpDokuForm.FileName = "FileFormatsGerman.html";
                 helpDokuForm.ShowDialog();
             }
         }

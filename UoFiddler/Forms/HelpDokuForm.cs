@@ -37,6 +37,8 @@ namespace UoFiddler.Forms
             InitializeAsync();
         }
 
+        public string FileName { get; set; }
+
         private async void InitializeAsync()
         {
             // Get the path to the %LOCALAPPDATA% directory
@@ -47,8 +49,9 @@ namespace UoFiddler.Forms
             var env = await CoreWebView2Environment.CreateAsync(userDataFolder: userDataFolder);
             // Ensure that the CoreWebView2 runtime is initialized and use the specified CoreWebView2Environment instance
             await webView2.EnsureCoreWebView2Async(env);
-            // Navigate to the UOFiddler.htm file in the UOFiddlerHelp folder in the current directory
-            webView2.CoreWebView2.Navigate($"file:///{Path.Combine(Environment.CurrentDirectory, "UOFiddlerHelp", "UOFiddler.htm")}");
+            // Navigate to the specified file in the UOFiddlerHelp folder in the current directory
+            webView2.CoreWebView2.Navigate($"file:///{Path.Combine(Environment.CurrentDirectory, "UOFiddlerHelp", FileName)}");
         }
+
     }
 }

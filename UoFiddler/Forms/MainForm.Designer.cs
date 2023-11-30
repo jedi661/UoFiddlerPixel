@@ -130,10 +130,11 @@ namespace UoFiddler.Forms
             tsPluginsSeparator = new System.Windows.Forms.ToolStripSeparator();
             toolStripDropDownButtonHelp = new System.Windows.Forms.ToolStripDropDownButton();
             toolStripMenuItemHelp = new System.Windows.Forms.ToolStripMenuItem();
+            fileFormatGermanToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             binaryDecimalHexadecimalConverterToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             alarmClockToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            notPadToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             calendarToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            notPadToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             toolStripMenuItemAbout = new System.Windows.Forms.ToolStripMenuItem();
             changelogToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -147,6 +148,8 @@ namespace UoFiddler.Forms
             toolStripMenuItem2 = new System.Windows.Forms.ToolStripMenuItem();
             toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
             toolStripMenuItemLink3 = new System.Windows.Forms.ToolStripMenuItem();
+            fileFormatGermanToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
+            fileFormatEnglischToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             TabPanel.SuspendLayout();
             contextMenuStripMainForm.SuspendLayout();
             StartTab.SuspendLayout();
@@ -1055,7 +1058,7 @@ namespace UoFiddler.Forms
             // toolStripDropDownButtonHelp
             // 
             toolStripDropDownButtonHelp.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            toolStripDropDownButtonHelp.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { toolStripMenuItemHelp, binaryDecimalHexadecimalConverterToolStripMenuItem, alarmClockToolStripMenuItem, calendarToolStripMenuItem, notPadToolStripMenuItem, toolStripSeparator1, toolStripMenuItemAbout, changelogToolStripMenuItem, toolStripSeparator2, ToolStripMenuItemDiscordUO, toolStripSeparator3, toolStripMenuItemLinks });
+            toolStripDropDownButtonHelp.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { toolStripMenuItemHelp, fileFormatGermanToolStripMenuItem, binaryDecimalHexadecimalConverterToolStripMenuItem, alarmClockToolStripMenuItem, calendarToolStripMenuItem, notPadToolStripMenuItem, toolStripSeparator1, toolStripMenuItemAbout, changelogToolStripMenuItem, toolStripSeparator2, ToolStripMenuItemDiscordUO, toolStripSeparator3, toolStripMenuItemLinks });
             toolStripDropDownButtonHelp.ImageTransparentColor = System.Drawing.Color.Magenta;
             toolStripDropDownButtonHelp.Name = "toolStripDropDownButtonHelp";
             toolStripDropDownButtonHelp.Size = new System.Drawing.Size(45, 22);
@@ -1069,6 +1072,14 @@ namespace UoFiddler.Forms
             toolStripMenuItemHelp.Size = new System.Drawing.Size(180, 22);
             toolStripMenuItemHelp.Text = "Help";
             toolStripMenuItemHelp.Click += ToolStripMenuItemHelp_Click;
+            // 
+            // fileFormatGermanToolStripMenuItem
+            // 
+            fileFormatGermanToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { fileFormatGermanToolStripMenuItem1, fileFormatEnglischToolStripMenuItem });
+            fileFormatGermanToolStripMenuItem.Image = Properties.Resources.Help;
+            fileFormatGermanToolStripMenuItem.Name = "fileFormatGermanToolStripMenuItem";
+            fileFormatGermanToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            fileFormatGermanToolStripMenuItem.Text = "File Format";
             // 
             // binaryDecimalHexadecimalConverterToolStripMenuItem
             // 
@@ -1087,14 +1098,6 @@ namespace UoFiddler.Forms
             alarmClockToolStripMenuItem.Text = "Alarm Clock";
             alarmClockToolStripMenuItem.Click += alarmClockToolStripMenuItem_Click;
             // 
-            // notPadToolStripMenuItem
-            // 
-            notPadToolStripMenuItem.Image = Properties.Resources.notepad;
-            notPadToolStripMenuItem.Name = "notPadToolStripMenuItem";
-            notPadToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            notPadToolStripMenuItem.Text = "NotPad";
-            notPadToolStripMenuItem.Click += notPadToolStripMenuItem_Click;
-            // 
             // calendarToolStripMenuItem
             // 
             calendarToolStripMenuItem.Image = Properties.Resources.calendar_week;
@@ -1103,6 +1106,14 @@ namespace UoFiddler.Forms
             calendarToolStripMenuItem.Text = "Calendar";
             calendarToolStripMenuItem.ToolTipText = "Calendar";
             calendarToolStripMenuItem.Click += calendarToolStripMenuItem_Click;
+            // 
+            // notPadToolStripMenuItem
+            // 
+            notPadToolStripMenuItem.Image = Properties.Resources.notepad;
+            notPadToolStripMenuItem.Name = "notPadToolStripMenuItem";
+            notPadToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            notPadToolStripMenuItem.Text = "NotPad";
+            notPadToolStripMenuItem.Click += notPadToolStripMenuItem_Click;
             // 
             // toolStripSeparator1
             // 
@@ -1142,7 +1153,7 @@ namespace UoFiddler.Forms
             // 
             ToolStripMenuItemDiscordUoFreeshardsDe.Image = Properties.Resources.pngegg;
             ToolStripMenuItemDiscordUoFreeshardsDe.Name = "ToolStripMenuItemDiscordUoFreeshardsDe";
-            ToolStripMenuItemDiscordUoFreeshardsDe.Size = new System.Drawing.Size(166, 22);
+            ToolStripMenuItemDiscordUoFreeshardsDe.Size = new System.Drawing.Size(180, 22);
             ToolStripMenuItemDiscordUoFreeshardsDe.Text = "Uo-Freeshards.de";
             ToolStripMenuItemDiscordUoFreeshardsDe.Click += ToolStripMenuItemDiscordUoFreeshardsDe_Click;
             // 
@@ -1195,6 +1206,20 @@ namespace UoFiddler.Forms
             toolStripMenuItemLink3.Size = new System.Drawing.Size(199, 22);
             toolStripMenuItemLink3.Text = "Servuo.com";
             toolStripMenuItemLink3.Click += toolStripMenuItemLink3_Click;
+            // 
+            // fileFormatGermanToolStripMenuItem1
+            // 
+            fileFormatGermanToolStripMenuItem1.Image = Properties.Resources.Directory;
+            fileFormatGermanToolStripMenuItem1.Name = "fileFormatGermanToolStripMenuItem1";
+            fileFormatGermanToolStripMenuItem1.Size = new System.Drawing.Size(180, 22);
+            fileFormatGermanToolStripMenuItem1.Text = "File Format German";
+            fileFormatGermanToolStripMenuItem1.Click += ToolStripMenuItemFileFormatsGerman_Click;
+            // 
+            // fileFormatEnglischToolStripMenuItem
+            // 
+            fileFormatEnglischToolStripMenuItem.Name = "fileFormatEnglischToolStripMenuItem";
+            fileFormatEnglischToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            fileFormatEnglischToolStripMenuItem.Text = "File Format Englisch";
             // 
             // MainForm
             // 
@@ -1347,6 +1372,9 @@ namespace UoFiddler.Forms
         private System.Windows.Forms.ToolStripMenuItem NotesToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem screenshotToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem calendarToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem fileFormatGermanToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem fileFormatGermanToolStripMenuItem1;
+        private System.Windows.Forms.ToolStripMenuItem fileFormatEnglischToolStripMenuItem;
     }
 }
 

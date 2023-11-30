@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Ultima File Format</title>
+    <style type="text/css">
+        .myTextBox {
+            width: 600px;
+            height: 600px;
+            margin-bottom: 20px;
+        }
+        .myLabel {
+            display: inline-block;
+            margin-right: 20px;
+        }
+		
+		body {
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+    color: #333;
+    padding: 20px;
+    background-color: #f4f4f4;
+	}
+	
+	h2 {
+    color: #444;
+	}
+	
+	p {
+    margin-bottom: 10px;
+	}
+
+	table {
+    border-collapse: collapse;
+    width: 100%;
+	}
+
+	table, th, td {
+    border: 1px solid #ccc;
+    padding: 10px;
+    text-align: left;
+	}
+
+	th {
+    background-color: #f2f2f2;
+	}
+
+	tr:nth-child(even) {
+    background-color: #f2f2f2;
+	}
+
+	pre {
+    background-color: #f9f9f9;
+    border: 1px solid #ccc;
+    padding: 10px;
+	}
+    </style>
+</head>
+<body>
+    <section>
+    <h2>Index</h2>
+    <p>Indexdateien werden verwendet, um Daten in anderen MUL-Dateien zu suchen.</p>
+    <h4>Data:</h4>
+    <pre>
+        <font color="MediumBlue">int</font> lookup;
+        <font color="MediumBlue">int</font> length;
+        <font color="MediumBlue">int</font> extra;
+    </pre>
+    <p>Um Daten für einen bestimmten Eintrag zu finden, suchen Sie nach (EntryID * 12) und lesen die Daten.<br>
+    Dann suchen Sie in der eigentlichen MUL-Datei (nicht in der Indexdatei) nach (lookup) und lesen (length) Anzahl von Bytes.<br>
+    Einige Daten basieren auf dem Extra-Feld.</p>
+</section>
+
+<section>
+    <h2>UO Colors</h2>
+    <p>Die Grafiken von UO sind alle 16-Bit 555 Farben:</p>
+    <h4>Data:</h4>
+    <pre>
+        <font color="MediumBlue">short</font> color;
+    </pre>
+    <h4><a title="16-bits">Color Bit Masks</a>:</h4>
+    <table border="1">
+        <tbody>
+            <tr>
+                <td>F</td><td>E</td><td>D</td><td>C</td><td>B</td><td>A</td><td>9</td><td>8</td><td>7</td><td>6</td><td>5</td><td>4</td><td>3</td><td>2</td><td>1</td><td>0</td>
+            </tr>
+            <tr>
+                <td colspan="1"><a title="Bitmask: 0x8000"> </a></td>
+                <td colspan="5" bgcolor="#C80000"><font color="#FFFFFF"><a title="Bitmask: 0x7C00">Red</a></font></td>
+                <td colspan="5" bgcolor="#00C800"><font color="#FFFFFF"><a title="Bitmask: 0x3E0">Green</a></font></td>
+                <td colspan="5" bgcolor="#0000C8"><font color="#FFFFFF"><a title="Bitmask: 0x1F">Blue</a></font></td>
+            </tr>
+        </tbody>
+    </table>
+    <p>Bit 15 wird normalerweise für Transparenz verwendet, scheint aber in UO nicht so zu sein.</p>
+</section>
+
+<section>
+    <h2><a title="Anim.mul, Anim.idx">Animations</a></h2>
+    <p><b>Data File: </b>Anim.mul<br><b>Index File: </b>Anim.idx<br></p>
+    <p>Diese Datei hat keinen Indexer. Direkt nachdem ein Block endet, beginnt ein anderer.</p>
+    <h4>Data:</h4>
+    <pre>
+        <font color="MediumBlue">short</font>[0x100] palette;
+        <font color="MediumBlue">int</font> frameCount;
+        <font color="MediumBlue">int</font>[frameCount] lookupTable;
+        <i>Frame Data...</i>
+    </pre>
+    <p>Um die Daten für einen Frame zu finden, suchen Sie nach 0x200 + lookupTable[frame].</p>
+    <h4>Frame Data:</h4>
+    <pre>
+        <font color="MediumBlue">short</font> centerX;
+        <font color="MediumBlue">short</font> centerY;
+        <font color="MediumBlue">short</font> width;
+        <font color="MediumBlue">short</font> height;
+        <i>Pixel Data...</i>
+    </pre>
+    <p>Pixel-Daten kommen in Chunks. Wenn der aktuelle Chunk-Header 0x7FFF7FFF ist, ist das Bild abgeschlossen.</p>
+    <h4>Chunks:</h4>
+    <pre>
+        <font color="MediumBlue">int</font> header;
+        <font color="MediumBlue">byte</font>[XRun] palettePixels; <font color="DarkGreen">// Siehe Beschreibung unten für XRun</font>
+    </pre>
+    <h4><a title="32-bits">Header Bit Masks</a>:</h4>
+    <table border="1">
+        <tbody>
+            <tr>
+                <td>1F</td><td>1E</td><td>1D</td><td>1C</td><td>1B</td><td>1A</td><td>19</td><td>18</td><td>17</td><td>16</td><td>15</td><td>14</td><td>13</td><td>12</td><td>11</td><td>10</td><td>0F</td><td>0E</td><td>0D</td><td>0C</td><td>0B</td><td>0A</td><td>09</td><td>08</td><td>07</td><td>06</td><td>05</td><td>04</td><td>03</td><td>02</td><td>01</td><td>00</td>
+            </tr>
+            <tr>
+                <td colspan="10"><a title="Bitmask: 0xFFC00000">YOffset</a></td>
+                <td colspan="10"><a title="Bitmask: 0x3FF000">XOffset</a></td>
+                <td colspan="12"><a title="Bitmask: 0xFFF">XRun</a></td>
+            </tr>
+        </tbody>
+    </table>
+    <p>XOffset und YOffset sind relativ zu centerX und centerY.<br>
+    XRun gibt an, wie viele Pixel in dieser Zeile enthalten sind.<br>
+    XOffset und YOffset sind signed, daher müssen wir das kompensieren:<br>
+    <font face="Courier New">XOffset = (XOffset ^ 0x200) - 0x200</font><br>
+    <font face="Courier New">YOffset = (YOffset ^ 0x200) - 0x200</font></p>
+</section>
+	
+<section>
+    <h2><a title="AnimData.mul">AnimData</a></h2>
+    <p><b>Data File: </b>AnimData.mul<br></p>
+    <p>Diese Datei hat keinen Indexer. Direkt nachdem ein Block endet, beginnt ein anderer.</p>
+    <h4>Block:</h4>
+    <pre>
+        <font color="MediumBlue">int</font> header; <font color="DarkGreen">// Unbekannt</font>
+        <i>Einträge...</i>
+    </pre>
+    <p>Jeder Block enthält acht Einträge.</p>
+    <h4>Eintrag:</h4>
+    <pre>
+        <font color="MediumBlue">sbyte</font>[64] frameData; <font color="DarkGreen">// Dies könnte weniger als 64 Bytes sein, ich erinnere mich, einige Mülldaten am Ende gesehen zu haben.</font>
+        <font color="MediumBlue">byte</font> unknown;
+        <font color="MediumBlue">byte</font> frameCount;
+        <font color="MediumBlue">byte</font> frameInterval; <font color="DarkGreen">// Wechseln Sie alle (frameInterval * 50) Millisekunden zum nächsten Frame.</font>
+        <font color="MediumBlue">byte</font> frameStart; <font color="DarkGreen">// Es wird angenommen, dass dies die Verzögerung vor dem Start der Animation ist (frameStart * 50ms).</font>
+    </pre>
+</section>
+	
+<section>
+    <h2><a title="Art.mul, ArtIdx.mul">Art</a></h2>
+    <p><b>Data File: </b>Art.mul<br><b>Index File: </b>ArtIdx.mul<br></p>
+    <p>Es gibt drei Arten von Kunstbildern; Land, statisch und UO alpha<br>
+    Landbilder sind flaches Gelände.<br>
+    Statische Bilder sind von Gegenständen (Wände, Ausrüstung, Essen, etc.)<br>
+    UO Alpha-Bilder sind eine Art animierte Charaktere, sie wurden anstelle von Anim.mul in der UO Alpha verwendet.<br><br>
+    Statische und UO Alpha-Bilder teilen das gleiche Format, während Landbilder ein anderes verwenden.</p>
+    <h4>Land:</h4>
+    <pre>
+        <font color="MediumBlue">short</font>[1024] imageColors;
+    </pre>
+    <p>Landbilder haben eine feste Größe von 44x44.<br>
+    Sie haben auch feste transparente Stellen, und das Format ist dafür optimiert.<br>
+    Um die ersten 22 Zeilen zu lesen, initialisieren Sie zuerst X auf 22, Y auf 0 und LineWidth auf 2<br>
+    Wiederholen Sie dann 22 Mal:<br>
+    <font face="Courier New">Verringern Sie X um 1</font><br>
+    <font face="Courier New">Lesen und Zeichnen Sie (LineWidth) Anzahl der Pixel</font><br>
+    <font face="Courier New">Erhöhen Sie Y um 1</font><br>
+    <font face="Courier New">Erhöhen Sie LineWidth um 2</font><br><br>
+    Für die letzten 22 Zeilen tun Sie folgendes:<br>
+    <font face="Courier New">Lesen und Zeichnen Sie (LineWidth) Anzahl der Pixel</font><br>
+    <font face="Courier New">Erhöhen Sie X um 1</font><br>
+    <font face="Courier New">Erhöhen Sie Y um 1</font><br>
+    <font face="Courier New">Verringern Sie LineWidth um 2</font><br>
+    Das resultierende Bild ist das diamantförmige Kachel.</p>
+    <h4>Statics:</h4>
+    <pre>
+        <font color="MediumBlue">int</font> header; <font color="DarkGreen">// Unknown</font>
+        <font color="MediumBlue">short</font> width;
+        <font color="MediumBlue">short</font> height;
+        <font color="MediumBlue">short</font>[height] lookupTable;
+        <i>Offset-Run data...</i>
+    </pre>
+    <p>Die Lookup-Tabelle ist vom Datenstart versetzt und behandelt die Daten nach 16-Bit.<br>
+    Um den richtigen Byte-Offset zu bekommen, müssen Sie 4 + Höhe hinzufügen, dann mit zwei multiplizieren.<br>
+    Die statischen Bilder sind mit einer Offset-Run-Kodierung komprimiert.<br>
+    <h4>Offset-Run data:</h4>
+    <pre>
+        <font color="MediumBlue">short</font> xOffset;
+        <font color="MediumBlue">short</font> xRun;
+        <font color="MediumBlue">short</font>[xRun] runColors;
+    </pre>
+    Wenn xOffset 0 und xRun 0 ist, ist die Zeile abgeschlossen. Wenn nicht, lesen Sie weiter die Chunks.<br>
+    Die Verarbeitung der Offset-Run-Daten ist einfach:<br>
+    <font face="Courier New">Erhöhen Sie X um xOffset</font><br>
+    <font face="Courier New">Foreach xRun</font><br>
+    <font face="Courier New">Lesen und Zeichnen Sie das nächste Pixel</font><br>
+    <font face="Courier New">Erhöhen Sie X um 1</font><br>
+    <font face="Courier New">End Foreach</font></p>
+</section>
+
+	
+<section>
+    <h2><a title="Fonts.mul">Fonts</a></h2>
+    <p><b>Data File: </b>Fonts.mul<br></p>
+    <p>Diese Datei hat keinen Indexer. Direkt nachdem ein Zeichensatz endet, beginnt ein anderer.</p>
+    <h4>Character Set:</h4>
+    <pre>
+        <font color="MediumBlue">byte</font> header; <font color="DarkGreen">// Unknown</font>
+        <p>List Character[224]: <font color="DarkGreen">// Die ersten 32 Zeichen sind nicht im Set enthalten</font>
+        <br>   <font color="MediumBlue">byte</font> width;
+        <br>   <font color="MediumBlue">byte</font> height;
+        <br>   <font color="MediumBlue">byte</font> header; <font color="DarkGreen">// Unknown</font>
+        <br>   <font color="MediumBlue">short</font>[width * height] imageColors;</p>
+    </pre>
+    <p>Das Array imageColor wird von oben nach unten, von links nach rechts geladen. Eine Farbe von 0x0000 sollte als transparent behandelt werden.</p>
+</section>
+
+	
+<section>
+    <h2><a title="GumpArt.mul, GumpIdx.mul">Gumps</a></h2>
+    <p><b>Data File: </b>GumpArt.mul<br><b>Index File: </b>GumpIdx.mul<br></p>
+    <p>Sie können die folgenden Werte aus dem Extra-Feld in der Indexdatei berechnen.</p>
+    <h4>Sizes:</h4>
+    <pre>
+        <font color="MediumBlue">short</font> width = ((<a title="This value is determined by the index."><font color="MediumBlue">extra</font></a> >> 16) & 0xFFFF);
+        <font color="MediumBlue">short</font> height = (<a title="This value is determined by the index."><font color="MediumBlue">extra</font></a> & 0xFFFF);
+    </pre>
+    <h4>Data:</h4>
+    <pre>
+        <font color="MediumBlue">int</font>[height] lookupTable;
+        <i>RLE Data...</i>
+    </pre>
+    <p>RLE steht für "run-length encoding", es handelt sich um eine einfache Form der Bildkompression.<br>
+    Diese Implementierung der RLE-Kompression wird als 32-Bit-Werte behandelt, die in zwei 16-Bit-Werte aufgeteilt sind</p>
+    <h4><a title="32-bits">RLE Packet</a>:</h4>
+    <table border="1">
+        <tbody>
+            <tr>
+                <td>1F</td><td>1E</td><td>1D</td><td>1C</td><td>1B</td><td>1A</td><td>19</td><td>18</td><td>17</td><td>16</td><td>15</td><td>14</td><td>13</td><td>12</td><td>11</td><td>10</td><td>0F</td><td>0E</td><td>0D</td><td>0C</td><td>0B</td><td>0A</td><td>09</td><td>08</td><td>07</td><td>06</td><td>05</td><td>04</td><td>03</td><td>02</td><td>01</td><td>00</td>
+            </tr>
+            <tr>
+                <td colspan="16"><a title="Bitmask: 0xFFFF0000">Run</a></td>
+                <td colspan="16"><a title="Bitmask: 0xFFFF">Color</a></td>
+            </tr>
+        </tbody>
+    </table>
+    <p>Das Feld Color gibt an, welche Farbe wiederholt werden soll. Das Feld Run repräsentiert die Länge der Pixel:<br><br>
+    <font face="Courier New">for ( int i = 0; i < Run; i++ )</font><br>
+    <font face="Courier New">{</font><br>
+    <font face="Courier New">   SetPixel( x + i, y, Color );</font><br>
+    <font face="Courier New">}</font><br>
+    <font face="Courier New">x += Run;</font></p>
+</section>
+	
+<section>
+    <h2><a title="Light.mul, LightIdx.mul">Lights</a></h2>
+    <p><b>Data File: </b>Light.mul<br><b>Index File: </b>LightIdx.mul<br></p>
+    <p>Sie können die folgenden Werte aus dem Extra-Feld in der Indexdatei berechnen.</p>
+    <h4>Sizes:</h4>
+    <pre>
+        <font color="MediumBlue">short</font> width = (<a title="This value is determined by the index."><font color="MediumBlue">extra</font></a> & 0xFFFF);
+        <font color="MediumBlue">short</font> height = ((<a title="This value is determined by the index."><font color="MediumBlue">extra</font></a> >> 16) & 0xFFFF);
+    </pre>
+    <h4>Data:</h4>
+    <pre>
+        <font color="MediumBlue">sbyte</font>[width * height] additiveLightmap;
+    </pre>
+    <p>Für jedes Pixel (geladen von oben nach unten, von links nach rechts) addieren Sie den Lichtkartenwert für jedes R, G und B.<br>Da der Wert von -31 bis 31 reicht, könnten Sie leicht einen Farbton anwenden, indem Sie den Farbeintrag bei Math.Abs( value ) verwenden.</p>
+</section>
+
+<section>
+    <h2><a title="Map<n>.mul">Maps</a></h2>
+    <p><b>Data File: </b>Map<n>.mul<br></p>
+    <p>Diese Datei hat keinen Indexer. Direkt nachdem ein Block endet, beginnt ein anderer.</p>
+    <h4>Block:</h4>
+    <pre>
+        <font color="MediumBlue">int</font> header; <font color="DarkGreen">// Unknown</font>
+        <i>Cells...</i>
+    </pre>
+    <p>Jeder Block enthält 64 Zellen, die als 8x8-Matrix von links nach rechts, von oben nach unten behandelt werden.</p>
+    <h4>Cell:</h4>
+    <pre>
+        <font color="MediumBlue">short</font> TileID;
+        <font color="MediumBlue">sbyte</font> Z;
+    </pre>
+    <p>Sie können zu einem bestimmten Block springen, indem Sie die Kartenhöhe kennen.<br>
+    - Für Map0.mul beträgt die Blockbreite und -höhe 768x512.<br>
+    - Für Map2.mul beträgt sie 288x200.<br><br>
+    Der Algorithmus zur Suche des Block-Index ist:<br>
+    <font face="Courier New">((XBlock * BlockHeight) + YBlock) * 196</font><br>
+    Von dort aus ist der Offset zu einer bestimmten Zelle:<br>
+    <font face="Courier New">((CellY * 8) + CellX) * 3</font></p>
+</section>
+	
+<section>
+    <h2><a title="MultiMap.rle">Multi Map</a></h2>
+    <p><b>Data File: </b>MultiMap.rle<br></p>
+    <p>Diese Datei enthält eine Draufsicht der Britannia-Karte. Die Bildabmessungen werden durch Breite und Höhe definiert. Pixel sind entweder ein- oder ausgeschaltet.</p>
+    <h4>Data:</h4>
+    <pre>
+        <font color="MediumBlue">int</font> width;
+        <font color="MediumBlue">int</font> height;
+        <i>Pixel Data......</i>
+    </pre>
+    <h4><a title="8-bits">Pixel Data</a>:</h4>
+    <table border="1">
+        <tbody>
+            <tr>
+                <td>7</td><td>6</td><td>5</td><td>4</td><td>3</td><td>2</td><td>1</td><td>0</td>
+            </tr>
+            <tr>
+                <td colspan="1" bgcolor="#C80000"><font color="#FFFFFF"><a title="Bitmask: 0x80">On?</a></font></td>
+                <td colspan="7"><a title="Bitmask: 0x7F">Count</a></td>
+            </tr>
+        </tbody>
+    </table>
+    <p>Dann wird das ein-/ausgeschaltete Pixel Count-mal wiederholt.<br>Wenn X die Breite überschreitet, setzen Sie X auf (X Modulus Breite)</p>
+</section>
+	
+<section>
+    <h2><a title="Multi.mul, Multi.idx">Multis</a></h2>
+    <p><b>Data File: </b>Multi.mul<br><b>Index File: </b>Multi.idx<br></p>
+    <h4>Data:</h4>
+    <pre>
+        <p>List Items[<a title="This value is determined by the index."><font color="MediumBlue">length</font></a> / 12]:
+        <br>   <font color="MediumBlue">short</font> ItemID;
+        <br>   <font color="MediumBlue">short</font> X;
+        <br>   <font color="MediumBlue">short</font> Y;
+        <br>   <font color="MediumBlue">short</font> Z;
+        <br>   <font color="MediumBlue">int</font> isVisible; <font color="DarkGreen">// 0=no, 1=yes</font></p>
+    </pre>
+    <p>Das Zentrum befindet sich bei XYZ (0,0,0). Die Liste muss sortiert sein.</p>
+</section>
+	
+<section>
+    <h2><a title="Palette.mul">Palette</a></h2>
+    <p><b>Data File: </b>Palette.mul<br></p>
+    <h4>Data:</h4>
+    <pre>
+        <p>List RGBValues[256]:
+        <br>   <font color="MediumBlue">byte</font> R;
+        <br>   <font color="MediumBlue">byte</font> G;
+        <br>   <font color="MediumBlue">byte</font> B;</p>
+    </pre>
+    <p>Diese Datei enthält einfach eine Palette von 24-Bit-RGB-Farbwerten.</p>
+</section>
+	
+<section>
+    <h2><a title="RadarCol.mul">Radar Colors</a></h2>
+    <p><b>Data File: </b>RadarCol.mul<br></p>
+    <h4>Data:</h4>
+    <pre>
+        <font color="MediumBlue">short</font>[0x8000] colors;
+    </pre>
+    <p>Diese Datei enthält einfach Farbwerte für jedes Kachel.</p>
+</section>
+
+<section>
+    <h2><a title="SJIS2Uni.mul">SJIS To UniFont Table</a></h2>
+    <p><b>Data File: </b>SJIS2Uni.mul<br></p>
+    <h4>Data:</h4>
+    <pre>
+        <font color="MediumBlue">short</font>[0x10000] table;
+    </pre>
+    <p>Diese Datei wird verwendet, um ein SJIS-Zeichen in die entsprechende UniFont[n].mul-Zeichengrafik zu konvertieren.</p>
+</section>
+	
+<section>
+    <h2><a title="SkillGrp.mul">Skill Groups</a></h2>
+    <p><b>Data File: </b>SkillGrp.mul<br></p>
+    <h4>Data:</h4>
+    <pre>
+        <font color="MediumBlue">int</font> groupCount;
+        <p>List Groups[groupCount]:
+        <br>   <font color="MediumBlue">char</font>[17] groupName;</p>
+        <font color="MediumBlue">int</font>[?] table; <font color="DarkGreen">// Contains which group a skill is in.</font>
+    </pre>
+    <p>The table array extends to the end of the file.<br>To determine which group a skill is in, simply use table[SkillID].</p>
+</section>
+
+<section>
+    <h2><a title="Skills.mul, Skills.idx">Skills</a></h2>
+    <p><b>Data File: </b>Skills.mul<br><b>Index File: </b>Skills.idx<br></p>
+    <h4>Data:</h4>
+    <pre>
+        <font color="MediumBlue">bool</font> isAction; <font color="DarkGreen">// Does the skill have an action button?</font><br>
+        <font color="MediumBlue">char</font>[<a title="This value is determined by the index."><font color="MediumBlue">length</font></a> - 1] name;
+    </pre>
+</section>
+
+<section>
+    <h2><a title="Sound.mul, SoundIdx.mul">Sounds</a></h2>
+    <p><b>Data File: </b>Sound.mul<br><b>Index File: </b>SoundIdx.mul<br></p>
+    <h4>Data:</h4>
+    <pre>
+        <font color="MediumBlue">char</font>[20] fileName; <font color="DarkGreen">// Original *.wav file name</font><br>
+        <font color="MediumBlue">byte</font>[20] header; <font color="DarkGreen">// Unknown</font><br>
+        <font color="MediumBlue">byte</font>[<a title="This value is determined by the index."><font color="MediumBlue">length</font></a> - 40] waveData;
+    </pre>
+    <p>waveData can be written out to a .wav file's "data" chunk, after writing out the "RIFF" and "WAVEfmt " chunks.<br>The wave files have PCM 22.050 kHz, 16-Bit Mono format.<br></p>
+    <p><b>See Also:</b></p>
+</section>
+
+<section>
+    <h2><a title="Speech.mul">Speech</a></h2>
+    <p><b>Data File: </b>Speech.mul<br></p>
+    <p>Diese Datei hat keinen Indexer. Direkt nachdem ein Chunk endet, beginnt ein anderer.<br></p>
+    <pre>
+        <h4>Chunks:</h4>
+            <font color="MediumBlue">short</font> keywordID; <font color="DarkGreen">// Note: This is big-endian</font><br>
+            <font color="MediumBlue">short</font> keywordLength; <font color="DarkGreen">// Note: This is also big-endian</font><br>
+            <font color="MediumBlue">char</font>[keywordLength] keyword;<br>
+    </pre>
+    <p>Wenn der Client ein bestimmtes Keyword sagt, muss er nur die Keyword-ID an den Server senden.<br>
+    Da Keywords in verschiedenen Sprachen sein können, muss der Server die Sprache nicht mehr übersetzen.<br></p>
+</section>
+
+<section>
+    <h2><a title="Statics<n>.mul, StaIdx<n>.mul">Statics</a></h2>
+    <p><b>Data File: </b>Statics<n>.mul<br><b>Index File: </b>StaIdx<n>.mul<br></p>
+    <h4>Block:</h4>
+    <pre>
+        <p>List Items[<a title="This value is determined by the index."><font color="MediumBlue">length</font></a> / 7]:
+        <br>   <font color="MediumBlue">short</font> TileID;
+        <br>   <font color="MediumBlue">byte</font> X; <font color="DarkGreen">// Bereich von 0 bis 7</font>
+        <br>   <font color="MediumBlue">byte</font> Y; <font color="DarkGreen">// Bereich von 0 bis 7</font>
+        <br>   <font color="MediumBlue">sbyte</font> Z;
+        <br>   <font color="MediumBlue">short</font> Unknown; <font color="DarkGreen">// An einem Punkt war dies der Farbton, scheint aber nicht mehr verwendet zu werden</font></p>
+    </pre>
+    <p>Die Liste muss sortiert sein.<br>
+    Um den Index eines bestimmten Blocks zu finden, müssen Sie die Kartenhöhe kennen.<br>
+    - Für Statics0.mul beträgt die Blockbreite und -höhe 768x512.<br>
+    - Für Statics2.mul beträgt sie 288x200.<br><br>
+    Daher suchen Sie in der Indexdatei:<br>
+    <font face="Courier New">((XBlock * BlockHeight) + YBlock) * 12</font></p>
+</section>
+
+<section>
+    <h2><a title="TexMaps.mul, TexIdx.mul">Textures</a></h2>
+    <p><b>Data File: </b>TexMaps.mul<br><b>Index File: </b>TexIdx.mul<br></p>
+    <p>Sie können die Breite und Höhe jeder Textur durch den Extra-Wert des Index berechnen:</p>
+    <h4>Sizes:</h4>
+    <pre>
+        <font color="MediumBlue">int</font> width = (<a title="This value is determined by the index."><font color="MediumBlue">extra</font></a> == 1 ? 128 : 64);
+        <font color="MediumBlue">int</font> height = width;
+    </pre>
+    <h4>Data:</h4>
+    <pre>
+        <font color="MediumBlue">short</font>[width * height] imageColors;
+    </pre>
+    <p>Das Array imageColor enthält die Bildpixel, geladen von oben nach unten, von links nach rechts.</p>
+</section>
+
+<section>
+    <h2><a title="TileData.mul">TileData</a></h2>
+    <p><b>Data File: </b>TileData.mul<br></p>
+    <p>Diese Datei hat keinen Indexer. Direkt nachdem ein Block endet, beginnt ein anderer.<br>
+    Es gibt zwei Arten von Blöcken; Land und statisch.<br>
+    Es gibt 512 Landblöcke, gefolgt von einer beliebigen Anzahl von statischen Blöcken</p>
+    <h4>Land Block:</h4>
+    <pre>
+        <font color="MediumBlue">int</font> header; <font color="DarkGreen">// Unbekannt</font>
+        <p>List Land Entries[32]:
+        <br>   <font color="MediumBlue">int</font> flags; <font color="DarkGreen">// Siehe unten</font>
+        <br>   <font color="MediumBlue">short</font> TextureID; <font color="DarkGreen">// Wenn 0, hat das Landkachel keine Textur</font>
+        <br>   <font color="MediumBlue">char</font>[20] name;</p>
+    </pre>
+    <h4>Static Block:</h4>
+    <pre>
+        <font color="MediumBlue">int</font> header; <font color="DarkGreen">// Unbekannt</font>
+        <p>List Static Entries[32]:
+        <br>   <font color="MediumBlue">int</font> flags; <font color="DarkGreen">// Siehe unten</font>
+        <br>   <font color="MediumBlue">byte</font> weight; <font color="DarkGreen">// 255 wenn nicht beweglich</font>
+        <br>   <font color="MediumBlue">byte</font> quality; <font color="DarkGreen">// Siehe unten</font>
+        <br>   <font color="MediumBlue">short</font> unknown1;
+        <br>   <font color="MediumBlue">byte</font> unknown2;
+        <br>   <font color="MediumBlue">byte</font> quantity; <font color="DarkGreen">// Siehe unten</font>
+        <br>   <font color="MediumBlue">short</font> animation; <font color="DarkGreen">// Die BodyID der Animation des Gegenstandes</font>
+        <br>   <font color="MediumBlue">byte</font> unknown3;
+        <br>   <font color="MediumBlue">byte</font> hue; <font color="DarkGreen">// Unbekannte Verwendung, vielleicht farbiges Licht?</font>
+        <br>   <font color="MediumBlue">byte</font> unknown4;
+        <br>   <font color="MediumBlue">byte</font> unknown5; <font color="DarkGreen">// In einigen Kreisen als "Value" bekannt</font>
+        <br>   <font color="MediumBlue">byte</font> height;
+        <br>   <font color="MediumBlue">char</font>[20] name;</p>
+    </pre>
+    <table border="1" width="25%">
+        <tbody>
+            <tr>
+                <td colspan="2">Flags</td>
+            </tr>
+            <tr>
+                <td>0x00000001</td><td>Background</td>
+            </tr>
+            <tr>
+                <td>0x00000002</td><td>Weapon</td>
+            </tr>
+            <tr>
+                <td>0x00000004</td><td><a title="Does not fade with circle of transparency">Transparent</a></td>
+            </tr>
+            <tr>
+                <td>0x00000008</td><td><a title="Draw translucent (~90% opaque)">Translucent</a></td>
+            </tr>
+            <tr>
+                <td>0x00000010</td><td>Wall</td>
+            </tr>
+            <tr>
+                <td>0x00000020</td><td>Damaging</td>
+            </tr>
+            <tr>
+                <td>0x00000040</td><td>Impassable</td>
+            </tr>
+            <tr>
+                <td>0x00000080</td><td>Wet</td>
+            </tr>
+            <tr>
+                <td>0x00000100</td><td>Unknown1</td>
+            </tr>
+            <tr>
+                <td>0x00000200</td><td>Surface</td>
+            </tr>
+            <tr>
+                <td>0x00000400</td><td>Bridge</td>
+            </tr>
+            <tr>
+                <td>0x00000800</td><td>Generic</td>
+            </tr>
+            <tr>
+                <td>0x00001000</td><td>Window</td>
+            </tr>
+            <tr>
+                <td>0x00002000</td><td><a title="Cannot shoot through with archery">NoShoot</a></td>
+            </tr>
+            <tr>
+                <td>0x00004000</td><td>ArticleA</td>
+            </tr>
+            <tr>
+                <td>0x00008000</td><td>ArticleAn</td>
+            </tr>
+            <tr>
+                <td>0x00010000</td><td><a title="Internal tile (spawnpoints, hair, etc)">Internal</a></td>
+            </tr>
+            <tr>
+                <td>0x00020000</td><td><a title="Turns translucent (~40%) when walked behind">Foliage</a></td>
+            </tr>
+            <tr>
+                <td>0x00040000</td><td><a title="Only hue perfectly gray pixels ( r == g == b )">PartialHue</a></td>
+            </tr>
+            <tr>
+                <td>0x00080000</td><td>Unknown2</td>
+            </tr>
+            <tr>
+                <td>0x00100000</td><td>Map</td>
+            </tr>
+            <tr>
+                <td>0x00200000</td><td>Container</td>
+            </tr>
+            <tr>
+                <td>0x00400000</td><td>Wearable</td>
+            </tr>
+            <tr>
+                <td>0x00800000</td><td>LightSource</td>
+            </tr>
+            <tr>
+                <td>0x01000000</td><td><a title="Is this tile animated? (AnimData.mul)">Animation</a></td>
+            </tr>
+            <tr>
+                <td>0x02000000</td><td><a title="Cannot walk diagonaly onto this tile??">NoDiagonal</a></td>
+            </tr>
+            <tr>
+                <td>0x04000000</td><td>Unknown3</td>
+            </tr>
+            <tr>
+                <td>0x08000000</td><td>Armor</td>
+            </tr>
+            <tr>
+                <td>0x10000000</td><td>Roof</td>
+            </tr>
+            <tr>
+                <td>0x20000000</td><td>Door</td>
+            </tr>
+            <tr>
+                <td>0x40000000</td><td>StairBack</td>
+            </tr>
+            <tr>
+                <td>0x80000000</td><td>StairRight</td>
+            </tr>
+        </tbody>
+    </table>
+    <p>Wenn Weapon, ist Quantity die Waffenklasse.<br>
+    Wenn Armor, ist Quantity die Rüstungsklasse.<br>
+    Wenn Wearable, ist Quality die Schicht.<br>
+    Wenn Light Source, ist Quality die LightID<br>
+    Wenn Container, ist Height "Contains" (Etwas, das bestimmt, wie viel der Behälter halten kann?)</p>
+</section>
+
+<section>
+    <h2><a title="UniFont[n].mul">Unicode Fonts</a></h2>
+    <p><b>Data File: </b>UniFont[n].mul<br></p>
+    <p>Diese Datei beginnt mit einer Suchtabelle:</p>
+    <h4>Lookup Table:</h4>
+    <pre>
+        <font color="MediumBlue">int</font>[0x10000] lookupTable;
+    </pre>
+    <p>Sie können dann die Daten finden, indem Sie zu lookupTable[charID] suchen</p>
+    <h4>Data:</h4>
+    <pre>
+        <font color="MediumBlue">byte</font> xOffset;
+        <font color="MediumBlue">byte</font> yOffset;
+        <font color="MediumBlue">byte</font> xWidth;
+        <font color="MediumBlue">byte</font> yHeight;
+        <i>Scanline Data...</i>
+    </pre>
+    <p>Scanlines sind auf einer Byte-Grenze gepolstert; für jede Scanline haben Sie ((xWidth - 1) / 8) + 1 Bytes Daten:</p>
+    <h4><a title="8-bits">Scanline Byte</a>:</h4>
+    <table border="1">
+        <tbody>
+            <tr>
+                <td>7</td><td>6</td><td>5</td><td>4</td><td>3</td><td>2</td><td>1</td><td>0</td>
+            </tr>
+            <tr>
+                <td colspan="8"><a title="Bitmask: 0xFF">8 pixels at 1-bpp</a></td>
+            </tr>
+        </tbody>
+    </table>
+    <p>Bits werden von hoch nach niedrig geladen; Bit 7 (Maske: 0x80) wäre das erste Pixel.<br>
+    Wenn der Bitwert 0 ist, ist die Farbe transparent, sonst ist die Farbe Vordergrundfarbe.</p>
+</section>
+
+<section>
+    <h2><a title="VerData.mul">Version Data</a></h2>
+    <p><b>Data File: </b>VerData.mul<br></p>
+    <p>Diese Datei beginnt mit einer Suchtabelle:</p>
+    <h4>Lookup Table:</h4>
+    <pre>
+        <font color="MediumBlue">int</font>[0x10000] lookupTable;
+    </pre>
+    <p>Sie können dann die Daten finden, indem Sie zu lookupTable[charID] suchen</p>
+    <h4>Data:</h4>
+    <pre>
+        <font color="MediumBlue">byte</font> xOffset;
+        <font color="MediumBlue">byte</font> yOffset;
+        <font color="MediumBlue">byte</font> xWidth;
+        <font color="MediumBlue">byte</font> yHeight;
+        <i>Scanline Data...</i>
+    </pre>
+    <p>Scanlines sind auf einer Byte-Grenze gepolstert; für jede Scanline haben Sie ((xWidth - 1) / 8) + 1 Bytes Daten:</p>
+    <h4><a title="8-bits">Scanline Byte</a>:</h4>
+    <table border="1">
+        <tbody>
+            <tr>
+                <td>7</td><td>6</td><td>5</td><td>4</td><td>3</td><td>2</td><td>1</td><td>0</td>
+            </tr>
+            <tr>
+                <td colspan="8"><a title="Bitmask: 0xFF">8 pixels at 1-bpp</a></td>
+            </tr>
+        </tbody>
+    </table>
+    <p>Bits werden von hoch nach niedrig geladen; Bit 7 (Maske: 0x80) wäre das erste Pixel.<br>
+    Wenn der Bitwert 0 ist, ist die Farbe transparent, sonst ist die Farbe Vordergrundfarbe.</p>
+    <table border="1" width="25%">
+        <tbody>
+            <tr>
+                <td colspan="2">FileID->File definitions</td>
+            </tr>
+            <tr>
+                <td>0x0</td><td>Map0.mul</td>
+            </tr>
+            <tr>
+                <td>0x1</td><td>StaIdx0.mul</td>
+            </tr>
+            <tr>
+                <td>0x2</td><td>Statics0.mul</td>
+            </tr>
+            <tr>
+                <td>0x3</td><td>ArtIdx.mul</td>
+            </tr>
+            <tr>
+                <td>0x4</td><td>Art.mul</td>
+            </tr>
+            <tr>
+                <td>0x5</td><td>Anim.idx</td>
+            </tr>
+            <tr>
+                <td>0x6</td><td>Anim.mul</td>
+            </tr>
+            <tr>
+                <td>0x7</td><td>SoundIdx.mul</td>
+            </tr>
+            <tr>
+                <td>0x8</td><td>Sound.mul</td>
+            </tr>
+            <tr>
+                <td>0x9</td><td>TexIdx.mul</td>
+            </tr>
+            <tr>
+                <td>0xA</td><td>TexMaps.mul</td>
+            </tr>
+            <tr>
+                <td>0xB</td><td>GumpIdx.mul</td>
+            </tr>
+            <tr>
+                <td>0xC</td><td>GumpArt.mul</td>
+            </tr>
+            <tr>
+                <td>0xD</td><td>Multi.idx</td>
+            </tr>
+            <tr>
+                <td>0xE</td><td>Multi.mul</td>
+            </tr>
+            <tr>
+                <td>0xF</td><td>Skills.idx</td>
+            </tr>
+            <tr>
+                <td>0x10</td><td>Skills.mul</td>
+            </tr>
+            <tr>
+                <td>0x1E</td><td>TileData.mul</td>
+            </tr>
+            <tr>
+                <td>0x1F</td><td>AnimData.mul</td>
+            </tr>
+        </tbody>
+    </table>
+</section>
+
+</body>
+</html>
