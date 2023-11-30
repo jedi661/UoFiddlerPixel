@@ -131,6 +131,8 @@ namespace UoFiddler.Forms
             toolStripDropDownButtonHelp = new System.Windows.Forms.ToolStripDropDownButton();
             toolStripMenuItemHelp = new System.Windows.Forms.ToolStripMenuItem();
             fileFormatGermanToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            fileFormatGermanToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
+            fileFormatEnglischToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             binaryDecimalHexadecimalConverterToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             alarmClockToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             calendarToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -148,8 +150,6 @@ namespace UoFiddler.Forms
             toolStripMenuItem2 = new System.Windows.Forms.ToolStripMenuItem();
             toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
             toolStripMenuItemLink3 = new System.Windows.Forms.ToolStripMenuItem();
-            fileFormatGermanToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
-            fileFormatEnglischToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             TabPanel.SuspendLayout();
             contextMenuStripMainForm.SuspendLayout();
             StartTab.SuspendLayout();
@@ -1081,6 +1081,22 @@ namespace UoFiddler.Forms
             fileFormatGermanToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             fileFormatGermanToolStripMenuItem.Text = "File Format";
             // 
+            // fileFormatGermanToolStripMenuItem1
+            // 
+            fileFormatGermanToolStripMenuItem1.Image = Properties.Resources.Directory;
+            fileFormatGermanToolStripMenuItem1.Name = "fileFormatGermanToolStripMenuItem1";
+            fileFormatGermanToolStripMenuItem1.Size = new System.Drawing.Size(180, 22);
+            fileFormatGermanToolStripMenuItem1.Text = "File Format German";
+            fileFormatGermanToolStripMenuItem1.Click += ToolStripMenuItemFileFormatsGerman_Click;
+            // 
+            // fileFormatEnglischToolStripMenuItem
+            // 
+            fileFormatEnglischToolStripMenuItem.Image = Properties.Resources.Directory;
+            fileFormatEnglischToolStripMenuItem.Name = "fileFormatEnglischToolStripMenuItem";
+            fileFormatEnglischToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            fileFormatEnglischToolStripMenuItem.Text = "File Format Englisch";
+            fileFormatEnglischToolStripMenuItem.Click += ToolStripMenuItemFileFormatsEnglisch_Click;
+            // 
             // binaryDecimalHexadecimalConverterToolStripMenuItem
             // 
             binaryDecimalHexadecimalConverterToolStripMenuItem.Image = Properties.Resources.calculator;
@@ -1153,7 +1169,7 @@ namespace UoFiddler.Forms
             // 
             ToolStripMenuItemDiscordUoFreeshardsDe.Image = Properties.Resources.pngegg;
             ToolStripMenuItemDiscordUoFreeshardsDe.Name = "ToolStripMenuItemDiscordUoFreeshardsDe";
-            ToolStripMenuItemDiscordUoFreeshardsDe.Size = new System.Drawing.Size(180, 22);
+            ToolStripMenuItemDiscordUoFreeshardsDe.Size = new System.Drawing.Size(166, 22);
             ToolStripMenuItemDiscordUoFreeshardsDe.Text = "Uo-Freeshards.de";
             ToolStripMenuItemDiscordUoFreeshardsDe.Click += ToolStripMenuItemDiscordUoFreeshardsDe_Click;
             // 
@@ -1206,20 +1222,6 @@ namespace UoFiddler.Forms
             toolStripMenuItemLink3.Size = new System.Drawing.Size(199, 22);
             toolStripMenuItemLink3.Text = "Servuo.com";
             toolStripMenuItemLink3.Click += toolStripMenuItemLink3_Click;
-            // 
-            // fileFormatGermanToolStripMenuItem1
-            // 
-            fileFormatGermanToolStripMenuItem1.Image = Properties.Resources.Directory;
-            fileFormatGermanToolStripMenuItem1.Name = "fileFormatGermanToolStripMenuItem1";
-            fileFormatGermanToolStripMenuItem1.Size = new System.Drawing.Size(180, 22);
-            fileFormatGermanToolStripMenuItem1.Text = "File Format German";
-            fileFormatGermanToolStripMenuItem1.Click += ToolStripMenuItemFileFormatsGerman_Click;
-            // 
-            // fileFormatEnglischToolStripMenuItem
-            // 
-            fileFormatEnglischToolStripMenuItem.Name = "fileFormatEnglischToolStripMenuItem";
-            fileFormatEnglischToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            fileFormatEnglischToolStripMenuItem.Text = "File Format Englisch";
             // 
             // MainForm
             // 

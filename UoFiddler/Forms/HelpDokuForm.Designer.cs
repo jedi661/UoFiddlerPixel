@@ -41,17 +41,37 @@ namespace UoFiddler.Forms
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(HelpDokuForm));
             toolStrip1 = new System.Windows.Forms.ToolStrip();
+            toolStripButtonSuche = new System.Windows.Forms.ToolStripButton();
+            toolStripTextBoxSearch = new System.Windows.Forms.ToolStripTextBox();
             webView2 = new Microsoft.Web.WebView2.WinForms.WebView2();
+            toolStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)webView2).BeginInit();
             SuspendLayout();
             // 
             // toolStrip1
             // 
+            toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { toolStripButtonSuche, toolStripTextBoxSearch });
             toolStrip1.Location = new System.Drawing.Point(0, 0);
             toolStrip1.Name = "toolStrip1";
             toolStrip1.Size = new System.Drawing.Size(959, 25);
             toolStrip1.TabIndex = 0;
             toolStrip1.Text = "toolStrip1";
+            // 
+            // toolStripButtonSuche
+            // 
+            toolStripButtonSuche.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            toolStripButtonSuche.Image = Properties.Resources.Mirror;
+            toolStripButtonSuche.ImageTransparentColor = System.Drawing.Color.Magenta;
+            toolStripButtonSuche.Name = "toolStripButtonSuche";
+            toolStripButtonSuche.Size = new System.Drawing.Size(23, 22);
+            toolStripButtonSuche.Text = "toolStripButton1";
+            toolStripButtonSuche.Click += toolStripButtonSuche_Click;
+            // 
+            // toolStripTextBoxSearch
+            // 
+            toolStripTextBoxSearch.Name = "toolStripTextBoxSearch";
+            toolStripTextBoxSearch.Size = new System.Drawing.Size(100, 25);
+            toolStripTextBoxSearch.ToolTipText = "Search Text";
             // 
             // webView2
             // 
@@ -77,6 +97,8 @@ namespace UoFiddler.Forms
             MinimizeBox = false;
             Name = "HelpDokuForm";
             Text = "Help - Doku";
+            toolStrip1.ResumeLayout(false);
+            toolStrip1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)webView2).EndInit();
             ResumeLayout(false);
             PerformLayout();
@@ -86,5 +108,7 @@ namespace UoFiddler.Forms
 
         private System.Windows.Forms.ToolStrip toolStrip1;
         private Microsoft.Web.WebView2.WinForms.WebView2 webView2;
+        private System.Windows.Forms.ToolStripButton toolStripButtonSuche;
+        private System.Windows.Forms.ToolStripTextBox toolStripTextBoxSearch;
     }
 }

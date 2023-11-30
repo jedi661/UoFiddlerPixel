@@ -53,5 +53,13 @@ namespace UoFiddler.Forms
             webView2.CoreWebView2.Navigate($"file:///{Path.Combine(Environment.CurrentDirectory, "UOFiddlerHelp", FileName)}");
         }
 
+        private async void toolStripButtonSuche_Click(object sender, EventArgs e)
+        {
+            string searchText = toolStripTextBoxSearch.Text;
+            if (!string.IsNullOrEmpty(searchText))
+            {
+                await webView2.CoreWebView2.ExecuteScriptAsync($"window.find('{searchText}')");
+            }
+        }
     }
 }

@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Ultima File Format</title>
+    <style type="text/css">
+        .myTextBox {
+            width: 600px;
+            height: 600px;
+            margin-bottom: 20px;
+        }
+        .myLabel {
+            display: inline-block;
+            margin-right: 20px;
+        }
+		
+		body {
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+    color: #333;
+    padding: 20px;
+    background-color: #f4f4f4;
+	}
+	
+	h2 {
+    color: #444;
+	}
+	
+	p {
+    margin-bottom: 10px;
+	}
+
+	table {
+    border-collapse: collapse;
+    width: 100%;
+	}
+
+	table, th, td {
+    border: 1px solid #ccc;
+    padding: 10px;
+    text-align: left;
+	}
+
+	th {
+    background-color: #f2f2f2;
+	}
+
+	tr:nth-child(even) {
+    background-color: #f2f2f2;
+	}
+
+	pre {
+    background-color: #f9f9f9;
+    border: 1px solid #ccc;
+    padding: 10px;
+	}
+    </style>
+</head>
+<body>
+    <section>
+    <h2>Index</h2>
+    <p>Index files are used to lookup data in other MUL files.</p>
+    <h4>Data:</h4>
+    <pre>
+        <font color="MediumBlue">int</font> lookup;
+        <font color="MediumBlue">int</font> length;
+        <font color="MediumBlue">int</font> extra;
+    </pre>
+    <p>To find data for a certain entry, you seek to (EntryID * 12), and read the data.<br>
+    Then, in the actual MUL file (not the index file), you seek to (lookup), and read (length) number of bytes.<br>
+    Some data relies on the extra field.</p>
+	</section>
+
+	<section>
+    <h2>UO Colors</h2>
+    <p>UO's graphics are all 16-bit 555 color:</p>
+    <h4>Data:</h4>
+    <pre>
+        <font color="MediumBlue">short</font> color;
+    </pre>
+    <h4><a title="16-bits">Color Bit Masks</a>:</h4>
+    <table border="1">
+        <tbody>
+            <tr>
+                <td>F</td><td>E</td><td>D</td><td>C</td><td>B</td><td>A</td><td>9</td><td>8</td><td>7</td><td>6</td><td>5</td><td>4</td><td>3</td><td>2</td><td>1</td><td>0</td>
+            </tr>
+            <tr>
+                <td colspan="1"><a title="Bitmask: 0x8000"> </a></td>
+                <td colspan="5" bgcolor="#C80000"><font color="#FFFFFF"><a title="Bitmask: 0x7C00">Red</a></font></td>
+                <td colspan="5" bgcolor="#00C800"><font color="#FFFFFF"><a title="Bitmask: 0x3E0">Green</a></font></td>
+                <td colspan="5" bgcolor="#0000C8"><font color="#FFFFFF"><a title="Bitmask: 0x1F">Blue</a></font></td>
+            </tr>
+        </tbody>
+    </table>
+    <p>Bit 15 is normally used for transparency, but doesn't appear to be so in UO.</p>
+	</section>
+
+	<section>
+    <h2><a title="Anim.mul, Anim.idx">Animations</a></h2>
+    <p><b>Data File: </b>Anim.mul<br><b>Index File: </b>Anim.idx<br></p>
+    <pre style="font-family: 'Courier New';">
+        <h4>Data:</h4>
+        <span style="color: MediumBlue;">short</span>[0x100] palette;
+        <span style="color: MediumBlue;">int</span> frameCount;
+        <span style="color: MediumBlue;">int</span>[frameCount] lookupTable;
+        <i>Frame Data...</i>
+    </pre>
+    <p>To find the data for a frame, seek to 0x200 + lookupTable[frame].</p>
+    <h4>Frame Data:</h4>
+    <pre>
+        <font color="MediumBlue">short</font> centerX;
+        <font color="MediumBlue">short</font> centerY;
+        <font color="MediumBlue">short</font> width;
+        <font color="MediumBlue">short</font> height;
+        <i>Pixel Data...</i>
+    </pre>
+    <p>Pixel data comes in chunks. If the current chunk header is 0x7FFF7FFF, the image is completed.</p>
+    <h4>Chunks:</h4>
+    <pre>
+        <font color="MediumBlue">int</font> header;
+        <font color="MediumBlue">byte</font>[XRun] palettePixels; <font color="DarkGreen">// See description below for XRun</font>
+    </pre>
+    <h4><a title="32-bits">Header Bit Masks</a>:</h4>
+    <table border="1">
+        <tbody>
+            <tr>
+                <td>1F</td><td>1E</td><td>1D</td><td>1C</td><td>1B</td><td>1A</td><td>19</td><td>18</td><td>17</td><td>16</td><td>15</td><td>14</td><td>13</td><td>12</td><td>11</td><td>10</td><td>0F</td><td>0E</td><td>0D</td><td>0C</td><td>0B</td><td>0A</td><td>09</td><td>08</td><td>07</td><td>06</td><td>05</td><td>04</td><td>03</td><td>02</td><td>01</td><td>00</td>
+            </tr>
+            <tr>
+                <td colspan="10"><a title="Bitmask: 0xFFC00000">YOffset</a></td>
+                <td colspan="10"><a title="Bitmask: 0x3FF000">XOffset</a></td>
+                <td colspan="12"><a title="Bitmask: 0xFFF">XRun</a></td>
+            </tr>
+        </tbody>
+    </table>
+    <p>XOffset and YOffset are relative to centerX and centerY.<br>
+    XRun indicates how many pixels are contained in this line.<br>
+    XOffset and YOffset are signed, so we need to compensate for that:<br>
+    <font face="Courier New">XOffset = (XOffset ^ 0x200) - 0x200</font><br>
+    <font face="Courier New">YOffset = (YOffset ^ 0x200) - 0x200</font></p>
+	</section>
+	
+	<section>
+    <h2><a title="AnimData.mul">AnimData</a></h2>
+    <p><b>Data File: </b>AnimData.mul<br></p>
+    <p>This file has no indexer. Directly after one block ends, another begins.</p>
+    <h4>Block:</h4>
+    <pre>
+        <font color="MediumBlue">int</font> header; <font color="DarkGreen">// Unbekannt</font>
+        <i>Entry...</i>
+    </pre>
+    <p>Each block contains eight entries.</p>
+    <h4>Entry:</h4>
+    <pre>
+        <font color="MediumBlue">sbyte</font>[64] frameData; <font color="DarkGreen">// This could be less than 64 bytes, I recall seeing some garbage data near the end.</font>
+        <font color="MediumBlue">byte</font> unknown;
+        <font color="MediumBlue">byte</font> frameCount;
+        <font color="MediumBlue">byte</font> frameInterval; <font color="DarkGreen">// Move to the next frame every (frameInterval * 50) milliseconds.</font>
+        <font color="MediumBlue">byte</font> frameStart; <font color="DarkGreen">// It is believed this is the delay before the animation starts (frameStart * 50ms).</font>
+    </pre>
+	</section>
+	
+	<section>
+    <h2><a title="Art.mul, ArtIdx.mul">Art</a></h2>
+    <p><b>Data File: </b>Art.mul<br><b>Index File: </b>ArtIdx.mul<br></p>
+    <p>There are three types of art images; land, static, and UO alpha<br>
+    Land images are of flat terrain.<br>
+    Static images are of items (walls, equipment, food, etc)<br>
+    UO alpha images are a sort of animated characters, they used these instead of Anim.mul in the UO alpha.<br><br>
+    Static and UO alpha images share the same format, while Land images use another.</p>
+    <h4>Land:</h4>
+    <pre>
+        <font color="MediumBlue">short</font>[1024] imageColors;
+    </pre>
+    <p>Land images are fixed size at 44x44.<br>
+    They also have fixed transparent locations, and the format is optimized for this.<br>
+    To read the first 22 lines, you first initialize X to 22, Y to 0, and LineWidth to 2<br>
+    Then repeat the following 22 times:<br>
+    <font face="Courier New">Decrease X by 1</font><br>
+    <font face="Courier New">Read and Draw (LineWidth) number of pixels</font><br>
+    <font face="Courier New">Increase Y by 1</font><br>
+    <font face="Courier New">Increase LineWidth by 2</font><br><br>
+    For the last 22 lines, do the following<br>
+    <font face="Courier New">Read and Draw (LineWidth) number of pixels</font><br>
+    <font face="Courier New">Increase X by 1</font><br>
+    <font face="Courier New">Increase Y by 1</font><br>
+    <font face="Courier New">Decrease LineWidth by 2</font><br>
+    The resulting image is the diamond shaped tile.</p>
+    <h4>Statics:</h4>
+    <pre>
+        <font color="MediumBlue">int</font> header; <font color="DarkGreen">// Unknown</font>
+        <font color="MediumBlue">short</font> width;
+        <font color="MediumBlue">short</font> height;
+        <font color="MediumBlue">short</font>[height] lookupTable;
+        <i>Offset-Run data...</i>
+    </pre>
+    <p>The lookup table is offset from the data start, and treats the data by 16-bits.<br>
+    To get the proper byte offset, you need to add 4 + height, then multiply by two.<br>
+    The static images are compressed with an offset-run encoding.<br>
+    <h4>Offset-Run data:</h4>
+    <pre>
+        <font color="MediumBlue">short</font> xOffset;
+        <font color="MediumBlue">short</font> xRun;
+        <font color="MediumBlue">short</font>[xRun] runColors;
+    </pre>
+    If xOffset is 0 and xRun is 0, the line has been completed. If not, continue reading the chunks.<br>
+    Processing the Offset-Run data is simple:<br>
+    <font face="Courier New">Increase X by xOffset</font><br>
+    <font face="Courier New">Foreach xRun</font><br>
+    <font face="Courier New">Read and Draw the next pixel</font><br>
+    <font face="Courier New">Increase X by 1</font><br>
+    <font face="Courier New">End Foreach</font></p>
+	</section>
+
+	
+	<section>
+    <h2><a title="Fonts.mul">Fonts</a></h2>
+    <p><b>Data File: </b>Fonts.mul<br></p>
+    <p>This file has no indexer. Directly after one character set ends, another begins.</p>
+    <h4>Character Set:</h4>
+    <pre>
+        <font color="MediumBlue">byte</font> header; <font color="DarkGreen">// Unknown</font>
+        <p>List Character[224]: <font color="DarkGreen">// First 32 characters are not included in the set</font>
+        <br>   <font color="MediumBlue">byte</font> width;
+        <br>   <font color="MediumBlue">byte</font> height;
+        <br>   <font color="MediumBlue">byte</font> header; <font color="DarkGreen">// Unknown</font>
+        <br>   <font color="MediumBlue">short</font>[width * height] imageColors;</p>
+    </pre>
+    <p>The imageColor array is loaded top to bottom, left to right. A color of 0x0000 should be treated as transparent..</p>
+	</section>
+
+	
+	<section>
+    <h2><a title="GumpArt.mul, GumpIdx.mul">Gumps</a></h2>
+    <p><b>Data File: </b>GumpArt.mul<br><b>Index File: </b>GumpIdx.mul<br></p>
+    <p>You can compute the following values from the Extra field in the index file.</p>
+    <h4>Sizes:</h4>
+    <pre>
+        <font color="MediumBlue">short</font> width = ((<a title="This value is determined by the index."><font color="MediumBlue">extra</font></a> >> 16) & 0xFFFF);
+        <font color="MediumBlue">short</font> height = (<a title="This value is determined by the index."><font color="MediumBlue">extra</font></a> & 0xFFFF);
+    </pre>
+    <h4>Data:</h4>
+    <pre>
+        <font color="MediumBlue">int</font>[height] lookupTable;
+        <i>RLE Data...</i>
+    </pre>
+    <p>RLE stands for "run-length encoding", it is a simple form of image compression.<br>This implementation of the RLE compression is treated as 32-bit values, broken up into two 16-bit values</p>
+    <h4><a title="32-bits">RLE Packet</a>:</h4>
+    <table border="1">
+        <tbody>
+            <tr>
+                <td>1F</td><td>1E</td><td>1D</td><td>1C</td><td>1B</td><td>1A</td><td>19</td><td>18</td><td>17</td><td>16</td><td>15</td><td>14</td><td>13</td><td>12</td><td>11</td><td>10</td><td>0F</td><td>0E</td><td>0D</td><td>0C</td><td>0B</td><td>0A</td><td>09</td><td>08</td><td>07</td><td>06</td><td>05</td><td>04</td><td>03</td><td>02</td><td>01</td><td>00</td>
+            </tr>
+            <tr>
+                <td colspan="16"><a title="Bitmask: 0xFFFF0000">Run</a></td>
+                <td colspan="16"><a title="Bitmask: 0xFFFF">Color</a></td>
+            </tr>
+        </tbody>
+    </table>
+    <p>The Color field indicates which color should be repeated. The Run field represents the length of pixels:<br><br>
+    <font face="Courier New">for ( int i = 0; i < Run; i++ )</font><br>
+    <font face="Courier New">{</font><br>
+    <font face="Courier New">   SetPixel( x + i, y, Color );</font><br>
+    <font face="Courier New">}</font><br>
+    <font face="Courier New">x += Run;</font></p>
+	</section>
+	
+	<section>
+    <h2><a title="Light.mul, LightIdx.mul">Lights</a></h2>
+    <p><b>Data File: </b>Light.mul<br><b>Index File: </b>LightIdx.mul</p>
+    <p>You can compute the following values from the Extra field in the index file.</p>
+    <pre style="font-family: 'Courier New';">
+        <h4>Sizes:</h4>
+        <span style="color: MediumBlue;">short</span> width = (<a title="This value is determined by the index."><span style="color: MediumBlue;">extra</span></a> &amp; 0xFFFF);
+        <span style="color: MediumBlue;">short</span> height = ((<a title="This value is determined by the index."><span style="color: MediumBlue;">extra</span></a> &gt;&gt; 16) &amp; 0xFFFF);
+        <h4>Data:</h4>
+        <span style="color: MediumBlue;">sbyte</span>[width * height] additiveLightmap;
+    </pre>
+    <p>For each pixel (loaded top to bottom, left to right), add the lightmap value for each R, G, and B.<br>As the value ranges from -31 to 31, you could easily apply a hue by using the color entry at Math.Abs( value ).</p>
+	</section>
+
+	<section>
+    <h2><a title="Map<n>.mul">Maps</a></h2>
+    <p><b>Data File: </b>Map&lt;n&gt;.mul</p>
+    <p>This file has no indexer. Directly after one block ends, another begins.</p>
+    <pre style="font-family: 'Courier New';">
+        <h4>Block:</h4>
+        <span style="color: MediumBlue;">int</span> header; <span style="color: DarkGreen;">// Unknown</span>
+        <i>Cells...</i>
+    </pre>
+    <p>Each block contains 64 cells, treated as an 8x8 matrix loaded left to right, top to bottom.</p>
+    <pre style="font-family: 'Courier New';">
+        <h4>Cell:</h4>
+        <span style="color: MediumBlue;">short</span> TileID;
+        <span style="color: MediumBlue;">sbyte</span> Z;
+    </pre>
+    <p>You can seek to a certain block, by knowing the map height.<br>- For Map0.mul, the block width and  height is 768x512.<br>- For Map2.mul, it's 288x200.<br><br>The algorithm used to find the block lookup is:<br><pre style="font-family: 'Courier New';">((XBlock * BlockHeight) + YBlock) * 196</pre>From there, the offset to a certain cell is:<br><pre style="font-family: 'Courier New';">((CellY * 8) + CellX) * 3</pre></p>
+	</section>
+	
+	<section>
+    <h2><a title="MultiMap.rle">Multi Map</a></h2>
+    <p><b>Data File: </b>MultiMap.rle</p>
+    <p>This file contains an overhead view of the Britannia map.</p>
+    <pre style="font-family: 'Courier New';">
+        <h4>Data:</h4>
+        <span style="color: MediumBlue;">int</span> width;
+        <span style="color: MediumBlue;">int</span> height;
+        <i>Pixel Data......</i>
+    </pre>
+    <p>This file contains an overhead view of the Britannia map. The image dimensions are defined by Width and Height.<br>Pixels are either on or off.</p>
+    <pre style="font-family: 'Courier New';">
+        <h4><a title="8-bits">Pixel Data</a>:</h4>
+        <table border="1">
+            <tbody>
+                <tr>
+                    <td>7</td><td>6</td><td>5</td><td>4</td><td>3</td><td>2</td><td>1</td><td>0</td>
+                </tr>
+                <tr>
+                    <td colspan="1" bgcolor="#C80000"><font color="#FFFFFF"><a title="Bitmask: 0x80">On?</a></font></td><td colspan="7"><a title="Bitmask: 0x7F">Count</a></td>
+                </tr>
+            </tbody>
+        </table>
+    </pre>
+    <p>Then the on/off pixel is repeated Count number of times.<br>If X exceeds width, set X to (X Modulus width)</p>
+	</section>
+	
+	<section>
+    <h2><a title="Palette.mul">Palette</a></h2>
+    <p><b>Data File: </b>Palette.mul<br></p>
+    <h4>Data:</h4>
+    <pre>
+        <p>List RGBValues[256]:
+        <br>   <font color="MediumBlue">byte</font> R;
+        <br>   <font color="MediumBlue">byte</font> G;
+        <br>   <font color="MediumBlue">byte</font> B;</p>
+    </pre>
+    <p>This file simply contains a palette of 24-bit RGB color values.</p>
+	</section>
+	
+	<section>
+    <h2><a title="RadarCol.mul">Radar Colors</a></h2>
+    <p><b>Data File: </b>RadarCol.mul<br></p>
+    <h4>Data:</h4>
+    <pre>
+        <font color="MediumBlue">short</font>[0x8000] colors;
+    </pre>
+    <p>This file simply contains color values for each tile.</p>
+	</section>
+
+	<section>
+    <h2><a title="SJIS2Uni.mul">SJIS To UniFont Table</a></h2>
+    <p><b>Data File: </b>SJIS2Uni.mul</p>
+    <pre style="font-family: 'Courier New';">
+        <h4>Data:</h4>
+        <span style="color: MediumBlue;">short</span>[0x10000] table;
+    </pre>
+    <p>This file is used to convert an SJIS character to the proper UniFont[n].mul character graphic.</p>
+	</section>
+	
+	<section>
+    <h2><a title="SkillGrp.mul">Skill Groups</a></h2>
+    <p><b>Data File: </b>SkillGrp.mul<br></p>
+    <h4>Data:</h4>
+    <pre>
+        <font color="MediumBlue">int</font> groupCount;
+        <p>List Groups[groupCount]:
+        <br>   <font color="MediumBlue">char</font>[17] groupName;</p>
+        <font color="MediumBlue">int</font>[?] table; <font color="DarkGreen">// Contains which group a skill is in.</font>
+    </pre>
+    <p>The table array extends to the end of the file.<br>To determine which group a skill is in, simply use table[SkillID].</p>
+	</section>
+
+	<section>
+    <h2><a title="Skills.mul, Skills.idx">Skills</a></h2>
+    <p><b>Data File: </b>Skills.mul<br><b>Index File: </b>Skills.idx<br></p>
+    <h4>Data:</h4>
+    <pre>
+        <font color="MediumBlue">bool</font> isAction; <font color="DarkGreen">// Does the skill have an action button?</font><br>
+        <font color="MediumBlue">char</font>[<a title="This value is determined by the index."><font color="MediumBlue">length</font></a> - 1] name;
+    </pre>
+	</section>
+
+	<section>
+    <h2><a title="Sound.mul, SoundIdx.mul">Sounds</a></h2>
+    <p><b>Data File: </b>Sound.mul<br><b>Index File: </b>SoundIdx.mul<br></p>
+    <h4>Data:</h4>
+    <pre>
+        <font color="MediumBlue">char</font>[20] fileName; <font color="DarkGreen">// Original *.wav file name</font><br>
+        <font color="MediumBlue">byte</font>[20] header; <font color="DarkGreen">// Unknown</font><br>
+        <font color="MediumBlue">byte</font>[<a title="This value is determined by the index."><font color="MediumBlue">length</font></a> - 40] waveData;
+    </pre>
+    <p>waveData can be written out to a .wav file's "data" chunk, after writing out the "RIFF" and "WAVEfmt " chunks.<br>The wave files have PCM 22.050 kHz, 16-Bit Mono format.<br></p>
+    <p><b>See Also:</b></p>
+	</section>
+
+	<section>
+    <h2><a title="Speech.mul">Speech</a></h2>
+    <p><b>Data File: </b>Speech.mul</p>
+    <p>This file has no indexer. Directly after one chunk ends, another begins.</p>
+    <pre style="font-family: 'Courier New';">
+        <h4>Chunks:</h4>
+        <span style="color: MediumBlue;">short</span> keywordID; <span style="color: DarkGreen;">// Note: This is big-endian</span>
+        <span style="color: MediumBlue;">short</span> keywordLength; <span style="color: DarkGreen;">// Note: This is also big-endian</span>
+        <span style="color: MediumBlue;">char</span>[keywordLength] keyword;
+    </pre>
+    <p>When the client says a certain keyword, it only has to send the keyword ID to the server.<br>As keywords can be in different languages, the server no longer needs to translate speech.</p>
+	</section>
+
+	<section>
+    <h2><a title="Statics<n>.mul, StaIdx<n>.mul">Statics</a></h2>
+    <p><b>Data File: </b>Statics<n>.mul<br><b>Index File: </b>StaIdx<n>.mul</p>
+    <pre style="font-family: 'Courier New';">
+        <h4>Block:</h4>
+        <p>List Items[<a title="This value is determined by the index."><span style="color: MediumBlue;">length</span></a> / 7]:
+        <br>   <span style="color: MediumBlue;">short</span> TileID;
+        <br>   <span style="color: MediumBlue;">byte</span> X; <span style="color: DarkGreen;">// Ranges from 0 to 7</span>
+        <br>   <span style="color: MediumBlue;">byte</span> Y; <span style="color: DarkGreen;">// Ranges from 0 to 7</span>
+        <br>   <span style="color: MediumBlue;">sbyte</span> Z;
+        <br>   <span style="color: MediumBlue;">short</span> Unknown; <span style="color: DarkGreen;">// At one point this was the hue, but doesn't appear to be used anymore</span>
+        </p>
+    </pre>
+    <p>The list needs to be sorted.<br>To find the index of a certain block, you need to know the map height.<br>- For Statics0.mul, the block width and height is 768x512.<br>- For Statics2.mul, it's 288x200.<br><br>So, you seek in the index file:<br><pre style="font-family: 'Courier New';">((XBlock * BlockHeight) + YBlock) * 12</pre></p>
+	</section>
+
+	<section>
+    <h2><a title="TexMaps.mul, TexIdx.mul">Textures</a></h2>
+    <p><b>Data File: </b>TexMaps.mul<br><b>Index File: </b>TexIdx.mul</p>
+    <p>You can compute the width and height of each texture by the Extra value of the index:</p>
+    <pre style="font-family: 'Courier New';">
+        <h4>Sizes:</h4>
+        <span style="color: MediumBlue;">int</span> width = (<a title="This value is determined by the index."><span style="color: MediumBlue;">extra</span></a> == 1 ? 128 : 64);
+        <span style="color: MediumBlue;">int</span> height = width;
+        <h4>Data:</h4>
+        <span style="color: MediumBlue;">short</span>[width * height] imageColors;
+    </pre>
+    <p>The imageColor array contains the image pixels loaded top to bottom, left to right.</p>
+	</section>
+
+	<section>
+    <h2><a title="TileData.mul">TileData</a></h2>
+    <p><b>Data File: </b>TileData.mul</p>
+    <p>This file has no indexer. Directly after one block ends, another begins.<br>There are two types of blocks; land and static.<br>There are 512 land blocks, followed by any number of static blocks</p>
+    <pre style="font-family: 'Courier New';">
+        <h4>Land Block:</h4>
+        <span style="color: MediumBlue;">int</span> header; <span style="color: DarkGreen;">// Unknown</span>
+        <p>List Land Entries[32]:
+        <br>&nbsp;&nbsp;&nbsp;<span style="color: MediumBlue;">int</span> flags; <span style="color: DarkGreen;">// See below</span>
+        <br>&nbsp;&nbsp;&nbsp;<span style="color: MediumBlue;">short</span> TextureID; <span style="color: DarkGreen;">// If 0, the land tile doesn't have a texture</span>
+        <br>&nbsp;&nbsp;&nbsp;<span style="color: MediumBlue;">char</span>[20] name;
+        </p>
+        <h4>Static Block:</h4>
+        <span style="color: MediumBlue;">int</span> header; <span style="color: DarkGreen;">// Unknown</span>
+        <p>List Static Entries[32]:
+        <br>&nbsp;&nbsp;&nbsp;<span style="color: MediumBlue;">int</span> flags; <span style="color: DarkGreen;">// See below</span>
+        <br>&nbsp;&nbsp;&nbsp;<span style="color: MediumBlue;">byte</span> weight; <span style="color: DarkGreen;">// 255 if not moveable</span>
+        <br>&nbsp;&nbsp;&nbsp;<span style="color: MediumBlue;">byte</span> quality; <span style="color: DarkGreen;">// See below</span>
+        <br>&nbsp;&nbsp;&nbsp;<span style="color: MediumBlue;">short</span> unknown1;
+        <br>&nbsp;&nbsp;&nbsp;<span style="color: MediumBlue;">byte</span> unknown2;
+        <br>&nbsp;&nbsp;&nbsp;<span style="color: MediumBlue;">byte</span> quantity; <span style="color: DarkGreen;">// See below</span>
+        <br>&nbsp;&nbsp;&nbsp;<span style="color: MediumBlue;">short</span> animation; <span style="color: DarkGreen;">// The BodyID of the item's animation</span>
+        <br>&nbsp;&nbsp;&nbsp;<span style="color: MediumBlue;">byte</span> unknown3;
+        <br>&nbsp;&nbsp;&nbsp;<span style="color: MediumBlue;">byte</span> hue; <span style="color: DarkGreen;">// Unknown use, perhaps colored lighting?</span>
+        <br>&nbsp;&nbsp;&nbsp;<span style="color: MediumBlue;">byte</span> unknown4;
+        <br>&nbsp;&nbsp;&nbsp;<span style="color: MediumBlue;">byte</span> unknown5; <span style="color: DarkGreen;">// Known in some circles as "Value"</span>
+        <br>&nbsp;&nbsp;&nbsp;<span style="color: MediumBlue;">byte</span> height;
+        <br>&nbsp;&nbsp;&nbsp;<span style="color: MediumBlue;">char</span>[20] name;
+        </p>
+    </pre>
+    </pre>
+    <table border="1" width="25%">
+        <tbody>
+            <tr>
+                <td colspan="2">Flags</td>
+            </tr>
+            <tr>
+                <td>0x00000001</td><td>Background</td>
+            </tr>
+            <tr>
+                <td>0x00000002</td><td>Weapon</td>
+            </tr>
+            <tr>
+                <td>0x00000004</td><td><a title="Does not fade with circle of transparency">Transparent</a></td>
+            </tr>
+            <tr>
+                <td>0x00000008</td><td><a title="Draw translucent (~90% opaque)">Translucent</a></td>
+            </tr>
+            <tr>
+                <td>0x00000010</td><td>Wall</td>
+            </tr>
+            <tr>
+                <td>0x00000020</td><td>Damaging</td>
+            </tr>
+            <tr>
+                <td>0x00000040</td><td>Impassable</td>
+            </tr>
+            <tr>
+                <td>0x00000080</td><td>Wet</td>
+            </tr>
+            <tr>
+                <td>0x00000100</td><td>Unknown1</td>
+            </tr>
+            <tr>
+                <td>0x00000200</td><td>Surface</td>
+            </tr>
+            <tr>
+                <td>0x00000400</td><td>Bridge</td>
+            </tr>
+            <tr>
+                <td>0x00000800</td><td>Generic</td>
+            </tr>
+            <tr>
+                <td>0x00001000</td><td>Window</td>
+            </tr>
+            <tr>
+                <td>0x00002000</td><td><a title="Cannot shoot through with archery">NoShoot</a></td>
+            </tr>
+            <tr>
+                <td>0x00004000</td><td>ArticleA</td>
+            </tr>
+            <tr>
+                <td>0x00008000</td><td>ArticleAn</td>
+            </tr>
+            <tr>
+                <td>0x00010000</td><td><a title="Internal tile (spawnpoints, hair, etc)">Internal</a></td>
+            </tr>
+            <tr>
+                <td>0x00020000</td><td><a title="Turns translucent (~40%) when walked behind">Foliage</a></td>
+            </tr>
+            <tr>
+                <td>0x00040000</td><td><a title="Only hue perfectly gray pixels ( r == g == b )">PartialHue</a></td>
+            </tr>
+            <tr>
+                <td>0x00080000</td><td>Unknown2</td>
+            </tr>
+            <tr>
+                <td>0x00100000</td><td>Map</td>
+            </tr>
+            <tr>
+                <td>0x00200000</td><td>Container</td>
+            </tr>
+            <tr>
+                <td>0x00400000</td><td>Wearable</td>
+            </tr>
+            <tr>
+                <td>0x00800000</td><td>LightSource</td>
+            </tr>
+            <tr>
+                <td>0x01000000</td><td><a title="Is this tile animated? (AnimData.mul)">Animation</a></td>
+            </tr>
+            <tr>
+                <td>0x02000000</td><td><a title="Cannot walk diagonaly onto this tile??">NoDiagonal</a></td>
+            </tr>
+            <tr>
+                <td>0x04000000</td><td>Unknown3</td>
+            </tr>
+            <tr>
+                <td>0x08000000</td><td>Armor</td>
+            </tr>
+            <tr>
+                <td>0x10000000</td><td>Roof</td>
+            </tr>
+            <tr>
+                <td>0x20000000</td><td>Door</td>
+            </tr>
+            <tr>
+                <td>0x40000000</td><td>StairBack</td>
+            </tr>
+            <tr>
+                <td>0x80000000</td><td>StairRight</td>
+            </tr>
+        </tbody>
+    </table>
+    <p>If Weapon, Quantity is Weapon Class.<br>
+    If Armor, Quantity is Armor Class.<br>
+    If Wearable, Quality is Layer.<br>
+    If Light Source, Quality is LightID<br>
+    If Container, Height is "Contains" (Something determining how much the container can hold?)</p>
+	</section>
+
+	<section>
+    <h2><a title="UniFont[n].mul">Unicode Fonts</a></h2>
+    <p><b>Data File: </b>UniFont[n].mul</p>
+    <p>This file begins with a lookup table:</p>
+    <pre style="font-family: 'Courier New';">
+        <h4>Lookup Table:</h4>
+        <span style="color: MediumBlue;">int</span>[0x10000] lookupTable;
+    </pre>
+    <p>You can then find the data by seeking to lookupTable[charID]</p>
+    <pre style="font-family: 'Courier New';">
+        <h4>Data:</h4>
+        <span style="color: MediumBlue;">byte</span> xOffset;
+        <span style="color: MediumBlue;">byte</span> yOffset;
+        <span style="color: MediumBlue;">byte</span> xWidth;
+        <span style="color: MediumBlue;">byte</span> yHeight;
+        <i>Scanline Data...</i>
+    </pre>
+    <p>Scanlines are padded on a byte-boundary; for each scanline, you will have ((xWidth - 1) / 8) + 1 bytes of data:</p>
+    <pre style="font-family: 'Courier New';">
+        <h4><a title="8-bits">Scanline Byte</a>:</h4>
+        <table border="1">
+            <tbody>
+                <tr>
+                    <td>7</td><td>6</td><td>5</td><td>4</td><td>3</td><td>2</td><td>1</td><td>0</td>
+                </tr>
+                <tr>
+                    <td colspan="8"><a title="Bitmask: 0xFF">8 pixels at 1-bpp</a></td>
+                </tr>
+            </tbody>
+        </table>
+    </pre>
+    <p>Bits are loaded high to low; bit 7 (mask: 0x80) would be the first pixel.<br>If the bit value is 0, color is transparent, else, color is forecolor.</p>
+	</section>
+
+	<section>
+    <h2><a title="VerData.mul">VerData</a></h2>
+    <p><b>Data File: </b>VerData.mul</p>
+    <pre style="font-family: 'Courier New';">
+        <h4>Data:</h4>
+        <span style="color: MediumBlue;">int</span> patchCount;
+        <p>List Patches[patchCount]:
+        <br>&nbsp;&nbsp;&nbsp;<span style="color: MediumBlue;">int</span> FileID; <span style="color: DarkGreen;">// See below</span>
+        <br>&nbsp;&nbsp;&nbsp;<span style="color: MediumBlue;">int</span> BlockID; <span style="color: DarkGreen;">// Which block this patch overrides</span>
+        <br>&nbsp;&nbsp;&nbsp;<span style="color: MediumBlue;">int</span> lookup; <span style="color: DarkGreen;">// Patch data lookup</span>
+        <br>&nbsp;&nbsp;&nbsp;<span style="color: MediumBlue;">int</span> length; <span style="color: DarkGreen;">// Patch data length</span>
+        <br>&nbsp;&nbsp;&nbsp;<span style="color: MediumBlue;">int</span> extra; <span style="color: DarkGreen;">// Patch data extra</span>
+        </p>
+        <i>Patch data...</i>
+    </pre>
+    <p>Patched data is in the same format of the original file.</p>
+    <table border="1" width="25%">
+        <tbody>
+            <tr>
+                <td colspan="2">FileID->File definitions</td>
+            </tr>
+            <tr>
+                <td>0x0</td><td>Map0.mul</td>
+            </tr>
+            <tr>
+                <td>0x1</td><td>StaIdx0.mul</td>
+            </tr>
+            <tr>
+                <td>0x2</td><td>Statics0.mul</td>
+            </tr>
+            <tr>
+                <td>0x3</td><td>ArtIdx.mul</td>
+            </tr>
+            <tr>
+                <td>0x4</td><td>Art.mul</td>
+            </tr>
+            <tr>
+                <td>0x5</td><td>Anim.idx</td>
+            </tr>
+            <tr>
+                <td>0x6</td><td>Anim.mul</td>
+            </tr>
+            <tr>
+                <td>0x7</td><td>SoundIdx.mul</td>
+            </tr>
+            <tr>
+                <td>0x8</td><td>Sound.mul</td>
+            </tr>
+            <tr>
+                <td>0x9</td><td>TexIdx.mul</td>
+            </tr>
+            <tr>
+                <td>0xA</td><td>TexMaps.mul</td>
+            </tr>
+            <tr>
+                <td>0xB</td><td>GumpIdx.mul</td>
+            </tr>
+            <tr>
+                <td>0xC</td><td>GumpArt.mul</td>
+            </tr>
+            <tr>
+                <td>0xD</td><td>Multi.idx</td>
+            </tr>
+            <tr>
+                <td>0xE</td><td>Multi.mul</td>
+            </tr>
+            <tr>
+                <td>0xF</td><td>Skills.idx</td>
+            </tr>
+            <tr>
+                <td>0x10</td><td>Skills.mul</td>
+            </tr>
+            <tr>
+                <td>0x1E</td><td>TileData.mul</td>
+            </tr>
+            <tr>
+                <td>0x1F</td><td>AnimData.mul</td>
+            </tr>
+        </tbody>
+    </table>
+	</section>
+
+</body>
+</html>

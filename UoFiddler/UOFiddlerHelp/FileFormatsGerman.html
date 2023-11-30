@@ -387,9 +387,9 @@
         <font color="MediumBlue">int</font> groupCount;
         <p>List Groups[groupCount]:
         <br>   <font color="MediumBlue">char</font>[17] groupName;</p>
-        <font color="MediumBlue">int</font>[?] table; <font color="DarkGreen">// Contains which group a skill is in.</font>
+        <font color="MediumBlue">int</font>[?] table; <font color="DarkGreen">// Enthält, zu welcher Gruppe ein Skill gehört.</font>
     </pre>
-    <p>The table array extends to the end of the file.<br>To determine which group a skill is in, simply use table[SkillID].</p>
+    <p>Das Tabellenarray reicht bis zum Ende der Datei.<br>Um festzustellen, zu welcher Gruppe ein Skill gehört, verwenden Sie einfach table[SkillID].</p>
 </section>
 
 <section>
@@ -397,7 +397,7 @@
     <p><b>Data File: </b>Skills.mul<br><b>Index File: </b>Skills.idx<br></p>
     <h4>Data:</h4>
     <pre>
-        <font color="MediumBlue">bool</font> isAction; <font color="DarkGreen">// Does the skill have an action button?</font><br>
+        <font color="MediumBlue">bool</font> isAction; <font color="DarkGreen">// Verfügt der Skill über eine Aktionsschaltfläche?</font><br>
         <font color="MediumBlue">char</font>[<a title="This value is determined by the index."><font color="MediumBlue">length</font></a> - 1] name;
     </pre>
 </section>
@@ -407,11 +407,11 @@
     <p><b>Data File: </b>Sound.mul<br><b>Index File: </b>SoundIdx.mul<br></p>
     <h4>Data:</h4>
     <pre>
-        <font color="MediumBlue">char</font>[20] fileName; <font color="DarkGreen">// Original *.wav file name</font><br>
+        <font color="MediumBlue">char</font>[20] fileName; <font color="DarkGreen">// Original *.wav Dateiname</font><br>
         <font color="MediumBlue">byte</font>[20] header; <font color="DarkGreen">// Unknown</font><br>
         <font color="MediumBlue">byte</font>[<a title="This value is determined by the index."><font color="MediumBlue">length</font></a> - 40] waveData;
     </pre>
-    <p>waveData can be written out to a .wav file's "data" chunk, after writing out the "RIFF" and "WAVEfmt " chunks.<br>The wave files have PCM 22.050 kHz, 16-Bit Mono format.<br></p>
+    <p>waveData kann in den „Daten“-Block einer WAV-Datei geschrieben werden, nachdem die Blöcke „RIFF“ und „WAVEfmt“ ausgeschrieben wurden.<br>Die Wave-Dateien haben PCM 22,050 kHz, 16-Bit-Mono-Format.<br></p>
     <p><b>See Also:</b></p>
 </section>
 
@@ -641,36 +641,23 @@
 </section>
 
 <section>
-    <h2><a title="VerData.mul">Version Data</a></h2>
-    <p><b>Data File: </b>VerData.mul<br></p>
-    <p>Diese Datei beginnt mit einer Suchtabelle:</p>
-    <h4>Lookup Table:</h4>
-    <pre>
-        <font color="MediumBlue">int</font>[0x10000] lookupTable;
+    <h2><a title="VerData.mul">VerData</a></h2>
+    <p><b>Datendatei: </b>VerData.mul</p>
+    <pre style="font-family: 'Courier New';">
+        <h4>Daten:</h4>
+        <span style="color: MediumBlue;">int</span> patchCount;
+        <p>Liste Patches[patchCount]:
+        <br>&nbsp;&nbsp;&nbsp;<span style="color: MediumBlue;">int</span> FileID; <span style="color: DarkGreen;">// Siehe unten</span>
+        <br>&nbsp;&nbsp;&nbsp;<span style="color: MediumBlue;">int</span> BlockID; <span style="color: DarkGreen;">// Welcher Block durch diesen Patch überschrieben wird</span>
+        <br>&nbsp;&nbsp;&nbsp;<span style="color: MediumBlue;">int</span> lookup; <span style="color: DarkGreen;">// Patch-Daten-Suche</span>
+        <br>&nbsp;&nbsp;&nbsp;<span style="color: MediumBlue;">int</span> length; <span style="color: DarkGreen;">// Patch-Daten-Länge</span>
+        <br>&nbsp;&nbsp;&nbsp;<span style="color: MediumBlue;">int</span> extra; <span style="color: DarkGreen;">// Patch-Daten-Extra</span>
+        </p>
+        <i>Patch-Daten...</i>
     </pre>
-    <p>Sie können dann die Daten finden, indem Sie zu lookupTable[charID] suchen</p>
-    <h4>Data:</h4>
-    <pre>
-        <font color="MediumBlue">byte</font> xOffset;
-        <font color="MediumBlue">byte</font> yOffset;
-        <font color="MediumBlue">byte</font> xWidth;
-        <font color="MediumBlue">byte</font> yHeight;
-        <i>Scanline Data...</i>
-    </pre>
-    <p>Scanlines sind auf einer Byte-Grenze gepolstert; für jede Scanline haben Sie ((xWidth - 1) / 8) + 1 Bytes Daten:</p>
-    <h4><a title="8-bits">Scanline Byte</a>:</h4>
-    <table border="1">
-        <tbody>
-            <tr>
-                <td>7</td><td>6</td><td>5</td><td>4</td><td>3</td><td>2</td><td>1</td><td>0</td>
-            </tr>
-            <tr>
-                <td colspan="8"><a title="Bitmask: 0xFF">8 pixels at 1-bpp</a></td>
-            </tr>
-        </tbody>
-    </table>
-    <p>Bits werden von hoch nach niedrig geladen; Bit 7 (Maske: 0x80) wäre das erste Pixel.<br>
-    Wenn der Bitwert 0 ist, ist die Farbe transparent, sonst ist die Farbe Vordergrundfarbe.</p>
+    <p>Die gepatchten Daten haben das gleiche Format wie die Originaldatei.</p>
+	
+	
     <table border="1" width="25%">
         <tbody>
             <tr>

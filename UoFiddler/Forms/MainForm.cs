@@ -1047,6 +1047,17 @@ namespace UoFiddler.Forms
         }
         #endregion
 
+        #region FileFormatEnglisch Html
+        private void ToolStripMenuItemFileFormatsEnglisch_Click(object sender, EventArgs e)
+        {
+            using (HelpDokuForm helpDokuForm = new HelpDokuForm())
+            {
+                helpDokuForm.FileName = "FileFormatsEnglisch.html";
+                helpDokuForm.ShowDialog();
+            }
+        }
+        #endregion
+
         #region About
         private void ToolStripMenuItemAbout_Click(object sender, EventArgs e)
         {
