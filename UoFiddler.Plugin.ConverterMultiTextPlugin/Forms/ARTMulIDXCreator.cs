@@ -5,6 +5,7 @@ using System.Drawing;
 using System.IO;
 using System.Text;
 using System.Windows.Forms;
+using static UoFiddler.Plugin.ConverterMultiTextPlugin.Forms.ARTMulIDXCreator;
 
 namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 {
@@ -1657,6 +1658,43 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         }
         #endregion
 
+        #region Texture
+        public class TextureFileCreator
+        {
+            private string texMapsFileName;
+            private string texIdxFileName;
+
+            public TextureFileCreator(string texMapsFileName, string texIdxFileName)
+            {
+                this.texMapsFileName = texMapsFileName;
+                this.texIdxFileName = texIdxFileName;
+            }
+
+            public void CreateFiles(int extra, short[] imageColors)
+            {
+                int width = (extra == 1 ? 128 : 64);
+                int height = width;
+
+                // Create TexMaps.mul file
+                using (BinaryWriter texMapsFile = new BinaryWriter(File.Open(texMapsFileName, FileMode.Create)))
+                {
+                    foreach (short color in imageColors)
+                    {
+                        texMapsFile.Write(color);
+                    }
+                }
+
+                // Create TexIdx.mul file
+                using (BinaryWriter texIdxFile = new BinaryWriter(File.Open(texIdxFileName, FileMode.Create)))
+                {
+                    texIdxFile.Write(width);
+                    texIdxFile.Write(height);
+                    texIdxFile.Write(extra);
+                }
+            }
+        }
+        #endregion
+
         private BinaryReader reader;
         private int itemsLoaded = 0;
 
@@ -1871,6 +1909,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         }
         #endregion
 
+        #region Indizien
         private void CountIndices_Click(object sender, EventArgs e)
         {
             OpenFileDialog openFileDialog = new OpenFileDialog();
@@ -1882,5 +1921,115 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 indexCount.Text = $"Anzahl der Indizes: {count}";
             }
         }
+        #endregion
+
+        #region Create Texture
+
+        private TextureFileCreator textureFileCreator;
+
+        private void btCreateTextur_Click(object sender, EventArgs e)
+        {
+            using (FolderBrowserDialog dialog = new FolderBrowserDialog())
+            {
+                dialog.Description = "Select the directory that you want to use as the default.";
+                dialog.ShowNewFolderButton = true;
+
+                if (dialog.ShowDialog() == DialogResult.OK)
+                {
+                    string folder = dialog.SelectedPath;
+
+                    // Bestimmen Sie die Anzahl der zu erstellenden Indizes
+                    int indexCount;
+                    if (string.IsNullOrEmpty(tbIndexCount.Text) || !int.TryParse(tbIndexCountTexture.Text, out indexCount))
+                    {
+                        indexCount = 16383;
+                    }
+
+                    // Erstellen Sie die BinaryWriter Instanzen außerhalb der Schleife
+                    using (BinaryWriter texMapsFile = new BinaryWriter(File.Open(Path.Combine(folder, "TexMaps.mul"), FileMode.Create)))
+                    using (BinaryWriter texIdxFile = new BinaryWriter(File.Open(Path.Combine(folder, "TexIdx.mul"), FileMode.Create)))
+                    {
+                        for (int i = 0; i < indexCount; i++)
+                        {
+                            // Erstellen Sie hier Ihr imageColors Array
+                            short[] imageColors;
+                            int extra;
+                            if (i % 2 == 0)
+                            {
+                                imageColors = new short[64 * 64]; // Beispiel: ein 64x64 Bild mit allen Pixeln schwarz
+                                extra = 0;
+                            }
+                            else
+                            {
+                                imageColors = new short[128 * 128]; // Beispiel: ein 128x128 Bild mit allen Pixeln schwarz
+                                extra = 1;
+                            }
+
+                            // Schreiben Sie die Bilddaten in die TexMaps.mul Datei
+                            // nur wenn die CheckBox nicht aktiviert ist oder dies die ersten beiden Bilder sind
+                            if (!checkBoxTexture.Checked || i < 2)
+                            {
+                                foreach (short color in imageColors)
+                                {
+                                    texMapsFile.Write(color);
+                                }
+                            }
+
+                            // Schreiben Sie die Indexdaten in die TexIdx.mul Datei
+                            int width = (extra == 1 ? 128 : 64);
+                            texIdxFile.Write(width); // width
+                            texIdxFile.Write(width); // height
+                            texIdxFile.Write(extra);  // extra
+                        }
+                    }
+
+                    // Aktualisieren Sie das Label und die TextBox, um die Anzahl der erstellten Indizes anzuzeigen
+                    lbTextureCount.Text = $"Erstellte Indizes: {indexCount}";
+                    tbIndexCount.Text = indexCount.ToString();
+                }
+            }
+        }
+
+        private void BtCreateIndexes_Click(object sender, EventArgs e)
+        {
+            using (FolderBrowserDialog dialog = new FolderBrowserDialog())
+            {
+                dialog.Description = "Select the directory that you want to use as the default.";
+                dialog.ShowNewFolderButton = true;
+
+                if (dialog.ShowDialog() == DialogResult.OK)
+                {
+                    string folder = dialog.SelectedPath;
+
+                    // Bestimmen Sie die Anzahl der zu erstellenden Indizes
+                    int indexCount;
+                    if (string.IsNullOrEmpty(tbIndexCount.Text) || !int.TryParse(tbIndexCountTexture.Text, out indexCount))
+                    {
+                        indexCount = 16383;
+                    }
+
+                    // Erstellen Sie die BinaryWriter Instanz für die TexIdx.mul Datei
+                    using (BinaryWriter texIdxFile = new BinaryWriter(File.Open(Path.Combine(folder, "TexIdx.mul"), FileMode.Create)))
+                    {
+                        for (int i = 0; i < indexCount; i++)
+                        {
+                            // Schreiben Sie die Indexdaten in die TexIdx.mul Datei
+                            int width = (i % 2 == 0 ? 64 : 128);
+                            texIdxFile.Write(width); // width
+                            texIdxFile.Write(width); // height
+                            texIdxFile.Write(i % 2);  // extra
+                        }
+                    }
+
+                    // Erstellen Sie eine leere TexMaps.mul Datei
+                    using (File.Create(Path.Combine(folder, "TexMaps.mul"))) { }
+
+                    // Aktualisieren Sie das Label und die TextBox, um die Anzahl der erstellten Indizes anzuzeigen
+                    lbTextureCount.Text = $"Erstellte Indizes: {indexCount}";
+                    tbIndexCount.Text = indexCount.ToString();
+                }
+            }
+        }
     }
+    #endregion
 }

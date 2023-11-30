@@ -77,6 +77,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             comboBoxMuls = new System.Windows.Forms.ComboBox();
             tabPage2 = new System.Windows.Forms.TabPage();
             tabPage3 = new System.Windows.Forms.TabPage();
+            groupBox1 = new System.Windows.Forms.GroupBox();
+            btCreateSimpleTiledata = new System.Windows.Forms.Button();
+            btCreateTiledataEmpty = new System.Windows.Forms.Button();
+            btCreateTiledataEmpty2 = new System.Windows.Forms.Button();
             groupBoxTiledata = new System.Windows.Forms.GroupBox();
             CountIndices = new System.Windows.Forms.Button();
             label19 = new System.Windows.Forms.Label();
@@ -88,10 +92,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             labelLand = new System.Windows.Forms.Label();
             labelStatic = new System.Windows.Forms.Label();
             btnCountTileDataEntries = new System.Windows.Forms.Button();
-            btCreateSimpleTiledata = new System.Windows.Forms.Button();
             lblTileDataEntryCount = new System.Windows.Forms.Label();
-            btCreateTiledataEmpty2 = new System.Windows.Forms.Button();
-            btCreateTiledataEmpty = new System.Windows.Forms.Button();
             label17 = new System.Windows.Forms.Label();
             checkBoxTileData = new System.Windows.Forms.CheckBox();
             lbTileDataCreate = new System.Windows.Forms.Label();
@@ -101,6 +102,16 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             tblandTileGroups = new System.Windows.Forms.TextBox();
             tbDirTileData = new System.Windows.Forms.TextBox();
             btCreateTiledata = new System.Windows.Forms.Button();
+            tabPage5 = new System.Windows.Forms.TabPage();
+            groupBoxTexture = new System.Windows.Forms.GroupBox();
+            BtCreateIndexes = new System.Windows.Forms.Button();
+            btCreateTextur = new System.Windows.Forms.Button();
+            lbtextureinfo2 = new System.Windows.Forms.Label();
+            tbIndexCountTexture = new System.Windows.Forms.TextBox();
+            lbTextureIndexCountinfo = new System.Windows.Forms.Label();
+            tbIndexCount = new System.Windows.Forms.Label();
+            lbTextureCount = new System.Windows.Forms.Label();
+            checkBoxTexture = new System.Windows.Forms.CheckBox();
             tabPage4 = new System.Windows.Forms.TabPage();
             textBoxOutput = new System.Windows.Forms.TextBox();
             textBoxTileDataInfo = new System.Windows.Forms.TextBox();
@@ -117,15 +128,17 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             buttonReadLandTileData = new System.Windows.Forms.Button();
             listViewTileData = new System.Windows.Forms.ListView();
             buttonReadTileData = new System.Windows.Forms.Button();
-            groupBox1 = new System.Windows.Forms.GroupBox();
+            lbTextureinfo3 = new System.Windows.Forms.Label();
             tabControl1.SuspendLayout();
             tabPage1.SuspendLayout();
             tabPage2.SuspendLayout();
             tabPage3.SuspendLayout();
+            groupBox1.SuspendLayout();
             groupBoxTiledata.SuspendLayout();
+            tabPage5.SuspendLayout();
+            groupBoxTexture.SuspendLayout();
             tabPage4.SuspendLayout();
             groupBoxInfo.SuspendLayout();
-            groupBox1.SuspendLayout();
             SuspendLayout();
             // 
             // textBox1
@@ -260,6 +273,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             tabControl1.Controls.Add(tabPage1);
             tabControl1.Controls.Add(tabPage2);
             tabControl1.Controls.Add(tabPage3);
+            tabControl1.Controls.Add(tabPage5);
             tabControl1.Controls.Add(tabPage4);
             tabControl1.Location = new System.Drawing.Point(3, 12);
             tabControl1.Name = "tabControl1";
@@ -520,6 +534,48 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             tabPage3.Text = "TileData";
             tabPage3.UseVisualStyleBackColor = true;
             // 
+            // groupBox1
+            // 
+            groupBox1.Controls.Add(btCreateSimpleTiledata);
+            groupBox1.Controls.Add(btCreateTiledataEmpty);
+            groupBox1.Controls.Add(btCreateTiledataEmpty2);
+            groupBox1.Location = new System.Drawing.Point(526, 21);
+            groupBox1.Name = "groupBox1";
+            groupBox1.Size = new System.Drawing.Size(200, 182);
+            groupBox1.TabIndex = 30;
+            groupBox1.TabStop = false;
+            groupBox1.Text = "Test";
+            // 
+            // btCreateSimpleTiledata
+            // 
+            btCreateSimpleTiledata.Location = new System.Drawing.Point(84, 73);
+            btCreateSimpleTiledata.Name = "btCreateSimpleTiledata";
+            btCreateSimpleTiledata.Size = new System.Drawing.Size(110, 23);
+            btCreateSimpleTiledata.TabIndex = 20;
+            btCreateSimpleTiledata.Text = "Simple Tiledata";
+            btCreateSimpleTiledata.UseVisualStyleBackColor = true;
+            btCreateSimpleTiledata.Click += btCreateSimpleTiledata_Click;
+            // 
+            // btCreateTiledataEmpty
+            // 
+            btCreateTiledataEmpty.Location = new System.Drawing.Point(99, 14);
+            btCreateTiledataEmpty.Name = "btCreateTiledataEmpty";
+            btCreateTiledataEmpty.Size = new System.Drawing.Size(95, 23);
+            btCreateTiledataEmpty.TabIndex = 11;
+            btCreateTiledataEmpty.Text = "Tiledata Empty";
+            btCreateTiledataEmpty.UseVisualStyleBackColor = true;
+            btCreateTiledataEmpty.Click += btCreateTiledataEmpty_Click;
+            // 
+            // btCreateTiledataEmpty2
+            // 
+            btCreateTiledataEmpty2.Location = new System.Drawing.Point(84, 44);
+            btCreateTiledataEmpty2.Name = "btCreateTiledataEmpty2";
+            btCreateTiledataEmpty2.Size = new System.Drawing.Size(110, 23);
+            btCreateTiledataEmpty2.TabIndex = 12;
+            btCreateTiledataEmpty2.Text = "Tile Data Empty2";
+            btCreateTiledataEmpty2.UseVisualStyleBackColor = true;
+            btCreateTiledataEmpty2.Click += btCreateTiledataEmpty2_Click;
+            // 
             // groupBoxTiledata
             // 
             groupBoxTiledata.Controls.Add(CountIndices);
@@ -629,16 +685,6 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             btnCountTileDataEntries.UseVisualStyleBackColor = true;
             btnCountTileDataEntries.Click += btnCountTileDataEntries_Click;
             // 
-            // btCreateSimpleTiledata
-            // 
-            btCreateSimpleTiledata.Location = new System.Drawing.Point(84, 73);
-            btCreateSimpleTiledata.Name = "btCreateSimpleTiledata";
-            btCreateSimpleTiledata.Size = new System.Drawing.Size(110, 23);
-            btCreateSimpleTiledata.TabIndex = 20;
-            btCreateSimpleTiledata.Text = "Simple Tiledata";
-            btCreateSimpleTiledata.UseVisualStyleBackColor = true;
-            btCreateSimpleTiledata.Click += btCreateSimpleTiledata_Click;
-            // 
             // lblTileDataEntryCount
             // 
             lblTileDataEntryCount.AutoSize = true;
@@ -647,26 +693,6 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             lblTileDataEntryCount.Size = new System.Drawing.Size(43, 15);
             lblTileDataEntryCount.TabIndex = 19;
             lblTileDataEntryCount.Text = "Count:";
-            // 
-            // btCreateTiledataEmpty2
-            // 
-            btCreateTiledataEmpty2.Location = new System.Drawing.Point(84, 44);
-            btCreateTiledataEmpty2.Name = "btCreateTiledataEmpty2";
-            btCreateTiledataEmpty2.Size = new System.Drawing.Size(110, 23);
-            btCreateTiledataEmpty2.TabIndex = 12;
-            btCreateTiledataEmpty2.Text = "Tile Data Empty2";
-            btCreateTiledataEmpty2.UseVisualStyleBackColor = true;
-            btCreateTiledataEmpty2.Click += btCreateTiledataEmpty2_Click;
-            // 
-            // btCreateTiledataEmpty
-            // 
-            btCreateTiledataEmpty.Location = new System.Drawing.Point(99, 14);
-            btCreateTiledataEmpty.Name = "btCreateTiledataEmpty";
-            btCreateTiledataEmpty.Size = new System.Drawing.Size(95, 23);
-            btCreateTiledataEmpty.TabIndex = 11;
-            btCreateTiledataEmpty.Text = "Tiledata Empty";
-            btCreateTiledataEmpty.UseVisualStyleBackColor = true;
-            btCreateTiledataEmpty.Click += btCreateTiledataEmpty_Click;
             // 
             // label17
             // 
@@ -744,6 +770,109 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             btCreateTiledata.Text = "Create Tiledata";
             btCreateTiledata.UseVisualStyleBackColor = true;
             btCreateTiledata.Click += btCreateTiledata_Click;
+            // 
+            // tabPage5
+            // 
+            tabPage5.Controls.Add(groupBoxTexture);
+            tabPage5.Location = new System.Drawing.Point(4, 24);
+            tabPage5.Name = "tabPage5";
+            tabPage5.Size = new System.Drawing.Size(745, 398);
+            tabPage5.TabIndex = 4;
+            tabPage5.Text = "Texturen";
+            tabPage5.UseVisualStyleBackColor = true;
+            // 
+            // groupBoxTexture
+            // 
+            groupBoxTexture.Controls.Add(lbTextureinfo3);
+            groupBoxTexture.Controls.Add(BtCreateIndexes);
+            groupBoxTexture.Controls.Add(btCreateTextur);
+            groupBoxTexture.Controls.Add(lbtextureinfo2);
+            groupBoxTexture.Controls.Add(tbIndexCountTexture);
+            groupBoxTexture.Controls.Add(lbTextureIndexCountinfo);
+            groupBoxTexture.Controls.Add(tbIndexCount);
+            groupBoxTexture.Controls.Add(lbTextureCount);
+            groupBoxTexture.Controls.Add(checkBoxTexture);
+            groupBoxTexture.Location = new System.Drawing.Point(5, 14);
+            groupBoxTexture.Name = "groupBoxTexture";
+            groupBoxTexture.Size = new System.Drawing.Size(734, 198);
+            groupBoxTexture.TabIndex = 7;
+            groupBoxTexture.TabStop = false;
+            groupBoxTexture.Text = "Texture";
+            // 
+            // BtCreateIndexes
+            // 
+            BtCreateIndexes.Location = new System.Drawing.Point(9, 125);
+            BtCreateIndexes.Name = "BtCreateIndexes";
+            BtCreateIndexes.Size = new System.Drawing.Size(117, 23);
+            BtCreateIndexes.TabIndex = 7;
+            BtCreateIndexes.Text = "Leere Texture";
+            BtCreateIndexes.UseVisualStyleBackColor = true;
+            BtCreateIndexes.Click += BtCreateIndexes_Click;
+            // 
+            // btCreateTextur
+            // 
+            btCreateTextur.Location = new System.Drawing.Point(6, 22);
+            btCreateTextur.Name = "btCreateTextur";
+            btCreateTextur.Size = new System.Drawing.Size(120, 23);
+            btCreateTextur.TabIndex = 0;
+            btCreateTextur.Text = "Create Texture";
+            btCreateTextur.UseVisualStyleBackColor = true;
+            btCreateTextur.Click += btCreateTextur_Click;
+            // 
+            // lbtextureinfo2
+            // 
+            lbtextureinfo2.AutoSize = true;
+            lbtextureinfo2.Location = new System.Drawing.Point(209, 19);
+            lbtextureinfo2.Name = "lbtextureinfo2";
+            lbtextureinfo2.Size = new System.Drawing.Size(293, 30);
+            lbtextureinfo2.TabIndex = 6;
+            lbtextureinfo2.Text = "Es werde nur 2 Image an Anfang hinzugefügt Schwarz,\r\nder rest ist auch Schwarz Platzhalter. ";
+            // 
+            // tbIndexCountTexture
+            // 
+            tbIndexCountTexture.Location = new System.Drawing.Point(6, 51);
+            tbIndexCountTexture.Name = "tbIndexCountTexture";
+            tbIndexCountTexture.Size = new System.Drawing.Size(120, 23);
+            tbIndexCountTexture.TabIndex = 1;
+            // 
+            // lbTextureIndexCountinfo
+            // 
+            lbTextureIndexCountinfo.AutoSize = true;
+            lbTextureIndexCountinfo.Location = new System.Drawing.Point(132, 54);
+            lbTextureIndexCountinfo.Name = "lbTextureIndexCountinfo";
+            lbTextureIndexCountinfo.Size = new System.Drawing.Size(550, 15);
+            lbTextureIndexCountinfo.TabIndex = 5;
+            lbTextureIndexCountinfo.Text = "16383 Indexe werden erstellt ohne angabe, ansonsten bestimmen wieviele indexe erstellt werden sollen.";
+            // 
+            // tbIndexCount
+            // 
+            tbIndexCount.AutoSize = true;
+            tbIndexCount.Location = new System.Drawing.Point(9, 82);
+            tbIndexCount.Name = "tbIndexCount";
+            tbIndexCount.Size = new System.Drawing.Size(40, 15);
+            tbIndexCount.TabIndex = 2;
+            tbIndexCount.Text = "Count";
+            // 
+            // lbTextureCount
+            // 
+            lbTextureCount.AutoSize = true;
+            lbTextureCount.Location = new System.Drawing.Point(9, 107);
+            lbTextureCount.Name = "lbTextureCount";
+            lbTextureCount.Size = new System.Drawing.Size(28, 15);
+            lbTextureCount.TabIndex = 4;
+            lbTextureCount.Text = "Info";
+            // 
+            // checkBoxTexture
+            // 
+            checkBoxTexture.AutoSize = true;
+            checkBoxTexture.Checked = true;
+            checkBoxTexture.CheckState = System.Windows.Forms.CheckState.Checked;
+            checkBoxTexture.Location = new System.Drawing.Point(132, 25);
+            checkBoxTexture.Name = "checkBoxTexture";
+            checkBoxTexture.Size = new System.Drawing.Size(71, 19);
+            checkBoxTexture.TabIndex = 3;
+            checkBoxTexture.Text = "2 Image.";
+            checkBoxTexture.UseVisualStyleBackColor = true;
             // 
             // tabPage4
             // 
@@ -910,17 +1039,14 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             buttonReadTileData.UseVisualStyleBackColor = true;
             buttonReadTileData.Click += buttonReadTileData_Click;
             // 
-            // groupBox1
+            // lbTextureinfo3
             // 
-            groupBox1.Controls.Add(btCreateSimpleTiledata);
-            groupBox1.Controls.Add(btCreateTiledataEmpty);
-            groupBox1.Controls.Add(btCreateTiledataEmpty2);
-            groupBox1.Location = new System.Drawing.Point(526, 21);
-            groupBox1.Name = "groupBox1";
-            groupBox1.Size = new System.Drawing.Size(200, 182);
-            groupBox1.TabIndex = 30;
-            groupBox1.TabStop = false;
-            groupBox1.Text = "Test";
+            lbTextureinfo3.AutoSize = true;
+            lbTextureinfo3.Location = new System.Drawing.Point(135, 128);
+            lbTextureinfo3.Name = "lbTextureinfo3";
+            lbTextureinfo3.Size = new System.Drawing.Size(171, 15);
+            lbTextureinfo3.TabIndex = 8;
+            lbTextureinfo3.Text = "Erstellt eine Leere Texmaps.mul";
             // 
             // ARTMulIDXCreator
             // 
@@ -939,13 +1065,16 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             tabPage2.PerformLayout();
             tabPage3.ResumeLayout(false);
             tabPage3.PerformLayout();
+            groupBox1.ResumeLayout(false);
             groupBoxTiledata.ResumeLayout(false);
             groupBoxTiledata.PerformLayout();
+            tabPage5.ResumeLayout(false);
+            groupBoxTexture.ResumeLayout(false);
+            groupBoxTexture.PerformLayout();
             tabPage4.ResumeLayout(false);
             tabPage4.PerformLayout();
             groupBoxInfo.ResumeLayout(false);
             groupBoxInfo.PerformLayout();
-            groupBox1.ResumeLayout(false);
             ResumeLayout(false);
         }
 
@@ -1029,5 +1158,16 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private System.Windows.Forms.GroupBox groupBoxTiledata;
         private System.Windows.Forms.Button CountIndices;
         private System.Windows.Forms.GroupBox groupBox1;
+        private System.Windows.Forms.TabPage tabPage5;
+        private System.Windows.Forms.Button btCreateTextur;
+        private System.Windows.Forms.TextBox tbIndexCountTexture;
+        private System.Windows.Forms.Label tbIndexCount;
+        private System.Windows.Forms.CheckBox checkBoxTexture;
+        private System.Windows.Forms.Label lbTextureCount;
+        private System.Windows.Forms.Label lbTextureIndexCountinfo;
+        private System.Windows.Forms.Label lbtextureinfo2;
+        private System.Windows.Forms.GroupBox groupBoxTexture;
+        private System.Windows.Forms.Button BtCreateIndexes;
+        private System.Windows.Forms.Label lbTextureinfo3;
     }
 }
