@@ -8,7 +8,7 @@ UOFiddler based on Ultima SDK it's a tool to view and alter almost every UO 2D c
 Version : 4.11.26
 - Add Map Tools
 - Added XML debugging hexcode
-- Add Create Art and Artidx Mul tool
+- Add Create Art and Artidx Mul tool Texture Tiledata
 - Load Menu : Saves the last selected profile, reselecting it upon startup
 - Search Animation
 
