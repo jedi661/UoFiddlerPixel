@@ -635,6 +635,7 @@ namespace UoFiddler.Controls.UserControls
             ExportAllMultis(ImageFormat.Png, _useTransparencyForPng ? Color.Transparent : _backgroundImageColor);
         }
 
+        #region ExportAllMulti
         private void ExportAllMultis(ImageFormat imageFormat, Color backgroundColor)
         {
             string fileExtension = Utils.GetFileExtensionFor(imageFormat);
@@ -672,7 +673,9 @@ namespace UoFiddler.Controls.UserControls
                     MessageBoxIcon.Information, MessageBoxDefaultButton.Button1);
             }
         }
+        #endregion
 
+        #region  OnClick_SaveAllText
         private void OnClick_SaveAllText(object sender, EventArgs e)
         {
             using (FolderBrowserDialog dialog = new FolderBrowserDialog())
@@ -705,7 +708,9 @@ namespace UoFiddler.Controls.UserControls
                     MessageBoxIcon.Information, MessageBoxDefaultButton.Button1);
             }
         }
+        #endregion
 
+        #region OnClick_SaveAllUOA
         private void OnClick_SaveAllUOA(object sender, EventArgs e)
         {
             using (FolderBrowserDialog dialog = new FolderBrowserDialog())
@@ -738,7 +743,9 @@ namespace UoFiddler.Controls.UserControls
                     MessageBoxIcon.Information, MessageBoxDefaultButton.Button1);
             }
         }
+        #endregion
 
+        #region OnClick_SaveAllWSC
         private void OnClick_SaveAllWSC(object sender, EventArgs e)
         {
             using (FolderBrowserDialog dialog = new FolderBrowserDialog())
@@ -771,7 +778,9 @@ namespace UoFiddler.Controls.UserControls
                     MessageBoxIcon.Information, MessageBoxDefaultButton.Button1);
             }
         }
+        #endregion
 
+        #region OnClick_SaveAllCSV
         private void OnClick_SaveAllCSV(object sender, EventArgs e)
         {
             using (FolderBrowserDialog dialog = new FolderBrowserDialog())
@@ -804,7 +813,9 @@ namespace UoFiddler.Controls.UserControls
                     MessageBoxIcon.Information, MessageBoxDefaultButton.Button1);
             }
         }
+        #endregion
 
+        #region OnClick_SaveAllUox3
         private void OnClick_SaveAllUox3(object sender, EventArgs e)
         {
             using (FolderBrowserDialog dialog = new FolderBrowserDialog())
@@ -837,7 +848,9 @@ namespace UoFiddler.Controls.UserControls
                     MessageBoxIcon.Information, MessageBoxDefaultButton.Button1);
             }
         }
+        #endregion
 
+        #region OnExportCsvFile
         private void OnExportCsvFile(object sender, EventArgs e)
         {
             if (TreeViewMulti.SelectedNode == null)
@@ -859,7 +872,9 @@ namespace UoFiddler.Controls.UserControls
             MessageBox.Show($"Multi saved to {fileName}", "Saved", MessageBoxButtons.OK, MessageBoxIcon.Information,
                 MessageBoxDefaultButton.Button1);
         }
+        #endregion
 
+        #region OnExportUox3File
         private void OnExportUox3File(object sender, EventArgs e)
         {
             if (TreeViewMulti.SelectedNode == null)
@@ -881,7 +896,9 @@ namespace UoFiddler.Controls.UserControls
             MessageBox.Show($"Multi saved to {fileName}", "Saved", MessageBoxButtons.OK, MessageBoxIcon.Information,
                 MessageBoxDefaultButton.Button1);
         }
+        #endregion
 
+        #region ChangeBackgroundColorToolStripMenuItem
         private void ChangeBackgroundColorToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (colorDialog.ShowDialog() != DialogResult.OK)
@@ -892,15 +909,18 @@ namespace UoFiddler.Controls.UserControls
             _backgroundImageColor = colorDialog.Color;
             MultiPictureBox.BackColor = _backgroundImageColor;
         }
+        #endregion
 
+        #region UseTransparencyForPNGToolStripMenuItem
         private void UseTransparencyForPNGToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
         {
             _useTransparencyForPng = UseTransparencyForPNGToolStripMenuItem.Checked;
         }
+        #endregion  
 
         #region Edit
 
-        private void editToolStripMenuItem_Click(object sender, EventArgs e)
+        /*private void editToolStripMenuItem_Click(object sender, EventArgs e)
         {
             // Überprüfe, ob ein Knoten ausgewählt ist
             if (TreeViewMulti.SelectedNode == null)
@@ -922,15 +942,45 @@ namespace UoFiddler.Controls.UserControls
                 int idToFind = selectedID; // Verwende die ausgewählte ID als ID zum Suchen
                 SaveChangesToXml(newName, newId, newType, idToFind);
             }
-        }
+        }*/
 
+        #region  editToolStripMenuItem
+        private void editToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // Check whether a node is selected
+            if (TreeViewMulti.SelectedNode == null)
+            {
+                return;
+            }
+
+            // Get the selected ID
+            int selectedID = int.Parse(TreeViewMulti.SelectedNode.Name);
+
+            // Assigning a value to selectedMultiType
+            selectedMultiType = 0; // Set the value to 0
+
+            // Open the editing window for the selected Multi
+            EditMultiForm editForm = new EditMultiForm(selectedMultiName, selectedID, selectedMultiType);
+            if (editForm.ShowDialog() == DialogResult.OK)
+            {
+                // Save the changes in the Multilist.xml file
+                string newName = editForm.MultiName;
+                int newId = editForm.MultiID;
+                int newType = editForm.SelectedMultiType;
+                int idToFind = selectedID; // Use the selected ID as the ID to search
+                SaveChangesToXml(newName, newId, newType, idToFind);
+            }
+        }
+        #endregion
+
+        #region SaveChangesToXml
         private void SaveChangesToXml(string newName, int newId, int newType, int idToFind)
         {
-            // Lade die XML-Datei
+            // Load the XML file
             XmlDocument doc = new XmlDocument();
             doc.Load("Multilist.xml");
 
-            // Finde das Multi-Element mit der ausgewählten ID
+            // Find the multi-element with the selected ID
             XmlNode multiNode = null;
             XmlNodeList multiNodes = doc.SelectNodes("/Multis/Multi");
             foreach (XmlNode node in multiNodes)
@@ -944,14 +994,14 @@ namespace UoFiddler.Controls.UserControls
 
             if (multiNode != null)
             {
-                // Wenn das Multi-Element existiert, aktualisiere das name-, id- und type-Attribut
+                // If the multi-element exists, update the name, id and type attribute
                 multiNode.Attributes["name"].Value = newName;
                 multiNode.Attributes["id"].Value = newId.ToString();
                 multiNode.Attributes["type"].Value = newType.ToString();
             }
             else
             {
-                // Wenn das Multi-Element nicht existiert, erstelle es
+                // If the multi element does not exist, create it
                 XmlNode multisNode = doc.SelectSingleNode("/Multis");
                 XmlNode newNode = doc.CreateElement("Multi");
 
@@ -967,7 +1017,7 @@ namespace UoFiddler.Controls.UserControls
                 typeAttr.Value = newType.ToString();
                 newNode.Attributes.Append(typeAttr);
 
-                // Füge das neue Multi-Element an der richtigen Stelle hinzu
+                // Add the new multi-element in the correct place
                 XmlNode previousNode = null;
                 foreach (XmlNode node in multiNodes)
                 {
@@ -989,34 +1039,34 @@ namespace UoFiddler.Controls.UserControls
                 }
             }
 
-            // Speichere die Änderungen in der XML-Datei
+            // Save the changes to the XML file
             doc.Save("Multilist.xml");
         }
+        #endregion
 
-
-
+        #region AddNewEntryToXm
         private void AddNewEntryToXml(int id, string name, int type)
         {
-            // Lade die XML-Datei
+            // Load the XML file
             XmlDocument doc = new XmlDocument();
             doc.Load("Multilist.xml");
 
-            // Erstelle ein neues Multi-Element
+            // Create a new multi-element
             XmlElement multiElement = doc.CreateElement("Multi");
             multiElement.SetAttribute("id", id.ToString());
             multiElement.SetAttribute("name", name);
             multiElement.SetAttribute("type", type.ToString());
 
-            // Finde das Multis-Element
+            // Find the multis element
             XmlNode multisElement = doc.SelectSingleNode("/Multis");
             if (multisElement == null)
             {
-                // Wenn das Multis-Element nicht existiert, erstelle es
+                // If the Multis element doesn't exist, create it
                 multisElement = doc.CreateElement("Multis");
                 doc.AppendChild(multisElement);
             }
 
-            // Füge das neue Multi-Element an der richtigen Stelle ein
+            // Insert the new multi-element in the correct place
             XmlNodeList multiNodes = multisElement.SelectNodes("/Multis/Multi");
             bool inserted = false;
             foreach (XmlNode multiNode in multiNodes)
@@ -1032,13 +1082,14 @@ namespace UoFiddler.Controls.UserControls
 
             if (!inserted)
             {
-                // Wenn das neue Multi-Element nicht eingefügt wurde, füge es am Ende hinzu
+                // If the new multi element has not been inserted, add it at the end
                 multisElement.AppendChild(multiElement);
             }
 
-            // Speichere die Änderungen in der XML-Datei
+            // Save the changes to the XML file
             doc.Save("Multilist.xml");
         }
+        #endregion
 
         #endregion
 

@@ -46,7 +46,7 @@ namespace UoFiddler.Forms
         // Create a new DateTimePicker
         DateTimePicker dateTimePicker = new DateTimePicker();
 
-        private bool isFirstInstance = true;
+        private bool isFirstInstance = true; // no value assigned yet
 
         // Globale Variable, um das Formular zu speichern
         private System.Windows.Forms.Form replaceForm = null;

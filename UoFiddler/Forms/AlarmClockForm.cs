@@ -24,7 +24,7 @@ namespace UoFiddler.Forms
 {
     public partial class AlarmClockForm : Form
     {
-        private Timer timer;
+        private Timer timer; // no value assigned yet
         private Timer realTimeTimer;
         private DateTime alarmTime;
         private SoundPlayer alarmSound = new SoundPlayer(@"C:\Windows\Media\Alarm01.wav"); // Path to alarm sound file Default alarm sound file

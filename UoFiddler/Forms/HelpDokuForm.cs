@@ -28,7 +28,7 @@ namespace UoFiddler.Forms
 {
     public partial class HelpDokuForm : Form
     {
-        private WebView2 webView;
+        private WebView2 webView; // no value assigned yet
 
         public HelpDokuForm()
         {

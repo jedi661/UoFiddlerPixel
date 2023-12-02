@@ -32,6 +32,17 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin
             }
         }
         #endregion
+
+        #region StartExternalProcess
+        public void StartExternalProcess(string fileName)
+        {
+            externalProcess = new Process();
+            externalProcess.StartInfo.FileName = fileName;
+            externalProcess.Start();
+        }
+        #endregion
+
+
         #region Dir
         private void BtSelectDirectory_Click(object sender, EventArgs e)
         {

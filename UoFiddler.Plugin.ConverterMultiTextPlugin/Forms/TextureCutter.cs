@@ -21,7 +21,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 {
     public partial class TextureCutter : Form
     {
-        private Point originalImageLocation;
+        private Point originalImageLocation = new Point(0, 0); //Determines the position in the picture box
         private Bitmap resizedImage;
         private bool isPickingColor = false;
 

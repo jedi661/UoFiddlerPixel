@@ -44,11 +44,14 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             LAB_StatusIS = new System.Windows.Forms.Label();
             label1 = new System.Windows.Forms.Label();
             openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
+            lbMessagePos = new System.Windows.Forms.Label();
+            lbMessagePosOld = new System.Windows.Forms.Label();
+            lbMessagePos09 = new System.Windows.Forms.Label();
             SuspendLayout();
             // 
             // btDecriptClientForm
             // 
-            btDecriptClientForm.Location = new System.Drawing.Point(81, 201);
+            btDecriptClientForm.Location = new System.Drawing.Point(78, 294);
             btDecriptClientForm.Name = "btDecriptClientForm";
             btDecriptClientForm.Size = new System.Drawing.Size(100, 23);
             btDecriptClientForm.TabIndex = 0;
@@ -59,7 +62,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // LAB_StatusIS
             // 
             LAB_StatusIS.AutoSize = true;
-            LAB_StatusIS.Location = new System.Drawing.Point(3, 173);
+            LAB_StatusIS.Location = new System.Drawing.Point(3, 272);
             LAB_StatusIS.Name = "LAB_StatusIS";
             LAB_StatusIS.Size = new System.Drawing.Size(42, 15);
             LAB_StatusIS.TabIndex = 1;
@@ -78,11 +81,41 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // 
             openFileDialog1.FileName = "openFileDialog1";
             // 
+            // lbMessagePos
+            // 
+            lbMessagePos.AutoSize = true;
+            lbMessagePos.Location = new System.Drawing.Point(7, 182);
+            lbMessagePos.Name = "lbMessagePos";
+            lbMessagePos.Size = new System.Drawing.Size(72, 15);
+            lbMessagePos.TabIndex = 3;
+            lbMessagePos.Text = "MessagePos";
+            // 
+            // lbMessagePosOld
+            // 
+            lbMessagePosOld.AutoSize = true;
+            lbMessagePosOld.Location = new System.Drawing.Point(7, 209);
+            lbMessagePosOld.Name = "lbMessagePosOld";
+            lbMessagePosOld.Size = new System.Drawing.Size(91, 15);
+            lbMessagePosOld.TabIndex = 4;
+            lbMessagePosOld.Text = "MessagePosOld";
+            // 
+            // lbMessagePos09
+            // 
+            lbMessagePos09.AutoSize = true;
+            lbMessagePos09.Location = new System.Drawing.Point(7, 241);
+            lbMessagePos09.Name = "lbMessagePos09";
+            lbMessagePos09.Size = new System.Drawing.Size(84, 15);
+            lbMessagePos09.TabIndex = 5;
+            lbMessagePos09.Text = "MessagePos09";
+            // 
             // DecriptClientForm
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            ClientSize = new System.Drawing.Size(268, 231);
+            ClientSize = new System.Drawing.Size(268, 329);
+            Controls.Add(lbMessagePos09);
+            Controls.Add(lbMessagePosOld);
+            Controls.Add(lbMessagePos);
             Controls.Add(label1);
             Controls.Add(LAB_StatusIS);
             Controls.Add(btDecriptClientForm);
@@ -101,5 +134,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private System.Windows.Forms.Label LAB_StatusIS;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.OpenFileDialog openFileDialog1;
+        private System.Windows.Forms.Label lbMessagePos;
+        private System.Windows.Forms.Label lbMessagePosOld;
+        private System.Windows.Forms.Label lbMessagePos09;
     }
 }

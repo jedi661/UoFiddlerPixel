@@ -3,15 +3,15 @@
 		<OutputType>WinExe</OutputType>
 		<ApplicationIcon>Resources\UOFiddlerIcon.ico</ApplicationIcon>
 		<StartupObject>UoFiddler.Program</StartupObject>
-		<TargetFramework>net7.0-windows</TargetFramework>
+		<TargetFramework>net8.0-windows7.0</TargetFramework>
 		<UseWindowsForms>true</UseWindowsForms>
 		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
 		<AssemblyTitle>UoFiddler</AssemblyTitle>
 		<Product>UoFiddler</Product>
 		<Copyright>Copyright © 2023</Copyright>
-		<AssemblyVersion>4.11.26</AssemblyVersion>
-		<FileVersion>4.11.26</FileVersion>
-		<Version>4.11.26</Version>
+		<AssemblyVersion>4.12.0</AssemblyVersion>
+		<FileVersion>4.12.0</FileVersion>
+		<Version>4.12.0</Version>
 		<GenerateResourceUsePreserializedResources>true</GenerateResourceUsePreserializedResources>
 	</PropertyGroup>
 	<PropertyGroup>

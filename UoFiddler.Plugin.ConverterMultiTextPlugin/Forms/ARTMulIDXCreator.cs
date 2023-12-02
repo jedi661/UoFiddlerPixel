@@ -1658,7 +1658,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         }
         #endregion
 
-        #region Texture
+        #region class Texture
         public class TextureFileCreator
         {
             private string texMapsFileName;
@@ -1692,6 +1692,137 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                     texIdxFile.Write(extra);
                 }
             }
+        }
+        #endregion
+
+        #region Class RadarColors
+        public class RadarColors
+        {
+            private short[] colors;
+
+            public RadarColors(string filePath)
+            {
+                colors = new short[0x8000];
+                LoadColorsFromFile(filePath);
+            }
+
+            private void LoadColorsFromFile(string filePath)
+            {
+                if (!File.Exists(filePath))
+                {
+                    throw new FileNotFoundException($"Die Datei {filePath} wurde nicht gefunden.");
+                }
+
+                using (BinaryReader reader = new BinaryReader(File.Open(filePath, FileMode.Open)))
+                {
+                    for (int i = 0; i < colors.Length; i++)
+                    {
+                        colors[i] = reader.ReadInt16();
+                    }
+                }
+            }
+
+            public short GetColor(int index)
+            {
+                if (index < 0 || index >= colors.Length)
+                {
+                    throw new IndexOutOfRangeException("Der Index liegt außerhalb des gültigen Bereichs.");
+                }
+
+                return colors[index];
+            }
+        }
+
+        #endregion
+
+        #region Class Palette
+        public class Palette
+        {
+            public class RGBValue
+            {
+                public byte R;
+                public byte G;
+                public byte B;
+            }
+
+            public List<RGBValue> RGBValues = new List<RGBValue>();
+
+            public void Save(string filename)
+            {
+                using (BinaryWriter writer = new BinaryWriter(File.Open(filename, FileMode.Create)))
+                {
+                    foreach (var rgb in RGBValues)
+                    {
+                        writer.Write(rgb.R);
+                        writer.Write(rgb.G);
+                        writer.Write(rgb.B);
+                    }
+                }
+            }
+
+            public void CreateDefaultPalette()
+            {
+                for (int i = 0; i < 256; i++)
+                {
+                    RGBValue rgb = new RGBValue();
+                    // Hier setzen wir die R-, G- und B-Werte auf i, 
+                    // Sie können diese Werte jedoch nach Belieben ändern.
+                    rgb.R = (byte)i;
+                    rgb.G = (byte)i;
+                    rgb.B = (byte)i;
+                    RGBValues.Add(rgb);
+                }
+            }
+
+            public void Load(string filename)
+            {
+                using (BinaryReader reader = new BinaryReader(File.Open(filename, FileMode.Open)))
+                {
+                    for (int i = 0; i < 256; i++)
+                    {
+                        RGBValue rgb = new RGBValue();
+                        rgb.R = reader.ReadByte();
+                        rgb.G = reader.ReadByte();
+                        rgb.B = reader.ReadByte();
+                        RGBValues.Add(rgb);
+                    }
+                }
+            }
+
+            public void DrawPalette(Graphics g)
+            {
+                for (int i = 0; i < RGBValues.Count; i++)
+                {
+                    using (Brush brush = new SolidBrush(Color.FromArgb(RGBValues[i].R, RGBValues[i].G, RGBValues[i].B)))
+                    {
+                        g.FillRectangle(brush, i * 10, 0, 10, 10);
+                    }
+                }
+            }
+            public void AddColor(Color color)
+            {
+                RGBValue rgb = new RGBValue();
+                rgb.R = color.R;
+                rgb.G = color.G;
+                rgb.B = color.B;
+                RGBValues.Add(rgb);
+            }
+
+            public void DrawPalette(Graphics g, int width, int height)
+            {
+                int colorsPerRow = width / 10;
+                for (int i = 0; i < RGBValues.Count; i++)
+                {
+                    using (Brush brush = new SolidBrush(Color.FromArgb(RGBValues[i].R, RGBValues[i].G, RGBValues[i].B)))
+                    {
+                        int x = (i % colorsPerRow) * 10;
+                        int y = (i / colorsPerRow) * 10;
+                        g.FillRectangle(brush, x, y, 10, 10);
+                    }
+                }
+            }
+
+
         }
         #endregion
 
@@ -1921,10 +2052,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 indexCount.Text = $"Anzahl der Indizes: {count}";
             }
         }
-        #endregion
+        #endregion       
 
-        #region Create Texture
-
+        #region Create Teture imagees
         private TextureFileCreator textureFileCreator;
 
         private void btCreateTextur_Click(object sender, EventArgs e)
@@ -1989,7 +2119,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 }
             }
         }
+        #endregion
 
+        #region Emtpy Texture
         private void BtCreateIndexes_Click(object sender, EventArgs e)
         {
             using (FolderBrowserDialog dialog = new FolderBrowserDialog())
@@ -2030,6 +2162,400 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 }
             }
         }
+        #endregion
+
+        #region Create RadarColor
+        private void CreateFileButtonRadarColor_Click(object sender, EventArgs e)
+        {
+            // Setzen Sie den Standarddateinamen
+            saveFileDialog.FileName = "RadarCol.mul";
+
+            // Zeigen Sie den Dialog zum Speichern der Datei an
+            if (saveFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                // Lesen Sie die Anzahl der Indizes aus der TextBox
+                int indexCount;
+                if (!int.TryParse(indexCountTextBox.Text, out indexCount))
+                {
+                    // Zeigen Sie eine Fehlermeldung an, wenn die Eingabe ungültig ist
+                    lbRadarColorInfo.Text = "Bitte geben Sie eine gültige Zahl ein.";
+                    return;
+                }
+
+                // Erstellen Sie die RadarCol.mul-Datei
+                CreateRadarColFile(saveFileDialog.FileName, indexCount);
+            }
+        }
+        
+        private void CreateRadarColFile(string filePath, int indexCount)
+        {
+            short[] colors = new short[indexCount];
+            // Hier können Sie die Farben nach Ihren Wünschen einstellen.
+
+            using (BinaryWriter writer = new BinaryWriter(File.Open(filePath, FileMode.Create)))
+            {
+                for (int i = 0; i < colors.Length; i++)
+                {
+                    writer.Write(colors[i]);
+                }
+            }
+
+            lbRadarColorInfo.Text = "Die Datei wurde erfolgreich erstellt!";
+        }
+        #endregion
+
+        #region Create Orginal Palette
+
+        private Palette palette = new Palette();
+        
+        private void btCreatePalette_Click(object sender, EventArgs e)
+        {
+            // Erstellen Sie die Palette und fügen Sie die gewünschten Farben hinzu
+            CreateDefaultPalette();
+
+            using (FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog())
+            {
+                if (folderBrowserDialog.ShowDialog() == DialogResult.OK)
+                {
+                    string filename = Path.Combine(folderBrowserDialog.SelectedPath, "Palette.mul");
+                    palette.Save(filename);
+                }
+            }
+        }
+        #endregion
+
+        #region CreateDefaultPalette Orginal Colors
+        private void CreateDefaultPalette()
+        {
+            palette = new Palette();
+
+            // Fügen Sie hier die gewünschten RGB-Werte hinzu
+            palette.AddColor(Color.FromArgb(0, 0, 0)); // RGB Value 0: R=0, G=0, B=0
+            palette.AddColor(Color.FromArgb(255, 0, 255)); // RGB Value 1: R=255, G=0, B=255
+            palette.AddColor(Color.FromArgb(255, 0, 255)); // RGB Value 2: R=255, G=0, B=255
+            palette.AddColor(Color.FromArgb(255, 0, 255)); // RGB Value 3: R=255, G=0, B=255
+            palette.AddColor(Color.FromArgb(255, 0, 255)); // RGB Value 4: R=255, G=0, B=255
+            palette.AddColor(Color.FromArgb(255, 0, 255)); // RGB Value 5: R=255, G=0, B=255
+            palette.AddColor(Color.FromArgb(255, 0, 255)); // RGB Value 6: R=255, G=0, B=255
+            palette.AddColor(Color.FromArgb(255, 0, 255)); // RGB Value 7: R=255, G=0, B=255
+            palette.AddColor(Color.FromArgb(255, 0, 255)); // RGB Value 8: R=255, G=0, B=255
+            palette.AddColor(Color.FromArgb(255, 0, 255)); // RGB Value 9: R=255, G=0, B=255
+            palette.AddColor(Color.FromArgb(199, 75, 0)); // RGB Value 10: R=199, G=75, B=0
+            palette.AddColor(Color.FromArgb(207, 99, 0)); // RGB Value 11: R=207, G=99, B=0
+            palette.AddColor(Color.FromArgb(215, 127, 0)); // RGB Value 12: R=215, G=127, B=0
+            palette.AddColor(Color.FromArgb(227, 155, 0)); // RGB Value 13: R=227, G=155, B=0
+            palette.AddColor(Color.FromArgb(235, 187, 0)); // RGB Value 14: R=235, G=187, B=0
+            palette.AddColor(Color.FromArgb(243, 219, 0)); // RGB Value 15: R=243, G=219, B=0
+            palette.AddColor(Color.FromArgb(255, 255, 0)); // RGB Value 16: R=255, G=255, B=0
+            palette.AddColor(Color.FromArgb(255, 255, 95)); // RGB Value 17: R=255, G=255, B=95
+            palette.AddColor(Color.FromArgb(255, 255, 147)); // RGB Value 18: R=255, G=255, B=147
+            palette.AddColor(Color.FromArgb(255, 255, 195)); // RGB Value 19: R=255, G=255, B=195
+            palette.AddColor(Color.FromArgb(255, 255, 247)); // RGB Value 20: R=255, G=255, B=247
+            palette.AddColor(Color.FromArgb(59, 27, 7)); // RGB Value 21: R=59, G=27, B=7
+            palette.AddColor(Color.FromArgb(67, 31, 7)); // RGB Value 22: R=67, G=31, B=7
+            palette.AddColor(Color.FromArgb(75, 35, 11)); // RGB Value 23: R=75, G=35, B=11
+            palette.AddColor(Color.FromArgb(83, 43, 15)); // RGB Value 24: R=83, G=43, B=15
+            palette.AddColor(Color.FromArgb(91, 47, 23)); // RGB Value 25: R=91, G=47, B=23
+            palette.AddColor(Color.FromArgb(99, 55, 27)); // RGB Value 26: R=99, G=55, B=27
+            palette.AddColor(Color.FromArgb(107, 63, 31)); // RGB Value 27: R=107, G=63, B=31
+            palette.AddColor(Color.FromArgb(115, 67, 39)); // RGB Value 28: R=115, G=67, B=39
+            palette.AddColor(Color.FromArgb(123, 75, 47)); // RGB Value 29: R=123, G=75, B=47
+            palette.AddColor(Color.FromArgb(131, 83, 51)); // RGB Value 30: R=131, G=83, B=51
+            palette.AddColor(Color.FromArgb(139, 91, 59)); // RGB Value 31: R=139, G=91, B=59
+            palette.AddColor(Color.FromArgb(147, 99, 67)); // RGB Value 32: R=147, G=99, B=67
+            palette.AddColor(Color.FromArgb(155, 107, 79)); // RGB Value 33: R=155, G=107, B=79
+            palette.AddColor(Color.FromArgb(163, 115, 87)); // RGB Value 34: R=163, G=115, B=87
+            palette.AddColor(Color.FromArgb(171, 127, 95)); // RGB Value 35: R=171, G=127, B=95
+            palette.AddColor(Color.FromArgb(179, 135, 107)); // RGB Value 36: R=179, G=135, B=107
+            palette.AddColor(Color.FromArgb(187, 147, 115)); // RGB Value 37: R=187, G=147, B=115
+            palette.AddColor(Color.FromArgb(195, 155, 127)); // RGB Value 38: R=195, G=155, B=127
+            palette.AddColor(Color.FromArgb(203, 167, 139)); // RGB Value 39: R=203, G=167, B=139
+            palette.AddColor(Color.FromArgb(211, 175, 151)); // RGB Value 40: R=211, G=175, B=151
+            palette.AddColor(Color.FromArgb(219, 187, 163)); // RGB Value 41: R=219, G=187, B=163
+            palette.AddColor(Color.FromArgb(231, 199, 179)); // RGB Value 42: R=231, G=199, B=179
+            palette.AddColor(Color.FromArgb(239, 211, 191)); // RGB Value 43: R=239, G=211, B=191
+            palette.AddColor(Color.FromArgb(247, 223, 207)); // RGB Value 44: R=247, G=223, B=207
+            palette.AddColor(Color.FromArgb(59, 59, 43)); // RGB Value 45: R=59, G=59, B=43
+            palette.AddColor(Color.FromArgb(79, 79, 59)); // RGB Value 46: R=79, G=79, B=59
+            palette.AddColor(Color.FromArgb(103, 103, 79)); // RGB Value 47: R=103, G=103, B=79
+            palette.AddColor(Color.FromArgb(127, 127, 103)); // RGB Value 48: R=127, G=127, B=103
+            palette.AddColor(Color.FromArgb(147, 147, 123)); // RGB Value 49: R=147, G=147, B=123
+            palette.AddColor(Color.FromArgb(171, 171, 147)); // RGB Value 50: R=171, G=171, B=147
+            palette.AddColor(Color.FromArgb(195, 195, 171)); // RGB Value 51: R=195, G=195, B=171
+            palette.AddColor(Color.FromArgb(219, 219, 199)); // RGB Value 52: R=219, G=219, B=199
+            palette.AddColor(Color.FromArgb(39, 0, 0)); // RGB Value 53: R=39, G=0, B=0
+            palette.AddColor(Color.FromArgb(51, 0, 0)); // RGB Value 54: R=51, G=0, B=0
+            palette.AddColor(Color.FromArgb(67, 11, 7)); // RGB Value 55: R=67, G=11, B=7
+            palette.AddColor(Color.FromArgb(79, 19, 11)); // RGB Value 56: R=79, G=19, B=11
+            palette.AddColor(Color.FromArgb(95, 31, 15)); // RGB Value 57: R=95, G=31, B=15
+            palette.AddColor(Color.FromArgb(111, 43, 27)); // RGB Value 58: R=111, G=43, B=27
+            palette.AddColor(Color.FromArgb(123, 59, 35)); // RGB Value 59: R=123, G=59, B=35
+            palette.AddColor(Color.FromArgb(60, 139, 75)); // RGB Value 60 R=60, G=139, B=75
+            palette.AddColor(Color.FromArgb(151, 91, 59)); // RGB Value 61: R=151, G=91, B=59
+            palette.AddColor(Color.FromArgb(167, 111, 71)); // RGB Value 62: R=167, G=111, B=71
+            palette.AddColor(Color.FromArgb(183, 127, 87)); // RGB Value 63: R=183, G=127, B=87
+            palette.AddColor(Color.FromArgb(195, 147, 103)); // RGB Value 64: R=195, G=147, B=103
+            palette.AddColor(Color.FromArgb(211, 167, 123)); // RGB Value 65: R=211, G=167, B=123
+            palette.AddColor(Color.FromArgb(223, 187, 143)); // RGB Value 66: R=223, G=187, B=143
+            palette.AddColor(Color.FromArgb(239, 211, 163)); // RGB Value 67: R=239, G=211, B=163
+            palette.AddColor(Color.FromArgb(255, 231, 187)); // RGB Value 68: R=255, G=231, B=187
+            palette.AddColor(Color.FromArgb(23, 23, 0)); // RGB Value 69: R=23, G=23, B=0
+            palette.AddColor(Color.FromArgb(35, 35, 0)); // RGB Value 70: R=35, G=35, B=0
+            palette.AddColor(Color.FromArgb(51, 47, 0)); // RGB Value 71: R=51, G=47, B=0
+            palette.AddColor(Color.FromArgb(67, 63, 7)); // RGB Value 72: R=67, G=63, B=7
+            palette.AddColor(Color.FromArgb(83, 75, 15)); // RGB Value 73: R=83, G=75, B=15
+            palette.AddColor(Color.FromArgb(99, 87, 19)); // RGB Value 74: R=99, G=87, B=19
+            palette.AddColor(Color.FromArgb(111, 99, 27)); // RGB Value 75: R=111, G=99, B=27
+            palette.AddColor(Color.FromArgb(127, 111, 39)); // RGB Value 76: R=127, G=111, B=39
+            palette.AddColor(Color.FromArgb(143, 123, 51)); // RGB Value 77: R=143, G=123, B=51
+            palette.AddColor(Color.FromArgb(159, 135, 63)); // RGB Value 78: R=159, G=135, B=63
+            palette.AddColor(Color.FromArgb(175, 147, 79)); // RGB Value 79: R=175, G=147, B=79
+            palette.AddColor(Color.FromArgb(187, 159, 95)); // RGB Value 80: R=187, G=159, B=95
+            palette.AddColor(Color.FromArgb(203, 175, 111)); // RGB Value 81: R=203, G=175, B=111
+            palette.AddColor(Color.FromArgb(219, 187, 131)); // RGB Value 82: R=219, G=187, B=131
+            palette.AddColor(Color.FromArgb(235, 203, 147)); // RGB Value 83: R=235, G=203, B=147
+            palette.AddColor(Color.FromArgb(251, 219, 171)); // RGB Value 84: R=251, G=219, B=171
+            palette.AddColor(Color.FromArgb(0, 0, 43)); // RGB Value 85: R=0, G=0, B=43
+            palette.AddColor(Color.FromArgb(0, 0, 55)); // RGB Value 86: R=0, G=0, B=55
+            palette.AddColor(Color.FromArgb(7, 7, 71)); // RGB Value 87: R=7, G=7, B=71
+            palette.AddColor(Color.FromArgb(15, 15, 83)); // RGB Value 88: R=15, G=15, B=83
+            palette.AddColor(Color.FromArgb(23, 23, 99)); // RGB Value 89: R=23, G=23, B=99
+            palette.AddColor(Color.FromArgb(31, 31, 111)); // RGB Value 90: R=31, G=31, B=111
+            palette.AddColor(Color.FromArgb(43, 43, 127)); // RGB Value 91: R=43, G=43, B=127
+            palette.AddColor(Color.FromArgb(59, 59, 139)); // RGB Value 92: R=59, G=59, B=139
+            palette.AddColor(Color.FromArgb(75, 75, 155)); // RGB Value 93: R=75, G=75, B=155
+            palette.AddColor(Color.FromArgb(91, 91, 167)); // RGB Value 94: R=91, G=91, B=167
+            palette.AddColor(Color.FromArgb(111, 111, 183)); // RGB Value 95: R=111, G=111, B=183
+            palette.AddColor(Color.FromArgb(131, 131, 195)); // RGB Value 96: R=131, G=131, B=195
+            palette.AddColor(Color.FromArgb(155, 155, 211)); // RGB Value 97: R=155, G=155, B=211
+            palette.AddColor(Color.FromArgb(179, 179, 227)); // RGB Value 98: R=179, G=179, B=227
+            palette.AddColor(Color.FromArgb(207, 207, 239)); // RGB Value 99: R=207, G=207, B=239
+            palette.AddColor(Color.FromArgb(235, 235, 255)); // RGB Value 100: R=235, G=235, B=255
+            palette.AddColor(Color.FromArgb(27, 27, 111)); // RGB Value 101: R=27, G=27, B=111
+            palette.AddColor(Color.FromArgb(35, 39, 131)); // RGB Value 102: R=35, G=39, B=131
+            palette.AddColor(Color.FromArgb(47, 55, 151)); // RGB Value 103: R=47, G=55, B=151
+            palette.AddColor(Color.FromArgb(63, 71, 171)); // RGB Value 104: R=63, G=71, B=171
+            palette.AddColor(Color.FromArgb(79, 91, 191)); // RGB Value 105: R=79, G=91, B=191
+            palette.AddColor(Color.FromArgb(95, 111, 211)); // RGB Value 106: R=95, G=111, B=211
+            palette.AddColor(Color.FromArgb(115, 135, 231)); // RGB Value 107: R=115, G=135, B=231
+            palette.AddColor(Color.FromArgb(139, 159, 255)); // RGB Value 108: R=139, G=159, B=255
+            palette.AddColor(Color.FromArgb(27, 135, 135)); // RGB Value 109: R=27, G=135, B=135
+            palette.AddColor(Color.FromArgb(43, 151, 151)); // RGB Value 110: R=43, G=151, B=151
+            palette.AddColor(Color.FromArgb(59, 167, 167)); // RGB Value 111: R=59, G=167, B=167
+            palette.AddColor(Color.FromArgb(79, 183, 183)); // RGB Value 112: R=79, G=183, B=183
+            palette.AddColor(Color.FromArgb(107, 203, 203)); // RGB Value 113: R=107, G=203, B=203
+            palette.AddColor(Color.FromArgb(131, 219, 219)); // RGB Value 114: R=131, G=219, B=219
+            palette.AddColor(Color.FromArgb(163, 235, 235)); // RGB Value 115: R=163, G=235, B=235
+            palette.AddColor(Color.FromArgb(195, 255, 255)); // RGB Value 116: R=195, G=255, B=255
+            palette.AddColor(Color.FromArgb(67, 0, 67)); // RGB Value 117: R=67, G=0, B=67
+            palette.AddColor(Color.FromArgb(91, 11, 91)); // RGB Value 118: R=91, G=11, B=91
+            palette.AddColor(Color.FromArgb(119, 27, 119)); // RGB Value 119: R=119, G=27, B=119
+            palette.AddColor(Color.FromArgb(147, 51, 147)); // RGB Value 120: R=147, G=51, B=147
+            palette.AddColor(Color.FromArgb(171, 83, 171)); // RGB Value 121: R=171, G=83, B=171
+            palette.AddColor(Color.FromArgb(199, 123, 199)); // RGB Value 122: R=199, G=123, B=199
+            palette.AddColor(Color.FromArgb(227, 167, 227)); // RGB Value 123: R=227, G=167, B=227
+            palette.AddColor(Color.FromArgb(255, 219, 255)); // RGB Value 124: R=255, G=219, B=255
+            palette.AddColor(Color.FromArgb(55, 127, 59)); // RGB Value 125: R=55, G=127, B=59
+            palette.AddColor(Color.FromArgb(71, 143, 75)); // RGB Value 126: R=71, G=143, B=75
+            palette.AddColor(Color.FromArgb(91, 163, 91)); // RGB Value 127: R=91, G=163, B=91
+            palette.AddColor(Color.FromArgb(111, 179, 111)); // RGB Value 128: R=111, G=179, B=111
+            palette.AddColor(Color.FromArgb(131, 199, 135)); // RGB Value 129: R=131, G=199, B=135
+            palette.AddColor(Color.FromArgb(155, 215, 159)); // RGB Value 130: R=155, G=215, B=159
+            palette.AddColor(Color.FromArgb(183, 235, 183)); // RGB Value 131: R=183, G=235, B=183
+            palette.AddColor(Color.FromArgb(215, 255, 215)); // RGB Value 132: R=215, G=255, B=215
+            palette.AddColor(Color.FromArgb(31, 39, 0)); // RGB Value 133: R=31, G=39, B=0
+            palette.AddColor(Color.FromArgb(43, 51, 0)); // RGB Value 134: R=43, G=51, B=0
+            palette.AddColor(Color.FromArgb(55, 67, 7)); // RGB Value 135: R=55, G=67, B=7
+            palette.AddColor(Color.FromArgb(67, 79, 7)); // RGB Value 136: R=67, G=79, B=7
+            palette.AddColor(Color.FromArgb(83, 95, 15)); // RGB Value 137: R=83, G=95, B=15
+            palette.AddColor(Color.FromArgb(99, 111, 23)); // RGB Value 138: R=99, G=111, B=23
+            palette.AddColor(Color.FromArgb(111, 123, 31)); // RGB Value 139: R=111, G=123, B=31
+            palette.AddColor(Color.FromArgb(127, 139, 43)); // RGB Value 140: R=127, G=139, B=43
+            palette.AddColor(Color.FromArgb(143, 151, 55)); // RGB Value 141: R=143, G=151, B=55
+            palette.AddColor(Color.FromArgb(159, 167, 67)); // RGB Value 142: R=159, G=167, B=67
+            palette.AddColor(Color.FromArgb(175, 183, 79)); // RGB Value 143: R=175, G=183, B=79
+            palette.AddColor(Color.FromArgb(191, 195, 95)); // RGB Value 144: R=191, G=195, B=95
+            palette.AddColor(Color.FromArgb(207, 211, 111)); // RGB Value 145: R=207, G=211, B=111
+            palette.AddColor(Color.FromArgb(223, 223, 131)); // RGB Value 146: R=223, G=223, B=131
+            palette.AddColor(Color.FromArgb(239, 239, 151)); // RGB Value 147: R=239, G=239, B=151
+            palette.AddColor(Color.FromArgb(255, 255, 171)); // RGB Value 148: R=255, G=255, B=171
+            palette.AddColor(Color.FromArgb(0, 35, 19)); // RGB Value 149: R=0, G=35, B=19
+            palette.AddColor(Color.FromArgb(0, 47, 27)); // RGB Value 150: R=0, G=47, B=27
+            palette.AddColor(Color.FromArgb(7, 63, 39)); // RGB Value 151: R=7, G=63, B=39
+            palette.AddColor(Color.FromArgb(11, 79, 55)); // RGB Value 152: R=11, G=79, B=55
+            palette.AddColor(Color.FromArgb(19, 91, 67)); // RGB Value 153: R=19, G=91, B=67
+            palette.AddColor(Color.FromArgb(27, 107, 83)); // RGB Value 154: R=27, G=107, B=83
+            palette.AddColor(Color.FromArgb(35, 123, 99)); // RGB Value 155: R=35, G=123, B=99
+            palette.AddColor(Color.FromArgb(43, 139, 115)); // RGB Value 156: R=43, G=139, B=115
+            palette.AddColor(Color.FromArgb(59, 151, 131)); // RGB Value 157: R=59, G=151, B=131
+            palette.AddColor(Color.FromArgb(79, 167, 151)); // RGB Value 158: R=79, G=167, B=151
+            palette.AddColor(Color.FromArgb(99, 179, 167)); // RGB Value 159: R=99, G=179, B=167
+            palette.AddColor(Color.FromArgb(115, 195, 187)); // RGB Value 160: R=115, G=195, B=187
+            palette.AddColor(Color.FromArgb(139, 211, 203)); // RGB Value 161: R=139, G=211, B=203
+            palette.AddColor(Color.FromArgb(159, 223, 219)); // RGB Value 162: R=159, G=223, B=219
+            palette.AddColor(Color.FromArgb(183, 239, 235)); // RGB Value 163: R=183, G=239, B=235
+            palette.AddColor(Color.FromArgb(211, 255, 255)); // RGB Value 164: R=211, G=255, B=255
+            palette.AddColor(Color.FromArgb(0, 19, 0)); // RGB Value 165: R=0, G=19, B=0
+            palette.AddColor(Color.FromArgb(0, 35, 0)); // RGB Value 166: R=0, G=35, B=0
+            palette.AddColor(Color.FromArgb(0, 47, 7)); // RGB Value 167: R=0, G=47, B=7
+            palette.AddColor(Color.FromArgb(7, 63, 11)); // RGB Value 168: R=7, G=63, B=11
+            palette.AddColor(Color.FromArgb(15, 79, 19)); // RGB Value 169: R=15, G=79, B=19
+            palette.AddColor(Color.FromArgb(23, 95, 27)); // RGB Value 170: R=23, G=95, B=27
+            palette.AddColor(Color.FromArgb(35, 111, 39)); // RGB Value 171: R=35, G=111, B=39
+            palette.AddColor(Color.FromArgb(43, 127, 51)); // RGB Value 172: R=43, G=127, B=51
+            palette.AddColor(Color.FromArgb(59, 143, 67)); // RGB Value 173: R=59, G=143, B=67
+            palette.AddColor(Color.FromArgb(75, 159, 79)); // RGB Value 174: R=75, G=159, B=79
+            palette.AddColor(Color.FromArgb(91, 175, 99)); // RGB Value 175: R=91, G=175, B=99
+            palette.AddColor(Color.FromArgb(107, 191, 115)); // RGB Value 176: R=107, G=191, B=115
+            palette.AddColor(Color.FromArgb(127, 207, 139)); // RGB Value 177: R=127, G=207, B=139
+            palette.AddColor(Color.FromArgb(151, 223, 159)); // RGB Value 178: R=151, G=223, B=159
+            palette.AddColor(Color.FromArgb(171, 239, 183)); // RGB Value 179: R=171, G=239, B=183
+            palette.AddColor(Color.FromArgb(199, 255, 207)); // RGB Value 180: R=199, G=255, B=207
+            palette.AddColor(Color.FromArgb(131, 71, 43)); // RGB Value 181: R=131, G=71, B=43
+            palette.AddColor(Color.FromArgb(147, 83, 47)); // RGB Value 182: R=147, G=83, B=47
+            palette.AddColor(Color.FromArgb(163, 95, 55)); // RGB Value 183: R=163, G=95, B=55
+            palette.AddColor(Color.FromArgb(183, 107, 63)); // RGB Value 184: R=183, G=107, B=63
+            palette.AddColor(Color.FromArgb(199, 123, 71)); // RGB Value 185: R=199, G=123, B=71
+            palette.AddColor(Color.FromArgb(219, 139, 79)); // RGB Value 186: R=219, G=139, B=79
+            palette.AddColor(Color.FromArgb(235, 155, 87)); // RGB Value 187: R=235, G=155, B=87
+            palette.AddColor(Color.FromArgb(255, 171, 95)); // RGB Value 188: R=255, G=171, B=95
+            palette.AddColor(Color.FromArgb(175, 151, 55)); // RGB Value 189: R=175, G=151, B=55
+            palette.AddColor(Color.FromArgb(191, 171, 55)); // RGB Value 190: R=191, G=171, B=55
+            palette.AddColor(Color.FromArgb(211, 195, 55)); // RGB Value 191: R=211, G=195, B=55
+            palette.AddColor(Color.FromArgb(231, 219, 51)); // RGB Value 192: R=231, G=219, B=51
+            palette.AddColor(Color.FromArgb(251, 247, 51)); // RGB Value 193: R=251, G=247, B=51
+            palette.AddColor(Color.FromArgb(27, 7, 0)); // RGB Value 194: R=27, G=7, B=0
+            palette.AddColor(Color.FromArgb(55, 11, 0)); // RGB Value 195: R=55, G=11, B=0
+            palette.AddColor(Color.FromArgb(83, 15, 0)); // RGB Value 196: R=83, G=15, B=0
+            palette.AddColor(Color.FromArgb(111, 15, 0)); // RGB Value 197: R=111, G=15, B=0
+            palette.AddColor(Color.FromArgb(139, 15, 0)); // RGB Value 198: R=139, G=15, B=0
+            palette.AddColor(Color.FromArgb(167, 11, 0)); // RGB Value 199: R=167, G=11, B=0
+            palette.AddColor(Color.FromArgb(195, 7, 0)); // RGB Value 200: R=195, G=7, B=0
+            palette.AddColor(Color.FromArgb(223, 0, 0)); // RGB Value 201: R=223, G=0, B=0
+            palette.AddColor(Color.FromArgb(227, 23, 23)); // RGB Value 202: R=227, G=23, B=23
+            palette.AddColor(Color.FromArgb(231, 51, 51)); // RGB Value 203: R=231, G=51, B=51
+            palette.AddColor(Color.FromArgb(235, 79, 79)); // RGB Value 204: R=235, G=79, B=79
+            palette.AddColor(Color.FromArgb(239, 111, 111)); // RGB Value 205: R=239, G=111, B=111
+            palette.AddColor(Color.FromArgb(243, 139, 139)); // RGB Value 206: R=243, G=139, B=139
+            palette.AddColor(Color.FromArgb(247, 171, 171)); // RGB Value 207: R=247, G=171, B=171
+            palette.AddColor(Color.FromArgb(251, 203, 203)); // RGB Value 208: R=251, G=203, B=203
+            palette.AddColor(Color.FromArgb(255, 239, 239)); // RGB Value 209: R=255, G=239, B=239
+            palette.AddColor(Color.FromArgb(7, 7, 7)); // RGB Value 210: R=7, G=7, B=7
+            palette.AddColor(Color.FromArgb(15, 15, 15)); // RGB Value 211: R=15, G=15, B=15
+            palette.AddColor(Color.FromArgb(27, 27, 27)); // RGB Value 212: R=27, G=27, B=27
+            palette.AddColor(Color.FromArgb(39, 39, 39)); // RGB Value 213: R=39, G=39, B=39
+            palette.AddColor(Color.FromArgb(51, 51, 47)); // RGB Value 214: R=51, G=51, B=47
+            palette.AddColor(Color.FromArgb(59, 59, 59)); // RGB Value 215: R=59, G=59, B=59
+            palette.AddColor(Color.FromArgb(71, 71, 71)); // RGB Value 216: R=71, G=71, B=71
+            palette.AddColor(Color.FromArgb(83, 83, 79)); // RGB Value 217: R=83, G=83, B=79
+            palette.AddColor(Color.FromArgb(91, 91, 91)); // RGB Value 218: R=91, G=91, B=91
+            palette.AddColor(Color.FromArgb(103, 103, 99)); // RGB Value 219: R=103, G=103, B=99
+            palette.AddColor(Color.FromArgb(115, 115, 111)); // RGB Value 220: R=115, G=115, B=111
+            palette.AddColor(Color.FromArgb(127, 127, 123)); // RGB Value 221: R=127, G=127, B=123
+            palette.AddColor(Color.FromArgb(127, 127, 123)); // RGB Value 222: R=127, G=127, B=123
+            palette.AddColor(Color.FromArgb(135, 135, 131)); // RGB Value 223: R=135, G=135, B=131
+            palette.AddColor(Color.FromArgb(147, 147, 143)); // RGB Value 224: R=147, G=147, B=143
+            palette.AddColor(Color.FromArgb(159, 159, 151)); // RGB Value 225: R=159, G=159, B=151
+            palette.AddColor(Color.FromArgb(171, 171, 163)); // RGB Value 226: R=171, G=171, B=163
+            palette.AddColor(Color.FromArgb(179, 179, 171)); // RGB Value 227: R=179, G=179, B=171
+            palette.AddColor(Color.FromArgb(191, 191, 183)); // RGB Value 228: R=191, G=191, B=183
+            palette.AddColor(Color.FromArgb(203, 203, 191)); // RGB Value 229: R=203, G=203, B=191
+            palette.AddColor(Color.FromArgb(211, 211, 199)); // RGB Value 230: R=211, G=211, B=199
+            palette.AddColor(Color.FromArgb(223, 223, 211)); // RGB Value 231: R=223, G=223, B=211
+            palette.AddColor(Color.FromArgb(235, 235, 219)); // RGB Value 232: R=235, G=235, B=219
+            palette.AddColor(Color.FromArgb(247, 247, 231)); // RGB Value 233: R=247, G=247, B=231
+            palette.AddColor(Color.FromArgb(0, 255, 0)); // RGB Value 234: R=0, G=255, B=0
+            palette.AddColor(Color.FromArgb(0, 255, 0)); // RGB Value 235: R=0, G=255, B=0
+            palette.AddColor(Color.FromArgb(0, 255, 0)); // RGB Value 236: R=0, G=255, B=0
+            palette.AddColor(Color.FromArgb(0, 255, 0)); // RGB Value 237: R=0, G=255, B=0
+            palette.AddColor(Color.FromArgb(0, 255, 0)); // RGB Value 238: R=0, G=255, B=0
+            palette.AddColor(Color.FromArgb(0, 255, 0)); // RGB Value 239: R=0, G=255, B=0
+            palette.AddColor(Color.FromArgb(0, 255, 0)); // RGB Value 240: R=0, G=255, B=0
+            palette.AddColor(Color.FromArgb(0, 255, 0)); // RGB Value 241: R=0, G=255, B=0
+            palette.AddColor(Color.FromArgb(0, 255, 0)); // RGB Value 242: R=0, G=255, B=0
+            palette.AddColor(Color.FromArgb(0, 255, 0)); // RGB Value 243: R=0, G=255, B=0
+            palette.AddColor(Color.FromArgb(0, 255, 0)); // RGB Value 244: R=0, G=255, B=0
+            palette.AddColor(Color.FromArgb(0, 255, 0)); // RGB Value 245: R=0, G=255, B=0
+            palette.AddColor(Color.FromArgb(255, 0, 255)); // RGB Value 246: R=255, G=0, B=255
+            palette.AddColor(Color.FromArgb(255, 0, 255)); // RGB Value 247: R=255, G=0, B=255
+            palette.AddColor(Color.FromArgb(255, 0, 255)); // RGB Value 248: R=255, G=0, B=255
+            palette.AddColor(Color.FromArgb(255, 0, 247)); // RGB Value 249: R=255, G=0, B=247
+            palette.AddColor(Color.FromArgb(255, 0, 255)); // RGB Value 250: R=255, G=0, B=255
+            palette.AddColor(Color.FromArgb(255, 0, 255)); // RGB Value 251: R=255, G=0, B=255
+            palette.AddColor(Color.FromArgb(255, 0, 255)); // RGB Value 252: R=255, G=0, B=255
+            palette.AddColor(Color.FromArgb(255, 0, 255)); // RGB Value 253: R=255, G=0, B=255
+            palette.AddColor(Color.FromArgb(127, 127, 127)); // RGB Value 254: R=127, G=127, B=127
+            palette.AddColor(Color.FromArgb(255, 255, 255)); // RGB Value 255: R=255, G=255, B=255
+        }
+        #endregion
+
+        #region Create Gray Palette RGB
+        private void btCreatePaletteFull_Click(object sender, EventArgs e)
+        {
+            using (FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog())
+            {
+                if (folderBrowserDialog.ShowDialog() == DialogResult.OK)
+                {
+                    string filename = Path.Combine(folderBrowserDialog.SelectedPath, "Palette.mul");
+                    palette.CreateDefaultPalette();
+                    palette.Save(filename);
+                }
+            }
+        }
+        #endregion
+
+        #region Load Palette
+        private void LoadPaletteButton_Click(object sender, EventArgs e)
+        {
+            using (OpenFileDialog openFileDialog = new OpenFileDialog())
+            {
+                openFileDialog.Filter = "mul files (*.mul)|*.mul";
+                if (openFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    palette.Load(openFileDialog.FileName);
+                    DrawPalette();
+                    DisplayRGBValues();
+                }
+            }
+        }
+        #endregion
+
+        /*private void DrawPalette()
+        {
+            Bitmap bitmap = new Bitmap(pictureBoxPalette.Width, pictureBoxPalette.Height);
+            using (Graphics g = Graphics.FromImage(bitmap))
+            {
+                palette.DrawPalette(g);
+            }
+            pictureBoxPalette.Image = bitmap;
+        }*/
+
+        #region DrawPalette
+        private void DrawPalette()
+        {
+            Bitmap bitmap = new Bitmap(pictureBoxPalette.Width, pictureBoxPalette.Height);
+            using (Graphics g = Graphics.FromImage(bitmap))
+            {
+                palette.DrawPalette(g, pictureBoxPalette.Width, pictureBoxPalette.Height);
+            }
+            pictureBoxPalette.Image = bitmap;
+        }
+        #endregion
+
+        #region DisplayRGBValues
+        private void DisplayRGBValues()
+        {
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < palette.RGBValues.Count; i++)
+            {
+                sb.AppendLine($"RGB Value {i}: R={palette.RGBValues[i].R}, G={palette.RGBValues[i].G}, B={palette.RGBValues[i].B}");
+            }
+            //rgbValuesLabel.Text = sb.ToString();
+            textBoxRgbValues.Text = sb.ToString();
+
+            // Kopieren Sie die RGB-Werte in die Zwischenablage
+            Clipboard.SetText(sb.ToString());
+        }
+        #endregion
     }
-    #endregion
 }

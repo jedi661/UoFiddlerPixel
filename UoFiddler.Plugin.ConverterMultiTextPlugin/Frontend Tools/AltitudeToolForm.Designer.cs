@@ -52,6 +52,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin
             lbTxt = new System.Windows.Forms.Label();
             checkBoxCopyText = new System.Windows.Forms.CheckBox();
             buttonHelp = new System.Windows.Forms.Button();
+            lbinfo = new System.Windows.Forms.Label();
             SuspendLayout();
             // 
             // comboBoxCommand
@@ -152,11 +153,21 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin
             buttonHelp.UseVisualStyleBackColor = true;
             buttonHelp.Click += buttonHelp_Click;
             // 
+            // lbinfo
+            // 
+            lbinfo.AutoSize = true;
+            lbinfo.Location = new System.Drawing.Point(278, 121);
+            lbinfo.Name = "lbinfo";
+            lbinfo.Size = new System.Drawing.Size(252, 15);
+            lbinfo.TabIndex = 10;
+            lbinfo.Text = "Info: Select the directory where the map.mul is";
+            // 
             // AltitudeToolForm
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             ClientSize = new System.Drawing.Size(594, 450);
+            Controls.Add(lbinfo);
             Controls.Add(buttonHelp);
             Controls.Add(checkBoxCopyText);
             Controls.Add(lbTxt);
@@ -188,5 +199,6 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin
         private System.Windows.Forms.Label lbTxt;
         private System.Windows.Forms.CheckBox checkBoxCopyText;
         private System.Windows.Forms.Button buttonHelp;
+        private System.Windows.Forms.Label lbinfo;
     }
 }

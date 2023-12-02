@@ -428,9 +428,15 @@ namespace UoFiddler.Controls.UserControls
                     // Play sound if isSoundMessageActive is true
                     if (isSoundMessageActive)
                     {
-                        SoundPlayer player = new SoundPlayer();
-                        player.SoundLocation = "sound.wav";
-                        player.Play();
+                        if (playCustomSound)
+                        {
+                            player.Play();
+                        }
+                        else
+                        {
+                            player.SoundLocation = "sound.wav";
+                            player.Play();
+                        }
                     }
                 }
             }
@@ -486,9 +492,15 @@ namespace UoFiddler.Controls.UserControls
             // Play sound if isSoundMessageActive is true
             if (isSoundMessageActive)
             {
-                SoundPlayer player = new SoundPlayer();
-                player.SoundLocation = "sound.wav";
-                player.Play();
+                if (playCustomSound)
+                {
+                    player.Play();
+                }
+                else
+                {
+                    player.SoundLocation = "sound.wav";
+                    player.Play();
+                }
             }
         }
         #endregion
@@ -536,9 +548,15 @@ namespace UoFiddler.Controls.UserControls
             // Play sound if isSoundMessageActive is true
             if (isSoundMessageActive)
             {
-                SoundPlayer player = new SoundPlayer();
-                player.SoundLocation = "sound.wav";
-                player.Play();
+                if (playCustomSound)
+                {
+                    player.Play();
+                }
+                else
+                {
+                    player.SoundLocation = "sound.wav";
+                    player.Play();
+                }
             }
         }
         #endregion
@@ -1195,9 +1213,15 @@ namespace UoFiddler.Controls.UserControls
                         // Play sound if isSoundMessageActive is true
                         if (isSoundMessageActive)
                         {
-                            SoundPlayer player = new SoundPlayer();
-                            player.SoundLocation = "sound.wav";
-                            player.Play();
+                            if (playCustomSound)
+                            {
+                                player.Play();
+                            }
+                            else
+                            {
+                                player.SoundLocation = "sound.wav";
+                                player.Play();
+                            }
                         }
 
                         // Only show a message if isSoundMessageActive is false
@@ -1294,9 +1318,15 @@ namespace UoFiddler.Controls.UserControls
                         // Play sound if isSoundMessageActive is true
                         if (isSoundMessageActive)
                         {
-                            SoundPlayer player = new SoundPlayer();
-                            player.SoundLocation = "sound.wav";
-                            player.Play();
+                            if (playCustomSound)
+                            {
+                                player.Play();
+                            }
+                            else
+                            {
+                                player.SoundLocation = "sound.wav";
+                                player.Play();
+                            }
                         }
                     }
                     else
@@ -1459,9 +1489,9 @@ namespace UoFiddler.Controls.UserControls
 
         #region Sound Button
         private bool isSoundMessageActive = false;
-        private bool playCustomSound = false;
+        private bool playCustomSound = false; // You can use it to select any sound
         private SoundPlayer player = new SoundPlayer();
-
+       
         public void toolStripButtonSoundMessage_Click(object sender, EventArgs e)
         {
             // Toggle the state of isSoundMessageActive
@@ -1474,8 +1504,15 @@ namespace UoFiddler.Controls.UserControls
                 toolStripButtonSoundMessage.BackColor = Color.Blue;
 
                 // Play sound
-                player.SoundLocation = "sound.wav";
-                player.Play();
+                if (playCustomSound)
+                {
+                    player.Play();
+                }
+                else
+                {
+                    player.SoundLocation = "sound.wav";
+                    player.Play();
+                }
             }
             else
             {
@@ -1487,6 +1524,8 @@ namespace UoFiddler.Controls.UserControls
 
         #region Mark
         private string lastSelectedId = "50320"; // Standardwert
+
+        #region listBox_MouseDouvleClick
         private void listBox_MouseDoubleClick(object sender, MouseEventArgs e)
         {
             // Speichern Sie den ausgewählten ID-Wert, wenn auf ein Element in der ListBox doppelgeklickt wird
@@ -1495,12 +1534,20 @@ namespace UoFiddler.Controls.UserControls
 
             if (isSoundMessageActive)
             {
-                SoundPlayer player = new SoundPlayer();
-                player.SoundLocation = "sound.wav";
-                player.Play();
+                if (playCustomSound)
+                {
+                    player.Play();
+                }
+                else
+                {
+                    player.SoundLocation = "sound.wav";
+                    player.Play();
+                }
             }
         }
+        #endregion
 
+        #region Mark
         private void markToolStripMenuItem_Click(object sender, EventArgs e)
         {
             for (int i = 0; i < listBox.Items.Count; ++i)
@@ -1517,9 +1564,31 @@ namespace UoFiddler.Controls.UserControls
 
             if (isSoundMessageActive)
             {
-                SoundPlayer player = new SoundPlayer();
-                player.SoundLocation = "sound.wav";
-                player.Play();
+                if (playCustomSound)
+                {
+                    player.Play();
+                }
+                else
+                {
+                    player.SoundLocation = "sound.wav";
+                    player.Play();
+                }
+            }
+        }
+        #endregion
+
+        #endregion
+
+        #region CoustomSound
+        private void customSoundToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            openFileDialog.Filter = "Wave Sound File (*.wav)|*.wav";
+
+            if (openFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                player.SoundLocation = openFileDialog.FileName;
+                playCustomSound = true;
             }
         }
         #endregion

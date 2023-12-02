@@ -17,8 +17,8 @@ namespace Ultima
         {
         }
 
-        protected WaveFormatException(SerializationInfo info, StreamingContext context) : base(info, context)
+        /*protected WaveFormatException(SerializationInfo info, StreamingContext context) : base(info, context)
         {
-        }
+        }*/
     }
 }

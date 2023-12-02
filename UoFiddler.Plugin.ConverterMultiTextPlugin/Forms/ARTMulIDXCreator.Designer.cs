@@ -55,7 +55,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             label3 = new System.Windows.Forms.Label();
             label4 = new System.Windows.Forms.Label();
             tabControl1 = new System.Windows.Forms.TabControl();
-            tabPage1 = new System.Windows.Forms.TabPage();
+            tabPageCreateMuls = new System.Windows.Forms.TabPage();
             label14 = new System.Windows.Forms.Label();
             lbCreatedMul = new System.Windows.Forms.Label();
             label13 = new System.Windows.Forms.Label();
@@ -75,8 +75,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             label5 = new System.Windows.Forms.Label();
             btCreateARTIDXMul_uint = new System.Windows.Forms.Button();
             comboBoxMuls = new System.Windows.Forms.ComboBox();
-            tabPage2 = new System.Windows.Forms.TabPage();
-            tabPage3 = new System.Windows.Forms.TabPage();
+            tabPageTileData = new System.Windows.Forms.TabPage();
             groupBox1 = new System.Windows.Forms.GroupBox();
             btCreateSimpleTiledata = new System.Windows.Forms.Button();
             btCreateTiledataEmpty = new System.Windows.Forms.Button();
@@ -102,8 +101,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             tblandTileGroups = new System.Windows.Forms.TextBox();
             tbDirTileData = new System.Windows.Forms.TextBox();
             btCreateTiledata = new System.Windows.Forms.Button();
-            tabPage5 = new System.Windows.Forms.TabPage();
+            tabPageTexturen = new System.Windows.Forms.TabPage();
             groupBoxTexture = new System.Windows.Forms.GroupBox();
+            lbTextureinfo3 = new System.Windows.Forms.Label();
             BtCreateIndexes = new System.Windows.Forms.Button();
             btCreateTextur = new System.Windows.Forms.Button();
             lbtextureinfo2 = new System.Windows.Forms.Label();
@@ -112,7 +112,22 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             tbIndexCount = new System.Windows.Forms.Label();
             lbTextureCount = new System.Windows.Forms.Label();
             checkBoxTexture = new System.Windows.Forms.CheckBox();
-            tabPage4 = new System.Windows.Forms.TabPage();
+            tabPageRadarColor = new System.Windows.Forms.TabPage();
+            lbRadarColor = new System.Windows.Forms.Label();
+            indexCountTextBox = new System.Windows.Forms.TextBox();
+            lbRadarColorInfo = new System.Windows.Forms.Label();
+            CreateFileButtonRadarColor = new System.Windows.Forms.Button();
+            tabPagePalette = new System.Windows.Forms.TabPage();
+            textBoxRgbValues = new System.Windows.Forms.TextBox();
+            rgbValuesLabel = new System.Windows.Forms.Label();
+            LoadPaletteButton = new System.Windows.Forms.Button();
+            pictureBoxPalette = new System.Windows.Forms.PictureBox();
+            lbCreateColorPalette = new System.Windows.Forms.Label();
+            btCreatePaletteFull = new System.Windows.Forms.Button();
+            lbCreatePalette = new System.Windows.Forms.Label();
+            btCreatePalette = new System.Windows.Forms.Button();
+            tabPageReadMuls = new System.Windows.Forms.TabPage();
+            tabPageReadOut = new System.Windows.Forms.TabPage();
             textBoxOutput = new System.Windows.Forms.TextBox();
             textBoxTileDataInfo = new System.Windows.Forms.TextBox();
             buttonReadStaticTileData = new System.Windows.Forms.Button();
@@ -128,16 +143,19 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             buttonReadLandTileData = new System.Windows.Forms.Button();
             listViewTileData = new System.Windows.Forms.ListView();
             buttonReadTileData = new System.Windows.Forms.Button();
-            lbTextureinfo3 = new System.Windows.Forms.Label();
+            saveFileDialog = new System.Windows.Forms.SaveFileDialog();
             tabControl1.SuspendLayout();
-            tabPage1.SuspendLayout();
-            tabPage2.SuspendLayout();
-            tabPage3.SuspendLayout();
+            tabPageCreateMuls.SuspendLayout();
+            tabPageTileData.SuspendLayout();
             groupBox1.SuspendLayout();
             groupBoxTiledata.SuspendLayout();
-            tabPage5.SuspendLayout();
+            tabPageTexturen.SuspendLayout();
             groupBoxTexture.SuspendLayout();
-            tabPage4.SuspendLayout();
+            tabPageRadarColor.SuspendLayout();
+            tabPagePalette.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)pictureBoxPalette).BeginInit();
+            tabPageReadMuls.SuspendLayout();
+            tabPageReadOut.SuspendLayout();
             groupBoxInfo.SuspendLayout();
             SuspendLayout();
             // 
@@ -270,51 +288,53 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // 
             // tabControl1
             // 
-            tabControl1.Controls.Add(tabPage1);
-            tabControl1.Controls.Add(tabPage2);
-            tabControl1.Controls.Add(tabPage3);
-            tabControl1.Controls.Add(tabPage5);
-            tabControl1.Controls.Add(tabPage4);
+            tabControl1.Controls.Add(tabPageCreateMuls);
+            tabControl1.Controls.Add(tabPageTileData);
+            tabControl1.Controls.Add(tabPageTexturen);
+            tabControl1.Controls.Add(tabPageRadarColor);
+            tabControl1.Controls.Add(tabPagePalette);
+            tabControl1.Controls.Add(tabPageReadMuls);
+            tabControl1.Controls.Add(tabPageReadOut);
             tabControl1.Location = new System.Drawing.Point(3, 12);
             tabControl1.Name = "tabControl1";
             tabControl1.SelectedIndex = 0;
             tabControl1.Size = new System.Drawing.Size(753, 426);
             tabControl1.TabIndex = 18;
             // 
-            // tabPage1
+            // tabPageCreateMuls
             // 
-            tabPage1.Controls.Add(label14);
-            tabPage1.Controls.Add(lbCreatedMul);
-            tabPage1.Controls.Add(label13);
-            tabPage1.Controls.Add(btCreateARTIDXMul_Ulong);
-            tabPage1.Controls.Add(label12);
-            tabPage1.Controls.Add(btCreateARTIDXMul_Byte);
-            tabPage1.Controls.Add(label11);
-            tabPage1.Controls.Add(btCreateARTIDXMul_Sbyte);
-            tabPage1.Controls.Add(label10);
-            tabPage1.Controls.Add(label9);
-            tabPage1.Controls.Add(btCreateARTIDXMul_Short);
-            tabPage1.Controls.Add(label8);
-            tabPage1.Controls.Add(btCreateARTIDXMul_Ushort);
-            tabPage1.Controls.Add(label7);
-            tabPage1.Controls.Add(btCreateARTIDXMul_Int);
-            tabPage1.Controls.Add(label6);
-            tabPage1.Controls.Add(label5);
-            tabPage1.Controls.Add(btCreateARTIDXMul_uint);
-            tabPage1.Controls.Add(comboBoxMuls);
-            tabPage1.Controls.Add(textBox2);
-            tabPage1.Controls.Add(textBox1);
-            tabPage1.Controls.Add(btCreateARTIDXMul);
-            tabPage1.Controls.Add(label2);
-            tabPage1.Controls.Add(btFileOrder);
-            tabPage1.Controls.Add(label1);
-            tabPage1.Location = new System.Drawing.Point(4, 24);
-            tabPage1.Name = "tabPage1";
-            tabPage1.Padding = new System.Windows.Forms.Padding(3);
-            tabPage1.Size = new System.Drawing.Size(745, 398);
-            tabPage1.TabIndex = 0;
-            tabPage1.Text = "Create Muls";
-            tabPage1.UseVisualStyleBackColor = true;
+            tabPageCreateMuls.Controls.Add(label14);
+            tabPageCreateMuls.Controls.Add(lbCreatedMul);
+            tabPageCreateMuls.Controls.Add(label13);
+            tabPageCreateMuls.Controls.Add(btCreateARTIDXMul_Ulong);
+            tabPageCreateMuls.Controls.Add(label12);
+            tabPageCreateMuls.Controls.Add(btCreateARTIDXMul_Byte);
+            tabPageCreateMuls.Controls.Add(label11);
+            tabPageCreateMuls.Controls.Add(btCreateARTIDXMul_Sbyte);
+            tabPageCreateMuls.Controls.Add(label10);
+            tabPageCreateMuls.Controls.Add(label9);
+            tabPageCreateMuls.Controls.Add(btCreateARTIDXMul_Short);
+            tabPageCreateMuls.Controls.Add(label8);
+            tabPageCreateMuls.Controls.Add(btCreateARTIDXMul_Ushort);
+            tabPageCreateMuls.Controls.Add(label7);
+            tabPageCreateMuls.Controls.Add(btCreateARTIDXMul_Int);
+            tabPageCreateMuls.Controls.Add(label6);
+            tabPageCreateMuls.Controls.Add(label5);
+            tabPageCreateMuls.Controls.Add(btCreateARTIDXMul_uint);
+            tabPageCreateMuls.Controls.Add(comboBoxMuls);
+            tabPageCreateMuls.Controls.Add(textBox2);
+            tabPageCreateMuls.Controls.Add(textBox1);
+            tabPageCreateMuls.Controls.Add(btCreateARTIDXMul);
+            tabPageCreateMuls.Controls.Add(label2);
+            tabPageCreateMuls.Controls.Add(btFileOrder);
+            tabPageCreateMuls.Controls.Add(label1);
+            tabPageCreateMuls.Location = new System.Drawing.Point(4, 24);
+            tabPageCreateMuls.Name = "tabPageCreateMuls";
+            tabPageCreateMuls.Padding = new System.Windows.Forms.Padding(3);
+            tabPageCreateMuls.Size = new System.Drawing.Size(745, 398);
+            tabPageCreateMuls.TabIndex = 0;
+            tabPageCreateMuls.Text = "Create Muls";
+            tabPageCreateMuls.UseVisualStyleBackColor = true;
             // 
             // label14
             // 
@@ -494,45 +514,27 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             comboBoxMuls.TabIndex = 16;
             comboBoxMuls.SelectedIndexChanged += comboBoxMuls_SelectedIndexChanged;
             // 
-            // tabPage2
+            // tabPageTileData
             // 
-            tabPage2.Controls.Add(btnCountEntries);
-            tabPage2.Controls.Add(label4);
-            tabPage2.Controls.Add(lblEntryCount);
-            tabPage2.Controls.Add(label3);
-            tabPage2.Controls.Add(textBoxInfo);
-            tabPage2.Controls.Add(textBoxIndex);
-            tabPage2.Controls.Add(btnShowInfo);
-            tabPage2.Controls.Add(btnReadArtIdx);
-            tabPage2.Location = new System.Drawing.Point(4, 24);
-            tabPage2.Name = "tabPage2";
-            tabPage2.Padding = new System.Windows.Forms.Padding(3);
-            tabPage2.Size = new System.Drawing.Size(745, 398);
-            tabPage2.TabIndex = 1;
-            tabPage2.Text = "Read Muls";
-            tabPage2.UseVisualStyleBackColor = true;
-            // 
-            // tabPage3
-            // 
-            tabPage3.Controls.Add(groupBox1);
-            tabPage3.Controls.Add(groupBoxTiledata);
-            tabPage3.Controls.Add(btnCountTileDataEntries);
-            tabPage3.Controls.Add(lblTileDataEntryCount);
-            tabPage3.Controls.Add(label17);
-            tabPage3.Controls.Add(checkBoxTileData);
-            tabPage3.Controls.Add(lbTileDataCreate);
-            tabPage3.Controls.Add(label16);
-            tabPage3.Controls.Add(label15);
-            tabPage3.Controls.Add(tbstaticTileGroups);
-            tabPage3.Controls.Add(tblandTileGroups);
-            tabPage3.Controls.Add(tbDirTileData);
-            tabPage3.Controls.Add(btCreateTiledata);
-            tabPage3.Location = new System.Drawing.Point(4, 24);
-            tabPage3.Name = "tabPage3";
-            tabPage3.Size = new System.Drawing.Size(745, 398);
-            tabPage3.TabIndex = 2;
-            tabPage3.Text = "TileData";
-            tabPage3.UseVisualStyleBackColor = true;
+            tabPageTileData.Controls.Add(groupBox1);
+            tabPageTileData.Controls.Add(groupBoxTiledata);
+            tabPageTileData.Controls.Add(btnCountTileDataEntries);
+            tabPageTileData.Controls.Add(lblTileDataEntryCount);
+            tabPageTileData.Controls.Add(label17);
+            tabPageTileData.Controls.Add(checkBoxTileData);
+            tabPageTileData.Controls.Add(lbTileDataCreate);
+            tabPageTileData.Controls.Add(label16);
+            tabPageTileData.Controls.Add(label15);
+            tabPageTileData.Controls.Add(tbstaticTileGroups);
+            tabPageTileData.Controls.Add(tblandTileGroups);
+            tabPageTileData.Controls.Add(tbDirTileData);
+            tabPageTileData.Controls.Add(btCreateTiledata);
+            tabPageTileData.Location = new System.Drawing.Point(4, 24);
+            tabPageTileData.Name = "tabPageTileData";
+            tabPageTileData.Size = new System.Drawing.Size(745, 398);
+            tabPageTileData.TabIndex = 2;
+            tabPageTileData.Text = "TileData";
+            tabPageTileData.UseVisualStyleBackColor = true;
             // 
             // groupBox1
             // 
@@ -771,15 +773,15 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             btCreateTiledata.UseVisualStyleBackColor = true;
             btCreateTiledata.Click += btCreateTiledata_Click;
             // 
-            // tabPage5
+            // tabPageTexturen
             // 
-            tabPage5.Controls.Add(groupBoxTexture);
-            tabPage5.Location = new System.Drawing.Point(4, 24);
-            tabPage5.Name = "tabPage5";
-            tabPage5.Size = new System.Drawing.Size(745, 398);
-            tabPage5.TabIndex = 4;
-            tabPage5.Text = "Texturen";
-            tabPage5.UseVisualStyleBackColor = true;
+            tabPageTexturen.Controls.Add(groupBoxTexture);
+            tabPageTexturen.Location = new System.Drawing.Point(4, 24);
+            tabPageTexturen.Name = "tabPageTexturen";
+            tabPageTexturen.Size = new System.Drawing.Size(745, 398);
+            tabPageTexturen.TabIndex = 4;
+            tabPageTexturen.Text = "Texturen";
+            tabPageTexturen.UseVisualStyleBackColor = true;
             // 
             // groupBoxTexture
             // 
@@ -798,6 +800,15 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             groupBoxTexture.TabIndex = 7;
             groupBoxTexture.TabStop = false;
             groupBoxTexture.Text = "Texture";
+            // 
+            // lbTextureinfo3
+            // 
+            lbTextureinfo3.AutoSize = true;
+            lbTextureinfo3.Location = new System.Drawing.Point(135, 128);
+            lbTextureinfo3.Name = "lbTextureinfo3";
+            lbTextureinfo3.Size = new System.Drawing.Size(171, 15);
+            lbTextureinfo3.TabIndex = 8;
+            lbTextureinfo3.Text = "Erstellt eine Leere Texmaps.mul";
             // 
             // BtCreateIndexes
             // 
@@ -874,21 +885,180 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             checkBoxTexture.Text = "2 Image.";
             checkBoxTexture.UseVisualStyleBackColor = true;
             // 
-            // tabPage4
+            // tabPageRadarColor
             // 
-            tabPage4.Controls.Add(textBoxOutput);
-            tabPage4.Controls.Add(textBoxTileDataInfo);
-            tabPage4.Controls.Add(buttonReadStaticTileData);
-            tabPage4.Controls.Add(groupBoxInfo);
-            tabPage4.Controls.Add(buttonReadLandTileData);
-            tabPage4.Controls.Add(listViewTileData);
-            tabPage4.Controls.Add(buttonReadTileData);
-            tabPage4.Location = new System.Drawing.Point(4, 24);
-            tabPage4.Name = "tabPage4";
-            tabPage4.Size = new System.Drawing.Size(745, 398);
-            tabPage4.TabIndex = 3;
-            tabPage4.Text = "Auslesen";
-            tabPage4.UseVisualStyleBackColor = true;
+            tabPageRadarColor.Controls.Add(lbRadarColor);
+            tabPageRadarColor.Controls.Add(indexCountTextBox);
+            tabPageRadarColor.Controls.Add(lbRadarColorInfo);
+            tabPageRadarColor.Controls.Add(CreateFileButtonRadarColor);
+            tabPageRadarColor.Location = new System.Drawing.Point(4, 24);
+            tabPageRadarColor.Name = "tabPageRadarColor";
+            tabPageRadarColor.Size = new System.Drawing.Size(745, 398);
+            tabPageRadarColor.TabIndex = 5;
+            tabPageRadarColor.Text = "RadarColor";
+            tabPageRadarColor.UseVisualStyleBackColor = true;
+            // 
+            // lbRadarColor
+            // 
+            lbRadarColor.AutoSize = true;
+            lbRadarColor.Location = new System.Drawing.Point(209, 27);
+            lbRadarColor.Name = "lbRadarColor";
+            lbRadarColor.Size = new System.Drawing.Size(163, 15);
+            lbRadarColor.TabIndex = 3;
+            lbRadarColor.Text = "Index Festlegen was man will.";
+            // 
+            // indexCountTextBox
+            // 
+            indexCountTextBox.Location = new System.Drawing.Point(103, 23);
+            indexCountTextBox.Name = "indexCountTextBox";
+            indexCountTextBox.Size = new System.Drawing.Size(100, 23);
+            indexCountTextBox.TabIndex = 2;
+            indexCountTextBox.Text = "82374";
+            // 
+            // lbRadarColorInfo
+            // 
+            lbRadarColorInfo.AutoSize = true;
+            lbRadarColorInfo.Location = new System.Drawing.Point(26, 60);
+            lbRadarColorInfo.Name = "lbRadarColorInfo";
+            lbRadarColorInfo.Size = new System.Drawing.Size(28, 15);
+            lbRadarColorInfo.TabIndex = 1;
+            lbRadarColorInfo.Text = "Info";
+            // 
+            // CreateFileButtonRadarColor
+            // 
+            CreateFileButtonRadarColor.Location = new System.Drawing.Point(22, 23);
+            CreateFileButtonRadarColor.Name = "CreateFileButtonRadarColor";
+            CreateFileButtonRadarColor.Size = new System.Drawing.Size(75, 23);
+            CreateFileButtonRadarColor.TabIndex = 0;
+            CreateFileButtonRadarColor.Text = "Create RadarColor";
+            CreateFileButtonRadarColor.UseVisualStyleBackColor = true;
+            CreateFileButtonRadarColor.Click += CreateFileButtonRadarColor_Click;
+            // 
+            // tabPagePalette
+            // 
+            tabPagePalette.Controls.Add(textBoxRgbValues);
+            tabPagePalette.Controls.Add(rgbValuesLabel);
+            tabPagePalette.Controls.Add(LoadPaletteButton);
+            tabPagePalette.Controls.Add(pictureBoxPalette);
+            tabPagePalette.Controls.Add(lbCreateColorPalette);
+            tabPagePalette.Controls.Add(btCreatePaletteFull);
+            tabPagePalette.Controls.Add(lbCreatePalette);
+            tabPagePalette.Controls.Add(btCreatePalette);
+            tabPagePalette.Location = new System.Drawing.Point(4, 24);
+            tabPagePalette.Name = "tabPagePalette";
+            tabPagePalette.Size = new System.Drawing.Size(745, 398);
+            tabPagePalette.TabIndex = 6;
+            tabPagePalette.Text = "Palette";
+            tabPagePalette.UseVisualStyleBackColor = true;
+            // 
+            // textBoxRgbValues
+            // 
+            textBoxRgbValues.Location = new System.Drawing.Point(296, 30);
+            textBoxRgbValues.Multiline = true;
+            textBoxRgbValues.Name = "textBoxRgbValues";
+            textBoxRgbValues.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
+            textBoxRgbValues.Size = new System.Drawing.Size(424, 198);
+            textBoxRgbValues.TabIndex = 7;
+            // 
+            // rgbValuesLabel
+            // 
+            rgbValuesLabel.AutoSize = true;
+            rgbValuesLabel.Location = new System.Drawing.Point(24, 213);
+            rgbValuesLabel.Name = "rgbValuesLabel";
+            rgbValuesLabel.Size = new System.Drawing.Size(36, 15);
+            rgbValuesLabel.TabIndex = 6;
+            rgbValuesLabel.Text = "Color";
+            // 
+            // LoadPaletteButton
+            // 
+            LoadPaletteButton.Location = new System.Drawing.Point(632, 351);
+            LoadPaletteButton.Name = "LoadPaletteButton";
+            LoadPaletteButton.Size = new System.Drawing.Size(88, 23);
+            LoadPaletteButton.TabIndex = 5;
+            LoadPaletteButton.Text = "Load Palette";
+            LoadPaletteButton.UseVisualStyleBackColor = true;
+            LoadPaletteButton.Click += LoadPaletteButton_Click;
+            // 
+            // pictureBoxPalette
+            // 
+            pictureBoxPalette.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
+            pictureBoxPalette.Location = new System.Drawing.Point(24, 234);
+            pictureBoxPalette.Name = "pictureBoxPalette";
+            pictureBoxPalette.Size = new System.Drawing.Size(696, 111);
+            pictureBoxPalette.TabIndex = 4;
+            pictureBoxPalette.TabStop = false;
+            // 
+            // lbCreateColorPalette
+            // 
+            lbCreateColorPalette.AutoSize = true;
+            lbCreateColorPalette.Location = new System.Drawing.Point(142, 59);
+            lbCreateColorPalette.Name = "lbCreateColorPalette";
+            lbCreateColorPalette.Size = new System.Drawing.Size(148, 15);
+            lbCreateColorPalette.TabIndex = 3;
+            lbCreateColorPalette.Text = "Create Color RGB - Palette ";
+            // 
+            // btCreatePaletteFull
+            // 
+            btCreatePaletteFull.Location = new System.Drawing.Point(24, 55);
+            btCreatePaletteFull.Name = "btCreatePaletteFull";
+            btCreatePaletteFull.Size = new System.Drawing.Size(112, 23);
+            btCreatePaletteFull.TabIndex = 2;
+            btCreatePaletteFull.Text = "Create Palette";
+            btCreatePaletteFull.UseVisualStyleBackColor = true;
+            btCreatePaletteFull.Click += btCreatePaletteFull_Click;
+            // 
+            // lbCreatePalette
+            // 
+            lbCreatePalette.AutoSize = true;
+            lbCreatePalette.Location = new System.Drawing.Point(142, 30);
+            lbCreatePalette.Name = "lbCreatePalette";
+            lbCreatePalette.Size = new System.Drawing.Size(85, 15);
+            lbCreatePalette.TabIndex = 1;
+            lbCreatePalette.Text = "Orginal Palette";
+            // 
+            // btCreatePalette
+            // 
+            btCreatePalette.Location = new System.Drawing.Point(24, 26);
+            btCreatePalette.Name = "btCreatePalette";
+            btCreatePalette.Size = new System.Drawing.Size(112, 23);
+            btCreatePalette.TabIndex = 0;
+            btCreatePalette.Text = "Create Palette";
+            btCreatePalette.UseVisualStyleBackColor = true;
+            btCreatePalette.Click += btCreatePalette_Click;
+            // 
+            // tabPageReadMuls
+            // 
+            tabPageReadMuls.Controls.Add(btnCountEntries);
+            tabPageReadMuls.Controls.Add(label4);
+            tabPageReadMuls.Controls.Add(lblEntryCount);
+            tabPageReadMuls.Controls.Add(label3);
+            tabPageReadMuls.Controls.Add(textBoxInfo);
+            tabPageReadMuls.Controls.Add(textBoxIndex);
+            tabPageReadMuls.Controls.Add(btnShowInfo);
+            tabPageReadMuls.Controls.Add(btnReadArtIdx);
+            tabPageReadMuls.Location = new System.Drawing.Point(4, 24);
+            tabPageReadMuls.Name = "tabPageReadMuls";
+            tabPageReadMuls.Padding = new System.Windows.Forms.Padding(3);
+            tabPageReadMuls.Size = new System.Drawing.Size(745, 398);
+            tabPageReadMuls.TabIndex = 1;
+            tabPageReadMuls.Text = "Read Muls";
+            tabPageReadMuls.UseVisualStyleBackColor = true;
+            // 
+            // tabPageReadOut
+            // 
+            tabPageReadOut.Controls.Add(textBoxOutput);
+            tabPageReadOut.Controls.Add(textBoxTileDataInfo);
+            tabPageReadOut.Controls.Add(buttonReadStaticTileData);
+            tabPageReadOut.Controls.Add(groupBoxInfo);
+            tabPageReadOut.Controls.Add(buttonReadLandTileData);
+            tabPageReadOut.Controls.Add(listViewTileData);
+            tabPageReadOut.Controls.Add(buttonReadTileData);
+            tabPageReadOut.Location = new System.Drawing.Point(4, 24);
+            tabPageReadOut.Name = "tabPageReadOut";
+            tabPageReadOut.Size = new System.Drawing.Size(745, 398);
+            tabPageReadOut.TabIndex = 3;
+            tabPageReadOut.Text = "ReadOut";
+            tabPageReadOut.UseVisualStyleBackColor = true;
             // 
             // textBoxOutput
             // 
@@ -1039,15 +1209,6 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             buttonReadTileData.UseVisualStyleBackColor = true;
             buttonReadTileData.Click += buttonReadTileData_Click;
             // 
-            // lbTextureinfo3
-            // 
-            lbTextureinfo3.AutoSize = true;
-            lbTextureinfo3.Location = new System.Drawing.Point(135, 128);
-            lbTextureinfo3.Name = "lbTextureinfo3";
-            lbTextureinfo3.Size = new System.Drawing.Size(171, 15);
-            lbTextureinfo3.TabIndex = 8;
-            lbTextureinfo3.Text = "Erstellt eine Leere Texmaps.mul";
-            // 
             // ARTMulIDXCreator
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -1059,20 +1220,25 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             Name = "ARTMulIDXCreator";
             Text = "ARTMulIDXCreator";
             tabControl1.ResumeLayout(false);
-            tabPage1.ResumeLayout(false);
-            tabPage1.PerformLayout();
-            tabPage2.ResumeLayout(false);
-            tabPage2.PerformLayout();
-            tabPage3.ResumeLayout(false);
-            tabPage3.PerformLayout();
+            tabPageCreateMuls.ResumeLayout(false);
+            tabPageCreateMuls.PerformLayout();
+            tabPageTileData.ResumeLayout(false);
+            tabPageTileData.PerformLayout();
             groupBox1.ResumeLayout(false);
             groupBoxTiledata.ResumeLayout(false);
             groupBoxTiledata.PerformLayout();
-            tabPage5.ResumeLayout(false);
+            tabPageTexturen.ResumeLayout(false);
             groupBoxTexture.ResumeLayout(false);
             groupBoxTexture.PerformLayout();
-            tabPage4.ResumeLayout(false);
-            tabPage4.PerformLayout();
+            tabPageRadarColor.ResumeLayout(false);
+            tabPageRadarColor.PerformLayout();
+            tabPagePalette.ResumeLayout(false);
+            tabPagePalette.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)pictureBoxPalette).EndInit();
+            tabPageReadMuls.ResumeLayout(false);
+            tabPageReadMuls.PerformLayout();
+            tabPageReadOut.ResumeLayout(false);
+            tabPageReadOut.PerformLayout();
             groupBoxInfo.ResumeLayout(false);
             groupBoxInfo.PerformLayout();
             ResumeLayout(false);
@@ -1095,8 +1261,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.TabControl tabControl1;
-        private System.Windows.Forms.TabPage tabPage1;
-        private System.Windows.Forms.TabPage tabPage2;
+        private System.Windows.Forms.TabPage tabPageCreateMuls;
+        private System.Windows.Forms.TabPage tabPageReadMuls;
         private System.Windows.Forms.ComboBox comboBoxMuls;
         private System.Windows.Forms.Button btCreateARTIDXMul_uint;
         private System.Windows.Forms.Label label6;
@@ -1116,7 +1282,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private System.Windows.Forms.Label label13;
         private System.Windows.Forms.Label lbCreatedMul;
         private System.Windows.Forms.Label label14;
-        private System.Windows.Forms.TabPage tabPage3;
+        private System.Windows.Forms.TabPage tabPageTileData;
         private System.Windows.Forms.Button btCreateTiledata;
         private System.Windows.Forms.TextBox tbDirTileData;
         private System.Windows.Forms.Label lbTileDataCreate;
@@ -1141,7 +1307,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private System.Windows.Forms.Label lblTileDataEntryCount;
         private System.Windows.Forms.Button btCreateSimpleTiledata;
         private System.Windows.Forms.Button btReadTileFlags;
-        private System.Windows.Forms.TabPage tabPage4;
+        private System.Windows.Forms.TabPage tabPageReadOut;
         private System.Windows.Forms.ListView listViewTileData;
         private System.Windows.Forms.Button buttonReadTileData;
         private System.Windows.Forms.Button buttonReadLandTileData;
@@ -1158,7 +1324,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private System.Windows.Forms.GroupBox groupBoxTiledata;
         private System.Windows.Forms.Button CountIndices;
         private System.Windows.Forms.GroupBox groupBox1;
-        private System.Windows.Forms.TabPage tabPage5;
+        private System.Windows.Forms.TabPage tabPageTexturen;
         private System.Windows.Forms.Button btCreateTextur;
         private System.Windows.Forms.TextBox tbIndexCountTexture;
         private System.Windows.Forms.Label tbIndexCount;
@@ -1169,5 +1335,20 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private System.Windows.Forms.GroupBox groupBoxTexture;
         private System.Windows.Forms.Button BtCreateIndexes;
         private System.Windows.Forms.Label lbTextureinfo3;
+        private System.Windows.Forms.TabPage tabPageRadarColor;
+        private System.Windows.Forms.Button CreateFileButtonRadarColor;
+        private System.Windows.Forms.Label lbRadarColorInfo;
+        private System.Windows.Forms.SaveFileDialog saveFileDialog;
+        private System.Windows.Forms.TextBox indexCountTextBox;
+        private System.Windows.Forms.Label lbRadarColor;
+        private System.Windows.Forms.TabPage tabPagePalette;
+        private System.Windows.Forms.Button btCreatePalette;
+        private System.Windows.Forms.Button btCreatePaletteFull;
+        private System.Windows.Forms.Label lbCreatePalette;
+        private System.Windows.Forms.Label lbCreateColorPalette;
+        private System.Windows.Forms.Button LoadPaletteButton;
+        private System.Windows.Forms.PictureBox pictureBoxPalette;
+        private System.Windows.Forms.Label rgbValuesLabel;
+        private System.Windows.Forms.TextBox textBoxRgbValues;
     }
 }

@@ -1070,7 +1070,7 @@ namespace UoFiddler.Controls.UserControls
         private System.Windows.Forms.ToolStripMenuItem selectRadarColorToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem selToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem setFilterToolStripMenuItem;
-        private UoFiddler.Controls.UserControls.CollapsibleSplitter splitter1;
+        //private UoFiddler.Controls.UserControls.CollapsibleSplitter splitter1;
         private System.Windows.Forms.ToolStrip MainToolStrip;
         private System.Windows.Forms.ToolStripButton toolStripButton1;
         private System.Windows.Forms.ToolStripButton toolStripButton2;

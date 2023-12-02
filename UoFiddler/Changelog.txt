@@ -1,3 +1,6 @@
+Version : 4.12.0 #XG1
+- Update to net8.
+
 Version : 4.11.26 #XG1
 - Add Map Tools
 - Added XML debugging hexcode

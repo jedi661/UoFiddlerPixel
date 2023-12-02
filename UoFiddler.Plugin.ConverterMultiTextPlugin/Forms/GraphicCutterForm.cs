@@ -35,7 +35,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private Rectangle cropArea;
         private bool isDragging = false;
         private bool showGrid2 = false;
-        private Rectangle selectedRectangle; // The selected range.
+        //private Rectangle selectedRectangle; // The selected range => not assigned a value
+        //private Bitmap transparentImage; // Transparent Image => not assigned a value
 
         //imageColorClearToolStripMenuItem
         private Bitmap originalImage;
@@ -43,7 +44,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 
         private Color gridColor = Color.Red; // Set the default grid color to red PictureBox1.
 
-        private Bitmap transparentImage; // Transparent Image
+        
         private bool playCustomSound = true; //Sound
 
         // Global variable to store the state of the mirrored image
