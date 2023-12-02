@@ -7,6 +7,7 @@ Version : 4.11.26 #XG1
 - Add Create Art and Artidx Mul tool Texture Tiledata
 - Load Menu : Saves the last selected profile, reselecting it upon startup
 - Search Animation
+- Add Alarmclock Snooze Timer 5 min
 
 Version : 4.11.25 #XG1
 - New feature added: Names outsourced to Gumps and stored in an XML file, with custom formatting and editing based on ID.

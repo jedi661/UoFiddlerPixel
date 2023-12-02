@@ -48,6 +48,7 @@ namespace UoFiddler.Forms
             timer1 = new System.Windows.Forms.Timer(components);
             btLoadWave = new System.Windows.Forms.Button();
             openFileDialogWave = new System.Windows.Forms.OpenFileDialog();
+            snoozeButton = new System.Windows.Forms.Button();
             SuspendLayout();
             // 
             // dateTimePicker1
@@ -79,7 +80,7 @@ namespace UoFiddler.Forms
             // 
             // stopButton
             // 
-            stopButton.Location = new System.Drawing.Point(99, 86);
+            stopButton.Location = new System.Drawing.Point(148, 86);
             stopButton.Name = "stopButton";
             stopButton.Size = new System.Drawing.Size(44, 23);
             stopButton.TabIndex = 3;
@@ -110,11 +111,22 @@ namespace UoFiddler.Forms
             // 
             openFileDialogWave.FileName = "openFileDialogWave";
             // 
+            // snoozeButton
+            // 
+            snoozeButton.Location = new System.Drawing.Point(81, 86);
+            snoozeButton.Name = "snoozeButton";
+            snoozeButton.Size = new System.Drawing.Size(57, 23);
+            snoozeButton.TabIndex = 6;
+            snoozeButton.Text = "5 min";
+            snoozeButton.UseVisualStyleBackColor = true;
+            snoozeButton.Click += snoozeButton_Click;
+            // 
             // AlarmClockForm
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             ClientSize = new System.Drawing.Size(218, 118);
+            Controls.Add(snoozeButton);
             Controls.Add(btLoadWave);
             Controls.Add(LabelTimeReal);
             Controls.Add(stopButton);
@@ -139,5 +151,6 @@ namespace UoFiddler.Forms
         private System.Windows.Forms.Timer timer1;
         private System.Windows.Forms.Button btLoadWave;
         private System.Windows.Forms.OpenFileDialog openFileDialogWave;
+        private System.Windows.Forms.Button snoozeButton;
     }
 }

@@ -7,6 +7,7 @@ UOFiddler based on Ultima SDK it's a tool to view and alter almost every UO 2D c
 Version : 4.12.0
 - Update to net8.
 - Add Custom Sound Gumps Button
+- Add Alarmclock Snooze Timer 5 min
 
 ## Changelog
 Version : 4.11.26
