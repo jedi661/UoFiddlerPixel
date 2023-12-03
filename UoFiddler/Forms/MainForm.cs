@@ -35,27 +35,7 @@ namespace UoFiddler.Forms
         private AlarmClockForm alarmClockForm;
         public MainForm()
         {
-            InitializeComponent();
-
-            //Orginal
-            /*if (FiddlerOptions.StoreFormState)
-            {
-                if (FiddlerOptions.MaximisedForm)
-                {
-                    StartPosition = FormStartPosition.Manual;
-                    WindowState = FormWindowState.Maximized;
-                }
-                else
-                {
-                    if (IsOkFormStateLocation(FiddlerOptions.FormPosition, FiddlerOptions.FormSize))
-                    {
-                        StartPosition = FormStartPosition.Manual; 
-                        WindowState = FormWindowState.Normal;
-                        Location = FiddlerOptions.FormPosition;
-                        Size = FiddlerOptions.FormSize;
-                    }
-                }
-            }*/
+            InitializeComponent();            
 
             // Original
             if (FiddlerOptions.StoreFormState)
@@ -76,23 +56,6 @@ namespace UoFiddler.Forms
                     }
                 }
             }
-
-            // Ohne IsOkFormStateLocation
-            /*if (FiddlerOptions.StoreFormState)
-            {
-                if (FiddlerOptions.MaximisedForm)
-                {
-                    StartPosition = FormStartPosition.Manual;
-                    WindowState = FormWindowState.Maximized;
-                }
-                else
-                {
-                    StartPosition = FormStartPosition.Manual;
-                    WindowState = FormWindowState.Normal;
-                    Location = FiddlerOptions.FormPosition;
-                    Size = FiddlerOptions.FormSize;
-                }
-            }*/
 
             // Please define the desired order of the tabs.
             string[] tabOrder = new string[] { "StartTab", "ItemsTab", "GumpsTab", "DressTab", "TileDataTab", "LandTilesTab", "TextureTab", "MapTab", "MultiMapTab", "MultisTab", "RadarColTab", "HuesTab", "AnimationTab", "AnimDataTab", "LightTab", "SoundsTab", "SkillsTab", "SkillGrpTab", "SpeechTab", "ClilocTab", "FontsTab", };
@@ -211,26 +174,6 @@ namespace UoFiddler.Forms
             {
                 this.Location = Properties.Settings.Default.FormLocationAlarm;
             }
-
-            /*
-            // MainFormPos
-            if (Properties.Settings.Default.MainFormPos != Point.Empty)
-            {
-                this.Location = Properties.Settings.Default.MainFormPos;
-            }
-
-            // MainFormSize
-            if (Properties.Settings.Default.MainFormSize != Size.Empty)
-            {
-                this.Size = Properties.Settings.Default.MainFormSize;
-            }
-
-            // MainFormMaximized
-            if (Properties.Settings.Default.MainFormMaximized)
-            {
-                this.WindowState = FormWindowState.Maximized;
-            }
-            */
         }
 
         #region TabPanel_DrawItem => tab design

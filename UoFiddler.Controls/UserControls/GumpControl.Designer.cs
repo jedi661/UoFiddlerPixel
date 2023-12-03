@@ -79,6 +79,7 @@ namespace UoFiddler.Controls.UserControls
             asJpgToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             asPngToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             showFreeSlotsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            customSoundToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             toolStripSeparator6 = new System.Windows.Forms.ToolStripSeparator();
             saveToolStripButton = new System.Windows.Forms.ToolStripButton();
             toolStripButtonSoundMessage = new System.Windows.Forms.ToolStripButton();
@@ -90,7 +91,6 @@ namespace UoFiddler.Controls.UserControls
             Preload = new System.Windows.Forms.ToolStripButton();
             toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
             PreLoader = new System.ComponentModel.BackgroundWorker();
-            customSoundToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
             splitContainer1.Panel1.SuspendLayout();
             splitContainer1.Panel2.SuspendLayout();
@@ -141,6 +141,7 @@ namespace UoFiddler.Controls.UserControls
             listBox.KeyDown += GumpControl_KeyDown;
             listBox.KeyUp += Gump_KeyUp;
             listBox.MouseDoubleClick += listBox_MouseDoubleClick;
+            listBox.PreviewKeyDown += listBox_PreviewKeyDown;
             // 
             // contextMenuStrip
             // 
@@ -382,7 +383,7 @@ namespace UoFiddler.Controls.UserControls
             // 
             exportAllToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { asBmpToolStripMenuItem1, asTiffToolStripMenuItem1, asJpgToolStripMenuItem, asPngToolStripMenuItem });
             exportAllToolStripMenuItem.Name = "exportAllToolStripMenuItem";
-            exportAllToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            exportAllToolStripMenuItem.Size = new System.Drawing.Size(156, 22);
             exportAllToolStripMenuItem.Text = "Export All..";
             // 
             // asBmpToolStripMenuItem1
@@ -417,9 +418,16 @@ namespace UoFiddler.Controls.UserControls
             // 
             showFreeSlotsToolStripMenuItem.CheckOnClick = true;
             showFreeSlotsToolStripMenuItem.Name = "showFreeSlotsToolStripMenuItem";
-            showFreeSlotsToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            showFreeSlotsToolStripMenuItem.Size = new System.Drawing.Size(156, 22);
             showFreeSlotsToolStripMenuItem.Text = "Show Free Slots";
             showFreeSlotsToolStripMenuItem.Click += OnClickShowFreeSlots;
+            // 
+            // customSoundToolStripMenuItem
+            // 
+            customSoundToolStripMenuItem.Name = "customSoundToolStripMenuItem";
+            customSoundToolStripMenuItem.Size = new System.Drawing.Size(156, 22);
+            customSoundToolStripMenuItem.Text = "Custom Sound";
+            customSoundToolStripMenuItem.Click += customSoundToolStripMenuItem_Click;
             // 
             // toolStripSeparator6
             // 
@@ -516,13 +524,6 @@ namespace UoFiddler.Controls.UserControls
             PreLoader.DoWork += PreLoaderDoWork;
             PreLoader.ProgressChanged += PreLoaderProgressChanged;
             PreLoader.RunWorkerCompleted += PreLoaderCompleted;
-            // 
-            // customSoundToolStripMenuItem
-            // 
-            customSoundToolStripMenuItem.Name = "customSoundToolStripMenuItem";
-            customSoundToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            customSoundToolStripMenuItem.Text = "Custom Sound";
-            customSoundToolStripMenuItem.Click += customSoundToolStripMenuItem_Click;
             // 
             // GumpControl
             // 

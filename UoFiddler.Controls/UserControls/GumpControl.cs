@@ -43,6 +43,9 @@ namespace UoFiddler.Controls.UserControls
             ProgressBar.Visible = false;
 
             _refMarker = this;
+
+            // Fügen Sie den listBox_KeyDown-Ereignishandler hinzu
+            listBox.KeyDown += listBox_KeyDown;
         }
 
         private static GumpControl _refMarker;
@@ -1495,7 +1498,7 @@ namespace UoFiddler.Controls.UserControls
         private bool isSoundMessageActive = false;
         private bool playCustomSound = false; // You can use it to select any sound
         private SoundPlayer player = new SoundPlayer();
-       
+
         public void toolStripButtonSoundMessage_Click(object sender, EventArgs e)
         {
             // Toggle the state of isSoundMessageActive
@@ -1593,6 +1596,51 @@ namespace UoFiddler.Controls.UserControls
             {
                 player.SoundLocation = openFileDialog.FileName;
                 playCustomSound = true;
+            }
+        }
+        #endregion
+
+        #region PreviewKeyDown // Pagedown and up
+        private void listBox_PreviewKeyDown(object sender, PreviewKeyDownEventArgs e)
+        {
+            switch (e.KeyCode)
+            {
+                case Keys.Next:  // PageDown
+                case Keys.Prior: // PageUp
+                    e.IsInputKey = true;
+                    break;
+            }
+        }
+        #endregion
+
+        #region zweite Keydown als ersatz
+        private void listBox_KeyDown(object sender, KeyEventArgs e)
+        {
+            int visibleItems = listBox.ClientSize.Height / listBox.ItemHeight;
+
+            switch (e.KeyCode)
+            {
+                case Keys.Next:  // PageDown
+                    if (listBox.SelectedIndex + visibleItems < listBox.Items.Count)
+                    {
+                        listBox.SelectedIndex += visibleItems;
+                    }
+                    else
+                    {
+                        listBox.SelectedIndex = listBox.Items.Count - 1;
+                    }
+                    break;
+
+                case Keys.Prior: // PageUp
+                    if (listBox.SelectedIndex - visibleItems >= 0)
+                    {
+                        listBox.SelectedIndex -= visibleItems;
+                    }
+                    else
+                    {
+                        listBox.SelectedIndex = 0;
+                    }
+                    break;
             }
         }
         #endregion

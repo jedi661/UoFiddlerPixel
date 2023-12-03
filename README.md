@@ -8,6 +8,8 @@ Version : 4.12.0
 - Update to net8.
 - Add Custom Sound Gumps Button
 - Add Alarmclock Snooze Timer 5 min
+- Gump - Instant search and focus with ‘Enter
+- Gump Pagedown and PageUp 
 
 ## Changelog
 Version : 4.11.26
