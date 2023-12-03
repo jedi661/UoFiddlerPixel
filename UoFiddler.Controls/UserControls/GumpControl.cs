@@ -1364,6 +1364,10 @@ namespace UoFiddler.Controls.UserControls
         {
             var searchQuery = searchByIdToolStripTextBox.Text;
             Search(searchQuery);
+            if (e.KeyCode == Keys.Return)
+            {
+                _refMarker.listBox.Focus();
+            }
         }
 
         #endregion
