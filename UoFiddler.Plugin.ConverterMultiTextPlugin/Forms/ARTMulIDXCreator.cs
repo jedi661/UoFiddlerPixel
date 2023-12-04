@@ -1826,6 +1826,83 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         }
         #endregion
 
+        #region Class Animation
+        public class AnimationGroup
+        {
+            public ushort[] Palette { get; set; }
+            public uint FrameCount { get; set; }
+            public uint[] FrameOffset { get; set; }
+            public Frame[] Frames { get; set; }
+
+            public AnimationGroup()
+            {
+                Palette = new ushort[256];
+                FrameCount = 0;
+                FrameOffset = new uint[0];
+                Frames = new Frame[0];
+            }
+        }
+
+        public class Frame
+        {
+            public ushort ImageCenterX { get; set; }
+            public ushort ImageCenterY { get; set; }
+            public ushort Width { get; set; }
+            public ushort Height { get; set; }
+            public DataStream Data { get; set; }
+
+            public Frame()
+            {
+                // Initialisieren Sie die Eigenschaften entsprechend
+            }
+        }
+
+        public class DataStream
+        {
+            public ushort RowHeader { get; set; }
+            private ushort _RowOfs;
+
+            public DataStream()
+            {
+                // Initialisieren Sie die Eigenschaften entsprechend
+            }
+
+            public int RunLength
+            {
+                get
+                {
+                    return RowHeader & 0xFFF;
+                }
+            }
+
+            public int LineNum
+            {
+                get
+                {
+                    return RowHeader >> 12;
+                }
+            }
+
+            public int Unknown
+            {
+                get
+                {
+                    return _RowOfs & 0x3F;
+                }
+            }
+
+            public int RowOfs
+            {
+                get
+                {
+                    return _RowOfs >> 6;
+                }
+            }
+        }
+
+
+        #endregion
+
         private BinaryReader reader;
         private int itemsLoaded = 0;
 
@@ -2186,7 +2263,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 CreateRadarColFile(saveFileDialog.FileName, indexCount);
             }
         }
-        
+
         private void CreateRadarColFile(string filePath, int indexCount)
         {
             short[] colors = new short[indexCount];
@@ -2207,7 +2284,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         #region Create Orginal Palette
 
         private Palette palette = new Palette();
-        
+
         private void btCreatePalette_Click(object sender, EventArgs e)
         {
             // Erstellen Sie die Palette und fügen Sie die gewünschten Farben hinzu
@@ -2557,5 +2634,84 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             Clipboard.SetText(sb.ToString());
         }
         #endregion
+
+        private void btnLoadAnimationMulData_Click(object sender, EventArgs e)
+        {
+            // Öffnen Sie den Datei-Dialog, um den Benutzer das Verzeichnis auswählen zu lassen
+            using (var fbd = new FolderBrowserDialog())
+            {
+                DialogResult result = fbd.ShowDialog();
+
+                if (result == DialogResult.OK && !string.IsNullOrWhiteSpace(fbd.SelectedPath))
+                {
+                    string animMulPath = Path.Combine(fbd.SelectedPath, "Anim.mul");
+                    string animIdxPath = Path.Combine(fbd.SelectedPath, "Anim.idx");
+
+                    // Laden Sie die Animation mit den ausgewählten Dateipfaden
+                    AnimationGroup animation = LoadAnimation(animMulPath, animIdxPath);
+
+                    // Zeigen Sie die Animation in der TextBox an
+                    this.txtData.Text = animation.ToString();
+                }
+            }
+        }
+
+        private AnimationGroup LoadAnimation(string animMulPath, string animIdxPath)
+        {
+            AnimationGroup animation = new AnimationGroup();
+
+            // Lesen Sie die Daten aus der Anim.idx Datei
+            using (var idxReader = new BinaryReader(File.OpenRead(animIdxPath)))
+            {
+                animation.FrameCount = (uint)(idxReader.BaseStream.Length / 12);
+                animation.FrameOffset = new uint[animation.FrameCount];
+
+                for (int i = 0; i < animation.FrameCount; i++)
+                {
+                    if (idxReader.BaseStream.Position < idxReader.BaseStream.Length - 12) // Überprüfen Sie, ob noch genügend Daten zum Lesen vorhanden sind
+                    {
+                        idxReader.ReadUInt32(); // Überspringen Sie das Lookup-Feld
+                        uint size = idxReader.ReadUInt32();
+                        idxReader.ReadUInt32(); // Überspringen Sie das Unknown-Feld
+
+                        if (size > 0)
+                        {
+                            animation.FrameOffset[i] = size;
+                        }
+                    }
+                }
+            }
+
+            // Lesen Sie die Daten aus der Anim.mul Datei
+            using (var mulReader = new BinaryReader(File.OpenRead(animMulPath)))
+            {
+                animation.Frames = new Frame[animation.FrameCount];
+
+                for (int i = 0; i < animation.FrameCount; i++)
+                {
+                    if (animation.FrameOffset[i] > 0)
+                    {
+                        mulReader.BaseStream.Seek(animation.FrameOffset[i], SeekOrigin.Begin);
+
+                        if (mulReader.BaseStream.Position < mulReader.BaseStream.Length - 8) // Überprüfen Sie, ob noch genügend Daten zum Lesen vorhanden sind
+                        {
+                            Frame frame = new Frame();
+                            frame.ImageCenterX = mulReader.ReadUInt16();
+                            frame.ImageCenterY = mulReader.ReadUInt16();
+                            frame.Width = mulReader.ReadUInt16();
+                            frame.Height = mulReader.ReadUInt16();
+
+                            // Hier sollten Sie den Code hinzufügen, um die Pixel-Daten zu lesen
+
+                            animation.Frames[i] = frame;
+                        }
+                    }
+                }
+            }
+
+            return animation;
+        }
+
+
     }
 }

@@ -1,0 +1,4191 @@
+<html>
+<head>
+<title>UO animations, demystified (somewhat)</title>
+</head>
+<body>
+<p> Last updated: 6 January 2023</p>
+<h1>Introduction</h1>
+<h2>Acknowledgment</h2>
+The data contained in this document was gathered from a variety of sources: code, comments, direct correspondence.
+I want to thank everyone who showed the patience of answering my rentless questions, on material that surely seemed long understood.
+I also want to thank those who allowed others to view their code, in particular ClassicUO and UOFiddler.  That, and the data documented
+by Heptazane (UO File Formats) and Alazane (InsideUO), and HellRazor, was essential in understanding the interactions.
+<h2>Purpose</h2>
+To provide an overview of the organization of animations in UO,
+how they are stored, and how they are mapped.
+<h1>Animations</h1>
+Ultima Online use a sequence of still images (frames) to represent an animation (much like movie film). The data that represents
+these images are stored in a data file (anim.mul, anim2.mul,anim3.mul,anim4.mul,anim5.mul).  This data is indexed by the corresponding 
+index file (anim.idx,anim2.idx,anim3.idx,anim4.idx,anim5.idx).  Each entry in the index file (3, 4 byte words, that represent the offset into the mul file,
+length of the data, and extra word that is not currently used) points to a data blob in the mul file that represents the frames (usually between 0-10) for a given 
+model, activity, and direction.  The data consists of a 256 color palette, number of frames (frames can be empty, contain no data), and the data for each frame. The frames all share the common
+palette for that entry.
+<h2>Organization</h2>
+At the lowest level, one can access a sequence of images that represents a model performing some action in some direction by directly traversing any of the anim idx files.
+However, one normally wants to logically group a collection of these entries to represet a complete model, and actions.  UO uses the concept of 
+"body types" to group the entries, to represent a model (model id), collection of actions (action id), and directions (direction id) for each action. For UO there are:
+5 body types, and 5 directions. 
+<p>
+	There are 5 directions any action for any model can have.  The directions are: Down,Down/Left,Left,Up/Left/Up. Each direction
+	corresponds to an entry in the index file, that provides the data for the frames for that action/direction combination.
+</p>
+<p>
+Structurally, a category can have N actions, as long as one 
+understands that information for a given category. For the current body types, the following table defines the number of allocated actions.
+</p>
+	<table border="1">
+		<tr>
+			<th>Body Type</th>
+			<th>Actions used</th>
+			<th>Number of IDX entries</th>
+		</tr>
+		<tr>
+			<td>Monster</td>
+			<td>22</td>
+			<td>110</td>
+		</tr>
+		<tr>
+			<td>Sea Monster</td>
+			<td>9</td>
+			<td>45</td>
+		</tr>
+		<tr>
+			<td>Animal</td>
+			<td>13</td>
+			<td>65</td>
+		</tr>
+		<tr>
+			<td>Equipment</td>
+			<td>35</td>
+			<td>175</td>
+		</tr>
+		<tr>
+			<td>Human</td>
+			<td>35</td>
+			<td>175</td>
+		</tr>
+		
+	</table>
+	<h3>Accessing the data</h3>
+	<p> To from a model id, action id, and direciton id, to an actual entry in the idx file requires 
+	an understanding of how the idx entries are logically grouped. A physical model number ranges 
+	from 0 - 2408. One must check the size of the idx file to see the max model number it can accomodate.</p>
+	<table border="1">
+		<tr>
+			<th>idx file #</th>
+			<th>Model number span</th>
+			<th>#entries reserved per model</th>
+			<th>Idx entry offset start</th>
+			<th>Calculation for model start</th>
+		</tr>
+		<tr>
+			<td>anim.idx</td>
+			<td>0-199</td>
+			<td>110</td>
+			<td>0</td>
+			<td>model# * 110</td>
+		</tr>
+		<tr>
+			<td>anim.idx</td>
+			<td>200-399</td>
+			<td>65</td>
+			<td>22000</td>
+			<td>22000 + ((model#-200) * 65)</td>
+		</tr>
+		<tr>
+			<td>anim.idx</td>
+			<td>400-2408</td>
+			<td>175</td>
+			<td>35000</td>
+			<td>35000 + ((model#-400) * 175)</td>
+		</tr>
+		<tr>
+			<td>anim2.idx</td>
+			<td>0-199</td>
+			<td>110</td>
+			<td>0</td>
+			<td>model# * 110</td>
+		</tr>
+		<tr>
+			<td>anim2.idx</td>
+			<td>200-2048</td>
+			<td>65</td>
+			<td>22000</td>
+			<td>22000 + ((model#-200) * 65)</td>
+		</tr>
+			<td>anim3.idx</td>
+			<td>0-299</td>
+			<td>65</td>
+			<td>0</td>
+			<td>model# * 65</td>
+		</tr>
+		<tr>
+			<td>anim3.idx</td>
+			<td>300-399</td>
+			<td>110</td>
+			<td>33000</td>
+			<td>33000 + ((model#-300) * 110)</td>
+		</tr>
+		<tr>
+			<td>anim3.idx</td>
+			<td>400-2408</td>
+			<td>175</td>
+			<td>35000</td>
+			<td>35000 + ((model#-400) * 175)</td>
+		</tr>
+		<tr>
+			<td>anim4.idx</td>
+			<td>0-199</td>
+			<td>110</td>
+			<td>0</td>
+			<td>model# * 110</td>
+		</tr>
+		<tr>
+			<td>anim4.idx</td>
+			<td>200-399</td>
+			<td>65</td>
+			<td>22000</td>
+			<td>22000 + ((model#-200) * 65)</td>
+		</tr>
+		<tr>
+			<td>anim4.idx</td>
+			<td>400-2408</td>
+			<td>175</td>
+			<td>35000</td>
+			<td>35000 + ((model#-400) * 175)</td>
+		</tr>
+		<tr>
+			<td>anim5.idx</td>
+			<td>0-199 (excluding model 34) </td>
+			<td>110</td>
+			<td>0</td>
+			<td>model# * 110</td>
+		</tr>
+		<tr>
+			<td>anim5.idx</td>
+			<td>34, 200-399</td>
+			<td>65</td>
+			<td>22000</td>
+			<td>22000 + ((model#-200) * 65)</td>
+		</tr>
+		<tr>
+			<td>anim5.idx</td>
+			<td>400-2408</td>
+			<td>175</td>
+			<td>35000</td>
+			<td>35000 + ((model#-400) * 175)</td>
+		</tr>
+		
+	</table>
+<h3>Body type mappings</h3>
+There are 2048 possible body ids unique (models). Each body id is defined a body type, via the "mobtypes.txt" file.  This file defines
+a type to an id, along with a flag that indicates some information about that model.  For model ids that are not defined in this file (or clients before 5.0),
+body types are defined by model id via the following:
+	<table border="1">
+		<tr>
+			<th>Model Id Range</th>
+			<th>Body Type</th>
+		</tr>
+		<tr>
+			<td>Monster</td>
+			<td>0-199</td>
+		</tr>
+		<tr>
+			<td>Animal</td>
+			<td>200-399</td>
+		</tr>
+		<tr>
+			<td>Human/Equipment</td>
+			<td>400-2408</td>
+		</tr>
+		
+	</table>
+	<h4>Mobtypes.txt</h4>
+	This file takes the format:
+	<code>
+	<p><blockquote>ID   Category   Flag</blockquote><br>
+	example:<br>
+	<blockquote> 1 MONSTER 0 </blockquote>
+	defines the model id 1, as a body type of "Monster", with no additional flags.</p>
+	</code>
+	<h5>Flags</h5>
+	The flag value in "mobtypes.txt" has the following meaning (for known values):
+<table border="1">
+	<tr>
+		<th> Body Type</th>
+		<th> Flag value</th>
+		<th> Meaning</th>
+	</tr>
+	<tr>
+		<td>Monster</td>
+		<td>A00</td>
+		<td>Attack actions 4,5,6 replace actions 12,13, and 14</td>
+	</tr>
+	<tr>
+		<td>Animal</td>
+		<td>20</td>
+		<td>Action 6 is transformed on water to allow animals such as snakes to float on water</td>
+	</tr>
+	<tr>
+		<td>Monster</td>
+		<td>1000</td>
+		<td>Actions 12, 13 and 14 cast spells</td>
+	</tr>
+	<tr>
+		<td>Monster</td>
+		<td>1000</td>
+		<td>Actions 7 and 8 are added, and action 12 is used as the summoning animation for the monster</td>
+	</tr>
+	<tr>
+		<td>Monster</td>
+		<td>1000</td>
+		<td>Action "fly" 19, 20, 21 which are supported, but also 12 and 13 with spell caster</td>
+	</tr>
+	<tr>
+		<td>Monster</td>
+		<td>1000</td>
+		<td>Action "fly" 19, 20, 21 which are supported, but also 12 with caster</td>
+	</tr>
+	<tr>
+		<td>All</td>
+		<td>10000</td>
+		<td>Animation is stored in the UOP files</td>
+	</tr>
+	<tr>
+		<td>Monster</td>
+		<td>10008</td>
+		<td>Animation is stored in the UOP files,unknown what the other bit indicates</td>
+	</tr>
+	<tr>
+		<td>Animal</td>
+		<td>12000</td>
+		<td>Animation is stored in the UOP files,unknown what the other bit indicates</td>
+	</tr>
+	<tr>
+		<td>Human</td>
+		<td>12000</td>
+		<td>For "bodysuits", e.g. Lord British.  Shows bodysuit and blocks other worn gump art</td>
+	</tr>
+
+</table>
+<h3>Action meanings</h3>
+To make order of the chaos, the action id (entry) represents a particular activity for that model type.  
+<table border="1">
+	<tr>
+		<th> Body Type</th>
+		<th> Action #</th>
+		<th> Activity</th>
+	</tr>
+	<tr>
+		<td>Monster</td>
+	</tr>
+	<tr>
+		<td></td>
+		<td>0</td>
+		<td>Walk</td>
+	</tr>
+	<tr>
+		<td></td>
+		<td>1</td>
+		<td>Stand</td>
+	</tr>
+	<tr>
+		<td></td>
+		<td>2</td>
+		<td>Die Forward</td>
+	</tr>
+	<tr>
+		<td></td>
+		<td>3</td>
+		<td>Die Backward</td>
+	</tr>
+	<tr>
+		<td></td>
+		<td>4</td>
+		<td>Attack 1</td>
+	</tr>
+	<tr>
+		<td></td>
+		<td>5</td>
+		<td>Attack 2</td>
+	</tr>
+	<tr>
+		<td></td>
+		<td>6</td>
+		<td>Attack 3</td>
+	</tr>
+	<tr>
+		<td></td>
+		<td>7</td>
+		<td>Stumble</td>
+	</tr>
+	<tr>
+		<td></td>
+		<td>8</td>
+		<td>Misc 1</td>
+	</tr>
+	<tr>
+		<td></td>
+		<td>9</td>
+		<td>Misc 2</td>
+	</tr>
+	<tr>
+		<td></td>
+		<td>10</td>
+		<td>Get Hit</td>
+	</tr>
+	<tr>
+		<td></td>
+		<td>11</td>
+		<td>Pillage</td>
+	</tr>
+	<tr>
+		<td></td>
+		<td>12</td>
+		<td>Stomp</td>
+	</tr>
+	<tr>
+		<td></td>
+		<td>13</td>
+		<td>Directed Spell Cast</td>
+	</tr>
+	<tr>
+		<td></td>
+		<td>14</td>
+		<td>Area/Summon Spell Cast</td>
+	</tr>
+	<tr>
+		<td></td>
+		<td>15</td>
+		<td>Block Right</td>
+	</tr>
+	<tr>
+		<td></td>
+		<td>16</td>
+		<td>Block Left</td>
+	</tr>
+	<tr>
+		<td></td>
+		<td>17</td>
+		<td>Fidget 1</td>
+	</tr>
+	<tr>
+		<td></td>
+		<td>18</td>
+		<td>Fidget 2</td>
+	</tr>
+	<tr>
+		<td></td>
+		<td>19</td>
+		<td>Fly</td>
+	</tr>
+	<tr>
+		<td></td>
+		<td>20</td>
+		<td>TakeOff</td>
+	</tr>
+	<tr>
+		<td></td>
+		<td>21</td>
+		<td>Get Hit in Air</td>
+	</tr>
+	<tr>
+		<td>Sea Monster</td>
+	</tr>
+	<tr>
+		<td></td>
+		<td>0</td>
+		<td>Walk</td>
+	</tr>
+	<tr>
+		<td></td>
+		<td>1</td>
+		<td>Run</td>
+	</tr>
+	<tr>
+		<td></td>
+		<td>2</td>
+		<td>Idle 1</td>
+	</tr>
+	<tr>
+		<td></td>
+		<td>3</td>
+		<td>Idle 2</td>
+	</tr>
+	<tr>
+		<td></td>
+		<td>4</td>
+		<td>Fidget</td>
+	</tr>
+	<tr>
+		<td></td>
+		<td>5</td>
+		<td>Attack 1</td>
+	</tr>
+	<tr>
+		<td></td>
+		<td>6</td>
+		<td>Attack 2</td>
+	</tr>
+	<tr>
+		<td></td>
+		<td>7</td>
+		<td>Get Hit</td>
+	</tr>
+	<tr>
+		<td></td>
+		<td>8</td>
+		<td>Die</td>
+	</tr>
+	<tr>
+		<td>Animal</td>
+	</tr>
+	<tr>
+		<td></td>
+		<td>0</td>
+		<td>Walk</td>
+	</tr>
+	<tr>
+		<td></td>
+		<td>1</td>
+		<td>Run</td>
+	</tr>
+	<tr>
+		<td></td>
+		<td>2</td>
+		<td>Stand</td>
+	</tr>
+	<tr>
+		<td></td>
+		<td>3</td>
+		<td>Eat</td>
+	</tr>
+	<tr>
+		<td></td>
+		<td>4</td>
+		<td>Alert</td>
+	</tr>
+	<tr>
+		<td></td>
+		<td>5</td>
+		<td>Attack 1</td>
+	</tr>
+	<tr>
+		<td></td>
+		<td>6</td>
+		<td>Attack 2</td>
+	</tr>
+	<tr>
+		<td></td>
+		<td>7</td>
+		<td>Get Hit</td>
+	</tr>
+	<tr>
+		<td></td>
+		<td>8</td>
+		<td>Die 1</td>
+	</tr>
+	<tr>
+		<td></td>
+		<td>9</td>
+		<td>Fidget 1</td>
+	</tr>
+	<tr>
+		<td></td>
+		<td>10</td>
+		<td>Fidget 2</td>
+	</tr>
+	<tr>
+		<td></td>
+		<td>11</td>
+		<td>Lie Down</td>
+	</tr>
+	<tr>
+		<td></td>
+		<td>12</td>
+		<td>Die 2</td>
+	</tr>
+	<tr>
+		<td>Human & Equipment</td>
+	</tr>
+	<tr>
+		<td></td>
+		<td>0</td>
+		<td>Walk</td>
+	</tr>
+	<tr>
+		<td></td>
+		<td>1</td>
+		<td>Walk Staff</td>
+	</tr>
+	<tr>
+		<td></td>
+		<td>2</td>
+		<td>Run</td>
+	</tr>
+	<tr>
+		<td></td>
+		<td>3</td>
+		<td>Run Staff</td>
+	</tr>
+	<tr>
+		<td></td>
+		<td>4</td>
+		<td>Idle 1</td>
+	</tr>
+	<tr>
+		<td></td>
+		<td>5</td>
+		<td>Idle 2</td>
+	</tr>
+	<tr>
+		<td></td>
+		<td>6</td>
+		<td>Fidget, Yawn, Stretch</td>
+	</tr>
+	<tr>
+		<td></td>
+		<td>7</td>
+		<td>Combat Idle 1H 1</td>
+	</tr>
+	<tr>
+		<td></td>
+		<td>8</td>
+		<td>Combat Idle 1H 2</td>
+	</tr>
+	<tr>
+		<td></td>
+		<td>9</td>
+		<td>Attack Slash 1H</td>
+	</tr>
+	<tr>
+		<td></td>
+		<td>10</td>
+		<td>Attack Pierce 1H</td>
+	</tr>
+	<tr>
+		<td></td>
+		<td>11</td>
+		<td>Attack Bash 1H</td>
+	</tr>
+	<tr>
+		<td></td>
+		<td>12</td>
+		<td>Attack Bash 2H</td>
+	</tr>
+	<tr>
+		<td></td>
+		<td>13</td>
+		<td>Attack Slash 2H</td>
+	</tr>
+	<tr>
+		<td></td>
+		<td>14</td>
+		<td>Attack Pierce 2H</td>
+	</tr>
+	<tr>
+		<td></td>
+		<td>15</td>
+		<td>Combat advance 1H</td>
+	</tr>
+	<tr>
+		<td></td>
+		<td>16</td>
+		<td>Spell Cast Directed</td>
+	</tr>
+	<tr>
+		<td></td>
+		<td>17</td>
+		<td>Spell Cast Area/Summon</td>
+	</tr>
+	<tr>
+		<td></td>
+		<td>18</td>
+		<td>Attack Bow & Arrow</td>
+	</tr>
+	<tr>
+		<td></td>
+		<td>19</td>
+		<td>Attack Crossbow</td>
+	</tr>
+	<tr>
+		<td></td>
+		<td>20</td>
+		<td>Get hit</td>
+	</tr>
+	<tr>
+		<td></td>
+		<td>21</td>
+		<td>Die Forward</td>
+	</tr>
+	<tr>
+		<td></td>
+		<td>22</td>
+		<td>Die Backward</td>
+	</tr>
+	<tr>
+		<td></td>
+		<td>23</td>
+		<td>Mount Walk</td>
+	</tr>
+	<tr>
+		<td></td>
+		<td>24</td>
+		<td>Mount Run</td>
+	</tr>
+	<tr>
+		<td></td>
+		<td>25</td>
+		<td>Mount Idle</td>
+	</tr>
+	<tr>
+		<td></td>
+		<td>26</td>
+		<td>Mount Attack Slash 1H</td>
+	</tr>
+	<tr>
+		<td></td>
+		<td>27</td>
+		<td>Mount Attack Bow & Arrow</td>
+	</tr>
+	<tr>
+		<td></td>
+		<td>28</td>
+		<td>Mount Attack Crossbow</td>
+	</tr>
+	<tr>
+		<td></td>
+		<td>29</td>
+		<td>Mount Attack Slash 2H</td>
+	</tr>
+	<tr>
+		<td></td>
+		<td>30</td>
+		<td>Block Shield</td>
+	</tr>
+	<tr>
+		<td></td>
+		<td>31</td>
+		<td>Punch Jab</td>
+	</tr>
+	<tr>
+		<td></td>
+		<td>32</td>
+		<td>Bow</td>
+	</tr>
+	<tr>
+		<td></td>
+		<td>33</td>
+		<td>Salute</td>
+	</tr>
+	<tr>
+		<td></td>
+		<td>34</td>
+		<td>Eat</td>
+	</tr>
+	
+</table>	
+<h3>Action swapping</h3>
+The client has the ability to swap actions for different different body types.
+"Anim1.def" defines the actions that are to be substituted when an action is received for Animal body types.
+"Anim2.def" defines the actions that are to be substituted when an action is received for Character and Equipment body types.
+	This file takes the format:
+	<code>
+	<p><blockquote>action id   {new action id}  unused</blockquote><br>
+	example:<br>
+	<blockquote> 13 {5} 0 </blockquote>
+	defines the acton id 13, to be replaced with action id 5.</p>
+	</code>
+<h3>Swapping Equipment types</h3>
+For model ids that have the human type, the equipment ids can be swapped to another equipment id (with a hue). In addition, a gump can be specified to be used.
+The file "Equipconv.def" specifies a given model id, and a given equipment model id, what to substitute for it.
+	This file takes the format:
+	<code>
+	<p><blockquote>modelid   equipmentid   newequipementid gumpid hue</blockquote><br>
+	<p><blockquote>Note: gumpid (If 0, then use equipmentid + 50000, if -1 then use newequipementid + 50000, other numbers are the actual gumpID )e</blockquote><br>
+	example:<br>
+	<blockquote> 249 1250 61250	0 </blockquote>
+	replaces for model id 249, the equipmentid 1250 to equipmentid 61250, with no gump id being also 61250 (50000+1250)</p>
+	</code>
+
+<h3> Creating/swapping Body ids</h3>
+The client has the ability to map a model id to an existing model id with a hue.  This is performed via the mapping table defined in the "Body.def" file.
+	This file takes the format:
+	<code>
+	<p><blockquote>modelid   {new model id}  hue</blockquote><br>
+	example:<br>
+	<blockquote> 11 {28} 1401 </blockquote>
+	defines the model id 11, to be replaced with model 28, hued with 1401.</p>
+	</code>
+<h3> Overriding the Corpse</h3>
+The file "Corpse.def" allows one to override the corpse id to be used, with none, or another one with a given hue.
+	This file takes the format:
+	<code>
+	<p><blockquote>modelid   {new model id}  hue</blockquote><br>
+	example:<br>
+	<blockquote> 11 {28} 1401 </blockquote>
+	defines the model id 11, to be replaced with model 28, hued with 1401.</p>
+	</code>
+<h3>Defining what model id comes from what animation file</h3>
+The file "Bodyconf.def" allows one to define for any model id, what anim # file to use, and what id out of that file to use.
+	This file takes the format:
+	<code>
+	<p><blockquote>modelid anim2 anim3 anim4 anim5 anim6(future?) </blockquote><br>
+	example:<br>
+	<blockquote> 157 1 -1 -1 -1 -1 </blockquote>
+	defines the model id 15, use model id 1 in anim2.mul.</p>
+	</code>
+<h2>Appendix</h2>
+<h3>Model Names</h3>
+<table border="1">
+	<tr>
+		<th>Model Id</th>
+		<th>Name</th>
+		<th>Type</th>
+	</tr>
+<tr>
+	<td>1</td>
+	<td>ogres_ogre</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>2</td>
+	<td>ettins_ettin</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>3</td>
+	<td>walking_dead_zombie</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>4</td>
+	<td>gargoyles_gargoyle</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>5</td>
+	<td>birds_eagle</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>6</td>
+	<td>birds_generic</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>7</td>
+	<td>orcs_orc_captain</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>8</td>
+	<td>flails_corpser</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>9</td>
+	<td>daemons_daemon</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>10</td>
+	<td>daemons_daemon2</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>11</td>
+	<td>arachnids_spider_dread</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>12</td>
+	<td>dragons_dragon_retro_grey</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>13</td>
+	<td>elementals_air_elemental</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>14</td>
+	<td>elementals_earth_elemental</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>15</td>
+	<td>elementals_fire_elemental</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>16</td>
+	<td>elementals_water_elemental</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>17</td>
+	<td>orcs_orc</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>18</td>
+	<td>ettins_ettin2</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>19</td>
+	<td>arachnids_spider_dread2</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>20</td>
+	<td>arachnids_spider_frost</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>21</td>
+	<td>serpents_snake_giant</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>22</td>
+	<td>gazers_gazer</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>23</td>
+	<td>canines_wolf_dire</td>
+	<td>Animal</td>
+</tr>
+<tr>
+	<td>24</td>
+	<td>liche_liche_retro</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>25</td>
+	<td>canines_wolf_grey</td>
+	<td>Animal</td>
+</tr>
+<tr>
+	<td>26</td>
+	<td>spirits_ghost</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>27</td>
+	<td>canines_wolf_grey2</td>
+	<td>Animal</td>
+</tr>
+<tr>
+	<td>28</td>
+	<td>arachnids_spider_giant</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>29</td>
+	<td>gorillas_silverback</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>30</td>
+	<td>harpies_harpy</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>31</td>
+	<td>headless_headless</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>33</td>
+	<td>lizard_race_lizardman</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>34</td>
+	<td>canines_wolf_white</td>
+	<td>Animal</td>
+</tr>
+<tr>
+	<td>35</td>
+	<td>lizard_race_lizardman2</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>36</td>
+	<td>lizard_race_lizardman3</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>37</td>
+	<td>canines_wolf_white2</td>
+	<td>Animal</td>
+</tr>
+<tr>
+	<td>38</td>
+	<td>daemons_daemon_black_gate</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>39</td>
+	<td>mongbats_mongbat</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>40</td>
+	<td>daemons_daemon_elder</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>41</td>
+	<td>orcs_orc2</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>42</td>
+	<td>rat_race_ratman</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>43</td>
+	<td>daemons_daemon_ice_fiend</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>44</td>
+	<td>rat_race_ratman2</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>45</td>
+	<td>rat_race_ratman3</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>46</td>
+	<td>Mf_Dragon_Rust</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>47</td>
+	<td>flails_reaper</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>48</td>
+	<td>scorpions_giant</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>49</td>
+	<td>dragons_wyrm_retro_white</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>50</td>
+	<td>skeletons_skeleton</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>51</td>
+	<td>slimes_slime</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>52</td>
+	<td>serpents_snake</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>53</td>
+	<td>trolls_troll</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>54</td>
+	<td>trolls_troll2</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>55</td>
+	<td>trolls_troll_frost</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>56</td>
+	<td>skeletons_skeleton2</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>57</td>
+	<td>skeletons_skeleton3</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>58</td>
+	<td>ethereals_wisp</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>59</td>
+	<td>dragons_dragon_retro_red</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>60</td>
+	<td>dragons_dragon_retro_grey2</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>61</td>
+	<td>dragons_dragon_retro_red2</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>62</td>
+	<td>dragons_wyvern</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>63</td>
+	<td>felines_cougar</td>
+	<td>Animal</td>
+</tr>
+<tr>
+	<td>64</td>
+	<td>felines_leopard_snow</td>
+	<td>Animal</td>
+</tr>
+<tr>
+	<td>65</td>
+	<td>felines_leopard_snow2</td>
+	<td>Animal</td>
+</tr>
+<tr>
+	<td>66</td>
+	<td>flails_swamp_tentacles</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>67</td>
+	<td>gargoyles_gargoyle_stone</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>68</td>
+	<td>gazers_gazer_elder</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>69</td>
+	<td>gazers_gazer_elder2</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>70</td>
+	<td>terathan_terathan_warrior</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>71</td>
+	<td>terathan_terathan_drone</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>72</td>
+	<td>terathan_terathan_queen</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>73</td>
+	<td>harpies_harpy_stone</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>74</td>
+	<td>imps_imp</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>75</td>
+	<td>cyclops_cyclops</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>76</td>
+	<td>titans_titan</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>77</td>
+	<td>krakens_kraken</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>78</td>
+	<td>liche_liche_lord_retro</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>79</td>
+	<td>liche_liche_lord_retro2</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>80</td>
+	<td>frogs_frog_giant</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>81</td>
+	<td>frogs_bullfrog</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>82</td>
+	<td>liche_liche_lord_retro3</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>83</td>
+	<td>ogres_ogre_lord</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>84</td>
+	<td>ogres_ogre_lord2</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>85</td>
+	<td>ophidians_ophidian_mage</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>86</td>
+	<td>ophidians_ophidian_warrior</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>87</td>
+	<td>ophidians_ophidian_queen</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>88</td>
+	<td>ruminants_goat_mountain</td>
+	<td>Animal</td>
+</tr>
+<tr>
+	<td>89</td>
+	<td>serpents_snake_giant_ice</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>90</td>
+	<td>serpents_snake_giant_lava</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>91</td>
+	<td>serpents_snake_giant_silver</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>92</td>
+	<td>serpents_snake_giant_silver2</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>93</td>
+	<td>serpents_snake_giant_silver3</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>94</td>
+	<td>slimes_slime_frost</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>95</td>
+	<td>bird_turkey</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>96</td>
+	<td>slimes_slime_frost2</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>97</td>
+	<td>canines_hell_hound</td>
+	<td>Animal</td>
+</tr>
+<tr>
+	<td>98</td>
+	<td>canines_hell_hound2</td>
+	<td>Animal</td>
+</tr>
+<tr>
+	<td>99</td>
+	<td>canines_wolf_dark</td>
+	<td>Animal</td>
+</tr>
+<tr>
+	<td>100</td>
+	<td>canines_wolf_silver</td>
+	<td>Animal</td>
+</tr>
+<tr>
+	<td>101</td>
+	<td>centaurs_centaur</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>102</td>
+	<td>daemons_daemon_exodus</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>103</td>
+	<td>dragons_dragon_asian</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>104</td>
+	<td>dragons_dragon_skeletal</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>105</td>
+	<td>dragons_wyrm_ancient</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>106</td>
+	<td>dragons_wyrm_shadow</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>107</td>
+	<td>elementals_agapite_elemental</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>108</td>
+	<td>elementals_bronze_elemental</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>109</td>
+	<td>elementals_copper_elemental</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>110</td>
+	<td>elementals_copper_dull_elemental</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>111</td>
+	<td>elementals_iron_elemental</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>112</td>
+	<td>elementals_valorite_elemental</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>113</td>
+	<td>elementals_verite_elemental</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>114</td>
+	<td>equines_horse_dark_steed</td>
+	<td>Animal</td>
+</tr>
+<tr>
+	<td>115</td>
+	<td>equines_horse_ethereal</td>
+	<td>Animal</td>
+</tr>
+<tr>
+	<td>116</td>
+	<td>equines_horse_nightmare</td>
+	<td>Animal</td>
+</tr>
+<tr>
+	<td>117</td>
+	<td>equines_horse_silver_steed</td>
+	<td>Animal</td>
+</tr>
+<tr>
+	<td>118</td>
+	<td>equines_horse_war_brittanian</td>
+	<td>Animal</td>
+</tr>
+<tr>
+	<td>119</td>
+	<td>equines_horse_war_mage_council</td>
+	<td>Animal</td>
+</tr>
+<tr>
+	<td>120</td>
+	<td>equines_horse_war_minax</td>
+	<td>Animal</td>
+</tr>
+<tr>
+	<td>121</td>
+	<td>equines_horse_war_shadowlord</td>
+	<td>Animal</td>
+</tr>
+<tr>
+	<td>122</td>
+	<td>equines_unicorn</td>
+	<td>Animal</td>
+</tr>
+<tr>
+	<td>123</td>
+	<td>ethereal_warriors_male</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>124</td>
+	<td>mages_evil_mage</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>125</td>
+	<td>mages_evil_mage_master</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>126</td>
+	<td>mages_evil_mage_master2</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>127</td>
+	<td>felines_predator_hellcat</td>
+	<td>Animal</td>
+</tr>
+<tr>
+	<td>128</td>
+	<td>fey_race_pixie</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>129</td>
+	<td>flails_swamp_tentacles2</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>130</td>
+	<td>gargoyles_gargoyle_blistering</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>131</td>
+	<td>genies_efreet</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>132</td>
+	<td>kirin_kirin</td>
+	<td>Animal</td>
+</tr>
+<tr>
+	<td>133</td>
+	<td>lizards_alligator_small</td>
+	<td>Animal</td>
+</tr>
+<tr>
+	<td>134</td>
+	<td>lizards_komodo_dragon</td>
+	<td>Animal</td>
+</tr>
+<tr>
+	<td>135</td>
+	<td>ogres_ogre_lord_arctic</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>136</td>
+	<td>ophidians_ophidian_archmage</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>137</td>
+	<td>ophidians_ophidian_knight</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>138</td>
+	<td>orcs_orc_lord</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>139</td>
+	<td>orcs_orc_lord2</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>140</td>
+	<td>orcs_orc_shaman</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>141</td>
+	<td>paladins_paladin</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>142</td>
+	<td>rat_race_ratman4</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>143</td>
+	<td>rat_race_shaman</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>144</td>
+	<td>sea_horse_sea_horse</td>
+	<td>Sea Monster</td>
+</tr>
+<tr>
+	<td>145</td>
+	<td>sea_serpents_sea_serpent</td>
+	<td>Sea Monster</td>
+</tr>
+<tr>
+	<td>146</td>
+	<td>shadowlords_shadowlord</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>147</td>
+	<td>skeletons_skeleton_knight</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>148</td>
+	<td>skeletons_skeleton_mage</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>149</td>
+	<td>succubi_succubus</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>150</td>
+	<td>sea_serpents_sea_serpent2</td>
+	<td>Sea Monster</td>
+</tr>
+<tr>
+	<td>151</td>
+	<td>dolphins_dolphin</td>
+	<td>Sea Monster</td>
+</tr>
+<tr>
+	<td>152</td>
+	<td>terathan_terathan_avenger</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>153</td>
+	<td>walking_dead_ghoul</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>154</td>
+	<td>walking_dead_mummy</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>155</td>
+	<td>walking_dead_rotting_corpse</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>157</td>
+	<td>arachnids_spider_black_widow</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>158</td>
+	<td>elementals_acid_elemental</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>159</td>
+	<td>elementals_blood_elemental</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>160</td>
+	<td>elementals_blood_elemental2</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>161</td>
+	<td>elementals_ice_elemental</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>162</td>
+	<td>elementals_poison_elemental</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>163</td>
+	<td>elementals_snow_elemental</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>164</td>
+	<td>ethereals_energy_vortex</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>165</td>
+	<td>ethereals_wisp2</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>166</td>
+	<td>elementals_gold_elemental</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>167</td>
+	<td>bruins_bear_brown</td>
+	<td>Animal</td>
+</tr>
+<tr>
+	<td>168</td>
+	<td>imps_shadow_fiend</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>169</td>
+	<td>Giant_Beetle_Fire</td>
+	<td>Animal</td>
+</tr>
+<tr>
+	<td>170</td>
+	<td>llamas_llama_ethereal</td>
+	<td>Animal</td>
+</tr>
+<tr>
+	<td>171</td>
+	<td>ostards_ostard_ethereal</td>
+	<td>Animal</td>
+</tr>
+<tr>
+	<td>172</td>
+	<td>dragons_dragon_retro_red3</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>173</td>
+	<td>arachnids_spider_black_widow2</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>174</td>
+	<td>succubi_succubus2</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>175</td>
+	<td>ethereal_warriors_male2</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>176</td>
+	<td>fey_race_pixie2</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>177</td>
+	<td>equines_horse_nightmare2</td>
+	<td>Animal</td>
+</tr>
+<tr>
+	<td>178</td>
+	<td>equines_horse_nightmare3</td>
+	<td>Animal</td>
+</tr>
+<tr>
+	<td>179</td>
+	<td>equines_horse_nightmare4</td>
+	<td>Animal</td>
+</tr>
+<tr>
+	<td>180</td>
+	<td>dragons_wyrm_retro_white2</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>181</td>
+	<td>orcs_orc_scout</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>182</td>
+	<td>orcs_orc_bomber</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>183</td>
+	<td>H_Savage_Male</td>
+	<td>Human</td>
+</tr>
+<tr>
+	<td>184</td>
+	<td>H_Savage_Female</td>
+	<td>Human</td>
+</tr>
+<tr>
+	<td>185</td>
+	<td>H_SavageRider_Male</td>
+	<td>Human</td>
+</tr>
+<tr>
+	<td>186</td>
+	<td>H_Savage_Female2</td>
+	<td>Human</td>
+</tr>
+<tr>
+	<td>187</td>
+	<td>ridgeback_ridgeback</td>
+	<td>Animal</td>
+</tr>
+<tr>
+	<td>188</td>
+	<td>ridgeback_savage</td>
+	<td>Animal</td>
+</tr>
+<tr>
+	<td>189</td>
+	<td>orcs_orc_lord3</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>190</td>
+	<td>equines_horse_firesteed</td>
+	<td>Animal</td>
+</tr>
+<tr>
+	<td>191</td>
+	<td>kirin_kirin_ethereal</td>
+	<td>Animal</td>
+</tr>
+<tr>
+	<td>192</td>
+	<td>equines_unicorn_ethereal</td>
+	<td>Animal</td>
+</tr>
+<tr>
+	<td>193</td>
+	<td>ridgeback_ridgeback_ethereal</td>
+	<td>Animal</td>
+</tr>
+<tr>
+	<td>194</td>
+	<td>swamp_dragon_ethereal</td>
+	<td>Animal</td>
+</tr>
+<tr>
+	<td>195</td>
+	<td>giant_beetle_ethereal</td>
+	<td>Animal</td>
+</tr>
+<tr>
+	<td>196</td>
+	<td>Denkou_Yajuu</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>197</td>
+	<td>Dragon_Chaos</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>198</td>
+	<td>Dragon_Order</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>199</td>
+	<td>Gouzen_Ha</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>200</td>
+	<td>equines_horse_dappled_brown</td>
+	<td>Animal</td>
+</tr>
+<tr>
+	<td>201</td>
+	<td>felines_housecat</td>
+	<td>Animal</td>
+</tr>
+<tr>
+	<td>202</td>
+	<td>lizards_alligator_brown</td>
+	<td>Animal</td>
+</tr>
+<tr>
+	<td>203</td>
+	<td>porcines_pig</td>
+	<td>Animal</td>
+</tr>
+<tr>
+	<td>204</td>
+	<td>equines_horse_dark_brown</td>
+	<td>Animal</td>
+</tr>
+<tr>
+	<td>205</td>
+	<td>rodents_rabbit_cottontail</td>
+	<td>Animal</td>
+</tr>
+<tr>
+	<td>206</td>
+	<td>lizards_lava_lizard</td>
+	<td>Animal</td>
+</tr>
+<tr>
+	<td>207</td>
+	<td>ruminants_sheep</td>
+	<td>Animal</td>
+</tr>
+<tr>
+	<td>208</td>
+	<td>fowl_normal_hen</td>
+	<td>Animal</td>
+</tr>
+<tr>
+	<td>209</td>
+	<td>ruminants_goat_billy</td>
+	<td>Animal</td>
+</tr>
+<tr>
+	<td>210</td>
+	<td>ostards_ostard_desert</td>
+	<td>Animal</td>
+</tr>
+<tr>
+	<td>211</td>
+	<td>bruins_bear_black</td>
+	<td>Animal</td>
+</tr>
+<tr>
+	<td>212</td>
+	<td>bruins_bear_grizzly</td>
+	<td>Animal</td>
+</tr>
+<tr>
+	<td>213</td>
+	<td>bruins_bear_polar</td>
+	<td>Animal</td>
+</tr>
+<tr>
+	<td>214</td>
+	<td>felines_panther</td>
+	<td>Animal</td>
+</tr>
+<tr>
+	<td>215</td>
+	<td>rodents_rat_giant</td>
+	<td>Animal</td>
+</tr>
+<tr>
+	<td>216</td>
+	<td>bovines_cow_brown</td>
+	<td>Animal</td>
+</tr>
+<tr>
+	<td>217</td>
+	<td>canines_dog_hound</td>
+	<td>Animal</td>
+</tr>
+<tr>
+	<td>218</td>
+	<td>ostards_ostard_forest</td>
+	<td>Animal</td>
+</tr>
+<tr>
+	<td>219</td>
+	<td>ostards_ostard_frenzied</td>
+	<td>Animal</td>
+</tr>
+<tr>
+	<td>220</td>
+	<td>llamas_llama</td>
+	<td>Animal</td>
+</tr>
+<tr>
+	<td>221</td>
+	<td>walrus_walrus_male</td>
+	<td>Animal</td>
+</tr>
+<tr>
+	<td>223</td>
+	<td>ruminants_sheep_shorn</td>
+	<td>Animal</td>
+</tr>
+<tr>
+	<td>225</td>
+	<td>canines_wolf_timber</td>
+	<td>Animal</td>
+</tr>
+<tr>
+	<td>226</td>
+	<td>equines_horse_dappled_grey</td>
+	<td>Animal</td>
+</tr>
+<tr>
+	<td>228</td>
+	<td>equines_horse_tan</td>
+	<td>Animal</td>
+</tr>
+<tr>
+	<td>231</td>
+	<td>bovines_cow_spotted</td>
+	<td>Animal</td>
+</tr>
+<tr>
+	<td>232</td>
+	<td>bovines_bull_brown</td>
+	<td>Animal</td>
+</tr>
+<tr>
+	<td>233</td>
+	<td>bovines_bull_spotted</td>
+	<td>Animal</td>
+</tr>
+<tr>
+	<td>234</td>
+	<td>deer_stag</td>
+	<td>Animal</td>
+</tr>
+<tr>
+	<td>237</td>
+	<td>deer_doe</td>
+	<td>Animal</td>
+</tr>
+<tr>
+	<td>238</td>
+	<td>rodents_rat_sewer</td>
+	<td>Animal</td>
+</tr>
+<tr>
+	<td>240</td>
+	<td>Kappa</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>241</td>
+	<td>Oni</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>242</td>
+	<td>Bimbobushi</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>243</td>
+	<td>Hai_Riyo</td>
+	<td>Animal</td>
+</tr>
+<tr>
+	<td>244</td>
+	<td>Rune_Beetle</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>245</td>
+	<td>Yomotsu_Warrior</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>246</td>
+	<td>Kitsun_Tsuki</td>
+	<td>Animal</td>
+</tr>
+<tr>
+	<td>247</td>
+	<td>Fan_Dancer</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>248</td>
+	<td>Wild_Guar</td>
+	<td>Animal</td>
+</tr>
+<tr>
+	<td>249</td>
+	<td>Yamandon</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>250</td>
+	<td>Tri_Wolf</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>251</td>
+	<td>Vampyric_Beast</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>252</td>
+	<td>Lady_of_the_Snow</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>253</td>
+	<td>Yomotsu_Priest</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>254</td>
+	<td>Crane</td>
+	<td>Animal</td>
+</tr>
+<tr>
+	<td>255</td>
+	<td>Yomotsu_Elder</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>256</td>
+	<td>Paroxysmus</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>257</td>
+	<td>DreadHorn</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>258</td>
+	<td>LadyMelisande</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>259</td>
+	<td>MonstrousInterredGrizzle</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>261</td>
+	<td>Shimmering_Effusion</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>262</td>
+	<td>TormentedMinotaur</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>263</td>
+	<td>Minotaur</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>264</td>
+	<td>Changling</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>265</td>
+	<td>Hydra</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>266</td>
+	<td>Dryad</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>267</td>
+	<td>Troglodyte</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>271</td>
+	<td>Satyr</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>272</td>
+	<td>MonstrousInterredGrizzle2</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>273</td>
+	<td>Fetid_Essence</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>276</td>
+	<td>Raptalon</td>
+	<td>Animal</td>
+</tr>
+<tr>
+	<td>277</td>
+	<td>CuShidhe</td>
+	<td>Animal</td>
+</tr>
+<tr>
+	<td>278</td>
+	<td>Squirrel</td>
+	<td>Animal</td>
+</tr>
+<tr>
+	<td>279</td>
+	<td>Ferret</td>
+	<td>Animal</td>
+</tr>
+<tr>
+	<td>280</td>
+	<td>MinotaurArmored</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>281</td>
+	<td>LeatherMinotaur</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>282</td>
+	<td>Perched_Parrot</td>
+	<td>Animal</td>
+</tr>
+<tr>
+	<td>283</td>
+	<td>Perched_Crow</td>
+	<td>Animal</td>
+</tr>
+<tr>
+	<td>284</td>
+	<td>MondainSteed01</td>
+	<td>Animal</td>
+</tr>
+<tr>
+	<td>285</td>
+	<td>ReaperForm</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>287</td>
+	<td>Bloodworm</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>290</td>
+	<td>porcines_boar</td>
+	<td>Animal</td>
+</tr>
+<tr>
+	<td>291</td>
+	<td>equines_horse_dappled_brown_pack</td>
+	<td>Animal</td>
+</tr>
+<tr>
+	<td>292</td>
+	<td>llamas_llama_pack</td>
+	<td>Animal</td>
+</tr>
+<tr>
+	<td>293</td>
+	<td>vollum</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>300</td>
+	<td>crystal_elemental</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>301</td>
+	<td>treefellow</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>302</td>
+	<td>skittering_hopper</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>303</td>
+	<td>devourer</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>304</td>
+	<td>flesh_golem</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>305</td>
+	<td>gore_fiend</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>306</td>
+	<td>impaler</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>307</td>
+	<td>gibberling</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>308</td>
+	<td>bonedemon</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>309</td>
+	<td>patchskeleton</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>310</td>
+	<td>wailingbanshee</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>311</td>
+	<td>shadow_knight</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>312</td>
+	<td>abysmal_horror</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>313</td>
+	<td>Darknight_Creeper</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>314</td>
+	<td>ravager</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>315</td>
+	<td>flesh_renderer</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>316</td>
+	<td>wander</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>317</td>
+	<td>vampire_bat</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>318</td>
+	<td>demon_knight</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>319</td>
+	<td>mound_of_maggots</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>334</td>
+	<td>gray_goblin</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>400</td>
+	<td>h_male</td>
+	<td>Human</td>
+</tr>
+<tr>
+	<td>401</td>
+	<td>h_female</td>
+	<td>Human</td>
+</tr>
+<tr>
+	<td>432</td>
+	<td>ridable_boura</td>
+	<td>Animal</td>
+</tr>
+<tr>
+	<td>573</td>
+	<td>death_vortex</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>574</td>
+	<td>spirits_blade_spirit</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>605</td>
+	<td>elf_male</td>
+	<td>Human</td>
+</tr>
+<tr>
+	<td>606</td>
+	<td>elf_female</td>
+	<td>Human</td>
+</tr>
+<tr>
+	<td>666</td>
+	<td>garg_male</td>
+	<td>Human</td>
+</tr>
+<tr>
+	<td>667</td>
+	<td>garg_female</td>
+	<td>Human</td>
+</tr>
+<tr>
+	<td>689</td>
+	<td>timelord</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>704</td>
+	<td>shadowlord2</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>713</td>
+	<td>Abyssal_Infernal</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>714</td>
+	<td>beetle_iron</td>
+	<td>Animal</td>
+</tr>
+<tr>
+	<td>715</td>
+	<td>lowland_boura</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>716</td>
+	<td>chicken_lizard</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>717</td>
+	<td>clockwork_scorpion</td>
+	<td>Animal</td>
+</tr>
+<tr>
+	<td>718</td>
+	<td>fairy_dragon</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>719</td>
+	<td>wolfman</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>720</td>
+	<td>lava_worm</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>721</td>
+	<td>Maddening_Horror</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>722</td>
+	<td>Putrid_Undead_Gargoyle</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>723</td>
+	<td>Green_Goblin</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>724</td>
+	<td>Gremlin</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>725</td>
+	<td>Homunculus</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>726</td>
+	<td>Kepetch</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>727</td>
+	<td>Kepetch_Ambusher</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>728</td>
+	<td>Medusa</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>729</td>
+	<td>Paralithode</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>730</td>
+	<td>Raptor</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>732</td>
+	<td>Rotworm</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>733</td>
+	<td>Skree</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>734</td>
+	<td>Toxic Slith</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>735</td>
+	<td>Navrey Night-Eyes</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>736</td>
+	<td>Wolf Spider</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>737</td>
+	<td>Trapdoor Spider</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>738</td>
+	<td>Fire Ant</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>739</td>
+	<td>Leather Wolf</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>740</td>
+	<td>Dream Wraith</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>741</td>
+	<td>Slasher of Viels</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>742</td>
+	<td>Charybdis</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>743</td>
+	<td>Tentacles of Osiredon the Scalis Enforcer</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>746</td>
+	<td>four_armed_demon</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>747</td>
+	<td>wailingbanshee2</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>748</td>
+	<td>spirits_ghost2</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>749</td>
+	<td>liche_liche_retro3</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>750</td>
+	<td>h_savage_male</td>
+	<td>Human</td>
+</tr>
+<tr>
+	<td>751</td>
+	<td>h_savage_female</td>
+	<td>Human</td>
+</tr>
+<tr>
+	<td>752</td>
+	<td>golem_iron</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>753</td>
+	<td>gargoyles_gargoyle_slave</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>754</td>
+	<td>gargoyles_gargoyle_enforcer</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>755</td>
+	<td>gargoyles_gargoyle_guard</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>756</td>
+	<td>clockwork_overseer</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>757</td>
+	<td>clockwork_minion</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>758</td>
+	<td>gargoyles_gargoyle_shopkeeper</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>763</td>
+	<td>clockwork_minion2</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>764</td>
+	<td>Juka_Warrior</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>765</td>
+	<td>Juka_Mage</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>766</td>
+	<td>NPC_Kabur</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>767</td>
+	<td>NPC_Blackthorn_Cohort</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>768</td>
+	<td>Juggernaut</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>769</td>
+	<td>NPC_Blackthorn</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>770</td>
+	<td>Meer_Mage</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>771</td>
+	<td>Meer_Warrior</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>772</td>
+	<td>NPC_Adranath</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>773</td>
+	<td>NPC_Cpt_Dasha</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>774</td>
+	<td>Dawn_Girl</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>775</td>
+	<td>plague_beast</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>776</td>
+	<td>horde_demon</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>777</td>
+	<td>doppleganger</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>778</td>
+	<td>swarm</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>779</td>
+	<td>bogling</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>780</td>
+	<td>bog_thing</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>781</td>
+	<td>fire_ant_worker</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>782</td>
+	<td>fire_ant_warrior</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>783</td>
+	<td>fire_ant_queen</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>784</td>
+	<td>arcane_demon</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>785</td>
+	<td>four_armed_demon2</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>786</td>
+	<td>chariot</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>787</td>
+	<td>ant_lion</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>788</td>
+	<td>sphinx</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>789</td>
+	<td>quagmire</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>790</td>
+	<td>sand_vortex</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>791</td>
+	<td>giant_beetle</td>
+	<td>Animal</td>
+</tr>
+<tr>
+	<td>792</td>
+	<td>chaos_demon</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>793</td>
+	<td>skeletal_mount</td>
+	<td>Animal</td>
+</tr>
+<tr>
+	<td>794</td>
+	<td>swamp_dragon</td>
+	<td>Animal</td>
+</tr>
+<tr>
+	<td>795</td>
+	<td>horde_demon2</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>796</td>
+	<td>horde_demon3</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>797</td>
+	<td>mf_dragon_fire</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>798</td>
+	<td>mf_dragon_rust</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>799</td>
+	<td>swamp_dragon_armor</td>
+	<td>Animal</td>
+</tr>
+<tr>
+	<td>804</td>
+	<td>fire_ant_matriarch</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>805</td>
+	<td>black_ant_worker</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>806</td>
+	<td>black_ant_warrior</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>807</td>
+	<td>black_ant_queen</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>808</td>
+	<td>black_ant_matriarch</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>827</td>
+	<td>Dragon</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>829</td>
+	<td>Rising_Colossus</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>830</td>
+	<td>Prime_Evil_Lich</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>831</td>
+	<td>Parrot</td>
+	<td>Animal</td>
+</tr>
+<tr>
+	<td>832</td>
+	<td>Phoenix</td>
+	<td>Animal</td>
+</tr>
+<tr>
+	<td>833</td>
+	<td>Women_unclear</td>
+	<td>Human</td>
+</tr>
+<tr>
+	<td>970</td>
+	<td>player_ghost5</td>
+	<td>Human</td>
+</tr>
+<tr>
+	<td>990</td>
+	<td>character_lord_british</td>
+	<td>Human</td>
+</tr>
+<tr>
+	<td>991</td>
+	<td>character_blackthorn</td>
+	<td>Human</td>
+</tr>
+<tr>
+	<td>994</td>
+	<td>character_dupre</td>
+	<td>Human</td>
+</tr>
+<tr>
+	<td>999</td>
+	<td>Multi_Colored_Horde_Daemon</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>1026</td>
+	<td>Uber Turkey</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>1068</td>
+	<td>Oseridan The Scalis Enforcer</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>1069</td>
+	<td>Ancient Hellhound</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>1070</td>
+	<td>Werewolf</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>1071</td>
+	<td>unknown Demon Lord</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>1246</td>
+	<td>Killer Pumpkin Dark</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>1247</td>
+	<td>Killer Pumpkin Light</td>
+	<td>Monster</td>
+</tr>
+<tr>
+	<td>1254</td>
+	<td>Tiger</td>
+	<td>Monster</td>
+</tr>
+
+</table>	
+<h3>Equipment Names</h3>
+<table border="1">
+	<tr>
+		<th>Body Id</th>
+		<th>Name</th>
+	</tr>
+<tr>
+	<td>404</td>
+	<td>floppy hat</td>
+</tr>
+<tr>
+	<td>405</td>
+	<td>wide-brim hat</td>
+</tr>
+<tr>
+	<td>406</td>
+	<td>cap</td>
+</tr>
+<tr>
+	<td>407</td>
+	<td>tall straw hat</td>
+</tr>
+<tr>
+	<td>408</td>
+	<td>straw hat</td>
+</tr>
+<tr>
+	<td>409</td>
+	<td>wizard's hat</td>
+</tr>
+<tr>
+	<td>410</td>
+	<td>bonnet</td>
+</tr>
+<tr>
+	<td>411</td>
+	<td>feathered hat</td>
+</tr>
+<tr>
+	<td>412</td>
+	<td>tricorne hat</td>
+</tr>
+<tr>
+	<td>413</td>
+	<td>jester hat</td>
+</tr>
+<tr>
+	<td>414</td>
+	<td>bear mask</td>
+</tr>
+<tr>
+	<td>415</td>
+	<td>deer mask</td>
+</tr>
+<tr>
+	<td>416</td>
+	<td>orc mask</td>
+</tr>
+<tr>
+	<td>417</td>
+	<td>tribal mask</td>
+</tr>
+<tr>
+	<td>418</td>
+	<td>tribal mask</td>
+</tr>
+<tr>
+	<td>419</td>
+	<td>skullcap</td>
+</tr>
+<tr>
+	<td>423</td>
+	<td>Leather Ninja Pants</td>
+</tr>
+<tr>
+	<td>424</td>
+	<td>Leather Ninja Mitts</td>
+</tr>
+<tr>
+	<td>425</td>
+	<td>Leather Ninja Hood</td>
+</tr>
+<tr>
+	<td>426</td>
+	<td>Leather Ninja Jacke</td>
+</tr>
+<tr>
+	<td>430</td>
+	<td>short pants</td>
+</tr>
+<tr>
+	<td>431</td>
+	<td>long pants</td>
+</tr>
+<tr>
+	<td>434</td>
+	<td>shirt</td>
+</tr>
+<tr>
+	<td>435</td>
+	<td>fancy shirt</td>
+</tr>
+<tr>
+	<td>442</td>
+	<td>Mail Hatsuburi</td>
+</tr>
+<tr>
+	<td>443</td>
+	<td>Plate Hatsuburi</td>
+</tr>
+<tr>
+	<td>444</td>
+	<td>Leather Jingasa</td>
+</tr>
+<tr>
+	<td>445</td>
+	<td>Plate Jingasa</td>
+</tr>
+<tr>
+	<td>446</td>
+	<td>Plate Jingasa</td>
+</tr>
+<tr>
+	<td>447</td>
+	<td>plain dress</td>
+</tr>
+<tr>
+	<td>448</td>
+	<td>fancy dress</td>
+</tr>
+<tr>
+	<td>449</td>
+	<td>skirt</td>
+</tr>
+<tr>
+	<td>450</td>
+	<td>Plate Jingasa</td>
+</tr>
+<tr>
+	<td>451</td>
+	<td>Plate Kabuto</td>
+</tr>
+<tr>
+	<td>455</td>
+	<td>kilt</td>
+</tr>
+<tr>
+	<td>456</td>
+	<td>Plate Mempo</td>
+</tr>
+<tr>
+	<td>457</td>
+	<td>Leather Do</td>
+</tr>
+<tr>
+	<td>458</td>
+	<td>Studded Do</td>
+</tr>
+<tr>
+	<td>459</td>
+	<td>Plate Do</td>
+</tr>
+<tr>
+	<td>460</td>
+	<td>none</td>
+</tr>
+<tr>
+	<td>461</td>
+	<td>none</td>
+</tr>
+<tr>
+	<td>462</td>
+	<td>Plate Kabuto</td>
+</tr>
+<tr>
+	<td>463</td>
+	<td>Plate Kabuto</td>
+</tr>
+<tr>
+	<td>464</td>
+	<td>Wakizashi</td>
+</tr>
+<tr>
+	<td>465</td>
+	<td>full apron</td>
+</tr>
+<tr>
+	<td>466</td>
+	<td>half apron</td>
+</tr>
+<tr>
+	<td>467</td>
+	<td>Bokuto</td>
+</tr>
+<tr>
+	<td>468</td>
+	<td>cloak</td>
+</tr>
+<tr>
+	<td>469</td>
+	<td>robe</td>
+</tr>
+<tr>
+	<td>470</td>
+	<td>Daisho</td>
+</tr>
+<tr>
+	<td>471</td>
+	<td>Leather Mempo</td>
+</tr>
+<tr>
+	<td>472</td>
+	<td>Studded Mempo</td>
+</tr>
+<tr>
+	<td>473</td>
+	<td>Leather Hiro Sode</td>
+</tr>
+<tr>
+	<td>474</td>
+	<td>Studded Hiro Sode</td>
+</tr>
+<tr>
+	<td>476</td>
+	<td>thigh boots</td>
+</tr>
+<tr>
+	<td>477</td>
+	<td>boots</td>
+</tr>
+<tr>
+	<td>478</td>
+	<td>Plate Hiro Sode</td>
+</tr>
+<tr>
+	<td>479</td>
+	<td>sandals</td>
+</tr>
+<tr>
+	<td>480</td>
+	<td>shoes</td>
+</tr>
+<tr>
+	<td>481</td>
+	<td>flower garland</td>
+</tr>
+<tr>
+	<td>482</td>
+	<td>fur boots</td>
+</tr>
+<tr>
+	<td>483</td>
+	<td>fur cape</td>
+</tr>
+<tr>
+	<td>484</td>
+	<td>fur surong</td>
+</tr>
+<tr>
+	<td>485</td>
+	<td>gilded dress</td>
+</tr>
+<tr>
+	<td>486</td>
+	<td>formal shirt</td>
+</tr>
+<tr>
+	<td>487</td>
+	<td>Leather Suneate</td>
+</tr>
+<tr>
+	<td>488</td>
+	<td>Studded Suneate</td>
+</tr>
+<tr>
+	<td>489</td>
+	<td>Plate Suneate</td>
+</tr>
+<tr>
+	<td>490</td>
+	<td>body sash</td>
+</tr>
+<tr>
+	<td>491</td>
+	<td>Leather Haidate</td>
+</tr>
+<tr>
+	<td>492</td>
+	<td>bandana</td>
+</tr>
+<tr>
+	<td>500</td>
+	<td>lantern</td>
+</tr>
+<tr>
+	<td>501</td>
+	<td>torch</td>
+</tr>
+<tr>
+	<td>502</td>
+	<td>candle</td>
+</tr>
+<tr>
+	<td>503</td>
+	<td>lantern</td>
+</tr>
+<tr>
+	<td>504</td>
+	<td>torch%es%</td>
+</tr>
+<tr>
+	<td>505</td>
+	<td>candle</td>
+</tr>
+<tr>
+	<td>506</td>
+	<td>Plate Haidate</td>
+</tr>
+<tr>
+	<td>512</td>
+	<td>Studded Haidate</td>
+</tr>
+<tr>
+	<td>513</td>
+	<td>Cloth Ninja Hood</td>
+</tr>
+<tr>
+	<td>514</td>
+	<td>Leather Ninja Belt</td>
+</tr>
+<tr>
+	<td>516</td>
+	<td>Kasa</td>
+</tr>
+<tr>
+	<td>517</td>
+	<td>Kamishimo</td>
+</tr>
+<tr>
+	<td>518</td>
+	<td>Hakama</td>
+</tr>
+<tr>
+	<td>519</td>
+	<td>No-Dachi</td>
+</tr>
+<tr>
+	<td>520</td>
+	<td>Tessen</td>
+</tr>
+<tr>
+	<td>521</td>
+	<td>studded tunic</td>
+</tr>
+<tr>
+	<td>523</td>
+	<td>studded sleeves</td>
+</tr>
+<tr>
+	<td>525</td>
+	<td>studded gorget</td>
+</tr>
+<tr>
+	<td>526</td>
+	<td>Lajatang</td>
+</tr>
+<tr>
+	<td>527</td>
+	<td>platemail</td>
+</tr>
+<tr>
+	<td>528</td>
+	<td>platemail arms</td>
+</tr>
+<tr>
+	<td>529</td>
+	<td>platemail legs</td>
+</tr>
+<tr>
+	<td>530</td>
+	<td>platemail gloves</td>
+</tr>
+<tr>
+	<td>532</td>
+	<td>Fukiya</td>
+</tr>
+<tr>
+	<td>533</td>
+	<td>Tekagi</td>
+</tr>
+<tr>
+	<td>534</td>
+	<td>Shuriken</td>
+</tr>
+<tr>
+	<td>535</td>
+	<td>Kama</td>
+</tr>
+<tr>
+	<td>536</td>
+	<td>Nunchaku</td>
+</tr>
+<tr>
+	<td>537</td>
+	<td>Sai</td>
+</tr>
+<tr>
+	<td>538</td>
+	<td>chainmail tunic</td>
+</tr>
+<tr>
+	<td>539</td>
+	<td>none</td>
+</tr>
+<tr>
+	<td>540</td>
+	<td>chainmail leggings</td>
+</tr>
+<tr>
+	<td>542</td>
+	<td>leather tunic</td>
+</tr>
+<tr>
+	<td>543</td>
+	<td>leather leggings</td>
+</tr>
+<tr>
+	<td>544</td>
+	<td>leather sleeves</td>
+</tr>
+<tr>
+	<td>545</td>
+	<td>leather gloves</td>
+</tr>
+<tr>
+	<td>546</td>
+	<td>leather gorget</td>
+</tr>
+<tr>
+	<td>547</td>
+	<td>none</td>
+</tr>
+<tr>
+	<td>548</td>
+	<td>ringmail armor</td>
+</tr>
+<tr>
+	<td>549</td>
+	<td>ringmail leggings</td>
+</tr>
+<tr>
+	<td>550</td>
+	<td>ringmail sleeves</td>
+</tr>
+<tr>
+	<td>551</td>
+	<td>none</td>
+</tr>
+<tr>
+	<td>552</td>
+	<td>Tattsuke-Hakama</td>
+</tr>
+<tr>
+	<td>553</td>
+	<td>Hakama-Shita</td>
+</tr>
+<tr>
+	<td>554</td>
+	<td>bone armor</td>
+</tr>
+<tr>
+	<td>555</td>
+	<td>bone leggings</td>
+</tr>
+<tr>
+	<td>556</td>
+	<td>bone arms</td>
+</tr>
+<tr>
+	<td>557</td>
+	<td>bone gloves</td>
+</tr>
+<tr>
+	<td>558</td>
+	<td>Male Kimono</td>
+</tr>
+<tr>
+	<td>559</td>
+	<td>Female Kimono</td>
+</tr>
+<tr>
+	<td>560</td>
+	<td>leather cap</td>
+</tr>
+<tr>
+	<td>561</td>
+	<td>chainmail  coif</td>
+</tr>
+<tr>
+	<td>562</td>
+	<td>bone helmet</td>
+</tr>
+<tr>
+	<td>563</td>
+	<td>plate helm</td>
+</tr>
+<tr>
+	<td>564</td>
+	<td>nose helm</td>
+</tr>
+<tr>
+	<td>565</td>
+	<td>helmet</td>
+</tr>
+<tr>
+	<td>566</td>
+	<td>kabuto</td>
+</tr>
+<tr>
+	<td>567</td>
+	<td>Obi</td>
+</tr>
+<tr>
+	<td>568</td>
+	<td>Jin-Baori</td>
+</tr>
+<tr>
+	<td>569</td>
+	<td>Samurai Waraji &amp; Ta</td>
+</tr>
+<tr>
+	<td>570</td>
+	<td>none</td>
+</tr>
+<tr>
+	<td>571</td>
+	<td>Cloth Ninja Jacket</td>
+</tr>
+<tr>
+	<td>572</td>
+	<td>Ninja Tall Tabi</td>
+</tr>
+<tr>
+	<td>575</td>
+	<td>Yumi</td>
+</tr>
+<tr>
+	<td>576</td>
+	<td>metal shield</td>
+</tr>
+<tr>
+	<td>577</td>
+	<td>bronze shield</td>
+</tr>
+<tr>
+	<td>578</td>
+	<td>wooden shield</td>
+</tr>
+<tr>
+	<td>579</td>
+	<td>buckler</td>
+</tr>
+<tr>
+	<td>580</td>
+	<td>kite shield</td>
+</tr>
+<tr>
+	<td>581</td>
+	<td>kite shield</td>
+</tr>
+<tr>
+	<td>582</td>
+	<td>heater shield</td>
+</tr>
+<tr>
+	<td>583</td>
+	<td>Tetsubo</td>
+</tr>
+<tr>
+	<td>611</td>
+	<td>large battle axe</td>
+</tr>
+<tr>
+	<td>612</td>
+	<td>two handed axe</td>
+</tr>
+<tr>
+	<td>613</td>
+	<td>executioner's axe</td>
+</tr>
+<tr>
+	<td>614</td>
+	<td>bardiche</td>
+</tr>
+<tr>
+	<td>615</td>
+	<td>hatchet</td>
+</tr>
+<tr>
+	<td>616</td>
+	<td>heavy crossbow</td>
+</tr>
+<tr>
+	<td>617</td>
+	<td>black staff</td>
+</tr>
+<tr>
+	<td>618</td>
+	<td>broadsword</td>
+</tr>
+<tr>
+	<td>619</td>
+	<td>cleaver</td>
+</tr>
+<tr>
+	<td>620</td>
+	<td>club</td>
+</tr>
+<tr>
+	<td>621</td>
+	<td>shepherd's crook</td>
+</tr>
+<tr>
+	<td>622</td>
+	<td>dagger</td>
+</tr>
+<tr>
+	<td>623</td>
+	<td>cutlass</td>
+</tr>
+<tr>
+	<td>624</td>
+	<td>halberd</td>
+</tr>
+<tr>
+	<td>625</td>
+	<td>hammer pick</td>
+</tr>
+<tr>
+	<td>626</td>
+	<td>javelin</td>
+</tr>
+<tr>
+	<td>627</td>
+	<td>katana</td>
+</tr>
+<tr>
+	<td>628</td>
+	<td>gnarled staff</td>
+</tr>
+<tr>
+	<td>629</td>
+	<td>butcher knife</td>
+</tr>
+<tr>
+	<td>630</td>
+	<td>kryss</td>
+</tr>
+<tr>
+	<td>631</td>
+	<td>mace</td>
+</tr>
+<tr>
+	<td>633</td>
+	<td>maul</td>
+</tr>
+<tr>
+	<td>635</td>
+	<td>pickaxe</td>
+</tr>
+<tr>
+	<td>636</td>
+	<td>pitchfork</td>
+</tr>
+<tr>
+	<td>637</td>
+	<td>scimitar</td>
+</tr>
+<tr>
+	<td>638</td>
+	<td>skinning knife</td>
+</tr>
+<tr>
+	<td>639</td>
+	<td>short spear</td>
+</tr>
+<tr>
+	<td>643</td>
+	<td>viking sword</td>
+</tr>
+<tr>
+	<td>644</td>
+	<td>war axe</td>
+</tr>
+<tr>
+	<td>645</td>
+	<td>war fork</td>
+</tr>
+<tr>
+	<td>646</td>
+	<td>war hammer</td>
+</tr>
+<tr>
+	<td>648</td>
+	<td>quarter staff</td>
+</tr>
+<tr>
+	<td>649</td>
+	<td>bow</td>
+</tr>
+<tr>
+	<td>651</td>
+	<td>crossbow</td>
+</tr>
+<tr>
+	<td>653</td>
+	<td>axe</td>
+</tr>
+<tr>
+	<td>679</td>
+	<td>dragon sleeves</td>
+</tr>
+<tr>
+	<td>680</td>
+	<td>dragon breastplate</td>
+</tr>
+<tr>
+	<td>681</td>
+	<td>dragon gloves</td>
+</tr>
+<tr>
+	<td>682</td>
+	<td>dragon helm</td>
+</tr>
+<tr>
+	<td>683</td>
+	<td>dragon leggings</td>
+</tr>
+<tr>
+	<td>684</td>
+	<td>amazon armor</td>
+</tr>
+<tr>
+	<td>685</td>
+	<td>amazon armor</td>
+</tr>
+<tr>
+	<td>686</td>
+	<td>amazon armor</td>
+</tr>
+<tr>
+	<td>687</td>
+	<td>fancy dress</td>
+</tr>
+<tr>
+	<td>688</td>
+	<td>fancy dress</td>
+</tr>
+<tr>
+	<td>700</td>
+	<td>none</td>
+</tr>
+<tr>
+	<td>701</td>
+	<td>Long Hair</td>
+</tr>
+<tr>
+	<td>702</td>
+	<td>Ponytail</td>
+</tr>
+<tr>
+	<td>703</td>
+	<td>none</td>
+</tr>
+<tr>
+	<td>710</td>
+	<td>none</td>
+</tr>
+<tr>
+	<td>712</td>
+	<td>none</td>
+</tr>
+<tr>
+	<td>759</td>
+	<td>Arcane Cloak</td>
+</tr>
+<tr>
+	<td>760</td>
+	<td>Arcane Gloves</td>
+</tr>
+<tr>
+	<td>761</td>
+	<td>Arcane Robe</td>
+</tr>
+<tr>
+	<td>762</td>
+	<td>Arcane Thigh Boots</td>
+</tr>
+<tr>
+	<td>800</td>
+	<td>goatee</td>
+</tr>
+<tr>
+	<td>801</td>
+	<td>long beard</td>
+</tr>
+<tr>
+	<td>802</td>
+	<td>short beard</td>
+</tr>
+<tr>
+	<td>803</td>
+	<td>mustache</td>
+</tr>
+<tr>
+	<td>809</td>
+	<td>none</td>
+</tr>
+<tr>
+	<td>810</td>
+	<td>none</td>
+</tr>
+<tr>
+	<td>811</td>
+	<td>none</td>
+</tr>
+<tr>
+	<td>812</td>
+	<td>none</td>
+</tr>
+<tr>
+	<td>813</td>
+	<td>none</td>
+</tr>
+<tr>
+	<td>814</td>
+	<td>none</td>
+</tr>
+<tr>
+	<td>815</td>
+	<td>none</td>
+</tr>
+<tr>
+	<td>816</td>
+	<td>none</td>
+</tr>
+<tr>
+	<td>817</td>
+	<td>none</td>
+</tr>
+<tr>
+	<td>818</td>
+	<td>none</td>
+</tr>
+<tr>
+	<td>819</td>
+	<td>none</td>
+</tr>
+<tr>
+	<td>821</td>
+	<td>none</td>
+</tr>
+<tr>
+	<td>822</td>
+	<td>none</td>
+</tr>
+<tr>
+	<td>823</td>
+	<td>none</td>
+</tr>
+<tr>
+	<td>833</td>
+	<td>none</td>
+</tr>
+<tr>
+	<td>834</td>
+	<td>none</td>
+</tr>
+<tr>
+	<td>835</td>
+	<td>none</td>
+</tr>
+<tr>
+	<td>836</td>
+	<td>none</td>
+</tr>
+<tr>
+	<td>837</td>
+	<td>none</td>
+</tr>
+<tr>
+	<td>838</td>
+	<td>none</td>
+</tr>
+<tr>
+	<td>839</td>
+	<td>none</td>
+</tr>
+<tr>
+	<td>840</td>
+	<td>none</td>
+</tr>
+<tr>
+	<td>841</td>
+	<td>none</td>
+</tr>
+<tr>
+	<td>842</td>
+	<td>none</td>
+</tr>
+<tr>
+	<td>866</td>
+	<td>winged helmet</td>
+</tr>
+<tr>
+	<td>867</td>
+	<td>none</td>
+</tr>
+<tr>
+	<td>868</td>
+	<td>none</td>
+</tr>
+<tr>
+	<td>869</td>
+	<td>Helm of Spirituali</td>
+</tr>
+<tr>
+	<td>870</td>
+	<td>Gorget of Truth</td>
+</tr>
+<tr>
+	<td>871</td>
+	<td>Breastplate of Jus</td>
+</tr>
+<tr>
+	<td>872</td>
+	<td>Arms of Compassion</td>
+</tr>
+<tr>
+	<td>873</td>
+	<td>Gauntlets of Valor</td>
+</tr>
+<tr>
+	<td>874</td>
+	<td>Legs of Honor</td>
+</tr>
+<tr>
+	<td>875</td>
+	<td>Solaretes of Sacri</td>
+</tr>
+<tr>
+	<td>876</td>
+	<td>Cloak of Humility</td>
+</tr>
+<tr>
+	<td>877</td>
+	<td>Spell weaving book</td>
+</tr>
+<tr>
+	<td>878</td>
+	<td>book of ninjitsu</td>
+</tr>
+<tr>
+	<td>879</td>
+	<td>book of bushido</td>
+</tr>
+<tr>
+	<td>880</td>
+	<td>none</td>
+</tr>
+<tr>
+	<td>881</td>
+	<td>none</td>
+</tr>
+<tr>
+	<td>882</td>
+	<td>necromancer book</td>
+</tr>
+<tr>
+	<td>883</td>
+	<td>book of arms</td>
+</tr>
+<tr>
+	<td>884</td>
+	<td>paladin spellbook</td>
+</tr>
+<tr>
+	<td>886</td>
+	<td>Lt_Armor_Gorget</td>
+</tr>
+<tr>
+	<td>887</td>
+	<td>Quiver of Infinity</td>
+</tr>
+<tr>
+	<td>888</td>
+	<td>Dupres Shield</td>
+</tr>
+<tr>
+	<td>889</td>
+	<td>Elven_Hair</td>
+</tr>
+<tr>
+	<td>890</td>
+	<td>Elven_Hair</td>
+</tr>
+<tr>
+	<td>891</td>
+	<td>Elven_Hair</td>
+</tr>
+<tr>
+	<td>892</td>
+	<td>Elven_Hair</td>
+</tr>
+<tr>
+	<td>893</td>
+	<td>Elven_Hair</td>
+</tr>
+<tr>
+	<td>894</td>
+	<td>Elven_Hair</td>
+</tr>
+<tr>
+	<td>895</td>
+	<td>Elven_Hair</td>
+</tr>
+<tr>
+	<td>896</td>
+	<td>elven quiver r</td>
+</tr>
+<tr>
+	<td>897</td>
+	<td>elven glasses s</td>
+</tr>
+<tr>
+	<td>898</td>
+	<td>elven robe e01</td>
+</tr>
+<tr>
+	<td>899</td>
+	<td>elven robe e02</td>
+</tr>
+<tr>
+	<td>900</td>
+	<td>none</td>
+</tr>
+<tr>
+	<td>901</td>
+	<td>none</td>
+</tr>
+<tr>
+	<td>902</td>
+	<td>none</td>
+</tr>
+<tr>
+	<td>903</td>
+	<td>none</td>
+</tr>
+<tr>
+	<td>904</td>
+	<td>none</td>
+</tr>
+<tr>
+	<td>905</td>
+	<td>none</td>
+</tr>
+<tr>
+	<td>906</td>
+	<td>none</td>
+</tr>
+<tr>
+	<td>907</td>
+	<td>elven shirt Male</td>
+</tr>
+<tr>
+	<td>908</td>
+	<td>elven shirt Male</td>
+</tr>
+<tr>
+	<td>909</td>
+	<td>tunic</td>
+</tr>
+<tr>
+	<td>910</td>
+	<td>surcoat</td>
+</tr>
+<tr>
+	<td>911</td>
+	<td>checkered shirt</td>
+</tr>
+<tr>
+	<td>912</td>
+	<td>jester suit</td>
+</tr>
+<tr>
+	<td>913</td>
+	<td>doublet</td>
+</tr>
+<tr>
+	<td>914</td>
+	<td>elven shirt t _Ches</td>
+</tr>
+<tr>
+	<td>915</td>
+	<td>elven shirt t _Ches</td>
+</tr>
+<tr>
+	<td>916</td>
+	<td>Elven_Hair01_BL_Mu</td>
+</tr>
+<tr>
+	<td>917</td>
+	<td>hair</td>
+</tr>
+<tr>
+	<td>918</td>
+	<td>hair</td>
+</tr>
+<tr>
+	<td>919</td>
+	<td>Elven_Hair04_BR_Mu</td>
+</tr>
+<tr>
+	<td>920</td>
+	<td>Elven_Pants s</td>
+</tr>
+<tr>
+	<td>921</td>
+	<td>studded armor</td>
+</tr>
+<tr>
+	<td>922</td>
+	<td>plate armor</td>
+</tr>
+<tr>
+	<td>923</td>
+	<td>leather armor</td>
+</tr>
+<tr>
+	<td>924</td>
+	<td>leather bustier</td>
+</tr>
+<tr>
+	<td>925</td>
+	<td>studded bustier</td>
+</tr>
+<tr>
+	<td>926</td>
+	<td>leather skirt</td>
+</tr>
+<tr>
+	<td>927</td>
+	<td>leather shorts</td>
+</tr>
+<tr>
+	<td>928</td>
+	<td>close helmet</td>
+</tr>
+<tr>
+	<td>929</td>
+	<td>bascinet</td>
+</tr>
+<tr>
+	<td>930</td>
+	<td>scythe</td>
+</tr>
+<tr>
+	<td>931</td>
+	<td>bone harvester</td>
+</tr>
+<tr>
+	<td>932</td>
+	<td>scepter</td>
+</tr>
+<tr>
+	<td>933</td>
+	<td>bladed staff</td>
+</tr>
+<tr>
+	<td>934</td>
+	<td>pike</td>
+</tr>
+<tr>
+	<td>935</td>
+	<td>double bladed staff</td>
+</tr>
+<tr>
+	<td>936</td>
+	<td>lance</td>
+</tr>
+<tr>
+	<td>937</td>
+	<td>crescent blade</td>
+</tr>
+<tr>
+	<td>938</td>
+	<td>composite bow</td>
+</tr>
+<tr>
+	<td>939</td>
+	<td>repeating crossbow</td>
+</tr>
+<tr>
+	<td>941</td>
+	<td>Elven_Boot t</td>
+</tr>
+<tr>
+	<td>942</td>
+	<td>Elven Plate</td>
+</tr>
+<tr>
+	<td>943</td>
+	<td>Elven Plate Belt</td>
+</tr>
+<tr>
+	<td>944</td>
+	<td>Elven Plate Gorget</td>
+</tr>
+<tr>
+	<td>945</td>
+	<td>Elven Plate Gloves</td>
+</tr>
+<tr>
+	<td>946</td>
+	<td>Elven Plate Legs</td>
+</tr>
+<tr>
+	<td>947</td>
+	<td>Elven Arm Plate</td>
+</tr>
+<tr>
+	<td>948</td>
+	<td>Elven Plate</td>
+</tr>
+<tr>
+	<td>950</td>
+	<td>Elven Composite Lo</td>
+</tr>
+<tr>
+	<td>951</td>
+	<td>Magical Shortbow</td>
+</tr>
+<tr>
+	<td>952</td>
+	<td>Elven Spellblade</td>
+</tr>
+<tr>
+	<td>953</td>
+	<td>Assassin Spike</td>
+</tr>
+<tr>
+	<td>954</td>
+	<td>Leafblade</td>
+</tr>
+<tr>
+	<td>955</td>
+	<td>War Cleaver</td>
+</tr>
+<tr>
+	<td>956</td>
+	<td>Diamond Mace</td>
+</tr>
+<tr>
+	<td>957</td>
+	<td>Wild Staff</td>
+</tr>
+<tr>
+	<td>958</td>
+	<td>Rune Blade</td>
+</tr>
+<tr>
+	<td>959</td>
+	<td>Radiant Scimitar</td>
+</tr>
+<tr>
+	<td>960</td>
+	<td>Ornate Axe</td>
+</tr>
+<tr>
+	<td>961</td>
+	<td>bone machete</td>
+</tr>
+<tr>
+	<td>965</td>
+	<td>Raven Helm</td>
+</tr>
+<tr>
+	<td>966</td>
+	<td>Vulture Helm</td>
+</tr>
+<tr>
+	<td>967</td>
+	<td>Winged Helm</td>
+</tr>
+<tr>
+	<td>968</td>
+	<td>Hide Chest</td>
+</tr>
+<tr>
+	<td>969</td>
+	<td>Hide Gloves</td>
+</tr>
+<tr>
+	<td>971</td>
+	<td>knee skirt</td>
+</tr>
+<tr>
+	<td>972</td>
+	<td>fishing pole</td>
+</tr>
+<tr>
+	<td>973</td>
+	<td>orc helm</td>
+</tr>
+<tr>
+	<td>974</td>
+	<td>Hide Gorget</td>
+</tr>
+<tr>
+	<td>975</td>
+	<td>Hide Paldrons</td>
+</tr>
+<tr>
+	<td>976</td>
+	<td>Hide Pants</td>
+</tr>
+<tr>
+	<td>977</td>
+	<td>Hide Female Chest</td>
+</tr>
+<tr>
+	<td>978</td>
+	<td>Lt_Armor_Chest</td>
+</tr>
+<tr>
+	<td>979</td>
+	<td>Lt_Armor_Gloves</td>
+</tr>
+<tr>
+	<td>980</td>
+	<td>wand</td>
+</tr>
+<tr>
+	<td>981</td>
+	<td>wand</td>
+</tr>
+<tr>
+	<td>982</td>
+	<td>wand</td>
+</tr>
+<tr>
+	<td>983</td>
+	<td>wand</td>
+</tr>
+<tr>
+	<td>984</td>
+	<td>spellbook</td>
+</tr>
+<tr>
+	<td>985</td>
+	<td>none</td>
+</tr>
+<tr>
+	<td>986</td>
+	<td>none</td>
+</tr>
+<tr>
+	<td>989</td>
+	<td>Lt_Armor_Paldrons</td>
+</tr>
+<tr>
+	<td>992</td>
+	<td>Order shield</td>
+</tr>
+<tr>
+	<td>993</td>
+	<td>Chaos shield</td>
+</tr>
+<tr>
+	<td>995</td>
+	<td>Lt_Armor_Pants</td>
+</tr>
+<tr>
+	<td>996</td>
+	<td>leaf tonlet t r_Kil</td>
+</tr>
+<tr>
+	<td>997</td>
+	<td>LtF_Chest Chest</td>
+</tr>
+</table>
+</body>
+</html>
+

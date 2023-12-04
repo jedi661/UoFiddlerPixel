@@ -35,7 +35,7 @@ namespace UoFiddler.Forms
         private AlarmClockForm alarmClockForm;
         public MainForm()
         {
-            InitializeComponent();            
+            InitializeComponent();
 
             // Original
             if (FiddlerOptions.StoreFormState)
@@ -1020,6 +1020,17 @@ namespace UoFiddler.Forms
             using (HelpDokuForm helpDokuForm = new HelpDokuForm())
             {
                 helpDokuForm.FileName = "FileFormatsEnglisch.html";
+                helpDokuForm.ShowDialog();
+            }
+        }
+        #endregion
+
+        #region Animation Html
+        private void animationsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            using (HelpDokuForm helpDokuForm = new HelpDokuForm())
+            {
+                helpDokuForm.FileName = "Animations.html";
                 helpDokuForm.ShowDialog();
             }
         }

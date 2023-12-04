@@ -9,7 +9,8 @@ Version : 4.12.0
 - Add Custom Sound Gumps Button
 - Add Alarmclock Snooze Timer 5 min
 - Gump - Instant search and focus with ‘Enter
-- Gump Pagedown and PageUp 
+- Gump Pagedown and PageUp
+- Add Animation Html
 
 ## Changelog
 Version : 4.11.26

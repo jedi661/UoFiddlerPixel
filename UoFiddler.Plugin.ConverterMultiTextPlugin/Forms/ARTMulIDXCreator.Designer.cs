@@ -126,6 +126,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             btCreatePaletteFull = new System.Windows.Forms.Button();
             lbCreatePalette = new System.Windows.Forms.Label();
             btCreatePalette = new System.Windows.Forms.Button();
+            tabPageAnimation = new System.Windows.Forms.TabPage();
+            btnLoadAnimationMulData = new System.Windows.Forms.Button();
             tabPageReadMuls = new System.Windows.Forms.TabPage();
             tabPageReadOut = new System.Windows.Forms.TabPage();
             textBoxOutput = new System.Windows.Forms.TextBox();
@@ -144,6 +146,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             listViewTileData = new System.Windows.Forms.ListView();
             buttonReadTileData = new System.Windows.Forms.Button();
             saveFileDialog = new System.Windows.Forms.SaveFileDialog();
+            txtData = new System.Windows.Forms.TextBox();
             tabControl1.SuspendLayout();
             tabPageCreateMuls.SuspendLayout();
             tabPageTileData.SuspendLayout();
@@ -154,6 +157,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             tabPageRadarColor.SuspendLayout();
             tabPagePalette.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)pictureBoxPalette).BeginInit();
+            tabPageAnimation.SuspendLayout();
             tabPageReadMuls.SuspendLayout();
             tabPageReadOut.SuspendLayout();
             groupBoxInfo.SuspendLayout();
@@ -293,6 +297,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             tabControl1.Controls.Add(tabPageTexturen);
             tabControl1.Controls.Add(tabPageRadarColor);
             tabControl1.Controls.Add(tabPagePalette);
+            tabControl1.Controls.Add(tabPageAnimation);
             tabControl1.Controls.Add(tabPageReadMuls);
             tabControl1.Controls.Add(tabPageReadOut);
             tabControl1.Location = new System.Drawing.Point(3, 12);
@@ -1026,6 +1031,27 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             btCreatePalette.UseVisualStyleBackColor = true;
             btCreatePalette.Click += btCreatePalette_Click;
             // 
+            // tabPageAnimation
+            // 
+            tabPageAnimation.Controls.Add(txtData);
+            tabPageAnimation.Controls.Add(btnLoadAnimationMulData);
+            tabPageAnimation.Location = new System.Drawing.Point(4, 24);
+            tabPageAnimation.Name = "tabPageAnimation";
+            tabPageAnimation.Size = new System.Drawing.Size(745, 398);
+            tabPageAnimation.TabIndex = 7;
+            tabPageAnimation.Text = "Animation";
+            tabPageAnimation.UseVisualStyleBackColor = true;
+            // 
+            // btnLoadAnimationMulData
+            // 
+            btnLoadAnimationMulData.Location = new System.Drawing.Point(39, 38);
+            btnLoadAnimationMulData.Name = "btnLoadAnimationMulData";
+            btnLoadAnimationMulData.Size = new System.Drawing.Size(75, 23);
+            btnLoadAnimationMulData.TabIndex = 0;
+            btnLoadAnimationMulData.Text = "button1";
+            btnLoadAnimationMulData.UseVisualStyleBackColor = true;
+            btnLoadAnimationMulData.Click += btnLoadAnimationMulData_Click;
+            // 
             // tabPageReadMuls
             // 
             tabPageReadMuls.Controls.Add(btnCountEntries);
@@ -1209,6 +1235,14 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             buttonReadTileData.UseVisualStyleBackColor = true;
             buttonReadTileData.Click += buttonReadTileData_Click;
             // 
+            // txtData
+            // 
+            txtData.Location = new System.Drawing.Point(143, 38);
+            txtData.Multiline = true;
+            txtData.Name = "txtData";
+            txtData.Size = new System.Drawing.Size(340, 195);
+            txtData.TabIndex = 1;
+            // 
             // ARTMulIDXCreator
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -1235,6 +1269,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             tabPagePalette.ResumeLayout(false);
             tabPagePalette.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)pictureBoxPalette).EndInit();
+            tabPageAnimation.ResumeLayout(false);
+            tabPageAnimation.PerformLayout();
             tabPageReadMuls.ResumeLayout(false);
             tabPageReadMuls.PerformLayout();
             tabPageReadOut.ResumeLayout(false);
@@ -1350,5 +1386,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private System.Windows.Forms.PictureBox pictureBoxPalette;
         private System.Windows.Forms.Label rgbValuesLabel;
         private System.Windows.Forms.TextBox textBoxRgbValues;
+        private System.Windows.Forms.TabPage tabPageAnimation;
+        private System.Windows.Forms.Button btnLoadAnimationMulData;
+        private System.Windows.Forms.TextBox txtData;
     }
 }
