@@ -393,6 +393,7 @@ namespace UoFiddler.Controls.UserControls
             // 
             // toolStripComboBox1
             // 
+            toolStripComboBox1.Items.AddRange(new object[] { "Wall", "Door-E-L", "Door-E-R", "Door-S-L", "Door-S-R", "Window", "Roof", "Floor", "Water", "Stairs-W", "Stairs-N", "Stairs-E", "Stairs-S", "Stairs-W-N", "Stairs-N-E", "Stairs-E-S", "Stairs-S-W", "Stairs-Block", "Container", "Lamp Post", "Fence", "Cave Wall", "Clothing", "Plant", "Chair-Small-5", "Chair-35", "Chair-Wood-8", "Chair-Throne-15", "LandTile Land", "LandTile Water", "LandTile Mountain", "Tree", "Clear" });
             toolStripComboBox1.Name = "toolStripComboBox1";
             toolStripComboBox1.Size = new System.Drawing.Size(121, 25);
             // 

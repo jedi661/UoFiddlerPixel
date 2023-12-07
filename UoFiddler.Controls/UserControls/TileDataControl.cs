@@ -15,6 +15,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Media;
+using System.Runtime.CompilerServices;
 using System.Runtime.ConstrainedExecution;
 using System.Windows.Controls.Primitives;
 using System.Windows.Forms;
@@ -33,44 +34,49 @@ namespace UoFiddler.Controls.UserControls
             SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer | ControlStyles.UserPaint, true);
 
             // Add the presets to the ToolStripComboBox
-            toolStripComboBox1.Items.Add("Wall"); //1
-            toolStripComboBox1.Items.Add("Door-E-L"); //2
-            toolStripComboBox1.Items.Add("Door-E-R"); //3
-            toolStripComboBox1.Items.Add("Door-S-L"); //4
-            toolStripComboBox1.Items.Add("Door-S-R"); //5
-            toolStripComboBox1.Items.Add("Window"); //6
-            toolStripComboBox1.Items.Add("Roof"); //7
-            toolStripComboBox1.Items.Add("Floor"); //8
-            toolStripComboBox1.Items.Add("Water"); //9
-            toolStripComboBox1.Items.Add("Stairs-W"); //10
-            toolStripComboBox1.Items.Add("Stairs-N"); //11
-            toolStripComboBox1.Items.Add("Stairs-E"); //12
-            toolStripComboBox1.Items.Add("Stairs-S"); //13
-            toolStripComboBox1.Items.Add("Stairs-W-N"); //14
-            toolStripComboBox1.Items.Add("Stairs-N-E"); //15
-            toolStripComboBox1.Items.Add("Stairs-E-S"); //16
-            toolStripComboBox1.Items.Add("Stairs-S-W"); //17
-            toolStripComboBox1.Items.Add("Stairs-Block"); //18
-            toolStripComboBox1.Items.Add("Container"); //19
-            toolStripComboBox1.Items.Add("Lamp Post"); //20
-            toolStripComboBox1.Items.Add("Fence"); //21
-            toolStripComboBox1.Items.Add("Cave Wall"); //22
-            toolStripComboBox1.Items.Add("Clothing"); //23
-            toolStripComboBox1.Items.Add("Plant"); //24
-            toolStripComboBox1.Items.Add("Chair-Small-5"); //25
-            toolStripComboBox1.Items.Add("Chair-35"); //26
-            toolStripComboBox1.Items.Add("Chair-Wood-8"); //27
-            toolStripComboBox1.Items.Add("Chair-Throne-15"); //28
+            // toolStripComboBox1.Items.Add("Wall"); //1
+            //toolStripComboBox1.Items.Add("Door-E-L"); //2
+            //toolStripComboBox1.Items.Add("Door-E-R"); //3
+            //toolStripComboBox1.Items.Add("Door-S-L"); //4
+            //toolStripComboBox1.Items.Add("Door-S-R"); //5
+            //toolStripComboBox1.Items.Add("Window"); //6
+            //toolStripComboBox1.Items.Add("Roof"); //7
+            //toolStripComboBox1.Items.Add("Floor"); //8
+            //toolStripComboBox1.Items.Add("Water"); //9
+            //toolStripComboBox1.Items.Add("Stairs-W"); //10
+            //toolStripComboBox1.Items.Add("Stairs-N"); //11
+            //toolStripComboBox1.Items.Add("Stairs-E"); //12
+            //toolStripComboBox1.Items.Add("Stairs-S"); //13
+            //toolStripComboBox1.Items.Add("Stairs-W-N"); //14
+            //toolStripComboBox1.Items.Add("Stairs-N-E"); //15
+            //toolStripComboBox1.Items.Add("Stairs-E-S"); //16
+            //toolStripComboBox1.Items.Add("Stairs-S-W"); //17
+            //toolStripComboBox1.Items.Add("Stairs-Block"); //18
+            //toolStripComboBox1.Items.Add("Container"); //19
+            //toolStripComboBox1.Items.Add("Lamp Post"); //20
+            //toolStripComboBox1.Items.Add("Fence"); //21
+            //toolStripComboBox1.Items.Add("Cave Wall"); //22
+            //toolStripComboBox1.Items.Add("Clothing"); //23
+            //toolStripComboBox1.Items.Add("Plant"); //24
+            //toolStripComboBox1.Items.Add("Chair-Small-5"); //25
+            //toolStripComboBox1.Items.Add("Chair-35"); //26
+            //toolStripComboBox1.Items.Add("Chair-Wood-8"); //27
+            //toolStripComboBox1.Items.Add("Chair-Throne-15"); //28
             // checkedListBox2
-            toolStripComboBox1.Items.Add("LandTile Land"); //29
-            toolStripComboBox1.Items.Add("LandTile Water"); //30
-            toolStripComboBox1.Items.Add("LandTile Mountain"); //31
+            //toolStripComboBox1.Items.Add("LandTile Land"); //29
+            //toolStripComboBox1.Items.Add("LandTile Water"); //30
+            //toolStripComboBox1.Items.Add("LandTile Mountain"); //31
             // checkedListBox2 End
             //Tree
-            toolStripComboBox1.Items.Add("Tree"); //32
+            //toolStripComboBox1.Items.Add("Tree"); //32
             //Clear
-            toolStripComboBox1.Items.Add("Clear"); //33
+            //toolStripComboBox1.Items.Add("Clear"); //33
             // Add an event handler for toolStripComboBox1's SelectedIndexChanged event
+
+            toolStripComboBox1.ComboBox.DrawMode = DrawMode.OwnerDrawFixed;
+            toolStripComboBox1.ComboBox.DrawItem += new DrawItemEventHandler(toolStripComboBox1_DrawItem);
+            LoadImages();  // Call the method to load the images
+
             toolStripComboBox1.SelectedIndexChanged += ToolStripComboBox1_SelectedIndexChanged;
 
             _refMarker = this;
@@ -1785,7 +1791,48 @@ namespace UoFiddler.Controls.UserControls
 
             MessageBox.Show(updated > 0 ? $"Updated {updated} land tile(s)." : "Nothing was updated.", "Set textures");
         }
-        #region ToolStripComboBox
+        #region ToolStripComboBox and More
+
+        #region LoadImages
+        void LoadImages()
+        {
+            if (!icons.ContainsKey("Stairs"))
+            {
+                icons.Add("Stairs-S", Properties.Resources.Stairs01);
+                icons.Add("Stairs-E", Properties.Resources.Stairs02);
+                icons.Add("Stairs-N", Properties.Resources.Stairs03);
+                icons.Add("Stairs-W", Properties.Resources.Stairs04);
+                icons.Add("Stairs-E-S", Properties.Resources.Stairs05);
+                icons.Add("Stairs-N-E", Properties.Resources.Stairs06);                
+                icons.Add("Stairs-S-W", Properties.Resources.Stairs07);
+                icons.Add("Stairs-W-N", Properties.Resources.Stairs08);
+            }
+        }
+        #endregion
+
+        #region Define Dictionary with Bitmap instead of Icon
+        // Define Dictionary with Bitmap instead of Icon
+        Dictionary<string, Bitmap> icons = new Dictionary<string, Bitmap>();
+        #endregion
+        #region toolStripComboBox1_DrawItem
+        void toolStripComboBox1_DrawItem(object sender, DrawItemEventArgs e)
+        {
+            e.DrawBackground();
+            string name = toolStripComboBox1.Items[e.Index].ToString();
+            // Zeichnen Sie zuerst den Text
+            e.Graphics.DrawString(name, e.Font, new SolidBrush(e.ForeColor), e.Bounds.Left, e.Bounds.Top);
+            if (icons.ContainsKey(name))  // Check whether the dictionary contains an image for this element
+            {
+                Bitmap bitmap = icons[name];
+                // Scale the image to the height of the line
+                int width = Convert.ToInt32(e.Graphics.MeasureString(name, e.Font).Width);
+                Rectangle destRect = new Rectangle(e.Bounds.Left + width, e.Bounds.Top, e.Bounds.Height, e.Bounds.Height);
+                e.Graphics.DrawImage(bitmap, destRect);
+            }
+        }
+        #endregion
+
+        #region ToolStripComboBox1_SelectedIndexChanged
         private void ToolStripComboBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
             // Set all elements to unchecked
@@ -1888,6 +1935,7 @@ namespace UoFiddler.Controls.UserControls
                         checkedListBox1.SetItemChecked(checkedListBox1.Items.IndexOf("Surface"), true);
                         checkedListBox1.SetItemChecked(checkedListBox1.Items.IndexOf("Bridge"), true);
                         checkedListBox1.SetItemChecked(checkedListBox1.Items.IndexOf("NoShoot"), true);
+                        checkedListBox1.SetItemChecked(checkedListBox1.Items.IndexOf("StairBack"), true);
                         break;
                     case "Stairs-N": //11
                         textBoxWeight.Text = "255";
@@ -1904,6 +1952,7 @@ namespace UoFiddler.Controls.UserControls
                         checkedListBox1.SetItemChecked(checkedListBox1.Items.IndexOf("Surface"), true);
                         checkedListBox1.SetItemChecked(checkedListBox1.Items.IndexOf("Bridge"), true);
                         checkedListBox1.SetItemChecked(checkedListBox1.Items.IndexOf("NoShoot"), true);
+                        checkedListBox1.SetItemChecked(checkedListBox1.Items.IndexOf("StairRight"), true);
                         break;
                     case "Stairs-S": //13
                         textBoxWeight.Text = "255";
@@ -2102,6 +2151,7 @@ namespace UoFiddler.Controls.UserControls
                 }
             }
         }
+        #endregion
         #endregion
         #region toolStripButton6 for Sound
 

@@ -38,6 +38,11 @@
 		<Compile Update="Forms\AnimationListNewEntriesForm.Designer.cs">
 			<DependentUpon>AnimationListNewEntriesForm.cs</DependentUpon>
 		</Compile>
+		<Compile Update="Properties\Settings.Designer.cs">
+		  <DesignTimeSharedInput>True</DesignTimeSharedInput>
+		  <AutoGen>True</AutoGen>
+		  <DependentUpon>Settings.settings</DependentUpon>
+		</Compile>
 		<Compile Update="UserControls\AnimDataControl.cs">
 			<SubType>UserControl</SubType>
 		</Compile>
@@ -467,5 +472,11 @@
 	<ItemGroup>
 		<PackageReference Include="Serilog" Version="3.1.1" />
 		<PackageReference Include="System.Resources.Extensions" Version="8.0.0" />
+	</ItemGroup>
+	<ItemGroup>
+	  <None Update="Properties\Settings.settings">
+	    <Generator>SettingsSingleFileGenerator</Generator>
+	    <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+	  </None>
 	</ItemGroup>
 </Project>

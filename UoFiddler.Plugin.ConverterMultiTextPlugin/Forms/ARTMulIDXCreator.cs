@@ -5,6 +5,8 @@ using System.Drawing;
 using System.IO;
 using System.Text;
 using System.Windows.Forms;
+using System.IO;
+using System.Runtime.InteropServices;
 using static UoFiddler.Plugin.ConverterMultiTextPlugin.Forms.ARTMulIDXCreator;
 
 namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
@@ -1899,9 +1901,87 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 }
             }
         }
-
-
         #endregion
+
+        public class AnimData
+        {
+            [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Size = 26, Pack = 1)]
+            private unsafe struct OldLandData
+            {
+                private uint _Flags;
+                private ushort _TexID;
+                public fixed byte _Name[20]; // Ändern Sie den Zugriffsmodifizierer auf public
+            }
+
+            [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Size = 37, Pack = 1)]
+            private unsafe struct OldItemData
+            {
+                private uint _Flags;
+                private byte _Weight;
+                private byte _Quality;
+                private ushort _Miscdata;
+                private byte _Unk1;
+                private byte _Quantity;
+                private ushort _Animation;
+                private byte _Unk2;
+                private byte _Hue;
+                private byte _StackingOff;
+                private byte _Value;
+                private byte _Height;
+                public fixed byte _Name[20]; // Ändern Sie den Zugriffsmodifizierer auf public
+            }
+
+            [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Size = 41, Pack = 1)]
+            private unsafe struct NewItemData
+            {
+                [MarshalAs(UnmanagedType.U8)]
+                private ulong _Flags;
+                private byte _Weight;
+                private byte _Quality;
+                private ushort _Miscdata;
+                private byte _Unk1;
+                private byte _Quantity;
+                private ushort _Animation;
+                private byte _Unk2;
+                private byte _Hue;
+                private byte _StackingOff;
+                private byte _Value;
+                private byte _Height;
+                public fixed byte _Name[20]; // Ändern Sie den Zugriffsmodifizierer auf public
+            }
+
+            public unsafe void ReadAndDisplayData(string filePath, System.Windows.Forms.TextBox textBox) // Fügen Sie das Schlüsselwort unsafe hinzu
+            {
+                using (var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read))
+                {
+                    var reader = new BinaryReader(stream);
+                    while (reader.BaseStream.Position != reader.BaseStream.Length)
+                    {
+                        var data = new OldItemData();
+                        var bytes = reader.ReadBytes(Marshal.SizeOf(typeof(OldItemData)));
+                        var handle = GCHandle.Alloc(bytes, GCHandleType.Pinned);
+                        data = (OldItemData)Marshal.PtrToStructure(handle.AddrOfPinnedObject(), typeof(OldItemData));
+                        handle.Free();
+
+                        // Angenommen, GetName() ist eine Funktion, die den Namen des Artikels aus den Rohdaten abruft
+                        string name = GetName(data._Name);
+                        textBox.AppendText(name + "\n");
+                    }
+                }
+            }
+
+            private unsafe string GetName(byte* name) // Fügen Sie das Schlüsselwort unsafe hinzu
+            {
+                var bytes = new byte[20];
+                for (int i = 0; i < 20; i++)
+                {
+                    bytes[i] = name[i];
+                }
+
+                return Encoding.ASCII.GetString(bytes).TrimEnd('\0');
+            }
+        }
+
 
         private BinaryReader reader;
         private int itemsLoaded = 0;
