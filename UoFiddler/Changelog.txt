@@ -5,6 +5,7 @@ Version : 4.12.0 #XG1
 - Gump - Instant search and focus with ‘Enter
 - Gump Pagedown and PageUp
 - Add Animation Html
+- Add Icons ToolStripComboBox1 Stairs
 
 Version : 4.11.26 #XG1
 - Add Map Tools

@@ -11,6 +11,7 @@ Version : 4.12.0
 - Gump - Instant search and focus with ‘Enter
 - Gump Pagedown and PageUp
 - Add Animation Html
+- Add Icons ToolStripComboBox1 Stairs
 
 ## Changelog
 Version : 4.11.26
