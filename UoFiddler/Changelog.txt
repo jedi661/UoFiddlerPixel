@@ -6,6 +6,7 @@ Version : 4.12.0 #XG1
 - Gump Pagedown and PageUp
 - Add Animation Html
 - Add Icons ToolStripComboBox1 Stairs
+- Gump ID Calculator and Buttons
 
 Version : 4.11.26 #XG1
 - Add Map Tools

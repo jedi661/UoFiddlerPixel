@@ -12,6 +12,7 @@ Version : 4.12.0
 - Gump Pagedown and PageUp
 - Add Animation Html
 - Add Icons ToolStripComboBox1 Stairs
+- Gump ID Calculator and Buttons
 
 ## Changelog
 Version : 4.11.26
