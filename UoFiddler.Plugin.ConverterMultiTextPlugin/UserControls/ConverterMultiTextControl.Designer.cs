@@ -64,6 +64,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             btAnimationVDForm = new System.Windows.Forms.Button();
             btAnimationEditFormButton = new System.Windows.Forms.Button();
             tabPageGraphic = new System.Windows.Forms.TabPage();
+            btGumpIDRechner = new System.Windows.Forms.Button();
+            lbUoArtMerge = new System.Windows.Forms.Label();
+            btUOArtMerge = new System.Windows.Forms.Button();
             lbGumpsEdit = new System.Windows.Forms.Label();
             lbTextureCutter = new System.Windows.Forms.Label();
             lbGraficCutter = new System.Windows.Forms.Label();
@@ -76,10 +79,13 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             lbMapMaker = new System.Windows.Forms.Label();
             btMapMaker = new System.Windows.Forms.Button();
             tabPageClient = new System.Windows.Forms.TabPage();
+            label4 = new System.Windows.Forms.Label();
             btArtMul = new System.Windows.Forms.Button();
             lbDecriptClient = new System.Windows.Forms.Label();
             btDecriptClient = new System.Windows.Forms.Button();
             tabPageScript = new System.Windows.Forms.TabPage();
+            lbScriptCreator = new System.Windows.Forms.Label();
+            btScriptCreator = new System.Windows.Forms.Button();
             tabPageTextureConverter = new System.Windows.Forms.TabPage();
             btclear = new System.Windows.Forms.Button();
             btMorseCode = new System.Windows.Forms.Button();
@@ -89,7 +95,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             statusStrip1 = new System.Windows.Forms.StatusStrip();
             toolStripStatusLabelTime = new System.Windows.Forms.ToolStripStatusLabel();
             timer1 = new System.Windows.Forms.Timer(components);
-            label4 = new System.Windows.Forms.Label();
+            label5 = new System.Windows.Forms.Label();
             contextMenuStrip1.SuspendLayout();
             tabControl1.SuspendLayout();
             tabPageMain.SuspendLayout();
@@ -97,6 +103,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             tabPageGraphic.SuspendLayout();
             tabPageMap.SuspendLayout();
             tabPageClient.SuspendLayout();
+            tabPageScript.SuspendLayout();
             tabPageTextureConverter.SuspendLayout();
             statusStrip1.SuspendLayout();
             SuspendLayout();
@@ -317,6 +324,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             // 
             // tabPageGraphic
             // 
+            tabPageGraphic.Controls.Add(label5);
+            tabPageGraphic.Controls.Add(btGumpIDRechner);
+            tabPageGraphic.Controls.Add(lbUoArtMerge);
+            tabPageGraphic.Controls.Add(btUOArtMerge);
             tabPageGraphic.Controls.Add(lbGumpsEdit);
             tabPageGraphic.Controls.Add(lbTextureCutter);
             tabPageGraphic.Controls.Add(lbGraficCutter);
@@ -329,6 +340,35 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             tabPageGraphic.TabIndex = 2;
             tabPageGraphic.Text = "Graphic";
             tabPageGraphic.UseVisualStyleBackColor = true;
+            // 
+            // btGumpIDRechner
+            // 
+            btGumpIDRechner.Image = Properties.Resources.GumpID;
+            btGumpIDRechner.Location = new System.Drawing.Point(209, 19);
+            btGumpIDRechner.Name = "btGumpIDRechner";
+            btGumpIDRechner.Size = new System.Drawing.Size(56, 64);
+            btGumpIDRechner.TabIndex = 19;
+            btGumpIDRechner.UseVisualStyleBackColor = true;
+            btGumpIDRechner.Click += btGumpIDRechner_Click;
+            // 
+            // lbUoArtMerge
+            // 
+            lbUoArtMerge.AutoSize = true;
+            lbUoArtMerge.Location = new System.Drawing.Point(106, 86);
+            lbUoArtMerge.Name = "lbUoArtMerge";
+            lbUoArtMerge.Size = new System.Drawing.Size(78, 15);
+            lbUoArtMerge.TabIndex = 18;
+            lbUoArtMerge.Text = "Uo Art Merge";
+            // 
+            // btUOArtMerge
+            // 
+            btUOArtMerge.Image = Properties.Resources.art_merge;
+            btUOArtMerge.Location = new System.Drawing.Point(106, 19);
+            btUOArtMerge.Name = "btUOArtMerge";
+            btUOArtMerge.Size = new System.Drawing.Size(56, 64);
+            btUOArtMerge.TabIndex = 17;
+            btUOArtMerge.UseVisualStyleBackColor = true;
+            btUOArtMerge.Click += btUOArtMerge_Click;
             // 
             // lbGumpsEdit
             // 
@@ -451,6 +491,15 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             tabPageClient.Text = "Client";
             tabPageClient.UseVisualStyleBackColor = true;
             // 
+            // label4
+            // 
+            label4.AutoSize = true;
+            label4.Location = new System.Drawing.Point(92, 75);
+            label4.Name = "label4";
+            label4.Size = new System.Drawing.Size(65, 15);
+            label4.TabIndex = 15;
+            label4.Text = "Create Mul";
+            // 
             // btArtMul
             // 
             btArtMul.Image = Properties.Resources.create_art_abd_mul_file2;
@@ -482,6 +531,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             // 
             // tabPageScript
             // 
+            tabPageScript.Controls.Add(lbScriptCreator);
+            tabPageScript.Controls.Add(btScriptCreator);
             tabPageScript.Location = new System.Drawing.Point(4, 24);
             tabPageScript.Name = "tabPageScript";
             tabPageScript.Padding = new System.Windows.Forms.Padding(3);
@@ -489,6 +540,26 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             tabPageScript.TabIndex = 6;
             tabPageScript.Text = "Scripts";
             tabPageScript.UseVisualStyleBackColor = true;
+            // 
+            // lbScriptCreator
+            // 
+            lbScriptCreator.AutoSize = true;
+            lbScriptCreator.Location = new System.Drawing.Point(6, 75);
+            lbScriptCreator.Name = "lbScriptCreator";
+            lbScriptCreator.Size = new System.Drawing.Size(79, 15);
+            lbScriptCreator.TabIndex = 1;
+            lbScriptCreator.Text = "Script Creator";
+            // 
+            // btScriptCreator
+            // 
+            btScriptCreator.BackColor = System.Drawing.Color.Transparent;
+            btScriptCreator.Image = Properties.Resources.script_creator;
+            btScriptCreator.Location = new System.Drawing.Point(6, 6);
+            btScriptCreator.Name = "btScriptCreator";
+            btScriptCreator.Size = new System.Drawing.Size(55, 66);
+            btScriptCreator.TabIndex = 0;
+            btScriptCreator.UseVisualStyleBackColor = false;
+            btScriptCreator.Click += btScriptCreator_Click;
             // 
             // tabPageTextureConverter
             // 
@@ -576,14 +647,14 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             toolStripStatusLabelTime.Size = new System.Drawing.Size(33, 17);
             toolStripStatusLabelTime.Text = "Time";
             // 
-            // label4
+            // label5
             // 
-            label4.AutoSize = true;
-            label4.Location = new System.Drawing.Point(92, 75);
-            label4.Name = "label4";
-            label4.Size = new System.Drawing.Size(65, 15);
-            label4.TabIndex = 15;
-            label4.Text = "Create Mul";
+            label5.AutoSize = true;
+            label5.Location = new System.Drawing.Point(209, 86);
+            label5.Name = "label5";
+            label5.Size = new System.Drawing.Size(80, 15);
+            label5.TabIndex = 20;
+            label5.Text = "Gump ID Calc";
             // 
             // ConverterMultiTextControl
             // 
@@ -608,6 +679,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             tabPageMap.PerformLayout();
             tabPageClient.ResumeLayout(false);
             tabPageClient.PerformLayout();
+            tabPageScript.ResumeLayout(false);
+            tabPageScript.PerformLayout();
             tabPageTextureConverter.ResumeLayout(false);
             tabPageTextureConverter.PerformLayout();
             statusStrip1.ResumeLayout(false);
@@ -668,5 +741,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
         private System.Windows.Forms.Label lbCopyMapReplace;
         private System.Windows.Forms.Button btArtMul;
         private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.Button btScriptCreator;
+        private System.Windows.Forms.Label lbScriptCreator;
+        private System.Windows.Forms.Button btUOArtMerge;
+        private System.Windows.Forms.Label lbUoArtMerge;
+        private System.Windows.Forms.Button btGumpIDRechner;
+        private System.Windows.Forms.Label label5;
     }
 }

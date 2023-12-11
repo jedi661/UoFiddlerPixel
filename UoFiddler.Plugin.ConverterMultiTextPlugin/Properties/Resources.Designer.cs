@@ -113,6 +113,16 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Properties {
         /// <summary>
         ///   Sucht eine lokalisierte Ressource vom Typ System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap art_merge {
+            get {
+                object obj = ResourceManager.GetObject("art-merge", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Ressource vom Typ System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap Border {
             get {
                 object obj = ResourceManager.GetObject("Border", resourceCulture);
@@ -326,6 +336,16 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Properties {
         internal static System.Drawing.Bitmap gump_edit_1_ {
             get {
                 object obj = ResourceManager.GetObject("gump-edit(1)", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Ressource vom Typ System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap GumpID {
+            get {
+                object obj = ResourceManager.GetObject("GumpID", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -556,6 +576,16 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Properties {
         internal static System.Drawing.Bitmap Schablone {
             get {
                 object obj = ResourceManager.GetObject("Schablone", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Ressource vom Typ System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap script_creator {
+            get {
+                object obj = ResourceManager.GetObject("script-creator", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

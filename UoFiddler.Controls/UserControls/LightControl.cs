@@ -39,6 +39,8 @@ namespace UoFiddler.Controls.UserControls
         /// <summary>
         /// ReLoads if loaded
         /// </summary>
+        /// 
+        #region Reload
         private void Reload()
         {
             if (_loaded)
@@ -46,7 +48,9 @@ namespace UoFiddler.Controls.UserControls
                 OnLoad(this, EventArgs.Empty);
             }
         }
+        #endregion
 
+        #region OnLoad
         private void OnLoad(object sender, EventArgs e)
         {
             if (IsAncestorSiteInDesignMode || FormsDesignerHelper.IsInDesignMode())
@@ -93,11 +97,16 @@ namespace UoFiddler.Controls.UserControls
             _loaded = true;
             Cursor.Current = Cursors.Default;
         }
+        #endregion
 
+        #region OnFilePathChangeEvent
         private void OnFilePathChangeEvent()
         {
             Reload();
         }
+        #endregion
+
+        #region Bitmap GetImage
         private unsafe Bitmap GetImage()
         {
             if (treeView1.SelectedNode == null)
@@ -205,7 +214,9 @@ namespace UoFiddler.Controls.UserControls
 
             return bit;
         }
+        #endregion
 
+        #region AfterSelect
         private void AfterSelect(object sender, TreeViewEventArgs e)
         {
             pictureBox1.Image?.Dispose();
@@ -223,6 +234,9 @@ namespace UoFiddler.Controls.UserControls
                 MessageBox.Show("Error: Invalid image!");
             }
         }
+        #endregion
+
+        #region OnClickRemove
         private void OnClickRemove(object sender, EventArgs e)
         {
             if (treeView1.SelectedNode == null)
@@ -243,6 +257,9 @@ namespace UoFiddler.Controls.UserControls
             treeView1.Invalidate();
             Options.ChangedUltimaClass["Light"] = true;
         }
+        #endregion
+
+        #region OnClickReplace
         private void OnClickReplace(object sender, EventArgs e)
         {
             if (treeView1.SelectedNode == null)
@@ -281,6 +298,9 @@ namespace UoFiddler.Controls.UserControls
                 }
             }
         }
+        #endregion
+
+        #region OnTextChangedInsert
         private void OnTextChangedInsert(object sender, EventArgs e)
         {
             if (Utils.ConvertStringToInt(InsertText.Text, out int index, 0, 99))
@@ -292,6 +312,9 @@ namespace UoFiddler.Controls.UserControls
                 InsertText.ForeColor = Color.Red;
             }
         }
+        #endregion
+
+        #region OnKeyDownInsert
         private void OnKeyDownInsert(object sender, KeyEventArgs e)
         {
             if (e.KeyCode != Keys.Enter)
@@ -349,6 +372,9 @@ namespace UoFiddler.Controls.UserControls
                 Options.ChangedUltimaClass["Light"] = true;
             }
         }
+        #endregion
+
+        #region OnClickSave
         private void OnClickSave(object sender, EventArgs e)
         {
             Ultima.Light.Save(Options.OutputPath);
@@ -356,7 +382,9 @@ namespace UoFiddler.Controls.UserControls
                 MessageBoxDefaultButton.Button1);
             Options.ChangedUltimaClass["Light"] = false;
         }
+        #endregion
 
+        #region OnClickExportBmp
         private void OnClickExportBmp(object sender, EventArgs e)
         {
             if (treeView1.SelectedNode == null)
@@ -371,7 +399,9 @@ namespace UoFiddler.Controls.UserControls
             MessageBox.Show($"Light saved to {fileName}", "Saved", MessageBoxButtons.OK, MessageBoxIcon.Information,
                 MessageBoxDefaultButton.Button1);
         }
+        #endregion
 
+        #region OnClickExportTiff
         private void OnClickExportTiff(object sender, EventArgs e)
         {
             if (treeView1.SelectedNode == null)
@@ -386,6 +416,9 @@ namespace UoFiddler.Controls.UserControls
             MessageBox.Show($"Light saved to {fileName}", "Saved", MessageBoxButtons.OK, MessageBoxIcon.Information,
                 MessageBoxDefaultButton.Button1);
         }
+        #endregion
+
+        #region OnClickExportJpg
         private void OnClickExportJpg(object sender, EventArgs e)
         {
             if (treeView1.SelectedNode == null)
@@ -400,17 +433,24 @@ namespace UoFiddler.Controls.UserControls
             MessageBox.Show($"Light saved to {fileName}", "Saved", MessageBoxButtons.OK, MessageBoxIcon.Information,
                 MessageBoxDefaultButton.Button1);
         }
+        #endregion
 
+        #region IgPreviewClicked
         private void IgPreviewClicked(object sender, EventArgs e)
         {
             iGPreviewToolStripMenuItem.Checked = !iGPreviewToolStripMenuItem.Checked;
             pictureBox1.Image = GetImage();
         }
+        #endregion
 
+        #region OnPictureSizeChanged
         private void OnPictureSizeChanged(object sender, EventArgs e)
         {
             pictureBox1.Image = GetImage();
         }
+        #endregion
+
+        #region LandTileTextChanged
         private void LandTileTextChanged(object sender, EventArgs e)
         {
             if (!_loaded)
@@ -440,6 +480,7 @@ namespace UoFiddler.Controls.UserControls
                 LandTileText.ForeColor = Color.Red;
             }
         }
+        #endregion
 
         #region ShowPreviewPopu 1-2 and Next 1-2 and prev 1-2 and Update 1-2
 
@@ -452,6 +493,8 @@ namespace UoFiddler.Controls.UserControls
         private Form _previewForm2;
 
         //Form LandTiles
+
+        #region ShowPreviewPopup
         private void ShowPreviewPopup(Bitmap image)
         {
             // Get the parent ToolStrip control of the LandTileText control
@@ -520,8 +563,11 @@ namespace UoFiddler.Controls.UserControls
             // Show the preview form
             _previewForm.Show();
         }
+        #endregion
 
         //Form StaticItems
+
+        #region ShowPreviewPopup2
         private void ShowPreviewPopup2(Bitmap image)
         {
             // Get the parent ToolStrip control of the LightTileText control
@@ -587,8 +633,11 @@ namespace UoFiddler.Controls.UserControls
 
             _previewForm2.Show();
         }
+        #endregion
 
         // Method to show the next image
+
+        #region ShowNextImage
         private void ShowNextImage()
         {
             // Increase the current image index.
@@ -609,8 +658,11 @@ namespace UoFiddler.Controls.UserControls
             // Update the display.
             UpdateDisplay();
         }
+        #endregion
 
         // Method to show the previous image
+
+        #region ShowPrevImage
         private void ShowPrevImage()
         {
             // Decrease the current image index.
@@ -634,8 +686,11 @@ namespace UoFiddler.Controls.UserControls
             // Update the display.
             UpdateDisplay();
         }
+        #endregion
 
         // Method to show the next image for items
+
+        #region ShowNextImage2
         private void ShowNextImage2()
         {
             // Increase the current image index for items
@@ -653,8 +708,11 @@ namespace UoFiddler.Controls.UserControls
             // Update the display for items
             UpdateDisplay2();
         }
+        #endregion
 
         // Method to show the previous image for items
+
+        #region ShowPrevImage2
         private void ShowPrevImage2()
         {
             // Decrease the current image index for items
@@ -673,8 +731,11 @@ namespace UoFiddler.Controls.UserControls
             // Update the display for items
             UpdateDisplay2();
         }
+        #endregion
 
         // Method to update the display.
+
+        #region UpdateDisplay
         private void UpdateDisplay()
         {
             // Display the image.
@@ -686,8 +747,11 @@ namespace UoFiddler.Controls.UserControls
             pictureBox1.Image = GetImage();
             LandTileText.Text = _currentImageIndex.ToString();
         }
+        #endregion
 
         // Method to update the display for items
+
+        #region UpdateDisplay2
         private void UpdateDisplay2()
         {
             // Show the image for items
@@ -698,7 +762,9 @@ namespace UoFiddler.Controls.UserControls
             pictureBox1.Image = GetImage();
             LightTileText.Text = _currentImageIndex2.ToString();
         }
+        #endregion
 
+        #region LandTileKeyUp
         private void LandTileKeyUp(object sender, KeyEventArgs e)
         {
             if (Utils.ConvertStringToInt(LandTileText.Text, out int index, 0, 0x3FFF))
@@ -710,7 +776,9 @@ namespace UoFiddler.Controls.UserControls
                 // ...
             }
         }
-        
+        #endregion
+
+        #region LandTileKeyDown
         private void LandTileKeyDown(object sender, KeyEventArgs e)
         {
             if (e.KeyCode != Keys.Enter)
@@ -742,6 +810,9 @@ namespace UoFiddler.Controls.UserControls
             // Update the current image index for land tiles
             _currentImageIndex = index;
         }
+        #endregion
+
+        #region LightTileTextChanged
         private void LightTileTextChanged(object sender, EventArgs e)
         {
             if (!_loaded)
@@ -771,7 +842,9 @@ namespace UoFiddler.Controls.UserControls
                 LightTileText.ForeColor = Color.Red;
             }
         }
+        #endregion
 
+        #region LightTileKeyDown
         private void LightTileKeyDown(object sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.Enter)
@@ -804,6 +877,7 @@ namespace UoFiddler.Controls.UserControls
                 _previewForm2?.Close();
             }
         }
+        #endregion
         #endregion
 
         #region Copy Clipbord     

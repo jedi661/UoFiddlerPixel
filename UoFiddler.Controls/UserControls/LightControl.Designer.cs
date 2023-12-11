@@ -239,7 +239,7 @@ namespace UoFiddler.Controls.UserControls
             // 
             contextMenuStrip2.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { iGPreviewToolStripMenuItem, backgroundLandTileToolStripMenuItem, lightTileToolStripMenuItem });
             contextMenuStrip2.Name = "contextMenuStrip2";
-            contextMenuStrip2.Size = new System.Drawing.Size(186, 92);
+            contextMenuStrip2.Size = new System.Drawing.Size(186, 70);
             // 
             // iGPreviewToolStripMenuItem
             // 

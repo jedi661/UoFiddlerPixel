@@ -583,5 +583,104 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             }
         }
         #endregion
+
+        #region ScriptCreator
+        private void btScriptCreator_Click(object sender, EventArgs e)
+        {
+            if (isFormOpen) // If the form is already open, exit the method.
+            {
+                return;
+            }
+
+            ToolTip toolTip1 = new ToolTip();
+            toolTip1.AutoPopDelay = 5000;
+            toolTip1.InitialDelay = 1000;
+            toolTip1.ReshowDelay = 500;
+            toolTip1.ShowAlways = true;
+            toolTip1.SetToolTip(this.btScriptCreator, "Script Creator");
+
+            var scriptCreatorForm = new ScriptCreator();
+            scriptCreatorForm.FormClosed += ScriptCreatorFormClosed;
+            scriptCreatorForm.Show();
+            isFormOpen = true;
+
+            btScriptCreator.Enabled = false;
+        }
+
+        private void ScriptCreatorFormClosed(object sender, EventArgs e)
+        {
+            if (isFormOpen)
+            {
+                isFormOpen = false;
+                btScriptCreator.Enabled = true;
+            }
+        }
+        #endregion
+
+        #region UOArtMerge
+        private void btUOArtMerge_Click(object sender, EventArgs e)
+        {
+            if (isFormOpen) // If the form is already open, exit the method.
+            {
+                return;
+            }
+
+            ToolTip toolTip1 = new ToolTip();
+            toolTip1.AutoPopDelay = 5000;
+            toolTip1.InitialDelay = 1000;
+            toolTip1.ReshowDelay = 500;
+            toolTip1.ShowAlways = true;
+            toolTip1.SetToolTip(this.btUOArtMerge, "UO Art Merge");
+
+            var uoArtMergeForm = new UOArtMergeForm();
+            uoArtMergeForm.FormClosed += UOArtMergeFormClosed;
+            uoArtMergeForm.Show();
+            isFormOpen = true;
+
+            btUOArtMerge.Enabled = false;
+        }
+
+        private void UOArtMergeFormClosed(object sender, EventArgs e)
+        {
+            if (isFormOpen)
+            {
+                isFormOpen = false;
+                btUOArtMerge.Enabled = true;
+            }
+        }
+        #endregion
+
+        #region Gump ID Rechner
+        private void btGumpIDRechner_Click(object sender, EventArgs e)
+        {
+            if (isFormOpen) // If the form is already open, exit the method.
+            {
+                return;
+            }
+
+            ToolTip toolTip1 = new ToolTip();
+            toolTip1.AutoPopDelay = 5000;
+            toolTip1.InitialDelay = 1000;
+            toolTip1.ReshowDelay = 500;
+            toolTip1.ShowAlways = true;
+            toolTip1.SetToolTip(this.btGumpIDRechner, "Gump ID Rechner");
+
+            var gumpIDRechnerForm = new GumpIDRechner();
+            gumpIDRechnerForm.FormClosed += GumpIDRechnerFormClosed;
+            gumpIDRechnerForm.Show();
+            isFormOpen = true;
+
+            btGumpIDRechner.Enabled = false;
+        }
+
+        private void GumpIDRechnerFormClosed(object sender, EventArgs e)
+        {
+            if (isFormOpen)
+            {
+                isFormOpen = false;
+                btGumpIDRechner.Enabled = true;
+            }
+        }
+        #endregion
     }
 }
