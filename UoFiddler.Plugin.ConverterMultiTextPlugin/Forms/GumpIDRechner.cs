@@ -32,6 +32,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private void BtMen_Click(object sender, EventArgs e)
         {
             string hexInput = tbInput.Text;
+
+            if (hexInput.StartsWith("0x", StringComparison.OrdinalIgnoreCase))
+            {
+                hexInput = hexInput.Substring(2);
+            }
+
             if (System.Text.RegularExpressions.Regex.IsMatch(hexInput, @"\A\b[0-9a-fA-F]+\b\Z"))
             {
                 int decimalValue = Convert.ToInt32(hexInput, 16);
@@ -40,8 +46,14 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 string hexValue = "0x" + decimalValue.ToString("X");
                 tbHex.Text = hexValue;
 
-                string lastThreeDigits = decimalValue.ToString().Substring(decimalValue.ToString().Length - 3);
+                string decimalString = decimalValue.ToString();
+                string lastThreeDigits = decimalString.Length >= 3 ? decimalString.Substring(decimalString.Length - 3) : decimalString;
                 tbAminID.Text = lastThreeDigits;
+
+                // Convert the last three digits to hexadecimal and display in tbAminHex
+                int lastThreeDigitsDecimal = int.Parse(lastThreeDigits);
+                string lastThreeDigitsHex = "0x" + lastThreeDigitsDecimal.ToString("X");
+                tbAminHex.Text = lastThreeDigitsHex;
             }
             else
             {
@@ -54,6 +66,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private void btWoman_Click(object sender, EventArgs e)
         {
             string hexInput = tbInput.Text;
+
+            if (hexInput.StartsWith("0x", StringComparison.OrdinalIgnoreCase))
+            {
+                hexInput = hexInput.Substring(2);
+            }
+
             if (System.Text.RegularExpressions.Regex.IsMatch(hexInput, @"\A\b[0-9a-fA-F]+\b\Z"))
             {
                 int decimalValue = Convert.ToInt32(hexInput, 16) + 10000;
@@ -62,12 +80,18 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 string hexValue = "0x" + decimalValue.ToString("X");
                 tbHex.Text = hexValue;
 
-                string lastThreeDigits = decimalValue.ToString().Substring(decimalValue.ToString().Length - 3);
+                string decimalString = decimalValue.ToString();
+                string lastThreeDigits = decimalString.Length >= 3 ? decimalString.Substring(decimalString.Length - 3) : decimalString;
                 tbAminID.Text = lastThreeDigits;
+
+                // Convert the last three digits to hexadecimal and display in tbAminHex
+                int lastThreeDigitsDecimal = int.Parse(lastThreeDigits);
+                string lastThreeDigitsHex = "0x" + lastThreeDigitsDecimal.ToString("X");
+                tbAminHex.Text = lastThreeDigitsHex;
             }
             else
             {
-                MessageBox.Show("Please enter a valid hexadecimal number.");
+                MessageBox.Show("Bitte geben Sie eine gültige Hexadezimalzahl ein.");
             }
         }
         #endregion

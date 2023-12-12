@@ -53,6 +53,7 @@
             ProgressBar = new System.Windows.Forms.ProgressBar();
             AnimationTabControl = new System.Windows.Forms.TabControl();
             FramePage = new System.Windows.Forms.TabPage();
+            checkBoxIDBlue = new System.Windows.Forms.CheckBox();
             ApplyButton = new System.Windows.Forms.Button();
             ColorBlueLabel = new System.Windows.Forms.Label();
             numericUpDown8 = new System.Windows.Forms.NumericUpDown();
@@ -370,7 +371,7 @@
             // ProgressBar
             // 
             ProgressBar.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
-            ProgressBar.Location = new System.Drawing.Point(582, 628);
+            ProgressBar.Location = new System.Drawing.Point(580, 628);
             ProgressBar.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             ProgressBar.Name = "ProgressBar";
             ProgressBar.Size = new System.Drawing.Size(197, 20);
@@ -391,6 +392,7 @@
             // 
             // FramePage
             // 
+            FramePage.Controls.Add(checkBoxIDBlue);
             FramePage.Controls.Add(ApplyButton);
             FramePage.Controls.Add(ColorBlueLabel);
             FramePage.Controls.Add(numericUpDown8);
@@ -425,6 +427,18 @@
             FramePage.TabIndex = 0;
             FramePage.Text = "Frame";
             FramePage.UseVisualStyleBackColor = true;
+            // 
+            // checkBoxIDBlue
+            // 
+            checkBoxIDBlue.AutoSize = true;
+            checkBoxIDBlue.Checked = true;
+            checkBoxIDBlue.CheckState = System.Windows.Forms.CheckState.Checked;
+            checkBoxIDBlue.Location = new System.Drawing.Point(687, 5);
+            checkBoxIDBlue.Name = "checkBoxIDBlue";
+            checkBoxIDBlue.Size = new System.Drawing.Size(49, 19);
+            checkBoxIDBlue.TabIndex = 26;
+            checkBoxIDBlue.Text = "Blue";
+            checkBoxIDBlue.UseVisualStyleBackColor = true;
             // 
             // ApplyButton
             // 
@@ -930,7 +944,7 @@
             AnimationEditPage.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             AnimationEditPage.Name = "AnimationEditPage";
             AnimationEditPage.Padding = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            AnimationEditPage.Size = new System.Drawing.Size(877, 601);
+            AnimationEditPage.Size = new System.Drawing.Size(924, 601);
             AnimationEditPage.TabIndex = 1;
             AnimationEditPage.Text = "Preview/Edit";
             AnimationEditPage.UseVisualStyleBackColor = true;
@@ -951,7 +965,7 @@
             AnimationTableLayoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
             AnimationTableLayoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 29F));
             AnimationTableLayoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 23F));
-            AnimationTableLayoutPanel.Size = new System.Drawing.Size(869, 595);
+            AnimationTableLayoutPanel.Size = new System.Drawing.Size(916, 595);
             AnimationTableLayoutPanel.TabIndex = 21;
             // 
             // AnimationEditToolStrip
@@ -963,7 +977,7 @@
             AnimationEditToolStrip.Location = new System.Drawing.Point(0, 570);
             AnimationEditToolStrip.Name = "AnimationEditToolStrip";
             AnimationEditToolStrip.RenderMode = System.Windows.Forms.ToolStripRenderMode.System;
-            AnimationEditToolStrip.Size = new System.Drawing.Size(869, 25);
+            AnimationEditToolStrip.Size = new System.Drawing.Size(916, 25);
             AnimationEditToolStrip.TabIndex = 11;
             AnimationEditToolStrip.Text = "X";
             // 
@@ -1036,7 +1050,7 @@
             AnimationPictureBox.Location = new System.Drawing.Point(4, 3);
             AnimationPictureBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             AnimationPictureBox.Name = "AnimationPictureBox";
-            AnimationPictureBox.Size = new System.Drawing.Size(663, 560);
+            AnimationPictureBox.Size = new System.Drawing.Size(710, 560);
             AnimationPictureBox.TabIndex = 1;
             AnimationPictureBox.TabStop = false;
             AnimationPictureBox.SizeChanged += AnimationPictureBox_OnSizeChanged;
@@ -1052,7 +1066,7 @@
             EditSidePanel.Controls.Add(ReferencialPointGroupBox);
             EditSidePanel.Controls.Add(CoordinatesGroupBox);
             EditSidePanel.Dock = System.Windows.Forms.DockStyle.Fill;
-            EditSidePanel.Location = new System.Drawing.Point(675, 3);
+            EditSidePanel.Location = new System.Drawing.Point(722, 3);
             EditSidePanel.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             EditSidePanel.Name = "EditSidePanel";
             EditSidePanel.Size = new System.Drawing.Size(190, 560);
@@ -1294,7 +1308,7 @@
             // SaveCoordinatesLabel5
             // 
             SaveCoordinatesLabel5.AutoSize = true;
-            SaveCoordinatesLabel5.Font = new System.Drawing.Font("Consolas", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            SaveCoordinatesLabel5.Font = new System.Drawing.Font("Consolas", 8.25F);
             SaveCoordinatesLabel5.Location = new System.Drawing.Point(7, 114);
             SaveCoordinatesLabel5.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             SaveCoordinatesLabel5.Name = "SaveCoordinatesLabel5";
@@ -1305,7 +1319,7 @@
             // SaveCoordinatesLabel4
             // 
             SaveCoordinatesLabel4.AutoSize = true;
-            SaveCoordinatesLabel4.Font = new System.Drawing.Font("Consolas", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            SaveCoordinatesLabel4.Font = new System.Drawing.Font("Consolas", 8.25F);
             SaveCoordinatesLabel4.Location = new System.Drawing.Point(7, 97);
             SaveCoordinatesLabel4.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             SaveCoordinatesLabel4.Name = "SaveCoordinatesLabel4";
@@ -1316,7 +1330,7 @@
             // SaveCoordinatesLabel3
             // 
             SaveCoordinatesLabel3.AutoSize = true;
-            SaveCoordinatesLabel3.Font = new System.Drawing.Font("Consolas", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            SaveCoordinatesLabel3.Font = new System.Drawing.Font("Consolas", 8.25F);
             SaveCoordinatesLabel3.Location = new System.Drawing.Point(7, 80);
             SaveCoordinatesLabel3.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             SaveCoordinatesLabel3.Name = "SaveCoordinatesLabel3";
@@ -1327,7 +1341,7 @@
             // SaveCoordinatesLabel2
             // 
             SaveCoordinatesLabel2.AutoSize = true;
-            SaveCoordinatesLabel2.Font = new System.Drawing.Font("Consolas", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            SaveCoordinatesLabel2.Font = new System.Drawing.Font("Consolas", 8.25F);
             SaveCoordinatesLabel2.Location = new System.Drawing.Point(7, 62);
             SaveCoordinatesLabel2.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             SaveCoordinatesLabel2.Name = "SaveCoordinatesLabel2";
@@ -1338,7 +1352,7 @@
             // SaveCoordinatesLabel1
             // 
             SaveCoordinatesLabel1.AutoSize = true;
-            SaveCoordinatesLabel1.Font = new System.Drawing.Font("Consolas", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            SaveCoordinatesLabel1.Font = new System.Drawing.Font("Consolas", 8.25F);
             SaveCoordinatesLabel1.Location = new System.Drawing.Point(7, 45);
             SaveCoordinatesLabel1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             SaveCoordinatesLabel1.Name = "SaveCoordinatesLabel1";
@@ -1377,7 +1391,7 @@
             // 
             DirectionTrackBar.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
             DirectionTrackBar.AutoSize = false;
-            DirectionTrackBar.Location = new System.Drawing.Point(786, 626);
+            DirectionTrackBar.Location = new System.Drawing.Point(784, 626);
             DirectionTrackBar.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             DirectionTrackBar.Maximum = 4;
             DirectionTrackBar.Name = "DirectionTrackBar";
@@ -1625,5 +1639,6 @@
         private System.Windows.Forms.ToolStripMenuItem showToolStripMenuItem;
         private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabelVDAminInfo;
         private System.Windows.Forms.ToolStripTextBox toolStripTextBoxSearch;
+        private System.Windows.Forms.CheckBox checkBoxIDBlue;
     }
 }

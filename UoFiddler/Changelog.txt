@@ -7,6 +7,7 @@ Version : 4.12.0 #XG1
 - Add Animation Html
 - Add Icons ToolStripComboBox1 Stairs
 - Gump ID Calculator and Buttons
+- Animation Checkbox IDs Color Blue
 
 Version : 4.11.26 #XG1
 - Add Map Tools

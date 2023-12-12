@@ -44,6 +44,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             tabPage1 = new System.Windows.Forms.TabPage();
             lbHexAdressInput = new System.Windows.Forms.Label();
             groupBoxResults = new System.Windows.Forms.GroupBox();
+            tbAminHex = new System.Windows.Forms.TextBox();
+            label1 = new System.Windows.Forms.Label();
             tbAminID = new System.Windows.Forms.TextBox();
             lbHex = new System.Windows.Forms.Label();
             lbiD = new System.Windows.Forms.Label();
@@ -114,18 +116,36 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // 
             // groupBoxResults
             // 
+            groupBoxResults.Controls.Add(tbAminHex);
+            groupBoxResults.Controls.Add(label1);
             groupBoxResults.Controls.Add(tbAminID);
             groupBoxResults.Controls.Add(lbHex);
             groupBoxResults.Controls.Add(lbiD);
             groupBoxResults.Controls.Add(lbDecimal);
             groupBoxResults.Controls.Add(tbHex);
             groupBoxResults.Controls.Add(tbDecimal);
-            groupBoxResults.Location = new System.Drawing.Point(18, 142);
+            groupBoxResults.Location = new System.Drawing.Point(18, 118);
             groupBoxResults.Name = "groupBoxResults";
-            groupBoxResults.Size = new System.Drawing.Size(218, 144);
+            groupBoxResults.Size = new System.Drawing.Size(218, 168);
             groupBoxResults.TabIndex = 3;
             groupBoxResults.TabStop = false;
             groupBoxResults.Text = "Results";
+            // 
+            // tbAminHex
+            // 
+            tbAminHex.Location = new System.Drawing.Point(101, 137);
+            tbAminHex.Name = "tbAminHex";
+            tbAminHex.Size = new System.Drawing.Size(100, 23);
+            tbAminHex.TabIndex = 7;
+            // 
+            // label1
+            // 
+            label1.AutoSize = true;
+            label1.Location = new System.Drawing.Point(25, 140);
+            label1.Name = "label1";
+            label1.Size = new System.Drawing.Size(63, 15);
+            label1.TabIndex = 6;
+            label1.Text = "Amin Hex:";
             // 
             // tbAminID
             // 
@@ -137,7 +157,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // lbHex
             // 
             lbHex.AutoSize = true;
-            lbHex.Location = new System.Drawing.Point(57, 63);
+            lbHex.Location = new System.Drawing.Point(57, 56);
             lbHex.Name = "lbHex";
             lbHex.Size = new System.Drawing.Size(31, 15);
             lbHex.TabIndex = 4;
@@ -163,7 +183,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // 
             // tbHex
             // 
-            tbHex.Location = new System.Drawing.Point(101, 60);
+            tbHex.Location = new System.Drawing.Point(101, 53);
             tbHex.Name = "tbHex";
             tbHex.Size = new System.Drawing.Size(100, 23);
             tbHex.TabIndex = 1;
@@ -444,5 +464,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private System.Windows.Forms.CheckBox checkBoxCase;
         private System.Windows.Forms.CheckBox checkBoxAsciiCode;
         private System.Windows.Forms.CheckBox checkBoxAsciiToText;
+        private System.Windows.Forms.TextBox tbAminHex;
+        private System.Windows.Forms.Label label1;
     }
 }
