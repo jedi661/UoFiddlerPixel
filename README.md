@@ -13,7 +13,7 @@ Version : 4.12.0
 - Add Animation Html
 - Add Icons ToolStripComboBox1 Stairs
 - Gump ID Calculator and Buttons
-- Add Animation Checkbox IDs Color Blue
+- Add Animation Checkbox Free IDs Color Blue
 
 ## Changelog
 Version : 4.11.26
