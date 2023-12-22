@@ -1293,7 +1293,7 @@ namespace UoFiddler.Controls.UserControls
         }
 
         #region Copy clipboard
-        private void copyToolStripMenuItem_Click(object sender, EventArgs e)
+        /*private void copyToolStripMenuItem_Click(object sender, EventArgs e)
         {
             // Check if an item is selected in the ItemsTileView
             if (ItemsTileView.SelectedIndices.Count == 0)
@@ -1338,6 +1338,54 @@ namespace UoFiddler.Controls.UserControls
                 MessageBox.Show("No image to copy!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
 
+        }*/
+
+        private void copyToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // Check if any items are selected in the ItemsTileView
+            if (ItemsTileView.SelectedIndices.Count == 0)
+            {
+                return;
+            }
+
+            // Iterate through the selected indices
+            foreach (int selectedIndex in ItemsTileView.SelectedIndices)
+            {
+                // Get the graphic for the selected item
+                Bitmap bitmap = Art.GetStatic(_itemList[selectedIndex]);
+                // Check if the graphic exists
+                if (bitmap != null)
+                {
+                    // Change the color #D3D3D3 to #FFFFFF
+                    for (int x = 0; x < bitmap.Width; x++)
+                    {
+                        for (int y = 0; y < bitmap.Height; y++)
+                        {
+                            Color pixelColor = bitmap.GetPixel(x, y);
+                            if (pixelColor.R == 211 && pixelColor.G == 211 && pixelColor.B == 211)
+                            {
+                                bitmap.SetPixel(x, y, Color.FromArgb(255, 255, 255));
+                            }
+                        }
+                    }
+
+                    // Convert the image to a 16-bit color depth
+                    Bitmap bmp16bit = new Bitmap(bitmap.Width, bitmap.Height, System.Drawing.Imaging.PixelFormat.Format16bppRgb555);
+                    using (Graphics g = Graphics.FromImage(bmp16bit))
+                    {
+                        g.DrawImage(bitmap, new Rectangle(0, 0, bmp16bit.Width, bmp16bit.Height));
+                    }
+
+                    // Copy the graphic to the clipboard
+                    Clipboard.SetImage(bmp16bit);
+                    MessageBox.Show($"The image {selectedIndex} has been copied to the clipboard!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+                else
+                {
+                    // Show a MessageBox to inform the user that the image was successfully copied
+                    MessageBox.Show($"No image to copy for index {selectedIndex}!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
         }
         #endregion
 

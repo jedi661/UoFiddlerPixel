@@ -4,6 +4,9 @@
 
 UOFiddler based on Ultima SDK it's a tool to view and alter almost every UO 2D client file. Source code is released under the Beerware license.
 
+Version : 4.12.1
+- Implemented copying multiple graphics to the clipboard with Ctrl+X
+
 Version : 4.12.0
 - Update to net8.
 - Add Custom Sound Gumps Button
