@@ -45,6 +45,7 @@ namespace UoFiddler.Controls.UserControls
 
         private int _selectedGraphicId = -1;
 
+        #region SelectedGraphicId
         public int SelectedGraphicId
         {
             get => _selectedGraphicId;
@@ -57,6 +58,7 @@ namespace UoFiddler.Controls.UserControls
                 UpdateDetail(_selectedGraphicId);
             }
         }
+        #endregion
 
         public IReadOnlyList<int> ItemList { get => _itemList.AsReadOnly(); }
         public static ItemsControl RefMarker { get; private set; }
@@ -66,6 +68,8 @@ namespace UoFiddler.Controls.UserControls
         /// <summary>
         /// Updates if TileSize is changed
         /// </summary>
+        /// 
+        #region UpdateTileView
         public void UpdateTileView()
         {
             var newSize = new Size(Options.ArtItemSizeWidth, Options.ArtItemSizeHeight);
@@ -98,12 +102,15 @@ namespace UoFiddler.Controls.UserControls
                 UpdateDetail(_selectedGraphicId);
             }
         }
+        #endregion
 
         /// <summary>
         /// Searches graphic number and selects it
         /// </summary>
         /// <param name="graphic"></param>
         /// <returns></returns>
+        /// 
+        #region SearchGraphic
         public static bool SearchGraphic(int graphic)
         {
             if (!RefMarker.IsLoaded)
@@ -122,6 +129,7 @@ namespace UoFiddler.Controls.UserControls
 
             return true;
         }
+        #endregion
 
         /// <summary>
         /// Searches for name and selects
@@ -129,6 +137,8 @@ namespace UoFiddler.Controls.UserControls
         /// <param name="name"></param>
         /// <param name="next">starting from current selected</param>
         /// <returns></returns>
+        /// 
+        #region SearchName
         public static bool SearchName(string name, bool next)
         {
             int index = 0;
@@ -169,7 +179,9 @@ namespace UoFiddler.Controls.UserControls
 
             return false;
         }
+        #endregion
 
+        #region OnLoad
         public void OnLoad(object sender, EventArgs e)
         {
             if (IsAncestorSiteInDesignMode || FormsDesignerHelper.IsInDesignMode())
@@ -227,10 +239,13 @@ namespace UoFiddler.Controls.UserControls
             IsLoaded = true;
             Cursor.Current = Cursors.Default;
         }
+        #endregion
 
         /// <summary>
         /// ReLoads if loaded
         /// </summary>
+        /// 
+        #region Reload
         private void Reload()
         {
             if (IsLoaded)
@@ -238,12 +253,16 @@ namespace UoFiddler.Controls.UserControls
                 OnLoad(this, new MyEventArgs(MyEventArgs.Types.ForceReload));
             }
         }
+        #endregion
 
+        #region OnFilePathChangeEvent
         private void OnFilePathChangeEvent()
         {
             Reload();
         }
+        #endregion
 
+        #region OnTileDataChangeEvent
         private void OnTileDataChangeEvent(object sender, int id)
         {
             if (!IsLoaded)
@@ -271,7 +290,9 @@ namespace UoFiddler.Controls.UserControls
             UpdateToolStripLabels(id);
             UpdateDetail(id);
         }
+        #endregion
 
+        #region OnItemChangeEvent
         private void OnItemChangeEvent(object sender, int index)
         {
             if (!IsLoaded)
@@ -323,9 +344,11 @@ namespace UoFiddler.Controls.UserControls
             ItemsTileView.VirtualListSize = _itemList.Count;
             ItemsTileView.Invalidate();
         }
+        #endregion
 
         private Color _backgroundColorItem = Color.White;
 
+        #region ChangeBackgroundColorToolStripMenuItem
         private void ChangeBackgroundColorToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (colorDialog.ShowDialog() != DialogResult.OK)
@@ -342,9 +365,11 @@ namespace UoFiddler.Controls.UserControls
 
             ItemsTileView.Invalidate();
         }
+        #endregion
 
         private Color _backgroundDetailColor = Color.White;
 
+        #region UpdateDetail
         private void UpdateDetail(int graphic)
         {
             if (IsAncestorSiteInDesignMode || FormsDesignerHelper.IsInDesignMode())
@@ -427,7 +452,9 @@ namespace UoFiddler.Controls.UserControls
             DetailTextBox.Clear();
             DetailTextBox.AppendText(sb.ToString());
         }
+        #endregion
 
+        #region ChangeBackgroundColorToolStripMenuItemDetail
         private void ChangeBackgroundColorToolStripMenuItemDetail_Click(object sender, EventArgs e)
         {
             if (colorDialog.ShowDialog() != DialogResult.OK)
@@ -441,10 +468,12 @@ namespace UoFiddler.Controls.UserControls
                 UpdateDetail(_selectedGraphicId);
             }
         }
+        #endregion
 
         private ItemSearchForm _showForm;
         private bool _scrolling;
 
+        #region OnSearchClick
         private void OnSearchClick(object sender, EventArgs e)
         {
             if (_showForm?.IsDisposed == false)
@@ -458,7 +487,9 @@ namespace UoFiddler.Controls.UserControls
             };
             _showForm.Show();
         }
+        #endregion
 
+        #region OnClickFindFree
         private void OnClickFindFree(object sender, EventArgs e)
         {
             if (_showFreeSlots)
@@ -504,7 +535,9 @@ namespace UoFiddler.Controls.UserControls
                 }
             }
         }
+        #endregion
 
+        #region OnClickReplace
         private void OnClickReplace(object sender, EventArgs e)
         {
             if (_selectedGraphicId < 0)
@@ -544,7 +577,9 @@ namespace UoFiddler.Controls.UserControls
                 }
             }
         }
+        #endregion
 
+        #region OnClickRemove
         private void OnClickRemove(object sender, EventArgs e)
         {
             if (!Art.IsValidStatic(_selectedGraphicId))
@@ -573,7 +608,9 @@ namespace UoFiddler.Controls.UserControls
 
             Options.ChangedUltimaClass["Art"] = true;
         }
+        #endregion
 
+        #region OnTextChangedInsert
         private void OnTextChangedInsert(object sender, EventArgs e)
         {
             if (Utils.ConvertStringToInt(InsertText.Text, out int index, 0, Art.GetMaxItemId()))
@@ -585,7 +622,9 @@ namespace UoFiddler.Controls.UserControls
                 InsertText.ForeColor = Color.Red;
             }
         }
+        #endregion
 
+        #region OnKeyDownInsertText
         private void OnKeyDownInsertText(object sender, KeyEventArgs e)
         {
             if (e.KeyCode != Keys.Enter)
@@ -620,7 +659,9 @@ namespace UoFiddler.Controls.UserControls
                 AddSingleItem(dialog.FileName, index);
             }
         }
+        #endregion
 
+        #region UpdateToolStripLabels
         private void UpdateToolStripLabels(int graphic)
         {
             if (IsAncestorSiteInDesignMode || FormsDesignerHelper.IsInDesignMode())
@@ -641,7 +682,9 @@ namespace UoFiddler.Controls.UserControls
             NameLabel.Text = !Art.IsValidStatic(graphic) ? "Name: FREE" : $"Name: {TileData.ItemTable[graphic].Name}";
             GraphicLabel.Text = $"Graphic: 0x{graphic:X4} ({graphic})";
         }
+        #endregion
 
+        #region OnClickSave
         private void OnClickSave(object sender, EventArgs e)
         {
             DialogResult result = MessageBox.Show("Are you sure? Will take a while", "Save", MessageBoxButtons.YesNo,
@@ -661,8 +704,10 @@ namespace UoFiddler.Controls.UserControls
             MessageBox.Show($"Saved to {Options.OutputPath}", "Save", MessageBoxButtons.OK, MessageBoxIcon.Information,
                 MessageBoxDefaultButton.Button1);
         }
+        #endregion
 
         // This method is an event handler for a button or control click
+        #region OnClickShowFreeSlots
         private void OnClickShowFreeSlots(object sender, EventArgs e)
         {
             // Toggle the value of the _showFreeSlots variable
@@ -710,6 +755,7 @@ namespace UoFiddler.Controls.UserControls
                 Reload();
             }
         }
+        #endregion
 
         #region Save format
 
@@ -834,6 +880,7 @@ namespace UoFiddler.Controls.UserControls
 
         #endregion
 
+        #region OnClickSelectTiledata
         private void OnClickSelectTiledata(object sender, EventArgs e)
         {
             if (_selectedGraphicId == -1)
@@ -847,7 +894,9 @@ namespace UoFiddler.Controls.UserControls
                 //tileDataControl.RefreshPictureBoxItem(); //Select pictureBoxItem TileDataControl
             }
         }
+        #endregion
 
+        #region OnClickSelectRadarCol
         private void OnClickSelectRadarCol(object sender, EventArgs e)
         {
             if (_selectedGraphicId >= 0)
@@ -855,6 +904,7 @@ namespace UoFiddler.Controls.UserControls
                 RadarColorControl.Select(_selectedGraphicId, false);
             }
         }
+        #endregion
 
         #region Misc Save
         private void OnClick_SaveAllBmp(object sender, EventArgs e)
@@ -930,6 +980,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
+        #region OnClickPreLoad
         private void OnClickPreLoad(object sender, EventArgs e)
         {
             if (PreLoader.IsBusy)
@@ -944,7 +995,9 @@ namespace UoFiddler.Controls.UserControls
             ProgressBar.Visible = true;
             PreLoader.RunWorkerAsync();
         }
+        #endregion
 
+        #region PreLoaderDoWork
         private void PreLoaderDoWork(object sender, DoWorkEventArgs e)
         {
             foreach (int item in _itemList)
@@ -953,17 +1006,23 @@ namespace UoFiddler.Controls.UserControls
                 PreLoader.ReportProgress(1);
             }
         }
+        #endregion
 
+        #region PreLoaderProgressChanged
         private void PreLoaderProgressChanged(object sender, ProgressChangedEventArgs e)
         {
             ProgressBar.PerformStep();
         }
+        #endregion
 
+        #region PreLoaderCompleted
         private void PreLoaderCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
             ProgressBar.Visible = false;
         }
+        #endregion
 
+        #region ItemsTileView_DrawItem
         private void ItemsTileView_DrawItem(object sender, TileViewControl.DrawTileListItemEventArgs e)
         {
             if (IsAncestorSiteInDesignMode || FormsDesignerHelper.IsInDesignMode())
@@ -1032,7 +1091,9 @@ namespace UoFiddler.Controls.UserControls
                 e.Graphics.Clip = previousClip;
             }
         }
+        #endregion
 
+        #region ItemsTileView_ItemSelectionChanged
         private void ItemsTileView_ItemSelectionChanged(object sender, ListViewItemSelectionChangedEventArgs e)
         {
             if (!e.IsSelected)
@@ -1042,7 +1103,9 @@ namespace UoFiddler.Controls.UserControls
 
             UpdateSelection(e.ItemIndex);
         }
+        #endregion
 
+        #region ItemsTileView_FocusSelectionChanged
         private void ItemsTileView_FocusSelectionChanged(object sender, TileViewControl.ListViewFocusedItemSelectionChangedEventArgs e)
         {
             if (!e.IsFocused)
@@ -1052,7 +1115,9 @@ namespace UoFiddler.Controls.UserControls
 
             UpdateSelection(e.FocusedItemIndex);
         }
+        #endregion
 
+        #region UpdateSelection
         private void UpdateSelection(int itemIndex)
         {
             if (_itemList.Count == 0)
@@ -1064,7 +1129,9 @@ namespace UoFiddler.Controls.UserControls
                 ? _itemList[0]
                 : _itemList[itemIndex];
         }
+        #endregion
 
+        #region ItemsTileView_MouseDoubleClick
         public void ItemsTileView_MouseDoubleClick(object sender, MouseEventArgs e)
         {
             if (ItemsTileView.SelectedIndices.Count == 0)
@@ -1078,7 +1145,9 @@ namespace UoFiddler.Controls.UserControls
             };
             f.Show();
         }
+        #endregion
 
+        #region ItemsTileView_KeyDown
         private void ItemsTileView_KeyDown(object sender, KeyEventArgs e)
         {
             // Check if the Ctrl+V key combination has been pressed
@@ -1098,8 +1167,16 @@ namespace UoFiddler.Controls.UserControls
             {
                 _scrolling = true;
             }
+            // Check if the Ctrl+F3 key combination has been pressed
+            else if (e.Control && e.KeyCode == Keys.F3)
+            {
+                // Call the searchByNameToolStripButton_Click method
+                searchByNameToolStripButton_Click(sender, e);
+            }
         }
+        #endregion
 
+        #region ItemsTileView_KeyUp
         private void ItemsTileView_KeyUp(object sender, KeyEventArgs e)
         {
             if (e.KeyData != Keys.PageDown && e.KeyData != Keys.PageUp)
@@ -1115,10 +1192,12 @@ namespace UoFiddler.Controls.UserControls
                 UpdateDetail(_selectedGraphicId);
             }
         }
+        #endregion
 
         private const int _maleGumpOffset = 50_000;
         private const int _femaleGumpOffset = 60_000;
 
+        #region SelectInGumpsTab
         private static void SelectInGumpsTab(int graphicId, bool female = false)
         {
             int gumpOffset = female ? _femaleGumpOffset : _maleGumpOffset;
@@ -1126,7 +1205,9 @@ namespace UoFiddler.Controls.UserControls
 
             GumpControl.Select(itemData.Animation + gumpOffset);
         }
+        #endregion
 
+        #region SelectInGumpsTabMaleToolStripMenuItem
         private void SelectInGumpsTabMaleToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (SelectedGraphicId <= 0)
@@ -1136,7 +1217,9 @@ namespace UoFiddler.Controls.UserControls
 
             SelectInGumpsTab(SelectedGraphicId);
         }
+        #endregion
 
+        #region SelectInGumpsTabFemaleToolStripMenuItem
         private void SelectInGumpsTabFemaleToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (SelectedGraphicId <= 0)
@@ -1146,7 +1229,9 @@ namespace UoFiddler.Controls.UserControls
 
             SelectInGumpsTab(SelectedGraphicId, true);
         }
+        #endregion
 
+        #region TileViewContextMenuStrip
         private void TileViewContextMenuStrip_Opening(object sender, CancelEventArgs e)
         {
             if (SelectedGraphicId <= 0)
@@ -1173,7 +1258,9 @@ namespace UoFiddler.Controls.UserControls
                 }
             }
         }
+        #endregion
 
+        #region ReplaceStartingFromText_KeyDown
         private void ReplaceStartingFromText_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.KeyCode != Keys.Enter)
@@ -1219,12 +1306,15 @@ namespace UoFiddler.Controls.UserControls
                 UpdateDetail(index);
             }
         }
+        #endregion
 
         /// <summary>
         /// Adds a single static item.
         /// </summary>
         /// <param name="fileName">Filename of the image to add.</param>
         /// <param name="index">Index where the static item will be added.</param>
+        /// 
+        #region AddSingleItem
         private void AddSingleItem(string fileName, int index)
         {
             using (var bmpTemp = new Bitmap(fileName))
@@ -1282,64 +1372,21 @@ namespace UoFiddler.Controls.UserControls
                 }
             }
         }
+        #endregion
 
         /// <summary>
         /// Check if it's valid index for land tile. Land tiles has fixed size 0x4000.
         /// </summary>
         /// <param name="index">Starting Index</param>
+        /// 
+        #region IsIndexValid
         private static bool IsIndexValid(int index)
         {
             return index >= 0 && index <= Art.GetMaxItemId();
         }
+        #endregion
 
         #region Copy clipboard
-        /*private void copyToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            // Check if an item is selected in the ItemsTileView
-            if (ItemsTileView.SelectedIndices.Count == 0)
-            {
-                return;
-            }
-
-            // Get the selected item
-            int selectedIndex = ItemsTileView.SelectedIndices[0];
-            // Get the graphic for the selected item
-            Bitmap bitmap = Art.GetStatic(_itemList[selectedIndex]);
-            // Check if the graphic exists
-            if (bitmap != null)
-            {
-                // Change the color #D3D3D3 to #FFFFFF
-                for (int x = 0; x < bitmap.Width; x++)
-                {
-                    for (int y = 0; y < bitmap.Height; y++)
-                    {
-                        Color pixelColor = bitmap.GetPixel(x, y);
-                        if (pixelColor.R == 211 && pixelColor.G == 211 && pixelColor.B == 211)
-                        {
-                            bitmap.SetPixel(x, y, Color.FromArgb(255, 255, 255));
-                        }
-                    }
-                }
-
-                // Convert the image to a 16-bit color depth
-                Bitmap bmp16bit = new Bitmap(bitmap.Width, bitmap.Height, System.Drawing.Imaging.PixelFormat.Format16bppRgb555);
-                using (Graphics g = Graphics.FromImage(bmp16bit))
-                {
-                    g.DrawImage(bitmap, new Rectangle(0, 0, bmp16bit.Width, bmp16bit.Height));
-                }
-
-                // Copy the graphic to the clipboard
-                Clipboard.SetImage(bmp16bit);
-                MessageBox.Show("The image has been copied to the clipboard!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            }
-            else
-            {
-                // Show a MessageBox to inform the user that the image was successfully copied
-                MessageBox.Show("No image to copy!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-
-        }*/
-
         private void copyToolStripMenuItem_Click(object sender, EventArgs e)
         {
             // Check if any items are selected in the ItemsTileView
