@@ -1,5 +1,6 @@
 Version : 4.12.1 #XG1
 - Implemented copying multiple graphics to the clipboard with Ctrl+X
+- Add Strg+F3 Search
 
 Version : 4.12.0 #XG1
 - Update to net8.
