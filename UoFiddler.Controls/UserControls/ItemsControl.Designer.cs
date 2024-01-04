@@ -44,9 +44,12 @@ namespace UoFiddler.Controls.UserControls
             components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ItemsControl));
             splitContainer2 = new SplitContainer();
+            chkApplyColorChange = new CheckBox();
             DetailPictureBox = new PictureBox();
             DetailPictureBoxContextMenuStrip = new ContextMenuStrip(components);
             changeBackgroundColorToolStripMenuItemDetail = new ToolStripMenuItem();
+            particleGraylToolStripMenuItem = new ToolStripMenuItem();
+            particleGrayColorToolStripMenuItem = new ToolStripMenuItem();
             DetailTextBox = new RichTextBox();
             splitContainer1 = new SplitContainer();
             ItemsTileView = new TileView.TileViewControl();
@@ -103,6 +106,7 @@ namespace UoFiddler.Controls.UserControls
             toolStripButton1 = new ToolStripButton();
             colorDialog = new ColorDialog();
             collapsibleSplitter1 = new CollapsibleSplitter();
+            toolStripSeparator6 = new ToolStripSeparator();
             ((System.ComponentModel.ISupportInitialize)splitContainer2).BeginInit();
             splitContainer2.Panel1.SuspendLayout();
             splitContainer2.Panel2.SuspendLayout();
@@ -128,15 +132,27 @@ namespace UoFiddler.Controls.UserControls
             // 
             // splitContainer2.Panel1
             // 
+            splitContainer2.Panel1.Controls.Add(chkApplyColorChange);
             splitContainer2.Panel1.Controls.Add(DetailPictureBox);
             // 
             // splitContainer2.Panel2
             // 
             splitContainer2.Panel2.Controls.Add(DetailTextBox);
-            splitContainer2.Size = new System.Drawing.Size(194, 342);
-            splitContainer2.SplitterDistance = 196;
+            splitContainer2.Size = new System.Drawing.Size(338, 342);
+            splitContainer2.SplitterDistance = 192;
             splitContainer2.SplitterWidth = 5;
             splitContainer2.TabIndex = 0;
+            // 
+            // chkApplyColorChange
+            // 
+            chkApplyColorChange.AutoSize = true;
+            chkApplyColorChange.Location = new System.Drawing.Point(3, 3);
+            chkApplyColorChange.Name = "chkApplyColorChange";
+            chkApplyColorChange.Size = new System.Drawing.Size(98, 19);
+            chkApplyColorChange.TabIndex = 1;
+            chkApplyColorChange.Text = "Particele Gray";
+            chkApplyColorChange.UseVisualStyleBackColor = true;
+            chkApplyColorChange.CheckedChanged += chkApplyColorChange_CheckedChanged;
             // 
             // DetailPictureBox
             // 
@@ -145,22 +161,39 @@ namespace UoFiddler.Controls.UserControls
             DetailPictureBox.Location = new System.Drawing.Point(0, 0);
             DetailPictureBox.Margin = new Padding(4, 3, 4, 3);
             DetailPictureBox.Name = "DetailPictureBox";
-            DetailPictureBox.Size = new System.Drawing.Size(194, 196);
+            DetailPictureBox.Size = new System.Drawing.Size(338, 192);
             DetailPictureBox.TabIndex = 0;
             DetailPictureBox.TabStop = false;
             // 
             // DetailPictureBoxContextMenuStrip
             // 
-            DetailPictureBoxContextMenuStrip.Items.AddRange(new ToolStripItem[] { changeBackgroundColorToolStripMenuItemDetail });
+            DetailPictureBoxContextMenuStrip.Items.AddRange(new ToolStripItem[] { changeBackgroundColorToolStripMenuItemDetail, toolStripSeparator6, particleGraylToolStripMenuItem, particleGrayColorToolStripMenuItem });
             DetailPictureBoxContextMenuStrip.Name = "contextMenuStrip2";
-            DetailPictureBoxContextMenuStrip.Size = new System.Drawing.Size(213, 26);
+            DetailPictureBoxContextMenuStrip.Size = new System.Drawing.Size(213, 98);
             // 
             // changeBackgroundColorToolStripMenuItemDetail
             // 
+            changeBackgroundColorToolStripMenuItemDetail.Image = Properties.Resources.colordialog_background;
             changeBackgroundColorToolStripMenuItemDetail.Name = "changeBackgroundColorToolStripMenuItemDetail";
             changeBackgroundColorToolStripMenuItemDetail.Size = new System.Drawing.Size(212, 22);
             changeBackgroundColorToolStripMenuItemDetail.Text = "Change background color";
             changeBackgroundColorToolStripMenuItemDetail.Click += ChangeBackgroundColorToolStripMenuItemDetail_Click;
+            // 
+            // particleGraylToolStripMenuItem
+            // 
+            particleGraylToolStripMenuItem.Image = Properties.Resources.particle_gray_hue;
+            particleGraylToolStripMenuItem.Name = "particleGraylToolStripMenuItem";
+            particleGraylToolStripMenuItem.Size = new System.Drawing.Size(212, 22);
+            particleGraylToolStripMenuItem.Text = "Particle Gray";
+            particleGraylToolStripMenuItem.Click += particleGraylToolStripMenuItem_Click;
+            // 
+            // particleGrayColorToolStripMenuItem
+            // 
+            particleGrayColorToolStripMenuItem.Image = Properties.Resources.colordialog;
+            particleGrayColorToolStripMenuItem.Name = "particleGrayColorToolStripMenuItem";
+            particleGrayColorToolStripMenuItem.Size = new System.Drawing.Size(212, 22);
+            particleGrayColorToolStripMenuItem.Text = "Particle Gray Color";
+            particleGrayColorToolStripMenuItem.Click += particleGrayColorToolStripMenuItem_Click;
             // 
             // DetailTextBox
             // 
@@ -168,7 +201,7 @@ namespace UoFiddler.Controls.UserControls
             DetailTextBox.Location = new System.Drawing.Point(0, 0);
             DetailTextBox.Margin = new Padding(4, 3, 4, 3);
             DetailTextBox.Name = "DetailTextBox";
-            DetailTextBox.Size = new System.Drawing.Size(194, 141);
+            DetailTextBox.Size = new System.Drawing.Size(338, 145);
             DetailTextBox.TabIndex = 0;
             DetailTextBox.Text = "";
             // 
@@ -186,8 +219,8 @@ namespace UoFiddler.Controls.UserControls
             // splitContainer1.Panel2
             // 
             splitContainer1.Panel2.Controls.Add(splitContainer2);
-            splitContainer1.Size = new System.Drawing.Size(758, 342);
-            splitContainer1.SplitterDistance = 559;
+            splitContainer1.Size = new System.Drawing.Size(1303, 342);
+            splitContainer1.SplitterDistance = 960;
             splitContainer1.SplitterWidth = 5;
             splitContainer1.TabIndex = 6;
             // 
@@ -203,7 +236,7 @@ namespace UoFiddler.Controls.UserControls
             ItemsTileView.Margin = new Padding(4, 3, 4, 3);
             ItemsTileView.MultiSelect = true;
             ItemsTileView.Name = "ItemsTileView";
-            ItemsTileView.Size = new System.Drawing.Size(559, 342);
+            ItemsTileView.Size = new System.Drawing.Size(960, 342);
             ItemsTileView.TabIndex = 0;
             ItemsTileView.TileBackgroundColor = System.Drawing.SystemColors.Window;
             ItemsTileView.TileBorderColor = System.Drawing.Color.Gray;
@@ -465,7 +498,7 @@ namespace UoFiddler.Controls.UserControls
             StatusStrip.Location = new System.Drawing.Point(0, 378);
             StatusStrip.Name = "StatusStrip";
             StatusStrip.Padding = new Padding(1, 0, 16, 0);
-            StatusStrip.Size = new System.Drawing.Size(758, 22);
+            StatusStrip.Size = new System.Drawing.Size(1303, 22);
             StatusStrip.TabIndex = 5;
             StatusStrip.Text = "statusStrip1";
             // 
@@ -501,7 +534,7 @@ namespace UoFiddler.Controls.UserControls
             ToolStrip.Location = new System.Drawing.Point(0, 0);
             ToolStrip.Name = "ToolStrip";
             ToolStrip.RenderMode = ToolStripRenderMode.System;
-            ToolStrip.Size = new System.Drawing.Size(758, 28);
+            ToolStrip.Size = new System.Drawing.Size(1303, 28);
             ToolStrip.TabIndex = 7;
             // 
             // toolStripLabel1
@@ -643,11 +676,16 @@ namespace UoFiddler.Controls.UserControls
             collapsibleSplitter1.Location = new System.Drawing.Point(0, 28);
             collapsibleSplitter1.Margin = new Padding(4, 3, 4, 3);
             collapsibleSplitter1.Name = "collapsibleSplitter1";
-            collapsibleSplitter1.Size = new System.Drawing.Size(758, 8);
+            collapsibleSplitter1.Size = new System.Drawing.Size(1303, 8);
             collapsibleSplitter1.TabIndex = 8;
             collapsibleSplitter1.TabStop = false;
             collapsibleSplitter1.UseAnimations = false;
             collapsibleSplitter1.VisualStyle = VisualStyles.DoubleDots;
+            // 
+            // toolStripSeparator6
+            // 
+            toolStripSeparator6.Name = "toolStripSeparator6";
+            toolStripSeparator6.Size = new System.Drawing.Size(209, 6);
             // 
             // ItemsControl
             // 
@@ -660,9 +698,10 @@ namespace UoFiddler.Controls.UserControls
             DoubleBuffered = true;
             Margin = new Padding(4, 3, 4, 3);
             Name = "ItemsControl";
-            Size = new System.Drawing.Size(758, 400);
+            Size = new System.Drawing.Size(1303, 400);
             Load += OnLoad;
             splitContainer2.Panel1.ResumeLayout(false);
+            splitContainer2.Panel1.PerformLayout();
             splitContainer2.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)splitContainer2).EndInit();
             splitContainer2.ResumeLayout(false);
@@ -743,5 +782,9 @@ namespace UoFiddler.Controls.UserControls
         private ToolStripMenuItem SelectIDToHexToolStripMenuItem;
         private ToolStripMenuItem imageSwapToolStripMenuItem;
         private ToolStripButton ReverseSearchToolStripButton;
+        private ToolStripMenuItem particleGraylToolStripMenuItem;
+        private CheckBox chkApplyColorChange;
+        private ToolStripMenuItem particleGrayColorToolStripMenuItem;
+        private ToolStripSeparator toolStripSeparator6;
     }
 }
