@@ -48,6 +48,7 @@ namespace UoFiddler.Controls.UserControls
             DetailPictureBox = new PictureBox();
             DetailPictureBoxContextMenuStrip = new ContextMenuStrip(components);
             changeBackgroundColorToolStripMenuItemDetail = new ToolStripMenuItem();
+            toolStripSeparator6 = new ToolStripSeparator();
             particleGraylToolStripMenuItem = new ToolStripMenuItem();
             particleGrayColorToolStripMenuItem = new ToolStripMenuItem();
             DetailTextBox = new RichTextBox();
@@ -106,7 +107,6 @@ namespace UoFiddler.Controls.UserControls
             toolStripButton1 = new ToolStripButton();
             colorDialog = new ColorDialog();
             collapsibleSplitter1 = new CollapsibleSplitter();
-            toolStripSeparator6 = new ToolStripSeparator();
             ((System.ComponentModel.ISupportInitialize)splitContainer2).BeginInit();
             splitContainer2.Panel1.SuspendLayout();
             splitContainer2.Panel2.SuspendLayout();
@@ -150,7 +150,7 @@ namespace UoFiddler.Controls.UserControls
             chkApplyColorChange.Name = "chkApplyColorChange";
             chkApplyColorChange.Size = new System.Drawing.Size(98, 19);
             chkApplyColorChange.TabIndex = 1;
-            chkApplyColorChange.Text = "Particele Gray";
+            chkApplyColorChange.Text = "Particele Grey";
             chkApplyColorChange.UseVisualStyleBackColor = true;
             chkApplyColorChange.CheckedChanged += chkApplyColorChange_CheckedChanged;
             // 
@@ -169,7 +169,7 @@ namespace UoFiddler.Controls.UserControls
             // 
             DetailPictureBoxContextMenuStrip.Items.AddRange(new ToolStripItem[] { changeBackgroundColorToolStripMenuItemDetail, toolStripSeparator6, particleGraylToolStripMenuItem, particleGrayColorToolStripMenuItem });
             DetailPictureBoxContextMenuStrip.Name = "contextMenuStrip2";
-            DetailPictureBoxContextMenuStrip.Size = new System.Drawing.Size(213, 98);
+            DetailPictureBoxContextMenuStrip.Size = new System.Drawing.Size(213, 76);
             // 
             // changeBackgroundColorToolStripMenuItemDetail
             // 
@@ -177,14 +177,21 @@ namespace UoFiddler.Controls.UserControls
             changeBackgroundColorToolStripMenuItemDetail.Name = "changeBackgroundColorToolStripMenuItemDetail";
             changeBackgroundColorToolStripMenuItemDetail.Size = new System.Drawing.Size(212, 22);
             changeBackgroundColorToolStripMenuItemDetail.Text = "Change background color";
+            changeBackgroundColorToolStripMenuItemDetail.ToolTipText = "Color Dialog for Background Display";
             changeBackgroundColorToolStripMenuItemDetail.Click += ChangeBackgroundColorToolStripMenuItemDetail_Click;
+            // 
+            // toolStripSeparator6
+            // 
+            toolStripSeparator6.Name = "toolStripSeparator6";
+            toolStripSeparator6.Size = new System.Drawing.Size(209, 6);
             // 
             // particleGraylToolStripMenuItem
             // 
             particleGraylToolStripMenuItem.Image = Properties.Resources.particle_gray_hue;
             particleGraylToolStripMenuItem.Name = "particleGraylToolStripMenuItem";
             particleGraylToolStripMenuItem.Size = new System.Drawing.Size(212, 22);
-            particleGraylToolStripMenuItem.Text = "Particle Gray";
+            particleGraylToolStripMenuItem.Text = "Particle Grey";
+            particleGraylToolStripMenuItem.ToolTipText = "Displays the colors that can be used for in-game coloring.";
             particleGraylToolStripMenuItem.Click += particleGraylToolStripMenuItem_Click;
             // 
             // particleGrayColorToolStripMenuItem
@@ -192,7 +199,8 @@ namespace UoFiddler.Controls.UserControls
             particleGrayColorToolStripMenuItem.Image = Properties.Resources.colordialog;
             particleGrayColorToolStripMenuItem.Name = "particleGrayColorToolStripMenuItem";
             particleGrayColorToolStripMenuItem.Size = new System.Drawing.Size(212, 22);
-            particleGrayColorToolStripMenuItem.Text = "Particle Gray Color";
+            particleGrayColorToolStripMenuItem.Text = "Particle Grey Color";
+            particleGrayColorToolStripMenuItem.ToolTipText = "Color Dialog for Particle Gray";
             particleGrayColorToolStripMenuItem.Click += particleGrayColorToolStripMenuItem_Click;
             // 
             // DetailTextBox
@@ -681,11 +689,6 @@ namespace UoFiddler.Controls.UserControls
             collapsibleSplitter1.TabStop = false;
             collapsibleSplitter1.UseAnimations = false;
             collapsibleSplitter1.VisualStyle = VisualStyles.DoubleDots;
-            // 
-            // toolStripSeparator6
-            // 
-            toolStripSeparator6.Name = "toolStripSeparator6";
-            toolStripSeparator6.Size = new System.Drawing.Size(209, 6);
             // 
             // ItemsControl
             // 

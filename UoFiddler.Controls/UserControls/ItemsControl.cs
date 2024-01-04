@@ -1798,8 +1798,8 @@ namespace UoFiddler.Controls.UserControls
             }
             else
             {
-                // Behandlung des Falls, wenn kein Bild vorhanden ist...
-                // MessageBox.Show("Es wurde kein Bild ausgewählt. Bitte wählen Sie zuerst ein Bild aus.");
+                // Handling the case when there is no image...
+                // MessageBox.Show("No image was selected. Please select an image first.");
             }
         }
 
