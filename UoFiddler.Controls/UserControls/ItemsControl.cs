@@ -455,6 +455,109 @@ namespace UoFiddler.Controls.UserControls
             // Apply color change if checkbox is checked = Particle Grey
             InsertNewImage((Image)DetailPictureBox.Image);
         }
+
+        /*private void UpdateDetail(int graphic)
+        {
+            if (IsAncestorSiteInDesignMode || FormsDesignerHelper.IsInDesignMode())
+            {
+                return;
+            }
+
+            if (!IsLoaded)
+            {
+                return;
+            }
+
+            if (_scrolling)
+            {
+                return;
+            }
+
+            ItemData item = TileData.ItemTable[graphic];
+            Bitmap bit = Art.GetStatic(graphic);
+
+            int xMin = 0;
+            int xMax = 0;
+            int yMin = 0;
+            int yMax = 0;
+
+            const int defaultSplitterDistance = 180;
+            if (bit == null)
+            {
+                splitContainer2.SplitterDistance = defaultSplitterDistance;
+                Bitmap newBit = new Bitmap(DetailPictureBox.Size.Width, DetailPictureBox.Size.Height);
+                using (Graphics newGraph = Graphics.FromImage(newBit))
+                {
+                    newGraph.Clear(_backgroundDetailColor);
+                }
+
+                DetailPictureBox.Image?.Dispose();
+                DetailPictureBox.Image = newBit;
+            }
+            else
+            {
+                var distance = bit.Size.Height + 10;
+                splitContainer2.SplitterDistance = distance < defaultSplitterDistance ? defaultSplitterDistance : distance;
+
+                Bitmap newBit = new Bitmap(DetailPictureBox.Size.Width, DetailPictureBox.Size.Height);
+                using (Graphics newGraph = Graphics.FromImage(newBit))
+                {
+                    newGraph.Clear(_backgroundDetailColor);
+
+                    // Zeichnen Sie die Raute zuerst, wenn sie existiert und nicht null ist
+                    if (_rhombusBitmap != null && _rhombusBitmap.RawFormat != null)
+                    {
+                        newGraph.DrawImage(_rhombusBitmap, 0, 0);
+                    }
+
+                    // Zeichnen Sie das neue Bild, wenn es nicht null ist
+                    if (bit != null && bit.RawFormat != null)
+                    {
+                        newGraph.DrawImage(bit, (DetailPictureBox.Size.Width - bit.Width) / 2, 5);
+                    }
+                }
+
+                // Machen Sie Schwarz und Weiß transparent
+                newBit.MakeTransparent(Color.Black);
+                newBit.MakeTransparent(Color.White);
+
+                // Setzen Sie das Bild der PictureBox auf das neue Bitmap
+                DetailPictureBox.Image?.Dispose();
+                DetailPictureBox.Image = newBit;
+
+                Art.Measure(bit, out xMin, out yMin, out xMax, out yMax);
+            }
+
+            var sb = new StringBuilder();
+            sb.AppendLine($"Name: {item.Name}");
+            sb.AppendLine($"Graphic: 0x{graphic:X4}");
+            sb.AppendLine($"Height/Capacity: {item.Height}");
+            sb.AppendLine($"Weight: {item.Weight}");
+            sb.AppendLine($"Animation: {item.Animation}");
+            sb.AppendLine($"Quality/Layer/Light: {item.Quality}");
+            sb.AppendLine($"Quantity: {item.Quantity}");
+            sb.AppendLine($"Hue: {item.Hue}");
+            sb.AppendLine($"StackingOffset/Unk4: {item.StackingOffset}");
+            sb.AppendLine($"Flags: {item.Flags}");
+            sb.AppendLine($"Graphic pixel size width, height: {bit?.Width ?? 0} {bit?.Height ?? 0} ");
+            sb.AppendLine($"Graphic pixel offset xMin, yMin, xMax, yMax: {xMin} {yMin} {xMax} {yMax}");
+
+            if ((item.Flags & TileFlag.Animation) != 0)
+            {
+                Animdata.AnimdataEntry info = Animdata.GetAnimData(graphic);
+                if (info != null)
+                {
+                    sb.AppendLine($"Animation FrameCount: {info.FrameCount} Interval: {info.FrameInterval}");
+                }
+            }
+
+            DetailTextBox.Clear();
+            DetailTextBox.AppendText(sb.ToString());
+
+            // Apply color change if checkbox is checked = Particle Grey
+            InsertNewImage((Image)DetailPictureBox.Image);
+        }*/
+
         #endregion
 
         #region ChangeBackgroundColorToolStripMenuItemDetail
@@ -1841,5 +1944,70 @@ namespace UoFiddler.Controls.UserControls
             }
         }
         #endregion
+
+        #region drawRhombus
+        private void drawRhombusToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // Make sure there is an image in the PictureBox
+            if (DetailPictureBox.Image == null)
+            {
+                return;
+            }
+
+            // Create a new Graphics object from the existing image
+            using (Graphics g = Graphics.FromImage(DetailPictureBox.Image))
+            {
+                // Define the points for your top diamond
+                Point[] pointsUpper = new Point[4];
+                pointsUpper[0] = new Point(DetailPictureBox.Image.Width / 2, 0); // center
+                pointsUpper[1] = new Point(DetailPictureBox.Image.Width / 2 + 22, 22); // Bottom right
+                pointsUpper[2] = new Point(DetailPictureBox.Image.Width / 2, 44); // Below
+                pointsUpper[3] = new Point(DetailPictureBox.Image.Width / 2 - 22, 22); // Below left
+
+                // Draw the top diamond
+                g.DrawPolygon(Pens.Black, pointsUpper);
+
+                // Draw lines from the corners of the top diamond upward
+                g.DrawLine(Pens.Black, pointsUpper[0], new Point(pointsUpper[0].X, 0)); // From the middle up
+                g.DrawLine(Pens.Black, pointsUpper[1], new Point(pointsUpper[1].X, 0)); // From bottom right to top
+                g.DrawLine(Pens.Black, pointsUpper[3], new Point(pointsUpper[3].X, 0)); // From bottom left to top
+
+                // Calculate the X coordinates for the horizontal line
+                int lineWidth = 100;
+                int lineStartX = (DetailPictureBox.Image.Width - lineWidth) / 2;
+                int lineEndX = lineStartX + lineWidth;
+
+                // Note the height of the image for the position of the bottom diamond
+                int imageHeight = DetailPictureBox.Image.Height;
+
+                // Draw a horizontal line at the top of the bottom diamond
+                g.DrawLine(Pens.Black, new Point(lineStartX, imageHeight - 66), new Point(lineEndX, imageHeight - 66));
+
+                // Define the points for your bottom diamond
+                Point[] pointsLower = new Point[4];
+                pointsLower[0] = new Point(DetailPictureBox.Image.Width / 2, imageHeight - 66); // center
+                pointsLower[1] = new Point(DetailPictureBox.Image.Width / 2 + 22, imageHeight - 88); // Bottom right
+                pointsLower[2] = new Point(DetailPictureBox.Image.Width / 2, imageHeight - 110); // Below
+                pointsLower[3] = new Point(DetailPictureBox.Image.Width / 2 - 22, imageHeight - 88); // Below left
+
+                // Draw the bottom diamond
+                g.DrawPolygon(Pens.Black, pointsLower);
+
+                // Draw lines from the corners of the bottom diamond up
+                g.DrawLine(Pens.Black, pointsLower[0], new Point(pointsLower[0].X, pointsLower[0].Y - 22)); // From the middle up
+                g.DrawLine(Pens.Black, pointsLower[1], new Point(pointsLower[1].X, pointsLower[1].Y - 22)); // From bottom right to top
+                g.DrawLine(Pens.Black, pointsLower[3], new Point(pointsLower[3].X, pointsLower[3].Y - 22)); // From bottom left to top
+
+                // Connect the lines of the upper and lower diamonds
+                g.DrawLine(Pens.Black, pointsUpper[0], pointsLower[0]); // Connect the middle points
+                g.DrawLine(Pens.Black, pointsUpper[1], pointsLower[1]); // Connect the right dots
+                g.DrawLine(Pens.Black, pointsUpper[3], pointsLower[3]); // Connect the left dots
+            }
+
+            // Refresh the PictureBox to reflect the changes
+            DetailPictureBox.Invalidate();
+        }
+        #endregion
+
     }
 }

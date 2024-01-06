@@ -169,6 +169,12 @@
   <data name="Delete05" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Delete05.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="diamand-" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\diamand-.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="draw-rhombus" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\draw-rhombus.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="Edit" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Edit.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>

@@ -51,6 +51,7 @@ namespace UoFiddler.Controls.UserControls
             toolStripSeparator6 = new ToolStripSeparator();
             particleGraylToolStripMenuItem = new ToolStripMenuItem();
             particleGrayColorToolStripMenuItem = new ToolStripMenuItem();
+            drawRhombusToolStripMenuItem = new ToolStripMenuItem();
             DetailTextBox = new RichTextBox();
             splitContainer1 = new SplitContainer();
             ItemsTileView = new TileView.TileViewControl();
@@ -107,6 +108,7 @@ namespace UoFiddler.Controls.UserControls
             toolStripButton1 = new ToolStripButton();
             colorDialog = new ColorDialog();
             collapsibleSplitter1 = new CollapsibleSplitter();
+            toolStripSeparator7 = new ToolStripSeparator();
             ((System.ComponentModel.ISupportInitialize)splitContainer2).BeginInit();
             splitContainer2.Panel1.SuspendLayout();
             splitContainer2.Panel2.SuspendLayout();
@@ -167,9 +169,9 @@ namespace UoFiddler.Controls.UserControls
             // 
             // DetailPictureBoxContextMenuStrip
             // 
-            DetailPictureBoxContextMenuStrip.Items.AddRange(new ToolStripItem[] { changeBackgroundColorToolStripMenuItemDetail, toolStripSeparator6, particleGraylToolStripMenuItem, particleGrayColorToolStripMenuItem });
+            DetailPictureBoxContextMenuStrip.Items.AddRange(new ToolStripItem[] { changeBackgroundColorToolStripMenuItemDetail, toolStripSeparator6, particleGraylToolStripMenuItem, particleGrayColorToolStripMenuItem, toolStripSeparator7, drawRhombusToolStripMenuItem });
             DetailPictureBoxContextMenuStrip.Name = "contextMenuStrip2";
-            DetailPictureBoxContextMenuStrip.Size = new System.Drawing.Size(213, 76);
+            DetailPictureBoxContextMenuStrip.Size = new System.Drawing.Size(213, 126);
             // 
             // changeBackgroundColorToolStripMenuItemDetail
             // 
@@ -202,6 +204,15 @@ namespace UoFiddler.Controls.UserControls
             particleGrayColorToolStripMenuItem.Text = "Particle Grey Color";
             particleGrayColorToolStripMenuItem.ToolTipText = "Color Dialog for Particle Gray";
             particleGrayColorToolStripMenuItem.Click += particleGrayColorToolStripMenuItem_Click;
+            // 
+            // drawRhombusToolStripMenuItem
+            // 
+            drawRhombusToolStripMenuItem.Image = Properties.Resources.diamand_;
+            drawRhombusToolStripMenuItem.Name = "drawRhombusToolStripMenuItem";
+            drawRhombusToolStripMenuItem.Size = new System.Drawing.Size(212, 22);
+            drawRhombusToolStripMenuItem.Text = "Draw Rhombus";
+            drawRhombusToolStripMenuItem.ToolTipText = "Draws a diamond shape on the image.";
+            drawRhombusToolStripMenuItem.Click += drawRhombusToolStripMenuItem_Click;
             // 
             // DetailTextBox
             // 
@@ -690,6 +701,11 @@ namespace UoFiddler.Controls.UserControls
             collapsibleSplitter1.UseAnimations = false;
             collapsibleSplitter1.VisualStyle = VisualStyles.DoubleDots;
             // 
+            // toolStripSeparator7
+            // 
+            toolStripSeparator7.Name = "toolStripSeparator7";
+            toolStripSeparator7.Size = new System.Drawing.Size(209, 6);
+            // 
             // ItemsControl
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -789,5 +805,7 @@ namespace UoFiddler.Controls.UserControls
         private CheckBox chkApplyColorChange;
         private ToolStripMenuItem particleGrayColorToolStripMenuItem;
         private ToolStripSeparator toolStripSeparator6;
+        private ToolStripMenuItem drawRhombusToolStripMenuItem;
+        private ToolStripSeparator toolStripSeparator7;
     }
 }

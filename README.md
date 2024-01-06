@@ -11,6 +11,7 @@ Version : 4.12.1
 - Add Items ParticelGrayHueShadow
 - Add Items ParticelGrayHueShadow Colord Dialog
 - Add Items Checkbox ParticelGray
+- Add Items => Draws a diamond shape on the image.
 
 Version : 4.12.0
 - Update to net8.
