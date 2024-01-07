@@ -1226,7 +1226,7 @@ namespace UoFiddler.Controls.UserControls
         #region UpdateSelection
         private void UpdateSelection(int itemIndex)
         {
-            // Aktualisieren Sie die currentImageID, wenn ein neues Bild ausgewählt wird
+            // Update the currentImageID when a new image is selected - Grid
             currentImageID = itemIndex;
 
             if (_itemList.Count == 0)
