@@ -12,6 +12,9 @@ Version : 4.12.1
 - Add Items ParticelGrayHueShadow Colord Dialog
 - Add Items Checkbox ParticelGray
 - Add Items => Draws a diamond shape on the image.
+- Add Items Grid Image
+- Add Items Grid Color
+- Add Items Copy Clipboard - DetailPictureBox
 
 Version : 4.12.0
 - Update to net8.

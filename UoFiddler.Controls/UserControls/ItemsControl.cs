@@ -1226,6 +1226,9 @@ namespace UoFiddler.Controls.UserControls
         #region UpdateSelection
         private void UpdateSelection(int itemIndex)
         {
+            // Aktualisieren Sie die currentImageID, wenn ein neues Bild ausgewählt wird
+            currentImageID = itemIndex;
+
             if (_itemList.Count == 0)
             {
                 return;
@@ -2009,5 +2012,111 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
+        #region Grid
+
+        private int currentImageID;
+
+        private void gridPictureToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // Check if an image is selected
+            if (currentImageID >= 0)
+            {
+                // Call the ShowImageWithBackground method to display the selected image
+                ShowImageWithBackground(currentImageID);
+            }
+            else
+            {
+                // If no image is selected, you will receive an error message
+                MessageBox.Show("Please first select an image from the ItemsTileView.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+        private void ShowImageWithBackground(int imageIndex)
+        {
+            // Load the image you want to display
+            Image foregroundImage = Art.GetStatic(_itemList[imageIndex]);
+
+            // Download the wallpaper from resources
+            Image backgroundImage = Properties.Resources.rasterpink_png;
+
+            // Change the color of the background image
+            backgroundImage = ChangeImageColor(backgroundImage, Color.FromArgb(244, 101, 255), selectedColorGrid);
+
+            // Create a new bitmap large enough to hold both images
+            Bitmap combinedImage = new Bitmap(Math.Max(backgroundImage.Width, foregroundImage.Width), Math.Max(backgroundImage.Height, foregroundImage.Height));
+
+            // Create a Graphics object to be able to draw on the bitmap
+            using (Graphics g = Graphics.FromImage(combinedImage))
+            {
+                // First draw the foreground image
+                g.DrawImage(foregroundImage, (combinedImage.Width - foregroundImage.Width) / 2, (combinedImage.Height - foregroundImage.Height));
+
+                // Draw the background image at the calculated position
+                g.DrawImage(backgroundImage, (combinedImage.Width - backgroundImage.Width) / 2, (combinedImage.Height - backgroundImage.Height));
+            }
+
+            // Assign the combined image to the PictureBox
+            DetailPictureBox.Image = combinedImage;
+        }
+
+        #endregion
+
+        #region Copy Clipboard DetailPictureBox
+        private void copyClipboardToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // Check whether an image is displayed in the DetailPictureBox
+            if (DetailPictureBox.Image != null)
+            {
+                // Copy the image to the clipboard
+                Clipboard.SetImage(DetailPictureBox.Image);
+            }
+            else
+            {
+                // If no image is displayed, you will receive an error message
+                MessageBox.Show("No image is displayed. Please select an image first.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+        #endregion
+
+        #region Grid Color
+        private Color selectedColorGrid = Color.FromArgb(244, 101, 255); // Default color #f465ff
+
+        private void SelectColorToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            using (ColorDialog colorDialog = new ColorDialog())
+            {
+                // Set the initial color to the currently selected color
+                colorDialog.Color = selectedColorGrid;
+
+                // Display the dialog and verify that the user clicked "OK."
+                if (colorDialog.ShowDialog() == DialogResult.OK)
+                {
+                    // Update the selected color
+                    selectedColorGrid = colorDialog.Color;
+                }
+            }
+        }
+
+        private Image ChangeImageColor(Image image, Color oldColor, Color newColor)
+        {
+            Bitmap bmp = new Bitmap(image);
+
+            for (int x = 0; x < bmp.Width; x++)
+            {
+                for (int y = 0; y < bmp.Height; y++)
+                {
+                    Color pixelColor = bmp.GetPixel(x, y);
+
+                    // Check if the current pixel is the old color
+                    if (pixelColor == oldColor)
+                    {
+                        // If so, change the color of the pixel to the new color
+                        bmp.SetPixel(x, y, newColor);
+                    }
+                }
+            }
+
+            return bmp;
+        }
+        #endregion
     }
 }
