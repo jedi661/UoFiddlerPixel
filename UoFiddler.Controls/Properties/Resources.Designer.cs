@@ -723,6 +723,16 @@ namespace UoFiddler.Controls.Properties {
         /// <summary>
         ///   Sucht eine lokalisierte Ressource vom Typ System.Drawing.Bitmap.
         /// </summary>
+        public static System.Drawing.Bitmap size_image_grafik {
+            get {
+                object obj = ResourceManager.GetObject("size-image-grafik", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Ressource vom Typ System.Drawing.Bitmap.
+        /// </summary>
         public static System.Drawing.Bitmap Stairs01 {
             get {
                 object obj = ResourceManager.GetObject("Stairs01", resourceCulture);

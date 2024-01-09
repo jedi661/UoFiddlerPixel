@@ -197,9 +197,7 @@
 		<Compile Update="Forms\LandTileSearchForm.Designer.cs">
 			<DependentUpon>LandTileSearchForm.cs</DependentUpon>
 		</Compile>
-		<Compile Update="UserControls\LightControl.cs">
-			<SubType>UserControl</SubType>
-		</Compile>
+		<Compile Update="UserControls\LightControl.cs" />
 		<Compile Update="UserControls\LightControl.Designer.cs">
 			<DependentUpon>LightControl.cs</DependentUpon>
 		</Compile>

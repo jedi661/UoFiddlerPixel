@@ -15,6 +15,8 @@ Version : 4.12.1
 - Add Items Grid Image
 - Add Items Grid Color
 - Add Items Copy Clipboard - DetailPictureBox
+- Light class completely revised
+- Added size to light to scale the size of the light image
 
 Version : 4.12.0
 - Update to net8.
