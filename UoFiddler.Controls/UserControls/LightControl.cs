@@ -266,18 +266,22 @@ namespace UoFiddler.Controls.UserControls
         #region OnTextChangedInsert
         private void OnTextChangedInsert(object sender, EventArgs e)
         {
-            if (Utils.ConvertStringToInt(InsertText.Text, out int index, 0, 99))
+            if (int.TryParse(InsertText.Text, out int index) && index >= 0 && index <= 99)
             {
                 InsertText.ForeColor = Ultima.Light.TestLight(index) ? Color.Red : Color.Black;
             }
             else
             {
                 InsertText.ForeColor = Color.Red;
+                if (index > 99)
+                {
+                    MessageBox.Show("The ID cannot be greater than 99. Please enter a valid ID.");
+                }
             }
         }
         #endregion
 
-        #region OnKeyDownInsert
+        #region OnKeyDownInsert 
         private void OnKeyDownInsert(object sender, KeyEventArgs e)
         {
             if (e.KeyCode != Keys.Enter)
@@ -285,54 +289,54 @@ namespace UoFiddler.Controls.UserControls
                 return;
             }
 
-            if (!Utils.ConvertStringToInt(InsertText.Text, out int index, 0, 99))
+            if (!int.TryParse(InsertText.Text, out int index) || index < 0 || index > 99)
             {
+                MessageBox.Show("Please enter a valid number between 0 and 99.");
                 return;
             }
 
             if (Ultima.Light.TestLight(index))
             {
-                return;
-            }
-
-            treeViewContextMenuStrip.Close();
-            using (var dialog = new OpenFileDialog())
-            {
-                dialog.Multiselect = false;
-                dialog.Title = string.Format("Choose image file to insert at {0} (0x{0:X})", index);
-                dialog.CheckFileExists = true;
-                dialog.Filter = "Image files (*.tif;*.tiff;*.bmp)|*.tif;*.tiff;*.bmp";
-                if (dialog.ShowDialog() != DialogResult.OK)
+                var result = MessageBox.Show("A light with this index already exists. Do you want to replace it?", "Confirmation", MessageBoxButtons.YesNo);
+                if (result != DialogResult.Yes)
                 {
                     return;
                 }
+            }
 
-                var bmp = new Bitmap(dialog.FileName);
-                Ultima.Light.Replace(index, bmp);
-                var treeNode = new TreeNode(index.ToString())
+            using (var dialog = new OpenFileDialog())
+            {
+                dialog.Multiselect = false;
+                dialog.Title = $"Select an image file to add to {index} (0x{index:X}) to insert";
+                dialog.Filter = "Image files (*.tif;*.tiff;*.bmp)|*.tif;*.tiff;*.bmp";
+
+                if (dialog.ShowDialog() == DialogResult.OK)
                 {
-                    Tag = index
-                };
-                bool done = false;
-                foreach (TreeNode node in treeViewLights.Nodes)
-                {
-                    if ((int)node.Tag <= index)
+                    var bmp = new Bitmap(dialog.FileName);
+                    Ultima.Light.Replace(index, bmp);
+
+                    // Find the existing node and remove it
+                    TreeNode existingNode = null;
+                    foreach (TreeNode node in treeViewLights.Nodes)
                     {
-                        continue;
+                        if ((int)node.Tag == index)
+                        {
+                            existingNode = node;
+                            break;
+                        }
+                    }
+                    if (existingNode != null)
+                    {
+                        treeViewLights.Nodes.Remove(existingNode);
                     }
 
-                    treeViewLights.Nodes.Insert(node.Index, treeNode);
-                    done = true;
-                    break;
-                }
-                if (!done)
-                {
-                    treeViewLights.Nodes.Add(treeNode);
-                }
+                    // Add the new node
+                    var treeNode = new TreeNode(index.ToString()) { Tag = index };
+                    treeViewLights.Nodes.Insert(index, treeNode);
+                    treeViewLights.SelectedNode = treeNode;
 
-                treeViewLights.Invalidate();
-                treeViewLights.SelectedNode = treeNode;
-                Options.ChangedUltimaClass["Light"] = true;
+                    Options.ChangedUltimaClass["Light"] = true;
+                }
             }
         }
         #endregion
