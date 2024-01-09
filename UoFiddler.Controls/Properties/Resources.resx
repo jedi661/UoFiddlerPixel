@@ -220,6 +220,18 @@
   <data name="jump" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\jump.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="landtile-background" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\landtile-background.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="landtile-background(1)" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\landtile-background(1).png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="landtile-background(2)" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\landtile-background(2).png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="landtile-background(3)" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\landtile-background(3).png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="left" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\left.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
@@ -261,6 +273,9 @@
   </data>
   <data name="particle-gray-hue" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\particle-gray-hue.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="preview" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\preview.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="rasterpink_png" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\rasterpink_png.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
