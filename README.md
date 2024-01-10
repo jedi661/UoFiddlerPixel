@@ -17,6 +17,7 @@ Version : 4.12.1
 - Add Items Copy Clipboard - DetailPictureBox
 - Light class completely revised
 - Added size to light to scale the size of the light image
+- Add Landtiles Zoom Form
 
 Version : 4.12.0
 - Update to net8.

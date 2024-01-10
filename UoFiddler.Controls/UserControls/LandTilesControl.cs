@@ -1343,5 +1343,113 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
+        #region Zoom Image
+        private void zoomImageToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // Create a new shape
+            Form zoomForm = new Form();
+
+            // Load the image
+            Image image = Art.GetLand(_selectedGraphicId);
+
+            // Create a new PictureBox
+            PictureBox pictureBox = new PictureBox
+            {
+                Dock = DockStyle.Fill,
+                Image = image, // Place the image on the selected LandTile
+                SizeMode = PictureBoxSizeMode.Normal, // Set the SizeMode to Normal to not scale the image
+                Width = image.Width, // Set the initial size to the size of the image
+                Height = image.Height  // Set the initial size to the size of the image
+            };
+            zoomForm.Controls.Add(pictureBox);
+
+            int zoomCount = 0; // Add a counter to track the number of zooms
+            int currentId = _selectedGraphicId; // Add a variable to track the current ID
+
+            // Create a button to zoom out
+            Button zoomOutButton = new Button
+            {
+                Text = "Zoom out",
+                Dock = DockStyle.Top
+            };
+            zoomOutButton.Click += (s, args) =>
+            {
+                if (zoomCount > 0)
+                {
+                    pictureBox.SizeMode = PictureBoxSizeMode.Zoom; // Change the SizeMode to Zoom to scale the image
+                    pictureBox.Width = (int)(pictureBox.Width / 1.1);
+                    pictureBox.Height = (int)(pictureBox.Height / 1.1);
+                    zoomCount--;
+                }
+                else if (zoomCount == 0)
+                {
+                    pictureBox.SizeMode = PictureBoxSizeMode.Normal; // Change the SizeMode to Normal to not scale the image
+                    pictureBox.Width = image.Width; // Set the size to the size of the image
+                    pictureBox.Height = image.Height; // Set the size to the size of the image
+                    zoomCount--; // Reduce the zoomCount to prevent further zooming out
+                }
+            };
+            zoomForm.Controls.Add(zoomOutButton);
+
+            // Create a button to zoom in
+            Button zoomInButton = new Button
+            {
+                Text = "Zoom in",
+                Dock = DockStyle.Top
+            };
+            zoomInButton.Click += (s, args) =>
+            {
+                if (zoomCount < 2)
+                {
+                    pictureBox.SizeMode = PictureBoxSizeMode.Zoom; // Change the SizeMode to Zoom to scale the image
+                    pictureBox.Width = (int)(pictureBox.Width * 1.1);
+                    pictureBox.Height = (int)(pictureBox.Height * 1.1);
+                    zoomCount++;
+                }
+            };
+            zoomForm.Controls.Add(zoomInButton);
+
+            // Create a button to switch to the next ID
+            Button nextIdButton = new Button
+            {
+                Text = "Forward",
+                Dock = DockStyle.Bottom
+            };
+            nextIdButton.Click += (s, args) =>
+            {
+                currentId++; // Increase the current ID
+                pictureBox.Image = Art.GetLand(currentId); // Load the image of the new ID
+            };
+            zoomForm.Controls.Add(nextIdButton);
+
+            // Create a button to switch to previous ID
+            Button previousIdButton = new Button
+            {
+                Text = "Backward",
+                Dock = DockStyle.Bottom
+            };
+            previousIdButton.Click += (s, args) =>
+            {
+                if (currentId > 0) // Make sure the ID doesn't become negative
+                {
+                    currentId--; // Decrease the current ID
+                    pictureBox.Image = Art.GetLand(currentId); // Load the image of the new ID
+                }
+            };
+            zoomForm.Controls.Add(previousIdButton);
+
+            // Create an OK button to close the form
+            Button okButton = new Button
+            {
+                Text = "OK",
+                Dock = DockStyle.Bottom
+            };
+            okButton.Click += (s, args) => zoomForm.Close();
+            zoomForm.Controls.Add(okButton);
+
+            // Display the shape
+            zoomForm.ShowDialog();
+        }
+        #endregion
     }
 }

@@ -69,12 +69,16 @@ namespace UoFiddler.Controls.UserControls
             importToTempToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             toolStripSeparator8 = new System.Windows.Forms.ToolStripSeparator();
             rotateBy90DegreesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            toolStripSeparator5 = new System.Windows.Forms.ToolStripSeparator();
+            saveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            zoomImageToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             LandTilesToolStrip = new System.Windows.Forms.ToolStrip();
             IndexToolStripLabel = new System.Windows.Forms.ToolStripLabel();
             searchByIdToolStripTextBox = new System.Windows.Forms.ToolStripTextBox();
             NameToolStripLabel = new System.Windows.Forms.ToolStripLabel();
             searchByNameToolStripTextBox = new System.Windows.Forms.ToolStripTextBox();
             searchByNameToolStripButton = new System.Windows.Forms.ToolStripButton();
+            SearchButton = new System.Windows.Forms.ToolStripButton();
             toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             MiscToolStripDropDownButton = new System.Windows.Forms.ToolStripDropDownButton();
             exportAllToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -84,15 +88,12 @@ namespace UoFiddler.Controls.UserControls
             asPngToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             SaveButton = new System.Windows.Forms.ToolStripButton();
             toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
-            SearchButton = new System.Windows.Forms.ToolStripButton();
             LandTilesTileView = new TileViewControl();
             panel1 = new System.Windows.Forms.Panel();
             StatusStrip = new System.Windows.Forms.StatusStrip();
             NameLabel = new System.Windows.Forms.ToolStripStatusLabel();
             GraphicLabel = new System.Windows.Forms.ToolStripStatusLabel();
             FlagsLabel = new System.Windows.Forms.ToolStripStatusLabel();
-            saveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            toolStripSeparator5 = new System.Windows.Forms.ToolStripSeparator();
             LandTilesContextMenuStrip.SuspendLayout();
             LandTilesToolStrip.SuspendLayout();
             panel1.SuspendLayout();
@@ -101,9 +102,9 @@ namespace UoFiddler.Controls.UserControls
             // 
             // LandTilesContextMenuStrip
             // 
-            LandTilesContextMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { showFreeSlotsToolStripMenuItem, toolStripSeparator6, exportImageToolStripMenuItem, toolStripSeparator3, selectInTileDataTabToolStripMenuItem, selectInRadarColorTabToolStripMenuItem, toolStripSeparator2, findNextFreeSlotToolStripMenuItem, removeToolStripMenuItem, replaceToolStripMenuItem, replaceStartingFromToolStripMenuItem, insertAtToolStripMenuItem, toolStripSeparator7, copyToolStripMenuItem, importToolStripMenuItem, importToTempToolStripMenuItem, toolStripSeparator8, rotateBy90DegreesToolStripMenuItem, toolStripSeparator5, saveToolStripMenuItem });
+            LandTilesContextMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { showFreeSlotsToolStripMenuItem, toolStripSeparator6, exportImageToolStripMenuItem, toolStripSeparator3, selectInTileDataTabToolStripMenuItem, selectInRadarColorTabToolStripMenuItem, toolStripSeparator2, findNextFreeSlotToolStripMenuItem, removeToolStripMenuItem, replaceToolStripMenuItem, replaceStartingFromToolStripMenuItem, insertAtToolStripMenuItem, toolStripSeparator7, copyToolStripMenuItem, importToolStripMenuItem, importToTempToolStripMenuItem, toolStripSeparator8, rotateBy90DegreesToolStripMenuItem, zoomImageToolStripMenuItem, toolStripSeparator5, saveToolStripMenuItem });
             LandTilesContextMenuStrip.Name = "contextMenuStrip1";
-            LandTilesContextMenuStrip.Size = new System.Drawing.Size(201, 348);
+            LandTilesContextMenuStrip.Size = new System.Drawing.Size(201, 392);
             // 
             // showFreeSlotsToolStripMenuItem
             // 
@@ -278,6 +279,28 @@ namespace UoFiddler.Controls.UserControls
             rotateBy90DegreesToolStripMenuItem.Text = "Rotate by 90 degrees.";
             rotateBy90DegreesToolStripMenuItem.Click += rotateBy90DegreesToolStripMenuItem_Click;
             // 
+            // toolStripSeparator5
+            // 
+            toolStripSeparator5.Name = "toolStripSeparator5";
+            toolStripSeparator5.Size = new System.Drawing.Size(197, 6);
+            // 
+            // saveToolStripMenuItem
+            // 
+            saveToolStripMenuItem.Image = Properties.Resources.Save2;
+            saveToolStripMenuItem.Name = "saveToolStripMenuItem";
+            saveToolStripMenuItem.Size = new System.Drawing.Size(200, 22);
+            saveToolStripMenuItem.Text = "Save";
+            saveToolStripMenuItem.Click += OnClickSave;
+            // 
+            // zoomImageToolStripMenuItem
+            // 
+            zoomImageToolStripMenuItem.Image = Properties.Resources.zoom_image_into_tile_2_;
+            zoomImageToolStripMenuItem.Name = "zoomImageToolStripMenuItem";
+            zoomImageToolStripMenuItem.Size = new System.Drawing.Size(200, 22);
+            zoomImageToolStripMenuItem.Text = "Zoom Image";
+            zoomImageToolStripMenuItem.ToolTipText = "Zoom into Landtiles";
+            zoomImageToolStripMenuItem.Click += zoomImageToolStripMenuItem_Click;
+            // 
             // LandTilesToolStrip
             // 
             LandTilesToolStrip.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
@@ -321,6 +344,17 @@ namespace UoFiddler.Controls.UserControls
             searchByNameToolStripButton.Size = new System.Drawing.Size(60, 22);
             searchByNameToolStripButton.Text = "Find next";
             searchByNameToolStripButton.Click += SearchByNameToolStripButton_Click;
+            // 
+            // SearchButton
+            // 
+            SearchButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            SearchButton.Image = Properties.Resources.Search;
+            SearchButton.ImageTransparentColor = System.Drawing.Color.Magenta;
+            SearchButton.Name = "SearchButton";
+            SearchButton.Size = new System.Drawing.Size(23, 22);
+            SearchButton.Text = "Search";
+            SearchButton.ToolTipText = "Old Search";
+            SearchButton.Click += OnClickSearch;
             // 
             // toolStripSeparator1
             // 
@@ -389,17 +423,6 @@ namespace UoFiddler.Controls.UserControls
             toolStripSeparator4.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
             toolStripSeparator4.Name = "toolStripSeparator4";
             toolStripSeparator4.Size = new System.Drawing.Size(6, 25);
-            // 
-            // SearchButton
-            // 
-            SearchButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            SearchButton.Image = Properties.Resources.Search;
-            SearchButton.ImageTransparentColor = System.Drawing.Color.Magenta;
-            SearchButton.Name = "SearchButton";
-            SearchButton.Size = new System.Drawing.Size(23, 22);
-            SearchButton.Text = "Search";
-            SearchButton.ToolTipText = "Old Search";
-            SearchButton.Click += OnClickSearch;
             // 
             // LandTilesTileView
             // 
@@ -474,19 +497,6 @@ namespace UoFiddler.Controls.UserControls
             FlagsLabel.Text = "Flags:";
             FlagsLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
-            // saveToolStripMenuItem
-            // 
-            saveToolStripMenuItem.Image = Properties.Resources.Save2;
-            saveToolStripMenuItem.Name = "saveToolStripMenuItem";
-            saveToolStripMenuItem.Size = new System.Drawing.Size(200, 22);
-            saveToolStripMenuItem.Text = "Save";
-            saveToolStripMenuItem.Click += OnClickSave;
-            // 
-            // toolStripSeparator5
-            // 
-            toolStripSeparator5.Name = "toolStripSeparator5";
-            toolStripSeparator5.Size = new System.Drawing.Size(197, 6);
-            // 
             // LandTilesControl
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -560,5 +570,6 @@ namespace UoFiddler.Controls.UserControls
         private System.Windows.Forms.ToolStripStatusLabel FlagsLabel;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator5;
         private System.Windows.Forms.ToolStripMenuItem saveToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem zoomImageToolStripMenuItem;
     }
 }
