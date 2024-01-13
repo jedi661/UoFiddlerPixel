@@ -165,13 +165,13 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // 
             contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { copyClipboardToolStripMenuItem, importClipbordToolStripMenuItem, toolStripSeparator1, fillTextureToolStripMenuItem });
             contextMenuStrip1.Name = "contextMenuStrip1";
-            contextMenuStrip1.Size = new System.Drawing.Size(160, 76);
+            contextMenuStrip1.Size = new System.Drawing.Size(181, 98);
             // 
             // copyClipboardToolStripMenuItem
             // 
             copyClipboardToolStripMenuItem.Image = Properties.Resources.Copy;
             copyClipboardToolStripMenuItem.Name = "copyClipboardToolStripMenuItem";
-            copyClipboardToolStripMenuItem.Size = new System.Drawing.Size(159, 22);
+            copyClipboardToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             copyClipboardToolStripMenuItem.Text = "Copy Clipboard";
             copyClipboardToolStripMenuItem.Click += copyClipboardToolStripMenuItem_Click;
             // 
@@ -179,20 +179,20 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // 
             importClipbordToolStripMenuItem.Image = Properties.Resources.import;
             importClipbordToolStripMenuItem.Name = "importClipbordToolStripMenuItem";
-            importClipbordToolStripMenuItem.Size = new System.Drawing.Size(159, 22);
+            importClipbordToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             importClipbordToolStripMenuItem.Text = "Import Clipbord";
             importClipbordToolStripMenuItem.Click += importClipbordToolStripMenuItem_Click;
             // 
             // toolStripSeparator1
             // 
             toolStripSeparator1.Name = "toolStripSeparator1";
-            toolStripSeparator1.Size = new System.Drawing.Size(156, 6);
+            toolStripSeparator1.Size = new System.Drawing.Size(177, 6);
             // 
             // fillTextureToolStripMenuItem
             // 
             fillTextureToolStripMenuItem.Image = Properties.Resources.fill;
             fillTextureToolStripMenuItem.Name = "fillTextureToolStripMenuItem";
-            fillTextureToolStripMenuItem.Size = new System.Drawing.Size(159, 22);
+            fillTextureToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             fillTextureToolStripMenuItem.Text = "Fill Texture";
             fillTextureToolStripMenuItem.Click += fillTextureToolStripMenuItem_Click;
             // 

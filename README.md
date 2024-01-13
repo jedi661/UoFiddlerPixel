@@ -18,6 +18,7 @@ Version : 4.12.1
 - Light class completely revised
 - Added size to light to scale the size of the light image
 - Add Landtiles Zoom Form
+- Add Texture editor for tiles incorporated into the textures.
 
 Version : 4.12.0
 - Update to net8.

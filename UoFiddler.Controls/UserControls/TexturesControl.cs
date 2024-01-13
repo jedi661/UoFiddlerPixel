@@ -29,11 +29,15 @@ namespace UoFiddler.Controls.UserControls
     {
         private bool playCustomSound = false;
 
+        private Textures _textures; // TextureWindowForm
+
         public TexturesControl()
         {
             InitializeComponent();
 
             SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer | ControlStyles.UserPaint, true);
+
+            _textures = new Textures(); // TextureWindowForm
         }
 
         private List<int> _textureList = new List<int>();
@@ -68,6 +72,8 @@ namespace UoFiddler.Controls.UserControls
 
             OnLoad(this, EventArgs.Empty);
         }
+
+
 
         private bool SearchGraphic(int graphic)
         {
@@ -1207,5 +1213,40 @@ namespace UoFiddler.Controls.UserControls
             playCustomSound = !playCustomSound;
         }
         #endregion
+
+        #region TextureWindows Form
+        private TextureWindowForm textureWindowForm;
+        private void toolStripButtonTextureWindows_Click(object sender, EventArgs e)
+        {
+            // Überprüfen Sie, ob die Form bereits geöffnet ist
+            if (textureWindowForm == null || textureWindowForm.IsDisposed)
+            {
+                // Erstellen Sie eine neue Instanz der Form, wenn sie noch nicht geöffnet ist
+                textureWindowForm = new TextureWindowForm(this);
+            }
+
+            // Bringen Sie die Form in den Vordergrund, wenn sie bereits geöffnet ist
+            textureWindowForm.BringToFront();
+
+            // Öffnen Sie die Form
+            textureWindowForm.Show();
+        }
+        #endregion
+
+        #region // TextureWindowForm GetSelectedTextureId GetTexture GetIdxLengt
+        public int GetSelectedTextureId()
+        {
+            return _selectedTextureId;
+        }
+
+        public Bitmap GetTexture(int id)
+        {
+            return Textures.GetTexture(id);
+        }
+        public int GetIdxLength()
+        {
+            return Textures.GetIdxLength();
+        }
+        #endregion        
     }
 }

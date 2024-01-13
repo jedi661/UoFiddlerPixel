@@ -83,6 +83,7 @@ namespace UoFiddler.Controls.UserControls
             ExportAllAsJpeg = new System.Windows.Forms.ToolStripMenuItem();
             ExportAllAsPng = new System.Windows.Forms.ToolStripMenuItem();
             PlaySoundtoolStripButton1 = new System.Windows.Forms.ToolStripButton();
+            toolStripButtonTextureWindows = new System.Windows.Forms.ToolStripButton();
             TextureTileView = new TileView.TileViewControl();
             panel1 = new System.Windows.Forms.Panel();
             statusStrip = new System.Windows.Forms.StatusStrip();
@@ -291,7 +292,7 @@ namespace UoFiddler.Controls.UserControls
             // toolStrip
             // 
             toolStrip.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
-            toolStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { toolStripSeparator3, toolStripSeparator4, SaveButton, toolStripSeparator1, IndexToolStripLabel, searchByIdToolStripTextBox, SearchButton, toolStripSeparator8, MiscToolStripDropDownButton, PlaySoundtoolStripButton1 });
+            toolStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { toolStripSeparator3, toolStripSeparator4, SaveButton, toolStripSeparator1, IndexToolStripLabel, searchByIdToolStripTextBox, SearchButton, toolStripSeparator8, MiscToolStripDropDownButton, PlaySoundtoolStripButton1, toolStripButtonTextureWindows });
             toolStrip.Location = new System.Drawing.Point(0, 0);
             toolStrip.Name = "toolStrip";
             toolStrip.RenderMode = System.Windows.Forms.ToolStripRenderMode.System;
@@ -416,6 +417,17 @@ namespace UoFiddler.Controls.UserControls
             PlaySoundtoolStripButton1.ToolTipText = "Deactivate the MessageBox and enable only one sound.";
             PlaySoundtoolStripButton1.Click += PlaySoundtoolStripButton1_Click;
             // 
+            // toolStripButtonTextureWindows
+            // 
+            toolStripButtonTextureWindows.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            toolStripButtonTextureWindows.Image = Properties.Resources.texture_form_tiles;
+            toolStripButtonTextureWindows.ImageTransparentColor = System.Drawing.Color.Magenta;
+            toolStripButtonTextureWindows.Name = "toolStripButtonTextureWindows";
+            toolStripButtonTextureWindows.Size = new System.Drawing.Size(23, 22);
+            toolStripButtonTextureWindows.Text = "Texture Windows";
+            toolStripButtonTextureWindows.ToolTipText = "Texture form for editing textures and tiles.";
+            toolStripButtonTextureWindows.Click += toolStripButtonTextureWindows_Click;
+            // 
             // TextureTileView
             // 
             TextureTileView.AutoScroll = true;
@@ -538,5 +550,6 @@ namespace UoFiddler.Controls.UserControls
         private System.Windows.Forms.ToolStripMenuItem copyDecAdressToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator10;
         private System.Windows.Forms.ToolStripButton PlaySoundtoolStripButton1;
+        private System.Windows.Forms.ToolStripButton toolStripButtonTextureWindows;
     }
 }
