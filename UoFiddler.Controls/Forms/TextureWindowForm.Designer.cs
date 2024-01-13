@@ -46,6 +46,7 @@ namespace UoFiddler.Controls.Forms
             clipboardToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             importToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             saveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            importToPrewiewToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             btBackward = new System.Windows.Forms.Button();
             btForward = new System.Windows.Forms.Button();
             lbTextureSize = new System.Windows.Forms.Label();
@@ -58,10 +59,19 @@ namespace UoFiddler.Controls.Forms
             buttonOpenTempGrafic = new System.Windows.Forms.Button();
             toolStripTexture = new System.Windows.Forms.ToolStrip();
             toolStripButtonSave = new System.Windows.Forms.ToolStripButton();
+            pictureBoxPreview = new System.Windows.Forms.PictureBox();
+            IgPreviewClicked = new System.Windows.Forms.Button();
+            previousButton = new System.Windows.Forms.Button();
+            NextButton = new System.Windows.Forms.Button();
+            toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
+            toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
+            panelPreview = new System.Windows.Forms.Panel();
             ((System.ComponentModel.ISupportInitialize)pictureBoxTexture).BeginInit();
             contextMenuStripTexturen.SuspendLayout();
             panelTexture.SuspendLayout();
             toolStripTexture.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)pictureBoxPreview).BeginInit();
+            panelPreview.SuspendLayout();
             SuspendLayout();
             // 
             // pictureBoxTexture
@@ -75,15 +85,15 @@ namespace UoFiddler.Controls.Forms
             // 
             // contextMenuStripTexturen
             // 
-            contextMenuStripTexturen.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { clipboardToolStripMenuItem, importToolStripMenuItem, saveToolStripMenuItem });
+            contextMenuStripTexturen.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { clipboardToolStripMenuItem, importToolStripMenuItem, toolStripSeparator1, importToPrewiewToolStripMenuItem, toolStripSeparator2, saveToolStripMenuItem });
             contextMenuStripTexturen.Name = "contextMenuStripTexturen";
-            contextMenuStripTexturen.Size = new System.Drawing.Size(127, 70);
+            contextMenuStripTexturen.Size = new System.Drawing.Size(172, 104);
             // 
             // clipboardToolStripMenuItem
             // 
             clipboardToolStripMenuItem.Image = Properties.Resources.Clipbord;
             clipboardToolStripMenuItem.Name = "clipboardToolStripMenuItem";
-            clipboardToolStripMenuItem.Size = new System.Drawing.Size(126, 22);
+            clipboardToolStripMenuItem.Size = new System.Drawing.Size(171, 22);
             clipboardToolStripMenuItem.Text = "Clipboard";
             clipboardToolStripMenuItem.ToolTipText = "Copy the image from the PictureBox to the clipboard.";
             clipboardToolStripMenuItem.Click += clipboardToolStripMenuItem_Click;
@@ -92,7 +102,7 @@ namespace UoFiddler.Controls.Forms
             // 
             importToolStripMenuItem.Image = Properties.Resources.import;
             importToolStripMenuItem.Name = "importToolStripMenuItem";
-            importToolStripMenuItem.Size = new System.Drawing.Size(126, 22);
+            importToolStripMenuItem.Size = new System.Drawing.Size(171, 22);
             importToolStripMenuItem.Text = "Import";
             importToolStripMenuItem.ToolTipText = "Import the image from the clipboard into the PictureBox.";
             importToolStripMenuItem.Click += importToolStripMenuItem_Click;
@@ -101,10 +111,19 @@ namespace UoFiddler.Controls.Forms
             // 
             saveToolStripMenuItem.Image = Properties.Resources.save;
             saveToolStripMenuItem.Name = "saveToolStripMenuItem";
-            saveToolStripMenuItem.Size = new System.Drawing.Size(126, 22);
+            saveToolStripMenuItem.Size = new System.Drawing.Size(171, 22);
             saveToolStripMenuItem.Text = "Save";
             saveToolStripMenuItem.ToolTipText = "Save the image to the target directory.";
             saveToolStripMenuItem.Click += saveToolStripMenuItem_Click;
+            // 
+            // importToPrewiewToolStripMenuItem
+            // 
+            importToPrewiewToolStripMenuItem.Image = Properties.Resources.iishenar_map;
+            importToPrewiewToolStripMenuItem.Name = "importToPrewiewToolStripMenuItem";
+            importToPrewiewToolStripMenuItem.Size = new System.Drawing.Size(171, 22);
+            importToPrewiewToolStripMenuItem.Text = "Import to Prewiew";
+            importToPrewiewToolStripMenuItem.ToolTipText = "Imports the graphic from the clipboard into the grid of the Picture Preview.";
+            importToPrewiewToolStripMenuItem.Click += importToPrewiewToolStripMenuItem_Click;
             // 
             // btBackward
             // 
@@ -219,7 +238,7 @@ namespace UoFiddler.Controls.Forms
             toolStripTexture.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { toolStripButtonSave });
             toolStripTexture.Location = new System.Drawing.Point(0, 0);
             toolStripTexture.Name = "toolStripTexture";
-            toolStripTexture.Size = new System.Drawing.Size(498, 25);
+            toolStripTexture.Size = new System.Drawing.Size(868, 25);
             toolStripTexture.TabIndex = 10;
             toolStripTexture.Text = "toolStrip1";
             // 
@@ -234,23 +253,85 @@ namespace UoFiddler.Controls.Forms
             toolStripButtonSave.ToolTipText = "Save the image to the temporary directory as a BMP file with a single click";
             toolStripButtonSave.Click += toolStripButtonSave_Click;
             // 
+            // pictureBoxPreview
+            // 
+            pictureBoxPreview.Location = new System.Drawing.Point(5, 12);
+            pictureBoxPreview.Name = "pictureBoxPreview";
+            pictureBoxPreview.Size = new System.Drawing.Size(473, 376);
+            pictureBoxPreview.TabIndex = 11;
+            pictureBoxPreview.TabStop = false;
+            // 
+            // IgPreviewClicked
+            // 
+            IgPreviewClicked.Location = new System.Drawing.Point(5, 394);
+            IgPreviewClicked.Name = "IgPreviewClicked";
+            IgPreviewClicked.Size = new System.Drawing.Size(56, 23);
+            IgPreviewClicked.TabIndex = 12;
+            IgPreviewClicked.Text = "Preview";
+            IgPreviewClicked.UseVisualStyleBackColor = true;
+            IgPreviewClicked.Click += IgPreviewClicked_Click;
+            // 
+            // previousButton
+            // 
+            previousButton.Location = new System.Drawing.Point(160, 394);
+            previousButton.Name = "previousButton";
+            previousButton.Size = new System.Drawing.Size(61, 23);
+            previousButton.TabIndex = 13;
+            previousButton.Text = "previous";
+            previousButton.UseVisualStyleBackColor = true;
+            previousButton.Click += previousButton_Click;
+            // 
+            // NextButton
+            // 
+            NextButton.Location = new System.Drawing.Point(227, 394);
+            NextButton.Name = "NextButton";
+            NextButton.Size = new System.Drawing.Size(56, 23);
+            NextButton.TabIndex = 14;
+            NextButton.Text = "Next";
+            NextButton.UseVisualStyleBackColor = true;
+            NextButton.Click += NextButton_Click;
+            // 
+            // toolStripSeparator1
+            // 
+            toolStripSeparator1.Name = "toolStripSeparator1";
+            toolStripSeparator1.Size = new System.Drawing.Size(168, 6);
+            // 
+            // toolStripSeparator2
+            // 
+            toolStripSeparator2.Name = "toolStripSeparator2";
+            toolStripSeparator2.Size = new System.Drawing.Size(168, 6);
+            // 
+            // panelPreview
+            // 
+            panelPreview.Controls.Add(pictureBoxPreview);
+            panelPreview.Controls.Add(NextButton);
+            panelPreview.Controls.Add(IgPreviewClicked);
+            panelPreview.Controls.Add(previousButton);
+            panelPreview.Location = new System.Drawing.Point(368, 37);
+            panelPreview.Name = "panelPreview";
+            panelPreview.Size = new System.Drawing.Size(488, 428);
+            panelPreview.TabIndex = 15;
+            // 
             // TextureWindowForm
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            ClientSize = new System.Drawing.Size(498, 425);
+            ClientSize = new System.Drawing.Size(868, 473);
+            Controls.Add(panelPreview);
             Controls.Add(toolStripTexture);
             Controls.Add(panelTexture);
             FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             Icon = (System.Drawing.Icon)resources.GetObject("$this.Icon");
             Name = "TextureWindowForm";
-            Text = "Texture Window ";
+            Text = "Texture ./. Tile  Converter";
             ((System.ComponentModel.ISupportInitialize)pictureBoxTexture).EndInit();
             contextMenuStripTexturen.ResumeLayout(false);
             panelTexture.ResumeLayout(false);
             panelTexture.PerformLayout();
             toolStripTexture.ResumeLayout(false);
             toolStripTexture.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)pictureBoxPreview).EndInit();
+            panelPreview.ResumeLayout(false);
             ResumeLayout(false);
             PerformLayout();
         }
@@ -274,5 +355,13 @@ namespace UoFiddler.Controls.Forms
         private System.Windows.Forms.ToolStrip toolStripTexture;
         private System.Windows.Forms.ToolStripButton toolStripButtonSave;
         private System.Windows.Forms.Button buttonOpenTempGrafic;
+        private System.Windows.Forms.PictureBox pictureBoxPreview;
+        private System.Windows.Forms.Button IgPreviewClicked;
+        private System.Windows.Forms.Button previousButton;
+        private System.Windows.Forms.Button NextButton;
+        private System.Windows.Forms.ToolStripMenuItem importToPrewiewToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
+        private System.Windows.Forms.Panel panelPreview;
     }
 }

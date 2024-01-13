@@ -19,6 +19,12 @@ namespace UoFiddler.Controls.Forms
         private int _currentId;
         private TexturesControl _texturesControl;
 
+        private int _landTile = 0x3;
+
+        // Fügen Sie diese Variablen zu Ihrer Klasse hinzu
+        private int _currentTile = 0;
+        private int _maxTile = 0x3FFF; // maximale Anzahl von Tiles
+
         public TextureWindowForm(TexturesControl texturesControl)
         {
             InitializeComponent();
@@ -340,7 +346,160 @@ namespace UoFiddler.Controls.Forms
                 MessageBox.Show("The directory tempGraphic does not exist.");
             }
         }
+        #endregion
 
+        #region private Bitmap GetImage()
+        private Bitmap GetImage()
+        {
+            // Create a new Bitmap object
+            Bitmap bitmap = new Bitmap(pictureBoxPreview.Width, pictureBoxPreview.Height);
+
+            using (Graphics g = Graphics.FromImage(bitmap))
+            {
+                // Draw the background onto the bitmap
+                Bitmap background = Ultima.Art.GetLand(_landTile);
+
+                if (background != null)
+                {
+                    // Draw the grid pattern
+                    int i = 0;
+                    for (int y = -22; y <= bitmap.Height; y += 22)
+                    {
+                        int x = i % 2 == 0 ? 0 : -22;
+                        for (; x <= bitmap.Width; x += 44)
+                        {
+                            g.DrawImage(background, x, y);
+                        }
+                        ++i;
+                    }
+                }
+            }
+
+            return bitmap;
+        }
+        #endregion
+
+        #region Bitmap GetImageFromImport
+
+        private Bitmap GetImageFromImport(Image importedImage)
+        {
+            // Cut the imported image into a diamond shape
+            Bitmap diamondImage = CropToDiamond(importedImage);
+
+            // Scale the diamond image to the desired size
+            Bitmap scaledImage = new Bitmap(diamondImage, new Size(44, 44)); // Resize as needed
+
+            // Create a new Bitmap object
+            Bitmap bitmap = new Bitmap(pictureBoxPreview.Width, pictureBoxPreview.Height);
+
+            using (Graphics g = Graphics.FromImage(bitmap))
+            {
+                // Use the scaled diamond image as a background
+                Bitmap background = scaledImage;
+
+                if (background != null)
+                {
+                    // Draw the grid pattern
+                    int i = 0;
+                    for (int y = -22; y <= bitmap.Height; y += 22)
+                    {
+                        int x = i % 2 == 0 ? 0 : -22;
+                        for (; x <= bitmap.Width; x += 44)
+                        {
+                            g.DrawImage(background, x, y);
+                        }
+                        ++i;
+                    }
+                }
+            }
+
+            // Remove the black paint
+            for (int x = 0; x < bitmap.Width; x++)
+            {
+                for (int y = 0; y < bitmap.Height; y++)
+                {
+                    Color pixelColor = bitmap.GetPixel(x, y);
+                    if (pixelColor.R == 0 && pixelColor.G == 0 && pixelColor.B == 0)
+                    {
+                        bitmap.SetPixel(x, y, Color.Transparent);
+                    }
+                }
+            }
+
+            return bitmap;
+        }
+        #endregion
+
+        #region IgPreviewClicked
+        private bool isButtonChecked = false;
+        private void IgPreviewClicked_Click(object sender, EventArgs e)
+        {
+            // Switching the state
+            isButtonChecked = !isButtonChecked;
+
+            // Get the image based on _landTile
+            Bitmap image = GetImage();
+
+            // Display the image in pictureBoxPreview
+            if (image != null)
+            {
+                pictureBoxPreview.Image = image;
+            }
+        }
+        #endregion
+
+        #region previousButton
+        private void previousButton_Click(object sender, EventArgs e)
+        {
+            if (_currentTile > 0)
+            {
+                _currentTile--;
+                ShowTile();
+            }
+        }
+        #endregion
+
+        #region NextButton
+        private void NextButton_Click(object sender, EventArgs e)
+        {
+            if (_currentTile < _maxTile)
+            {
+                _currentTile++;
+                ShowTile();
+            }
+        }
+        #endregion
+
+        #region ShowTile
+        private void ShowTile()
+        {
+            _landTile = _currentTile;
+            pictureBoxPreview.Image = GetImage();
+        }
+        #endregion
+
+        #region importToPrewiewToolStripMenuItem
+        private void importToPrewiewToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (Clipboard.ContainsImage())
+            {
+                // Get the image from the clipboard
+                Image clipboardImage = Clipboard.GetImage();
+
+                // Use the GetImageFromImport method to display the image in a grid pattern
+                Bitmap image = GetImageFromImport(clipboardImage);
+
+                // Display the image in pictureBoxPreview
+                if (image != null)
+                {
+                    pictureBoxPreview.Image = image;
+                }
+            }
+            else
+            {
+                MessageBox.Show("The clipboard does not contain an image.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
         #endregion
     }
 }
