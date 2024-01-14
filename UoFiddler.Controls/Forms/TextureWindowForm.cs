@@ -11,19 +11,20 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using UoFiddler.Controls.UserControls;
 using System.Diagnostics;
+using System.Text.RegularExpressions;
 
 namespace UoFiddler.Controls.Forms
 {
     public partial class TextureWindowForm : Form
     {
+        // Add these variables to your class
         private int _currentId;
         private TexturesControl _texturesControl;
 
-        private int _landTile = 0x3;
+        private int _landTile = 0x3; // start tile
 
-        // Fügen Sie diese Variablen zu Ihrer Klasse hinzu
         private int _currentTile = 0;
-        private int _maxTile = 0x3FFF; // maximale Anzahl von Tiles
+        private int _maxTile = 0x3FFF; // maximum number of tiles
 
         public TextureWindowForm(TexturesControl texturesControl)
         {
@@ -498,6 +499,128 @@ namespace UoFiddler.Controls.Forms
             else
             {
                 MessageBox.Show("The clipboard does not contain an image.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+        #endregion
+
+        #region btColorHex
+        private void btColorHex_Click(object sender, EventArgs e)
+        {
+            if (pictureBoxTexture.Image != null)
+            {
+                Bitmap bmp = new Bitmap(pictureBoxTexture.Image);
+                Dictionary<string, Color> colors = new Dictionary<string, Color>();
+
+                for (int x = 0; x < bmp.Width; x++)
+                {
+                    for (int y = 0; y < bmp.Height; y++)
+                    {
+                        Color clr = bmp.GetPixel(x, y);
+                        string hex = clr.R.ToString("X2") + clr.G.ToString("X2") + clr.B.ToString("X2");
+                        if (!colors.ContainsKey(hex))
+                        {
+                            colors.Add(hex, clr);
+                        }
+                    }
+                }
+
+                rtBoxInfo.Clear();
+                foreach (KeyValuePair<string, Color> entry in colors)
+                {
+                    rtBoxInfo.SelectionStart = rtBoxInfo.TextLength;
+                    rtBoxInfo.SelectionLength = 0;
+
+                    rtBoxInfo.SelectionBackColor = entry.Value;
+                    rtBoxInfo.AppendText("    "); // four spaces for a wider "cube"
+
+                    rtBoxInfo.SelectionBackColor = rtBoxInfo.BackColor;
+                    rtBoxInfo.AppendText("  " + entry.Key + Environment.NewLine); // Two spaces spacing
+                }
+            }
+            else
+            {
+                MessageBox.Show("There is no image to analyze.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            // Paste this code into the initialization of your form
+            rtBoxInfo.MouseClick += (s, e) =>
+            {
+                if (rtBoxInfo.SelectedText.Length > 0)
+                {
+                    tBoxInfoColor.Text = rtBoxInfo.SelectedText.Trim();
+                }
+            };
+
+        }
+        #endregion
+
+        #region btReplaceColor
+        private void btReplaceColor_Click(object sender, EventArgs e)
+        {
+            if (pictureBoxTexture.Image != null)
+            {
+                // Parse the color codes from the text boxes
+                string oldColorCode = tBoxInfoColor.Text.StartsWith("#") ? tBoxInfoColor.Text : "#" + tBoxInfoColor.Text;
+                string newColorCode = tbColorSet.Text.StartsWith("#") ? tbColorSet.Text : "#" + tbColorSet.Text;
+
+                // Check if the color codes are valid
+                if (!IsHexColor(oldColorCode) || !IsHexColor(newColorCode))
+                {
+                    MessageBox.Show("Invalid color code. Please enter a valid hexadecimal color value.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+
+                Color oldColor = ColorTranslator.FromHtml(oldColorCode);
+                Color newColor = ColorTranslator.FromHtml(newColorCode);
+
+                Bitmap bmp = new Bitmap(pictureBoxTexture.Image);
+
+                for (int x = 0; x < bmp.Width; x++)
+                {
+                    for (int y = 0; y < bmp.Height; y++)
+                    {
+                        Color clr = bmp.GetPixel(x, y);
+                        if (clr == oldColor)
+                        {
+                            bmp.SetPixel(x, y, newColor);
+                        }
+                    }
+                }
+
+                // Create a new bitmap with the changed image
+                Bitmap newBmp = new Bitmap(bmp);
+
+                // Assign the new bitmap to the PictureBox
+                pictureBoxTexture.Image = newBmp;
+            }
+            else
+            {
+                MessageBox.Show("There is no image to edit.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+        #endregion
+
+        #region IsHexColor
+        // Method for checking whether a string represents a valid hexadecimal color value
+        private bool IsHexColor(string colorCode)
+        {
+            return Regex.IsMatch(colorCode, "^#(?:[0-9a-fA-F]{3}){1,2}$");
+        }
+        #endregion
+
+        #region btColorDialog
+        private void btColorDialog_Click(object sender, EventArgs e)
+        {
+            // Create a new ColorDialog object
+            ColorDialog colorDialog = new ColorDialog();
+
+            // Display the dialog and verify that the user clicked "OK."
+            if (colorDialog.ShowDialog() == DialogResult.OK)
+            {
+                // Convert the selected color to a hexadecimal code
+                string hex = "#" + colorDialog.Color.R.ToString("X2") + colorDialog.Color.G.ToString("X2") + colorDialog.Color.B.ToString("X2");
+
+                // Set the text of the tbColorSet TextBox to hexadecimal code
+                tbColorSet.Text = hex;
             }
         }
         #endregion

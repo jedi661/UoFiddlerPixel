@@ -20,6 +20,7 @@ Version : 4.12.1
 - Add Landtiles Zoom Form
 - Add Texture editor for tiles incorporated into the textures.
 - Add Picture Preview
+- Add Added color change so you can change the pixel colors.
 
 Version : 4.12.0
 - Update to net8.

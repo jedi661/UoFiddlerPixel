@@ -45,8 +45,10 @@ namespace UoFiddler.Controls.Forms
             contextMenuStripTexturen = new System.Windows.Forms.ContextMenuStrip(components);
             clipboardToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             importToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            saveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             importToPrewiewToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
+            saveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             btBackward = new System.Windows.Forms.Button();
             btForward = new System.Windows.Forms.Button();
             lbTextureSize = new System.Windows.Forms.Label();
@@ -63,9 +65,13 @@ namespace UoFiddler.Controls.Forms
             IgPreviewClicked = new System.Windows.Forms.Button();
             previousButton = new System.Windows.Forms.Button();
             NextButton = new System.Windows.Forms.Button();
-            toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
-            toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             panelPreview = new System.Windows.Forms.Panel();
+            tBoxInfoColor = new System.Windows.Forms.TextBox();
+            btColorHex = new System.Windows.Forms.Button();
+            rtBoxInfo = new System.Windows.Forms.RichTextBox();
+            btReplaceColor = new System.Windows.Forms.Button();
+            tbColorSet = new System.Windows.Forms.TextBox();
+            btColorDialog = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)pictureBoxTexture).BeginInit();
             contextMenuStripTexturen.SuspendLayout();
             panelTexture.SuspendLayout();
@@ -107,14 +113,10 @@ namespace UoFiddler.Controls.Forms
             importToolStripMenuItem.ToolTipText = "Import the image from the clipboard into the PictureBox.";
             importToolStripMenuItem.Click += importToolStripMenuItem_Click;
             // 
-            // saveToolStripMenuItem
+            // toolStripSeparator1
             // 
-            saveToolStripMenuItem.Image = Properties.Resources.save;
-            saveToolStripMenuItem.Name = "saveToolStripMenuItem";
-            saveToolStripMenuItem.Size = new System.Drawing.Size(171, 22);
-            saveToolStripMenuItem.Text = "Save";
-            saveToolStripMenuItem.ToolTipText = "Save the image to the target directory.";
-            saveToolStripMenuItem.Click += saveToolStripMenuItem_Click;
+            toolStripSeparator1.Name = "toolStripSeparator1";
+            toolStripSeparator1.Size = new System.Drawing.Size(168, 6);
             // 
             // importToPrewiewToolStripMenuItem
             // 
@@ -124,6 +126,20 @@ namespace UoFiddler.Controls.Forms
             importToPrewiewToolStripMenuItem.Text = "Import to Prewiew";
             importToPrewiewToolStripMenuItem.ToolTipText = "Imports the graphic from the clipboard into the grid of the Picture Preview.";
             importToPrewiewToolStripMenuItem.Click += importToPrewiewToolStripMenuItem_Click;
+            // 
+            // toolStripSeparator2
+            // 
+            toolStripSeparator2.Name = "toolStripSeparator2";
+            toolStripSeparator2.Size = new System.Drawing.Size(168, 6);
+            // 
+            // saveToolStripMenuItem
+            // 
+            saveToolStripMenuItem.Image = Properties.Resources.save;
+            saveToolStripMenuItem.Name = "saveToolStripMenuItem";
+            saveToolStripMenuItem.Size = new System.Drawing.Size(171, 22);
+            saveToolStripMenuItem.Text = "Save";
+            saveToolStripMenuItem.ToolTipText = "Save the image to the target directory.";
+            saveToolStripMenuItem.Click += saveToolStripMenuItem_Click;
             // 
             // btBackward
             // 
@@ -291,16 +307,6 @@ namespace UoFiddler.Controls.Forms
             NextButton.UseVisualStyleBackColor = true;
             NextButton.Click += NextButton_Click;
             // 
-            // toolStripSeparator1
-            // 
-            toolStripSeparator1.Name = "toolStripSeparator1";
-            toolStripSeparator1.Size = new System.Drawing.Size(168, 6);
-            // 
-            // toolStripSeparator2
-            // 
-            toolStripSeparator2.Name = "toolStripSeparator2";
-            toolStripSeparator2.Size = new System.Drawing.Size(168, 6);
-            // 
             // panelPreview
             // 
             panelPreview.Controls.Add(pictureBoxPreview);
@@ -312,11 +318,72 @@ namespace UoFiddler.Controls.Forms
             panelPreview.Size = new System.Drawing.Size(488, 428);
             panelPreview.TabIndex = 15;
             // 
+            // tBoxInfoColor
+            // 
+            tBoxInfoColor.Location = new System.Drawing.Point(76, 330);
+            tBoxInfoColor.Multiline = true;
+            tBoxInfoColor.Name = "tBoxInfoColor";
+            tBoxInfoColor.Size = new System.Drawing.Size(97, 23);
+            tBoxInfoColor.TabIndex = 16;
+            // 
+            // btColorHex
+            // 
+            btColorHex.Location = new System.Drawing.Point(304, 431);
+            btColorHex.Name = "btColorHex";
+            btColorHex.Size = new System.Drawing.Size(48, 23);
+            btColorHex.TabIndex = 17;
+            btColorHex.Text = "Color";
+            btColorHex.UseVisualStyleBackColor = true;
+            btColorHex.Click += btColorHex_Click;
+            // 
+            // rtBoxInfo
+            // 
+            rtBoxInfo.Location = new System.Drawing.Point(183, 325);
+            rtBoxInfo.Name = "rtBoxInfo";
+            rtBoxInfo.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.Vertical;
+            rtBoxInfo.Size = new System.Drawing.Size(169, 100);
+            rtBoxInfo.TabIndex = 18;
+            rtBoxInfo.Text = "";
+            // 
+            // btReplaceColor
+            // 
+            btReplaceColor.Location = new System.Drawing.Point(76, 402);
+            btReplaceColor.Name = "btReplaceColor";
+            btReplaceColor.Size = new System.Drawing.Size(97, 23);
+            btReplaceColor.TabIndex = 19;
+            btReplaceColor.Text = "Replace Color";
+            btReplaceColor.UseVisualStyleBackColor = true;
+            btReplaceColor.Click += btReplaceColor_Click;
+            // 
+            // tbColorSet
+            // 
+            tbColorSet.Location = new System.Drawing.Point(76, 373);
+            tbColorSet.Multiline = true;
+            tbColorSet.Name = "tbColorSet";
+            tbColorSet.Size = new System.Drawing.Size(97, 23);
+            tbColorSet.TabIndex = 20;
+            // 
+            // btColorDialog
+            // 
+            btColorDialog.Location = new System.Drawing.Point(24, 373);
+            btColorDialog.Name = "btColorDialog";
+            btColorDialog.Size = new System.Drawing.Size(46, 23);
+            btColorDialog.TabIndex = 21;
+            btColorDialog.Text = "Colors";
+            btColorDialog.UseVisualStyleBackColor = true;
+            btColorDialog.Click += btColorDialog_Click;
+            // 
             // TextureWindowForm
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             ClientSize = new System.Drawing.Size(868, 473);
+            Controls.Add(btColorDialog);
+            Controls.Add(tbColorSet);
+            Controls.Add(btReplaceColor);
+            Controls.Add(rtBoxInfo);
+            Controls.Add(btColorHex);
+            Controls.Add(tBoxInfoColor);
             Controls.Add(panelPreview);
             Controls.Add(toolStripTexture);
             Controls.Add(panelTexture);
@@ -363,5 +430,11 @@ namespace UoFiddler.Controls.Forms
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
         private System.Windows.Forms.Panel panelPreview;
+        private System.Windows.Forms.TextBox tBoxInfoColor;
+        private System.Windows.Forms.Button btColorHex;
+        private System.Windows.Forms.RichTextBox rtBoxInfo;
+        private System.Windows.Forms.Button btReplaceColor;
+        private System.Windows.Forms.TextBox tbColorSet;
+        private System.Windows.Forms.Button btColorDialog;
     }
 }
