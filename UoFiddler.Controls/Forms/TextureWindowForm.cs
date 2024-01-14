@@ -547,9 +547,11 @@ namespace UoFiddler.Controls.Forms
                 if (rtBoxInfo.SelectedText.Length > 0)
                 {
                     tBoxInfoColor.Text = rtBoxInfo.SelectedText.Trim();
+
+                    // Copy the selected text to the clipboard
+                    Clipboard.SetText(rtBoxInfo.SelectedText.Trim());
                 }
             };
-
         }
         #endregion
 
@@ -624,5 +626,87 @@ namespace UoFiddler.Controls.Forms
             }
         }
         #endregion
+
+        #region btCopyColorCode
+        private void btCopyColorCode_Click(object sender, EventArgs e)
+        {
+            // Extract the text from the rtBoxInfo
+            string text = rtBoxInfo.Text;
+
+            // Check if the text is null
+            if (text == null)
+            {
+                MessageBox.Show("No text available to copy!");
+                return;
+            }
+
+            // Remove spaces at the beginning of each color code and add a '#'
+            string[] lines = text.Split('\n');
+            for (int i = 0; i < lines.Length; i++)
+            {
+                lines[i] = lines[i].TrimStart();
+                if (lines[i].Length > 0 && !lines[i].StartsWith("#"))
+                {
+                    lines[i] = "#" + lines[i];
+                }
+            }
+
+            // Paste the modified text into the clipboard
+            Clipboard.SetText(string.Join("\n", lines));
+
+            // Display a message that the color codes have been copied to the clipboard
+            MessageBox.Show("The color codes have been copied to the clipboard!");
+        }
+        #endregion
+
+        #region trackBarContrast
+        private void trackBarContrast_ValueChanged(object sender, EventArgs e)
+        {
+            // Update the label to reflect the current value
+            labelContrastValue.Text = trackBarColor.Value.ToString();
+
+            // Make sure there is an image
+            if (pictureBoxTexture.Image != null)
+            {
+                // Save the original image when the value of the TrackBar is 0
+                if (trackBarColor.Value == 0)
+                {
+                    _originalImage = (Image)pictureBoxTexture.Image.Clone();
+                }
+                else
+                {
+                    // Convert the image to a bitmap
+                    Bitmap bmp = new Bitmap(_originalImage);
+
+                    // Create a ColorMatrix and set the contrast
+                    float contrast = (float)Math.Pow((100.0 + trackBarColor.Value) / 100.0, 2);
+
+                    System.Drawing.Imaging.ColorMatrix colorMatrix = new System.Drawing.Imaging.ColorMatrix(new float[][]
+                    {
+                new float[] {contrast, 0, 0, 0, 0},
+                new float[] {0, contrast, 0, 0, 0},
+                new float[] {0, 0, contrast, 0, 0},
+                new float[] {0, 0, 0, 1, 0},
+                new float[] {0, 0, 0, 0, 1}
+                    });
+
+                    // Create an ImageAttributes object and set the ColorMatrix
+                    System.Drawing.Imaging.ImageAttributes attributes = new System.Drawing.Imaging.ImageAttributes();
+                    attributes.SetColorMatrix(colorMatrix);
+
+                    // Draw the image with the new ImageAttributes
+                    using (Graphics g = Graphics.FromImage(bmp))
+                    {
+                        g.DrawImage(_originalImage, new Rectangle(0, 0, bmp.Width, bmp.Height),
+                            0, 0, _originalImage.Width, _originalImage.Height, GraphicsUnit.Pixel, attributes);
+                    }
+
+                    // Put the new image in the PictureBox
+                    pictureBoxTexture.Image = bmp;
+                }
+            }
+        }
+        #endregion
+
     }
 }

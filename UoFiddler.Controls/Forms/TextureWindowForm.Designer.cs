@@ -58,6 +58,8 @@ namespace UoFiddler.Controls.Forms
             checkBoxRight = new System.Windows.Forms.CheckBox();
             checkBoxAntiAliasing = new System.Windows.Forms.CheckBox();
             panelTexture = new System.Windows.Forms.Panel();
+            labelContrastValue = new System.Windows.Forms.Label();
+            trackBarColor = new System.Windows.Forms.TrackBar();
             buttonOpenTempGrafic = new System.Windows.Forms.Button();
             toolStripTexture = new System.Windows.Forms.ToolStrip();
             toolStripButtonSave = new System.Windows.Forms.ToolStripButton();
@@ -72,9 +74,11 @@ namespace UoFiddler.Controls.Forms
             btReplaceColor = new System.Windows.Forms.Button();
             tbColorSet = new System.Windows.Forms.TextBox();
             btColorDialog = new System.Windows.Forms.Button();
+            btCopyColorCode = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)pictureBoxTexture).BeginInit();
             contextMenuStripTexturen.SuspendLayout();
             panelTexture.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)trackBarColor).BeginInit();
             toolStripTexture.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)pictureBoxPreview).BeginInit();
             panelPreview.SuspendLayout();
@@ -224,6 +228,8 @@ namespace UoFiddler.Controls.Forms
             // panelTexture
             // 
             panelTexture.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            panelTexture.Controls.Add(labelContrastValue);
+            panelTexture.Controls.Add(trackBarColor);
             panelTexture.Controls.Add(buttonOpenTempGrafic);
             panelTexture.Controls.Add(pictureBoxTexture);
             panelTexture.Controls.Add(btBackward);
@@ -236,8 +242,27 @@ namespace UoFiddler.Controls.Forms
             panelTexture.Controls.Add(btMakeTile);
             panelTexture.Location = new System.Drawing.Point(12, 37);
             panelTexture.Name = "panelTexture";
-            panelTexture.Size = new System.Drawing.Size(340, 282);
+            panelTexture.Size = new System.Drawing.Size(340, 326);
             panelTexture.TabIndex = 9;
+            // 
+            // labelContrastValue
+            // 
+            labelContrastValue.AutoSize = true;
+            labelContrastValue.Location = new System.Drawing.Point(77, 258);
+            labelContrastValue.Name = "labelContrastValue";
+            labelContrastValue.Size = new System.Drawing.Size(56, 15);
+            labelContrastValue.TabIndex = 11;
+            labelContrastValue.Text = "contrast :";
+            // 
+            // trackBarColor
+            // 
+            trackBarColor.Location = new System.Drawing.Point(29, 276);
+            trackBarColor.Maximum = 128;
+            trackBarColor.Minimum = -128;
+            trackBarColor.Name = "trackBarColor";
+            trackBarColor.Size = new System.Drawing.Size(104, 45);
+            trackBarColor.TabIndex = 10;
+            trackBarColor.ValueChanged += trackBarContrast_ValueChanged;
             // 
             // buttonOpenTempGrafic
             // 
@@ -279,7 +304,7 @@ namespace UoFiddler.Controls.Forms
             // 
             // IgPreviewClicked
             // 
-            IgPreviewClicked.Location = new System.Drawing.Point(5, 394);
+            IgPreviewClicked.Location = new System.Drawing.Point(5, 435);
             IgPreviewClicked.Name = "IgPreviewClicked";
             IgPreviewClicked.Size = new System.Drawing.Size(56, 23);
             IgPreviewClicked.TabIndex = 12;
@@ -289,7 +314,7 @@ namespace UoFiddler.Controls.Forms
             // 
             // previousButton
             // 
-            previousButton.Location = new System.Drawing.Point(160, 394);
+            previousButton.Location = new System.Drawing.Point(159, 435);
             previousButton.Name = "previousButton";
             previousButton.Size = new System.Drawing.Size(61, 23);
             previousButton.TabIndex = 13;
@@ -299,7 +324,7 @@ namespace UoFiddler.Controls.Forms
             // 
             // NextButton
             // 
-            NextButton.Location = new System.Drawing.Point(227, 394);
+            NextButton.Location = new System.Drawing.Point(226, 435);
             NextButton.Name = "NextButton";
             NextButton.Size = new System.Drawing.Size(56, 23);
             NextButton.TabIndex = 14;
@@ -315,12 +340,12 @@ namespace UoFiddler.Controls.Forms
             panelPreview.Controls.Add(previousButton);
             panelPreview.Location = new System.Drawing.Point(368, 37);
             panelPreview.Name = "panelPreview";
-            panelPreview.Size = new System.Drawing.Size(488, 428);
+            panelPreview.Size = new System.Drawing.Size(488, 461);
             panelPreview.TabIndex = 15;
             // 
             // tBoxInfoColor
             // 
-            tBoxInfoColor.Location = new System.Drawing.Point(76, 330);
+            tBoxInfoColor.Location = new System.Drawing.Point(76, 374);
             tBoxInfoColor.Multiline = true;
             tBoxInfoColor.Name = "tBoxInfoColor";
             tBoxInfoColor.Size = new System.Drawing.Size(97, 23);
@@ -328,7 +353,7 @@ namespace UoFiddler.Controls.Forms
             // 
             // btColorHex
             // 
-            btColorHex.Location = new System.Drawing.Point(304, 431);
+            btColorHex.Location = new System.Drawing.Point(304, 472);
             btColorHex.Name = "btColorHex";
             btColorHex.Size = new System.Drawing.Size(48, 23);
             btColorHex.TabIndex = 17;
@@ -338,7 +363,7 @@ namespace UoFiddler.Controls.Forms
             // 
             // rtBoxInfo
             // 
-            rtBoxInfo.Location = new System.Drawing.Point(183, 325);
+            rtBoxInfo.Location = new System.Drawing.Point(183, 369);
             rtBoxInfo.Name = "rtBoxInfo";
             rtBoxInfo.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.Vertical;
             rtBoxInfo.Size = new System.Drawing.Size(169, 100);
@@ -347,7 +372,7 @@ namespace UoFiddler.Controls.Forms
             // 
             // btReplaceColor
             // 
-            btReplaceColor.Location = new System.Drawing.Point(76, 402);
+            btReplaceColor.Location = new System.Drawing.Point(76, 446);
             btReplaceColor.Name = "btReplaceColor";
             btReplaceColor.Size = new System.Drawing.Size(97, 23);
             btReplaceColor.TabIndex = 19;
@@ -357,7 +382,7 @@ namespace UoFiddler.Controls.Forms
             // 
             // tbColorSet
             // 
-            tbColorSet.Location = new System.Drawing.Point(76, 373);
+            tbColorSet.Location = new System.Drawing.Point(76, 417);
             tbColorSet.Multiline = true;
             tbColorSet.Name = "tbColorSet";
             tbColorSet.Size = new System.Drawing.Size(97, 23);
@@ -365,7 +390,7 @@ namespace UoFiddler.Controls.Forms
             // 
             // btColorDialog
             // 
-            btColorDialog.Location = new System.Drawing.Point(24, 373);
+            btColorDialog.Location = new System.Drawing.Point(24, 417);
             btColorDialog.Name = "btColorDialog";
             btColorDialog.Size = new System.Drawing.Size(46, 23);
             btColorDialog.TabIndex = 21;
@@ -373,11 +398,22 @@ namespace UoFiddler.Controls.Forms
             btColorDialog.UseVisualStyleBackColor = true;
             btColorDialog.Click += btColorDialog_Click;
             // 
+            // btCopyColorCode
+            // 
+            btCopyColorCode.Location = new System.Drawing.Point(254, 472);
+            btCopyColorCode.Name = "btCopyColorCode";
+            btCopyColorCode.Size = new System.Drawing.Size(44, 23);
+            btCopyColorCode.TabIndex = 22;
+            btCopyColorCode.Text = "Copy";
+            btCopyColorCode.UseVisualStyleBackColor = true;
+            btCopyColorCode.Click += btCopyColorCode_Click;
+            // 
             // TextureWindowForm
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            ClientSize = new System.Drawing.Size(868, 473);
+            ClientSize = new System.Drawing.Size(868, 505);
+            Controls.Add(btCopyColorCode);
             Controls.Add(btColorDialog);
             Controls.Add(tbColorSet);
             Controls.Add(btReplaceColor);
@@ -395,6 +431,7 @@ namespace UoFiddler.Controls.Forms
             contextMenuStripTexturen.ResumeLayout(false);
             panelTexture.ResumeLayout(false);
             panelTexture.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)trackBarColor).EndInit();
             toolStripTexture.ResumeLayout(false);
             toolStripTexture.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)pictureBoxPreview).EndInit();
@@ -436,5 +473,8 @@ namespace UoFiddler.Controls.Forms
         private System.Windows.Forms.Button btReplaceColor;
         private System.Windows.Forms.TextBox tbColorSet;
         private System.Windows.Forms.Button btColorDialog;
+        private System.Windows.Forms.Button btCopyColorCode;
+        private System.Windows.Forms.TrackBar trackBarColor;
+        private System.Windows.Forms.Label labelContrastValue;
     }
 }
