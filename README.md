@@ -5,22 +5,23 @@
 UOFiddler based on Ultima SDK it's a tool to view and alter almost every UO 2D client file. Source code is released under the Beerware license.
 
 Version : 4.12.1
-- Implemented copying multiple graphics to the clipboard with Ctrl+X
-- Add Strg+F3 Search
-- Add ParticelGreyHueShadow and ParticelGreyHue CheckBox into TextureCutter
-- Add Items ParticelGrayHueShadow
-- Add Items ParticelGrayHueShadow Colord Dialog
-- Add Items Checkbox ParticelGray
-- Add Items Rhombus
-- Add Items Grid Image
-- Add Items Grid Color
-- Add Items Copy Clipboard - DetailPictureBox
-- Light class completely revised
-- Added size to light to scale the size of the light image
-- Add Landtiles Zoom Form
+- Implemented copying multiple graphics to the clipboard with Ctrl+X.
+- Add Strg+F3 Search.
+- Add ParticelGreyHueShadow and ParticelGreyHue CheckBox into TextureCutter.
+- Add Items ParticelGrayHueShadow.
+- Add Items ParticelGrayHueShadow Colord Dialog.
+- Add Items Checkbox ParticelGray.
+- Add Items Rhombus.
+- Add Items Grid Image.
+- Add Items Grid Color.
+- Add Items Copy Clipboard - DetailPictureBox.
+- Light class completely revised.
+- Added size to light to scale the size of the light image.
+- Add Landtiles Zoom Form.
 - Add Texture editor for tiles incorporated into the textures.
-- Add Picture Preview
+- Add Picture Preview.
 - Add Added color change so you can change the pixel colors.
+- Add Mirror, scale textures to 64x64 and 128x128, rotate right left and create textures.
 
 Version : 4.12.0
 - Update to net8.

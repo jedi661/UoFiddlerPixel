@@ -708,5 +708,114 @@ namespace UoFiddler.Controls.Forms
         }
         #endregion
 
+        #region BtCreateTexture
+        private void BtCreateTexture_Click(object sender, EventArgs e)
+        {
+            if (pictureBoxTexture.Image != null)
+            {
+                Bitmap bmp = new Bitmap(pictureBoxTexture.Image);
+
+                // Check which CheckBox is selected
+                if (checkBox64x64.Checked)
+                {
+                    // Scale the image to 64x64
+                    Bitmap newBmp = new Bitmap(bmp, new Size(64, 64));
+                    pictureBoxTexture.Image = newBmp;
+                }
+                else if (checkBox128x128.Checked)
+                {
+                    // Scale the image to 128x128
+                    Bitmap newBmp = new Bitmap(bmp, new Size(128, 128));
+                    pictureBoxTexture.Image = newBmp;
+                }
+                else
+                {
+                    MessageBox.Show("Please choose a size.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+            else
+            {
+                MessageBox.Show("There is no image to edit.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+        #endregion
+
+        #region checkBox64x64_CheckedChanged
+        private void checkBox64x64_CheckedChanged(object sender, EventArgs e)
+        {
+            if (checkBox64x64.Checked)
+            {
+                checkBox128x128.Checked = false;
+            }
+        }
+        #endregion
+
+        #region checkBox128x128_CheckedChanged
+        private void checkBox128x128_CheckedChanged(object sender, EventArgs e)
+        {
+            if (checkBox128x128.Checked)
+            {
+                checkBox64x64.Checked = false;
+            }
+        }
+        #endregion
+
+        #region toolStripButtonImageLoad
+        private void toolStripButtonImageLoad_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            openFileDialog.Filter = "Images|*.bmp;*.png;*.jpeg;*.jpg;*.tiff;*.tif";
+
+            if (openFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                pictureBoxTexture.Image = Image.FromFile(openFileDialog.FileName);
+            }
+        }
+        #endregion
+
+        #region btImageLeft
+        private void btImageLeft_Click(object sender, EventArgs e)
+        {
+            if (pictureBoxTexture.Image != null)
+            {
+                pictureBoxTexture.Image.RotateFlip(RotateFlipType.Rotate270FlipNone);
+                pictureBoxTexture.Refresh();
+            }
+            else
+            {
+                MessageBox.Show("There is no image to rotate.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+        #endregion
+
+        #region btImageRight
+        private void btImageRight_Click(object sender, EventArgs e)
+        {
+            if (pictureBoxTexture.Image != null)
+            {
+                pictureBoxTexture.Image.RotateFlip(RotateFlipType.Rotate90FlipNone);
+                pictureBoxTexture.Refresh();
+            }
+            else
+            {
+                MessageBox.Show("There is no image to rotate.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+        #endregion
+
+        #region mirrorToolStripMenuItem
+        private void mirrorToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (pictureBoxTexture.Image != null)
+            {
+                pictureBoxTexture.Image.RotateFlip(RotateFlipType.RotateNoneFlipX);
+                pictureBoxTexture.Refresh();
+            }
+            else
+            {
+                MessageBox.Show("There is no image to mirror.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+        #endregion
     }
 }

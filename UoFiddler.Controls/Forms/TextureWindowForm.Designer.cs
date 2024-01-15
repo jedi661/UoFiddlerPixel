@@ -58,11 +58,17 @@ namespace UoFiddler.Controls.Forms
             checkBoxRight = new System.Windows.Forms.CheckBox();
             checkBoxAntiAliasing = new System.Windows.Forms.CheckBox();
             panelTexture = new System.Windows.Forms.Panel();
+            btImageRight = new System.Windows.Forms.Button();
+            btImageLeft = new System.Windows.Forms.Button();
+            BtCreateTexture = new System.Windows.Forms.Button();
+            checkBox128x128 = new System.Windows.Forms.CheckBox();
+            checkBox64x64 = new System.Windows.Forms.CheckBox();
             labelContrastValue = new System.Windows.Forms.Label();
             trackBarColor = new System.Windows.Forms.TrackBar();
             buttonOpenTempGrafic = new System.Windows.Forms.Button();
             toolStripTexture = new System.Windows.Forms.ToolStrip();
             toolStripButtonSave = new System.Windows.Forms.ToolStripButton();
+            toolStripButtonImageLoad = new System.Windows.Forms.ToolStripButton();
             pictureBoxPreview = new System.Windows.Forms.PictureBox();
             IgPreviewClicked = new System.Windows.Forms.Button();
             previousButton = new System.Windows.Forms.Button();
@@ -75,6 +81,7 @@ namespace UoFiddler.Controls.Forms
             tbColorSet = new System.Windows.Forms.TextBox();
             btColorDialog = new System.Windows.Forms.Button();
             btCopyColorCode = new System.Windows.Forms.Button();
+            mirrorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)pictureBoxTexture).BeginInit();
             contextMenuStripTexturen.SuspendLayout();
             panelTexture.SuspendLayout();
@@ -95,15 +102,15 @@ namespace UoFiddler.Controls.Forms
             // 
             // contextMenuStripTexturen
             // 
-            contextMenuStripTexturen.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { clipboardToolStripMenuItem, importToolStripMenuItem, toolStripSeparator1, importToPrewiewToolStripMenuItem, toolStripSeparator2, saveToolStripMenuItem });
+            contextMenuStripTexturen.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { clipboardToolStripMenuItem, importToolStripMenuItem, toolStripSeparator1, importToPrewiewToolStripMenuItem, toolStripSeparator2, saveToolStripMenuItem, mirrorToolStripMenuItem });
             contextMenuStripTexturen.Name = "contextMenuStripTexturen";
-            contextMenuStripTexturen.Size = new System.Drawing.Size(172, 104);
+            contextMenuStripTexturen.Size = new System.Drawing.Size(181, 148);
             // 
             // clipboardToolStripMenuItem
             // 
             clipboardToolStripMenuItem.Image = Properties.Resources.Clipbord;
             clipboardToolStripMenuItem.Name = "clipboardToolStripMenuItem";
-            clipboardToolStripMenuItem.Size = new System.Drawing.Size(171, 22);
+            clipboardToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             clipboardToolStripMenuItem.Text = "Clipboard";
             clipboardToolStripMenuItem.ToolTipText = "Copy the image from the PictureBox to the clipboard.";
             clipboardToolStripMenuItem.Click += clipboardToolStripMenuItem_Click;
@@ -112,7 +119,7 @@ namespace UoFiddler.Controls.Forms
             // 
             importToolStripMenuItem.Image = Properties.Resources.import;
             importToolStripMenuItem.Name = "importToolStripMenuItem";
-            importToolStripMenuItem.Size = new System.Drawing.Size(171, 22);
+            importToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             importToolStripMenuItem.Text = "Import";
             importToolStripMenuItem.ToolTipText = "Import the image from the clipboard into the PictureBox.";
             importToolStripMenuItem.Click += importToolStripMenuItem_Click;
@@ -120,13 +127,13 @@ namespace UoFiddler.Controls.Forms
             // toolStripSeparator1
             // 
             toolStripSeparator1.Name = "toolStripSeparator1";
-            toolStripSeparator1.Size = new System.Drawing.Size(168, 6);
+            toolStripSeparator1.Size = new System.Drawing.Size(177, 6);
             // 
             // importToPrewiewToolStripMenuItem
             // 
             importToPrewiewToolStripMenuItem.Image = Properties.Resources.iishenar_map;
             importToPrewiewToolStripMenuItem.Name = "importToPrewiewToolStripMenuItem";
-            importToPrewiewToolStripMenuItem.Size = new System.Drawing.Size(171, 22);
+            importToPrewiewToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             importToPrewiewToolStripMenuItem.Text = "Import to Prewiew";
             importToPrewiewToolStripMenuItem.ToolTipText = "Imports the graphic from the clipboard into the grid of the Picture Preview.";
             importToPrewiewToolStripMenuItem.Click += importToPrewiewToolStripMenuItem_Click;
@@ -134,13 +141,13 @@ namespace UoFiddler.Controls.Forms
             // toolStripSeparator2
             // 
             toolStripSeparator2.Name = "toolStripSeparator2";
-            toolStripSeparator2.Size = new System.Drawing.Size(168, 6);
+            toolStripSeparator2.Size = new System.Drawing.Size(177, 6);
             // 
             // saveToolStripMenuItem
             // 
             saveToolStripMenuItem.Image = Properties.Resources.save;
             saveToolStripMenuItem.Name = "saveToolStripMenuItem";
-            saveToolStripMenuItem.Size = new System.Drawing.Size(171, 22);
+            saveToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             saveToolStripMenuItem.Text = "Save";
             saveToolStripMenuItem.ToolTipText = "Save the image to the target directory.";
             saveToolStripMenuItem.Click += saveToolStripMenuItem_Click;
@@ -228,6 +235,11 @@ namespace UoFiddler.Controls.Forms
             // panelTexture
             // 
             panelTexture.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            panelTexture.Controls.Add(btImageRight);
+            panelTexture.Controls.Add(btImageLeft);
+            panelTexture.Controls.Add(BtCreateTexture);
+            panelTexture.Controls.Add(checkBox128x128);
+            panelTexture.Controls.Add(checkBox64x64);
             panelTexture.Controls.Add(labelContrastValue);
             panelTexture.Controls.Add(trackBarColor);
             panelTexture.Controls.Add(buttonOpenTempGrafic);
@@ -244,6 +256,58 @@ namespace UoFiddler.Controls.Forms
             panelTexture.Name = "panelTexture";
             panelTexture.Size = new System.Drawing.Size(340, 326);
             panelTexture.TabIndex = 9;
+            // 
+            // btImageRight
+            // 
+            btImageRight.Location = new System.Drawing.Point(286, 199);
+            btImageRight.Name = "btImageRight";
+            btImageRight.Size = new System.Drawing.Size(51, 23);
+            btImageRight.TabIndex = 16;
+            btImageRight.Text = "Right";
+            btImageRight.UseVisualStyleBackColor = true;
+            btImageRight.Click += btImageRight_Click;
+            // 
+            // btImageLeft
+            // 
+            btImageLeft.Location = new System.Drawing.Point(241, 199);
+            btImageLeft.Name = "btImageLeft";
+            btImageLeft.Size = new System.Drawing.Size(46, 23);
+            btImageLeft.TabIndex = 15;
+            btImageLeft.Text = "Left";
+            btImageLeft.UseVisualStyleBackColor = true;
+            btImageLeft.Click += btImageLeft_Click;
+            // 
+            // BtCreateTexture
+            // 
+            BtCreateTexture.Location = new System.Drawing.Point(162, 287);
+            BtCreateTexture.Name = "BtCreateTexture";
+            BtCreateTexture.Size = new System.Drawing.Size(99, 23);
+            BtCreateTexture.TabIndex = 14;
+            BtCreateTexture.Text = "Create Texture";
+            BtCreateTexture.UseVisualStyleBackColor = true;
+            BtCreateTexture.Click += BtCreateTexture_Click;
+            // 
+            // checkBox128x128
+            // 
+            checkBox128x128.AutoSize = true;
+            checkBox128x128.Location = new System.Drawing.Point(267, 291);
+            checkBox128x128.Name = "checkBox128x128";
+            checkBox128x128.Size = new System.Drawing.Size(68, 19);
+            checkBox128x128.TabIndex = 13;
+            checkBox128x128.Text = "128x128";
+            checkBox128x128.UseVisualStyleBackColor = true;
+            checkBox128x128.CheckedChanged += checkBox128x128_CheckedChanged;
+            // 
+            // checkBox64x64
+            // 
+            checkBox64x64.AutoSize = true;
+            checkBox64x64.Location = new System.Drawing.Point(267, 266);
+            checkBox64x64.Name = "checkBox64x64";
+            checkBox64x64.Size = new System.Drawing.Size(56, 19);
+            checkBox64x64.TabIndex = 12;
+            checkBox64x64.Text = "64x64";
+            checkBox64x64.UseVisualStyleBackColor = true;
+            checkBox64x64.CheckedChanged += checkBox64x64_CheckedChanged;
             // 
             // labelContrastValue
             // 
@@ -276,7 +340,7 @@ namespace UoFiddler.Controls.Forms
             // 
             // toolStripTexture
             // 
-            toolStripTexture.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { toolStripButtonSave });
+            toolStripTexture.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { toolStripButtonSave, toolStripButtonImageLoad });
             toolStripTexture.Location = new System.Drawing.Point(0, 0);
             toolStripTexture.Name = "toolStripTexture";
             toolStripTexture.Size = new System.Drawing.Size(868, 25);
@@ -293,6 +357,17 @@ namespace UoFiddler.Controls.Forms
             toolStripButtonSave.Text = "Save";
             toolStripButtonSave.ToolTipText = "Save the image to the temporary directory as a BMP file with a single click";
             toolStripButtonSave.Click += toolStripButtonSave_Click;
+            // 
+            // toolStripButtonImageLoad
+            // 
+            toolStripButtonImageLoad.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            toolStripButtonImageLoad.Image = Properties.Resources.disk_load_image;
+            toolStripButtonImageLoad.ImageTransparentColor = System.Drawing.Color.Magenta;
+            toolStripButtonImageLoad.Name = "toolStripButtonImageLoad";
+            toolStripButtonImageLoad.Size = new System.Drawing.Size(23, 22);
+            toolStripButtonImageLoad.Text = "Load Image";
+            toolStripButtonImageLoad.ToolTipText = "Load Image into Pixturebox";
+            toolStripButtonImageLoad.Click += toolStripButtonImageLoad_Click;
             // 
             // pictureBoxPreview
             // 
@@ -408,6 +483,14 @@ namespace UoFiddler.Controls.Forms
             btCopyColorCode.UseVisualStyleBackColor = true;
             btCopyColorCode.Click += btCopyColorCode_Click;
             // 
+            // mirrorToolStripMenuItem
+            // 
+            mirrorToolStripMenuItem.Name = "mirrorToolStripMenuItem";
+            mirrorToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            mirrorToolStripMenuItem.Text = "Mirror";
+            mirrorToolStripMenuItem.ToolTipText = "Mirror Image";
+            mirrorToolStripMenuItem.Click += mirrorToolStripMenuItem_Click;
+            // 
             // TextureWindowForm
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -476,5 +559,12 @@ namespace UoFiddler.Controls.Forms
         private System.Windows.Forms.Button btCopyColorCode;
         private System.Windows.Forms.TrackBar trackBarColor;
         private System.Windows.Forms.Label labelContrastValue;
+        private System.Windows.Forms.Button BtCreateTexture;
+        private System.Windows.Forms.CheckBox checkBox128x128;
+        private System.Windows.Forms.CheckBox checkBox64x64;
+        private System.Windows.Forms.ToolStripButton toolStripButtonImageLoad;
+        private System.Windows.Forms.Button btImageRight;
+        private System.Windows.Forms.Button btImageLeft;
+        private System.Windows.Forms.ToolStripMenuItem mirrorToolStripMenuItem;
     }
 }
