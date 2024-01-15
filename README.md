@@ -22,6 +22,7 @@ Version : 4.12.1
 - Add Picture Preview.
 - Add Added color change so you can change the pixel colors.
 - Add Mirror, scale textures to 64x64 and 128x128, rotate right left and create textures.
+- Add Backgrund Button.
 
 Version : 4.12.0
 - Update to net8.

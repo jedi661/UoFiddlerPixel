@@ -1209,7 +1209,7 @@ namespace UoFiddler.Controls.UserControls
         #region Sound
         private void PlaySoundtoolStripButton1_Click(object sender, EventArgs e)
         {
-            // Den Wert des _playInsertSound-Feldes umschalten            
+            // Toggle the value of the _playInsertSound field           
             playCustomSound = !playCustomSound;
         }
         #endregion
@@ -1218,17 +1218,17 @@ namespace UoFiddler.Controls.UserControls
         private TextureWindowForm textureWindowForm;
         private void toolStripButtonTextureWindows_Click(object sender, EventArgs e)
         {
-            // Überprüfen Sie, ob die Form bereits geöffnet ist
+            // Check if the form is already open
             if (textureWindowForm == null || textureWindowForm.IsDisposed)
             {
-                // Erstellen Sie eine neue Instanz der Form, wenn sie noch nicht geöffnet ist
+                // Create a new instance of the shape if it's not already open
                 textureWindowForm = new TextureWindowForm(this);
             }
 
-            // Bringen Sie die Form in den Vordergrund, wenn sie bereits geöffnet ist
+            // Bring the shape to the foreground if it is already open
             textureWindowForm.BringToFront();
 
-            // Öffnen Sie die Form
+            // Open the Form
             textureWindowForm.Show();
         }
         #endregion

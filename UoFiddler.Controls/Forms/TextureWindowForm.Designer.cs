@@ -48,6 +48,8 @@ namespace UoFiddler.Controls.Forms
             toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             importToPrewiewToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
+            mirrorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
             saveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             btBackward = new System.Windows.Forms.Button();
             btForward = new System.Windows.Forms.Button();
@@ -74,6 +76,7 @@ namespace UoFiddler.Controls.Forms
             previousButton = new System.Windows.Forms.Button();
             NextButton = new System.Windows.Forms.Button();
             panelPreview = new System.Windows.Forms.Panel();
+            btBackground = new System.Windows.Forms.Button();
             tBoxInfoColor = new System.Windows.Forms.TextBox();
             btColorHex = new System.Windows.Forms.Button();
             rtBoxInfo = new System.Windows.Forms.RichTextBox();
@@ -81,7 +84,6 @@ namespace UoFiddler.Controls.Forms
             tbColorSet = new System.Windows.Forms.TextBox();
             btColorDialog = new System.Windows.Forms.Button();
             btCopyColorCode = new System.Windows.Forms.Button();
-            mirrorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)pictureBoxTexture).BeginInit();
             contextMenuStripTexturen.SuspendLayout();
             panelTexture.SuspendLayout();
@@ -102,15 +104,15 @@ namespace UoFiddler.Controls.Forms
             // 
             // contextMenuStripTexturen
             // 
-            contextMenuStripTexturen.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { clipboardToolStripMenuItem, importToolStripMenuItem, toolStripSeparator1, importToPrewiewToolStripMenuItem, toolStripSeparator2, saveToolStripMenuItem, mirrorToolStripMenuItem });
+            contextMenuStripTexturen.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { clipboardToolStripMenuItem, importToolStripMenuItem, toolStripSeparator1, importToPrewiewToolStripMenuItem, toolStripSeparator2, mirrorToolStripMenuItem, toolStripSeparator3, saveToolStripMenuItem });
             contextMenuStripTexturen.Name = "contextMenuStripTexturen";
-            contextMenuStripTexturen.Size = new System.Drawing.Size(181, 148);
+            contextMenuStripTexturen.Size = new System.Drawing.Size(172, 132);
             // 
             // clipboardToolStripMenuItem
             // 
             clipboardToolStripMenuItem.Image = Properties.Resources.Clipbord;
             clipboardToolStripMenuItem.Name = "clipboardToolStripMenuItem";
-            clipboardToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            clipboardToolStripMenuItem.Size = new System.Drawing.Size(171, 22);
             clipboardToolStripMenuItem.Text = "Clipboard";
             clipboardToolStripMenuItem.ToolTipText = "Copy the image from the PictureBox to the clipboard.";
             clipboardToolStripMenuItem.Click += clipboardToolStripMenuItem_Click;
@@ -119,7 +121,7 @@ namespace UoFiddler.Controls.Forms
             // 
             importToolStripMenuItem.Image = Properties.Resources.import;
             importToolStripMenuItem.Name = "importToolStripMenuItem";
-            importToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            importToolStripMenuItem.Size = new System.Drawing.Size(171, 22);
             importToolStripMenuItem.Text = "Import";
             importToolStripMenuItem.ToolTipText = "Import the image from the clipboard into the PictureBox.";
             importToolStripMenuItem.Click += importToolStripMenuItem_Click;
@@ -127,13 +129,13 @@ namespace UoFiddler.Controls.Forms
             // toolStripSeparator1
             // 
             toolStripSeparator1.Name = "toolStripSeparator1";
-            toolStripSeparator1.Size = new System.Drawing.Size(177, 6);
+            toolStripSeparator1.Size = new System.Drawing.Size(168, 6);
             // 
             // importToPrewiewToolStripMenuItem
             // 
             importToPrewiewToolStripMenuItem.Image = Properties.Resources.iishenar_map;
             importToPrewiewToolStripMenuItem.Name = "importToPrewiewToolStripMenuItem";
-            importToPrewiewToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            importToPrewiewToolStripMenuItem.Size = new System.Drawing.Size(171, 22);
             importToPrewiewToolStripMenuItem.Text = "Import to Prewiew";
             importToPrewiewToolStripMenuItem.ToolTipText = "Imports the graphic from the clipboard into the grid of the Picture Preview.";
             importToPrewiewToolStripMenuItem.Click += importToPrewiewToolStripMenuItem_Click;
@@ -141,13 +143,27 @@ namespace UoFiddler.Controls.Forms
             // toolStripSeparator2
             // 
             toolStripSeparator2.Name = "toolStripSeparator2";
-            toolStripSeparator2.Size = new System.Drawing.Size(177, 6);
+            toolStripSeparator2.Size = new System.Drawing.Size(168, 6);
+            // 
+            // mirrorToolStripMenuItem
+            // 
+            mirrorToolStripMenuItem.Image = Properties.Resources.Mirror;
+            mirrorToolStripMenuItem.Name = "mirrorToolStripMenuItem";
+            mirrorToolStripMenuItem.Size = new System.Drawing.Size(171, 22);
+            mirrorToolStripMenuItem.Text = "Mirror";
+            mirrorToolStripMenuItem.ToolTipText = "Mirror Image";
+            mirrorToolStripMenuItem.Click += mirrorToolStripMenuItem_Click;
+            // 
+            // toolStripSeparator3
+            // 
+            toolStripSeparator3.Name = "toolStripSeparator3";
+            toolStripSeparator3.Size = new System.Drawing.Size(168, 6);
             // 
             // saveToolStripMenuItem
             // 
             saveToolStripMenuItem.Image = Properties.Resources.save;
             saveToolStripMenuItem.Name = "saveToolStripMenuItem";
-            saveToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            saveToolStripMenuItem.Size = new System.Drawing.Size(171, 22);
             saveToolStripMenuItem.Text = "Save";
             saveToolStripMenuItem.ToolTipText = "Save the image to the target directory.";
             saveToolStripMenuItem.Click += saveToolStripMenuItem_Click;
@@ -409,6 +425,7 @@ namespace UoFiddler.Controls.Forms
             // 
             // panelPreview
             // 
+            panelPreview.Controls.Add(btBackground);
             panelPreview.Controls.Add(pictureBoxPreview);
             panelPreview.Controls.Add(NextButton);
             panelPreview.Controls.Add(IgPreviewClicked);
@@ -417,6 +434,16 @@ namespace UoFiddler.Controls.Forms
             panelPreview.Name = "panelPreview";
             panelPreview.Size = new System.Drawing.Size(488, 461);
             panelPreview.TabIndex = 15;
+            // 
+            // btBackground
+            // 
+            btBackground.Location = new System.Drawing.Point(288, 435);
+            btBackground.Name = "btBackground";
+            btBackground.Size = new System.Drawing.Size(84, 23);
+            btBackground.TabIndex = 15;
+            btBackground.Text = "Standard";
+            btBackground.UseVisualStyleBackColor = true;
+            btBackground.Click += btBackground_Click;
             // 
             // tBoxInfoColor
             // 
@@ -482,14 +509,6 @@ namespace UoFiddler.Controls.Forms
             btCopyColorCode.Text = "Copy";
             btCopyColorCode.UseVisualStyleBackColor = true;
             btCopyColorCode.Click += btCopyColorCode_Click;
-            // 
-            // mirrorToolStripMenuItem
-            // 
-            mirrorToolStripMenuItem.Name = "mirrorToolStripMenuItem";
-            mirrorToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            mirrorToolStripMenuItem.Text = "Mirror";
-            mirrorToolStripMenuItem.ToolTipText = "Mirror Image";
-            mirrorToolStripMenuItem.Click += mirrorToolStripMenuItem_Click;
             // 
             // TextureWindowForm
             // 
@@ -566,5 +585,7 @@ namespace UoFiddler.Controls.Forms
         private System.Windows.Forms.Button btImageRight;
         private System.Windows.Forms.Button btImageLeft;
         private System.Windows.Forms.ToolStripMenuItem mirrorToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
+        private System.Windows.Forms.Button btBackground;
     }
 }

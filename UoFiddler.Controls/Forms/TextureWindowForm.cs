@@ -817,5 +817,29 @@ namespace UoFiddler.Controls.Forms
             }
         }
         #endregion
+
+        #region btBackground
+        private int _clickCount = 0;
+        private void btBackground_Click(object sender, EventArgs e)
+        {
+            _clickCount++;
+
+            switch (_clickCount % 3)
+            {
+                case 0: // Default color
+                    pictureBoxPreview.BackColor = SystemColors.Control;
+                    btBackground.Text = "Standard"; // Insert the original name of the button here
+                    break;
+                case 1: // Black
+                    pictureBoxPreview.BackColor = Color.Black;
+                    btBackground.Text = "Black";
+                    break;
+                case 2: // White
+                    pictureBoxPreview.BackColor = Color.White;
+                    btBackground.Text = "White";
+                    break;
+            }
+        }
+        #endregion
     }
 }
