@@ -15,7 +15,7 @@ Version : 4.12.1 #XG1
 - Add Texture editor for tiles incorporated into the textures.
 - Add Picture Preview
 - Add Added color change so you can change the pixel colors.
-- Mirror, scale textures to 64x64 and 128x128, rotate right left and create textures.
+- Add Mirror, scale textures to 64x64 and 128x128, rotate right left and create textures.
 
 Version : 4.12.0 #XG1
 - Update to net8.
