@@ -275,7 +275,7 @@ namespace UoFiddler.Controls.Forms
             // 
             // btImageRight
             // 
-            btImageRight.Location = new System.Drawing.Point(286, 199);
+            btImageRight.Location = new System.Drawing.Point(284, 199);
             btImageRight.Name = "btImageRight";
             btImageRight.Size = new System.Drawing.Size(51, 23);
             btImageRight.TabIndex = 16;
@@ -285,7 +285,7 @@ namespace UoFiddler.Controls.Forms
             // 
             // btImageLeft
             // 
-            btImageLeft.Location = new System.Drawing.Point(241, 199);
+            btImageLeft.Location = new System.Drawing.Point(239, 199);
             btImageLeft.Name = "btImageLeft";
             btImageLeft.Size = new System.Drawing.Size(46, 23);
             btImageLeft.TabIndex = 15;
@@ -346,7 +346,7 @@ namespace UoFiddler.Controls.Forms
             // 
             // buttonOpenTempGrafic
             // 
-            buttonOpenTempGrafic.Location = new System.Drawing.Point(241, 224);
+            buttonOpenTempGrafic.Location = new System.Drawing.Point(239, 224);
             buttonOpenTempGrafic.Name = "buttonOpenTempGrafic";
             buttonOpenTempGrafic.Size = new System.Drawing.Size(46, 23);
             buttonOpenTempGrafic.TabIndex = 9;

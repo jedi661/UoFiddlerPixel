@@ -1247,6 +1247,27 @@ namespace UoFiddler.Controls.UserControls
         {
             return Textures.GetIdxLength();
         }
-        #endregion        
+        #endregion
+
+
+        #region BildFusion Form
+        private BildFusionForm bildFusionForm;
+        private void toolStripButtonPictureFusion_Click(object sender, EventArgs e)
+        {
+            // Check if the form is already open
+            if (bildFusionForm == null || bildFusionForm.IsDisposed)
+            {
+                // Create a new instance of the form if it's not already open
+                bildFusionForm = new BildFusionForm();
+            }
+
+            // Bring the form to the foreground if it is already open
+            bildFusionForm.BringToFront();
+
+            // Open the Form
+            bildFusionForm.Show();
+        }
+        #endregion
+
     }
 }
