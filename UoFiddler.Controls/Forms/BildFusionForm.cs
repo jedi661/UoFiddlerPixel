@@ -13,6 +13,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -59,7 +60,7 @@ namespace UoFiddler.Controls.Forms
 
             if (openFileDialog1.ShowDialog() == DialogResult.OK)
             {
-                // Laden Sie das Hintergrundbild
+                // Load the background image
                 originalBackgroundImage = new Bitmap(openFileDialog1.FileName);
 
                 // Display a message
@@ -237,7 +238,7 @@ namespace UoFiddler.Controls.Forms
         }
         #endregion
 
-        #region  btSave64x64_Click
+        #region  Save
         private void btSave_Click(object sender, EventArgs e)
         {
             PictureBox currentBox;
@@ -656,7 +657,7 @@ namespace UoFiddler.Controls.Forms
                     }
                 }
             }
-        }        
+        }
         #endregion
 
         #region comboBoxRubberStamp_DrawItem
@@ -712,6 +713,9 @@ namespace UoFiddler.Controls.Forms
 
                 // Invert the value of the TrackBar to calculate transparency
                 int transparency = 255 - trackBarFading.Value;
+
+                // Update the label with the current TrackBar value
+                lbNr.Text = trackBarFading.Value.ToString();
 
                 // Go through each pixel in the image
                 for (int y = 0; y < tempOverlayImage.Height; y++)
@@ -877,6 +881,151 @@ namespace UoFiddler.Controls.Forms
             return Color.FromArgb((int)(r * 255), (int)(g * 255), (int)(b * 255));
         }
         #endregion
+        #endregion
+
+        #region btMirror
+        private void btMirror_Click(object sender, EventArgs e)
+        {
+            // Check if there is an overlay image
+            if (originalOverlayImage != null)
+            {
+                // Flip the overlay image horizontally
+                originalOverlayImage.RotateFlip(RotateFlipType.RotateNoneFlipX);
+
+                // Draw the mirrored overlay image onto the background image
+                DrawOverlayOnImage();
+
+                // Check which CheckBox is selected and load the image into the corresponding PictureBox
+                if (checkBox64x64.Checked)
+                {
+                    pictureBox64x64.Image = new Bitmap(displayedImage, new Size(64, 64));
+                }
+                else if (checkBox128x128.Checked)
+                {
+                    pictureBox128x128.Image = new Bitmap(displayedImage, new Size(128, 128));
+                }
+                else if (checkBox256x256.Checked)
+                {
+                    pictureBox256x256.Image = new Bitmap(displayedImage, new Size(256, 256));
+                }
+            }
+        }
+        #endregion
+
+        #region btBackgroundImageLoad
+        // Create a second ImageList for the background images
+        private ImageList backgroundImageList = new ImageList();
+
+        private void btBackgroundImageLoad_Click(object sender, EventArgs e)
+        {
+            using (var fbd = new FolderBrowserDialog())
+            {
+                DialogResult result = fbd.ShowDialog();
+
+                if (result == DialogResult.OK && !string.IsNullOrWhiteSpace(fbd.SelectedPath))
+                {
+                    string[] files = Directory.GetFiles(fbd.SelectedPath);
+                    tbDirBackgroundImage.Text = fbd.SelectedPath;
+                    comboBoxBackgroundImage.Items.Clear();
+                    backgroundImageList.Images.Clear(); // Use the new ImageList
+
+                    foreach (var file in files)
+                    {
+                        string extension = System.IO.Path.GetExtension(file).ToLower();
+                        if (extension == ".bmp" || extension == ".png" || extension == ".tiff" || extension == ".jpg")
+                        {
+                            backgroundImageList.Images.Add(Image.FromFile(file)); // Add the image to the new ImageList
+                            comboBoxBackgroundImage.Items.Add(System.IO.Path.GetFileName(file));
+                        }
+                    }
+                }
+            }
+        }
+        #endregion
+
+        #region comboBoxBackgroundImage_DrawItem
+        private void comboBoxBackgroundImage_DrawItem(object sender, DrawItemEventArgs e)
+        {
+            if (e.Index < 0) return; // When no item is selected
+
+            // Draw the image and text for each element
+            e.DrawBackground();
+            e.Graphics.DrawImage(backgroundImageList.Images[e.Index], e.Bounds.Left, e.Bounds.Top);
+            e.Graphics.DrawString(comboBoxBackgroundImage.Items[e.Index].ToString(), e.Font, new SolidBrush(e.ForeColor), e.Bounds.Left + backgroundImageList.ImageSize.Width, e.Bounds.Top);
+            e.DrawFocusRectangle();
+        }
+        #endregion
+
+        #region comboBoxBackgroundImage
+        private void comboBoxBackgroundImage_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            string selectedFile = Path.Combine(tbDirBackgroundImage.Text, comboBoxBackgroundImage.SelectedItem.ToString());
+            originalBackgroundImage = new Bitmap(selectedFile);
+            displayedImage = new Bitmap(originalBackgroundImage); // Update the displayedImage variable
+
+            if (checkBox64x64.Checked)
+            {
+                pictureBox64x64.Image = new Bitmap(originalBackgroundImage, new Size(64, 64));
+            }
+            else if (checkBox128x128.Checked)
+            {
+                pictureBox128x128.Image = new Bitmap(originalBackgroundImage, new Size(128, 128));
+            }
+            else if (checkBox256x256.Checked)
+            {
+                pictureBox256x256.Image = new Bitmap(originalBackgroundImage, new Size(256, 256));
+            }
+        }
+        #endregion
+
+        #region btViewLoadBackground
+        private void btViewLoadBackground_Click(object sender, EventArgs e)
+        {
+            using (var ofd = new OpenFileDialog())
+            {
+                ofd.InitialDirectory = "C:\\"; // Set your default directory path here
+                ofd.Filter = "Bilder|*.bmp;*.png;*.jpg;*.jpeg;*.gif";
+                ofd.Multiselect = true;
+
+                if (ofd.ShowDialog() == DialogResult.OK)
+                {
+                    tbDirBackgroundImage.Text = System.IO.Path.GetDirectoryName(ofd.FileNames[0]);
+
+                    comboBoxBackgroundImage.Items.Clear();
+                    backgroundImageList.Images.Clear();
+
+                    foreach (var file in ofd.FileNames)
+                    {
+                        // Add the image to the ImageList
+                        backgroundImageList.Images.Add(Image.FromFile(file));
+                        comboBoxBackgroundImage.Items.Add(System.IO.Path.GetFileName(file));
+                    }
+                }
+            }
+        }
+        #endregion
+
+        #region btDirSaveOrder
+        private void btDirSaveOrder_Click(object sender, EventArgs e)
+        {
+            // Get the path to the program directory
+            string programDirectory = Application.StartupPath;
+
+            // Define the path to the temporary directory in the program directory
+            string directory = Path.Combine(programDirectory, "tempGrafic");
+
+            // Check if the directory exists
+            if (Directory.Exists(directory))
+            {
+                // Open the directory in the file explorer
+                Process.Start("explorer.exe", directory);
+            }
+            else
+            {
+                // Display a message to the user indicating that the directory does not exist
+                MessageBox.Show("The directory tempGraphic does not exist.");
+            }
+        }
         #endregion
     }
 }
