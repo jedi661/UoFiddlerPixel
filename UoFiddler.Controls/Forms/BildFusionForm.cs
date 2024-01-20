@@ -15,11 +15,14 @@ using System.ComponentModel;
 using System.Data;
 using System.Diagnostics;
 using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace UoFiddler.Controls.Forms
 {
@@ -51,6 +54,8 @@ namespace UoFiddler.Controls.Forms
         private Bitmap rotatedOverlayImage64;
         private Bitmap rotatedOverlayImage128;
         private Bitmap rotatedOverlayImage256;
+
+        private Bitmap originalForegroundImage;
 
         #region btLoad
         private void btLoad_Click(object sender, EventArgs e)
@@ -639,7 +644,7 @@ namespace UoFiddler.Controls.Forms
             using (var ofd = new OpenFileDialog())
             {
                 ofd.InitialDirectory = "C:\\"; // Set your default directory path here
-                ofd.Filter = "Bilder|*.bmp;*.png;*.jpg;*.jpeg;*.gif";
+                ofd.Filter = "Images|*.bmp;*.png;*.jpg;*.jpeg;*.gif";
                 ofd.Multiselect = true;
 
                 if (ofd.ShowDialog() == DialogResult.OK)
@@ -984,7 +989,7 @@ namespace UoFiddler.Controls.Forms
             using (var ofd = new OpenFileDialog())
             {
                 ofd.InitialDirectory = "C:\\"; // Set your default directory path here
-                ofd.Filter = "Bilder|*.bmp;*.png;*.jpg;*.jpeg;*.gif";
+                ofd.Filter = "Images|*.bmp;*.png;*.jpg;*.jpeg;*.gif";
                 ofd.Multiselect = true;
 
                 if (ofd.ShowDialog() == DialogResult.OK)
@@ -1024,6 +1029,231 @@ namespace UoFiddler.Controls.Forms
             {
                 // Display a message to the user indicating that the directory does not exist
                 MessageBox.Show("The directory tempGraphic does not exist.");
+            }
+        }
+        #endregion
+
+        #region trackBarSharp_ValueChanged
+        private void trackBarSharp_ValueChanged(object sender, EventArgs e)
+        {
+            // Check if there is an overlay image
+            if (originalOverlayImage != null)
+            {
+                // Check if the value of the TrackBar is 1
+                if (trackBarSharp.Value == 1)
+                {
+                    // Restore the original foreground image
+                    originalOverlayImage = new Bitmap(originalForegroundImage);
+                }
+                else
+                {
+                    // Save the original foreground image before making any changes to it
+                    originalForegroundImage = new Bitmap(originalOverlayImage);
+
+                    // Apply the sharpening function to the originalOverlayImage
+                    // Use the TrackBar value as the sharpening level
+                    SharpenImage(originalOverlayImage, trackBarSharp.Value);
+                }
+
+                // Draw the sharpened overlay image onto the background image
+                DrawOverlayOnImage();
+
+                // Check which CheckBox is selected and load the image into the corresponding PictureBox
+                if (checkBox64x64.Checked)
+                {
+                    pictureBox64x64.Image = new Bitmap(displayedImage, new Size(64, 64));
+                }
+                else if (checkBox128x128.Checked)
+                {
+                    pictureBox128x128.Image = new Bitmap(displayedImage, new Size(128, 128));
+                }
+                else if (checkBox256x256.Checked)
+                {
+                    pictureBox256x256.Image = new Bitmap(displayedImage, new Size(256, 256));
+                }
+
+                // Update the PictureBox object to reflect the changes
+                GetCurrentPictureBox().Refresh();
+            }
+        }
+        #endregion
+
+        #region SharpenImage
+        private void SharpenImage(Bitmap image, int sharpness)
+        {
+            // Define the Laplace filter
+            double[,] laplaceFilter = new double[,]
+            {
+                { -1, -1, -1 },
+                { -1,  8, -1 },
+                { -1, -1, -1 }
+            };
+
+            // Scale the filter based on sharpening level
+            double scale = sharpness / 255.0;
+            for (int i = 0; i < 3; i++)
+            {
+                for (int j = 0; j < 3; j++)
+                {
+                    laplaceFilter[i, j] *= scale;
+                }
+            }
+
+            // Apply the filter to the image
+            ApplyFilter(image, laplaceFilter, scale);
+        }
+        #endregion
+
+        #region ApplyFilter
+        private void ApplyFilter(Bitmap image, double[,] filter, double alpha)
+        {
+            int width = image.Width;
+            int height = image.Height;
+
+            // Make a copy of the image
+            Bitmap copy = new Bitmap(image);
+            Bitmap sharpenedImage = new Bitmap(image);
+
+            // Loop through every pixel in the image
+            for (int x = 1; x < width - 1; x++)
+            {
+                for (int y = 1; y < height - 1; y++)
+                {
+                    double red = 0.0, green = 0.0, blue = 0.0;
+
+                    // Apply the filter to the surrounding pixels
+                    for (int filterX = 0; filterX < 3; filterX++)
+                    {
+                        for (int filterY = 0; filterY < 3; filterY++)
+                        {
+                            Color pixelColor = copy.GetPixel(x + filterX - 1, y + filterY - 1);
+
+                            // Check if the pixel is black
+                            if (pixelColor.R == 0 && pixelColor.G == 0 && pixelColor.B == 0)
+                            {
+                                continue;
+                            }
+
+                            red += pixelColor.R * filter[filterX, filterY];
+                            green += pixelColor.G * filter[filterX, filterY];
+                            blue += pixelColor.B * filter[filterX, filterY];
+                        }
+                    }
+
+                    // Limit the color values ​​to the range 0-255
+                    red = Math.Min(Math.Max(red, 0), 255);
+                    green = Math.Min(Math.Max(green, 0), 255);
+                    blue = Math.Min(Math.Max(blue, 0), 255);
+
+                    // Blend the sharpened image with the original image
+                    Color originalColor = image.GetPixel(x, y);
+                    red = Math.Max(alpha * red + (1 - alpha) * originalColor.R, originalColor.R);
+                    green = Math.Max(alpha * green + (1 - alpha) * originalColor.G, originalColor.G);
+                    blue = Math.Max(alpha * blue + (1 - alpha) * originalColor.B, originalColor.B);
+
+
+                    // Check whether the original pixel is black before setting it
+                    if (originalColor.R != 0 || originalColor.G != 0 || originalColor.B != 0)
+                    {
+                        sharpenedImage.SetPixel(x, y, Color.FromArgb((int)red, (int)green, (int)blue));
+                    }
+                }
+            }
+
+            // Replace the non-black pixels of the original image with the corresponding pixels of the sharpened image
+            for (int x = 0; x < width; x++)
+            {
+                for (int y = 0; y < height; y++)
+                {
+                    Color originalColor = image.GetPixel(x, y);
+
+                    // Check if the pixel is black
+                    if (originalColor.R != 0 || originalColor.G != 0 || originalColor.B != 0)
+                    {
+                        image.SetPixel(x, y, sharpenedImage.GetPixel(x, y));
+                    }
+                }
+            }
+        }
+        #endregion
+
+        #region btClipBoard
+        private void btClipboard_Click(object sender, EventArgs e)
+        {
+            // Check whether an image is displayed in the PictureBox
+            if (GetCurrentPictureBox().Image != null)
+            {
+                // Copy the image to the clipboard
+                Clipboard.SetImage(GetCurrentPictureBox().Image);
+            }
+        }
+        #endregion
+
+        #region BtTextureCut
+        private void BtTextureCut_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            openFileDialog.Filter = "Bild Dateien|*.bmp;*.jpg;*.png";
+            if (openFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                // Load the texture
+                Image texture = Image.FromFile(openFileDialog.FileName);
+
+                // Put the texture in the PictureBoxes
+                SetImageToBox(pictureBox64x64, texture);
+                SetImageToBox(pictureBox128x128, texture);
+                SetImageToBox(pictureBox256x256, texture);
+            }
+            else
+            {
+                MessageBox.Show("No image selected.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+        #endregion
+
+        #region SetImageToBox
+        private void SetImageToBox(PictureBox box, Image texture)
+        {
+            int size = Math.Min(box.Width, box.Height);
+            int x = (texture.Width - size) / 2;
+            int y = (texture.Height - size) / 2;
+            Rectangle section = new Rectangle(x, y, size, size);
+
+            Bitmap bmp = new Bitmap(texture);
+            Image croppedImage = bmp.Clone(section, bmp.PixelFormat);
+
+            box.Image = croppedImage;
+            SaveImageFromBox(box);
+        }
+        #endregion
+
+        #region SaveImageFromBox
+        private void SaveImageFromBox(PictureBox box)
+        {
+            if (box.Image != null)
+            {
+                string programDirectory = AppDomain.CurrentDomain.BaseDirectory;
+                string directory = Path.Combine(programDirectory, "tempGrafic");
+
+                // Generate file name with "TextureTile", date and time
+                string dateTime = DateTime.Now.ToString("yyyyMMdd_HHmmss");
+                string size = box.Width.ToString() + "x" + box.Height.ToString();
+                string filename = Path.Combine(directory, $"TextureTile_{size}_{dateTime}.bmp");
+
+                // Make sure the directory exists
+                Directory.CreateDirectory(directory);
+
+                // Save the image as a BMP file
+                box.Image.Save(filename, System.Drawing.Imaging.ImageFormat.Bmp);
+
+                // Play the sound
+                string soundFilePath = Path.Combine(programDirectory, "Sound.wav");
+                System.Media.SoundPlayer player = new System.Media.SoundPlayer(soundFilePath);
+                player.Play();
+            }
+            else
+            {
+                MessageBox.Show("There is no image to save.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
         #endregion

@@ -1249,7 +1249,6 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-
         #region BildFusion Form
         private BildFusionForm bildFusionForm;
         private void toolStripButtonPictureFusion_Click(object sender, EventArgs e)

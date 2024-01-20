@@ -1,3 +1,6 @@
+Version : 4.12.2 #XG1
+- BildFusion Add Sharp , Clipboard, Texture Cut.
+
 Version : 4.12.1 #XG1
 - Implemented copying multiple graphics to the clipboard with Ctrl+X.
 - Add Strg+F3 Search.
