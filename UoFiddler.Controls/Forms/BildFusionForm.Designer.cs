@@ -45,6 +45,10 @@ namespace UoFiddler.Controls.Forms
             pictureBox256x256 = new System.Windows.Forms.PictureBox();
             comboBoxRubberStamp = new System.Windows.Forms.ComboBox();
             panelPixturebox = new System.Windows.Forms.Panel();
+            panel1 = new System.Windows.Forms.Panel();
+            btCutTexture = new System.Windows.Forms.Button();
+            btLoadForeground = new System.Windows.Forms.Button();
+            btLoadTexture = new System.Windows.Forms.Button();
             BtTextureCut = new System.Windows.Forms.Button();
             lb256x256 = new System.Windows.Forms.Label();
             lb128x128 = new System.Windows.Forms.Label();
@@ -88,10 +92,12 @@ namespace UoFiddler.Controls.Forms
             lbFading = new System.Windows.Forms.Label();
             trackBarSharp = new System.Windows.Forms.TrackBar();
             lbSharp = new System.Windows.Forms.Label();
+            label2 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)pictureBox64x64).BeginInit();
             ((System.ComponentModel.ISupportInitialize)pictureBox128x128).BeginInit();
             ((System.ComponentModel.ISupportInitialize)pictureBox256x256).BeginInit();
             panelPixturebox.SuspendLayout();
+            panel1.SuspendLayout();
             panelMenu.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)trackBarFading).BeginInit();
             ((System.ComponentModel.ISupportInitialize)trackBarColor).BeginInit();
@@ -142,6 +148,7 @@ namespace UoFiddler.Controls.Forms
             // panelPixturebox
             // 
             panelPixturebox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            panelPixturebox.Controls.Add(panel1);
             panelPixturebox.Controls.Add(BtTextureCut);
             panelPixturebox.Controls.Add(lb256x256);
             panelPixturebox.Controls.Add(lb128x128);
@@ -154,13 +161,54 @@ namespace UoFiddler.Controls.Forms
             panelPixturebox.Size = new System.Drawing.Size(552, 385);
             panelPixturebox.TabIndex = 6;
             // 
+            // panel1
+            // 
+            panel1.Controls.Add(label2);
+            panel1.Controls.Add(btCutTexture);
+            panel1.Controls.Add(btLoadForeground);
+            panel1.Controls.Add(btLoadTexture);
+            panel1.Location = new System.Drawing.Point(6, 232);
+            panel1.Name = "panel1";
+            panel1.Size = new System.Drawing.Size(134, 148);
+            panel1.TabIndex = 10;
+            // 
+            // btCutTexture
+            // 
+            btCutTexture.Location = new System.Drawing.Point(9, 119);
+            btCutTexture.Name = "btCutTexture";
+            btCutTexture.Size = new System.Drawing.Size(111, 23);
+            btCutTexture.TabIndex = 7;
+            btCutTexture.Text = "Make Texture";
+            btCutTexture.UseVisualStyleBackColor = true;
+            btCutTexture.Click += btCutTexture_Click;
+            // 
+            // btLoadForeground
+            // 
+            btLoadForeground.Location = new System.Drawing.Point(9, 90);
+            btLoadForeground.Name = "btLoadForeground";
+            btLoadForeground.Size = new System.Drawing.Size(111, 23);
+            btLoadForeground.TabIndex = 9;
+            btLoadForeground.Text = "Load Foreground";
+            btLoadForeground.UseVisualStyleBackColor = true;
+            btLoadForeground.Click += btLoadForeground_Click;
+            // 
+            // btLoadTexture
+            // 
+            btLoadTexture.Location = new System.Drawing.Point(9, 61);
+            btLoadTexture.Name = "btLoadTexture";
+            btLoadTexture.Size = new System.Drawing.Size(111, 23);
+            btLoadTexture.TabIndex = 8;
+            btLoadTexture.Text = "Load Backend";
+            btLoadTexture.UseVisualStyleBackColor = true;
+            btLoadTexture.Click += btLoadTexture_Click;
+            // 
             // BtTextureCut
             // 
-            BtTextureCut.Location = new System.Drawing.Point(24, 351);
+            BtTextureCut.Location = new System.Drawing.Point(17, 203);
             BtTextureCut.Name = "BtTextureCut";
-            BtTextureCut.Size = new System.Drawing.Size(75, 23);
+            BtTextureCut.Size = new System.Drawing.Size(111, 23);
             BtTextureCut.TabIndex = 6;
-            BtTextureCut.Text = "Cut Texture";
+            BtTextureCut.Text = "3 x Cut Texture";
             BtTextureCut.UseVisualStyleBackColor = true;
             BtTextureCut.Click += BtTextureCut_Click;
             // 
@@ -600,6 +648,15 @@ namespace UoFiddler.Controls.Forms
             lbSharp.TabIndex = 15;
             lbSharp.Text = "Sharp :";
             // 
+            // label2
+            // 
+            label2.AutoSize = true;
+            label2.Location = new System.Drawing.Point(9, 13);
+            label2.Name = "label2";
+            label2.Size = new System.Drawing.Size(118, 45);
+            label2.TabIndex = 10;
+            label2.Text = "White is transparent, \r\nand black represents \r\nthe transition.";
+            // 
             // BildFusionForm
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -624,6 +681,8 @@ namespace UoFiddler.Controls.Forms
             ((System.ComponentModel.ISupportInitialize)pictureBox256x256).EndInit();
             panelPixturebox.ResumeLayout(false);
             panelPixturebox.PerformLayout();
+            panel1.ResumeLayout(false);
+            panel1.PerformLayout();
             panelMenu.ResumeLayout(false);
             panelMenu.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)trackBarFading).EndInit();
@@ -683,5 +742,10 @@ namespace UoFiddler.Controls.Forms
         private System.Windows.Forms.TrackBar trackBarSharp;
         private System.Windows.Forms.Label lbSharp;
         private System.Windows.Forms.Button BtTextureCut;
+        private System.Windows.Forms.Button btCutTexture;
+        private System.Windows.Forms.Button btLoadTexture;
+        private System.Windows.Forms.Button btLoadForeground;
+        private System.Windows.Forms.Panel panel1;
+        private System.Windows.Forms.Label label2;
     }
 }

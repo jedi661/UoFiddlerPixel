@@ -1257,5 +1257,178 @@ namespace UoFiddler.Controls.Forms
             }
         }
         #endregion
+
+        #region btLoadTexture
+        private void btLoadTexture_Click(object sender, EventArgs e)
+        {
+            // Load the background image
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            openFileDialog.Filter = "Image files|*.bmp;*.jpg;*.png";
+            if (openFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                // Load the texture
+                Image texture = Image.FromFile(openFileDialog.FileName);
+
+                // Load the image into the PictureBoxes
+                LoadImageToBox(pictureBox64x64, texture, true);
+                LoadImageToBox(pictureBox128x128, texture, true);
+                LoadImageToBox(pictureBox256x256, texture, true);
+            }
+            else
+            {
+                MessageBox.Show("No image selected.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+        #endregion
+
+        #region LoadImageToBox
+        private void LoadImageToBox(PictureBox box, Image texture, bool isBackground = false)
+        {
+            // Put the picture in the PictureBox
+            if (isBackground)
+            {
+                box.BackgroundImage = texture;
+            }
+            else
+            {
+                box.Image = texture;
+            }
+        }
+        #endregion
+
+        #region btLoadForeground
+        private void btLoadForeground_Click(object sender, EventArgs e)
+        {
+            // Load the foreground image
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            openFileDialog.Filter = "Image files|*.bmp;*.jpg;*.png";
+            if (openFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                // Load the image
+                Image image = Image.FromFile(openFileDialog.FileName);
+
+                // Create a bitmap from the image
+                Bitmap bitmap = new Bitmap(image);
+
+                // Make white transparent
+                MakeWhiteTransparent(bitmap);
+
+                // Put the edited image into the selected PictureBox
+                if (checkBox64x64.Checked)
+                {
+                    LoadImageToBox(pictureBox64x64, bitmap);
+                }
+                else if (checkBox128x128.Checked)
+                {
+                    LoadImageToBox(pictureBox128x128, bitmap);
+                }
+                else if (checkBox256x256.Checked)
+                {
+                    LoadImageToBox(pictureBox256x256, bitmap);
+                }
+            }
+            else
+            {
+                MessageBox.Show("No image selected.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+        #endregion
+
+        #region MakeWhiteTransparent
+        public void MakeWhiteTransparent(Bitmap bitmap)
+        {
+            // Loop through every pixel in the image
+            for (int y = 0; y < bitmap.Height; y++)
+            {
+                for (int x = 0; x < bitmap.Width; x++)
+                {
+                    // Get the color of the pixel
+                    Color pixelColor = bitmap.GetPixel(x, y);
+
+                    // Check if the color is white
+                    if (pixelColor.R == 255 && pixelColor.G == 255 && pixelColor.B == 255)
+                    {
+                        // Set the pixel to transparent
+                        bitmap.SetPixel(x, y, Color.Transparent);
+                    }
+                }
+            }
+        }
+        #endregion
+
+        #region btCutTextur
+        private void btCutTexture_Click(object sender, EventArgs e)
+        {
+            // Check the checkboxes and cut the texture
+            if (checkBox64x64.Checked)
+            {
+                SaveMergedImageFromBox(pictureBox64x64);
+            }
+            else if (checkBox128x128.Checked)
+            {
+                SaveMergedImageFromBox(pictureBox128x128);
+            }
+            else if (checkBox256x256.Checked)
+            {
+                SaveMergedImageFromBox(pictureBox256x256);
+            }
+        }
+        #endregion
+
+        #region SaveBitmap
+        private void SaveBitmap(Bitmap bitmap)
+        {
+            string programDirectory = AppDomain.CurrentDomain.BaseDirectory;
+            string directory = Path.Combine(programDirectory, "tempGrafic");
+
+            // Generate file name with "TextureTile", date and time
+            string dateTime = DateTime.Now.ToString("yyyyMMdd_HHmmss");
+            string size = bitmap.Width.ToString() + "x" + bitmap.Height.ToString();
+            string filename = Path.Combine(directory, $"TextureTile_{size}_{dateTime}.bmp");
+
+            // Make sure the directory exists
+            Directory.CreateDirectory(directory);
+
+            // Save the image as a BMP file
+            bitmap.Save(filename, System.Drawing.Imaging.ImageFormat.Bmp);
+
+            // Play the sound
+            string soundFilePath = Path.Combine(programDirectory, "Sound.wav");
+            System.Media.SoundPlayer player = new System.Media.SoundPlayer(soundFilePath);
+            player.Play();
+        }
+        #endregion
+
+        #region SaveMergedImageFromBox
+        private void SaveMergedImageFromBox(PictureBox box)
+        {
+            if (box.Image != null && box.BackgroundImage != null)
+            {
+                // Create a new bitmap the size of the PictureBox
+                Bitmap bitmap = new Bitmap(box.Width, box.Height);
+
+                // Draw both images onto the new bitmap
+                using (Graphics g = Graphics.FromImage(bitmap))
+                {
+                    // Draw the background image in the center of the bitmap
+                    int x = (bitmap.Width - box.BackgroundImage.Width) / 2;
+                    int y = (bitmap.Height - box.BackgroundImage.Height) / 2;
+                    g.DrawImage(box.BackgroundImage, x, y);
+
+                    // Draw the foreground image in the center of the bitmap
+                    x = (bitmap.Width - box.Image.Width) / 2;
+                    y = (bitmap.Height - box.Image.Height) / 2;
+                    g.DrawImage(box.Image, x, y);
+                }
+
+                // Save the merged image
+                SaveBitmap(bitmap);
+            }
+            else
+            {
+                MessageBox.Show("There is no image to save.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+        #endregion
     }
 }
