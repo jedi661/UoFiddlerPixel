@@ -30,7 +30,7 @@ namespace UoFiddler.Controls.Forms
     {
         public BildFusionForm()
         {
-            InitializeComponent();
+            InitializeComponent();            
         }
 
         // Global variables to store the background image and overlay image
@@ -1427,6 +1427,263 @@ namespace UoFiddler.Controls.Forms
             else
             {
                 MessageBox.Show("There is no image to save.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+        #endregion 
+
+        #region btLoadTilesIntoTiles
+        private void btLoadTilesIntoTiles_Click(object sender, EventArgs e)
+        {
+            // Create an OpenFileDialog to select the images
+            OpenFileDialog openFileDialog = new OpenFileDialog
+            {
+                Filter = "Images|*.bmp;*.jpg;*.jpeg;*.png",
+                Multiselect = false
+            };
+
+            // Load the images
+            Image[] images = new Image[3];
+            for (int i = 0; i < 3; i++)
+            {
+                if (openFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    images[i] = Image.FromFile(openFileDialog.FileName);
+                }
+                else
+                {
+                    MessageBox.Show("Please select an image.");
+                    return;
+                }
+            }
+
+            // Create a new bitmap for each image
+            Bitmap[] bitmaps = new Bitmap[3];
+            for (int i = 0; i < 3; i++)
+            {
+                bitmaps[i] = new Bitmap(images[i]);
+            }
+
+            // Make #000000 transparent in the images
+            MakeColorSemiTransparent(bitmaps[1], "#000000", 0); // 100% transparent
+
+            // Define your colors
+            string[] colors = new string[100];
+            for (int i = 0; i < 100; i++)
+            {
+                int value = 255 - (int)(2.55 * i); // Produces a value from 255 to 156
+                string hexValue = value.ToString("X2"); // Converts the value to hexadecimal
+                colors[i] = "#" + hexValue + hexValue + hexValue; // Generates a hex color code
+            }
+
+            // Make each color in the middle image transparent with decreasing transparency
+            for (int t = 0; t < 100; t++)
+            {
+                MakeColorSemiTransparent(bitmaps[1], colors[t], 255 - (int)(2.55 * t)); // t% opaque
+            }
+
+            // Apply the transparency mask to the foreground image
+            ApplyTransparencyMask(bitmaps[2], bitmaps[1]);
+
+            // Combine the images
+            // Combine the images
+            Image combinedImage = CombineImages(bitmaps[0], bitmaps[1], bitmaps[2]);
+
+            // Check which checkbox is checked and set the corresponding PictureBox
+            if (checkBox64x64.Checked)
+            {
+                pictureBox64x64.Image = new Bitmap(combinedImage, pictureBox64x64.Size);
+            }
+            else if (checkBox128x128.Checked)
+            {
+                pictureBox128x128.Image = new Bitmap(combinedImage, pictureBox128x128.Size);
+            }
+            else if (checkBox256x256.Checked)
+            {
+                pictureBox256x256.Image = new Bitmap(combinedImage, pictureBox256x256.Size);
+            }
+            else
+            {
+                MessageBox.Show("Please select a CheckBox.");
+            }
+
+        }
+        #endregion
+
+        #region MakeColorSemiTransparent
+        private static void MakeColorSemiTransparent(Bitmap bitmap, string hexColor, int transparency)
+        {
+            Color color = ColorTranslator.FromHtml(hexColor);
+
+            for (int y = 0; y < bitmap.Height; y++)
+            {
+                for (int x = 0; x < bitmap.Width; x++)
+                {
+                    if (bitmap.GetPixel(x, y) == color)
+                    {
+                        bitmap.SetPixel(x, y, Color.FromArgb(transparency, color.R, color.G, color.B));
+                    }
+                }
+            }
+        }
+        #endregion
+
+        #region ApplyTransparencyMas
+        private static void ApplyTransparencyMask(Bitmap foreground, Bitmap mask)
+        {
+            for (int y = 0; y < foreground.Height; y++)
+            {
+                for (int x = 0; x < foreground.Width; x++)
+                {
+                    Color maskColor = mask.GetPixel(x, y);
+                    int maskBrightness = (int)(maskColor.GetBrightness() * 255);
+                    Color foregroundColor = foreground.GetPixel(x, y);
+                    foreground.SetPixel(x, y, Color.FromArgb(maskBrightness, foregroundColor.R, foregroundColor.G, foregroundColor.B));
+                }
+            }
+        }
+        #endregion
+
+        #region Bitmap CombineImages
+        private static Bitmap CombineImages(Image image1, Image image2, Image image3)
+        {
+            Bitmap result = new Bitmap(64, 64);
+
+            using (Graphics graphics = Graphics.FromImage(result))
+            {
+                graphics.DrawImage(image1, 0, 0);
+                graphics.DrawImage(image2, 0, 0);
+                graphics.DrawImage(image3, 0, 0);
+            }
+
+            return result;
+        }
+        #endregion
+
+        #region btnGenerateColorCodes
+        private void btnGenerateColorCodes_Click(object sender, EventArgs e)
+        {
+            // Create a list of color codes and their corresponding opacity
+            string[] colors = new string[]
+            {
+                "#000000 - 100% opacity",
+                "#FFFFFF - 100% opacity",
+                "#FEFEFE - 99% opacity",
+                "#FDFDFD - 98% opacity",
+                "#FCFCFC - 97% opacity",
+                "#FBFBFB - 96% opacity",
+                "#FAFAFA - 95% opacity",
+                "#F9F9F9 - 94% opacity",
+                "#F8F8F8 - 93% opacity",
+                "#F7F7F7 - 92% opacity",
+                "#F6F6F6 - 91% opacity",
+                "#F5F5F5 - 90% opacity",
+                "#F4F4F4 - 89% opacity",
+                "#F3F3F3 - 88% opacity",
+                "#F2F2F2 - 87% opacity",
+                "#F1F1F1 - 86% opacity",
+                "#F0F0F0 - 85% opacity",
+                "#EFEFEF - 84% opacity",
+                "#EEEEEE - 83% opacity",
+                "#EDEDED - 82% opacity",
+                "#ECECEC - 81% opacity",
+                "#EBEBEB - 80% opacity",
+                "#EAEAEA - 79% opacity",
+                "#E9E9E9 - 78% opacity",
+                "#E8E8E8 - 77% opacity",
+                "#E7E7E7 - 76% opacity",
+                "#E6E6E6 - 75% opacity",
+                "#E5E5E5 - 74% opacity",
+                "#E4E4E4 - 73% opacity",
+                "#E3E3E3 - 72% opacity",
+                "#E2E2E2 - 71% opacity",
+                "#E1E1E1 - 70% opacity",
+                "#E0E0E0 - 69% opacity",
+                "#DFDFDF - 68% opacity",
+                "#DEDEDE - 67% opacity",
+                "#DDDDDD - 66% opacity",
+                "#DCDCDC - 65% opacity",
+                "#DBDBDB - 64% opacity",
+                "#DADADA - 63% opacity",
+                "#D9D9D9 - 62% opacity",
+                "#D8D8D8 - 61% opacity",
+                "#D7D7D7 - 60% opacity",
+                "#D6D6D6 - 59% opacity",
+                "#D5D5D5 - 58% opacity",
+                "#D4D4D4 - 57% opacity",
+                "#D3D3D3 - 56% opacity",
+                "#D2D2D2 - 55% opacity",
+                "#D1D1D1 - 54% opacity",
+                "#D0D0D0 - 53% opacity",
+                "#CFCFCF - 52% opacity",
+                "#CECECE - 51% opacity",
+                "#CDCDCD - 50% opacity",
+                "#CCCCCC - 49% opacity",
+                "#CBCBCB - 48% opacity",
+                "#CACACA - 47% opacity",
+                "#C9C9C9 - 46% opacity",
+                "#C8C8C8 - 45% opacity",
+                "#C7C7C7 - 44% opacity",
+                "#C6C6C6 - 43% opacity",
+                "#C5C5C5 - 42% opacity",
+                "#C4C4C4 - 41% opacity",
+                "#C3C3C3 - 40% opacity",
+                "#C2C2C2 - 39% opacity",
+                "#C1C1C1 - 38% opacity",
+                "#C0C0C0 - 37% opacity",
+                "#BFBFBF - 36% opacity",
+                "#BEBEBE - 35% opacity",
+                "#BDBDBD - 34% opacity",
+                "#BCBCBC - 33% opacity",
+                "#BBBBBB - 32% opacity",
+                "#BABABA - 31% opacity",
+                "#B9B9B9 - 30% opacity",
+                "#B8B8B8 - 29% opacity",
+                "#B7B7B7 - 28% opacity",
+                "#B6B6B6 - 27% opacity",
+                "#B5B5B5 - 26% opacity",
+                "#B4B4B4 - 25% opacity",
+                "#B3B3B3 - 24% opacity",
+                "#B2B2B2 - 23% opacity",
+                "#B1B1B1 - 22% opacity",
+                "#B0B0B0 - 21% opacity",
+                "#AFAFAF - 20% opacity",
+                "#AEAEAE - 19% opacity",
+                "#ADADAD - 18% opacity",
+                "#ACACAC - 17% opacity",
+                "#ABABAB - 16% opacity",
+                "#AAAAAA - 15% opacity",
+                "#A9A9A9 - 14% opacity",
+                "#A8A8A8 - 13% opacity",
+                "#A7A7A7 - 12% opacity",
+                "#A6A6A6 - 11% opacity",
+                "#A5A5A5 - 10% opacity",
+                "#A4A4A4 - 9% opacity",
+                "#A3A3A3 - 8% opacity",
+                "#A2A2A2 - 7% opacity",
+                "#A1A1A1 - 6% opacity",
+                "#A0A0A0 - 5% opacity",
+                "#9F9F9F - 4% opacity",
+                "#9E9E9E - 3% opacity",
+                "#9D9D9D - 2% opacity",
+                "#9C9C9C - 1% opacity",                
+            };
+
+            // Display the color codes in the RichTextBox
+            richTextBox1.Text = string.Join("\n", colors);
+        }
+        #endregion
+
+        #region richTextBox1_MouseUp        
+        private void richTextBox1_MouseUp(object sender, MouseEventArgs e)
+        {
+            // Überprüfen Sie, ob der ausgewählte Text null oder leer ist
+            if (!string.IsNullOrEmpty(richTextBox1.SelectedText))
+            {
+                // Wenn der ausgewählte Text ein Hex-Farbcode ist, kopieren Sie ihn in die Zwischenablage
+                if (richTextBox1.SelectedText.StartsWith("#"))
+                {
+                    Clipboard.SetText(richTextBox1.SelectedText);
+                }
             }
         }
         #endregion

@@ -45,7 +45,11 @@ namespace UoFiddler.Controls.Forms
             pictureBox256x256 = new System.Windows.Forms.PictureBox();
             comboBoxRubberStamp = new System.Windows.Forms.ComboBox();
             panelPixturebox = new System.Windows.Forms.Panel();
+            btnGenerateColorCodes = new System.Windows.Forms.Button();
+            richTextBox1 = new System.Windows.Forms.RichTextBox();
+            btLoadTilesIntoTiles = new System.Windows.Forms.Button();
             panel1 = new System.Windows.Forms.Panel();
+            label2 = new System.Windows.Forms.Label();
             btCutTexture = new System.Windows.Forms.Button();
             btLoadForeground = new System.Windows.Forms.Button();
             btLoadTexture = new System.Windows.Forms.Button();
@@ -92,7 +96,6 @@ namespace UoFiddler.Controls.Forms
             lbFading = new System.Windows.Forms.Label();
             trackBarSharp = new System.Windows.Forms.TrackBar();
             lbSharp = new System.Windows.Forms.Label();
-            label2 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)pictureBox64x64).BeginInit();
             ((System.ComponentModel.ISupportInitialize)pictureBox128x128).BeginInit();
             ((System.ComponentModel.ISupportInitialize)pictureBox256x256).BeginInit();
@@ -148,6 +151,9 @@ namespace UoFiddler.Controls.Forms
             // panelPixturebox
             // 
             panelPixturebox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            panelPixturebox.Controls.Add(btnGenerateColorCodes);
+            panelPixturebox.Controls.Add(richTextBox1);
+            panelPixturebox.Controls.Add(btLoadTilesIntoTiles);
             panelPixturebox.Controls.Add(panel1);
             panelPixturebox.Controls.Add(BtTextureCut);
             panelPixturebox.Controls.Add(lb256x256);
@@ -161,6 +167,35 @@ namespace UoFiddler.Controls.Forms
             panelPixturebox.Size = new System.Drawing.Size(552, 385);
             panelPixturebox.TabIndex = 6;
             // 
+            // btnGenerateColorCodes
+            // 
+            btnGenerateColorCodes.Location = new System.Drawing.Point(278, 321);
+            btnGenerateColorCodes.Name = "btnGenerateColorCodes";
+            btnGenerateColorCodes.Size = new System.Drawing.Size(75, 23);
+            btnGenerateColorCodes.TabIndex = 14;
+            btnGenerateColorCodes.Text = "Colors";
+            btnGenerateColorCodes.UseVisualStyleBackColor = true;
+            btnGenerateColorCodes.Click += btnGenerateColorCodes_Click;
+            // 
+            // richTextBox1
+            // 
+            richTextBox1.Location = new System.Drawing.Point(359, 306);
+            richTextBox1.Name = "richTextBox1";
+            richTextBox1.Size = new System.Drawing.Size(155, 68);
+            richTextBox1.TabIndex = 13;
+            richTextBox1.Text = "";
+            richTextBox1.MouseUp += richTextBox1_MouseUp;
+            // 
+            // btLoadTilesIntoTiles
+            // 
+            btLoadTilesIntoTiles.Location = new System.Drawing.Point(221, 350);
+            btLoadTilesIntoTiles.Name = "btLoadTilesIntoTiles";
+            btLoadTilesIntoTiles.Size = new System.Drawing.Size(132, 23);
+            btLoadTilesIntoTiles.TabIndex = 11;
+            btLoadTilesIntoTiles.Text = "Texture  into Texture";
+            btLoadTilesIntoTiles.UseVisualStyleBackColor = true;
+            btLoadTilesIntoTiles.Click += btLoadTilesIntoTiles_Click;
+            // 
             // panel1
             // 
             panel1.Controls.Add(label2);
@@ -171,6 +206,15 @@ namespace UoFiddler.Controls.Forms
             panel1.Name = "panel1";
             panel1.Size = new System.Drawing.Size(134, 148);
             panel1.TabIndex = 10;
+            // 
+            // label2
+            // 
+            label2.AutoSize = true;
+            label2.Location = new System.Drawing.Point(9, 13);
+            label2.Name = "label2";
+            label2.Size = new System.Drawing.Size(118, 45);
+            label2.TabIndex = 10;
+            label2.Text = "White is transparent, \r\nand black represents \r\nthe transition.";
             // 
             // btCutTexture
             // 
@@ -648,15 +692,6 @@ namespace UoFiddler.Controls.Forms
             lbSharp.TabIndex = 15;
             lbSharp.Text = "Sharp :";
             // 
-            // label2
-            // 
-            label2.AutoSize = true;
-            label2.Location = new System.Drawing.Point(9, 13);
-            label2.Name = "label2";
-            label2.Size = new System.Drawing.Size(118, 45);
-            label2.TabIndex = 10;
-            label2.Text = "White is transparent, \r\nand black represents \r\nthe transition.";
-            // 
             // BildFusionForm
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -747,5 +782,8 @@ namespace UoFiddler.Controls.Forms
         private System.Windows.Forms.Button btLoadForeground;
         private System.Windows.Forms.Panel panel1;
         private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.Button btLoadTilesIntoTiles;
+        private System.Windows.Forms.Button btnGenerateColorCodes;
+        private System.Windows.Forms.RichTextBox richTextBox1;
     }
 }
