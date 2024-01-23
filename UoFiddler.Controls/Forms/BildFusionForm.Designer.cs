@@ -198,6 +198,7 @@ namespace UoFiddler.Controls.Forms
             // 
             // panel1
             // 
+            panel1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             panel1.Controls.Add(label2);
             panel1.Controls.Add(btCutTexture);
             panel1.Controls.Add(btLoadForeground);

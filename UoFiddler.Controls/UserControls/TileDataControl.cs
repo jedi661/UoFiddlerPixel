@@ -647,7 +647,13 @@ namespace UoFiddler.Controls.UserControls
                 pictureBoxItem.Image = newBit;
 
                 originalImage = pictureBoxItem.Image; // Update the original image -> Zoom
-                UpdateZoomFormImage(); // Update Zoom -> Form
+
+                // Update the image in the Zoom form
+                if (zoomForm != null && zoomForm.Visible)
+                {
+                    UpdateZoomFormImage();
+                }
+
             }
             else
             {
