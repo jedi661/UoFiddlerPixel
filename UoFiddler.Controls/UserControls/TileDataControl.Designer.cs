@@ -694,7 +694,7 @@ namespace UoFiddler.Controls.UserControls
             // 
             contextMenuStripBoxItem.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { zoomToolStripMenuItem, zoomImageToolStripMenuItem });
             contextMenuStripBoxItem.Name = "contextMenuStripBoxItem";
-            contextMenuStripBoxItem.Size = new System.Drawing.Size(138, 48);
+            contextMenuStripBoxItem.Size = new System.Drawing.Size(181, 70);
             // 
             // zoomToolStripMenuItem
             // 

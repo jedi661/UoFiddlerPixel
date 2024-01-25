@@ -841,5 +841,38 @@ namespace UoFiddler.Controls.Forms
             }
         }
         #endregion
+
+        #region triangleToolStripMenuItem
+        private void triangleToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (pictureBoxTexture.Image != null)
+            {
+                // Create a new Bitmap object based on the current image in the PictureBox
+                Bitmap bmp = new Bitmap(pictureBoxTexture.Image);
+
+                // Create a Graphics object for the bitmap
+                using (Graphics g = Graphics.FromImage(bmp))
+                {
+                    // Define the color and brush
+                    Color color = ColorTranslator.FromHtml("#000000");
+                    using (SolidBrush brush = new SolidBrush(color))
+                    {
+                        // Define the rectangle for the bottom half of the image
+                        Rectangle rect = new Rectangle(0, bmp.Height / 2, bmp.Width, bmp.Height / 2);
+
+                        // Fill the rectangle with black
+                        g.FillRectangle(brush, rect);
+                    }
+                }
+
+                // Put the new image in the PictureBox
+                pictureBoxTexture.Image = bmp;
+            }
+            else
+            {
+                MessageBox.Show("There is no image to edit.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+        #endregion
     }
 }
