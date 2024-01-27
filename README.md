@@ -8,6 +8,7 @@ Version : 4.12.2
 - BildFusion Add Sharp , Clipboard, Texture Cut.
 - Make Texture, White is transparent, and black represents the transition, Texture into Texture, Colors.
 - Add triangle for Tiles TextureWindowForm
+- Path Settings, Reload all Files and New, Load Single Mul file, Delete Line
 
 Version : 4.12.1
 - Implemented copying multiple graphics to the clipboard with Ctrl+X.

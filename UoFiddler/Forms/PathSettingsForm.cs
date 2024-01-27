@@ -13,6 +13,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.IO;
 using System.Windows.Forms;
 using Ultima;
 using Ultima.Helpers;
@@ -72,6 +73,58 @@ namespace UoFiddler.Forms
             pgPaths.Refresh();
             tsTbRootPath.Text = Files.RootDir;
             MapHelper.CheckForNewMapSize();
+        }
+
+        private void newDirAndMulToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            using (FolderBrowserDialog dialog = new FolderBrowserDialog())
+            {
+                if (dialog.ShowDialog() == DialogResult.OK)
+                {
+                    string directoryPath = dialog.SelectedPath;
+                    string[] files = Directory.GetFiles(directoryPath, "*.mul"); // Filter für .mul Dateien
+
+                    foreach (string filePath in files)
+                    {
+                        string key = Path.GetFileNameWithoutExtension(filePath); // Verwenden Sie den Dateinamen ohne Erweiterung als Schlüssel
+                        Files.MulPath.Add(key, filePath);
+                    }
+
+                    pgPaths.SelectedObject = new DictionaryPropertyGridAdapter(Files.MulPath);
+                    pgPaths.Refresh();
+                }
+            }
+        }
+
+        private void loadSingleMulFileToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            using (OpenFileDialog dialog = new OpenFileDialog())
+            {
+                dialog.Filter = "mul files (*.mul)|*.mul"; // Filter für .mul Dateien
+                if (dialog.ShowDialog() == DialogResult.OK)
+                {
+                    string filePath = dialog.FileName;
+                    string key = Path.GetFileNameWithoutExtension(filePath); // Verwenden Sie den Dateinamen ohne Erweiterung als Schlüssel
+                    Files.MulPath.Add(key, filePath);
+
+                    pgPaths.SelectedObject = new DictionaryPropertyGridAdapter(Files.MulPath);
+                    pgPaths.Refresh();
+                }
+            }
+        }
+
+        private void DeleteLineToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (pgPaths.SelectedGridItem != null)
+            {
+                string key = pgPaths.SelectedGridItem.Label; // Der Schlüssel ist der Label des ausgewählten GridItems
+                if (Files.MulPath.ContainsKey(key))
+                {
+                    Files.MulPath.Remove(key);
+                    pgPaths.SelectedObject = new DictionaryPropertyGridAdapter(Files.MulPath);
+                    pgPaths.Refresh();
+                }
+            }
         }
     }
 

@@ -536,6 +536,6 @@ namespace UoFiddler.Controls.Forms
         private class RTerMur : SupportedMaps
         {
             public RTerMur() : base(5, Options.MapNames[5], 1280, 4096) { }
-        }
+        }        
     }
 }

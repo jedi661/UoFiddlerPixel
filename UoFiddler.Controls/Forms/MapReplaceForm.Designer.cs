@@ -39,384 +39,359 @@ namespace UoFiddler.Controls.Forms
         /// </summary>
         private void InitializeComponent()
         {
-            this.textBox1 = new System.Windows.Forms.TextBox();
-            this.button1 = new System.Windows.Forms.Button();
-            this.checkBoxMap = new System.Windows.Forms.CheckBox();
-            this.checkBoxStatics = new System.Windows.Forms.CheckBox();
-            this.numericUpDownX1 = new System.Windows.Forms.NumericUpDown();
-            this.label1 = new System.Windows.Forms.Label();
-            this.label2 = new System.Windows.Forms.Label();
-            this.numericUpDownY1 = new System.Windows.Forms.NumericUpDown();
-            this.label3 = new System.Windows.Forms.Label();
-            this.numericUpDownX2 = new System.Windows.Forms.NumericUpDown();
-            this.label4 = new System.Windows.Forms.Label();
-            this.numericUpDownY2 = new System.Windows.Forms.NumericUpDown();
-            this.button2 = new System.Windows.Forms.Button();
-            this.progressBar1 = new System.Windows.Forms.ProgressBar();
-            this.label5 = new System.Windows.Forms.Label();
-            this.RemoveDupl = new System.Windows.Forms.CheckBox();
-            this.groupBox1 = new System.Windows.Forms.GroupBox();
-            this.groupBox2 = new System.Windows.Forms.GroupBox();
-            this.groupBox3 = new System.Windows.Forms.GroupBox();
-            this.groupBox4 = new System.Windows.Forms.GroupBox();
-            this.label6 = new System.Windows.Forms.Label();
-            this.numericUpDownToX1 = new System.Windows.Forms.NumericUpDown();
-            this.numericUpDownToY1 = new System.Windows.Forms.NumericUpDown();
-            this.label7 = new System.Windows.Forms.Label();
-            this.comboBoxMapID = new System.Windows.Forms.ComboBox();
-            this.label8 = new System.Windows.Forms.Label();
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDownX1)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDownY1)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDownX2)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDownY2)).BeginInit();
-            this.groupBox1.SuspendLayout();
-            this.groupBox2.SuspendLayout();
-            this.groupBox3.SuspendLayout();
-            this.groupBox4.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDownToX1)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDownToY1)).BeginInit();
-            this.SuspendLayout();
+            textBox1 = new System.Windows.Forms.TextBox();
+            button1 = new System.Windows.Forms.Button();
+            checkBoxMap = new System.Windows.Forms.CheckBox();
+            checkBoxStatics = new System.Windows.Forms.CheckBox();
+            numericUpDownX1 = new System.Windows.Forms.NumericUpDown();
+            label1 = new System.Windows.Forms.Label();
+            label2 = new System.Windows.Forms.Label();
+            numericUpDownY1 = new System.Windows.Forms.NumericUpDown();
+            label3 = new System.Windows.Forms.Label();
+            numericUpDownX2 = new System.Windows.Forms.NumericUpDown();
+            label4 = new System.Windows.Forms.Label();
+            numericUpDownY2 = new System.Windows.Forms.NumericUpDown();
+            button2 = new System.Windows.Forms.Button();
+            progressBar1 = new System.Windows.Forms.ProgressBar();
+            label5 = new System.Windows.Forms.Label();
+            RemoveDupl = new System.Windows.Forms.CheckBox();
+            groupBox1 = new System.Windows.Forms.GroupBox();
+            groupBox2 = new System.Windows.Forms.GroupBox();
+            groupBox3 = new System.Windows.Forms.GroupBox();
+            groupBox4 = new System.Windows.Forms.GroupBox();
+            label6 = new System.Windows.Forms.Label();
+            numericUpDownToX1 = new System.Windows.Forms.NumericUpDown();
+            numericUpDownToY1 = new System.Windows.Forms.NumericUpDown();
+            label7 = new System.Windows.Forms.Label();
+            comboBoxMapID = new System.Windows.Forms.ComboBox();
+            label8 = new System.Windows.Forms.Label();
+            ((System.ComponentModel.ISupportInitialize)numericUpDownX1).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)numericUpDownY1).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)numericUpDownX2).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)numericUpDownY2).BeginInit();
+            groupBox1.SuspendLayout();
+            groupBox2.SuspendLayout();
+            groupBox3.SuspendLayout();
+            groupBox4.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)numericUpDownToX1).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)numericUpDownToY1).BeginInit();
+            SuspendLayout();
             // 
             // textBox1
             // 
-            this.textBox1.Location = new System.Drawing.Point(105, 14);
-            this.textBox1.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.textBox1.Name = "textBox1";
-            this.textBox1.Size = new System.Drawing.Size(227, 23);
-            this.textBox1.TabIndex = 0;
+            textBox1.Location = new System.Drawing.Point(105, 14);
+            textBox1.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            textBox1.Name = "textBox1";
+            textBox1.Size = new System.Drawing.Size(227, 23);
+            textBox1.TabIndex = 0;
             // 
             // button1
             // 
-            this.button1.AutoSize = true;
-            this.button1.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.button1.Location = new System.Drawing.Point(340, 12);
-            this.button1.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(26, 25);
-            this.button1.TabIndex = 1;
-            this.button1.Text = "...";
-            this.button1.UseVisualStyleBackColor = true;
-            this.button1.Click += new System.EventHandler(this.OnClickBrowse);
+            button1.AutoSize = true;
+            button1.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            button1.Location = new System.Drawing.Point(340, 12);
+            button1.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            button1.Name = "button1";
+            button1.Size = new System.Drawing.Size(26, 25);
+            button1.TabIndex = 1;
+            button1.Text = "...";
+            button1.UseVisualStyleBackColor = true;
+            button1.Click += OnClickBrowse;
             // 
             // checkBoxMap
             // 
-            this.checkBoxMap.AutoSize = true;
-            this.checkBoxMap.Location = new System.Drawing.Point(7, 22);
-            this.checkBoxMap.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.checkBoxMap.Name = "checkBoxMap";
-            this.checkBoxMap.Size = new System.Drawing.Size(81, 19);
-            this.checkBoxMap.TabIndex = 2;
-            this.checkBoxMap.Text = "Copy Map";
-            this.checkBoxMap.UseVisualStyleBackColor = true;
+            checkBoxMap.AutoSize = true;
+            checkBoxMap.Location = new System.Drawing.Point(7, 22);
+            checkBoxMap.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            checkBoxMap.Name = "checkBoxMap";
+            checkBoxMap.Size = new System.Drawing.Size(81, 19);
+            checkBoxMap.TabIndex = 2;
+            checkBoxMap.Text = "Copy Map";
+            checkBoxMap.UseVisualStyleBackColor = true;
             // 
             // checkBoxStatics
             // 
-            this.checkBoxStatics.AutoSize = true;
-            this.checkBoxStatics.Location = new System.Drawing.Point(13, 22);
-            this.checkBoxStatics.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.checkBoxStatics.Name = "checkBoxStatics";
-            this.checkBoxStatics.Size = new System.Drawing.Size(91, 19);
-            this.checkBoxStatics.TabIndex = 3;
-            this.checkBoxStatics.Text = "Copy Statics";
-            this.checkBoxStatics.UseVisualStyleBackColor = true;
+            checkBoxStatics.AutoSize = true;
+            checkBoxStatics.Location = new System.Drawing.Point(13, 22);
+            checkBoxStatics.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            checkBoxStatics.Name = "checkBoxStatics";
+            checkBoxStatics.Size = new System.Drawing.Size(91, 19);
+            checkBoxStatics.TabIndex = 3;
+            checkBoxStatics.Text = "Copy Statics";
+            checkBoxStatics.UseVisualStyleBackColor = true;
             // 
             // numericUpDownX1
             // 
-            this.numericUpDownX1.Increment = new decimal(new int[] {
-            8,
-            0,
-            0,
-            0});
-            this.numericUpDownX1.Location = new System.Drawing.Point(99, 22);
-            this.numericUpDownX1.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.numericUpDownX1.Name = "numericUpDownX1";
-            this.numericUpDownX1.Size = new System.Drawing.Size(63, 23);
-            this.numericUpDownX1.TabIndex = 4;
+            numericUpDownX1.Increment = new decimal(new int[] { 8, 0, 0, 0 });
+            numericUpDownX1.Location = new System.Drawing.Point(99, 22);
+            numericUpDownX1.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            numericUpDownX1.Name = "numericUpDownX1";
+            numericUpDownX1.Size = new System.Drawing.Size(63, 23);
+            numericUpDownX1.TabIndex = 4;
             // 
             // label1
             // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(63, 24);
-            this.label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(20, 15);
-            this.label1.TabIndex = 5;
-            this.label1.Text = "X1";
+            label1.AutoSize = true;
+            label1.Location = new System.Drawing.Point(63, 24);
+            label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            label1.Name = "label1";
+            label1.Size = new System.Drawing.Size(20, 15);
+            label1.TabIndex = 5;
+            label1.Text = "X1";
             // 
             // label2
             // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(63, 54);
-            this.label2.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(20, 15);
-            this.label2.TabIndex = 7;
-            this.label2.Text = "Y1";
+            label2.AutoSize = true;
+            label2.Location = new System.Drawing.Point(63, 54);
+            label2.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            label2.Name = "label2";
+            label2.Size = new System.Drawing.Size(20, 15);
+            label2.TabIndex = 7;
+            label2.Text = "Y1";
             // 
             // numericUpDownY1
             // 
-            this.numericUpDownY1.Increment = new decimal(new int[] {
-            8,
-            0,
-            0,
-            0});
-            this.numericUpDownY1.Location = new System.Drawing.Point(99, 52);
-            this.numericUpDownY1.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.numericUpDownY1.Name = "numericUpDownY1";
-            this.numericUpDownY1.Size = new System.Drawing.Size(63, 23);
-            this.numericUpDownY1.TabIndex = 6;
+            numericUpDownY1.Increment = new decimal(new int[] { 8, 0, 0, 0 });
+            numericUpDownY1.Location = new System.Drawing.Point(99, 52);
+            numericUpDownY1.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            numericUpDownY1.Name = "numericUpDownY1";
+            numericUpDownY1.Size = new System.Drawing.Size(63, 23);
+            numericUpDownY1.TabIndex = 6;
             // 
             // label3
             // 
-            this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(192, 24);
-            this.label3.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(20, 15);
-            this.label3.TabIndex = 9;
-            this.label3.Text = "X2";
+            label3.AutoSize = true;
+            label3.Location = new System.Drawing.Point(192, 24);
+            label3.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            label3.Name = "label3";
+            label3.Size = new System.Drawing.Size(20, 15);
+            label3.TabIndex = 9;
+            label3.Text = "X2";
             // 
             // numericUpDownX2
             // 
-            this.numericUpDownX2.Increment = new decimal(new int[] {
-            8,
-            0,
-            0,
-            0});
-            this.numericUpDownX2.Location = new System.Drawing.Point(229, 22);
-            this.numericUpDownX2.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.numericUpDownX2.Name = "numericUpDownX2";
-            this.numericUpDownX2.Size = new System.Drawing.Size(63, 23);
-            this.numericUpDownX2.TabIndex = 8;
+            numericUpDownX2.Increment = new decimal(new int[] { 8, 0, 0, 0 });
+            numericUpDownX2.Location = new System.Drawing.Point(229, 22);
+            numericUpDownX2.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            numericUpDownX2.Name = "numericUpDownX2";
+            numericUpDownX2.Size = new System.Drawing.Size(63, 23);
+            numericUpDownX2.TabIndex = 8;
             // 
             // label4
             // 
-            this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(192, 57);
-            this.label4.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(20, 15);
-            this.label4.TabIndex = 11;
-            this.label4.Text = "Y2";
+            label4.AutoSize = true;
+            label4.Location = new System.Drawing.Point(192, 57);
+            label4.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            label4.Name = "label4";
+            label4.Size = new System.Drawing.Size(20, 15);
+            label4.TabIndex = 11;
+            label4.Text = "Y2";
             // 
             // numericUpDownY2
             // 
-            this.numericUpDownY2.Increment = new decimal(new int[] {
-            8,
-            0,
-            0,
-            0});
-            this.numericUpDownY2.Location = new System.Drawing.Point(229, 54);
-            this.numericUpDownY2.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.numericUpDownY2.Name = "numericUpDownY2";
-            this.numericUpDownY2.Size = new System.Drawing.Size(63, 23);
-            this.numericUpDownY2.TabIndex = 10;
+            numericUpDownY2.Increment = new decimal(new int[] { 8, 0, 0, 0 });
+            numericUpDownY2.Location = new System.Drawing.Point(229, 54);
+            numericUpDownY2.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            numericUpDownY2.Name = "numericUpDownY2";
+            numericUpDownY2.Size = new System.Drawing.Size(63, 23);
+            numericUpDownY2.TabIndex = 10;
             // 
             // button2
             // 
-            this.button2.Location = new System.Drawing.Point(144, 318);
-            this.button2.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(88, 27);
-            this.button2.TabIndex = 12;
-            this.button2.Text = "Replace";
-            this.button2.UseVisualStyleBackColor = true;
-            this.button2.Click += new System.EventHandler(this.OnClickCopy);
+            button2.Location = new System.Drawing.Point(144, 318);
+            button2.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            button2.Name = "button2";
+            button2.Size = new System.Drawing.Size(88, 27);
+            button2.TabIndex = 12;
+            button2.Text = "Replace";
+            button2.UseVisualStyleBackColor = true;
+            button2.Click += OnClickCopy;
             // 
             // progressBar1
             // 
-            this.progressBar1.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.progressBar1.Location = new System.Drawing.Point(0, 354);
-            this.progressBar1.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.progressBar1.Name = "progressBar1";
-            this.progressBar1.Size = new System.Drawing.Size(384, 27);
-            this.progressBar1.TabIndex = 13;
+            progressBar1.Dock = System.Windows.Forms.DockStyle.Bottom;
+            progressBar1.Location = new System.Drawing.Point(0, 354);
+            progressBar1.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            progressBar1.Name = "progressBar1";
+            progressBar1.Size = new System.Drawing.Size(384, 27);
+            progressBar1.TabIndex = 13;
             // 
             // label5
             // 
-            this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(13, 17);
-            this.label5.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(79, 15);
-            this.label5.TabIndex = 14;
-            this.label5.Text = "Replace From";
+            label5.AutoSize = true;
+            label5.Location = new System.Drawing.Point(13, 17);
+            label5.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            label5.Name = "label5";
+            label5.Size = new System.Drawing.Size(79, 15);
+            label5.TabIndex = 14;
+            label5.Text = "Replace From";
             // 
             // RemoveDupl
             // 
-            this.RemoveDupl.AutoSize = true;
-            this.RemoveDupl.Location = new System.Drawing.Point(13, 48);
-            this.RemoveDupl.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.RemoveDupl.Name = "RemoveDupl";
-            this.RemoveDupl.Size = new System.Drawing.Size(127, 19);
-            this.RemoveDupl.TabIndex = 17;
-            this.RemoveDupl.Text = "Remove Duplicates";
-            this.RemoveDupl.UseVisualStyleBackColor = true;
+            RemoveDupl.AutoSize = true;
+            RemoveDupl.Location = new System.Drawing.Point(13, 48);
+            RemoveDupl.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            RemoveDupl.Name = "RemoveDupl";
+            RemoveDupl.Size = new System.Drawing.Size(127, 19);
+            RemoveDupl.TabIndex = 17;
+            RemoveDupl.Text = "Remove Duplicates";
+            RemoveDupl.UseVisualStyleBackColor = true;
             // 
             // groupBox1
             // 
-            this.groupBox1.Controls.Add(this.checkBoxMap);
-            this.groupBox1.Location = new System.Drawing.Point(15, 75);
-            this.groupBox1.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Padding = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.groupBox1.Size = new System.Drawing.Size(169, 75);
-            this.groupBox1.TabIndex = 19;
-            this.groupBox1.TabStop = false;
-            this.groupBox1.Text = "Map";
+            groupBox1.Controls.Add(checkBoxMap);
+            groupBox1.Location = new System.Drawing.Point(15, 75);
+            groupBox1.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            groupBox1.Name = "groupBox1";
+            groupBox1.Padding = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            groupBox1.Size = new System.Drawing.Size(169, 75);
+            groupBox1.TabIndex = 19;
+            groupBox1.TabStop = false;
+            groupBox1.Text = "Map";
             // 
             // groupBox2
             // 
-            this.groupBox2.Controls.Add(this.checkBoxStatics);
-            this.groupBox2.Controls.Add(this.RemoveDupl);
-            this.groupBox2.Location = new System.Drawing.Point(201, 75);
-            this.groupBox2.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Padding = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.groupBox2.Size = new System.Drawing.Size(169, 75);
-            this.groupBox2.TabIndex = 20;
-            this.groupBox2.TabStop = false;
-            this.groupBox2.Text = "Statics";
+            groupBox2.Controls.Add(checkBoxStatics);
+            groupBox2.Controls.Add(RemoveDupl);
+            groupBox2.Location = new System.Drawing.Point(201, 75);
+            groupBox2.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            groupBox2.Name = "groupBox2";
+            groupBox2.Padding = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            groupBox2.Size = new System.Drawing.Size(169, 75);
+            groupBox2.TabIndex = 20;
+            groupBox2.TabStop = false;
+            groupBox2.Text = "Statics";
             // 
             // groupBox3
             // 
-            this.groupBox3.Controls.Add(this.label1);
-            this.groupBox3.Controls.Add(this.numericUpDownX1);
-            this.groupBox3.Controls.Add(this.numericUpDownY1);
-            this.groupBox3.Controls.Add(this.label2);
-            this.groupBox3.Controls.Add(this.numericUpDownX2);
-            this.groupBox3.Controls.Add(this.label4);
-            this.groupBox3.Controls.Add(this.label3);
-            this.groupBox3.Controls.Add(this.numericUpDownY2);
-            this.groupBox3.Location = new System.Drawing.Point(15, 157);
-            this.groupBox3.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.groupBox3.Name = "groupBox3";
-            this.groupBox3.Padding = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.groupBox3.Size = new System.Drawing.Size(355, 85);
-            this.groupBox3.TabIndex = 21;
-            this.groupBox3.TabStop = false;
-            this.groupBox3.Text = "From Region";
+            groupBox3.Controls.Add(label1);
+            groupBox3.Controls.Add(numericUpDownX1);
+            groupBox3.Controls.Add(numericUpDownY1);
+            groupBox3.Controls.Add(label2);
+            groupBox3.Controls.Add(numericUpDownX2);
+            groupBox3.Controls.Add(label4);
+            groupBox3.Controls.Add(label3);
+            groupBox3.Controls.Add(numericUpDownY2);
+            groupBox3.Location = new System.Drawing.Point(15, 157);
+            groupBox3.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            groupBox3.Name = "groupBox3";
+            groupBox3.Padding = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            groupBox3.Size = new System.Drawing.Size(355, 85);
+            groupBox3.TabIndex = 21;
+            groupBox3.TabStop = false;
+            groupBox3.Text = "From Region";
             // 
             // groupBox4
             // 
-            this.groupBox4.Controls.Add(this.label6);
-            this.groupBox4.Controls.Add(this.numericUpDownToX1);
-            this.groupBox4.Controls.Add(this.numericUpDownToY1);
-            this.groupBox4.Controls.Add(this.label7);
-            this.groupBox4.Location = new System.Drawing.Point(15, 249);
-            this.groupBox4.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.groupBox4.Name = "groupBox4";
-            this.groupBox4.Padding = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.groupBox4.Size = new System.Drawing.Size(355, 62);
-            this.groupBox4.TabIndex = 22;
-            this.groupBox4.TabStop = false;
-            this.groupBox4.Text = "To Region";
+            groupBox4.Controls.Add(label6);
+            groupBox4.Controls.Add(numericUpDownToX1);
+            groupBox4.Controls.Add(numericUpDownToY1);
+            groupBox4.Controls.Add(label7);
+            groupBox4.Location = new System.Drawing.Point(15, 249);
+            groupBox4.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            groupBox4.Name = "groupBox4";
+            groupBox4.Padding = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            groupBox4.Size = new System.Drawing.Size(355, 62);
+            groupBox4.TabIndex = 22;
+            groupBox4.TabStop = false;
+            groupBox4.Text = "To Region";
             // 
             // label6
             // 
-            this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(63, 24);
-            this.label6.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(20, 15);
-            this.label6.TabIndex = 5;
-            this.label6.Text = "X1";
+            label6.AutoSize = true;
+            label6.Location = new System.Drawing.Point(63, 24);
+            label6.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            label6.Name = "label6";
+            label6.Size = new System.Drawing.Size(20, 15);
+            label6.TabIndex = 5;
+            label6.Text = "X1";
             // 
             // numericUpDownToX1
             // 
-            this.numericUpDownToX1.Increment = new decimal(new int[] {
-            8,
-            0,
-            0,
-            0});
-            this.numericUpDownToX1.Location = new System.Drawing.Point(99, 22);
-            this.numericUpDownToX1.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.numericUpDownToX1.Name = "numericUpDownToX1";
-            this.numericUpDownToX1.Size = new System.Drawing.Size(63, 23);
-            this.numericUpDownToX1.TabIndex = 4;
+            numericUpDownToX1.Increment = new decimal(new int[] { 8, 0, 0, 0 });
+            numericUpDownToX1.Location = new System.Drawing.Point(99, 22);
+            numericUpDownToX1.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            numericUpDownToX1.Name = "numericUpDownToX1";
+            numericUpDownToX1.Size = new System.Drawing.Size(63, 23);
+            numericUpDownToX1.TabIndex = 4;
             // 
             // numericUpDownToY1
             // 
-            this.numericUpDownToY1.Increment = new decimal(new int[] {
-            8,
-            0,
-            0,
-            0});
-            this.numericUpDownToY1.Location = new System.Drawing.Point(229, 22);
-            this.numericUpDownToY1.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.numericUpDownToY1.Name = "numericUpDownToY1";
-            this.numericUpDownToY1.Size = new System.Drawing.Size(63, 23);
-            this.numericUpDownToY1.TabIndex = 6;
+            numericUpDownToY1.Increment = new decimal(new int[] { 8, 0, 0, 0 });
+            numericUpDownToY1.Location = new System.Drawing.Point(229, 22);
+            numericUpDownToY1.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            numericUpDownToY1.Name = "numericUpDownToY1";
+            numericUpDownToY1.Size = new System.Drawing.Size(63, 23);
+            numericUpDownToY1.TabIndex = 6;
             // 
             // label7
             // 
-            this.label7.AutoSize = true;
-            this.label7.Location = new System.Drawing.Point(192, 24);
-            this.label7.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(20, 15);
-            this.label7.TabIndex = 7;
-            this.label7.Text = "Y1";
+            label7.AutoSize = true;
+            label7.Location = new System.Drawing.Point(192, 24);
+            label7.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            label7.Name = "label7";
+            label7.Size = new System.Drawing.Size(20, 15);
+            label7.TabIndex = 7;
+            label7.Text = "Y1";
             // 
             // comboBoxMapID
             // 
-            this.comboBoxMapID.FormattingEnabled = true;
-            this.comboBoxMapID.Location = new System.Drawing.Point(105, 44);
-            this.comboBoxMapID.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.comboBoxMapID.Name = "comboBoxMapID";
-            this.comboBoxMapID.Size = new System.Drawing.Size(227, 23);
-            this.comboBoxMapID.TabIndex = 23;
+            comboBoxMapID.FormattingEnabled = true;
+            comboBoxMapID.Location = new System.Drawing.Point(105, 44);
+            comboBoxMapID.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            comboBoxMapID.Name = "comboBoxMapID";
+            comboBoxMapID.Size = new System.Drawing.Size(227, 23);
+            comboBoxMapID.TabIndex = 23;
             // 
             // label8
             // 
-            this.label8.AutoSize = true;
-            this.label8.Location = new System.Drawing.Point(13, 47);
-            this.label8.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label8.Name = "label8";
-            this.label8.Size = new System.Drawing.Size(45, 15);
-            this.label8.TabIndex = 24;
-            this.label8.Text = "Map ID";
+            label8.AutoSize = true;
+            label8.Location = new System.Drawing.Point(13, 47);
+            label8.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            label8.Name = "label8";
+            label8.Size = new System.Drawing.Size(45, 15);
+            label8.TabIndex = 24;
+            label8.Text = "Map ID";
             // 
             // MapReplaceForm
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(384, 381);
-            this.Controls.Add(this.label8);
-            this.Controls.Add(this.comboBoxMapID);
-            this.Controls.Add(this.groupBox4);
-            this.Controls.Add(this.groupBox3);
-            this.Controls.Add(this.groupBox2);
-            this.Controls.Add(this.groupBox1);
-            this.Controls.Add(this.label5);
-            this.Controls.Add(this.progressBar1);
-            this.Controls.Add(this.button2);
-            this.Controls.Add(this.button1);
-            this.Controls.Add(this.textBox1);
-            this.DoubleBuffered = true;
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow;
-            this.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.MaximizeBox = false;
-            this.MinimumSize = new System.Drawing.Size(388, 285);
-            this.Name = "MapReplaceForm";
-            this.Text = "MapReplace";
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDownX1)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDownY1)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDownX2)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDownY2)).EndInit();
-            this.groupBox1.ResumeLayout(false);
-            this.groupBox1.PerformLayout();
-            this.groupBox2.ResumeLayout(false);
-            this.groupBox2.PerformLayout();
-            this.groupBox3.ResumeLayout(false);
-            this.groupBox3.PerformLayout();
-            this.groupBox4.ResumeLayout(false);
-            this.groupBox4.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDownToX1)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDownToY1)).EndInit();
-            this.ResumeLayout(false);
-            this.PerformLayout();
-
+            AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
+            AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            ClientSize = new System.Drawing.Size(384, 381);
+            Controls.Add(label8);
+            Controls.Add(comboBoxMapID);
+            Controls.Add(groupBox4);
+            Controls.Add(groupBox3);
+            Controls.Add(groupBox2);
+            Controls.Add(groupBox1);
+            Controls.Add(label5);
+            Controls.Add(progressBar1);
+            Controls.Add(button2);
+            Controls.Add(button1);
+            Controls.Add(textBox1);
+            DoubleBuffered = true;
+            FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow;
+            Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            MaximizeBox = false;
+            MinimumSize = new System.Drawing.Size(388, 285);
+            Name = "MapReplaceForm";
+            Text = "MapReplace";
+            ((System.ComponentModel.ISupportInitialize)numericUpDownX1).EndInit();
+            ((System.ComponentModel.ISupportInitialize)numericUpDownY1).EndInit();
+            ((System.ComponentModel.ISupportInitialize)numericUpDownX2).EndInit();
+            ((System.ComponentModel.ISupportInitialize)numericUpDownY2).EndInit();
+            groupBox1.ResumeLayout(false);
+            groupBox1.PerformLayout();
+            groupBox2.ResumeLayout(false);
+            groupBox2.PerformLayout();
+            groupBox3.ResumeLayout(false);
+            groupBox3.PerformLayout();
+            groupBox4.ResumeLayout(false);
+            groupBox4.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)numericUpDownToX1).EndInit();
+            ((System.ComponentModel.ISupportInitialize)numericUpDownToY1).EndInit();
+            ResumeLayout(false);
+            PerformLayout();
         }
 
         #endregion
