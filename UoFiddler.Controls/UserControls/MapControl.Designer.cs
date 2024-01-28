@@ -65,6 +65,7 @@ namespace UoFiddler.Controls.UserControls
             malasToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             tokunoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             terMurToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            forellToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             extractMapToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             asBmpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -174,9 +175,9 @@ namespace UoFiddler.Controls.UserControls
             // 
             // contextMenuStrip1
             // 
-            contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { zoomToolStripMenuItem, zoomToolStripMenuItem1, getMapInfoToolStripMenuItem, insertMarkerToolStripMenuItem, toolStripSeparator4, gotoToolStripMenuItem, sendClientToPosToolStripMenuItem, toolStripSeparator2, feluccaToolStripMenuItem, trammelToolStripMenuItem, ilshenarToolStripMenuItem, malasToolStripMenuItem, tokunoToolStripMenuItem, terMurToolStripMenuItem, toolStripSeparator1, extractMapToolStripMenuItem });
+            contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { zoomToolStripMenuItem, zoomToolStripMenuItem1, getMapInfoToolStripMenuItem, insertMarkerToolStripMenuItem, toolStripSeparator4, gotoToolStripMenuItem, sendClientToPosToolStripMenuItem, toolStripSeparator2, feluccaToolStripMenuItem, trammelToolStripMenuItem, ilshenarToolStripMenuItem, malasToolStripMenuItem, tokunoToolStripMenuItem, terMurToolStripMenuItem, forellToolStripMenuItem, toolStripSeparator1, extractMapToolStripMenuItem });
             contextMenuStrip1.Name = "contextMenuStrip1";
-            contextMenuStrip1.Size = new System.Drawing.Size(172, 308);
+            contextMenuStrip1.Size = new System.Drawing.Size(172, 330);
             contextMenuStrip1.Closed += OnContextClosed;
             contextMenuStrip1.Opening += OnOpenContext;
             // 
@@ -285,6 +286,14 @@ namespace UoFiddler.Controls.UserControls
             terMurToolStripMenuItem.Text = "TerMur";
             terMurToolStripMenuItem.Click += ChangeMapTerMur;
             // 
+            // forellToolStripMenuItem
+            // 
+            forellToolStripMenuItem.Name = "forellToolStripMenuItem";
+            forellToolStripMenuItem.Size = new System.Drawing.Size(171, 22);
+            forellToolStripMenuItem.Tag = "6";
+            forellToolStripMenuItem.Text = "Forell";
+            forellToolStripMenuItem.Click += ChangeMapForell;
+            // 
             // toolStripSeparator1
             // 
             toolStripSeparator1.Name = "toolStripSeparator1";
@@ -302,28 +311,28 @@ namespace UoFiddler.Controls.UserControls
             // asBmpToolStripMenuItem
             // 
             asBmpToolStripMenuItem.Name = "asBmpToolStripMenuItem";
-            asBmpToolStripMenuItem.Size = new System.Drawing.Size(115, 22);
+            asBmpToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             asBmpToolStripMenuItem.Text = "As Bmp";
             asBmpToolStripMenuItem.Click += ExtractMapBmp;
             // 
             // asTiffToolStripMenuItem
             // 
             asTiffToolStripMenuItem.Name = "asTiffToolStripMenuItem";
-            asTiffToolStripMenuItem.Size = new System.Drawing.Size(115, 22);
+            asTiffToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             asTiffToolStripMenuItem.Text = "As Tiff";
             asTiffToolStripMenuItem.Click += ExtractMapTiff;
             // 
             // asJpgToolStripMenuItem
             // 
             asJpgToolStripMenuItem.Name = "asJpgToolStripMenuItem";
-            asJpgToolStripMenuItem.Size = new System.Drawing.Size(115, 22);
+            asJpgToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             asJpgToolStripMenuItem.Text = "As Jpg";
             asJpgToolStripMenuItem.Click += ExtractMapJpg;
             // 
             // asPngToolStripMenuItem
             // 
             asPngToolStripMenuItem.Name = "asPngToolStripMenuItem";
-            asPngToolStripMenuItem.Size = new System.Drawing.Size(115, 22);
+            asPngToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             asPngToolStripMenuItem.Text = "As Png";
             asPngToolStripMenuItem.Click += ExtractMapPng;
             // 
@@ -776,5 +785,6 @@ namespace UoFiddler.Controls.UserControls
         private System.Windows.Forms.ToolStripMenuItem zoomToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem zoomToolStripMenuItem1;
         private System.Windows.Forms.ToolStripButton toolStripButtonMarkRegion;
+        private System.Windows.Forms.ToolStripMenuItem forellToolStripMenuItem;
     }
 }

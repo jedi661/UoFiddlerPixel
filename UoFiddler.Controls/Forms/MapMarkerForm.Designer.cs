@@ -39,131 +39,145 @@ namespace UoFiddler.Controls.Forms
         /// </summary>
         private void InitializeComponent()
         {
-            this.textBox1 = new System.Windows.Forms.TextBox();
-            this.label1 = new System.Windows.Forms.Label();
-            this.colorDialog1 = new System.Windows.Forms.ColorDialog();
-            this.pictureBox1 = new System.Windows.Forms.PictureBox();
-            this.button1 = new System.Windows.Forms.Button();
-            this.button2 = new System.Windows.Forms.Button();
-            this.numericUpDown1 = new System.Windows.Forms.NumericUpDown();
-            this.numericUpDown2 = new System.Windows.Forms.NumericUpDown();
-            this.comboBox1 = new System.Windows.Forms.ComboBox();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown2)).BeginInit();
-            this.SuspendLayout();
+            textBox1 = new System.Windows.Forms.TextBox();
+            label1 = new System.Windows.Forms.Label();
+            colorDialog1 = new System.Windows.Forms.ColorDialog();
+            pictureBox1 = new System.Windows.Forms.PictureBox();
+            button1 = new System.Windows.Forms.Button();
+            button2 = new System.Windows.Forms.Button();
+            numericUpDown1 = new System.Windows.Forms.NumericUpDown();
+            numericUpDown2 = new System.Windows.Forms.NumericUpDown();
+            comboBox1 = new System.Windows.Forms.ComboBox();
+            listBoxMapOverlaysList = new System.Windows.Forms.ListBox();
+            deleteMapOverlaysList = new System.Windows.Forms.Button();
+            ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)numericUpDown1).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)numericUpDown2).BeginInit();
+            SuspendLayout();
             // 
             // textBox1
             // 
-            this.textBox1.Location = new System.Drawing.Point(51, 58);
-            this.textBox1.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.textBox1.Name = "textBox1";
-            this.textBox1.Size = new System.Drawing.Size(274, 23);
-            this.textBox1.TabIndex = 0;
+            textBox1.Location = new System.Drawing.Point(51, 58);
+            textBox1.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            textBox1.Name = "textBox1";
+            textBox1.Size = new System.Drawing.Size(274, 23);
+            textBox1.TabIndex = 0;
             // 
             // label1
             // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(12, 61);
-            this.label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(28, 15);
-            this.label1.TabIndex = 1;
-            this.label1.Text = "Text";
+            label1.AutoSize = true;
+            label1.Location = new System.Drawing.Point(12, 61);
+            label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            label1.Name = "label1";
+            label1.Size = new System.Drawing.Size(28, 15);
+            label1.TabIndex = 1;
+            label1.Text = "Text";
             // 
             // pictureBox1
             // 
-            this.pictureBox1.Location = new System.Drawing.Point(97, 92);
-            this.pictureBox1.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(46, 37);
-            this.pictureBox1.TabIndex = 2;
-            this.pictureBox1.TabStop = false;
+            pictureBox1.Location = new System.Drawing.Point(97, 92);
+            pictureBox1.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            pictureBox1.Name = "pictureBox1";
+            pictureBox1.Size = new System.Drawing.Size(46, 37);
+            pictureBox1.TabIndex = 2;
+            pictureBox1.TabStop = false;
             // 
             // button1
             // 
-            this.button1.Location = new System.Drawing.Point(149, 98);
-            this.button1.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(88, 27);
-            this.button1.TabIndex = 3;
-            this.button1.Text = "Choose Color";
-            this.button1.UseVisualStyleBackColor = true;
-            this.button1.Click += new System.EventHandler(this.OnClickColor);
+            button1.Location = new System.Drawing.Point(149, 98);
+            button1.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            button1.Name = "button1";
+            button1.Size = new System.Drawing.Size(88, 27);
+            button1.TabIndex = 3;
+            button1.Text = "Choose Color";
+            button1.UseVisualStyleBackColor = true;
+            button1.Click += OnClickColor;
             // 
             // button2
             // 
-            this.button2.Location = new System.Drawing.Point(124, 136);
-            this.button2.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(88, 27);
-            this.button2.TabIndex = 4;
-            this.button2.Text = "Save";
-            this.button2.UseVisualStyleBackColor = true;
-            this.button2.Click += new System.EventHandler(this.OnClickSave);
+            button2.Location = new System.Drawing.Point(124, 136);
+            button2.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            button2.Name = "button2";
+            button2.Size = new System.Drawing.Size(88, 27);
+            button2.TabIndex = 4;
+            button2.Text = "Save";
+            button2.UseVisualStyleBackColor = true;
+            button2.Click += OnClickSave;
             // 
             // numericUpDown1
             // 
-            this.numericUpDown1.Location = new System.Drawing.Point(21, 15);
-            this.numericUpDown1.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.numericUpDown1.Maximum = new decimal(new int[] {
-            7168,
-            0,
-            0,
-            0});
-            this.numericUpDown1.Name = "numericUpDown1";
-            this.numericUpDown1.Size = new System.Drawing.Size(75, 23);
-            this.numericUpDown1.TabIndex = 5;
+            numericUpDown1.Location = new System.Drawing.Point(21, 15);
+            numericUpDown1.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            numericUpDown1.Maximum = new decimal(new int[] { 7168, 0, 0, 0 });
+            numericUpDown1.Name = "numericUpDown1";
+            numericUpDown1.Size = new System.Drawing.Size(75, 23);
+            numericUpDown1.TabIndex = 5;
             // 
             // numericUpDown2
             // 
-            this.numericUpDown2.Location = new System.Drawing.Point(103, 15);
-            this.numericUpDown2.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.numericUpDown2.Maximum = new decimal(new int[] {
-            4096,
-            0,
-            0,
-            0});
-            this.numericUpDown2.Name = "numericUpDown2";
-            this.numericUpDown2.Size = new System.Drawing.Size(69, 23);
-            this.numericUpDown2.TabIndex = 6;
+            numericUpDown2.Location = new System.Drawing.Point(103, 15);
+            numericUpDown2.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            numericUpDown2.Maximum = new decimal(new int[] { 4096, 0, 0, 0 });
+            numericUpDown2.Name = "numericUpDown2";
+            numericUpDown2.Size = new System.Drawing.Size(69, 23);
+            numericUpDown2.TabIndex = 6;
             // 
             // comboBox1
             // 
-            this.comboBox1.FormattingEnabled = true;
-            this.comboBox1.Location = new System.Drawing.Point(178, 14);
-            this.comboBox1.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.comboBox1.Name = "comboBox1";
-            this.comboBox1.Size = new System.Drawing.Size(140, 23);
-            this.comboBox1.TabIndex = 7;
+            comboBox1.FormattingEnabled = true;
+            comboBox1.Location = new System.Drawing.Point(178, 14);
+            comboBox1.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            comboBox1.Name = "comboBox1";
+            comboBox1.Size = new System.Drawing.Size(140, 23);
+            comboBox1.TabIndex = 7;
+            // 
+            // listBoxMapOverlaysList
+            // 
+            listBoxMapOverlaysList.FormattingEnabled = true;
+            listBoxMapOverlaysList.ItemHeight = 15;
+            listBoxMapOverlaysList.Location = new System.Drawing.Point(332, 12);
+            listBoxMapOverlaysList.Name = "listBoxMapOverlaysList";
+            listBoxMapOverlaysList.Size = new System.Drawing.Size(120, 94);
+            listBoxMapOverlaysList.TabIndex = 8;
+            // 
+            // deleteMapOverlaysList
+            // 
+            deleteMapOverlaysList.Location = new System.Drawing.Point(392, 112);
+            deleteMapOverlaysList.Name = "deleteMapOverlaysList";
+            deleteMapOverlaysList.Size = new System.Drawing.Size(60, 23);
+            deleteMapOverlaysList.TabIndex = 9;
+            deleteMapOverlaysList.Text = "Delete";
+            deleteMapOverlaysList.UseVisualStyleBackColor = true;
+            deleteMapOverlaysList.Click += deleteMapOverlaysList_Click;
             // 
             // MapMarkerForm
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(344, 171);
-            this.Controls.Add(this.comboBox1);
-            this.Controls.Add(this.numericUpDown2);
-            this.Controls.Add(this.numericUpDown1);
-            this.Controls.Add(this.button2);
-            this.Controls.Add(this.button1);
-            this.Controls.Add(this.pictureBox1);
-            this.Controls.Add(this.label1);
-            this.Controls.Add(this.textBox1);
-            this.DoubleBuffered = true;
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow;
-            this.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.MaximizeBox = false;
-            this.MinimizeBox = false;
-            this.Name = "MapMarkerForm";
-            this.Text = "Add MapMarker";
-            this.TopMost = true;
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown2)).EndInit();
-            this.ResumeLayout(false);
-            this.PerformLayout();
-
+            AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
+            AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            ClientSize = new System.Drawing.Size(465, 171);
+            Controls.Add(deleteMapOverlaysList);
+            Controls.Add(listBoxMapOverlaysList);
+            Controls.Add(comboBox1);
+            Controls.Add(numericUpDown2);
+            Controls.Add(numericUpDown1);
+            Controls.Add(button2);
+            Controls.Add(button1);
+            Controls.Add(pictureBox1);
+            Controls.Add(label1);
+            Controls.Add(textBox1);
+            DoubleBuffered = true;
+            FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow;
+            Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            MaximizeBox = false;
+            MinimizeBox = false;
+            Name = "MapMarkerForm";
+            Text = "Add MapMarker";
+            TopMost = true;
+            ((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();
+            ((System.ComponentModel.ISupportInitialize)numericUpDown1).EndInit();
+            ((System.ComponentModel.ISupportInitialize)numericUpDown2).EndInit();
+            ResumeLayout(false);
+            PerformLayout();
         }
 
         #endregion
@@ -177,5 +191,7 @@ namespace UoFiddler.Controls.Forms
         private System.Windows.Forms.NumericUpDown numericUpDown2;
         private System.Windows.Forms.PictureBox pictureBox1;
         private System.Windows.Forms.TextBox textBox1;
+        private System.Windows.Forms.ListBox listBoxMapOverlaysList;
+        private System.Windows.Forms.Button deleteMapOverlaysList;
     }
 }

@@ -1,11 +1,12 @@
 ﻿/***************************************************************************
  *
  * $Author: Turley
- *
- * "THE BEER-WARE LICENSE"
- * As long as you retain this notice you can do whatever you want with
+ * Advanced Nikodemus
+ * 
+ * "THE BEER-WINE-WARE LICENSE"
+ * As long as you retain this notice you can do whatever you want with 
  * this stuff. If we meet some day, and you think this stuff is worth it,
- * you can buy me a beer in return.
+ * you can buy me a beer and Wine in return.
  *
  ***************************************************************************/
 
@@ -35,11 +36,14 @@ namespace UoFiddler.Plugin.UopPacker.UserControls
 
         }
 
+        #region UopPackerControl
         public UopPackerControl(string version) : this()
         {
             VersionLabel.Text = version;
         }
+        #endregion
 
+        #region InputMulSelect
         private void InputMulSelect(object sender, EventArgs e)
         {
             FileDialog.FilterIndex = 1;
@@ -50,7 +54,9 @@ namespace UoFiddler.Plugin.UopPacker.UserControls
                 inmul.Text = FileDialog.FileName;
             }
         }
+        #endregion
 
+        #region InputIdxSelect
         private void InputIdxSelect(object sender, EventArgs e)
         {
             FileDialog.FilterIndex = 3;
@@ -60,7 +66,9 @@ namespace UoFiddler.Plugin.UopPacker.UserControls
                 inidx.Text = FileDialog.FileName;
             }
         }
+        #endregion
 
+        #region OutputUopSelect
         private void OutputUopSelect(object sender, EventArgs e)
         {
             FileDialog.FilterIndex = 2;
@@ -71,7 +79,9 @@ namespace UoFiddler.Plugin.UopPacker.UserControls
                 outuop.Text = FileDialog.FileName;
             }
         }
+        #endregion
 
+        #region ToUop
         private void ToUop(object sender, EventArgs e)
         {
             var selectedFileType = multype?.SelectedValue?.ToString() ?? string.Empty;
@@ -141,7 +151,9 @@ namespace UoFiddler.Plugin.UopPacker.UserControls
                 multouop.Enabled = true;
             }
         }
+        #endregion
 
+        #region OutMulSelect
         private void OutMulSelect(object sender, EventArgs e)
         {
             FileDialog.FilterIndex = 1;
@@ -151,7 +163,9 @@ namespace UoFiddler.Plugin.UopPacker.UserControls
                 outmul.Text = FileDialog.FileName;
             }
         }
+        #endregion
 
+        #region  OutputIdxSelect
         private void OutputIdxSelect(object sender, EventArgs e)
         {
             FileDialog.FilterIndex = 3;
@@ -161,7 +175,9 @@ namespace UoFiddler.Plugin.UopPacker.UserControls
                 outidx.Text = FileDialog.FileName;
             }
         }
+        #endregion
 
+        #region InputUopSelect
         private void InputUopSelect(object sender, EventArgs e)
         {
             FileDialog.FilterIndex = 2;
@@ -171,7 +187,9 @@ namespace UoFiddler.Plugin.UopPacker.UserControls
                 inuop.Text = FileDialog.FileName;
             }
         }
+        #endregion
 
+        #region ToMul
         private void ToMul(object sender, EventArgs e)
         {
             var selectedFileType = uoptype?.SelectedValue?.ToString() ?? string.Empty;
@@ -234,7 +252,9 @@ namespace UoFiddler.Plugin.UopPacker.UserControls
                 uoptomul.Enabled = true;
             }
         }
+        #endregion
 
+        #region SelectFolder
         private void SelectFolder_Click(object sender, EventArgs e)
         {
             if (FolderDialog.ShowDialog() == DialogResult.OK)
@@ -242,10 +262,12 @@ namespace UoFiddler.Plugin.UopPacker.UserControls
                 inputfolder.Text = FolderDialog.SelectedPath;
             }
         }
+        #endregion
 
         private int _total;
         private int _success;
 
+        #region Extract
         private void Extract(string inFile, string outFile, string outIdx, FileType type, int typeIndex)
         {
             try
@@ -278,7 +300,9 @@ namespace UoFiddler.Plugin.UopPacker.UserControls
                 MessageBox.Show($"An error occurred while performing the action.\r\n{e.Message}");
             }
         }
+        #endregion
 
+        #region Pack
         private void Pack(string inFile, string inIdx, string outFile, FileType type, int typeIndex)
         {
             try
@@ -311,12 +335,16 @@ namespace UoFiddler.Plugin.UopPacker.UserControls
                 MessageBox.Show($"An error occurred while performing the action.\r\n{e.Message}");
             }
         }
+        #endregion
 
+        #region FixPath
         private string FixPath(string file)
         {
             return (file == null) ? null : Path.Combine(inputfolder.Text, file);
         }
+        #endregion
 
+        #region StartFolderButtonClick
         private void StartFolderButtonClick(object sender, EventArgs e)
         {
             if (inputfolder.Text.Length == 0)
@@ -366,5 +394,146 @@ namespace UoFiddler.Plugin.UopPacker.UserControls
                 MessageBox.Show("You must select an option");
             }
         }
+        #endregion
+
+        #region SingleFileUopArtExtractButton
+        private void SingleFileUopArtExtractButtonClick(object sender, EventArgs e)
+        {
+            if (inputfolder.Text.Length == 0)
+            {
+                MessageBox.Show("You must specify the input folder");
+                return;
+            }
+
+            if (extract.Checked)
+            {
+                _success = _total = 0;
+                ExtractSingleArtUopToMul();
+                statustext.Text = $"Done ({_success}/{_total} files extracted)";
+            }
+            else
+            {
+                MessageBox.Show("You must select an option");
+            }
+        }
+
+        private void ExtractSingleArtUopToMul()
+        {
+            string inFile = "artLegacyMUL.uop";
+            string outFile = "art.mul";
+            string outIdx = "artidx.mul";
+            FileType type = FileType.ArtLegacyMul;
+            int typeIndex = 0;
+
+            try
+            {
+                statustext.Text = inFile;
+                Refresh();
+                inFile = FixPath(inFile);
+                if (!File.Exists(inFile))
+                {
+                    return;
+                }
+                outFile = FixPath(outFile);
+                if (File.Exists(outFile))
+                {
+                    return;
+                }
+                outIdx = FixPath(outIdx);
+                ++_total;
+                _conv.FromUop(inFile, outFile, outIdx, type, typeIndex);
+                ++_success;
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show($"An error occurred while performing the action.\r\n{e.Message}");
+            }
+        }
+        #endregion
+
+        #region SingleFileExtractButton
+        private void SingleFileExtractButtonClick(object sender, EventArgs e)
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            openFileDialog.Filter = "UOP files (*.uop)|*.uop";
+            if (openFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                string inFile = openFileDialog.FileName;
+                ExtractSingleUopToMul(inFile);
+            }
+        } 
+        private void ExtractSingleUopToMul(string inFile)
+        {
+            string outFile = Path.ChangeExtension(inFile, ".mul");
+            string outIdx = Path.ChangeExtension(inFile, ".idx");
+
+            FileType type = FileType.ArtLegacyMul; // Default type
+            int typeIndex = 0; // Default typeIndex
+
+            // Determine the file type and type index based on the input file name
+            if (inFile.Contains("artLegacyMUL.uop"))
+            {
+                type = FileType.ArtLegacyMul;
+                typeIndex = 0;
+            }
+            else if (inFile.Contains("gumpartLegacyMUL.uop"))
+            {
+                type = FileType.GumpartLegacyMul;
+                typeIndex = 0;
+            }
+            else if (inFile.Contains("soundLegacyMUL.uop"))
+            {
+                type = FileType.SoundLegacyMul;
+                typeIndex = 0;
+            }
+            else if (inFile.Contains("map") && inFile.Contains("LegacyMUL.uop"))
+            {
+                type = FileType.MapLegacyMul;
+                for (int i = 0; i <= 6; i++)
+                {
+                    if (inFile.Contains($"map{i}LegacyMUL.uop"))
+                    {
+                        typeIndex = i;
+                        break;
+                    }
+                }
+            }
+            else if (inFile.Contains("LegacyMULOld.uop"))
+            {
+                // Set the correct FileType and typeIndex here
+                type = FileType.MapLegacyMul; // Example: Change this as needed
+                typeIndex = 0; // Example: Change this as needed
+            }
+            else
+            {
+                MessageBox.Show("Unknown file type");
+                return;
+            }
+
+            try
+            {
+                statustext.Text = inFile;
+                Refresh();
+                if (!File.Exists(inFile))
+                {
+                    MessageBox.Show("The input file does not exist");
+                    return;
+                }
+                if (File.Exists(outFile))
+                {
+                    MessageBox.Show("Output file already exists");
+                    return;
+                }
+                ++_total;
+                _conv.FromUop(inFile, outFile, outIdx, type, typeIndex);
+                ++_success;
+                statustext.Text = $"Done ({_success}/{_total} files extracted)";
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show($"An error occurred.\r\n{e.Message}");
+            }
+        }
+        #endregion
     }
 }

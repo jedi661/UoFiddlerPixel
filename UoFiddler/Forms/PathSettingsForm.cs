@@ -1,11 +1,12 @@
 /***************************************************************************
  *
  * $Author: Turley
+ * Advanced Nikodemus
  * 
- * "THE BEER-WARE LICENSE"
+ * "THE BEER-WINE-WARE LICENSE"
  * As long as you retain this notice you can do whatever you want with 
  * this stuff. If we meet some day, and you think this stuff is worth it,
- * you can buy me a beer in return.
+ * you can buy me a beer and Wine in return.
  *
  ***************************************************************************/
 
@@ -14,6 +15,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
+using System.Linq;
 using System.Windows.Forms;
 using Ultima;
 using Ultima.Helpers;
@@ -32,6 +34,7 @@ namespace UoFiddler.Forms
             tsTbRootPath.Text = Files.RootDir;
         }
 
+        #region ReloadPath
         private void ReloadPath(object sender, EventArgs e)
         {
             Files.ReLoadDirectory();
@@ -41,7 +44,9 @@ namespace UoFiddler.Forms
             pgPaths.Refresh();
             tsTbRootPath.Text = Files.RootDir;
         }
+        #endregion
 
+        #region OnClickManual
         private void OnClickManual(object sender, EventArgs e)
         {
             using (FolderBrowserDialog dialog = new FolderBrowserDialog())
@@ -60,7 +65,9 @@ namespace UoFiddler.Forms
                 MapHelper.CheckForNewMapSize();
             }
         }
+        #endregion
 
+        #region OnKeyDownDir
         private void OnKeyDownDir(object sender, KeyEventArgs e)
         {
             if (e.KeyCode != Keys.Enter)
@@ -74,7 +81,9 @@ namespace UoFiddler.Forms
             tsTbRootPath.Text = Files.RootDir;
             MapHelper.CheckForNewMapSize();
         }
+        #endregion
 
+        #region newDirAndMulToolStripMenuItem
         private void newDirAndMulToolStripMenuItem_Click(object sender, EventArgs e)
         {
             using (FolderBrowserDialog dialog = new FolderBrowserDialog())
@@ -82,11 +91,13 @@ namespace UoFiddler.Forms
                 if (dialog.ShowDialog() == DialogResult.OK)
                 {
                     string directoryPath = dialog.SelectedPath;
-                    string[] files = Directory.GetFiles(directoryPath, "*.mul"); // Filter für .mul Dateien
+                    string[] mulFiles = Directory.GetFiles(directoryPath, "*.mul"); // Filter for .mul files
+                    string[] uopFiles = Directory.GetFiles(directoryPath, "*.uop"); // Filter for .uop files
+                    string[] files = mulFiles.Concat(uopFiles).ToArray(); // Combine .mul and .uop files
 
                     foreach (string filePath in files)
                     {
-                        string key = Path.GetFileNameWithoutExtension(filePath); // Verwenden Sie den Dateinamen ohne Erweiterung als Schlüssel
+                        string key = Path.GetFileNameWithoutExtension(filePath); // Use the file name without an extension as the key
                         Files.MulPath.Add(key, filePath);
                     }
 
@@ -95,29 +106,41 @@ namespace UoFiddler.Forms
                 }
             }
         }
+        #endregion
 
+        #region loadSingleMulFileToolStripMenuItem
         private void loadSingleMulFileToolStripMenuItem_Click(object sender, EventArgs e)
         {
             using (OpenFileDialog dialog = new OpenFileDialog())
             {
-                dialog.Filter = "mul files (*.mul)|*.mul"; // Filter für .mul Dateien
+                dialog.Filter = "mul files (*.mul)|*.mul|uop files (*.uop)|*.uop"; // Filter for .mul and .uop files
                 if (dialog.ShowDialog() == DialogResult.OK)
                 {
                     string filePath = dialog.FileName;
-                    string key = Path.GetFileNameWithoutExtension(filePath); // Verwenden Sie den Dateinamen ohne Erweiterung als Schlüssel
-                    Files.MulPath.Add(key, filePath);
+                    string key = Path.GetFileNameWithoutExtension(filePath); // Use the file name without an extension as the key
+
+                    if (Files.MulPath.ContainsKey(key))
+                    {
+                        Files.MulPath[key] = filePath; // Update the path if the key already exists
+                    }
+                    else
+                    {
+                        Files.MulPath.Add(key, filePath); // Add the key if it doesn't already exist
+                    }
 
                     pgPaths.SelectedObject = new DictionaryPropertyGridAdapter(Files.MulPath);
                     pgPaths.Refresh();
                 }
             }
         }
+        #endregion
 
+        #region DeleteLineToolStripMenuItem
         private void DeleteLineToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (pgPaths.SelectedGridItem != null)
             {
-                string key = pgPaths.SelectedGridItem.Label; // Der Schlüssel ist der Label des ausgewählten GridItems
+                string key = pgPaths.SelectedGridItem.Label; // The key is the label of the selected GridItem
                 if (Files.MulPath.ContainsKey(key))
                 {
                     Files.MulPath.Remove(key);
@@ -126,8 +149,10 @@ namespace UoFiddler.Forms
                 }
             }
         }
+        #endregion
     }
 
+    #region DictionaryPropertyGridAdapter
     internal class DictionaryPropertyGridAdapter : ICustomTypeDescriptor
     {
         private readonly IDictionary _dictionary;
@@ -206,7 +231,9 @@ namespace UoFiddler.Forms
             return new PropertyDescriptorCollection(props);
         }
     }
+    #endregion
 
+    #region DictionaryPropertyDescriptor
     internal class DictionaryPropertyDescriptor : PropertyDescriptor
     {
         private readonly IDictionary _dictionary;
@@ -249,4 +276,5 @@ namespace UoFiddler.Forms
             return false;
         }
     }
+    #endregion
 }

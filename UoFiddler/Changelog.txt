@@ -3,6 +3,14 @@ Version : 4.12.2 #XG1
 - Make Texture, White is transparent, and black represents the transition, Texture into Texture, Colors.
 - Add triangle for Tiles TextureWindowForm
 - Path Settings, Reload all Files and New, Load Single Mul file, Delete Line
+- Add New Map Forell into SDK Map class
+- Add Muls into SDK File class
+- Add Map Forell into Map Controll and make nee class.
+- Add Options %AppData% open dir
+- Add Options New Map Forell
+- Add Insert Maker Delete function
+- Add Singe UOP Extract and Single Art Extract
+- Add Pass coordinates
 
 Version : 4.12.1 #XG1
 - Implemented copying multiple graphics to the clipboard with Ctrl+X.

@@ -72,6 +72,8 @@ namespace UoFiddler.Plugin.UopPacker.UserControls
             label12 = new System.Windows.Forms.Label();
             OperationTypeTabControl = new System.Windows.Forms.TabControl();
             ExtractAllFilesTabPage = new System.Windows.Forms.TabPage();
+            SingleFileExtractButton = new System.Windows.Forms.Button();
+            SingleFileUopArtExtractButton = new System.Windows.Forms.Button();
             StartFolderButton = new System.Windows.Forms.Button();
             ExtractionStatusStrip = new System.Windows.Forms.StatusStrip();
             statustext = new System.Windows.Forms.ToolStripStatusLabel();
@@ -246,7 +248,7 @@ namespace UoFiddler.Plugin.UopPacker.UserControls
             mulMapIndex.BackColor = System.Drawing.Color.White;
             mulMapIndex.Location = new System.Drawing.Point(118, 135);
             mulMapIndex.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            mulMapIndex.Maximum = new decimal(new int[] { 5, 0, 0, 0 });
+            mulMapIndex.Maximum = new decimal(new int[] { 6, 0, 0, 0 });
             mulMapIndex.Name = "mulMapIndex";
             mulMapIndex.ReadOnly = true;
             mulMapIndex.Size = new System.Drawing.Size(42, 23);
@@ -433,6 +435,8 @@ namespace UoFiddler.Plugin.UopPacker.UserControls
             // 
             // ExtractAllFilesTabPage
             // 
+            ExtractAllFilesTabPage.Controls.Add(SingleFileExtractButton);
+            ExtractAllFilesTabPage.Controls.Add(SingleFileUopArtExtractButton);
             ExtractAllFilesTabPage.Controls.Add(StartFolderButton);
             ExtractAllFilesTabPage.Controls.Add(ExtractionStatusStrip);
             ExtractAllFilesTabPage.Controls.Add(pack);
@@ -448,6 +452,26 @@ namespace UoFiddler.Plugin.UopPacker.UserControls
             ExtractAllFilesTabPage.TabIndex = 1;
             ExtractAllFilesTabPage.Text = "Every file";
             ExtractAllFilesTabPage.UseVisualStyleBackColor = true;
+            // 
+            // SingleFileExtractButton
+            // 
+            SingleFileExtractButton.Location = new System.Drawing.Point(362, 12);
+            SingleFileExtractButton.Name = "SingleFileExtractButton";
+            SingleFileExtractButton.Size = new System.Drawing.Size(116, 23);
+            SingleFileExtractButton.TabIndex = 14;
+            SingleFileExtractButton.Text = "Single Uop Extract";
+            SingleFileExtractButton.UseVisualStyleBackColor = true;
+            SingleFileExtractButton.Click += SingleFileExtractButtonClick;
+            // 
+            // SingleFileUopArtExtractButton
+            // 
+            SingleFileUopArtExtractButton.Location = new System.Drawing.Point(499, 12);
+            SingleFileUopArtExtractButton.Name = "SingleFileUopArtExtractButton";
+            SingleFileUopArtExtractButton.Size = new System.Drawing.Size(131, 23);
+            SingleFileUopArtExtractButton.TabIndex = 13;
+            SingleFileUopArtExtractButton.Text = "Single Uop Art Extract";
+            SingleFileUopArtExtractButton.UseVisualStyleBackColor = true;
+            SingleFileUopArtExtractButton.Click += SingleFileUopArtExtractButtonClick;
             // 
             // StartFolderButton
             // 
@@ -724,5 +748,7 @@ namespace UoFiddler.Plugin.UopPacker.UserControls
         private System.Windows.Forms.ComboBox uoptype;
         private System.Windows.Forms.ToolStripStatusLabel VersionLabel;
         private System.Windows.Forms.CheckBox checkBoxOverwriteSaveUop;
+        private System.Windows.Forms.Button SingleFileUopArtExtractButton;
+        private System.Windows.Forms.Button SingleFileExtractButton;
     }
 }

@@ -1,11 +1,12 @@
 ﻿/***************************************************************************
  *
  * $Author: Turley
+ * Advanced Nikodemus
  * 
- * "THE BEER-WARE LICENSE"
+ * "THE BEER-WINE-WARE LICENSE"
  * As long as you retain this notice you can do whatever you want with 
  * this stuff. If we meet some day, and you think this stuff is worth it,
- * you can buy me a beer in return.
+ * you can buy me a beer and Wine in return.
  *
  ***************************************************************************/
 
@@ -81,6 +82,7 @@ namespace UoFiddler.Forms
             map3Nametext.Text = Options.MapNames[3];
             map4Nametext.Text = Options.MapNames[4];
             map5Nametext.Text = Options.MapNames[5];
+            map6Nametext.Text = Options.MapNames[6]; //New Map Forell
             cmdtext.Text = Options.MapCmd;
             argstext.Text = Options.MapArgs;
             textBoxOutputPath.Text = Options.OutputPath;
@@ -170,7 +172,8 @@ namespace UoFiddler.Forms
                 || map2Nametext.Text != Options.MapNames[2]
                 || map3Nametext.Text != Options.MapNames[3]
                 || map4Nametext.Text != Options.MapNames[4]
-                || map5Nametext.Text != Options.MapNames[5])
+                || map5Nametext.Text != Options.MapNames[5]
+                || map6Nametext.Text != Options.MapNames[6]) //New Map Forell
             {
                 Options.MapNames[0] = map0Nametext.Text;
                 Options.MapNames[1] = map1Nametext.Text;
@@ -178,6 +181,7 @@ namespace UoFiddler.Forms
                 Options.MapNames[3] = map3Nametext.Text;
                 Options.MapNames[4] = map4Nametext.Text;
                 Options.MapNames[5] = map5Nametext.Text;
+                Options.MapNames[6] = map6Nametext.Text; //New Map Forell
                 ControlEvents.FireMapNameChangeEvent();
             }
 
@@ -277,5 +281,19 @@ namespace UoFiddler.Forms
         {
             Close();
         }
+
+        private void btAppData_Click(object sender, EventArgs e)
+        {
+            string path = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\UoFiddler";
+            if (Directory.Exists(path))
+            {
+                System.Diagnostics.Process.Start("explorer.exe", path);
+            }
+            else
+            {
+                MessageBox.Show("Verzeichnis existiert nicht: " + path);
+            }
+        }
+
     }
 }

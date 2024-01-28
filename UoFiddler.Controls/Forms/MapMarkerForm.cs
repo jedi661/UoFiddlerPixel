@@ -1,18 +1,22 @@
 ﻿/***************************************************************************
  *
  * $Author: Turley
- *
- * "THE BEER-WARE LICENSE"
- * As long as you retain this notice you can do whatever you want with
+ * Advanced Nikodemus
+ * 
+ * "THE BEER-WINE-WARE LICENSE"
+ * As long as you retain this notice you can do whatever you want with 
  * this stuff. If we meet some day, and you think this stuff is worth it,
- * you can buy me a beer in return.
+ * you can buy me a beer and Wine in return.
  *
  ***************************************************************************/
 
 using System;
 using System.Drawing;
 using System.Windows.Forms;
+using System.Xml;
+using System.IO;
 using UoFiddler.Controls.Classes;
+using UoFiddler.Controls.UserControls;
 
 namespace UoFiddler.Controls.Forms
 {
@@ -20,6 +24,8 @@ namespace UoFiddler.Controls.Forms
     {
         private readonly Action<int, int, int, Color, string> _addOverlayAction;
         private static Color _lastColor = Color.FromArgb(180, Color.Yellow);
+
+        private MapControl _mapControl;
 
         public MapMarkerForm(Action<int, int, int, Color, string> addOverlayAction, int x, int y, int map)
         {
@@ -32,9 +38,24 @@ namespace UoFiddler.Controls.Forms
             numericUpDown2.Value = y;
 
             comboBox1.Items.AddRange(Options.MapNames);
-            comboBox1.SelectedIndex = map;
+            
+            if (map < Options.MapNames.Length)
+            {
+                comboBox1.SelectedIndex = map;
+            }
+            else
+            {
+                // Handle the error or set a default value
+            }
 
             pictureBox1.BackColor = _lastColor;
+
+            LoadMapOverlays();
+        }
+
+        public void SetMapControl(MapControl mapControl)
+        {
+            _mapControl = mapControl;
         }
 
         private void OnClickColor(object sender, EventArgs e)
@@ -55,6 +76,60 @@ namespace UoFiddler.Controls.Forms
                 textBox1.Text);
 
             Close();
+        }
+
+        private void LoadMapOverlays()
+        {
+            // Load the XML document
+            XmlDocument doc = new XmlDocument();
+            doc.Load(Path.Combine(Options.AppDataPath, "MapOverlays.xml"));
+
+            // Clear the ListBox
+            listBoxMapOverlaysList.Items.Clear();
+
+            // Add each marker to the ListBox
+            foreach (XmlElement markerElement in doc.DocumentElement.SelectNodes("Marker"))
+            {
+                string text = markerElement.GetAttribute("text");
+                listBoxMapOverlaysList.Items.Add(text);
+            }
+        }
+
+        private void deleteMapOverlaysList_Click(object sender, EventArgs e)
+        {
+            // Get the selected item
+            string selectedText = (string)listBoxMapOverlaysList.SelectedItem;
+
+            // Load the XML document
+            XmlDocument doc = new XmlDocument();
+            doc.Load(Path.Combine(Options.AppDataPath, "MapOverlays.xml"));
+
+            // Find the marker with the selected text and remove it
+            XmlElement markerToRemove = null;
+            foreach (XmlElement markerElement in doc.DocumentElement.SelectNodes("Marker"))
+            {
+                if (markerElement.GetAttribute("text") == selectedText)
+                {
+                    markerToRemove = markerElement;
+                    break;
+                }
+            }
+
+            // If a marker was found, remove it from the XML document and the ListBox
+            if (markerToRemove != null)
+            {
+                doc.DocumentElement.RemoveChild(markerToRemove);
+                listBoxMapOverlaysList.Items.Remove(selectedText);
+
+                // Save the changes to the XML document
+                doc.Save(Path.Combine(Options.AppDataPath, "MapOverlays.xml"));
+
+                // Call LoadMapOverlays after saving the changes
+                LoadMapOverlays();
+
+                // Call LoadMapOverlays on the MapControl instance
+                _mapControl.LoadMapOverlays();
+            }
         }
     }
 }

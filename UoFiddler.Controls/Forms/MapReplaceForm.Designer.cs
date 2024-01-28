@@ -65,6 +65,8 @@ namespace UoFiddler.Controls.Forms
             label7 = new System.Windows.Forms.Label();
             comboBoxMapID = new System.Windows.Forms.ComboBox();
             label8 = new System.Windows.Forms.Label();
+            label9 = new System.Windows.Forms.Label();
+            lbInfo1 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)numericUpDownX1).BeginInit();
             ((System.ComponentModel.ISupportInitialize)numericUpDownY1).BeginInit();
             ((System.ComponentModel.ISupportInitialize)numericUpDownX2).BeginInit();
@@ -79,17 +81,17 @@ namespace UoFiddler.Controls.Forms
             // 
             // textBox1
             // 
-            textBox1.Location = new System.Drawing.Point(105, 14);
+            textBox1.Location = new System.Drawing.Point(114, 14);
             textBox1.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             textBox1.Name = "textBox1";
-            textBox1.Size = new System.Drawing.Size(227, 23);
+            textBox1.Size = new System.Drawing.Size(259, 23);
             textBox1.TabIndex = 0;
             // 
             // button1
             // 
             button1.AutoSize = true;
             button1.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            button1.Location = new System.Drawing.Point(340, 12);
+            button1.Location = new System.Drawing.Point(381, 12);
             button1.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             button1.Name = "button1";
             button1.Size = new System.Drawing.Size(26, 25);
@@ -198,7 +200,7 @@ namespace UoFiddler.Controls.Forms
             // 
             // button2
             // 
-            button2.Location = new System.Drawing.Point(144, 318);
+            button2.Location = new System.Drawing.Point(144, 339);
             button2.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             button2.Name = "button2";
             button2.Size = new System.Drawing.Size(88, 27);
@@ -210,10 +212,10 @@ namespace UoFiddler.Controls.Forms
             // progressBar1
             // 
             progressBar1.Dock = System.Windows.Forms.DockStyle.Bottom;
-            progressBar1.Location = new System.Drawing.Point(0, 354);
+            progressBar1.Location = new System.Drawing.Point(0, 393);
             progressBar1.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             progressBar1.Name = "progressBar1";
-            progressBar1.Size = new System.Drawing.Size(384, 27);
+            progressBar1.Size = new System.Drawing.Size(418, 27);
             progressBar1.TabIndex = 13;
             // 
             // label5
@@ -240,7 +242,7 @@ namespace UoFiddler.Controls.Forms
             // groupBox1
             // 
             groupBox1.Controls.Add(checkBoxMap);
-            groupBox1.Location = new System.Drawing.Point(15, 75);
+            groupBox1.Location = new System.Drawing.Point(15, 96);
             groupBox1.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             groupBox1.Name = "groupBox1";
             groupBox1.Padding = new System.Windows.Forms.Padding(4, 3, 4, 3);
@@ -253,7 +255,7 @@ namespace UoFiddler.Controls.Forms
             // 
             groupBox2.Controls.Add(checkBoxStatics);
             groupBox2.Controls.Add(RemoveDupl);
-            groupBox2.Location = new System.Drawing.Point(201, 75);
+            groupBox2.Location = new System.Drawing.Point(201, 96);
             groupBox2.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             groupBox2.Name = "groupBox2";
             groupBox2.Padding = new System.Windows.Forms.Padding(4, 3, 4, 3);
@@ -272,7 +274,7 @@ namespace UoFiddler.Controls.Forms
             groupBox3.Controls.Add(label4);
             groupBox3.Controls.Add(label3);
             groupBox3.Controls.Add(numericUpDownY2);
-            groupBox3.Location = new System.Drawing.Point(15, 157);
+            groupBox3.Location = new System.Drawing.Point(15, 178);
             groupBox3.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             groupBox3.Name = "groupBox3";
             groupBox3.Padding = new System.Windows.Forms.Padding(4, 3, 4, 3);
@@ -287,7 +289,7 @@ namespace UoFiddler.Controls.Forms
             groupBox4.Controls.Add(numericUpDownToX1);
             groupBox4.Controls.Add(numericUpDownToY1);
             groupBox4.Controls.Add(label7);
-            groupBox4.Location = new System.Drawing.Point(15, 249);
+            groupBox4.Location = new System.Drawing.Point(15, 270);
             groupBox4.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             groupBox4.Name = "groupBox4";
             groupBox4.Padding = new System.Windows.Forms.Padding(4, 3, 4, 3);
@@ -337,27 +339,47 @@ namespace UoFiddler.Controls.Forms
             // comboBoxMapID
             // 
             comboBoxMapID.FormattingEnabled = true;
-            comboBoxMapID.Location = new System.Drawing.Point(105, 44);
+            comboBoxMapID.Location = new System.Drawing.Point(114, 61);
             comboBoxMapID.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             comboBoxMapID.Name = "comboBoxMapID";
-            comboBoxMapID.Size = new System.Drawing.Size(227, 23);
+            comboBoxMapID.Size = new System.Drawing.Size(259, 23);
             comboBoxMapID.TabIndex = 23;
             // 
             // label8
             // 
             label8.AutoSize = true;
-            label8.Location = new System.Drawing.Point(13, 47);
+            label8.Location = new System.Drawing.Point(13, 64);
             label8.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             label8.Name = "label8";
-            label8.Size = new System.Drawing.Size(45, 15);
+            label8.Size = new System.Drawing.Size(90, 15);
             label8.TabIndex = 24;
-            label8.Text = "Map ID";
+            label8.Text = "Maps ID target :";
+            // 
+            // label9
+            // 
+            label9.AutoSize = true;
+            label9.Location = new System.Drawing.Point(42, 41);
+            label9.Name = "label9";
+            label9.Size = new System.Drawing.Size(18, 15);
+            label9.TabIndex = 25;
+            label9.Text = "to";
+            // 
+            // lbInfo1
+            // 
+            lbInfo1.AutoSize = true;
+            lbInfo1.Location = new System.Drawing.Point(13, 375);
+            lbInfo1.Name = "lbInfo1";
+            lbInfo1.Size = new System.Drawing.Size(360, 15);
+            lbInfo1.TabIndex = 26;
+            lbInfo1.Text = "The map is created from the loaded map in the map tab with name";
             // 
             // MapReplaceForm
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            ClientSize = new System.Drawing.Size(384, 381);
+            ClientSize = new System.Drawing.Size(418, 420);
+            Controls.Add(lbInfo1);
+            Controls.Add(label9);
             Controls.Add(label8);
             Controls.Add(comboBoxMapID);
             Controls.Add(groupBox4);
@@ -422,5 +444,7 @@ namespace UoFiddler.Controls.Forms
         private System.Windows.Forms.ProgressBar progressBar1;
         private System.Windows.Forms.CheckBox RemoveDupl;
         private System.Windows.Forms.TextBox textBox1;
+        private System.Windows.Forms.Label label9;
+        private System.Windows.Forms.Label lbInfo1;
     }
 }

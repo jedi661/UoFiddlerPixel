@@ -11,17 +11,22 @@
 
 using System;
 using System.IO;
+using System.Windows.Controls;
 using System.Windows.Forms;
 using Ultima;
 using UoFiddler.Controls.Classes;
+using UoFiddler.Controls.UserControls;
+using static UoFiddler.Controls.UserControls.MapControl;
+using static UoFiddler.Controls.UserControls.OverlayCursor;
 
 namespace UoFiddler.Controls.Forms
 {
     public partial class MapReplaceForm : Form
     {
         private readonly Map _workingMap;
+        private MapControl _mapControl;
 
-        public MapReplaceForm(Map currentMap)
+        public MapReplaceForm(Map currentMap, MapControl mapControl)
         {
             InitializeComponent();
             Icon = Options.GetFiddlerIcon();
@@ -41,10 +46,28 @@ namespace UoFiddler.Controls.Forms
             comboBoxMapID.Items.Add(new RMalas());
             comboBoxMapID.Items.Add(new RTokuno());
             comboBoxMapID.Items.Add(new RTerMur());
+            comboBoxMapID.Items.Add(new RForell()); //New Map Forell
             comboBoxMapID.EndUpdate();
             comboBoxMapID.SelectedIndex = 0;
+
+            // coordinates
+            _workingMap = currentMap;
+            _mapControl = mapControl; // Now mapControl is defined
+            _mapControl.RectangleDrawn += MapControl_RectangleDrawn;
         }
 
+        #region MapControl_RectangleDrawn
+        private void MapControl_RectangleDrawn(object sender, RectangleDrawnEventArgs e)
+        {
+            // Update the NumericUpDown values
+            numericUpDownX1.Value = e.StartPoint.X;
+            numericUpDownY1.Value = e.StartPoint.Y;
+            numericUpDownX2.Value = e.EndPoint.X;
+            numericUpDownY2.Value = e.EndPoint.Y;
+        }
+        #endregion
+
+        #region OnClickBrowse
         private void OnClickBrowse(object sender, EventArgs e)
         {
             FolderBrowserDialog dialog = new FolderBrowserDialog
@@ -60,7 +83,9 @@ namespace UoFiddler.Controls.Forms
 
             dialog.Dispose();
         }
+        #endregion
 
+        #region OnClickCopy
         private void OnClickCopy(object sender, EventArgs e)
         {
             string path = textBox1.Text;
@@ -481,7 +506,9 @@ namespace UoFiddler.Controls.Forms
 
             MessageBox.Show($"Files saved to {Options.OutputPath}", "Saved", MessageBoxButtons.OK, MessageBoxIcon.Information, MessageBoxDefaultButton.Button1);
         }
+        #endregion
 
+        #region SupportedMaps
         private class SupportedMaps
         {
             public int Id { get; }
@@ -502,40 +529,62 @@ namespace UoFiddler.Controls.Forms
                 return $"{Id} - {Name} : {Width}x{Height}";
             }
         }
+        #endregion
 
+        #region RFeluccaOld 
         private class RFeluccaOld : SupportedMaps
         {
             public RFeluccaOld() : base(0, Options.MapNames[0] + "Old", 6144, 4096) { }
         }
+        #endregion
 
+        #region RFelucca
         private class RFelucca : SupportedMaps
         {
             public RFelucca() : base(0, Options.MapNames[0], 7168, 4096) { }
         }
+        #endregion
 
+        #region RTrammel
         private class RTrammel : SupportedMaps
         {
             public RTrammel() : base(1, Options.MapNames[1], 7168, 4096) { }
         }
+        #endregion
 
+        #region RIlshenar
         private class RIlshenar : SupportedMaps
         {
             public RIlshenar() : base(2, Options.MapNames[2], 2304, 1600) { }
         }
+        #endregion
 
+        #region RMalas
         private class RMalas : SupportedMaps
         {
             public RMalas() : base(3, Options.MapNames[3], 2560, 2048) { }
         }
+        #endregion
 
+        #region RTokuno
         private class RTokuno : SupportedMaps
         {
             public RTokuno() : base(4, Options.MapNames[4], 1448, 1448) { }
         }
+        #endregion
 
+        #region RTerMur
         private class RTerMur : SupportedMaps
         {
             public RTerMur() : base(5, Options.MapNames[5], 1280, 4096) { }
-        }        
+        }
+        #endregion
+
+        #region RForell
+        private class RForell : SupportedMaps // New Map Forell
+        {
+            public RForell() : base(6, Options.MapNames[6], 6144, 4096) { }
+        }
+        #endregion
     }
 }
