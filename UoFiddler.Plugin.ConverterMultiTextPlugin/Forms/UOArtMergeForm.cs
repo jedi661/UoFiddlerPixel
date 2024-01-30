@@ -99,6 +99,21 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 
             // Set the text of the searchTextBox to the hexadecimal representation of the selected item
             searchTextBox.Text = $"0x{i:X}";
+
+            // Überprüfen Sie, ob ein Element in der listBoxOrg ausgewählt ist
+            if (listBoxOrg.SelectedIndex != -1)
+            {
+                int selectedIndex = listBoxOrg.SelectedIndex;
+                // Konvertieren Sie den ausgewählten Index in eine Hexadezimaladresse
+                string hexAddress = $"0x{selectedIndex:X}";
+                // Aktualisieren Sie lbIndex mit der Hexadezimaladresse und der ID
+                lbIndex.Text = $"Hex-Adresse: {hexAddress}, ID: {selectedIndex}";
+            }
+
+            // Get the total number of items (IDs) in listBoxOrg
+            int totalIDs = listBoxOrg.Items.Count;
+            // Update lbIndex with the total number of IDs
+            lbCountOrg.Text = $"Total number IDs: {totalIDs}";
         }
         #endregion
 
@@ -195,11 +210,26 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 {
                     listBoxOrg.SelectedIndex = selectedIndex;
                 }
-                if (selectedIndex < listBoxRight.Items.Count)
+                if (selectedIndex < listBoxLeft.Items.Count)
                 {
-                    listBoxRight.SelectedIndex = selectedIndex;
+                    listBoxLeft.SelectedIndex = selectedIndex;
                 }
             }
+
+            // Überprüfen Sie, ob ein Element in der listBoxLeft ausgewählt ist
+            if (listBoxLeft.SelectedIndex != -1)
+            {
+                int selectedIndex = listBoxLeft.SelectedIndex;
+                // Konvertieren Sie den ausgewählten Index in eine Hexadezimaladresse
+                string hexAddress = $"0x{selectedIndex:X}";
+                // Aktualisieren Sie lbIndexLeft mit der Hexadezimaladresse und der ID
+                lbIndexLeft.Text = $"Hex-Adresse: {hexAddress}, ID: {selectedIndex}";
+            }
+
+            // Get the total number of items (IDs) in listBoxLeft
+            int totalIDs = listBoxLeft.Items.Count;
+            // Update lbIndex with the total number of IDs
+            lbCountLeft.Text = $"Total number IDs: {totalIDs}";
         }
         #endregion
 
@@ -297,11 +327,26 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 {
                     listBoxOrg.SelectedIndex = selectedIndex;
                 }
-                if (selectedIndex < listBoxLeft.Items.Count)
+                if (selectedIndex < listBoxRight.Items.Count)
                 {
-                    listBoxLeft.SelectedIndex = selectedIndex;
+                    listBoxRight.SelectedIndex = selectedIndex;
                 }
             }
+
+            // Überprüfen Sie, ob ein Element in der listBoxRight ausgewählt ist
+            if (listBoxRight.SelectedIndex != -1)
+            {
+                int selectedIndex = listBoxRight.SelectedIndex;
+                // Konvertieren Sie den ausgewählten Index in eine Hexadezimaladresse
+                string hexAddress = $"0x{selectedIndex:X}";
+                // Aktualisieren Sie lbIndexRight mit der Hexadezimaladresse und der ID
+                lbIndexRight.Text = $"Hex-Adresse: {hexAddress}, ID: {selectedIndex}";
+            }
+
+            // Get the total number of items (IDs) in listBoxRight
+            int totalIDs = listBoxRight.Items.Count;
+            // Update lbIndex with the total number of IDs
+            lbCountRight.Text = $"Total number IDs: {totalIDs}";
         }
         #endregion
 

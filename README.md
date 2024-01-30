@@ -20,6 +20,7 @@ Version : 4.12.2
 - Created Uo Art Merge class, which is a multifunctional tool for moving Art Mul images, 
   including shifting, saving, same height, showing only differences, free ID choice, mirroring, removing, copying to clipboard, 
   importing from clipboard, saving XML directories, ID deletion, and hex search.
+- Add Label Infos
 
 Version : 4.12.1
 - Implemented copying multiple graphics to the clipboard with Ctrl+X.

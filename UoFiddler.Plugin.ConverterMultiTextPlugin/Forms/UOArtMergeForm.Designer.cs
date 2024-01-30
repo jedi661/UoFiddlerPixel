@@ -42,6 +42,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(UOArtMergeForm));
             panel1Art = new System.Windows.Forms.Panel();
+            lbCountOrg = new System.Windows.Forms.Label();
+            lbIndex = new System.Windows.Forms.Label();
             lbOrginal = new System.Windows.Forms.Label();
             pictureBoxOrg = new System.Windows.Forms.PictureBox();
             contextMenuStripPictureBoxOrg = new System.Windows.Forms.ContextMenuStrip(components);
@@ -50,9 +52,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             saveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             mirrorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            copyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            toolStripSeparator5 = new System.Windows.Forms.ToolStripSeparator();
             removeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
+            copyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             importToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            toolStripSeparator6 = new System.Windows.Forms.ToolStripSeparator();
             pictureBoxLeft = new System.Windows.Forms.PictureBox();
             contextMenuStripListBoxLeft = new System.Windows.Forms.ContextMenuStrip(components);
             moveArtToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
@@ -62,6 +67,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             panel1 = new System.Windows.Forms.Panel();
             lbLeft = new System.Windows.Forms.Label();
             panel2 = new System.Windows.Forms.Panel();
+            lbIndexRight = new System.Windows.Forms.Label();
+            lbCountRight = new System.Windows.Forms.Label();
             lbRight = new System.Windows.Forms.Label();
             pictureBoxRight = new System.Windows.Forms.PictureBox();
             contextMenuStripPictureboxRight = new System.Windows.Forms.ContextMenuStrip(components);
@@ -92,9 +99,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             label2 = new System.Windows.Forms.Label();
             OnClickSearch = new System.Windows.Forms.Button();
             searchTextBox = new System.Windows.Forms.TextBox();
-            toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
-            toolStripSeparator5 = new System.Windows.Forms.ToolStripSeparator();
-            toolStripSeparator6 = new System.Windows.Forms.ToolStripSeparator();
+            lbInfo = new System.Windows.Forms.Label();
+            lbCountLeft = new System.Windows.Forms.Label();
+            lbIndexLeft = new System.Windows.Forms.Label();
             panel1Art.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)pictureBoxOrg).BeginInit();
             contextMenuStripListBoxOrg.SuspendLayout();
@@ -108,6 +115,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // 
             // panel1Art
             // 
+            panel1Art.Controls.Add(lbCountOrg);
+            panel1Art.Controls.Add(lbIndex);
             panel1Art.Controls.Add(lbOrginal);
             panel1Art.Controls.Add(pictureBoxOrg);
             panel1Art.Controls.Add(listBoxOrg);
@@ -115,6 +124,24 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             panel1Art.Name = "panel1Art";
             panel1Art.Size = new System.Drawing.Size(392, 446);
             panel1Art.TabIndex = 0;
+            // 
+            // lbCountOrg
+            // 
+            lbCountOrg.AutoSize = true;
+            lbCountOrg.Location = new System.Drawing.Point(3, 427);
+            lbCountOrg.Name = "lbCountOrg";
+            lbCountOrg.Size = new System.Drawing.Size(40, 15);
+            lbCountOrg.TabIndex = 6;
+            lbCountOrg.Text = "Count";
+            // 
+            // lbIndex
+            // 
+            lbIndex.AutoSize = true;
+            lbIndex.Location = new System.Drawing.Point(184, 427);
+            lbIndex.Name = "lbIndex";
+            lbIndex.Size = new System.Drawing.Size(36, 15);
+            lbIndex.TabIndex = 5;
+            lbIndex.Text = "Index";
             // 
             // lbOrginal
             // 
@@ -158,13 +185,13 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // 
             contextMenuStripListBoxOrg.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { saveToolStripMenuItem, toolStripSeparator2, mirrorToolStripMenuItem, toolStripSeparator5, removeToolStripMenuItem, toolStripSeparator4, copyToolStripMenuItem, importToolStripMenuItem, toolStripSeparator6 });
             contextMenuStripListBoxOrg.Name = "contextMenuStripListBoxOrg";
-            contextMenuStripListBoxOrg.Size = new System.Drawing.Size(181, 160);
+            contextMenuStripListBoxOrg.Size = new System.Drawing.Size(118, 138);
             // 
             // saveToolStripMenuItem
             // 
             saveToolStripMenuItem.Image = Properties.Resources.Save2;
             saveToolStripMenuItem.Name = "saveToolStripMenuItem";
-            saveToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            saveToolStripMenuItem.Size = new System.Drawing.Size(117, 22);
             saveToolStripMenuItem.Text = "Save";
             saveToolStripMenuItem.ToolTipText = "Save Art.mul";
             saveToolStripMenuItem.Click += OnClickSave;
@@ -172,43 +199,58 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // toolStripSeparator2
             // 
             toolStripSeparator2.Name = "toolStripSeparator2";
-            toolStripSeparator2.Size = new System.Drawing.Size(177, 6);
+            toolStripSeparator2.Size = new System.Drawing.Size(114, 6);
             // 
             // mirrorToolStripMenuItem
             // 
             mirrorToolStripMenuItem.Image = Properties.Resources.reload;
             mirrorToolStripMenuItem.Name = "mirrorToolStripMenuItem";
-            mirrorToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            mirrorToolStripMenuItem.Size = new System.Drawing.Size(117, 22);
             mirrorToolStripMenuItem.Text = "Mirror";
             mirrorToolStripMenuItem.ToolTipText = "Mirror Image";
             mirrorToolStripMenuItem.Click += mirrorToolStripMenuItem_Click;
             // 
-            // copyToolStripMenuItem
+            // toolStripSeparator5
             // 
-            copyToolStripMenuItem.Image = Properties.Resources.Copy;
-            copyToolStripMenuItem.Name = "copyToolStripMenuItem";
-            copyToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            copyToolStripMenuItem.Text = "Copy";
-            copyToolStripMenuItem.ToolTipText = "Copy Art Image to Clipboard";
-            copyToolStripMenuItem.Click += copyToolStripMenuItem_Click;
+            toolStripSeparator5.Name = "toolStripSeparator5";
+            toolStripSeparator5.Size = new System.Drawing.Size(114, 6);
             // 
             // removeToolStripMenuItem
             // 
             removeToolStripMenuItem.Image = Properties.Resources.a_black_square_with_round_corners_and_within_the_b;
             removeToolStripMenuItem.Name = "removeToolStripMenuItem";
-            removeToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            removeToolStripMenuItem.Size = new System.Drawing.Size(117, 22);
             removeToolStripMenuItem.Text = "Remove";
             removeToolStripMenuItem.ToolTipText = "Remove Image";
             removeToolStripMenuItem.Click += btremoveitemfromindex_Click;
+            // 
+            // toolStripSeparator4
+            // 
+            toolStripSeparator4.Name = "toolStripSeparator4";
+            toolStripSeparator4.Size = new System.Drawing.Size(114, 6);
+            // 
+            // copyToolStripMenuItem
+            // 
+            copyToolStripMenuItem.Image = Properties.Resources.Copy;
+            copyToolStripMenuItem.Name = "copyToolStripMenuItem";
+            copyToolStripMenuItem.Size = new System.Drawing.Size(117, 22);
+            copyToolStripMenuItem.Text = "Copy";
+            copyToolStripMenuItem.ToolTipText = "Copy Art Image to Clipboard";
+            copyToolStripMenuItem.Click += copyToolStripMenuItem_Click;
             // 
             // importToolStripMenuItem
             // 
             importToolStripMenuItem.Image = Properties.Resources.import;
             importToolStripMenuItem.Name = "importToolStripMenuItem";
-            importToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            importToolStripMenuItem.Size = new System.Drawing.Size(117, 22);
             importToolStripMenuItem.Text = "Import";
             importToolStripMenuItem.ToolTipText = "Import Image from Clipboard";
             importToolStripMenuItem.Click += importToolStripclipboardMenuItem_Click;
+            // 
+            // toolStripSeparator6
+            // 
+            toolStripSeparator6.Name = "toolStripSeparator6";
+            toolStripSeparator6.Size = new System.Drawing.Size(114, 6);
             // 
             // pictureBoxLeft
             // 
@@ -265,6 +307,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // 
             // panel1
             // 
+            panel1.Controls.Add(lbIndexLeft);
+            panel1.Controls.Add(lbCountLeft);
             panel1.Controls.Add(lbLeft);
             panel1.Controls.Add(pictureBoxLeft);
             panel1.Controls.Add(listBoxLeft);
@@ -284,6 +328,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // 
             // panel2
             // 
+            panel2.Controls.Add(lbIndexRight);
+            panel2.Controls.Add(lbCountRight);
             panel2.Controls.Add(lbRight);
             panel2.Controls.Add(pictureBoxRight);
             panel2.Controls.Add(listBoxRight);
@@ -291,6 +337,24 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             panel2.Name = "panel2";
             panel2.Size = new System.Drawing.Size(392, 446);
             panel2.TabIndex = 5;
+            // 
+            // lbIndexRight
+            // 
+            lbIndexRight.AutoSize = true;
+            lbIndexRight.Location = new System.Drawing.Point(184, 427);
+            lbIndexRight.Name = "lbIndexRight";
+            lbIndexRight.Size = new System.Drawing.Size(36, 15);
+            lbIndexRight.TabIndex = 6;
+            lbIndexRight.Text = "Index";
+            // 
+            // lbCountRight
+            // 
+            lbCountRight.AutoSize = true;
+            lbCountRight.Location = new System.Drawing.Point(3, 427);
+            lbCountRight.Name = "lbCountRight";
+            lbCountRight.Size = new System.Drawing.Size(40, 15);
+            lbCountRight.TabIndex = 5;
+            lbCountRight.Text = "Count";
             // 
             // lbRight
             // 
@@ -567,26 +631,39 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             searchTextBox.Size = new System.Drawing.Size(57, 23);
             searchTextBox.TabIndex = 32;
             // 
-            // toolStripSeparator4
+            // lbInfo
             // 
-            toolStripSeparator4.Name = "toolStripSeparator4";
-            toolStripSeparator4.Size = new System.Drawing.Size(177, 6);
+            lbInfo.AutoSize = true;
+            lbInfo.Location = new System.Drawing.Point(112, 539);
+            lbInfo.Name = "lbInfo";
+            lbInfo.Size = new System.Drawing.Size(69, 15);
+            lbInfo.TabIndex = 35;
+            lbInfo.Text = "Index ID Nr:";
             // 
-            // toolStripSeparator5
+            // lbCountLeft
             // 
-            toolStripSeparator5.Name = "toolStripSeparator5";
-            toolStripSeparator5.Size = new System.Drawing.Size(177, 6);
+            lbCountLeft.AutoSize = true;
+            lbCountLeft.Location = new System.Drawing.Point(4, 427);
+            lbCountLeft.Name = "lbCountLeft";
+            lbCountLeft.Size = new System.Drawing.Size(40, 15);
+            lbCountLeft.TabIndex = 7;
+            lbCountLeft.Text = "Count";
             // 
-            // toolStripSeparator6
+            // lbIndexLeft
             // 
-            toolStripSeparator6.Name = "toolStripSeparator6";
-            toolStripSeparator6.Size = new System.Drawing.Size(177, 6);
+            lbIndexLeft.AutoSize = true;
+            lbIndexLeft.Location = new System.Drawing.Point(184, 427);
+            lbIndexLeft.Name = "lbIndexLeft";
+            lbIndexLeft.Size = new System.Drawing.Size(36, 15);
+            lbIndexLeft.TabIndex = 7;
+            lbIndexLeft.Text = "Index";
             // 
             // UOArtMergeForm
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             ClientSize = new System.Drawing.Size(1222, 612);
+            Controls.Add(lbInfo);
             Controls.Add(label2);
             Controls.Add(OnClickSearch);
             Controls.Add(searchTextBox);
@@ -687,5 +764,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator5;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator4;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator6;
+        private System.Windows.Forms.Label lbInfo;
+        private System.Windows.Forms.Label lbIndex;
+        private System.Windows.Forms.Label lbCountOrg;
+        private System.Windows.Forms.Label lbCountRight;
+        private System.Windows.Forms.Label lbIndexRight;
+        private System.Windows.Forms.Label lbIndexLeft;
+        private System.Windows.Forms.Label lbCountLeft;
     }
 }
