@@ -63,6 +63,16 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Properties {
         /// <summary>
         ///   Sucht eine lokalisierte Ressource vom Typ System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap a_black_square_with_round_corners_and_within_the_b {
+            get {
+                object obj = ResourceManager.GetObject("a-black-square-with-round-corners-and-within-the-b", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Ressource vom Typ System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap altitude_tool {
             get {
                 object obj = ResourceManager.GetObject("altitude-tool", resourceCulture);

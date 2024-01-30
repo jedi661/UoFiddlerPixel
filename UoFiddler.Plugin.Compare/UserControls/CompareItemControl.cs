@@ -36,6 +36,7 @@ namespace UoFiddler.Plugin.Compare.UserControls
             listBoxSec.KeyDown += ListBoxSec_KeyDown;
         }
 
+        #region OnLoad
         private void OnLoad(object sender, EventArgs e)
         {
             listBoxOrg.Items.Clear();
@@ -65,7 +66,9 @@ namespace UoFiddler.Plugin.Compare.UserControls
             //Load the settings for Combobox
             LoadSettingsDirectoryComboBox();
         }
+        #endregion
 
+        #region LoadSettingsDirectoryComboBox
         private void LoadSettingsDirectoryComboBox()
         {
             string settingsDirectory = "DirectoryisSettings";
@@ -80,7 +83,9 @@ namespace UoFiddler.Plugin.Compare.UserControls
                 }
             }
         }
+        #endregion
 
+        #region OnIndexChangedOrg
         private void OnIndexChangedOrg(object sender, EventArgs e)
         {
             if (listBoxOrg.SelectedIndex == -1 || listBoxOrg.Items.Count < 1)
@@ -107,7 +112,9 @@ namespace UoFiddler.Plugin.Compare.UserControls
 
             listBoxOrg.Invalidate();
         }
+        #endregion
 
+        #region DrawItemOrg
         private void DrawItemOrg(object sender, DrawItemEventArgs e)
         {
             if (e.Index == -1)
@@ -140,12 +147,14 @@ namespace UoFiddler.Plugin.Compare.UserControls
                 e.Bounds.Y + ((e.Bounds.Height / 2) -
                 (e.Graphics.MeasureString($"0x{i:X} ({i})", Font).Height / 2))));
         }
+        #endregion
 
-
+        #region MeasureOrg
         private void MeasureOrg(object sender, MeasureItemEventArgs e)
         {
             e.ItemHeight = 13;
         }
+        #endregion
 
         /*private void OnClickLoadSecond(object sender, EventArgs e)
         {
@@ -164,6 +173,7 @@ namespace UoFiddler.Plugin.Compare.UserControls
             }
         }*/
 
+        #region OnClickLoadSecond
         private void OnClickLoadSecond(object sender, EventArgs e)
         {
             if (string.IsNullOrWhiteSpace(textBoxSecondDir.Text))
@@ -186,7 +196,9 @@ namespace UoFiddler.Plugin.Compare.UserControls
                 LoadSecond();
             }*/
         }
+        #endregion
 
+        #region LoadSecond
         private void LoadSecond()
         {
             _mCompare.Clear();
@@ -201,8 +213,11 @@ namespace UoFiddler.Plugin.Compare.UserControls
             listBoxSec.Items.AddRange(cache.ToArray());
             listBoxSec.EndUpdate();
         }
+        #endregion
 
         //Colors 
+
+        #region DrawItemSec
         private void DrawItemSec(object sender, DrawItemEventArgs e)
         {
             if (e.Index == -1)
@@ -242,8 +257,9 @@ namespace UoFiddler.Plugin.Compare.UserControls
                 e.Bounds.Y + ((e.Bounds.Height / 2) -
                 (e.Graphics.MeasureString($"0x{i:X} ({i})", Font).Height / 2))));
         }
+        #endregion
 
-
+        #region listBoxSec_DrawItem
         private void listBoxSec_DrawItem(object sender, DrawItemEventArgs e)
         {
             if (e.Index == -1)
@@ -281,13 +297,16 @@ namespace UoFiddler.Plugin.Compare.UserControls
                 e.Bounds.Y + ((e.Bounds.Height / 2) -
                 (e.Graphics.MeasureString($"0x{i:X}", Font).Height / 2))));
         }
+        #endregion
 
-
+        #region MeasureSec
         private void MeasureSec(object sender, MeasureItemEventArgs e)
         {
             e.ItemHeight = 13;
         }
+        #endregion
 
+        #region OnIndexChangedSec
         private void OnIndexChangedSec(object sender, EventArgs e)
         {
             if (listBoxSec.SelectedIndex == -1 || listBoxSec.Items.Count < 1)
@@ -308,7 +327,9 @@ namespace UoFiddler.Plugin.Compare.UserControls
 
             listBoxSec.Invalidate();
         }
+        #endregion
 
+        #region Compare
         private bool Compare(int index)
         {
             if (_mCompare.ContainsKey(index))
@@ -349,7 +370,9 @@ namespace UoFiddler.Plugin.Compare.UserControls
             _mCompare[index] = res;
             return res;
         }
+        #endregion
 
+        #region OnChangeShowDiff
         private void OnChangeShowDiff(object sender, EventArgs e)
         {
             if (_mCompare.Count < 1)
@@ -390,6 +413,7 @@ namespace UoFiddler.Plugin.Compare.UserControls
             listBoxOrg.EndUpdate();
             listBoxSec.EndUpdate();
         }
+        #endregion
 
         #region ExportAsBmp + ExportAsTiff listBoxSec
         private void ExportAsBmp(object sender, EventArgs e)
@@ -922,7 +946,7 @@ namespace UoFiddler.Plugin.Compare.UserControls
             int firstSelectedIndex = int.Parse(listBoxSec.Items[listBoxSec.SelectedIndices[0]].ToString());
             pictureBoxOrg.BackgroundImage = Art.GetStatic(firstSelectedIndex);
         }
-        
+
         private void ListBoxSec_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.Left)
@@ -952,5 +976,10 @@ namespace UoFiddler.Plugin.Compare.UserControls
             }
         }
         #endregion
+
+        private void label2_Click(object sender, EventArgs e)
+        {
+
+        }
     }
 }

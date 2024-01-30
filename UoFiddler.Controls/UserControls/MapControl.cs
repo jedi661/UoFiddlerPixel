@@ -35,6 +35,7 @@ namespace UoFiddler.Controls.UserControls
         // Declaration of the isDrawingRectangle variable
         private bool isDrawingRectangle = false;
 
+        #region MapControl
         public MapControl()
         {
             InitializeComponent();
@@ -56,6 +57,7 @@ namespace UoFiddler.Controls.UserControls
         
         
         }
+        #endregion
 
         private static MapControl _refMarker;
         public static double Zoom = 1;
@@ -840,6 +842,8 @@ namespace UoFiddler.Controls.UserControls
             }
         }
         #endregion
+
+        #region OnKeyDownGoto
         private void OnKeyDownGoto(object sender, KeyEventArgs e)
         {
             if (e.KeyCode != Keys.Enter)
@@ -868,6 +872,7 @@ namespace UoFiddler.Controls.UserControls
             }
             pictureBox.Invalidate();
         }
+        #endregion
 
         #region OnClickSendClient
         private void OnClickSendClient(object sender, EventArgs e)

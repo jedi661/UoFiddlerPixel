@@ -93,7 +93,7 @@ namespace UoFiddler.Plugin.Compare.UserControls
             listBoxOrg.Location = new System.Drawing.Point(4, 3);
             listBoxOrg.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             listBoxOrg.Name = "listBoxOrg";
-            listBoxOrg.Size = new System.Drawing.Size(220, 258);
+            listBoxOrg.Size = new System.Drawing.Size(220, 257);
             listBoxOrg.TabIndex = 0;
             listBoxOrg.DrawItem += DrawItemOrg;
             listBoxOrg.MeasureItem += MeasureOrg;
@@ -131,7 +131,7 @@ namespace UoFiddler.Plugin.Compare.UserControls
             listBoxSec.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             listBoxSec.Name = "listBoxSec";
             listBoxSec.SelectionMode = System.Windows.Forms.SelectionMode.MultiExtended;
-            listBoxSec.Size = new System.Drawing.Size(221, 258);
+            listBoxSec.Size = new System.Drawing.Size(221, 257);
             listBoxSec.TabIndex = 1;
             listBoxSec.DrawItem += DrawItemSec;
             listBoxSec.MeasureItem += MeasureSec;
@@ -212,7 +212,7 @@ namespace UoFiddler.Plugin.Compare.UserControls
             pictureBoxSec.Location = new System.Drawing.Point(5, 132);
             pictureBoxSec.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             pictureBoxSec.Name = "pictureBoxSec";
-            pictureBoxSec.Size = new System.Drawing.Size(362, 122);
+            pictureBoxSec.Size = new System.Drawing.Size(362, 121);
             pictureBoxSec.TabIndex = 3;
             pictureBoxSec.TabStop = false;
             // 
@@ -262,7 +262,7 @@ namespace UoFiddler.Plugin.Compare.UserControls
             tableLayoutPanel1.RowCount = 2;
             tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
             tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            tableLayoutPanel1.Size = new System.Drawing.Size(372, 258);
+            tableLayoutPanel1.Size = new System.Drawing.Size(372, 257);
             tableLayoutPanel1.TabIndex = 7;
             // 
             // tableLayoutPanel2
@@ -280,7 +280,7 @@ namespace UoFiddler.Plugin.Compare.UserControls
             tableLayoutPanel2.Name = "tableLayoutPanel2";
             tableLayoutPanel2.RowCount = 1;
             tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            tableLayoutPanel2.Size = new System.Drawing.Size(837, 264);
+            tableLayoutPanel2.Size = new System.Drawing.Size(837, 263);
             tableLayoutPanel2.TabIndex = 8;
             // 
             // splitContainer1
@@ -313,7 +313,7 @@ namespace UoFiddler.Plugin.Compare.UserControls
             splitContainer1.Panel2.Controls.Add(checkBox1);
             splitContainer1.Panel2.Controls.Add(button1);
             splitContainer1.Size = new System.Drawing.Size(837, 432);
-            splitContainer1.SplitterDistance = 264;
+            splitContainer1.SplitterDistance = 263;
             splitContainer1.SplitterWidth = 5;
             splitContainer1.TabIndex = 9;
             // 
