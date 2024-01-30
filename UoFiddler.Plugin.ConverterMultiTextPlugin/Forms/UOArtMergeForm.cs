@@ -1,11 +1,11 @@
 ﻿// /***************************************************************************
 //  *
-//  * $Author: Turley
+//  * $Author: Nikodemus
 //  * 
-//  * "THE BEER-WARE LICENSE"
+//  * "THE WINE-WARE LICENSE"
 //  * As long as you retain this notice you can do whatever you want with 
 //  * this stuff. If we meet some day, and you think this stuff is worth it,
-//  * you can buy me a beer in return.
+//  * you can buy me a Wine in return.
 //  *
 //  ***************************************************************************/
 
@@ -100,13 +100,13 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // Set the text of the searchTextBox to the hexadecimal representation of the selected item
             searchTextBox.Text = $"0x{i:X}";
 
-            // Überprüfen Sie, ob ein Element in der listBoxOrg ausgewählt ist
+            // Check if an item in the listBoxOrg is selected
             if (listBoxOrg.SelectedIndex != -1)
             {
                 int selectedIndex = listBoxOrg.SelectedIndex;
-                // Konvertieren Sie den ausgewählten Index in eine Hexadezimaladresse
+                // Convert the selected index to a hexadecimal address
                 string hexAddress = $"0x{selectedIndex:X}";
-                // Aktualisieren Sie lbIndex mit der Hexadezimaladresse und der ID
+                // Update lbIndex with the hexadecimal address and ID
                 lbIndex.Text = $"Hex-Adresse: {hexAddress}, ID: {selectedIndex}";
             }
 
@@ -129,7 +129,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 
             int i = int.Parse(listBoxOrg.Items[e.Index].ToString());
             string hexValue = $"0x{i:X}";
-            string displayValue = $"{hexValue} ({i})"; // Zeigt sowohl die Hex-Adresse als auch die ID-Adresse an
+            string displayValue = $"{hexValue} ({i})"; // Displays both the hex address and the ID address
 
             using (Brush brush = new SolidBrush(e.ForeColor))
             {
@@ -216,13 +216,13 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 }
             }
 
-            // Überprüfen Sie, ob ein Element in der listBoxLeft ausgewählt ist
+            // Check if an item in the listBoxLeft is selected
             if (listBoxLeft.SelectedIndex != -1)
             {
                 int selectedIndex = listBoxLeft.SelectedIndex;
-                // Konvertieren Sie den ausgewählten Index in eine Hexadezimaladresse
+                // Convert the selected index to a hexadecimal address
                 string hexAddress = $"0x{selectedIndex:X}";
-                // Aktualisieren Sie lbIndexLeft mit der Hexadezimaladresse und der ID
+                // Update lbIndexLeft with the hexadecimal address and ID
                 lbIndexLeft.Text = $"Hex-Adresse: {hexAddress}, ID: {selectedIndex}";
             }
 
@@ -245,7 +245,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 
             int i = int.Parse(listBoxLeft.Items[e.Index].ToString());
             string hexValue = $"0x{i:X}";
-            string displayValue = $"{hexValue} ({i})"; // Zeigt sowohl die Hex-Adresse als auch die ID-Adresse an
+            string displayValue = $"{hexValue} ({i})"; // Displays both the hex address and the ID address
 
             using (Brush brush = new SolidBrush(e.ForeColor))
             {
@@ -267,8 +267,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 }
                 if (dialog.ShowDialog() == DialogResult.OK)
                 {
-                    textBoxRightDir.Text = dialog.SelectedPath;
-                    //lastSelectedPathRight = dialog.SelectedPath;
+                    textBoxRightDir.Text = dialog.SelectedPath;                    
                 }
             }
         }
@@ -333,13 +332,13 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 }
             }
 
-            // Überprüfen Sie, ob ein Element in der listBoxRight ausgewählt ist
+            // Check if an item in the listBoxRight is selected
             if (listBoxRight.SelectedIndex != -1)
             {
                 int selectedIndex = listBoxRight.SelectedIndex;
-                // Konvertieren Sie den ausgewählten Index in eine Hexadezimaladresse
+                // Convert the selected index to a hexadecimal address
                 string hexAddress = $"0x{selectedIndex:X}";
-                // Aktualisieren Sie lbIndexRight mit der Hexadezimaladresse und der ID
+                // Update lbIndexRight with the hexadecimal address and ID
                 lbIndexRight.Text = $"Hex-Adresse: {hexAddress}, ID: {selectedIndex}";
             }
 
@@ -362,7 +361,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 
             int i = int.Parse(listBoxRight.Items[e.Index].ToString());
             string hexValue = $"0x{i:X}";
-            string displayValue = $"{hexValue} ({i})"; // Zeigt sowohl die Hex-Adresse als auch die ID-Adresse an
+            string displayValue = $"{hexValue} ({i})"; // Displays both the hex address and the ID address
 
             using (Brush brush = new SolidBrush(e.ForeColor))
             {
@@ -374,7 +373,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         #region OnChangeShowDiff
         private void OnChangeShowDiff(object sender, EventArgs e)
         {
-            // Rufen Sie Compare für jedes Element in listBoxOrg auf
+            // Call Compare on each item in listBoxOrg
             for (int i = 0; i < listBoxOrg.Items.Count; i++)
             {
                 Compare(i);
@@ -481,7 +480,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             }
             Bitmap copy = new Bitmap(SecondArt.GetStatic(i));
 
-            // Wenn checkBoxFreeIDchoice aktiviert ist, fügen Sie das Bild an der ausgewählten ID in listBoxOrg ein
+            // If checkBoxFreeIDchoice is enabled, insert the image into listBoxOrg at the selected ID
             if (checkBoxfFreeIDchoice.Checked)
             {
                 int selectedIndex = listBoxOrg.SelectedIndex;
@@ -492,7 +491,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                     ControlEvents.FireItemChangeEvent(this, selectedIndex);
                     _mCompare[selectedIndex] = true;
 
-                    // Aktualisieren Sie pictureBoxOrg mit dem ausgewählten Bild
+                    // Update pictureBoxOrg with the selected image
                     pictureBoxOrg.BackgroundImage = Art.GetStatic(selectedIndex);
                 }
             }
@@ -571,7 +570,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             }
             Bitmap copy = new Bitmap(SecondArt.GetStatic(i));
 
-            // Wenn checkBoxFreeIDchoice aktiviert ist, fügen Sie das Bild an der ausgewählten ID in listBoxOrg ein
+            // If checkBoxFreeIDchoice is enabled, insert the image into listBoxOrg at the selected ID
             if (checkBoxfFreeIDchoice.Checked)
             {
                 int selectedIndex = listBoxOrg.SelectedIndex;
@@ -582,7 +581,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                     ControlEvents.FireItemChangeEvent(this, selectedIndex);
                     _mCompare[selectedIndex] = true;
 
-                    // Aktualisieren Sie pictureBoxOrg mit dem ausgewählten Bild
+                    // Update pictureBoxOrg with the selected image
                     pictureBoxOrg.BackgroundImage = Art.GetStatic(selectedIndex);
                 }
             }
@@ -630,17 +629,17 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         #region btSaveXML
         private void btSaveXML_Click(object sender, EventArgs e)
         {
-            // Erstellen Sie das Verzeichnis, wenn es nicht existiert
+            // Create the directory if it doesn't exist
             string settingsDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "DirectoryisSettings");
             if (!Directory.Exists(settingsDirectory))
             {
                 Directory.CreateDirectory(settingsDirectory);
             }
 
-            // Erstellen Sie die XML-Datei
+            // Create the XML file
             string xmlFilePath = Path.Combine(settingsDirectory, "XMLSaveDirUAArtMerge.xml");
 
-            // Laden Sie die vorhandene XML-Datei, falls sie existiert
+            // Load the existing XML file if it exists
             XDocument doc;
             if (File.Exists(xmlFilePath))
             {
@@ -651,10 +650,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 doc = new XDocument(new XElement("Directories"));
             }
 
-            // Zählen Sie die Anzahl der vorhandenen Verzeichniseinträge
+            // Count the number of existing directory entries
             int directoryCount = doc.Root.Elements("Directory").Count();
 
-            // Fügen Sie die Verzeichnisse mit einer eindeutigen ID zur XML-Datei hinzu
+            // Add the directories to the XML file with a unique ID
             doc.Root.Add(
                 new XElement("Directory",
                     new XAttribute("id", directoryCount + 1),
@@ -667,7 +666,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             );
             doc.Save(xmlFilePath);
 
-            // Aktualisieren Sie die comboBoxSaveDir
+            // Update the comboBoxSaveDir
             comboBoxSaveDir.Items.Clear();
             comboBoxSaveDir.Items.Add(textBoxLeftDir.Text);
             comboBoxSaveDir.Items.Add(textBoxRightDir.Text);
@@ -677,28 +676,28 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         #region LoadDirectoriesIntoComboBox
         private void LoadDirectoriesIntoComboBox()
         {
-            // Erstellen Sie den Pfad zur XML-Datei
+            // Create the path to the XML file
             string settingsDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "DirectoryisSettings");
             string xmlFilePath = Path.Combine(settingsDirectory, "XMLSaveDirUAArtMerge.xml");
 
-            // Überprüfen Sie, ob die XML-Datei existiert
+            // Check if the XML file exists
             if (!File.Exists(xmlFilePath))
             {
                 return;
             }
 
-            // Lesen Sie die XML-Datei
+            // Read the XML file
             XDocument doc = XDocument.Load(xmlFilePath);
             var directories = doc.Root.Elements("Directory");
 
-            // Fügen Sie jeden Pfad zur comboBoxSaveDir und comboBoxSaveDir2 hinzu
+            // Add each path to comboBoxSaveDir and comboBoxSaveDir2
             comboBoxSaveDir.Items.Clear();
             comboBoxSaveDir2.Items.Clear();
             foreach (var directory in directories)
             {
                 string path = directory.Attribute("path").Value;
                 comboBoxSaveDir.Items.Add(path);
-                comboBoxSaveDir2.Items.Add(path);  // Hinzufügen der Pfade zur comboBoxSaveDir2
+                comboBoxSaveDir2.Items.Add(path);  // Adding the paths to the comboBoxSaveDir2
             }
         }
         #endregion
@@ -713,18 +712,18 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         #region LoadIDsIntoListBox
         private void LoadIDsIntoListBox()
         {
-            // Erstellen Sie den Pfad zur XML-Datei
+            // Create the path to the XML file
             string settingsDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "DirectoryisSettings");
             string xmlFilePath = Path.Combine(settingsDirectory, "XMLSaveDirUAArtMerge.xml");
 
-            // Überprüfen Sie, ob die XML-Datei existiert
+            // Check if the XML file exists
             if (!File.Exists(xmlFilePath))
             {
-                MessageBox.Show("Die XML-Datei konnte nicht gefunden werden.");
+                MessageBox.Show("The XML file could not be found.");
                 return;
             }
 
-            // Lesen Sie die XML-Datei
+            // Read the XML file
             XDocument doc;
             try
             {
@@ -732,13 +731,13 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Fehler beim Lesen der XML-Datei: {ex.Message}");
+                MessageBox.Show($"Error reading XML file: {ex.Message}");
                 return;
             }
 
             var directories = doc.Root.Elements("Directory");
 
-            // Fügen Sie jede ID zur tbIDNr hinzu
+            // Add each ID to the tbIDNr
             tbIDNr.Items.Clear();
             foreach (var directory in directories)
             {
@@ -773,43 +772,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         }
         #endregion
 
-        #region DeleteDirectoryById
-        /*private void DeleteDirectoryById(int id)
-        {
-            string settingsDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "DirectoryisSettings");
-            string xmlFilePath = Path.Combine(settingsDirectory, "XMLSaveDirUAArtMerge.xml");
-
-            if (!File.Exists(xmlFilePath))
-            {
-                MessageBox.Show("Die XML-Datei konnte nicht gefunden werden.");
-                return;
-            }
-
-            XDocument doc;
-            try
-            {
-                doc = XDocument.Load(xmlFilePath);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Fehler beim Lesen der XML-Datei: {ex.Message}");
-                return;
-            }
-
-            var directoryToDelete = doc.Root.Elements("Directory").FirstOrDefault(d => (int)d.Attribute("id") == id);
-            if (directoryToDelete != null)
-            {
-                directoryToDelete.Remove();
-                doc.Save(xmlFilePath);
-
-                // Entfernen Sie die ID aus der tbIDNr
-                tbIDNr.Items.Remove(id.ToString());
-            }
-            else
-            {
-                MessageBox.Show($"Die ID {id} konnte nicht gefunden werden.");
-            }
-        }*/
+        #region DeleteDirectoryById       
 
         private void DeleteDirectoryById(int id)
         {
@@ -818,7 +781,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 
             if (!File.Exists(xmlFilePath))
             {
-                MessageBox.Show("Die XML-Datei konnte nicht gefunden werden.");
+                MessageBox.Show("The XML file could not be found.");
                 return;
             }
 
@@ -829,7 +792,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Fehler beim Lesen der XML-Datei: {ex.Message}");
+                MessageBox.Show($"Error reading XML file: {ex.Message}");
                 return;
             }
 
@@ -848,12 +811,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 
                 doc.Save(xmlFilePath);
 
-                // Entfernen Sie die ID aus der tbIDNr
+                // Remove the ID from the tbIDNr
                 tbIDNr.Items.Remove(id.ToString());
             }
             else
             {
-                MessageBox.Show($"Die ID {id} konnte nicht gefunden werden.");
+                MessageBox.Show($"The ID {id} could not be found.");
             }
         }
 
@@ -862,17 +825,17 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         #region btDelete
         private void btDelete_Click(object sender, EventArgs e)
         {
-            // Lesen Sie die ID aus der Textbox
+            // Read the ID from the textbox
             if (!int.TryParse(tbIDNr.Text, out int id))
             {
-                MessageBox.Show("Bitte geben Sie eine gültige ID ein.");
+                MessageBox.Show("Please enter a valid ID.");
                 return;
             }
 
-            // Löschen Sie das Verzeichnis mit der angegebenen ID
+            // Delete the directory with the specified ID
             DeleteDirectoryById(id);
 
-            // Aktualisieren Sie die comboBoxSaveDir
+            // Update the comboBoxSaveDir
             LoadDirectoriesIntoComboBox();
         }
         #endregion
@@ -973,7 +936,6 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             }
             return -1;
         }
-
         #endregion
 
         #region Mirror
@@ -1077,6 +1039,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         }
         #endregion
 
+        #region importToolStripclipboardMenuItem
         private void importToolStripclipboardMenuItem_Click(object sender, EventArgs e)
         {
             if (listBoxOrg.SelectedIndex != -1)
@@ -1141,5 +1104,6 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 }
             }
         }
+        #endregion
     }
 }
