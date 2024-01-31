@@ -65,6 +65,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             copyToolStripMenuItemListBoxLeft = new System.Windows.Forms.ToolStripMenuItem();
             listBoxLeft = new System.Windows.Forms.ListBox();
             panel1 = new System.Windows.Forms.Panel();
+            lbIndexLeft = new System.Windows.Forms.Label();
+            lbCountLeft = new System.Windows.Forms.Label();
             lbLeft = new System.Windows.Forms.Label();
             panel2 = new System.Windows.Forms.Panel();
             lbIndexRight = new System.Windows.Forms.Label();
@@ -100,8 +102,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             OnClickSearch = new System.Windows.Forms.Button();
             searchTextBox = new System.Windows.Forms.TextBox();
             lbInfo = new System.Windows.Forms.Label();
-            lbCountLeft = new System.Windows.Forms.Label();
-            lbIndexLeft = new System.Windows.Forms.Label();
+            DetailTextBox = new System.Windows.Forms.RichTextBox();
             panel1Art.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)pictureBoxOrg).BeginInit();
             contextMenuStripListBoxOrg.SuspendLayout();
@@ -316,6 +317,24 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             panel1.Name = "panel1";
             panel1.Size = new System.Drawing.Size(392, 446);
             panel1.TabIndex = 4;
+            // 
+            // lbIndexLeft
+            // 
+            lbIndexLeft.AutoSize = true;
+            lbIndexLeft.Location = new System.Drawing.Point(184, 427);
+            lbIndexLeft.Name = "lbIndexLeft";
+            lbIndexLeft.Size = new System.Drawing.Size(36, 15);
+            lbIndexLeft.TabIndex = 7;
+            lbIndexLeft.Text = "Index";
+            // 
+            // lbCountLeft
+            // 
+            lbCountLeft.AutoSize = true;
+            lbCountLeft.Location = new System.Drawing.Point(4, 427);
+            lbCountLeft.Name = "lbCountLeft";
+            lbCountLeft.Size = new System.Drawing.Size(40, 15);
+            lbCountLeft.TabIndex = 7;
+            lbCountLeft.Text = "Count";
             // 
             // lbLeft
             // 
@@ -640,29 +659,21 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             lbInfo.TabIndex = 35;
             lbInfo.Text = "Index ID Nr:";
             // 
-            // lbCountLeft
+            // DetailTextBox
             // 
-            lbCountLeft.AutoSize = true;
-            lbCountLeft.Location = new System.Drawing.Point(4, 427);
-            lbCountLeft.Name = "lbCountLeft";
-            lbCountLeft.Size = new System.Drawing.Size(40, 15);
-            lbCountLeft.TabIndex = 7;
-            lbCountLeft.Text = "Count";
-            // 
-            // lbIndexLeft
-            // 
-            lbIndexLeft.AutoSize = true;
-            lbIndexLeft.Location = new System.Drawing.Point(184, 427);
-            lbIndexLeft.Name = "lbIndexLeft";
-            lbIndexLeft.Size = new System.Drawing.Size(36, 15);
-            lbIndexLeft.TabIndex = 7;
-            lbIndexLeft.Text = "Index";
+            DetailTextBox.Location = new System.Drawing.Point(813, 534);
+            DetailTextBox.Name = "DetailTextBox";
+            DetailTextBox.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.Vertical;
+            DetailTextBox.Size = new System.Drawing.Size(374, 79);
+            DetailTextBox.TabIndex = 36;
+            DetailTextBox.Text = "";
             // 
             // UOArtMergeForm
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            ClientSize = new System.Drawing.Size(1222, 612);
+            ClientSize = new System.Drawing.Size(1222, 620);
+            Controls.Add(DetailTextBox);
             Controls.Add(lbInfo);
             Controls.Add(label2);
             Controls.Add(OnClickSearch);
@@ -771,5 +782,6 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private System.Windows.Forms.Label lbIndexRight;
         private System.Windows.Forms.Label lbIndexLeft;
         private System.Windows.Forms.Label lbCountLeft;
+        private System.Windows.Forms.RichTextBox DetailTextBox;
     }
 }

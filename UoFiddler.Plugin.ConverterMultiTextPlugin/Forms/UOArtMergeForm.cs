@@ -114,6 +114,38 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             int totalIDs = listBoxOrg.Items.Count;
             // Update lbIndex with the total number of IDs
             lbCountOrg.Text = $"Total number IDs: {totalIDs}";
+
+            // Check if an item in the listBoxOrg is selected
+            if (listBoxOrg.SelectedIndex != -1)
+            {
+                int selectedIndex = listBoxOrg.SelectedIndex;
+                if (!Art.IsValidStatic(selectedIndex))
+                {
+                    return;
+                }
+
+                // Get the current image and associated data
+                Bitmap currentImage = Art.GetStatic(selectedIndex);
+                ItemData item = TileData.ItemTable[selectedIndex];
+
+                // Create a StringBuilder to store the details of the image
+                var sb = new StringBuilder();
+                sb.AppendLine($"Name: {item.Name}");
+                sb.AppendLine($"Graphic: 0x{selectedIndex:X4}");
+                sb.AppendLine($"Height/Capacity: {item.Height}");
+                sb.AppendLine($"Weight: {item.Weight}");
+                sb.AppendLine($"Animation: {item.Animation}");
+                sb.AppendLine($"Quality/Layer/Light: {item.Quality}");
+                sb.AppendLine($"Quantity: {item.Quantity}");
+                sb.AppendLine($"Hue: {item.Hue}");
+                sb.AppendLine($"StackingOffset/Unk4: {item.StackingOffset}");
+                sb.AppendLine($"Flags: {item.Flags}");
+                sb.AppendLine($"Graphic pixel size width, height: {currentImage?.Width ?? 0} {currentImage?.Height ?? 0}");
+
+                // Paste the details into the DetailTextBox
+                DetailTextBox.Clear();
+                DetailTextBox.AppendText(sb.ToString());
+            }
         }
         #endregion
 
@@ -1105,5 +1137,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             }
         }
         #endregion
+
+
     }
 }
