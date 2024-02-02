@@ -682,5 +682,38 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             }
         }
         #endregion
+
+        #region IsoTiloSlicer
+        private void btIsoTiloSlicer_Click(object sender, EventArgs e)
+        {
+            if (isFormOpen)
+            {
+                return;
+            }
+
+            ToolTip toolTip1 = new ToolTip();
+            toolTip1.AutoPopDelay = 5000;
+            toolTip1.InitialDelay = 1000;
+            toolTip1.ReshowDelay = 500;
+            toolTip1.ShowAlways = true;
+            toolTip1.SetToolTip(this.btIsoTiloSlicer, "Iso Tilo Slicer");
+
+            var isoTiloSlicerForm = new IsoTiloSlicer();
+            isoTiloSlicerForm.FormClosed += IsoTiloSlicerFormClosed;
+            isoTiloSlicerForm.Show();
+            isFormOpen = true;
+
+            btIsoTiloSlicer.Enabled = false;
+        }
+
+        private void IsoTiloSlicerFormClosed(object sender, EventArgs e)
+        {
+            if (isFormOpen)
+            {
+                isFormOpen = false;
+                btIsoTiloSlicer.Enabled = true;
+            }
+        }
+        #endregion
     }
 }

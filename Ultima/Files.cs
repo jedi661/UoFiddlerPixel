@@ -81,6 +81,8 @@ namespace Ultima
             "map6.mul", // New Map
             "map7.mul", // New Map
             "map8.mul", // New Map
+            "map9.mul", // New Map
+            "map10.mul", // New Map
             "map0legacymul.uop",
             "map1legacymul.uop",
             "map2legacymul.uop",
@@ -90,6 +92,8 @@ namespace Ultima
             "map6legacymul.uop", //New Map
             "map7legacymul.uop", //New Map
             "map8legacymul.uop", //New Map
+            "map9legacymul.uop", //New Map
+            "map10legacymul.uop", //New Map
             "mapdif0.mul",
             "mapdif1.mul",
             "mapdif2.mul",
@@ -137,6 +141,8 @@ namespace Ultima
             "staidx6.mul", //New Map
             "staidx7.mul", //New Map
             "staidx8.mul", //New Map
+            "staidx9.mul", //New Map
+            "staidx10.mul", //New Map
             "statics0.mul",
             "statics1.mul",
             "statics2.mul",
@@ -146,6 +152,8 @@ namespace Ultima
             "statics6.mul", //New Map
             "statics7.mul", //New Map
             "statics8.mul", //New Map
+            "statics9.mul", //New Map
+            "statics10.mul", //New Map
             "texidx.mul",
             "texmaps.mul",
             "tiledata.mul",

@@ -56,6 +56,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             label3 = new System.Windows.Forms.Label();
             tabControl1 = new System.Windows.Forms.TabControl();
             tabPageMain = new System.Windows.Forms.TabPage();
+            btIsoTiloSlicer = new System.Windows.Forms.Button();
             lbAltitudeTool = new System.Windows.Forms.Label();
             btAltitudeTool = new System.Windows.Forms.Button();
             tabPageAnimation = new System.Windows.Forms.TabPage();
@@ -64,6 +65,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             btAnimationVDForm = new System.Windows.Forms.Button();
             btAnimationEditFormButton = new System.Windows.Forms.Button();
             tabPageGraphic = new System.Windows.Forms.TabPage();
+            label5 = new System.Windows.Forms.Label();
             btGumpIDRechner = new System.Windows.Forms.Button();
             lbUoArtMerge = new System.Windows.Forms.Label();
             btUOArtMerge = new System.Windows.Forms.Button();
@@ -95,7 +97,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             statusStrip1 = new System.Windows.Forms.StatusStrip();
             toolStripStatusLabelTime = new System.Windows.Forms.ToolStripStatusLabel();
             timer1 = new System.Windows.Forms.Timer(components);
-            label5 = new System.Windows.Forms.Label();
+            lbIsoTiloSlicer = new System.Windows.Forms.Label();
             contextMenuStrip1.SuspendLayout();
             tabControl1.SuspendLayout();
             tabPageMain.SuspendLayout();
@@ -242,6 +244,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             // 
             // tabPageMain
             // 
+            tabPageMain.Controls.Add(lbIsoTiloSlicer);
+            tabPageMain.Controls.Add(btIsoTiloSlicer);
             tabPageMain.Controls.Add(lbAltitudeTool);
             tabPageMain.Controls.Add(btAltitudeTool);
             tabPageMain.Location = new System.Drawing.Point(4, 24);
@@ -251,6 +255,16 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             tabPageMain.TabIndex = 0;
             tabPageMain.Text = "Main";
             tabPageMain.UseVisualStyleBackColor = true;
+            // 
+            // btIsoTiloSlicer
+            // 
+            btIsoTiloSlicer.Image = Properties.Resources.grafic_cutter;
+            btIsoTiloSlicer.Location = new System.Drawing.Point(3, 168);
+            btIsoTiloSlicer.Name = "btIsoTiloSlicer";
+            btIsoTiloSlicer.Size = new System.Drawing.Size(55, 55);
+            btIsoTiloSlicer.TabIndex = 2;
+            btIsoTiloSlicer.UseVisualStyleBackColor = true;
+            btIsoTiloSlicer.Click += btIsoTiloSlicer_Click;
             // 
             // lbAltitudeTool
             // 
@@ -340,6 +354,15 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             tabPageGraphic.TabIndex = 2;
             tabPageGraphic.Text = "Graphic";
             tabPageGraphic.UseVisualStyleBackColor = true;
+            // 
+            // label5
+            // 
+            label5.AutoSize = true;
+            label5.Location = new System.Drawing.Point(209, 86);
+            label5.Name = "label5";
+            label5.Size = new System.Drawing.Size(80, 15);
+            label5.TabIndex = 20;
+            label5.Text = "Gump ID Calc";
             // 
             // btGumpIDRechner
             // 
@@ -647,14 +670,14 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             toolStripStatusLabelTime.Size = new System.Drawing.Size(33, 17);
             toolStripStatusLabelTime.Text = "Time";
             // 
-            // label5
+            // lbIsoTiloSlicer
             // 
-            label5.AutoSize = true;
-            label5.Location = new System.Drawing.Point(209, 86);
-            label5.Name = "label5";
-            label5.Size = new System.Drawing.Size(80, 15);
-            label5.TabIndex = 20;
-            label5.Text = "Gump ID Calc";
+            lbIsoTiloSlicer.AutoSize = true;
+            lbIsoTiloSlicer.Location = new System.Drawing.Point(3, 226);
+            lbIsoTiloSlicer.Name = "lbIsoTiloSlicer";
+            lbIsoTiloSlicer.Size = new System.Drawing.Size(69, 15);
+            lbIsoTiloSlicer.TabIndex = 3;
+            lbIsoTiloSlicer.Text = "IsoTiloSlicer";
             // 
             // ConverterMultiTextControl
             // 
@@ -747,5 +770,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
         private System.Windows.Forms.Label lbUoArtMerge;
         private System.Windows.Forms.Button btGumpIDRechner;
         private System.Windows.Forms.Label label5;
+        private System.Windows.Forms.Button btIsoTiloSlicer;
+        private System.Windows.Forms.Label lbIsoTiloSlicer;
     }
 }
