@@ -28,7 +28,8 @@ namespace Ultima
         public static readonly Map Malas = new Map(3, 3, 2560, 2048);
         public static readonly Map Tokuno = new Map(4, 4, 1448, 1448);
         public static readonly Map TerMur = new Map(5, 5, 1280, 4096);
-        public static readonly Map Forell = new Map(6, 6, 6144, 4096); // New Map
+        public static readonly Map Forell = new Map(6, 6, 6144, 4096); // New Map Forell
+        public static readonly Map Dragon = new Map(7, 7, 6144, 4096); // Dragnonlance
         public static Map Custom;
 
         public static void StartUpSetDiff(bool value)
@@ -66,6 +67,7 @@ namespace Ultima
             Tokuno.Tiles.CloseStreams();
             TerMur.Tiles.CloseStreams();
             Forell.Tiles.CloseStreams(); // New Map
+            Dragon.Tiles.CloseStreams(); // Map Dragonlance
 
             Felucca.Tiles.StaticIndexInit = false;
             Trammel.Tiles.StaticIndexInit = false;
@@ -73,7 +75,8 @@ namespace Ultima
             Malas.Tiles.StaticIndexInit = false;
             Tokuno.Tiles.StaticIndexInit = false;
             TerMur.Tiles.StaticIndexInit = false;
-            Forell.Tiles.StaticIndexInit = false;
+            Forell.Tiles.StaticIndexInit = false; //New Map
+            Dragon.Tiles.StaticIndexInit = false; //Dragonlance
 
             Felucca._cache = Trammel._cache = Ilshenar._cache = Malas._cache = Tokuno._cache = TerMur._cache = null;
             Felucca._tiles = Trammel._tiles = Ilshenar._tiles = Malas._tiles = Tokuno._tiles = TerMur._tiles = null;
@@ -88,6 +91,7 @@ namespace Ultima
                 Ilshenar._cacheNoStaticsNoPatch =
                 Malas._cacheNoStaticsNoPatch = Tokuno._cacheNoStaticsNoPatch = TerMur._cacheNoStaticsNoPatch = null;
             Forell._cache = null; // New Map
+            Dragon._cache = null; // Dragonlance
         }
 
         public void ResetCache()

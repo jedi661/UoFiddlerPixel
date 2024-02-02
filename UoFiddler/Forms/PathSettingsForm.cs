@@ -109,7 +109,7 @@ namespace UoFiddler.Forms
         #endregion
 
         #region loadSingleMulFileToolStripMenuItem
-        private void loadSingleMulFileToolStripMenuItem_Click(object sender, EventArgs e)
+        /*private void loadSingleMulFileToolStripMenuItem_Click(object sender, EventArgs e)
         {
             using (OpenFileDialog dialog = new OpenFileDialog())
             {
@@ -132,7 +132,33 @@ namespace UoFiddler.Forms
                     pgPaths.Refresh();
                 }
             }
+        }*/
+
+        private void loadSingleMulFileToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            using (OpenFileDialog dialog = new OpenFileDialog())
+            {
+                dialog.Filter = "mul files (*.mul)|*.mul|uop files (*.uop)|*.uop"; // Filter for .mul and .uop files
+                if (dialog.ShowDialog() == DialogResult.OK)
+                {
+                    string filePath = dialog.FileName;
+                    string key = Path.GetFileName(filePath); // Use the full file name as the key
+
+                    if (Files.MulPath.ContainsKey(key))
+                    {
+                        Files.MulPath[key] = filePath; // Update the path if the key already exists
+                    }
+                    else
+                    {
+                        Files.MulPath.Add(key, filePath); // Add the key if it doesn't already exist
+                    }
+
+                    pgPaths.SelectedObject = new DictionaryPropertyGridAdapter(Files.MulPath);
+                    pgPaths.Refresh();
+                }
+            }
         }
+
         #endregion
 
         #region DeleteLineToolStripMenuItem

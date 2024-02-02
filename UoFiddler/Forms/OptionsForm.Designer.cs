@@ -65,6 +65,8 @@ namespace UoFiddler.Forms
             FocusColorLabel = new System.Windows.Forms.Label();
             SelectedColorLabel = new System.Windows.Forms.Label();
             groupBox3 = new System.Windows.Forms.GroupBox();
+            label11 = new System.Windows.Forms.Label();
+            map6Nametext = new System.Windows.Forms.TextBox();
             map5Nametext = new System.Windows.Forms.TextBox();
             argstext = new System.Windows.Forms.TextBox();
             cmdtext = new System.Windows.Forms.TextBox();
@@ -84,8 +86,8 @@ namespace UoFiddler.Forms
             TileFocusColorComboBox = new System.Windows.Forms.ComboBox();
             buttonClose = new System.Windows.Forms.Button();
             btAppData = new System.Windows.Forms.Button();
-            map6Nametext = new System.Windows.Forms.TextBox();
-            label11 = new System.Windows.Forms.Label();
+            label12 = new System.Windows.Forms.Label();
+            map7Nametext = new System.Windows.Forms.TextBox();
             groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)numericUpDownItemSizeHeight).BeginInit();
             ((System.ComponentModel.ISupportInitialize)numericUpDownItemSizeWidth).BeginInit();
@@ -367,6 +369,8 @@ namespace UoFiddler.Forms
             // 
             // groupBox3
             // 
+            groupBox3.Controls.Add(map7Nametext);
+            groupBox3.Controls.Add(label12);
             groupBox3.Controls.Add(label11);
             groupBox3.Controls.Add(map6Nametext);
             groupBox3.Controls.Add(label9);
@@ -393,6 +397,23 @@ namespace UoFiddler.Forms
             groupBox3.TabIndex = 5;
             groupBox3.TabStop = false;
             groupBox3.Text = "Map";
+            // 
+            // label11
+            // 
+            label11.AutoSize = true;
+            label11.Location = new System.Drawing.Point(7, 200);
+            label11.Name = "label11";
+            label11.Size = new System.Drawing.Size(72, 15);
+            label11.TabIndex = 17;
+            label11.Text = "map6 Name";
+            // 
+            // map6Nametext
+            // 
+            map6Nametext.Location = new System.Drawing.Point(89, 197);
+            map6Nametext.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            map6Nametext.Name = "map6Nametext";
+            map6Nametext.Size = new System.Drawing.Size(116, 23);
+            map6Nametext.TabIndex = 16;
             // 
             // map5Nametext
             // 
@@ -579,22 +600,22 @@ namespace UoFiddler.Forms
             btAppData.UseVisualStyleBackColor = true;
             btAppData.Click += btAppData_Click;
             // 
-            // map6Nametext
+            // label12
             // 
-            map6Nametext.Location = new System.Drawing.Point(89, 197);
-            map6Nametext.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            map6Nametext.Name = "map6Nametext";
-            map6Nametext.Size = new System.Drawing.Size(116, 23);
-            map6Nametext.TabIndex = 16;
+            label12.AutoSize = true;
+            label12.Location = new System.Drawing.Point(7, 229);
+            label12.Name = "label12";
+            label12.Size = new System.Drawing.Size(72, 15);
+            label12.TabIndex = 18;
+            label12.Text = "map7 Name";
             // 
-            // label11
+            // map7Nametext
             // 
-            label11.AutoSize = true;
-            label11.Location = new System.Drawing.Point(7, 200);
-            label11.Name = "label11";
-            label11.Size = new System.Drawing.Size(72, 15);
-            label11.TabIndex = 17;
-            label11.Text = "map6 Name";
+            map7Nametext.Location = new System.Drawing.Point(89, 226);
+            map7Nametext.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            map7Nametext.Name = "map7Nametext";
+            map7Nametext.Size = new System.Drawing.Size(116, 23);
+            map7Nametext.TabIndex = 19;
             // 
             // OptionsForm
             // 
@@ -679,5 +700,7 @@ namespace UoFiddler.Forms
         private System.Windows.Forms.Button btAppData;
         private System.Windows.Forms.TextBox map6Nametext;
         private System.Windows.Forms.Label label11;
+        private System.Windows.Forms.TextBox map7Nametext;
+        private System.Windows.Forms.Label label12;
     }
 }

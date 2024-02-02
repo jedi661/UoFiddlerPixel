@@ -47,6 +47,7 @@ namespace UoFiddler.Controls.Forms
             comboBoxMapID.Items.Add(new RTokuno());
             comboBoxMapID.Items.Add(new RTerMur());
             comboBoxMapID.Items.Add(new RForell()); //New Map Forell
+            comboBoxMapID.Items.Add(new RDragon()); //New Map Dragon
             comboBoxMapID.EndUpdate();
             comboBoxMapID.SelectedIndex = 0;
 
@@ -584,6 +585,13 @@ namespace UoFiddler.Controls.Forms
         private class RForell : SupportedMaps // New Map Forell
         {
             public RForell() : base(6, Options.MapNames[6], 6144, 4096) { }
+        }
+        #endregion
+
+        #region RDragon
+        private class RDragon : SupportedMaps // New Map Dragon
+        {
+            public RDragon() : base(7, Options.MapNames[7], 6144, 4096) { }
         }
         #endregion
     }

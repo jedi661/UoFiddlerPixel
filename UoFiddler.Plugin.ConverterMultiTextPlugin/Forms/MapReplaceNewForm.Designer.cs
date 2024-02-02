@@ -406,11 +406,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // lbMulControl
             // 
             lbMulControl.AutoSize = true;
-            lbMulControl.Location = new System.Drawing.Point(126, 433);
+            lbMulControl.Location = new System.Drawing.Point(13, 389);
             lbMulControl.Name = "lbMulControl";
-            lbMulControl.Size = new System.Drawing.Size(38, 15);
+            lbMulControl.Size = new System.Drawing.Size(22, 15);
             lbMulControl.TabIndex = 40;
-            lbMulControl.Text = "label9";
+            lbMulControl.Text = "Dir";
             // 
             // MapReplaceNewForm
             // 
