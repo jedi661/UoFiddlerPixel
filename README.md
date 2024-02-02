@@ -23,6 +23,7 @@ Version : 4.12.2
 - Add Label Infos
 - Add Image Details
 - Add MapReplaceNewForm
+- Add Map7 Dragon
 
 Version : 4.12.1
 - Implemented copying multiple graphics to the clipboard with Ctrl+X.
