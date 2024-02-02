@@ -67,7 +67,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             button1 = new System.Windows.Forms.Button();
             button2 = new System.Windows.Forms.Button();
             pictureBox1 = new System.Windows.Forms.PictureBox();
-            btLoadMapX = new System.Windows.Forms.Button();
+            btLoadUODir = new System.Windows.Forms.Button();
+            textBoxUltimaDir = new System.Windows.Forms.TextBox();
+            button3 = new System.Windows.Forms.Button();
+            lbMulControl = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)numericUpDownToX1).BeginInit();
             ((System.ComponentModel.ISupportInitialize)numericUpDownToY1).BeginInit();
             ((System.ComponentModel.ISupportInitialize)numericUpDownY2).BeginInit();
@@ -84,7 +87,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // label8
             // 
             label8.AutoSize = true;
-            label8.Location = new System.Drawing.Point(13, 41);
+            label8.Location = new System.Drawing.Point(13, 68);
             label8.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             label8.Name = "label8";
             label8.Size = new System.Drawing.Size(45, 15);
@@ -106,6 +109,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             numericUpDownToX1.Increment = new decimal(new int[] { 8, 0, 0, 0 });
             numericUpDownToX1.Location = new System.Drawing.Point(99, 22);
             numericUpDownToX1.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            numericUpDownToX1.Maximum = new decimal(new int[] { 7168, 0, 0, 0 });
             numericUpDownToX1.Name = "numericUpDownToX1";
             numericUpDownToX1.Size = new System.Drawing.Size(63, 23);
             numericUpDownToX1.TabIndex = 4;
@@ -115,6 +119,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             numericUpDownToY1.Increment = new decimal(new int[] { 8, 0, 0, 0 });
             numericUpDownToY1.Location = new System.Drawing.Point(229, 22);
             numericUpDownToY1.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            numericUpDownToY1.Maximum = new decimal(new int[] { 7168, 0, 0, 0 });
             numericUpDownToY1.Name = "numericUpDownToY1";
             numericUpDownToY1.Size = new System.Drawing.Size(63, 23);
             numericUpDownToY1.TabIndex = 6;
@@ -143,11 +148,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // comboBoxMapID
             // 
             comboBoxMapID.FormattingEnabled = true;
-            comboBoxMapID.Location = new System.Drawing.Point(105, 38);
+            comboBoxMapID.Location = new System.Drawing.Point(105, 65);
             comboBoxMapID.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             comboBoxMapID.Name = "comboBoxMapID";
             comboBoxMapID.Size = new System.Drawing.Size(227, 23);
             comboBoxMapID.TabIndex = 34;
+            comboBoxMapID.SelectedIndexChanged += ComboBoxMapID_SelectedIndexChanged;
             // 
             // label4
             // 
@@ -164,6 +170,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             numericUpDownY2.Increment = new decimal(new int[] { 8, 0, 0, 0 });
             numericUpDownY2.Location = new System.Drawing.Point(229, 54);
             numericUpDownY2.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            numericUpDownY2.Maximum = new decimal(new int[] { 7168, 0, 0, 0 });
             numericUpDownY2.Name = "numericUpDownY2";
             numericUpDownY2.Size = new System.Drawing.Size(63, 23);
             numericUpDownY2.TabIndex = 10;
@@ -174,7 +181,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             groupBox4.Controls.Add(numericUpDownToX1);
             groupBox4.Controls.Add(numericUpDownToY1);
             groupBox4.Controls.Add(label7);
-            groupBox4.Location = new System.Drawing.Point(15, 243);
+            groupBox4.Location = new System.Drawing.Point(15, 270);
             groupBox4.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             groupBox4.Name = "groupBox4";
             groupBox4.Padding = new System.Windows.Forms.Padding(4, 3, 4, 3);
@@ -188,6 +195,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             numericUpDownY1.Increment = new decimal(new int[] { 8, 0, 0, 0 });
             numericUpDownY1.Location = new System.Drawing.Point(99, 52);
             numericUpDownY1.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            numericUpDownY1.Maximum = new decimal(new int[] { 7168, 0, 0, 0 });
             numericUpDownY1.Name = "numericUpDownY1";
             numericUpDownY1.Size = new System.Drawing.Size(63, 23);
             numericUpDownY1.TabIndex = 6;
@@ -225,7 +233,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // progressBar1
             // 
             progressBar1.Dock = System.Windows.Forms.DockStyle.Bottom;
-            progressBar1.Location = new System.Drawing.Point(0, 423);
+            progressBar1.Location = new System.Drawing.Point(0, 598);
             progressBar1.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             progressBar1.Name = "progressBar1";
             progressBar1.Size = new System.Drawing.Size(800, 27);
@@ -251,7 +259,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             groupBox3.Controls.Add(label4);
             groupBox3.Controls.Add(label3);
             groupBox3.Controls.Add(numericUpDownY2);
-            groupBox3.Location = new System.Drawing.Point(15, 151);
+            groupBox3.Location = new System.Drawing.Point(15, 178);
             groupBox3.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             groupBox3.Name = "groupBox3";
             groupBox3.Padding = new System.Windows.Forms.Padding(4, 3, 4, 3);
@@ -265,6 +273,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             numericUpDownX1.Increment = new decimal(new int[] { 8, 0, 0, 0 });
             numericUpDownX1.Location = new System.Drawing.Point(99, 22);
             numericUpDownX1.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            numericUpDownX1.Maximum = new decimal(new int[] { 7168, 0, 0, 0 });
             numericUpDownX1.Name = "numericUpDownX1";
             numericUpDownX1.Size = new System.Drawing.Size(63, 23);
             numericUpDownX1.TabIndex = 4;
@@ -274,6 +283,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             numericUpDownX2.Increment = new decimal(new int[] { 8, 0, 0, 0 });
             numericUpDownX2.Location = new System.Drawing.Point(229, 22);
             numericUpDownX2.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            numericUpDownX2.Maximum = new decimal(new int[] { 7168, 0, 0, 0 });
             numericUpDownX2.Name = "numericUpDownX2";
             numericUpDownX2.Size = new System.Drawing.Size(63, 23);
             numericUpDownX2.TabIndex = 8;
@@ -282,7 +292,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // 
             groupBox2.Controls.Add(checkBoxStatics);
             groupBox2.Controls.Add(RemoveDupl);
-            groupBox2.Location = new System.Drawing.Point(201, 69);
+            groupBox2.Location = new System.Drawing.Point(201, 96);
             groupBox2.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             groupBox2.Name = "groupBox2";
             groupBox2.Padding = new System.Windows.Forms.Padding(4, 3, 4, 3);
@@ -305,7 +315,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // groupBox1
             // 
             groupBox1.Controls.Add(checkBoxMap);
-            groupBox1.Location = new System.Drawing.Point(15, 69);
+            groupBox1.Location = new System.Drawing.Point(15, 96);
             groupBox1.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             groupBox1.Name = "groupBox1";
             groupBox1.Padding = new System.Windows.Forms.Padding(4, 3, 4, 3);
@@ -348,7 +358,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // 
             // button2
             // 
-            button2.Location = new System.Drawing.Point(144, 312);
+            button2.Location = new System.Drawing.Point(144, 339);
             button2.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             button2.Name = "button2";
             button2.Size = new System.Drawing.Size(88, 27);
@@ -359,28 +369,58 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // 
             // pictureBox1
             // 
-            pictureBox1.Location = new System.Drawing.Point(387, 80);
+            pictureBox1.Location = new System.Drawing.Point(387, 107);
             pictureBox1.Name = "pictureBox1";
             pictureBox1.Size = new System.Drawing.Size(401, 311);
             pictureBox1.TabIndex = 36;
             pictureBox1.TabStop = false;
             // 
-            // btLoadMapX
+            // btLoadUODir
             // 
-            btLoadMapX.Location = new System.Drawing.Point(276, 316);
-            btLoadMapX.Name = "btLoadMapX";
-            btLoadMapX.Size = new System.Drawing.Size(75, 23);
-            btLoadMapX.TabIndex = 37;
-            btLoadMapX.Text = "button3";
-            btLoadMapX.UseVisualStyleBackColor = true;
-            btLoadMapX.Click += btLoadMapX_Click;
+            btLoadUODir.Location = new System.Drawing.Point(340, 37);
+            btLoadUODir.Name = "btLoadUODir";
+            btLoadUODir.Size = new System.Drawing.Size(55, 23);
+            btLoadUODir.TabIndex = 37;
+            btLoadUODir.Text = "button3";
+            btLoadUODir.UseVisualStyleBackColor = true;
+            btLoadUODir.Click += btLoadUODir_Click;
+            // 
+            // textBoxUltimaDir
+            // 
+            textBoxUltimaDir.Location = new System.Drawing.Point(105, 37);
+            textBoxUltimaDir.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            textBoxUltimaDir.Name = "textBoxUltimaDir";
+            textBoxUltimaDir.Size = new System.Drawing.Size(227, 23);
+            textBoxUltimaDir.TabIndex = 38;
+            // 
+            // button3
+            // 
+            button3.Location = new System.Drawing.Point(274, 343);
+            button3.Name = "button3";
+            button3.Size = new System.Drawing.Size(75, 23);
+            button3.TabIndex = 39;
+            button3.Text = "button3";
+            button3.UseVisualStyleBackColor = true;
+            button3.Click += button3_Click;
+            // 
+            // lbMulControl
+            // 
+            lbMulControl.AutoSize = true;
+            lbMulControl.Location = new System.Drawing.Point(126, 433);
+            lbMulControl.Name = "lbMulControl";
+            lbMulControl.Size = new System.Drawing.Size(38, 15);
+            lbMulControl.TabIndex = 40;
+            lbMulControl.Text = "label9";
             // 
             // MapReplaceNewForm
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            ClientSize = new System.Drawing.Size(800, 450);
-            Controls.Add(btLoadMapX);
+            ClientSize = new System.Drawing.Size(800, 625);
+            Controls.Add(lbMulControl);
+            Controls.Add(button3);
+            Controls.Add(textBoxUltimaDir);
+            Controls.Add(btLoadUODir);
             Controls.Add(pictureBox1);
             Controls.Add(label8);
             Controls.Add(comboBoxMapID);
@@ -444,6 +484,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private System.Windows.Forms.Button button1;
         private System.Windows.Forms.Button button2;
         private System.Windows.Forms.PictureBox pictureBox1;
-        private System.Windows.Forms.Button btLoadMapX;
+        private System.Windows.Forms.Button btLoadUODir;
+        private System.Windows.Forms.TextBox textBoxUltimaDir;
+        private System.Windows.Forms.Button button3;
+        private System.Windows.Forms.Label lbMulControl;
     }
 }
