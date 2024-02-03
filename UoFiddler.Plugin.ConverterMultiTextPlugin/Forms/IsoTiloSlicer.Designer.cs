@@ -40,15 +40,24 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         /// </summary>
         private void InitializeComponent()
         {
+            components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(IsoTiloSlicer));
             btnSelectImage = new System.Windows.Forms.Button();
             txtImagePath = new System.Windows.Forms.TextBox();
             picImagePreview = new System.Windows.Forms.PictureBox();
+            contextMenuStripPixtureBox = new System.Windows.Forms.ContextMenuStrip(components);
+            loadToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            importToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            runClipbordToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            mirrorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             cmbCommands = new System.Windows.Forms.ComboBox();
             BtnRun = new System.Windows.Forms.Button();
             buttonOpenTempGrafic = new System.Windows.Forms.Button();
             lbImageSize = new System.Windows.Forms.Label();
+            toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
+            toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             ((System.ComponentModel.ISupportInitialize)picImagePreview).BeginInit();
+            contextMenuStripPixtureBox.SuspendLayout();
             SuspendLayout();
             // 
             // btnSelectImage
@@ -71,12 +80,54 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // picImagePreview
             // 
             picImagePreview.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            picImagePreview.ContextMenuStrip = contextMenuStripPixtureBox;
             picImagePreview.Location = new System.Drawing.Point(240, 44);
             picImagePreview.Name = "picImagePreview";
             picImagePreview.Size = new System.Drawing.Size(421, 421);
             picImagePreview.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage;
             picImagePreview.TabIndex = 2;
             picImagePreview.TabStop = false;
+            // 
+            // contextMenuStripPixtureBox
+            // 
+            contextMenuStripPixtureBox.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { loadToolStripMenuItem, importToolStripMenuItem, toolStripSeparator1, mirrorToolStripMenuItem, toolStripSeparator2, runClipbordToolStripMenuItem });
+            contextMenuStripPixtureBox.Name = "contextMenuStripPixtureBox";
+            contextMenuStripPixtureBox.Size = new System.Drawing.Size(181, 126);
+            // 
+            // loadToolStripMenuItem
+            // 
+            loadToolStripMenuItem.Image = Properties.Resources.Load;
+            loadToolStripMenuItem.Name = "loadToolStripMenuItem";
+            loadToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            loadToolStripMenuItem.Text = "Load";
+            loadToolStripMenuItem.ToolTipText = "Load Image";
+            loadToolStripMenuItem.Click += LoadToolStripMenuItem_Click;
+            // 
+            // importToolStripMenuItem
+            // 
+            importToolStripMenuItem.Image = Properties.Resources.import;
+            importToolStripMenuItem.Name = "importToolStripMenuItem";
+            importToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            importToolStripMenuItem.Text = "Import Clipboard";
+            importToolStripMenuItem.ToolTipText = "Copy from Clipboard";
+            importToolStripMenuItem.Click += importToolStripMenuItem_Click;
+            // 
+            // runClipbordToolStripMenuItem
+            // 
+            runClipbordToolStripMenuItem.Image = Properties.Resources.right;
+            runClipbordToolStripMenuItem.Name = "runClipbordToolStripMenuItem";
+            runClipbordToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            runClipbordToolStripMenuItem.Text = "Run Clipbord";
+            runClipbordToolStripMenuItem.ToolTipText = "Start Conversion";
+            runClipbordToolStripMenuItem.Click += runClipbordToolStripMenuItem_Click;
+            // 
+            // mirrorToolStripMenuItem
+            // 
+            mirrorToolStripMenuItem.Image = Properties.Resources.mirror_single_image;
+            mirrorToolStripMenuItem.Name = "mirrorToolStripMenuItem";
+            mirrorToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            mirrorToolStripMenuItem.Text = "Mirror";
+            mirrorToolStripMenuItem.Click += mirrorToolStripMenuItem_Click;
             // 
             // cmbCommands
             // 
@@ -116,6 +167,16 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             lbImageSize.TabIndex = 6;
             lbImageSize.Text = "Size";
             // 
+            // toolStripSeparator1
+            // 
+            toolStripSeparator1.Name = "toolStripSeparator1";
+            toolStripSeparator1.Size = new System.Drawing.Size(177, 6);
+            // 
+            // toolStripSeparator2
+            // 
+            toolStripSeparator2.Name = "toolStripSeparator2";
+            toolStripSeparator2.Size = new System.Drawing.Size(177, 6);
+            // 
             // IsoTiloSlicer
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -133,6 +194,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             Name = "IsoTiloSlicer";
             Text = "IsoTiloSlicer";
             ((System.ComponentModel.ISupportInitialize)picImagePreview).EndInit();
+            contextMenuStripPixtureBox.ResumeLayout(false);
             ResumeLayout(false);
             PerformLayout();
         }
@@ -146,5 +208,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private System.Windows.Forms.Button BtnRun;
         private System.Windows.Forms.Button buttonOpenTempGrafic;
         private System.Windows.Forms.Label lbImageSize;
+        private System.Windows.Forms.ContextMenuStrip contextMenuStripPixtureBox;
+        private System.Windows.Forms.ToolStripMenuItem importToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem runClipbordToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem loadToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem mirrorToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
     }
 }

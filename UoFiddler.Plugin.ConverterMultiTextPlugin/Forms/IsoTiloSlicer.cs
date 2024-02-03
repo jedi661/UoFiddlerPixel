@@ -30,6 +30,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             imageHandler = new ImageHandler();
         }
 
+        #region BtnSelectImage
         private void BtnSelectImage_Click(object sender, EventArgs e)
         {
             using (OpenFileDialog openFileDialog = new OpenFileDialog())
@@ -41,13 +42,14 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                     picImagePreview.Image = image;
                     imageHandler.ImagePath = openFileDialog.FileName;
 
-                    // Zeigen Sie die Größe des Bildes im lbImageSize Label an
-                    lbImageSize.Text = $"Bildgröße: {image.Width} x {image.Height}";
+                    // Display the size of the image in the lbImageSize label
+                    lbImageSize.Text = $"Image size: {image.Width} x {image.Height}";
                 }
             }
         }
+        #endregion
 
-
+        #region CmbCommands
         private void CmbCommands_SelectedIndexChanged(object sender, EventArgs e)
         {
             string command = cmbCommands.SelectedItem.ToString();
@@ -75,8 +77,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                     break;
             }
         }
+        #endregion
 
-
+        #region BtnRun
         private void BtnRun_Click(object sender, EventArgs e)
         {
             // Get the path to the program directory
@@ -91,7 +94,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // Process the image
             imageHandler.Process();
         }
+        #endregion
 
+        #region buttonOpenTempGrafic
         private void buttonOpenTempGrafic_Click(object sender, EventArgs e)
         {
             // Get the path to the program directory
@@ -112,5 +117,97 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 MessageBox.Show("The directory tempGraphic does not exist.");
             }
         }
+        #endregion
+
+        #region LoadToolStripMenuItem
+        private void LoadToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            using (OpenFileDialog openFileDialog = new OpenFileDialog())
+            {
+                openFileDialog.Filter = "Image Files(*.BMP;*.JPG;*.GIF)|*.BMP;*.JPG;*.GIF|All files (*.*)|*.*";
+                if (openFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    Image image = new Bitmap(openFileDialog.FileName);
+                    picImagePreview.Image = image;
+
+                    // Display the size of the image in the lbImageSize label
+                    lbImageSize.Text = $"Image size: {image.Width} x {image.Height}";
+                }
+            }
+        }
+        #endregion
+
+        #region runClipbordToolStripMenuItem
+        private void runClipbordToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // Check if there is an image in the PictureBox
+            if (picImagePreview.Image == null)
+            {
+                MessageBox.Show("Please insert a picture into the PictureBox.");
+                return;
+            }
+
+            // Verify that a selection was made using cmbCommands
+            if (cmbCommands.SelectedItem == null)
+            {
+                MessageBox.Show("Please make a selection using cmbCommands.");
+                return;
+            }
+
+            // Get the path to the program directory
+            string programDirectory = Application.StartupPath;
+
+            // Define the path to the temporary directory in the program directory
+            string directory = Path.Combine(programDirectory, "tempGrafic");
+
+            // Set the output directory of the image handler
+            imageHandler.OutputDirectory = directory;
+
+            // Convert the Image in the PictureBox to a Bitmap and save it to a temporary file
+            Bitmap bmp = new Bitmap(picImagePreview.Image);
+            string tempFilePath = Path.Combine(directory, "temp.bmp");
+            bmp.Save(tempFilePath);
+
+            // Set the ImagePath of the image handler to the temporary file
+            imageHandler.ImagePath = tempFilePath;
+
+            // Process the image
+            imageHandler.Process();
+        }
+        #endregion
+
+        #region importToolStripMenuItem
+        private void importToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (Clipboard.ContainsImage())
+            {
+                Image image = Clipboard.GetImage();
+                picImagePreview.Image = image;
+
+                // Display the size of the image in the lbImageSize label
+                lbImageSize.Text = $"Image size: {image.Width} x {image.Height}";
+            }
+            else
+            {
+                MessageBox.Show("The clipboard does not contain an image.");
+            }
+        }
+        #endregion
+
+        #region Mirror
+        private void mirrorToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (picImagePreview.Image != null)
+            {
+                Bitmap bmp = new Bitmap(picImagePreview.Image);
+                bmp.RotateFlip(RotateFlipType.RotateNoneFlipX);
+                picImagePreview.Image = bmp;
+            }
+            else
+            {
+                MessageBox.Show("There is no image to mirror in the PictureBox.");
+            }
+        }
+        #endregion
     }
 }
