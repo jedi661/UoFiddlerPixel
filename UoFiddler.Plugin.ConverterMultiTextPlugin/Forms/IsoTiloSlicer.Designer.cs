@@ -53,9 +53,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // 
             // btnSelectImage
             // 
-            btnSelectImage.Location = new System.Drawing.Point(204, 78);
+            btnSelectImage.Location = new System.Drawing.Point(174, 44);
             btnSelectImage.Name = "btnSelectImage";
-            btnSelectImage.Size = new System.Drawing.Size(75, 23);
+            btnSelectImage.Size = new System.Drawing.Size(49, 23);
             btnSelectImage.TabIndex = 0;
             btnSelectImage.Text = "Load Image";
             btnSelectImage.UseVisualStyleBackColor = true;
@@ -63,16 +63,17 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // 
             // txtImagePath
             // 
-            txtImagePath.Location = new System.Drawing.Point(42, 79);
+            txtImagePath.Location = new System.Drawing.Point(12, 44);
             txtImagePath.Name = "txtImagePath";
             txtImagePath.Size = new System.Drawing.Size(156, 23);
             txtImagePath.TabIndex = 1;
             // 
             // picImagePreview
             // 
-            picImagePreview.Location = new System.Drawing.Point(298, 78);
+            picImagePreview.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            picImagePreview.Location = new System.Drawing.Point(240, 44);
             picImagePreview.Name = "picImagePreview";
-            picImagePreview.Size = new System.Drawing.Size(361, 350);
+            picImagePreview.Size = new System.Drawing.Size(421, 421);
             picImagePreview.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage;
             picImagePreview.TabIndex = 2;
             picImagePreview.TabStop = false;
@@ -81,16 +82,16 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // 
             cmbCommands.FormattingEnabled = true;
             cmbCommands.Items.AddRange(new object[] { "--image path", "--tilesize 44", "--offset 1", "--output out", "--filename {0}", "--startingnumber 0", "" });
-            cmbCommands.Location = new System.Drawing.Point(42, 36);
+            cmbCommands.Location = new System.Drawing.Point(12, 12);
             cmbCommands.Name = "cmbCommands";
             cmbCommands.Size = new System.Drawing.Size(156, 23);
             cmbCommands.TabIndex = 3;
             // 
             // BtnRun
             // 
-            BtnRun.Location = new System.Drawing.Point(204, 107);
+            BtnRun.Location = new System.Drawing.Point(174, 73);
             BtnRun.Name = "BtnRun";
-            BtnRun.Size = new System.Drawing.Size(75, 23);
+            BtnRun.Size = new System.Drawing.Size(49, 23);
             BtnRun.TabIndex = 4;
             BtnRun.Text = "Run";
             BtnRun.UseVisualStyleBackColor = true;
@@ -98,9 +99,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // 
             // buttonOpenTempGrafic
             // 
-            buttonOpenTempGrafic.Location = new System.Drawing.Point(204, 145);
+            buttonOpenTempGrafic.Location = new System.Drawing.Point(174, 102);
             buttonOpenTempGrafic.Name = "buttonOpenTempGrafic";
-            buttonOpenTempGrafic.Size = new System.Drawing.Size(75, 23);
+            buttonOpenTempGrafic.Size = new System.Drawing.Size(49, 23);
             buttonOpenTempGrafic.TabIndex = 5;
             buttonOpenTempGrafic.Text = "Temp";
             buttonOpenTempGrafic.UseVisualStyleBackColor = true;
@@ -109,7 +110,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // lbImageSize
             // 
             lbImageSize.AutoSize = true;
-            lbImageSize.Location = new System.Drawing.Point(298, 44);
+            lbImageSize.Location = new System.Drawing.Point(240, 15);
             lbImageSize.Name = "lbImageSize";
             lbImageSize.Size = new System.Drawing.Size(27, 15);
             lbImageSize.TabIndex = 6;
@@ -119,7 +120,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            ClientSize = new System.Drawing.Size(770, 477);
+            ClientSize = new System.Drawing.Size(673, 477);
             Controls.Add(lbImageSize);
             Controls.Add(buttonOpenTempGrafic);
             Controls.Add(BtnRun);
