@@ -56,6 +56,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             label3 = new System.Windows.Forms.Label();
             tabControl1 = new System.Windows.Forms.TabControl();
             tabPageMain = new System.Windows.Forms.TabPage();
+            lbIsoTiloSlicer = new System.Windows.Forms.Label();
             btIsoTiloSlicer = new System.Windows.Forms.Button();
             lbAltitudeTool = new System.Windows.Forms.Label();
             btAltitudeTool = new System.Windows.Forms.Button();
@@ -76,6 +77,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             buttonGraficCutterForm = new System.Windows.Forms.Button();
             TextureCutter = new System.Windows.Forms.Button();
             tabPageMap = new System.Windows.Forms.TabPage();
+            UOMap = new System.Windows.Forms.Button();
             lbCopyMapReplace = new System.Windows.Forms.Label();
             btMapReplace = new System.Windows.Forms.Button();
             lbMapMaker = new System.Windows.Forms.Label();
@@ -97,7 +99,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             statusStrip1 = new System.Windows.Forms.StatusStrip();
             toolStripStatusLabelTime = new System.Windows.Forms.ToolStripStatusLabel();
             timer1 = new System.Windows.Forms.Timer(components);
-            lbIsoTiloSlicer = new System.Windows.Forms.Label();
+            lbUoMap = new System.Windows.Forms.Label();
             contextMenuStrip1.SuspendLayout();
             tabControl1.SuspendLayout();
             tabPageMain.SuspendLayout();
@@ -255,6 +257,15 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             tabPageMain.TabIndex = 0;
             tabPageMain.Text = "Main";
             tabPageMain.UseVisualStyleBackColor = true;
+            // 
+            // lbIsoTiloSlicer
+            // 
+            lbIsoTiloSlicer.AutoSize = true;
+            lbIsoTiloSlicer.Location = new System.Drawing.Point(3, 226);
+            lbIsoTiloSlicer.Name = "lbIsoTiloSlicer";
+            lbIsoTiloSlicer.Size = new System.Drawing.Size(69, 15);
+            lbIsoTiloSlicer.TabIndex = 3;
+            lbIsoTiloSlicer.Text = "IsoTiloSlicer";
             // 
             // btIsoTiloSlicer
             // 
@@ -452,6 +463,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             // 
             // tabPageMap
             // 
+            tabPageMap.Controls.Add(lbUoMap);
+            tabPageMap.Controls.Add(UOMap);
             tabPageMap.Controls.Add(lbCopyMapReplace);
             tabPageMap.Controls.Add(btMapReplace);
             tabPageMap.Controls.Add(lbMapMaker);
@@ -462,6 +475,16 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             tabPageMap.TabIndex = 4;
             tabPageMap.Text = "Map";
             tabPageMap.UseVisualStyleBackColor = true;
+            // 
+            // UOMap
+            // 
+            UOMap.Image = Properties.Resources.ultima_online_map;
+            UOMap.Location = new System.Drawing.Point(6, 172);
+            UOMap.Name = "UOMap";
+            UOMap.Size = new System.Drawing.Size(59, 57);
+            UOMap.TabIndex = 17;
+            UOMap.UseVisualStyleBackColor = true;
+            UOMap.Click += UOMap_Click;
             // 
             // lbCopyMapReplace
             // 
@@ -670,14 +693,14 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             toolStripStatusLabelTime.Size = new System.Drawing.Size(33, 17);
             toolStripStatusLabelTime.Text = "Time";
             // 
-            // lbIsoTiloSlicer
+            // lbUoMap
             // 
-            lbIsoTiloSlicer.AutoSize = true;
-            lbIsoTiloSlicer.Location = new System.Drawing.Point(3, 226);
-            lbIsoTiloSlicer.Name = "lbIsoTiloSlicer";
-            lbIsoTiloSlicer.Size = new System.Drawing.Size(69, 15);
-            lbIsoTiloSlicer.TabIndex = 3;
-            lbIsoTiloSlicer.Text = "IsoTiloSlicer";
+            lbUoMap.AutoSize = true;
+            lbUoMap.Location = new System.Drawing.Point(6, 234);
+            lbUoMap.Name = "lbUoMap";
+            lbUoMap.Size = new System.Drawing.Size(49, 15);
+            lbUoMap.TabIndex = 18;
+            lbUoMap.Text = "Uo Map";
             // 
             // ConverterMultiTextControl
             // 
@@ -772,5 +795,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.Button btIsoTiloSlicer;
         private System.Windows.Forms.Label lbIsoTiloSlicer;
+        private System.Windows.Forms.Button UOMap;
+        private System.Windows.Forms.Label lbUoMap;
     }
 }

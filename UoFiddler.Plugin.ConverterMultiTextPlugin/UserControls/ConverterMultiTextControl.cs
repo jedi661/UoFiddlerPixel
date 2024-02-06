@@ -714,6 +714,40 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
                 btIsoTiloSlicer.Enabled = true;
             }
         }
+
         #endregion
+
+        private bool isUOMapFormOpen = false;
+
+        private void UOMap_Click(object sender, EventArgs e)
+        {
+            if (isUOMapFormOpen) // If the form is already open, exit the method.
+            {
+                return;
+            }
+
+            ToolTip toolTip1 = new ToolTip();
+            toolTip1.AutoPopDelay = 5000;
+            toolTip1.InitialDelay = 1000;
+            toolTip1.ReshowDelay = 500;
+            toolTip1.ShowAlways = true;
+            toolTip1.SetToolTip(this.UOMap, "UOMap");
+
+            var uomapForm = new UOMap();
+            uomapForm.FormClosed += UOMap_FormClosed;
+            uomapForm.Show();
+            isUOMapFormOpen = true;
+
+            UOMap.Enabled = false;
+        }
+
+        private void UOMap_FormClosed(object sender, EventArgs e)
+        {
+            if (isUOMapFormOpen)
+            {
+                isUOMapFormOpen = false;
+                UOMap.Enabled = true;
+            }
+        }
     }
 }

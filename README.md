@@ -26,6 +26,7 @@ Version : 4.12.2
 - Add Map7 Dragon
 - Add IsoTileSlicer
 - Add Octokit 9.1.2
+- Add UoMap
 
 Version : 4.12.1
 - Implemented copying multiple graphics to the clipboard with Ctrl+X.
