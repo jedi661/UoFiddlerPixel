@@ -2,7 +2,7 @@
 
 ## About
 
-UOFiddler based on Ultima SDK it's a tool to view and alter almost every UO 2D client file. Source code is released under the Beerware license.
+UOFiddler based on Ultima SDK it's a tool to view and alter almost every UO 2D client file. Source code is released under the Beerware and Wineware license.
 
 Version : 4.12.2
 - BildFusion Add Sharp , Clipboard, Texture Cut.

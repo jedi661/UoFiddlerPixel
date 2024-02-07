@@ -133,6 +133,13 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         #region BtnExecute
         private void BtnExecute_Click(object sender, EventArgs e)
         {
+            // Check if a map is selected in the comboBoxMaps
+            if (comboBoxMaps.SelectedItem == null)
+            {
+                MessageBox.Show("Please first select a card from the drop down list.");
+                return;
+            }
+
             // Initialize the progress bar
             progressBarMap.Minimum = 0;
             progressBarMap.Maximum = ViewSizeH * ViewSizeV;
@@ -168,6 +175,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 
             // Define the path to the temporary directory in the program directory
             string directory = Path.Combine(programDirectory, "tempGrafic");
+
+            // Create the directory if it does not exist
+            Directory.CreateDirectory(directory);
 
             // Save the images in the specified directory
             string mapName = comboBoxMaps.SelectedItem.ToString().Replace(".mul", "");
