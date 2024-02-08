@@ -183,6 +183,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             string mapName = comboBoxMaps.SelectedItem.ToString().Replace(".mul", "");
             blkim.Save(Path.Combine(directory, $"{mapName}_map.png"));
             zim.Save(Path.Combine(directory, $"{mapName}_zmap.png"));
+
+            // Confirm the completion in textBoxLoad
+            textBoxLoad.Text = $"The images were successfully added to the directory '{directory}' saved.";
         }
         #endregion
 
