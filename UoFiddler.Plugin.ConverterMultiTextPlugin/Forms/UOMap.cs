@@ -15,6 +15,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.Drawing.Imaging;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -181,8 +182,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 
             // Save the images in the specified directory
             string mapName = comboBoxMaps.SelectedItem.ToString().Replace(".mul", "");
-            blkim.Save(Path.Combine(directory, $"{mapName}_map.png"));
-            zim.Save(Path.Combine(directory, $"{mapName}_zmap.png"));
+            string format = saveAsBmpCheckBox.Checked ? ".bmp" : ".png";
+            blkim.Save(Path.Combine(directory, $"{mapName}_map{format}"), ImageFormat.Bmp);
+            zim.Save(Path.Combine(directory, $"{mapName}_zmap{format}"), ImageFormat.Bmp);
 
             // Confirm the completion in textBoxLoad
             textBoxLoad.Text = $"The images were successfully added to the directory '{directory}' saved.";

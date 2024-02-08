@@ -47,6 +47,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             buttonOpenTempGrafic = new System.Windows.Forms.Button();
             progressBarMap = new System.Windows.Forms.ProgressBar();
             panel1 = new System.Windows.Forms.Panel();
+            saveAsBmpCheckBox = new System.Windows.Forms.CheckBox();
             comboBoxMaps = new System.Windows.Forms.ComboBox();
             panel1.SuspendLayout();
             SuspendLayout();
@@ -99,6 +100,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // panel1
             // 
             panel1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            panel1.Controls.Add(saveAsBmpCheckBox);
             panel1.Controls.Add(comboBoxMaps);
             panel1.Controls.Add(progressBarMap);
             panel1.Controls.Add(BtnLoad);
@@ -109,6 +111,18 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             panel1.Name = "panel1";
             panel1.Size = new System.Drawing.Size(436, 235);
             panel1.TabIndex = 5;
+            // 
+            // saveAsBmpCheckBox
+            // 
+            saveAsBmpCheckBox.AutoSize = true;
+            saveAsBmpCheckBox.Checked = true;
+            saveAsBmpCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
+            saveAsBmpCheckBox.Location = new System.Drawing.Point(336, 56);
+            saveAsBmpCheckBox.Name = "saveAsBmpCheckBox";
+            saveAsBmpCheckBox.Size = new System.Drawing.Size(95, 19);
+            saveAsBmpCheckBox.TabIndex = 6;
+            saveAsBmpCheckBox.Text = ".bmp or .png";
+            saveAsBmpCheckBox.UseVisualStyleBackColor = true;
             // 
             // comboBoxMaps
             // 
@@ -143,5 +157,6 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private System.Windows.Forms.ProgressBar progressBarMap;
         private System.Windows.Forms.Panel panel1;
         private System.Windows.Forms.ComboBox comboBoxMaps;
+        private System.Windows.Forms.CheckBox saveAsBmpCheckBox;
     }
 }
