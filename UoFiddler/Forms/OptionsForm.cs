@@ -84,6 +84,7 @@ namespace UoFiddler.Forms
             map5Nametext.Text = Options.MapNames[5];
             map6Nametext.Text = Options.MapNames[6]; //New Map Forell
             map7Nametext.Text = Options.MapNames[7]; //New Map Dragon
+            map8Nametext.Text = Options.MapNames[8]; //New Map Intermediate world
             cmdtext.Text = Options.MapCmd;
             argstext.Text = Options.MapArgs;
             textBoxOutputPath.Text = Options.OutputPath;
@@ -175,7 +176,8 @@ namespace UoFiddler.Forms
                 || map4Nametext.Text != Options.MapNames[4]
                 || map5Nametext.Text != Options.MapNames[5]
                 || map6Nametext.Text != Options.MapNames[6] //New Map Forell
-                || map6Nametext.Text != Options.MapNames[7]) //New Map Dragon
+                || map6Nametext.Text != Options.MapNames[7] //New Map Dragon
+                || map6Nametext.Text != Options.MapNames[8]) //New Map Intermediate world
             {
                 Options.MapNames[0] = map0Nametext.Text;
                 Options.MapNames[1] = map1Nametext.Text;
@@ -185,6 +187,7 @@ namespace UoFiddler.Forms
                 Options.MapNames[5] = map5Nametext.Text;
                 Options.MapNames[6] = map6Nametext.Text; //New Map Forell
                 Options.MapNames[7] = map6Nametext.Text; //New Map Dragon
+                Options.MapNames[8] = map6Nametext.Text; //New Map Intermediate world
                 ControlEvents.FireMapNameChangeEvent();
             }
 

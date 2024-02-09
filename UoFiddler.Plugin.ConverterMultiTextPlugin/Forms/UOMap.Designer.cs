@@ -117,7 +117,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             saveAsBmpCheckBox.AutoSize = true;
             saveAsBmpCheckBox.Checked = true;
             saveAsBmpCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
-            saveAsBmpCheckBox.Location = new System.Drawing.Point(336, 56);
+            saveAsBmpCheckBox.Location = new System.Drawing.Point(335, 26);
             saveAsBmpCheckBox.Name = "saveAsBmpCheckBox";
             saveAsBmpCheckBox.Size = new System.Drawing.Size(95, 19);
             saveAsBmpCheckBox.TabIndex = 6;

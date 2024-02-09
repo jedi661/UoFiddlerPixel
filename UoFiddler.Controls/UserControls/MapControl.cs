@@ -53,7 +53,7 @@ namespace UoFiddler.Controls.UserControls
             pictureBox.MouseWheel += OnMouseWheel;
 
             //maps
-            Options.MapNames = new string[] { "Map.Felucca", "Map.Trammel", "Map.Ilshenar", "Map.Malas", "Map.Tokuno", "Map.TerMur", "Map.Forell", "Map.Dragon" }; // Namen festlegen für neue Karten.
+            Options.MapNames = new string[] { "Map.Felucca", "Map.Trammel", "Map.Ilshenar", "Map.Malas", "Map.Tokuno", "Map.TerMur", "Map.Forell", "Map.Dragon", "Map.IntermediateWorld" }; // Namen festlegen für neue Karten.
         
         
         }
@@ -143,6 +143,7 @@ namespace UoFiddler.Controls.UserControls
             tokunoToolStripMenuItem.Checked = false;
             forellToolStripMenuItem.Checked = false; //new Map Forell
             dragonToolStripMenuItem.Checked = false; //Dragonlance
+            intermediateWorldToolStripMenuItem.Checked = false; //Intermediate world
             PreloadMap.Visible = true;
             ChangeMapNames();
             ZoomLabel.Text = $"Zoom: {Zoom}";
@@ -209,7 +210,7 @@ namespace UoFiddler.Controls.UserControls
             }
 
             // Create lists of ToolStripMenuItems and nodes that correspond to the cards
-            ToolStripMenuItem[] mapMenuItems = { feluccaToolStripMenuItem, trammelToolStripMenuItem, ilshenarToolStripMenuItem, malasToolStripMenuItem, tokunoToolStripMenuItem, terMurToolStripMenuItem, forellToolStripMenuItem, dragonToolStripMenuItem };
+            ToolStripMenuItem[] mapMenuItems = { feluccaToolStripMenuItem, trammelToolStripMenuItem, ilshenarToolStripMenuItem, malasToolStripMenuItem, tokunoToolStripMenuItem, terMurToolStripMenuItem, forellToolStripMenuItem, dragonToolStripMenuItem, intermediateWorldToolStripMenuItem };
             TreeNode[] mapNodes = { OverlayObjectTree.Nodes[0], OverlayObjectTree.Nodes[1], OverlayObjectTree.Nodes[2], OverlayObjectTree.Nodes[3], OverlayObjectTree.Nodes[4], OverlayObjectTree.Nodes[5], OverlayObjectTree.Nodes[6] };
 
             // Update the texts of the ToolStripMenuItems and nodes
@@ -343,6 +344,7 @@ namespace UoFiddler.Controls.UserControls
             terMurToolStripMenuItem.Checked = false;
             forellToolStripMenuItem.Checked = false;
             dragonToolStripMenuItem.Checked = false;
+            intermediateWorldToolStripMenuItem.Checked = false;
         }
         #endregion
 
@@ -468,6 +470,21 @@ namespace UoFiddler.Controls.UserControls
             dragonToolStripMenuItem.Checked = true;
             CurrentMap = Map.Dragon;
             _currentMapId = 7;
+            ChangeMap();
+        }
+        #endregion
+
+        #region Intermediate World
+        private void ChangeIntermediateWorld(object sender, EventArgs e) //New Map Intermediate world
+        {
+            if (intermediateWorldToolStripMenuItem.Checked)
+            {
+                return;
+            }
+            ResetCheckedMap();
+            intermediateWorldToolStripMenuItem.Checked = true;
+            CurrentMap = Map.IntermediateWorld;
+            _currentMapId = 8;
             ChangeMap();
         }
         #endregion
@@ -623,8 +640,8 @@ namespace UoFiddler.Controls.UserControls
         private void SwitchMap(int mapId)
         {
             // Create lists of ToolStripMenuItems and cards that correspond to the cards
-            ToolStripMenuItem[] mapMenuItems = { feluccaToolStripMenuItem, trammelToolStripMenuItem, ilshenarToolStripMenuItem, malasToolStripMenuItem, tokunoToolStripMenuItem, terMurToolStripMenuItem, forellToolStripMenuItem, dragonToolStripMenuItem };
-            Map[] maps = { Map.Felucca, Map.Trammel, Map.Ilshenar, Map.Malas, Map.Tokuno, Map.TerMur, Map.Forell, Map.Dragon };
+            ToolStripMenuItem[] mapMenuItems = { feluccaToolStripMenuItem, trammelToolStripMenuItem, ilshenarToolStripMenuItem, malasToolStripMenuItem, tokunoToolStripMenuItem, terMurToolStripMenuItem, forellToolStripMenuItem, dragonToolStripMenuItem, intermediateWorldToolStripMenuItem };
+            Map[] maps = { Map.Felucca, Map.Trammel, Map.Ilshenar, Map.Malas, Map.Tokuno, Map.TerMur, Map.Forell, Map.Dragon, Map.IntermediateWorld };
 
             // Make sure the mapId is in the valid range
             if (mapId >= 0 && mapId < mapMenuItems.Length)

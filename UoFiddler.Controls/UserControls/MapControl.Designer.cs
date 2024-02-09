@@ -67,6 +67,7 @@ namespace UoFiddler.Controls.UserControls
             terMurToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             forellToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             dragonToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            intermediateWorldToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             extractMapToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             asBmpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -176,9 +177,9 @@ namespace UoFiddler.Controls.UserControls
             // 
             // contextMenuStrip1
             // 
-            contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { zoomToolStripMenuItem, zoomToolStripMenuItem1, getMapInfoToolStripMenuItem, insertMarkerToolStripMenuItem, toolStripSeparator4, gotoToolStripMenuItem, sendClientToPosToolStripMenuItem, toolStripSeparator2, feluccaToolStripMenuItem, trammelToolStripMenuItem, ilshenarToolStripMenuItem, malasToolStripMenuItem, tokunoToolStripMenuItem, terMurToolStripMenuItem, forellToolStripMenuItem, dragonToolStripMenuItem, toolStripSeparator1, extractMapToolStripMenuItem });
+            contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { zoomToolStripMenuItem, zoomToolStripMenuItem1, getMapInfoToolStripMenuItem, insertMarkerToolStripMenuItem, toolStripSeparator4, gotoToolStripMenuItem, sendClientToPosToolStripMenuItem, toolStripSeparator2, feluccaToolStripMenuItem, trammelToolStripMenuItem, ilshenarToolStripMenuItem, malasToolStripMenuItem, tokunoToolStripMenuItem, terMurToolStripMenuItem, forellToolStripMenuItem, dragonToolStripMenuItem, intermediateWorldToolStripMenuItem, toolStripSeparator1, extractMapToolStripMenuItem });
             contextMenuStrip1.Name = "contextMenuStrip1";
-            contextMenuStrip1.Size = new System.Drawing.Size(181, 374);
+            contextMenuStrip1.Size = new System.Drawing.Size(177, 374);
             contextMenuStrip1.Closed += OnContextClosed;
             contextMenuStrip1.Opening += OnOpenContext;
             // 
@@ -186,7 +187,7 @@ namespace UoFiddler.Controls.UserControls
             // 
             zoomToolStripMenuItem.Image = Properties.Resources.zoomplus;
             zoomToolStripMenuItem.Name = "zoomToolStripMenuItem";
-            zoomToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            zoomToolStripMenuItem.Size = new System.Drawing.Size(176, 22);
             zoomToolStripMenuItem.Text = "+Zoom";
             zoomToolStripMenuItem.Click += OnZoomPlus;
             // 
@@ -194,7 +195,7 @@ namespace UoFiddler.Controls.UserControls
             // 
             zoomToolStripMenuItem1.Image = Properties.Resources.zoomminus;
             zoomToolStripMenuItem1.Name = "zoomToolStripMenuItem1";
-            zoomToolStripMenuItem1.Size = new System.Drawing.Size(180, 22);
+            zoomToolStripMenuItem1.Size = new System.Drawing.Size(176, 22);
             zoomToolStripMenuItem1.Text = "-Zoom";
             zoomToolStripMenuItem1.Click += OnZoomMinus;
             // 
@@ -202,7 +203,7 @@ namespace UoFiddler.Controls.UserControls
             // 
             getMapInfoToolStripMenuItem.Image = Properties.Resources.Map;
             getMapInfoToolStripMenuItem.Name = "getMapInfoToolStripMenuItem";
-            getMapInfoToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            getMapInfoToolStripMenuItem.Size = new System.Drawing.Size(176, 22);
             getMapInfoToolStripMenuItem.Text = "GetMapInfo";
             getMapInfoToolStripMenuItem.ToolTipText = "\"Provides information about the map, including the tiles, textures, and statics at each position.";
             getMapInfoToolStripMenuItem.Click += GetMapInfo;
@@ -210,20 +211,20 @@ namespace UoFiddler.Controls.UserControls
             // insertMarkerToolStripMenuItem
             // 
             insertMarkerToolStripMenuItem.Name = "insertMarkerToolStripMenuItem";
-            insertMarkerToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            insertMarkerToolStripMenuItem.Size = new System.Drawing.Size(176, 22);
             insertMarkerToolStripMenuItem.Text = "Insert Marker";
             insertMarkerToolStripMenuItem.Click += OnClickInsertMarker;
             // 
             // toolStripSeparator4
             // 
             toolStripSeparator4.Name = "toolStripSeparator4";
-            toolStripSeparator4.Size = new System.Drawing.Size(177, 6);
+            toolStripSeparator4.Size = new System.Drawing.Size(173, 6);
             // 
             // gotoToolStripMenuItem
             // 
             gotoToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { TextBoxGoto });
             gotoToolStripMenuItem.Name = "gotoToolStripMenuItem";
-            gotoToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            gotoToolStripMenuItem.Size = new System.Drawing.Size(176, 22);
             gotoToolStripMenuItem.Text = "Goto...";
             gotoToolStripMenuItem.DropDownClosed += OnDropDownClosed;
             // 
@@ -236,61 +237,61 @@ namespace UoFiddler.Controls.UserControls
             // sendClientToPosToolStripMenuItem
             // 
             sendClientToPosToolStripMenuItem.Name = "sendClientToPosToolStripMenuItem";
-            sendClientToPosToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            sendClientToPosToolStripMenuItem.Size = new System.Drawing.Size(176, 22);
             sendClientToPosToolStripMenuItem.Text = "Send Client To Pos";
             sendClientToPosToolStripMenuItem.Click += OnClickSendClientToPos;
             // 
             // toolStripSeparator2
             // 
             toolStripSeparator2.Name = "toolStripSeparator2";
-            toolStripSeparator2.Size = new System.Drawing.Size(177, 6);
+            toolStripSeparator2.Size = new System.Drawing.Size(173, 6);
             // 
             // feluccaToolStripMenuItem
             // 
             feluccaToolStripMenuItem.Name = "feluccaToolStripMenuItem";
-            feluccaToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            feluccaToolStripMenuItem.Size = new System.Drawing.Size(176, 22);
             feluccaToolStripMenuItem.Text = "Felucca";
             feluccaToolStripMenuItem.Click += ChangeMapFelucca;
             // 
             // trammelToolStripMenuItem
             // 
             trammelToolStripMenuItem.Name = "trammelToolStripMenuItem";
-            trammelToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            trammelToolStripMenuItem.Size = new System.Drawing.Size(176, 22);
             trammelToolStripMenuItem.Text = "Trammel";
             trammelToolStripMenuItem.Click += ChangeMapTrammel;
             // 
             // ilshenarToolStripMenuItem
             // 
             ilshenarToolStripMenuItem.Name = "ilshenarToolStripMenuItem";
-            ilshenarToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            ilshenarToolStripMenuItem.Size = new System.Drawing.Size(176, 22);
             ilshenarToolStripMenuItem.Text = "Ilshenar";
             ilshenarToolStripMenuItem.Click += ChangeMapIlshenar;
             // 
             // malasToolStripMenuItem
             // 
             malasToolStripMenuItem.Name = "malasToolStripMenuItem";
-            malasToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            malasToolStripMenuItem.Size = new System.Drawing.Size(176, 22);
             malasToolStripMenuItem.Text = "Malas";
             malasToolStripMenuItem.Click += ChangeMapMalas;
             // 
             // tokunoToolStripMenuItem
             // 
             tokunoToolStripMenuItem.Name = "tokunoToolStripMenuItem";
-            tokunoToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            tokunoToolStripMenuItem.Size = new System.Drawing.Size(176, 22);
             tokunoToolStripMenuItem.Text = "Tokuno";
             tokunoToolStripMenuItem.Click += ChangeMapTokuno;
             // 
             // terMurToolStripMenuItem
             // 
             terMurToolStripMenuItem.Name = "terMurToolStripMenuItem";
-            terMurToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            terMurToolStripMenuItem.Size = new System.Drawing.Size(176, 22);
             terMurToolStripMenuItem.Text = "TerMur";
             terMurToolStripMenuItem.Click += ChangeMapTerMur;
             // 
             // forellToolStripMenuItem
             // 
             forellToolStripMenuItem.Name = "forellToolStripMenuItem";
-            forellToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            forellToolStripMenuItem.Size = new System.Drawing.Size(176, 22);
             forellToolStripMenuItem.Tag = "6";
             forellToolStripMenuItem.Text = "Forell";
             forellToolStripMenuItem.Click += ChangeMapForell;
@@ -298,22 +299,30 @@ namespace UoFiddler.Controls.UserControls
             // dragonToolStripMenuItem
             // 
             dragonToolStripMenuItem.Name = "dragonToolStripMenuItem";
-            dragonToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            dragonToolStripMenuItem.Size = new System.Drawing.Size(176, 22);
             dragonToolStripMenuItem.Tag = "7";
             dragonToolStripMenuItem.Text = "Dragon";
             dragonToolStripMenuItem.Click += ChangeMapDragon;
             // 
+            // intermediateWorldToolStripMenuItem
+            // 
+            intermediateWorldToolStripMenuItem.Name = "intermediateWorldToolStripMenuItem";
+            intermediateWorldToolStripMenuItem.Size = new System.Drawing.Size(176, 22);
+            intermediateWorldToolStripMenuItem.Tag = "8";
+            intermediateWorldToolStripMenuItem.Text = "Intermediate World";
+            intermediateWorldToolStripMenuItem.Click += ChangeIntermediateWorld;
+            // 
             // toolStripSeparator1
             // 
             toolStripSeparator1.Name = "toolStripSeparator1";
-            toolStripSeparator1.Size = new System.Drawing.Size(177, 6);
+            toolStripSeparator1.Size = new System.Drawing.Size(173, 6);
             // 
             // extractMapToolStripMenuItem
             // 
             extractMapToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { asBmpToolStripMenuItem, asTiffToolStripMenuItem, asJpgToolStripMenuItem, asPngToolStripMenuItem });
             extractMapToolStripMenuItem.Image = Properties.Resources.tokuno_map;
             extractMapToolStripMenuItem.Name = "extractMapToolStripMenuItem";
-            extractMapToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            extractMapToolStripMenuItem.Size = new System.Drawing.Size(176, 22);
             extractMapToolStripMenuItem.Text = "Extract Map..";
             extractMapToolStripMenuItem.DropDownClosed += OnDropDownClosed;
             // 
@@ -796,5 +805,6 @@ namespace UoFiddler.Controls.UserControls
         private System.Windows.Forms.ToolStripButton toolStripButtonMarkRegion;
         private System.Windows.Forms.ToolStripMenuItem forellToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem dragonToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem intermediateWorldToolStripMenuItem;
     }
 }

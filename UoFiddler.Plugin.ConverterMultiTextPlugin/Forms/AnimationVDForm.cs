@@ -25,18 +25,6 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 
     public partial class AnimationVDForm : Form
     {
-        private byte[] radarColorBuffer;
-        private byte[] mapBuffer;
-        private const int BlockSize = 196;
-        private const int BlockH = 8;
-        private const int BlockV = 8;
-        private const int MapBlockH = 896;
-        private const int MapBlockV = 512;
-        private const int ViewStrtH = 0;
-        private const int ViewStrtV = 0;
-        private const int ViewSizeH = 896;
-        private const int ViewSizeV = 512;
-
         public AnimationVDForm()
         {
             InitializeComponent();

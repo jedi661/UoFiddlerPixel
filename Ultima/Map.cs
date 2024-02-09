@@ -30,6 +30,7 @@ namespace Ultima
         public static readonly Map TerMur = new Map(5, 5, 1280, 4096);
         public static readonly Map Forell = new Map(6, 6, 6144, 4096); // New Map Forell
         public static readonly Map Dragon = new Map(7, 7, 6144, 4096); // Dragnonlance
+        public static readonly Map IntermediateWorld = new Map(8, 8, 6144, 4096); // Intermediate world
         public static Map Custom;
 
         public static void StartUpSetDiff(bool value)
@@ -68,6 +69,7 @@ namespace Ultima
             TerMur.Tiles.CloseStreams();
             Forell.Tiles.CloseStreams(); // New Map
             Dragon.Tiles.CloseStreams(); // Map Dragonlance
+            IntermediateWorld.Tiles.CloseStreams(); // Intermediate world
 
             Felucca.Tiles.StaticIndexInit = false;
             Trammel.Tiles.StaticIndexInit = false;
@@ -77,6 +79,7 @@ namespace Ultima
             TerMur.Tiles.StaticIndexInit = false;
             Forell.Tiles.StaticIndexInit = false; //New Map
             Dragon.Tiles.StaticIndexInit = false; //Dragonlance
+            IntermediateWorld.Tiles.StaticIndexInit = false; //Intermediate world
 
             Felucca._cache = Trammel._cache = Ilshenar._cache = Malas._cache = Tokuno._cache = TerMur._cache = null;
             Felucca._tiles = Trammel._tiles = Ilshenar._tiles = Malas._tiles = Tokuno._tiles = TerMur._tiles = null;
@@ -92,6 +95,7 @@ namespace Ultima
                 Malas._cacheNoStaticsNoPatch = Tokuno._cacheNoStaticsNoPatch = TerMur._cacheNoStaticsNoPatch = null;
             Forell._cache = null; // New Map
             Dragon._cache = null; // Dragonlance
+            IntermediateWorld._cache = null; // Intermediate world
         }
 
         public void ResetCache()
