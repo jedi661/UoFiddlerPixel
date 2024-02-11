@@ -1226,5 +1226,48 @@ namespace UoFiddler.Controls.UserControls
             return null;
         }
         #endregion
+
+        #region toolStripButtonMultiScript
+        private UoFiddler.Controls.Forms.MultiScript multiScriptForm;
+        private void toolStripButtonMultiScript_Click(object sender, EventArgs e)
+        {
+            // Überprüfen, ob die Form bereits geöffnet ist
+            if (multiScriptForm == null || multiScriptForm.IsDisposed)
+            {
+                // Wenn nicht, erstellen Sie eine neue Instanz der Form und öffnen Sie sie
+                multiScriptForm = new UoFiddler.Controls.Forms.MultiScript();
+                multiScriptForm.Show();
+            }
+        }
+        #endregion
+
+        #region fillMultiScripterToolStripMenuItem
+        private static MultiScript currentInstance = null;
+        private void fillMultiScripterToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // Überprüfen Sie, ob bereits eine Instanz von MultiScript existiert
+            if (currentInstance == null || currentInstance.IsDisposed)
+            {
+                // Erstellen Sie eine neue Instanz von MultiScript, wenn keine existiert
+                currentInstance = new MultiScript();
+
+                // Übertragen Sie die Komponenteninformationen von MultiComponentBox in tbIndexImage
+                currentInstance.IndexImageText = GetComponentsFromMultiComponentBox();
+            }
+
+            // Bringen Sie die MultiScript-Form in den Vordergrund
+            currentInstance.BringToFront();
+
+            // Öffnen Sie die MultiScript-Form
+            currentInstance.Show();
+        }
+
+        private string GetComponentsFromMultiComponentBox()
+        {
+            // Hier holen Sie die Komponenteninformationen aus MultiComponentBox
+            // Dies ist nur ein Platzhalter und muss durch Ihren tatsächlichen Code ersetzt werden
+            return MultiComponentBox.Text;
+        }
+        #endregion
     }
 }
