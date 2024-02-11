@@ -47,6 +47,8 @@ namespace UoFiddler.Controls.Forms
             tbscriptFinish = new System.Windows.Forms.TextBox();
             btnSaveScript = new System.Windows.Forms.Button();
             label1 = new System.Windows.Forms.Label();
+            label2 = new System.Windows.Forms.Label();
+            label3 = new System.Windows.Forms.Label();
             SuspendLayout();
             // 
             // tbNameScript
@@ -104,11 +106,31 @@ namespace UoFiddler.Controls.Forms
             label1.TabIndex = 5;
             label1.Text = "Name :";
             // 
+            // label2
+            // 
+            label2.AutoSize = true;
+            label2.Location = new System.Drawing.Point(14, 16);
+            label2.Name = "label2";
+            label2.Size = new System.Drawing.Size(71, 15);
+            label2.TabIndex = 6;
+            label2.Text = "Component";
+            // 
+            // label3
+            // 
+            label3.AutoSize = true;
+            label3.Location = new System.Drawing.Point(447, 16);
+            label3.Name = "label3";
+            label3.Size = new System.Drawing.Size(37, 15);
+            label3.TabIndex = 7;
+            label3.Text = "Script";
+            // 
             // MultiScript
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             ClientSize = new System.Drawing.Size(738, 450);
+            Controls.Add(label3);
+            Controls.Add(label2);
             Controls.Add(label1);
             Controls.Add(btnSaveScript);
             Controls.Add(tbscriptFinish);
@@ -131,5 +153,7 @@ namespace UoFiddler.Controls.Forms
         private System.Windows.Forms.TextBox tbscriptFinish;
         private System.Windows.Forms.Button btnSaveScript;
         private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.Label label3;
     }
 }
