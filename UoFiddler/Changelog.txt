@@ -21,7 +21,7 @@ Version : 4.12.2 #XG1
 - Add IsoTileSlicer
 - Add Octokit 9.1.2
 - Add UoMap
-- Add Map8
+- Add Map8 (Intermediate world)
 - Add MultiScript
 
 Version : 4.12.1 #XG1
