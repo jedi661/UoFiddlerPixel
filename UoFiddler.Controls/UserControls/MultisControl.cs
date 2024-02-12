@@ -1,6 +1,7 @@
 /***************************************************************************
  *
  * $Author: Turley
+ * Advanced: Nikodemus
  * 
  * "THE BEER-WARE LICENSE"
  * As long as you retain this notice you can do whatever you want with 
