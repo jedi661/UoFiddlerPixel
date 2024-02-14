@@ -27,31 +27,33 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         public TileArtForm()
         {
             InitializeComponent();
-        } 
+        }
+
+        #region pictureBoxTileArt_Paint
         private void pictureBoxTileArt_Paint(object sender, PaintEventArgs e)
         {
             Graphics g = e.Graphics;
 
-            // Definieren Sie die Größe der Route
+            // Define the size of the route
             int routeSize = 44;
 
-            // Definieren Sie die Anzahl der Routen in der x- und y-Richtung
+            // Define the number of routes in the x and y directions
             int routesX = 3;
             int routesY = 3;
 
-            // Verschieben Sie den Ursprung in die Mitte der PictureBox
+            // Move the origin to the center of the PictureBox
             g.TranslateTransform(pictureBoxTileArt.Width / 2, pictureBoxTileArt.Height / 2);
 
-            // Zeichnen Sie die Routen
+            // Draw the routes
             for (int i = 0; i < routesX; i++)
             {
                 for (int j = 0; j < routesY; j++)
                 {
-                    // Berechnen Sie die Position der Route
+                    // Calculate the position of the route
                     int x = (int)((i - j) * routeSize / 2f) - routeSize;
                     int y = (int)((i + j) * routeSize / 2f) - routeSize;
 
-                    // Erstellen Sie ein neues Polygon für die Raute
+                    // Create a new polygon for the diamond
                     Point[] diamond = new Point[]
                     {
                     new Point(x + routeSize / 2, y),
@@ -60,10 +62,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                     new Point(x, y + routeSize / 2)
                     };
 
-                    // Zeichnen Sie die Raute
+                    // Draw the diamond
                     g.DrawPolygon(Pens.Black, diamond);
 
-                    // Zeichnen Sie das Bild auf die Raute, wenn es geladen wurde
+                    // Once the image has loaded, draw it onto the diamond
                     if (images[0] != null)
                     {
                         g.DrawImage(images[0], x, y, routeSize, routeSize);
@@ -71,6 +73,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 }
             }
         }
+        #endregion
+
+        #region MakeTransparent
         private Image MakeTransparent(Image image, Color color)
         {
             Bitmap bitmap = new Bitmap(image);
@@ -79,73 +84,77 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 
             return bitmap;
         }
+        #endregion
 
-        // Globale Variable zum Speichern der Bilder
+        #region btloadArt0All
+        // Global variable to store the images
         private Image[] images = new Image[9];
         private void btloadArt0All_Click(object sender, EventArgs e)
         {
-            // Erstellen Sie ein OpenFileDialog-Objekt
+            // Create an OpenFileDialog object
             OpenFileDialog openFileDialog = new OpenFileDialog();
 
-            // Setzen Sie die Eigenschaften des OpenFileDialog
-            openFileDialog.Filter = "Bilder|*.jpg;*.jpeg;*.png;*.bmp";
+            // Set the properties of the OpenFileDialog
+            openFileDialog.Filter = "Pictures|*.jpg;*.jpeg;*.png;*.bmp";
             openFileDialog.Multiselect = false;
 
-            // Zeigen Sie das Dialogfeld an und prüfen Sie, ob der Benutzer auf OK geklickt hat
+            // Display the dialog box and verify that the user clicked OK
             if (openFileDialog.ShowDialog() == DialogResult.OK)
             {
-                // Laden Sie das Bild
+                // Load the image
                 Image image = Image.FromFile(openFileDialog.FileName);
 
-                // Machen Sie die Farben #000000 und #FFFFFF transparent
+                // Make the colors #000000 and #FFFFFF transparent
                 image = MakeTransparent(image, Color.Black);
                 image = MakeTransparent(image, Color.White);
 
-                // Speichern Sie das Bild in der images-Array
+                // Save the image in the images array
                 images[0] = image;
 
-                // Zeichnen Sie die PictureBox neu
+                // Redraw the PictureBox
                 pictureBoxTileArt.Invalidate();
             }
         }
+        #endregion
 
+        #region pictureBoxTileArt_Paint2
         private void pictureBoxTileArt_Paint2(object sender, PaintEventArgs e)
         {
             Graphics g = e.Graphics;
 
-            // Definieren Sie die Größe der Route
+            // Define the size of the route
             int routeSize = 44;
 
-            // Definieren Sie die Anzahl der Routen in der x- und y-Richtung
+            // Define the number of routes in the x and y directions
             int routesX = 3;
             int routesY = 3;
 
-            // Verschieben Sie den Ursprung in die Mitte der PictureBox
+            // Move the origin to the center of the PictureBox
             g.TranslateTransform(pictureBoxTileArt2.Width / 2, pictureBoxTileArt2.Height / 2);
 
-            // Zeichnen Sie die Routen
+            // Draw the routes
             for (int i = 0; i < routesX; i++)
             {
                 for (int j = 0; j < routesY; j++)
                 {
-                    // Berechnen Sie die Position der Route
+                    // Calculate the position of the route
                     int x = (int)((i - j) * routeSize / 2f) - routeSize;
                     int y = (int)((i + j) * routeSize / 2f) - routeSize;
 
-                    // Erstellen Sie ein neues Polygon für die Raute
+                    // Create a new polygon for the diamond
                     Point[] diamond = new Point[]
                     {
-                new Point(x + routeSize / 2, y),
-                new Point(x + routeSize, y + routeSize / 2),
-                new Point(x + routeSize / 2, y + routeSize),
-                new Point(x, y + routeSize / 2)
+                        new Point(x + routeSize / 2, y),
+                        new Point(x + routeSize, y + routeSize / 2),
+                        new Point(x + routeSize / 2, y + routeSize),
+                        new Point(x, y + routeSize / 2)
                     };
 
-                    // Zeichnen Sie die Raute
+                    // Draw the diamond
                     g.DrawPolygon(Pens.Black, diamond);
 
-                    // Zeichnen Sie das Bild auf die Raute, wenn es geladen wurde
-                    int imageIndex = i * routesY + j; // Berechnen Sie den Index des Bildes basierend auf den Koordinaten der Kachel
+                    // Once the image has loaded, draw it onto the diamond
+                    int imageIndex = i * routesY + j; // Calculate the index of the image based on the coordinates of the tile
                     if (imageIndex < images.Length && images[imageIndex] != null)
                     {
                         g.DrawImage(images[imageIndex], x, y, routeSize, routeSize);
@@ -153,7 +162,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 }
             }
         }
+        #endregion
 
+        #region btloadArt
         private void btloadArt01_Click(object sender, EventArgs e)
         {
             LoadImage(0);
@@ -198,38 +209,40 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         {
             LoadImage(8);
         }
+        #endregion
 
+        #region LoadImage
         private void LoadImage(int index)
         {
             Image image;
 
-            // Überprüfen Sie, ob die checkBoxClipboard aktiviert ist
+            // Check whether the checkBoxClipboard is activated
             if (checkBoxClipboard.Checked)
             {
-                // Laden Sie das Bild aus der Zwischenablage
+                // Load the image from the clipboard
                 if (Clipboard.ContainsImage())
                 {
                     image = Clipboard.GetImage();
                 }
                 else
                 {
-                    MessageBox.Show("Die Zwischenablage enthält kein Bild.");
+                    MessageBox.Show("The clipboard does not contain an image.");
                     return;
                 }
             }
             else
             {
-                // Erstellen Sie ein OpenFileDialog-Objekt
+                // Create an OpenFileDialog object
                 OpenFileDialog openFileDialog = new OpenFileDialog();
 
-                // Setzen Sie die Eigenschaften des OpenFileDialog
+                // Set the properties of the OpenFileDialog
                 openFileDialog.Filter = "Bilder|*.jpg;*.jpeg;*.png;*.bmp";
                 openFileDialog.Multiselect = false;
 
-                // Zeigen Sie das Dialogfeld an und prüfen Sie, ob der Benutzer auf OK geklickt hat
+                // Display the dialog box and verify that the user clicked OK
                 if (openFileDialog.ShowDialog() == DialogResult.OK)
                 {
-                    // Laden Sie das Bild
+                    // Load the image
                     image = Image.FromFile(openFileDialog.FileName);
                 }
                 else
@@ -238,17 +251,16 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 }
             }
 
-            // Machen Sie die Farben #000000 und #FFFFFF transparent
+            // Make the colors #000000 and #FFFFFF transparent
             image = MakeTransparent(image, Color.Black);
             image = MakeTransparent(image, Color.White);
 
-            // Speichern Sie das Bild in der images-Array
+            // Save the image in the images array
             images[index] = image;
 
-            // Zeichnen Sie die PictureBox neu
+            // Redraw the PictureBox
             pictureBoxTileArt2.Invalidate();
         }
-
-
+        #endregion
     }
 }

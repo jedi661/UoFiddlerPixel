@@ -229,7 +229,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 // Scale the graphics.
                 e.Graphics.ScaleTransform(scaleFactor, scaleFactor);
 
-                // Drehe die Grafik um 45 Grad.
+                // Rotate the graphic 45 degrees.
                 e.Graphics.RotateTransform(45);
 
                 for (int i = gridSize; i >= 0; i--)
@@ -760,7 +760,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         }
 
         #endregion
-        // Show Border Image und die Sichtbarkeit des Rahmens zu aktualisieren.
+        // Show Border Image and update the visibility of the border.
         private void showBorderToolStripMenuItem_Click(object sender, EventArgs e)
         {
             showBorder = !showBorder;
