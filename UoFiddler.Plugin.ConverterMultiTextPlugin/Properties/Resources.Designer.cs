@@ -643,6 +643,16 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Properties {
         /// <summary>
         ///   Sucht eine lokalisierte Ressource vom Typ System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap tile_art_form {
+            get {
+                object obj = ResourceManager.GetObject("tile-art-form", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Ressource vom Typ System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap ultima_online_map {
             get {
                 object obj = ResourceManager.GetObject("ultima-online-map", resourceCulture);

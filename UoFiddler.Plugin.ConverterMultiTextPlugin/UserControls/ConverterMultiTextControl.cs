@@ -717,6 +717,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
 
         #endregion
 
+        #region UOMap
         private bool isUOMapFormOpen = false;
 
         private void UOMap_Click(object sender, EventArgs e)
@@ -749,5 +750,41 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
                 UOMap.Enabled = true;
             }
         }
+        #endregion
+
+        #region BtTileArtForm
+        private bool isTileArtFormOpen = false;
+
+        private void BtTileArtForm_Click(object sender, EventArgs e)
+        {
+            if (isTileArtFormOpen) // Wenn das Formular bereits geöffnet ist, beenden Sie die Methode.
+            {
+                return;
+            }
+
+            ToolTip toolTip1 = new ToolTip();
+            toolTip1.AutoPopDelay = 5000;
+            toolTip1.InitialDelay = 1000;
+            toolTip1.ReshowDelay = 500;
+            toolTip1.ShowAlways = true;
+            toolTip1.SetToolTip(this.BtTileArtForm, "TileArtForm");
+
+            var tileArtForm = new TileArtForm();
+            tileArtForm.FormClosed += TileArtForm_FormClosed;
+            tileArtForm.Show();
+            isTileArtFormOpen = true;
+
+            BtTileArtForm.Enabled = false;
+        }
+
+        private void TileArtForm_FormClosed(object sender, EventArgs e)
+        {
+            if (isTileArtFormOpen)
+            {
+                isTileArtFormOpen = false;
+                BtTileArtForm.Enabled = true;
+            }
+        }
+        #endregion
     }
 }

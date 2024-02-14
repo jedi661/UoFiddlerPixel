@@ -29,6 +29,7 @@ Version : 4.12.2
 - Add UoMap
 - Add Map8 (Intermediate world)
 - Add MultiScript
+- Add Land Tile Art
 
 Version : 4.12.1
 - Implemented copying multiple graphics to the clipboard with Ctrl+X.

@@ -66,6 +66,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             btAnimationVDForm = new System.Windows.Forms.Button();
             btAnimationEditFormButton = new System.Windows.Forms.Button();
             tabPageGraphic = new System.Windows.Forms.TabPage();
+            lbTileArtForm = new System.Windows.Forms.Label();
+            BtTileArtForm = new System.Windows.Forms.Button();
             label5 = new System.Windows.Forms.Label();
             btGumpIDRechner = new System.Windows.Forms.Button();
             lbUoArtMerge = new System.Windows.Forms.Label();
@@ -77,6 +79,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             buttonGraficCutterForm = new System.Windows.Forms.Button();
             TextureCutter = new System.Windows.Forms.Button();
             tabPageMap = new System.Windows.Forms.TabPage();
+            lbUoMap = new System.Windows.Forms.Label();
             UOMap = new System.Windows.Forms.Button();
             lbCopyMapReplace = new System.Windows.Forms.Label();
             btMapReplace = new System.Windows.Forms.Button();
@@ -99,7 +102,6 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             statusStrip1 = new System.Windows.Forms.StatusStrip();
             toolStripStatusLabelTime = new System.Windows.Forms.ToolStripStatusLabel();
             timer1 = new System.Windows.Forms.Timer(components);
-            lbUoMap = new System.Windows.Forms.Label();
             contextMenuStrip1.SuspendLayout();
             tabControl1.SuspendLayout();
             tabPageMain.SuspendLayout();
@@ -349,6 +351,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             // 
             // tabPageGraphic
             // 
+            tabPageGraphic.Controls.Add(lbTileArtForm);
+            tabPageGraphic.Controls.Add(BtTileArtForm);
             tabPageGraphic.Controls.Add(label5);
             tabPageGraphic.Controls.Add(btGumpIDRechner);
             tabPageGraphic.Controls.Add(lbUoArtMerge);
@@ -365,6 +369,25 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             tabPageGraphic.TabIndex = 2;
             tabPageGraphic.Text = "Graphic";
             tabPageGraphic.UseVisualStyleBackColor = true;
+            // 
+            // lbTileArtForm
+            // 
+            lbTileArtForm.AutoSize = true;
+            lbTileArtForm.Location = new System.Drawing.Point(106, 173);
+            lbTileArtForm.Name = "lbTileArtForm";
+            lbTileArtForm.Size = new System.Drawing.Size(73, 15);
+            lbTileArtForm.TabIndex = 22;
+            lbTileArtForm.Text = "Land Tile Art";
+            // 
+            // BtTileArtForm
+            // 
+            BtTileArtForm.Image = Properties.Resources.tile_art_form;
+            BtTileArtForm.Location = new System.Drawing.Point(106, 104);
+            BtTileArtForm.Name = "BtTileArtForm";
+            BtTileArtForm.Size = new System.Drawing.Size(56, 66);
+            BtTileArtForm.TabIndex = 21;
+            BtTileArtForm.UseVisualStyleBackColor = true;
+            BtTileArtForm.Click += BtTileArtForm_Click;
             // 
             // label5
             // 
@@ -475,6 +498,15 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             tabPageMap.TabIndex = 4;
             tabPageMap.Text = "Map";
             tabPageMap.UseVisualStyleBackColor = true;
+            // 
+            // lbUoMap
+            // 
+            lbUoMap.AutoSize = true;
+            lbUoMap.Location = new System.Drawing.Point(6, 234);
+            lbUoMap.Name = "lbUoMap";
+            lbUoMap.Size = new System.Drawing.Size(49, 15);
+            lbUoMap.TabIndex = 18;
+            lbUoMap.Text = "Uo Map";
             // 
             // UOMap
             // 
@@ -693,15 +725,6 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             toolStripStatusLabelTime.Size = new System.Drawing.Size(33, 17);
             toolStripStatusLabelTime.Text = "Time";
             // 
-            // lbUoMap
-            // 
-            lbUoMap.AutoSize = true;
-            lbUoMap.Location = new System.Drawing.Point(6, 234);
-            lbUoMap.Name = "lbUoMap";
-            lbUoMap.Size = new System.Drawing.Size(49, 15);
-            lbUoMap.TabIndex = 18;
-            lbUoMap.Text = "Uo Map";
-            // 
             // ConverterMultiTextControl
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -797,5 +820,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
         private System.Windows.Forms.Label lbIsoTiloSlicer;
         private System.Windows.Forms.Button UOMap;
         private System.Windows.Forms.Label lbUoMap;
+        private System.Windows.Forms.Button BtTileArtForm;
+        private System.Windows.Forms.Label lbTileArtForm;
     }
 }
