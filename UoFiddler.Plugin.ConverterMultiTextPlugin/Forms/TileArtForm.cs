@@ -27,6 +27,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         public TileArtForm()
         {
             InitializeComponent();
+
+            this.KeyPreview = true;
+            this.KeyDown += new KeyEventHandler(TileArtForm_KeyDown);
         }
 
         #region pictureBoxTileArt_Paint
@@ -260,6 +263,275 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 
             // Redraw the PictureBox
             pictureBoxTileArt2.Invalidate();
+        }
+        #endregion
+
+        #region array for pictureBoxTileArt3
+        private Image[] images3 = new Image[64]; // A separate array for pictureBoxTileArt3
+        private Point? hoverTile = null; // Saves the tile the mouse hovers over
+        private const int routeSize = 44; // Define routeSize as a class variable
+        private const int routesX = 8; // Define routesX as a class variable
+        private const int routesY = 8; // Define routesY as a class variable
+        private Dictionary<Point, Rectangle> tileRectangles = new Dictionary<Point, Rectangle>(); // Stores the pixel coordinates of each tile
+        #endregion
+
+        #region pictureBoxTileArt3_MouseMove
+        private void pictureBoxTileArt3_MouseMove(object sender, MouseEventArgs e)
+        {
+            // Show mouse coordinates on a label
+            labelMouseCoordinates.Text = $"X: {e.X}, Y: {e.Y}";
+
+            // Find the tile the mouse is hovering over
+            Point newHoverTile = MouseToTileCoordinates(e.X, e.Y);
+
+            // Check whether the mouse has entered a new tile
+            if (newHoverTile != hoverTile)
+            {
+                // Update the tile the mouse is hovering over
+                hoverTile = newHoverTile;
+
+                // Redraw the PictureBox
+                pictureBoxTileArt3.Invalidate();
+            }
+        }
+        #endregion
+
+        #region pictureBoxTileArt3_MouseClick
+        private void pictureBoxTileArt3_MouseClick(object sender, MouseEventArgs e)
+        {
+            if (hoverTile.HasValue && e.Button == MouseButtons.Right)
+            {
+                int imageIndex = hoverTile.Value.X * routesY + hoverTile.Value.Y;
+                if (imageIndex < images3.Length)
+                {
+                    // Load the image
+                    LoadImageFromClipboardOrFile(imageIndex);
+
+                    // Once the image has loaded, draw it onto the tile
+                    if (images3[imageIndex] != null)
+                    {
+                        // Draw the image on the tile
+                        Graphics g = pictureBoxTileArt3.CreateGraphics();
+                        Rectangle tileRectangle = tileRectangles[hoverTile.Value];
+                        g.DrawImage(images3[imageIndex], tileRectangle);
+                    }
+                }
+
+                // Redraw the PictureBox
+                pictureBoxTileArt3.Invalidate();
+            }
+        }
+        #endregion
+
+        #region pictureBoxTileArt3_Paint
+        private void pictureBoxTileArt3_Paint(object sender, PaintEventArgs e)
+        {
+            Graphics g = e.Graphics;
+
+            // Move the origin to the center of the PictureBox and shift it upwards by 1.5 route sizes
+            g.TranslateTransform(pictureBoxTileArt3.Width / 2, pictureBoxTileArt3.Height / 2 - (float)(routeSize * routesY / 4 + 1.5 * routeSize));
+
+            // Draw the routes
+            for (int i = 0; i < routesX; i++)
+            {
+                for (int j = 0; j < routesY; j++)
+                {
+                    // Calculate the position of the center of the route
+                    int x = (int)((i - j) * routeSize / 2f);
+                    int y = (int)((i + j) * routeSize / 2f);
+
+                    // Create a new polygon for the diamond
+                    Point[] diamond = new Point[]
+                    {
+                new Point(x, y - routeSize / 2),
+                new Point(x + routeSize / 2, y),
+                new Point(x, y + routeSize / 2),
+                new Point(x - routeSize / 2, y)
+                    };
+
+                    // Draw the diamond
+                    g.DrawPolygon(Pens.Black, diamond);
+
+                    // Save the pixel coordinates of the tile
+                    Rectangle tileRectangle = new Rectangle(x - routeSize / 2, y - routeSize / 2, routeSize, routeSize);
+                    tileRectangles[new Point(i, j)] = tileRectangle;
+
+                    // Once the image has loaded, draw it onto the diamond
+                    int imageIndex = i * routesY + j; // Calculate the index of the image based on the coordinates of the tile
+                    if (imageIndex < images3.Length && images3[imageIndex] != null)
+                    {
+                        g.DrawImage(images3[imageIndex], tileRectangle);
+                    }
+                }
+            }
+
+            // Draw a highlight on the tile that the mouse hovers over
+            if (hoverTile.HasValue)
+            {
+                int i = hoverTile.Value.X;
+                int j = hoverTile.Value.Y;
+
+                // Calculate the position of the tile
+                int x = (int)((i - j) * routeSize / 2f);
+                int y = (int)((i + j) * routeSize / 2f);
+
+                // Create a new polygon for the highlight
+                Point[] highlight = new Point[]
+                {
+                    new Point(x, y - routeSize / 2),
+                    new Point(x + routeSize / 2, y),
+                    new Point(x, y + routeSize / 2),
+                    new Point(x - routeSize / 2, y)
+                };
+
+                // Draw the highlight
+                g.FillPolygon(new SolidBrush(Color.FromArgb(128, Color.Yellow)), highlight); //Color
+            }
+        }
+        #endregion
+
+        #region LoadImageFromClipboardOrFile
+        private void LoadImageFromClipboardOrFile(int index)
+        {
+            Image image;
+
+            // Check whether the checkBoxClipboard2 is activated
+            if (checkBoxClipboard2.Checked)
+            {
+                // Load the image from the clipboard
+                if (Clipboard.ContainsImage())
+                {
+                    image = Clipboard.GetImage();
+                }
+                else
+                {
+                    MessageBox.Show("The clipboard does not contain an image.");
+                    return;
+                }
+            }
+            else
+            {
+                // Create an OpenFileDialog object
+                OpenFileDialog openFileDialog = new OpenFileDialog();
+
+                // Set the properties of the OpenFileDialog
+                openFileDialog.Filter = "Bilder|*.jpg;*.jpeg;*.png;*.bmp";
+                openFileDialog.Multiselect = false;
+
+                // Display the dialog box and verify that the user clicked OK
+                if (openFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    // Load the image
+                    image = Image.FromFile(openFileDialog.FileName);
+                }
+                else
+                {
+                    return;
+                }
+            }
+
+            // Make the colors #000000 and #FFFFFF transparent
+            image = MakeTransparent(image, Color.Black);
+            image = MakeTransparent(image, Color.White);
+
+            // Save the image in the images3 array
+            images3[index] = image;
+
+            // Redraw the PictureBox
+            pictureBoxTileArt3.Invalidate();
+        }
+        #endregion
+
+        #region MouseToTileCoordinates 
+        private Point MouseToTileCoordinates(int mouseX, int mouseY)
+        {
+            // Convert the mouse coordinates relative to the origin of the PictureBox
+            int relativeX = mouseX - pictureBoxTileArt3.Width / 2;
+            int relativeY = mouseY - (pictureBoxTileArt3.Height / 2 - (int)(routeSize * routesY / 4 + 1.5 * routeSize));
+
+            // Calculate tile coordinates based on relative mouse coordinates
+            int i = (int)Math.Round((relativeX / (float)routeSize + relativeY / (float)routeSize));
+            int j = (int)Math.Round((relativeY / (float)routeSize - relativeX / (float)routeSize));
+
+            // Make sure the tile coordinates are within the valid range
+            i = Math.Max(0, Math.Min(i, routesX - 1));
+            j = Math.Max(0, Math.Min(j, routesY - 1));
+
+            // Find the nearest tile
+            Point closestTile = new Point(i, j);
+            double minDistance = double.MaxValue;
+
+            // Check the surrounding tiles to find the closest one
+            for (int di = -1; di <= 1; di++)
+            {
+                for (int dj = -1; dj <= 1; dj++)
+                {
+                    Point tile = new Point(i + di, j + dj);
+                    // Check that the tile lies within the boundaries of the diamond
+                    if (tile.X >= 0 && tile.X < routesX && tile.Y >= 0 && tile.Y < routesY)
+                    {
+                        Point tileMouseCoords = TileToMouseCoordinates(tile.X, tile.Y);
+                        double distance = Math.Sqrt(Math.Pow(tileMouseCoords.X - mouseX, 2) + Math.Pow(tileMouseCoords.Y - mouseY, 2));
+
+                        if (distance < minDistance)
+                        {
+                            closestTile = tile;
+                            minDistance = distance;
+                        }
+                    }
+                }
+            }
+
+            return closestTile;
+        }
+        #endregion
+
+        #region Point TileToMouseCoordinates
+        private Point TileToMouseCoordinates(int i, int j)
+        {
+            // Calculate the pixel coordinates of the tile
+            int x = (int)((i - j) * routeSize / 2f);
+            int y = (int)((i + j) * routeSize / 2f);
+
+            // Convert the pixel coordinates to mouse coordinates
+            int mouseX = x + pictureBoxTileArt3.Width / 2;
+            int mouseY = y + (pictureBoxTileArt3.Height / 2 - (int)(routeSize * routesY / 4 + 1.5 * routeSize));
+
+            return new Point(mouseX, mouseY);
+        }
+        #endregion        
+
+        #region TileArtForm_KeyDown
+        private void TileArtForm_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (hoverTile.HasValue)
+            {
+                int i = hoverTile.Value.X;
+                int j = hoverTile.Value.Y;
+
+                switch (e.KeyCode)
+                {
+                    case Keys.W:  // W for up
+                        i = Math.Max(0, i - 1);
+                        break;
+                    case Keys.A:  // A for left
+                        j = Math.Min(routesY - 1, j + 1);
+                        break;
+                    case Keys.S:  // S for down
+                        i = Math.Min(routesX - 1, i + 1);
+                        break;
+                    case Keys.D:  // D for right
+                        j = Math.Max(0, j - 1);
+                        break;
+                    case Keys.Space:  // Space bar to load images
+                        int imageIndex = i * routesY + j;  // Calculate the index of the image based on the coordinates of the tile
+                        LoadImageFromClipboardOrFile(imageIndex);  // Load the image
+                        break;
+                }
+
+                hoverTile = new Point(i, j);
+                pictureBoxTileArt3.Invalidate();
+            }
         }
         #endregion
     }
