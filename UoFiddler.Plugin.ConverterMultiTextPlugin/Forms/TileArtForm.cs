@@ -626,5 +626,60 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             pictureBoxTileArt3.Invalidate();
         }
         #endregion
+
+        #region btFill64Tiles_Click
+        private void btFill64Tiles_Click(object sender, EventArgs e)
+        {
+            Image image;
+
+            // Check whether the checkBoxClipboard2 is activated
+            if (checkBoxClipboard2.Checked)
+            {
+                // Load the image from the clipboard
+                if (Clipboard.ContainsImage())
+                {
+                    image = Clipboard.GetImage();
+                }
+                else
+                {
+                    MessageBox.Show("The clipboard does not contain an image.");
+                    return;
+                }
+            }
+            else
+            {
+                // Create an OpenFileDialog object
+                OpenFileDialog openFileDialog = new OpenFileDialog();
+
+                // Set the properties of the OpenFileDialog
+                openFileDialog.Filter = "Bilder|*.jpg;*.jpeg;*.png;*.bmp";
+                openFileDialog.Multiselect = false;
+
+                // Display the dialog box and verify that the user clicked OK
+                if (openFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    // Load the image
+                    image = Image.FromFile(openFileDialog.FileName);
+                }
+                else
+                {
+                    return;
+                }
+            }
+
+            // Make the colors #000000 and #FFFFFF transparent
+            image = MakeTransparent(image, Color.Black);
+            image = MakeTransparent(image, Color.White);
+
+            // Save the image in all indices of the images3 array
+            for (int i = 0; i < images3.Length; i++)
+            {
+                images3[i] = image;
+            }
+
+            // Redraw the PictureBox
+            pictureBoxTileArt3.Invalidate();
+        }
+        #endregion
     }
 }

@@ -67,6 +67,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             btnToggleView = new System.Windows.Forms.Button();
             labelMouseCoordinates = new System.Windows.Forms.Label();
             checkBoxClipboard2 = new System.Windows.Forms.CheckBox();
+            btFill64Tiles = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)pictureBoxTileArt).BeginInit();
             ((System.ComponentModel.ISupportInitialize)pictureBoxTileArt2).BeginInit();
             panel1BackGround.SuspendLayout();
@@ -230,7 +231,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             tabControl1.Location = new System.Drawing.Point(12, 12);
             tabControl1.Name = "tabControl1";
             tabControl1.SelectedIndex = 0;
-            tabControl1.Size = new System.Drawing.Size(975, 703);
+            tabControl1.Size = new System.Drawing.Size(630, 491);
             tabControl1.TabIndex = 15;
             // 
             // tabPageTiles9
@@ -251,13 +252,14 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             tabPageTiles9.Location = new System.Drawing.Point(4, 24);
             tabPageTiles9.Name = "tabPageTiles9";
             tabPageTiles9.Padding = new System.Windows.Forms.Padding(3);
-            tabPageTiles9.Size = new System.Drawing.Size(967, 675);
+            tabPageTiles9.Size = new System.Drawing.Size(622, 463);
             tabPageTiles9.TabIndex = 0;
             tabPageTiles9.Text = "Tiles 9";
             tabPageTiles9.UseVisualStyleBackColor = true;
             // 
             // tabPageTiles64
             // 
+            tabPageTiles64.Controls.Add(btFill64Tiles);
             tabPageTiles64.Controls.Add(panelContainingPictureBox);
             tabPageTiles64.Controls.Add(labelGrad);
             tabPageTiles64.Controls.Add(trackBar1);
@@ -267,7 +269,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             tabPageTiles64.Location = new System.Drawing.Point(4, 24);
             tabPageTiles64.Name = "tabPageTiles64";
             tabPageTiles64.Padding = new System.Windows.Forms.Padding(3);
-            tabPageTiles64.Size = new System.Drawing.Size(967, 675);
+            tabPageTiles64.Size = new System.Drawing.Size(622, 463);
             tabPageTiles64.TabIndex = 1;
             tabPageTiles64.Text = "Tiles 64";
             tabPageTiles64.UseVisualStyleBackColor = true;
@@ -324,7 +326,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // 
             btnToggleView.Location = new System.Drawing.Point(423, 111);
             btnToggleView.Name = "btnToggleView";
-            btnToggleView.Size = new System.Drawing.Size(75, 23);
+            btnToggleView.Size = new System.Drawing.Size(36, 23);
             btnToggleView.TabIndex = 7;
             btnToggleView.Text = "3D";
             btnToggleView.UseVisualStyleBackColor = true;
@@ -349,11 +351,21 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             checkBoxClipboard2.Text = "Clipboard";
             checkBoxClipboard2.UseVisualStyleBackColor = true;
             // 
+            // btFill64Tiles
+            // 
+            btFill64Tiles.Location = new System.Drawing.Point(465, 111);
+            btFill64Tiles.Name = "btFill64Tiles";
+            btFill64Tiles.Size = new System.Drawing.Size(36, 23);
+            btFill64Tiles.TabIndex = 12;
+            btFill64Tiles.Text = "Fill";
+            btFill64Tiles.UseVisualStyleBackColor = true;
+            btFill64Tiles.Click += btFill64Tiles_Click;
+            // 
             // TileArtForm
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            ClientSize = new System.Drawing.Size(1056, 765);
+            ClientSize = new System.Drawing.Size(644, 506);
             Controls.Add(tabControl1);
             FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             Icon = (System.Drawing.Icon)resources.GetObject("$this.Icon");
@@ -402,5 +414,6 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private System.Windows.Forms.Label labelGrad;
         private System.Windows.Forms.HScrollBar hScrollBar1;
         private System.Windows.Forms.Panel panelContainingPictureBox;
+        private System.Windows.Forms.Button btFill64Tiles;
     }
 }
