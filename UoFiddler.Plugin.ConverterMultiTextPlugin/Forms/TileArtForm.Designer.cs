@@ -59,6 +59,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             tabControl1 = new System.Windows.Forms.TabControl();
             tabPageTiles9 = new System.Windows.Forms.TabPage();
             tabPageTiles64 = new System.Windows.Forms.TabPage();
+            btSaveDrawing = new System.Windows.Forms.Button();
+            btClearTilesAll = new System.Windows.Forms.Button();
+            btFill64Tiles = new System.Windows.Forms.Button();
             panelContainingPictureBox = new System.Windows.Forms.Panel();
             pictureBoxTileArt3 = new System.Windows.Forms.PictureBox();
             hScrollBar1 = new System.Windows.Forms.HScrollBar();
@@ -67,7 +70,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             btnToggleView = new System.Windows.Forms.Button();
             labelMouseCoordinates = new System.Windows.Forms.Label();
             checkBoxClipboard2 = new System.Windows.Forms.CheckBox();
-            btFill64Tiles = new System.Windows.Forms.Button();
+            btLoadDrawing = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)pictureBoxTileArt).BeginInit();
             ((System.ComponentModel.ISupportInitialize)pictureBoxTileArt2).BeginInit();
             panel1BackGround.SuspendLayout();
@@ -259,6 +262,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // 
             // tabPageTiles64
             // 
+            tabPageTiles64.Controls.Add(btLoadDrawing);
+            tabPageTiles64.Controls.Add(btSaveDrawing);
+            tabPageTiles64.Controls.Add(btClearTilesAll);
             tabPageTiles64.Controls.Add(btFill64Tiles);
             tabPageTiles64.Controls.Add(panelContainingPictureBox);
             tabPageTiles64.Controls.Add(labelGrad);
@@ -273,6 +279,36 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             tabPageTiles64.TabIndex = 1;
             tabPageTiles64.Text = "Tiles 64";
             tabPageTiles64.UseVisualStyleBackColor = true;
+            // 
+            // btSaveDrawing
+            // 
+            btSaveDrawing.Location = new System.Drawing.Point(543, 158);
+            btSaveDrawing.Name = "btSaveDrawing";
+            btSaveDrawing.Size = new System.Drawing.Size(48, 23);
+            btSaveDrawing.TabIndex = 14;
+            btSaveDrawing.Text = "Save";
+            btSaveDrawing.UseVisualStyleBackColor = true;
+            btSaveDrawing.Click += btSaveDrawing_Click;
+            // 
+            // btClearTilesAll
+            // 
+            btClearTilesAll.Location = new System.Drawing.Point(507, 111);
+            btClearTilesAll.Name = "btClearTilesAll";
+            btClearTilesAll.Size = new System.Drawing.Size(44, 23);
+            btClearTilesAll.TabIndex = 13;
+            btClearTilesAll.Text = "Clear";
+            btClearTilesAll.UseVisualStyleBackColor = true;
+            btClearTilesAll.Click += btClearTilesAll_Click;
+            // 
+            // btFill64Tiles
+            // 
+            btFill64Tiles.Location = new System.Drawing.Point(465, 111);
+            btFill64Tiles.Name = "btFill64Tiles";
+            btFill64Tiles.Size = new System.Drawing.Size(36, 23);
+            btFill64Tiles.TabIndex = 12;
+            btFill64Tiles.Text = "Fill";
+            btFill64Tiles.UseVisualStyleBackColor = true;
+            btFill64Tiles.Click += btFill64Tiles_Click;
             // 
             // panelContainingPictureBox
             // 
@@ -351,15 +387,15 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             checkBoxClipboard2.Text = "Clipboard";
             checkBoxClipboard2.UseVisualStyleBackColor = true;
             // 
-            // btFill64Tiles
+            // btLoadDrawing
             // 
-            btFill64Tiles.Location = new System.Drawing.Point(465, 111);
-            btFill64Tiles.Name = "btFill64Tiles";
-            btFill64Tiles.Size = new System.Drawing.Size(36, 23);
-            btFill64Tiles.TabIndex = 12;
-            btFill64Tiles.Text = "Fill";
-            btFill64Tiles.UseVisualStyleBackColor = true;
-            btFill64Tiles.Click += btFill64Tiles_Click;
+            btLoadDrawing.Location = new System.Drawing.Point(543, 181);
+            btLoadDrawing.Name = "btLoadDrawing";
+            btLoadDrawing.Size = new System.Drawing.Size(48, 23);
+            btLoadDrawing.TabIndex = 15;
+            btLoadDrawing.Text = "Load";
+            btLoadDrawing.UseVisualStyleBackColor = true;
+            btLoadDrawing.Click += btLoadDrawing_Click;
             // 
             // TileArtForm
             // 
@@ -415,5 +451,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private System.Windows.Forms.HScrollBar hScrollBar1;
         private System.Windows.Forms.Panel panelContainingPictureBox;
         private System.Windows.Forms.Button btFill64Tiles;
+        private System.Windows.Forms.Button btClearTilesAll;
+        private System.Windows.Forms.Button btSaveDrawing;
+        private System.Windows.Forms.Button btLoadDrawing;
     }
 }

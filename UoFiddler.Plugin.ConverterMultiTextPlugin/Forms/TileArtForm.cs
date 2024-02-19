@@ -16,10 +16,12 @@ using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Drawing.Drawing2D;
+using System.Drawing.Imaging;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
@@ -679,6 +681,52 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 
             // Redraw the PictureBox
             pictureBoxTileArt3.Invalidate();
+        }
+        #endregion
+
+        #region btClearTilesAll_Click
+        private void btClearTilesAll_Click(object sender, EventArgs e)
+        {
+            // Set each element in the images3 array to null
+            for (int i = 0; i < images3.Length; i++)
+            {
+                images3[i] = null;
+            }
+
+            // Redraw the PictureBox to show the empty diamond spaces
+            pictureBoxTileArt3.Invalidate();
+        }
+        #endregion
+
+        #region btSaveDrawing_Click
+        private void btSaveDrawing_Click(object sender, EventArgs e)
+        {
+            // Create a SaveFileDialog to select the save location
+            SaveFileDialog saveFileDialog = new SaveFileDialog();
+            saveFileDialog.Filter = "PNG Image|*.png";
+            if (saveFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                // Save the current drawing as a PNG image
+                Bitmap bitmap = new Bitmap(pictureBoxTileArt3.Width, pictureBoxTileArt3.Height);
+                pictureBoxTileArt3.DrawToBitmap(bitmap, new Rectangle(0, 0, bitmap.Width, bitmap.Height));
+                bitmap.Save(saveFileDialog.FileName, ImageFormat.Png);
+            }
+        }
+        #endregion
+
+        #region btLoadDrawing_Click
+        private void btLoadDrawing_Click(object sender, EventArgs e)
+        {
+            // Create an OpenFileDialog to select the file to load
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            openFileDialog.Filter = "PNG Image|*.png";
+            if (openFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                // Load the image and set it as the PictureBox's background image
+                Image image = Image.FromFile(openFileDialog.FileName);
+                pictureBoxTileArt3.BackgroundImage = image;
+                pictureBoxTileArt3.Invalidate();
+            }
         }
         #endregion
     }
