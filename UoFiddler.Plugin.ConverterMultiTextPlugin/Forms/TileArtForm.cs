@@ -15,10 +15,12 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 {
@@ -30,6 +32,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 
             this.KeyPreview = true;
             this.KeyDown += new KeyEventHandler(TileArtForm_KeyDown);
+
+            hScrollBar1.Minimum = -pictureBoxTileArt3.Width / 2;
+            hScrollBar1.Maximum = pictureBoxTileArt3.Width / 2;
         }
 
         #region pictureBoxTileArt_Paint
@@ -323,11 +328,23 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         }
         #endregion
 
-        #region pictureBoxTileArt3_Paint
+        #region pictureBoxTileArt3_Paint 
         private void pictureBoxTileArt3_Paint(object sender, PaintEventArgs e)
         {
             Graphics g = e.Graphics;
+            Matrix matrix = new Matrix();
 
+            if (is3DView)
+            {
+                //Add a rotation to rotate the diamond mesh to an isometric view
+                matrix.Rotate(currentRotation);
+                // Add scale to distort the diamond mesh and complete the isometric view
+                matrix.Scale((float)Math.Sqrt(2), (float)Math.Sqrt(2) / 2);
+                // Add a translation to move the diamond mesh based on the value of the scroll bar
+                matrix.Translate(hScrollBar1.Value, 0, MatrixOrder.Append);
+            }
+            // Set the transformation matrix of the Graphics object
+            g.Transform = matrix;
             // Move the origin to the center of the PictureBox and shift it upwards by 1.5 route sizes
             g.TranslateTransform(pictureBoxTileArt3.Width / 2, pictureBoxTileArt3.Height / 2 - (float)(routeSize * routesY / 4 + 1.5 * routeSize));
 
@@ -336,21 +353,23 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             {
                 for (int j = 0; j < routesY; j++)
                 {
-                    // Calculate the position of the center of the route
                     int x = (int)((i - j) * routeSize / 2f);
                     int y = (int)((i + j) * routeSize / 2f);
 
                     // Create a new polygon for the diamond
                     Point[] diamond = new Point[]
                     {
-                new Point(x, y - routeSize / 2),
-                new Point(x + routeSize / 2, y),
-                new Point(x, y + routeSize / 2),
-                new Point(x - routeSize / 2, y)
+                        new Point(x, y - routeSize / 2),
+                        new Point(x + routeSize / 2, y),
+                        new Point(x, y + routeSize / 2),
+                        new Point(x - routeSize / 2, y)
                     };
 
-                    // Draw the diamond
-                    g.DrawPolygon(Pens.Black, diamond);
+                    // Draw the diamond only if not in 3D mode
+                    if (!is3DView)
+                    {
+                        g.DrawPolygon(Pens.Black, diamond);
+                    }
 
                     // Save the pixel coordinates of the tile
                     Rectangle tileRectangle = new Rectangle(x - routeSize / 2, y - routeSize / 2, routeSize, routeSize);
@@ -360,7 +379,16 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                     int imageIndex = i * routesY + j; // Calculate the index of the image based on the coordinates of the tile
                     if (imageIndex < images3.Length && images3[imageIndex] != null)
                     {
-                        g.DrawImage(images3[imageIndex], tileRectangle);
+                        if (is3DView)
+                        {
+                            // Draw the image in 3D
+                            DrawIsometricImage(g, images3[imageIndex], new Point(x, y));
+                        }
+                        else
+                        {
+                            // Draw the image in 2D
+                            g.DrawImage(images3[imageIndex], tileRectangle);
+                        }
                     }
                 }
             }
@@ -532,6 +560,70 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 hoverTile = new Point(i, j);
                 pictureBoxTileArt3.Invalidate();
             }
+        }
+        #endregion
+
+        #region Veriable 3d
+        // Global variable to store the state of the view
+        private bool is3DView = false;
+        // Global variable to store the current rotation value
+        private float currentRotation = 0.0f;
+        #endregion
+
+        #region DrawIsometricImage
+        private void DrawIsometricImage(Graphics g, Image image, Point location)
+        {
+            // Create a new matrix for the transformation
+            Matrix matrix = new Matrix();
+
+            // Add rotation to rotate the image to an isometric view
+            matrix.Rotate(currentRotation); // Use the current rotation value
+
+            // Add scaling to distort the image and complete the isometric view
+            matrix.Scale((float)Math.Sqrt(2), (float)Math.Sqrt(2) / 2);
+
+            // Add a translation to move the image based on the scroll bar value
+            matrix.Translate(hScrollBar1.Value, 0, MatrixOrder.Append); // NEW ADDED
+
+            // Set the transformation matrix of the Graphics object
+            g.Transform = matrix;
+
+            // Draw the image at the specified location
+            g.DrawImage(image, location);
+        }
+
+        #endregion
+
+        #region btnToggleView_Click
+        private void btnToggleView_Click(object sender, EventArgs e)
+        {
+            // Switch between 2D and 3D view
+            is3DView = !is3DView;
+
+            // Redraw PictureBox
+            pictureBoxTileArt3.Invalidate();
+        }
+        #endregion
+
+        #region trackBar1_ValueChanged
+        private void trackBar1_ValueChanged(object sender, EventArgs e)
+        {
+            // Update the alignment based on the value of the slider
+            currentRotation = trackBar1.Value;
+
+            // Update the label
+            labelGrad.Text = $"Orientation: {currentRotation} Degree";
+
+            // Redraw the image with the updated orientation
+            pictureBoxTileArt3.Invalidate();
+        }
+        #endregion
+
+        #region hScrollBar1_Scroll
+        private void hScrollBar1_Scroll(object sender, ScrollEventArgs e)
+        {
+            // Redraw the PictureBox
+            pictureBoxTileArt3.Invalidate();
         }
         #endregion
     }

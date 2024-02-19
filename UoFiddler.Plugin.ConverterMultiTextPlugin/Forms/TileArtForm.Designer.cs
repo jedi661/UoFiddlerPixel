@@ -59,9 +59,14 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             tabControl1 = new System.Windows.Forms.TabControl();
             tabPageTiles9 = new System.Windows.Forms.TabPage();
             tabPageTiles64 = new System.Windows.Forms.TabPage();
+            panelContainingPictureBox = new System.Windows.Forms.Panel();
+            pictureBoxTileArt3 = new System.Windows.Forms.PictureBox();
+            hScrollBar1 = new System.Windows.Forms.HScrollBar();
+            labelGrad = new System.Windows.Forms.Label();
+            trackBar1 = new System.Windows.Forms.TrackBar();
+            btnToggleView = new System.Windows.Forms.Button();
             labelMouseCoordinates = new System.Windows.Forms.Label();
             checkBoxClipboard2 = new System.Windows.Forms.CheckBox();
-            pictureBoxTileArt3 = new System.Windows.Forms.PictureBox();
             ((System.ComponentModel.ISupportInitialize)pictureBoxTileArt).BeginInit();
             ((System.ComponentModel.ISupportInitialize)pictureBoxTileArt2).BeginInit();
             panel1BackGround.SuspendLayout();
@@ -69,7 +74,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             tabControl1.SuspendLayout();
             tabPageTiles9.SuspendLayout();
             tabPageTiles64.SuspendLayout();
+            panelContainingPictureBox.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)pictureBoxTileArt3).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)trackBar1).BeginInit();
             SuspendLayout();
             // 
             // pictureBoxTileArt
@@ -223,7 +230,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             tabControl1.Location = new System.Drawing.Point(12, 12);
             tabControl1.Name = "tabControl1";
             tabControl1.SelectedIndex = 0;
-            tabControl1.Size = new System.Drawing.Size(635, 475);
+            tabControl1.Size = new System.Drawing.Size(975, 703);
             tabControl1.TabIndex = 15;
             // 
             // tabPageTiles9
@@ -244,23 +251,84 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             tabPageTiles9.Location = new System.Drawing.Point(4, 24);
             tabPageTiles9.Name = "tabPageTiles9";
             tabPageTiles9.Padding = new System.Windows.Forms.Padding(3);
-            tabPageTiles9.Size = new System.Drawing.Size(627, 447);
+            tabPageTiles9.Size = new System.Drawing.Size(967, 675);
             tabPageTiles9.TabIndex = 0;
             tabPageTiles9.Text = "Tiles 9";
             tabPageTiles9.UseVisualStyleBackColor = true;
             // 
             // tabPageTiles64
             // 
+            tabPageTiles64.Controls.Add(panelContainingPictureBox);
+            tabPageTiles64.Controls.Add(labelGrad);
+            tabPageTiles64.Controls.Add(trackBar1);
+            tabPageTiles64.Controls.Add(btnToggleView);
             tabPageTiles64.Controls.Add(labelMouseCoordinates);
             tabPageTiles64.Controls.Add(checkBoxClipboard2);
-            tabPageTiles64.Controls.Add(pictureBoxTileArt3);
             tabPageTiles64.Location = new System.Drawing.Point(4, 24);
             tabPageTiles64.Name = "tabPageTiles64";
             tabPageTiles64.Padding = new System.Windows.Forms.Padding(3);
-            tabPageTiles64.Size = new System.Drawing.Size(627, 447);
+            tabPageTiles64.Size = new System.Drawing.Size(967, 675);
             tabPageTiles64.TabIndex = 1;
             tabPageTiles64.Text = "Tiles 64";
             tabPageTiles64.UseVisualStyleBackColor = true;
+            // 
+            // panelContainingPictureBox
+            // 
+            panelContainingPictureBox.Controls.Add(pictureBoxTileArt3);
+            panelContainingPictureBox.Controls.Add(hScrollBar1);
+            panelContainingPictureBox.Location = new System.Drawing.Point(6, 44);
+            panelContainingPictureBox.Name = "panelContainingPictureBox";
+            panelContainingPictureBox.Size = new System.Drawing.Size(381, 411);
+            panelContainingPictureBox.TabIndex = 11;
+            // 
+            // pictureBoxTileArt3
+            // 
+            pictureBoxTileArt3.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            pictureBoxTileArt3.Location = new System.Drawing.Point(3, 3);
+            pictureBoxTileArt3.Name = "pictureBoxTileArt3";
+            pictureBoxTileArt3.Size = new System.Drawing.Size(374, 374);
+            pictureBoxTileArt3.TabIndex = 4;
+            pictureBoxTileArt3.TabStop = false;
+            pictureBoxTileArt3.Paint += pictureBoxTileArt3_Paint;
+            pictureBoxTileArt3.MouseClick += pictureBoxTileArt3_MouseClick;
+            pictureBoxTileArt3.MouseMove += pictureBoxTileArt3_MouseMove;
+            // 
+            // hScrollBar1
+            // 
+            hScrollBar1.Location = new System.Drawing.Point(3, 380);
+            hScrollBar1.Name = "hScrollBar1";
+            hScrollBar1.Size = new System.Drawing.Size(374, 17);
+            hScrollBar1.TabIndex = 10;
+            hScrollBar1.Scroll += hScrollBar1_Scroll;
+            // 
+            // labelGrad
+            // 
+            labelGrad.AutoSize = true;
+            labelGrad.Location = new System.Drawing.Point(423, 219);
+            labelGrad.Name = "labelGrad";
+            labelGrad.Size = new System.Drawing.Size(36, 15);
+            labelGrad.TabIndex = 9;
+            labelGrad.Text = "angle";
+            // 
+            // trackBar1
+            // 
+            trackBar1.Location = new System.Drawing.Point(423, 159);
+            trackBar1.Maximum = 45;
+            trackBar1.Minimum = -45;
+            trackBar1.Name = "trackBar1";
+            trackBar1.Size = new System.Drawing.Size(104, 45);
+            trackBar1.TabIndex = 8;
+            trackBar1.ValueChanged += trackBar1_ValueChanged;
+            // 
+            // btnToggleView
+            // 
+            btnToggleView.Location = new System.Drawing.Point(423, 111);
+            btnToggleView.Name = "btnToggleView";
+            btnToggleView.Size = new System.Drawing.Size(75, 23);
+            btnToggleView.TabIndex = 7;
+            btnToggleView.Text = "3D";
+            btnToggleView.UseVisualStyleBackColor = true;
+            btnToggleView.Click += btnToggleView_Click;
             // 
             // labelMouseCoordinates
             // 
@@ -281,23 +349,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             checkBoxClipboard2.Text = "Clipboard";
             checkBoxClipboard2.UseVisualStyleBackColor = true;
             // 
-            // pictureBoxTileArt3
-            // 
-            pictureBoxTileArt3.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            pictureBoxTileArt3.Location = new System.Drawing.Point(25, 44);
-            pictureBoxTileArt3.Name = "pictureBoxTileArt3";
-            pictureBoxTileArt3.Size = new System.Drawing.Size(374, 374);
-            pictureBoxTileArt3.TabIndex = 4;
-            pictureBoxTileArt3.TabStop = false;
-            pictureBoxTileArt3.Paint += pictureBoxTileArt3_Paint;
-            pictureBoxTileArt3.MouseClick += pictureBoxTileArt3_MouseClick;
-            pictureBoxTileArt3.MouseMove += pictureBoxTileArt3_MouseMove;
-            // 
             // TileArtForm
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            ClientSize = new System.Drawing.Size(653, 494);
+            ClientSize = new System.Drawing.Size(1056, 765);
             Controls.Add(tabControl1);
             FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             Icon = (System.Drawing.Icon)resources.GetObject("$this.Icon");
@@ -312,7 +368,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             tabPageTiles9.PerformLayout();
             tabPageTiles64.ResumeLayout(false);
             tabPageTiles64.PerformLayout();
+            panelContainingPictureBox.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)pictureBoxTileArt3).EndInit();
+            ((System.ComponentModel.ISupportInitialize)trackBar1).EndInit();
             ResumeLayout(false);
         }
 
@@ -339,5 +397,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private System.Windows.Forms.PictureBox pictureBoxTileArt3;
         private System.Windows.Forms.CheckBox checkBoxClipboard2;
         private System.Windows.Forms.Label labelMouseCoordinates;
+        private System.Windows.Forms.Button btnToggleView;
+        private System.Windows.Forms.TrackBar trackBar1;
+        private System.Windows.Forms.Label labelGrad;
+        private System.Windows.Forms.HScrollBar hScrollBar1;
+        private System.Windows.Forms.Panel panelContainingPictureBox;
     }
 }
