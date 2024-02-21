@@ -58,6 +58,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             panel2Backgrund = new System.Windows.Forms.Panel();
             tabControl1 = new System.Windows.Forms.TabControl();
             tabPageTiles9 = new System.Windows.Forms.TabPage();
+            panel3Backgrund = new System.Windows.Forms.Panel();
+            pictureBoxTileArt2Mirror = new System.Windows.Forms.PictureBox();
             tabPageTiles64 = new System.Windows.Forms.TabPage();
             btLoadDrawing = new System.Windows.Forms.Button();
             btSaveDrawing = new System.Windows.Forms.Button();
@@ -85,6 +87,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             panel2Backgrund.SuspendLayout();
             tabControl1.SuspendLayout();
             tabPageTiles9.SuspendLayout();
+            panel3Backgrund.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)pictureBoxTileArt2Mirror).BeginInit();
             tabPageTiles64.SuspendLayout();
             panelContainingPictureBox.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)pictureBoxTileArt3).BeginInit();
@@ -96,7 +100,6 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // 
             // pictureBoxTileArt
             // 
-            pictureBoxTileArt.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             pictureBoxTileArt.Location = new System.Drawing.Point(52, 38);
             pictureBoxTileArt.Name = "pictureBoxTileArt";
             pictureBoxTileArt.Size = new System.Drawing.Size(187, 187);
@@ -126,7 +129,6 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // 
             // pictureBoxTileArt2
             // 
-            pictureBoxTileArt2.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             pictureBoxTileArt2.Location = new System.Drawing.Point(29, 38);
             pictureBoxTileArt2.Name = "pictureBoxTileArt2";
             pictureBoxTileArt2.Size = new System.Drawing.Size(187, 187);
@@ -253,6 +255,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // 
             // tabPageTiles9
             // 
+            tabPageTiles9.Controls.Add(panel3Backgrund);
             tabPageTiles9.Controls.Add(panel2Backgrund);
             tabPageTiles9.Controls.Add(btloadArt01);
             tabPageTiles9.Controls.Add(panel1BackGround);
@@ -273,6 +276,23 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             tabPageTiles9.TabIndex = 0;
             tabPageTiles9.Text = "Tiles 9";
             tabPageTiles9.UseVisualStyleBackColor = true;
+            // 
+            // panel3Backgrund
+            // 
+            panel3Backgrund.Controls.Add(pictureBoxTileArt2Mirror);
+            panel3Backgrund.Location = new System.Drawing.Point(614, 147);
+            panel3Backgrund.Name = "panel3Backgrund";
+            panel3Backgrund.Size = new System.Drawing.Size(263, 260);
+            panel3Backgrund.TabIndex = 15;
+            // 
+            // pictureBoxTileArt2Mirror
+            // 
+            pictureBoxTileArt2Mirror.Location = new System.Drawing.Point(29, 38);
+            pictureBoxTileArt2Mirror.Name = "pictureBoxTileArt2Mirror";
+            pictureBoxTileArt2Mirror.Size = new System.Drawing.Size(187, 187);
+            pictureBoxTileArt2Mirror.TabIndex = 3;
+            pictureBoxTileArt2Mirror.TabStop = false;
+            pictureBoxTileArt2Mirror.Paint += pictureBoxTileArt2Mirror_Paint;
             // 
             // tabPageTiles64
             // 
@@ -515,6 +535,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             tabControl1.ResumeLayout(false);
             tabPageTiles9.ResumeLayout(false);
             tabPageTiles9.PerformLayout();
+            panel3Backgrund.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)pictureBoxTileArt2Mirror).EndInit();
             tabPageTiles64.ResumeLayout(false);
             tabPageTiles64.PerformLayout();
             panelContainingPictureBox.ResumeLayout(false);
@@ -567,5 +589,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private System.Windows.Forms.Label labelMouseCoordinates2;
         private System.Windows.Forms.Button btnToggleView2;
         private System.Windows.Forms.Button btFill256Tiles;
+        private System.Windows.Forms.Panel panel3Backgrund;
+        private System.Windows.Forms.PictureBox pictureBoxTileArt2Mirror;
     }
 }

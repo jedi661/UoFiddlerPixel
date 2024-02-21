@@ -1095,5 +1095,52 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             pictureBoxTileArt4.Invalidate();
         }
         #endregion
+
+        #region pictureBoxTileArt2Mirror_Paint
+        private void pictureBoxTileArt2Mirror_Paint(object sender, PaintEventArgs e)
+        {
+            Graphics g = e.Graphics;
+
+            // Define the size of the route
+            int routeSize = 44;
+
+            // Define the number of routes in the x and y directions
+            int routesX = 3;
+            int routesY = 3;
+
+            // Move the origin to the center of the PictureBox
+            g.TranslateTransform(pictureBoxTileArt2.Width / 2, pictureBoxTileArt2.Height / 2);
+
+            // Draw the routes
+            for (int i = 0; i < routesX; i++)
+            {
+                for (int j = 0; j < routesY; j++)
+                {
+                    // Calculate the position of the route
+                    int x = (int)((i - j) * routeSize / 2f) - routeSize;
+                    int y = (int)((i + j) * routeSize / 2f) - routeSize;
+
+                    // Create a new polygon for the diamond
+                    Point[] diamond = new Point[]
+                    {
+                        new Point(x + routeSize / 2, y),
+                        new Point(x + routeSize, y + routeSize / 2),
+                        new Point(x + routeSize / 2, y + routeSize),
+                        new Point(x, y + routeSize / 2)
+                    };
+
+                    // Draw the diamond
+                    g.DrawPolygon(Pens.Black, diamond);
+
+                    // Once the image has loaded, draw it onto the diamond
+                    int imageIndex = i * routesY + j; // Calculate the index of the image based on the coordinates of the tile
+                    if (imageIndex < images.Length && images[imageIndex] != null)
+                    {
+                        g.DrawImage(images[imageIndex], x, y, routeSize, routeSize);
+                    }
+                }
+            }
+        }
+        #endregion
     }
 }

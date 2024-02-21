@@ -1105,6 +1105,9 @@ namespace UoFiddler.Controls.UserControls
             }
 
             UpdateSelection(e.ItemIndex);
+
+            // Call the update colors method for Datagridview => colorsImageToolStripMenuItem
+            UpdateColors();
         }
         #endregion
 
@@ -2013,6 +2016,101 @@ namespace UoFiddler.Controls.UserControls
             }
 
             return bmp;
+        }
+        #endregion
+
+        #region colorsImageToolStripMenuIte
+        // Global variable for the DataGridView and the shape
+        DataGridView colorGrid;
+        Form colorForm;
+        private void colorsImageToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // Create a new shape
+            colorForm = new Form();
+            colorForm.Text = "Image colors";
+            // Set the FormBorderStyle to FixedDialog to fix the size of the shape
+            colorForm.FormBorderStyle = FormBorderStyle.FixedDialog;
+            // Disable the Maximize button
+            colorForm.MaximizeBox = false;
+            // Make sure the shape always stays in the foreground
+            colorForm.TopMost = true;
+
+            // Create a new DataGridView and add it to the shape
+            colorGrid = new DataGridView();
+            colorGrid.Dock = DockStyle.Fill;
+            colorForm.Controls.Add(colorGrid);
+
+            // Add a column to the DataGridView
+            colorGrid.Columns.Add("Color", "Color");
+
+            // Add a cell click event handler
+            colorGrid.CellClick += (s, args) =>
+            {
+                // Check if a cell was clicked
+                if (args.RowIndex >= 0 && args.ColumnIndex >= 0)
+                {
+                    // Get the value of the clicked cell
+                    string colorHex = (string)colorGrid.Rows[args.RowIndex].Cells[args.ColumnIndex].Value;
+
+                    // Copy the value to the clipboard
+                    Clipboard.SetText(colorHex);
+                }
+            };
+
+            // Display the shape
+            colorForm.Show();
+
+            // Update the colors
+            UpdateColors();
+        }
+        #endregion
+
+        #region UpdateColors Datagridview
+        private void UpdateColors()
+        {
+            // Check that colorGrid and colorForm are initialized and the shape is visible
+            if (colorGrid == null || colorForm == null || !colorForm.Visible)
+            {
+                return;
+            }
+
+            // Delete all previous lines
+            colorGrid.Rows.Clear();
+
+            // Get the selected image
+            Bitmap selectedImage = (Bitmap)DetailPictureBox.Image;
+
+            // Create a HashSet to store unique colors
+            HashSet<string> uniqueColors = new HashSet<string>();
+
+            // Loop through every pixel in the image
+            for (int x = 0; x < selectedImage.Width; x++)
+            {
+                for (int y = 0; y < selectedImage.Height; y++)
+                {
+                    // Get the color of the pixel
+                    Color pixelColor = selectedImage.GetPixel(x, y);
+
+                    // Convert the color to a hexadecimal code
+                    string colorHex = pixelColor.R.ToString("X2") + pixelColor.G.ToString("X2") + pixelColor.B.ToString("X2");
+
+                    // Add the color to the HashSet
+                    uniqueColors.Add(colorHex);
+                }
+            }
+
+            // Loop through each unique color and add it to the DataGridView
+            foreach (string color in uniqueColors)
+            {
+                // Add a new row to the DataGridView
+                int rowIndex = colorGrid.Rows.Add();
+
+                // Set the cell background color to the color
+                colorGrid.Rows[rowIndex].Cells[0].Style.BackColor = ColorTranslator.FromHtml("#" + color);
+
+                // Set the cell's text to the hexcode of the color
+                colorGrid.Rows[rowIndex].Cells[0].Value = color;
+            }
         }
         #endregion
     }
