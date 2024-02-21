@@ -90,6 +90,7 @@ namespace UoFiddler.Controls.UserControls
             importToolStripclipboardMenuItem = new ToolStripMenuItem();
             toolStripSeparator4 = new ToolStripSeparator();
             saveToolStripMenuItem = new ToolStripMenuItem();
+            colorsImageToolStripMenuItem = new ToolStripMenuItem();
             StatusStrip = new StatusStrip();
             NameLabel = new ToolStripStatusLabel();
             GraphicLabel = new ToolStripStatusLabel();
@@ -113,7 +114,6 @@ namespace UoFiddler.Controls.UserControls
             toolStripButton1 = new ToolStripButton();
             colorDialog = new ColorDialog();
             collapsibleSplitter1 = new CollapsibleSplitter();
-            colorsImageToolStripMenuItem = new ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)splitContainer2).BeginInit();
             splitContainer2.Panel1.SuspendLayout();
             splitContainer2.Panel2.SuspendLayout();
@@ -318,7 +318,7 @@ namespace UoFiddler.Controls.UserControls
             // 
             // TileViewContextMenuStrip
             // 
-            TileViewContextMenuStrip.Items.AddRange(new ToolStripItem[] { showFreeSlotsToolStripMenuItem, findNextFreeSlotToolStripMenuItem, ChangeBackgroundColorToolStripMenuItem, toolStripSeparator3, selectInTileDataTabToolStripMenuItem, selectInRadarColorTabToolStripMenuItem, SelectIDToHexToolStripMenuItem, selectInGumpsTabMaleToolStripMenuItem, selectInGumpsTabFemaleToolStripMenuItem, toolStripSeparator2, extractToolStripMenuItem, replaceToolStripMenuItem, replaceStartingFromToolStripMenuItem, removeToolStripMenuItem, insertAtToolStripMenuItem, imageSwapToolStripMenuItem, toolStripSeparator5, mirrorToolStripMenuItem, toolStripSeparator1, copyToolStripMenuItem, importToolStripclipboardMenuItem, toolStripSeparator4, saveToolStripMenuItem, colorsImageToolStripMenuItem });
+            TileViewContextMenuStrip.Items.AddRange(new ToolStripItem[] { showFreeSlotsToolStripMenuItem, findNextFreeSlotToolStripMenuItem, ChangeBackgroundColorToolStripMenuItem, colorsImageToolStripMenuItem, toolStripSeparator3, selectInTileDataTabToolStripMenuItem, selectInRadarColorTabToolStripMenuItem, SelectIDToHexToolStripMenuItem, selectInGumpsTabMaleToolStripMenuItem, selectInGumpsTabFemaleToolStripMenuItem, toolStripSeparator2, extractToolStripMenuItem, replaceToolStripMenuItem, replaceStartingFromToolStripMenuItem, removeToolStripMenuItem, insertAtToolStripMenuItem, imageSwapToolStripMenuItem, toolStripSeparator5, mirrorToolStripMenuItem, toolStripSeparator1, copyToolStripMenuItem, importToolStripclipboardMenuItem, toolStripSeparator4, saveToolStripMenuItem });
             TileViewContextMenuStrip.Name = "contextMenuStrip1";
             TileViewContextMenuStrip.Size = new System.Drawing.Size(213, 474);
             TileViewContextMenuStrip.Opening += TileViewContextMenuStrip_Opening;
@@ -554,6 +554,15 @@ namespace UoFiddler.Controls.UserControls
             saveToolStripMenuItem.ToolTipText = "Saves the .mul file.";
             saveToolStripMenuItem.Click += OnClickSave;
             // 
+            // colorsImageToolStripMenuItem
+            // 
+            colorsImageToolStripMenuItem.Image = Properties.Resources.colordialog_background;
+            colorsImageToolStripMenuItem.Name = "colorsImageToolStripMenuItem";
+            colorsImageToolStripMenuItem.Size = new System.Drawing.Size(212, 22);
+            colorsImageToolStripMenuItem.Text = "Colors Image";
+            colorsImageToolStripMenuItem.ToolTipText = "Show Colors from Image";
+            colorsImageToolStripMenuItem.Click += colorsImageToolStripMenuItem_Click;
+            // 
             // StatusStrip
             // 
             StatusStrip.Items.AddRange(new ToolStripItem[] { NameLabel, GraphicLabel });
@@ -743,13 +752,6 @@ namespace UoFiddler.Controls.UserControls
             collapsibleSplitter1.TabStop = false;
             collapsibleSplitter1.UseAnimations = false;
             collapsibleSplitter1.VisualStyle = VisualStyles.DoubleDots;
-            // 
-            // colorsImageToolStripMenuItem
-            // 
-            colorsImageToolStripMenuItem.Name = "colorsImageToolStripMenuItem";
-            colorsImageToolStripMenuItem.Size = new System.Drawing.Size(212, 22);
-            colorsImageToolStripMenuItem.Text = "Colors Image";
-            colorsImageToolStripMenuItem.Click += colorsImageToolStripMenuItem_Click;
             // 
             // ItemsControl
             // 
