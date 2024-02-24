@@ -5,7 +5,14 @@
     <title>Animationen in Amin.mul einbauen</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Arial', sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        h1, h2 {
+            color: #444;
         }
 
         .animation-container {
@@ -16,36 +23,98 @@
             align-items: center;
             background-color: #f9f9f9;
             margin-bottom: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
         }
 
         .animation-item {
             width: 50px;
             height: 50px;
             background-color: #007BFF;
-            animation: bounce 2s infinite;
+            border-radius: 50%;
+            animation: bounce 2s infinite ease-in-out, color-change 2s infinite;
         }
 
         @keyframes bounce {
-            0% {
+            0%, 100% {
                 transform: translateY(0);
             }
 
             50% {
                 transform: translateY(-50px);
             }
+        }
+
+        @keyframes color-change {
+            0% {
+                background-color: #007BFF;
+            }
+
+            50% {
+                background-color: #FF4500;
+            }
 
             100% {
-                transform: translateY(0);
+                background-color: #007BFF;
             }
+        }
+
+        img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
         }
     </style>
 </head>
 <body>
     <h1>Animationen in Amin.mul einbauen</h1>
-    <p>Hier kommt Ihr Text...</p>
+    <p>Dieses Tutorial erklärt, wie man neue Animationen in die Anim(X).mul-Datei einfügt.</p>
     <div class="animation-container">
         <div class="animation-item"></div>
     </div>
-    <p>Weitere Inhalte...</p>
+    <h2>Schritt 1: Wählen Sie den Tab 'Animationen'</h2>
+    <p>Zuerst wählen wir den Tab 'Animationen'. Dort wählen wir anschließend unten 'Settings' > 'Animationen Edit' aus.</p>
+    <img src="images/img4190.webp" alt="Einstellungen für Animationen">
+    <h2>Schritt 2: Öffnen Sie den Animation Editor</h2>
+    <p>Daraufhin öffnet sich der Animation Editor. Dort wählen wir unter 'Choose anim File' die jeweilige Animations-.mul-Datei aus, die wir verwenden möchten, um neue Animationen einzufügen.</p>
+    <img src="images/img4191.webp" alt="Animation Editor">
+    <h2>Schritt 3: Suchen Nach ID für die neue Animation</h2>
+    <p>Jetzt suchen wir die ID, auf die wir die neuen Animationen importieren möchten. Man kann auch die Suche anstoßen, um freie IDs zu finden, und sich dann einen Platz aussuchen.</p>
+    <img src="images/img4192.webp" alt="Animation Editor">
+    <h2>Schritt 4: Importieren neuer Animation</h2>
+    <p>Nun wählen wir die Animation aus dem Verzeichnis aus und importieren diese.</p>
+    <img src="images/img4193.webp" alt="Animation Editor">
+    <h2>Schritt 5: Animation Importiert</h2>
+    <p>Die Animation wurde nun in den ID-Slot importiert.</p>
+    <img src="images/img4194.webp" alt="Animation Editor">
+    <h2>Schritt 6: Speichern</h2>
+    <p>Nun speichert man die jeweilige Anim.mul und navigiert zum Verzeichnis, in dem die Daten gespeichert werden. Diese kopiert man anschließend in das Ultima Online-Verzeichnis.</p>
+    <img src="images/img4195.webp" alt="Animation Editor"> <img src="images/img4196.webp" alt="Animation Editor">
+    <h2>Schritt 7: Einstellungen Bodyconv.def und mobtypes.txt</h2>
+    <p>
+        Nun nimmt man Einstellungen in den Dateien 'Bodyconv.def' und 'mobtypes.txt' im Ultima Online Verzeichnis vor. Zuerst prüft man, ob nicht bereits gleiche Zahlen vorhanden sind, und trägt dann dort die Einstellungen für die jeweilige Animation ein, die man ansprechen möchte.
+        Als Beispiel hab ich hier den Nummer 1000 bzw. 1001 für den Elefant und 1000 für das Chamel genommen.
+    </p>
+    <p>Bodyconv.def :</p>
+    <img src="images/img4185.webp" alt="Animation Editor">
+    <p>mobtypes.txt :</p>
+    <img src="images/img4199.webp" alt="Animation Editor"> <img src="images/img4186.webp" alt="Animation Editor">
+    <h2>Schritt 8: Neu laden des UoFiddler</h2>
+    <p>
+        Nachdem die Einstellungen in den Dateien 'Bodyconv.def' und 'mobtypes.txt' eingetragen und gespeichert wurden, kann man den UO Fiddler erneut starten und überprüfen,
+        ob die Animationen aufgelistet sind, auch mit der richtigen Adresse, die wir dann für das Serverskript nutzen werden. Ebenso aktualisieren wir die 'AnimationList.xml', um dort auch die Animation beim Start richtig darzustellen.
+    </p>
+    <img src="images/img4187.webp" alt="Animation Editor">
+    <h2>Schritt 9: Neu laden des UoFiddler</h2>
+    <p>Jetzt kann man nochmals überprüfen, ob alles ordnungsgemäß funktioniert.</p>
+    <img src="images/img4201.webp" alt="Animation Editor">
+    <h2>Schritt 10: Animationlist.xml</h2>
+    <p>Wer möchte, kann auch direkt in die 'AnimationList.xml' seinen Eintrag der neuen Animation hinzufügen, damit sie beim Start von UO Fiddler aufgelistet wird. Dazu navigiert ihr zu eurem 'AppData\Roaming\UoFiddler'-Pfad und bearbeitet die Datei. Gebt der Animation einen Namen und tragt die gleiche Body-Adresse ein, zum Beispiel 1000, wie im Beispiel angegeben.</p>
+    <img src="images/img4203.webp" alt="Animation Editor"> <img src="images/img4204.webp" alt="Animation Editor">
+    <h2>Schritt 11: Script Erstellen für den Server</h2>
+    <p>Als Nächstes erstellt ihr ein Skript für den Server, gebt dort die Body-Nummer an und startet dann den Server.</p>
+    <img src="images/img4200.webp" alt="Animation Editor">
+    <!-- Fügen Sie hier weitere Schritte und Inhalte hinzu -->
 </body>
 </html>

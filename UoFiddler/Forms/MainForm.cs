@@ -1036,6 +1036,28 @@ namespace UoFiddler.Forms
         }
         #endregion
 
+        #region Animation Install German
+        private void animationInstallToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            using (HelpDokuForm helpDokuForm = new HelpDokuForm())
+            {
+                helpDokuForm.FileName = "AnimationInstallation.html";
+                helpDokuForm.ShowDialog();
+            }
+        }
+        #endregion
+
+        #region Animation Install Englisch
+        private void animationInstallEnglischToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            using (HelpDokuForm helpDokuForm = new HelpDokuForm())
+            {
+                helpDokuForm.FileName = "AnimationInstallationEng.html";
+                helpDokuForm.ShowDialog();
+            }
+        }
+        #endregion
+
         #region About
         private void ToolStripMenuItemAbout_Click(object sender, EventArgs e)
         {
@@ -1468,6 +1490,6 @@ namespace UoFiddler.Forms
                 calendarForm.Focus();
             }
         }
-        #endregion
+        #endregion        
     }
 }

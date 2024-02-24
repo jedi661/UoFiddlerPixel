@@ -134,6 +134,8 @@ namespace UoFiddler.Forms
             fileFormatGermanToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             fileFormatEnglischToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             animationsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            animationInstallToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            animationInstallEnglischToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             binaryDecimalHexadecimalConverterToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             alarmClockToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             calendarToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -1076,7 +1078,7 @@ namespace UoFiddler.Forms
             // 
             // fileFormatGermanToolStripMenuItem
             // 
-            fileFormatGermanToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { fileFormatGermanToolStripMenuItem1, fileFormatEnglischToolStripMenuItem, animationsToolStripMenuItem });
+            fileFormatGermanToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { fileFormatGermanToolStripMenuItem1, fileFormatEnglischToolStripMenuItem, animationsToolStripMenuItem, animationInstallToolStripMenuItem, animationInstallEnglischToolStripMenuItem });
             fileFormatGermanToolStripMenuItem.Image = Properties.Resources.Help;
             fileFormatGermanToolStripMenuItem.Name = "fileFormatGermanToolStripMenuItem";
             fileFormatGermanToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
@@ -1086,7 +1088,7 @@ namespace UoFiddler.Forms
             // 
             fileFormatGermanToolStripMenuItem1.Image = Properties.Resources.Directory;
             fileFormatGermanToolStripMenuItem1.Name = "fileFormatGermanToolStripMenuItem1";
-            fileFormatGermanToolStripMenuItem1.Size = new System.Drawing.Size(180, 22);
+            fileFormatGermanToolStripMenuItem1.Size = new System.Drawing.Size(211, 22);
             fileFormatGermanToolStripMenuItem1.Text = "File Format German";
             fileFormatGermanToolStripMenuItem1.Click += ToolStripMenuItemFileFormatsGerman_Click;
             // 
@@ -1094,7 +1096,7 @@ namespace UoFiddler.Forms
             // 
             fileFormatEnglischToolStripMenuItem.Image = Properties.Resources.Directory;
             fileFormatEnglischToolStripMenuItem.Name = "fileFormatEnglischToolStripMenuItem";
-            fileFormatEnglischToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            fileFormatEnglischToolStripMenuItem.Size = new System.Drawing.Size(211, 22);
             fileFormatEnglischToolStripMenuItem.Text = "File Format Englisch";
             fileFormatEnglischToolStripMenuItem.Click += ToolStripMenuItemFileFormatsEnglisch_Click;
             // 
@@ -1102,9 +1104,25 @@ namespace UoFiddler.Forms
             // 
             animationsToolStripMenuItem.Image = Properties.Resources.animation_monster_oder_pet;
             animationsToolStripMenuItem.Name = "animationsToolStripMenuItem";
-            animationsToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            animationsToolStripMenuItem.Size = new System.Drawing.Size(211, 22);
             animationsToolStripMenuItem.Text = "Animations";
             animationsToolStripMenuItem.Click += animationsToolStripMenuItem_Click;
+            // 
+            // animationInstallToolStripMenuItem
+            // 
+            animationInstallToolStripMenuItem.Image = Properties.Resources.Directory;
+            animationInstallToolStripMenuItem.Name = "animationInstallToolStripMenuItem";
+            animationInstallToolStripMenuItem.Size = new System.Drawing.Size(211, 22);
+            animationInstallToolStripMenuItem.Text = "Animation Install German";
+            animationInstallToolStripMenuItem.Click += animationInstallToolStripMenuItem_Click;
+            // 
+            // animationInstallEnglischToolStripMenuItem
+            // 
+            animationInstallEnglischToolStripMenuItem.Image = Properties.Resources.Directory;
+            animationInstallEnglischToolStripMenuItem.Name = "animationInstallEnglischToolStripMenuItem";
+            animationInstallEnglischToolStripMenuItem.Size = new System.Drawing.Size(211, 22);
+            animationInstallEnglischToolStripMenuItem.Text = "Animation Install Englisch";
+            animationInstallEnglischToolStripMenuItem.Click += animationInstallEnglischToolStripMenuItem_Click;
             // 
             // binaryDecimalHexadecimalConverterToolStripMenuItem
             // 
@@ -1387,6 +1405,8 @@ namespace UoFiddler.Forms
         private System.Windows.Forms.ToolStripMenuItem fileFormatGermanToolStripMenuItem1;
         private System.Windows.Forms.ToolStripMenuItem fileFormatEnglischToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem animationsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem animationInstallToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem animationInstallEnglischToolStripMenuItem;
     }
 }
 

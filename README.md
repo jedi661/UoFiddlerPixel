@@ -7,6 +7,7 @@ UOFiddler based on Ultima SDK it's a tool to view and alter almost every UO 2D c
 Version : 4.12.3
 - Add Items Image Colors and Update
 - Add Script Creator - Book
+- Add Help - Tutorial Animationen Install German and Englisch
 
 Version : 4.12.2
 - BildFusion Add Sharp , Clipboard, Texture Cut.
