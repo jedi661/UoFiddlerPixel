@@ -145,7 +145,7 @@ namespace UoFiddler.Controls.Forms
             } //human
         };
 
-        private void OnLoad(object sender, EventArgs e)
+        /*private void OnLoad(object sender, EventArgs e)
         {
             Options.LoadedUltimaClass["AnimationEdit"] = true;
 
@@ -222,7 +222,92 @@ namespace UoFiddler.Controls.Forms
             }
 
             _loaded = true;
+        }*/
+
+        private void OnLoad(object sender, EventArgs e)
+        {
+            Options.LoadedUltimaClass["AnimationEdit"] = true;
+
+            AnimationListTreeView.BeginUpdate();
+            try
+            {
+                AnimationListTreeView.Nodes.Clear();
+                if (_fileType != 0)
+                {
+                    int count = Animations.GetAnimCount(_fileType);
+                    TreeNode[] nodes = new TreeNode[count];
+                    int animationCount = 0; // Counting variable for animations
+                    for (int i = 0; i < count; ++i)
+                    {
+                        int animLength = Animations.GetAnimLength(i, _fileType);
+                        string type = animLength == 22 ? "H" : animLength == 13 ? "L" : "P";
+                        TreeNode node = new TreeNode
+                        {
+                            Tag = i,
+                            Text = $"{type}: {i} ({BodyConverter.GetTrueBody(_fileType, i)})"
+                        };
+
+                        bool valid = false;
+                        for (int j = 0; j < animLength; ++j)
+                        {
+                            TreeNode treeNode = new TreeNode
+                            {
+                                Tag = j,
+                                Text = string.Format("{0:D2} {1}", j, _animNames[animLength == 22 ? 1 : animLength == 13 ? 0 : 2][j])
+                            };
+
+                            if (AnimationEdit.IsActionDefined(_fileType, i, j))
+                            {
+                                valid = true;
+                            }
+                            else
+                            {
+                                treeNode.ForeColor = Color.Red;
+                            }
+
+                            node.Nodes.Add(treeNode);
+                        }
+
+                        if (valid)
+                        {
+                            animationCount++; // Increment the count variable when an animation is found
+                        }
+                        else
+                        {
+                            if (_showOnlyValid)
+                            {
+                                continue;
+                            }
+                            //node.ForeColor = Color.Red;
+                            // If checkBoxIDBlue is checked, set the color to Blue. Otherwise, set it to Red.
+                            node.ForeColor = checkBoxIDBlue.Checked ? Color.Blue : Color.Red;
+                        }
+
+                        nodes[i] = node;
+                    }
+
+                    AnimationListTreeView.Nodes.AddRange(nodes.Where(n => n != null).ToArray());
+                    toolStripStatusDisplayLabelAnimation.Text = $"Number of animations: {animationCount}"; // Update the label with the number of animations
+                }
+            }
+            finally
+            {
+                AnimationListTreeView.EndUpdate();
+            }
+
+            if (AnimationListTreeView.Nodes.Count > 0)
+            {
+                AnimationListTreeView.SelectedNode = AnimationListTreeView.Nodes[0];
+            }
+
+            if (!_loaded)
+            {
+                ControlEvents.FilePathChangeEvent += OnFilePathChangeEvent;
+            }
+
+            _loaded = true;
         }
+
 
         private void OnFilePathChangeEvent()
         {

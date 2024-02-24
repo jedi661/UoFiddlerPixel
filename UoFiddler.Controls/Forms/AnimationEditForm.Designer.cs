@@ -150,6 +150,7 @@
             ShowOnlyValidToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             ExportAllToVDToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             toolStripStatusLabelVDAminInfo = new System.Windows.Forms.ToolStripStatusLabel();
+            toolStripStatusDisplayLabelAnimation = new System.Windows.Forms.ToolStripStatusLabel();
             AnimationTimer = new System.Windows.Forms.Timer(components);
             ((System.ComponentModel.ISupportInitialize)MainSplitContainer).BeginInit();
             MainSplitContainer.Panel1.SuspendLayout();
@@ -371,7 +372,7 @@
             // ProgressBar
             // 
             ProgressBar.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
-            ProgressBar.Location = new System.Drawing.Point(580, 628);
+            ProgressBar.Location = new System.Drawing.Point(578, 628);
             ProgressBar.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             ProgressBar.Name = "ProgressBar";
             ProgressBar.Size = new System.Drawing.Size(197, 20);
@@ -1391,7 +1392,7 @@
             // 
             DirectionTrackBar.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
             DirectionTrackBar.AutoSize = false;
-            DirectionTrackBar.Location = new System.Drawing.Point(784, 626);
+            DirectionTrackBar.Location = new System.Drawing.Point(782, 626);
             DirectionTrackBar.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             DirectionTrackBar.Maximum = 4;
             DirectionTrackBar.Name = "DirectionTrackBar";
@@ -1401,7 +1402,7 @@
             // 
             // StatusStrip
             // 
-            StatusStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { MiscToolStripButton, toolStripStatusLabelVDAminInfo });
+            StatusStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { MiscToolStripButton, toolStripStatusLabelVDAminInfo, toolStripStatusDisplayLabelAnimation });
             StatusStrip.Location = new System.Drawing.Point(0, 629);
             StatusStrip.Name = "StatusStrip";
             StatusStrip.Padding = new System.Windows.Forms.Padding(1, 0, 16, 0);
@@ -1448,6 +1449,12 @@
             toolStripStatusLabelVDAminInfo.Name = "toolStripStatusLabelVDAminInfo";
             toolStripStatusLabelVDAminInfo.Size = new System.Drawing.Size(73, 17);
             toolStripStatusLabelVDAminInfo.Text = "Import Info :";
+            // 
+            // toolStripStatusDisplayLabelAnimation
+            // 
+            toolStripStatusDisplayLabelAnimation.Name = "toolStripStatusDisplayLabelAnimation";
+            toolStripStatusDisplayLabelAnimation.Size = new System.Drawing.Size(99, 17);
+            toolStripStatusDisplayLabelAnimation.Text = "Animation Count";
             // 
             // AnimationTimer
             // 
@@ -1640,5 +1647,6 @@
         private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabelVDAminInfo;
         private System.Windows.Forms.ToolStripTextBox toolStripTextBoxSearch;
         private System.Windows.Forms.CheckBox checkBoxIDBlue;
+        private System.Windows.Forms.ToolStripStatusLabel toolStripStatusDisplayLabelAnimation;
     }
 }

@@ -405,7 +405,9 @@
   <Mob name="character_lord_british (990)" body="990" type="3" />
   <Mob name="character_blackthorn (991)" body="991" type="3" />
   <Mob name="character_dupre (994)" body="994" type="3" />
-  <Mob name="Multi_Colored_Horde_Daemon (999)" body="999" type="0" />  
+  <Mob name="Multi_Colored_Horde_Daemon (999)" body="999" type="0" />
+  <Mob name="Chamel (1000)" body="1000" type="2" />
+  <Mob name="Elephant (1001)" body="1001" type="2" />
   <Mob name="Uber Turkey (1026)" body="1026" type="0" />
   <Mob name="Oseridan The Scalis Enforcer (1068)" body="1068" type="0" />
   <Mob name="Ancient Hellhound (1069)" body="1069" type="0" />
