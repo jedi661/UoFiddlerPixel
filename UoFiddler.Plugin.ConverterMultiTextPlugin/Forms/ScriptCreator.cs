@@ -355,13 +355,13 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         }
         #endregion
 
-        #region btColorSet_Click
+        #region btColorSet_Click        
         private void btColorSet_Click(object sender, EventArgs e)
         {
             // Create a new form
             Form colorForm = new Form();
             colorForm.Text = "Choose a color";
-            colorForm.Size = new Size(800, 600);  // Set the size of the form
+            colorForm.Size = new Size(1000, 600);  // Set the size of the form
             colorForm.FormBorderStyle = FormBorderStyle.FixedDialog;  // Disable form resizing
 
             // Create a new DataGridView
@@ -371,9 +371,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             dgv.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;  // Adjust the column width to fill the available space
             colorForm.Controls.Add(dgv);
 
-            // Add a column for the Hue values ​​and one for the colors
+            // Add columns for the Hue values, colors, and Photoshop color codes
             dgv.Columns.Add("Hue", "Hue");
             dgv.Columns.Add("Color", "Color");
+            dgv.Columns.Add("PSColor", "PS Color");
 
             // Add a color preview column
             DataGridViewColumn colorPreviewColumn = new DataGridViewColumn(new DataGridViewColorCell());
@@ -384,7 +385,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             for (int hue = 1; hue <= 32768; hue++)
             {
                 Color color = HueToRGB555(hue);
-                dgv.Rows.Add(hue, color.Name, color);
+                string psColor = RGBToPhotoshopColorCode(color);
+                dgv.Rows.Add(hue, color.Name, psColor, color);
             }
 
             // When the user clicks on a row, copy the Hue value to the textBoxCoverHue
@@ -401,23 +403,32 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // View the form
             colorForm.ShowDialog();
         }
+
+        // Convert a .NET Color to a Photoshop color code
+        private string RGBToPhotoshopColorCode(Color color)
+        {
+            // Photoshop uses the hexadecimal RGB color code
+            return color.R.ToString("X2") + color.G.ToString("X2") + color.B.ToString("X2");
+        }
+
         #endregion
 
         #region Color HueToRGB555
         private Color HueToRGB555(int hue)
         {
             // Divide the Hue value into three parts
-            int r = hue % 32;
-            int g = (hue / 32) % 32;
-            int b = (hue / 1024) % 32;
+            int r = (hue >> 10) & 0x1F;
+            int g = (hue >> 5) & 0x1F;
+            int b = hue & 0x1F;
 
-            // Scale the values ​​to the range 0 to 255
-            r = (r << 3) | (r >> 2);
-            g = (g << 3) | (g >> 2);
-            b = (b << 3) | (b >> 2);
+            // Scale the values to the range 0 to 255
+            r = (r * 255) / 31;
+            g = (g * 255) / 31;
+            b = (b * 255) / 31;
 
             return Color.FromArgb(r, g, b);
         }
+
         #endregion
 
         #region textBoxCoverHue_TextChanged
