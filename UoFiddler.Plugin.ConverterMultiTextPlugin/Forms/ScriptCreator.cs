@@ -401,7 +401,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             };
 
             // View the form
-            colorForm.ShowDialog();
+            //colorForm.ShowDialog();
+
+            // View the form and bring it to the front
+            colorForm.Show();
+            colorForm.BringToFront();
         }
 
         // Convert a .NET Color to a Photoshop color code
