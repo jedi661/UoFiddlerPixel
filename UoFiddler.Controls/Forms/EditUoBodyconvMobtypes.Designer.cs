@@ -56,11 +56,58 @@ namespace UoFiddler.Controls.Forms
             textBoxID = new System.Windows.Forms.TextBox();
             btBackwardText = new System.Windows.Forms.Button();
             lbID = new System.Windows.Forms.Label();
-            panel1 = new System.Windows.Forms.Panel();
-            textBoxBody = new System.Windows.Forms.TextBox();
+            panelEdit = new System.Windows.Forms.Panel();
             lbBody = new System.Windows.Forms.Label();
+            textBoxBody = new System.Windows.Forms.TextBox();
+            panelScript = new System.Windows.Forms.Panel();
+            label5 = new System.Windows.Forms.Label();
+            tbKarma = new System.Windows.Forms.TextBox();
+            lbFame = new System.Windows.Forms.Label();
+            tbFame = new System.Windows.Forms.TextBox();
+            label3 = new System.Windows.Forms.Label();
+            lbSetDamage2 = new System.Windows.Forms.Label();
+            tbSetDamage2 = new System.Windows.Forms.TextBox();
+            lbSetDamage1 = new System.Windows.Forms.Label();
+            tbSetDamage1 = new System.Windows.Forms.TextBox();
+            lbSetHits = new System.Windows.Forms.Label();
+            label4 = new System.Windows.Forms.Label();
+            tbSetHits2 = new System.Windows.Forms.TextBox();
+            lbSetHits1 = new System.Windows.Forms.Label();
+            tbSetHits1 = new System.Windows.Forms.TextBox();
+            label2 = new System.Windows.Forms.Label();
+            lbInt2 = new System.Windows.Forms.Label();
+            tbInt2 = new System.Windows.Forms.TextBox();
+            lbInt1 = new System.Windows.Forms.Label();
+            tbInt1 = new System.Windows.Forms.TextBox();
+            label1 = new System.Windows.Forms.Label();
+            lbDex2 = new System.Windows.Forms.Label();
+            tbDex2 = new System.Windows.Forms.TextBox();
+            lbDex1 = new System.Windows.Forms.Label();
+            tbDex1 = new System.Windows.Forms.TextBox();
+            lbstrength = new System.Windows.Forms.Label();
+            lbStr2 = new System.Windows.Forms.Label();
+            tbStr2 = new System.Windows.Forms.TextBox();
+            lbStr1 = new System.Windows.Forms.Label();
+            tbStr1 = new System.Windows.Forms.TextBox();
+            lbBaseHorse = new System.Windows.Forms.Label();
+            tBBaseSoundID2 = new System.Windows.Forms.TextBox();
+            lbBaseSoundID = new System.Windows.Forms.Label();
+            tBBaseSoundID1 = new System.Windows.Forms.TextBox();
+            lbItemID3 = new System.Windows.Forms.Label();
+            lbItemID2 = new System.Windows.Forms.Label();
+            lbItemID1 = new System.Windows.Forms.Label();
+            tbItemID3 = new System.Windows.Forms.TextBox();
+            tbItemID2 = new System.Windows.Forms.TextBox();
+            lbItemID = new System.Windows.Forms.Label();
+            tbItemID = new System.Windows.Forms.TextBox();
+            btCreateScript = new System.Windows.Forms.Button();
+            lbScriptName = new System.Windows.Forms.Label();
+            tbScriptName = new System.Windows.Forms.TextBox();
+            lbVirtualArmor = new System.Windows.Forms.Label();
+            tbVirtualArmor = new System.Windows.Forms.TextBox();
             contextMenuStripRichTextBoxEdit.SuspendLayout();
-            panel1.SuspendLayout();
+            panelEdit.SuspendLayout();
+            panelScript.SuspendLayout();
             SuspendLayout();
             // 
             // btLoadBodyconv
@@ -106,7 +153,7 @@ namespace UoFiddler.Controls.Forms
             richTextBoxEdit.Location = new System.Drawing.Point(297, 29);
             richTextBoxEdit.Name = "richTextBoxEdit";
             richTextBoxEdit.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.Vertical;
-            richTextBoxEdit.Size = new System.Drawing.Size(694, 529);
+            richTextBoxEdit.Size = new System.Drawing.Size(694, 614);
             richTextBoxEdit.TabIndex = 5;
             richTextBoxEdit.Text = "";
             // 
@@ -183,29 +230,22 @@ namespace UoFiddler.Controls.Forms
             lbID.TabIndex = 11;
             lbID.Text = "ID :";
             // 
-            // panel1
+            // panelEdit
             // 
-            panel1.Controls.Add(lbBody);
-            panel1.Controls.Add(textBoxBody);
-            panel1.Controls.Add(btSaveFile);
-            panel1.Controls.Add(lbID);
-            panel1.Controls.Add(btLoadBodyconv);
-            panel1.Controls.Add(btLoadPfad);
-            panel1.Controls.Add(btBackwardText);
-            panel1.Controls.Add(textBoxPfad);
-            panel1.Controls.Add(textBoxID);
-            panel1.Controls.Add(btmobtypes);
-            panel1.Location = new System.Drawing.Point(12, 29);
-            panel1.Name = "panel1";
-            panel1.Size = new System.Drawing.Size(279, 236);
-            panel1.TabIndex = 12;
-            // 
-            // textBoxBody
-            // 
-            textBoxBody.Location = new System.Drawing.Point(183, 117);
-            textBoxBody.Name = "textBoxBody";
-            textBoxBody.Size = new System.Drawing.Size(75, 23);
-            textBoxBody.TabIndex = 12;
+            panelEdit.Controls.Add(lbBody);
+            panelEdit.Controls.Add(textBoxBody);
+            panelEdit.Controls.Add(btSaveFile);
+            panelEdit.Controls.Add(lbID);
+            panelEdit.Controls.Add(btLoadBodyconv);
+            panelEdit.Controls.Add(btLoadPfad);
+            panelEdit.Controls.Add(btBackwardText);
+            panelEdit.Controls.Add(textBoxPfad);
+            panelEdit.Controls.Add(textBoxID);
+            panelEdit.Controls.Add(btmobtypes);
+            panelEdit.Location = new System.Drawing.Point(12, 29);
+            panelEdit.Name = "panelEdit";
+            panelEdit.Size = new System.Drawing.Size(279, 192);
+            panelEdit.TabIndex = 12;
             // 
             // lbBody
             // 
@@ -216,12 +256,458 @@ namespace UoFiddler.Controls.Forms
             lbBody.TabIndex = 13;
             lbBody.Text = "Body-ID";
             // 
+            // textBoxBody
+            // 
+            textBoxBody.Location = new System.Drawing.Point(183, 117);
+            textBoxBody.Name = "textBoxBody";
+            textBoxBody.Size = new System.Drawing.Size(75, 23);
+            textBoxBody.TabIndex = 12;
+            // 
+            // panelScript
+            // 
+            panelScript.Controls.Add(lbVirtualArmor);
+            panelScript.Controls.Add(tbVirtualArmor);
+            panelScript.Controls.Add(label5);
+            panelScript.Controls.Add(tbKarma);
+            panelScript.Controls.Add(lbFame);
+            panelScript.Controls.Add(tbFame);
+            panelScript.Controls.Add(label3);
+            panelScript.Controls.Add(lbSetDamage2);
+            panelScript.Controls.Add(tbSetDamage2);
+            panelScript.Controls.Add(lbSetDamage1);
+            panelScript.Controls.Add(tbSetDamage1);
+            panelScript.Controls.Add(lbSetHits);
+            panelScript.Controls.Add(label4);
+            panelScript.Controls.Add(tbSetHits2);
+            panelScript.Controls.Add(lbSetHits1);
+            panelScript.Controls.Add(tbSetHits1);
+            panelScript.Controls.Add(label2);
+            panelScript.Controls.Add(lbInt2);
+            panelScript.Controls.Add(tbInt2);
+            panelScript.Controls.Add(lbInt1);
+            panelScript.Controls.Add(tbInt1);
+            panelScript.Controls.Add(label1);
+            panelScript.Controls.Add(lbDex2);
+            panelScript.Controls.Add(tbDex2);
+            panelScript.Controls.Add(lbDex1);
+            panelScript.Controls.Add(tbDex1);
+            panelScript.Controls.Add(lbstrength);
+            panelScript.Controls.Add(lbStr2);
+            panelScript.Controls.Add(tbStr2);
+            panelScript.Controls.Add(lbStr1);
+            panelScript.Controls.Add(tbStr1);
+            panelScript.Controls.Add(lbBaseHorse);
+            panelScript.Controls.Add(tBBaseSoundID2);
+            panelScript.Controls.Add(lbBaseSoundID);
+            panelScript.Controls.Add(tBBaseSoundID1);
+            panelScript.Controls.Add(lbItemID3);
+            panelScript.Controls.Add(lbItemID2);
+            panelScript.Controls.Add(lbItemID1);
+            panelScript.Controls.Add(tbItemID3);
+            panelScript.Controls.Add(tbItemID2);
+            panelScript.Controls.Add(lbItemID);
+            panelScript.Controls.Add(tbItemID);
+            panelScript.Controls.Add(btCreateScript);
+            panelScript.Controls.Add(lbScriptName);
+            panelScript.Controls.Add(tbScriptName);
+            panelScript.Location = new System.Drawing.Point(12, 227);
+            panelScript.Name = "panelScript";
+            panelScript.Size = new System.Drawing.Size(279, 416);
+            panelScript.TabIndex = 13;
+            // 
+            // label5
+            // 
+            label5.AutoSize = true;
+            label5.Location = new System.Drawing.Point(165, 345);
+            label5.Name = "label5";
+            label5.Size = new System.Drawing.Size(47, 15);
+            label5.TabIndex = 42;
+            label5.Text = "Karma :";
+            // 
+            // tbKarma
+            // 
+            tbKarma.Location = new System.Drawing.Point(218, 342);
+            tbKarma.Name = "tbKarma";
+            tbKarma.Size = new System.Drawing.Size(43, 23);
+            tbKarma.TabIndex = 41;
+            tbKarma.Text = "-14000";
+            // 
+            // lbFame
+            // 
+            lbFame.AutoSize = true;
+            lbFame.Location = new System.Drawing.Point(170, 316);
+            lbFame.Name = "lbFame";
+            lbFame.Size = new System.Drawing.Size(42, 15);
+            lbFame.TabIndex = 40;
+            lbFame.Text = "Fame :";
+            // 
+            // tbFame
+            // 
+            tbFame.Location = new System.Drawing.Point(218, 313);
+            tbFame.Name = "tbFame";
+            tbFame.Size = new System.Drawing.Size(43, 23);
+            tbFame.TabIndex = 39;
+            tbFame.Text = "14000";
+            // 
+            // label3
+            // 
+            label3.AutoSize = true;
+            label3.Location = new System.Drawing.Point(106, 278);
+            label3.Name = "label3";
+            label3.Size = new System.Drawing.Size(73, 15);
+            label3.TabIndex = 38;
+            label3.Text = "SetDamage :";
+            // 
+            // lbSetDamage2
+            // 
+            lbSetDamage2.AutoSize = true;
+            lbSetDamage2.Location = new System.Drawing.Point(224, 257);
+            lbSetDamage2.Name = "lbSetDamage2";
+            lbSetDamage2.Size = new System.Drawing.Size(44, 15);
+            lbSetDamage2.TabIndex = 37;
+            lbSetDamage2.Text = "Dam 2:";
+            // 
+            // tbSetDamage2
+            // 
+            tbSetDamage2.Location = new System.Drawing.Point(226, 275);
+            tbSetDamage2.Name = "tbSetDamage2";
+            tbSetDamage2.Size = new System.Drawing.Size(35, 23);
+            tbSetDamage2.TabIndex = 36;
+            tbSetDamage2.Text = "22";
+            // 
+            // lbSetDamage1
+            // 
+            lbSetDamage1.AutoSize = true;
+            lbSetDamage1.Location = new System.Drawing.Point(185, 257);
+            lbSetDamage1.Name = "lbSetDamage1";
+            lbSetDamage1.Size = new System.Drawing.Size(44, 15);
+            lbSetDamage1.TabIndex = 35;
+            lbSetDamage1.Text = "Dam 1:";
+            // 
+            // tbSetDamage1
+            // 
+            tbSetDamage1.Location = new System.Drawing.Point(185, 275);
+            tbSetDamage1.Name = "tbSetDamage1";
+            tbSetDamage1.Size = new System.Drawing.Size(35, 23);
+            tbSetDamage1.TabIndex = 34;
+            tbSetDamage1.Text = "16";
+            // 
+            // lbSetHits
+            // 
+            lbSetHits.AutoSize = true;
+            lbSetHits.Location = new System.Drawing.Point(131, 229);
+            lbSetHits.Name = "lbSetHits";
+            lbSetHits.Size = new System.Drawing.Size(50, 15);
+            lbSetHits.TabIndex = 33;
+            lbSetHits.Text = "SetHits :";
+            // 
+            // label4
+            // 
+            label4.AutoSize = true;
+            label4.Location = new System.Drawing.Point(226, 211);
+            label4.Name = "label4";
+            label4.Size = new System.Drawing.Size(40, 15);
+            label4.TabIndex = 32;
+            label4.Text = "Hits 2:";
+            // 
+            // tbSetHits2
+            // 
+            tbSetHits2.Location = new System.Drawing.Point(228, 229);
+            tbSetHits2.Name = "tbSetHits2";
+            tbSetHits2.Size = new System.Drawing.Size(35, 23);
+            tbSetHits2.TabIndex = 31;
+            tbSetHits2.Text = "315";
+            // 
+            // lbSetHits1
+            // 
+            lbSetHits1.AutoSize = true;
+            lbSetHits1.Location = new System.Drawing.Point(187, 211);
+            lbSetHits1.Name = "lbSetHits1";
+            lbSetHits1.Size = new System.Drawing.Size(40, 15);
+            lbSetHits1.TabIndex = 30;
+            lbSetHits1.Text = "Hits 1:";
+            // 
+            // tbSetHits1
+            // 
+            tbSetHits1.Location = new System.Drawing.Point(187, 229);
+            tbSetHits1.Name = "tbSetHits1";
+            tbSetHits1.Size = new System.Drawing.Size(35, 23);
+            tbSetHits1.TabIndex = 29;
+            tbSetHits1.Text = "298";
+            // 
+            // label2
+            // 
+            label2.AutoSize = true;
+            label2.Location = new System.Drawing.Point(154, 184);
+            label2.Name = "label2";
+            label2.Size = new System.Drawing.Size(27, 15);
+            label2.TabIndex = 28;
+            label2.Text = "Int :";
+            // 
+            // lbInt2
+            // 
+            lbInt2.AutoSize = true;
+            lbInt2.Location = new System.Drawing.Point(228, 163);
+            lbInt2.Name = "lbInt2";
+            lbInt2.Size = new System.Drawing.Size(33, 15);
+            lbInt2.TabIndex = 27;
+            lbInt2.Text = "Int 2:";
+            // 
+            // tbInt2
+            // 
+            tbInt2.Location = new System.Drawing.Point(228, 181);
+            tbInt2.Name = "tbInt2";
+            tbInt2.Size = new System.Drawing.Size(35, 23);
+            tbInt2.TabIndex = 26;
+            tbInt2.Text = "125";
+            // 
+            // lbInt1
+            // 
+            lbInt1.AutoSize = true;
+            lbInt1.Location = new System.Drawing.Point(187, 163);
+            lbInt1.Name = "lbInt1";
+            lbInt1.Size = new System.Drawing.Size(33, 15);
+            lbInt1.TabIndex = 25;
+            lbInt1.Text = "Int 1:";
+            // 
+            // tbInt1
+            // 
+            tbInt1.Location = new System.Drawing.Point(187, 181);
+            tbInt1.Name = "tbInt1";
+            tbInt1.Size = new System.Drawing.Size(35, 23);
+            tbInt1.TabIndex = 24;
+            tbInt1.Text = "86";
+            // 
+            // label1
+            // 
+            label1.AutoSize = true;
+            label1.Location = new System.Drawing.Point(154, 136);
+            label1.Name = "label1";
+            label1.Size = new System.Drawing.Size(33, 15);
+            label1.TabIndex = 23;
+            label1.Text = "Dex :";
+            // 
+            // lbDex2
+            // 
+            lbDex2.AutoSize = true;
+            lbDex2.Location = new System.Drawing.Point(228, 115);
+            lbDex2.Name = "lbDex2";
+            lbDex2.Size = new System.Drawing.Size(39, 15);
+            lbDex2.TabIndex = 22;
+            lbDex2.Text = "Dex 2:";
+            // 
+            // tbDex2
+            // 
+            tbDex2.Location = new System.Drawing.Point(228, 133);
+            tbDex2.Name = "tbDex2";
+            tbDex2.Size = new System.Drawing.Size(35, 23);
+            tbDex2.TabIndex = 21;
+            tbDex2.Text = "105";
+            // 
+            // lbDex1
+            // 
+            lbDex1.AutoSize = true;
+            lbDex1.Location = new System.Drawing.Point(187, 115);
+            lbDex1.Name = "lbDex1";
+            lbDex1.Size = new System.Drawing.Size(39, 15);
+            lbDex1.TabIndex = 20;
+            lbDex1.Text = "Dex 1:";
+            // 
+            // tbDex1
+            // 
+            tbDex1.Location = new System.Drawing.Point(187, 133);
+            tbDex1.Name = "tbDex1";
+            tbDex1.Size = new System.Drawing.Size(35, 23);
+            tbDex1.TabIndex = 19;
+            tbDex1.Text = "86";
+            // 
+            // lbstrength
+            // 
+            lbstrength.AutoSize = true;
+            lbstrength.Location = new System.Drawing.Point(154, 89);
+            lbstrength.Name = "lbstrength";
+            lbstrength.Size = new System.Drawing.Size(27, 15);
+            lbstrength.TabIndex = 18;
+            lbstrength.Text = "Str :";
+            // 
+            // lbStr2
+            // 
+            lbStr2.AutoSize = true;
+            lbStr2.Location = new System.Drawing.Point(228, 68);
+            lbStr2.Name = "lbStr2";
+            lbStr2.Size = new System.Drawing.Size(33, 15);
+            lbStr2.TabIndex = 17;
+            lbStr2.Text = "Str 2:";
+            // 
+            // tbStr2
+            // 
+            tbStr2.Location = new System.Drawing.Point(228, 86);
+            tbStr2.Name = "tbStr2";
+            tbStr2.Size = new System.Drawing.Size(35, 23);
+            tbStr2.TabIndex = 16;
+            tbStr2.Text = "525";
+            // 
+            // lbStr1
+            // 
+            lbStr1.AutoSize = true;
+            lbStr1.Location = new System.Drawing.Point(187, 68);
+            lbStr1.Name = "lbStr1";
+            lbStr1.Size = new System.Drawing.Size(33, 15);
+            lbStr1.TabIndex = 15;
+            lbStr1.Text = "Str 1:";
+            // 
+            // tbStr1
+            // 
+            tbStr1.Location = new System.Drawing.Point(187, 86);
+            tbStr1.Name = "tbStr1";
+            tbStr1.Size = new System.Drawing.Size(35, 23);
+            tbStr1.TabIndex = 14;
+            tbStr1.Text = "496";
+            // 
+            // lbBaseHorse
+            // 
+            lbBaseHorse.AutoSize = true;
+            lbBaseHorse.Location = new System.Drawing.Point(132, 10);
+            lbBaseHorse.Name = "lbBaseHorse";
+            lbBaseHorse.Size = new System.Drawing.Size(65, 15);
+            lbBaseHorse.TabIndex = 13;
+            lbBaseHorse.Text = "Base Horse";
+            // 
+            // tBBaseSoundID2
+            // 
+            tBBaseSoundID2.Location = new System.Drawing.Point(8, 213);
+            tBBaseSoundID2.Name = "tBBaseSoundID2";
+            tBBaseSoundID2.Size = new System.Drawing.Size(72, 23);
+            tBBaseSoundID2.TabIndex = 12;
+            tBBaseSoundID2.Text = "0x16A";
+            // 
+            // lbBaseSoundID
+            // 
+            lbBaseSoundID.AutoSize = true;
+            lbBaseSoundID.Location = new System.Drawing.Point(8, 166);
+            lbBaseSoundID.Name = "lbBaseSoundID";
+            lbBaseSoundID.Size = new System.Drawing.Size(76, 15);
+            lbBaseSoundID.TabIndex = 11;
+            lbBaseSoundID.Text = "BaseSoundID";
+            // 
+            // tBBaseSoundID1
+            // 
+            tBBaseSoundID1.Location = new System.Drawing.Point(8, 184);
+            tBBaseSoundID1.Name = "tBBaseSoundID1";
+            tBBaseSoundID1.Size = new System.Drawing.Size(71, 23);
+            tBBaseSoundID1.TabIndex = 10;
+            tBBaseSoundID1.Text = "0xA8";
+            // 
+            // lbItemID3
+            // 
+            lbItemID3.AutoSize = true;
+            lbItemID3.Location = new System.Drawing.Point(85, 136);
+            lbItemID3.Name = "lbItemID3";
+            lbItemID3.Size = new System.Drawing.Size(54, 15);
+            lbItemID3.TabIndex = 9;
+            lbItemID3.Text = "Item ID 3";
+            // 
+            // lbItemID2
+            // 
+            lbItemID2.AutoSize = true;
+            lbItemID2.Location = new System.Drawing.Point(85, 107);
+            lbItemID2.Name = "lbItemID2";
+            lbItemID2.Size = new System.Drawing.Size(54, 15);
+            lbItemID2.TabIndex = 8;
+            lbItemID2.Text = "Item ID 2";
+            // 
+            // lbItemID1
+            // 
+            lbItemID1.AutoSize = true;
+            lbItemID1.Location = new System.Drawing.Point(85, 78);
+            lbItemID1.Name = "lbItemID1";
+            lbItemID1.Size = new System.Drawing.Size(54, 15);
+            lbItemID1.TabIndex = 7;
+            lbItemID1.Text = "Item ID 1";
+            // 
+            // tbItemID3
+            // 
+            tbItemID3.Location = new System.Drawing.Point(8, 133);
+            tbItemID3.Name = "tbItemID3";
+            tbItemID3.Size = new System.Drawing.Size(71, 23);
+            tbItemID3.TabIndex = 6;
+            tbItemID3.Text = "16055";
+            // 
+            // tbItemID2
+            // 
+            tbItemID2.Location = new System.Drawing.Point(8, 104);
+            tbItemID2.Name = "tbItemID2";
+            tbItemID2.Size = new System.Drawing.Size(71, 23);
+            tbItemID2.TabIndex = 5;
+            tbItemID2.Text = "16041";
+            // 
+            // lbItemID
+            // 
+            lbItemID.AutoSize = true;
+            lbItemID.Location = new System.Drawing.Point(8, 57);
+            lbItemID.Name = "lbItemID";
+            lbItemID.Size = new System.Drawing.Size(81, 15);
+            lbItemID.TabIndex = 4;
+            lbItemID.Text = "Item Image ID";
+            // 
+            // tbItemID
+            // 
+            tbItemID.Location = new System.Drawing.Point(8, 75);
+            tbItemID.Name = "tbItemID";
+            tbItemID.Size = new System.Drawing.Size(71, 23);
+            tbItemID.TabIndex = 3;
+            tbItemID.Text = "16039";
+            // 
+            // btCreateScript
+            // 
+            btCreateScript.Location = new System.Drawing.Point(132, 28);
+            btCreateScript.Name = "btCreateScript";
+            btCreateScript.Size = new System.Drawing.Size(90, 23);
+            btCreateScript.TabIndex = 2;
+            btCreateScript.Text = "Create Script";
+            btCreateScript.UseVisualStyleBackColor = true;
+            btCreateScript.Click += btCreateScript_Click;
+            // 
+            // lbScriptName
+            // 
+            lbScriptName.AutoSize = true;
+            lbScriptName.Location = new System.Drawing.Point(8, 10);
+            lbScriptName.Name = "lbScriptName";
+            lbScriptName.Size = new System.Drawing.Size(72, 15);
+            lbScriptName.TabIndex = 1;
+            lbScriptName.Text = "Script Name";
+            // 
+            // tbScriptName
+            // 
+            tbScriptName.Location = new System.Drawing.Point(8, 28);
+            tbScriptName.Name = "tbScriptName";
+            tbScriptName.Size = new System.Drawing.Size(100, 23);
+            tbScriptName.TabIndex = 0;
+            // 
+            // lbVirtualArmor
+            // 
+            lbVirtualArmor.AutoSize = true;
+            lbVirtualArmor.Location = new System.Drawing.Point(165, 374);
+            lbVirtualArmor.Name = "lbVirtualArmor";
+            lbVirtualArmor.Size = new System.Drawing.Size(47, 15);
+            lbVirtualArmor.TabIndex = 44;
+            lbVirtualArmor.Text = "Armor :";
+            // 
+            // tbVirtualArmor
+            // 
+            tbVirtualArmor.Location = new System.Drawing.Point(218, 371);
+            tbVirtualArmor.Name = "tbVirtualArmor";
+            tbVirtualArmor.Size = new System.Drawing.Size(43, 23);
+            tbVirtualArmor.TabIndex = 43;
+            tbVirtualArmor.Text = "60";
+            // 
             // EditUoBodyconvMobtypes
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            ClientSize = new System.Drawing.Size(1003, 570);
-            Controls.Add(panel1);
+            ClientSize = new System.Drawing.Size(1003, 655);
+            Controls.Add(panelScript);
+            Controls.Add(panelEdit);
             Controls.Add(lbFileName);
             Controls.Add(lbSearchCount);
             Controls.Add(richTextBoxEdit);
@@ -230,8 +716,10 @@ namespace UoFiddler.Controls.Forms
             Name = "EditUoBodyconvMobtypes";
             Text = "Edit UoBodyconv or Mobtypes";
             contextMenuStripRichTextBoxEdit.ResumeLayout(false);
-            panel1.ResumeLayout(false);
-            panel1.PerformLayout();
+            panelEdit.ResumeLayout(false);
+            panelEdit.PerformLayout();
+            panelScript.ResumeLayout(false);
+            panelScript.PerformLayout();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -252,8 +740,54 @@ namespace UoFiddler.Controls.Forms
         private System.Windows.Forms.TextBox textBoxID;
         private System.Windows.Forms.Button btBackwardText;
         private System.Windows.Forms.Label lbID;
-        private System.Windows.Forms.Panel panel1;
+        private System.Windows.Forms.Panel panelEdit;
         private System.Windows.Forms.TextBox textBoxBody;
         private System.Windows.Forms.Label lbBody;
+        private System.Windows.Forms.Panel panelScript;
+        private System.Windows.Forms.Button btCreateScript;
+        private System.Windows.Forms.Label lbScriptName;
+        private System.Windows.Forms.TextBox tbScriptName;
+        private System.Windows.Forms.Label lbItemID;
+        private System.Windows.Forms.TextBox tbItemID;
+        private System.Windows.Forms.TextBox tbItemID3;
+        private System.Windows.Forms.TextBox tbItemID2;
+        private System.Windows.Forms.Label lbItemID3;
+        private System.Windows.Forms.Label lbItemID2;
+        private System.Windows.Forms.Label lbItemID1;
+        private System.Windows.Forms.Label lbBaseSoundID;
+        private System.Windows.Forms.TextBox tBBaseSoundID1;
+        private System.Windows.Forms.TextBox tBBaseSoundID2;
+        private System.Windows.Forms.Label lbBaseHorse;
+        private System.Windows.Forms.TextBox tbStr1;
+        private System.Windows.Forms.Label lbStr2;
+        private System.Windows.Forms.TextBox tbStr2;
+        private System.Windows.Forms.Label lbStr1;
+        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Label lbDex2;
+        private System.Windows.Forms.TextBox tbDex2;
+        private System.Windows.Forms.Label lbDex1;
+        private System.Windows.Forms.TextBox tbDex1;
+        private System.Windows.Forms.Label lbstrength;
+        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.Label lbInt2;
+        private System.Windows.Forms.TextBox tbInt2;
+        private System.Windows.Forms.Label lbInt1;
+        private System.Windows.Forms.TextBox tbInt1;
+        private System.Windows.Forms.Label lbSetHits;
+        private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.TextBox tbSetHits2;
+        private System.Windows.Forms.Label lbSetHits1;
+        private System.Windows.Forms.TextBox tbSetHits1;
+        private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.Label lbSetDamage2;
+        private System.Windows.Forms.TextBox tbSetDamage2;
+        private System.Windows.Forms.Label lbSetDamage1;
+        private System.Windows.Forms.TextBox tbSetDamage1;
+        private System.Windows.Forms.Label lbFame;
+        private System.Windows.Forms.TextBox tbFame;
+        private System.Windows.Forms.Label label5;
+        private System.Windows.Forms.TextBox tbKarma;
+        private System.Windows.Forms.Label lbVirtualArmor;
+        private System.Windows.Forms.TextBox tbVirtualArmor;
     }
 }
