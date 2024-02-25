@@ -5,15 +5,16 @@
 UOFiddler based on Ultima SDK it's a tool to view and alter almost every UO 2D client file. Source code is released under the Beerware and Wineware license.
 
 Version : 4.12.3
-- Add Items Image Colors and Update
-- Add Script Creator - Book
-- Add Help - Tutorial Animationen Install German and Englisch
-- Add Animation - Edit UoBodyconv and Mobtypes Form 
+- Add Items Image Colors and Update.
+- Add Script Creator - Book.
+- Add Help - Tutorial Animationen Install German and Englisch.
+- Add Animation - Edit UoBodyconv and Mobtypes Form.
+- Add Animation - Script Script Creator.
 
 Version : 4.12.2
 - BildFusion Add Sharp , Clipboard, Texture Cut.
 - Make Texture, White is transparent, and black represents the transition, Texture into Texture, Colors.
-- Add triangle for Tiles TextureWindowForm
+- Add triangle for Tiles TextureWindowForm.
 - Path Settings, Reload all Files and New, Load Single Mul file, Delete Line
 - Add New Map Forell into SDK Map class
 - Add Muls into SDK File class
