@@ -47,6 +47,8 @@
             toolStripSeparator8 = new System.Windows.Forms.ToolStripSeparator();
             FindFreeIDSlotsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             showToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            toolStripSeparator9 = new System.Windows.Forms.ToolStripSeparator();
+            saveToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             AnimationFileToolStrip = new System.Windows.Forms.ToolStrip();
             SelectFileToolStripComboBox = new System.Windows.Forms.ToolStripComboBox();
             toolStripTextBoxSearch = new System.Windows.Forms.ToolStripTextBox();
@@ -152,6 +154,7 @@
             toolStripStatusLabelVDAminInfo = new System.Windows.Forms.ToolStripStatusLabel();
             toolStripStatusDisplayLabelAnimation = new System.Windows.Forms.ToolStripStatusLabel();
             AnimationTimer = new System.Windows.Forms.Timer(components);
+            editUoBodyconMobtypesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)MainSplitContainer).BeginInit();
             MainSplitContainer.Panel1.SuspendLayout();
             MainSplitContainer.Panel2.SuspendLayout();
@@ -228,9 +231,9 @@
             // 
             // ContextMenuStripTreeView
             // 
-            ContextMenuStripTreeView.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { AddToolStripMenuItem, removeToolStripMenuItem, extractImagesToolStripMenuItem1, importToolStripMenuItem1, exportToolStripMenuItem1, toolStripSeparator8, FindFreeIDSlotsToolStripMenuItem, showToolStripMenuItem });
+            ContextMenuStripTreeView.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { AddToolStripMenuItem, removeToolStripMenuItem, extractImagesToolStripMenuItem1, importToolStripMenuItem1, exportToolStripMenuItem1, toolStripSeparator8, FindFreeIDSlotsToolStripMenuItem, showToolStripMenuItem, toolStripSeparator9, saveToolStripMenuItem1 });
             ContextMenuStripTreeView.Name = "contextMenuStrip2";
-            ContextMenuStripTreeView.Size = new System.Drawing.Size(158, 164);
+            ContextMenuStripTreeView.Size = new System.Drawing.Size(158, 192);
             // 
             // AddToolStripMenuItem
             // 
@@ -345,6 +348,19 @@
             showToolStripMenuItem.Text = "Show";
             showToolStripMenuItem.Click += OnClickShowOnlyValid;
             // 
+            // toolStripSeparator9
+            // 
+            toolStripSeparator9.Name = "toolStripSeparator9";
+            toolStripSeparator9.Size = new System.Drawing.Size(154, 6);
+            // 
+            // saveToolStripMenuItem1
+            // 
+            saveToolStripMenuItem1.Image = Properties.Resources.Save2;
+            saveToolStripMenuItem1.Name = "saveToolStripMenuItem1";
+            saveToolStripMenuItem1.Size = new System.Drawing.Size(157, 22);
+            saveToolStripMenuItem1.Text = "Save";
+            saveToolStripMenuItem1.Click += OnClickSave;
+            // 
             // AnimationFileToolStrip
             // 
             AnimationFileToolStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { SelectFileToolStripComboBox, toolStripTextBoxSearch });
@@ -372,7 +388,7 @@
             // ProgressBar
             // 
             ProgressBar.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
-            ProgressBar.Location = new System.Drawing.Point(578, 628);
+            ProgressBar.Location = new System.Drawing.Point(576, 628);
             ProgressBar.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             ProgressBar.Name = "ProgressBar";
             ProgressBar.Size = new System.Drawing.Size(197, 20);
@@ -1392,7 +1408,7 @@
             // 
             DirectionTrackBar.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
             DirectionTrackBar.AutoSize = false;
-            DirectionTrackBar.Location = new System.Drawing.Point(782, 626);
+            DirectionTrackBar.Location = new System.Drawing.Point(780, 626);
             DirectionTrackBar.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             DirectionTrackBar.Maximum = 4;
             DirectionTrackBar.Name = "DirectionTrackBar";
@@ -1413,7 +1429,7 @@
             // MiscToolStripButton
             // 
             MiscToolStripButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            MiscToolStripButton.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { SaveToolStripMenuItem, ShowOnlyValidToolStripMenuItem, ExportAllToVDToolStripMenuItem });
+            MiscToolStripButton.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { SaveToolStripMenuItem, ShowOnlyValidToolStripMenuItem, ExportAllToVDToolStripMenuItem, editUoBodyconMobtypesToolStripMenuItem });
             MiscToolStripButton.ImageTransparentColor = System.Drawing.Color.Magenta;
             MiscToolStripButton.Name = "MiscToolStripButton";
             MiscToolStripButton.Size = new System.Drawing.Size(45, 20);
@@ -1423,7 +1439,7 @@
             // 
             SaveToolStripMenuItem.Image = Properties.Resources.Save2;
             SaveToolStripMenuItem.Name = "SaveToolStripMenuItem";
-            SaveToolStripMenuItem.Size = new System.Drawing.Size(186, 22);
+            SaveToolStripMenuItem.Size = new System.Drawing.Size(235, 22);
             SaveToolStripMenuItem.Text = "Save";
             SaveToolStripMenuItem.Click += OnClickSave;
             // 
@@ -1432,7 +1448,7 @@
             ShowOnlyValidToolStripMenuItem.CheckOnClick = true;
             ShowOnlyValidToolStripMenuItem.Image = Properties.Resources.show;
             ShowOnlyValidToolStripMenuItem.Name = "ShowOnlyValidToolStripMenuItem";
-            ShowOnlyValidToolStripMenuItem.Size = new System.Drawing.Size(186, 22);
+            ShowOnlyValidToolStripMenuItem.Size = new System.Drawing.Size(235, 22);
             ShowOnlyValidToolStripMenuItem.Text = "Show Only Valid";
             ShowOnlyValidToolStripMenuItem.Click += OnClickShowOnlyValid;
             // 
@@ -1440,7 +1456,7 @@
             // 
             ExportAllToVDToolStripMenuItem.Image = Properties.Resources.Export;
             ExportAllToVDToolStripMenuItem.Name = "ExportAllToVDToolStripMenuItem";
-            ExportAllToVDToolStripMenuItem.Size = new System.Drawing.Size(186, 22);
+            ExportAllToVDToolStripMenuItem.Size = new System.Drawing.Size(235, 22);
             ExportAllToVDToolStripMenuItem.Text = "Export All Valid To VD";
             ExportAllToVDToolStripMenuItem.Click += OnClickExportAllToVD;
             // 
@@ -1459,6 +1475,15 @@
             // AnimationTimer
             // 
             AnimationTimer.Tick += AnimationTimer_Tick;
+            // 
+            // editUoBodyconMobtypesToolStripMenuItem
+            // 
+            editUoBodyconMobtypesToolStripMenuItem.Image = Properties.Resources.Add;
+            editUoBodyconMobtypesToolStripMenuItem.Name = "editUoBodyconMobtypesToolStripMenuItem";
+            editUoBodyconMobtypesToolStripMenuItem.Size = new System.Drawing.Size(235, 22);
+            editUoBodyconMobtypesToolStripMenuItem.Text = "Edit Uo Bodyconv + mobtypes";
+            editUoBodyconMobtypesToolStripMenuItem.ToolTipText = "Edit Uo Bodyconv and mobtypes";
+            editUoBodyconMobtypesToolStripMenuItem.Click += editUoBodyconMobtypesToolStripMenuItem_Click;
             // 
             // AnimationEditForm
             // 
@@ -1648,5 +1673,8 @@
         private System.Windows.Forms.ToolStripTextBox toolStripTextBoxSearch;
         private System.Windows.Forms.CheckBox checkBoxIDBlue;
         private System.Windows.Forms.ToolStripStatusLabel toolStripStatusDisplayLabelAnimation;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator9;
+        private System.Windows.Forms.ToolStripMenuItem saveToolStripMenuItem1;
+        private System.Windows.Forms.ToolStripMenuItem editUoBodyconMobtypesToolStripMenuItem;
     }
 }

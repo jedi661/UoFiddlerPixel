@@ -70,7 +70,7 @@ namespace UoFiddler.Forms
             // 
             contextMenuPath.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { newDirAndMulToolStripMenuItem, loadSingleMulFileToolStripMenuItem, DeleteLineToolStripMenuItem });
             contextMenuPath.Name = "contextMenuStrip1";
-            contextMenuPath.Size = new System.Drawing.Size(205, 92);
+            contextMenuPath.Size = new System.Drawing.Size(205, 70);
             // 
             // newDirAndMulToolStripMenuItem
             // 

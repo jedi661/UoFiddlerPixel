@@ -4505,5 +4505,26 @@ namespace UoFiddler.Controls.Forms
             }
         }
         #endregion
+
+        #region Edit Ultima Online Bodyconv.def and mobtypes.txt
+
+        private EditUoBodyconvMobtypes editUoBodyconvMobtypesForm;
+
+        private void editUoBodyconMobtypesToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // Check if the form is already open
+            if (editUoBodyconvMobtypesForm == null || editUoBodyconvMobtypesForm.IsDisposed)
+            {
+                // Open form if it is not already open
+                editUoBodyconvMobtypesForm = new EditUoBodyconvMobtypes();
+                editUoBodyconvMobtypesForm.Show();
+            }
+            else
+            {
+                // Bring form to foreground if it is already open
+                editUoBodyconvMobtypesForm.BringToFront();
+            }
+        }
+        #endregion
     }
 }
