@@ -4527,6 +4527,7 @@ namespace UoFiddler.Controls.Forms
 
             // Set the value of textBoxID in the EditUoBodyconvMobtypes form
             editUoBodyconvMobtypesForm.TextBoxID = _currentBody.ToString();
+            editUoBodyconvMobtypesForm.TextBoxBody = BodyConverter.GetTrueBody(_fileType, _currentBody).ToString();
         }
         #endregion
     }

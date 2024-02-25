@@ -144,5 +144,12 @@ namespace UoFiddler.Controls.Forms
             set { textBoxID.Text = value; }
         }
         #endregion
+
+        #region string TextBoxBody
+        public string TextBoxBody
+        {
+            set { textBoxBody.Text = value; }
+        }
+        #endregion
     }
 }

@@ -57,6 +57,8 @@ namespace UoFiddler.Controls.Forms
             btBackwardText = new System.Windows.Forms.Button();
             lbID = new System.Windows.Forms.Label();
             panel1 = new System.Windows.Forms.Panel();
+            textBoxBody = new System.Windows.Forms.TextBox();
+            lbBody = new System.Windows.Forms.Label();
             contextMenuStripRichTextBoxEdit.SuspendLayout();
             panel1.SuspendLayout();
             SuspendLayout();
@@ -164,7 +166,7 @@ namespace UoFiddler.Controls.Forms
             // 
             // btBackwardText
             // 
-            btBackwardText.Location = new System.Drawing.Point(183, 107);
+            btBackwardText.Location = new System.Drawing.Point(183, 146);
             btBackwardText.Name = "btBackwardText";
             btBackwardText.Size = new System.Drawing.Size(75, 23);
             btBackwardText.TabIndex = 10;
@@ -183,6 +185,8 @@ namespace UoFiddler.Controls.Forms
             // 
             // panel1
             // 
+            panel1.Controls.Add(lbBody);
+            panel1.Controls.Add(textBoxBody);
             panel1.Controls.Add(btSaveFile);
             panel1.Controls.Add(lbID);
             panel1.Controls.Add(btLoadBodyconv);
@@ -195,6 +199,22 @@ namespace UoFiddler.Controls.Forms
             panel1.Name = "panel1";
             panel1.Size = new System.Drawing.Size(279, 236);
             panel1.TabIndex = 12;
+            // 
+            // textBoxBody
+            // 
+            textBoxBody.Location = new System.Drawing.Point(183, 117);
+            textBoxBody.Name = "textBoxBody";
+            textBoxBody.Size = new System.Drawing.Size(75, 23);
+            textBoxBody.TabIndex = 12;
+            // 
+            // lbBody
+            // 
+            lbBody.AutoSize = true;
+            lbBody.Location = new System.Drawing.Point(183, 99);
+            lbBody.Name = "lbBody";
+            lbBody.Size = new System.Drawing.Size(50, 15);
+            lbBody.TabIndex = 13;
+            lbBody.Text = "Body-ID";
             // 
             // EditUoBodyconvMobtypes
             // 
@@ -233,5 +253,7 @@ namespace UoFiddler.Controls.Forms
         private System.Windows.Forms.Button btBackwardText;
         private System.Windows.Forms.Label lbID;
         private System.Windows.Forms.Panel panel1;
+        private System.Windows.Forms.TextBox textBoxBody;
+        private System.Windows.Forms.Label lbBody;
     }
 }
