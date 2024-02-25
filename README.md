@@ -8,6 +8,7 @@ Version : 4.12.3
 - Add Items Image Colors and Update
 - Add Script Creator - Book
 - Add Help - Tutorial Animationen Install German and Englisch
+- Add Animation - Edit UoBodyconv and Mobtypes Form 
 
 Version : 4.12.2
 - BildFusion Add Sharp , Clipboard, Texture Cut.

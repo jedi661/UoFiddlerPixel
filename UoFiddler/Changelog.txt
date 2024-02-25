@@ -2,6 +2,7 @@ Version : 4.12.3 #XG1
 - Add Items Image Colors and Update
 - Add Script Creator - Book
 - Add Help - Tutorial Animationen Install German and Englisch
+- Add Animation - Edit UoBodyconv and Mobtypes Form 
 
 Version : 4.12.2 #XG1
 - BildFusion Add Sharp , Clipboard, Texture Cut.

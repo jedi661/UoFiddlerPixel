@@ -4524,6 +4524,9 @@ namespace UoFiddler.Controls.Forms
                 // Bring form to foreground if it is already open
                 editUoBodyconvMobtypesForm.BringToFront();
             }
+
+            // Set the value of textBoxID in the EditUoBodyconvMobtypes form
+            editUoBodyconvMobtypesForm.TextBoxID = _currentBody.ToString();
         }
         #endregion
     }
