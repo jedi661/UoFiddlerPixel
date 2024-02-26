@@ -21,6 +21,7 @@ using System.Threading.Tasks;
 using System.Text.RegularExpressions;
 using System.IO;
 using System.Windows.Forms;
+using System.Media;
 
 namespace UoFiddler.Controls.Forms
 {
@@ -49,6 +50,15 @@ namespace UoFiddler.Controls.Forms
             {
                 MessageBox.Show("The Bodyconv.def file could not be found.");
             }
+
+            // Create a new SoundPlayer
+            SoundPlayer player = new SoundPlayer();
+
+            // Load the sound file
+            player.SoundLocation = AppDomain.CurrentDomain.BaseDirectory + "\\Sound.wav";
+
+            // Play the sound
+            player.Play();
         }
         #endregion
 
@@ -80,6 +90,15 @@ namespace UoFiddler.Controls.Forms
             {
                 MessageBox.Show("The file mobtypes.txt could not be found.");
             }
+
+            // Create a new SoundPlayer
+            SoundPlayer player = new SoundPlayer();
+
+            // Load the sound file
+            player.SoundLocation = AppDomain.CurrentDomain.BaseDirectory + "\\Sound.wav";
+
+            // Play the sound
+            player.Play();
         }
         #endregion
 
@@ -121,6 +140,15 @@ namespace UoFiddler.Controls.Forms
             {
                 MessageBox.Show("No file was selected to save.");
             }
+
+            // Create a new SoundPlayer
+            SoundPlayer player = new SoundPlayer();
+
+            // Load the sound file
+            player.SoundLocation = AppDomain.CurrentDomain.BaseDirectory + "\\Sound.wav";
+
+            // Play the sound
+            player.Play();
         }
         #endregion
 
@@ -298,24 +326,49 @@ namespace UoFiddler.Controls.Forms
          }}
     }}";
             richTextBoxEdit.Text = script;
+
+            // Create a new SoundPlayer
+            SoundPlayer player = new SoundPlayer();
+
+            // Load the sound file
+            player.SoundLocation = AppDomain.CurrentDomain.BaseDirectory + "\\Sound.wav";
+
+            // Play the sound
+            player.Play();
         }
         #endregion
 
-        #region
+        #region btSaveScript_Click
         private void btSaveScript_Click(object sender, EventArgs e)
         {
             SaveFileDialog saveFileDialog = new SaveFileDialog();
             saveFileDialog.Filter = "C# Files|*.cs";
             saveFileDialog.Title = "Save a C# File";
-            saveFileDialog.FileName = tbScriptName.Text; // Setzt den Dateinamen auf den Inhalt von tbScriptName
+            saveFileDialog.FileName = tbScriptName.Text; // Sets the filename to the contents of tbScriptName
 
             if (saveFileDialog.ShowDialog() == DialogResult.OK)
             {
                 using (StreamWriter writer = new StreamWriter(saveFileDialog.OpenFile()))
                 {
-                    writer.Write(richTextBoxEdit.Text); // Schreibt den Inhalt von richTextBoxEdit in die Datei
+                    writer.Write(richTextBoxEdit.Text); // Writes the contents of richTextBoxEdit to the file
                 }
             }
+        }
+        #endregion
+
+        #region btClipboard
+        private void btClipboard_Click(object sender, EventArgs e)
+        {
+            Clipboard.SetText(richTextBoxEdit.Text);
+
+            // Create a new SoundPlayer
+            SoundPlayer player = new SoundPlayer();
+
+            // Load the sound file
+            player.SoundLocation = AppDomain.CurrentDomain.BaseDirectory + "\\Sound.wav";
+
+            // Play the sound
+            player.Play();
         }
         #endregion
     }

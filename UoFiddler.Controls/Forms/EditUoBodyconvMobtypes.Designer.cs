@@ -106,6 +106,7 @@ namespace UoFiddler.Controls.Forms
             btCreateScript = new System.Windows.Forms.Button();
             lbScriptName = new System.Windows.Forms.Label();
             tbScriptName = new System.Windows.Forms.TextBox();
+            btClipboard = new System.Windows.Forms.Button();
             contextMenuStripRichTextBoxEdit.SuspendLayout();
             panelEdit.SuspendLayout();
             panelScript.SuspendLayout();
@@ -151,10 +152,10 @@ namespace UoFiddler.Controls.Forms
             // richTextBoxEdit
             // 
             richTextBoxEdit.ContextMenuStrip = contextMenuStripRichTextBoxEdit;
-            richTextBoxEdit.Location = new System.Drawing.Point(297, 29);
+            richTextBoxEdit.Location = new System.Drawing.Point(306, 29);
             richTextBoxEdit.Name = "richTextBoxEdit";
             richTextBoxEdit.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.Vertical;
-            richTextBoxEdit.Size = new System.Drawing.Size(694, 614);
+            richTextBoxEdit.Size = new System.Drawing.Size(718, 614);
             richTextBoxEdit.TabIndex = 5;
             richTextBoxEdit.Text = "";
             // 
@@ -245,7 +246,7 @@ namespace UoFiddler.Controls.Forms
             panelEdit.Controls.Add(btmobtypes);
             panelEdit.Location = new System.Drawing.Point(12, 29);
             panelEdit.Name = "panelEdit";
-            panelEdit.Size = new System.Drawing.Size(279, 192);
+            panelEdit.Size = new System.Drawing.Size(288, 192);
             panelEdit.TabIndex = 12;
             // 
             // lbBody
@@ -266,6 +267,7 @@ namespace UoFiddler.Controls.Forms
             // 
             // panelScript
             // 
+            panelScript.Controls.Add(btClipboard);
             panelScript.Controls.Add(btSaveScript);
             panelScript.Controls.Add(lbVirtualArmor);
             panelScript.Controls.Add(tbVirtualArmor);
@@ -314,7 +316,7 @@ namespace UoFiddler.Controls.Forms
             panelScript.Controls.Add(tbScriptName);
             panelScript.Location = new System.Drawing.Point(12, 227);
             panelScript.Name = "panelScript";
-            panelScript.Size = new System.Drawing.Size(279, 416);
+            panelScript.Size = new System.Drawing.Size(288, 416);
             panelScript.TabIndex = 13;
             // 
             // btSaveScript
@@ -325,11 +327,12 @@ namespace UoFiddler.Controls.Forms
             btSaveScript.TabIndex = 45;
             btSaveScript.Text = "Save";
             btSaveScript.UseVisualStyleBackColor = true;
+            btSaveScript.Click += btSaveScript_Click;
             // 
             // lbVirtualArmor
             // 
             lbVirtualArmor.AutoSize = true;
-            lbVirtualArmor.Location = new System.Drawing.Point(165, 374);
+            lbVirtualArmor.Location = new System.Drawing.Point(182, 374);
             lbVirtualArmor.Name = "lbVirtualArmor";
             lbVirtualArmor.Size = new System.Drawing.Size(47, 15);
             lbVirtualArmor.TabIndex = 44;
@@ -337,7 +340,7 @@ namespace UoFiddler.Controls.Forms
             // 
             // tbVirtualArmor
             // 
-            tbVirtualArmor.Location = new System.Drawing.Point(218, 371);
+            tbVirtualArmor.Location = new System.Drawing.Point(235, 371);
             tbVirtualArmor.Name = "tbVirtualArmor";
             tbVirtualArmor.Size = new System.Drawing.Size(43, 23);
             tbVirtualArmor.TabIndex = 43;
@@ -346,7 +349,7 @@ namespace UoFiddler.Controls.Forms
             // label5
             // 
             label5.AutoSize = true;
-            label5.Location = new System.Drawing.Point(165, 345);
+            label5.Location = new System.Drawing.Point(182, 345);
             label5.Name = "label5";
             label5.Size = new System.Drawing.Size(47, 15);
             label5.TabIndex = 42;
@@ -354,7 +357,7 @@ namespace UoFiddler.Controls.Forms
             // 
             // tbKarma
             // 
-            tbKarma.Location = new System.Drawing.Point(218, 342);
+            tbKarma.Location = new System.Drawing.Point(235, 342);
             tbKarma.Name = "tbKarma";
             tbKarma.Size = new System.Drawing.Size(43, 23);
             tbKarma.TabIndex = 41;
@@ -363,7 +366,7 @@ namespace UoFiddler.Controls.Forms
             // lbFame
             // 
             lbFame.AutoSize = true;
-            lbFame.Location = new System.Drawing.Point(170, 316);
+            lbFame.Location = new System.Drawing.Point(187, 316);
             lbFame.Name = "lbFame";
             lbFame.Size = new System.Drawing.Size(42, 15);
             lbFame.TabIndex = 40;
@@ -371,7 +374,7 @@ namespace UoFiddler.Controls.Forms
             // 
             // tbFame
             // 
-            tbFame.Location = new System.Drawing.Point(218, 313);
+            tbFame.Location = new System.Drawing.Point(235, 313);
             tbFame.Name = "tbFame";
             tbFame.Size = new System.Drawing.Size(43, 23);
             tbFame.TabIndex = 39;
@@ -380,7 +383,7 @@ namespace UoFiddler.Controls.Forms
             // label3
             // 
             label3.AutoSize = true;
-            label3.Location = new System.Drawing.Point(106, 278);
+            label3.Location = new System.Drawing.Point(123, 278);
             label3.Name = "label3";
             label3.Size = new System.Drawing.Size(73, 15);
             label3.TabIndex = 38;
@@ -389,7 +392,7 @@ namespace UoFiddler.Controls.Forms
             // lbSetDamage2
             // 
             lbSetDamage2.AutoSize = true;
-            lbSetDamage2.Location = new System.Drawing.Point(224, 257);
+            lbSetDamage2.Location = new System.Drawing.Point(241, 257);
             lbSetDamage2.Name = "lbSetDamage2";
             lbSetDamage2.Size = new System.Drawing.Size(44, 15);
             lbSetDamage2.TabIndex = 37;
@@ -397,7 +400,7 @@ namespace UoFiddler.Controls.Forms
             // 
             // tbSetDamage2
             // 
-            tbSetDamage2.Location = new System.Drawing.Point(226, 275);
+            tbSetDamage2.Location = new System.Drawing.Point(243, 275);
             tbSetDamage2.Name = "tbSetDamage2";
             tbSetDamage2.Size = new System.Drawing.Size(35, 23);
             tbSetDamage2.TabIndex = 36;
@@ -406,7 +409,7 @@ namespace UoFiddler.Controls.Forms
             // lbSetDamage1
             // 
             lbSetDamage1.AutoSize = true;
-            lbSetDamage1.Location = new System.Drawing.Point(185, 257);
+            lbSetDamage1.Location = new System.Drawing.Point(202, 257);
             lbSetDamage1.Name = "lbSetDamage1";
             lbSetDamage1.Size = new System.Drawing.Size(44, 15);
             lbSetDamage1.TabIndex = 35;
@@ -414,7 +417,7 @@ namespace UoFiddler.Controls.Forms
             // 
             // tbSetDamage1
             // 
-            tbSetDamage1.Location = new System.Drawing.Point(185, 275);
+            tbSetDamage1.Location = new System.Drawing.Point(202, 275);
             tbSetDamage1.Name = "tbSetDamage1";
             tbSetDamage1.Size = new System.Drawing.Size(35, 23);
             tbSetDamage1.TabIndex = 34;
@@ -423,7 +426,7 @@ namespace UoFiddler.Controls.Forms
             // lbSetHits
             // 
             lbSetHits.AutoSize = true;
-            lbSetHits.Location = new System.Drawing.Point(131, 229);
+            lbSetHits.Location = new System.Drawing.Point(148, 229);
             lbSetHits.Name = "lbSetHits";
             lbSetHits.Size = new System.Drawing.Size(50, 15);
             lbSetHits.TabIndex = 33;
@@ -432,7 +435,7 @@ namespace UoFiddler.Controls.Forms
             // label4
             // 
             label4.AutoSize = true;
-            label4.Location = new System.Drawing.Point(226, 211);
+            label4.Location = new System.Drawing.Point(243, 211);
             label4.Name = "label4";
             label4.Size = new System.Drawing.Size(40, 15);
             label4.TabIndex = 32;
@@ -440,7 +443,7 @@ namespace UoFiddler.Controls.Forms
             // 
             // tbSetHits2
             // 
-            tbSetHits2.Location = new System.Drawing.Point(228, 229);
+            tbSetHits2.Location = new System.Drawing.Point(245, 229);
             tbSetHits2.Name = "tbSetHits2";
             tbSetHits2.Size = new System.Drawing.Size(35, 23);
             tbSetHits2.TabIndex = 31;
@@ -449,7 +452,7 @@ namespace UoFiddler.Controls.Forms
             // lbSetHits1
             // 
             lbSetHits1.AutoSize = true;
-            lbSetHits1.Location = new System.Drawing.Point(187, 211);
+            lbSetHits1.Location = new System.Drawing.Point(204, 211);
             lbSetHits1.Name = "lbSetHits1";
             lbSetHits1.Size = new System.Drawing.Size(40, 15);
             lbSetHits1.TabIndex = 30;
@@ -457,7 +460,7 @@ namespace UoFiddler.Controls.Forms
             // 
             // tbSetHits1
             // 
-            tbSetHits1.Location = new System.Drawing.Point(187, 229);
+            tbSetHits1.Location = new System.Drawing.Point(204, 229);
             tbSetHits1.Name = "tbSetHits1";
             tbSetHits1.Size = new System.Drawing.Size(35, 23);
             tbSetHits1.TabIndex = 29;
@@ -466,7 +469,7 @@ namespace UoFiddler.Controls.Forms
             // label2
             // 
             label2.AutoSize = true;
-            label2.Location = new System.Drawing.Point(154, 184);
+            label2.Location = new System.Drawing.Point(171, 184);
             label2.Name = "label2";
             label2.Size = new System.Drawing.Size(27, 15);
             label2.TabIndex = 28;
@@ -475,7 +478,7 @@ namespace UoFiddler.Controls.Forms
             // lbInt2
             // 
             lbInt2.AutoSize = true;
-            lbInt2.Location = new System.Drawing.Point(228, 163);
+            lbInt2.Location = new System.Drawing.Point(245, 163);
             lbInt2.Name = "lbInt2";
             lbInt2.Size = new System.Drawing.Size(33, 15);
             lbInt2.TabIndex = 27;
@@ -483,7 +486,7 @@ namespace UoFiddler.Controls.Forms
             // 
             // tbInt2
             // 
-            tbInt2.Location = new System.Drawing.Point(228, 181);
+            tbInt2.Location = new System.Drawing.Point(245, 181);
             tbInt2.Name = "tbInt2";
             tbInt2.Size = new System.Drawing.Size(35, 23);
             tbInt2.TabIndex = 26;
@@ -492,7 +495,7 @@ namespace UoFiddler.Controls.Forms
             // lbInt1
             // 
             lbInt1.AutoSize = true;
-            lbInt1.Location = new System.Drawing.Point(187, 163);
+            lbInt1.Location = new System.Drawing.Point(204, 163);
             lbInt1.Name = "lbInt1";
             lbInt1.Size = new System.Drawing.Size(33, 15);
             lbInt1.TabIndex = 25;
@@ -500,7 +503,7 @@ namespace UoFiddler.Controls.Forms
             // 
             // tbInt1
             // 
-            tbInt1.Location = new System.Drawing.Point(187, 181);
+            tbInt1.Location = new System.Drawing.Point(204, 181);
             tbInt1.Name = "tbInt1";
             tbInt1.Size = new System.Drawing.Size(35, 23);
             tbInt1.TabIndex = 24;
@@ -509,7 +512,7 @@ namespace UoFiddler.Controls.Forms
             // label1
             // 
             label1.AutoSize = true;
-            label1.Location = new System.Drawing.Point(154, 136);
+            label1.Location = new System.Drawing.Point(171, 136);
             label1.Name = "label1";
             label1.Size = new System.Drawing.Size(33, 15);
             label1.TabIndex = 23;
@@ -518,7 +521,7 @@ namespace UoFiddler.Controls.Forms
             // lbDex2
             // 
             lbDex2.AutoSize = true;
-            lbDex2.Location = new System.Drawing.Point(228, 115);
+            lbDex2.Location = new System.Drawing.Point(245, 115);
             lbDex2.Name = "lbDex2";
             lbDex2.Size = new System.Drawing.Size(39, 15);
             lbDex2.TabIndex = 22;
@@ -526,7 +529,7 @@ namespace UoFiddler.Controls.Forms
             // 
             // tbDex2
             // 
-            tbDex2.Location = new System.Drawing.Point(228, 133);
+            tbDex2.Location = new System.Drawing.Point(245, 133);
             tbDex2.Name = "tbDex2";
             tbDex2.Size = new System.Drawing.Size(35, 23);
             tbDex2.TabIndex = 21;
@@ -535,7 +538,7 @@ namespace UoFiddler.Controls.Forms
             // lbDex1
             // 
             lbDex1.AutoSize = true;
-            lbDex1.Location = new System.Drawing.Point(187, 115);
+            lbDex1.Location = new System.Drawing.Point(204, 115);
             lbDex1.Name = "lbDex1";
             lbDex1.Size = new System.Drawing.Size(39, 15);
             lbDex1.TabIndex = 20;
@@ -543,7 +546,7 @@ namespace UoFiddler.Controls.Forms
             // 
             // tbDex1
             // 
-            tbDex1.Location = new System.Drawing.Point(187, 133);
+            tbDex1.Location = new System.Drawing.Point(204, 133);
             tbDex1.Name = "tbDex1";
             tbDex1.Size = new System.Drawing.Size(35, 23);
             tbDex1.TabIndex = 19;
@@ -552,7 +555,7 @@ namespace UoFiddler.Controls.Forms
             // lbstrength
             // 
             lbstrength.AutoSize = true;
-            lbstrength.Location = new System.Drawing.Point(154, 89);
+            lbstrength.Location = new System.Drawing.Point(171, 89);
             lbstrength.Name = "lbstrength";
             lbstrength.Size = new System.Drawing.Size(27, 15);
             lbstrength.TabIndex = 18;
@@ -561,7 +564,7 @@ namespace UoFiddler.Controls.Forms
             // lbStr2
             // 
             lbStr2.AutoSize = true;
-            lbStr2.Location = new System.Drawing.Point(228, 68);
+            lbStr2.Location = new System.Drawing.Point(245, 68);
             lbStr2.Name = "lbStr2";
             lbStr2.Size = new System.Drawing.Size(33, 15);
             lbStr2.TabIndex = 17;
@@ -569,7 +572,7 @@ namespace UoFiddler.Controls.Forms
             // 
             // tbStr2
             // 
-            tbStr2.Location = new System.Drawing.Point(228, 86);
+            tbStr2.Location = new System.Drawing.Point(245, 86);
             tbStr2.Name = "tbStr2";
             tbStr2.Size = new System.Drawing.Size(35, 23);
             tbStr2.TabIndex = 16;
@@ -578,7 +581,7 @@ namespace UoFiddler.Controls.Forms
             // lbStr1
             // 
             lbStr1.AutoSize = true;
-            lbStr1.Location = new System.Drawing.Point(187, 68);
+            lbStr1.Location = new System.Drawing.Point(204, 68);
             lbStr1.Name = "lbStr1";
             lbStr1.Size = new System.Drawing.Size(33, 15);
             lbStr1.TabIndex = 15;
@@ -586,7 +589,7 @@ namespace UoFiddler.Controls.Forms
             // 
             // tbStr1
             // 
-            tbStr1.Location = new System.Drawing.Point(187, 86);
+            tbStr1.Location = new System.Drawing.Point(204, 86);
             tbStr1.Name = "tbStr1";
             tbStr1.Size = new System.Drawing.Size(35, 23);
             tbStr1.TabIndex = 14;
@@ -712,11 +715,21 @@ namespace UoFiddler.Controls.Forms
             tbScriptName.Size = new System.Drawing.Size(100, 23);
             tbScriptName.TabIndex = 0;
             // 
+            // btClipboard
+            // 
+            btClipboard.Location = new System.Drawing.Point(243, 28);
+            btClipboard.Name = "btClipboard";
+            btClipboard.Size = new System.Drawing.Size(42, 23);
+            btClipboard.TabIndex = 46;
+            btClipboard.Text = "Clip..";
+            btClipboard.UseVisualStyleBackColor = true;
+            btClipboard.Click += btClipboard_Click;
+            // 
             // EditUoBodyconvMobtypes
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            ClientSize = new System.Drawing.Size(1003, 655);
+            ClientSize = new System.Drawing.Size(1036, 655);
             Controls.Add(panelScript);
             Controls.Add(panelEdit);
             Controls.Add(lbFileName);
@@ -801,5 +814,6 @@ namespace UoFiddler.Controls.Forms
         private System.Windows.Forms.Label lbVirtualArmor;
         private System.Windows.Forms.TextBox tbVirtualArmor;
         private System.Windows.Forms.Button btSaveScript;
+        private System.Windows.Forms.Button btClipboard;
     }
 }
