@@ -62,6 +62,9 @@ namespace UoFiddler.Controls.Forms
             lbBody = new System.Windows.Forms.Label();
             textBoxBody = new System.Windows.Forms.TextBox();
             panelScript = new System.Windows.Forms.Panel();
+            btnSaveSettings = new System.Windows.Forms.Button();
+            tbMinTameSkill = new System.Windows.Forms.TextBox();
+            lbMinTameSkill = new System.Windows.Forms.Label();
             tbSControlSlots = new System.Windows.Forms.TextBox();
             lbControlSlots = new System.Windows.Forms.Label();
             lbOrFalse = new System.Windows.Forms.Label();
@@ -156,8 +159,7 @@ namespace UoFiddler.Controls.Forms
             tabControl1 = new System.Windows.Forms.TabControl();
             tabPageRunUo = new System.Windows.Forms.TabPage();
             tabPageSphere = new System.Windows.Forms.TabPage();
-            tbMinTameSkill = new System.Windows.Forms.TextBox();
-            lbMinTameSkill = new System.Windows.Forms.Label();
+            btnLoadSettings = new System.Windows.Forms.Button();
             contextMenuStripRichTextBoxEdit.SuspendLayout();
             panelEdit.SuspendLayout();
             panelScript.SuspendLayout();
@@ -340,6 +342,8 @@ namespace UoFiddler.Controls.Forms
             // 
             // panelScript
             // 
+            panelScript.Controls.Add(btnLoadSettings);
+            panelScript.Controls.Add(btnSaveSettings);
             panelScript.Controls.Add(tbMinTameSkill);
             panelScript.Controls.Add(lbMinTameSkill);
             panelScript.Controls.Add(tbSControlSlots);
@@ -437,6 +441,33 @@ namespace UoFiddler.Controls.Forms
             panelScript.Name = "panelScript";
             panelScript.Size = new System.Drawing.Size(288, 574);
             panelScript.TabIndex = 13;
+            // 
+            // btnSaveSettings
+            // 
+            btnSaveSettings.Location = new System.Drawing.Point(135, 545);
+            btnSaveSettings.Name = "btnSaveSettings";
+            btnSaveSettings.Size = new System.Drawing.Size(93, 23);
+            btnSaveSettings.TabIndex = 93;
+            btnSaveSettings.Text = "Save Settings";
+            btnSaveSettings.UseVisualStyleBackColor = true;
+            btnSaveSettings.Click += btnSaveSettings_Click;
+            // 
+            // tbMinTameSkill
+            // 
+            tbMinTameSkill.Location = new System.Drawing.Point(94, 543);
+            tbMinTameSkill.Name = "tbMinTameSkill";
+            tbMinTameSkill.Size = new System.Drawing.Size(35, 23);
+            tbMinTameSkill.TabIndex = 92;
+            tbMinTameSkill.Text = "95.1";
+            // 
+            // lbMinTameSkill
+            // 
+            lbMinTameSkill.AutoSize = true;
+            lbMinTameSkill.Location = new System.Drawing.Point(10, 546);
+            lbMinTameSkill.Name = "lbMinTameSkill";
+            lbMinTameSkill.Size = new System.Drawing.Size(83, 15);
+            lbMinTameSkill.TabIndex = 91;
+            lbMinTameSkill.Text = "MinTameSkill :";
             // 
             // tbSControlSlots
             // 
@@ -1253,22 +1284,15 @@ namespace UoFiddler.Controls.Forms
             tabPageSphere.Text = "Sphere";
             tabPageSphere.UseVisualStyleBackColor = true;
             // 
-            // tbMinTameSkill
+            // btnLoadSettings
             // 
-            tbMinTameSkill.Location = new System.Drawing.Point(94, 543);
-            tbMinTameSkill.Name = "tbMinTameSkill";
-            tbMinTameSkill.Size = new System.Drawing.Size(35, 23);
-            tbMinTameSkill.TabIndex = 92;
-            tbMinTameSkill.Text = "95.1";
-            // 
-            // lbMinTameSkill
-            // 
-            lbMinTameSkill.AutoSize = true;
-            lbMinTameSkill.Location = new System.Drawing.Point(10, 546);
-            lbMinTameSkill.Name = "lbMinTameSkill";
-            lbMinTameSkill.Size = new System.Drawing.Size(83, 15);
-            lbMinTameSkill.TabIndex = 91;
-            lbMinTameSkill.Text = "MinTameSkill :";
+            btnLoadSettings.Location = new System.Drawing.Point(231, 545);
+            btnLoadSettings.Name = "btnLoadSettings";
+            btnLoadSettings.Size = new System.Drawing.Size(46, 23);
+            btnLoadSettings.TabIndex = 94;
+            btnLoadSettings.Text = "Load";
+            btnLoadSettings.UseVisualStyleBackColor = true;
+            btnLoadSettings.Click += btnLoadSettings_Click;
             // 
             // EditUoBodyconvMobtypes
             // 
@@ -1283,7 +1307,7 @@ namespace UoFiddler.Controls.Forms
             FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             Icon = (System.Drawing.Icon)resources.GetObject("$this.Icon");
             Name = "EditUoBodyconvMobtypes";
-            Text = "Edit UoBodyconv or Mobtypes";
+            Text = "Edit UoBodyconv or Mobtypes and Script Creator";
             contextMenuStripRichTextBoxEdit.ResumeLayout(false);
             panelEdit.ResumeLayout(false);
             panelEdit.PerformLayout();
@@ -1413,5 +1437,7 @@ namespace UoFiddler.Controls.Forms
         private System.Windows.Forms.Label lbControlSlots;
         private System.Windows.Forms.TextBox tbMinTameSkill;
         private System.Windows.Forms.Label lbMinTameSkill;
+        private System.Windows.Forms.Button btnSaveSettings;
+        private System.Windows.Forms.Button btnLoadSettings;
     }
 }

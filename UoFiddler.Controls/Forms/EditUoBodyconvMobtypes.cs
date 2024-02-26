@@ -417,5 +417,135 @@ namespace UoFiddler.Controls.Forms
             player.Play();
         }
         #endregion
+
+        private void btnSaveSettings_Click(object sender, EventArgs e)
+        {
+            // Erstellen Sie eine neue Liste, um die Werte zu speichern
+            List<string> values = new List<string>();
+
+            // Fügen Sie die Werte der Textboxen zur Liste hinzu
+            values.Add(tbScriptName.Text);
+            values.Add(tbItemID.Text);
+            values.Add(tbItemID2.Text);
+            values.Add(tbItemID3.Text);
+            values.Add(tbStr1.Text);
+            values.Add(tbStr2.Text);
+            values.Add(tbDex1.Text);
+            values.Add(tbDex2.Text);
+            values.Add(tbInt1.Text);
+            values.Add(tbInt2.Text);
+            values.Add(tbSetHits1.Text);
+            values.Add(tbSetHits2.Text);
+            values.Add(tBBaseSoundID1.Text);
+            values.Add(tBBaseSoundID2.Text);
+            values.Add(tbSetDamage1.Text);
+            values.Add(tbSetDamage2.Text);
+            values.Add(tbPhysical.Text);
+            values.Add(tbFire.Text);
+            values.Add(tbEnergy.Text);
+            values.Add(tbFame.Text);
+            values.Add(tbKarma.Text);
+            values.Add(tbVirtualArmor.Text);
+            values.Add(tbRPhysical1.Text);
+            values.Add(tbRPhysical2.Text);
+            values.Add(tbRFire1.Text);
+            values.Add(tbRFire2.Text);
+            values.Add(tbRCold1.Text);
+            values.Add(tbRCold2.Text);
+            values.Add(tbRPoison1.Text);
+            values.Add(tbRPoison2.Text);
+            values.Add(tbREnergy1.Text);
+            values.Add(tbREnergy2.Text);
+            values.Add(tbSEvalInt1.Text);
+            values.Add(tbSEvalInt2.Text);
+            values.Add(tbSetMagery1.Text);
+            values.Add(tbSetMagery2.Text);
+            values.Add(tbSMagicResist1.Text);
+            values.Add(tbSMagicResist2.Text);
+            values.Add(tbSTactics1.Text);
+            values.Add(tbSTactics2.Text);
+            values.Add(tbSWrestling1.Text);
+            values.Add(tbSWrestling2.Text);
+            values.Add(tbSControlSlots.Text);
+            values.Add(tbTamable.Text);
+            values.Add(tbMinTameSkill.Text);
+
+            // Fügen Sie weitere Textboxen hinzu, falls vorhanden...
+
+            // Bestimmen Sie den Pfad zum Speicherort
+            string path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data", "SavesSettings");
+
+            // Erstellen Sie den Ordner, wenn er noch nicht existiert
+            Directory.CreateDirectory(path);
+
+            // Speichern Sie die Liste in einer Datei
+            File.WriteAllLines(Path.Combine(path, "ScriptSettingsAnimationen.txt"), values);
+        }
+
+        private void btnLoadSettings_Click(object sender, EventArgs e)
+        {
+            // Bestimmen Sie den Pfad zum Speicherort
+            string path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data", "SavesSettings", "ScriptSettingsAnimationen.txt");
+
+            // Überprüfen Sie, ob die Datei existiert
+            if (File.Exists(path))
+            {
+                // Lesen Sie die Werte aus der Datei
+                List<string> values = File.ReadAllLines(path).ToList();
+
+                // Setzen Sie die Werte der Textboxen
+                tbScriptName.Text = values[0];
+                tbItemID.Text = values[1];
+                tbItemID2.Text = values[2];
+                tbItemID3.Text = values[3];
+                tbStr1.Text = values[4];
+                tbStr2.Text = values[5];
+                tbDex1.Text = values[6];
+                tbDex2.Text = values[7];
+                tbInt1.Text = values[8];
+                tbInt2.Text = values[9];
+                tbSetHits1.Text = values[10];
+                tbSetHits2.Text = values[11];
+                tBBaseSoundID1.Text = values[12];
+                tBBaseSoundID2.Text = values[13];
+                tbSetDamage1.Text = values[14];
+                tbSetDamage2.Text = values[15];
+                tbPhysical.Text = values[16];
+                tbFire.Text = values[17];
+                tbEnergy.Text = values[18];
+                tbFame.Text = values[19];
+                tbKarma.Text = values[20];
+                tbVirtualArmor.Text = values[21];
+                tbRPhysical1.Text = values[22];
+                tbRPhysical2.Text = values[23];
+                tbRFire1.Text = values[24];
+                tbRFire2.Text = values[25];
+                tbRCold1.Text = values[26];
+                tbRCold2.Text = values[27];
+                tbRPoison1.Text = values[28];
+                tbRPoison2.Text = values[29];
+                tbREnergy1.Text = values[30];
+                tbREnergy2.Text = values[31];
+                tbSEvalInt1.Text = values[31];
+                tbSEvalInt2.Text = values[32];
+                tbSetMagery1.Text = values[33];
+                tbSetMagery2.Text = values[34];
+                tbSMagicResist1.Text = values[35];
+                tbSMagicResist2.Text = values[36];
+                tbSTactics1.Text = values[37];
+                tbSTactics2.Text = values[38];
+                tbSWrestling1.Text = values[39];
+                tbSWrestling2.Text = values[40];
+                tbSControlSlots.Text = values[41];
+                tbTamable.Text = values[42];
+                tbMinTameSkill.Text = values[43];
+
+                // Setzen Sie weitere Textboxen, falls vorhanden...
+            }
+            else
+            {
+                MessageBox.Show("Die Einstellungsdatei konnte nicht gefunden werden.");
+            }
+        }
     }
 }
