@@ -418,12 +418,13 @@ namespace UoFiddler.Controls.Forms
         }
         #endregion
 
+        #region btnSaveSettings
         private void btnSaveSettings_Click(object sender, EventArgs e)
         {
-            // Erstellen Sie eine neue Liste, um die Werte zu speichern
+            // Create a new list to store the values
             List<string> values = new List<string>();
 
-            // Fügen Sie die Werte der Textboxen zur Liste hinzu
+            // Add the text box values ​​to the list
             values.Add(tbScriptName.Text);
             values.Add(tbItemID.Text);
             values.Add(tbItemID2.Text);
@@ -470,30 +471,41 @@ namespace UoFiddler.Controls.Forms
             values.Add(tbTamable.Text);
             values.Add(tbMinTameSkill.Text);
 
-            // Fügen Sie weitere Textboxen hinzu, falls vorhanden...
+            // Add more text boxes if any...
 
             // Bestimmen Sie den Pfad zum Speicherort
             string path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data", "SavesSettings");
 
-            // Erstellen Sie den Ordner, wenn er noch nicht existiert
+            // Create the folder if it doesn't already exist
             Directory.CreateDirectory(path);
 
-            // Speichern Sie die Liste in einer Datei
+            // Save the list to a file
             File.WriteAllLines(Path.Combine(path, "ScriptSettingsAnimationen.txt"), values);
-        }
 
+            // Create a new SoundPlayer
+            SoundPlayer player = new SoundPlayer();
+
+            // Load the sound file
+            player.SoundLocation = AppDomain.CurrentDomain.BaseDirectory + "\\Sound.wav";
+
+            // Play the sound
+            player.Play();
+        }
+        #endregion
+
+        #region btnLoadSettings_Click
         private void btnLoadSettings_Click(object sender, EventArgs e)
         {
-            // Bestimmen Sie den Pfad zum Speicherort
+            // Specify the path to the storage location
             string path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data", "SavesSettings", "ScriptSettingsAnimationen.txt");
 
-            // Überprüfen Sie, ob die Datei existiert
+            // Check if the file exists
             if (File.Exists(path))
             {
-                // Lesen Sie die Werte aus der Datei
+                // Read the values ​​from the file
                 List<string> values = File.ReadAllLines(path).ToList();
 
-                // Setzen Sie die Werte der Textboxen
+                // Set the values ​​of the text boxes
                 tbScriptName.Text = values[0];
                 tbItemID.Text = values[1];
                 tbItemID2.Text = values[2];
@@ -526,26 +538,36 @@ namespace UoFiddler.Controls.Forms
                 tbRPoison2.Text = values[29];
                 tbREnergy1.Text = values[30];
                 tbREnergy2.Text = values[31];
-                tbSEvalInt1.Text = values[31];
-                tbSEvalInt2.Text = values[32];
-                tbSetMagery1.Text = values[33];
-                tbSetMagery2.Text = values[34];
-                tbSMagicResist1.Text = values[35];
-                tbSMagicResist2.Text = values[36];
-                tbSTactics1.Text = values[37];
-                tbSTactics2.Text = values[38];
-                tbSWrestling1.Text = values[39];
-                tbSWrestling2.Text = values[40];
-                tbSControlSlots.Text = values[41];
-                tbTamable.Text = values[42];
-                tbMinTameSkill.Text = values[43];
+                tbSEvalInt1.Text = values[32];
+                tbSEvalInt2.Text = values[33];
+                tbSetMagery1.Text = values[34];
+                tbSetMagery2.Text = values[35];
+                tbSMagicResist1.Text = values[36];
+                tbSMagicResist2.Text = values[37];
+                tbSTactics1.Text = values[38];
+                tbSTactics2.Text = values[39];
+                tbSWrestling1.Text = values[40];
+                tbSWrestling2.Text = values[41];
+                tbSControlSlots.Text = values[42];
+                tbTamable.Text = values[43];
+                tbMinTameSkill.Text = values[44];
 
-                // Setzen Sie weitere Textboxen, falls vorhanden...
+                // Put additional text boxes if there are any...
             }
             else
             {
-                MessageBox.Show("Die Einstellungsdatei konnte nicht gefunden werden.");
+                MessageBox.Show("The settings file could not be found.");
             }
+            #endregion
+
+            // Create a new SoundPlayer
+            SoundPlayer player = new SoundPlayer();
+
+            // Load the sound file
+            player.SoundLocation = AppDomain.CurrentDomain.BaseDirectory + "\\Sound.wav";
+
+            // Play the sound
+            player.Play();
         }
     }
 }
