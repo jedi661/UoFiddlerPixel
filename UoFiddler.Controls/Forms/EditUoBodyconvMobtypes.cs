@@ -166,6 +166,21 @@ namespace UoFiddler.Controls.Forms
         }
         #endregion
 
+        #region btCheckNumbers_Click
+        private void btCheckNumbers_Click(object sender, EventArgs e)
+        {
+            // Extract all numbers from the text
+            var matches = Regex.Matches(richTextBoxEdit.Text, @"\b\d{2,4}\b");
+            var numbers = new HashSet<int>(matches.Cast<Match>().Select(m => int.Parse(m.Value)));
+
+            // Find the first missing number
+            int missingNumber = Enumerable.Range(10, 9990).FirstOrDefault(i => !numbers.Contains(i));
+
+            // Zeigen Sie die fehlende Zahl in einer MessageBox an
+            MessageBox.Show($"The first free number found is at {missingNumber}");
+        }
+        #endregion
+
         #region string TextBoxID
         public string TextBoxID
         {
@@ -213,6 +228,36 @@ namespace UoFiddler.Controls.Forms
             string SetKarma = tbKarma.Text; // Karma
             // Armor
             string SetArmor = tbVirtualArmor.Text; // Armor
+            // Damage Resistance
+            string SetPhysical = tbPhysical.Text; // Damage Resistance Physical
+            string SetFire = tbFire.Text; // Damage Resistance Fire
+            string SetEnergy = tbEnergy.Text; // Damage Resistance Energy
+            // Resistance
+            string SetRPhysical1 = tbRPhysical1.Text; // Resistance Physical
+            string SetRPhysical2 = tbRPhysical2.Text; // Resistance Physical
+            string SetRFire1 = tbRFire1.Text; // Resistance Fire
+            string SetRFire2 = tbRFire2.Text; // Resistance Fire
+            string SetRCold1 = tbRCold1.Text; // Resistance Cold
+            string SetRCold2 = tbRCold2.Text; // Resistance Cold
+            string SetRPoison1 = tbRPoison1.Text; // Resistance Poison
+            string SetRPoison2 = tbRPoison2.Text; // Resistance Poison
+            string SetREnergy1 = tbREnergy1.Text; // Resistance Energy
+            string SetREnergy2 = tbREnergy2.Text; // Resistance Energy
+            // Set Skills
+            string SetEvalInt1 = tbSEvalInt1.Text; // Set Skill EvalInt
+            string SetEvalInt2 = tbSEvalInt2.Text; // Set Skill EvalInt
+            string SetMagery1 = tbSetMagery1.Text; // Set Skill Magery
+            string SetMagery2 = tbSetMagery2.Text; // Set Skill Magery
+            string SMagicResist1 = tbSMagicResist1.Text; // Set Skill Magery Resist
+            string SMagicResist2 = tbSMagicResist2.Text; // Set Skill Magery Resist
+            string STactics1 = tbSTactics1.Text; // Set Skill Tactics
+            string STactics2 = tbSTactics2.Text; // Set Skill Tactics
+            string SWrestling1 = tbSWrestling1.Text; // Set Skill Wrestling
+            string SWrestling2 = tbSWrestling2.Text; // Set Skill Wrestling
+            // Animal
+            string STamable = tbTamable.Text; // Set True or False
+            string SControlSlots = tbSControlSlots.Text; // Set Controll Slots you need from 1 to 6
+            string SMinTameSkill = tbMinTameSkill.Text; // Set Tame Skill you Need
 
             string script = $@"
             using System;
@@ -242,31 +287,32 @@ namespace UoFiddler.Controls.Forms
                 SetHits({Hitp1}, {Hitp2});          // Hitpoints
                 SetDamage({SetDam1}, {SetDam2});    // Damage
 
-                // Resistance
-                SetDamageType(ResistanceType.Physical, 40);
-                SetDamageType(ResistanceType.Fire, 40);
-                SetDamageType(ResistanceType.Energy, 20);
+                // Damage Resistance
+                SetDamageType(ResistanceType.Physical, {SetPhysical});
+                SetDamageType(ResistanceType.Fire, {SetFire});
+                SetDamageType(ResistanceType.Energy, {SetEnergy});
 
-                SetResistance(ResistanceType.Physical, 55, 65);
-                SetResistance(ResistanceType.Fire, 30, 40);
-                SetResistance(ResistanceType.Cold, 30, 40);
-                SetResistance(ResistanceType.Poison, 30, 40);
-                SetResistance(ResistanceType.Energy, 20, 30);
+                // Set Resistance
+                SetResistance(ResistanceType.Physical, {SetRPhysical1}, {SetRPhysical2});
+                SetResistance(ResistanceType.Fire, {SetRFire1}, {SetRFire2});
+                SetResistance(ResistanceType.Cold, {SetRCold1}, {SetRCold2});
+                SetResistance(ResistanceType.Poison, {SetRPoison1}, {SetRPoison2});
+                SetResistance(ResistanceType.Energy, {SetREnergy1}, {SetREnergy2});
 
-                // Skills
-                SetSkill(SkillName.EvalInt, 10.4, 50.0);
-                SetSkill(SkillName.Magery, 10.4, 50.0);
-                SetSkill(SkillName.MagicResist, 85.3, 100.0);
-                SetSkill(SkillName.Tactics, 97.6, 100.0);
-                SetSkill(SkillName.Wrestling, 80.5, 92.5);
+                // Set Skills
+                SetSkill(SkillName.EvalInt, {SetEvalInt1}, {SetEvalInt2});
+                SetSkill(SkillName.Magery, {SetMagery1}, {SetMagery2});
+                SetSkill(SkillName.MagicResist, {SMagicResist1}, {SMagicResist2});
+                SetSkill(SkillName.Tactics, {STactics1}, {STactics2});
+                SetSkill(SkillName.Wrestling, {SWrestling1}, {SWrestling2});
 
                 Fame = {SetFame}; // Fame
                 Karma = {SetKarma}; // Karma
 
                 VirtualArmor = {SetArmor}; // Armor
-                Tamable = true; // Tame false or true
-                ControlSlots = 2; // Control slots you need
-                MinTameSkill = 95.1;  //Skill required to tame
+                Tamable = {STamable}; // Tame false or true
+                ControlSlots = {SControlSlots}; // Control slots you need
+                MinTameSkill = {SMinTameSkill};  //Skill required to tame
 
                 switch (Utility.Random(3))
                 {{
