@@ -135,7 +135,7 @@ namespace UoFiddler.Controls.Forms
             {
                 MessageBox.Show("No further reversals possible.");
             }
-        }        
+        }
         #endregion
 
         #region string TextBoxID
@@ -152,6 +152,7 @@ namespace UoFiddler.Controls.Forms
         }
         #endregion
 
+        #region btCreateScript_Click
         private void btCreateScript_Click(object sender, EventArgs e)
         {
             string scriptName = tbScriptName.Text;
@@ -298,5 +299,24 @@ namespace UoFiddler.Controls.Forms
     }}";
             richTextBoxEdit.Text = script;
         }
+        #endregion
+
+        #region
+        private void btSaveScript_Click(object sender, EventArgs e)
+        {
+            SaveFileDialog saveFileDialog = new SaveFileDialog();
+            saveFileDialog.Filter = "C# Files|*.cs";
+            saveFileDialog.Title = "Save a C# File";
+            saveFileDialog.FileName = tbScriptName.Text; // Setzt den Dateinamen auf den Inhalt von tbScriptName
+
+            if (saveFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                using (StreamWriter writer = new StreamWriter(saveFileDialog.OpenFile()))
+                {
+                    writer.Write(richTextBoxEdit.Text); // Schreibt den Inhalt von richTextBoxEdit in die Datei
+                }
+            }
+        }
+        #endregion
     }
 }

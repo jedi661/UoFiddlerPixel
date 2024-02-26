@@ -60,6 +60,9 @@ namespace UoFiddler.Controls.Forms
             lbBody = new System.Windows.Forms.Label();
             textBoxBody = new System.Windows.Forms.TextBox();
             panelScript = new System.Windows.Forms.Panel();
+            btSaveScript = new System.Windows.Forms.Button();
+            lbVirtualArmor = new System.Windows.Forms.Label();
+            tbVirtualArmor = new System.Windows.Forms.TextBox();
             label5 = new System.Windows.Forms.Label();
             tbKarma = new System.Windows.Forms.TextBox();
             lbFame = new System.Windows.Forms.Label();
@@ -103,8 +106,6 @@ namespace UoFiddler.Controls.Forms
             btCreateScript = new System.Windows.Forms.Button();
             lbScriptName = new System.Windows.Forms.Label();
             tbScriptName = new System.Windows.Forms.TextBox();
-            lbVirtualArmor = new System.Windows.Forms.Label();
-            tbVirtualArmor = new System.Windows.Forms.TextBox();
             contextMenuStripRichTextBoxEdit.SuspendLayout();
             panelEdit.SuspendLayout();
             panelScript.SuspendLayout();
@@ -265,6 +266,7 @@ namespace UoFiddler.Controls.Forms
             // 
             // panelScript
             // 
+            panelScript.Controls.Add(btSaveScript);
             panelScript.Controls.Add(lbVirtualArmor);
             panelScript.Controls.Add(tbVirtualArmor);
             panelScript.Controls.Add(label5);
@@ -314,6 +316,32 @@ namespace UoFiddler.Controls.Forms
             panelScript.Name = "panelScript";
             panelScript.Size = new System.Drawing.Size(279, 416);
             panelScript.TabIndex = 13;
+            // 
+            // btSaveScript
+            // 
+            btSaveScript.Location = new System.Drawing.Point(204, 28);
+            btSaveScript.Name = "btSaveScript";
+            btSaveScript.Size = new System.Drawing.Size(40, 23);
+            btSaveScript.TabIndex = 45;
+            btSaveScript.Text = "Save";
+            btSaveScript.UseVisualStyleBackColor = true;
+            // 
+            // lbVirtualArmor
+            // 
+            lbVirtualArmor.AutoSize = true;
+            lbVirtualArmor.Location = new System.Drawing.Point(165, 374);
+            lbVirtualArmor.Name = "lbVirtualArmor";
+            lbVirtualArmor.Size = new System.Drawing.Size(47, 15);
+            lbVirtualArmor.TabIndex = 44;
+            lbVirtualArmor.Text = "Armor :";
+            // 
+            // tbVirtualArmor
+            // 
+            tbVirtualArmor.Location = new System.Drawing.Point(218, 371);
+            tbVirtualArmor.Name = "tbVirtualArmor";
+            tbVirtualArmor.Size = new System.Drawing.Size(43, 23);
+            tbVirtualArmor.TabIndex = 43;
+            tbVirtualArmor.Text = "60";
             // 
             // label5
             // 
@@ -567,7 +595,7 @@ namespace UoFiddler.Controls.Forms
             // lbBaseHorse
             // 
             lbBaseHorse.AutoSize = true;
-            lbBaseHorse.Location = new System.Drawing.Point(132, 10);
+            lbBaseHorse.Location = new System.Drawing.Point(114, 10);
             lbBaseHorse.Name = "lbBaseHorse";
             lbBaseHorse.Size = new System.Drawing.Size(65, 15);
             lbBaseHorse.TabIndex = 13;
@@ -660,7 +688,7 @@ namespace UoFiddler.Controls.Forms
             // 
             // btCreateScript
             // 
-            btCreateScript.Location = new System.Drawing.Point(132, 28);
+            btCreateScript.Location = new System.Drawing.Point(114, 28);
             btCreateScript.Name = "btCreateScript";
             btCreateScript.Size = new System.Drawing.Size(90, 23);
             btCreateScript.TabIndex = 2;
@@ -683,23 +711,6 @@ namespace UoFiddler.Controls.Forms
             tbScriptName.Name = "tbScriptName";
             tbScriptName.Size = new System.Drawing.Size(100, 23);
             tbScriptName.TabIndex = 0;
-            // 
-            // lbVirtualArmor
-            // 
-            lbVirtualArmor.AutoSize = true;
-            lbVirtualArmor.Location = new System.Drawing.Point(165, 374);
-            lbVirtualArmor.Name = "lbVirtualArmor";
-            lbVirtualArmor.Size = new System.Drawing.Size(47, 15);
-            lbVirtualArmor.TabIndex = 44;
-            lbVirtualArmor.Text = "Armor :";
-            // 
-            // tbVirtualArmor
-            // 
-            tbVirtualArmor.Location = new System.Drawing.Point(218, 371);
-            tbVirtualArmor.Name = "tbVirtualArmor";
-            tbVirtualArmor.Size = new System.Drawing.Size(43, 23);
-            tbVirtualArmor.TabIndex = 43;
-            tbVirtualArmor.Text = "60";
             // 
             // EditUoBodyconvMobtypes
             // 
@@ -789,5 +800,6 @@ namespace UoFiddler.Controls.Forms
         private System.Windows.Forms.TextBox tbKarma;
         private System.Windows.Forms.Label lbVirtualArmor;
         private System.Windows.Forms.TextBox tbVirtualArmor;
+        private System.Windows.Forms.Button btSaveScript;
     }
 }
