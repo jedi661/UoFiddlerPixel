@@ -90,6 +90,7 @@ namespace UoFiddler.Forms
             textBoxOutputPath.Text = Options.OutputPath;
         }
 
+        #region OnClickApply
         private void OnClickApply(object sender, EventArgs e)
         {
             Options.RightPanelInSoundsTab = checkBoxPanelSoundsDesign.Checked;
@@ -199,7 +200,9 @@ namespace UoFiddler.Forms
                 Options.OutputPath = textBoxOutputPath.Text;
             }
         }
+        #endregion
 
+        #region OnClickBrowseOutputPath
         private void OnClickBrowseOutputPath(object sender, EventArgs e)
         {
             using (FolderBrowserDialog dialog = new FolderBrowserDialog())
@@ -213,7 +216,9 @@ namespace UoFiddler.Forms
                 }
             }
         }
+        #endregion
 
+        #region TileFocusColorComboBoxDrawItem
         private void TileFocusColorComboBoxDrawItem(object sender, DrawItemEventArgs e)
         {
             e.DrawBackground();
@@ -239,7 +244,9 @@ namespace UoFiddler.Forms
             TextRenderer.DrawText(e.Graphics, itemText, TileFocusColorComboBox.Font, textRectangle, TileFocusColorComboBox.ForeColor,
                 TextFormatFlags.Left | TextFormatFlags.VerticalCenter);
         }
+        #endregion
 
+        #region TileSelectionColorComboBoxDrawItem
         private void TileSelectionColorComboBoxDrawItem(object sender, DrawItemEventArgs e)
         {
             e.DrawBackground();
@@ -265,7 +272,9 @@ namespace UoFiddler.Forms
             TextRenderer.DrawText(e.Graphics, itemText, TileSelectionColorComboBox.Font, textRectangle, TileSelectionColorComboBox.ForeColor,
                 TextFormatFlags.Left | TextFormatFlags.VerticalCenter);
         }
+        #endregion
 
+        #region RestoreDefaultsButton
         private void RestoreDefaultsButton_Click(object sender, EventArgs e)
         {
             const string title = "Restore defaults";
@@ -282,12 +291,16 @@ namespace UoFiddler.Forms
             TileFocusColorComboBox.SelectedItem = Color.DarkRed;
             TileSelectionColorComboBox.SelectedItem = Color.DodgerBlue;
         }
+        #endregion
 
+        #region OnClickClose
         private void OnClickClose(object sender, EventArgs e)
         {
             Close();
         }
+        #endregion
 
+        #region btAppData_Click
         private void btAppData_Click(object sender, EventArgs e)
         {
             string path = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\UoFiddler";
@@ -297,9 +310,9 @@ namespace UoFiddler.Forms
             }
             else
             {
-                MessageBox.Show("Verzeichnis existiert nicht: " + path);
+                MessageBox.Show("Directory does not exist: " + path);
             }
         }
-
+        #endregion
     }
 }

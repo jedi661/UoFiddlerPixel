@@ -556,7 +556,7 @@ namespace UoFiddler.Controls.Forms
             else
             {
                 MessageBox.Show("The settings file could not be found.");
-            }            
+            }
 
             // Create a new SoundPlayer
             SoundPlayer player = new SoundPlayer();
@@ -695,6 +695,7 @@ ON=@CreateLoot
         }
         #endregion
 
+        #region checkBoxSphereID_CheckedChanged
         private void checkBoxSphereID_CheckedChanged(Object sender, EventArgs e)
         {
             if (checkBoxSphereID.Checked)
@@ -702,5 +703,44 @@ ON=@CreateLoot
                 tbCHARDEF.Text = textBoxID.Text;
             }
         }
+        #endregion
+
+        #region btAnimationlistLoad
+        private void btAnimationlistLoad_Click(object sender, EventArgs e)
+        {
+            string path = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\UoFiddler\Animationlist.xml";
+            if (File.Exists(path))
+            {
+                richTextBoxEdit.Text = File.ReadAllText(path);
+            }
+            else
+            {
+                MessageBox.Show("file does not exist: " + path);
+            }
+        }
+        #endregion
+
+        #region btSaveAnimationlist
+        private void btSaveAnimationlist_Click(object sender, EventArgs e)
+        {
+            string path = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\UoFiddler\Animationlist.xml";
+            File.WriteAllText(path, richTextBoxEdit.Text);
+        }
+        #endregion
+
+        #region btAppData_Click
+        private void btAppData_Click(object sender, EventArgs e)
+        {
+            string path = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\UoFiddler";
+            if (Directory.Exists(path))
+            {
+                System.Diagnostics.Process.Start("explorer.exe", path);
+            }
+            else
+            {
+                MessageBox.Show("Directory does not exist: " + path);
+            }
+        }
+        #endregion
     }
 }

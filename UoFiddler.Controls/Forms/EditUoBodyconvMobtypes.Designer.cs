@@ -232,12 +232,18 @@ namespace UoFiddler.Controls.Forms
             tbCHARDEF = new System.Windows.Forms.TextBox();
             lbCHARDEF = new System.Windows.Forms.Label();
             btCreateSphereScript = new System.Windows.Forms.Button();
+            tabPageAnimationlist = new System.Windows.Forms.TabPage();
+            btClipboardAnimationlist = new System.Windows.Forms.Button();
+            btSaveAnimationlist = new System.Windows.Forms.Button();
+            btAnimationlistLoad = new System.Windows.Forms.Button();
+            btAppData = new System.Windows.Forms.Button();
             contextMenuStripRichTextBoxEdit.SuspendLayout();
             panelEdit.SuspendLayout();
             panelScript.SuspendLayout();
             tabControl1.SuspendLayout();
             tabPageRunUo.SuspendLayout();
             tabPageSphere.SuspendLayout();
+            tabPageAnimationlist.SuspendLayout();
             SuspendLayout();
             // 
             // btLoadBodyconv
@@ -1352,6 +1358,7 @@ namespace UoFiddler.Controls.Forms
             // 
             tabControl1.Controls.Add(tabPageRunUo);
             tabControl1.Controls.Add(tabPageSphere);
+            tabControl1.Controls.Add(tabPageAnimationlist);
             tabControl1.Location = new System.Drawing.Point(12, 227);
             tabControl1.Name = "tabControl1";
             tabControl1.SelectedIndex = 0;
@@ -2092,6 +2099,59 @@ namespace UoFiddler.Controls.Forms
             btCreateSphereScript.UseVisualStyleBackColor = true;
             btCreateSphereScript.Click += btCreateSphereScript_Click;
             // 
+            // tabPageAnimationlist
+            // 
+            tabPageAnimationlist.Controls.Add(btAppData);
+            tabPageAnimationlist.Controls.Add(btClipboardAnimationlist);
+            tabPageAnimationlist.Controls.Add(btSaveAnimationlist);
+            tabPageAnimationlist.Controls.Add(btAnimationlistLoad);
+            tabPageAnimationlist.Location = new System.Drawing.Point(4, 24);
+            tabPageAnimationlist.Name = "tabPageAnimationlist";
+            tabPageAnimationlist.Size = new System.Drawing.Size(303, 635);
+            tabPageAnimationlist.TabIndex = 2;
+            tabPageAnimationlist.Text = "Animationlist";
+            tabPageAnimationlist.UseVisualStyleBackColor = true;
+            // 
+            // btClipboardAnimationlist
+            // 
+            btClipboardAnimationlist.Location = new System.Drawing.Point(169, 8);
+            btClipboardAnimationlist.Name = "btClipboardAnimationlist";
+            btClipboardAnimationlist.Size = new System.Drawing.Size(42, 23);
+            btClipboardAnimationlist.TabIndex = 71;
+            btClipboardAnimationlist.Text = "Clip..";
+            btClipboardAnimationlist.UseVisualStyleBackColor = true;
+            btClipboardAnimationlist.Click += btClipboard_Click;
+            // 
+            // btSaveAnimationlist
+            // 
+            btSaveAnimationlist.Location = new System.Drawing.Point(123, 8);
+            btSaveAnimationlist.Name = "btSaveAnimationlist";
+            btSaveAnimationlist.Size = new System.Drawing.Size(44, 23);
+            btSaveAnimationlist.TabIndex = 1;
+            btSaveAnimationlist.Text = "Save";
+            btSaveAnimationlist.UseVisualStyleBackColor = true;
+            btSaveAnimationlist.Click += btSaveAnimationlist_Click;
+            // 
+            // btAnimationlistLoad
+            // 
+            btAnimationlistLoad.Location = new System.Drawing.Point(3, 8);
+            btAnimationlistLoad.Name = "btAnimationlistLoad";
+            btAnimationlistLoad.Size = new System.Drawing.Size(119, 23);
+            btAnimationlistLoad.TabIndex = 0;
+            btAnimationlistLoad.Text = "Load Animationlist";
+            btAnimationlistLoad.UseVisualStyleBackColor = true;
+            btAnimationlistLoad.Click += btAnimationlistLoad_Click;
+            // 
+            // btAppData
+            // 
+            btAppData.Location = new System.Drawing.Point(212, 8);
+            btAppData.Name = "btAppData";
+            btAppData.Size = new System.Drawing.Size(61, 23);
+            btAppData.TabIndex = 72;
+            btAppData.Text = "AppData";
+            btAppData.UseVisualStyleBackColor = true;
+            btAppData.Click += btAppData_Click;
+            // 
             // EditUoBodyconvMobtypes
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -2115,6 +2175,7 @@ namespace UoFiddler.Controls.Forms
             tabPageRunUo.ResumeLayout(false);
             tabPageSphere.ResumeLayout(false);
             tabPageSphere.PerformLayout();
+            tabPageAnimationlist.ResumeLayout(false);
             ResumeLayout(false);
             PerformLayout();
         }
@@ -2311,5 +2372,10 @@ namespace UoFiddler.Controls.Forms
         private System.Windows.Forms.Button btSaveSphereScript;
         private System.Windows.Forms.Button btSphereClipboad;
         private System.Windows.Forms.CheckBox checkBoxSphereID;
+        private System.Windows.Forms.TabPage tabPageAnimationlist;
+        private System.Windows.Forms.Button btAnimationlistLoad;
+        private System.Windows.Forms.Button btSaveAnimationlist;
+        private System.Windows.Forms.Button btClipboardAnimationlist;
+        private System.Windows.Forms.Button btAppData;
     }
 }
