@@ -11,7 +11,7 @@ Version : 4.12.3
 - Add Animation - Edit UoBodyconv and Mobtypes Form.
 - Add Animation - Script Script Creator.
 - Add Animation - Script Script for RunUo and Sphere.
-- Add Abunatuib - Script Edit Animationlist.
+- Add Animation - Script Edit Animationlist.
 
 Version : 4.12.2
 - BildFusion Add Sharp , Clipboard, Texture Cut.
