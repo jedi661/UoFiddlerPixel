@@ -5,6 +5,7 @@ Version : 4.12.3 #XG1
 - Add Animation - Edit UoBodyconv and Mobtypes Form.
 - Add Animation - Script Script Creator.
 - Add Animation - Script Script for RunUo and Sphere.
+- Add Abunatuib - Script Edit Animationlist.
 
 Version : 4.12.2 #XG1
 - BildFusion Add Sharp , Clipboard, Texture Cut.
