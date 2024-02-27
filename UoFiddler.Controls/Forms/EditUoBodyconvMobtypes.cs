@@ -742,5 +742,25 @@ ON=@CreateLoot
             }
         }
         #endregion
+
+        #region btUOOpenDirectory_Clic
+        private void btUOOpenDirectory_Click(object sender, EventArgs e)
+        {
+            string path = textBoxPfad.Text;
+
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                MessageBox.Show("Please provide a directory.", "warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+            else if (!Directory.Exists(path))
+            {
+                MessageBox.Show("The specified directory does not exist.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            else
+            {
+                System.Diagnostics.Process.Start("explorer.exe", path);
+            }
+        }
+        #endregion
     }
 }

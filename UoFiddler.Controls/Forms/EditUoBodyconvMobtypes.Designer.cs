@@ -233,10 +233,11 @@ namespace UoFiddler.Controls.Forms
             lbCHARDEF = new System.Windows.Forms.Label();
             btCreateSphereScript = new System.Windows.Forms.Button();
             tabPageAnimationlist = new System.Windows.Forms.TabPage();
+            btAppData = new System.Windows.Forms.Button();
             btClipboardAnimationlist = new System.Windows.Forms.Button();
             btSaveAnimationlist = new System.Windows.Forms.Button();
             btAnimationlistLoad = new System.Windows.Forms.Button();
-            btAppData = new System.Windows.Forms.Button();
+            btUOOpenDirectory = new System.Windows.Forms.Button();
             contextMenuStripRichTextBoxEdit.SuspendLayout();
             panelEdit.SuspendLayout();
             panelScript.SuspendLayout();
@@ -377,6 +378,7 @@ namespace UoFiddler.Controls.Forms
             // 
             // panelEdit
             // 
+            panelEdit.Controls.Add(btUOOpenDirectory);
             panelEdit.Controls.Add(checkBoxSphereID);
             panelEdit.Controls.Add(btCheckNumbers);
             panelEdit.Controls.Add(lbBody);
@@ -2112,6 +2114,16 @@ namespace UoFiddler.Controls.Forms
             tabPageAnimationlist.Text = "Animationlist";
             tabPageAnimationlist.UseVisualStyleBackColor = true;
             // 
+            // btAppData
+            // 
+            btAppData.Location = new System.Drawing.Point(212, 8);
+            btAppData.Name = "btAppData";
+            btAppData.Size = new System.Drawing.Size(61, 23);
+            btAppData.TabIndex = 72;
+            btAppData.Text = "AppData";
+            btAppData.UseVisualStyleBackColor = true;
+            btAppData.Click += btAppData_Click;
+            // 
             // btClipboardAnimationlist
             // 
             btClipboardAnimationlist.Location = new System.Drawing.Point(169, 8);
@@ -2142,15 +2154,15 @@ namespace UoFiddler.Controls.Forms
             btAnimationlistLoad.UseVisualStyleBackColor = true;
             btAnimationlistLoad.Click += btAnimationlistLoad_Click;
             // 
-            // btAppData
+            // btUOOpenDirectory
             // 
-            btAppData.Location = new System.Drawing.Point(212, 8);
-            btAppData.Name = "btAppData";
-            btAppData.Size = new System.Drawing.Size(61, 23);
-            btAppData.TabIndex = 72;
-            btAppData.Text = "AppData";
-            btAppData.UseVisualStyleBackColor = true;
-            btAppData.Click += btAppData_Click;
+            btUOOpenDirectory.Location = new System.Drawing.Point(8, 117);
+            btUOOpenDirectory.Name = "btUOOpenDirectory";
+            btUOOpenDirectory.Size = new System.Drawing.Size(71, 23);
+            btUOOpenDirectory.TabIndex = 16;
+            btUOOpenDirectory.Text = "UO Dir";
+            btUOOpenDirectory.UseVisualStyleBackColor = true;
+            btUOOpenDirectory.Click += btUOOpenDirectory_Click;
             // 
             // EditUoBodyconvMobtypes
             // 
@@ -2377,5 +2389,6 @@ namespace UoFiddler.Controls.Forms
         private System.Windows.Forms.Button btSaveAnimationlist;
         private System.Windows.Forms.Button btClipboardAnimationlist;
         private System.Windows.Forms.Button btAppData;
+        private System.Windows.Forms.Button btUOOpenDirectory;
     }
 }
