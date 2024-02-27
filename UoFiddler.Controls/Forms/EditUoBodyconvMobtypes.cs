@@ -674,6 +674,15 @@ ON=@CreateLoot
     ITEM=loot_gold_2";
 
             richTextBoxEdit.Text = script;
+
+            // Create a new SoundPlayer
+            SoundPlayer player = new SoundPlayer();
+
+            // Load the sound file
+            player.SoundLocation = AppDomain.CurrentDomain.BaseDirectory + "\\Sound.wav";
+
+            // Play the sound
+            player.Play();
         }
         #endregion
 
@@ -717,6 +726,15 @@ ON=@CreateLoot
             {
                 MessageBox.Show("file does not exist: " + path);
             }
+
+            // Create a new SoundPlayer
+            SoundPlayer player = new SoundPlayer();
+
+            // Load the sound file
+            player.SoundLocation = AppDomain.CurrentDomain.BaseDirectory + "\\Sound.wav";
+
+            // Play the sound
+            player.Play();
         }
         #endregion
 
@@ -725,6 +743,15 @@ ON=@CreateLoot
         {
             string path = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\UoFiddler\Animationlist.xml";
             File.WriteAllText(path, richTextBoxEdit.Text);
+
+            // Create a new SoundPlayer
+            SoundPlayer player = new SoundPlayer();
+
+            // Load the sound file
+            player.SoundLocation = AppDomain.CurrentDomain.BaseDirectory + "\\Sound.wav";
+
+            // Play the sound
+            player.Play();
         }
         #endregion
 
@@ -740,6 +767,15 @@ ON=@CreateLoot
             {
                 MessageBox.Show("Directory does not exist: " + path);
             }
+
+            // Create a new SoundPlayer
+            SoundPlayer player = new SoundPlayer();
+
+            // Load the sound file
+            player.SoundLocation = AppDomain.CurrentDomain.BaseDirectory + "\\Sound.wav";
+
+            // Play the sound
+            player.Play();
         }
         #endregion
 
@@ -759,6 +795,38 @@ ON=@CreateLoot
             else
             {
                 System.Diagnostics.Process.Start("explorer.exe", path);
+            }
+
+            // Create a new SoundPlayer
+            SoundPlayer player = new SoundPlayer();
+
+            // Load the sound file
+            player.SoundLocation = AppDomain.CurrentDomain.BaseDirectory + "\\Sound.wav";
+
+            // Play the sound
+            player.Play();
+        }
+        #endregion
+
+        #region btInfoMobtypes
+        private void btInfoMobtypes_Click(object sender, EventArgs e)
+        {
+            string infoText = "ENGLISH:\n" +
+                      "mobtypes MONSTER 1000 indicates actions 12, 13, and 14 are for casting spells. mobtypes MONSTER 1008 signifies flying actions 19, 20, 21 are supported, along with casting actions 12 and 13. mobtypes MONSTER 1009 also supports flying actions 19, 20, 21, but only casting action 12. For mobtypes MONSTER A00, the uniqueness lies in the limited actions available, with attack actions 4, 5, and 6 serving as replacements for actions 12, 13, and 14. Lastly, mobtypes MONSTER 1004 includes additional actions 7 and 8, with action 12 being utilized for the monster's summoning animation.\n\n" +
+                      "DEUTSCH:\n" +
+                      "mobtypes MONSTER 1000 zeigt an, dass Aktionen 12, 13 und 14 zum Zaubern verwendet werden. mobtypes MONSTER 1008 deutet darauf hin, dass Flugaktionen 19, 20, 21 unterstützt werden, zusammen mit Zaubereiaktionen 12 und 13. mobtypes MONSTER 1009 unterstützt ebenfalls Flugaktionen 19, 20, 21, aber nur Zaubereiaktion 12. Bei mobtypes MONSTER A00 liegt die Besonderheit in den begrenzten verfügbaren Aktionen, wobei Angriffsaktionen 4, 5 und 6 als Ersatz für Aktionen 12, 13 und 14 dienen. Schließlich beinhalten mobtypes MONSTER 1004 zusätzliche Aktionen 7 und 8, wobei Aktion 12 für die Beschwörungsanimation des Monsters verwendet wird.";
+
+            MessageBox.Show(infoText, "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+        #endregion
+
+        #region richTextBoxEdit_KeyDown
+        private void richTextBoxEdit_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.F3)
+            {
+                searchToolStripMenuItem_Click(this, EventArgs.Empty);
+                e.SuppressKeyPress = true;  //Prevents the event from being forwarded
             }
         }
         #endregion

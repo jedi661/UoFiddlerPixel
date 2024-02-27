@@ -58,6 +58,8 @@ namespace UoFiddler.Controls.Forms
             btBackwardText = new System.Windows.Forms.Button();
             lbID = new System.Windows.Forms.Label();
             panelEdit = new System.Windows.Forms.Panel();
+            btInfoMobtypes = new System.Windows.Forms.Button();
+            btUOOpenDirectory = new System.Windows.Forms.Button();
             checkBoxSphereID = new System.Windows.Forms.CheckBox();
             btCheckNumbers = new System.Windows.Forms.Button();
             lbBody = new System.Windows.Forms.Label();
@@ -237,7 +239,6 @@ namespace UoFiddler.Controls.Forms
             btClipboardAnimationlist = new System.Windows.Forms.Button();
             btSaveAnimationlist = new System.Windows.Forms.Button();
             btAnimationlistLoad = new System.Windows.Forms.Button();
-            btUOOpenDirectory = new System.Windows.Forms.Button();
             contextMenuStripRichTextBoxEdit.SuspendLayout();
             panelEdit.SuspendLayout();
             panelScript.SuspendLayout();
@@ -293,6 +294,7 @@ namespace UoFiddler.Controls.Forms
             richTextBoxEdit.Size = new System.Drawing.Size(834, 860);
             richTextBoxEdit.TabIndex = 5;
             richTextBoxEdit.Text = "";
+            richTextBoxEdit.KeyDown += richTextBoxEdit_KeyDown;
             // 
             // contextMenuStripRichTextBoxEdit
             // 
@@ -359,7 +361,7 @@ namespace UoFiddler.Controls.Forms
             // 
             // btBackwardText
             // 
-            btBackwardText.Location = new System.Drawing.Point(222, 146);
+            btBackwardText.Location = new System.Drawing.Point(222, 125);
             btBackwardText.Name = "btBackwardText";
             btBackwardText.Size = new System.Drawing.Size(75, 23);
             btBackwardText.TabIndex = 10;
@@ -378,6 +380,8 @@ namespace UoFiddler.Controls.Forms
             // 
             // panelEdit
             // 
+            panelEdit.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            panelEdit.Controls.Add(btInfoMobtypes);
             panelEdit.Controls.Add(btUOOpenDirectory);
             panelEdit.Controls.Add(checkBoxSphereID);
             panelEdit.Controls.Add(btCheckNumbers);
@@ -396,6 +400,26 @@ namespace UoFiddler.Controls.Forms
             panelEdit.Size = new System.Drawing.Size(307, 192);
             panelEdit.TabIndex = 12;
             // 
+            // btInfoMobtypes
+            // 
+            btInfoMobtypes.Location = new System.Drawing.Point(259, 150);
+            btInfoMobtypes.Name = "btInfoMobtypes";
+            btInfoMobtypes.Size = new System.Drawing.Size(37, 23);
+            btInfoMobtypes.TabIndex = 17;
+            btInfoMobtypes.Text = "Info";
+            btInfoMobtypes.UseVisualStyleBackColor = true;
+            btInfoMobtypes.Click += btInfoMobtypes_Click;
+            // 
+            // btUOOpenDirectory
+            // 
+            btUOOpenDirectory.Location = new System.Drawing.Point(8, 125);
+            btUOOpenDirectory.Name = "btUOOpenDirectory";
+            btUOOpenDirectory.Size = new System.Drawing.Size(71, 23);
+            btUOOpenDirectory.TabIndex = 16;
+            btUOOpenDirectory.Text = "UO Dir";
+            btUOOpenDirectory.UseVisualStyleBackColor = true;
+            btUOOpenDirectory.Click += btUOOpenDirectory_Click;
+            // 
             // checkBoxSphereID
             // 
             checkBoxSphereID.AutoSize = true;
@@ -409,7 +433,7 @@ namespace UoFiddler.Controls.Forms
             // 
             // btCheckNumbers
             // 
-            btCheckNumbers.Location = new System.Drawing.Point(85, 146);
+            btCheckNumbers.Location = new System.Drawing.Point(85, 125);
             btCheckNumbers.Name = "btCheckNumbers";
             btCheckNumbers.Size = new System.Drawing.Size(133, 23);
             btCheckNumbers.TabIndex = 14;
@@ -2154,16 +2178,6 @@ namespace UoFiddler.Controls.Forms
             btAnimationlistLoad.UseVisualStyleBackColor = true;
             btAnimationlistLoad.Click += btAnimationlistLoad_Click;
             // 
-            // btUOOpenDirectory
-            // 
-            btUOOpenDirectory.Location = new System.Drawing.Point(8, 117);
-            btUOOpenDirectory.Name = "btUOOpenDirectory";
-            btUOOpenDirectory.Size = new System.Drawing.Size(71, 23);
-            btUOOpenDirectory.TabIndex = 16;
-            btUOOpenDirectory.Text = "UO Dir";
-            btUOOpenDirectory.UseVisualStyleBackColor = true;
-            btUOOpenDirectory.Click += btUOOpenDirectory_Click;
-            // 
             // EditUoBodyconvMobtypes
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -2390,5 +2404,6 @@ namespace UoFiddler.Controls.Forms
         private System.Windows.Forms.Button btClipboardAnimationlist;
         private System.Windows.Forms.Button btAppData;
         private System.Windows.Forms.Button btUOOpenDirectory;
+        private System.Windows.Forms.Button btInfoMobtypes;
     }
 }
