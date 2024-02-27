@@ -1,7 +1,6 @@
 ﻿// /***************************************************************************
 //  *
-//  * $Author: Turley
-//  * Advanced Nikodemus
+//  * $Author: Nikodemus
 //  * 
 //  * \"THE BEER-WINE-WARE LICENSE\"
 //  * As long as you retain this notice you can do whatever you want with 
@@ -557,8 +556,7 @@ namespace UoFiddler.Controls.Forms
             else
             {
                 MessageBox.Show("The settings file could not be found.");
-            }
-            #endregion
+            }            
 
             // Create a new SoundPlayer
             SoundPlayer player = new SoundPlayer();
@@ -568,6 +566,141 @@ namespace UoFiddler.Controls.Forms
 
             // Play the sound
             player.Play();
+        }
+        #endregion
+
+        #region btCreateSphereScript_Click
+        private void btCreateSphereScript_Click(object sender, EventArgs e)
+        {
+            string SetCHARDEF = tbCHARDEF.Text; // CHARDEF
+            string SetDEFNAME = tbDEFNAME.Text; // DEFNAME
+            string SetNAME = tbName.Text; // NAME
+            string SetICON = tbICON.Text; // ICON
+            string SetSOUND = tbSOUND.Text; // SOUND
+            string SetCAN = tbCAN.Text; // CAN
+            string SetDAM = tbDAM.Text; // DAM
+            string SetArmor = tbAmor.Text; // armor
+            string SetDESIRES = tbDESIRES.Text; // DESIRES
+            string SetAVERSIONS = tbAVERSIONS.Text; // AVERSIONS
+            string SetFOODTYPE = tbFOODTYPE.Text; // FOODTYPE
+            string SetMAXFOOD = tbMAXFOOD.Text; // MAXFOOD
+            string SetRESOURCES = tbRESOURCES.Text; // RESOURCES
+            string SetCATEGORY = tbCATEGORY.Text; // CATEGORY
+            string SetSUBSECTION = tbSUBSECTION.Text; // SUBSECTION
+            string SetDESCRIPTION = tbDESCRIPTION.Text; // DESCRIPTION
+            string SetNPC = tbNPC.Text; // NPC
+            string SetSFame = tbSFAME.Text; // FAME
+            string SetSKarma = tbSKARMA.Text; // KARMA
+            string SetSTR = tbSTR.Text; // STR
+            string SetDEX = tbDEX.Text; // DEX
+            string SetINT = tbINT.Text; // INT
+            string SetEVALUATINGINTEL = tbEVALUATINGINTEL.Text; // EVALUATINGINTEL
+            string SetMAGERY = tbMAGERY.Text; // MAGERY
+            string SetMAGICRESISTANCE = tbMAGICRESISTANCE.Text; // MAGICRESISTANCE
+            string SetMEDITATION = tbMEDITATION.Text; // MEDITATION
+            string SetPARRYING = tbPARRYING.Text; // PARRYING
+            string SetTACTICS = tbTACTICS.Text; // TACTICS
+            string SetWRESTLING = tbWRESTLING.Text; // WRESTLING
+            string SetRESPHYSICAL = tbRESPHYSICAL.Text; // RESPHYSICAL
+            string SetRESCOLD = tbRESCOLD.Text; // RESCOLD
+            string SetRESENERGY = tbRESENERGY.Text; // RESENERGY
+            string SetRESFIRE = tbRESFIRE.Text; // RESFIRE
+            string SetRESPOISON = tbRESPOISON.Text; // RESPOISON
+
+            string script = $@"
+[CHARDEF {SetCHARDEF}]
+DEFNAME={SetDEFNAME}
+NAME={SetNAME}
+ICON={SetICON}
+SOUND={SetSOUND}
+CAN={SetCAN}
+DAM={SetDAM}
+armor={SetArmor}
+DESIRES={SetDESIRES}
+AVERSIONS={SetAVERSIONS}
+FOODTYPE={SetFOODTYPE}
+MAXFOOD={SetMAXFOOD}
+RESOURCES={SetRESOURCES}
+TAG.FORCEMONSTRE=3
+TAG.Barding.Diff=72.5
+TAG.SlayerGroup=GARGOYLE,DEMON
+TEVENTS=e_carnivores2
+CATEGORY={SetCATEGORY}
+SUBSECTION={SetSUBSECTION}
+DESCRIPTION={SetDESCRIPTION}
+ON=@Create
+    NPC={SetNPC}
+    FAME={{{SetSFame}}}
+    KARMA={{{SetSKarma}}}
+    STR={{{SetSTR}}}
+    DEX={{{SetDEX}}}
+    INT={{{SetINT}}}
+    EVALUATINGINTEL={{{SetEVALUATINGINTEL}}}
+    MAGERY={{{SetMAGERY}}}
+    MAGICRESISTANCE={{{SetMAGICRESISTANCE}}}
+    MEDITATION={{{SetMEDITATION}}}
+    PARRYING={{{SetPARRYING}}}
+    TACTICS={{{SetTACTICS}}}
+    WRESTLING={{{SetWRESTLING}}}
+    RESPHYSICAL={{{SetRESPHYSICAL}}}
+    RESCOLD={{{SetRESCOLD}}}
+    RESENERGY={SetRESENERGY}
+    RESFIRE={{{SetRESFIRE}}}
+    RESPOISON={{{SetRESPOISON}}}
+    
+    ITEMNEWBIE=i_spellbook
+    ADDSPELL=s_magic_arrow
+    ADDSPELL=s_clumsy
+    ADDSPELL=s_weaken
+    ADDSPELL=s_feeblemind
+    ADDSPELL=s_curse
+    ADDSPELL=s_harm
+    ADDSPELL=s_fireball
+    ADDSPELL=s_poison
+    ADDSPELL=s_lightning
+    ADDSPELL=s_mana_drain
+    ADDSPELL=s_mind_blast
+    ADDSPELL=s_paralyze
+    ADDSPELL=s_energy_bolt
+    ADDSPELL=s_explosion
+    ADDSPELL=s_mass_curse
+    ADDSPELL=s_chain_lightning
+    ADDSPELL=s_flamestrike
+    ADDSPELL=s_mana_vampire
+    
+ON=@CreateLoot
+    ITEM=loot_gargoyle
+    ITEM=i_pierre_depecage_gargoyle
+    ITEM=loot_gold_2";
+
+            richTextBoxEdit.Text = script;
+        }
+        #endregion
+
+        #region btSaveSphereScript_Click
+        private void btSaveSphereScript_Click(object sender, EventArgs e)
+        {
+            SaveFileDialog saveFileDialog = new SaveFileDialog();
+            saveFileDialog.Filter = "SCP Files|*.scp";
+            saveFileDialog.Title = "Save a SCP File";
+            saveFileDialog.FileName = tbName.Text; // Setzt den Dateinamen auf den Inhalt von tbName
+
+            if (saveFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                using (StreamWriter writer = new StreamWriter(saveFileDialog.OpenFile()))
+                {
+                    writer.Write(richTextBoxEdit.Text); // Schreibt den Inhalt von richTextBoxEdit in die Datei
+                }
+            }
+        }
+        #endregion
+
+        private void checkBoxSphereID_CheckedChanged(Object sender, EventArgs e)
+        {
+            if (checkBoxSphereID.Checked)
+            {
+                tbCHARDEF.Text = textBoxID.Text;
+            }
         }
     }
 }

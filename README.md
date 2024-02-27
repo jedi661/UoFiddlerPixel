@@ -10,6 +10,7 @@ Version : 4.12.3
 - Add Help - Tutorial Animationen Install German and Englisch.
 - Add Animation - Edit UoBodyconv and Mobtypes Form.
 - Add Animation - Script Script Creator.
+- Add Animation - Script Script for RunUo and Sphere.
 
 Version : 4.12.2
 - BildFusion Add Sharp , Clipboard, Texture Cut.
