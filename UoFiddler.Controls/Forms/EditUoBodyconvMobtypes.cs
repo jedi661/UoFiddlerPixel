@@ -709,7 +709,9 @@ ON=@CreateLoot
         {
             if (checkBoxSphereID.Checked)
             {
-                tbCHARDEF.Text = textBoxID.Text;
+                int decValue = int.Parse(textBoxBody.Text);
+                string hexValue = decValue.ToString("X");
+                tbCHARDEF.Text = decValue < 16 ? "0" + hexValue : "0" + hexValue;
             }
         }
         #endregion

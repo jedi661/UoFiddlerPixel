@@ -93,7 +93,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             string bookAuthor = textBoxBookAuthor.Text;
             string bookFilename = textBoxBookFilename.Text.Replace(" ", ""); // Removes spaces from the class name
             string grafikID = textBoxGrafikID.Text;
-            string coverHue = textBoxCoverHue.Text;            
+            string coverHue = textBoxCoverHue.Text;
             bool enableAutoFormat = comboBoxEnableAutoformat.SelectedItem != null ? comboBoxEnableAutoformat.SelectedItem.ToString() == "Enable Autoformat" : false;
             string bookContent = textBoxBookContent.Text;
 
@@ -495,5 +495,283 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             }
         }
         #endregion
+
+        #region btCreateScriptCrossbow
+        private void btCreateScriptCrossbow_Click(object sender, EventArgs e)
+        {
+            // Name Script
+            string SetNameCrossbow = tbNameCrossbow.Text.Replace(" ", "_");
+            string SetCrossBowItem1 = tbCrossBowItem1.Text; // Item ID
+            string SetCrossBowItem2 = tbCrossBowItem2.Text; // Item ID
+            string SetWeight = tbWeight.Text; // Weight
+            string SetLayer = tbTwoHanded.Text; // Layer
+            string SetBaseRanged = tbBaseRanged.Text; // BaseRanged
+            string SetEffectID = tbEffectID.Text; // EffectID
+            string SetAmmoType = tbAmmoType.Text; // AmmoType
+            string SetWeaponAbility1 = tbWeaponAbility1.Text; // WeaponAbility1
+            string SetWeaponAbility2 = tbWeaponAbility2.Text; // WeaponAbility2
+            string SetAosStrengthReq = tbAosStrengthReq.Text; // AosStrengthReq
+            string SetAosMinDamage = tbAosMinDamage.Text; // AosMinDamage
+            string SetAosMaxDamage1 = tbAosMaxDamage1.Text; // AosMaxDamage
+            string SetAosMaxDamage2 = tbAosMaxDamage2.Text; // AosMaxDamage
+            string SetAosSpeed = tbAosSpeed.Text; // AosSpeed
+            string SetMlSpeed = tbMlSpeed.Text; // MlSpeed
+            string SetOldStrengthReq = tbOldStrengthReq.Text; // OldStrengthReq
+            string SetOldMinDamage = tbOldMinDamage.Text; // OldMinDamage
+            string SetOldMaxDamage = tbOldMaxDamage.Text; // OldMaxDamage
+            string SetOldSpeed = tbOldSpeed.Text; // OldSpeed
+            string SetDefMaxRange = tbDefMaxRange.Text; // DefMaxRange
+            string SetInitMinHits = tbInitMinHits.Text; // InitMinHits
+            string SetInitMaxHits = tbInitMaxHits.Text; // InitMaxHits
+
+            string script = $@"
+    using System;
+
+    namespace Server.Items
+    {{
+        [FlipableAttribute({SetCrossBowItem1}, {SetCrossBowItem2})]
+        public class {SetNameCrossbow} : {SetBaseRanged}
+        {{
+            [Constructable]
+            public {SetNameCrossbow}()
+                : base({SetCrossBowItem1})
+            {{
+                this.Weight = {SetWeight};
+                this.Layer = Layer.{SetLayer};
+            }}
+
+            public {SetNameCrossbow}(Serial serial)
+                : base(serial)
+            {{
+            }}
+
+            public override int EffectID
+            {{
+                get
+                {{
+                    return {SetEffectID};
+                }}
+            }}
+            public override Type AmmoType
+            {{
+                get
+                {{
+                    return typeof({SetAmmoType});
+                }}
+            }}
+            public override Item Ammo
+            {{
+                get
+                {{
+                    return new {SetAmmoType}();
+                }}
+            }}
+            public override WeaponAbility PrimaryAbility
+            {{
+                get
+                {{
+                    return WeaponAbility.{SetWeaponAbility1};
+                }}
+            }}
+            public override WeaponAbility SecondaryAbility
+            {{
+                get
+                {{
+                    return WeaponAbility.{SetWeaponAbility2};
+                }}
+            }}
+            public override int AosStrengthReq
+            {{
+                get
+                {{
+                    return {SetAosStrengthReq};
+                }}
+            }}
+            public override int AosMinDamage
+            {{
+                get
+                {{
+                    return {SetAosMinDamage};
+                }}
+            }}
+            public override int AosMaxDamage
+            {{
+                get
+                {{
+                    return Core.ML ? {SetAosMaxDamage1} : {SetAosMaxDamage2};
+                }}
+            }}
+            public override int AosSpeed
+            {{
+                get
+                {{
+                    return {SetAosSpeed};
+                }}
+            }}
+            public override float MlSpeed
+            {{
+                get
+                {{
+                    return {SetMlSpeed};
+                }}
+            }}
+            public override int OldStrengthReq
+            {{
+                get
+                {{
+                    return {SetOldStrengthReq};
+                }}
+            }}
+            public override int OldMinDamage
+            {{
+                get
+                {{
+                    return {SetOldMinDamage};
+                }}
+            }}
+            public override int OldMaxDamage
+            {{
+                get
+                {{
+                    return {SetOldMaxDamage};
+                }}
+            }}
+            public override int OldSpeed
+            {{
+                get
+                {{
+                    return {SetOldSpeed};
+                }}
+            }}
+            public override int DefMaxRange
+            {{
+                get
+                {{
+                    return {SetDefMaxRange};
+                }}
+            }}
+            public override int InitMinHits
+            {{
+                get
+                {{
+                    return {SetInitMinHits};
+                }}
+            }}
+            public override int InitMaxHits
+            {{
+                get
+                {{
+                    return {SetInitMaxHits};
+                }}
+            }}
+            public override void Serialize(GenericWriter writer)
+            {{
+                base.Serialize(writer);
+
+                writer.Write((int)0); // version
+            }}
+
+            public override void Deserialize(GenericReader reader)
+            {{
+                base.Deserialize(reader);
+
+                int version = reader.ReadInt();
+            }}
+        }}
+    }}";
+
+            richTextBoxScriptEdit.Text = script;
+        }
+        #endregion
+
+        #region btCopyToClipboard
+        private void btCopyToClipboard_Click(object sender, EventArgs e)
+        {
+            Clipboard.SetText(richTextBoxScriptEdit.Text);
+        }
+        #endregion
+
+        private void btCreateScriptBow_Click(object sender, EventArgs e)
+        {
+            string SetNameCrossbow = tbBowName.Text.Replace(" ", "_");
+            string SetBow = tbBow.Text; // Bow Class or Other
+            string SetItemID = tbItemID.Text; // ItemID
+            string SetName = tbName.Text; // Name
+            string SetHue = tbHue.Text; // Hue
+            string SetStrRequirement = tbStrRequirement.Text; // StrRequirement
+            string SetAttributes1 = tbAttributes1.Text; // Attributes
+            string SetSpellChanneling = tbSpellChanneling.Text; // SpellChanneling
+            string SetWeaponAttributes1 = tbWeaponAttributes1.Text; // WeaponAttributes 1
+            string SetHitLightning = tbHitLightning.Text; // tbHitLightning
+            string SetMinDamage = tbMinDamage.Text; // MinDamage
+            string SetMaxDamage = tbMaxDamage.Text; // MaxDamage
+            string SetWeaponAttributes2 = tbWeaponAttributes2.Text; // DurabilityBonus
+            string SetValue1 = tbValue1.Text; // 1000
+            string SetLootType = tbLootType.Text; // LootType
+            string SetWeaponAttributes3 = tbWeaponAttributes3.Text; // WeaponSpeed
+            string SetValue2 = tbValue2.Text; // 20
+            string SetWeaponAttributes4 = tbWeaponAttributes4.Text; // HitLeechHits
+            string SetValue3 = tbValue3.Text; // 5
+            string SetWeaponAttributes5 = tbWeaponAttributes5.Text; // HitHarm
+            string SetValue4 = tbValue4.Text; // 10
+            string SetWeaponAttributes6 = tbWeaponAttributes6.Text; // HitFireball
+            string SetValue5 = tbValue5.Text; // 15
+
+            string script = $@"
+using System;
+using Server;
+using Ultima;
+
+namespace Server.Items
+{{
+    public class {SetNameCrossbow} : {SetBow}
+    {{
+        [Constructable]
+        public {SetNameCrossbow}()
+        {{
+            this.ItemID = {SetItemID};
+            Name = ""{SetName}"";
+            Hue = {SetHue};
+            StrRequirement = {SetStrRequirement};
+            Attributes.{SetAttributes1} = {SetSpellChanneling};
+            WeaponAttributes.{SetWeaponAttributes1} = {SetHitLightning};
+            MinDamage = {SetMinDamage};
+            MaxDamage = {SetMaxDamage};
+            WeaponAttributes.{SetWeaponAttributes2} = {SetValue1};
+            LootType = LootType.{SetLootType};
+
+            // Hinzugefügte Attribute
+            Attributes.{SetWeaponAttributes3} = {SetValue2};
+            WeaponAttributes.{SetWeaponAttributes4} = {SetValue3};
+            WeaponAttributes.{SetWeaponAttributes5} = {SetValue4};
+            WeaponAttributes.{SetWeaponAttributes6} = {SetValue5};
+        }}
+
+        public override void GetDamageTypes(Mobile wielder, out int phys, out int fire, out int cold, out int pois, out int nrgy, out int chaos, out int direct)
+        {{
+            phys = fire = pois = cold = chaos = direct = 0;
+            nrgy = 100;
+        }}
+
+        public {SetNameCrossbow}(Serial serial) : base(serial)
+        {{
+        }}
+
+        public override void Serialize(GenericWriter writer)
+        {{
+            base.Serialize(writer);
+            writer.Write((int)0);
+        }}
+
+        public override void Deserialize(GenericReader reader)
+        {{
+            base.Deserialize(reader);
+            int version = reader.ReadInt();
+        }}
+    }}
+}}";
+            richTextBoxScriptEdit.Text = script;
+        }
+
     }
 }

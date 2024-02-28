@@ -2101,7 +2101,7 @@ namespace UoFiddler.Controls.Forms
             // 
             tbCHARDEF.Location = new System.Drawing.Point(82, 31);
             tbCHARDEF.Name = "tbCHARDEF";
-            tbCHARDEF.Size = new System.Drawing.Size(24, 23);
+            tbCHARDEF.Size = new System.Drawing.Size(57, 23);
             tbCHARDEF.TabIndex = 2;
             tbCHARDEF.Text = "04";
             // 
