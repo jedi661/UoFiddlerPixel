@@ -831,126 +831,9 @@ ON=@CreateLoot
                 e.SuppressKeyPress = true;  //Prevents the event from being forwarded
             }
         }
-        #endregion
+        #endregion 
 
-        #region btnSaveAminMulFiles  
-
-        private void btnSaveAminMulFiles_Click(object sender, EventArgs e)
-        {
-            using (FolderBrowserDialog fbd = new FolderBrowserDialog())
-            {
-                fbd.Description = "Select a directory to save the files";
-
-                if (fbd.ShowDialog() == DialogResult.OK)
-                {
-                    string path = fbd.SelectedPath;
-
-                    // Get the original and new creature IDs from the text boxes
-                    int origCreatureID = int.Parse(txtOrigCreatureID.Text, System.Globalization.NumberStyles.HexNumber);
-                    int newCreatureID = int.Parse(txtNewCreatureID.Text, System.Globalization.NumberStyles.HexNumber);
-
-                    // Calculate the index offset for the new creature ID
-                    int indexOffset;
-                    if (newCreatureID <= 199)
-                    {
-                        indexOffset = newCreatureID * 110;
-                    }
-                    else if (newCreatureID > 199 && newCreatureID <= 399)
-                    {
-                        indexOffset = (newCreatureID - 200) * 65 + 22000;
-                    }
-                    else
-                    {
-                        indexOffset = (newCreatureID - 400) * 175 + 35000;
-                    }
-
-                    // Create the ANIM.IDX file
-                    using (FileStream fs = File.Create(Path.Combine(path, "anim.idx")))
-                    {
-                        // Create index entries for the number of animations
-                        for (int i = 0; i < indexOffset; i++)
-                        {
-                            // Each index entry has a Lookup, Size, and Unknown DWORD
-                            // Set Lookup to -1 (unused)
-                            fs.Write(BitConverter.GetBytes(-1), 0, 4);
-
-                            // Set Size to -1 (unused)
-                            fs.Write(BitConverter.GetBytes(-1), 0, 4);
-
-                            // Set Unknown to -1 (unused)
-                            fs.Write(BitConverter.GetBytes(-1), 0, 4);
-                        }
-                    }
-                }
-            }
-        }
-        #endregion
-
-        private void btnSaveAminMul1050Files_Click(object sender, EventArgs e)
-        {
-            using (FolderBrowserDialog fbd = new FolderBrowserDialog())
-            {
-                fbd.Description = "Select a directory to save the files";
-
-                if (fbd.ShowDialog() == DialogResult.OK)
-                {
-                    string path = fbd.SelectedPath;
-
-                    // Iterieren Sie über alle Dateitypen
-                    for (int fileType = 1; fileType <= 5; fileType++)
-                    {
-                        // Erstellen Sie die anim.mul Datei
-                        using (FileStream fs = File.Create(Path.Combine(path, $"anim{fileType}.mul")))
-                        {
-                            // Erstellen Sie Animationsdaten für die Anzahl der Animationen basierend auf dem Dateitypen
-                            int animationCount = Ultima.Animations.GetAnimCount(fileType);
-                            for (int i = 0; i < animationCount; i++)
-                            {
-                                // Jede Animation hat eine Palette von 256 Wörtern, gefolgt von der Anzahl der Frames und den Frame-Offsets
-                                // Füllen Sie die Palette mit Schwarz (0x0000)
-                                fs.Write(new byte[256 * 2], 0, 256 * 2);
-
-                                // Schreiben Sie die Anzahl der Frames (angenommen, jede Animation hat 1 Frame)
-                                fs.Write(BitConverter.GetBytes(1), 0, 4);
-
-                                // Schreiben Sie den Frame-Offset (angenommen, der Offset ist 0)
-                                fs.Write(new byte[4], 0, 4);
-
-                                // Schreiben Sie die Bilddaten für das Frame
-                                // Jedes Bild hat einen centerX, centerY, width und height Wert, gefolgt von den Pixelwerten
-                                fs.Write(BitConverter.GetBytes((short)38), 0, 2); // centerX
-                                fs.Write(BitConverter.GetBytes((short)53), 0, 2); // centerY
-                                fs.Write(BitConverter.GetBytes((short)77), 0, 2); // width
-                                fs.Write(BitConverter.GetBytes((short)107), 0, 2); // height
-
-                                // Füllen Sie die Pixelwerte mit Schwarz (0x0000)
-                                fs.Write(new byte[77 * 107 * 2], 0, 77 * 107 * 2);
-                            }
-                        }
-
-                        // Erstellen Sie die ANIM.IDX Datei
-                        using (FileStream fs = File.Create(Path.Combine(path, $"anim{fileType}.idx")))
-                        {
-                            // Erstellen Sie Indexeinträge für die Anzahl der Animationen basierend auf dem Dateitypen
-                            int animationCount = Ultima.Animations.GetAnimCount(fileType);
-                            for (int i = 0; i < animationCount; i++)
-                            {
-                                // Jeder Indexeintrag hat eine Lookup, Size und Unknown DWORD
-                                // Setzen Sie Lookup auf den Start der Animation in der anim.mul Datei
-                                fs.Write(BitConverter.GetBytes(i * (256 * 2 + 4 + 4 + 8 + 77 * 107 * 2)), 0, 4);
-
-                                // Setzen Sie Size auf die Größe der Animation
-                                fs.Write(BitConverter.GetBytes(256 * 2 + 4 + 4 + 8 + 77 * 107 * 2), 0, 4);
-
-                                // Setzen Sie Unknown auf 0
-                                fs.Write(new byte[4], 0, 4);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
+        #region btnSingleEmptyAnimMul_Click
         private void btnSingleEmptyAnimMul_Click(object sender, EventArgs e)
         {
             using (FolderBrowserDialog fbd = new FolderBrowserDialog())
@@ -961,14 +844,15 @@ ON=@CreateLoot
                 {
                     string path = fbd.SelectedPath;
 
-                    // Erstellen Sie die anim.mul Datei
+                    // Create the file anim.mul
                     using (FileStream fs = File.Create(Path.Combine(path, "anim.mul")))
                     {
-                        // Keine Daten werden in die anim.mul Datei geschrieben, da sie leer sein soll
+                        // No data is written to the anim.mul file because it is supposed to be empty
                     }
                 }
             }
         }
+        #endregion
 
         #region Constants
         // Constants for the sizes of different creature types
