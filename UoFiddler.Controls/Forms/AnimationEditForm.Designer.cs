@@ -151,10 +151,10 @@
             SaveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             ShowOnlyValidToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             ExportAllToVDToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            editUoBodyconMobtypesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             toolStripStatusLabelVDAminInfo = new System.Windows.Forms.ToolStripStatusLabel();
             toolStripStatusDisplayLabelAnimation = new System.Windows.Forms.ToolStripStatusLabel();
             AnimationTimer = new System.Windows.Forms.Timer(components);
-            editUoBodyconMobtypesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)MainSplitContainer).BeginInit();
             MainSplitContainer.Panel1.SuspendLayout();
             MainSplitContainer.Panel2.SuspendLayout();
@@ -388,7 +388,7 @@
             // ProgressBar
             // 
             ProgressBar.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
-            ProgressBar.Location = new System.Drawing.Point(576, 628);
+            ProgressBar.Location = new System.Drawing.Point(575, 628);
             ProgressBar.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             ProgressBar.Name = "ProgressBar";
             ProgressBar.Size = new System.Drawing.Size(197, 20);
@@ -1408,7 +1408,7 @@
             // 
             DirectionTrackBar.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
             DirectionTrackBar.AutoSize = false;
-            DirectionTrackBar.Location = new System.Drawing.Point(780, 626);
+            DirectionTrackBar.Location = new System.Drawing.Point(779, 626);
             DirectionTrackBar.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             DirectionTrackBar.Maximum = 4;
             DirectionTrackBar.Name = "DirectionTrackBar";
@@ -1460,6 +1460,15 @@
             ExportAllToVDToolStripMenuItem.Text = "Export All Valid To VD";
             ExportAllToVDToolStripMenuItem.Click += OnClickExportAllToVD;
             // 
+            // editUoBodyconMobtypesToolStripMenuItem
+            // 
+            editUoBodyconMobtypesToolStripMenuItem.Image = Properties.Resources.Add;
+            editUoBodyconMobtypesToolStripMenuItem.Name = "editUoBodyconMobtypesToolStripMenuItem";
+            editUoBodyconMobtypesToolStripMenuItem.Size = new System.Drawing.Size(235, 22);
+            editUoBodyconMobtypesToolStripMenuItem.Text = "Edit Uo Bodyconv + mobtypes";
+            editUoBodyconMobtypesToolStripMenuItem.ToolTipText = "Edit Uo Bodyconv and mobtypes";
+            editUoBodyconMobtypesToolStripMenuItem.Click += editUoBodyconMobtypesToolStripMenuItem_Click;
+            // 
             // toolStripStatusLabelVDAminInfo
             // 
             toolStripStatusLabelVDAminInfo.Name = "toolStripStatusLabelVDAminInfo";
@@ -1475,15 +1484,6 @@
             // AnimationTimer
             // 
             AnimationTimer.Tick += AnimationTimer_Tick;
-            // 
-            // editUoBodyconMobtypesToolStripMenuItem
-            // 
-            editUoBodyconMobtypesToolStripMenuItem.Image = Properties.Resources.Add;
-            editUoBodyconMobtypesToolStripMenuItem.Name = "editUoBodyconMobtypesToolStripMenuItem";
-            editUoBodyconMobtypesToolStripMenuItem.Size = new System.Drawing.Size(235, 22);
-            editUoBodyconMobtypesToolStripMenuItem.Text = "Edit Uo Bodyconv + mobtypes";
-            editUoBodyconMobtypesToolStripMenuItem.ToolTipText = "Edit Uo Bodyconv and mobtypes";
-            editUoBodyconMobtypesToolStripMenuItem.Click += editUoBodyconMobtypesToolStripMenuItem_Click;
             // 
             // AnimationEditForm
             // 

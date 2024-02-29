@@ -195,7 +195,8 @@ namespace Ultima
             return cache[index] = new AnimIdx(index, fileIndex);
         }
 
-        public static bool IsActionDefined(int fileType, int body, int action)
+        // Old version
+        /*public static bool IsActionDefined(int fileType, int body, int action)
         {
             AnimIdx[] cache = GetCache(fileType);
 
@@ -215,7 +216,31 @@ namespace Ultima
             bool valid = fileIndex.Valid(index, out int length, out int _, out bool _);
 
             return valid && length >= 1;
+        }*/
+
+        #region IsActionDefined
+        public static bool IsActionDefined(int fileType, int body, int action)
+        {
+            AnimIdx[] cache = GetCache(fileType);
+
+            GetFileIndex(body, fileType, action, 0, out FileIndex fileIndex, out int index);
+
+            if (cache != null && index >= 0 && index < cache.Length && cache[index] != null)
+            {
+                return cache[index].Frames?.Count > 0;
+            }
+
+            int animCount = Animations.GetAnimLength(body, fileType);
+            if (animCount < action)
+            {
+                return false;
+            }
+
+            bool valid = fileIndex.Valid(index, out int length, out int _, out bool _);
+
+            return valid && length >= 1;
         }
+        #endregion
 
         public static void LoadFromVD(int fileType, int body, BinaryReader bin)
         {
@@ -360,7 +385,9 @@ namespace Ultima
         public ushort[] Palette { get; private set; }
         public List<FrameEdit> Frames { get; private set; }
 
-        public AnimIdx(int index, FileIndex fileIndex)
+
+        // Old version
+        /*public AnimIdx(int index, FileIndex fileIndex)
         {
             Palette = new ushort[0x100];
             Stream stream = fileIndex.Seek(index, out int length, out int extra, out bool _);
@@ -396,7 +423,52 @@ namespace Ultima
                 }
             }
             stream.Close();
+        }*/
+
+        #region AnimIdx
+        public AnimIdx(int index, FileIndex fileIndex)
+        {
+            Palette = new ushort[0x100];
+            Stream stream = fileIndex.Seek(index, out int length, out int extra, out bool _);
+            if ((stream == null) || (length < 1))
+            {
+                return;
+            }
+
+            _idxExtra = extra;
+            using (var bin = new BinaryReader(stream))
+            {
+                for (int i = 0; i < 0x100; ++i)
+                {
+                    Palette[i] = (ushort)(bin.ReadUInt16() ^ 0x8000);
+                }
+
+                var start = (int)bin.BaseStream.Position;
+                int frameCount = bin.ReadInt32();
+
+                var lookups = new int[frameCount];
+
+                for (int i = 0; i < frameCount; ++i)
+                {
+                    if (bin.BaseStream.Position + 4 > bin.BaseStream.Length)
+                    {
+                        // We have reached the end of the stream, break the loop.
+                        break;
+                    }
+                    lookups[i] = start + bin.ReadInt32();
+                }
+
+                Frames = new List<FrameEdit>();
+
+                for (int i = 0; i < frameCount; ++i)
+                {
+                    stream.Seek(lookups[i], SeekOrigin.Begin);
+                    Frames.Add(new FrameEdit(bin));
+                }
+            }
+            stream.Close();
         }
+        #endregion
 
         public AnimIdx(BinaryReader bin, int extra)
         {

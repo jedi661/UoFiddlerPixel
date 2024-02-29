@@ -832,5 +832,418 @@ ON=@CreateLoot
             }
         }
         #endregion
+
+        #region btnSaveAminMulFiles  
+
+        private void btnSaveAminMulFiles_Click(object sender, EventArgs e)
+        {
+            using (FolderBrowserDialog fbd = new FolderBrowserDialog())
+            {
+                fbd.Description = "Select a directory to save the files";
+
+                if (fbd.ShowDialog() == DialogResult.OK)
+                {
+                    string path = fbd.SelectedPath;
+
+                    // Get the original and new creature IDs from the text boxes
+                    int origCreatureID = int.Parse(txtOrigCreatureID.Text, System.Globalization.NumberStyles.HexNumber);
+                    int newCreatureID = int.Parse(txtNewCreatureID.Text, System.Globalization.NumberStyles.HexNumber);
+
+                    // Calculate the index offset for the new creature ID
+                    int indexOffset;
+                    if (newCreatureID <= 199)
+                    {
+                        indexOffset = newCreatureID * 110;
+                    }
+                    else if (newCreatureID > 199 && newCreatureID <= 399)
+                    {
+                        indexOffset = (newCreatureID - 200) * 65 + 22000;
+                    }
+                    else
+                    {
+                        indexOffset = (newCreatureID - 400) * 175 + 35000;
+                    }
+
+                    // Create the ANIM.IDX file
+                    using (FileStream fs = File.Create(Path.Combine(path, "anim.idx")))
+                    {
+                        // Create index entries for the number of animations
+                        for (int i = 0; i < indexOffset; i++)
+                        {
+                            // Each index entry has a Lookup, Size, and Unknown DWORD
+                            // Set Lookup to -1 (unused)
+                            fs.Write(BitConverter.GetBytes(-1), 0, 4);
+
+                            // Set Size to -1 (unused)
+                            fs.Write(BitConverter.GetBytes(-1), 0, 4);
+
+                            // Set Unknown to -1 (unused)
+                            fs.Write(BitConverter.GetBytes(-1), 0, 4);
+                        }
+                    }
+                }
+            }
+        }
+        #endregion
+
+        private void btnSaveAminMul1050Files_Click(object sender, EventArgs e)
+        {
+            using (FolderBrowserDialog fbd = new FolderBrowserDialog())
+            {
+                fbd.Description = "Select a directory to save the files";
+
+                if (fbd.ShowDialog() == DialogResult.OK)
+                {
+                    string path = fbd.SelectedPath;
+
+                    // Iterieren Sie über alle Dateitypen
+                    for (int fileType = 1; fileType <= 5; fileType++)
+                    {
+                        // Erstellen Sie die anim.mul Datei
+                        using (FileStream fs = File.Create(Path.Combine(path, $"anim{fileType}.mul")))
+                        {
+                            // Erstellen Sie Animationsdaten für die Anzahl der Animationen basierend auf dem Dateitypen
+                            int animationCount = Ultima.Animations.GetAnimCount(fileType);
+                            for (int i = 0; i < animationCount; i++)
+                            {
+                                // Jede Animation hat eine Palette von 256 Wörtern, gefolgt von der Anzahl der Frames und den Frame-Offsets
+                                // Füllen Sie die Palette mit Schwarz (0x0000)
+                                fs.Write(new byte[256 * 2], 0, 256 * 2);
+
+                                // Schreiben Sie die Anzahl der Frames (angenommen, jede Animation hat 1 Frame)
+                                fs.Write(BitConverter.GetBytes(1), 0, 4);
+
+                                // Schreiben Sie den Frame-Offset (angenommen, der Offset ist 0)
+                                fs.Write(new byte[4], 0, 4);
+
+                                // Schreiben Sie die Bilddaten für das Frame
+                                // Jedes Bild hat einen centerX, centerY, width und height Wert, gefolgt von den Pixelwerten
+                                fs.Write(BitConverter.GetBytes((short)38), 0, 2); // centerX
+                                fs.Write(BitConverter.GetBytes((short)53), 0, 2); // centerY
+                                fs.Write(BitConverter.GetBytes((short)77), 0, 2); // width
+                                fs.Write(BitConverter.GetBytes((short)107), 0, 2); // height
+
+                                // Füllen Sie die Pixelwerte mit Schwarz (0x0000)
+                                fs.Write(new byte[77 * 107 * 2], 0, 77 * 107 * 2);
+                            }
+                        }
+
+                        // Erstellen Sie die ANIM.IDX Datei
+                        using (FileStream fs = File.Create(Path.Combine(path, $"anim{fileType}.idx")))
+                        {
+                            // Erstellen Sie Indexeinträge für die Anzahl der Animationen basierend auf dem Dateitypen
+                            int animationCount = Ultima.Animations.GetAnimCount(fileType);
+                            for (int i = 0; i < animationCount; i++)
+                            {
+                                // Jeder Indexeintrag hat eine Lookup, Size und Unknown DWORD
+                                // Setzen Sie Lookup auf den Start der Animation in der anim.mul Datei
+                                fs.Write(BitConverter.GetBytes(i * (256 * 2 + 4 + 4 + 8 + 77 * 107 * 2)), 0, 4);
+
+                                // Setzen Sie Size auf die Größe der Animation
+                                fs.Write(BitConverter.GetBytes(256 * 2 + 4 + 4 + 8 + 77 * 107 * 2), 0, 4);
+
+                                // Setzen Sie Unknown auf 0
+                                fs.Write(new byte[4], 0, 4);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        private void btnSingleEmptyAnimMul_Click(object sender, EventArgs e)
+        {
+            using (FolderBrowserDialog fbd = new FolderBrowserDialog())
+            {
+                fbd.Description = "Select a directory to save the files";
+
+                if (fbd.ShowDialog() == DialogResult.OK)
+                {
+                    string path = fbd.SelectedPath;
+
+                    // Erstellen Sie die anim.mul Datei
+                    using (FileStream fs = File.Create(Path.Combine(path, "anim.mul")))
+                    {
+                        // Keine Daten werden in die anim.mul Datei geschrieben, da sie leer sein soll
+                    }
+                }
+            }
+        }
+
+        #region Constants
+        // Constants for the sizes of different creature types
+        const int cHighDetail = 110;
+        const int cLowDetail = 65;
+        const int cHuman = 175;
+
+        const int cHighDetailOLd = 1; // Old Version
+        const int cLowDetailOld = 2; // Old Version
+        const int cHumanOld = 3; // Old Version
+
+        private int newIdCount = 0;
+        #endregion
+
+        #region btnBrowseClick
+        private void btnBrowseClick(object sender, EventArgs e)
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            if (openFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                tbfilename.Text = openFileDialog.FileName;
+            }
+        }
+        #endregion
+
+        #region btnSetOutputDirectoryClick
+        private void btnSetOutputDirectoryClick(object sender, EventArgs e)
+        {
+            // Open a FolderBrowserDialog to select the output directory
+            FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog();
+            if (folderBrowserDialog.ShowDialog() == DialogResult.OK)
+            {
+                // Set the text of the output directory textbox to the selected path
+                txtOutputDirectory.Text = folderBrowserDialog.SelectedPath;
+            }
+        }
+        #endregion
+
+        #region btnProcessClick
+        private void btnProcessClick(object sender, EventArgs e)
+        {
+            // Flush tbProcessAminidx with every new process
+            tbProcessAminidx.Clear();
+
+            try
+            {
+                // Check if the file exists
+                string filename = tbfilename.Text;
+                if (!File.Exists(filename))
+                {
+                    tbProcessAminidx.AppendText("Could not open anim.idx!\n");
+                    return;
+                }
+
+                // Parse the creature ID from the text box
+                int creatureID;
+                if (!int.TryParse(txtOrigCreatureID.Text, System.Globalization.NumberStyles.HexNumber, null, out creatureID))
+                {
+                    tbProcessAminidx.AppendText("Enter a valid Animation ID\n");
+                    return;
+                }
+
+                // Determine the number of copies based on the selected checkboxes
+                int copyCount;
+                if (chkHighDetail.Checked)
+                {
+                    copyCount = cHighDetail;
+                }
+                else if (chkLowDetail.Checked)
+                {
+                    copyCount = cLowDetail;
+                }
+                else if (chkHuman.Checked)
+                {
+                    copyCount = cHuman;
+                }
+                else
+                {
+                    // If no checkbox is selected, parse the number of copies from the text box
+                    if (!int.TryParse(txtNewCreatureID.Text, out copyCount))
+                    {
+                        tbProcessAminidx.AppendText("Enter a valid copy count\n");
+                        return;
+                    }
+                }
+
+                // Determine the output filename
+                string outputFilename = txtOutputFilename.Text;
+                if (string.IsNullOrEmpty(outputFilename))
+                {
+                    outputFilename = Path.Combine(txtOutputDirectory.Text, "anim.idx"); // Use "anim.idx" in the output directory if no output file is specified
+                }
+                else
+                {
+                    // Append "amin", the outputFilename, and ".idx" to the output directory
+                    outputFilename = Path.Combine(txtOutputDirectory.Text, "amin" + outputFilename + ".idx");
+                }
+
+                // Copy the original file to the output file
+                File.Copy(filename, outputFilename, true);
+
+                // Execute the copy process
+                // CopyAnimationData(filename, creatureID, copyCount);
+
+                // Execute the copy process on the new file
+                CopyAnimationData(outputFilename, creatureID, copyCount);
+            }
+            catch (Exception ex)
+            {
+                tbProcessAminidx.AppendText($"An error has occurred: {ex.Message}\n");
+            }
+        }
+
+        private void CopyAnimationData(string filename, int creatureID, int copyCount)
+        {
+            tbProcessAminidx.AppendText("Checking if new Animation ID is in use\n");
+
+            using (FileStream stream = File.Open(filename, FileMode.Open, FileAccess.ReadWrite))
+            {
+                // Determine the index offset and length of data to read based on the creature ID
+                int indexOffset, readLength;
+                string creatureType;
+                DetermineCreatureProperties(creatureID, out indexOffset, out readLength, out creatureType);
+
+                tbProcessAminidx.AppendText($"Creature is a {creatureType}\n");
+
+                // Read the animation index data into a byte array
+                stream.Seek(indexOffset * 12, SeekOrigin.Begin);
+                byte[] buffer = new byte[readLength];
+                stream.Read(buffer, 0, readLength);
+                tbProcessAminidx.AppendText($"Read {readLength} bytes of index-data for cID {creatureID}\n");
+
+                // Copy the data the specified number of times
+                for (int i = 0; i < copyCount; i++)
+                {
+                    // Find the end of the file
+                    stream.Seek(0, SeekOrigin.End);
+
+                    // Write the data directly to the stream
+                    stream.Write(buffer, 0, readLength);
+
+                    tbProcessAminidx.AppendText($"Wrote {readLength} bytes of index-data to cID {creatureID}\n");
+
+                    // Increment the counter for each ID created
+                    newIdCount++;
+                }
+                // Update the label with the number of IDs created
+                lblNewIdCount.Text = $"Number of IDs created: {newIdCount}";
+            }
+        }
+        #endregion
+
+        #region DetermineCreatureProperties
+        private void DetermineCreatureProperties(int creatureID, out int indexOffset, out int readLength, out string creatureType)
+        {
+            if (creatureID <= 199)
+            {
+                indexOffset = creatureID * cHighDetail;
+                readLength = cHighDetail * 12;
+                creatureType = "High Detail Critter";
+            }
+            else if (creatureID > 199 && creatureID <= 399)
+            {
+                indexOffset = (creatureID - 200) * cLowDetail + 22000;
+                readLength = cLowDetail * 12;
+                creatureType = "Low Detail Critter";
+            }
+            else
+            {
+                indexOffset = (creatureID - 400) * cHuman + 35000;
+                readLength = cHuman * 12;
+                creatureType = "Human or an Accessoire";
+            }
+        }
+        #endregion
+
+        #region btnProcessClickOldVersion
+        private void btnProcessClickOldVersion(object sender, EventArgs e)
+        {
+            // Flush tbProcessAminidx with every new process
+            tbProcessAminidx.Clear();
+
+            try
+            {
+                int readLength = 0;
+                int wroteLength = 0;
+                string filename = tbfilename.Text;
+                if (!File.Exists(filename))
+                {
+                    tbProcessAminidx.AppendText("Could not open anim.idx!\n");
+                    return;
+                }
+
+                int creatureID;
+                if (!int.TryParse(txtOrigCreatureID.Text, System.Globalization.NumberStyles.HexNumber, null, out creatureID))
+                {
+                    tbProcessAminidx.AppendText("Enter a valid Animation ID\n");
+                    return;
+                }
+
+                int copyCount;
+                if (!int.TryParse(txtNewCreatureID.Text, out copyCount))
+                {
+                    tbProcessAminidx.AppendText("Enter a valid copy count\n");
+                    return;
+                }
+
+                tbProcessAminidx.AppendText("Checking if new Animation ID is in use\n");
+
+                using (FileStream stream = File.Open(filename, FileMode.Open, FileAccess.ReadWrite))
+                {
+                    int indexOffset;
+                    byte cAnimType;
+
+                    if (creatureID <= 199)
+                    {
+                        indexOffset = creatureID * 110;
+                        readLength = 110 * 12;
+                        cAnimType = cHighDetailOLd;
+                        tbProcessAminidx.AppendText("Creature is a High Detail Critter\n");
+                    }
+                    else if (creatureID > 199 && creatureID <= 399)
+                    {
+                        indexOffset = (creatureID - 200) * 65 + 22000;
+                        readLength = 65 * 12;
+                        cAnimType = cLowDetailOld;
+                        tbProcessAminidx.AppendText("Creature is a Low Detail Critter\n");
+                    }
+                    else
+                    {
+                        indexOffset = (creatureID - 400) * 175 + 35000;
+                        readLength = 175 * 12;
+                        cAnimType = cHumanOld;
+                        tbProcessAminidx.AppendText("Creature is a Human or an Accessoire\n");
+                    }
+
+                    stream.Seek(indexOffset * 12, SeekOrigin.Begin);
+                    byte[] buffer = new byte[readLength];
+                    stream.Read(buffer, 0, readLength);
+                    tbProcessAminidx.AppendText($"Read {readLength} bytes of index-data for cID {creatureID}\n");
+
+                    // Copy the data the number of times specified in copyCount
+                    for (int i = 0; i < copyCount; i++)
+                    {
+                        // Find the end of the file
+                        stream.Seek(0, SeekOrigin.End);
+
+                        // Write the data directly to the stream
+                        stream.Write(buffer, 0, readLength);
+
+                        // Update wroteLength to the value of readLength since all data has been written
+                        wroteLength = readLength;
+                        tbProcessAminidx.AppendText($"Wrote {wroteLength} bytes of index-data to cID {creatureID}\n");
+
+                        // Perform different actions based on the creature type
+                        switch (cAnimType)
+                        {
+                            case cHighDetailOLd:
+                                // Perform some action for high detail creatures
+                                break;
+                            case cLowDetailOld:
+                                // Perform some action for low detail creatures
+                                break;
+                            case cHumanOld:
+                                // Perform some action for human creatures
+                                break;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                tbProcessAminidx.AppendText($"An error has occurred: {ex.Message}\n");
+            }
+            #endregion
+        }
     }
 }

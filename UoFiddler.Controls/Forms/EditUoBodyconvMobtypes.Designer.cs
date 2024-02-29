@@ -239,6 +239,26 @@ namespace UoFiddler.Controls.Forms
             btClipboardAnimationlist = new System.Windows.Forms.Button();
             btSaveAnimationlist = new System.Windows.Forms.Button();
             btAnimationlistLoad = new System.Windows.Forms.Button();
+            tabPageAminmul = new System.Windows.Forms.TabPage();
+            button1 = new System.Windows.Forms.Button();
+            txtOutputDirectory = new System.Windows.Forms.TextBox();
+            btnSetOutputDirectory = new System.Windows.Forms.Button();
+            txtOutputFilename = new System.Windows.Forms.TextBox();
+            lblNewIdCount = new System.Windows.Forms.Label();
+            btnProcessClickOld = new System.Windows.Forms.Button();
+            panelCheckbox = new System.Windows.Forms.Panel();
+            lbCopys = new System.Windows.Forms.Label();
+            chkHighDetail = new System.Windows.Forms.CheckBox();
+            chkLowDetail = new System.Windows.Forms.CheckBox();
+            chkHuman = new System.Windows.Forms.CheckBox();
+            tbfilename = new System.Windows.Forms.TextBox();
+            btnBrowse = new System.Windows.Forms.Button();
+            tbProcessAminidx = new System.Windows.Forms.TextBox();
+            lbCopyManyTimes = new System.Windows.Forms.Label();
+            txtNewCreatureID = new System.Windows.Forms.TextBox();
+            lbCopyID = new System.Windows.Forms.Label();
+            txtOrigCreatureID = new System.Windows.Forms.TextBox();
+            btnNewAnimIDXFiles = new System.Windows.Forms.Button();
             contextMenuStripRichTextBoxEdit.SuspendLayout();
             panelEdit.SuspendLayout();
             panelScript.SuspendLayout();
@@ -246,6 +266,8 @@ namespace UoFiddler.Controls.Forms
             tabPageRunUo.SuspendLayout();
             tabPageSphere.SuspendLayout();
             tabPageAnimationlist.SuspendLayout();
+            tabPageAminmul.SuspendLayout();
+            panelCheckbox.SuspendLayout();
             SuspendLayout();
             // 
             // btLoadBodyconv
@@ -1385,6 +1407,7 @@ namespace UoFiddler.Controls.Forms
             tabControl1.Controls.Add(tabPageRunUo);
             tabControl1.Controls.Add(tabPageSphere);
             tabControl1.Controls.Add(tabPageAnimationlist);
+            tabControl1.Controls.Add(tabPageAminmul);
             tabControl1.Location = new System.Drawing.Point(12, 227);
             tabControl1.Name = "tabControl1";
             tabControl1.SelectedIndex = 0;
@@ -2178,6 +2201,203 @@ namespace UoFiddler.Controls.Forms
             btAnimationlistLoad.UseVisualStyleBackColor = true;
             btAnimationlistLoad.Click += btAnimationlistLoad_Click;
             // 
+            // tabPageAminmul
+            // 
+            tabPageAminmul.Controls.Add(button1);
+            tabPageAminmul.Controls.Add(txtOutputDirectory);
+            tabPageAminmul.Controls.Add(btnSetOutputDirectory);
+            tabPageAminmul.Controls.Add(txtOutputFilename);
+            tabPageAminmul.Controls.Add(lblNewIdCount);
+            tabPageAminmul.Controls.Add(btnProcessClickOld);
+            tabPageAminmul.Controls.Add(panelCheckbox);
+            tabPageAminmul.Controls.Add(tbfilename);
+            tabPageAminmul.Controls.Add(btnBrowse);
+            tabPageAminmul.Controls.Add(tbProcessAminidx);
+            tabPageAminmul.Controls.Add(lbCopyManyTimes);
+            tabPageAminmul.Controls.Add(txtNewCreatureID);
+            tabPageAminmul.Controls.Add(lbCopyID);
+            tabPageAminmul.Controls.Add(txtOrigCreatureID);
+            tabPageAminmul.Controls.Add(btnNewAnimIDXFiles);
+            tabPageAminmul.Location = new System.Drawing.Point(4, 24);
+            tabPageAminmul.Name = "tabPageAminmul";
+            tabPageAminmul.Size = new System.Drawing.Size(303, 635);
+            tabPageAminmul.TabIndex = 3;
+            tabPageAminmul.Text = "Create";
+            tabPageAminmul.UseVisualStyleBackColor = true;
+            // 
+            // button1
+            // 
+            button1.Location = new System.Drawing.Point(23, 594);
+            button1.Name = "button1";
+            button1.Size = new System.Drawing.Size(120, 23);
+            button1.TabIndex = 93;
+            button1.Text = "Empty anim.mul";
+            button1.UseVisualStyleBackColor = true;
+            button1.Click += btnSingleEmptyAnimMul_Click;
+            // 
+            // txtOutputDirectory
+            // 
+            txtOutputDirectory.Location = new System.Drawing.Point(6, 43);
+            txtOutputDirectory.Name = "txtOutputDirectory";
+            txtOutputDirectory.Size = new System.Drawing.Size(231, 23);
+            txtOutputDirectory.TabIndex = 92;
+            // 
+            // btnSetOutputDirectory
+            // 
+            btnSetOutputDirectory.Location = new System.Drawing.Point(243, 43);
+            btnSetOutputDirectory.Name = "btnSetOutputDirectory";
+            btnSetOutputDirectory.Size = new System.Drawing.Size(52, 23);
+            btnSetOutputDirectory.TabIndex = 91;
+            btnSetOutputDirectory.Text = "outbut";
+            btnSetOutputDirectory.UseVisualStyleBackColor = true;
+            btnSetOutputDirectory.Click += btnSetOutputDirectoryClick;
+            // 
+            // txtOutputFilename
+            // 
+            txtOutputFilename.Location = new System.Drawing.Point(251, 187);
+            txtOutputFilename.Name = "txtOutputFilename";
+            txtOutputFilename.Size = new System.Drawing.Size(42, 23);
+            txtOutputFilename.TabIndex = 90;
+            // 
+            // lblNewIdCount
+            // 
+            lblNewIdCount.AutoSize = true;
+            lblNewIdCount.Location = new System.Drawing.Point(149, 266);
+            lblNewIdCount.Name = "lblNewIdCount";
+            lblNewIdCount.Size = new System.Drawing.Size(46, 15);
+            lblNewIdCount.TabIndex = 89;
+            lblNewIdCount.Text = "Count :";
+            // 
+            // btnProcessClickOld
+            // 
+            btnProcessClickOld.Location = new System.Drawing.Point(167, 157);
+            btnProcessClickOld.Name = "btnProcessClickOld";
+            btnProcessClickOld.Size = new System.Drawing.Size(126, 24);
+            btnProcessClickOld.TabIndex = 88;
+            btnProcessClickOld.Text = "C - Amin.IDX Old V";
+            btnProcessClickOld.UseVisualStyleBackColor = true;
+            btnProcessClickOld.Click += btnProcessClickOldVersion;
+            // 
+            // panelCheckbox
+            // 
+            panelCheckbox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            panelCheckbox.Controls.Add(lbCopys);
+            panelCheckbox.Controls.Add(chkHighDetail);
+            panelCheckbox.Controls.Add(chkLowDetail);
+            panelCheckbox.Controls.Add(chkHuman);
+            panelCheckbox.Location = new System.Drawing.Point(23, 157);
+            panelCheckbox.Name = "panelCheckbox";
+            panelCheckbox.Size = new System.Drawing.Size(141, 100);
+            panelCheckbox.TabIndex = 87;
+            // 
+            // lbCopys
+            // 
+            lbCopys.AutoSize = true;
+            lbCopys.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            lbCopys.Location = new System.Drawing.Point(11, 8);
+            lbCopys.Name = "lbCopys";
+            lbCopys.Size = new System.Drawing.Size(108, 15);
+            lbCopys.TabIndex = 87;
+            lbCopys.Text = "Copys X Checkbox";
+            // 
+            // chkHighDetail
+            // 
+            chkHighDetail.AutoSize = true;
+            chkHighDetail.Location = new System.Drawing.Point(17, 51);
+            chkHighDetail.Name = "chkHighDetail";
+            chkHighDetail.Size = new System.Drawing.Size(112, 19);
+            chkHighDetail.TabIndex = 86;
+            chkHighDetail.Text = "HighDetail x 110";
+            chkHighDetail.UseVisualStyleBackColor = true;
+            // 
+            // chkLowDetail
+            // 
+            chkLowDetail.AutoSize = true;
+            chkLowDetail.Location = new System.Drawing.Point(17, 26);
+            chkLowDetail.Name = "chkLowDetail";
+            chkLowDetail.Size = new System.Drawing.Size(102, 19);
+            chkLowDetail.TabIndex = 84;
+            chkLowDetail.Text = "LowDetail x 65";
+            chkLowDetail.UseVisualStyleBackColor = true;
+            // 
+            // chkHuman
+            // 
+            chkHuman.AutoSize = true;
+            chkHuman.Location = new System.Drawing.Point(17, 73);
+            chkHuman.Name = "chkHuman";
+            chkHuman.Size = new System.Drawing.Size(96, 19);
+            chkHuman.TabIndex = 85;
+            chkHuman.Text = "Human x 175";
+            chkHuman.UseVisualStyleBackColor = true;
+            // 
+            // tbfilename
+            // 
+            tbfilename.Location = new System.Drawing.Point(6, 14);
+            tbfilename.Name = "tbfilename";
+            tbfilename.Size = new System.Drawing.Size(231, 23);
+            tbfilename.TabIndex = 83;
+            // 
+            // btnBrowse
+            // 
+            btnBrowse.Location = new System.Drawing.Point(243, 14);
+            btnBrowse.Name = "btnBrowse";
+            btnBrowse.Size = new System.Drawing.Size(52, 23);
+            btnBrowse.TabIndex = 82;
+            btnBrowse.Text = "load";
+            btnBrowse.UseVisualStyleBackColor = true;
+            btnBrowse.Click += btnBrowseClick;
+            // 
+            // tbProcessAminidx
+            // 
+            tbProcessAminidx.Location = new System.Drawing.Point(23, 288);
+            tbProcessAminidx.Multiline = true;
+            tbProcessAminidx.Name = "tbProcessAminidx";
+            tbProcessAminidx.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
+            tbProcessAminidx.Size = new System.Drawing.Size(270, 166);
+            tbProcessAminidx.TabIndex = 81;
+            // 
+            // lbCopyManyTimes
+            // 
+            lbCopyManyTimes.AutoSize = true;
+            lbCopyManyTimes.Location = new System.Drawing.Point(10, 130);
+            lbCopyManyTimes.Name = "lbCopyManyTimes";
+            lbCopyManyTimes.Size = new System.Drawing.Size(180, 15);
+            lbCopyManyTimes.TabIndex = 80;
+            lbCopyManyTimes.Text = "Copy the index this many times :";
+            // 
+            // txtNewCreatureID
+            // 
+            txtNewCreatureID.Location = new System.Drawing.Point(193, 127);
+            txtNewCreatureID.Name = "txtNewCreatureID";
+            txtNewCreatureID.Size = new System.Drawing.Size(100, 23);
+            txtNewCreatureID.TabIndex = 79;
+            // 
+            // lbCopyID
+            // 
+            lbCopyID.AutoSize = true;
+            lbCopyID.Location = new System.Drawing.Point(74, 88);
+            lbCopyID.Name = "lbCopyID";
+            lbCopyID.Size = new System.Drawing.Size(116, 15);
+            lbCopyID.TabIndex = 78;
+            lbCopyID.Text = "Copy from Amin ID :";
+            // 
+            // txtOrigCreatureID
+            // 
+            txtOrigCreatureID.Location = new System.Drawing.Point(193, 85);
+            txtOrigCreatureID.Name = "txtOrigCreatureID";
+            txtOrigCreatureID.Size = new System.Drawing.Size(100, 23);
+            txtOrigCreatureID.TabIndex = 77;
+            // 
+            // btnNewAnimIDXFiles
+            // 
+            btnNewAnimIDXFiles.Location = new System.Drawing.Point(22, 261);
+            btnNewAnimIDXFiles.Name = "btnNewAnimIDXFiles";
+            btnNewAnimIDXFiles.Size = new System.Drawing.Size(126, 24);
+            btnNewAnimIDXFiles.TabIndex = 74;
+            btnNewAnimIDXFiles.Text = "Create Amin IDX";
+            btnNewAnimIDXFiles.UseVisualStyleBackColor = true;
+            btnNewAnimIDXFiles.Click += btnProcessClick;
+            // 
             // EditUoBodyconvMobtypes
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -2202,6 +2422,10 @@ namespace UoFiddler.Controls.Forms
             tabPageSphere.ResumeLayout(false);
             tabPageSphere.PerformLayout();
             tabPageAnimationlist.ResumeLayout(false);
+            tabPageAminmul.ResumeLayout(false);
+            tabPageAminmul.PerformLayout();
+            panelCheckbox.ResumeLayout(false);
+            panelCheckbox.PerformLayout();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -2405,5 +2629,25 @@ namespace UoFiddler.Controls.Forms
         private System.Windows.Forms.Button btAppData;
         private System.Windows.Forms.Button btUOOpenDirectory;
         private System.Windows.Forms.Button btInfoMobtypes;
+        private System.Windows.Forms.TabPage tabPageAminmul;
+        private System.Windows.Forms.Button btnNewAnimIDXFiles;
+        private System.Windows.Forms.Label lbCopyManyTimes;
+        private System.Windows.Forms.TextBox txtNewCreatureID;
+        private System.Windows.Forms.Label lbCopyID;
+        private System.Windows.Forms.TextBox txtOrigCreatureID;
+        private System.Windows.Forms.TextBox tbProcessAminidx;
+        private System.Windows.Forms.Button btnBrowse;
+        private System.Windows.Forms.TextBox tbfilename;
+        private System.Windows.Forms.CheckBox chkLowDetail;
+        private System.Windows.Forms.CheckBox chkHuman;
+        private System.Windows.Forms.CheckBox chkHighDetail;
+        private System.Windows.Forms.Panel panelCheckbox;
+        private System.Windows.Forms.Label lbCopys;
+        private System.Windows.Forms.Button btnProcessClickOld;
+        private System.Windows.Forms.Label lblNewIdCount;
+        private System.Windows.Forms.TextBox txtOutputFilename;
+        private System.Windows.Forms.TextBox txtOutputDirectory;
+        private System.Windows.Forms.Button btnSetOutputDirectory;
+        private System.Windows.Forms.Button button1;
     }
 }
