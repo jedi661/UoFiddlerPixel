@@ -13,6 +13,7 @@ Version : 4.12.3
 - Add Animation - Script Script for RunUo and Sphere.
 - Add Animation - Script Edit Animationlist.
 - Add Creater Amin.idx and Amin.mul Empty.
+- Add ScriptCreator Buttons Edit and Scripts
 
 Version : 4.12.2
 - BildFusion Add Sharp , Clipboard, Texture Cut.
