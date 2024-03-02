@@ -100,11 +100,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             }
             catch (System.IO.FileNotFoundException)
             {
-                // Die XML-Datei existiert noch nicht, also tun wir nichts.
+                // The XML file doesn't exist yet, so we don't do anything.
             }
             catch (System.IO.DirectoryNotFoundException)
             {
-                // Das Verzeichnis existiert noch nicht, also tun wir nichts.
+                // The directory doesn't exist yet, so we don't do anything.
             }
 
         }
