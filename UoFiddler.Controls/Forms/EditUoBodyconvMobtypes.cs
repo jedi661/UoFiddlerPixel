@@ -1127,7 +1127,7 @@ ON=@CreateLoot
             {
                 tbProcessAminidx.AppendText($"An error has occurred: {ex.Message}\n");
             }
-            #endregion
         }
+        #endregion      
     }
 }

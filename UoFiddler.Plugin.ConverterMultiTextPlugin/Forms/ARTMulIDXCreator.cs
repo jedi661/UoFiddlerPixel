@@ -2677,16 +2677,6 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         }
         #endregion
 
-        /*private void DrawPalette()
-        {
-            Bitmap bitmap = new Bitmap(pictureBoxPalette.Width, pictureBoxPalette.Height);
-            using (Graphics g = Graphics.FromImage(bitmap))
-            {
-                palette.DrawPalette(g);
-            }
-            pictureBoxPalette.Image = bitmap;
-        }*/
-
         #region DrawPalette
         private void DrawPalette()
         {
@@ -2715,6 +2705,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         }
         #endregion
 
+        #region btnLoadAnimationMulData
         private void btnLoadAnimationMulData_Click(object sender, EventArgs e)
         {
             // Öffnen Sie den Datei-Dialog, um den Benutzer das Verzeichnis auswählen zu lassen
@@ -2735,7 +2726,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 }
             }
         }
+        #endregion
 
+        #region LoadAnimation
         private AnimationGroup LoadAnimation(string animMulPath, string animIdxPath)
         {
             AnimationGroup animation = new AnimationGroup();
@@ -2760,7 +2753,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                         }
                     }
                 }
-            }
+            }            
 
             // Lesen Sie die Daten aus der Anim.mul Datei
             using (var mulReader = new BinaryReader(File.OpenRead(animMulPath)))
@@ -2791,7 +2784,472 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 
             return animation;
         }
+        #endregion
 
+        #region BtnCreateArtIdx
+        private void BtnCreateArtIdx_Click(object sender, EventArgs e)
+        {
+            SaveFileDialog saveFileDialog = new SaveFileDialog();
+            saveFileDialog.Filter = "MUL Files|*.mul";
+            saveFileDialog.Title = "Save a MUL File";
 
+            if (saveFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                CreateArtIdx(saveFileDialog.FileName, 1000000);
+                infoARTIDXMULID.AppendText($"Created a new ARTIDX.MUL file with 1,000,000 entries at {saveFileDialog.FileName}\n");
+            }
+        }
+        #endregion
+
+        #region CreateArtIdx
+        private void CreateArtIdx(string filename, int entries)
+        {
+            using (FileStream stream = File.Open(filename, FileMode.OpenOrCreate, FileAccess.ReadWrite))
+            {
+                // Read the existing entries into a buffer
+                byte[] buffer = new byte[stream.Length];
+                stream.Read(buffer, 0, buffer.Length);
+
+                // Create a buffer for the additional entries
+                byte[] additionalBuffer = new byte[(entries - buffer.Length / 12) * 12];
+
+                // Write the additional entries to the stream
+                stream.Write(additionalBuffer, 0, additionalBuffer.Length);
+            }
+        }
+        #endregion
+
+        #region BtnCreateArtIdx100K
+        private void BtnCreateArtIdx100K_Click(object sender, EventArgs e)
+        {
+            CreateArtIdxWithEntries(100000);
+        }
+        #endregion
+
+        #region BtnCreateArtIdx150K
+        private void BtnCreateArtIdx150K_Click(object sender, EventArgs e)
+        {
+            CreateArtIdxWithEntries(150000);
+        }
+        #endregion
+
+        #region BtnCreateArtIdx200K
+        private void BtnCreateArtIdx200K_Click(object sender, EventArgs e)
+        {
+            CreateArtIdxWithEntries(200000);
+        }
+        #endregion
+
+        #region BtnCreateArtIdx250K
+        private void BtnCreateArtIdx250K_Click(object sender, EventArgs e)
+        {
+            CreateArtIdxWithEntries(250000);
+        }
+        #endregion
+
+        #region BtnCreateArtIdx500K
+        private void BtnCreateArtIdx500K_Click(object sender, EventArgs e)
+        {
+            CreateArtIdxWithEntries(500000);
+        }
+        #endregion
+
+        #region CreateArtIdxWithEntries
+        private void CreateArtIdxWithEntries(int entries)
+        {
+            SaveFileDialog saveFileDialog = new SaveFileDialog();
+            saveFileDialog.Filter = "MUL Files|*.mul";
+            saveFileDialog.Title = "Save a MUL File";
+
+            if (saveFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                CreateArtIdx(saveFileDialog.FileName, entries);
+                infoARTIDXMULID.AppendText($"Created a new ARTIDX.MUL file with {entries} entries at {saveFileDialog.FileName}\n");
+            }
+        }
+        #endregion
+
+        #region ReadArtIdx
+
+        private int _indexCount = 0;
+        private void BtnReadArtIdx_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            openFileDialog.Filter = "MUL Files|*.mul";
+            openFileDialog.Title = "Open a MUL File";
+
+            if (openFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                _indexCount = 0; // Setzen Sie den Zähler zurück
+                ReadArtIdx(openFileDialog.FileName);
+                lblIndexCount.Text = $"Total indices read: {_indexCount}"; // Aktualisieren Sie das Label
+                infoARTIDXMULID.AppendText($"Finished reading {_indexCount} entries from {openFileDialog.FileName}\n");
+            }
+        }
+
+        /*private void ReadArtIdx(string filename)
+        {
+            using (FileStream stream = File.Open(filename, FileMode.Open, FileAccess.Read))
+            {
+                // Calculate the number of entries
+                int entries = (int)stream.Length / 12;
+
+                // Create a buffer for the entries
+                byte[] buffer = new byte[12];
+
+                for (int i = 0; i < entries; i++)
+                {
+                    // Read an entry into the buffer
+                    stream.Read(buffer, 0, buffer.Length);
+
+                    // Convert the buffer to DWORDs
+                    int lookup = BitConverter.ToInt32(buffer, 0);
+                    int size = BitConverter.ToInt32(buffer, 4);
+                    int unknown = BitConverter.ToInt32(buffer, 8);
+
+                    _indexCount++; // Erhöhen Sie den Zähler
+                }
+            }
+        }*/
+
+        private void ReadArtIdx(string filename)
+        {
+            using (FileStream stream = File.Open(filename, FileMode.Open, FileAccess.Read))
+            {
+                // Calculate the number of entries
+                int entries = (int)stream.Length / 12;
+
+                // Create a buffer for the entries
+                byte[] buffer = new byte[12];
+
+                int definedCount = 0;
+                int undefinedCount = 0;
+
+                for (int i = 0; i < entries; i++)
+                {
+                    // Read an entry into the buffer
+                    stream.Read(buffer, 0, buffer.Length);
+
+                    // Convert the buffer to DWORDs
+                    int lookup = BitConverter.ToInt32(buffer, 0);
+                    int size = BitConverter.ToInt32(buffer, 4);
+
+                    // Check if the entry is defined
+                    if (lookup != -1 && size > 0)
+                    {
+                        definedCount++;
+                    }
+                    else
+                    {
+                        undefinedCount++;
+                    }
+
+                    _indexCount++; // Erhöhen Sie den Zähler
+                }
+
+                // Append the summary to infoARTIDXMULID
+                infoARTIDXMULID.AppendText($"Total entries: {_indexCount}\n");
+                infoARTIDXMULID.AppendText($"Defined entries: {definedCount}\n");
+                infoARTIDXMULID.AppendText($"Undefined entries: {undefinedCount}\n");
+            }
+        }
+        #endregion
+
+        #region btnSingleEmptyAnimMul_Click
+        private void btnSingleEmptyAnimMul_Click(object sender, EventArgs e)
+        {
+            using (FolderBrowserDialog fbd = new FolderBrowserDialog())
+            {
+                fbd.Description = "Select a directory to save the files";
+
+                if (fbd.ShowDialog() == DialogResult.OK)
+                {
+                    string path = fbd.SelectedPath;
+
+                    // Create the file anim.mul
+                    using (FileStream fs = File.Create(Path.Combine(path, "anim.mul")))
+                    {
+                        // No data is written to the anim.mul file because it is supposed to be empty
+                    }
+                }
+            }
+        }
+        #endregion
+
+        #region Constants
+        // Constants for the sizes of different creature types
+        const int cHighDetail = 110;
+        const int cLowDetail = 65;
+        const int cHuman = 175;
+
+        const int cHighDetailOLd = 1; // Old Version
+        const int cLowDetailOld = 2; // Old Version
+        const int cHumanOld = 3; // Old Version
+
+        private int newIdCount = 0;
+        #endregion
+
+        #region btnBrowseClick
+        private void btnBrowseClick(object sender, EventArgs e)
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            if (openFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                tbfilename.Text = openFileDialog.FileName;
+            }
+        }
+        #endregion
+
+        #region btnSetOutputDirectoryClick
+        private void btnSetOutputDirectoryClick(object sender, EventArgs e)
+        {
+            // Open a FolderBrowserDialog to select the output directory
+            FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog();
+            if (folderBrowserDialog.ShowDialog() == DialogResult.OK)
+            {
+                // Set the text of the output directory textbox to the selected path
+                txtOutputDirectory.Text = folderBrowserDialog.SelectedPath;
+            }
+        }
+        #endregion
+
+        #region btnProcessClick
+        private void btnProcessClick(object sender, EventArgs e)
+        {
+            // Flush tbProcessAminidx with every new process
+            tbProcessAminidx.Clear();
+
+            try
+            {
+                // Check if the file exists
+                string filename = tbfilename.Text;
+                if (!File.Exists(filename))
+                {
+                    tbProcessAminidx.AppendText("Could not open anim.idx!\n");
+                    return;
+                }
+
+                // Parse the creature ID from the text box
+                int creatureID;
+                if (!int.TryParse(txtOrigCreatureID.Text, System.Globalization.NumberStyles.HexNumber, null, out creatureID))
+                {
+                    tbProcessAminidx.AppendText("Enter a valid Animation ID\n");
+                    return;
+                }
+
+                // Determine the number of copies based on the selected checkboxes
+                int copyCount;
+                if (chkHighDetail.Checked)
+                {
+                    copyCount = cHighDetail;
+                }
+                else if (chkLowDetail.Checked)
+                {
+                    copyCount = cLowDetail;
+                }
+                else if (chkHuman.Checked)
+                {
+                    copyCount = cHuman;
+                }
+                else
+                {
+                    // If no checkbox is selected, parse the number of copies from the text box
+                    if (!int.TryParse(txtNewCreatureID.Text, out copyCount))
+                    {
+                        tbProcessAminidx.AppendText("Enter a valid copy count\n");
+                        return;
+                    }
+                }
+
+                // Determine the output filename
+                string outputFilename = txtOutputFilename.Text;
+                if (string.IsNullOrEmpty(outputFilename))
+                {
+                    outputFilename = Path.Combine(txtOutputDirectory.Text, "anim.idx"); // Use "anim.idx" in the output directory if no output file is specified
+                }
+                else
+                {
+                    // Append "amin", the outputFilename, and ".idx" to the output directory
+                    outputFilename = Path.Combine(txtOutputDirectory.Text, "amin" + outputFilename + ".idx");
+                }
+
+                // Copy the original file to the output file
+                File.Copy(filename, outputFilename, true);
+
+                // Execute the copy process
+                // CopyAnimationData(filename, creatureID, copyCount);
+
+                // Execute the copy process on the new file
+                CopyAnimationData(outputFilename, creatureID, copyCount);
+            }
+            catch (Exception ex)
+            {
+                tbProcessAminidx.AppendText($"An error has occurred: {ex.Message}\n");
+            }
+        }
+
+        private void CopyAnimationData(string filename, int creatureID, int copyCount)
+        {
+            tbProcessAminidx.AppendText("Checking if new Animation ID is in use\n");
+
+            using (FileStream stream = File.Open(filename, FileMode.Open, FileAccess.ReadWrite))
+            {
+                // Determine the index offset and length of data to read based on the creature ID
+                int indexOffset, readLength;
+                string creatureType;
+                DetermineCreatureProperties(creatureID, out indexOffset, out readLength, out creatureType);
+
+                tbProcessAminidx.AppendText($"Creature is a {creatureType}\n");
+
+                // Read the animation index data into a byte array
+                stream.Seek(indexOffset * 12, SeekOrigin.Begin);
+                byte[] buffer = new byte[readLength];
+                stream.Read(buffer, 0, readLength);
+                tbProcessAminidx.AppendText($"Read {readLength} bytes of index-data for cID {creatureID}\n");
+
+                // Copy the data the specified number of times
+                for (int i = 0; i < copyCount; i++)
+                {
+                    // Find the end of the file
+                    stream.Seek(0, SeekOrigin.End);
+
+                    // Write the data directly to the stream
+                    stream.Write(buffer, 0, readLength);
+
+                    tbProcessAminidx.AppendText($"Wrote {readLength} bytes of index-data to cID {creatureID}\n");
+
+                    // Increment the counter for each ID created
+                    newIdCount++;
+                }
+                // Update the label with the number of IDs created
+                lblNewIdCount.Text = $"Number of IDs created: {newIdCount}";
+            }
+        }
+        #endregion
+
+        #region DetermineCreatureProperties
+        private void DetermineCreatureProperties(int creatureID, out int indexOffset, out int readLength, out string creatureType)
+        {
+            if (creatureID <= 199)
+            {
+                indexOffset = creatureID * cHighDetail;
+                readLength = cHighDetail * 12;
+                creatureType = "High Detail Critter";
+            }
+            else if (creatureID > 199 && creatureID <= 399)
+            {
+                indexOffset = (creatureID - 200) * cLowDetail + 22000;
+                readLength = cLowDetail * 12;
+                creatureType = "Low Detail Critter";
+            }
+            else
+            {
+                indexOffset = (creatureID - 400) * cHuman + 35000;
+                readLength = cHuman * 12;
+                creatureType = "Human or an Accessoire";
+            }
+        }
+        #endregion
+
+        #region btnProcessClickOldVersion
+        private void btnProcessClickOldVersion(object sender, EventArgs e)
+        {
+            // Flush tbProcessAminidx with every new process
+            tbProcessAminidx.Clear();
+
+            try
+            {
+                int readLength = 0;
+                int wroteLength = 0;
+                string filename = tbfilename.Text;
+                if (!File.Exists(filename))
+                {
+                    tbProcessAminidx.AppendText("Could not open anim.idx!\n");
+                    return;
+                }
+
+                int creatureID;
+                if (!int.TryParse(txtOrigCreatureID.Text, System.Globalization.NumberStyles.HexNumber, null, out creatureID))
+                {
+                    tbProcessAminidx.AppendText("Enter a valid Animation ID\n");
+                    return;
+                }
+
+                int copyCount;
+                if (!int.TryParse(txtNewCreatureID.Text, out copyCount))
+                {
+                    tbProcessAminidx.AppendText("Enter a valid copy count\n");
+                    return;
+                }
+
+                tbProcessAminidx.AppendText("Checking if new Animation ID is in use\n");
+
+                using (FileStream stream = File.Open(filename, FileMode.Open, FileAccess.ReadWrite))
+                {
+                    int indexOffset;
+                    byte cAnimType;
+
+                    if (creatureID <= 199)
+                    {
+                        indexOffset = creatureID * 110;
+                        readLength = 110 * 12;
+                        cAnimType = cHighDetailOLd;
+                        tbProcessAminidx.AppendText("Creature is a High Detail Critter\n");
+                    }
+                    else if (creatureID > 199 && creatureID <= 399)
+                    {
+                        indexOffset = (creatureID - 200) * 65 + 22000;
+                        readLength = 65 * 12;
+                        cAnimType = cLowDetailOld;
+                        tbProcessAminidx.AppendText("Creature is a Low Detail Critter\n");
+                    }
+                    else
+                    {
+                        indexOffset = (creatureID - 400) * 175 + 35000;
+                        readLength = 175 * 12;
+                        cAnimType = cHumanOld;
+                        tbProcessAminidx.AppendText("Creature is a Human or an Accessoire\n");
+                    }
+
+                    stream.Seek(indexOffset * 12, SeekOrigin.Begin);
+                    byte[] buffer = new byte[readLength];
+                    stream.Read(buffer, 0, readLength);
+                    tbProcessAminidx.AppendText($"Read {readLength} bytes of index-data for cID {creatureID}\n");
+
+                    // Copy the data the number of times specified in copyCount
+                    for (int i = 0; i < copyCount; i++)
+                    {
+                        // Find the end of the file
+                        stream.Seek(0, SeekOrigin.End);
+
+                        // Write the data directly to the stream
+                        stream.Write(buffer, 0, readLength);
+
+                        // Update wroteLength to the value of readLength since all data has been written
+                        wroteLength = readLength;
+                        tbProcessAminidx.AppendText($"Wrote {wroteLength} bytes of index-data to cID {creatureID}\n");
+
+                        // Perform different actions based on the creature type
+                        switch (cAnimType)
+                        {
+                            case cHighDetailOLd:
+                                // Perform some action for high detail creatures
+                                break;
+                            case cLowDetailOld:
+                                // Perform some action for low detail creatures
+                                break;
+                            case cHumanOld:
+                                // Perform some action for human creatures
+                                break;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                tbProcessAminidx.AppendText($"An error has occurred: {ex.Message}\n");
+            }
+        }
+        #endregion      
     }
 }

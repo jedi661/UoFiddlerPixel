@@ -127,6 +127,25 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             lbCreatePalette = new System.Windows.Forms.Label();
             btCreatePalette = new System.Windows.Forms.Button();
             tabPageAnimation = new System.Windows.Forms.TabPage();
+            txtOutputDirectory = new System.Windows.Forms.TextBox();
+            btnSetOutputDirectory = new System.Windows.Forms.Button();
+            txtOutputFilename = new System.Windows.Forms.TextBox();
+            lblNewIdCount = new System.Windows.Forms.Label();
+            btnProcessClickOld = new System.Windows.Forms.Button();
+            panelCheckbox = new System.Windows.Forms.Panel();
+            lbCopys = new System.Windows.Forms.Label();
+            chkHighDetail = new System.Windows.Forms.CheckBox();
+            chkLowDetail = new System.Windows.Forms.CheckBox();
+            chkHuman = new System.Windows.Forms.CheckBox();
+            tbfilename = new System.Windows.Forms.TextBox();
+            btnBrowse = new System.Windows.Forms.Button();
+            tbProcessAminidx = new System.Windows.Forms.TextBox();
+            lbCopyManyTimes = new System.Windows.Forms.Label();
+            txtNewCreatureID = new System.Windows.Forms.TextBox();
+            lbCopyID = new System.Windows.Forms.Label();
+            txtOrigCreatureID = new System.Windows.Forms.TextBox();
+            btnNewAnimIDXFiles = new System.Windows.Forms.Button();
+            txtData = new System.Windows.Forms.TextBox();
             btnLoadAnimationMulData = new System.Windows.Forms.Button();
             tabPageReadMuls = new System.Windows.Forms.TabPage();
             tabPageReadOut = new System.Windows.Forms.TabPage();
@@ -145,8 +164,20 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             buttonReadLandTileData = new System.Windows.Forms.Button();
             listViewTileData = new System.Windows.Forms.ListView();
             buttonReadTileData = new System.Windows.Forms.Button();
+            tabPageArtmul = new System.Windows.Forms.TabPage();
+            BtnCreateArtIdx500K = new System.Windows.Forms.Button();
+            BtnCreateArtIdx250K = new System.Windows.Forms.Button();
+            BtnCreateArtIdx200K = new System.Windows.Forms.Button();
+            BtnCreateArtIdx150K = new System.Windows.Forms.Button();
+            BtnCreateArtIdx100K = new System.Windows.Forms.Button();
+            lbreadartidx = new System.Windows.Forms.Label();
+            lbartidxmul = new System.Windows.Forms.Label();
+            lblIndexCount = new System.Windows.Forms.Label();
+            ReadArtmul = new System.Windows.Forms.Button();
+            infoARTIDXMULID = new System.Windows.Forms.TextBox();
+            BtnCreateArtIdx = new System.Windows.Forms.Button();
             saveFileDialog = new System.Windows.Forms.SaveFileDialog();
-            txtData = new System.Windows.Forms.TextBox();
+            button1 = new System.Windows.Forms.Button();
             tabControl1.SuspendLayout();
             tabPageCreateMuls.SuspendLayout();
             tabPageTileData.SuspendLayout();
@@ -158,9 +189,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             tabPagePalette.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)pictureBoxPalette).BeginInit();
             tabPageAnimation.SuspendLayout();
+            panelCheckbox.SuspendLayout();
             tabPageReadMuls.SuspendLayout();
             tabPageReadOut.SuspendLayout();
             groupBoxInfo.SuspendLayout();
+            tabPageArtmul.SuspendLayout();
             SuspendLayout();
             // 
             // textBox1
@@ -300,10 +333,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             tabControl1.Controls.Add(tabPageAnimation);
             tabControl1.Controls.Add(tabPageReadMuls);
             tabControl1.Controls.Add(tabPageReadOut);
+            tabControl1.Controls.Add(tabPageArtmul);
             tabControl1.Location = new System.Drawing.Point(3, 12);
             tabControl1.Name = "tabControl1";
             tabControl1.SelectedIndex = 0;
-            tabControl1.Size = new System.Drawing.Size(753, 426);
+            tabControl1.Size = new System.Drawing.Size(753, 557);
             tabControl1.TabIndex = 18;
             // 
             // tabPageCreateMuls
@@ -336,7 +370,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             tabPageCreateMuls.Location = new System.Drawing.Point(4, 24);
             tabPageCreateMuls.Name = "tabPageCreateMuls";
             tabPageCreateMuls.Padding = new System.Windows.Forms.Padding(3);
-            tabPageCreateMuls.Size = new System.Drawing.Size(745, 398);
+            tabPageCreateMuls.Size = new System.Drawing.Size(745, 529);
             tabPageCreateMuls.TabIndex = 0;
             tabPageCreateMuls.Text = "Create Muls";
             tabPageCreateMuls.UseVisualStyleBackColor = true;
@@ -536,7 +570,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             tabPageTileData.Controls.Add(btCreateTiledata);
             tabPageTileData.Location = new System.Drawing.Point(4, 24);
             tabPageTileData.Name = "tabPageTileData";
-            tabPageTileData.Size = new System.Drawing.Size(745, 398);
+            tabPageTileData.Size = new System.Drawing.Size(745, 529);
             tabPageTileData.TabIndex = 2;
             tabPageTileData.Text = "TileData";
             tabPageTileData.UseVisualStyleBackColor = true;
@@ -783,7 +817,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             tabPageTexturen.Controls.Add(groupBoxTexture);
             tabPageTexturen.Location = new System.Drawing.Point(4, 24);
             tabPageTexturen.Name = "tabPageTexturen";
-            tabPageTexturen.Size = new System.Drawing.Size(745, 398);
+            tabPageTexturen.Size = new System.Drawing.Size(745, 529);
             tabPageTexturen.TabIndex = 4;
             tabPageTexturen.Text = "Texturen";
             tabPageTexturen.UseVisualStyleBackColor = true;
@@ -898,7 +932,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             tabPageRadarColor.Controls.Add(CreateFileButtonRadarColor);
             tabPageRadarColor.Location = new System.Drawing.Point(4, 24);
             tabPageRadarColor.Name = "tabPageRadarColor";
-            tabPageRadarColor.Size = new System.Drawing.Size(745, 398);
+            tabPageRadarColor.Size = new System.Drawing.Size(745, 529);
             tabPageRadarColor.TabIndex = 5;
             tabPageRadarColor.Text = "RadarColor";
             tabPageRadarColor.UseVisualStyleBackColor = true;
@@ -951,7 +985,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             tabPagePalette.Controls.Add(btCreatePalette);
             tabPagePalette.Location = new System.Drawing.Point(4, 24);
             tabPagePalette.Name = "tabPagePalette";
-            tabPagePalette.Size = new System.Drawing.Size(745, 398);
+            tabPagePalette.Size = new System.Drawing.Size(745, 529);
             tabPagePalette.TabIndex = 6;
             tabPagePalette.Text = "Palette";
             tabPagePalette.UseVisualStyleBackColor = true;
@@ -1033,18 +1067,204 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // 
             // tabPageAnimation
             // 
+            tabPageAnimation.Controls.Add(button1);
+            tabPageAnimation.Controls.Add(txtOutputDirectory);
+            tabPageAnimation.Controls.Add(btnSetOutputDirectory);
+            tabPageAnimation.Controls.Add(txtOutputFilename);
+            tabPageAnimation.Controls.Add(lblNewIdCount);
+            tabPageAnimation.Controls.Add(btnProcessClickOld);
+            tabPageAnimation.Controls.Add(panelCheckbox);
+            tabPageAnimation.Controls.Add(tbfilename);
+            tabPageAnimation.Controls.Add(btnBrowse);
+            tabPageAnimation.Controls.Add(tbProcessAminidx);
+            tabPageAnimation.Controls.Add(lbCopyManyTimes);
+            tabPageAnimation.Controls.Add(txtNewCreatureID);
+            tabPageAnimation.Controls.Add(lbCopyID);
+            tabPageAnimation.Controls.Add(txtOrigCreatureID);
+            tabPageAnimation.Controls.Add(btnNewAnimIDXFiles);
             tabPageAnimation.Controls.Add(txtData);
             tabPageAnimation.Controls.Add(btnLoadAnimationMulData);
             tabPageAnimation.Location = new System.Drawing.Point(4, 24);
             tabPageAnimation.Name = "tabPageAnimation";
-            tabPageAnimation.Size = new System.Drawing.Size(745, 398);
+            tabPageAnimation.Size = new System.Drawing.Size(745, 529);
             tabPageAnimation.TabIndex = 7;
             tabPageAnimation.Text = "Animation";
             tabPageAnimation.UseVisualStyleBackColor = true;
             // 
+            // txtOutputDirectory
+            // 
+            txtOutputDirectory.Location = new System.Drawing.Point(8, 50);
+            txtOutputDirectory.Name = "txtOutputDirectory";
+            txtOutputDirectory.Size = new System.Drawing.Size(231, 23);
+            txtOutputDirectory.TabIndex = 106;
+            // 
+            // btnSetOutputDirectory
+            // 
+            btnSetOutputDirectory.Location = new System.Drawing.Point(245, 50);
+            btnSetOutputDirectory.Name = "btnSetOutputDirectory";
+            btnSetOutputDirectory.Size = new System.Drawing.Size(52, 23);
+            btnSetOutputDirectory.TabIndex = 105;
+            btnSetOutputDirectory.Text = "outbut";
+            btnSetOutputDirectory.UseVisualStyleBackColor = true;
+            btnSetOutputDirectory.Click += btnSetOutputDirectoryClick;
+            // 
+            // txtOutputFilename
+            // 
+            txtOutputFilename.Location = new System.Drawing.Point(253, 194);
+            txtOutputFilename.Name = "txtOutputFilename";
+            txtOutputFilename.Size = new System.Drawing.Size(42, 23);
+            txtOutputFilename.TabIndex = 104;
+            // 
+            // lblNewIdCount
+            // 
+            lblNewIdCount.AutoSize = true;
+            lblNewIdCount.Location = new System.Drawing.Point(151, 273);
+            lblNewIdCount.Name = "lblNewIdCount";
+            lblNewIdCount.Size = new System.Drawing.Size(46, 15);
+            lblNewIdCount.TabIndex = 103;
+            lblNewIdCount.Text = "Count :";
+            // 
+            // btnProcessClickOld
+            // 
+            btnProcessClickOld.Location = new System.Drawing.Point(169, 164);
+            btnProcessClickOld.Name = "btnProcessClickOld";
+            btnProcessClickOld.Size = new System.Drawing.Size(126, 24);
+            btnProcessClickOld.TabIndex = 102;
+            btnProcessClickOld.Text = "C - Amin.IDX Old V";
+            btnProcessClickOld.UseVisualStyleBackColor = true;
+            btnProcessClickOld.Click += btnProcessClickOldVersion;
+            // 
+            // panelCheckbox
+            // 
+            panelCheckbox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            panelCheckbox.Controls.Add(lbCopys);
+            panelCheckbox.Controls.Add(chkHighDetail);
+            panelCheckbox.Controls.Add(chkLowDetail);
+            panelCheckbox.Controls.Add(chkHuman);
+            panelCheckbox.Location = new System.Drawing.Point(25, 164);
+            panelCheckbox.Name = "panelCheckbox";
+            panelCheckbox.Size = new System.Drawing.Size(141, 100);
+            panelCheckbox.TabIndex = 101;
+            // 
+            // lbCopys
+            // 
+            lbCopys.AutoSize = true;
+            lbCopys.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            lbCopys.Location = new System.Drawing.Point(11, 8);
+            lbCopys.Name = "lbCopys";
+            lbCopys.Size = new System.Drawing.Size(108, 15);
+            lbCopys.TabIndex = 87;
+            lbCopys.Text = "Copys X Checkbox";
+            // 
+            // chkHighDetail
+            // 
+            chkHighDetail.AutoSize = true;
+            chkHighDetail.Location = new System.Drawing.Point(17, 51);
+            chkHighDetail.Name = "chkHighDetail";
+            chkHighDetail.Size = new System.Drawing.Size(112, 19);
+            chkHighDetail.TabIndex = 86;
+            chkHighDetail.Text = "HighDetail x 110";
+            chkHighDetail.UseVisualStyleBackColor = true;
+            // 
+            // chkLowDetail
+            // 
+            chkLowDetail.AutoSize = true;
+            chkLowDetail.Location = new System.Drawing.Point(17, 26);
+            chkLowDetail.Name = "chkLowDetail";
+            chkLowDetail.Size = new System.Drawing.Size(102, 19);
+            chkLowDetail.TabIndex = 84;
+            chkLowDetail.Text = "LowDetail x 65";
+            chkLowDetail.UseVisualStyleBackColor = true;
+            // 
+            // chkHuman
+            // 
+            chkHuman.AutoSize = true;
+            chkHuman.Location = new System.Drawing.Point(17, 73);
+            chkHuman.Name = "chkHuman";
+            chkHuman.Size = new System.Drawing.Size(96, 19);
+            chkHuman.TabIndex = 85;
+            chkHuman.Text = "Human x 175";
+            chkHuman.UseVisualStyleBackColor = true;
+            // 
+            // tbfilename
+            // 
+            tbfilename.Location = new System.Drawing.Point(8, 21);
+            tbfilename.Name = "tbfilename";
+            tbfilename.Size = new System.Drawing.Size(231, 23);
+            tbfilename.TabIndex = 100;
+            // 
+            // btnBrowse
+            // 
+            btnBrowse.Location = new System.Drawing.Point(245, 21);
+            btnBrowse.Name = "btnBrowse";
+            btnBrowse.Size = new System.Drawing.Size(52, 23);
+            btnBrowse.TabIndex = 99;
+            btnBrowse.Text = "load";
+            btnBrowse.UseVisualStyleBackColor = true;
+            btnBrowse.Click += btnBrowseClick;
+            // 
+            // tbProcessAminidx
+            // 
+            tbProcessAminidx.Location = new System.Drawing.Point(25, 295);
+            tbProcessAminidx.Multiline = true;
+            tbProcessAminidx.Name = "tbProcessAminidx";
+            tbProcessAminidx.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
+            tbProcessAminidx.Size = new System.Drawing.Size(270, 166);
+            tbProcessAminidx.TabIndex = 98;
+            // 
+            // lbCopyManyTimes
+            // 
+            lbCopyManyTimes.AutoSize = true;
+            lbCopyManyTimes.Location = new System.Drawing.Point(12, 137);
+            lbCopyManyTimes.Name = "lbCopyManyTimes";
+            lbCopyManyTimes.Size = new System.Drawing.Size(180, 15);
+            lbCopyManyTimes.TabIndex = 97;
+            lbCopyManyTimes.Text = "Copy the index this many times :";
+            // 
+            // txtNewCreatureID
+            // 
+            txtNewCreatureID.Location = new System.Drawing.Point(195, 134);
+            txtNewCreatureID.Name = "txtNewCreatureID";
+            txtNewCreatureID.Size = new System.Drawing.Size(100, 23);
+            txtNewCreatureID.TabIndex = 96;
+            // 
+            // lbCopyID
+            // 
+            lbCopyID.AutoSize = true;
+            lbCopyID.Location = new System.Drawing.Point(76, 95);
+            lbCopyID.Name = "lbCopyID";
+            lbCopyID.Size = new System.Drawing.Size(116, 15);
+            lbCopyID.TabIndex = 95;
+            lbCopyID.Text = "Copy from Amin ID :";
+            // 
+            // txtOrigCreatureID
+            // 
+            txtOrigCreatureID.Location = new System.Drawing.Point(195, 92);
+            txtOrigCreatureID.Name = "txtOrigCreatureID";
+            txtOrigCreatureID.Size = new System.Drawing.Size(100, 23);
+            txtOrigCreatureID.TabIndex = 94;
+            // 
+            // btnNewAnimIDXFiles
+            // 
+            btnNewAnimIDXFiles.Location = new System.Drawing.Point(24, 268);
+            btnNewAnimIDXFiles.Name = "btnNewAnimIDXFiles";
+            btnNewAnimIDXFiles.Size = new System.Drawing.Size(126, 24);
+            btnNewAnimIDXFiles.TabIndex = 93;
+            btnNewAnimIDXFiles.Text = "Create Amin IDX";
+            btnNewAnimIDXFiles.UseVisualStyleBackColor = true;
+            btnNewAnimIDXFiles.Click += btnProcessClick;
+            // 
+            // txtData
+            // 
+            txtData.Location = new System.Drawing.Point(369, 50);
+            txtData.Multiline = true;
+            txtData.Name = "txtData";
+            txtData.Size = new System.Drawing.Size(134, 195);
+            txtData.TabIndex = 1;
+            // 
             // btnLoadAnimationMulData
             // 
-            btnLoadAnimationMulData.Location = new System.Drawing.Point(39, 38);
+            btnLoadAnimationMulData.Location = new System.Drawing.Point(369, 21);
             btnLoadAnimationMulData.Name = "btnLoadAnimationMulData";
             btnLoadAnimationMulData.Size = new System.Drawing.Size(75, 23);
             btnLoadAnimationMulData.TabIndex = 0;
@@ -1065,7 +1285,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             tabPageReadMuls.Location = new System.Drawing.Point(4, 24);
             tabPageReadMuls.Name = "tabPageReadMuls";
             tabPageReadMuls.Padding = new System.Windows.Forms.Padding(3);
-            tabPageReadMuls.Size = new System.Drawing.Size(745, 398);
+            tabPageReadMuls.Size = new System.Drawing.Size(745, 529);
             tabPageReadMuls.TabIndex = 1;
             tabPageReadMuls.Text = "Read Muls";
             tabPageReadMuls.UseVisualStyleBackColor = true;
@@ -1081,7 +1301,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             tabPageReadOut.Controls.Add(buttonReadTileData);
             tabPageReadOut.Location = new System.Drawing.Point(4, 24);
             tabPageReadOut.Name = "tabPageReadOut";
-            tabPageReadOut.Size = new System.Drawing.Size(745, 398);
+            tabPageReadOut.Size = new System.Drawing.Size(745, 529);
             tabPageReadOut.TabIndex = 3;
             tabPageReadOut.Text = "ReadOut";
             tabPageReadOut.UseVisualStyleBackColor = true;
@@ -1235,19 +1455,146 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             buttonReadTileData.UseVisualStyleBackColor = true;
             buttonReadTileData.Click += buttonReadTileData_Click;
             // 
-            // txtData
+            // tabPageArtmul
             // 
-            txtData.Location = new System.Drawing.Point(143, 38);
-            txtData.Multiline = true;
-            txtData.Name = "txtData";
-            txtData.Size = new System.Drawing.Size(340, 195);
-            txtData.TabIndex = 1;
+            tabPageArtmul.Controls.Add(BtnCreateArtIdx500K);
+            tabPageArtmul.Controls.Add(BtnCreateArtIdx250K);
+            tabPageArtmul.Controls.Add(BtnCreateArtIdx200K);
+            tabPageArtmul.Controls.Add(BtnCreateArtIdx150K);
+            tabPageArtmul.Controls.Add(BtnCreateArtIdx100K);
+            tabPageArtmul.Controls.Add(lbreadartidx);
+            tabPageArtmul.Controls.Add(lbartidxmul);
+            tabPageArtmul.Controls.Add(lblIndexCount);
+            tabPageArtmul.Controls.Add(ReadArtmul);
+            tabPageArtmul.Controls.Add(infoARTIDXMULID);
+            tabPageArtmul.Controls.Add(BtnCreateArtIdx);
+            tabPageArtmul.Location = new System.Drawing.Point(4, 24);
+            tabPageArtmul.Name = "tabPageArtmul";
+            tabPageArtmul.Size = new System.Drawing.Size(745, 529);
+            tabPageArtmul.TabIndex = 8;
+            tabPageArtmul.Text = "Artmul";
+            tabPageArtmul.UseVisualStyleBackColor = true;
+            // 
+            // BtnCreateArtIdx500K
+            // 
+            BtnCreateArtIdx500K.Location = new System.Drawing.Point(17, 189);
+            BtnCreateArtIdx500K.Name = "BtnCreateArtIdx500K";
+            BtnCreateArtIdx500K.Size = new System.Drawing.Size(75, 23);
+            BtnCreateArtIdx500K.TabIndex = 10;
+            BtnCreateArtIdx500K.Text = "500 K";
+            BtnCreateArtIdx500K.UseVisualStyleBackColor = true;
+            BtnCreateArtIdx500K.Click += BtnCreateArtIdx500K_Click;
+            // 
+            // BtnCreateArtIdx250K
+            // 
+            BtnCreateArtIdx250K.Location = new System.Drawing.Point(17, 160);
+            BtnCreateArtIdx250K.Name = "BtnCreateArtIdx250K";
+            BtnCreateArtIdx250K.Size = new System.Drawing.Size(75, 23);
+            BtnCreateArtIdx250K.TabIndex = 9;
+            BtnCreateArtIdx250K.Text = "250 K";
+            BtnCreateArtIdx250K.UseVisualStyleBackColor = true;
+            BtnCreateArtIdx250K.Click += BtnCreateArtIdx250K_Click;
+            // 
+            // BtnCreateArtIdx200K
+            // 
+            BtnCreateArtIdx200K.Location = new System.Drawing.Point(17, 131);
+            BtnCreateArtIdx200K.Name = "BtnCreateArtIdx200K";
+            BtnCreateArtIdx200K.Size = new System.Drawing.Size(75, 23);
+            BtnCreateArtIdx200K.TabIndex = 8;
+            BtnCreateArtIdx200K.Text = "200 K";
+            BtnCreateArtIdx200K.UseVisualStyleBackColor = true;
+            BtnCreateArtIdx200K.Click += BtnCreateArtIdx200K_Click;
+            // 
+            // BtnCreateArtIdx150K
+            // 
+            BtnCreateArtIdx150K.Location = new System.Drawing.Point(17, 102);
+            BtnCreateArtIdx150K.Name = "BtnCreateArtIdx150K";
+            BtnCreateArtIdx150K.Size = new System.Drawing.Size(75, 23);
+            BtnCreateArtIdx150K.TabIndex = 7;
+            BtnCreateArtIdx150K.Text = "150 K";
+            BtnCreateArtIdx150K.UseVisualStyleBackColor = true;
+            BtnCreateArtIdx150K.Click += BtnCreateArtIdx150K_Click;
+            // 
+            // BtnCreateArtIdx100K
+            // 
+            BtnCreateArtIdx100K.Location = new System.Drawing.Point(17, 73);
+            BtnCreateArtIdx100K.Name = "BtnCreateArtIdx100K";
+            BtnCreateArtIdx100K.Size = new System.Drawing.Size(75, 23);
+            BtnCreateArtIdx100K.TabIndex = 6;
+            BtnCreateArtIdx100K.Text = "100 K";
+            BtnCreateArtIdx100K.UseVisualStyleBackColor = true;
+            BtnCreateArtIdx100K.Click += BtnCreateArtIdx100K_Click;
+            // 
+            // lbreadartidx
+            // 
+            lbreadartidx.AutoSize = true;
+            lbreadartidx.Location = new System.Drawing.Point(646, 22);
+            lbreadartidx.Name = "lbreadartidx";
+            lbreadartidx.Size = new System.Drawing.Size(66, 15);
+            lbreadartidx.TabIndex = 5;
+            lbreadartidx.Text = "Read artidx";
+            // 
+            // lbartidxmul
+            // 
+            lbartidxmul.AutoSize = true;
+            lbartidxmul.Location = new System.Drawing.Point(17, 22);
+            lbartidxmul.Name = "lbartidxmul";
+            lbartidxmul.Size = new System.Drawing.Size(74, 15);
+            lbartidxmul.TabIndex = 4;
+            lbartidxmul.Text = "Create artidx";
+            // 
+            // lblIndexCount
+            // 
+            lblIndexCount.AutoSize = true;
+            lblIndexCount.Location = new System.Drawing.Point(146, 221);
+            lblIndexCount.Name = "lblIndexCount";
+            lblIndexCount.Size = new System.Drawing.Size(43, 15);
+            lblIndexCount.TabIndex = 3;
+            lblIndexCount.Text = "Count:";
+            // 
+            // ReadArtmul
+            // 
+            ReadArtmul.Location = new System.Drawing.Point(646, 44);
+            ReadArtmul.Name = "ReadArtmul";
+            ReadArtmul.Size = new System.Drawing.Size(75, 23);
+            ReadArtmul.TabIndex = 2;
+            ReadArtmul.Text = "Read";
+            ReadArtmul.UseVisualStyleBackColor = true;
+            ReadArtmul.Click += BtnReadArtIdx_Click;
+            // 
+            // infoARTIDXMULID
+            // 
+            infoARTIDXMULID.Location = new System.Drawing.Point(146, 19);
+            infoARTIDXMULID.Multiline = true;
+            infoARTIDXMULID.Name = "infoARTIDXMULID";
+            infoARTIDXMULID.Size = new System.Drawing.Size(494, 199);
+            infoARTIDXMULID.TabIndex = 1;
+            // 
+            // BtnCreateArtIdx
+            // 
+            BtnCreateArtIdx.Location = new System.Drawing.Point(17, 44);
+            BtnCreateArtIdx.Name = "BtnCreateArtIdx";
+            BtnCreateArtIdx.Size = new System.Drawing.Size(75, 23);
+            BtnCreateArtIdx.TabIndex = 0;
+            BtnCreateArtIdx.Text = "1 Million";
+            BtnCreateArtIdx.UseVisualStyleBackColor = true;
+            BtnCreateArtIdx.Click += BtnCreateArtIdx_Click;
+            // 
+            // button1
+            // 
+            button1.Location = new System.Drawing.Point(24, 467);
+            button1.Name = "button1";
+            button1.Size = new System.Drawing.Size(120, 23);
+            button1.TabIndex = 107;
+            button1.Text = "Empty anim.mul";
+            button1.UseVisualStyleBackColor = true;
+            button1.Click += btnSingleEmptyAnimMul_Click;
             // 
             // ARTMulIDXCreator
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            ClientSize = new System.Drawing.Size(758, 442);
+            ClientSize = new System.Drawing.Size(758, 604);
             Controls.Add(tabControl1);
             FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             Icon = (System.Drawing.Icon)resources.GetObject("$this.Icon");
@@ -1271,12 +1618,16 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             ((System.ComponentModel.ISupportInitialize)pictureBoxPalette).EndInit();
             tabPageAnimation.ResumeLayout(false);
             tabPageAnimation.PerformLayout();
+            panelCheckbox.ResumeLayout(false);
+            panelCheckbox.PerformLayout();
             tabPageReadMuls.ResumeLayout(false);
             tabPageReadMuls.PerformLayout();
             tabPageReadOut.ResumeLayout(false);
             tabPageReadOut.PerformLayout();
             groupBoxInfo.ResumeLayout(false);
             groupBoxInfo.PerformLayout();
+            tabPageArtmul.ResumeLayout(false);
+            tabPageArtmul.PerformLayout();
             ResumeLayout(false);
         }
 
@@ -1389,5 +1740,36 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private System.Windows.Forms.TabPage tabPageAnimation;
         private System.Windows.Forms.Button btnLoadAnimationMulData;
         private System.Windows.Forms.TextBox txtData;
+        private System.Windows.Forms.TabPage tabPageArtmul;
+        private System.Windows.Forms.Button BtnCreateArtIdx;
+        private System.Windows.Forms.TextBox infoARTIDXMULID;
+        private System.Windows.Forms.Button ReadArtmul;
+        private System.Windows.Forms.Label lblIndexCount;
+        private System.Windows.Forms.Label lbartidxmul;
+        private System.Windows.Forms.Label lbreadartidx;
+        private System.Windows.Forms.Button BtnCreateArtIdx100K;
+        private System.Windows.Forms.Button BtnCreateArtIdx150K;
+        private System.Windows.Forms.Button BtnCreateArtIdx200K;
+        private System.Windows.Forms.Button BtnCreateArtIdx250K;
+        private System.Windows.Forms.Button BtnCreateArtIdx500K;
+        private System.Windows.Forms.TextBox txtOutputDirectory;
+        private System.Windows.Forms.Button btnSetOutputDirectory;
+        private System.Windows.Forms.TextBox txtOutputFilename;
+        private System.Windows.Forms.Label lblNewIdCount;
+        private System.Windows.Forms.Button btnProcessClickOld;
+        private System.Windows.Forms.Panel panelCheckbox;
+        private System.Windows.Forms.Label lbCopys;
+        private System.Windows.Forms.CheckBox chkHighDetail;
+        private System.Windows.Forms.CheckBox chkLowDetail;
+        private System.Windows.Forms.CheckBox chkHuman;
+        private System.Windows.Forms.TextBox tbfilename;
+        private System.Windows.Forms.Button btnBrowse;
+        private System.Windows.Forms.TextBox tbProcessAminidx;
+        private System.Windows.Forms.Label lbCopyManyTimes;
+        private System.Windows.Forms.TextBox txtNewCreatureID;
+        private System.Windows.Forms.Label lbCopyID;
+        private System.Windows.Forms.TextBox txtOrigCreatureID;
+        private System.Windows.Forms.Button btnNewAnimIDXFiles;
+        private System.Windows.Forms.Button button1;
     }
 }
