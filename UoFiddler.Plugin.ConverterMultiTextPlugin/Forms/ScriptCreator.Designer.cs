@@ -495,6 +495,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             tbClassNameChair1 = new System.Windows.Forms.TextBox();
             btCreateScriptChair = new System.Windows.Forms.Button();
             tabPageGiftBox = new System.Windows.Forms.TabPage();
+            lbCommodityDeedBoxRewardItem = new System.Windows.Forms.Label();
+            tbCommodityDeedBoxRewardItem = new System.Windows.Forms.TextBox();
             lbCommodityDeedBoxGump = new System.Windows.Forms.Label();
             tbCommodityDeedBoxGump = new System.Windows.Forms.TextBox();
             lbCommodityDeedBoxLabelNumber = new System.Windows.Forms.Label();
@@ -537,13 +539,28 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             lbGiftBoxClassScriptName = new System.Windows.Forms.Label();
             tbGiftBoxClassScriptName = new System.Windows.Forms.TextBox();
             btCreateGiftBoxScript = new System.Windows.Forms.Button();
-            tabPageMisc = new System.Windows.Forms.TabPage();
+            tabPageBag = new System.Windows.Forms.TabPage();
+            tbSpidersSilk = new System.Windows.Forms.TextBox();
+            tbSulfurousAsh = new System.Windows.Forms.TextBox();
+            tbNightshade = new System.Windows.Forms.TextBox();
+            tbMandrakeRoot = new System.Windows.Forms.TextBox();
+            tbGinseng = new System.Windows.Forms.TextBox();
+            tbGarlic = new System.Windows.Forms.TextBox();
+            tbBloodmoss = new System.Windows.Forms.TextBox();
+            lbReagents = new System.Windows.Forms.Label();
+            tbBlackPearl = new System.Windows.Forms.TextBox();
+            label5 = new System.Windows.Forms.Label();
+            tbBagOfReagentsBagMuch = new System.Windows.Forms.TextBox();
+            lbBagOfReagentsBag = new System.Windows.Forms.Label();
+            tbBagOfReagentsBag = new System.Windows.Forms.TextBox();
+            button2 = new System.Windows.Forms.Button();
+            lbCreateBagOfReagentsScript = new System.Windows.Forms.Label();
+            tbCreateBagOfReagentsScript = new System.Windows.Forms.TextBox();
+            btCreateBagOfReagentsScript = new System.Windows.Forms.Button();
             btSaveXML = new System.Windows.Forms.Button();
             btLoadPfadWall = new System.Windows.Forms.Button();
             textBoxPfadWall = new System.Windows.Forms.TextBox();
             toolStrip1 = new System.Windows.Forms.ToolStrip();
-            lbCommodityDeedBoxRewardItem = new System.Windows.Forms.Label();
-            tbCommodityDeedBoxRewardItem = new System.Windows.Forms.TextBox();
             panelBaseScript.SuspendLayout();
             tabControlItems.SuspendLayout();
             tabPageBook.SuspendLayout();
@@ -565,7 +582,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             tabPageChair.SuspendLayout();
             panelEdit.SuspendLayout();
             tabPageGiftBox.SuspendLayout();
-            tabPageMisc.SuspendLayout();
+            tabPageBag.SuspendLayout();
             SuspendLayout();
             // 
             // panelBaseScript
@@ -4457,7 +4474,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // 
             tabControl2.Controls.Add(tabPageChair);
             tabControl2.Controls.Add(tabPageGiftBox);
-            tabControl2.Controls.Add(tabPageMisc);
+            tabControl2.Controls.Add(tabPageBag);
             tabControl2.Location = new System.Drawing.Point(3, 3);
             tabControl2.Name = "tabControl2";
             tabControl2.SelectedIndex = 0;
@@ -4993,6 +5010,23 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             tabPageGiftBox.Text = "GiftBox";
             tabPageGiftBox.UseVisualStyleBackColor = true;
             // 
+            // lbCommodityDeedBoxRewardItem
+            // 
+            lbCommodityDeedBoxRewardItem.AutoSize = true;
+            lbCommodityDeedBoxRewardItem.Location = new System.Drawing.Point(41, 587);
+            lbCommodityDeedBoxRewardItem.Name = "lbCommodityDeedBoxRewardItem";
+            lbCommodityDeedBoxRewardItem.Size = new System.Drawing.Size(76, 15);
+            lbCommodityDeedBoxRewardItem.TabIndex = 103;
+            lbCommodityDeedBoxRewardItem.Text = "RewardItem :";
+            // 
+            // tbCommodityDeedBoxRewardItem
+            // 
+            tbCommodityDeedBoxRewardItem.Location = new System.Drawing.Point(119, 584);
+            tbCommodityDeedBoxRewardItem.Name = "tbCommodityDeedBoxRewardItem";
+            tbCommodityDeedBoxRewardItem.Size = new System.Drawing.Size(122, 23);
+            tbCommodityDeedBoxRewardItem.TabIndex = 102;
+            tbCommodityDeedBoxRewardItem.Text = "1076217";
+            // 
             // lbCommodityDeedBoxGump
             // 
             lbCommodityDeedBoxGump.AutoSize = true;
@@ -5355,18 +5389,179 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             btCreateGiftBoxScript.UseVisualStyleBackColor = true;
             btCreateGiftBoxScript.Click += btCreateGiftBoxScript_Click;
             // 
-            // tabPageMisc
+            // tabPageBag
             // 
-            tabPageMisc.Controls.Add(btSaveXML);
-            tabPageMisc.Controls.Add(btLoadPfadWall);
-            tabPageMisc.Controls.Add(textBoxPfadWall);
-            tabPageMisc.Location = new System.Drawing.Point(4, 24);
-            tabPageMisc.Name = "tabPageMisc";
-            tabPageMisc.Padding = new System.Windows.Forms.Padding(3);
-            tabPageMisc.Size = new System.Drawing.Size(326, 631);
-            tabPageMisc.TabIndex = 1;
-            tabPageMisc.Text = "Misc";
-            tabPageMisc.UseVisualStyleBackColor = true;
+            tabPageBag.Controls.Add(tbSpidersSilk);
+            tabPageBag.Controls.Add(tbSulfurousAsh);
+            tabPageBag.Controls.Add(tbNightshade);
+            tabPageBag.Controls.Add(tbMandrakeRoot);
+            tabPageBag.Controls.Add(tbGinseng);
+            tabPageBag.Controls.Add(tbGarlic);
+            tabPageBag.Controls.Add(tbBloodmoss);
+            tabPageBag.Controls.Add(lbReagents);
+            tabPageBag.Controls.Add(tbBlackPearl);
+            tabPageBag.Controls.Add(label5);
+            tabPageBag.Controls.Add(tbBagOfReagentsBagMuch);
+            tabPageBag.Controls.Add(lbBagOfReagentsBag);
+            tabPageBag.Controls.Add(tbBagOfReagentsBag);
+            tabPageBag.Controls.Add(button2);
+            tabPageBag.Controls.Add(lbCreateBagOfReagentsScript);
+            tabPageBag.Controls.Add(tbCreateBagOfReagentsScript);
+            tabPageBag.Controls.Add(btCreateBagOfReagentsScript);
+            tabPageBag.Controls.Add(btSaveXML);
+            tabPageBag.Controls.Add(btLoadPfadWall);
+            tabPageBag.Controls.Add(textBoxPfadWall);
+            tabPageBag.Location = new System.Drawing.Point(4, 24);
+            tabPageBag.Name = "tabPageBag";
+            tabPageBag.Padding = new System.Windows.Forms.Padding(3);
+            tabPageBag.Size = new System.Drawing.Size(326, 631);
+            tabPageBag.TabIndex = 1;
+            tabPageBag.Text = "Bag";
+            tabPageBag.UseVisualStyleBackColor = true;
+            // 
+            // tbSpidersSilk
+            // 
+            tbSpidersSilk.Location = new System.Drawing.Point(122, 360);
+            tbSpidersSilk.Name = "tbSpidersSilk";
+            tbSpidersSilk.Size = new System.Drawing.Size(170, 23);
+            tbSpidersSilk.TabIndex = 93;
+            tbSpidersSilk.Text = "SpidersSilk";
+            // 
+            // tbSulfurousAsh
+            // 
+            tbSulfurousAsh.Location = new System.Drawing.Point(122, 335);
+            tbSulfurousAsh.Name = "tbSulfurousAsh";
+            tbSulfurousAsh.Size = new System.Drawing.Size(170, 23);
+            tbSulfurousAsh.TabIndex = 92;
+            tbSulfurousAsh.Text = "SulfurousAsh";
+            // 
+            // tbNightshade
+            // 
+            tbNightshade.Location = new System.Drawing.Point(122, 310);
+            tbNightshade.Name = "tbNightshade";
+            tbNightshade.Size = new System.Drawing.Size(170, 23);
+            tbNightshade.TabIndex = 91;
+            tbNightshade.Text = "Nightshade";
+            // 
+            // tbMandrakeRoot
+            // 
+            tbMandrakeRoot.Location = new System.Drawing.Point(122, 285);
+            tbMandrakeRoot.Name = "tbMandrakeRoot";
+            tbMandrakeRoot.Size = new System.Drawing.Size(170, 23);
+            tbMandrakeRoot.TabIndex = 90;
+            tbMandrakeRoot.Text = "MandrakeRoot";
+            // 
+            // tbGinseng
+            // 
+            tbGinseng.Location = new System.Drawing.Point(122, 260);
+            tbGinseng.Name = "tbGinseng";
+            tbGinseng.Size = new System.Drawing.Size(170, 23);
+            tbGinseng.TabIndex = 89;
+            tbGinseng.Text = "Ginseng";
+            // 
+            // tbGarlic
+            // 
+            tbGarlic.Location = new System.Drawing.Point(122, 235);
+            tbGarlic.Name = "tbGarlic";
+            tbGarlic.Size = new System.Drawing.Size(170, 23);
+            tbGarlic.TabIndex = 88;
+            tbGarlic.Text = "Garlic";
+            // 
+            // tbBloodmoss
+            // 
+            tbBloodmoss.Location = new System.Drawing.Point(122, 210);
+            tbBloodmoss.Name = "tbBloodmoss";
+            tbBloodmoss.Size = new System.Drawing.Size(170, 23);
+            tbBloodmoss.TabIndex = 87;
+            tbBloodmoss.Text = "Bloodmoss";
+            // 
+            // lbReagents
+            // 
+            lbReagents.AutoSize = true;
+            lbReagents.Location = new System.Drawing.Point(59, 188);
+            lbReagents.Name = "lbReagents";
+            lbReagents.Size = new System.Drawing.Size(61, 15);
+            lbReagents.TabIndex = 86;
+            lbReagents.Text = "Reagents :";
+            // 
+            // tbBlackPearl
+            // 
+            tbBlackPearl.Location = new System.Drawing.Point(122, 185);
+            tbBlackPearl.Name = "tbBlackPearl";
+            tbBlackPearl.Size = new System.Drawing.Size(170, 23);
+            tbBlackPearl.TabIndex = 85;
+            tbBlackPearl.Text = "BlackPearl";
+            // 
+            // label5
+            // 
+            label5.AutoSize = true;
+            label5.Location = new System.Drawing.Point(76, 162);
+            label5.Name = "label5";
+            label5.Size = new System.Drawing.Size(44, 15);
+            label5.TabIndex = 84;
+            label5.Text = "Much :";
+            // 
+            // tbBagOfReagentsBagMuch
+            // 
+            tbBagOfReagentsBagMuch.Location = new System.Drawing.Point(122, 159);
+            tbBagOfReagentsBagMuch.Name = "tbBagOfReagentsBagMuch";
+            tbBagOfReagentsBagMuch.Size = new System.Drawing.Size(38, 23);
+            tbBagOfReagentsBagMuch.TabIndex = 83;
+            tbBagOfReagentsBagMuch.Text = "50";
+            // 
+            // lbBagOfReagentsBag
+            // 
+            lbBagOfReagentsBag.AutoSize = true;
+            lbBagOfReagentsBag.Location = new System.Drawing.Point(53, 138);
+            lbBagOfReagentsBag.Name = "lbBagOfReagentsBag";
+            lbBagOfReagentsBag.Size = new System.Drawing.Size(67, 15);
+            lbBagOfReagentsBag.TabIndex = 82;
+            lbBagOfReagentsBag.Text = "Basename :";
+            // 
+            // tbBagOfReagentsBag
+            // 
+            tbBagOfReagentsBag.Location = new System.Drawing.Point(122, 135);
+            tbBagOfReagentsBag.Name = "tbBagOfReagentsBag";
+            tbBagOfReagentsBag.Size = new System.Drawing.Size(170, 23);
+            tbBagOfReagentsBag.TabIndex = 81;
+            tbBagOfReagentsBag.Text = "Bag";
+            // 
+            // button2
+            // 
+            button2.Location = new System.Drawing.Point(94, 76);
+            button2.Name = "button2";
+            button2.Size = new System.Drawing.Size(42, 23);
+            button2.TabIndex = 80;
+            button2.Text = "Clip..";
+            button2.UseVisualStyleBackColor = true;
+            button2.Click += btCopyToClipboardChair_Click;
+            // 
+            // lbCreateBagOfReagentsScript
+            // 
+            lbCreateBagOfReagentsScript.AutoSize = true;
+            lbCreateBagOfReagentsScript.Location = new System.Drawing.Point(48, 114);
+            lbCreateBagOfReagentsScript.Name = "lbCreateBagOfReagentsScript";
+            lbCreateBagOfReagentsScript.Size = new System.Drawing.Size(73, 15);
+            lbCreateBagOfReagentsScript.TabIndex = 79;
+            lbCreateBagOfReagentsScript.Text = "Name class :";
+            // 
+            // tbCreateBagOfReagentsScript
+            // 
+            tbCreateBagOfReagentsScript.Location = new System.Drawing.Point(122, 111);
+            tbCreateBagOfReagentsScript.Name = "tbCreateBagOfReagentsScript";
+            tbCreateBagOfReagentsScript.Size = new System.Drawing.Size(170, 23);
+            tbCreateBagOfReagentsScript.TabIndex = 78;
+            tbCreateBagOfReagentsScript.Text = "BagOfReagents";
+            // 
+            // btCreateBagOfReagentsScript
+            // 
+            btCreateBagOfReagentsScript.Location = new System.Drawing.Point(6, 76);
+            btCreateBagOfReagentsScript.Name = "btCreateBagOfReagentsScript";
+            btCreateBagOfReagentsScript.Size = new System.Drawing.Size(87, 23);
+            btCreateBagOfReagentsScript.TabIndex = 77;
+            btCreateBagOfReagentsScript.Text = "Create Script";
+            btCreateBagOfReagentsScript.UseVisualStyleBackColor = true;
+            btCreateBagOfReagentsScript.Click += btCreateBagOfReagentsScript_Click;
             // 
             // btSaveXML
             // 
@@ -5402,23 +5597,6 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             toolStrip1.Size = new System.Drawing.Size(1186, 25);
             toolStrip1.TabIndex = 1;
             toolStrip1.Text = "toolStrip1";
-            // 
-            // lbCommodityDeedBoxRewardItem
-            // 
-            lbCommodityDeedBoxRewardItem.AutoSize = true;
-            lbCommodityDeedBoxRewardItem.Location = new System.Drawing.Point(41, 587);
-            lbCommodityDeedBoxRewardItem.Name = "lbCommodityDeedBoxRewardItem";
-            lbCommodityDeedBoxRewardItem.Size = new System.Drawing.Size(76, 15);
-            lbCommodityDeedBoxRewardItem.TabIndex = 103;
-            lbCommodityDeedBoxRewardItem.Text = "RewardItem :";
-            // 
-            // tbCommodityDeedBoxRewardItem
-            // 
-            tbCommodityDeedBoxRewardItem.Location = new System.Drawing.Point(119, 584);
-            tbCommodityDeedBoxRewardItem.Name = "tbCommodityDeedBoxRewardItem";
-            tbCommodityDeedBoxRewardItem.Size = new System.Drawing.Size(122, 23);
-            tbCommodityDeedBoxRewardItem.TabIndex = 102;
-            tbCommodityDeedBoxRewardItem.Text = "1076217";
             // 
             // ScriptCreator
             // 
@@ -5465,8 +5643,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             panelEdit.PerformLayout();
             tabPageGiftBox.ResumeLayout(false);
             tabPageGiftBox.PerformLayout();
-            tabPageMisc.ResumeLayout(false);
-            tabPageMisc.PerformLayout();
+            tabPageBag.ResumeLayout(false);
+            tabPageBag.PerformLayout();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -5875,7 +6053,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private System.Windows.Forms.RichTextBox richTextBoxScriptMiscellaneous;
         private System.Windows.Forms.TabControl tabControl2;
         private System.Windows.Forms.TabPage tabPageChair;
-        private System.Windows.Forms.TabPage tabPageMisc;
+        private System.Windows.Forms.TabPage tabPageBag;
         private System.Windows.Forms.Label ClassNameChair2;
         private System.Windows.Forms.TextBox tbClassNameChair2;
         private System.Windows.Forms.Button btCopyToClipboardChair;
@@ -5976,5 +6154,31 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private System.Windows.Forms.TextBox tbCommodityDeedBoxGump;
         private System.Windows.Forms.Label lbCommodityDeedBoxRewardItem;
         private System.Windows.Forms.TextBox tbCommodityDeedBoxRewardItem;
+        private System.Windows.Forms.TextBox textBox2;
+        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.TextBox textBox3;
+        private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.TextBox textBox4;
+        private System.Windows.Forms.TextBox textBox5;
+        private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.TextBox textBox6;
+        private System.Windows.Forms.Label label5;
+        private System.Windows.Forms.TextBox tbBagOfReagentsBagMuch;
+        private System.Windows.Forms.Label lbBagOfReagentsBag;
+        private System.Windows.Forms.TextBox tbBagOfReagentsBag;
+        private System.Windows.Forms.Button button2;
+        private System.Windows.Forms.Label lbCreateBagOfReagentsScript;
+        private System.Windows.Forms.TextBox tbCreateBagOfReagentsScript;
+        private System.Windows.Forms.Button btCreateBagOfReagentsScript;
+        private System.Windows.Forms.TextBox tbSpidersSilk;
+        private System.Windows.Forms.TextBox tbSulfurousAsh;
+        private System.Windows.Forms.TextBox tbNightshade;
+        private System.Windows.Forms.TextBox tbMandrakeRoot;
+        private System.Windows.Forms.TextBox tbGinseng;
+        private System.Windows.Forms.TextBox tbGarlic;
+        private System.Windows.Forms.TextBox tbBloodmoss;
+        private System.Windows.Forms.Label lbReagents;
+        private System.Windows.Forms.TextBox tbBlackPearl;
+        private System.Windows.Forms.Label lbBagOfReagentsHue;
     }
 }

@@ -2292,6 +2292,7 @@ namespace Server.Items
         }
         #endregion
 
+        #region btCreateGiftBoxScript
         private void btCreateGiftBoxScript_Click(object sender, EventArgs e)
         {
             string SetclassNameGift = tbGiftBoxClassScriptName.Text.Replace(" ", "_"); // Class Name GiftBox
@@ -2360,7 +2361,9 @@ namespace Server.Items
             // Play the sound
             player.Play();
         }
+        #endregion
 
+        #region btCreateClosedBarrelScript
         private void btCreateClosedBarrelScript_Click(object sender, EventArgs e)
         {
             string SetclassNameClosedBarrel = tbClassnameClosedBarrel.Text.Replace(" ", "_"); // ClosedBarrel
@@ -2419,7 +2422,9 @@ namespace Server.Items
             // Play the sound
             player.Play();
         }
+        #endregion
 
+        #region btCreateCommodityDeedBoxScript
         private void btCreateCommodityDeedBoxScript_Click(object sender, EventArgs e)
         {
             string SetclassNameCommodityDeedBoxScript = tbClassnameCommodityDeedBox.Text.Replace(" ", "_");
@@ -2517,6 +2522,79 @@ namespace Server.Items
             int version = reader.ReadEncodedInt();
 
             this.m_IsRewardItem = reader.ReadBool();
+        }}
+    }}
+}}";
+            richTextBoxScriptMiscellaneous.Text = script;
+
+            // Create a new SoundPlayer
+            SoundPlayer player = new SoundPlayer();
+
+            // Load the sound file
+            player.SoundLocation = AppDomain.CurrentDomain.BaseDirectory + "\\Sound.wav";
+
+            // Play the sound
+            player.Play();
+        }
+        #endregion
+
+        private void btCreateBagOfReagentsScript_Click(object sender, EventArgs e)
+        {
+            string SetclassNameCreateBagOfReagent = tbCreateBagOfReagentsScript.Text.Replace(" ", "_");
+            string SetCreateBagOfReagentBag = tbBagOfReagentsBag.Text; // Bag
+            string SetBagOfReagentsBagMuch = tbBagOfReagentsBagMuch.Text; // 50
+            string SetBlackPearl = tbBlackPearl.Text; // BlackPearl
+            string SetBloodmoss = tbBloodmoss.Text; // Bloodmoss
+            string SetGarlic = tbGarlic.Text; // Garlic
+            string SetGinseng = tbGinseng.Text; // Ginseng
+            string SetMandrakeRoot = tbMandrakeRoot.Text; // MandrakeRoot
+            string SetNightshade = tbNightshade.Text; // Nightshade
+            string SetSulfurousAsh = tbSulfurousAsh.Text; // SulfurousAsh
+            string SetSpidersSilk = tbSpidersSilk.Text; // SpidersSilk
+
+            string script = $@"
+using System;
+
+namespace Server.Items
+{{
+    public class {SetclassNameCreateBagOfReagent} : {SetCreateBagOfReagentBag}
+    {{
+        [Constructable]
+        public {SetclassNameCreateBagOfReagent}()
+            : this({SetBagOfReagentsBagMuch})
+        {{
+        }}
+
+        [Constructable]
+        public {SetclassNameCreateBagOfReagent}(int amount)
+        {{
+            this.DropItem(new {SetBlackPearl}(amount));
+            this.DropItem(new {SetBloodmoss}(amount));
+            this.DropItem(new {SetGarlic}(amount));
+            this.DropItem(new {SetGinseng}(amount));
+            this.DropItem(new {SetMandrakeRoot}(amount));
+            this.DropItem(new {SetNightshade}(amount));
+            this.DropItem(new {SetSulfurousAsh}(amount));
+            this.DropItem(new {SetSpidersSilk}(amount));
+        }}
+
+        public {SetclassNameCreateBagOfReagent}(Serial serial)
+            : base(serial)
+        {{
+        }}
+
+        public override void Serialize(GenericWriter writer)
+        {{
+            base.Serialize(writer);
+
+            writer.Write((int)0); // version
+        }}
+
+        public override void Deserialize(GenericReader reader)
+        {{
+            base.Deserialize(reader);
+
+            int version = reader.ReadInt();
         }}
     }}
 }}";
