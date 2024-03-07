@@ -450,6 +450,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             tabControl2 = new System.Windows.Forms.TabControl();
             tabPageChair = new System.Windows.Forms.TabPage();
             panelEdit = new System.Windows.Forms.Panel();
+            lbNameEditor = new System.Windows.Forms.Label();
             btWallTXTLoad = new System.Windows.Forms.Button();
             btLoadPfadChair = new System.Windows.Forms.Button();
             btSaveFile = new System.Windows.Forms.Button();
@@ -493,12 +494,56 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             lbClassNameChair1 = new System.Windows.Forms.Label();
             tbClassNameChair1 = new System.Windows.Forms.TextBox();
             btCreateScriptChair = new System.Windows.Forms.Button();
+            tabPageGiftBox = new System.Windows.Forms.TabPage();
+            lbCommodityDeedBoxGump = new System.Windows.Forms.Label();
+            tbCommodityDeedBoxGump = new System.Windows.Forms.TextBox();
+            lbCommodityDeedBoxLabelNumber = new System.Windows.Forms.Label();
+            tbCommodityDeedBoxLabelNumber = new System.Windows.Forms.TextBox();
+            lbCommodityDeedBoxHue = new System.Windows.Forms.Label();
+            tbCommodityDeedBoxHue = new System.Windows.Forms.TextBox();
+            lbCommodityDeedBoxWeight = new System.Windows.Forms.Label();
+            tbCommodityDeedBoxWeight = new System.Windows.Forms.TextBox();
+            tbFlipableID2 = new System.Windows.Forms.TextBox();
+            lbFlipableIDs = new System.Windows.Forms.Label();
+            tbFlipableID1 = new System.Windows.Forms.TextBox();
+            lbBaseContainerCommodityDeedBox = new System.Windows.Forms.Label();
+            tbBaseContainerCommodityDeedBox = new System.Windows.Forms.TextBox();
+            lbClassnameCommodityDeedBox = new System.Windows.Forms.Label();
+            tbClassnameCommodityDeedBox = new System.Windows.Forms.TextBox();
+            btCreateCommodityDeedBoxScript = new System.Windows.Forms.Button();
+            lbDefaultGumpID = new System.Windows.Forms.Label();
+            tbDefaultGumpID = new System.Windows.Forms.TextBox();
+            lbClosedBarrelItemsID = new System.Windows.Forms.Label();
+            tbClosedBarrelItemsID = new System.Windows.Forms.TextBox();
+            lbTrapableContainer = new System.Windows.Forms.Label();
+            tbTrapableContainer = new System.Windows.Forms.TextBox();
+            lbClosedBarrelClassname = new System.Windows.Forms.Label();
+            tbClassnameClosedBarrel = new System.Windows.Forms.TextBox();
+            btCreateClosedBarrelScript = new System.Windows.Forms.Button();
+            lbGiftHue = new System.Windows.Forms.Label();
+            tbGiftHue = new System.Windows.Forms.TextBox();
+            lbGiftGiftBox = new System.Windows.Forms.Label();
+            tbGiftGiftBox = new System.Windows.Forms.TextBox();
+            lbGiftWeight = new System.Windows.Forms.Label();
+            tbGiftWeight = new System.Windows.Forms.TextBox();
+            tbGiftFlipable2 = new System.Windows.Forms.TextBox();
+            lbGiftFlipable = new System.Windows.Forms.Label();
+            tbGiftFlipable1 = new System.Windows.Forms.TextBox();
+            lbGiftLabelNumber = new System.Windows.Forms.Label();
+            tbGiftLabelNumber = new System.Windows.Forms.TextBox();
+            lbGiftBoxClassScriptNameBaseContainer = new System.Windows.Forms.Label();
+            tbGiftBaseContainer = new System.Windows.Forms.TextBox();
+            button1 = new System.Windows.Forms.Button();
+            lbGiftBoxClassScriptName = new System.Windows.Forms.Label();
+            tbGiftBoxClassScriptName = new System.Windows.Forms.TextBox();
+            btCreateGiftBoxScript = new System.Windows.Forms.Button();
             tabPageMisc = new System.Windows.Forms.TabPage();
-            toolStrip1 = new System.Windows.Forms.ToolStrip();
-            lbNameEditor = new System.Windows.Forms.Label();
             btSaveXML = new System.Windows.Forms.Button();
             btLoadPfadWall = new System.Windows.Forms.Button();
             textBoxPfadWall = new System.Windows.Forms.TextBox();
+            toolStrip1 = new System.Windows.Forms.ToolStrip();
+            lbCommodityDeedBoxRewardItem = new System.Windows.Forms.Label();
+            tbCommodityDeedBoxRewardItem = new System.Windows.Forms.TextBox();
             panelBaseScript.SuspendLayout();
             tabControlItems.SuspendLayout();
             tabPageBook.SuspendLayout();
@@ -519,6 +564,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             tabControl2.SuspendLayout();
             tabPageChair.SuspendLayout();
             panelEdit.SuspendLayout();
+            tabPageGiftBox.SuspendLayout();
             tabPageMisc.SuspendLayout();
             SuspendLayout();
             // 
@@ -4410,6 +4456,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // tabControl2
             // 
             tabControl2.Controls.Add(tabPageChair);
+            tabControl2.Controls.Add(tabPageGiftBox);
             tabControl2.Controls.Add(tabPageMisc);
             tabControl2.Location = new System.Drawing.Point(3, 3);
             tabControl2.Name = "tabControl2";
@@ -4480,6 +4527,16 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             panelEdit.Name = "panelEdit";
             panelEdit.Size = new System.Drawing.Size(320, 341);
             panelEdit.TabIndex = 96;
+            // 
+            // lbNameEditor
+            // 
+            lbNameEditor.AutoSize = true;
+            lbNameEditor.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold);
+            lbNameEditor.Location = new System.Drawing.Point(3, 12);
+            lbNameEditor.Name = "lbNameEditor";
+            lbNameEditor.Size = new System.Drawing.Size(120, 21);
+            lbNameEditor.TabIndex = 97;
+            lbNameEditor.Text = "Editor .txt .Def";
             // 
             // btWallTXTLoad
             // 
@@ -4883,6 +4940,421 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             btCreateScriptChair.UseVisualStyleBackColor = true;
             btCreateScriptChair.Click += btCreateScriptChair_Click;
             // 
+            // tabPageGiftBox
+            // 
+            tabPageGiftBox.Controls.Add(lbCommodityDeedBoxRewardItem);
+            tabPageGiftBox.Controls.Add(tbCommodityDeedBoxRewardItem);
+            tabPageGiftBox.Controls.Add(lbCommodityDeedBoxGump);
+            tabPageGiftBox.Controls.Add(tbCommodityDeedBoxGump);
+            tabPageGiftBox.Controls.Add(lbCommodityDeedBoxLabelNumber);
+            tabPageGiftBox.Controls.Add(tbCommodityDeedBoxLabelNumber);
+            tabPageGiftBox.Controls.Add(lbCommodityDeedBoxHue);
+            tabPageGiftBox.Controls.Add(tbCommodityDeedBoxHue);
+            tabPageGiftBox.Controls.Add(lbCommodityDeedBoxWeight);
+            tabPageGiftBox.Controls.Add(tbCommodityDeedBoxWeight);
+            tabPageGiftBox.Controls.Add(tbFlipableID2);
+            tabPageGiftBox.Controls.Add(lbFlipableIDs);
+            tabPageGiftBox.Controls.Add(tbFlipableID1);
+            tabPageGiftBox.Controls.Add(lbBaseContainerCommodityDeedBox);
+            tabPageGiftBox.Controls.Add(tbBaseContainerCommodityDeedBox);
+            tabPageGiftBox.Controls.Add(lbClassnameCommodityDeedBox);
+            tabPageGiftBox.Controls.Add(tbClassnameCommodityDeedBox);
+            tabPageGiftBox.Controls.Add(btCreateCommodityDeedBoxScript);
+            tabPageGiftBox.Controls.Add(lbDefaultGumpID);
+            tabPageGiftBox.Controls.Add(tbDefaultGumpID);
+            tabPageGiftBox.Controls.Add(lbClosedBarrelItemsID);
+            tabPageGiftBox.Controls.Add(tbClosedBarrelItemsID);
+            tabPageGiftBox.Controls.Add(lbTrapableContainer);
+            tabPageGiftBox.Controls.Add(tbTrapableContainer);
+            tabPageGiftBox.Controls.Add(lbClosedBarrelClassname);
+            tabPageGiftBox.Controls.Add(tbClassnameClosedBarrel);
+            tabPageGiftBox.Controls.Add(btCreateClosedBarrelScript);
+            tabPageGiftBox.Controls.Add(lbGiftHue);
+            tabPageGiftBox.Controls.Add(tbGiftHue);
+            tabPageGiftBox.Controls.Add(lbGiftGiftBox);
+            tabPageGiftBox.Controls.Add(tbGiftGiftBox);
+            tabPageGiftBox.Controls.Add(lbGiftWeight);
+            tabPageGiftBox.Controls.Add(tbGiftWeight);
+            tabPageGiftBox.Controls.Add(tbGiftFlipable2);
+            tabPageGiftBox.Controls.Add(lbGiftFlipable);
+            tabPageGiftBox.Controls.Add(tbGiftFlipable1);
+            tabPageGiftBox.Controls.Add(lbGiftLabelNumber);
+            tabPageGiftBox.Controls.Add(tbGiftLabelNumber);
+            tabPageGiftBox.Controls.Add(lbGiftBoxClassScriptNameBaseContainer);
+            tabPageGiftBox.Controls.Add(tbGiftBaseContainer);
+            tabPageGiftBox.Controls.Add(button1);
+            tabPageGiftBox.Controls.Add(lbGiftBoxClassScriptName);
+            tabPageGiftBox.Controls.Add(tbGiftBoxClassScriptName);
+            tabPageGiftBox.Controls.Add(btCreateGiftBoxScript);
+            tabPageGiftBox.Location = new System.Drawing.Point(4, 24);
+            tabPageGiftBox.Name = "tabPageGiftBox";
+            tabPageGiftBox.Size = new System.Drawing.Size(326, 631);
+            tabPageGiftBox.TabIndex = 2;
+            tabPageGiftBox.Text = "GiftBox";
+            tabPageGiftBox.UseVisualStyleBackColor = true;
+            // 
+            // lbCommodityDeedBoxGump
+            // 
+            lbCommodityDeedBoxGump.AutoSize = true;
+            lbCommodityDeedBoxGump.Location = new System.Drawing.Point(22, 562);
+            lbCommodityDeedBoxGump.Name = "lbCommodityDeedBoxGump";
+            lbCommodityDeedBoxGump.Size = new System.Drawing.Size(95, 15);
+            lbCommodityDeedBoxGump.TabIndex = 101;
+            lbCommodityDeedBoxGump.Text = "DefaultGumpID :";
+            // 
+            // tbCommodityDeedBoxGump
+            // 
+            tbCommodityDeedBoxGump.Location = new System.Drawing.Point(119, 559);
+            tbCommodityDeedBoxGump.Name = "tbCommodityDeedBoxGump";
+            tbCommodityDeedBoxGump.Size = new System.Drawing.Size(58, 23);
+            tbCommodityDeedBoxGump.TabIndex = 100;
+            tbCommodityDeedBoxGump.Text = "0x43";
+            // 
+            // lbCommodityDeedBoxLabelNumber
+            // 
+            lbCommodityDeedBoxLabelNumber.AutoSize = true;
+            lbCommodityDeedBoxLabelNumber.Location = new System.Drawing.Point(32, 537);
+            lbCommodityDeedBoxLabelNumber.Name = "lbCommodityDeedBoxLabelNumber";
+            lbCommodityDeedBoxLabelNumber.Size = new System.Drawing.Size(85, 15);
+            lbCommodityDeedBoxLabelNumber.TabIndex = 99;
+            lbCommodityDeedBoxLabelNumber.Text = "LabelNumber :";
+            // 
+            // tbCommodityDeedBoxLabelNumber
+            // 
+            tbCommodityDeedBoxLabelNumber.Location = new System.Drawing.Point(119, 534);
+            tbCommodityDeedBoxLabelNumber.Name = "tbCommodityDeedBoxLabelNumber";
+            tbCommodityDeedBoxLabelNumber.Size = new System.Drawing.Size(122, 23);
+            tbCommodityDeedBoxLabelNumber.TabIndex = 98;
+            tbCommodityDeedBoxLabelNumber.Text = "1080523";
+            // 
+            // lbCommodityDeedBoxHue
+            // 
+            lbCommodityDeedBoxHue.AutoSize = true;
+            lbCommodityDeedBoxHue.Location = new System.Drawing.Point(82, 486);
+            lbCommodityDeedBoxHue.Name = "lbCommodityDeedBoxHue";
+            lbCommodityDeedBoxHue.Size = new System.Drawing.Size(35, 15);
+            lbCommodityDeedBoxHue.TabIndex = 97;
+            lbCommodityDeedBoxHue.Text = "Hue :";
+            // 
+            // tbCommodityDeedBoxHue
+            // 
+            tbCommodityDeedBoxHue.Location = new System.Drawing.Point(119, 483);
+            tbCommodityDeedBoxHue.Name = "tbCommodityDeedBoxHue";
+            tbCommodityDeedBoxHue.Size = new System.Drawing.Size(58, 23);
+            tbCommodityDeedBoxHue.TabIndex = 96;
+            tbCommodityDeedBoxHue.Text = "0x47";
+            // 
+            // lbCommodityDeedBoxWeight
+            // 
+            lbCommodityDeedBoxWeight.AutoSize = true;
+            lbCommodityDeedBoxWeight.Location = new System.Drawing.Point(66, 512);
+            lbCommodityDeedBoxWeight.Name = "lbCommodityDeedBoxWeight";
+            lbCommodityDeedBoxWeight.Size = new System.Drawing.Size(51, 15);
+            lbCommodityDeedBoxWeight.TabIndex = 95;
+            lbCommodityDeedBoxWeight.Text = "Weight :";
+            // 
+            // tbCommodityDeedBoxWeight
+            // 
+            tbCommodityDeedBoxWeight.Location = new System.Drawing.Point(119, 509);
+            tbCommodityDeedBoxWeight.Name = "tbCommodityDeedBoxWeight";
+            tbCommodityDeedBoxWeight.Size = new System.Drawing.Size(58, 23);
+            tbCommodityDeedBoxWeight.TabIndex = 94;
+            tbCommodityDeedBoxWeight.Text = "4.0";
+            // 
+            // tbFlipableID2
+            // 
+            tbFlipableID2.Location = new System.Drawing.Point(183, 457);
+            tbFlipableID2.Name = "tbFlipableID2";
+            tbFlipableID2.Size = new System.Drawing.Size(58, 23);
+            tbFlipableID2.TabIndex = 93;
+            tbFlipableID2.Text = "0xE7D";
+            // 
+            // lbFlipableIDs
+            // 
+            lbFlipableIDs.AutoSize = true;
+            lbFlipableIDs.Location = new System.Drawing.Point(63, 460);
+            lbFlipableIDs.Name = "lbFlipableIDs";
+            lbFlipableIDs.Size = new System.Drawing.Size(54, 15);
+            lbFlipableIDs.TabIndex = 92;
+            lbFlipableIDs.Text = "Flipable :";
+            // 
+            // tbFlipableID1
+            // 
+            tbFlipableID1.Location = new System.Drawing.Point(119, 457);
+            tbFlipableID1.Name = "tbFlipableID1";
+            tbFlipableID1.Size = new System.Drawing.Size(58, 23);
+            tbFlipableID1.TabIndex = 91;
+            tbFlipableID1.Text = "0x9AA";
+            // 
+            // lbBaseContainerCommodityDeedBox
+            // 
+            lbBaseContainerCommodityDeedBox.AutoSize = true;
+            lbBaseContainerCommodityDeedBox.Location = new System.Drawing.Point(29, 434);
+            lbBaseContainerCommodityDeedBox.Name = "lbBaseContainerCommodityDeedBox";
+            lbBaseContainerCommodityDeedBox.Size = new System.Drawing.Size(89, 15);
+            lbBaseContainerCommodityDeedBox.TabIndex = 90;
+            lbBaseContainerCommodityDeedBox.Text = "BaseContainer :";
+            // 
+            // tbBaseContainerCommodityDeedBox
+            // 
+            tbBaseContainerCommodityDeedBox.Location = new System.Drawing.Point(119, 431);
+            tbBaseContainerCommodityDeedBox.Name = "tbBaseContainerCommodityDeedBox";
+            tbBaseContainerCommodityDeedBox.Size = new System.Drawing.Size(170, 23);
+            tbBaseContainerCommodityDeedBox.TabIndex = 89;
+            tbBaseContainerCommodityDeedBox.Text = "BaseContainer";
+            // 
+            // lbClassnameCommodityDeedBox
+            // 
+            lbClassnameCommodityDeedBox.AutoSize = true;
+            lbClassnameCommodityDeedBox.Location = new System.Drawing.Point(45, 409);
+            lbClassnameCommodityDeedBox.Name = "lbClassnameCommodityDeedBox";
+            lbClassnameCommodityDeedBox.Size = new System.Drawing.Size(73, 15);
+            lbClassnameCommodityDeedBox.TabIndex = 88;
+            lbClassnameCommodityDeedBox.Text = "Name class :";
+            // 
+            // tbClassnameCommodityDeedBox
+            // 
+            tbClassnameCommodityDeedBox.Location = new System.Drawing.Point(119, 406);
+            tbClassnameCommodityDeedBox.Name = "tbClassnameCommodityDeedBox";
+            tbClassnameCommodityDeedBox.Size = new System.Drawing.Size(170, 23);
+            tbClassnameCommodityDeedBox.TabIndex = 87;
+            tbClassnameCommodityDeedBox.Text = "CommodityDeedBox";
+            // 
+            // btCreateCommodityDeedBoxScript
+            // 
+            btCreateCommodityDeedBoxScript.Location = new System.Drawing.Point(3, 371);
+            btCreateCommodityDeedBoxScript.Name = "btCreateCommodityDeedBoxScript";
+            btCreateCommodityDeedBoxScript.Size = new System.Drawing.Size(87, 23);
+            btCreateCommodityDeedBoxScript.TabIndex = 86;
+            btCreateCommodityDeedBoxScript.Text = "Create Script";
+            btCreateCommodityDeedBoxScript.UseVisualStyleBackColor = true;
+            btCreateCommodityDeedBoxScript.Click += btCreateCommodityDeedBoxScript_Click;
+            // 
+            // lbDefaultGumpID
+            // 
+            lbDefaultGumpID.AutoSize = true;
+            lbDefaultGumpID.Location = new System.Drawing.Point(22, 332);
+            lbDefaultGumpID.Name = "lbDefaultGumpID";
+            lbDefaultGumpID.Size = new System.Drawing.Size(95, 15);
+            lbDefaultGumpID.TabIndex = 85;
+            lbDefaultGumpID.Text = "DefaultGumpID :";
+            // 
+            // tbDefaultGumpID
+            // 
+            tbDefaultGumpID.Location = new System.Drawing.Point(119, 329);
+            tbDefaultGumpID.Name = "tbDefaultGumpID";
+            tbDefaultGumpID.Size = new System.Drawing.Size(58, 23);
+            tbDefaultGumpID.TabIndex = 84;
+            tbDefaultGumpID.Text = "0x3e";
+            // 
+            // lbClosedBarrelItemsID
+            // 
+            lbClosedBarrelItemsID.AutoSize = true;
+            lbClosedBarrelItemsID.Location = new System.Drawing.Point(66, 307);
+            lbClosedBarrelItemsID.Name = "lbClosedBarrelItemsID";
+            lbClosedBarrelItemsID.Size = new System.Drawing.Size(51, 15);
+            lbClosedBarrelItemsID.TabIndex = 83;
+            lbClosedBarrelItemsID.Text = "Item ID :";
+            // 
+            // tbClosedBarrelItemsID
+            // 
+            tbClosedBarrelItemsID.Location = new System.Drawing.Point(119, 304);
+            tbClosedBarrelItemsID.Name = "tbClosedBarrelItemsID";
+            tbClosedBarrelItemsID.Size = new System.Drawing.Size(58, 23);
+            tbClosedBarrelItemsID.TabIndex = 82;
+            tbClosedBarrelItemsID.Text = "0x0FAE";
+            // 
+            // lbTrapableContainer
+            // 
+            lbTrapableContainer.AutoSize = true;
+            lbTrapableContainer.Location = new System.Drawing.Point(8, 281);
+            lbTrapableContainer.Name = "lbTrapableContainer";
+            lbTrapableContainer.Size = new System.Drawing.Size(109, 15);
+            lbTrapableContainer.TabIndex = 81;
+            lbTrapableContainer.Text = "TrapableContainer :";
+            // 
+            // tbTrapableContainer
+            // 
+            tbTrapableContainer.Location = new System.Drawing.Point(119, 278);
+            tbTrapableContainer.Name = "tbTrapableContainer";
+            tbTrapableContainer.Size = new System.Drawing.Size(170, 23);
+            tbTrapableContainer.TabIndex = 80;
+            tbTrapableContainer.Text = "TrapableContainer";
+            // 
+            // lbClosedBarrelClassname
+            // 
+            lbClosedBarrelClassname.AutoSize = true;
+            lbClosedBarrelClassname.Location = new System.Drawing.Point(45, 256);
+            lbClosedBarrelClassname.Name = "lbClosedBarrelClassname";
+            lbClosedBarrelClassname.Size = new System.Drawing.Size(73, 15);
+            lbClosedBarrelClassname.TabIndex = 79;
+            lbClosedBarrelClassname.Text = "Name class :";
+            // 
+            // tbClassnameClosedBarrel
+            // 
+            tbClassnameClosedBarrel.Location = new System.Drawing.Point(119, 253);
+            tbClassnameClosedBarrel.Name = "tbClassnameClosedBarrel";
+            tbClassnameClosedBarrel.Size = new System.Drawing.Size(170, 23);
+            tbClassnameClosedBarrel.TabIndex = 78;
+            tbClassnameClosedBarrel.Text = "ClosedBarrel";
+            // 
+            // btCreateClosedBarrelScript
+            // 
+            btCreateClosedBarrelScript.Location = new System.Drawing.Point(3, 218);
+            btCreateClosedBarrelScript.Name = "btCreateClosedBarrelScript";
+            btCreateClosedBarrelScript.Size = new System.Drawing.Size(87, 23);
+            btCreateClosedBarrelScript.TabIndex = 77;
+            btCreateClosedBarrelScript.Text = "Create Script";
+            btCreateClosedBarrelScript.UseVisualStyleBackColor = true;
+            btCreateClosedBarrelScript.Click += btCreateClosedBarrelScript_Click;
+            // 
+            // lbGiftHue
+            // 
+            lbGiftHue.AutoSize = true;
+            lbGiftHue.Location = new System.Drawing.Point(81, 189);
+            lbGiftHue.Name = "lbGiftHue";
+            lbGiftHue.Size = new System.Drawing.Size(35, 15);
+            lbGiftHue.TabIndex = 76;
+            lbGiftHue.Text = "Hue :";
+            // 
+            // tbGiftHue
+            // 
+            tbGiftHue.Location = new System.Drawing.Point(119, 186);
+            tbGiftHue.Name = "tbGiftHue";
+            tbGiftHue.Size = new System.Drawing.Size(58, 23);
+            tbGiftHue.TabIndex = 75;
+            tbGiftHue.Text = "hue";
+            // 
+            // lbGiftGiftBox
+            // 
+            lbGiftGiftBox.AutoSize = true;
+            lbGiftGiftBox.Location = new System.Drawing.Point(65, 164);
+            lbGiftGiftBox.Name = "lbGiftGiftBox";
+            lbGiftGiftBox.Size = new System.Drawing.Size(52, 15);
+            lbGiftGiftBox.TabIndex = 74;
+            lbGiftGiftBox.Text = "GiftBox :";
+            // 
+            // tbGiftGiftBox
+            // 
+            tbGiftGiftBox.Location = new System.Drawing.Point(119, 161);
+            tbGiftGiftBox.Name = "tbGiftGiftBox";
+            tbGiftGiftBox.Size = new System.Drawing.Size(122, 23);
+            tbGiftGiftBox.TabIndex = 73;
+            tbGiftGiftBox.Text = "RandomDyedHue";
+            // 
+            // lbGiftWeight
+            // 
+            lbGiftWeight.AutoSize = true;
+            lbGiftWeight.Location = new System.Drawing.Point(66, 139);
+            lbGiftWeight.Name = "lbGiftWeight";
+            lbGiftWeight.Size = new System.Drawing.Size(51, 15);
+            lbGiftWeight.TabIndex = 72;
+            lbGiftWeight.Text = "Weight :";
+            // 
+            // tbGiftWeight
+            // 
+            tbGiftWeight.Location = new System.Drawing.Point(119, 136);
+            tbGiftWeight.Name = "tbGiftWeight";
+            tbGiftWeight.Size = new System.Drawing.Size(58, 23);
+            tbGiftWeight.TabIndex = 71;
+            tbGiftWeight.Text = "2.0";
+            // 
+            // tbGiftFlipable2
+            // 
+            tbGiftFlipable2.Location = new System.Drawing.Point(183, 111);
+            tbGiftFlipable2.Name = "tbGiftFlipable2";
+            tbGiftFlipable2.Size = new System.Drawing.Size(58, 23);
+            tbGiftFlipable2.TabIndex = 70;
+            tbGiftFlipable2.Text = "0x232B";
+            // 
+            // lbGiftFlipable
+            // 
+            lbGiftFlipable.AutoSize = true;
+            lbGiftFlipable.Location = new System.Drawing.Point(63, 114);
+            lbGiftFlipable.Name = "lbGiftFlipable";
+            lbGiftFlipable.Size = new System.Drawing.Size(54, 15);
+            lbGiftFlipable.TabIndex = 69;
+            lbGiftFlipable.Text = "Flipable :";
+            // 
+            // tbGiftFlipable1
+            // 
+            tbGiftFlipable1.Location = new System.Drawing.Point(119, 111);
+            tbGiftFlipable1.Name = "tbGiftFlipable1";
+            tbGiftFlipable1.Size = new System.Drawing.Size(58, 23);
+            tbGiftFlipable1.TabIndex = 68;
+            tbGiftFlipable1.Text = "0x232A";
+            // 
+            // lbGiftLabelNumber
+            // 
+            lbGiftLabelNumber.AutoSize = true;
+            lbGiftLabelNumber.Location = new System.Drawing.Point(32, 89);
+            lbGiftLabelNumber.Name = "lbGiftLabelNumber";
+            lbGiftLabelNumber.Size = new System.Drawing.Size(85, 15);
+            lbGiftLabelNumber.TabIndex = 67;
+            lbGiftLabelNumber.Text = "LabelNumber :";
+            // 
+            // tbGiftLabelNumber
+            // 
+            tbGiftLabelNumber.Location = new System.Drawing.Point(119, 86);
+            tbGiftLabelNumber.Name = "tbGiftLabelNumber";
+            tbGiftLabelNumber.Size = new System.Drawing.Size(122, 23);
+            tbGiftLabelNumber.TabIndex = 66;
+            tbGiftLabelNumber.Text = "1156382";
+            // 
+            // lbGiftBoxClassScriptNameBaseContainer
+            // 
+            lbGiftBoxClassScriptNameBaseContainer.AutoSize = true;
+            lbGiftBoxClassScriptNameBaseContainer.Location = new System.Drawing.Point(28, 65);
+            lbGiftBoxClassScriptNameBaseContainer.Name = "lbGiftBoxClassScriptNameBaseContainer";
+            lbGiftBoxClassScriptNameBaseContainer.Size = new System.Drawing.Size(89, 15);
+            lbGiftBoxClassScriptNameBaseContainer.TabIndex = 65;
+            lbGiftBoxClassScriptNameBaseContainer.Text = "BaseContainer :";
+            // 
+            // tbGiftBaseContainer
+            // 
+            tbGiftBaseContainer.Location = new System.Drawing.Point(119, 62);
+            tbGiftBaseContainer.Name = "tbGiftBaseContainer";
+            tbGiftBaseContainer.Size = new System.Drawing.Size(170, 23);
+            tbGiftBaseContainer.TabIndex = 64;
+            tbGiftBaseContainer.Text = "BaseContainer";
+            // 
+            // button1
+            // 
+            button1.Location = new System.Drawing.Point(91, 3);
+            button1.Name = "button1";
+            button1.Size = new System.Drawing.Size(42, 23);
+            button1.TabIndex = 63;
+            button1.Text = "Clip..";
+            button1.UseVisualStyleBackColor = true;
+            button1.Click += btCopyToClipboardChair_Click;
+            // 
+            // lbGiftBoxClassScriptName
+            // 
+            lbGiftBoxClassScriptName.AutoSize = true;
+            lbGiftBoxClassScriptName.Location = new System.Drawing.Point(45, 41);
+            lbGiftBoxClassScriptName.Name = "lbGiftBoxClassScriptName";
+            lbGiftBoxClassScriptName.Size = new System.Drawing.Size(73, 15);
+            lbGiftBoxClassScriptName.TabIndex = 62;
+            lbGiftBoxClassScriptName.Text = "Name class :";
+            // 
+            // tbGiftBoxClassScriptName
+            // 
+            tbGiftBoxClassScriptName.Location = new System.Drawing.Point(119, 38);
+            tbGiftBoxClassScriptName.Name = "tbGiftBoxClassScriptName";
+            tbGiftBoxClassScriptName.Size = new System.Drawing.Size(170, 23);
+            tbGiftBoxClassScriptName.TabIndex = 61;
+            tbGiftBoxClassScriptName.Text = "GiftBox";
+            // 
+            // btCreateGiftBoxScript
+            // 
+            btCreateGiftBoxScript.Location = new System.Drawing.Point(3, 3);
+            btCreateGiftBoxScript.Name = "btCreateGiftBoxScript";
+            btCreateGiftBoxScript.Size = new System.Drawing.Size(87, 23);
+            btCreateGiftBoxScript.TabIndex = 60;
+            btCreateGiftBoxScript.Text = "Create Script";
+            btCreateGiftBoxScript.UseVisualStyleBackColor = true;
+            btCreateGiftBoxScript.Click += btCreateGiftBoxScript_Click;
+            // 
             // tabPageMisc
             // 
             tabPageMisc.Controls.Add(btSaveXML);
@@ -4895,24 +5367,6 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             tabPageMisc.TabIndex = 1;
             tabPageMisc.Text = "Misc";
             tabPageMisc.UseVisualStyleBackColor = true;
-            // 
-            // toolStrip1
-            // 
-            toolStrip1.Location = new System.Drawing.Point(0, 0);
-            toolStrip1.Name = "toolStrip1";
-            toolStrip1.Size = new System.Drawing.Size(1186, 25);
-            toolStrip1.TabIndex = 1;
-            toolStrip1.Text = "toolStrip1";
-            // 
-            // lbNameEditor
-            // 
-            lbNameEditor.AutoSize = true;
-            lbNameEditor.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold);
-            lbNameEditor.Location = new System.Drawing.Point(3, 12);
-            lbNameEditor.Name = "lbNameEditor";
-            lbNameEditor.Size = new System.Drawing.Size(120, 21);
-            lbNameEditor.TabIndex = 97;
-            lbNameEditor.Text = "Editor .txt .Def";
             // 
             // btSaveXML
             // 
@@ -4940,6 +5394,31 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             textBoxPfadWall.Name = "textBoxPfadWall";
             textBoxPfadWall.Size = new System.Drawing.Size(233, 23);
             textBoxPfadWall.TabIndex = 37;
+            // 
+            // toolStrip1
+            // 
+            toolStrip1.Location = new System.Drawing.Point(0, 0);
+            toolStrip1.Name = "toolStrip1";
+            toolStrip1.Size = new System.Drawing.Size(1186, 25);
+            toolStrip1.TabIndex = 1;
+            toolStrip1.Text = "toolStrip1";
+            // 
+            // lbCommodityDeedBoxRewardItem
+            // 
+            lbCommodityDeedBoxRewardItem.AutoSize = true;
+            lbCommodityDeedBoxRewardItem.Location = new System.Drawing.Point(41, 587);
+            lbCommodityDeedBoxRewardItem.Name = "lbCommodityDeedBoxRewardItem";
+            lbCommodityDeedBoxRewardItem.Size = new System.Drawing.Size(76, 15);
+            lbCommodityDeedBoxRewardItem.TabIndex = 103;
+            lbCommodityDeedBoxRewardItem.Text = "RewardItem :";
+            // 
+            // tbCommodityDeedBoxRewardItem
+            // 
+            tbCommodityDeedBoxRewardItem.Location = new System.Drawing.Point(119, 584);
+            tbCommodityDeedBoxRewardItem.Name = "tbCommodityDeedBoxRewardItem";
+            tbCommodityDeedBoxRewardItem.Size = new System.Drawing.Size(122, 23);
+            tbCommodityDeedBoxRewardItem.TabIndex = 102;
+            tbCommodityDeedBoxRewardItem.Text = "1076217";
             // 
             // ScriptCreator
             // 
@@ -4984,6 +5463,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             tabPageChair.PerformLayout();
             panelEdit.ResumeLayout(false);
             panelEdit.PerformLayout();
+            tabPageGiftBox.ResumeLayout(false);
+            tabPageGiftBox.PerformLayout();
             tabPageMisc.ResumeLayout(false);
             tabPageMisc.PerformLayout();
             ResumeLayout(false);
@@ -5450,5 +5931,50 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private System.Windows.Forms.Button btSaveXML;
         private System.Windows.Forms.TextBox textBoxPfadWall;
         private System.Windows.Forms.Button btLoadPfadWall;
+        private System.Windows.Forms.TabPage tabPageGiftBox;
+        private System.Windows.Forms.Label lbGiftBoxClassScriptNameBaseContainer;
+        private System.Windows.Forms.TextBox tbGiftBaseContainer;
+        private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.Label lbGiftBoxClassScriptName;
+        private System.Windows.Forms.TextBox tbGiftBoxClassScriptName;
+        private System.Windows.Forms.Button btCreateGiftBoxScript;
+        private System.Windows.Forms.Label lbGiftLabelNumber;
+        private System.Windows.Forms.TextBox tbGiftLabelNumber;
+        private System.Windows.Forms.TextBox tbGiftFlipable2;
+        private System.Windows.Forms.Label lbGiftFlipable;
+        private System.Windows.Forms.TextBox tbGiftFlipable1;
+        private System.Windows.Forms.Label lbGiftWeight;
+        private System.Windows.Forms.TextBox tbGiftWeight;
+        private System.Windows.Forms.Label lbGiftGiftBox;
+        private System.Windows.Forms.TextBox tbGiftGiftBox;
+        private System.Windows.Forms.Label lbGiftHue;
+        private System.Windows.Forms.TextBox tbGiftHue;
+        private System.Windows.Forms.Label lbClosedBarrelClassname;
+        private System.Windows.Forms.TextBox tbClassnameClosedBarrel;
+        private System.Windows.Forms.Button btCreateClosedBarrelScript;
+        private System.Windows.Forms.Label lbClosedBarrelItemsID;
+        private System.Windows.Forms.TextBox tbClosedBarrelItemsID;
+        private System.Windows.Forms.Label lbTrapableContainer;
+        private System.Windows.Forms.TextBox tbTrapableContainer;
+        private System.Windows.Forms.Label lbDefaultGumpID;
+        private System.Windows.Forms.TextBox tbDefaultGumpID;
+        private System.Windows.Forms.Label lbBaseContainerCommodityDeedBox;
+        private System.Windows.Forms.TextBox tbBaseContainerCommodityDeedBox;
+        private System.Windows.Forms.Label lbClassnameCommodityDeedBox;
+        private System.Windows.Forms.TextBox tbClassnameCommodityDeedBox;
+        private System.Windows.Forms.Button btCreateCommodityDeedBoxScript;
+        private System.Windows.Forms.TextBox tbFlipableID2;
+        private System.Windows.Forms.Label lbFlipableIDs;
+        private System.Windows.Forms.TextBox tbFlipableID1;
+        private System.Windows.Forms.Label lbCommodityDeedBoxHue;
+        private System.Windows.Forms.TextBox tbCommodityDeedBoxHue;
+        private System.Windows.Forms.Label lbCommodityDeedBoxWeight;
+        private System.Windows.Forms.TextBox tbCommodityDeedBoxWeight;
+        private System.Windows.Forms.Label lbCommodityDeedBoxLabelNumber;
+        private System.Windows.Forms.TextBox tbCommodityDeedBoxLabelNumber;
+        private System.Windows.Forms.Label lbCommodityDeedBoxGump;
+        private System.Windows.Forms.TextBox tbCommodityDeedBoxGump;
+        private System.Windows.Forms.Label lbCommodityDeedBoxRewardItem;
+        private System.Windows.Forms.TextBox tbCommodityDeedBoxRewardItem;
     }
 }

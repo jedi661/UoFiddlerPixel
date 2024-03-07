@@ -2291,5 +2291,245 @@ namespace Server.Items
             }
         }
         #endregion
+
+        private void btCreateGiftBoxScript_Click(object sender, EventArgs e)
+        {
+            string SetclassNameGift = tbGiftBoxClassScriptName.Text.Replace(" ", "_"); // Class Name GiftBox
+            string SetGiftBaseContainer = tbGiftBaseContainer.Text; // BaseContainer
+            string SetGiftLabelNumber = tbGiftLabelNumber.Text; // LabelNumber 1156382
+            string SetGiftFlipable1 = tbGiftFlipable1.Text; // 0x232A
+            string SetGiftFlipable2 = tbGiftFlipable2.Text; // 0x232B
+            string SetGiftWeight = tbGiftWeight.Text; // 2.0
+            string SetGiftBox = tbGiftGiftBox.Text;  // RandomDyedHue
+            string SetGiftHue = tbGiftHue.Text; // hue
+
+            string script = $@"
+            using System;
+
+            namespace Server.Items
+            {{
+                [Furniture]
+                [Flipable({SetGiftFlipable1}, {SetGiftFlipable2})]
+                public class {SetclassNameGift} : {SetGiftBaseContainer}
+                {{
+                    public override int LabelNumber {{ get {{ return {SetGiftLabelNumber}; }} }} // Holiday Giftbox
+
+                    [Constructable]
+                    public {SetclassNameGift}()
+                        : this(Utility.{SetGiftBox}())
+                    {{
+                    }}
+
+                    [Constructable]
+                    public {SetclassNameGift}(int hue)
+                        : base(Utility.Random({SetGiftFlipable1}, 2))
+                    {{
+                        this.Weight = {SetGiftWeight};
+                        this.Hue = {SetGiftHue};
+                    }}
+
+                    public {SetclassNameGift}(Serial serial)
+                        : base(serial)
+                    {{
+                    }}
+
+                    public override void Serialize(GenericWriter writer)
+                    {{
+                        base.Serialize(writer);
+
+                        writer.Write((int)0); // version
+                    }}
+
+                    public override void Deserialize(GenericReader reader)
+                    {{
+                        base.Deserialize(reader);
+
+                        int version = reader.ReadInt();
+                    }}
+                }}
+            }}";
+
+            richTextBoxScriptMiscellaneous.Text = script;
+
+            // Create a new SoundPlayer
+            SoundPlayer player = new SoundPlayer();
+
+            // Load the sound file
+            player.SoundLocation = AppDomain.CurrentDomain.BaseDirectory + "\\Sound.wav";
+
+            // Play the sound
+            player.Play();
+        }
+
+        private void btCreateClosedBarrelScript_Click(object sender, EventArgs e)
+        {
+            string SetclassNameClosedBarrel = tbClassnameClosedBarrel.Text.Replace(" ", "_"); // ClosedBarrel
+            string SetTrapableContainer = tbTrapableContainer.Text; // TrapableContainer
+            string SetClosedBarrelItemsID = tbClosedBarrelItemsID.Text; // 0x0FAE
+            string SetDefaultGumpID = tbDefaultGumpID.Text; // 0x3e
+
+            string script = $@"
+using System;
+
+namespace Server.Items
+{{
+    class {SetclassNameClosedBarrel} : {SetTrapableContainer}
+    {{ 
+        [Constructable]
+        public {SetclassNameClosedBarrel}()
+            : base({SetClosedBarrelItemsID})
+        {{
+        }}
+
+        public {SetclassNameClosedBarrel}(Serial serial)
+            : base(serial)
+        {{
+        }}
+
+        public override int DefaultGumpID
+        {{
+            get
+            {{
+                return {SetDefaultGumpID};
+            }}
+        }}
+        public override void Serialize(GenericWriter writer)
+        {{
+            base.Serialize(writer);
+
+            writer.Write((int)0); // version
+        }}
+
+        public override void Deserialize(GenericReader reader)
+        {{
+            base.Deserialize(reader);
+
+            int version = reader.ReadInt();
+        }}
+    }}
+}}";
+            richTextBoxScriptMiscellaneous.Text = script;
+
+            // Create a new SoundPlayer
+            SoundPlayer player = new SoundPlayer();
+
+            // Load the sound file
+            player.SoundLocation = AppDomain.CurrentDomain.BaseDirectory + "\\Sound.wav";
+
+            // Play the sound
+            player.Play();
+        }
+
+        private void btCreateCommodityDeedBoxScript_Click(object sender, EventArgs e)
+        {
+            string SetclassNameCommodityDeedBoxScript = tbClassnameCommodityDeedBox.Text.Replace(" ", "_");
+            string SetBaseContainerCommodityDeedBox = tbBaseContainerCommodityDeedBox.Text; // BaseContainer
+            string SetFlipableID1 = tbFlipableID1.Text; // 0x9AA
+            string SetFlipableID2 = tbFlipableID2.Text; // 0xE7D
+            string SetCommodityDeedBoxHue = tbCommodityDeedBoxHue.Text; // 0x47
+            string SetCommodityDeedBoxWeight = tbCommodityDeedBoxWeight.Text; // 4.0
+            string SetCommodityDeedBoxLabelNumber = tbCommodityDeedBoxLabelNumber.Text; // 1080523
+            string SetCommodityDeedBoxGump = tbCommodityDeedBoxGump.Text; // 0x43
+            string SetCommodityDeedBoxRewardItem = tbCommodityDeedBoxRewardItem.Text; // 1076217
+
+            string script = $@"
+using System;
+using Server.Engines.VeteranRewards;
+
+namespace Server.Items
+{{ 
+    [Furniture]
+    [Flipable({SetFlipableID1}, {SetFlipableID2})]
+    public class {SetclassNameCommodityDeedBoxScript} : {SetBaseContainerCommodityDeedBox}, IRewardItem
+    {{
+        private bool m_IsRewardItem;
+        [Constructable]
+        public {SetclassNameCommodityDeedBoxScript}()
+            : base({SetFlipableID1})
+        {{
+            this.Hue = {SetCommodityDeedBoxHue};
+            this.Weight = {SetCommodityDeedBoxWeight};
+        }}
+
+        public {SetclassNameCommodityDeedBoxScript}(Serial serial)
+            : base(serial)
+        {{
+        }}
+
+        public override int LabelNumber
+        {{
+            get
+            {{
+                return {SetCommodityDeedBoxLabelNumber};
+            }}
+        }}// Commodity Deed Box
+        public override int DefaultGumpID
+        {{
+            get
+            {{
+                return {SetCommodityDeedBoxGump};
+            }}
+        }}
+        [CommandProperty(AccessLevel.GameMaster)]
+        public bool IsRewardItem
+        {{
+            get
+            {{
+                return this.m_IsRewardItem;
+            }}
+            set
+            {{
+                this.m_IsRewardItem = value;
+                this.InvalidateProperties();
+            }}
+        }}
+        public static {SetclassNameCommodityDeedBoxScript} Find(Item deed)
+        {{
+            Item parent = deed;
+
+            while (parent != null && !(parent is {SetclassNameCommodityDeedBoxScript}))
+                parent = parent.Parent as Item;
+
+            return parent as {SetclassNameCommodityDeedBoxScript};
+        }}
+
+        public override void GetProperties(ObjectPropertyList list)
+        {{
+            base.GetProperties(list);
+			
+            if (this.m_IsRewardItem)
+                list.Add({SetCommodityDeedBoxRewardItem}); // 1st Year Veteran Reward		
+        }}
+
+        public override void Serialize(GenericWriter writer)
+        {{
+            base.Serialize(writer);
+
+            writer.WriteEncodedInt(0); // version
+
+            writer.Write((bool)this.m_IsRewardItem);
+        }}
+
+        public override void Deserialize(GenericReader reader)
+        {{
+            base.Deserialize(reader);
+
+            int version = reader.ReadEncodedInt();
+
+            this.m_IsRewardItem = reader.ReadBool();
+        }}
+    }}
+}}";
+            richTextBoxScriptMiscellaneous.Text = script;
+
+            // Create a new SoundPlayer
+            SoundPlayer player = new SoundPlayer();
+
+            // Load the sound file
+            player.SoundLocation = AppDomain.CurrentDomain.BaseDirectory + "\\Sound.wav";
+
+            // Play the sound
+            player.Play();
+        }
     }
 }
