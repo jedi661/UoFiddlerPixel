@@ -1182,6 +1182,12 @@ namespace UoFiddler.Controls.UserControls
                 // Call the searchByNameToolStripButton_Click method
                 searchByNameToolStripButton_Click(sender, e);
             }
+            // Verify that the Ctrl+J key combination was pressed
+            else if (e.Control && e.KeyCode == Keys.J)
+            {
+                // Call the goToMarkedPositionToolStripMenuItem_Click method to jump to the marked position
+                goToMarkedPositionToolStripMenuItem_Click(sender, e);
+            }
         }
         #endregion
 
@@ -2110,6 +2116,34 @@ namespace UoFiddler.Controls.UserControls
 
                 // Set the cell's text to the hexcode of the color
                 colorGrid.Rows[rowIndex].Cells[0].Value = color;
+            }
+        }
+        #endregion
+
+
+        #region markToolStripMenuItem
+        // Variable for storing the marked position
+        private int markedPosition = -1;
+
+        // Method of marking position
+        private void markToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (ItemsTileView.SelectedIndices.Count > 0)
+            {
+                markedPosition = ItemsTileView.SelectedIndices[0];
+            }
+        }
+        #endregion
+
+        #region goToMarkedPositionToolStripMenuItem
+        // Method to return to marked position
+        private void goToMarkedPositionToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (markedPosition >= 0 && markedPosition < ItemsTileView.VirtualListSize)
+            {
+                // Set the selected position to the marked position
+                ItemsTileView.SelectedIndices.Clear();
+                ItemsTileView.SelectedIndices.Add(markedPosition);
             }
         }
         #endregion
