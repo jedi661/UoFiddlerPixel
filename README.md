@@ -16,6 +16,8 @@ Version : 4.12.3
 - Add ScriptCreator Buttons Edit and Scripts
 - Add Items Mark
 - Add Items Goto Mark
+- Add LandTiles Mark
+- Add LandTiles Go To
 
 Version : 4.12.2
 - BildFusion Add Sharp , Clipboard, Texture Cut.

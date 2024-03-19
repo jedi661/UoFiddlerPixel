@@ -1109,6 +1109,12 @@ namespace UoFiddler.Controls.UserControls
                 // Calling the copyToolStripMenuItem_Click method to import the graphic from the clipboard.
                 copyToolStripMenuItem_Click(sender, e);
             }
+            // Verify that the Ctrl+J key combination was pressed
+            else if (e.Control && e.KeyCode == Keys.J)
+            {
+                // Call the gotoMarkToolStripMenuItem_Click method to jump to the marked position
+                gotoMarkToolStripMenuItem_Click(sender, e);
+            }
         }
 
         //Ingnore to temp.
@@ -1449,6 +1455,30 @@ namespace UoFiddler.Controls.UserControls
 
             // Display the shape
             zoomForm.ShowDialog();
+        }
+        #endregion
+
+        #region markToolStripMenuItem
+        // Variable for storing the marked position
+        private int markedPosition = -1;
+        private void markToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (LandTilesTileView.SelectedIndices.Count > 0)
+            {
+                markedPosition = LandTilesTileView.SelectedIndices[0];
+            }
+        }
+        #endregion
+
+        #region gotoMarkToolStripMenuItem
+        private void gotoMarkToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (markedPosition >= 0 && markedPosition < LandTilesTileView.VirtualListSize)
+            {
+                // Set the selected position to the marked position
+                LandTilesTileView.SelectedIndices.Clear();
+                LandTilesTileView.SelectedIndices.Add(markedPosition);
+            }
         }
         #endregion
     }

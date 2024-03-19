@@ -69,9 +69,11 @@ namespace UoFiddler.Controls.UserControls
             importToTempToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             toolStripSeparator8 = new System.Windows.Forms.ToolStripSeparator();
             rotateBy90DegreesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            zoomImageToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             toolStripSeparator5 = new System.Windows.Forms.ToolStripSeparator();
             saveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            zoomImageToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            markToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            gotoMarkToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             LandTilesToolStrip = new System.Windows.Forms.ToolStrip();
             IndexToolStripLabel = new System.Windows.Forms.ToolStripLabel();
             searchByIdToolStripTextBox = new System.Windows.Forms.ToolStripTextBox();
@@ -94,6 +96,7 @@ namespace UoFiddler.Controls.UserControls
             NameLabel = new System.Windows.Forms.ToolStripStatusLabel();
             GraphicLabel = new System.Windows.Forms.ToolStripStatusLabel();
             FlagsLabel = new System.Windows.Forms.ToolStripStatusLabel();
+            toolStripSeparator9 = new System.Windows.Forms.ToolStripSeparator();
             LandTilesContextMenuStrip.SuspendLayout();
             LandTilesToolStrip.SuspendLayout();
             panel1.SuspendLayout();
@@ -102,9 +105,9 @@ namespace UoFiddler.Controls.UserControls
             // 
             // LandTilesContextMenuStrip
             // 
-            LandTilesContextMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { showFreeSlotsToolStripMenuItem, toolStripSeparator6, exportImageToolStripMenuItem, toolStripSeparator3, selectInTileDataTabToolStripMenuItem, selectInRadarColorTabToolStripMenuItem, toolStripSeparator2, findNextFreeSlotToolStripMenuItem, removeToolStripMenuItem, replaceToolStripMenuItem, replaceStartingFromToolStripMenuItem, insertAtToolStripMenuItem, toolStripSeparator7, copyToolStripMenuItem, importToolStripMenuItem, importToTempToolStripMenuItem, toolStripSeparator8, rotateBy90DegreesToolStripMenuItem, zoomImageToolStripMenuItem, toolStripSeparator5, saveToolStripMenuItem });
+            LandTilesContextMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { showFreeSlotsToolStripMenuItem, toolStripSeparator6, exportImageToolStripMenuItem, toolStripSeparator3, selectInTileDataTabToolStripMenuItem, selectInRadarColorTabToolStripMenuItem, toolStripSeparator2, findNextFreeSlotToolStripMenuItem, removeToolStripMenuItem, replaceToolStripMenuItem, replaceStartingFromToolStripMenuItem, insertAtToolStripMenuItem, toolStripSeparator7, copyToolStripMenuItem, importToolStripMenuItem, importToTempToolStripMenuItem, toolStripSeparator8, rotateBy90DegreesToolStripMenuItem, zoomImageToolStripMenuItem, toolStripSeparator5, markToolStripMenuItem, gotoMarkToolStripMenuItem, toolStripSeparator9, saveToolStripMenuItem });
             LandTilesContextMenuStrip.Name = "contextMenuStrip1";
-            LandTilesContextMenuStrip.Size = new System.Drawing.Size(201, 392);
+            LandTilesContextMenuStrip.Size = new System.Drawing.Size(201, 442);
             // 
             // showFreeSlotsToolStripMenuItem
             // 
@@ -279,6 +282,15 @@ namespace UoFiddler.Controls.UserControls
             rotateBy90DegreesToolStripMenuItem.Text = "Rotate by 90 degrees.";
             rotateBy90DegreesToolStripMenuItem.Click += rotateBy90DegreesToolStripMenuItem_Click;
             // 
+            // zoomImageToolStripMenuItem
+            // 
+            zoomImageToolStripMenuItem.Image = Properties.Resources.zoom_image_into_tile_2_;
+            zoomImageToolStripMenuItem.Name = "zoomImageToolStripMenuItem";
+            zoomImageToolStripMenuItem.Size = new System.Drawing.Size(200, 22);
+            zoomImageToolStripMenuItem.Text = "Zoom Image";
+            zoomImageToolStripMenuItem.ToolTipText = "Zoom into Landtiles";
+            zoomImageToolStripMenuItem.Click += zoomImageToolStripMenuItem_Click;
+            // 
             // toolStripSeparator5
             // 
             toolStripSeparator5.Name = "toolStripSeparator5";
@@ -292,14 +304,23 @@ namespace UoFiddler.Controls.UserControls
             saveToolStripMenuItem.Text = "Save";
             saveToolStripMenuItem.Click += OnClickSave;
             // 
-            // zoomImageToolStripMenuItem
+            // markToolStripMenuItem
             // 
-            zoomImageToolStripMenuItem.Image = Properties.Resources.zoom_image_into_tile_2_;
-            zoomImageToolStripMenuItem.Name = "zoomImageToolStripMenuItem";
-            zoomImageToolStripMenuItem.Size = new System.Drawing.Size(200, 22);
-            zoomImageToolStripMenuItem.Text = "Zoom Image";
-            zoomImageToolStripMenuItem.ToolTipText = "Zoom into Landtiles";
-            zoomImageToolStripMenuItem.Click += zoomImageToolStripMenuItem_Click;
+            markToolStripMenuItem.Image = Properties.Resources.Mark;
+            markToolStripMenuItem.Name = "markToolStripMenuItem";
+            markToolStripMenuItem.Size = new System.Drawing.Size(200, 22);
+            markToolStripMenuItem.Text = "Mark Position";
+            markToolStripMenuItem.ToolTipText = "Mark Position";
+            markToolStripMenuItem.Click += markToolStripMenuItem_Click;
+            // 
+            // gotoMarkToolStripMenuItem
+            // 
+            gotoMarkToolStripMenuItem.Image = Properties.Resources.zoom_image_into_tile_2_;
+            gotoMarkToolStripMenuItem.Name = "gotoMarkToolStripMenuItem";
+            gotoMarkToolStripMenuItem.Size = new System.Drawing.Size(200, 22);
+            gotoMarkToolStripMenuItem.Text = "Goto Position";
+            gotoMarkToolStripMenuItem.ToolTipText = "Go To Position";
+            gotoMarkToolStripMenuItem.Click += gotoMarkToolStripMenuItem_Click;
             // 
             // LandTilesToolStrip
             // 
@@ -497,6 +518,11 @@ namespace UoFiddler.Controls.UserControls
             FlagsLabel.Text = "Flags:";
             FlagsLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
+            // toolStripSeparator9
+            // 
+            toolStripSeparator9.Name = "toolStripSeparator9";
+            toolStripSeparator9.Size = new System.Drawing.Size(197, 6);
+            // 
             // LandTilesControl
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -571,5 +597,8 @@ namespace UoFiddler.Controls.UserControls
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator5;
         private System.Windows.Forms.ToolStripMenuItem saveToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem zoomImageToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem markToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem gotoMarkToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator9;
     }
 }
