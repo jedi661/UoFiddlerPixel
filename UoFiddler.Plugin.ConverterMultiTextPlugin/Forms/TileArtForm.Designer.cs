@@ -310,9 +310,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // 
             // copyToolStripMenuItem
             // 
+            copyToolStripMenuItem.Image = Properties.Resources.Copy;
             copyToolStripMenuItem.Name = "copyToolStripMenuItem";
             copyToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             copyToolStripMenuItem.Text = "Copy";
+            copyToolStripMenuItem.ToolTipText = "Copy to Clipboard";
             copyToolStripMenuItem.Click += copyToolStripMenuItem_Click;
             // 
             // tabPageTiles9
