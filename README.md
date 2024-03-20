@@ -18,6 +18,7 @@ Version : 4.12.3
 - Add Items Goto Mark
 - Add LandTiles Mark
 - Add LandTiles Go To
+- Add LandtilesView into TileArtForm
 
 Version : 4.12.2
 - BildFusion Add Sharp , Clipboard, Texture Cut.

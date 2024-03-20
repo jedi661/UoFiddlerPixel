@@ -40,6 +40,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         /// </summary>
         private void InitializeComponent()
         {
+            components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(TileArtForm));
             pictureBoxTileArt = new System.Windows.Forms.PictureBox();
             btloadArt0All = new System.Windows.Forms.Button();
@@ -57,6 +58,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             panel1BackGround = new System.Windows.Forms.Panel();
             panel2Backgrund = new System.Windows.Forms.Panel();
             tabControl1 = new System.Windows.Forms.TabControl();
+            tabPageLandTiles = new System.Windows.Forms.TabPage();
+            LandTilesTileView = new Controls.UserControls.TileView.TileViewControl();
+            LandTilesContextMenuStrip = new System.Windows.Forms.ContextMenuStrip(components);
+            copyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             tabPageTiles9 = new System.Windows.Forms.TabPage();
             panel3Backgrund = new System.Windows.Forms.Panel();
             pictureBoxTileArt2Mirror = new System.Windows.Forms.PictureBox();
@@ -81,11 +86,17 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             panel1 = new System.Windows.Forms.Panel();
             pictureBoxTileArt4 = new System.Windows.Forms.PictureBox();
             hScrollBar2 = new System.Windows.Forms.HScrollBar();
+            StatusStrip = new System.Windows.Forms.StatusStrip();
+            NameLabel = new System.Windows.Forms.ToolStripStatusLabel();
+            GraphicLabel = new System.Windows.Forms.ToolStripStatusLabel();
+            FlagsLabel = new System.Windows.Forms.ToolStripStatusLabel();
             ((System.ComponentModel.ISupportInitialize)pictureBoxTileArt).BeginInit();
             ((System.ComponentModel.ISupportInitialize)pictureBoxTileArt2).BeginInit();
             panel1BackGround.SuspendLayout();
             panel2Backgrund.SuspendLayout();
             tabControl1.SuspendLayout();
+            tabPageLandTiles.SuspendLayout();
+            LandTilesContextMenuStrip.SuspendLayout();
             tabPageTiles9.SuspendLayout();
             panel3Backgrund.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)pictureBoxTileArt2Mirror).BeginInit();
@@ -96,6 +107,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             tabPageTiles256.SuspendLayout();
             panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)pictureBoxTileArt4).BeginInit();
+            StatusStrip.SuspendLayout();
             SuspendLayout();
             // 
             // pictureBoxTileArt
@@ -244,6 +256,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // 
             // tabControl1
             // 
+            tabControl1.Controls.Add(tabPageLandTiles);
             tabControl1.Controls.Add(tabPageTiles9);
             tabControl1.Controls.Add(tabPageTiles64);
             tabControl1.Controls.Add(tabPageTiles256);
@@ -252,6 +265,55 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             tabControl1.SelectedIndex = 0;
             tabControl1.Size = new System.Drawing.Size(921, 826);
             tabControl1.TabIndex = 15;
+            // 
+            // tabPageLandTiles
+            // 
+            tabPageLandTiles.Controls.Add(LandTilesTileView);
+            tabPageLandTiles.Location = new System.Drawing.Point(4, 24);
+            tabPageLandTiles.Name = "tabPageLandTiles";
+            tabPageLandTiles.Size = new System.Drawing.Size(913, 798);
+            tabPageLandTiles.TabIndex = 3;
+            tabPageLandTiles.Text = "LandTiles";
+            tabPageLandTiles.UseVisualStyleBackColor = true;
+            // 
+            // LandTilesTileView
+            // 
+            LandTilesTileView.AutoScroll = true;
+            LandTilesTileView.AutoScrollMinSize = new System.Drawing.Size(0, 50);
+            LandTilesTileView.BackColor = System.Drawing.SystemColors.Window;
+            LandTilesTileView.ContextMenuStrip = LandTilesContextMenuStrip;
+            LandTilesTileView.Dock = System.Windows.Forms.DockStyle.Fill;
+            LandTilesTileView.FocusIndex = -1;
+            LandTilesTileView.Location = new System.Drawing.Point(0, 0);
+            LandTilesTileView.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            LandTilesTileView.MultiSelect = false;
+            LandTilesTileView.Name = "LandTilesTileView";
+            LandTilesTileView.Size = new System.Drawing.Size(913, 798);
+            LandTilesTileView.TabIndex = 9;
+            LandTilesTileView.TileBackgroundColor = System.Drawing.SystemColors.Window;
+            LandTilesTileView.TileBorderColor = System.Drawing.Color.Gray;
+            LandTilesTileView.TileBorderWidth = 1F;
+            LandTilesTileView.TileFocusColor = System.Drawing.Color.DarkRed;
+            LandTilesTileView.TileHighlightColor = System.Drawing.SystemColors.Highlight;
+            LandTilesTileView.TileMargin = new System.Windows.Forms.Padding(2, 2, 0, 0);
+            LandTilesTileView.TilePadding = new System.Windows.Forms.Padding(1);
+            LandTilesTileView.TileSize = new System.Drawing.Size(44, 44);
+            LandTilesTileView.VirtualListSize = 1;
+            LandTilesTileView.ItemSelectionChanged += TileArtTileView_ItemSelectionChanged;
+            LandTilesTileView.DrawItem += LandTilesTileView_DrawItem;
+            // 
+            // LandTilesContextMenuStrip
+            // 
+            LandTilesContextMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { copyToolStripMenuItem });
+            LandTilesContextMenuStrip.Name = "LandTilesContextMenuStrip";
+            LandTilesContextMenuStrip.Size = new System.Drawing.Size(181, 48);
+            // 
+            // copyToolStripMenuItem
+            // 
+            copyToolStripMenuItem.Name = "copyToolStripMenuItem";
+            copyToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            copyToolStripMenuItem.Text = "Copy";
+            copyToolStripMenuItem.Click += copyToolStripMenuItem_Click;
             // 
             // tabPageTiles9
             // 
@@ -518,11 +580,44 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             hScrollBar2.TabIndex = 10;
             hScrollBar2.Scroll += hScrollBar2_Scroll;
             // 
+            // StatusStrip
+            // 
+            StatusStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { NameLabel, GraphicLabel, FlagsLabel });
+            StatusStrip.Location = new System.Drawing.Point(0, 822);
+            StatusStrip.Name = "StatusStrip";
+            StatusStrip.Size = new System.Drawing.Size(932, 22);
+            StatusStrip.TabIndex = 16;
+            StatusStrip.Text = "StatusStrip";
+            // 
+            // NameLabel
+            // 
+            NameLabel.AutoSize = false;
+            NameLabel.Name = "NameLabel";
+            NameLabel.Size = new System.Drawing.Size(140, 17);
+            NameLabel.Text = "Name:";
+            NameLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // GraphicLabel
+            // 
+            GraphicLabel.AutoSize = false;
+            GraphicLabel.Name = "GraphicLabel";
+            GraphicLabel.Size = new System.Drawing.Size(120, 17);
+            GraphicLabel.Text = "Graphic:";
+            GraphicLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // FlagsLabel
+            // 
+            FlagsLabel.Name = "FlagsLabel";
+            FlagsLabel.Size = new System.Drawing.Size(37, 17);
+            FlagsLabel.Text = "Flags:";
+            FlagsLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
             // TileArtForm
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             ClientSize = new System.Drawing.Size(932, 844);
+            Controls.Add(StatusStrip);
             Controls.Add(tabControl1);
             FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             Icon = (System.Drawing.Icon)resources.GetObject("$this.Icon");
@@ -533,6 +628,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             panel1BackGround.ResumeLayout(false);
             panel2Backgrund.ResumeLayout(false);
             tabControl1.ResumeLayout(false);
+            tabPageLandTiles.ResumeLayout(false);
+            LandTilesContextMenuStrip.ResumeLayout(false);
             tabPageTiles9.ResumeLayout(false);
             tabPageTiles9.PerformLayout();
             panel3Backgrund.ResumeLayout(false);
@@ -546,7 +643,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             tabPageTiles256.PerformLayout();
             panel1.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)pictureBoxTileArt4).EndInit();
+            StatusStrip.ResumeLayout(false);
+            StatusStrip.PerformLayout();
             ResumeLayout(false);
+            PerformLayout();
         }
 
         #endregion
@@ -591,5 +691,13 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private System.Windows.Forms.Button btFill256Tiles;
         private System.Windows.Forms.Panel panel3Backgrund;
         private System.Windows.Forms.PictureBox pictureBoxTileArt2Mirror;
+        private System.Windows.Forms.TabPage tabPageLandTiles;
+        private Controls.UserControls.TileView.TileViewControl LandTilesTileView;
+        private System.Windows.Forms.StatusStrip StatusStrip;
+        private System.Windows.Forms.ToolStripStatusLabel NameLabel;
+        private System.Windows.Forms.ToolStripStatusLabel GraphicLabel;
+        private System.Windows.Forms.ToolStripStatusLabel FlagsLabel;
+        private System.Windows.Forms.ContextMenuStrip LandTilesContextMenuStrip;
+        private System.Windows.Forms.ToolStripMenuItem copyToolStripMenuItem;
     }
 }

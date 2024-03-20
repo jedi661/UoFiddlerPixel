@@ -21,13 +21,23 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Ultima;
+using UoFiddler.Controls.Classes;
+using UoFiddler.Controls.Helpers;
+using System.IO;
 
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
+using static UoFiddler.Controls.UserControls.TileView.TileViewControl;
 
 namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 {
     public partial class TileArtForm : Form
     {
+        private List<int> _tileList = new List<int>(); // List for storing items Tiles
+        private int _selectedGraphicId = -1;
+        public bool IsLoaded { get; private set; }
+        private bool _showFreeSlots;
+
         public TileArtForm()
         {
             InitializeComponent();
@@ -39,7 +49,37 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             hScrollBar1.Maximum = pictureBoxTileArt3.Width / 1;
             hScrollBar2.Minimum = -pictureBoxTileArt4.Width / 1;
             hScrollBar2.Maximum = pictureBoxTileArt4.Width / 1;
+
+            // Call the OnLoad method here to draw the tiles
+            OnLoad(this, EventArgs.Empty);
         }
+
+        #region SelectedGraphicId
+        public int SelectedGraphicId
+        {
+            get => _selectedGraphicId;
+            set
+            {
+                _selectedGraphicId = value < 0 ? 0 : value;
+                UpdateToolStripLabels(_selectedGraphicId);
+                LandTilesTileView.FocusIndex = _tileList.IndexOf(_selectedGraphicId);
+            }
+        }
+        #endregion
+
+        #region UpdateToolStripLabels
+        private void UpdateToolStripLabels(int graphic)
+        {
+            if (!IsLoaded)
+            {
+                return;
+            }
+
+            NameLabel.Text = $"Name: {TileData.LandTable[graphic].Name}";
+            GraphicLabel.Text = string.Format("ID: 0x{0:X4} ({0})", graphic);
+            FlagsLabel.Text = $"Flags: {TileData.LandTable[graphic].Flags}";
+        }
+        #endregion
 
         #region pictureBoxTileArt_Paint
         private void pictureBoxTileArt_Paint(object sender, PaintEventArgs e)
@@ -1138,6 +1178,268 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                     {
                         g.DrawImage(images[imageIndex], x, y, routeSize, routeSize);
                     }
+                }
+            }
+        }
+        #endregion
+
+        #region OnLoad
+        private void OnLoad(object sender, EventArgs e)
+        {
+            if (IsAncestorSiteInDesignMode || FormsDesignerHelper.IsInDesignMode())
+            {
+                return;
+            }
+
+            Cursor.Current = Cursors.WaitCursor;
+
+            Options.LoadedUltimaClass["TileData"] = true;
+            Options.LoadedUltimaClass["Art"] = true;
+
+            const int landTileMax = 0x4000;
+
+            for (int i = 0; i < landTileMax; ++i)
+            {
+                if (Art.IsValidLand(i))
+                {
+                    _tileList.Add(i);
+                }
+            }
+
+            LandTilesTileView.VirtualListSize = _tileList.Count;
+
+            if (!IsLoaded)
+            {
+                ControlEvents.FilePathChangeEvent += OnFilePathChangeEvent;
+                ControlEvents.LandTileChangeEvent += OnLandTileChangeEvent;
+                ControlEvents.TileDataChangeEvent += OnTileDataChangeEvent;
+            }
+
+            IsLoaded = true;
+
+            Cursor.Current = Cursors.Default;
+        }
+        #endregion
+
+        #region OnFilePathChangeEvent
+        private void OnFilePathChangeEvent()
+        {
+            Reload();
+        }
+        #endregion
+
+        #region Reload
+        private void Reload()
+        {
+            if (!IsLoaded)
+            {
+                return;
+            }
+
+            _selectedGraphicId = -1;
+            _tileList.Clear();
+
+            OnLoad(this, new MyEventArgs(MyEventArgs.Types.ForceReload));
+        }
+        #endregion
+
+        #region OnTileDataChangeEvent
+        private void OnTileDataChangeEvent(object sender, int id)
+        {
+            if (!IsLoaded)
+            {
+                return;
+            }
+
+            if (sender.Equals(this))
+            {
+                return;
+            }
+
+            if (id < 0 || id > 0x3FFF)
+            {
+                return;
+            }
+
+            if (_selectedGraphicId != id)
+            {
+                return;
+            }
+
+            UpdateToolStripLabels(id);
+        }
+        #endregion
+
+        #region OnLandTileChangeEvent
+        private void OnLandTileChangeEvent(object sender, int index)
+        {
+            if (!IsLoaded)
+            {
+                return;
+            }
+
+            if (sender.Equals(this))
+            {
+                return;
+            }
+
+            if (Art.IsValidLand(index))
+            {
+                bool done = false;
+                for (int i = 0; i < _tileList.Count; ++i)
+                {
+                    if (index < _tileList[i])
+                    {
+                        _tileList.Insert(i, index);
+                        done = true;
+                        break;
+                    }
+
+                    if (index != _tileList[i])
+                    {
+                        continue;
+                    }
+
+                    done = true;
+                    break;
+                }
+
+                if (!done)
+                {
+                    _tileList.Add(index);
+                }
+            }
+            else
+            {
+                if (_showFreeSlots)
+                {
+                    return;
+                }
+
+                _tileList.Remove(index);
+            }
+
+            LandTilesTileView.VirtualListSize = _tileList.Count;
+            LandTilesTileView.Invalidate();
+        }
+        #endregion
+
+        #region LandTilesTileView_DrawItem
+        private void LandTilesTileView_DrawItem(object sender, DrawTileListItemEventArgs e)
+        {
+            if (IsAncestorSiteInDesignMode || FormsDesignerHelper.IsInDesignMode())
+            {
+                return;
+            }
+
+            Point itemPoint = new Point(e.Bounds.X + LandTilesTileView.TilePadding.Left, e.Bounds.Y + LandTilesTileView.TilePadding.Top);
+            const int fixedTileSize = 44;
+            Size itemSize = new Size(fixedTileSize, fixedTileSize);
+            Rectangle itemRec = new Rectangle(itemPoint, itemSize);
+
+            var previousClip = e.Graphics.Clip;
+
+            e.Graphics.Clip = new Region(itemRec);
+
+            if (e.Index < _tileList.Count)
+            {
+                Bitmap bitmap = Art.GetLand(_tileList[e.Index], out bool patched);
+
+                if (bitmap == null)
+                {
+                    e.Graphics.Clip = new Region(itemRec);
+
+                    itemRec.X += 5;
+                    itemRec.Y += 5;
+
+                    itemRec.Width -= 10;
+                    itemRec.Height -= 10;
+
+                    e.Graphics.FillRectangle(Brushes.Red, itemRec);
+                    e.Graphics.Clip = previousClip;
+                }
+                else
+                {
+                    if (patched)
+                    {
+                        // different background for verdata patched tiles
+                        e.Graphics.FillRectangle(Brushes.LightCoral, itemRec);
+                    }
+
+                    e.Graphics.DrawImage(bitmap, itemRec);
+
+                    e.Graphics.Clip = previousClip;
+                }
+            }
+            else
+            {
+                // Handling the case when the index is out of range...
+            }
+        }
+        #endregion
+
+        #region TileArtTileView_ItemSelectionChanged
+        private void TileArtTileView_ItemSelectionChanged(object sender, ListViewItemSelectionChangedEventArgs e)
+        {
+            if (!e.IsSelected)
+            {
+                return;
+            }
+
+            if (_tileList.Count == 0)
+            {
+                return;
+            }
+
+            SelectedGraphicId = e.ItemIndex < 0 || e.ItemIndex > _tileList.Count
+                ? _tileList[0]
+                : _tileList[e.ItemIndex];
+        }
+        #endregion
+
+        #region Copy clipboard - Event handler for the click event of the copyToolStripMenuItem control
+        private void copyToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // Check if a graphic is selected
+            if (_selectedGraphicId >= 0)
+            {
+                // Get the bitmap of the selected graphic using the Art class
+                Bitmap originalBitmap = Art.GetLand(_selectedGraphicId);
+                if (originalBitmap != null)
+                {
+                    // Erstellen Sie eine Kopie des Originalbildes
+                    Bitmap bitmap = new Bitmap(originalBitmap);
+
+                    // Farbänderungsfunktion direkt eingebaut
+                    for (int y = 0; y < bitmap.Height; y++)
+                    {
+                        for (int x = 0; x < bitmap.Width; x++)
+                        {
+                            Color pixelColor = bitmap.GetPixel(x, y);
+                            if (pixelColor.R == 211 && pixelColor.G == 211 && pixelColor.B == 211) // Check if the color of the pixel is #D3D3D3
+                            {
+                                bitmap.SetPixel(x, y, Color.Black); // Change the color of the pixel to black
+                            }
+                        }
+                    }
+
+                    // Convert the image to a 24-bit color depth
+                    Bitmap bmp24bit = new Bitmap(bitmap.Width, bitmap.Height, System.Drawing.Imaging.PixelFormat.Format24bppRgb);
+                    using (Graphics g = Graphics.FromImage(bmp24bit))
+                    {
+                        g.DrawImage(bitmap, new Rectangle(0, 0, bmp24bit.Width, bmp24bit.Height));
+                    }
+
+                    // Copy the graphic to the clipboard
+                    Clipboard.SetImage(bmp24bit);
+
+                    // Show a message box indicating success
+                    MessageBox.Show("The image has been copied to the clipboard!");
+                }
+                else
+                {
+                    // Show a message box indicating failure
+                    MessageBox.Show("No image to copy!");
                 }
             }
         }

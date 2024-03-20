@@ -12,6 +12,7 @@ Version : 4.12.3 #XG1
 - Add Items Goto Mark
 - Add LandTiles Mark
 - Add LandTiles Go To
+- Add LandtilesView into TileArtForm
 
 Version : 4.12.2 #XG1
 - BildFusion Add Sharp , Clipboard, Texture Cut.
