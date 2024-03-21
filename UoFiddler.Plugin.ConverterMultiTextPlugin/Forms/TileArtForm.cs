@@ -28,6 +28,7 @@ using System.IO;
 
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 using static UoFiddler.Controls.UserControls.TileView.TileViewControl;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.Button;
 
 namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 {
@@ -37,6 +38,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private int _selectedGraphicId = -1;
         public bool IsLoaded { get; private set; }
         private bool _showFreeSlots;
+
+        private List<string> copiedIdAddresses = new List<string>(); // Copy List Hex ID
+        private List<string> copiedHexAddresses = new List<string>(); // Insert Paint Grid Hex ID
+        private List<List<string>> loadedHexAddressesInTileArt2 = new List<List<string>>(); // A list of lists for each button.
+
+
 
         public TileArtForm()
         {
@@ -52,6 +59,22 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 
             // Call the OnLoad method here to draw the tiles
             OnLoad(this, EventArgs.Empty);
+
+            // Initialize loadedHexAddressesInTileArt2 with empty lists.
+            for (int i = 0; i < 9; i++) // Replace "9" with the number of buttons you have.
+            {
+                loadedHexAddressesInTileArt2.Add(new List<string>());
+            }
+
+            // Laden Sie das Bild aus den Ressourcen
+            Image image = Properties.Resources.Transestion; // Ersetzen Sie "Properties.Resources.Transestion" durch den tatsächlichen Pfad zu Ihrem Bild in den Ressourcen
+
+            // Setzen Sie das Bild als Hintergrundbild des Panel
+            panelImage.BackgroundImage = image;
+
+            // Passen Sie das Layout des Hintergrundbilds an, damit es gestreckt wird, um den gesamten Panel zu füllen
+            panelImage.BackgroundImageLayout = ImageLayout.Stretch;
+
         }
 
         #region SelectedGraphicId
@@ -174,6 +197,15 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         {
             Graphics g = e.Graphics;
 
+            // HexIDTextBox leeren
+            HexIDTextBox9.Clear();
+
+            // ID-Adressen in der HexIDTextBox auflisten
+            foreach (string idAddress in copiedIdAddresses)
+            {
+                HexIDTextBox9.AppendText(idAddress + Environment.NewLine);
+            }
+
             // Define the size of the route
             int routeSize = 44;
 
@@ -264,11 +296,14 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         #endregion
 
         #region LoadImage
+        // Create a dictionary to store the hex addresses and type together.
+        private Dictionary<string, string> hexAddresses = new Dictionary<string, string>();
+
         private void LoadImage(int index)
         {
             Image image;
 
-            // Check whether the checkBoxClipboard is activated
+            // Check if the checkBoxClipboard is checked.
             if (checkBoxClipboard.Checked)
             {
                 // Load the image from the clipboard
@@ -278,23 +313,23 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 }
                 else
                 {
-                    MessageBox.Show("The clipboard does not contain an image.");
+                    MessageBox.Show("The clipboard does not contain an image..");
                     return;
                 }
             }
             else
             {
-                // Create an OpenFileDialog object
+                // Create an OpenFileDialog object.
                 OpenFileDialog openFileDialog = new OpenFileDialog();
 
-                // Set the properties of the OpenFileDialog
+                // Set the properties of the OpenFileDialog.
                 openFileDialog.Filter = "Picture|*.jpg;*.jpeg;*.png;*.bmp";
                 openFileDialog.Multiselect = false;
 
-                // Display the dialog box and verify that the user clicked OK
+                // Display the dialog box and check if the user clicked OK.
                 if (openFileDialog.ShowDialog() == DialogResult.OK)
                 {
-                    // Load the image
+                    // Load the image.
                     image = Image.FromFile(openFileDialog.FileName);
                 }
                 else
@@ -303,16 +338,76 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 }
             }
 
-            // Make the colors #000000 and #FFFFFF transparent
+            // Make the colors #000000 and #FFFFFF transparent.
             image = MakeTransparent(image, Color.Black);
             image = MakeTransparent(image, Color.White);
 
-            // Save the image in the images array
+            // Save the image in the images array.
             images[index] = image;
 
-            // Redraw the PictureBox
+            // Redraw the PictureBox.
             pictureBoxTileArt2.Invalidate();
+
+            // Add the loaded hex addresses from copiedIdAddresses to the dictionary for the selected type.
+            string selectedType = null;
+            if (checkBoxLL.Checked)
+            {
+                selectedType = "LL";
+            }
+            else if (checkBoxUU.Checked)
+            {
+                selectedType = "UU";
+            }
+            else if (checkBoxDL.Checked)
+            {
+                selectedType = "DL";
+            }
+            else if (checkBoxDR.Checked)
+            {
+                selectedType = "DR";
+            }
+            else if (checkBoxUL.Checked)
+            {
+                selectedType = "UL";
+            }
+            else if (checkBoxUR.Checked)
+            {
+                selectedType = "UR";
+            }
+
+            if (selectedType != null)
+            {
+                foreach (string address in copiedIdAddresses)
+                {
+                    if (!hexAddresses.ContainsKey(address))
+                    {
+                        hexAddresses[address] = selectedType;
+                    }
+                }
+            }
+
+            // Clear TextBoxTileArt2.
+            TextBoxTileArt2.Clear();
+
+            // List the loaded hex addresses in TextBoxTileArt2.
+            foreach (var pair in hexAddresses)
+            {
+                TextBoxTileArt2.AppendText(pair.Key + " " + pair.Value + Environment.NewLine);
+            }
         }
+        #endregion
+
+        #region private Dictionary<string, List<Tuple<string, string>>> hexAddressesByType = new Dictionary<string, List<Tuple<string, string>>>
+        // Create a dictionary to store the hex addresses for each type.
+        private Dictionary<string, List<Tuple<string, string>>> hexAddressesByType = new Dictionary<string, List<Tuple<string, string>>>
+        {
+            { "LL", new List<Tuple<string, string>>() },
+            { "UU", new List<Tuple<string, string>>() },
+            { "DL", new List<Tuple<string, string>>() },
+            { "DR", new List<Tuple<string, string>>() },
+            { "UL", new List<Tuple<string, string>>() },
+            { "UR", new List<Tuple<string, string>>() },
+        };
         #endregion
 
         #region array for pictureBoxTileArt3
@@ -364,6 +459,13 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                         Rectangle tileRectangle = tileRectangles[hoverTile.Value];
                         g.DrawImage(images3[imageIndex], tileRectangle);
                     }
+
+                    // Kopierte Hexadresse zur TextBoxTileArt3 hinzufügen
+                    string copiedHexAddress = copiedHexAddresses.LastOrDefault();
+                    if (!string.IsNullOrEmpty(copiedHexAddress))
+                    {
+                        TextBoxTileArt3.AppendText(copiedHexAddress + Environment.NewLine);
+                    }
                 }
 
                 // Redraw the PictureBox
@@ -377,6 +479,15 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         {
             Graphics g = e.Graphics;
             Matrix matrix = new Matrix();
+
+            // Clear HexIDTextBox.
+            HexIDTextBox64.Clear();
+
+            // List ID addresses in the HexIDTextBox.
+            foreach (string idAddress in copiedIdAddresses)
+            {
+                HexIDTextBox64.AppendText(idAddress + Environment.NewLine);
+            }
 
             if (is3DView)
             {
@@ -773,7 +884,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         #endregion
 
         #region Veriable pictureBoxTileArt4_Paint
-        private Image[] images4 = new Image[256]; // Ein separates Array für pictureBoxTileArt4
+        private Image[] images4 = new Image[256]; // A separate array for pictureBoxTileArt4.
         private const int routesX1 = 16; // Define routesX1 as a class variable
         private const int routesY1 = 16; // Define routesY1 as a class variable
         private const int routeSize2 = 44; // Define routeSize2 as a class variable
@@ -786,6 +897,15 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         {
             Graphics g = e.Graphics;
             Matrix matrix = new Matrix();
+
+            // Clear HexIDTextBox.
+            HexIDTextBox256.Clear();
+
+            // List ID addresses in the HexIDTextBox.
+            foreach (string idAddress in copiedIdAddresses)
+            {
+                HexIDTextBox256.AppendText(idAddress + Environment.NewLine);
+            }
 
             if (is3DView2)
             {
@@ -912,6 +1032,13 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                         Graphics g = pictureBoxTileArt4.CreateGraphics();
                         Rectangle tileRectangle2 = tileRectangles2[hoverTile2.Value];
                         g.DrawImage(images4[imageIndex], tileRectangle2);
+                    }
+
+                    // Add copied hex address to TextBoxTileArt4
+                    string copiedHexAddress = copiedHexAddresses.LastOrDefault();
+                    if (!string.IsNullOrEmpty(copiedHexAddress))
+                    {
+                        TextBoxTileArt4.AppendText(copiedHexAddress + Environment.NewLine);
                     }
                 }
 
@@ -1403,14 +1530,19 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // Check if a graphic is selected
             if (_selectedGraphicId >= 0)
             {
+                // Hexadezimalwert des ausgewählten _selectedGraphicId zur Liste hinzufügen
+                copiedIdAddresses.Add("0x" + _selectedGraphicId.ToString("X4"));
+                string hexAddress = "0x" + _selectedGraphicId.ToString("X4");
+                copiedHexAddresses.Add(hexAddress);
+
                 // Get the bitmap of the selected graphic using the Art class
                 Bitmap originalBitmap = Art.GetLand(_selectedGraphicId);
                 if (originalBitmap != null)
                 {
-                    // Erstellen Sie eine Kopie des Originalbildes
+                    // Create a copy of the original image.
                     Bitmap bitmap = new Bitmap(originalBitmap);
 
-                    // Farbänderungsfunktion direkt eingebaut
+                    // Color change function directly integrated.
                     for (int y = 0; y < bitmap.Height; y++)
                     {
                         for (int x = 0; x < bitmap.Width; x++)
@@ -1441,6 +1573,170 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                     // Show a message box indicating failure
                     MessageBox.Show("No image to copy!");
                 }
+            }
+        }
+        #endregion
+
+        #region btnClearTextBoxTileArt3
+        private void btnClearTextBoxTileArt3_Click(object sender, EventArgs e)
+        {
+            TextBoxTileArt3.Clear();
+        }
+        #endregion
+
+        #region btnClearTextBoxTileArt4
+        private void btnClearTextBoxTileArt4_Click(object sender, EventArgs e)
+        {
+            TextBoxTileArt4.Clear();
+        }
+        #endregion
+
+        #region btClearTilesAll4
+        private void btClearTilesAll4_Click(object sender, EventArgs e)
+        {
+            // Set each element in the images3 array to null
+            for (int i = 0; i < images4.Length; i++)
+            {
+                images4[i] = null;
+            }
+
+            // Redraw the PictureBox to show the empty diamond spaces
+            pictureBoxTileArt4.Invalidate();
+        }
+        #endregion
+
+        #region GenerateXmlButton_Click
+        private void GenerateXmlButton_Click(object sender, EventArgs e)
+        {
+            // Create the XML section based on the stored hex addresses.
+            string xml = $"<Brush Id=\"{textBoxId.Text}\" Name=\"{textBoxName.Text}\">\n";
+
+            // Add the hex addresses from textboxLandID.
+            string[] landIDs = textboxLandID.Text.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+            foreach (string id in landIDs)
+            {
+                xml += $"    <Land ID=\"{id}\"/>\n";
+            }
+
+            xml += $"    <Edge To=\"{textBoxEdgeTo.Text}\">\n";
+            foreach (var pair in hexAddresses)
+            {
+                xml += $"        <Land Type=\"{pair.Value}\" ID=\"{pair.Key}\"/>\n";
+            }
+            xml += "    </Edge>\n";
+            xml += "</Brush>";
+
+            // Display the generated XML section.
+            richTextBoxXML.Text = xml;
+        }
+        #endregion
+
+        #region  checkBoxLL checkBoxUU checkBoxDL ... CheckedChanged
+        private void checkBoxLL_CheckedChanged(object sender, EventArgs e)
+        {
+            if (checkBoxLL.Checked)
+            {
+                checkBoxUU.Checked = false;
+                checkBoxDL.Checked = false;
+                checkBoxDR.Checked = false;
+                checkBoxUL.Checked = false;
+                checkBoxUR.Checked = false;
+            }
+        }
+
+        private void checkBoxUU_CheckedChanged(object sender, EventArgs e)
+        {
+            if (checkBoxUU.Checked)
+            {
+                checkBoxLL.Checked = false;
+                checkBoxDL.Checked = false;
+                checkBoxDR.Checked = false;
+                checkBoxUL.Checked = false;
+                checkBoxUR.Checked = false;
+            }
+        }
+
+        private void checkBoxDL_CheckedChanged(object sender, EventArgs e)
+        {
+            if (checkBoxDL.Checked)
+            {
+                checkBoxLL.Checked = false;
+                checkBoxUU.Checked = false;
+                checkBoxDR.Checked = false;
+                checkBoxUL.Checked = false;
+                checkBoxUR.Checked = false;
+            }
+        }
+
+        private void checkBoxDR_CheckedChanged(object sender, EventArgs e)
+        {
+            if (checkBoxDR.Checked)
+            {
+                checkBoxLL.Checked = false;
+                checkBoxUU.Checked = false;
+                checkBoxDL.Checked = false;
+                checkBoxUL.Checked = false;
+                checkBoxUR.Checked = false;
+            }
+        }
+
+        private void checkBoxUL_CheckedChanged(object sender, EventArgs e)
+        {
+            if (checkBoxUL.Checked)
+            {
+                checkBoxLL.Checked = false;
+                checkBoxUU.Checked = false;
+                checkBoxDL.Checked = false;
+                checkBoxDR.Checked = false;
+                checkBoxUR.Checked = false;
+            }
+        }
+
+        private void checkBoxUR_CheckedChanged(object sender, EventArgs e)
+        {
+            if (checkBoxUR.Checked)
+            {
+                checkBoxLL.Checked = false;
+                checkBoxUU.Checked = false;
+                checkBoxDL.Checked = false;
+                checkBoxDR.Checked = false;
+                checkBoxUL.Checked = false;
+            }
+        }
+        #endregion
+
+        #region resetButton
+        private void resetButton_Click(object sender, EventArgs e)
+        {
+            // Reset pictureBoxTileArt2.
+            for (int i = 0; i < images.Length; i++) // Access the "images" array.
+            {
+                images[i] = null;
+            }
+            pictureBoxTileArt2.Invalidate();
+
+            // Reset TextBoxTileArt2.
+            TextBoxTileArt2.Clear();
+
+            // Reset HexIDTextBox9.
+            HexIDTextBox9.Clear();
+
+            // Fügen Sie hier weitere Reset-Logik hinzu, falls erforderlich
+        }
+        #endregion
+
+        #region copyClipbordButton
+        private void copyClipbordButton_Click(object sender, EventArgs e)
+        {
+            // Check if richTextBoxXML.Text is null.
+            if (!string.IsNullOrEmpty(richTextBoxXML.Text))
+            {
+                // Copy the contents of richTextBoxXML to the clipboard.
+                Clipboard.SetText(richTextBoxXML.Text);
+            }
+            else
+            {
+                MessageBox.Show("There is no text to copy..");
             }
         }
         #endregion

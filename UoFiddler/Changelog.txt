@@ -13,6 +13,7 @@ Version : 4.12.3 #XG1
 - Add LandTiles Mark
 - Add LandTiles Go To
 - Add LandtilesView into TileArtForm
+- Add Editor for Tilesbrush.xml (CentrEd)
 
 Version : 4.12.2 #XG1
 - BildFusion Add Sharp , Clipboard, Texture Cut.
