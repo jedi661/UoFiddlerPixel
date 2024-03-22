@@ -127,6 +127,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             NameLabel = new System.Windows.Forms.ToolStripStatusLabel();
             GraphicLabel = new System.Windows.Forms.ToolStripStatusLabel();
             FlagsLabel = new System.Windows.Forms.ToolStripStatusLabel();
+            lbTransitions = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)pictureBoxTileArt).BeginInit();
             ((System.ComponentModel.ISupportInitialize)pictureBoxTileArt2).BeginInit();
             panel1BackGround.SuspendLayout();
@@ -358,6 +359,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // 
             // tabPageTiles9
             // 
+            tabPageTiles9.Controls.Add(lbTransitions);
             tabPageTiles9.Controls.Add(panelImage);
             tabPageTiles9.Controls.Add(copyClipbordButton);
             tabPageTiles9.Controls.Add(lbURbt);
@@ -650,7 +652,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             TextBoxTileArt2.Multiline = true;
             TextBoxTileArt2.Name = "TextBoxTileArt2";
             TextBoxTileArt2.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            TextBoxTileArt2.Size = new System.Drawing.Size(159, 202);
+            TextBoxTileArt2.Size = new System.Drawing.Size(159, 337);
             TextBoxTileArt2.TabIndex = 19;
             // 
             // lpID9
@@ -658,9 +660,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             lpID9.AutoSize = true;
             lpID9.Location = new System.Drawing.Point(22, 420);
             lpID9.Name = "lpID9";
-            lpID9.Size = new System.Drawing.Size(21, 15);
+            lpID9.Size = new System.Drawing.Size(56, 15);
             lpID9.TabIndex = 18;
-            lpID9.Text = "ID:";
+            lpID9.Text = "ID (Hex) :";
             // 
             // HexIDTextBox9
             // 
@@ -1037,6 +1039,15 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             FlagsLabel.Text = "Flags:";
             FlagsLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
+            // lbTransitions
+            // 
+            lbTransitions.AutoSize = true;
+            lbTransitions.Location = new System.Drawing.Point(187, 420);
+            lbTransitions.Name = "lbTransitions";
+            lbTransitions.Size = new System.Drawing.Size(84, 15);
+            lbTransitions.TabIndex = 46;
+            lbTransitions.Text = "Transitons List:";
+            // 
             // TileArtForm
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -1161,5 +1172,6 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private System.Windows.Forms.Label lbDRbt;
         private System.Windows.Forms.Button copyClipbordButton;
         private System.Windows.Forms.Panel panelImage;
+        private System.Windows.Forms.Label lbTransitions;
     }
 }

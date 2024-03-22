@@ -67,13 +67,13 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 loadedHexAddressesInTileArt2.Add(new List<string>());
             }
 
-            // Laden Sie das Bild aus den Ressourcen
-            Image image = Properties.Resources.Transestion; // Ersetzen Sie "Properties.Resources.Transestion" durch den tatsächlichen Pfad zu Ihrem Bild in den Ressourcen
+            // Load the image from resources
+            Image image = Properties.Resources.Transestion; // Replace "Properties.Resources.Transestion" with the actual path to your image in resources
 
-            // Setzen Sie das Bild als Hintergrundbild des Panel
+            // Set the image as the panel's background image
             panelImage.BackgroundImage = image;
 
-            // Passen Sie das Layout des Hintergrundbilds an, damit es gestreckt wird, um den gesamten Panel zu füllen
+            // Enter the layout of the background image so that it stretches to fill the entire panel
             panelImage.BackgroundImageLayout = ImageLayout.Stretch;
 
         }
