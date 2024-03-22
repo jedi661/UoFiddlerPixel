@@ -29,6 +29,7 @@ using System.IO;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 using static UoFiddler.Controls.UserControls.TileView.TileViewControl;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.Button;
+using System.Media;
 
 namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 {
@@ -1738,6 +1739,15 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             {
                 MessageBox.Show("There is no text to copy..");
             }
+
+            // Create a new SoundPlayer
+            SoundPlayer player = new SoundPlayer();
+
+            // Load the sound file
+            player.SoundLocation = AppDomain.CurrentDomain.BaseDirectory + "\\Sound.wav";
+
+            // Play the sound
+            player.Play();
         }
         #endregion
     }
