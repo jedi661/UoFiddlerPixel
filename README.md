@@ -20,6 +20,7 @@ Version : 4.12.3
 - Add LandTiles Go To
 - Add LandtilesView into TileArtForm
 - Add Editor for Tilesbrush.xml (CentrEd)
+- Add Transitions - Graphic (From Prapilk)
 
 Version : 4.12.2
 - BildFusion Add Sharp , Clipboard, Texture Cut.

@@ -754,7 +754,6 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
 
         #region BtTileArtForm
         private bool isTileArtFormOpen = false;
-
         private void BtTileArtForm_Click(object sender, EventArgs e)
         {
             if (isTileArtFormOpen) // Wenn das Formular bereits geöffnet ist, beenden Sie die Methode.
@@ -785,6 +784,42 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
                 BtTileArtForm.Enabled = true;
             }
         }
+        #endregion
+
+        #region Transitions
+        private bool isTransitionsFormOpen = false;
+
+        private void btTransitions_Click(object sender, EventArgs e)
+        {
+            if (isTransitionsFormOpen) // Wenn das Formular bereits geöffnet ist, beenden Sie die Methode.
+            {
+                return;
+            }
+
+            ToolTip toolTip1 = new ToolTip();
+            toolTip1.AutoPopDelay = 5000;
+            toolTip1.InitialDelay = 1000;
+            toolTip1.ReshowDelay = 500;
+            toolTip1.ShowAlways = true;
+            toolTip1.SetToolTip(this.btTransitions, "TransitionsForm");
+
+            var transitionsForm = new TransitionsForm();
+            transitionsForm.FormClosed += TransitionsForm_FormClosed;
+            transitionsForm.Show();
+            isTransitionsFormOpen = true;
+
+            btTransitions.Enabled = false;
+        }
+
+        private void TransitionsForm_FormClosed(object sender, EventArgs e)
+        {
+            if (isTransitionsFormOpen)
+            {
+                isTransitionsFormOpen = false;
+                btTransitions.Enabled = true;
+            }
+        }
+
         #endregion
     }
 }

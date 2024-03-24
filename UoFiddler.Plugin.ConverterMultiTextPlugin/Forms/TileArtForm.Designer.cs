@@ -63,6 +63,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             LandTilesContextMenuStrip = new System.Windows.Forms.ContextMenuStrip(components);
             copyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             tabPageTiles9 = new System.Windows.Forms.TabPage();
+            lbTransitions = new System.Windows.Forms.Label();
             panelImage = new System.Windows.Forms.Panel();
             copyClipbordButton = new System.Windows.Forms.Button();
             lbURbt = new System.Windows.Forms.Label();
@@ -127,7 +128,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             NameLabel = new System.Windows.Forms.ToolStripStatusLabel();
             GraphicLabel = new System.Windows.Forms.ToolStripStatusLabel();
             FlagsLabel = new System.Windows.Forms.ToolStripStatusLabel();
-            lbTransitions = new System.Windows.Forms.Label();
+            panelTransitions = new System.Windows.Forms.Panel();
             ((System.ComponentModel.ISupportInitialize)pictureBoxTileArt).BeginInit();
             ((System.ComponentModel.ISupportInitialize)pictureBoxTileArt2).BeginInit();
             panel1BackGround.SuspendLayout();
@@ -146,6 +147,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)pictureBoxTileArt4).BeginInit();
             StatusStrip.SuspendLayout();
+            panelTransitions.SuspendLayout();
             SuspendLayout();
             // 
             // pictureBoxTileArt
@@ -281,9 +283,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // panel1BackGround
             // 
             panel1BackGround.Controls.Add(pictureBoxTileArt);
-            panel1BackGround.Location = new System.Drawing.Point(22, 147);
+            panel1BackGround.Location = new System.Drawing.Point(6, 147);
             panel1BackGround.Name = "panel1BackGround";
-            panel1BackGround.Size = new System.Drawing.Size(293, 260);
+            panel1BackGround.Size = new System.Drawing.Size(309, 260);
             panel1BackGround.TabIndex = 13;
             // 
             // panel2Backgrund
@@ -359,35 +361,13 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // 
             // tabPageTiles9
             // 
-            tabPageTiles9.Controls.Add(lbTransitions);
-            tabPageTiles9.Controls.Add(panelImage);
-            tabPageTiles9.Controls.Add(copyClipbordButton);
+            tabPageTiles9.Controls.Add(panelTransitions);
             tabPageTiles9.Controls.Add(lbURbt);
             tabPageTiles9.Controls.Add(lbULbt);
             tabPageTiles9.Controls.Add(lbDLbt);
             tabPageTiles9.Controls.Add(lbUUbt);
             tabPageTiles9.Controls.Add(lbLLbt);
             tabPageTiles9.Controls.Add(lbDRbt);
-            tabPageTiles9.Controls.Add(resetButton);
-            tabPageTiles9.Controls.Add(lbLandID);
-            tabPageTiles9.Controls.Add(textboxLandID);
-            tabPageTiles9.Controls.Add(richTextBoxXML);
-            tabPageTiles9.Controls.Add(lbEdgeTo);
-            tabPageTiles9.Controls.Add(lbName);
-            tabPageTiles9.Controls.Add(lbID);
-            tabPageTiles9.Controls.Add(textBoxEdgeTo);
-            tabPageTiles9.Controls.Add(textBoxName);
-            tabPageTiles9.Controls.Add(textBoxId);
-            tabPageTiles9.Controls.Add(GenerateXmlButton);
-            tabPageTiles9.Controls.Add(checkBoxUR);
-            tabPageTiles9.Controls.Add(checkBoxUL);
-            tabPageTiles9.Controls.Add(checkBoxDR);
-            tabPageTiles9.Controls.Add(checkBoxDL);
-            tabPageTiles9.Controls.Add(checkBoxUU);
-            tabPageTiles9.Controls.Add(checkBoxLL);
-            tabPageTiles9.Controls.Add(TextBoxTileArt2);
-            tabPageTiles9.Controls.Add(lpID9);
-            tabPageTiles9.Controls.Add(HexIDTextBox9);
             tabPageTiles9.Controls.Add(panel3Backgrund);
             tabPageTiles9.Controls.Add(panel2Backgrund);
             tabPageTiles9.Controls.Add(btloadArt01);
@@ -410,16 +390,25 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             tabPageTiles9.Text = "Tiles 9";
             tabPageTiles9.UseVisualStyleBackColor = true;
             // 
+            // lbTransitions
+            // 
+            lbTransitions.AutoSize = true;
+            lbTransitions.Location = new System.Drawing.Point(179, 11);
+            lbTransitions.Name = "lbTransitions";
+            lbTransitions.Size = new System.Drawing.Size(84, 15);
+            lbTransitions.TabIndex = 46;
+            lbTransitions.Text = "Transitons List:";
+            // 
             // panelImage
             // 
-            panelImage.Location = new System.Drawing.Point(362, 555);
+            panelImage.Location = new System.Drawing.Point(354, 146);
             panelImage.Name = "panelImage";
             panelImage.Size = new System.Drawing.Size(222, 220);
             panelImage.TabIndex = 45;
             // 
             // copyClipbordButton
             // 
-            copyClipbordButton.Location = new System.Drawing.Point(696, 752);
+            copyClipbordButton.Location = new System.Drawing.Point(688, 343);
             copyClipbordButton.Name = "copyClipbordButton";
             copyClipbordButton.Size = new System.Drawing.Size(100, 23);
             copyClipbordButton.TabIndex = 44;
@@ -489,7 +478,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // 
             // resetButton
             // 
-            resetButton.Location = new System.Drawing.Point(22, 752);
+            resetButton.Location = new System.Drawing.Point(14, 343);
             resetButton.Name = "resetButton";
             resetButton.Size = new System.Drawing.Size(49, 23);
             resetButton.TabIndex = 37;
@@ -500,7 +489,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // lbLandID
             // 
             lbLandID.AutoSize = true;
-            lbLandID.Location = new System.Drawing.Point(590, 441);
+            lbLandID.Location = new System.Drawing.Point(582, 32);
             lbLandID.Name = "lbLandID";
             lbLandID.Size = new System.Drawing.Size(50, 15);
             lbLandID.TabIndex = 36;
@@ -508,7 +497,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // 
             // textboxLandID
             // 
-            textboxLandID.Location = new System.Drawing.Point(590, 465);
+            textboxLandID.Location = new System.Drawing.Point(582, 56);
             textboxLandID.Multiline = true;
             textboxLandID.Name = "textboxLandID";
             textboxLandID.Size = new System.Drawing.Size(100, 310);
@@ -516,7 +505,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // 
             // richTextBoxXML
             // 
-            richTextBoxXML.Location = new System.Drawing.Point(696, 492);
+            richTextBoxXML.Location = new System.Drawing.Point(688, 83);
             richTextBoxXML.Name = "richTextBoxXML";
             richTextBoxXML.Size = new System.Drawing.Size(312, 254);
             richTextBoxXML.TabIndex = 34;
@@ -525,7 +514,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // lbEdgeTo
             // 
             lbEdgeTo.AutoSize = true;
-            lbEdgeTo.Location = new System.Drawing.Point(908, 441);
+            lbEdgeTo.Location = new System.Drawing.Point(900, 32);
             lbEdgeTo.Name = "lbEdgeTo";
             lbEdgeTo.Size = new System.Drawing.Size(51, 15);
             lbEdgeTo.TabIndex = 33;
@@ -534,7 +523,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // lbName
             // 
             lbName.AutoSize = true;
-            lbName.Location = new System.Drawing.Point(802, 441);
+            lbName.Location = new System.Drawing.Point(794, 32);
             lbName.Name = "lbName";
             lbName.Size = new System.Drawing.Size(45, 15);
             lbName.TabIndex = 32;
@@ -543,7 +532,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // lbID
             // 
             lbID.AutoSize = true;
-            lbID.Location = new System.Drawing.Point(696, 441);
+            lbID.Location = new System.Drawing.Point(688, 32);
             lbID.Name = "lbID";
             lbID.Size = new System.Drawing.Size(24, 15);
             lbID.TabIndex = 31;
@@ -551,28 +540,28 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // 
             // textBoxEdgeTo
             // 
-            textBoxEdgeTo.Location = new System.Drawing.Point(908, 465);
+            textBoxEdgeTo.Location = new System.Drawing.Point(900, 56);
             textBoxEdgeTo.Name = "textBoxEdgeTo";
             textBoxEdgeTo.Size = new System.Drawing.Size(100, 23);
             textBoxEdgeTo.TabIndex = 30;
             // 
             // textBoxName
             // 
-            textBoxName.Location = new System.Drawing.Point(802, 465);
+            textBoxName.Location = new System.Drawing.Point(794, 56);
             textBoxName.Name = "textBoxName";
             textBoxName.Size = new System.Drawing.Size(100, 23);
             textBoxName.TabIndex = 28;
             // 
             // textBoxId
             // 
-            textBoxId.Location = new System.Drawing.Point(696, 465);
+            textBoxId.Location = new System.Drawing.Point(688, 56);
             textBoxId.Name = "textBoxId";
             textBoxId.Size = new System.Drawing.Size(100, 23);
             textBoxId.TabIndex = 27;
             // 
             // GenerateXmlButton
             // 
-            GenerateXmlButton.Location = new System.Drawing.Point(933, 752);
+            GenerateXmlButton.Location = new System.Drawing.Point(925, 343);
             GenerateXmlButton.Name = "GenerateXmlButton";
             GenerateXmlButton.Size = new System.Drawing.Size(75, 23);
             GenerateXmlButton.TabIndex = 26;
@@ -583,7 +572,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // checkBoxUR
             // 
             checkBoxUR.AutoSize = true;
-            checkBoxUR.Location = new System.Drawing.Point(363, 530);
+            checkBoxUR.Location = new System.Drawing.Point(355, 121);
             checkBoxUR.Name = "checkBoxUR";
             checkBoxUR.Size = new System.Drawing.Size(75, 19);
             checkBoxUR.TabIndex = 25;
@@ -594,7 +583,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // checkBoxUL
             // 
             checkBoxUL.AutoSize = true;
-            checkBoxUL.Location = new System.Drawing.Point(363, 512);
+            checkBoxUL.Location = new System.Drawing.Point(355, 103);
             checkBoxUL.Name = "checkBoxUL";
             checkBoxUL.Size = new System.Drawing.Size(85, 19);
             checkBoxUL.TabIndex = 24;
@@ -605,7 +594,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // checkBoxDR
             // 
             checkBoxDR.AutoSize = true;
-            checkBoxDR.Location = new System.Drawing.Point(363, 494);
+            checkBoxDR.Location = new System.Drawing.Point(355, 85);
             checkBoxDR.Name = "checkBoxDR";
             checkBoxDR.Size = new System.Drawing.Size(70, 19);
             checkBoxDR.TabIndex = 23;
@@ -616,7 +605,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // checkBoxDL
             // 
             checkBoxDL.AutoSize = true;
-            checkBoxDL.Location = new System.Drawing.Point(363, 476);
+            checkBoxDL.Location = new System.Drawing.Point(355, 67);
             checkBoxDL.Name = "checkBoxDL";
             checkBoxDL.Size = new System.Drawing.Size(82, 19);
             checkBoxDL.TabIndex = 22;
@@ -627,7 +616,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // checkBoxUU
             // 
             checkBoxUU.AutoSize = true;
-            checkBoxUU.Location = new System.Drawing.Point(363, 458);
+            checkBoxUU.Location = new System.Drawing.Point(355, 49);
             checkBoxUU.Name = "checkBoxUU";
             checkBoxUU.Size = new System.Drawing.Size(150, 19);
             checkBoxUU.TabIndex = 21;
@@ -638,7 +627,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // checkBoxLL
             // 
             checkBoxLL.AutoSize = true;
-            checkBoxLL.Location = new System.Drawing.Point(363, 440);
+            checkBoxLL.Location = new System.Drawing.Point(355, 31);
             checkBoxLL.Name = "checkBoxLL";
             checkBoxLL.Size = new System.Drawing.Size(133, 19);
             checkBoxLL.TabIndex = 20;
@@ -648,7 +637,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // 
             // TextBoxTileArt2
             // 
-            TextBoxTileArt2.Location = new System.Drawing.Point(187, 438);
+            TextBoxTileArt2.Location = new System.Drawing.Point(179, 29);
             TextBoxTileArt2.Multiline = true;
             TextBoxTileArt2.Name = "TextBoxTileArt2";
             TextBoxTileArt2.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
@@ -658,7 +647,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // lpID9
             // 
             lpID9.AutoSize = true;
-            lpID9.Location = new System.Drawing.Point(22, 420);
+            lpID9.Location = new System.Drawing.Point(14, 11);
             lpID9.Name = "lpID9";
             lpID9.Size = new System.Drawing.Size(56, 15);
             lpID9.TabIndex = 18;
@@ -666,7 +655,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // 
             // HexIDTextBox9
             // 
-            HexIDTextBox9.Location = new System.Drawing.Point(22, 438);
+            HexIDTextBox9.Location = new System.Drawing.Point(14, 29);
             HexIDTextBox9.Multiline = true;
             HexIDTextBox9.Name = "HexIDTextBox9";
             HexIDTextBox9.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
@@ -1010,9 +999,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // StatusStrip
             // 
             StatusStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { NameLabel, GraphicLabel, FlagsLabel });
-            StatusStrip.Location = new System.Drawing.Point(0, 822);
+            StatusStrip.Location = new System.Drawing.Point(0, 834);
             StatusStrip.Name = "StatusStrip";
-            StatusStrip.Size = new System.Drawing.Size(1073, 22);
+            StatusStrip.Size = new System.Drawing.Size(1066, 22);
             StatusStrip.TabIndex = 16;
             StatusStrip.Text = "StatusStrip";
             // 
@@ -1039,20 +1028,41 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             FlagsLabel.Text = "Flags:";
             FlagsLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
-            // lbTransitions
+            // panelTransitions
             // 
-            lbTransitions.AutoSize = true;
-            lbTransitions.Location = new System.Drawing.Point(187, 420);
-            lbTransitions.Name = "lbTransitions";
-            lbTransitions.Size = new System.Drawing.Size(84, 15);
-            lbTransitions.TabIndex = 46;
-            lbTransitions.Text = "Transitons List:";
+            panelTransitions.Controls.Add(lpID9);
+            panelTransitions.Controls.Add(lbTransitions);
+            panelTransitions.Controls.Add(HexIDTextBox9);
+            panelTransitions.Controls.Add(panelImage);
+            panelTransitions.Controls.Add(TextBoxTileArt2);
+            panelTransitions.Controls.Add(copyClipbordButton);
+            panelTransitions.Controls.Add(checkBoxLL);
+            panelTransitions.Controls.Add(checkBoxUU);
+            panelTransitions.Controls.Add(checkBoxDL);
+            panelTransitions.Controls.Add(checkBoxDR);
+            panelTransitions.Controls.Add(checkBoxUL);
+            panelTransitions.Controls.Add(checkBoxUR);
+            panelTransitions.Controls.Add(GenerateXmlButton);
+            panelTransitions.Controls.Add(resetButton);
+            panelTransitions.Controls.Add(textBoxId);
+            panelTransitions.Controls.Add(lbLandID);
+            panelTransitions.Controls.Add(textBoxName);
+            panelTransitions.Controls.Add(textboxLandID);
+            panelTransitions.Controls.Add(textBoxEdgeTo);
+            panelTransitions.Controls.Add(richTextBoxXML);
+            panelTransitions.Controls.Add(lbID);
+            panelTransitions.Controls.Add(lbEdgeTo);
+            panelTransitions.Controls.Add(lbName);
+            panelTransitions.Location = new System.Drawing.Point(6, 413);
+            panelTransitions.Name = "panelTransitions";
+            panelTransitions.Size = new System.Drawing.Size(1013, 370);
+            panelTransitions.TabIndex = 47;
             // 
             // TileArtForm
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            ClientSize = new System.Drawing.Size(1073, 844);
+            ClientSize = new System.Drawing.Size(1066, 856);
             Controls.Add(StatusStrip);
             Controls.Add(tabControl1);
             FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
@@ -1081,6 +1091,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             ((System.ComponentModel.ISupportInitialize)pictureBoxTileArt4).EndInit();
             StatusStrip.ResumeLayout(false);
             StatusStrip.PerformLayout();
+            panelTransitions.ResumeLayout(false);
+            panelTransitions.PerformLayout();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -1173,5 +1185,6 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private System.Windows.Forms.Button copyClipbordButton;
         private System.Windows.Forms.Panel panelImage;
         private System.Windows.Forms.Label lbTransitions;
+        private System.Windows.Forms.Panel panelTransitions;
     }
 }
