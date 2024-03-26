@@ -4,7 +4,7 @@
 
 UOFiddler based on Ultima SDK it's a tool to view and alter almost every UO 2D client file. Source code is released under the Beerware and Wineware license.
 This is an extended version of UoFiddler that has more maps and more tools, as well as Map Edit, and will be expanded over time to support the Ultima standard 
-version more than the original version. Also, some source codes from older projects that are no longer supported have been integrated.
+version more than the original version. Also, some source codes from older and New projects that are no longer supported have been integrated.
 
 Version : 4.12.3
 - Add Items Image Colors and Update.
