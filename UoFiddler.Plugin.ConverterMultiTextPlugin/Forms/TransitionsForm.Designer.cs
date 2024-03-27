@@ -57,6 +57,21 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             flowLayoutPanelTextures2 = new System.Windows.Forms.FlowLayoutPanel();
             flowLayoutPanelTextures1 = new System.Windows.Forms.FlowLayoutPanel();
             flowLayoutPanelAlphaImages = new System.Windows.Forms.FlowLayoutPanel();
+            textBoxNameTextureA = new System.Windows.Forms.TextBox();
+            lbName = new System.Windows.Forms.Label();
+            lbName2 = new System.Windows.Forms.Label();
+            textBoxNameTextureB = new System.Windows.Forms.TextBox();
+            lbBrushID = new System.Windows.Forms.Label();
+            textBoxBrushNumberA = new System.Windows.Forms.TextBox();
+            lbBrushID2 = new System.Windows.Forms.Label();
+            textBoxBrushNumberB = new System.Windows.Forms.TextBox();
+            lblAlphaName = new System.Windows.Forms.Label();
+            Compteur = new System.Windows.Forms.Label();
+            btnPrevious = new System.Windows.Forms.Button();
+            btnNext = new System.Windows.Forms.Button();
+            lbStartHexadecimal = new System.Windows.Forms.Label();
+            tbStartHexDec = new System.Windows.Forms.TextBox();
+            checkBoxZoom = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)pictureBoxPreview).BeginInit();
             ((System.ComponentModel.ISupportInitialize)pictureBoxLandtile).BeginInit();
             ((System.ComponentModel.ISupportInitialize)trackBarContrast).BeginInit();
@@ -111,7 +126,6 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             pictureBoxPreview.Location = new System.Drawing.Point(729, 30);
             pictureBoxPreview.Name = "pictureBoxPreview";
             pictureBoxPreview.Size = new System.Drawing.Size(256, 256);
-            pictureBoxPreview.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
             pictureBoxPreview.TabIndex = 7;
             pictureBoxPreview.TabStop = false;
             // 
@@ -121,7 +135,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             pictureBoxLandtile.Location = new System.Drawing.Point(729, 292);
             pictureBoxLandtile.Name = "pictureBoxLandtile";
             pictureBoxLandtile.Size = new System.Drawing.Size(256, 256);
-            pictureBoxLandtile.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
+            pictureBoxLandtile.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage;
             pictureBoxLandtile.TabIndex = 8;
             pictureBoxLandtile.TabStop = false;
             // 
@@ -136,13 +150,14 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // 
             // trackBarContrast
             // 
+            trackBarContrast.LargeChange = 1;
             trackBarContrast.Location = new System.Drawing.Point(729, 569);
-            trackBarContrast.Maximum = 100;
+            trackBarContrast.Maximum = 20;
             trackBarContrast.Minimum = 1;
             trackBarContrast.Name = "trackBarContrast";
             trackBarContrast.Size = new System.Drawing.Size(256, 45);
-            trackBarContrast.TabIndex = 10;
-            trackBarContrast.TickFrequency = 10;
+            trackBarContrast.TabIndex = 7;
+            trackBarContrast.TickFrequency = 2;
             trackBarContrast.Value = 1;
             trackBarContrast.Scroll += trackBarContrast_Scroll;
             // 
@@ -216,17 +231,169 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // 
             // flowLayoutPanelAlphaImages
             // 
+            flowLayoutPanelAlphaImages.AutoScroll = true;
             flowLayoutPanelAlphaImages.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             flowLayoutPanelAlphaImages.Location = new System.Drawing.Point(490, 13);
             flowLayoutPanelAlphaImages.Name = "flowLayoutPanelAlphaImages";
             flowLayoutPanelAlphaImages.Size = new System.Drawing.Size(233, 427);
             flowLayoutPanelAlphaImages.TabIndex = 18;
             // 
+            // textBoxNameTextureA
+            // 
+            textBoxNameTextureA.Location = new System.Drawing.Point(75, 501);
+            textBoxNameTextureA.Name = "textBoxNameTextureA";
+            textBoxNameTextureA.Size = new System.Drawing.Size(100, 23);
+            textBoxNameTextureA.TabIndex = 19;
+            textBoxNameTextureA.TextChanged += textBoxNameTextureA_TextChanged;
+            // 
+            // lbName
+            // 
+            lbName.AutoSize = true;
+            lbName.Location = new System.Drawing.Point(104, 483);
+            lbName.Name = "lbName";
+            lbName.Size = new System.Drawing.Size(45, 15);
+            lbName.TabIndex = 20;
+            lbName.Text = "Name :";
+            // 
+            // lbName2
+            // 
+            lbName2.AutoSize = true;
+            lbName2.Location = new System.Drawing.Point(343, 483);
+            lbName2.Name = "lbName2";
+            lbName2.Size = new System.Drawing.Size(45, 15);
+            lbName2.TabIndex = 22;
+            lbName2.Text = "Name :";
+            // 
+            // textBoxNameTextureB
+            // 
+            textBoxNameTextureB.Location = new System.Drawing.Point(314, 501);
+            textBoxNameTextureB.Name = "textBoxNameTextureB";
+            textBoxNameTextureB.Size = new System.Drawing.Size(100, 23);
+            textBoxNameTextureB.TabIndex = 21;
+            textBoxNameTextureB.TextChanged += textBoxNameTextureB_TextChanged;
+            // 
+            // lbBrushID
+            // 
+            lbBrushID.AutoSize = true;
+            lbBrushID.Location = new System.Drawing.Point(104, 533);
+            lbBrushID.Name = "lbBrushID";
+            lbBrushID.Size = new System.Drawing.Size(48, 15);
+            lbBrushID.TabIndex = 24;
+            lbBrushID.Text = "BrushID";
+            // 
+            // textBoxBrushNumberA
+            // 
+            textBoxBrushNumberA.Location = new System.Drawing.Point(75, 551);
+            textBoxBrushNumberA.Name = "textBoxBrushNumberA";
+            textBoxBrushNumberA.Size = new System.Drawing.Size(100, 23);
+            textBoxBrushNumberA.TabIndex = 23;
+            textBoxBrushNumberA.TextChanged += textBoxBrushNumberA_TextChanged;
+            // 
+            // lbBrushID2
+            // 
+            lbBrushID2.AutoSize = true;
+            lbBrushID2.Location = new System.Drawing.Point(343, 533);
+            lbBrushID2.Name = "lbBrushID2";
+            lbBrushID2.Size = new System.Drawing.Size(48, 15);
+            lbBrushID2.TabIndex = 26;
+            lbBrushID2.Text = "BrushID";
+            // 
+            // textBoxBrushNumberB
+            // 
+            textBoxBrushNumberB.Location = new System.Drawing.Point(314, 551);
+            textBoxBrushNumberB.Name = "textBoxBrushNumberB";
+            textBoxBrushNumberB.Size = new System.Drawing.Size(100, 23);
+            textBoxBrushNumberB.TabIndex = 25;
+            textBoxBrushNumberB.TextChanged += textBoxBrushNumberB_TextChanged;
+            // 
+            // lblAlphaName
+            // 
+            lblAlphaName.AutoSize = true;
+            lblAlphaName.Location = new System.Drawing.Point(1005, 30);
+            lblAlphaName.Name = "lblAlphaName";
+            lblAlphaName.Size = new System.Drawing.Size(79, 15);
+            lblAlphaName.TabIndex = 27;
+            lblAlphaName.Text = "Alpha Name :";
+            // 
+            // Compteur
+            // 
+            Compteur.AutoSize = true;
+            Compteur.Location = new System.Drawing.Point(1005, 76);
+            Compteur.Name = "Compteur";
+            Compteur.Size = new System.Drawing.Size(56, 15);
+            Compteur.TabIndex = 28;
+            Compteur.Text = "Counter :";
+            // 
+            // btnPrevious
+            // 
+            btnPrevious.Location = new System.Drawing.Point(1005, 119);
+            btnPrevious.Name = "btnPrevious";
+            btnPrevious.Size = new System.Drawing.Size(75, 23);
+            btnPrevious.TabIndex = 29;
+            btnPrevious.Text = "Previous";
+            btnPrevious.UseVisualStyleBackColor = true;
+            btnPrevious.Click += btnPrevious_Click;
+            // 
+            // btnNext
+            // 
+            btnNext.Location = new System.Drawing.Point(1005, 157);
+            btnNext.Name = "btnNext";
+            btnNext.Size = new System.Drawing.Size(75, 23);
+            btnNext.TabIndex = 30;
+            btnNext.Text = "Next";
+            btnNext.UseVisualStyleBackColor = true;
+            btnNext.Click += btnNext_Click;
+            // 
+            // lbStartHexadecimal
+            // 
+            lbStartHexadecimal.AutoSize = true;
+            lbStartHexadecimal.Location = new System.Drawing.Point(1005, 226);
+            lbStartHexadecimal.Name = "lbStartHexadecimal";
+            lbStartHexadecimal.Size = new System.Drawing.Size(133, 15);
+            lbStartHexadecimal.TabIndex = 31;
+            lbStartHexadecimal.Text = "Start Hexadecimal Ox....";
+            // 
+            // tbStartHexDec
+            // 
+            tbStartHexDec.Location = new System.Drawing.Point(1005, 253);
+            tbStartHexDec.Name = "tbStartHexDec";
+            tbStartHexDec.Size = new System.Drawing.Size(100, 23);
+            tbStartHexDec.TabIndex = 32;
+            tbStartHexDec.TextChanged += StartHexDec_TextChanged;
+            // 
+            // checkBoxZoom
+            // 
+            checkBoxZoom.AutoSize = true;
+            checkBoxZoom.Checked = true;
+            checkBoxZoom.CheckState = System.Windows.Forms.CheckState.Checked;
+            checkBoxZoom.Location = new System.Drawing.Point(1005, 195);
+            checkBoxZoom.Name = "checkBoxZoom";
+            checkBoxZoom.Size = new System.Drawing.Size(137, 19);
+            checkBoxZoom.TabIndex = 33;
+            checkBoxZoom.Text = "Zoom / Centerimage";
+            checkBoxZoom.UseVisualStyleBackColor = true;
+            checkBoxZoom.CheckedChanged += checkBoxZoom_CheckedChanged;
+            // 
             // TransitionsForm
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            ClientSize = new System.Drawing.Size(1005, 691);
+            ClientSize = new System.Drawing.Size(1178, 691);
+            Controls.Add(checkBoxZoom);
+            Controls.Add(tbStartHexDec);
+            Controls.Add(lbStartHexadecimal);
+            Controls.Add(btnNext);
+            Controls.Add(btnPrevious);
+            Controls.Add(Compteur);
+            Controls.Add(lblAlphaName);
+            Controls.Add(lbBrushID2);
+            Controls.Add(textBoxBrushNumberB);
+            Controls.Add(lbBrushID);
+            Controls.Add(textBoxBrushNumberA);
+            Controls.Add(lbName2);
+            Controls.Add(textBoxNameTextureB);
+            Controls.Add(lbName);
+            Controls.Add(textBoxNameTextureA);
             Controls.Add(flowLayoutPanelAlphaImages);
             Controls.Add(flowLayoutPanelTextures1);
             Controls.Add(flowLayoutPanelTextures2);
@@ -275,5 +442,20 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private System.Windows.Forms.FlowLayoutPanel flowLayoutPanelTextures2;
         private System.Windows.Forms.FlowLayoutPanel flowLayoutPanelTextures1;
         private System.Windows.Forms.FlowLayoutPanel flowLayoutPanelAlphaImages;
+        private System.Windows.Forms.TextBox textBoxNameTextureA;
+        private System.Windows.Forms.Label lbName;
+        private System.Windows.Forms.Label lbName2;
+        private System.Windows.Forms.TextBox textBoxNameTextureB;
+        private System.Windows.Forms.Label lbBrushID;
+        private System.Windows.Forms.TextBox textBoxBrushNumberA;
+        private System.Windows.Forms.Label lbBrushID2;
+        private System.Windows.Forms.TextBox textBoxBrushNumberB;
+        private System.Windows.Forms.Label lblAlphaName;
+        private System.Windows.Forms.Label Compteur;
+        private System.Windows.Forms.Button btnPrevious;
+        private System.Windows.Forms.Button btnNext;
+        private System.Windows.Forms.Label lbStartHexadecimal;
+        private System.Windows.Forms.TextBox tbStartHexDec;
+        private System.Windows.Forms.CheckBox checkBoxZoom;
     }
 }

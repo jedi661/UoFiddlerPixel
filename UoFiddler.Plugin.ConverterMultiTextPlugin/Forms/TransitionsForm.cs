@@ -19,25 +19,46 @@ using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
+using System.Reflection.Emit;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
+using System.Runtime.Intrinsics.X86;
+using UoFiddler.Plugin.ConverterMultiTextPlugin.Class;
 
 namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 {
     public partial class TransitionsForm : Form
     {
+        // Declare textBoxValue as a member variable
+        private XMLgenerator xmlGenerator = new XMLgenerator();
         private List<Image> textures1 = new List<Image>();
         private List<Image> textures2 = new List<Image>();
         private List<Image> alphaImages = new List<Image>();
+        private List<string> alphaImageFileNames = new List<string>();
+        private List<string> texture1FilePaths = new List<string>();
+        private List<string> texture2FilePaths = new List<string>();
         private double gamma = 0.5; // Default value for gamma
         private double blurValue = 0.5; // Default value for blur
         private FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog();
+        // Add these member variables to track the index of the currently displayed alpha image
+        private int currentAlphaIndex = 0;
+        private int totalAlphaImages = 0;
+        private string nameTextureA;
+        private string brushIdA;
+        private string nameTextureB;
+        private string brushIdB;
 
         public TransitionsForm()
         {
             InitializeComponent();
 
+            // Set the SizeMode property to Zoom when the form is initialized
+            pictureBoxPreview.SizeMode = PictureBoxSizeMode.Zoom;
+            pictureBoxLandtile.SizeMode = PictureBoxSizeMode.Zoom;
+            totalAlphaImages = alphaImages.Count;
+            xmlGenerator = new XMLgenerator();
         }
 
         #region UpdatePictureBoxes
@@ -106,16 +127,75 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         }
         #endregion
 
+
+        // Event handler for the "Back" button
+        private void btnPrevious_Click(object sender, EventArgs e)
+        {
+            // Decrement the index of the currently displayed alpha image
+            currentAlphaIndex--;
+
+            // Check if index is less than zero, revert to last frame if so
+            if (currentAlphaIndex < 0)
+            {
+                currentAlphaIndex = alphaImages.Count - 1;
+            }
+
+            // Update preview with matching alpha image
+            UpdatePreview();
+            UpdateAlphaNameLabel(); // Update alpha name label
+            // Update the “counter” label
+            UpdateCounterLabel();
+
+        }
+
+        // Event handler for the "Next" button
+        private void btnNext_Click(object sender, EventArgs e)
+        {
+            // Increment index of currently displayed alpha image
+            currentAlphaIndex++;
+
+            // Check if index exceeds total images
+            if (currentAlphaIndex >= alphaImages.Count)
+            {
+                currentAlphaIndex = 0; // Return to top of list
+            }
+
+            // Update preview with matching alpha image
+            UpdatePreview();
+            UpdateAlphaNameLabel(); // Update alpha name label
+            // Update the “counter” label
+            UpdateCounterLabel();
+        }
+
+
+        // Method to update the label with the name of the alpha corresponding to the current index
+        private void UpdateAlphaNameLabel()
+        {
+            // Check if the index is valid
+            if (currentAlphaIndex >= 0 && currentAlphaIndex < alphaImageFileNames.Count)
+            {
+                // Get alpha file name from list
+                string alphaFileName = Path.GetFileName(alphaImageFileNames[currentAlphaIndex]);
+
+                // Show alpha name in label
+                lblAlphaName.Text = alphaFileName;
+            }
+        }
+
         #region UpdatePreview
+        // Update preview with alpha image corresponding to current index
         private void UpdatePreview()
         {
-            if (alphaImages.Count > 0 && textures1.Count > 0 && textures2.Count > 0)
+            // Check if alpha images are available
+            if (alphaImages.Count > 0)
             {
+                // Get the alpha image corresponding to the current index
+                Image alphaImage = alphaImages[currentAlphaIndex];
+
+                // Generate the first transition image with the selected alpha image
+                // Also use the other textures as you do now
                 Image texture1 = textures1[0];
                 Image texture2 = textures2[0];
-                Image alphaImage = alphaImages[0];
-
-                // Generate the first transition image
                 Bitmap transitionImage = GenerateTransition(texture1, texture2, alphaImage);
 
                 // Show first transition image in pictureBoxPreview
@@ -176,45 +256,6 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 
             return transitionImage;
         }
-
-        /*private Bitmap GenerateTransition(Image texture1, Image texture2, Image alphaImage)
-        {
-            try
-            {
-                Bitmap blurredAlphaImage = ApplyGamma(ApplyGaussianBlur((Bitmap)alphaImage, blurValue), gamma);
-                Bitmap transitionImage = new Bitmap(texture1.Width, texture1.Height);
-
-                for (int x = 0; x < texture1.Width; x++)
-                {
-                    for (int y = 0; y < texture1.Height; y++)
-                    {
-                        Color alphaPixel = blurredAlphaImage.GetPixel(x, y);
-                        float alpha = alphaPixel.GetBrightness();
-
-                        Color texture1Pixel = ((Bitmap)texture1).GetPixel(x, y);
-                        Color texture2Pixel = ((Bitmap)texture2).GetPixel(x, y);
-
-                        int newRed = (int)(alpha * texture1Pixel.R + (1 - alpha) * texture2Pixel.R);
-                        int newGreen = (int)(alpha * texture1Pixel.G + (1 - alpha) * texture2Pixel.G);
-                        int newBlue = (int)(alpha * texture1Pixel.B + (1 - alpha) * texture2Pixel.B);
-
-                        newRed = Math.Max(0, Math.Min(255, newRed));
-                        newGreen = Math.Max(0, Math.Min(255, newGreen));
-                        newBlue = Math.Max(0, Math.Min(255, newBlue));
-
-                        transitionImage.SetPixel(x, y, Color.FromArgb(newRed, newGreen, newBlue));
-                    }
-                }
-
-                return transitionImage;
-            }
-            catch (Exception ex)
-            {
-                // Here you can add appropriate error handling code.
-                MessageBox.Show("An error has occurred: " + ex.Message);
-                return null;
-            }
-        }*/
         #endregion
 
         #region Bitmap ApplyGaussianBlur
@@ -262,18 +303,22 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             if (openFileDialog.ShowDialog() == DialogResult.OK)
             {
                 textures1.Clear();
+                texture1FilePaths.Clear(); // Clear the list before adding new paths
+
                 foreach (string imagePath in openFileDialog.FileNames)
                 {
                     try
                     {
                         Image texture1 = Image.FromFile(imagePath);
                         textures1.Add(texture1);
+                        texture1FilePaths.Add(imagePath); // Add the file path to the list
                     }
                     catch (Exception ex)
                     {
                         MessageBox.Show("An error occurred while loading the image : " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
                 }
+
                 UpdatePictureBoxes();
                 UpdatePreview();
             }
@@ -290,18 +335,22 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             if (openFileDialog.ShowDialog() == DialogResult.OK)
             {
                 textures2.Clear();
+                texture2FilePaths.Clear(); // Clear the list before adding new paths
+
                 foreach (string imagePath in openFileDialog.FileNames)
                 {
                     try
                     {
                         Image texture2 = Image.FromFile(imagePath);
                         textures2.Add(texture2);
+                        texture2FilePaths.Add(imagePath); // Add the file path to the list
                     }
                     catch (Exception ex)
                     {
                         MessageBox.Show("An error occurred while loading the image : " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
                 }
+
                 UpdatePictureBoxes();
                 UpdatePreview();
             }
@@ -320,13 +369,21 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 try
                 {
                     alphaImages.Clear();
+                    alphaImageFileNames.Clear(); // Added to empty filename list
+
                     string[] alphaFiles = Directory.GetFiles(folderPath, "*.png");
 
                     foreach (string filePath in alphaFiles)
                     {
                         Image alphaImage = Image.FromFile(filePath);
                         alphaImages.Add(alphaImage);
+
+                        // Add file name to list
+                        alphaImageFileNames.Add(filePath);
                     }
+
+                    // Reset the index of the currently displayed alpha image to zero
+                    currentAlphaIndex = 0;
 
                     MessageBox.Show($"Loading successful : {alphaImages.Count} alpha images loaded.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
@@ -336,9 +393,19 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 }
                 UpdatePictureBoxes();
                 UpdatePreview();
+                UpdateAlphaNameLabel(); // Update alpha name label
+                UpdateCounterLabel();   // Update counter
             }
         }
         #endregion
+
+        // Method to update the "counter" label with the current number of the alpha image
+        private void UpdateCounterLabel()
+        {
+            int currentNumber = currentAlphaIndex + 1; // Add 1 because indices start at 0
+            int totalNumber = alphaImages.Count;
+            Compteur.Text = $"{currentNumber}/{totalNumber}";
+        }
 
         #region btnGenerateTransition
         private void btnGenerateTransition_Click(object sender, EventArgs e)
@@ -351,7 +418,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 
             if (folderBrowserDialog.ShowDialog() == DialogResult.OK)
             {
+                string outputPath = folderBrowserDialog.SelectedPath; // Use the user-selected path
+
                 int alphaIndex = 0;
+
+                // Convert initial ID to integer
+                int initialID = Convert.ToInt32(XMLgenerator.InitialLandTypeId, 16);
 
                 foreach (Image alphaImage in alphaImages)
                 {
@@ -360,40 +432,70 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                     Bitmap transitionImage = GenerateTransition(texture1, texture2, alphaImage);
 
                     // Save images without rotation
-                    string transitionFileName = Path.Combine(folderBrowserDialog.SelectedPath, $"Transition_{alphaIndex + 1}.bmp");
+                    string transitionFileName = Path.Combine(outputPath, $"0x{initialID.ToString("X")}.bmp");
                     transitionImage.Save(transitionFileName, ImageFormat.Bmp);
 
                     // Preview the transition
                     Image previewImage = RotateAndResizeImageForPreview(transitionImage, 45);
 
                     // Save images with 45 degree rotation and resized
-                    string rotatedTransitionFileName = Path.Combine(folderBrowserDialog.SelectedPath, $"RotatedTransition_{alphaIndex + 1}.bmp");
+                    string rotatedTransitionFileName = Path.Combine(outputPath, $"RotatedTransition_{alphaIndex + 1}.bmp");
                     previewImage.Save(rotatedTransitionFileName, ImageFormat.Bmp);
 
+                    // Increment initial ID for next transition
+                    initialID++;
+
+                    // Increment alpha image index
                     alphaIndex++;
                 }
 
+                // Create an instance of the XMLgenerator class
+                XMLgenerator xmlGenerator = new XMLgenerator();
+
+                // Set the InitialLandTypeId property to tbStartHexDec.Text
+                XMLgenerator.InitialLandTypeId = tbStartHexDec.Text;
+
+                // Retrieve TextBox values
+                string nameTextureA = textBoxNameTextureA.Text;
+                string nameTextureB = textBoxNameTextureB.Text;
+                string brushIdA = textBoxBrushNumberA.Text;
+                string brushIdB = textBoxBrushNumberB.Text;
+
+
+
+                // Call GenerateXML with all necessary values
+                xmlGenerator.GenerateXML(texture1FilePaths, texture2FilePaths, alphaImageFileNames, outputPath, nameTextureA, nameTextureB, brushIdA, brushIdB);
+
                 MessageBox.Show("Generation complete.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
-                // Empty lists
+                // Reset lists and controls
                 textures1.Clear();
                 textures2.Clear();
                 alphaImages.Clear();
 
-                // Clear PictureBoxes
                 pictureBoxTexture1.Image = null;
                 pictureBoxTexture2.Image = null;
                 pictureBoxAlpha1.Image = null;
                 pictureBoxPreview.Image = null;
                 pictureBoxLandtile.Image = null;
+                tbStartHexDec.Text = null;
 
-                // Clear controls from FlowLayoutPanels
                 flowLayoutPanelTextures1.Controls.Clear();
                 flowLayoutPanelTextures2.Controls.Clear();
                 flowLayoutPanelAlphaImages.Controls.Clear();
             }
         }
         #endregion
+
+        private void StartHexDec_TextChanged(object sender, EventArgs e)
+        {
+            string newText = tbStartHexDec.Text.Trim(); // Get the text from TextBox1 by removing whitespace at the beginning and end
+            if (!string.IsNullOrEmpty(newText))
+            {
+                // Update the ID of the Land types rows in the XML by accessing the InitialLandTypeId property of the XMLgenerator instance
+                XMLgenerator.InitialLandTypeId = newText;
+            }
+        }
 
         #region BlurFilter Class
         // Definition of BlurFilter class for Gaussian blur
@@ -482,6 +584,56 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 return kernel;
             }
             #endregion
+        }
+        #endregion
+
+        #region textBoxNameTextureA_TextChanged
+        private void textBoxNameTextureA_TextChanged(object sender, EventArgs e)
+        {
+            // Get the text from the TextBox and assign it to nameTextureA
+            nameTextureA = textBoxNameTextureA.Text;
+        }
+        #endregion
+
+        #region textBoxNameTextureB_TextChanged
+        private void textBoxNameTextureB_TextChanged(object sender, EventArgs e)
+        {
+            // Get the text from the TextBox and assign it to nameTextureB
+            nameTextureB = textBoxNameTextureB.Text;
+        }
+        #endregion
+
+        #region textBoxBrushNumberA_TextChanged
+        private void textBoxBrushNumberA_TextChanged(object sender, EventArgs e)
+        {
+            // Get the text from the TextBox and assign it to brushIdA
+            brushIdA = textBoxBrushNumberA.Text;
+        }
+        #endregion
+
+        #region textBoxBrushNumberB_TextChanged
+        private void textBoxBrushNumberB_TextChanged(object sender, EventArgs e)
+        {
+            // Get the text from the TextBox and assign it to brushIdB
+            brushIdB = textBoxBrushNumberB.Text;
+        }
+        #endregion
+
+        #region checkBoxZoom_CheckedChanged
+        private void checkBoxZoom_CheckedChanged(object sender, EventArgs e)
+        {
+            if (checkBoxZoom.Checked)
+            {
+                // Set the SizeMode property to Zoom if the checkbox is checked
+                pictureBoxPreview.SizeMode = PictureBoxSizeMode.Zoom;
+                pictureBoxLandtile.SizeMode = PictureBoxSizeMode.Zoom;
+            }
+            else
+            {
+                // Set the SizeMode property to Normal if the checkbox is unchecked
+                pictureBoxPreview.SizeMode = PictureBoxSizeMode.CenterImage;
+                pictureBoxLandtile.SizeMode = PictureBoxSizeMode.CenterImage;
+            }
         }
         #endregion
     }
