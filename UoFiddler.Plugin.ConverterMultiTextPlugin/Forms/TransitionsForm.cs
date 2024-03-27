@@ -176,6 +176,45 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 
             return transitionImage;
         }
+
+        /*private Bitmap GenerateTransition(Image texture1, Image texture2, Image alphaImage)
+        {
+            try
+            {
+                Bitmap blurredAlphaImage = ApplyGamma(ApplyGaussianBlur((Bitmap)alphaImage, blurValue), gamma);
+                Bitmap transitionImage = new Bitmap(texture1.Width, texture1.Height);
+
+                for (int x = 0; x < texture1.Width; x++)
+                {
+                    for (int y = 0; y < texture1.Height; y++)
+                    {
+                        Color alphaPixel = blurredAlphaImage.GetPixel(x, y);
+                        float alpha = alphaPixel.GetBrightness();
+
+                        Color texture1Pixel = ((Bitmap)texture1).GetPixel(x, y);
+                        Color texture2Pixel = ((Bitmap)texture2).GetPixel(x, y);
+
+                        int newRed = (int)(alpha * texture1Pixel.R + (1 - alpha) * texture2Pixel.R);
+                        int newGreen = (int)(alpha * texture1Pixel.G + (1 - alpha) * texture2Pixel.G);
+                        int newBlue = (int)(alpha * texture1Pixel.B + (1 - alpha) * texture2Pixel.B);
+
+                        newRed = Math.Max(0, Math.Min(255, newRed));
+                        newGreen = Math.Max(0, Math.Min(255, newGreen));
+                        newBlue = Math.Max(0, Math.Min(255, newBlue));
+
+                        transitionImage.SetPixel(x, y, Color.FromArgb(newRed, newGreen, newBlue));
+                    }
+                }
+
+                return transitionImage;
+            }
+            catch (Exception ex)
+            {
+                // Here you can add appropriate error handling code.
+                MessageBox.Show("An error has occurred: " + ex.Message);
+                return null;
+            }
+        }*/
         #endregion
 
         #region Bitmap ApplyGaussianBlur

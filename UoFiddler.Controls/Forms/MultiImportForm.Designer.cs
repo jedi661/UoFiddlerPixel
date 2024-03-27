@@ -39,78 +39,107 @@ namespace UoFiddler.Controls.Forms
         /// </summary>
         private void InitializeComponent()
         {
-            this.importTypeComboBox = new System.Windows.Forms.ComboBox();
-            this.filenameTextBox = new System.Windows.Forms.TextBox();
-            this.button1 = new System.Windows.Forms.Button();
-            this.importButton = new System.Windows.Forms.Button();
-            this.SuspendLayout();
+            importTypeComboBox = new System.Windows.Forms.ComboBox();
+            filenameTextBox = new System.Windows.Forms.TextBox();
+            button1 = new System.Windows.Forms.Button();
+            importButton = new System.Windows.Forms.Button();
+            richTextBoxFile = new System.Windows.Forms.RichTextBox();
+            btOnClickConvert = new System.Windows.Forms.Button();
+            checkBoxShowASCII = new System.Windows.Forms.CheckBox();
+            SuspendLayout();
             // 
             // importTypeComboBox
             // 
-            this.importTypeComboBox.FormattingEnabled = true;
-            this.importTypeComboBox.Items.AddRange(new object[] {
-            "Txt file",
-            "UOA file",
-            "UOA Binary file",
-            "WSC file",
-            "CSV (punt\'s multi tool)"});
-            this.importTypeComboBox.Location = new System.Drawing.Point(13, 12);
-            this.importTypeComboBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.importTypeComboBox.Name = "importTypeComboBox";
-            this.importTypeComboBox.Size = new System.Drawing.Size(178, 23);
-            this.importTypeComboBox.TabIndex = 0;
+            importTypeComboBox.FormattingEnabled = true;
+            importTypeComboBox.Items.AddRange(new object[] { "Txt file", "UOA file", "UOA Binary file", "WSC file", "CSV (punt's multi tool)" });
+            importTypeComboBox.Location = new System.Drawing.Point(13, 12);
+            importTypeComboBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            importTypeComboBox.Name = "importTypeComboBox";
+            importTypeComboBox.Size = new System.Drawing.Size(178, 23);
+            importTypeComboBox.TabIndex = 0;
             // 
             // filenameTextBox
             // 
-            this.filenameTextBox.Location = new System.Drawing.Point(13, 42);
-            this.filenameTextBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.filenameTextBox.Name = "filenameTextBox";
-            this.filenameTextBox.Size = new System.Drawing.Size(275, 23);
-            this.filenameTextBox.TabIndex = 2;
+            filenameTextBox.Location = new System.Drawing.Point(13, 42);
+            filenameTextBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            filenameTextBox.Name = "filenameTextBox";
+            filenameTextBox.Size = new System.Drawing.Size(352, 23);
+            filenameTextBox.TabIndex = 2;
             // 
             // button1
             // 
-            this.button1.AutoSize = true;
-            this.button1.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.button1.Location = new System.Drawing.Point(296, 42);
-            this.button1.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(26, 25);
-            this.button1.TabIndex = 3;
-            this.button1.Text = "...";
-            this.button1.UseVisualStyleBackColor = true;
-            this.button1.Click += new System.EventHandler(this.OnClickBrowse);
+            button1.AutoSize = true;
+            button1.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            button1.Location = new System.Drawing.Point(373, 40);
+            button1.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            button1.Name = "button1";
+            button1.Size = new System.Drawing.Size(26, 25);
+            button1.TabIndex = 3;
+            button1.Text = "...";
+            button1.UseVisualStyleBackColor = true;
+            button1.Click += OnClickBrowse;
             // 
             // importButton
             // 
-            this.importButton.Location = new System.Drawing.Point(234, 72);
-            this.importButton.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.importButton.Name = "importButton";
-            this.importButton.Size = new System.Drawing.Size(88, 27);
-            this.importButton.TabIndex = 4;
-            this.importButton.Text = "Import";
-            this.importButton.UseVisualStyleBackColor = true;
-            this.importButton.Click += new System.EventHandler(this.OnClickImport);
+            importButton.Location = new System.Drawing.Point(311, 70);
+            importButton.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            importButton.Name = "importButton";
+            importButton.Size = new System.Drawing.Size(88, 27);
+            importButton.TabIndex = 4;
+            importButton.Text = "Import";
+            importButton.UseVisualStyleBackColor = true;
+            importButton.Click += OnClickImport;
+            // 
+            // richTextBoxFile
+            // 
+            richTextBoxFile.Location = new System.Drawing.Point(13, 110);
+            richTextBoxFile.Name = "richTextBoxFile";
+            richTextBoxFile.Size = new System.Drawing.Size(387, 310);
+            richTextBoxFile.TabIndex = 5;
+            richTextBoxFile.Text = "";
+            // 
+            // btOnClickConvert
+            // 
+            btOnClickConvert.Location = new System.Drawing.Point(13, 74);
+            btOnClickConvert.Name = "btOnClickConvert";
+            btOnClickConvert.Size = new System.Drawing.Size(75, 23);
+            btOnClickConvert.TabIndex = 6;
+            btOnClickConvert.Text = "Convert";
+            btOnClickConvert.UseVisualStyleBackColor = true;
+            btOnClickConvert.Click += OnClickConvert;
+            // 
+            // checkBoxShowASCII
+            // 
+            checkBoxShowASCII.AutoSize = true;
+            checkBoxShowASCII.Location = new System.Drawing.Point(96, 75);
+            checkBoxShowASCII.Name = "checkBoxShowASCII";
+            checkBoxShowASCII.Size = new System.Drawing.Size(95, 19);
+            checkBoxShowASCII.TabIndex = 7;
+            checkBoxShowASCII.Text = "Ascii / Binare";
+            checkBoxShowASCII.UseVisualStyleBackColor = true;
+            checkBoxShowASCII.CheckedChanged += checkBoxShowASCII_CheckedChanged;
             // 
             // MultiImportForm
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(337, 109);
-            this.Controls.Add(this.importButton);
-            this.Controls.Add(this.button1);
-            this.Controls.Add(this.filenameTextBox);
-            this.Controls.Add(this.importTypeComboBox);
-            this.DoubleBuffered = true;
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow;
-            this.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.Name = "MultiImportForm";
-            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
-            this.Text = "Multi Import";
-            this.TopMost = true;
-            this.ResumeLayout(false);
-            this.PerformLayout();
-
+            AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
+            AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            ClientSize = new System.Drawing.Size(412, 445);
+            Controls.Add(checkBoxShowASCII);
+            Controls.Add(btOnClickConvert);
+            Controls.Add(richTextBoxFile);
+            Controls.Add(importButton);
+            Controls.Add(button1);
+            Controls.Add(filenameTextBox);
+            Controls.Add(importTypeComboBox);
+            DoubleBuffered = true;
+            FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow;
+            Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            Name = "MultiImportForm";
+            StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
+            Text = "Multi Import";
+            TopMost = true;
+            ResumeLayout(false);
+            PerformLayout();
         }
 
         #endregion
@@ -119,5 +148,8 @@ namespace UoFiddler.Controls.Forms
         private System.Windows.Forms.Button importButton;
         private System.Windows.Forms.ComboBox importTypeComboBox;
         private System.Windows.Forms.TextBox filenameTextBox;
+        private System.Windows.Forms.RichTextBox richTextBoxFile;
+        private System.Windows.Forms.Button btOnClickConvert;
+        private System.Windows.Forms.CheckBox checkBoxShowASCII;
     }
 }
