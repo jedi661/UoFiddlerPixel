@@ -72,6 +72,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             lbStartHexadecimal = new System.Windows.Forms.Label();
             tbStartHexDec = new System.Windows.Forms.TextBox();
             checkBoxZoom = new System.Windows.Forms.CheckBox();
+            buttonOpenTempGrafic = new System.Windows.Forms.Button();
+            tbDir = new System.Windows.Forms.TextBox();
+            btDir = new System.Windows.Forms.Button();
+            lbDir = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)pictureBoxPreview).BeginInit();
             ((System.ComponentModel.ISupportInitialize)pictureBoxLandtile).BeginInit();
             ((System.ComponentModel.ISupportInitialize)trackBarContrast).BeginInit();
@@ -165,7 +169,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // 
             btnGenerateTransition.Location = new System.Drawing.Point(729, 656);
             btnGenerateTransition.Name = "btnGenerateTransition";
-            btnGenerateTransition.Size = new System.Drawing.Size(256, 23);
+            btnGenerateTransition.Size = new System.Drawing.Size(175, 23);
             btnGenerateTransition.TabIndex = 11;
             btnGenerateTransition.Text = "Generate transitions";
             btnGenerateTransition.UseVisualStyleBackColor = true;
@@ -374,11 +378,51 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             checkBoxZoom.UseVisualStyleBackColor = true;
             checkBoxZoom.CheckedChanged += checkBoxZoom_CheckedChanged;
             // 
+            // buttonOpenTempGrafic
+            // 
+            buttonOpenTempGrafic.Location = new System.Drawing.Point(910, 656);
+            buttonOpenTempGrafic.Name = "buttonOpenTempGrafic";
+            buttonOpenTempGrafic.Size = new System.Drawing.Size(75, 23);
+            buttonOpenTempGrafic.TabIndex = 34;
+            buttonOpenTempGrafic.Text = "Open Dir";
+            buttonOpenTempGrafic.UseVisualStyleBackColor = true;
+            buttonOpenTempGrafic.Click += buttonOpenTempGrafic_Click;
+            // 
+            // tbDir
+            // 
+            tbDir.Location = new System.Drawing.Point(343, 656);
+            tbDir.Name = "tbDir";
+            tbDir.Size = new System.Drawing.Size(240, 23);
+            tbDir.TabIndex = 35;
+            // 
+            // btDir
+            // 
+            btDir.Location = new System.Drawing.Point(586, 656);
+            btDir.Name = "btDir";
+            btDir.Size = new System.Drawing.Size(141, 23);
+            btDir.TabIndex = 36;
+            btDir.Text = "Select directory / or not";
+            btDir.UseVisualStyleBackColor = true;
+            btDir.Click += btDir_Click;
+            // 
+            // lbDir
+            // 
+            lbDir.AutoSize = true;
+            lbDir.Location = new System.Drawing.Point(343, 635);
+            lbDir.Name = "lbDir";
+            lbDir.Size = new System.Drawing.Size(224, 15);
+            lbDir.TabIndex = 37;
+            lbDir.Text = "Directory Set otherwise default directory :";
+            // 
             // TransitionsForm
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             ClientSize = new System.Drawing.Size(1178, 691);
+            Controls.Add(lbDir);
+            Controls.Add(btDir);
+            Controls.Add(tbDir);
+            Controls.Add(buttonOpenTempGrafic);
             Controls.Add(checkBoxZoom);
             Controls.Add(tbStartHexDec);
             Controls.Add(lbStartHexadecimal);
@@ -457,5 +501,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private System.Windows.Forms.Label lbStartHexadecimal;
         private System.Windows.Forms.TextBox tbStartHexDec;
         private System.Windows.Forms.CheckBox checkBoxZoom;
+        private System.Windows.Forms.Button buttonOpenTempGrafic;
+        private System.Windows.Forms.TextBox tbDir;
+        private System.Windows.Forms.Button btDir;
+        private System.Windows.Forms.Label lbDir;
     }
 }

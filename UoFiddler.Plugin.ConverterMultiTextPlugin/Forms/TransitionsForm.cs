@@ -1,7 +1,7 @@
 ﻿/***************************************************************************
  *
  * $Author: Prapilk
- * Built-in : Nikodeus
+ * Built-in : Nikodemus
  * 
  * "THE WINE-WARE LICENSE"
  * As long as you retain this notice you can do whatever you want with 
@@ -26,6 +26,7 @@ using System.Windows.Forms;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 using System.Runtime.Intrinsics.X86;
 using UoFiddler.Plugin.ConverterMultiTextPlugin.Class;
+using System.Diagnostics;
 
 namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 {
@@ -408,83 +409,97 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         }
 
         #region btnGenerateTransition
+
         private void btnGenerateTransition_Click(object sender, EventArgs e)
         {
             if (textures1.Count == 0 || textures2.Count == 0 || alphaImages.Count == 0)
             {
-                MessageBox.Show("Please select textures and alpha images before generating the transition.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Please select textures and alpha images before generating the transitions.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
-            if (folderBrowserDialog.ShowDialog() == DialogResult.OK)
+            // Get the path to the program directory
+            string programDirectory = Application.StartupPath;
+
+            // Define the path to the temporary directory in the program directory
+            string defaultDirectory = Path.Combine(programDirectory, "tempGrafic");
+
+            // Use the directory from tbDir if it's not empty, otherwise use the default directory
+            string directory = string.IsNullOrEmpty(tbDir.Text) ? defaultDirectory : tbDir.Text;
+
+            // Check if the directory exists
+            if (!Directory.Exists(directory))
             {
-                string outputPath = folderBrowserDialog.SelectedPath; // Use the user-selected path
-
-                int alphaIndex = 0;
-
-                // Convert initial ID to integer
-                int initialID = Convert.ToInt32(XMLgenerator.InitialLandTypeId, 16);
-
-                foreach (Image alphaImage in alphaImages)
-                {
-                    Image texture1 = textures1[alphaIndex % textures1.Count];
-                    Image texture2 = textures2[alphaIndex % textures2.Count];
-                    Bitmap transitionImage = GenerateTransition(texture1, texture2, alphaImage);
-
-                    // Save images without rotation
-                    string transitionFileName = Path.Combine(outputPath, $"0x{initialID.ToString("X")}.bmp");
-                    transitionImage.Save(transitionFileName, ImageFormat.Bmp);
-
-                    // Preview the transition
-                    Image previewImage = RotateAndResizeImageForPreview(transitionImage, 45);
-
-                    // Save images with 45 degree rotation and resized
-                    string rotatedTransitionFileName = Path.Combine(outputPath, $"RotatedTransition_{alphaIndex + 1}.bmp");
-                    previewImage.Save(rotatedTransitionFileName, ImageFormat.Bmp);
-
-                    // Increment initial ID for next transition
-                    initialID++;
-
-                    // Increment alpha image index
-                    alphaIndex++;
-                }
-
-                // Create an instance of the XMLgenerator class
-                XMLgenerator xmlGenerator = new XMLgenerator();
-
-                // Set the InitialLandTypeId property to tbStartHexDec.Text
-                XMLgenerator.InitialLandTypeId = tbStartHexDec.Text;
-
-                // Retrieve TextBox values
-                string nameTextureA = textBoxNameTextureA.Text;
-                string nameTextureB = textBoxNameTextureB.Text;
-                string brushIdA = textBoxBrushNumberA.Text;
-                string brushIdB = textBoxBrushNumberB.Text;
-
-
-
-                // Call GenerateXML with all necessary values
-                xmlGenerator.GenerateXML(texture1FilePaths, texture2FilePaths, alphaImageFileNames, outputPath, nameTextureA, nameTextureB, brushIdA, brushIdB);
-
-                MessageBox.Show("Generation complete.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
-
-                // Reset lists and controls
-                textures1.Clear();
-                textures2.Clear();
-                alphaImages.Clear();
-
-                pictureBoxTexture1.Image = null;
-                pictureBoxTexture2.Image = null;
-                pictureBoxAlpha1.Image = null;
-                pictureBoxPreview.Image = null;
-                pictureBoxLandtile.Image = null;
-                tbStartHexDec.Text = null;
-
-                flowLayoutPanelTextures1.Controls.Clear();
-                flowLayoutPanelTextures2.Controls.Clear();
-                flowLayoutPanelAlphaImages.Controls.Clear();
+                // Create the directory
+                Directory.CreateDirectory(directory);
             }
+
+            // Use the directory as the output path
+            string outputPath = directory;
+
+            int alphaIndex = 0;
+
+            // Convert initial ID to integer
+            int initialID = Convert.ToInt32(XMLgenerator.InitialLandTypeId, 16);
+
+            foreach (Image alphaImage in alphaImages)
+            {
+                Image texture1 = textures1[alphaIndex % textures1.Count];
+                Image texture2 = textures2[alphaIndex % textures2.Count];
+                Bitmap transitionImage = GenerateTransition(texture1, texture2, alphaImage);
+
+                // Save images without rotation
+                string transitionFileName = Path.Combine(outputPath, $"0x{initialID.ToString("X")}.bmp");
+                transitionImage.Save(transitionFileName, ImageFormat.Bmp);
+
+                // Preview the transition
+                Image previewImage = RotateAndResizeImageForPreview(transitionImage, 45);
+
+                // Save images with 45 degree rotation and resized
+                string rotatedTransitionFileName = Path.Combine(outputPath, $"RotatedTransition_{alphaIndex + 1}.bmp");
+                previewImage.Save(rotatedTransitionFileName, ImageFormat.Bmp);
+
+                // Increment initial ID for next transition
+                initialID++;
+
+                // Increment alpha image index
+                alphaIndex++;
+            }
+
+            // Create an instance of the XMLgenerator class
+            XMLgenerator xmlGenerator = new XMLgenerator();
+
+            // Set the InitialLandTypeId property to tbStartHexDec.Text
+            XMLgenerator.InitialLandTypeId = tbStartHexDec.Text;
+
+            // Retrieve TextBox values
+            string nameTextureA = textBoxNameTextureA.Text;
+            string nameTextureB = textBoxNameTextureB.Text;
+            string brushIdA = textBoxBrushNumberA.Text;
+            string brushIdB = textBoxBrushNumberB.Text;
+
+            // Call GenerateXML with all necessary values
+            xmlGenerator.GenerateXML(texture1FilePaths, texture2FilePaths, alphaImageFileNames, outputPath, nameTextureA, nameTextureB, brushIdA, brushIdB);
+
+            MessageBox.Show("Generation completed.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+            // Reset lists and controls
+            textures1.Clear();
+            textures2.Clear();
+            alphaImages.Clear();
+
+            pictureBoxTexture1.Image = null;
+            pictureBoxTexture2.Image = null;
+            pictureBoxAlpha1.Image = null;
+            pictureBoxPreview.Image = null;
+            pictureBoxLandtile.Image = null;
+            tbStartHexDec.Text = null;
+
+            flowLayoutPanelTextures1.Controls.Clear();
+            flowLayoutPanelTextures2.Controls.Clear();
+            flowLayoutPanelAlphaImages.Controls.Clear();
         }
+
         #endregion
 
         private void StartHexDec_TextChanged(object sender, EventArgs e)
@@ -633,6 +648,47 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 // Set the SizeMode property to Normal if the checkbox is unchecked
                 pictureBoxPreview.SizeMode = PictureBoxSizeMode.CenterImage;
                 pictureBoxLandtile.SizeMode = PictureBoxSizeMode.CenterImage;
+            }
+        }
+        #endregion
+
+        #region buttonOpenTempGrafic
+        private void buttonOpenTempGrafic_Click(object sender, EventArgs e)
+        {
+            // Get the path to the program directory
+            string programDirectory = Application.StartupPath;
+
+            // Define the path to the temporary directory in the program directory
+            string defaultDirectory = Path.Combine(programDirectory, "tempGrafic");
+
+            // Use the directory from tbDir if it's not empty, otherwise use the default directory
+            string directory = string.IsNullOrEmpty(tbDir.Text) ? defaultDirectory : tbDir.Text;
+
+            // Check if the directory exists
+            if (Directory.Exists(directory))
+            {
+                // Open the directory in the file explorer
+                Process.Start("explorer.exe", directory);
+            }
+            else
+            {
+                // Display a message to the user indicating that the directory does not exist
+                MessageBox.Show($"The directory {directory} does not exist.");
+            }
+        }
+        #endregion
+
+        #region btDir_Click
+        private void btDir_Click(object sender, EventArgs e)
+        {
+            // Create a new instance of FolderBrowserDialog
+            FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog();
+
+            // Display the dialog and verify that the user clicked OK
+            if (folderBrowserDialog.ShowDialog() == DialogResult.OK)
+            {
+                // Set the text of tbDir to the selected path
+                tbDir.Text = folderBrowserDialog.SelectedPath;
             }
         }
         #endregion
