@@ -23,22 +23,22 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 {
     public partial class AdminToolForm : Form
     {
-        private static AdminToolForm instance; // Statische Variable zur Speicherung der Instanz
+        private static AdminToolForm instance; // Static variable to store the instance
         private AdminToolForm adminToolForm;
 
 
         public AdminToolForm()
         {
-            // Überprüfen, ob bereits eine Instanz der Form geöffnet ist
+            // Check whether an instance of the shape is already open
             if (instance != null && !instance.IsDisposed)
             {
-                // Eine Instanz ist bereits geöffnet, also die vorhandene Instanz anzeigen und die neue Instanz schließen
+                // An instance is already open, so show the existing instance and close the new instance
                 instance.Focus();
                 Close();
                 return;
             }
 
-            // Es wurde keine andere Instanz gefunden, also diese Instanz speichern
+            // No other instance was found, so save this instance
             instance = this;
 
             InitializeComponent();
@@ -46,39 +46,44 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             label1.Text = "";
         }
 
+        #region ÖffneAdminToolForm
         public void ÖffneAdminToolForm()
         {
-            // Überprüfen, ob das AdminToolForm bereits verworfen wurde oder null ist
+            // Check if the AdminToolForm has already been discarded or is null
             if (adminToolForm == null || adminToolForm.IsDisposed)
             {
-                // Eine neue Instanz des AdminToolForm erstellen
+                // Create a new instance of the AdminToolForm
                 adminToolForm = new AdminToolForm();
-                // Das Formular anzeigen
+                // Show the form
                 adminToolForm.Show();
             }
             else
             {
-                // Das bereits vorhandene Formular anzeigen
+                // Show the already existing form
                 adminToolForm.Focus();
             }
         }
+        #endregion
 
-        // Methode zum Abrufen der bereits geöffneten Instanz
+        #region AdminToolForm
+        // Method to get the already opened instance
         public static AdminToolForm GetInstance()
         {
             if (instance == null || instance.IsDisposed)
             {
-                // Wenn keine Instanz vorhanden ist oder die Instanz verworfen wurde, erstelle eine neue Instanz
+                // If no instance exists or the instance has been discarded, create a new instance
                 instance = new AdminToolForm();
             }
 
             return instance;
         }
+        #endregion
 
+        #region btnPing
         private void btnPing_Click(object sender, System.EventArgs e)
         {
             string address = textBoxAdress.Text;
-            // Überprüfen, ob die Adresse eine gültige IP-Adresse oder Domain ist
+            // Verify that the address is a valid IP address or domain
             if (IsValidIPAddress(address) || IsValidDomainName(address))
             {
                 Ping pingSender = new Ping();
@@ -97,24 +102,26 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             }
             else
             {
-                // Wenn die Adresse ungültig ist, wird eine Nachricht angezeigt
+                // If the address is invalid, a message will be displayed
                 MessageBox.Show("The entered address is invalid. Please enter a valid IP address or domain.");
             }
 
             label1.Text = address;
         }
+        #endregion
 
-        // Überprüft, ob die angegebene Zeichenfolge eine gültige IP-Adresse ist
+        #region IsValidIPAddress
+        // Checks whether the specified string is a valid IP address
         private bool IsValidIPAddress(string address)
         {
-            // Überprüfen Sie die IPv4-Adresse
+            // Check the IPv4 address
             string patternIPv4 = @"^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$";
             if (Regex.IsMatch(address, patternIPv4))
             {
                 return true;
             }
 
-            // Überprüfen Sie die IPv6-Adresse
+            // Check the IPv6 address
             string patternIPv6 = @"^(?:[A-F0-9]{1,4}:){7}[A-F0-9]{1,4}$";
             if (Regex.IsMatch(address, patternIPv6))
             {
@@ -123,57 +130,63 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 
             return false;
         }
+        #endregion
 
-        // Überprüft, ob die angegebene Zeichenfolge eine gültige Domain ist
+        #region IsValidDomainName
+        // Checks whether the specified string is a valid domain
         private bool IsValidDomainName(string address)
         {
             string pattern = @"^([a-z0-9]+(-[a-z0-9]+)*\.)+[a-z]{2,}$";
             return Regex.IsMatch(address, pattern);
         }
+        #endregion
 
+        #region textBoxAdress_KeyDown
         private void textBoxAdress_KeyDown(object sender, KeyEventArgs e)
         {
-            // Überprüfe, ob die Eingabetaste gedrückt wurde
+            // Check if the Enter key was pressed
             if (e.KeyCode == Keys.Enter)
             {
-                // Starte den Ping
+                // Start ping
                 btnPing_Click(this, EventArgs.Empty);
             }
         }
+        #endregion
 
+        #region btnTracert
         private async void btnTracert_Click(object sender, EventArgs e)
         {
             string address = textBoxAdress.Text;
-            // Überprüfen, ob die Adresse eine gültige IP-Adresse oder Domain ist
+            // Verify that the address is a valid IP address or domain
             if (IsValidIPAddressTracert(address) || IsValidDomainNameTracert(address))
             {
-                // Leere die textBoxPingAusgabe
+                // Empty the textBoxPingOutput
                 textBoxPingAusgabe.Clear();
-                // Maximaler TTL-Wert
+                // Maximum TTL value
                 int maxHops = 30;
-                // Aktueller TTL-Wert
+                // Current TTL value
                 int currentHop = 1;
-                // Ziel erreicht?
+                // Goal achieved?
                 bool targetReached = false;
-                // Ping-Objekt erstellen
+                // Create ping object
                 Ping pingSender = new Ping();
-                // Ping-Optionen erstellen
+                // Create ping options
                 PingOptions pingOptions = new PingOptions(currentHop, true);
-                // Puffer erstellen
+                // Create buffer
                 byte[] buffer = new byte[32];
-                // Timeout festlegen
+                // Set timeout
                 int timeout = 5000;
                 try
                 {
-                    // IPHostEntry-Objekt für die Zieladresse erstellen
+                    // Create IPHostEntry object for the destination address
                     IPHostEntry hostEntry = Dns.GetHostEntry(address);
-                    // Ziel-IP-Adresse festlegen
+                    // Set target IP address
                     IPAddress targetAddress = hostEntry.AddressList[0];
                     while (!targetReached && currentHop <= maxHops)
                     {
-                        // Ping senden
+                        // Send ping
                         PingReply reply = await pingSender.SendPingAsync(targetAddress, timeout, buffer, pingOptions);
-                        // Ergebnis anzeigen
+                        // show result
                         if (reply.Status == IPStatus.Success)
                         {
                             textBoxPingAusgabe.AppendText(currentHop + "\t" + reply.Address.ToString() + "\r\n");
@@ -187,43 +200,50 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                         {
                             textBoxPingAusgabe.AppendText(currentHop + "\t*\r\n");
                         }
-                        // TTL-Wert erhöhen
+                        // Increase TTL value
                         currentHop++;
                         pingOptions.Ttl = currentHop;
                     }
                 }
                 catch (SocketException)
                 {
-                    // Wenn eine SocketException auftritt, wird eine Nachricht angezeigt
+                    // If a SocketException occurs, a message is displayed
                     MessageBox.Show("The entered address is invalid. Please enter a valid IP address or domain.");
                 }
             }
             else
             {
-                // Wenn die Adresse ungültig ist, wird eine Nachricht angezeigt
+                // If the address is invalid, a message will be displayed
                 MessageBox.Show("The entered address is invalid. Please enter a valid IP address or domain.");
             }
         }
+        #endregion
 
-        // Überprüft, ob die angegebene Zeichenfolge eine gültige IP-Adresse ist
+        #region IsValidIPAddressTracert
+        // Checks whether the specified string is a valid IP address
         private bool IsValidIPAddressTracert(string address)
         {
             IPAddress ipAddress;
             return IPAddress.TryParse(address, out ipAddress);
         }
+        #endregion
 
-        // Überprüft, ob die angegebene Zeichenfolge eine gültige Domain ist
+        #region IsValidDomainNameTracert
+        // Checks whether the specified string is a valid domain
         private bool IsValidDomainNameTracert(string address)
         {
             return Uri.CheckHostName(address) != UriHostNameType.Unknown;
         }
+        #endregion
 
-        // Methode zum Schließen der Form
+        #region btnClose
+        // Method of closing the form
         private void btnClose_Click(object sender, EventArgs e)
         {
-            // Setze die Instanzvariable auf null, um das erneute Öffnen der Form zu ermöglichen
+            // Set the instance variable to null to allow the form to be reopened
             instance = null;
             Close();
         }
+        #endregion
     }
 }
