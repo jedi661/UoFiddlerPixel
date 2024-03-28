@@ -27,6 +27,8 @@ using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 using System.Runtime.Intrinsics.X86;
 using UoFiddler.Plugin.ConverterMultiTextPlugin.Class;
 using System.Diagnostics;
+using System.Media;
+using static System.Windows.Forms.DataFormats;
 
 namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 {
@@ -128,7 +130,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         }
         #endregion
 
-
+        #region btnPrevious
         // Event handler for the "Back" button
         private void btnPrevious_Click(object sender, EventArgs e)
         {
@@ -147,8 +149,17 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // Update the “counter” label
             UpdateCounterLabel();
 
-        }
+            // Create a new SoundPlayer
+            SoundPlayer player = new SoundPlayer();
+            // Load the sound file
+            player.SoundLocation = AppDomain.CurrentDomain.BaseDirectory + "\\Sound.wav";
+            // Play the sound
+            player.Play();
 
+        }
+        #endregion
+
+        #region btnNext
         // Event handler for the "Next" button
         private void btnNext_Click(object sender, EventArgs e)
         {
@@ -166,9 +177,17 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             UpdateAlphaNameLabel(); // Update alpha name label
             // Update the “counter” label
             UpdateCounterLabel();
+
+            // Create a new SoundPlayer
+            SoundPlayer player = new SoundPlayer();
+            // Load the sound file
+            player.SoundLocation = AppDomain.CurrentDomain.BaseDirectory + "\\Sound.wav";
+            // Play the sound
+            player.Play();
         }
+        #endregion
 
-
+        #region UpdateAlphaNameLabel
         // Method to update the label with the name of the alpha corresponding to the current index
         private void UpdateAlphaNameLabel()
         {
@@ -182,6 +201,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 lblAlphaName.Text = alphaFileName;
             }
         }
+        #endregion
 
         #region UpdatePreview
         // Update preview with alpha image corresponding to current index
@@ -215,6 +235,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private void trackBarContrast_Scroll(object sender, EventArgs e)
         {
             gamma = (double)trackBarContrast.Value;
+            labelContrastValue.Text = trackBarContrast.Value.ToString();
             UpdatePreview();
         }
         #endregion
@@ -223,6 +244,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private void trackBarFlou_Scroll(object sender, EventArgs e)
         {
             blurValue = (double)trackBarFlou.Value / 10.0 * 2;
+            labelFlouValue.Text = trackBarFlou.Value.ToString();
             UpdatePreview();
         }
         #endregion
@@ -400,6 +422,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         }
         #endregion
 
+        #region UpdateCounterLabel
         // Method to update the "counter" label with the current number of the alpha image
         private void UpdateCounterLabel()
         {
@@ -407,6 +430,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             int totalNumber = alphaImages.Count;
             Compteur.Text = $"{currentNumber}/{totalNumber}";
         }
+        #endregion
 
         #region btnGenerateTransition
 
@@ -502,6 +526,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 
         #endregion
 
+        #region StartHexDec
         private void StartHexDec_TextChanged(object sender, EventArgs e)
         {
             string newText = tbStartHexDec.Text.Trim(); // Get the text from TextBox1 by removing whitespace at the beginning and end
@@ -511,6 +536,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 XMLgenerator.InitialLandTypeId = newText;
             }
         }
+        #endregion
 
         #region BlurFilter Class
         // Definition of BlurFilter class for Gaussian blur
@@ -690,6 +716,85 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 // Set the text of tbDir to the selected path
                 tbDir.Text = folderBrowserDialog.SelectedPath;
             }
+        }
+        #endregion
+
+        #region btEditTransition
+        private void btEditTransition_Click(object sender, EventArgs e)
+        {
+            // Create a new instance of Form and RichTextBox
+            Form form = new Form();
+            RichTextBox richTextBox = new RichTextBox();
+
+            // Download the icon from resources
+            System.Resources.ResourceManager resources = new System.Resources.ResourceManager(typeof(TransitionsForm)); // Replace Form with the actual name of your Form class
+            form.Icon = (System.Drawing.Icon)resources.GetObject("$this.Icon");
+
+            // Adjust the shape's properties
+            form.Width = 800; // Set the width to the desired value
+            form.Height = 600; // Set the height to the desired value
+
+            // Create a FlowLayoutPanel
+            FlowLayoutPanel flowLayoutPanel = new FlowLayoutPanel();
+            flowLayoutPanel.Dock = DockStyle.Bottom;
+            flowLayoutPanel.AutoSize = true;
+
+            // Add the FlowLayoutPanel to the shape
+            form.Controls.Add(flowLayoutPanel);
+
+            // Get the path to the program directory
+            string programDirectory = Application.StartupPath;
+
+            // Define the path to the temporary directory in the program directory
+            string defaultDirectory = Path.Combine(programDirectory, "tempGrafic");
+
+            // Use the directory from tbDir if it is not empty, otherwise use the default directory
+            string directory = string.IsNullOrEmpty(tbDir.Text) ? defaultDirectory : tbDir.Text;
+
+            // Define the path to the transition.xml file
+            string filePath = Path.Combine(directory, "transition.xml");
+
+            // Create the buttons
+            System.Windows.Forms.Button btnSave = new System.Windows.Forms.Button();
+            btnSave.Text = "Save";
+            btnSave.Click += (s, e) =>
+            {
+                // Save the contents of the RichTextBox to the file
+                File.WriteAllText(filePath, richTextBox.Text);
+            };
+
+            System.Windows.Forms.Button btnCopy = new System.Windows.Forms.Button();
+            btnCopy.Text = "Copy to Clipboard";
+            btnCopy.Click += (s, e) =>
+            {
+                // Copy the contents of the RichTextBox to the clipboard
+                Clipboard.SetText(richTextBox.Text);
+            };
+
+            // Add the buttons to the FlowLayoutPanel
+            flowLayoutPanel.Controls.Add(btnSave);
+            flowLayoutPanel.Controls.Add(btnCopy);
+
+            // Adjust the properties of the RichTextBox
+            richTextBox.Dock = DockStyle.Fill;
+
+            // Add the RichTextBox to the shape
+            form.Controls.Add(richTextBox);
+
+            // Check if the file exists
+            if (File.Exists(filePath))
+            {
+                // Load the contents of the file into the RichTextBox
+                richTextBox.Text = File.ReadAllText(filePath);
+            }
+            else
+            {
+                // Display a message stating that the file does not exist
+                MessageBox.Show($"The file {filePath} does not exist.");
+            }
+
+            // Display the shape
+            form.Show();
         }
         #endregion
     }

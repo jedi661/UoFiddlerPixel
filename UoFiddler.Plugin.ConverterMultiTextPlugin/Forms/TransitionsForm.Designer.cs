@@ -76,6 +76,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             tbDir = new System.Windows.Forms.TextBox();
             btDir = new System.Windows.Forms.Button();
             lbDir = new System.Windows.Forms.Label();
+            labelContrastValue = new System.Windows.Forms.Label();
+            labelFlouValue = new System.Windows.Forms.Label();
+            btEditTransition = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)pictureBoxPreview).BeginInit();
             ((System.ComponentModel.ISupportInitialize)pictureBoxLandtile).BeginInit();
             ((System.ComponentModel.ISupportInitialize)trackBarContrast).BeginInit();
@@ -414,11 +417,42 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             lbDir.TabIndex = 37;
             lbDir.Text = "Directory Set otherwise default directory :";
             // 
+            // labelContrastValue
+            // 
+            labelContrastValue.AutoSize = true;
+            labelContrastValue.Location = new System.Drawing.Point(991, 569);
+            labelContrastValue.Name = "labelContrastValue";
+            labelContrastValue.Size = new System.Drawing.Size(86, 15);
+            labelContrastValue.TabIndex = 38;
+            labelContrastValue.Text = "ContrastValue :";
+            // 
+            // labelFlouValue
+            // 
+            labelFlouValue.AutoSize = true;
+            labelFlouValue.Location = new System.Drawing.Point(991, 605);
+            labelFlouValue.Name = "labelFlouValue";
+            labelFlouValue.Size = new System.Drawing.Size(64, 15);
+            labelFlouValue.TabIndex = 39;
+            labelFlouValue.Text = "FlouValue :";
+            // 
+            // btEditTransition
+            // 
+            btEditTransition.Location = new System.Drawing.Point(991, 656);
+            btEditTransition.Name = "btEditTransition";
+            btEditTransition.Size = new System.Drawing.Size(75, 23);
+            btEditTransition.TabIndex = 40;
+            btEditTransition.Text = "XML Edit";
+            btEditTransition.UseVisualStyleBackColor = true;
+            btEditTransition.Click += btEditTransition_Click;
+            // 
             // TransitionsForm
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             ClientSize = new System.Drawing.Size(1178, 691);
+            Controls.Add(btEditTransition);
+            Controls.Add(labelFlouValue);
+            Controls.Add(labelContrastValue);
             Controls.Add(lbDir);
             Controls.Add(btDir);
             Controls.Add(tbDir);
@@ -505,5 +539,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private System.Windows.Forms.TextBox tbDir;
         private System.Windows.Forms.Button btDir;
         private System.Windows.Forms.Label lbDir;
+        private System.Windows.Forms.Label labelContrastValue;
+        private System.Windows.Forms.Label labelFlouValue;
+        private System.Windows.Forms.Button btEditTransition;
     }
 }
