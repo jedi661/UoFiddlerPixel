@@ -16,13 +16,14 @@ Version : 4.12.3
 - Add Animation - Script Edit Animationlist.
 - Add Creater Amin.idx and Amin.mul Empty.
 - Add ScriptCreator Buttons Edit and Scripts
-- Add Items Mark
-- Add Items Goto Mark
-- Add LandTiles Mark
-- Add LandTiles Go To
-- Add LandtilesView into TileArtForm
+- Add Items Mark.
+- Add Items Goto Mark.
+- Add LandTiles Mark.
+- Add LandTiles Go To.
+- Add LandtilesView into TileArtForm.
 - Add Editor for Tilesbrush.xml (CentrEd)
-- Add Transitions - Graphic (From Prapilk)
+- Add Transitions - Graphic (From Prapilk).
+- Add TileViewContextMenuStrip_Closing To focus on the index.
 
 Version : 4.12.2
 - BildFusion Add Sharp , Clipboard, Texture Cut.

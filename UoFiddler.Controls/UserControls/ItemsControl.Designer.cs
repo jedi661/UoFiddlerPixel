@@ -90,9 +90,10 @@ namespace UoFiddler.Controls.UserControls
             copyToolStripMenuItem = new ToolStripMenuItem();
             importToolStripclipboardMenuItem = new ToolStripMenuItem();
             toolStripSeparator4 = new ToolStripSeparator();
-            saveToolStripMenuItem = new ToolStripMenuItem();
             markToolStripMenuItem = new ToolStripMenuItem();
             gotoMarkToolStripMenuItem = new ToolStripMenuItem();
+            toolStripSeparator9 = new ToolStripSeparator();
+            saveToolStripMenuItem = new ToolStripMenuItem();
             StatusStrip = new StatusStrip();
             NameLabel = new ToolStripStatusLabel();
             GraphicLabel = new ToolStripStatusLabel();
@@ -116,7 +117,6 @@ namespace UoFiddler.Controls.UserControls
             toolStripButton1 = new ToolStripButton();
             colorDialog = new ColorDialog();
             collapsibleSplitter1 = new CollapsibleSplitter();
-            toolStripSeparator9 = new ToolStripSeparator();
             ((System.ComponentModel.ISupportInitialize)splitContainer2).BeginInit();
             splitContainer2.Panel1.SuspendLayout();
             splitContainer2.Panel2.SuspendLayout();
@@ -324,6 +324,7 @@ namespace UoFiddler.Controls.UserControls
             TileViewContextMenuStrip.Items.AddRange(new ToolStripItem[] { showFreeSlotsToolStripMenuItem, findNextFreeSlotToolStripMenuItem, ChangeBackgroundColorToolStripMenuItem, colorsImageToolStripMenuItem, toolStripSeparator3, selectInTileDataTabToolStripMenuItem, selectInRadarColorTabToolStripMenuItem, SelectIDToHexToolStripMenuItem, selectInGumpsTabMaleToolStripMenuItem, selectInGumpsTabFemaleToolStripMenuItem, toolStripSeparator2, extractToolStripMenuItem, replaceToolStripMenuItem, replaceStartingFromToolStripMenuItem, removeToolStripMenuItem, insertAtToolStripMenuItem, imageSwapToolStripMenuItem, toolStripSeparator5, mirrorToolStripMenuItem, toolStripSeparator1, copyToolStripMenuItem, importToolStripclipboardMenuItem, toolStripSeparator4, markToolStripMenuItem, gotoMarkToolStripMenuItem, toolStripSeparator9, saveToolStripMenuItem });
             TileViewContextMenuStrip.Name = "contextMenuStrip1";
             TileViewContextMenuStrip.Size = new System.Drawing.Size(213, 524);
+            TileViewContextMenuStrip.Closing += TileViewContextMenuStrip_Closing;
             TileViewContextMenuStrip.Opening += TileViewContextMenuStrip_Opening;
             // 
             // showFreeSlotsToolStripMenuItem
@@ -557,15 +558,6 @@ namespace UoFiddler.Controls.UserControls
             toolStripSeparator4.Name = "toolStripSeparator4";
             toolStripSeparator4.Size = new System.Drawing.Size(209, 6);
             // 
-            // saveToolStripMenuItem
-            // 
-            saveToolStripMenuItem.Image = Properties.Resources.Save2;
-            saveToolStripMenuItem.Name = "saveToolStripMenuItem";
-            saveToolStripMenuItem.Size = new System.Drawing.Size(212, 22);
-            saveToolStripMenuItem.Text = "Save";
-            saveToolStripMenuItem.ToolTipText = "Saves the .mul file.";
-            saveToolStripMenuItem.Click += OnClickSave;
-            // 
             // markToolStripMenuItem
             // 
             markToolStripMenuItem.Image = Properties.Resources.Mark;
@@ -583,6 +575,20 @@ namespace UoFiddler.Controls.UserControls
             gotoMarkToolStripMenuItem.Text = "Goto Position";
             gotoMarkToolStripMenuItem.ToolTipText = "Strg+J Jump to Last Mark Position";
             gotoMarkToolStripMenuItem.Click += goToMarkedPositionToolStripMenuItem_Click;
+            // 
+            // toolStripSeparator9
+            // 
+            toolStripSeparator9.Name = "toolStripSeparator9";
+            toolStripSeparator9.Size = new System.Drawing.Size(209, 6);
+            // 
+            // saveToolStripMenuItem
+            // 
+            saveToolStripMenuItem.Image = Properties.Resources.Save2;
+            saveToolStripMenuItem.Name = "saveToolStripMenuItem";
+            saveToolStripMenuItem.Size = new System.Drawing.Size(212, 22);
+            saveToolStripMenuItem.Text = "Save";
+            saveToolStripMenuItem.ToolTipText = "Saves the .mul file.";
+            saveToolStripMenuItem.Click += OnClickSave;
             // 
             // StatusStrip
             // 
@@ -773,11 +779,6 @@ namespace UoFiddler.Controls.UserControls
             collapsibleSplitter1.TabStop = false;
             collapsibleSplitter1.UseAnimations = false;
             collapsibleSplitter1.VisualStyle = VisualStyles.DoubleDots;
-            // 
-            // toolStripSeparator9
-            // 
-            toolStripSeparator9.Name = "toolStripSeparator9";
-            toolStripSeparator9.Size = new System.Drawing.Size(209, 6);
             // 
             // ItemsControl
             // 

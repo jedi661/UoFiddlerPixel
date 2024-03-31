@@ -1105,6 +1105,7 @@ namespace UoFiddler.Controls.UserControls
             }
 
             UpdateSelection(e.ItemIndex);
+            //ItemsTileView.Focus(e.ItemIndex);
 
             // Call the update colors method for Datagridview => colorsImageToolStripMenuItem
             UpdateColors();
@@ -2147,5 +2148,17 @@ namespace UoFiddler.Controls.UserControls
             }
         }
         #endregion
+
+        #region TileViewContextMenuStrip_Closing
+        private void TileViewContextMenuStrip_Closing(object sender, ToolStripDropDownClosingEventArgs e)
+        {
+            // Check if any items are selected in the ItemsTileView
+            if (ItemsTileView.SelectedIndices.Count > 0)
+            {
+                // Set the focus to the first selected item
+                ItemsTileView.FocusIndex = ItemsTileView.SelectedIndices[0];
+            }
+        }
+        #region 
     }
 }
