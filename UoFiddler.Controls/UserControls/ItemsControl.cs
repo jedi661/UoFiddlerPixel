@@ -2159,6 +2159,6 @@ namespace UoFiddler.Controls.UserControls
                 ItemsTileView.FocusIndex = ItemsTileView.SelectedIndices[0];
             }
         }
-        #region 
+        #endregion
     }
 }
