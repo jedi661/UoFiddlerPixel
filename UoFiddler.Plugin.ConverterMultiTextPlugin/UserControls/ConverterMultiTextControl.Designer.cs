@@ -96,6 +96,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             lbScriptCreator = new System.Windows.Forms.Label();
             btScriptCreator = new System.Windows.Forms.Button();
             tabPageTextureConverter = new System.Windows.Forms.TabPage();
+            btTest = new System.Windows.Forms.Button();
             btclear = new System.Windows.Forms.Button();
             btMorseCode = new System.Windows.Forms.Button();
             checkBoxASCII = new System.Windows.Forms.CheckBox();
@@ -664,6 +665,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             // 
             // tabPageTextureConverter
             // 
+            tabPageTextureConverter.Controls.Add(btTest);
             tabPageTextureConverter.Controls.Add(btclear);
             tabPageTextureConverter.Controls.Add(btMorseCode);
             tabPageTextureConverter.Controls.Add(checkBoxASCII);
@@ -684,6 +686,16 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             tabPageTextureConverter.TabIndex = 1;
             tabPageTextureConverter.Text = "Text Converter";
             tabPageTextureConverter.UseVisualStyleBackColor = true;
+            // 
+            // btTest
+            // 
+            btTest.Location = new System.Drawing.Point(338, 232);
+            btTest.Name = "btTest";
+            btTest.Size = new System.Drawing.Size(92, 23);
+            btTest.TabIndex = 13;
+            btTest.Text = "Test";
+            btTest.UseVisualStyleBackColor = true;
+            btTest.Click += btTest_Click;
             // 
             // btclear
             // 
@@ -847,5 +859,6 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
         private System.Windows.Forms.Label lbTileArtForm;
         private System.Windows.Forms.Label lbTransitions;
         private System.Windows.Forms.Button btTransitions;
+        private System.Windows.Forms.Button btTest;
     }
 }

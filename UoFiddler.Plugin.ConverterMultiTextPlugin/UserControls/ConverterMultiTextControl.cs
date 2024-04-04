@@ -821,5 +821,51 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
         }
 
         #endregion
+
+        #region MultiTileEntry
+        public struct MultiTileEntry
+        {
+            public ushort m_ItemID;
+            public short m_OffsetX, m_OffsetY, m_OffsetZ;
+            public int m_Flags;
+            public int m_Unk1;
+        }
+        #endregion
+
+        #region btTest_Click
+        private void btTest_Click(object sender, EventArgs e)
+        {
+            // Eingabe aus textBox1 holen
+            string input = textBox1.Text;
+
+            // Eingabezeilen aufteilen
+            string[] lines = input.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None);
+
+            // Liste zum Speichern der umgewandelten Einträge
+            List<MultiTileEntry> entries = new List<MultiTileEntry>();
+
+            // Jede Zeile verarbeiten
+            foreach (string line in lines)
+            {
+                // Zeile in Teile aufteilen
+                string[] parts = line.Split(',');
+
+                // Neuen Eintrag erstellen und Werte zuweisen
+                MultiTileEntry entry = new MultiTileEntry();
+                entry.m_ItemID = Convert.ToUInt16(parts[2].Split(':')[1].Trim()); // ID
+                entry.m_OffsetX = (short)(short.Parse(parts[0].Split(':')[1].Trim()) - 1405); // X
+                entry.m_OffsetY = (short)(short.Parse(parts[1].Split(':')[1].Trim()) - 1709); // Y
+                entry.m_OffsetZ = short.Parse(parts[3].Split(':')[1].Trim()); // Z
+                entry.m_Flags = 0; // Color, setzen Sie hier den richtigen Wert
+                entry.m_Unk1 = 0;  // Setzen Sie hier den richtigen Wert
+
+                // Eintrag zur Liste hinzufügen
+                entries.Add(entry);
+            }
+
+            // Umgewandelte Einträge in textBox2 anzeigen
+            textBox2.Text = string.Join("\r\n", entries.Select(x => $"0x{x.m_ItemID.ToString("X4")} {x.m_OffsetX} {x.m_OffsetY} {x.m_OffsetZ} {x.m_Flags} {x.m_Unk1}"));
+        }
+        #endregion
     }
 }
