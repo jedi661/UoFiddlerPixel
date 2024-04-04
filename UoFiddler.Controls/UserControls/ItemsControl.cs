@@ -2121,7 +2121,6 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-
         #region markToolStripMenuItem
         // Variable for storing the marked position
         private int markedPosition = -1;
