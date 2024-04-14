@@ -762,7 +762,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region addHtmlLocalizedToolStripMenuItem
+        #region addHtmlLocalizedToolStripMenuItem 
         private void addHtmlLocalizedToolStripMenuItem_Click(object sender, EventArgs e)
         {
             Form form = new Form();
@@ -792,6 +792,14 @@ namespace UoFiddler.Controls.UserControls
             // Set the default value for the arguments text box
             textBoxes[5].Text = "string.Empty";
 
+            // Load comment text from Cells[1] when the form is opened
+            if (dataGridView1.SelectedCells.Count > 0)
+            {
+                int selectedRow = dataGridView1.SelectedCells[0].RowIndex;
+                string text = dataGridView1.Rows[selectedRow].Cells[1].Value.ToString();
+                textBoxes[6].Text = text;
+            }
+
             copyButton.Text = "Copy";
             copyButton.Top = textBoxes.Length * 30;
             copyButton.Left = 10;
@@ -801,14 +809,13 @@ namespace UoFiddler.Controls.UserControls
                 {
                     int selectedRow = dataGridView1.SelectedCells[0].RowIndex;
                     string number = dataGridView1.Rows[selectedRow].Cells[0].Value.ToString();
-                    string text = dataGridView1.Rows[selectedRow].Cells[1].Value.ToString();
 
-                    // Automatically set comment text from Cells[1]
-                    textBoxes[6].Text = text;
+                    // Use the comment text from the text box
+                    string comment = textBoxes[6].Text;
 
                     string arguments = textBoxes[5].Text == "string.Empty" ? "string.Empty" : $"\"{textBoxes[5].Text}\"";
 
-                    string result = $"AddHtmlLocalized({textBoxes[0].Text}, {textBoxes[1].Text}, {textBoxes[2].Text}, {textBoxes[3].Text}, {number}, {arguments}, {textBoxes[4].Text}, false, false); // {textBoxes[6].Text}";
+                    string result = $"AddHtmlLocalized({textBoxes[0].Text}, {textBoxes[1].Text}, {textBoxes[2].Text}, {textBoxes[3].Text}, {number}, {arguments}, {textBoxes[4].Text}, false, false); // {comment}";
 
                     Clipboard.SetText(result);
                 }
