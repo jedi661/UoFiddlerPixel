@@ -24,6 +24,8 @@ Version : 4.12.3
 - Add Editor for Tilesbrush.xml (CentrEd)
 - Add Transitions - Graphic (From Prapilk).
 - Add TileViewContextMenuStrip_Closing To focus on the index.
+- Add Ciloc a Copy Clipboard Only
+- Add Ciloc Advanced search function that highlights matches and navigates through results.
 
 Version : 4.12.2
 - BildFusion Add Sharp , Clipboard, Texture Cut.

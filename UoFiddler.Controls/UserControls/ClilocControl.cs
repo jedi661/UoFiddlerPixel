@@ -1,6 +1,7 @@
 /***************************************************************************
  *
  * $Author: Turley
+ * Advanced: Nikodemus
  * 
  * "THE BEER-WARE LICENSE"
  * As long as you retain this notice you can do whatever you want with 
@@ -17,6 +18,8 @@ using Ultima;
 using UoFiddler.Controls.Classes;
 using UoFiddler.Controls.Forms;
 using UoFiddler.Controls.Helpers;
+using System.Drawing;
+
 
 namespace UoFiddler.Controls.UserControls
 {
@@ -29,6 +32,8 @@ namespace UoFiddler.Controls.UserControls
 
             _source = new BindingSource();
             FindEntry.TextBox.PreviewKeyDown += FindEntry_PreviewKeyDown;
+
+            dataGridView1.CellFormatting += dataGridView1_CellFormatting;
         }
 
         private const string _searchNumberPlaceholder = "Enter Number";
@@ -41,6 +46,7 @@ namespace UoFiddler.Controls.UserControls
         private int _sortColumn;
         private bool _loaded;
 
+        #region int Lang
         /// <summary>
         /// Sets Language and loads cliloc
         /// </summary>
@@ -69,7 +75,9 @@ namespace UoFiddler.Controls.UserControls
                 }
             }
         }
+        #endregion
 
+        #region Reload
         /// <summary>
         /// Reload when loaded (file changed)
         /// </summary>
@@ -82,7 +90,9 @@ namespace UoFiddler.Controls.UserControls
 
             OnLoad(this, EventArgs.Empty);
         }
+        #endregion
 
+        #region  OnLoad
         private void OnLoad(object sender, EventArgs e)
         {
             if (IsAncestorSiteInDesignMode || FormsDesignerHelper.IsInDesignMode())
@@ -125,12 +135,16 @@ namespace UoFiddler.Controls.UserControls
 
             Cursor.Current = Cursors.Default;
         }
+        #endregion
 
+        #region OnFilePathChangeEvent
         private void OnFilePathChangeEvent()
         {
             Reload();
         }
+        #endregion
 
+        #region TestCustomLang
         private void TestCustomLang(string what)
         {
             if (Files.GetFilePath(what) != null)
@@ -163,7 +177,9 @@ namespace UoFiddler.Controls.UserControls
                 LangComboBox.EndUpdate();
             }
         }
+        #endregion
 
+        #region OnLangChange
         private void OnLangChange(object sender, EventArgs e)
         {
             if (LangComboBox.SelectedIndex == Lang)
@@ -189,9 +205,15 @@ namespace UoFiddler.Controls.UserControls
 
             dataGridView1.Invalidate();
         }
+        #endregion
 
+        #region GotoNr
         private void GotoNr(object sender, EventArgs e)
         {
+            // Reset the current search word to remove highlighting
+            currentSearchWord = string.Empty;
+            dataGridView1.Refresh();
+
             if (int.TryParse(GotoEntry.Text, NumberStyles.Integer, null, out int nr))
             {
                 for (int i = 0; i < dataGridView1.Rows.Count; ++i)
@@ -201,8 +223,11 @@ namespace UoFiddler.Controls.UserControls
                         continue;
                     }
 
+                    // Set the current search word to the value you are looking for
+                    currentSearchWord = nr.ToString();
                     dataGridView1.Rows[i].Selected = true;
                     dataGridView1.FirstDisplayedScrollingRowIndex = i;
+                    dataGridView1.Refresh();
                     return;
                 }
             }
@@ -214,6 +239,11 @@ namespace UoFiddler.Controls.UserControls
                 MessageBoxIcon.Error,
                 MessageBoxDefaultButton.Button1);
         }
+        #endregion
+
+        #region  FindEntryClick        
+
+        private string currentSearchWord;
 
         private void FindEntryClick(object sender, EventArgs e)
         {
@@ -229,30 +259,57 @@ namespace UoFiddler.Controls.UserControls
 
             bool hasErrors = false;
 
+            // Enter the current search word
+            currentSearchWord = FindEntry.Text.ToLower();
+
             for (int i = dataGridView1.Rows.GetFirstRow(DataGridViewElementStates.Selected) + 1; i < dataGridView1.Rows.Count; ++i)
             {
-                var searchResult = searchMethod(FindEntry.Text, dataGridView1.Rows[i].Cells[1].Value.ToString());
+                var cellText = dataGridView1.Rows[i].Cells[1].Value.ToString().ToLower();
+
+                var searchResult = searchMethod(currentSearchWord, cellText);
                 if (searchResult.HasErrors)
                 {
                     hasErrors = true;
                     break;
                 }
 
-                if (!searchResult.EntryFound)
+                if (searchResult.EntryFound)
                 {
-                    continue;
+                    dataGridView1.Rows[i].Selected = true;
+                    dataGridView1.FirstDisplayedScrollingRowIndex = i;
+                    return;
                 }
-
-                dataGridView1.Rows[i].Selected = true;
-                dataGridView1.FirstDisplayedScrollingRowIndex = i;
-                return;
             }
+
+            // Refresh the DataGridView to update the highlighting
+            dataGridView1.Refresh();
 
             MessageBox.Show(hasErrors ? "Invalid regular expression." : "Entry not found.", "Find Entry",
                 MessageBoxButtons.OK, MessageBoxIcon.Error,
                 MessageBoxDefaultButton.Button1);
         }
+        #endregion
 
+        #region dataGridView1_CellFormatting
+        private void dataGridView1_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
+        {
+            if (e.RowIndex >= 0 && e.ColumnIndex >= 0)
+            {
+                var cell = dataGridView1.Rows[e.RowIndex].Cells[e.ColumnIndex];
+
+                if (cell.Value is string cellText && !string.IsNullOrEmpty(currentSearchWord) && cellText.ToLower().Contains(currentSearchWord))
+                {
+                    e.CellStyle.BackColor = Color.Yellow;
+                }
+                else
+                {
+                    e.CellStyle.BackColor = Color.White;
+                }
+            }
+        }
+        #endregion
+
+        #region OnClickSave
         private void OnClickSave(object sender, EventArgs e)
         {
             dataGridView1.CancelEdit();
@@ -285,7 +342,9 @@ namespace UoFiddler.Controls.UserControls
                 MessageBoxDefaultButton.Button1);
             Options.ChangedUltimaClass["CliLoc"] = false;
         }
+        #endregion
 
+        #region OnCell_dbClick
         private void OnCell_dbClick(object sender, DataGridViewCellEventArgs e)
         {
             if (e.RowIndex < 0)
@@ -298,12 +357,16 @@ namespace UoFiddler.Controls.UserControls
 
             new ClilocDetailForm(cellNr, cellText, SaveEntry).Show();
         }
+        #endregion
 
+        #region OnClick_AddEntry
         private void OnClick_AddEntry(object sender, EventArgs e)
         {
             new ClilocAddForm(IsNumberFree, AddEntry).Show();
         }
+        #endregion
 
+        #region OnClick_DeleteEntry
         private void OnClick_DeleteEntry(object sender, EventArgs e)
         {
             if (dataGridView1.SelectedCells.Count <= 0)
@@ -315,7 +378,9 @@ namespace UoFiddler.Controls.UserControls
             dataGridView1.Invalidate();
             Options.ChangedUltimaClass["CliLoc"] = true;
         }
+        #endregion
 
+        #region OnHeaderClicked
         private void OnHeaderClicked(object sender, DataGridViewCellMouseEventArgs e)
         {
             if (_sortColumn == e.ColumnIndex)
@@ -346,7 +411,9 @@ namespace UoFiddler.Controls.UserControls
 
             dataGridView1.Invalidate();
         }
+        #endregion
 
+        #region OnCLick_CopyClilocNumber
         private void OnCLick_CopyClilocNumber(object sender, EventArgs e)
         {
             if (dataGridView1.SelectedCells.Count > 0)
@@ -355,7 +422,9 @@ namespace UoFiddler.Controls.UserControls
                     ((int)dataGridView1.SelectedCells[0].OwningRow.Cells[0].Value).ToString(), true);
             }
         }
+        #endregion
 
+        #region OnCLick_CopyClilocText
         private void OnCLick_CopyClilocText(object sender, EventArgs e)
         {
             if (dataGridView1.SelectedCells.Count > 0)
@@ -364,7 +433,9 @@ namespace UoFiddler.Controls.UserControls
                     (string)dataGridView1.SelectedCells[0].OwningRow.Cells[1].Value, true);
             }
         }
+        #endregion
 
+        #region SaveEntry
         public void SaveEntry(int number, string text)
         {
             for (int i = 0; i < _cliloc.Entries.Count; ++i)
@@ -386,7 +457,9 @@ namespace UoFiddler.Controls.UserControls
                 return;
             }
         }
+        #endregion
 
+        #region IsNumberFree
         public bool IsNumberFree(int number)
         {
             foreach (StringEntry entry in _cliloc.Entries)
@@ -399,7 +472,9 @@ namespace UoFiddler.Controls.UserControls
 
             return true;
         }
+        #endregion
 
+        #region AddEntry
         public void AddEntry(int number)
         {
             int index = 0;
@@ -422,13 +497,17 @@ namespace UoFiddler.Controls.UserControls
                 ++index;
             }
         }
+        #endregion
 
+        #region FindEntry_PreviewKeyDown
         private static void FindEntry_PreviewKeyDown(object sender, PreviewKeyDownEventArgs e)
         {
             //if (e.KeyData == Keys.Control) || (e.Ke Keys.Alt | Keys.Tab | Keys.a))
             e.IsInputKey = true;
         }
+        #endregion
 
+        #region OnClickExportCSV
         private void OnClickExportCSV(object sender, EventArgs e)
         {
             string path = Options.OutputPath;
@@ -446,7 +525,9 @@ namespace UoFiddler.Controls.UserControls
 
             MessageBox.Show($"CliLoc saved to {fileName}", "Saved", MessageBoxButtons.OK, MessageBoxIcon.Information, MessageBoxDefaultButton.Button1);
         }
+        #endregion
 
+        #region OnClickImportCSV
         private void OnClickImportCSV(object sender, EventArgs e)
         {
             OpenFileDialog dialog = new OpenFileDialog
@@ -530,7 +611,9 @@ namespace UoFiddler.Controls.UserControls
             }
             dialog.Dispose();
         }
+        #endregion
 
+        #region TileDataToolStripMenuItem
         private void TileDataToolStripMenuItem_Click(object sender, EventArgs e)
         {
             int count = 0;
@@ -589,7 +672,9 @@ namespace UoFiddler.Controls.UserControls
                 MessageBox.Show(this, "No entries changed.", "Import Done", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         }
+        #endregion
 
+        #region GetCliLocBaseId
         private static int GetCliLocBaseId(int tileId)
         {
             if (tileId >= 0x4000u)
@@ -613,7 +698,9 @@ namespace UoFiddler.Controls.UserControls
 
             throw new ArgumentException("Tile id out of range.", nameof(tileId));
         }
+        #endregion
 
+        #region GotoEntry_Enter
         private void GotoEntry_Enter(object sender, EventArgs e)
         {
             if (GotoEntry.Text == _searchNumberPlaceholder)
@@ -621,7 +708,9 @@ namespace UoFiddler.Controls.UserControls
                 GotoEntry.Text = "";
             }
         }
+        #endregion
 
+        #region FindEntry_Enter
         private void FindEntry_Enter(object sender, EventArgs e)
         {
             if (FindEntry.Text == _searchTextPlaceholder)
@@ -629,7 +718,9 @@ namespace UoFiddler.Controls.UserControls
                 FindEntry.Text = "";
             }
         }
+        #endregion
 
+        #region GotoEntry_KeyDown
         private void GotoEntry_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.KeyCode != Keys.Enter)
@@ -641,7 +732,9 @@ namespace UoFiddler.Controls.UserControls
             e.SuppressKeyPress = true;
             e.Handled = true;
         }
+        #endregion
 
+        #region FindEntry_KeyDown
         private void FindEntry_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.KeyCode != Keys.Enter)
@@ -653,5 +746,20 @@ namespace UoFiddler.Controls.UserControls
             e.SuppressKeyPress = true;
             e.Handled = true;
         }
+        #endregion
+
+        #region copyToolStripMenuItem
+        private void copyToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (dataGridView1.SelectedCells.Count > 0)
+            {
+                // Access the first selected cell
+                DataGridViewCell cell = dataGridView1.SelectedCells[0];
+
+                // Copy the cell's value to the clipboard
+                Clipboard.SetDataObject(cell.Value.ToString(), true);
+            }
+        }
+        #endregion
     }
 }
