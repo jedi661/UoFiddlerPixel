@@ -26,6 +26,7 @@ Version : 4.12.3
 - Add TileViewContextMenuStrip_Closing To focus on the index.
 - Add Ciloc a Copy Clipboard Only
 - Add Ciloc Advanced search function that highlights matches and navigates through results.
+- Add AddHtmlLocalized Form created, fills text fields, generates and copies code for HTML localization
 
 Version : 4.12.2
 - BildFusion Add Sharp , Clipboard, Texture Cut.

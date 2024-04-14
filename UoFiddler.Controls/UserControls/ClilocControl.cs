@@ -761,5 +761,62 @@ namespace UoFiddler.Controls.UserControls
             }
         }
         #endregion
+
+        #region addHtmlLocalizedToolStripMenuItem
+        private void addHtmlLocalizedToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Form form = new Form();
+            TextBox[] textBoxes = new TextBox[7];
+            Label[] labels = new Label[7]
+            {
+        new Label { Text = "X - coordinate" },
+        new Label { Text = "Y - coordinate" },
+        new Label { Text = "Width" },
+        new Label { Text = "Height" },
+        new Label { Text = "Color" },
+        new Label { Text = "Arguments" },
+        new Label { Text = "comment" }
+            };
+            Button copyButton = new Button();
+
+            for (int i = 0; i < textBoxes.Length; i++)
+            {
+                labels[i].Top = i * 30;
+                labels[i].Left = 10;
+                form.Controls.Add(labels[i]);
+
+                textBoxes[i] = new TextBox { Top = i * 30, Left = labels[i].Right + 10 };
+                form.Controls.Add(textBoxes[i]);
+            }
+
+            // Set the default value for the arguments text box
+            textBoxes[5].Text = "string.Empty";
+
+            copyButton.Text = "Copy";
+            copyButton.Top = textBoxes.Length * 30;
+            copyButton.Left = 10;
+            copyButton.Click += (sender, e) =>
+            {
+                if (dataGridView1.SelectedCells.Count > 0)
+                {
+                    int selectedRow = dataGridView1.SelectedCells[0].RowIndex;
+                    string number = dataGridView1.Rows[selectedRow].Cells[0].Value.ToString();
+                    string text = dataGridView1.Rows[selectedRow].Cells[1].Value.ToString();
+
+                    // Automatically set comment text from Cells[1]
+                    textBoxes[6].Text = text;
+
+                    string arguments = textBoxes[5].Text == "string.Empty" ? "string.Empty" : $"\"{textBoxes[5].Text}\"";
+
+                    string result = $"AddHtmlLocalized({textBoxes[0].Text}, {textBoxes[1].Text}, {textBoxes[2].Text}, {textBoxes[3].Text}, {number}, {arguments}, {textBoxes[4].Text}, false, false); // {textBoxes[6].Text}";
+
+                    Clipboard.SetText(result);
+                }
+            };
+
+            form.Controls.Add(copyButton);
+            form.Show();
+        }
+        #endregion
     }
 }
