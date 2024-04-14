@@ -48,6 +48,7 @@ namespace UoFiddler.Controls.UserControls
             toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
             addEntryToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             deleteEntryToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            addHtmlLocalizedToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             toolStrip1 = new System.Windows.Forms.ToolStrip();
             LangComboBox = new System.Windows.Forms.ToolStripComboBox();
             toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
@@ -63,7 +64,7 @@ namespace UoFiddler.Controls.UserControls
             toolStripDropDownButton1 = new System.Windows.Forms.ToolStripDropDownButton();
             cSVToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             tileDataToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            addHtmlLocalizedToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
             ((System.ComponentModel.ISupportInitialize)dataGridView1).BeginInit();
             contextMenuStrip1.SuspendLayout();
             toolStrip1.SuspendLayout();
@@ -89,9 +90,9 @@ namespace UoFiddler.Controls.UserControls
             // 
             // contextMenuStrip1
             // 
-            contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { copyCliLocNumberToolStripMenuItem, copyCliLocTextToolStripMenuItem, copyToolStripMenuItem, toolStripSeparator3, addEntryToolStripMenuItem, deleteEntryToolStripMenuItem, addHtmlLocalizedToolStripMenuItem });
+            contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { copyCliLocNumberToolStripMenuItem, copyCliLocTextToolStripMenuItem, copyToolStripMenuItem, toolStripSeparator3, addEntryToolStripMenuItem, deleteEntryToolStripMenuItem, toolStripSeparator4, addHtmlLocalizedToolStripMenuItem });
             contextMenuStrip1.Name = "contextMenuStrip1";
-            contextMenuStrip1.Size = new System.Drawing.Size(186, 164);
+            contextMenuStrip1.Size = new System.Drawing.Size(186, 170);
             // 
             // copyCliLocNumberToolStripMenuItem
             // 
@@ -137,6 +138,15 @@ namespace UoFiddler.Controls.UserControls
             deleteEntryToolStripMenuItem.Size = new System.Drawing.Size(185, 22);
             deleteEntryToolStripMenuItem.Text = "Delete Entry";
             deleteEntryToolStripMenuItem.Click += OnClick_DeleteEntry;
+            // 
+            // addHtmlLocalizedToolStripMenuItem
+            // 
+            addHtmlLocalizedToolStripMenuItem.Image = Properties.Resources.Covert;
+            addHtmlLocalizedToolStripMenuItem.Name = "addHtmlLocalizedToolStripMenuItem";
+            addHtmlLocalizedToolStripMenuItem.Size = new System.Drawing.Size(185, 22);
+            addHtmlLocalizedToolStripMenuItem.Text = "AddHtmlLocalized";
+            addHtmlLocalizedToolStripMenuItem.ToolTipText = "AddHtmlLocalized generator";
+            addHtmlLocalizedToolStripMenuItem.Click += addHtmlLocalizedToolStripMenuItem_Click;
             // 
             // toolStrip1
             // 
@@ -258,12 +268,10 @@ namespace UoFiddler.Controls.UserControls
             tileDataToolStripMenuItem.Text = "TileData";
             tileDataToolStripMenuItem.Click += TileDataToolStripMenuItem_Click;
             // 
-            // addHtmlLocalizedToolStripMenuItem
+            // toolStripSeparator4
             // 
-            addHtmlLocalizedToolStripMenuItem.Name = "addHtmlLocalizedToolStripMenuItem";
-            addHtmlLocalizedToolStripMenuItem.Size = new System.Drawing.Size(185, 22);
-            addHtmlLocalizedToolStripMenuItem.Text = "AddHtmlLocalized";
-            addHtmlLocalizedToolStripMenuItem.Click += addHtmlLocalizedToolStripMenuItem_Click;
+            toolStripSeparator4.Name = "toolStripSeparator4";
+            toolStripSeparator4.Size = new System.Drawing.Size(182, 6);
             // 
             // ClilocControl
             // 
@@ -310,5 +318,6 @@ namespace UoFiddler.Controls.UserControls
         private System.Windows.Forms.ToolStripButton RegexToolStripButton;
         private System.Windows.Forms.ToolStripMenuItem copyToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem addHtmlLocalizedToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator4;
     }
 }
