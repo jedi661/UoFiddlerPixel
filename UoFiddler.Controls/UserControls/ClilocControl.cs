@@ -769,13 +769,13 @@ namespace UoFiddler.Controls.UserControls
             TextBox[] textBoxes = new TextBox[7];
             Label[] labels = new Label[7]
             {
-        new Label { Text = "X - coordinate" },
-        new Label { Text = "Y - coordinate" },
-        new Label { Text = "Width" },
-        new Label { Text = "Height" },
-        new Label { Text = "Color" },
-        new Label { Text = "Arguments" },
-        new Label { Text = "comment" }
+                new Label { Text = "X - coordinate" },
+                new Label { Text = "Y - coordinate" },
+                new Label { Text = "Width" },
+                new Label { Text = "Height" },
+                new Label { Text = "Color" },
+                new Label { Text = "Arguments" },
+                new Label { Text = "comment" }
             };
             Button copyButton = new Button();
 

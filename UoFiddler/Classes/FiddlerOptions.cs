@@ -41,8 +41,8 @@ namespace UoFiddler.Classes
         /// </summary>
         public static bool UpdateCheckOnStart { get; set; }
 
-        public static string RepositoryOwner { get; } = "polserver";
-        public static string RepositoryName { get; } = "UOFiddler";
+        public static string RepositoryOwner { get; } = "jedi661";  // Old polserver
+        public static string RepositoryName { get; } = "UoFiddlerPixel"; // Old UOFiddler
 
         public static bool StoreFormState { get; set; }
         public static bool MaximisedForm { get; set; }

@@ -53,6 +53,8 @@ namespace UoFiddler.Forms
             checkBoxFormState = new System.Windows.Forms.CheckBox();
             label8 = new System.Windows.Forms.Label();
             label9 = new System.Windows.Forms.Label();
+            linkLabel2 = new System.Windows.Forms.LinkLabel();
+            ShowRepoInfoButton = new System.Windows.Forms.Button();
             SuspendLayout();
             // 
             // richTextBox1
@@ -105,7 +107,7 @@ namespace UoFiddler.Forms
             // label1
             // 
             label1.AutoSize = true;
-            label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+            label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold);
             label1.ForeColor = System.Drawing.SystemColors.ControlText;
             label1.Location = new System.Drawing.Point(15, 290);
             label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
@@ -127,7 +129,7 @@ namespace UoFiddler.Forms
             // label3
             // 
             label3.AutoSize = true;
-            label3.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+            label3.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold);
             label3.Location = new System.Drawing.Point(14, 333);
             label3.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             label3.Name = "label3";
@@ -148,7 +150,7 @@ namespace UoFiddler.Forms
             // label5
             // 
             label5.AutoSize = true;
-            label5.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+            label5.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold);
             label5.Location = new System.Drawing.Point(15, 377);
             label5.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             label5.Name = "label5";
@@ -191,7 +193,7 @@ namespace UoFiddler.Forms
             // label8
             // 
             label8.AutoSize = true;
-            label8.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+            label8.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold);
             label8.Location = new System.Drawing.Point(16, 432);
             label8.Name = "label8";
             label8.Size = new System.Drawing.Size(103, 13);
@@ -207,11 +209,34 @@ namespace UoFiddler.Forms
             label9.TabIndex = 14;
             label9.Text = "AsYlum, Nikodemus";
             // 
+            // linkLabel2
+            // 
+            linkLabel2.AutoSize = true;
+            linkLabel2.Location = new System.Drawing.Point(112, 10);
+            linkLabel2.Name = "linkLabel2";
+            linkLabel2.Size = new System.Drawing.Size(83, 15);
+            linkLabel2.TabIndex = 15;
+            linkLabel2.TabStop = true;
+            linkLabel2.Text = "UoPixelFiddler";
+            linkLabel2.LinkClicked += linkLabel2_LinkClicked;
+            // 
+            // ShowRepoInfoButton
+            // 
+            ShowRepoInfoButton.Location = new System.Drawing.Point(282, 511);
+            ShowRepoInfoButton.Name = "ShowRepoInfoButton";
+            ShowRepoInfoButton.Size = new System.Drawing.Size(133, 27);
+            ShowRepoInfoButton.TabIndex = 16;
+            ShowRepoInfoButton.Text = "Show Repository Info";
+            ShowRepoInfoButton.UseVisualStyleBackColor = true;
+            ShowRepoInfoButton.Click += ShowRepoInfoButton_Click;
+            // 
             // AboutBoxForm
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             ClientSize = new System.Drawing.Size(504, 551);
+            Controls.Add(ShowRepoInfoButton);
+            Controls.Add(linkLabel2);
             Controls.Add(label9);
             Controls.Add(label8);
             Controls.Add(checkBoxFormState);
@@ -256,5 +281,7 @@ namespace UoFiddler.Forms
         private System.Windows.Forms.RichTextBox richTextBox1;
         private System.Windows.Forms.Label label8;
         private System.Windows.Forms.Label label9;
+        private System.Windows.Forms.LinkLabel linkLabel2;
+        private System.Windows.Forms.Button ShowRepoInfoButton;
     }
 }
