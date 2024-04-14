@@ -10,15 +10,22 @@
  ***************************************************************************/
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Windows.Forms;
 using UoFiddler.Classes;
 using UoFiddler.Controls.Classes;
+using System.Drawing;
 
 namespace UoFiddler.Forms
 {
     public partial class AboutBoxForm : Form
-    {
+    {        
+        private Timer animationTimer;
+        private Random random;
+        private List<Label> labels;
+        private List<string> specialWords = new List<string> { "Code", "Nikodemus", "Matrix", "Ultima", "Turley", "Ares", "AsYlum", "MuadDib", "Nibbio", "Soulblighter", "Andreew", "Online" };
+
         #region AboutBoxForm
         public AboutBoxForm()
         {
@@ -26,7 +33,78 @@ namespace UoFiddler.Forms
             Icon = Options.GetFiddlerIcon();
 
             checkBoxCheckOnStart.Checked = FiddlerOptions.UpdateCheckOnStart;
-            checkBoxFormState.Checked = FiddlerOptions.StoreFormState;
+            checkBoxFormState.Checked = FiddlerOptions.StoreFormState;                       
+
+            labels = new List<Label>();
+
+            this.Load += AboutBoxForm_Load;
+        }
+        #endregion
+
+        #region AboutBoxForm_Load
+        private void AboutBoxForm_Load(object sender, EventArgs e)
+        {
+            InitializeAnimation();
+        }
+        #endregion
+
+        #region InitializeAnimation()
+        private void InitializeAnimation()
+        {
+        animationTimer = new Timer
+        {
+            Interval = 50
+        };
+
+        random = new Random();
+
+        for (int i = 0; i < 100; i++)
+        {
+            var label = new Label
+            {
+                ForeColor = Color.Green,
+                Font = new Font("Courier New", 14, FontStyle.Bold),
+                Text = GetRandomCharacter(),
+                Location = new Point(random.Next(animationPanel.Width), random.Next(animationPanel.Height))
+            };
+
+            labels.Add(label);
+            animationPanel.Controls.Add(label);
+        }
+
+        animationTimer.Tick += AnimationTimer_Tick;
+        animationTimer.Start();
+        }
+        #endregion
+
+        #region GetRandomCharacter()
+        private string GetRandomCharacter()
+        {
+            // Occasionally return a special word
+            if (random.Next(200) == 0) // Increase this number to decrease the frequency of the special words
+            {
+                return specialWords[random.Next(specialWords.Count)];
+            }
+
+            // Otherwise return a random character
+            return ((char)random.Next(33, 127)).ToString();
+        }
+        #endregion
+
+        #region AnimationTimer_Tick
+        private void AnimationTimer_Tick(object sender, EventArgs e)
+        {
+            foreach (var label in labels)
+            {
+                label.Top += 10;
+                
+                if (label.Top > animationPanel.Height)
+                {
+                    label.Top = 0;
+                    label.Left = random.Next(animationPanel.Width);
+                    label.Text = GetRandomCharacter();
+                }
+            }
         }
         #endregion
 

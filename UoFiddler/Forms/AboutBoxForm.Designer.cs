@@ -38,8 +38,6 @@ namespace UoFiddler.Forms
         /// </summary>
         private void InitializeComponent()
         {
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(AboutBoxForm));
-            richTextBox1 = new System.Windows.Forms.RichTextBox();
             checkBoxCheckOnStart = new System.Windows.Forms.CheckBox();
             button1 = new System.Windows.Forms.Button();
             linkLabel1 = new System.Windows.Forms.LinkLabel();
@@ -55,18 +53,8 @@ namespace UoFiddler.Forms
             label9 = new System.Windows.Forms.Label();
             linkLabel2 = new System.Windows.Forms.LinkLabel();
             ShowRepoInfoButton = new System.Windows.Forms.Button();
+            animationPanel = new System.Windows.Forms.Panel();
             SuspendLayout();
-            // 
-            // richTextBox1
-            // 
-            richTextBox1.BackColor = System.Drawing.SystemColors.ControlLightLight;
-            richTextBox1.Location = new System.Drawing.Point(15, 29);
-            richTextBox1.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            richTextBox1.Name = "richTextBox1";
-            richTextBox1.ReadOnly = true;
-            richTextBox1.Size = new System.Drawing.Size(478, 252);
-            richTextBox1.TabIndex = 0;
-            richTextBox1.Text = resources.GetString("richTextBox1.Text");
             // 
             // checkBoxCheckOnStart
             // 
@@ -230,11 +218,21 @@ namespace UoFiddler.Forms
             ShowRepoInfoButton.UseVisualStyleBackColor = true;
             ShowRepoInfoButton.Click += ShowRepoInfoButton_Click;
             // 
+            // animationPanel
+            // 
+            animationPanel.BackColor = System.Drawing.SystemColors.ActiveBorder;
+            animationPanel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            animationPanel.Location = new System.Drawing.Point(13, 28);
+            animationPanel.Name = "animationPanel";
+            animationPanel.Size = new System.Drawing.Size(422, 252);
+            animationPanel.TabIndex = 17;
+            // 
             // AboutBoxForm
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            ClientSize = new System.Drawing.Size(504, 551);
+            ClientSize = new System.Drawing.Size(448, 551);
+            Controls.Add(animationPanel);
             Controls.Add(ShowRepoInfoButton);
             Controls.Add(linkLabel2);
             Controls.Add(label9);
@@ -250,7 +248,6 @@ namespace UoFiddler.Forms
             Controls.Add(linkLabel1);
             Controls.Add(button1);
             Controls.Add(checkBoxCheckOnStart);
-            Controls.Add(richTextBox1);
             DoubleBuffered = true;
             FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
             Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
@@ -278,10 +275,10 @@ namespace UoFiddler.Forms
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.Label label7;
         private System.Windows.Forms.LinkLabel linkLabel1;
-        private System.Windows.Forms.RichTextBox richTextBox1;
         private System.Windows.Forms.Label label8;
         private System.Windows.Forms.Label label9;
         private System.Windows.Forms.LinkLabel linkLabel2;
         private System.Windows.Forms.Button ShowRepoInfoButton;
+        private System.Windows.Forms.Panel animationPanel;
     }
 }
