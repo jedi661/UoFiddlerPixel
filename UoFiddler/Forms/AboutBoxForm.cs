@@ -1,6 +1,7 @@
 ﻿/***************************************************************************
  *
  * $Author: Turley
+ * Advanced Nikodemus
  * 
  * "THE BEER-WARE LICENSE"
  * As long as you retain this notice you can do whatever you want with 
@@ -24,19 +25,20 @@ namespace UoFiddler.Forms
         private Timer animationTimer;
         private Random random;
         private List<Label> labels;
-        private List<string> specialWords = new List<string> { "Code", "Nikodemus", "Matrix", "Ultima", "Turley", "Ares", "AsYlum", "MuadDib", "Nibbio", "Soulblighter", "Andreew", "Online" };
+        private List<string> specialWords = new List<string>
+        {
+            "Code", "Nikodemus", "Matrix", "Ultima", "Turley", "Ares", "AsYlum", "MuadDib", "Nibbio", "Soulblighter", "Andreew", "Online"
+        };
 
         #region AboutBoxForm
         public AboutBoxForm()
         {
             InitializeComponent();
+            this.DoubleBuffered = true; // Enable double buffering
             Icon = Options.GetFiddlerIcon();
-
             checkBoxCheckOnStart.Checked = FiddlerOptions.UpdateCheckOnStart;
-            checkBoxFormState.Checked = FiddlerOptions.StoreFormState;                       
-
+            checkBoxFormState.Checked = FiddlerOptions.StoreFormState;
             labels = new List<Label>();
-
             this.Load += AboutBoxForm_Load;
         }
         #endregion
@@ -51,29 +53,27 @@ namespace UoFiddler.Forms
         #region InitializeAnimation()
         private void InitializeAnimation()
         {
-        animationTimer = new Timer
-        {
-            Interval = 50
-        };
-
-        random = new Random();
-
-        for (int i = 0; i < 100; i++)
-        {
-            var label = new Label
+            animationTimer = new Timer
             {
-                ForeColor = Color.Green,
-                Font = new Font("Courier New", 14, FontStyle.Bold),
-                Text = GetRandomCharacter(),
-                Location = new Point(random.Next(animationPanel.Width), random.Next(animationPanel.Height))
+                Interval = 50
             };
-
-            labels.Add(label);
-            animationPanel.Controls.Add(label);
-        }
-
-        animationTimer.Tick += AnimationTimer_Tick;
-        animationTimer.Start();
+            
+            random = new Random();
+            
+            for (int i = 0; i < 100; i++)
+            {
+                var label = new Label
+                {
+                    ForeColor = Color.Green,
+                    Font = new Font("Courier New", 14, FontStyle.Bold),
+                    Text = GetRandomCharacter(),
+                    Location = new Point(random.Next(animationPanel.Width), random.Next(animationPanel.Height))
+                };
+                labels.Add(label);
+                animationPanel.Controls.Add(label);
+            }
+            animationTimer.Tick += AnimationTimer_Tick;
+            animationTimer.Start();
         }
         #endregion
 
