@@ -36,6 +36,7 @@ namespace UoFiddler.Controls.UserControls
 
         private int _soundIdOffset;
 
+        #region SoundsControl
         public SoundsControl()
         {
             InitializeComponent();
@@ -50,7 +51,9 @@ namespace UoFiddler.Controls.UserControls
 
             _soundIdOffset = GetSoundIdOffset();
         }
+        #endregion
 
+        #region Reload
         /// <summary>
         /// ReLoads if loaded
         /// </summary>
@@ -65,7 +68,9 @@ namespace UoFiddler.Controls.UserControls
 
             OnLoad(this, EventArgs.Empty);
         }
+        #endregion
 
+        #region OnLoad
         private void OnLoad(object sender, EventArgs e)
         {
             if (IsAncestorSiteInDesignMode || FormsDesignerHelper.IsInDesignMode())
@@ -148,12 +153,16 @@ namespace UoFiddler.Controls.UserControls
                 SearchId(oldItem.Value);
             }
         }
+        #endregion
 
+        #region GetSoundIdOffset
         private static int GetSoundIdOffset()
         {
             return Options.PolSoundIdOffset ? 1 : 0;
         }
+        #endregion
 
+        #region OnSpTimerTick
         private void OnSpTimerTick(object sender, EventArgs eventArgs)
         {
             BeginInvoke((Action)(() =>
@@ -175,28 +184,36 @@ namespace UoFiddler.Controls.UserControls
                     _spTimer.Stop();
                 }));
         }
+        #endregion
 
+        #region OnFilePathChangeEvent
         private void OnFilePathChangeEvent()
         {
             Reload();
         }
+        #endregion
 
+        #region OnClickPlay
         private void OnClickPlay(object sender, EventArgs e)
         {
             PlaySound((int)treeView.SelectedNode.Tag);
         }
+        #endregion
 
+        #region OnDoubleClick
         private void OnDoubleClick(object sender, TreeNodeMouseClickEventArgs e)
         {
             PlaySound((int)e.Node.Tag);
         }
+        #endregion
 
+        #region  OnClickStop
         private void OnClickStop(object sender, EventArgs e)
         {
-            // Stoppen Sie den Sound, falls er abgespielt wird
+            // Stop the sound if it is playing
             StopSound();
 
-            // Wenn ein Loop läuft, stoppen Sie ihn
+            // If a loop is running, stop it
             lock (_loopLock)
             {
                 if (_looping)
@@ -204,16 +221,18 @@ namespace UoFiddler.Controls.UserControls
                     _looping = false;
                     if (_loopThread != null)
                     {
-                        if (!_loopThread.Join(1000)) // Warten Sie bis zu 1 Sekunde auf den Thread, um zu beenden
+                        if (!_loopThread.Join(1000)) // Wait up to 1 second for the thread to exit
                         {
-                            // Der Thread hat nicht rechtzeitig geendet, Sie könnten hier zusätzliche Maßnahmen ergreifen
+                            // The thread didn't end in time, you could take additional action here
                         }
                         _loopThread = null;
                     }
                 }
             }
         }
+        #endregion
 
+        #region StopSound
         private void StopSound()
         {
             _sp.Stop();
@@ -224,7 +243,9 @@ namespace UoFiddler.Controls.UserControls
             stopButton.Visible = false;
             StopSoundButton.Enabled = false;
         }
+        #endregion
 
+        #region PlaySound
         private void PlaySound(int id)
         {
             _sp.Stop();
@@ -264,7 +285,9 @@ namespace UoFiddler.Controls.UserControls
                 _playing = true;
             }
         }
+        #endregion
 
+        #region BeforeSelect
         private void BeforeSelect(object sender, TreeViewCancelEventArgs e)
         {
             if (_playing)
@@ -272,7 +295,9 @@ namespace UoFiddler.Controls.UserControls
                 StopSound();
             }
         }
+        #endregion
 
+        #region AfterSelect
         private void AfterSelect(object sender, EventArgs e)
         {
             if (treeView.SelectedNode == null)
@@ -307,7 +332,9 @@ namespace UoFiddler.Controls.UserControls
                 IdInsertTextbox.Text = $"0x{(int)treeView.SelectedNode.Tag + _soundIdOffset:X}";
             }
         }
+        #endregion
 
+        #region OnChangeSort
         private void OnChangeSort(object sender, EventArgs e)
         {
             if (showFreeSlotsToolStripMenuItem.Checked)
@@ -347,7 +374,9 @@ namespace UoFiddler.Controls.UserControls
                 SearchId(oldItem.Value);
             }
         }
+        #endregion
 
+        #region DoSearchName
         private void DoSearchName(string name, bool next, bool prev)
         {
             int index = 0;
@@ -410,7 +439,9 @@ namespace UoFiddler.Controls.UserControls
                 }
             }
         }
+        #endregion
 
+        #region OnClickExtract
         private void OnClickExtract(object sender, EventArgs e)
         {
             if (treeView.SelectedNode == null)
@@ -440,7 +471,9 @@ namespace UoFiddler.Controls.UserControls
             MessageBox.Show($"Sound saved to {fileName}", "Saved", MessageBoxButtons.OK, MessageBoxIcon.Information,
                 MessageBoxDefaultButton.Button1);
         }
+        #endregion
 
+        #region OnClickSave(
         private void OnClickSave(object sender, EventArgs e)
         {
             Cursor.Current = Cursors.WaitCursor;
@@ -451,7 +484,9 @@ namespace UoFiddler.Controls.UserControls
                 MessageBoxDefaultButton.Button1);
             Options.ChangedUltimaClass["Sound"] = false;
         }
+        #endregion
 
+        #region OnClickRemove
         private void OnClickRemove(object sender, EventArgs e)
         {
             if (treeView.SelectedNode == null)
@@ -484,7 +519,9 @@ namespace UoFiddler.Controls.UserControls
             AfterSelect(this, e);
             Options.ChangedUltimaClass["Sound"] = true;
         }
+        #endregion
 
+        #region OnClickExportSoundListCsv
         private void OnClickExportSoundListCsv(object sender, EventArgs e)
         {
             string fileName = Path.Combine(Options.OutputPath, "SoundList.csv");
@@ -494,7 +531,9 @@ namespace UoFiddler.Controls.UserControls
             MessageBox.Show($"SoundList saved to {fileName}", "Saved", MessageBoxButtons.OK, MessageBoxIcon.Information,
                 MessageBoxDefaultButton.Button1);
         }
+        #endregion
 
+        #region SearchId
         public bool SearchId(int id)
         {
             for (int i = 0; i < treeView.Nodes.Count; ++i)
@@ -514,14 +553,18 @@ namespace UoFiddler.Controls.UserControls
 
             return false;
         }
+        #endregion
 
+        #region ShowFreeSlotsClick
         private void ShowFreeSlotsClick(object sender, EventArgs e)
         {
             Reload();
 
             nextFreeSlotToolStripMenuItem.Enabled = showFreeSlotsToolStripMenuItem.Checked;
         }
+        #endregion
 
+        #region OnClickReplace
         private void OnClickReplace(object sender, EventArgs e)
         {
             string file;
@@ -621,7 +664,9 @@ namespace UoFiddler.Controls.UserControls
 
             Options.ChangedUltimaClass["Sound"] = true;
         }
+        #endregion
 
+        #region NextFreeSlotToolStripMenuItem
         private void NextFreeSlotToolStripMenuItem_Click(object sender, EventArgs e)
         {
             for (int i = treeView.Nodes.IndexOf(treeView.SelectedNode) + 1; i < treeView.Nodes.Count; ++i)
@@ -640,7 +685,9 @@ namespace UoFiddler.Controls.UserControls
                 return;
             }
         }
+        #endregion
 
+        #region TreeView_KeyDown
         private void TreeView_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.Escape)
@@ -682,7 +729,9 @@ namespace UoFiddler.Controls.UserControls
                 e.Handled = true;
             }
         }
+        #endregion
 
+        #region TreeViewOnAfterLabelEdit
         private void TreeViewOnAfterLabelEdit(object sender, NodeLabelEditEventArgs e)
         {
             int id = (int)e.Node.Tag;
@@ -716,7 +765,9 @@ namespace UoFiddler.Controls.UserControls
 
             e.CancelEdit = true;
         }
+        #endregion
 
+        #region TreeView_BeforeLabelEdit
         private void TreeView_BeforeLabelEdit(object sender, NodeLabelEditEventArgs e)
         {
             int id = (int)e.Node.Tag;
@@ -730,7 +781,9 @@ namespace UoFiddler.Controls.UserControls
                 e.CancelEdit = true;
             }
         }
+        #endregion
 
+        #region WavChooseInsertButton
         private string _wavChosen;
 
         private void WavChooseInsertButton_Click(object sender, EventArgs e)
@@ -749,12 +802,16 @@ namespace UoFiddler.Controls.UserControls
                 }
             }
         }
+        #endregion
 
+        #region AddInsertReplaceButton
         private void AddInsertReplaceButton_Click(object sender, EventArgs e)
         {
             OnClickReplace(null, e);
         }
+        #endregion
 
+        #region SearchByIdButton
         private void SearchByIdButton_Click(object sender, EventArgs e)
         {
             if (!Utils.ConvertStringToInt(SearchNameTextbox.Text, out int id))
@@ -767,32 +824,44 @@ namespace UoFiddler.Controls.UserControls
                 MessageBox.Show($"Can't find Sound with ID {SearchNameTextbox.Text}?");
             }
         }
+        #endregion
 
+        #region SearchByNameButton
         private void SearchByNameButton_Click(object sender, EventArgs e)
         {
             DoSearchName(SearchNameTextbox.Text, false, false);
         }
+        #endregion
 
+        #region GoNextResultButton
         private void GoNextResultButton_Click(object sender, EventArgs e)
         {
             DoSearchName(SearchNameTextbox.Text, true, false);
         }
+        #endregion
 
+        #region GoPrevResultButton
         private void GoPrevResultButton_Click(object sender, EventArgs e)
         {
             DoSearchName(SearchNameTextbox.Text, false, true);
         }
+        #endregion
 
+        #region ExportAllSoundsToolStripMenuItem
         private void ExportAllSoundsToolStripMenuItem_Click(object sender, EventArgs e)
         {
             ExportAllSounds();
         }
+        #endregion
 
+        #region ExportAllSoundsButton
         private void ExportAllSoundsButton_Click(object sender, EventArgs e)
         {
             ExportAllSounds();
         }
+        #endregion
 
+        #region ExportAllSounds
         private void ExportAllSounds()
         {
             for (int i = 0; i < _soundsLength; ++i)
@@ -825,14 +894,16 @@ namespace UoFiddler.Controls.UserControls
             MessageBox.Show("Extract all sounds complete.", "Saved", MessageBoxButtons.OK, MessageBoxIcon.Information,
                 MessageBoxDefaultButton.Button1);
         }
+        #endregion
 
+        #region loopToolStripMenuItem
         private System.Threading.Thread _loopThread;
         private bool _looping;
         private readonly object _loopLock = new object();
 
         private void loopToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            // Stellen Sie sicher, dass ein Sound ausgewählt ist
+            // Make sure a sound is selected
             if (treeView.SelectedNode == null)
             {
                 return;
@@ -845,7 +916,7 @@ namespace UoFiddler.Controls.UserControls
                 return;
             }
 
-            // Wenn bereits ein Loop läuft, stoppen Sie ihn
+            // If a loop is already running, stop it
             lock (_loopLock)
             {
                 if (_looping)
@@ -854,9 +925,9 @@ namespace UoFiddler.Controls.UserControls
                     _spTimer.Stop();
                     if (_loopThread != null)
                     {
-                        if (!_loopThread.Join(1000)) // Warten Sie bis zu 1 Sekunde auf den Thread, um zu beenden
+                        if (!_loopThread.Join(1000)) // Wait up to 1 second for the thread to exit
                         {
-                            // Der Thread hat nicht rechtzeitig geendet, Sie könnten hier zusätzliche Maßnahmen ergreifen
+                            // The thread didn't end in time, you could take additional action here
                         }
                         _loopThread = null;
                     }
@@ -864,13 +935,13 @@ namespace UoFiddler.Controls.UserControls
                 }
             }
 
-            // Stoppen Sie den aktuellen Sound, falls er abgespielt wird
+            // Stop the current sound if it is playing
             if (_playing)
             {
                 StopSound();
             }
 
-            // Starten Sie einen neuen Thread, um den Sound in einer Schleife abzuspielen
+            // Start a new thread to play the sound in a loop
             _loopThread = new System.Threading.Thread(() =>
             {
                 try
@@ -885,7 +956,7 @@ namespace UoFiddler.Controls.UserControls
                         while (_looping)
                         {
                             _sp.PlaySync();
-                            // Setzen Sie den Timer zurück und starten Sie ihn erneut, wenn der Sound von vorne beginnt
+                            // Reset the timer and start it again when the sound starts again
                             this.Invoke((MethodInvoker)delegate
                             {
                                 _spTimerStart = DateTime.Now;
@@ -896,7 +967,7 @@ namespace UoFiddler.Controls.UserControls
                 }
                 catch (Exception ex)
                 {
-                    // Behandeln Sie den Fehler auf geeignete Weise
+                    // Handle the error appropriately
                     Console.WriteLine(ex);
                 }
             });
@@ -904,6 +975,6 @@ namespace UoFiddler.Controls.UserControls
 
             _playing = true;
         }
-
+        #endregion
     }
 }
