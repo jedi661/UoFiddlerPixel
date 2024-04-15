@@ -8,6 +8,7 @@ version more than the original version. Also, some source codes from older and N
 
 Version : 4.12.4
 - Add About revised, removed more Richtextbox and added a matrix animation with the names of the developers, new links, and new information.
+- Add Sound Loop
 
 Version : 4.12.3
 - Add Items Image Colors and Update.

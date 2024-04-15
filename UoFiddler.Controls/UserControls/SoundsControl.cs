@@ -193,7 +193,25 @@ namespace UoFiddler.Controls.UserControls
 
         private void OnClickStop(object sender, EventArgs e)
         {
+            // Stoppen Sie den Sound, falls er abgespielt wird
             StopSound();
+
+            // Wenn ein Loop läuft, stoppen Sie ihn
+            lock (_loopLock)
+            {
+                if (_looping)
+                {
+                    _looping = false;
+                    if (_loopThread != null)
+                    {
+                        if (!_loopThread.Join(1000)) // Warten Sie bis zu 1 Sekunde auf den Thread, um zu beenden
+                        {
+                            // Der Thread hat nicht rechtzeitig geendet, Sie könnten hier zusätzliche Maßnahmen ergreifen
+                        }
+                        _loopThread = null;
+                    }
+                }
+            }
         }
 
         private void StopSound()
@@ -807,5 +825,85 @@ namespace UoFiddler.Controls.UserControls
             MessageBox.Show("Extract all sounds complete.", "Saved", MessageBoxButtons.OK, MessageBoxIcon.Information,
                 MessageBoxDefaultButton.Button1);
         }
+
+        private System.Threading.Thread _loopThread;
+        private bool _looping;
+        private readonly object _loopLock = new object();
+
+        private void loopToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // Stellen Sie sicher, dass ein Sound ausgewählt ist
+            if (treeView.SelectedNode == null)
+            {
+                return;
+            }
+
+            int id = (int)treeView.SelectedNode.Tag;
+            UoSound sound = Sounds.GetSound(id);
+            if (sound == null)
+            {
+                return;
+            }
+
+            // Wenn bereits ein Loop läuft, stoppen Sie ihn
+            lock (_loopLock)
+            {
+                if (_looping)
+                {
+                    _looping = false;
+                    _spTimer.Stop();
+                    if (_loopThread != null)
+                    {
+                        if (!_loopThread.Join(1000)) // Warten Sie bis zu 1 Sekunde auf den Thread, um zu beenden
+                        {
+                            // Der Thread hat nicht rechtzeitig geendet, Sie könnten hier zusätzliche Maßnahmen ergreifen
+                        }
+                        _loopThread = null;
+                    }
+                    return;
+                }
+            }
+
+            // Stoppen Sie den aktuellen Sound, falls er abgespielt wird
+            if (_playing)
+            {
+                StopSound();
+            }
+
+            // Starten Sie einen neuen Thread, um den Sound in einer Schleife abzuspielen
+            _loopThread = new System.Threading.Thread(() =>
+            {
+                try
+                {
+                    using (MemoryStream mStream = new MemoryStream(sound.Buffer))
+                    {
+                        _sp.Stream = mStream;
+                        lock (_loopLock)
+                        {
+                            _looping = true;
+                        }
+                        while (_looping)
+                        {
+                            _sp.PlaySync();
+                            // Setzen Sie den Timer zurück und starten Sie ihn erneut, wenn der Sound von vorne beginnt
+                            this.Invoke((MethodInvoker)delegate
+                            {
+                                _spTimerStart = DateTime.Now;
+                                _spTimer.Start();
+                            });
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // Behandeln Sie den Fehler auf geeignete Weise
+                    Console.WriteLine(ex);
+                }
+            });
+            _loopThread.Start();
+
+            _playing = true;
+        }
+
     }
 }
