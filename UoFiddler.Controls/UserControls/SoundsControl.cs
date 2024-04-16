@@ -1,8 +1,9 @@
 /***************************************************************************
  *
  * $Author: Turley
+ * Advanced: Nikodemus
  * 
- * "THE BEER-WARE LICENSE"
+ * "THE BEER-WINE-WARE LICENSE"
  * As long as you retain this notice you can do whatever you want with 
  * this stuff. If we meet some day, and you think this stuff is worth it,
  * you can buy me a beer in return.
@@ -66,7 +67,7 @@ namespace UoFiddler.Controls.UserControls
 
             nameSortToolStripMenuItem.Checked = false;
 
-            OnLoad(this, EventArgs.Empty);
+            OnLoad(this, EventArgs.Empty);            
         }
         #endregion
 
@@ -152,6 +153,9 @@ namespace UoFiddler.Controls.UserControls
             {
                 SearchId(oldItem.Value);
             }
+
+            // Update the ID count at the end of the method
+            UpdateIDCountLabel();
         }
         #endregion
 
@@ -518,6 +522,9 @@ namespace UoFiddler.Controls.UserControls
 
             AfterSelect(this, e);
             Options.ChangedUltimaClass["Sound"] = true;
+
+            // Update the ID count at the end of the method
+            UpdateIDCountLabel();
         }
         #endregion
 
@@ -663,6 +670,9 @@ namespace UoFiddler.Controls.UserControls
             treeView.Invalidate();
 
             Options.ChangedUltimaClass["Sound"] = true;
+
+            // Update the ID count at the end of the method
+            UpdateIDCountLabel();
         }
         #endregion
 
@@ -974,6 +984,30 @@ namespace UoFiddler.Controls.UserControls
             _loopThread.Start();
 
             _playing = true;
+        }
+        #endregion
+
+        #region UpdateIDCountLabel
+        private void UpdateIDCountLabel()
+        {
+            // The total number of possible sound IDs 4095, at the moment manual value let's see if you can increase the mul.
+            int totalIDs = 0xFFE; // Replace this with the actual total
+
+            // Die Anzahl der belegten Sound-IDs
+            int occupiedIDs = 0;
+            foreach (TreeNode node in treeView.Nodes)
+            {
+                if (Sounds.IsValidSound((int)node.Tag, out _, out _))
+                {
+                    occupiedIDs++;
+                }
+            }
+
+            // The number of free sound IDs
+            int freeIDs = totalIDs - occupiedIDs;
+
+            // Update the label
+            IDCount.Text = $"Occupied Sound-IDs: {occupiedIDs}, Free Sound-IDs: {freeIDs}";
         }
         #endregion
     }

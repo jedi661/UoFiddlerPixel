@@ -93,6 +93,7 @@ namespace UoFiddler.Controls.UserControls
             WavFileInsertTextbox = new System.Windows.Forms.TextBox();
             WavChooseInsertButton = new System.Windows.Forms.Button();
             AddInsertReplaceButton = new System.Windows.Forms.Button();
+            IDCount = new System.Windows.Forms.Label();
             cmStripSounds.SuspendLayout();
             tableLayoutPanel1.SuspendLayout();
             statusStripSounds.SuspendLayout();
@@ -130,7 +131,7 @@ namespace UoFiddler.Controls.UserControls
             // 
             cmStripSounds.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { nameSortToolStripMenuItem, tsSeparator1, showFreeSlotsToolStripMenuItem, nextFreeSlotToolStripMenuItem, tsSeparator2, playSoundToolStripMenuItem, stopToolStripMenuItem, loopToolStripMenuItem, toolStripMenuItem1, replaceToolStripMenuItem, extractSoundToolStripMenuItem, removeSoundToolStripMenuItem, itemSave, toolStripSeparator1 });
             cmStripSounds.Name = "contextMenuStrip1";
-            cmStripSounds.Size = new System.Drawing.Size(181, 270);
+            cmStripSounds.Size = new System.Drawing.Size(169, 248);
             cmStripSounds.Tag = "Start and Stop";
             // 
             // nameSortToolStripMenuItem
@@ -653,14 +654,16 @@ namespace UoFiddler.Controls.UserControls
             tableLayoutPanel6.Controls.Add(WavFileInsertTextbox, 1, 1);
             tableLayoutPanel6.Controls.Add(WavChooseInsertButton, 2, 1);
             tableLayoutPanel6.Controls.Add(AddInsertReplaceButton, 0, 2);
+            tableLayoutPanel6.Controls.Add(IDCount, 1, 3);
             tableLayoutPanel6.Dock = System.Windows.Forms.DockStyle.Fill;
             tableLayoutPanel6.Location = new System.Drawing.Point(4, 19);
             tableLayoutPanel6.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             tableLayoutPanel6.Name = "tableLayoutPanel6";
-            tableLayoutPanel6.RowCount = 3;
+            tableLayoutPanel6.RowCount = 4;
             tableLayoutPanel6.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 29F));
             tableLayoutPanel6.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 29F));
-            tableLayoutPanel6.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 55F));
+            tableLayoutPanel6.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 54F));
+            tableLayoutPanel6.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 21F));
             tableLayoutPanel6.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 23F));
             tableLayoutPanel6.Size = new System.Drawing.Size(416, 227);
             tableLayoutPanel6.TabIndex = 0;
@@ -732,6 +735,15 @@ namespace UoFiddler.Controls.UserControls
             AddInsertReplaceButton.Text = "Add \\ Replace";
             AddInsertReplaceButton.UseVisualStyleBackColor = true;
             AddInsertReplaceButton.Click += AddInsertReplaceButton_Click;
+            // 
+            // IDCount
+            // 
+            IDCount.AutoSize = true;
+            IDCount.Location = new System.Drawing.Point(43, 112);
+            IDCount.Name = "IDCount";
+            IDCount.Size = new System.Drawing.Size(57, 15);
+            IDCount.TabIndex = 8;
+            IDCount.Text = "ID Count:";
             // 
             // SoundsControl
             // 
@@ -823,5 +835,6 @@ namespace UoFiddler.Controls.UserControls
         private System.Windows.Forms.ToolStripMenuItem stopToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem loopToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
+        private System.Windows.Forms.Label IDCount;
     }
 }
