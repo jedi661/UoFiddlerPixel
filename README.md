@@ -11,6 +11,7 @@ Version : 4.12.4
 - Add Sound Loop.
 - Added functionality to update the count of occupied and free sound IDs in real-time when sounds are added, removed, or the view is reloaded.
 - Removed Escape key function, changed F2 key function to Ctrl+E, added Space key function to play/stop sound.
+- Update Nuget Paket.
 
 Version : 4.12.3
 - Add Items Image Colors and Update.
