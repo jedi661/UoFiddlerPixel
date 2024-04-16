@@ -598,6 +598,13 @@ namespace UoFiddler.Controls.UserControls
                 file = _wavChosen;
             }
 
+            // Check if “file” is null before accessing it
+            if (file == null)
+            {
+                MessageBox.Show("No file selected", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
             int id = (int)treeView.SelectedNode.Tag;
             string name = Path.GetFileName(file);
 
