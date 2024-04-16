@@ -1,0 +1,84 @@
+name: Build & Release
+
+on:
+  push:
+    branches:
+      - "master"
+    tags:
+      - "[0-9]+.[0-9]+.[0-9]+"
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build
+    runs-on: windows-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        configuration:
+          - Release
+
+    env:
+      DOTNET_CLI_TELEMETRY_OPTOUT: 1
+      DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
+      DOTNET_NOLOGO: 1
+      Solution_Name: UoFiddler.sln
+      Asset_Name: UOFiddler-${{ github.ref_name }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4.1.1
+        with:
+          fetch-depth: 0
+
+      - name: Install .NET Core
+        uses: actions/setup-dotnet@v4.0.0
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restore & build the application
+        run: dotnet build $env:Solution_Name --configuration $env:Configuration
+        env:
+          Configuration: ${{ matrix.configuration }}
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4.3.1
+        with:
+          name: ${{ env.Asset_Name }}.zip
+          path: ./UOFiddler/bin/Release/
+
+  release:
+    name: Release
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: windows-latest
+
+    permissions:
+      contents: write
+
+    env:
+      Asset_Name: UOFiddler-${{ github.ref_name }}
+      Body_Path: release_body.md
+
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4.1.4
+        with:
+          name: ${{ env.Asset_Name }}.zip
+          path: ./${{ env.Asset_Name }}/
+
+      - name: Archive release
+        run: 7z a -tzip ${{ env.Asset_Name }}.zip './${{ env.Asset_Name }}'
+
+      - name: Create release
+        uses: softprops/action-gh-release@v2.0.4
+        with:
+          name: UOFiddler ${{ github.ref_name }}
+          generate_release_notes: true
+          draft: false
+          prerelease: false
+          fail_on_unmatched_files: true
+          files: ${{ env.Asset_Name }}.zip

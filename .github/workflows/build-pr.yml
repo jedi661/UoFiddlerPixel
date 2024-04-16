@@ -1,0 +1,42 @@
+name: Build (PR)
+
+on:
+  pull_request:
+    branches:
+      - "**"
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build
+
+    runs-on: windows-latest
+
+    strategy:
+      matrix:
+        configuration:
+          - Release
+
+    env:
+      DOTNET_CLI_TELEMETRY_OPTOUT: 1
+      DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
+      DOTNET_NOLOGO: 1
+      Solution_Name: UoFiddler.sln
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4.1.1
+        with:
+          fetch-depth: 1
+
+      - name: Install .NET Core
+        uses: actions/setup-dotnet@v4.0.0
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restore & build the application
+        run: dotnet build $env:Solution_Name --configuration $env:Configuration
+        env:
+          Configuration: ${{ matrix.configuration }}
