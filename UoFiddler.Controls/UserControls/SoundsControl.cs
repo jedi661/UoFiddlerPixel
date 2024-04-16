@@ -704,17 +704,12 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region TreeView_KeyDown
+        #region TreeView_KeyDown 
         private void TreeView_KeyDown(object sender, KeyEventArgs e)
         {
-            if (e.KeyCode == Keys.Escape)
-            {
-                StopSound();
-
-                e.Handled = true;
-                e.SuppressKeyPress = true;
-            }
-            else if (e.KeyCode == Keys.F2)
+            // If the Ctrl+E key combination is pressed and a node in the TreeView is selected,
+            // the selected node is put into edit mode
+            if (e.Control && e.KeyCode == Keys.E)
             {
                 if (treeView.SelectedNode == null)
                 {
@@ -728,6 +723,8 @@ namespace UoFiddler.Controls.UserControls
             }
             else if (e.KeyCode == Keys.Enter)
             {
+                // If the Enter key is pressed and no node in the TreeView is currently being edited,
+                // the OnClickPlay event handler is called, which plays the selected sound
                 if (treeView.Nodes.OfType<TreeNode>().Any(n => n.IsEditing))
                 {
                     return;
@@ -740,10 +737,32 @@ namespace UoFiddler.Controls.UserControls
             }
             else if (e.KeyCode == Keys.F && e.Control)
             {
+                // If the Ctrl+F key combination is pressed, the focus is set to the SearchNameTextbox,
+                // allowing the user to immediately start typing a search query
                 SearchNameTextbox.Focus();
 
                 e.SuppressKeyPress = true;
                 e.Handled = true;
+            }
+
+            if (e.KeyCode == Keys.Space)
+            {
+                // If the Space key is pressed, it checks whether a sound is being played
+                if (_playing)
+                {
+                    // If a sound is being played, it stops the sound
+                    _sp.Stop();
+                    _playing = false;
+                }
+                else
+                {
+                    // If no sound is being played, it plays the selected sound
+                    if (treeView.SelectedNode != null)
+                    {
+                        int id = (int)treeView.SelectedNode.Tag;
+                        PlaySound(id);
+                    }
+                }
             }
         }
         #endregion
@@ -1016,6 +1035,6 @@ namespace UoFiddler.Controls.UserControls
             // Update the label
             IDCount.Text = $"Occupied Sound-IDs: {occupiedIDs}, Free Sound-IDs: {freeIDs}";
         }
-        #endregion
+        #endregion        
     }
 }
