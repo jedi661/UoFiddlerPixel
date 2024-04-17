@@ -8,6 +8,7 @@ using System.Windows.Forms;
 using System.IO;
 using System.Runtime.InteropServices;
 using static UoFiddler.Plugin.ConverterMultiTextPlugin.Forms.ARTMulIDXCreator;
+using UoFiddler.Controls.UserControls;
 
 namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 {
@@ -104,33 +105,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         }
         #endregion
 
-        #region Long
-        /*private void btnReadArtIdx_Click(object sender, EventArgs e)
-        {
-            using (var folderBrowserDialog = new FolderBrowserDialog())
-            {
-                if (folderBrowserDialog.ShowDialog() == DialogResult.OK)
-                {
-                    textBox1.Text = folderBrowserDialog.SelectedPath;
-
-                    var artIndexFile = new ArtIndexFile();
-                    string filePath = Path.Combine(folderBrowserDialog.SelectedPath, "artidx.MUL");
-                    artIndexFile.LoadFromFile(filePath); // Angenommen, Sie haben eine LoadFromFile-Methode
-
-                    int indexToRead = int.Parse(textBoxIndex.Text); // Angenommen, textBoxIndex ist die TextBox, in der Sie den zu lesenden Index angeben
-                    if (indexToRead >= 0 && indexToRead < artIndexFile.CountEntries())
-                    {
-                        var entry = artIndexFile.GetEntry(indexToRead); // Angenommen, Sie haben eine GetEntry-Methode
-                        textBoxInfo.Text = $"Eintrag {indexToRead}: Lookup={entry.Lookup}, Size={entry.Size}, Unknown={entry.Unknown}"; // Angenommen, textBoxInfo ist die TextBox, in der Sie die Informationen anzeigen möchten
-                    }
-                    else
-                    {
-                        textBoxInfo.Text = "Ungültiger Index";
-                    }
-                }
-            }
-        }*/
-
+        #region Long 
         private void btnReadArtIdx_Click(object sender, EventArgs e)
         {
             using (var folderBrowserDialog = new FolderBrowserDialog())
@@ -1068,50 +1043,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             {
                 return entries.Count;
             }
-            #endregion
-
-            /*public void LoadFromFile(string filename)
-            {
-                entries.Clear(); // Löschen Sie alle vorhandenen Einträge
-
-                using (var fs = new FileStream(filename, FileMode.Open))
-                {
-                    using (var reader = new BinaryReader(fs))
-                    {
-                        while (reader.BaseStream.Position != reader.BaseStream.Length) // Lesen Sie bis zum Ende der Datei
-                        {
-                            // Lesen Sie die Metadaten für das Bild
-                            uint lookup = reader.ReadUInt32();
-                            uint size = reader.ReadUInt32();
-                            uint unknown = reader.ReadUInt32();
-
-                            // Setzen Sie die Position des Readers auf den Anfang des Bildes
-                            reader.BaseStream.Position = lookup;
-
-                            // Lesen Sie die Bilddaten aus der Datei
-                            byte[] imageData = reader.ReadBytes((int)size);
-
-                            // Lesen Sie die Flagge
-                            uint flag = BitConverter.ToUInt32(imageData, 0);
-
-                            Bitmap image;
-                            if (flag > 0xFFFF || flag == 0)
-                            {
-                                // Das Bild ist roh
-                                image = LoadRawImage(imageData);
-                            }
-                            else
-                            {
-                                // Das Bild ist ein Laufbild
-                                image = LoadRunImage(imageData);
-                            }
-
-                            var entry = new ArtDataEntry(image);
-                            entries.Add(entry);
-                        }
-                    }
-                }
-            }*/
+            #endregion           
 
             #region LoadFromFile
             public void LoadFromFile(string filename)
@@ -1164,36 +1096,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                     }
                 }
             }
-            #endregion
-
-
-            /*private Bitmap LoadRawImage(byte[] imageData)
-            {
-                int width = 44;
-                int height = 44;
-                Bitmap image = new Bitmap(width, height);
-                int index = 4; // skip the flag
-
-                for (int i = 0; i < height; i++)
-                {
-                    int rowWidth = 2 + i;
-                    if (rowWidth > width) rowWidth = width;
-
-                    for (int j = 0; j < rowWidth; j++)
-                    {
-                        ushort pixelData = BitConverter.ToUInt16(imageData, index);
-                        Color pixelColor = Color.FromArgb(
-                            ((pixelData >> 10) & 0x1F) * 0xFF / 0x1F,
-                            ((pixelData >> 5) & 0x1F) * 0xFF / 0x1F,
-                            (pixelData & 0x1F) * 0xFF / 0x1F);
-                        image.SetPixel(j, i, pixelColor);
-
-                        index += 2;
-                    }
-                }
-
-                return image;
-            }*/
+            #endregion            
 
             #region LoadRawImage
             private Bitmap LoadRawImage(byte[] imageData)
@@ -1317,38 +1220,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 }
             }
             #endregion
-
-            /*public void LoadFromFileForCounting(string filename)
-            {
-                entries.Clear(); // Delete all existing entries
-
-                using (var fs = new FileStream(filename, FileMode.Open))
-                {
-                    using (var reader = new BinaryReader(fs))
-                    {
-                        // Read Land Tile Groups
-                        for (int i = 0; i < 512; i++)
-                        {
-                            if (reader.BaseStream.Position + 836 <= reader.BaseStream.Length)
-                            {
-                                reader.BaseStream.Position += 836; // Skip Land Tile Group
-                                entries.Add(new ArtDataEntry(null));
-                            }
-                            else
-                            {
-                                break;
-                            }
-                        }
-
-                        // Read Static Tile Groups until the end of the file
-                        while (reader.BaseStream.Position + 1188 <= reader.BaseStream.Length)
-                        {
-                            reader.BaseStream.Position += 1188; // Skip Static Tile Group
-                            entries.Add(new ArtDataEntry(null));
-                        }
-                    }
-                }
-            }*/
+            
             #region LoadFromFileForCounting
             public void LoadFromFileForCounting(string filename)
             {
@@ -2753,7 +2625,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                         }
                     }
                 }
-            }            
+            }
 
             // Lesen Sie die Daten aus der Anim.mul Datei
             using (var mulReader = new BinaryReader(File.OpenRead(animMulPath)))
@@ -2882,35 +2754,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             {
                 _indexCount = 0; // Setzen Sie den Zähler zurück
                 ReadArtIdx(openFileDialog.FileName);
-                lblIndexCount.Text = $"Total indices read: {_indexCount}"; // Aktualisieren Sie das Label
+                lblIndexCount.Text = $"Total indices read: {_indexCount}"; // Update the label
                 infoARTIDXMULID.AppendText($"Finished reading {_indexCount} entries from {openFileDialog.FileName}\n");
             }
-        }
-
-        /*private void ReadArtIdx(string filename)
-        {
-            using (FileStream stream = File.Open(filename, FileMode.Open, FileAccess.Read))
-            {
-                // Calculate the number of entries
-                int entries = (int)stream.Length / 12;
-
-                // Create a buffer for the entries
-                byte[] buffer = new byte[12];
-
-                for (int i = 0; i < entries; i++)
-                {
-                    // Read an entry into the buffer
-                    stream.Read(buffer, 0, buffer.Length);
-
-                    // Convert the buffer to DWORDs
-                    int lookup = BitConverter.ToInt32(buffer, 0);
-                    int size = BitConverter.ToInt32(buffer, 4);
-                    int unknown = BitConverter.ToInt32(buffer, 8);
-
-                    _indexCount++; // Erhöhen Sie den Zähler
-                }
-            }
-        }*/
+        }   
 
         private void ReadArtIdx(string filename)
         {
@@ -3250,6 +3097,340 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 tbProcessAminidx.AppendText($"An error has occurred: {ex.Message}\n");
             }
         }
-        #endregion      
+        #endregion
+
+        #region CreateOrgSoundMul
+        private void CreateOrgSoundMul_Click(object sender, EventArgs e)
+        {
+            if (folderBrowserDialog.ShowDialog() == DialogResult.OK)
+            {
+                string directoryPath = folderBrowserDialog.SelectedPath;
+                int indexSize = int.Parse(SoundIDXMul.Text);
+
+                using (BinaryWriter soundIdxWriter = new BinaryWriter(File.Open(Path.Combine(directoryPath, "SoundIdx.mul"), FileMode.Create)))
+                using (BinaryWriter soundWriter = new BinaryWriter(File.Open(Path.Combine(directoryPath, "Sound.mul"), FileMode.Create)))
+                {
+                    int currentPosition = 0;
+
+                    for (int i = 0; i < indexSize; i++)
+                    {
+                        // Beispieldaten für Wellendaten
+                        byte[] waveData = GenerateWaveData();
+
+                        // Schreiben Sie die Wellendaten in die Sound.mul-Datei
+                        soundWriter.Write(waveData);
+
+                        // Schreiben Sie die Indexeinträge in die SoundIdx.mul-Datei
+                        soundIdxWriter.Write(currentPosition); // Start-Position
+                        soundIdxWriter.Write(waveData.Length); // Länge der Wellendaten
+                        soundIdxWriter.Write((ushort)i); // Index
+                        soundIdxWriter.Write((ushort)0); // Reserviert
+
+                        currentPosition += waveData.Length;
+                    }
+                }
+            }
+        }
+
+        private byte[] GenerateWaveData()
+        {
+            // Hier können Sie den Code zum Generieren von Beispiel-Wellendaten einfügen
+            // oder die Wellendaten aus einer Quelldatei lesen
+            byte[] waveData = new byte[1024]; // Beispiel-Wellendaten
+            return waveData;
+        }
+        #endregion
+
+        #region ReadIndexSize Sound
+        private void ReadIndexSize_Click(object sender, EventArgs e)
+        {
+            if (folderBrowserDialog.ShowDialog() == DialogResult.OK)
+            {
+                string directoryPath = folderBrowserDialog.SelectedPath;
+                string filePath = Path.Combine(directoryPath, "SoundIdx.mul");
+
+                if (File.Exists(filePath))
+                {
+                    int indexCount = 0;
+                    using (BinaryReader reader = new BinaryReader(File.OpenRead(filePath)))
+                    {
+                        while (reader.BaseStream.Position < reader.BaseStream.Length)
+                        {
+                            // Lesen Sie die Start-Position (4 Bytes)
+                            int start = reader.ReadInt32();
+
+                            // Lesen Sie die Länge der Wellendaten (4 Bytes)
+                            int length = reader.ReadInt32();
+
+                            // Lesen Sie den Index (2 Bytes)
+                            ushort index = reader.ReadUInt16();
+
+                            // Lesen Sie den reservierten Wert (2 Bytes)
+                            ushort reserved = reader.ReadUInt16();
+
+                            indexCount++;
+                        }
+                    }
+
+                    IndexSizeLabel.Text = $"Indexgröße: {indexCount}";
+                }
+                else
+                {
+                    MessageBox.Show("Die Datei SoundIdx.mul wurde nicht gefunden.");
+                }
+            }
+        }
+        #endregion
+
+        #region Gump
+        #region CreateGumpButton
+        // Event handler for the button click event to create a new Gump.
+        // Parameters:
+        //   - sender: The object that raised the event.
+        //   - e: The event arguments.
+        private void CreateGumpButton_Click(object sender, EventArgs e)
+        {
+            if (folderBrowserDialog.ShowDialog() == DialogResult.OK)
+            {
+                string directoryPath = folderBrowserDialog.SelectedPath;
+                int indexSize;
+
+                if (int.TryParse(IndexSizeTextBox.Text, out indexSize) && indexSize > 0)
+                {
+                    int width = 2500; // Actual width of the image
+                    int height = 2500; // Actual height of the image
+
+                    List<GumpRow> rows = GenerateGumpRows(width, indexSize);
+                    CreateGump(directoryPath, width, height, rows);
+                }
+                else
+                {
+                    MessageBox.Show("Please enter a valid index size, which is greater than 0.");
+                }
+            }
+        }
+        #endregion
+
+        #region ReadGumpButton
+        // Event handler for the button click event to read the Gump index count and display it on a label.
+        // Parameters:
+        //   - sender: The object that raised the event.
+        //   - e: The event arguments.
+
+        private void ReadGumpButton_Click(object sender, EventArgs e)
+        {
+            if (folderBrowserDialog.ShowDialog() == DialogResult.OK)
+            {
+                string directoryPath = folderBrowserDialog.SelectedPath;
+                int indexCount = GetIndexCount(directoryPath);
+
+                gumpLabel.Text = $"Index is {indexCount}";
+            }
+        }
+        #endregion
+
+        #region GetIndexCount
+        // Retrieves the number of entries in the Gump index file.
+        // Parameters:
+        //   - directoryPath: The directory path containing the Gump index file.
+        // Returns:
+        //   The number of entries in the Gump index, or 0 if the index file does not exist.
+        private int GetIndexCount(string directoryPath)
+        {
+            string gumpIndexPath = Path.Combine(directoryPath, "GUMPIDX.MUL");
+
+            if (!File.Exists(gumpIndexPath))
+                return 0;
+
+            using (BinaryReader gumpIndexReader = new BinaryReader(File.OpenRead(gumpIndexPath)))
+            {
+                return (int)gumpIndexReader.BaseStream.Length / 12;
+            }
+        }
+        #endregion
+
+        #region CreateGump
+        // Creates a Gump by writing its metadata and pixel data to binary files.
+        // Parameters:
+        //   - directoryPath: The directory path where the Gump files will be created.
+        //   - width: The width of the Gump.
+        //   - height: The height of the Gump.
+        //   - rows: A list of GumpRow objects representing the pixel data of the Gump.
+
+        private void CreateGump(string directoryPath, int width, int height, List<GumpRow> rows)
+        {
+            string gumpIndexPath = Path.Combine(directoryPath, "GUMPIDX.MUL");
+            string gumpDataPath = Path.Combine(directoryPath, "GUMPART.MUL");
+
+            using (BinaryWriter gumpIndexWriter = new BinaryWriter(File.Open(gumpIndexPath, FileMode.Create)))
+            using (BinaryWriter gumpDataWriter = new BinaryWriter(File.Open(gumpDataPath, FileMode.Create)))
+            {
+                for (int i = 0; i < rows.Count; i++)
+                {
+                    gumpIndexWriter.Write(-1); // Lookup (still undefined)
+                    gumpIndexWriter.Write(0); // Size (will be updated later)
+                    gumpIndexWriter.Write((ushort)height); // Height
+                    gumpIndexWriter.Write((ushort)width); // Width
+
+                    // Write a placeholder value to the GUMPART.MUL file
+                    gumpDataWriter.Write(-1);
+                }
+            }
+        }
+        #endregion
+
+        #region ReadGump
+        // Reads a Gump from binary data files.
+        // Parameters:
+        //   - directoryPath: The directory path containing the Gump files.
+        //   - gumpIndex: The index of the Gump to read.
+        // Returns:
+        //   A list of GumpRow objects representing the pixels of the read Gump.
+
+        private List<GumpRow> ReadGump(string directoryPath, int gumpIndex)
+        {
+            string gumpIndexPath = Path.Combine(directoryPath, "GUMPIDX.MUL");
+            string gumpDataPath = Path.Combine(directoryPath, "GUMPART.MUL");
+
+            using (BinaryReader gumpIndexReader = new BinaryReader(File.OpenRead(gumpIndexPath)))
+            using (BinaryReader gumpDataReader = new BinaryReader(File.OpenRead(gumpDataPath)))
+            {
+                gumpIndexReader.BaseStream.Seek(gumpIndex * 12, SeekOrigin.Begin);
+                int lookup = gumpIndexReader.ReadInt32();
+                int size = gumpIndexReader.ReadInt32();
+                ushort height = gumpIndexReader.ReadUInt16();
+                ushort width = gumpIndexReader.ReadUInt16();
+
+                List<GumpRow> rows = new List<GumpRow>();
+
+                gumpDataReader.BaseStream.Seek(lookup, SeekOrigin.Begin);
+                for (int y = 0; y < height; y++)
+                {
+                    GumpRow row = DecodeRow(gumpDataReader, width);
+                    rows.Add(row);
+                }
+
+                return rows;
+            }
+        }
+        #endregion
+
+        #region GumpRun
+        // Encodes a single row of pixels into runs of pixel values and their run lengths.
+        // Parameters:
+        //   - row: The GumpRow containing the pixel values to encode.
+        // Returns:
+        //   A list of GumpRun objects representing the encoded pixel runs.
+        private List<GumpRun> EncodeRow(GumpRow row)
+        {
+            List<GumpRun> runs = new List<GumpRun>();
+            ushort currentValue = row.Pixels[0];
+            int currentRunLength = 1;
+
+            for (int i = 1; i < row.Pixels.Length; i++)
+            {
+                ushort nextValue = row.Pixels[i];
+                if (nextValue == currentValue)
+                {
+                    currentRunLength++;
+                }
+                else
+                {
+                    runs.Add(new GumpRun { Value = currentValue, Run = (ushort)currentRunLength });
+                    currentValue = nextValue;
+                    currentRunLength = 1;
+                }
+            }
+
+            runs.Add(new GumpRun { Value = currentValue, Run = (ushort)currentRunLength });
+            return runs;
+        }
+        #endregion
+
+        #region DecodeRow
+        // Decodes a single row of pixels from binary data using a BinaryReader.
+        // Parameters:
+        //   - reader: The BinaryReader instance used to read pixel data.
+        //   - width: The width of the row.
+        // Returns:
+        //   A GumpRow containing the decoded pixel values.
+        private GumpRow DecodeRow(BinaryReader reader, int width)
+        {
+            GumpRow row = new GumpRow { Pixels = new ushort[width] };
+            int pixelIndex = 0;
+
+            while (pixelIndex < width)
+            {
+                ushort value = reader.ReadUInt16();
+                ushort run = reader.ReadUInt16();
+
+                for (int i = 0; i < run; i++)
+                {
+                    row.Pixels[pixelIndex++] = value;
+                }
+            }
+
+            return row;
+        }
+        #endregion
+
+        #region  DisplayGumpInLabel
+        // Displays the generated Gump on a label in the user interface.
+        // Currently not utilized in the application.
+        private void DisplayGumpInLabel(List<GumpRow> rows)
+        {
+            // Implement the code here to display the Gump in a label
+            StringBuilder sb = new StringBuilder();
+            foreach (GumpRow row in rows)
+            {
+                sb.AppendLine(string.Join(" ", row.Pixels));
+            }
+            gumpLabel.Text = sb.ToString();
+        }
+        #endregion
+
+        #region GenerateGumpRows
+        // Generates Gump rows based on the specified width and index size.
+        // Parameters:
+        //   - width: The width of each Gump row.
+        //   - indexSize: The size of the Gump index.
+        // Returns:
+        //   A list of Gump rows containing randomly generated pixel values within the specified index size.
+
+        private List<GumpRow> GenerateGumpRows(int width, int indexSize)
+        {
+            List<GumpRow> rows = new List<GumpRow>();
+            Random random = new Random();
+            for (int i = 0; i < indexSize; i++)
+            {
+                ushort[] pixels = new ushort[width];
+                for (int x = 0; x < width; x++)
+                {
+                    pixels[x] = (ushort)random.Next(indexSize); // Random pixel values ​​within the index size
+                }
+                rows.Add(new GumpRow { Pixels = pixels });
+            }
+            return rows;
+        }
+        #endregion
+
+        #region GumpRun
+        // Represents a run of pixels in a Gump row, consisting of a pixel value and its run length.
+        public struct GumpRun
+        {
+            public ushort Value;
+            public ushort Run;
+        }
+        #endregion
+
+        #region GumpRow
+        // Represents a single row of pixels in a Gump, stored as an array of ushort values.
+        public struct GumpRow
+        {
+            public ushort[] Pixels;
+        }
+        #endregion
+        #endregion
+
     }
 }

@@ -127,6 +127,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             lbCreatePalette = new System.Windows.Forms.Label();
             btCreatePalette = new System.Windows.Forms.Button();
             tabPageAnimation = new System.Windows.Forms.TabPage();
+            button1 = new System.Windows.Forms.Button();
             txtOutputDirectory = new System.Windows.Forms.TextBox();
             btnSetOutputDirectory = new System.Windows.Forms.Button();
             txtOutputFilename = new System.Windows.Forms.TextBox();
@@ -176,8 +177,20 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             ReadArtmul = new System.Windows.Forms.Button();
             infoARTIDXMULID = new System.Windows.Forms.TextBox();
             BtnCreateArtIdx = new System.Windows.Forms.Button();
+            tabPageSound = new System.Windows.Forms.TabPage();
+            panel1 = new System.Windows.Forms.Panel();
+            IndexSizeLabel = new System.Windows.Forms.Label();
+            ReadIndexSize = new System.Windows.Forms.Button();
+            SoundIDXMul = new System.Windows.Forms.TextBox();
+            CreateOrgSoundMul = new System.Windows.Forms.Button();
+            tabPageGump = new System.Windows.Forms.TabPage();
+            panel2 = new System.Windows.Forms.Panel();
+            IndexSizeTextBox = new System.Windows.Forms.TextBox();
+            gumpLabel = new System.Windows.Forms.Label();
+            ReadGumpButton = new System.Windows.Forms.Button();
+            CreateGumpButton = new System.Windows.Forms.Button();
             saveFileDialog = new System.Windows.Forms.SaveFileDialog();
-            button1 = new System.Windows.Forms.Button();
+            folderBrowserDialog = new System.Windows.Forms.FolderBrowserDialog();
             tabControl1.SuspendLayout();
             tabPageCreateMuls.SuspendLayout();
             tabPageTileData.SuspendLayout();
@@ -194,6 +207,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             tabPageReadOut.SuspendLayout();
             groupBoxInfo.SuspendLayout();
             tabPageArtmul.SuspendLayout();
+            tabPageSound.SuspendLayout();
+            panel1.SuspendLayout();
+            tabPageGump.SuspendLayout();
+            panel2.SuspendLayout();
             SuspendLayout();
             // 
             // textBox1
@@ -334,6 +351,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             tabControl1.Controls.Add(tabPageReadMuls);
             tabControl1.Controls.Add(tabPageReadOut);
             tabControl1.Controls.Add(tabPageArtmul);
+            tabControl1.Controls.Add(tabPageSound);
+            tabControl1.Controls.Add(tabPageGump);
             tabControl1.Location = new System.Drawing.Point(3, 12);
             tabControl1.Name = "tabControl1";
             tabControl1.SelectedIndex = 0;
@@ -1091,6 +1110,16 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             tabPageAnimation.Text = "Animation";
             tabPageAnimation.UseVisualStyleBackColor = true;
             // 
+            // button1
+            // 
+            button1.Location = new System.Drawing.Point(24, 467);
+            button1.Name = "button1";
+            button1.Size = new System.Drawing.Size(120, 23);
+            button1.TabIndex = 107;
+            button1.Text = "Empty anim.mul";
+            button1.UseVisualStyleBackColor = true;
+            button1.Click += btnSingleEmptyAnimMul_Click;
+            // 
             // txtOutputDirectory
             // 
             txtOutputDirectory.Location = new System.Drawing.Point(8, 50);
@@ -1580,15 +1609,122 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             BtnCreateArtIdx.UseVisualStyleBackColor = true;
             BtnCreateArtIdx.Click += BtnCreateArtIdx_Click;
             // 
-            // button1
+            // tabPageSound
             // 
-            button1.Location = new System.Drawing.Point(24, 467);
-            button1.Name = "button1";
-            button1.Size = new System.Drawing.Size(120, 23);
-            button1.TabIndex = 107;
-            button1.Text = "Empty anim.mul";
-            button1.UseVisualStyleBackColor = true;
-            button1.Click += btnSingleEmptyAnimMul_Click;
+            tabPageSound.Controls.Add(panel1);
+            tabPageSound.Location = new System.Drawing.Point(4, 24);
+            tabPageSound.Name = "tabPageSound";
+            tabPageSound.Padding = new System.Windows.Forms.Padding(3);
+            tabPageSound.Size = new System.Drawing.Size(745, 529);
+            tabPageSound.TabIndex = 9;
+            tabPageSound.Text = "Sound";
+            tabPageSound.UseVisualStyleBackColor = true;
+            // 
+            // panel1
+            // 
+            panel1.Controls.Add(IndexSizeLabel);
+            panel1.Controls.Add(ReadIndexSize);
+            panel1.Controls.Add(SoundIDXMul);
+            panel1.Controls.Add(CreateOrgSoundMul);
+            panel1.Location = new System.Drawing.Point(6, 28);
+            panel1.Name = "panel1";
+            panel1.Size = new System.Drawing.Size(279, 188);
+            panel1.TabIndex = 1;
+            // 
+            // IndexSizeLabel
+            // 
+            IndexSizeLabel.AutoSize = true;
+            IndexSizeLabel.Location = new System.Drawing.Point(8, 61);
+            IndexSizeLabel.Name = "IndexSizeLabel";
+            IndexSizeLabel.Size = new System.Drawing.Size(36, 15);
+            IndexSizeLabel.TabIndex = 3;
+            IndexSizeLabel.Text = "Index";
+            // 
+            // ReadIndexSize
+            // 
+            ReadIndexSize.Location = new System.Drawing.Point(190, 57);
+            ReadIndexSize.Name = "ReadIndexSize";
+            ReadIndexSize.Size = new System.Drawing.Size(75, 23);
+            ReadIndexSize.TabIndex = 2;
+            ReadIndexSize.Text = "Read";
+            ReadIndexSize.UseVisualStyleBackColor = true;
+            ReadIndexSize.Click += ReadIndexSize_Click;
+            // 
+            // SoundIDXMul
+            // 
+            SoundIDXMul.Location = new System.Drawing.Point(8, 28);
+            SoundIDXMul.Name = "SoundIDXMul";
+            SoundIDXMul.Size = new System.Drawing.Size(100, 23);
+            SoundIDXMul.TabIndex = 1;
+            SoundIDXMul.Text = "4095";
+            // 
+            // CreateOrgSoundMul
+            // 
+            CreateOrgSoundMul.Location = new System.Drawing.Point(190, 28);
+            CreateOrgSoundMul.Name = "CreateOrgSoundMul";
+            CreateOrgSoundMul.Size = new System.Drawing.Size(75, 23);
+            CreateOrgSoundMul.TabIndex = 0;
+            CreateOrgSoundMul.Text = "Create";
+            CreateOrgSoundMul.UseVisualStyleBackColor = true;
+            CreateOrgSoundMul.Click += CreateOrgSoundMul_Click;
+            // 
+            // tabPageGump
+            // 
+            tabPageGump.Controls.Add(panel2);
+            tabPageGump.Location = new System.Drawing.Point(4, 24);
+            tabPageGump.Name = "tabPageGump";
+            tabPageGump.Size = new System.Drawing.Size(745, 529);
+            tabPageGump.TabIndex = 10;
+            tabPageGump.Text = "Gump";
+            tabPageGump.UseVisualStyleBackColor = true;
+            // 
+            // panel2
+            // 
+            panel2.Controls.Add(IndexSizeTextBox);
+            panel2.Controls.Add(gumpLabel);
+            panel2.Controls.Add(ReadGumpButton);
+            panel2.Controls.Add(CreateGumpButton);
+            panel2.Location = new System.Drawing.Point(5, 16);
+            panel2.Name = "panel2";
+            panel2.Size = new System.Drawing.Size(272, 160);
+            panel2.TabIndex = 0;
+            // 
+            // IndexSizeTextBox
+            // 
+            IndexSizeTextBox.Location = new System.Drawing.Point(14, 20);
+            IndexSizeTextBox.Name = "IndexSizeTextBox";
+            IndexSizeTextBox.Size = new System.Drawing.Size(100, 23);
+            IndexSizeTextBox.TabIndex = 3;
+            IndexSizeTextBox.Text = "65535";
+            // 
+            // gumpLabel
+            // 
+            gumpLabel.AutoSize = true;
+            gumpLabel.Location = new System.Drawing.Point(14, 53);
+            gumpLabel.Name = "gumpLabel";
+            gumpLabel.Size = new System.Drawing.Size(36, 15);
+            gumpLabel.TabIndex = 2;
+            gumpLabel.Text = "Index";
+            // 
+            // ReadGumpButton
+            // 
+            ReadGumpButton.Location = new System.Drawing.Point(170, 49);
+            ReadGumpButton.Name = "ReadGumpButton";
+            ReadGumpButton.Size = new System.Drawing.Size(85, 23);
+            ReadGumpButton.TabIndex = 1;
+            ReadGumpButton.Text = "Read";
+            ReadGumpButton.UseVisualStyleBackColor = true;
+            ReadGumpButton.Click += ReadGumpButton_Click;
+            // 
+            // CreateGumpButton
+            // 
+            CreateGumpButton.Location = new System.Drawing.Point(170, 20);
+            CreateGumpButton.Name = "CreateGumpButton";
+            CreateGumpButton.Size = new System.Drawing.Size(85, 23);
+            CreateGumpButton.TabIndex = 0;
+            CreateGumpButton.Text = "Create";
+            CreateGumpButton.UseVisualStyleBackColor = true;
+            CreateGumpButton.Click += CreateGumpButton_Click;
             // 
             // ARTMulIDXCreator
             // 
@@ -1628,6 +1764,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             groupBoxInfo.PerformLayout();
             tabPageArtmul.ResumeLayout(false);
             tabPageArtmul.PerformLayout();
+            tabPageSound.ResumeLayout(false);
+            panel1.ResumeLayout(false);
+            panel1.PerformLayout();
+            tabPageGump.ResumeLayout(false);
+            panel2.ResumeLayout(false);
+            panel2.PerformLayout();
             ResumeLayout(false);
         }
 
@@ -1771,5 +1913,18 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private System.Windows.Forms.TextBox txtOrigCreatureID;
         private System.Windows.Forms.Button btnNewAnimIDXFiles;
         private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.TabPage tabPageSound;
+        private System.Windows.Forms.Panel panel1;
+        private System.Windows.Forms.TextBox SoundIDXMul;
+        private System.Windows.Forms.Button CreateOrgSoundMul;
+        private System.Windows.Forms.FolderBrowserDialog folderBrowserDialog;
+        private System.Windows.Forms.Label IndexSizeLabel;
+        private System.Windows.Forms.Button ReadIndexSize;
+        private System.Windows.Forms.TabPage tabPageGump;
+        private System.Windows.Forms.Panel panel2;
+        private System.Windows.Forms.Button CreateGumpButton;
+        private System.Windows.Forms.Button ReadGumpButton;
+        private System.Windows.Forms.Label gumpLabel;
+        private System.Windows.Forms.TextBox IndexSizeTextBox;
     }
 }
