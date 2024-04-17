@@ -9,6 +9,8 @@ using System.IO;
 using System.Runtime.InteropServices;
 using static UoFiddler.Plugin.ConverterMultiTextPlugin.Forms.ARTMulIDXCreator;
 using UoFiddler.Controls.UserControls;
+using System.Diagnostics;
+using System.Threading.Tasks;
 
 namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 {
@@ -127,7 +129,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                     if (indexToRead >= 0 && indexToRead < artIndexFile.CountEntries())
                     {
                         var entry = artIndexFile.GetEntry(indexToRead); // Suppose you have a GetEntry method
-                        textBoxInfo.Text = $"Eintrag {indexToRead}: Lookup={entry.Lookup}, Size={entry.Size}, Unknown={entry.Unknown}"; // Angenommen, textBoxInfo ist die TextBox, in der Sie die Informationen anzeigen möchten
+                        textBoxInfo.Text = $"Eintrag {indexToRead}: Lookup={entry.Lookup}, Size={entry.Size}, Unknown={entry.Unknown}"; // Assume textBoxInfo is the TextBox where you want to display the information
                     }
                     else
                     {
@@ -136,7 +138,6 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 }
             }
         }
-
         #endregion
 
         #region Unit
@@ -350,7 +351,6 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         }
         #endregion
 
-
         #region CreateTiledata
         private void btCreateTiledata_Click(object sender, EventArgs e)
         {
@@ -363,25 +363,24 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                     tbDirTileData.Text = fbd.SelectedPath;
                     TileDataCreator creator = new TileDataCreator();
 
-                    // Lesen Sie die Werte aus den Textboxen oder verwenden Sie Standardwerte
+                    // Read the values ​​from the text boxes or use default values
                     int landTileGroups = string.IsNullOrWhiteSpace(tblandTileGroups.Text) ? 16383 : int.Parse(tblandTileGroups.Text);
                     int staticTileGroups = string.IsNullOrWhiteSpace(tbstaticTileGroups.Text) ? 65535 : int.Parse(tbstaticTileGroups.Text);
 
-                    // Erstellen Sie den vollständigen Pfad zur Datei
+                    // Create the full path to the file
                     string filePath = Path.Combine(fbd.SelectedPath, "Tiledata.mul");
 
-                    // Überprüfen Sie, ob die Checkbox aktiviert ist
+                    // Check whether the checkbox is activated
                     bool createEmptyFile = checkBoxTileData.Checked;
 
                     creator.CreateTileData(filePath, landTileGroups, staticTileGroups, createEmptyFile);
 
-                    // Aktualisieren Sie das Label, um anzuzeigen, dass die Datei erfolgreich erstellt wurde
-                    lbTileDataCreate.Text = $"Die Tiledata.mul-Datei wurde erfolgreich erstellt in: {filePath}";
+                    // Update the label to indicate that the file was created successfully
+                    lbTileDataCreate.Text = $"The Tiledata.mul file was successfully created in: {filePath}";
                 }
             }
         }
         #endregion
-
 
         #region  Tiledatainfo
         private void btTiledatainfo_Click(object sender, EventArgs e)
@@ -394,28 +393,28 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 {
                     tbDirTileData.Text = fbd.SelectedPath;
 
-                    // Erstellen Sie den vollständigen Pfad zur Datei
+                    // Create the full path to the file
                     string filePath = Path.Combine(fbd.SelectedPath, "Tiledata.mul");
 
-                    // Überprüfen Sie, ob die Datei existiert
+                    // Check if the file exists
                     if (!File.Exists(filePath))
                     {
-                        textBoxTileDataInfo.Text = "Die Datei Tiledata.mul konnte nicht gefunden werden.";
+                        textBoxTileDataInfo.Text = "The file Tiledata.mul could not be found.";
                         return;
                     }
 
-                    // Lesen Sie die Daten aus der Datei
+                    // Read the data from the file
                     using (var fs = File.OpenRead(filePath))
                     {
                         using (var reader = new BinaryReader(fs))
                         {
-                            // Lesen Sie die Anzahl der Land Tile Groups
+                            // Read the number of Land Tile Groups
                             int landTileGroups = reader.ReadInt32();
 
-                            // Lesen Sie die Anzahl der Static Tile Groups
+                            // Read the number of Static Tile Groups
                             int staticTileGroups = reader.ReadInt32();
 
-                            // Zeigen Sie die Informationen in der Textbox an
+                            // Display the information in the text box
                             textBoxTileDataInfo.Text = $"Land Tile Groups: {landTileGroups}\nStatic Tile Groups: {staticTileGroups}";
                         }
                     }
@@ -436,23 +435,22 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                     tbDirTileData.Text = fbd.SelectedPath;
                     TileDataCreator creator = new TileDataCreator();
 
-                    // Lesen Sie die Werte aus den Textboxen oder verwenden Sie Standardwerte
+                    // Read the values ​​from the text boxes or use default values
                     int landTileGroups = string.IsNullOrWhiteSpace(tblandTileGroups.Text) ? 16383 : int.Parse(tblandTileGroups.Text);
                     int staticTileGroups = string.IsNullOrWhiteSpace(tbstaticTileGroups.Text) ? 65535 : int.Parse(tbstaticTileGroups.Text);
 
-                    // Erstellen Sie den vollständigen Pfad zur Datei
+                    // Create the full path to the file
                     string filePath = Path.Combine(fbd.SelectedPath, "Tiledata.mul");
 
-                    // Erstellen Sie eine leere Tiledata.mul-Datei
+                    // Create an empty Tiledata.mul file
                     creator.CreateTileData(filePath, landTileGroups, staticTileGroups, true);
 
-                    // Aktualisieren Sie das Label, um anzuzeigen, dass die Datei erfolgreich erstellt wurde
-                    lbTileDataCreate.Text = $"Die leere Tiledata.mul-Datei wurde erfolgreich erstellt in: {filePath}";
+                    // Update the label to indicate that the file was created successfully
+                    lbTileDataCreate.Text = $"The empty Tiledata.mul file has been successfully created in: {filePath}";
                 }
             }
         }
         #endregion
-
 
         #region Crete Button Emtpy2
         private void btCreateTiledataEmpty2_Click(object sender, EventArgs e)
@@ -465,18 +463,18 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 {
                     TileDataCreator creator = new TileDataCreator();
 
-                    // Setzen Sie die Anzahl der Land- und Static-Tile-Gruppen auf Standardwerte
+                    // Set the number of land and static tile groups to default values
                     int landTileGroups = 16383;
                     int staticTileGroups = 65535;
 
-                    // Erstellen Sie den vollständigen Pfad zur Datei
+                    // Create the full path to the file
                     string filePath = Path.Combine(fbd.SelectedPath, "Tiledata.mul");
 
-                    // Erstellen Sie eine leere Tiledata.mul-Datei
+                    // Create an empty Tiledata.mul file
                     creator.CreateTileData(filePath, landTileGroups, staticTileGroups, true);
 
-                    // Zeigen Sie eine Meldung an, um anzuzeigen, dass die Datei erfolgreich erstellt wurde
-                    MessageBox.Show($"Die leere Tiledata.mul-Datei wurde erfolgreich erstellt in: {filePath}");
+                    // Display a message to indicate that the file was created successfully
+                    MessageBox.Show($"The empty Tiledata.mul file has been successfully created in: {filePath}");
                 }
             }
         }
@@ -495,8 +493,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                     string filePath = Path.Combine(fbd.SelectedPath, "Tiledata.mul");
                     int index = int.Parse(textBoxTiledataIndex.Text);
                     //string tileDataInfo = creator.ReadTileData(filePath, index);
-                    string tileDataInfo = creator.ReadTileData(filePath, index, "Land"); // Zum Lesen von Land Tiles
-                    string tileDataInfo2 = creator.ReadTileData(filePath, index, "Static"); // Zum Lesen von Static Tiles
+                    string tileDataInfo = creator.ReadTileData(filePath, index, "Land"); // To read Land Tiles
+                    string tileDataInfo2 = creator.ReadTileData(filePath, index, "Static"); // For reading static tiles
 
                     textBoxTileDataInfo.Text = tileDataInfo;
                 }
@@ -515,12 +513,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 {
                     string filePath = Path.Combine(fbd.SelectedPath, "Tiledata.mul");
 
-                    // Überprüfen Sie, ob der Index in Hexadezimalform vorliegt
+                    // Check that the index is in hexadecimal form
                     bool isHex = textBoxTiledataIndex.Text.StartsWith("0x");
                     int index;
                     if (isHex)
                     {
-                        // Wenn der Index in Hexadezimalform vorliegt, konvertieren Sie ihn in eine Dezimalzahl
+                        // If the index is in hexadecimal form, convert it to decimal
                         index = Convert.ToInt32(textBoxTiledataIndex.Text.Substring(2), 16);
                     }
                     else
@@ -528,20 +526,20 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                         index = int.Parse(textBoxTiledataIndex.Text);
                     }
 
-                    // Multiplizieren Sie den Index mit der Größe des Blocks, um die richtige Position in der Datei zu erreichen
-                    index *= 836; // Ersetzen Sie 836 durch die tatsächliche Größe des Blocks
+                    // Multiply the index by the size of the block to get the correct position in the file
+                    index *= 836; // Replace 836 with the actual size of the block
 
                     using (var fs = File.OpenRead(filePath))
                     {
                         fs.Position = index;
-                        byte[] buffer = new byte[836]; // Lesen Sie 836 Bytes ab der angegebenen Position
+                        byte[] buffer = new byte[836]; // Read 836 bytes from the specified position
                         fs.Read(buffer, 0, buffer.Length);
-                        string hex = BitConverter.ToString(buffer).Replace("-", " "); // Konvertieren Sie die Bytes in einen Hexadezimal-String
+                        string hex = BitConverter.ToString(buffer).Replace("-", " "); // Convert the bytes to a hexadecimal string
 
-                        // Konvertieren Sie die Bytes in ASCII-Zeichen
+                        // Convert the bytes to ASCII characters
                         string ascii = Encoding.ASCII.GetString(buffer);
 
-                        textBoxTileDataInfo.Text = $"Die Bytes an der Position {index} in der Datei {filePath} sind:\n{hex}\n\nASCII:\n{ascii}";
+                        textBoxTileDataInfo.Text = $"The bytes at the position {index} in the file {filePath} are:\n{hex}\n\nASCII:\n{ascii}";
                     }
                 }
             }
@@ -593,7 +591,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                     string filePath = Path.Combine(folderBrowserDialog.SelectedPath, "Tiledata.mul");
                     artDataFile.LoadFromFileForCounting(filePath);
                     int numEntries = artDataFile.CountEntries();
-                    lblTileDataEntryCount.Text = "Die Anzahl der Einträge ist: " + numEntries;
+                    lblTileDataEntryCount.Text = "The number of entries is: " + numEntries;
                 }
             }
         }
@@ -610,13 +608,13 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 {
                     string filePath = Path.Combine(fbd.SelectedPath, "Tiledata.mul");
 
-                    // Überprüfen Sie, ob die Datei bereits existiert. Wenn ja, löschen Sie sie.
+                    // Check if the file already exists. If so, delete them.
                     if (File.Exists(filePath))
                     {
                         File.Delete(filePath);
                     }
 
-                    // Erstellen Sie die Datei.
+                    // Create the file.
                     using (var fs = File.Create(filePath))
                     {
                         using (var writer = new BinaryWriter(fs))
@@ -632,7 +630,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                         }
                     }
 
-                    MessageBox.Show($"Die Tiledata.mul-Datei wurde erfolgreich erstellt in: {filePath}");
+                    MessageBox.Show($"The Tiledata.mul file was successfully created in: {filePath}");
                 }
             }
         }
@@ -649,51 +647,51 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 {
                     tbDirTileData.Text = fbd.SelectedPath;
 
-                    // Erstellen Sie den vollständigen Pfad zur Datei
+                    // Create the full path to the file
                     string filePath = Path.Combine(fbd.SelectedPath, "Tiledata.mul");
 
-                    // Überprüfen Sie, ob die Datei existiert
+                    // Check if the file exists
                     if (!File.Exists(filePath))
                     {
-                        textBoxTileDataInfo.Text = "Die Datei Tiledata.mul konnte nicht gefunden werden.";
+                        textBoxTileDataInfo.Text = "The file Tiledata.mul could not be found.";
                         return;
                     }
 
-                    // Lesen Sie die Daten aus der Datei
+                    // Read the data from the file
                     using (var fs = File.OpenRead(filePath))
                     {
                         using (var reader = new BinaryReader(fs))
                         {
-                            // Lesen Sie die Anzahl der Land Tile Groups
+                            // Read the number of Land Tile Groups
                             int landTileGroups = reader.ReadInt32();
 
-                            // Lesen Sie die Anzahl der Static Tile Groups
+                            // Read the number of Static Tile Groups
                             int staticTileGroups = reader.ReadInt32();
 
-                            // Erstellen Sie eine neue Instanz von TileDataFlags
+                            // Create a new instance of TileDataFlags
                             TileDataFlags flags = new TileDataFlags();
 
-                            // Lesen Sie die Flags für jedes Tile
+                            // Read the flags for each tile
                             while (reader.BaseStream.Position != reader.BaseStream.Length)
                             {
-                                // Lesen Sie die Flags aus der Datei
+                                // Read the flags from the file
                                 ulong flagValue = reader.ReadUInt64();
 
-                                // Interpretieren Sie die Flags mit der TileDataFlags-Klasse
+                                // Interpret the flags using the TileDataFlags class
                                 flags.Value = flagValue;
 
-                                // Fügen Sie die Flags zu einer Liste hinzu
+                                // Add the flags to a list
                                 List<ulong> flagList = new List<ulong>();
                                 flagList.Add(flagValue);
 
-                                // Verwenden Sie die Flags hier...
+                                // Use the flags here...
                                 foreach (ulong flag in flagList)
                                 {
-                                    // Verarbeiten Sie jedes Flag...
+                                    // Process each flag...
                                 }
                             }
 
-                            // Zeigen Sie die Informationen in der Textbox an
+                            // Display the information in the text box
                             textBoxTileDataInfo.Text = $"Land Tile Groups: {landTileGroups}\nStatic Tile Groups: {staticTileGroups}";
                         }
                     }
@@ -949,7 +947,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 
             public TileDataFlags()
             {
-                // Initialisieren Sie Ihre Flags hier, falls erforderlich
+                // Initialize your flags here if necessary
             }
 
             public TileDataFlags(ulong flagValue)
@@ -959,25 +957,25 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 
             public TileDataFlags(string flagValue)
             {
-                // Zerlegen Sie den Eingabestring in einzelne Flag-Namen
+                // Break the input string into individual flag names
                 var flagNames = flagValue.Split(',');
 
-                // Durchlaufen Sie jeden Flag-Namen
+                // Loop through each flag name
                 foreach (var flagName in flagNames)
                 {
-                    // Entfernen Sie Leerzeichen
+                    // Remove spaces
                     var trimmedFlagName = flagName.Trim();
 
-                    // Überprüfen Sie, ob der Flag-Name gültig ist
+                    // Check whether the flag name is valid
                     if (flagNameMasks.ContainsKey(trimmedFlagName))
                     {
-                        // Wenn ja, setzen Sie das entsprechende Bit in `value`
+                        // If yes, set the appropriate one Bit in `value`
                         value |= flagNameMasks[trimmedFlagName];
                     }
                     else
                     {
-                        // Wenn nicht, werfen Sie eine Ausnahme oder behandeln Sie den Fehler auf geeignete Weise
-                        throw new ArgumentException("Ungültiger Flag-Name: " + trimmedFlagName);
+                        // If not, throw an exception or handle the error appropriately
+                        throw new ArgumentException("Invalid flag name: " + trimmedFlagName);
                     }
                 }
             }
@@ -1113,7 +1111,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 
                     for (int j = 0; j < rowWidth; j++)
                     {
-                        // Überprüfen Sie, ob der Index innerhalb des gültigen Bereichs liegt
+                        // Check whether the index is within the valid range
                         if (index + 2 <= imageData.Length)
                         {
                             ushort pixelData = BitConverter.ToUInt16(imageData, index);
@@ -1126,8 +1124,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                         }
                         else
                         {
-                            // Handle the error
-                            // Zum Beispiel könnten Sie eine Ausnahme auslösen oder einen Standardwert zuweisen
+                            // Handle the error                            
                         }
                     }
                 }
@@ -1220,7 +1217,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 }
             }
             #endregion
-            
+
             #region LoadFromFileForCounting
             public void LoadFromFileForCounting(string filename)
             {
@@ -1264,24 +1261,24 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             #region  CreateTileData
             public void CreateTileData(string filePath, int landTileGroups, int staticTileGroups, bool createEmptyFile)
             {
-                // Überprüfen Sie, ob die Datei bereits existiert. Wenn ja, löschen Sie sie.
+                // Check if the file already exists. If so, delete them.
                 if (File.Exists(filePath))
                 {
                     File.Delete(filePath);
                 }
 
-                // Erstellen Sie die Datei.
+                // Create the file.
                 using (var fs = File.Create(filePath))
                 {
                     for (int i = 0; i < landTileGroups; i++)
                     {
-                        // Schreiben Sie die Land Tile Group in die Datei.
+                        // Write the Land Tile Group to the file.
                         WriteLandTileGroup(fs, createEmptyFile);
                     }
 
                     for (int i = 0; i < staticTileGroups; i++)
                     {
-                        // Schreiben Sie die Static Tile Group in die Datei.
+                        // Write the Static Tile Group to the file.
                         WriteStaticTileGroup(fs, createEmptyFile);
                     }
                 }
@@ -1346,15 +1343,15 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             #endregion
 
             #region ReadTileData2(
-            // nicht genützt
+            // not used
             public string ReadTileData2(string filePath, int index)
             {
                 using (var fs = File.OpenRead(filePath))
                 {
-                    // Berechnen Sie die Position des angegebenen Index in der Datei
-                    long position = index * 26; // Jedes Tile ist 26 Bytes groß
+                    // Calculate the position of the specified index in the file
+                    long position = index * 26; // Each tile is 26 bytes in size
 
-                    // Stellen Sie sicher, dass die Position innerhalb der Datei liegt
+                    // Make sure the location is within the file
                     if (position < fs.Length)
                     {
                         fs.Position = position;
@@ -1374,10 +1371,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                             byte height = reader.ReadByte();
                             char[] tileName = reader.ReadChars(20);
 
-                            // Konvertieren Sie die Flags in eine Sequenz von Bit-Werten
+                            // Convert the flags into a sequence of bit values
                             string flagString = Convert.ToString(flags, 2).PadLeft(32, '0');
 
-                            // Erzeugen Sie die Ausgabe
+                            // Generate the output
                             StringBuilder output = new StringBuilder($"0x{index:X4};{new string(tileName)};{weight};{quality};0x{unknown:X4};{unknown1};{quantity};0x{animId:X4};{unknown2};{hue};0x{unknown3:X4};{height};{flagString}");
 
                             return output.ToString();
@@ -1396,18 +1393,18 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             {
                 using (var fs = File.OpenRead(filePath))
                 {
-                    // Berechnen Sie die Position des angegebenen Index in der Datei
+                    // Calculate the position of the specified index in the file
                     long position;
                     if (tileType == "Land")
                     {
-                        position = index * 26; // Jedes Land Tile ist 26 Bytes groß
+                        position = index * 26; // Each country tile is 26 bytes in size
                     }
                     else // Static
                     {
-                        position = index * 37; // Jedes Static Tile ist 37 Bytes groß
+                        position = index * 37; // Each static tile is 37 bytes in size
                     }
 
-                    // Stellen Sie sicher, dass die Position innerhalb der Datei liegt
+                    // Make sure the location is within the file
                     if (position < fs.Length)
                     {
                         fs.Position = position;
@@ -1415,12 +1412,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                         using (var reader = new BinaryReader(fs))
                         {
                             uint flags = reader.ReadUInt32();
-                            // ... (restlicher Code zum Lesen anderer Attribute) ...
+                            // ... (remaining code for reading other attributes)...
 
-                            // Konvertieren Sie die Flags in eine Sequenz von Bit-Werten
+                            // Convert the flags into a sequence of bit values
                             string flagString = Convert.ToString(flags, 2).PadLeft(32, '0');
 
-                            // Erzeugen Sie die Ausgabe
+                            // Generate the output
                             StringBuilder output = new StringBuilder($"0x{index:X4}; ... ;{flagString}");
 
                             return output.ToString();
@@ -1584,7 +1581,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             {
                 if (!File.Exists(filePath))
                 {
-                    throw new FileNotFoundException($"Die Datei {filePath} wurde nicht gefunden.");
+                    throw new FileNotFoundException($"The file {filePath} was not found.");
                 }
 
                 using (BinaryReader reader = new BinaryReader(File.Open(filePath, FileMode.Open)))
@@ -1600,7 +1597,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             {
                 if (index < 0 || index >= colors.Length)
                 {
-                    throw new IndexOutOfRangeException("Der Index liegt außerhalb des gültigen Bereichs.");
+                    throw new IndexOutOfRangeException("The index is out of range.");
                 }
 
                 return colors[index];
@@ -1639,8 +1636,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 for (int i = 0; i < 256; i++)
                 {
                     RGBValue rgb = new RGBValue();
-                    // Hier setzen wir die R-, G- und B-Werte auf i, 
-                    // Sie können diese Werte jedoch nach Belieben ändern.
+                    // Here we set the R, G and B values ​​to i, 
+                    // However, you can change these values ​​as you wish.
                     rgb.R = (byte)i;
                     rgb.G = (byte)i;
                     rgb.B = (byte)i;
@@ -1727,7 +1724,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 
             public Frame()
             {
-                // Initialisieren Sie die Eigenschaften entsprechend
+                // Initialize the properties accordingly
             }
         }
 
@@ -1738,7 +1735,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 
             public DataStream()
             {
-                // Initialisieren Sie die Eigenschaften entsprechend
+                // Initialize the properties accordingly
             }
 
             public int RunLength
@@ -1775,6 +1772,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         }
         #endregion
 
+        #region class AnimData
         public class AnimData
         {
             [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Size = 26, Pack = 1)]
@@ -1782,7 +1780,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             {
                 private uint _Flags;
                 private ushort _TexID;
-                public fixed byte _Name[20]; // Ändern Sie den Zugriffsmodifizierer auf public
+                public fixed byte _Name[20]; // Change the access modifier to public
             }
 
             [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Size = 37, Pack = 1)]
@@ -1800,7 +1798,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 private byte _StackingOff;
                 private byte _Value;
                 private byte _Height;
-                public fixed byte _Name[20]; // Ändern Sie den Zugriffsmodifizierer auf public
+                public fixed byte _Name[20]; // Change the access modifier to public
             }
 
             [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Size = 41, Pack = 1)]
@@ -1819,10 +1817,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 private byte _StackingOff;
                 private byte _Value;
                 private byte _Height;
-                public fixed byte _Name[20]; // Ändern Sie den Zugriffsmodifizierer auf public
+                public fixed byte _Name[20]; // Change the access modifier to public
             }
 
-            public unsafe void ReadAndDisplayData(string filePath, System.Windows.Forms.TextBox textBox) // Fügen Sie das Schlüsselwort unsafe hinzu
+            public unsafe void ReadAndDisplayData(string filePath, System.Windows.Forms.TextBox textBox) // Add the keyword unsafe
             {
                 using (var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read))
                 {
@@ -1835,14 +1833,14 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                         data = (OldItemData)Marshal.PtrToStructure(handle.AddrOfPinnedObject(), typeof(OldItemData));
                         handle.Free();
 
-                        // Angenommen, GetName() ist eine Funktion, die den Namen des Artikels aus den Rohdaten abruft
+                        // Suppose GetName() is a function that retrieves the name of the article from the raw data
                         string name = GetName(data._Name);
                         textBox.AppendText(name + "\n");
                     }
                 }
             }
 
-            private unsafe string GetName(byte* name) // Fügen Sie das Schlüsselwort unsafe hinzu
+            private unsafe string GetName(byte* name) // Add the keyword unsafe
             {
                 var bytes = new byte[20];
                 for (int i = 0; i < 20; i++)
@@ -1853,39 +1851,38 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 return Encoding.ASCII.GetString(bytes).TrimEnd('\0');
             }
         }
-
+        #endregion
 
         private BinaryReader reader;
         private int itemsLoaded = 0;
 
-
         #region LoadItems
         private void LoadItems()
         {
-            // Leeren Sie das ListView, wenn es das erste Mal geladen wird
+            // Empty the ListView when it first loads
             if (itemsLoaded == 0)
             {
                 listViewTileData.Items.Clear();
             }
 
-            // Laden Sie bis zu 50 Elemente
+            // Load up to 50 items
             for (int i = 0; i < 50 && reader.BaseStream.Position < reader.BaseStream.Length; i++)
             {
-                // Lesen Sie die Daten für jede Land-Kachel-Gruppe
+                // Read the data for each country tile group
                 ulong flags = reader.ReadUInt64();
                 ushort textureId = reader.ReadUInt16();
                 string tileName = Encoding.Default.GetString(reader.ReadBytes(20));
 
-                // Fügen Sie die Informationen als neuen Eintrag in das ListView ein
+                // Paste the information into the ListView as a new entry
                 ListViewItem item = new ListViewItem(new string[]
                 {
-            reader.BaseStream.Position.ToString("X"),
-            tileName,
-            textureId.ToString(),
-            Convert.ToString((long)flags, 2).PadLeft(33, '0')
+                    reader.BaseStream.Position.ToString("X"),
+                    tileName,
+                    textureId.ToString(),
+                    Convert.ToString((long)flags, 2).PadLeft(33, '0')
                 });
 
-                // Füge die Flag-Werte hinzu
+                // Add the flag values
                 for (int j = 0; j < 33; j++)
                 {
                     bool flagJ = (flags & (1UL << j)) != 0;
@@ -1901,7 +1898,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         #region TiledataHex Keydown
         private void TiledataHex_KeyDown(object sender, KeyEventArgs e)
         {
-            // Prüfen Sie, ob die Leertaste gedrückt wurde
+            // Check if the spacebar was pressed
             if (e.KeyCode == Keys.Space)
             {
                 if (landItemsLoaded < 16000)
@@ -1934,10 +1931,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         #region LoadLandTiles
         private void LoadLandTiles()
         {
-            // Laden Sie bis zu 50 Elemente
+            // Load up to 50 items
             for (int i = 0; i < 50 && reader.BaseStream.Position < reader.BaseStream.Length; i++)
             {
-                // Lesen Sie die Daten für jede Land-Kachel-Gruppe
+                // Read the data for each country tile group
                 uint flags = reader.ReadUInt32();
                 Console.WriteLine("Flags: " + flags);
                 ushort textureId = reader.ReadUInt16();
@@ -1945,7 +1942,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 string tileName = Encoding.Default.GetString(reader.ReadBytes(20));
                 Console.WriteLine("Tile Name: " + tileName);
 
-                // Fügen Sie die Informationen als neuen Eintrag in das ListView ein
+                // Paste the information into the ListView as a new entry
                 ListViewItem item = new ListViewItem(new string[]
                 {
             reader.BaseStream.Position.ToString("X"),
@@ -1963,7 +1960,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         #region LoadStaticTiles
         private void LoadStaticTiles()
         {
-            // Laden Sie bis zu 50 Elemente
+            // Load up to 50 items
             for (int i = 0; i < 50 && reader.BaseStream.Position < reader.BaseStream.Length; i++)
             {
                 uint unknown = reader.ReadUInt32();
@@ -1980,7 +1977,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 byte height = reader.ReadByte();
                 string tileName = Encoding.Default.GetString(reader.ReadBytes(20));
 
-                // Fügen Sie die Informationen als neuen Eintrag in das ListView ein
+                // Paste the information into the ListView as a new entry
                 ListViewItem item = new ListViewItem(new string[]
                 {
             reader.BaseStream.Position.ToString("X"),
@@ -2038,13 +2035,13 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 foreach (ListViewItem item in listViewTileData.Items)
                 {
                     string details = "";
-                    // Iterieren Sie durch alle SubItems des aktuellen Elements
+                    // Iterate through all SubItems of the current item
                     foreach (ListViewItem.ListViewSubItem subItem in item.SubItems)
                     {
-                        // Fügen Sie den Text des SubItems zu den Details hinzu
+                        // Add the SubItem's text to the details
                         details += subItem.Text + "\n";
                     }
-                    // Fügen Sie die Details zur TextBox hinzu
+                    // Add the details to the TextBox
                     textBoxOutput.AppendText(details);
                 }
             }
@@ -2062,9 +2059,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 TileData2 tileData = new TileData2(folderBrowserDialog.SelectedPath);
                 tileData.CreateTileData(landCount, staticCount);
                 int totalIndices = landCount * 32 + staticCount * 32;
-                indexCount.Text = $"Erstellte Landblöcke: {landCount * 32}\n" +
-                                  $"Erstellte statische Blöcke: {staticCount * 32}\n" +
-                                  $"Gesamtzahl der erstellten Indizes: {totalIndices}";
+                indexCount.Text = $"Created land blocks: {landCount * 32}\n" +
+                                  $"Created static blocks: {staticCount * 32}\n" +
+                                  $"Total number of indexes created: {totalIndices}";
             }
         }
         #endregion
@@ -2078,7 +2075,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             {
                 TileData2 tileData = new TileData2(Path.GetDirectoryName(openFileDialog.FileName));
                 int count = tileData.CountIndices();
-                indexCount.Text = $"Anzahl der Indizes: {count}";
+                indexCount.Text = $"Number of indexes: {count}";
             }
         }
         #endregion       
@@ -2097,35 +2094,35 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 {
                     string folder = dialog.SelectedPath;
 
-                    // Bestimmen Sie die Anzahl der zu erstellenden Indizes
+                    // Determine the number of indexes to create
                     int indexCount;
                     if (string.IsNullOrEmpty(tbIndexCount.Text) || !int.TryParse(tbIndexCountTexture.Text, out indexCount))
                     {
                         indexCount = 16383;
                     }
 
-                    // Erstellen Sie die BinaryWriter Instanzen außerhalb der Schleife
+                    // Create the BinaryWriter instances outside the loop
                     using (BinaryWriter texMapsFile = new BinaryWriter(File.Open(Path.Combine(folder, "TexMaps.mul"), FileMode.Create)))
                     using (BinaryWriter texIdxFile = new BinaryWriter(File.Open(Path.Combine(folder, "TexIdx.mul"), FileMode.Create)))
                     {
                         for (int i = 0; i < indexCount; i++)
                         {
-                            // Erstellen Sie hier Ihr imageColors Array
+                            // Create your imageColors array here
                             short[] imageColors;
                             int extra;
                             if (i % 2 == 0)
                             {
-                                imageColors = new short[64 * 64]; // Beispiel: ein 64x64 Bild mit allen Pixeln schwarz
+                                imageColors = new short[64 * 64]; // Example: a 64x64 image with all pixels black
                                 extra = 0;
                             }
                             else
                             {
-                                imageColors = new short[128 * 128]; // Beispiel: ein 128x128 Bild mit allen Pixeln schwarz
+                                imageColors = new short[128 * 128]; // Example: a 128x128 image with all pixels black
                                 extra = 1;
                             }
 
-                            // Schreiben Sie die Bilddaten in die TexMaps.mul Datei
-                            // nur wenn die CheckBox nicht aktiviert ist oder dies die ersten beiden Bilder sind
+                            // Write the image data to the TexMaps.mul file
+                            // only if the CheckBox is not activated or these are the first two images
                             if (!checkBoxTexture.Checked || i < 2)
                             {
                                 foreach (short color in imageColors)
@@ -2134,7 +2131,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                                 }
                             }
 
-                            // Schreiben Sie die Indexdaten in die TexIdx.mul Datei
+                            // Write the index data to the TexIdx.mul file
                             int width = (extra == 1 ? 128 : 64);
                             texIdxFile.Write(width); // width
                             texIdxFile.Write(width); // height
@@ -2142,8 +2139,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                         }
                     }
 
-                    // Aktualisieren Sie das Label und die TextBox, um die Anzahl der erstellten Indizes anzuzeigen
-                    lbTextureCount.Text = $"Erstellte Indizes: {indexCount}";
+                    // Update the Label and TextBox to reflect the number of indexes created
+                    lbTextureCount.Text = $"Created indexes: {indexCount}";
                     tbIndexCount.Text = indexCount.ToString();
                 }
             }
@@ -2162,19 +2159,19 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 {
                     string folder = dialog.SelectedPath;
 
-                    // Bestimmen Sie die Anzahl der zu erstellenden Indizes
+                    // Determine the number of indexes to create
                     int indexCount;
                     if (string.IsNullOrEmpty(tbIndexCount.Text) || !int.TryParse(tbIndexCountTexture.Text, out indexCount))
                     {
                         indexCount = 16383;
                     }
 
-                    // Erstellen Sie die BinaryWriter Instanz für die TexIdx.mul Datei
+                    // Create the BinaryWriter instance for the TexIdx.mul file
                     using (BinaryWriter texIdxFile = new BinaryWriter(File.Open(Path.Combine(folder, "TexIdx.mul"), FileMode.Create)))
                     {
                         for (int i = 0; i < indexCount; i++)
                         {
-                            // Schreiben Sie die Indexdaten in die TexIdx.mul Datei
+                            // Write the index data to the TexIdx.mul file
                             int width = (i % 2 == 0 ? 64 : 128);
                             texIdxFile.Write(width); // width
                             texIdxFile.Write(width); // height
@@ -2182,11 +2179,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                         }
                     }
 
-                    // Erstellen Sie eine leere TexMaps.mul Datei
+                    // Create an empty TexMaps.mul file
                     using (File.Create(Path.Combine(folder, "TexMaps.mul"))) { }
 
-                    // Aktualisieren Sie das Label und die TextBox, um die Anzahl der erstellten Indizes anzuzeigen
-                    lbTextureCount.Text = $"Erstellte Indizes: {indexCount}";
+                    // Update the Label and TextBox to reflect the number of indexes created
+                    lbTextureCount.Text = $"Created indexes: {indexCount}";
                     tbIndexCount.Text = indexCount.ToString();
                 }
             }
@@ -2196,22 +2193,22 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         #region Create RadarColor
         private void CreateFileButtonRadarColor_Click(object sender, EventArgs e)
         {
-            // Setzen Sie den Standarddateinamen
+            // Set the default file name
             saveFileDialog.FileName = "RadarCol.mul";
 
-            // Zeigen Sie den Dialog zum Speichern der Datei an
+            // Display the save file dialog
             if (saveFileDialog.ShowDialog() == DialogResult.OK)
             {
-                // Lesen Sie die Anzahl der Indizes aus der TextBox
+                // Read the number of indexes from the TextBox
                 int indexCount;
                 if (!int.TryParse(indexCountTextBox.Text, out indexCount))
                 {
-                    // Zeigen Sie eine Fehlermeldung an, wenn die Eingabe ungültig ist
-                    lbRadarColorInfo.Text = "Bitte geben Sie eine gültige Zahl ein.";
+                    // Display an error message if the input is invalid
+                    lbRadarColorInfo.Text = "Please enter a valid number.";
                     return;
                 }
 
-                // Erstellen Sie die RadarCol.mul-Datei
+                // Create the RadarCol.mul file
                 CreateRadarColFile(saveFileDialog.FileName, indexCount);
             }
         }
@@ -2219,7 +2216,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private void CreateRadarColFile(string filePath, int indexCount)
         {
             short[] colors = new short[indexCount];
-            // Hier können Sie die Farben nach Ihren Wünschen einstellen.
+            // Here you can adjust the colors according to your wishes.
 
             using (BinaryWriter writer = new BinaryWriter(File.Open(filePath, FileMode.Create)))
             {
@@ -2229,7 +2226,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 }
             }
 
-            lbRadarColorInfo.Text = "Die Datei wurde erfolgreich erstellt!";
+            lbRadarColorInfo.Text = "The file was created successfully!";
         }
         #endregion
 
@@ -2239,7 +2236,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 
         private void btCreatePalette_Click(object sender, EventArgs e)
         {
-            // Erstellen Sie die Palette und fügen Sie die gewünschten Farben hinzu
+            // Create the palette and add the colors you want
             CreateDefaultPalette();
 
             using (FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog())
@@ -2258,7 +2255,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         {
             palette = new Palette();
 
-            // Fügen Sie hier die gewünschten RGB-Werte hinzu
+            // Add the desired RGB values ​​here
             palette.AddColor(Color.FromArgb(0, 0, 0)); // RGB Value 0: R=0, G=0, B=0
             palette.AddColor(Color.FromArgb(255, 0, 255)); // RGB Value 1: R=255, G=0, B=255
             palette.AddColor(Color.FromArgb(255, 0, 255)); // RGB Value 2: R=255, G=0, B=255
@@ -2572,15 +2569,16 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             //rgbValuesLabel.Text = sb.ToString();
             textBoxRgbValues.Text = sb.ToString();
 
-            // Kopieren Sie die RGB-Werte in die Zwischenablage
+            // Copy the RGB values ​​to the clipboard
             Clipboard.SetText(sb.ToString());
         }
         #endregion
 
+        #region Animation
         #region btnLoadAnimationMulData
         private void btnLoadAnimationMulData_Click(object sender, EventArgs e)
         {
-            // Öffnen Sie den Datei-Dialog, um den Benutzer das Verzeichnis auswählen zu lassen
+            // Open the file dialog to let the user select the directory
             using (var fbd = new FolderBrowserDialog())
             {
                 DialogResult result = fbd.ShowDialog();
@@ -2590,10 +2588,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                     string animMulPath = Path.Combine(fbd.SelectedPath, "Anim.mul");
                     string animIdxPath = Path.Combine(fbd.SelectedPath, "Anim.idx");
 
-                    // Laden Sie die Animation mit den ausgewählten Dateipfaden
+                    // Load the animation with the selected file paths
                     AnimationGroup animation = LoadAnimation(animMulPath, animIdxPath);
 
-                    // Zeigen Sie die Animation in der TextBox an
+                    // Display the animation in the TextBox
                     this.txtData.Text = animation.ToString();
                 }
             }
@@ -2605,7 +2603,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         {
             AnimationGroup animation = new AnimationGroup();
 
-            // Lesen Sie die Daten aus der Anim.idx Datei
+            // Read the data from the Anim.idx file
             using (var idxReader = new BinaryReader(File.OpenRead(animIdxPath)))
             {
                 animation.FrameCount = (uint)(idxReader.BaseStream.Length / 12);
@@ -2613,11 +2611,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 
                 for (int i = 0; i < animation.FrameCount; i++)
                 {
-                    if (idxReader.BaseStream.Position < idxReader.BaseStream.Length - 12) // Überprüfen Sie, ob noch genügend Daten zum Lesen vorhanden sind
+                    if (idxReader.BaseStream.Position < idxReader.BaseStream.Length - 12) // Check if there is enough data left to read
                     {
-                        idxReader.ReadUInt32(); // Überspringen Sie das Lookup-Feld
+                        idxReader.ReadUInt32(); // Skip the lookup field
                         uint size = idxReader.ReadUInt32();
-                        idxReader.ReadUInt32(); // Überspringen Sie das Unknown-Feld
+                        idxReader.ReadUInt32(); // Skip the Unknown field
 
                         if (size > 0)
                         {
@@ -2627,7 +2625,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 }
             }
 
-            // Lesen Sie die Daten aus der Anim.mul Datei
+            // Read the data from the Anim.mul file
             using (var mulReader = new BinaryReader(File.OpenRead(animMulPath)))
             {
                 animation.Frames = new Frame[animation.FrameCount];
@@ -2638,7 +2636,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                     {
                         mulReader.BaseStream.Seek(animation.FrameOffset[i], SeekOrigin.Begin);
 
-                        if (mulReader.BaseStream.Position < mulReader.BaseStream.Length - 8) // Überprüfen Sie, ob noch genügend Daten zum Lesen vorhanden sind
+                        if (mulReader.BaseStream.Position < mulReader.BaseStream.Length - 8) // Check if there is enough data left to read
                         {
                             Frame frame = new Frame();
                             frame.ImageCenterX = mulReader.ReadUInt16();
@@ -2646,7 +2644,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                             frame.Width = mulReader.ReadUInt16();
                             frame.Height = mulReader.ReadUInt16();
 
-                            // Hier sollten Sie den Code hinzufügen, um die Pixel-Daten zu lesen
+                            // Here you should add the code to read the pixel data
 
                             animation.Frames[i] = frame;
                         }
@@ -2657,7 +2655,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             return animation;
         }
         #endregion
+        #endregion
 
+        #region Arts
         #region BtnCreateArtIdx
         private void BtnCreateArtIdx_Click(object sender, EventArgs e)
         {
@@ -2741,9 +2741,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         }
         #endregion
 
-        #region ReadArtIdx
-
-        private int _indexCount = 0;
+        #region BtnReadArtIdx
+        private int _indexCount = 0;        
         private void BtnReadArtIdx_Click(object sender, EventArgs e)
         {
             OpenFileDialog openFileDialog = new OpenFileDialog();
@@ -2757,8 +2756,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 lblIndexCount.Text = $"Total indices read: {_indexCount}"; // Update the label
                 infoARTIDXMULID.AppendText($"Finished reading {_indexCount} entries from {openFileDialog.FileName}\n");
             }
-        }   
+        }
+        #endregion
 
+        #region ReadArtIdx
         private void ReadArtIdx(string filename)
         {
             using (FileStream stream = File.Open(filename, FileMode.Open, FileAccess.Read))
@@ -2800,6 +2801,157 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 infoARTIDXMULID.AppendText($"Undefined entries: {undefinedCount}\n");
             }
         }
+        #endregion
+
+        #region ReadArtmul2
+        private void ReadArtmul2_Click(object sender, EventArgs e)
+        {
+            // Öffnen Sie einen FolderBrowserDialog, um die Datei auszuwählen
+            FolderBrowserDialog fbd = new FolderBrowserDialog();
+            if (fbd.ShowDialog() == DialogResult.OK)
+            {
+                string fileName = Path.Combine(fbd.SelectedPath, "artidx.mul");
+                if (File.Exists(fileName))
+                {
+                    // Lesen Sie die Datei als Bytearray
+                    byte[] fileBytes = File.ReadAllBytes(fileName);
+
+                    // Berechnen Sie die Anzahl der Indexeinträge (jeder Eintrag hat 12 Bytes)
+                    int indexCount = fileBytes.Length / 12;
+
+                    // Zeigen Sie die Anzahl der Indexeinträge im Label an
+                    lblIndexCount.Text = $"Die ARTIDX.MUL hat {indexCount} Indexeinträge.";
+                }
+                else
+                {
+                    MessageBox.Show("Die Datei 'artidx.mul' wurde nicht gefunden.", "Fehler", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+        }
+        #endregion
+
+        #region btnCreateNewArtidx
+        private void btnCreateNewArtidx(object sender, EventArgs e)
+        {
+            // Open a FolderBrowserDialog to select the destination path
+            FolderBrowserDialog fbd = new FolderBrowserDialog();
+            if (fbd.ShowDialog() == DialogResult.OK)
+            {
+                string targetPath = fbd.SelectedPath;
+
+                // Verify that a valid number of index entries has been entered
+                if (int.TryParse(tbxNewIndex.Text, out int indexCount) && indexCount > 0)
+                {
+                    // Create a new byte array with the specified size
+                    byte[] newFileBytes = new byte[indexCount * 12];
+
+                    // Set the flag to 0xFFFFFFFF for all index entries (empty)
+                    for (int i = 0; i < indexCount; i++)
+                    {
+                        int offset = i * 12;
+                        // Write the flag (0xFFFFFFFF) to the first 4 bytes of the index entry
+                        Array.Copy(BitConverter.GetBytes(0xFFFFFFFF), 0, newFileBytes, offset, 4);
+
+                        // Initialize the next 4 bytes (Size) with 0
+                        Array.Copy(BitConverter.GetBytes(0), 0, newFileBytes, offset + 4, 4);
+
+                        // Initialize the last 4 bytes (Unknown) with 0
+                        Array.Copy(BitConverter.GetBytes(0), 0, newFileBytes, offset + 8, 4);
+                    }
+
+                    // Save the new byte array as a file
+                    string newFileName = Path.Combine(targetPath, "artidx.mul");
+                    File.WriteAllBytes(newFileName, newFileBytes);
+
+                    MessageBox.Show($"The new ARTIDX.MUL file with {indexCount} empty index entries has been successfully created..", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+                else
+                {
+                    MessageBox.Show("Please enter a valid positive integer for the number of index entries.", "Invalid input", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+        }
+        #endregion
+
+        #region btnCreateNewArtidx2
+        private void btnCreateNewArtidx2(object sender, EventArgs e)
+        {
+            // Open a FolderBrowserDialog to select the destination path
+            FolderBrowserDialog fbd = new FolderBrowserDialog();
+            if (fbd.ShowDialog() == DialogResult.OK)
+            {
+                string targetPath = fbd.SelectedPath;
+
+                // Verify that valid numbers have been entered for the ranges
+                if (int.TryParse(tbxNewIndex2.Text, out int totalCount) && totalCount > 0 &&
+                    int.TryParse(tbxArtsCount.Text, out int artsCount) && artsCount >= 0 &&
+                    int.TryParse(tbxLandTilesCount.Text, out int landTilesCount) && landTilesCount >= 0 &&
+                    artsCount + landTilesCount == totalCount)
+                {
+                    // Create a new byte array with the specified size
+                    byte[] newFileBytes = new byte[totalCount * 12];
+
+                    // Set the flag to 0xFFFFFFFF for all index entries (empty)
+                    for (int i = 0; i < totalCount; i++)
+                    {
+                        int offset = i * 12;
+                        Array.Copy(BitConverter.GetBytes(0xFFFFFFFF), 0, newFileBytes, offset, 4); // Flag
+                        Array.Copy(BitConverter.GetBytes(0), 0, newFileBytes, offset + 4, 4); // Size
+                        Array.Copy(BitConverter.GetBytes(0), 0, newFileBytes, offset + 8, 4); // Unknown
+                    }
+
+                    // Speichern Sie das neue Bytearray als Datei
+                    string newFileName = Path.Combine(targetPath, "artidx.mul");
+                    File.WriteAllBytes(newFileName, newFileBytes);
+
+                    MessageBox.Show($"The new ARTIDX.MUL file with a total of {totalCount} empty index entries has been successfully created..\nNumber of Arts: {artsCount}\nNumber of Land Tiles: {landTilesCount}", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+                else
+                {
+                    MessageBox.Show("Please enter valid positive integers for the total number, the number of arts, and the number of land tiles, where the sum of the arts and land tiles must match the total number.", "Invalid input", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+        }
+        #endregion
+
+        #region btnCreateOldVersionArtidx
+        private void btnCreateOldVersionArtidx(object sender, EventArgs e)
+        {
+            // Open a FolderBrowserDialog to select the destination path
+            FolderBrowserDialog fbd = new FolderBrowserDialog();
+            if (fbd.ShowDialog() == DialogResult.OK)
+            {
+                string targetPath = fbd.SelectedPath;
+
+                // Verify that a valid number of index entries has been entered
+                if (int.TryParse(tbxNewIndex.Text, out int indexCount) && indexCount > 0)
+                {
+                    // Create a new byte array with the specified size
+                    byte[] newFileBytes = new byte[indexCount * 12];
+
+                    // Set the flag to 0xFFFFFFFF for all index entries (empty)
+                    for (int i = 0; i < indexCount; i++)
+                    {
+                        int offset = i * 12;
+                        newFileBytes[offset] = 0xFF;
+                        newFileBytes[offset + 1] = 0xFF;
+                        newFileBytes[offset + 2] = 0xFF;
+                        newFileBytes[offset + 3] = 0xFF;
+                    }
+
+                    // Save the new byte array as a file
+                    string newFileName = Path.Combine(targetPath, "artidx.mul");
+                    File.WriteAllBytes(newFileName, newFileBytes);
+
+                    MessageBox.Show($"The new ARTIDX.MUL file with {indexCount} empty index entries has been successfully created.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+                else
+                {
+                    MessageBox.Show("Please enter a valid positive integer for the number of index entries.", "Invalid input", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+        }
+        #endregion
         #endregion
 
         #region btnSingleEmptyAnimMul_Click
@@ -2934,7 +3086,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 tbProcessAminidx.AppendText($"An error has occurred: {ex.Message}\n");
             }
         }
+        #endregion
 
+        #region CopyAnimationData
         private void CopyAnimationData(string filename, int creatureID, int copyCount)
         {
             tbProcessAminidx.AppendText("Checking if new Animation ID is in use\n");
@@ -2970,6 +3124,72 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 }
                 // Update the label with the number of IDs created
                 lblNewIdCount.Text = $"Number of IDs created: {newIdCount}";
+            }
+        }
+        #endregion        
+
+        #region ReadAnimIdx
+        private async void ReadAnimIdx_Click(object sender, EventArgs e)
+        {
+            Debug.WriteLine("ReadAnimIdx_Click gestartet");
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            openFileDialog.Filter = "Animation Index File (ANIM.IDX)|ANIM.IDX";
+            if (openFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                string filePath = openFileDialog.FileName;
+                Debug.WriteLine($"Datei: {filePath}");
+                try
+                {
+                    using (BinaryReader reader = new BinaryReader(File.OpenRead(filePath)))
+                    {
+                        tbProcessAminidx.Clear();
+                        StringBuilder indexEntries = new StringBuilder();
+                        while (reader.BaseStream.Position < reader.BaseStream.Length)
+                        {
+                            int lookup = await Task.Run(() => reader.ReadInt32());
+                            int size = await Task.Run(() => reader.ReadInt32());
+                            int unknown = await Task.Run(() => reader.ReadInt32());
+                            indexEntries.AppendLine($"Lookup: {lookup}, Size: {size}, Unknown: {unknown}");
+                        }
+                        tbProcessAminidx.Text = indexEntries.ToString();
+                    }
+                    Debug.WriteLine("Read file completed");
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Error reading file: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+        }
+        #endregion
+
+        #region btnCountIndices
+        private async void btnCountIndices_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            openFileDialog.Filter = "Animation Index File (ANIM.IDX)|ANIM.IDX";
+            if (openFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                string filePath = openFileDialog.FileName;
+                try
+                {
+                    using (BinaryReader reader = new BinaryReader(File.OpenRead(filePath)))
+                    {
+                        int indexCount = 0;
+                        while (reader.BaseStream.Position < reader.BaseStream.Length)
+                        {
+                            await Task.Run(() => reader.ReadInt32()); // Lookup
+                            await Task.Run(() => reader.ReadInt32()); // Size
+                            await Task.Run(() => reader.ReadInt32()); // Unknown
+                            indexCount++;
+                        }
+                        lblNewIdCount.Text = indexCount.ToString();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Fehler beim Lesen der Datei: {ex.Message}", "Fehler", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
             }
         }
         #endregion
@@ -3099,6 +3319,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         }
         #endregion
 
+        #region Sound
         #region CreateOrgSoundMul
         private void CreateOrgSoundMul_Click(object sender, EventArgs e)
         {
@@ -3180,6 +3401,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 }
             }
         }
+        #endregion
         #endregion
 
         #region Gump
@@ -3413,7 +3635,6 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             return rows;
         }
         #endregion
-
         #region GumpRun
         // Represents a run of pixels in a Gump row, consisting of a pixel value and its run length.
         public struct GumpRun
@@ -3431,6 +3652,5 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         }
         #endregion
         #endregion
-
     }
 }

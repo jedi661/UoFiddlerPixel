@@ -127,6 +127,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             lbCreatePalette = new System.Windows.Forms.Label();
             btCreatePalette = new System.Windows.Forms.Button();
             tabPageAnimation = new System.Windows.Forms.TabPage();
+            btnCountIndices = new System.Windows.Forms.Button();
+            ReadAnimIdx = new System.Windows.Forms.Button();
             button1 = new System.Windows.Forms.Button();
             txtOutputDirectory = new System.Windows.Forms.TextBox();
             btnSetOutputDirectory = new System.Windows.Forms.Button();
@@ -166,6 +168,19 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             listViewTileData = new System.Windows.Forms.ListView();
             buttonReadTileData = new System.Windows.Forms.Button();
             tabPageArtmul = new System.Windows.Forms.TabPage();
+            panel4 = new System.Windows.Forms.Panel();
+            label20 = new System.Windows.Forms.Label();
+            tbxNewIndex2 = new System.Windows.Forms.TextBox();
+            lbArtsCount = new System.Windows.Forms.Label();
+            lbLandTilesCount = new System.Windows.Forms.Label();
+            tbxLandTilesCount = new System.Windows.Forms.TextBox();
+            tbxArtsCount = new System.Windows.Forms.TextBox();
+            button3 = new System.Windows.Forms.Button();
+            panel3 = new System.Windows.Forms.Panel();
+            lbinfoArt = new System.Windows.Forms.Label();
+            tbxNewIndex = new System.Windows.Forms.TextBox();
+            button2 = new System.Windows.Forms.Button();
+            ReadArtmul2 = new System.Windows.Forms.Button();
             BtnCreateArtIdx500K = new System.Windows.Forms.Button();
             BtnCreateArtIdx250K = new System.Windows.Forms.Button();
             BtnCreateArtIdx200K = new System.Windows.Forms.Button();
@@ -191,6 +206,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             CreateGumpButton = new System.Windows.Forms.Button();
             saveFileDialog = new System.Windows.Forms.SaveFileDialog();
             folderBrowserDialog = new System.Windows.Forms.FolderBrowserDialog();
+            btCreateOldVersionArtidx = new System.Windows.Forms.Button();
             tabControl1.SuspendLayout();
             tabPageCreateMuls.SuspendLayout();
             tabPageTileData.SuspendLayout();
@@ -207,6 +223,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             tabPageReadOut.SuspendLayout();
             groupBoxInfo.SuspendLayout();
             tabPageArtmul.SuspendLayout();
+            panel4.SuspendLayout();
+            panel3.SuspendLayout();
             tabPageSound.SuspendLayout();
             panel1.SuspendLayout();
             tabPageGump.SuspendLayout();
@@ -1086,6 +1104,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // 
             // tabPageAnimation
             // 
+            tabPageAnimation.Controls.Add(btnCountIndices);
+            tabPageAnimation.Controls.Add(ReadAnimIdx);
             tabPageAnimation.Controls.Add(button1);
             tabPageAnimation.Controls.Add(txtOutputDirectory);
             tabPageAnimation.Controls.Add(btnSetOutputDirectory);
@@ -1109,6 +1129,26 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             tabPageAnimation.TabIndex = 7;
             tabPageAnimation.Text = "Animation";
             tabPageAnimation.UseVisualStyleBackColor = true;
+            // 
+            // btnCountIndices
+            // 
+            btnCountIndices.Location = new System.Drawing.Point(450, 273);
+            btnCountIndices.Name = "btnCountIndices";
+            btnCountIndices.Size = new System.Drawing.Size(75, 23);
+            btnCountIndices.TabIndex = 109;
+            btnCountIndices.Text = "Indexe";
+            btnCountIndices.UseVisualStyleBackColor = true;
+            btnCountIndices.Click += btnCountIndices_Click;
+            // 
+            // ReadAnimIdx
+            // 
+            ReadAnimIdx.Location = new System.Drawing.Point(369, 273);
+            ReadAnimIdx.Name = "ReadAnimIdx";
+            ReadAnimIdx.Size = new System.Drawing.Size(75, 23);
+            ReadAnimIdx.TabIndex = 108;
+            ReadAnimIdx.Text = "Read";
+            ReadAnimIdx.UseVisualStyleBackColor = true;
+            ReadAnimIdx.Click += ReadAnimIdx_Click;
             // 
             // button1
             // 
@@ -1486,6 +1526,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // 
             // tabPageArtmul
             // 
+            tabPageArtmul.Controls.Add(panel4);
+            tabPageArtmul.Controls.Add(panel3);
+            tabPageArtmul.Controls.Add(ReadArtmul2);
             tabPageArtmul.Controls.Add(BtnCreateArtIdx500K);
             tabPageArtmul.Controls.Add(BtnCreateArtIdx250K);
             tabPageArtmul.Controls.Add(BtnCreateArtIdx200K);
@@ -1503,6 +1546,131 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             tabPageArtmul.TabIndex = 8;
             tabPageArtmul.Text = "Artmul";
             tabPageArtmul.UseVisualStyleBackColor = true;
+            // 
+            // panel4
+            // 
+            panel4.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            panel4.Controls.Add(label20);
+            panel4.Controls.Add(tbxNewIndex2);
+            panel4.Controls.Add(lbArtsCount);
+            panel4.Controls.Add(lbLandTilesCount);
+            panel4.Controls.Add(tbxLandTilesCount);
+            panel4.Controls.Add(tbxArtsCount);
+            panel4.Controls.Add(button3);
+            panel4.Location = new System.Drawing.Point(309, 239);
+            panel4.Name = "panel4";
+            panel4.Size = new System.Drawing.Size(331, 100);
+            panel4.TabIndex = 15;
+            // 
+            // label20
+            // 
+            label20.AutoSize = true;
+            label20.Location = new System.Drawing.Point(84, 4);
+            label20.Name = "label20";
+            label20.Size = new System.Drawing.Size(36, 15);
+            label20.TabIndex = 19;
+            label20.Text = "Index";
+            // 
+            // tbxNewIndex2
+            // 
+            tbxNewIndex2.Location = new System.Drawing.Point(84, 22);
+            tbxNewIndex2.Name = "tbxNewIndex2";
+            tbxNewIndex2.Size = new System.Drawing.Size(100, 23);
+            tbxNewIndex2.TabIndex = 18;
+            tbxNewIndex2.Text = "100000";
+            // 
+            // lbArtsCount
+            // 
+            lbArtsCount.AutoSize = true;
+            lbArtsCount.Location = new System.Drawing.Point(84, 48);
+            lbArtsCount.Name = "lbArtsCount";
+            lbArtsCount.Size = new System.Drawing.Size(61, 15);
+            lbArtsCount.TabIndex = 17;
+            lbArtsCount.Text = "ArtsCount";
+            // 
+            // lbLandTilesCount
+            // 
+            lbLandTilesCount.AutoSize = true;
+            lbLandTilesCount.Location = new System.Drawing.Point(190, 48);
+            lbLandTilesCount.Name = "lbLandTilesCount";
+            lbLandTilesCount.Size = new System.Drawing.Size(92, 15);
+            lbLandTilesCount.TabIndex = 16;
+            lbLandTilesCount.Text = "LandTiles Count";
+            // 
+            // tbxLandTilesCount
+            // 
+            tbxLandTilesCount.Location = new System.Drawing.Point(190, 66);
+            tbxLandTilesCount.Name = "tbxLandTilesCount";
+            tbxLandTilesCount.Size = new System.Drawing.Size(100, 23);
+            tbxLandTilesCount.TabIndex = 15;
+            tbxLandTilesCount.Text = "30000";
+            // 
+            // tbxArtsCount
+            // 
+            tbxArtsCount.Location = new System.Drawing.Point(84, 66);
+            tbxArtsCount.Name = "tbxArtsCount";
+            tbxArtsCount.Size = new System.Drawing.Size(100, 23);
+            tbxArtsCount.TabIndex = 14;
+            tbxArtsCount.Text = "70000";
+            // 
+            // button3
+            // 
+            button3.Location = new System.Drawing.Point(3, 66);
+            button3.Name = "button3";
+            button3.Size = new System.Drawing.Size(75, 23);
+            button3.TabIndex = 13;
+            button3.Text = "Create";
+            button3.UseVisualStyleBackColor = true;
+            button3.Click += btnCreateNewArtidx2;
+            // 
+            // panel3
+            // 
+            panel3.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            panel3.Controls.Add(btCreateOldVersionArtidx);
+            panel3.Controls.Add(lbinfoArt);
+            panel3.Controls.Add(tbxNewIndex);
+            panel3.Controls.Add(button2);
+            panel3.Location = new System.Drawing.Point(5, 239);
+            panel3.Name = "panel3";
+            panel3.Size = new System.Drawing.Size(262, 100);
+            panel3.TabIndex = 14;
+            // 
+            // lbinfoArt
+            // 
+            lbinfoArt.AutoSize = true;
+            lbinfoArt.Location = new System.Drawing.Point(140, 49);
+            lbinfoArt.Name = "lbinfoArt";
+            lbinfoArt.Size = new System.Drawing.Size(36, 15);
+            lbinfoArt.TabIndex = 14;
+            lbinfoArt.Text = "Index";
+            // 
+            // tbxNewIndex
+            // 
+            tbxNewIndex.Location = new System.Drawing.Point(141, 67);
+            tbxNewIndex.Name = "tbxNewIndex";
+            tbxNewIndex.Size = new System.Drawing.Size(100, 23);
+            tbxNewIndex.TabIndex = 13;
+            tbxNewIndex.Text = "65500";
+            // 
+            // button2
+            // 
+            button2.Location = new System.Drawing.Point(11, 67);
+            button2.Name = "button2";
+            button2.Size = new System.Drawing.Size(75, 23);
+            button2.TabIndex = 12;
+            button2.Text = "Create";
+            button2.UseVisualStyleBackColor = true;
+            button2.Click += btnCreateNewArtidx;
+            // 
+            // ReadArtmul2
+            // 
+            ReadArtmul2.Location = new System.Drawing.Point(646, 73);
+            ReadArtmul2.Name = "ReadArtmul2";
+            ReadArtmul2.Size = new System.Drawing.Size(75, 23);
+            ReadArtmul2.TabIndex = 11;
+            ReadArtmul2.Text = "Read";
+            ReadArtmul2.UseVisualStyleBackColor = true;
+            ReadArtmul2.Click += ReadArtmul2_Click;
             // 
             // BtnCreateArtIdx500K
             // 
@@ -1726,6 +1894,16 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             CreateGumpButton.UseVisualStyleBackColor = true;
             CreateGumpButton.Click += CreateGumpButton_Click;
             // 
+            // btCreateOldVersionArtidx
+            // 
+            btCreateOldVersionArtidx.Location = new System.Drawing.Point(11, 21);
+            btCreateOldVersionArtidx.Name = "btCreateOldVersionArtidx";
+            btCreateOldVersionArtidx.Size = new System.Drawing.Size(112, 23);
+            btCreateOldVersionArtidx.TabIndex = 15;
+            btCreateOldVersionArtidx.Text = "Old Veriant 2003";
+            btCreateOldVersionArtidx.UseVisualStyleBackColor = true;
+            btCreateOldVersionArtidx.Click += btnCreateOldVersionArtidx;
+            // 
             // ARTMulIDXCreator
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -1764,6 +1942,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             groupBoxInfo.PerformLayout();
             tabPageArtmul.ResumeLayout(false);
             tabPageArtmul.PerformLayout();
+            panel4.ResumeLayout(false);
+            panel4.PerformLayout();
+            panel3.ResumeLayout(false);
+            panel3.PerformLayout();
             tabPageSound.ResumeLayout(false);
             panel1.ResumeLayout(false);
             panel1.PerformLayout();
@@ -1926,5 +2108,21 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private System.Windows.Forms.Button ReadGumpButton;
         private System.Windows.Forms.Label gumpLabel;
         private System.Windows.Forms.TextBox IndexSizeTextBox;
+        private System.Windows.Forms.Button ReadArtmul2;
+        private System.Windows.Forms.Button ReadAnimIdx;
+        private System.Windows.Forms.Button btnCountIndices;
+        private System.Windows.Forms.TextBox tbxNewIndex;
+        private System.Windows.Forms.Button button2;
+        private System.Windows.Forms.Panel panel3;
+        private System.Windows.Forms.Label lbinfoArt;
+        private System.Windows.Forms.Panel panel4;
+        private System.Windows.Forms.Button button3;
+        private System.Windows.Forms.TextBox tbxArtsCount;
+        private System.Windows.Forms.Label label20;
+        private System.Windows.Forms.TextBox tbxNewIndex2;
+        private System.Windows.Forms.Label lbArtsCount;
+        private System.Windows.Forms.Label lbLandTilesCount;
+        private System.Windows.Forms.TextBox tbxLandTilesCount;
+        private System.Windows.Forms.Button btCreateOldVersionArtidx;
     }
 }
