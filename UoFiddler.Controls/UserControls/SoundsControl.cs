@@ -1019,7 +1019,7 @@ namespace UoFiddler.Controls.UserControls
             // The total number of possible sound IDs 4095, at the moment manual value let's see if you can increase the mul.
             int totalIDs = 0xFFE; // Replace this with the actual total
 
-            // Die Anzahl der belegten Sound-IDs
+            // The number of sound IDs in use
             int occupiedIDs = 0;
             foreach (TreeNode node in treeView.Nodes)
             {
