@@ -1626,7 +1626,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             panel1.Controls.Add(ReadIndexSize);
             panel1.Controls.Add(SoundIDXMul);
             panel1.Controls.Add(CreateOrgSoundMul);
-            panel1.Location = new System.Drawing.Point(6, 28);
+            panel1.Location = new System.Drawing.Point(6, 6);
             panel1.Name = "panel1";
             panel1.Size = new System.Drawing.Size(279, 188);
             panel1.TabIndex = 1;
@@ -1634,7 +1634,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // IndexSizeLabel
             // 
             IndexSizeLabel.AutoSize = true;
-            IndexSizeLabel.Location = new System.Drawing.Point(8, 61);
+            IndexSizeLabel.Location = new System.Drawing.Point(8, 54);
             IndexSizeLabel.Name = "IndexSizeLabel";
             IndexSizeLabel.Size = new System.Drawing.Size(36, 15);
             IndexSizeLabel.TabIndex = 3;
@@ -1642,7 +1642,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // 
             // ReadIndexSize
             // 
-            ReadIndexSize.Location = new System.Drawing.Point(190, 57);
+            ReadIndexSize.Location = new System.Drawing.Point(176, 46);
             ReadIndexSize.Name = "ReadIndexSize";
             ReadIndexSize.Size = new System.Drawing.Size(75, 23);
             ReadIndexSize.TabIndex = 2;
@@ -1652,7 +1652,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // 
             // SoundIDXMul
             // 
-            SoundIDXMul.Location = new System.Drawing.Point(8, 28);
+            SoundIDXMul.Location = new System.Drawing.Point(8, 18);
             SoundIDXMul.Name = "SoundIDXMul";
             SoundIDXMul.Size = new System.Drawing.Size(100, 23);
             SoundIDXMul.TabIndex = 1;
@@ -1660,7 +1660,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // 
             // CreateOrgSoundMul
             // 
-            CreateOrgSoundMul.Location = new System.Drawing.Point(190, 28);
+            CreateOrgSoundMul.Location = new System.Drawing.Point(176, 17);
             CreateOrgSoundMul.Name = "CreateOrgSoundMul";
             CreateOrgSoundMul.Size = new System.Drawing.Size(75, 23);
             CreateOrgSoundMul.TabIndex = 0;
@@ -1684,7 +1684,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             panel2.Controls.Add(gumpLabel);
             panel2.Controls.Add(ReadGumpButton);
             panel2.Controls.Add(CreateGumpButton);
-            panel2.Location = new System.Drawing.Point(5, 16);
+            panel2.Location = new System.Drawing.Point(5, 3);
             panel2.Name = "panel2";
             panel2.Size = new System.Drawing.Size(272, 160);
             panel2.TabIndex = 0;
@@ -1708,7 +1708,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // 
             // ReadGumpButton
             // 
-            ReadGumpButton.Location = new System.Drawing.Point(170, 49);
+            ReadGumpButton.Location = new System.Drawing.Point(170, 45);
             ReadGumpButton.Name = "ReadGumpButton";
             ReadGumpButton.Size = new System.Drawing.Size(85, 23);
             ReadGumpButton.TabIndex = 1;
@@ -1718,7 +1718,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // 
             // CreateGumpButton
             // 
-            CreateGumpButton.Location = new System.Drawing.Point(170, 20);
+            CreateGumpButton.Location = new System.Drawing.Point(170, 19);
             CreateGumpButton.Name = "CreateGumpButton";
             CreateGumpButton.Size = new System.Drawing.Size(85, 23);
             CreateGumpButton.TabIndex = 0;
