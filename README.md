@@ -12,6 +12,8 @@ Version : 4.12.4
 - Added functionality to update the count of occupied and free sound IDs in real-time when sounds are added, removed, or the view is reloaded.
 - Removed Escape key function, changed F2 key function to Ctrl+E, added Space key function to play/stop sound.
 - Update Nuget Paket.
+- Implemented functionality in the ServerStartBox for selecting, saving, and loading paths for the ServUO directory and Visual Studio, 
+  as well as for starting the ServUO server or another server directly through the .exe.
 
 Version : 4.12.3
 - Add Items Image Colors and Update.

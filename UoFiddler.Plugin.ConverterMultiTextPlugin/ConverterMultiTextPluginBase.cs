@@ -78,6 +78,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin
             tabControl.TabPages.Add(page);
         }
 
+        #region ModifyPluginToolStrip ServerStartBox
         public override void ModifyPluginToolStrip(ToolStripDropDownButton toolStrip)
         {
             ToolStripMenuItem item = new ToolStripMenuItem
@@ -86,14 +87,33 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin
             };
             item.Click += ItemClick;
             toolStrip.DropDownItems.Add(item);
-        }
 
+            // Add a menu item for ServerStartBox
+            ToolStripMenuItem serverStartBoxItem = new ToolStripMenuItem
+            {
+                Text = "ServerStartBox"
+            };
+            serverStartBoxItem.Click += ShowServerStartBox;
+            toolStrip.DropDownItems.Add(serverStartBoxItem);
+        }
+        #endregion
+
+        #region ItemClick Admintool
         private static void ItemClick(object sender, EventArgs e)
         {
             //new AdminToolForm().Show();
             AdminToolForm form = AdminToolForm.GetInstance();
             form.Show();
         }
+        #endregion
+
+        #region ShowServerStartBox
+        private static void ShowServerStartBox(object sender, EventArgs e)
+        {
+            // Create a new instance of ServerStartBox and display it
+            new ServerStartBox().Show();
+        }
+        #endregion
 
         private void EventsModifyItemsControlContextMenuEvent(ContextMenuStrip strip)
         {
