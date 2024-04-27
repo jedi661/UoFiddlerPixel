@@ -76,7 +76,6 @@
 			<Private>false</Private>
 			<ExcludeAssets>runtime</ExcludeAssets>
 		</ProjectReference>
-		<ProjectReference Include="..\UoFiddler.Plugin.ExamplePlugin\UoFiddler.Plugin.ExamplePlugin.csproj" />
 		<ProjectReference Include="..\UoFiddler.Plugin.UopPacker\UoFiddler.Plugin.UopPacker.csproj" />
 	</ItemGroup>
 	<ItemGroup>

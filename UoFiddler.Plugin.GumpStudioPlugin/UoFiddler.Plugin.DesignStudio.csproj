@@ -1,0 +1,55 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<AssemblyName>GumpStudio</AssemblyName>
+		<TargetFramework>net8.0-windows7.0</TargetFramework>
+		<UseWindowsForms>true</UseWindowsForms>
+		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+		<AssemblyTitle>FiddlerPlugin</AssemblyTitle>
+		<Product>FiddlerPlugin</Product>
+		<Copyright>Copyright © 2023</Copyright>
+	</PropertyGroup>
+	<PropertyGroup>
+		<EnableNETAnalyzers>true</EnableNETAnalyzers>
+	</PropertyGroup>
+	<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+		<DebugType>portable</DebugType>
+		<OutputPath>..\UoFiddler\bin\$(Configuration)\plugins\</OutputPath>
+	</PropertyGroup>
+	<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+		<DebugType>none</DebugType>
+		<OutputPath>..\UoFiddler\bin\$(Configuration)\plugins\</OutputPath>
+		<GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
+	</PropertyGroup>
+	<ItemGroup>
+		<Compile Update="Forms\DesignStudioForm.cs">
+			<SubType>Form</SubType>
+		</Compile>
+		<Compile Update="Forms\DesignStudioForm.Designer.cs">
+			<DependentUpon>DesignStudioForm.cs</DependentUpon>
+		</Compile>
+		<Compile Update="UserControls\DesignStudioControl.cs">
+			<SubType>UserControl</SubType>
+		</Compile>
+		<Compile Update="UserControls\DesignStudioControl.Designer.cs">
+			<DependentUpon>DesignStudioControl.cs</DependentUpon>
+		</Compile>
+	</ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\Ultima\Ultima.csproj">
+			<Private>false</Private>
+			<ExcludeAssets>runtime</ExcludeAssets>
+		</ProjectReference>
+		<ProjectReference Include="..\UoFiddler.Controls\UoFiddler.Controls.csproj">
+			<Private>false</Private>
+			<ExcludeAssets>runtime</ExcludeAssets>
+		</ProjectReference>
+	</ItemGroup>
+	<ItemGroup>
+		<EmbeddedResource Update="Forms\DesignStudioForm.resx">
+			<DependentUpon>DesignStudioForm.cs</DependentUpon>
+		</EmbeddedResource>
+		<EmbeddedResource Update="UserControls\DesignStudioControl.resx">
+			<DependentUpon>DesignStudioControl.cs</DependentUpon>
+		</EmbeddedResource>
+	</ItemGroup>
+</Project>

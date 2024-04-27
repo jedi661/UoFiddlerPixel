@@ -18,16 +18,17 @@ using Ultima;
 using UoFiddler.Controls.Classes;
 using UoFiddler.Controls.Plugin;
 using UoFiddler.Controls.Plugin.Interfaces;
-using UoFiddler.Plugin.ConverterMultiTextPlugin.Forms;
-using UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls;
+using UoFiddler.Plugin.DesignStudio.Forms;
+using UoFiddler.Plugin.DesignStudio.UserControls;
 
-namespace UoFiddler.Plugin.ConverterMultiTextPlugin
+
+namespace UoFiddler.Plugin.DesignStudio
 {
-    public class ConverterMultiTextPluginBase : PluginBase
+    public class DesignStudioPluginBase : PluginBase
     {
         private const string _itemDescFileName = "itemdesc.cfg";
 
-        public ConverterMultiTextPluginBase()
+        public DesignStudioPluginBase()
         {
             PluginEvents.ModifyItemsControlContextMenuEvent += EventsModifyItemsControlContextMenuEvent;
         }
@@ -35,12 +36,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin
         /// <summary>
         /// Name of the plugin
         /// </summary>
-        public override string Name { get; } = "Tool Box";
+        public override string Name { get; } = "DesignStudio";
 
         /// <summary>
         /// Description of the Plugin's purpose
         /// </summary>
-        public override string Description { get; } = "This is Tool Box plugin and AdminTool, Imagecutter and Texturecutter, Converter, Alarm Clock, and more.";
+        public override string Description { get; } = "Design Studio";
 
         /// <summary>
         /// Author of the plugin
@@ -50,7 +51,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin
         /// <summary>
         /// Version of the plugin
         /// </summary>
-        public override string Version { get; } = "1.0.5";
+        public override string Version { get; } = "1.0.0";
 
         /// <summary>
         /// Host of the plugin.
@@ -72,48 +73,26 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin
             TabPage page = new TabPage
             {
                 Tag = tabControl.TabCount + 1, // at end used for undock/dock feature to define the order
-                Text = "Tool Box"
+                Text = "DesignStudio"
             };
-            page.Controls.Add(new ConverterMultiTextControl());
+            page.Controls.Add(new DesignStudioControl());
             tabControl.TabPages.Add(page);
         }
 
-        #region ModifyPluginToolStrip ServerStartBox
         public override void ModifyPluginToolStrip(ToolStripDropDownButton toolStrip)
         {
             ToolStripMenuItem item = new ToolStripMenuItem
             {
-                Text = "AdminTool" //ConverterMultiText
+                Text = "DesignStudio"
             };
             item.Click += ItemClick;
             toolStrip.DropDownItems.Add(item);
-
-            // Add a menu item for ServerStartBox
-            ToolStripMenuItem serverStartBoxItem = new ToolStripMenuItem
-            {
-                Text = "ServerStartBox"
-            };
-            serverStartBoxItem.Click += ShowServerStartBox;
-            toolStrip.DropDownItems.Add(serverStartBoxItem);
         }
-        #endregion
 
-        #region ItemClick Admintool
         private static void ItemClick(object sender, EventArgs e)
         {
-            //new AdminToolForm().Show();
-            AdminToolForm form = AdminToolForm.GetInstance();
-            form.Show();
+            new DesignStudioForm().Show();
         }
-        #endregion
-
-        #region ShowServerStartBox
-        private static void ShowServerStartBox(object sender, EventArgs e)
-        {
-            // Create a new instance of ServerStartBox and display it
-            new ServerStartBox().Show();
-        }
-        #endregion
 
         private void EventsModifyItemsControlContextMenuEvent(ContextMenuStrip strip)
         {
