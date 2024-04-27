@@ -15,6 +15,7 @@ Version : 4.12.4
 - Implemented functionality in the ServerStartBox for selecting, saving, and loading paths for the ServUO directory and Visual Studio, 
   as well as for starting the ServUO server or another server directly through the .exe.
 - Add DesignStudio
+- Fixed: When importing an image from the clipboard, the selected graphic ID was not retained in the LandTilesTileView.
 
 Version : 4.12.3
 - Add Items Image Colors and Update.
