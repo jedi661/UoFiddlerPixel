@@ -17,6 +17,9 @@ Version : 4.12.4
 - Add DesignStudio
 - Fixed: When importing an image from the clipboard, the selected graphic ID was not retained in the LandTilesTileView.
 - Added functionality to toggle LandTilesTileView background color between white and black upon clicking background.
+- The method creates a ColorBox that enables interactive analysis of color information in an image. 
+  By selecting pixels, the associated color values are determined and displayed in a RichTextBox.
+
 
 Version : 4.12.3
 - Add Items Image Colors and Update.

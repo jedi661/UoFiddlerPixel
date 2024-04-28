@@ -185,9 +185,7 @@
 		<Compile Update="Forms\MapDiffInsertForm.Designer.cs">
 			<DependentUpon>MapDiffInsertForm.cs</DependentUpon>
 		</Compile>
-		<Compile Update="UserControls\LandTilesControl.cs">
-			<SubType>UserControl</SubType>
-		</Compile>
+		<Compile Update="UserControls\LandTilesControl.cs" />
 		<Compile Update="UserControls\LandTilesControl.Designer.cs">
 			<DependentUpon>LandTilesControl.cs</DependentUpon>
 		</Compile>

@@ -13,13 +13,16 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using Ultima;
 using UoFiddler.Controls.Classes;
 using UoFiddler.Controls.Forms;
 using UoFiddler.Controls.Helpers;
+using static UoFiddler.Controls.UserControls.LandTilesControl;
 
 namespace UoFiddler.Controls.UserControls
 {
@@ -1404,6 +1407,199 @@ namespace UoFiddler.Controls.UserControls
             // Switch status for next time
             isBackgroundWhite = !isBackgroundWhite;
         }
+        #endregion
+
+        #region colorsImagesToolStripMenuItem 
+        private void colorsImagesToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // Use the selected graphic ID directly
+            int selectedId = _selectedGraphicId;
+
+            // Create a new form
+            Form colorForm = new Form
+            {
+                Text = $"Color Values for Graphic ID: {selectedId}",
+                Width = 500,
+                Height = 970
+            };
+
+            // Create a new SplitContainer
+            SplitContainer splitContainer = new SplitContainer
+            {
+                Dock = DockStyle.Fill,
+                Orientation = Orientation.Horizontal
+            };
+
+            // Add the SplitContainer to the form
+            colorForm.Controls.Add(splitContainer);
+
+            // Create a new PixelBox
+            PixelBox pixelBox = new PixelBox
+            {
+                Dock = DockStyle.Fill,
+                Cursor = Cursors.Cross // Place the mouse cursor here
+            };
+
+            // Create a new RichTextBox
+            RichTextBox colorBox = new RichTextBox
+            {
+                Dock = DockStyle.Fill
+            };
+
+            // Add an event handler for the MouseClick event
+            colorBox.MouseClick += (sender, e) =>
+            {
+                // Check if a row is selected
+                if (colorBox.GetLineFromCharIndex(colorBox.SelectionStart) == colorBox.GetLineFromCharIndex(colorBox.SelectionStart + colorBox.SelectionLength - 1))
+                {
+                    // Extract the color code from the selected row
+                    string selectedLine = colorBox.Lines[colorBox.GetLineFromCharIndex(colorBox.SelectionStart)];
+                    Match match = Regex.Match(selectedLine, @"Hex: (#?[0-9A-Fa-f]{6})");
+                    if (match.Success)
+                    {
+                        // Copy the color code to the clipboard
+                        Clipboard.SetText(match.Value);
+                    }
+                }
+            };
+
+            // Add the RichTextBox to the SplitContainer
+            splitContainer.Panel2.Controls.Add(colorBox);
+
+            // Add the PixelBox to the SplitContainer
+            splitContainer.Panel1.Controls.Add(pixelBox);
+
+            // Get the selected image
+            Bitmap selectedImage = null;
+            if (selectedId >= 0 && selectedId < _tileList.Count)
+            {
+                selectedImage = Art.GetLand(selectedId);
+            }
+
+            // Set the PixelBox's image to the selected image
+            pixelBox.Image = selectedImage;
+
+            pixelBox.PixelSelected += (x, y) =>
+            {
+                // Check that the x and y coordinates are within the boundaries of the image
+                if (x >= 0 && x < selectedImage.Width && y >= 0 && y < selectedImage.Height)
+                {
+                    // Reset the text color for all text in the RichTextBox
+                    colorBox.SelectAll();
+                    colorBox.SelectionColor = Color.Black;
+                    colorBox.DeselectAll();
+
+                    // Find the line in the RichTextBox that corresponds to the selected pixel                   
+                    int lineIndex = y * selectedImage.Width + x;
+
+                    // Get the color of the current pixel                    
+                    Color pixelColor = selectedImage.GetPixel(x, y);
+
+                    // Convert the RGB color values into a hex color code
+                    string hexColor = ColorTranslator.ToHtml(pixelColor);
+
+                    // Extract the hex color code from the selected row
+                    string selectedLine = colorBox.Lines[lineIndex];
+                    Match match = Regex.Match(selectedLine, @"Hex: (#?[0-9A-Fa-f]{6})");
+                    if (match.Success)
+                    {
+                        string selectedHexColor = match.Groups[1].Value;
+
+                        // Compare the hex color codes                      
+                        if (hexColor == selectedHexColor)
+                        {
+                            // The color codes match, highlight the line in the RichTextBox
+                            colorBox.Select(colorBox.GetFirstCharIndexFromLine(lineIndex), colorBox.Lines[lineIndex].Length);
+
+                            // Change the text color of the selected line
+                            colorBox.SelectionColor = Color.LightGray;
+
+                            // Scroll to the selected line in the RichTextBox
+                            colorBox.ScrollToCaret();
+                        }
+                    }
+                }
+            };
+
+            // Loop through every pixel in the image
+            for (int y = 0; y < selectedImage.Height; y++)
+            {
+                for (int x = 0; x < selectedImage.Width; x++)
+                {
+                    // Get the color of the current pixel
+                    Color pixelColor = selectedImage.GetPixel(x, y);
+
+                    // Add the RGB color values and the hex color code to the RichTextBox
+                    string hexColor = ColorTranslator.ToHtml(pixelColor);
+
+                    // Fügen Sie die RGB-Farbwerte und den Hex-Farbcode zur RichTextBox hinzu
+                    string colorText = $"Pixel ({x}, {y}): Color [R={pixelColor.R}, G={pixelColor.G}, B={pixelColor.B}], Hex: {hexColor}";
+                    colorBox.AppendText(colorText);
+
+                    // Add 5 spaces without color
+                    colorBox.AppendText("     ");
+
+                    // Add 5 spaces with the background color
+                    colorBox.SelectionBackColor = pixelColor;
+                    colorBox.AppendText("     ");
+                    colorBox.SelectionBackColor = Color.White;
+
+                    // Add a new line
+                    colorBox.AppendText("\n");
+                }
+            }
+            // View the form
+            colorForm.Show();
+        }
+
+        #region class PixelBox
+        public class PixelBox : Control
+        {
+            // Image is a public property of type Bitmap. It represents the image to be processed.
+            public Bitmap Image { get; set; }
+            // PixelSelected is an event that fires when a pixel is selected. It takes the x and y coordinates of the selected pixel as parameters.
+            public event Action<int, int> PixelSelected;
+
+            // OnPaint is a method that is called when the control is redrawn. It is overridden by the Control base class.
+            protected override void OnPaint(PaintEventArgs e)
+            {
+                base.OnPaint(e);
+
+                if (Image != null)
+                {
+                    //Iterate through each pixel in the image.
+                    for (int x = 0; x < Image.Width; x++)
+                    {
+                        for (int y = 0; y < Image.Height; y++)
+                        {
+                            // Get the color of the current pixel.
+                            Color pixelColor = Image.GetPixel(x, y);
+                            //Create a new brush with the color of the current pixel.
+                            using (Brush brush = new SolidBrush(pixelColor))
+                            {
+                                //Draw a rectangle in the control at the position of the current pixel, using the brush with the color of the pixel.
+                                e.Graphics.FillRectangle(brush, x * 10, y * 10, 10, 10);
+                            }
+                        }
+                    }
+                }
+            }
+
+            #region OnMouseDown
+            protected override void OnMouseDown(MouseEventArgs e)
+            {
+                base.OnMouseDown(e);
+
+                // Calculate the selected pixel based on the mouse position and the actual pixel size
+                int x = e.X / 10;
+                int y = e.Y / 10;
+
+                // Raise the PixelSelected event
+                PixelSelected?.Invoke(x, y);
+            }
+            #endregion
+        }
+        #endregion
         #endregion
     }
 }
