@@ -76,6 +76,7 @@ namespace UoFiddler.Controls.UserControls
             backgroundToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             toolStripSeparator9 = new System.Windows.Forms.ToolStripSeparator();
             saveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            colorsImagesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             LandTilesToolStrip = new System.Windows.Forms.ToolStrip();
             IndexToolStripLabel = new System.Windows.Forms.ToolStripLabel();
             searchByIdToolStripTextBox = new System.Windows.Forms.ToolStripTextBox();
@@ -98,7 +99,6 @@ namespace UoFiddler.Controls.UserControls
             NameLabel = new System.Windows.Forms.ToolStripStatusLabel();
             GraphicLabel = new System.Windows.Forms.ToolStripStatusLabel();
             FlagsLabel = new System.Windows.Forms.ToolStripStatusLabel();
-            colorsImagesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             LandTilesContextMenuStrip.SuspendLayout();
             LandTilesToolStrip.SuspendLayout();
             panel1.SuspendLayout();
@@ -107,7 +107,7 @@ namespace UoFiddler.Controls.UserControls
             // 
             // LandTilesContextMenuStrip
             // 
-            LandTilesContextMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { showFreeSlotsToolStripMenuItem, toolStripSeparator6, exportImageToolStripMenuItem, toolStripSeparator3, selectInTileDataTabToolStripMenuItem, selectInRadarColorTabToolStripMenuItem, toolStripSeparator2, findNextFreeSlotToolStripMenuItem, removeToolStripMenuItem, replaceToolStripMenuItem, replaceStartingFromToolStripMenuItem, insertAtToolStripMenuItem, toolStripSeparator7, copyToolStripMenuItem, importToolStripMenuItem, importToTempToolStripMenuItem, toolStripSeparator8, rotateBy90DegreesToolStripMenuItem, zoomImageToolStripMenuItem, toolStripSeparator5, markToolStripMenuItem, gotoMarkToolStripMenuItem, backgroundToolStripMenuItem, toolStripSeparator9, saveToolStripMenuItem, colorsImagesToolStripMenuItem });
+            LandTilesContextMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { showFreeSlotsToolStripMenuItem, toolStripSeparator6, exportImageToolStripMenuItem, toolStripSeparator3, selectInTileDataTabToolStripMenuItem, selectInRadarColorTabToolStripMenuItem, toolStripSeparator2, findNextFreeSlotToolStripMenuItem, removeToolStripMenuItem, replaceToolStripMenuItem, replaceStartingFromToolStripMenuItem, insertAtToolStripMenuItem, toolStripSeparator7, copyToolStripMenuItem, importToolStripMenuItem, importToTempToolStripMenuItem, toolStripSeparator8, rotateBy90DegreesToolStripMenuItem, zoomImageToolStripMenuItem, toolStripSeparator5, markToolStripMenuItem, gotoMarkToolStripMenuItem, backgroundToolStripMenuItem, colorsImagesToolStripMenuItem, toolStripSeparator9, saveToolStripMenuItem });
             LandTilesContextMenuStrip.Name = "contextMenuStrip1";
             LandTilesContextMenuStrip.Size = new System.Drawing.Size(201, 486);
             // 
@@ -337,6 +337,14 @@ namespace UoFiddler.Controls.UserControls
             saveToolStripMenuItem.Text = "Save";
             saveToolStripMenuItem.Click += OnClickSave;
             // 
+            // colorsImagesToolStripMenuItem
+            // 
+            colorsImagesToolStripMenuItem.Image = Properties.Resources.colordialog_background;
+            colorsImagesToolStripMenuItem.Name = "colorsImagesToolStripMenuItem";
+            colorsImagesToolStripMenuItem.Size = new System.Drawing.Size(200, 22);
+            colorsImagesToolStripMenuItem.Text = "Colors Images";
+            colorsImagesToolStripMenuItem.Click += colorsImagesToolStripMenuItem_Click;
+            // 
             // LandTilesToolStrip
             // 
             LandTilesToolStrip.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
@@ -532,13 +540,6 @@ namespace UoFiddler.Controls.UserControls
             FlagsLabel.Size = new System.Drawing.Size(37, 17);
             FlagsLabel.Text = "Flags:";
             FlagsLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // colorsImagesToolStripMenuItem
-            // 
-            colorsImagesToolStripMenuItem.Name = "colorsImagesToolStripMenuItem";
-            colorsImagesToolStripMenuItem.Size = new System.Drawing.Size(200, 22);
-            colorsImagesToolStripMenuItem.Text = "Colors Images";
-            colorsImagesToolStripMenuItem.Click += colorsImagesToolStripMenuItem_Click;
             // 
             // LandTilesControl
             // 
