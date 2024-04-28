@@ -963,6 +963,16 @@ namespace UoFiddler.Controls.Properties {
         /// <summary>
         ///   Sucht eine lokalisierte Ressource vom Typ System.Drawing.Bitmap.
         /// </summary>
+        public static System.Drawing.Bitmap yin_yang_black_whtite {
+            get {
+                object obj = ResourceManager.GetObject("yin-yang-black-whtite", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Ressource vom Typ System.Drawing.Bitmap.
+        /// </summary>
         public static System.Drawing.Bitmap Zeichnen {
             get {
                 object obj = ResourceManager.GetObject("Zeichnen", resourceCulture);

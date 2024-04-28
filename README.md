@@ -16,6 +16,7 @@ Version : 4.12.4
   as well as for starting the ServUO server or another server directly through the .exe.
 - Add DesignStudio
 - Fixed: When importing an image from the clipboard, the selected graphic ID was not retained in the LandTilesTileView.
+- Added functionality to toggle LandTilesTileView background color between white and black upon clicking background.
 
 Version : 4.12.3
 - Add Items Image Colors and Update.

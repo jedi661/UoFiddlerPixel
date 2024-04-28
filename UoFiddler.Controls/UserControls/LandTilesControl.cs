@@ -1385,5 +1385,25 @@ namespace UoFiddler.Controls.UserControls
             }
         }
         #endregion
+
+        #region backgroundToolStripMenuItem
+        private bool isBackgroundWhite = true;
+        private void backgroundToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (isBackgroundWhite)
+            {
+                // Change the background color to black
+                LandTilesTileView.BackColor = Color.FromArgb(0, 0, 0); // #000000
+            }
+            else
+            {
+                // Change the background color to white
+                LandTilesTileView.BackColor = Color.FromArgb(255, 255, 255); // #FFFFFF
+            }
+
+            // Switch status for next time
+            isBackgroundWhite = !isBackgroundWhite;
+        }
+        #endregion
     }
 }
