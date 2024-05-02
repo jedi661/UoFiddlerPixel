@@ -76,6 +76,7 @@ namespace UoFiddler.Controls.UserControls
         private Color _backgroundImageColor = Color.White;
         private bool _useTransparencyForPng = true;
 
+        #region Reload
         /// <summary>
         /// ReLoads if loaded
         /// </summary>
@@ -86,7 +87,9 @@ namespace UoFiddler.Controls.UserControls
                 OnLoad(this, EventArgs.Empty);
             }
         }
+        #endregion
 
+        #region OnLoad
         private void OnLoad(object sender, EventArgs e)
         {
             if (IsAncestorSiteInDesignMode || FormsDesignerHelper.IsInDesignMode())
@@ -168,12 +171,16 @@ namespace UoFiddler.Controls.UserControls
             _loaded = true;
             Cursor.Current = Cursors.Default;
         }
+        #endregion
 
+        #region OnFilePathChangeEvent
         private void OnFilePathChangeEvent()
         {
             Reload();
         }
+        #endregion
 
+        #region OnMultiChangeEvent
         private void OnMultiChangeEvent(object sender, int id)
         {
             if (!_loaded)
@@ -233,7 +240,9 @@ namespace UoFiddler.Controls.UserControls
                 TreeViewMulti.Nodes.Add(node);
             }
         }
+        #endregion
 
+        #region ChangeMulti
         public void ChangeMulti(int id, MultiComponentList multi)
         {
             if (multi == MultiComponentList.Empty)
@@ -265,7 +274,9 @@ namespace UoFiddler.Controls.UserControls
             AfterSelect_Multi(this, null);
             ControlEvents.FireMultiChangeEvent(this, index);
         }
+        #endregion
 
+        #region AfterSelect_Multi
         private void AfterSelect_Multi(object sender, TreeViewEventArgs e)
         {
             MultiComponentList multi = (MultiComponentList)TreeViewMulti.SelectedNode.Tag;
@@ -286,7 +297,9 @@ namespace UoFiddler.Controls.UserControls
             ChangeComponentList(multi);
             MultiPictureBox.Invalidate();
         }
+        #endregion
 
+        #region OnPaint_MultiPic
         private void OnPaint_MultiPic(object sender, PaintEventArgs e)
         {
             if (TreeViewMulti.SelectedNode == null)
@@ -338,13 +351,17 @@ namespace UoFiddler.Controls.UserControls
 
             e.Graphics.DrawImage(mMainPictureMulti, destRect, 0, 0, mMainPictureMulti.Width, mMainPictureMulti.Height, GraphicsUnit.Pixel);
         }
+        #endregion
 
+        #region OnValue_HeightChangeMulti
         private void OnValue_HeightChangeMulti(object sender, EventArgs e)
         {
             toolTip.SetToolTip(HeightChangeMulti, $"MaxHeight: {HeightChangeMulti.Maximum - HeightChangeMulti.Value}");
             MultiPictureBox.Invalidate();
         }
+        #endregion
 
+        #region ChangeComponentList
         private void ChangeComponentList(MultiComponentList multi)
         {
             MultiComponentBox.Clear();
@@ -368,26 +385,37 @@ namespace UoFiddler.Controls.UserControls
                 }
             }
         }
+        #endregion
+
+        #region Extract_Image_ClickBmp
         private void Extract_Image_ClickBmp(object sender, EventArgs e)
         {
             ExtractMultiImage(ImageFormat.Bmp, _backgroundImageColor);
         }
+        #endregion
 
+        #region Extract_Image_ClickTiff
         private void Extract_Image_ClickTiff(object sender, EventArgs e)
         {
             ExtractMultiImage(ImageFormat.Tiff, _backgroundImageColor);
         }
+        #endregion
 
+        #region Extract_Image_ClickJpg
         private void Extract_Image_ClickJpg(object sender, EventArgs e)
         {
             ExtractMultiImage(ImageFormat.Jpeg, _backgroundImageColor);
         }
+        #endregion
 
+        #region Extract_Image_ClickPng
         private void Extract_Image_ClickPng(object sender, EventArgs e)
         {
             ExtractMultiImage(ImageFormat.Png, _useTransparencyForPng ? Color.Transparent : _backgroundImageColor);
         }
+        #endregion
 
+        #region ExtractMultiImage
         private void ExtractMultiImage(ImageFormat imageFormat, Color backgroundColor)
         {
             string fileExtension = Utils.GetFileExtensionFor(imageFormat);
@@ -412,7 +440,9 @@ namespace UoFiddler.Controls.UserControls
                     MessageBoxDefaultButton.Button1);
             }
         }
+        #endregion
 
+        #region SaveImage
         private static void SaveImage(Image sourceImage, string fileName, ImageFormat imageFormat, Color backgroundColor)
         {
             using (Bitmap newBitmap = new Bitmap(sourceImage.Width, sourceImage.Height))
@@ -425,7 +455,9 @@ namespace UoFiddler.Controls.UserControls
                 newBitmap.Save(fileName, imageFormat);
             }
         }
+        #endregion
 
+        #region OnClickFreeSlots
         private void OnClickFreeSlots(object sender, EventArgs e)
         {
             _showFreeSlots = !_showFreeSlots;
@@ -494,7 +526,9 @@ namespace UoFiddler.Controls.UserControls
             }
             TreeViewMulti.EndUpdate();
         }
+        #endregion
 
+        #region OnExportTextFile
         private void OnExportTextFile(object sender, EventArgs e)
         {
             if (TreeViewMulti.SelectedNode == null)
@@ -516,7 +550,9 @@ namespace UoFiddler.Controls.UserControls
             MessageBox.Show($"Multi saved to {fileName}", "Saved", MessageBoxButtons.OK, MessageBoxIcon.Information,
                 MessageBoxDefaultButton.Button1);
         }
+        #endregion
 
+        #region OnExportWscFile
         private void OnExportWscFile(object sender, EventArgs e)
         {
             if (TreeViewMulti.SelectedNode == null)
@@ -538,7 +574,9 @@ namespace UoFiddler.Controls.UserControls
             MessageBox.Show($"Multi saved to {fileName}", "Saved", MessageBoxButtons.OK, MessageBoxIcon.Information,
                 MessageBoxDefaultButton.Button1);
         }
+        #endregion
 
+        #region OnExportUOAFile
         private void OnExportUOAFile(object sender, EventArgs e)
         {
             if (TreeViewMulti.SelectedNode == null)
@@ -560,7 +598,9 @@ namespace UoFiddler.Controls.UserControls
             MessageBox.Show($"Multi saved to {fileName}", "Saved", MessageBoxButtons.OK, MessageBoxIcon.Information,
                 MessageBoxDefaultButton.Button1);
         }
+        #endregion
 
+        #region OnClickSave
         private void OnClickSave(object sender, EventArgs e)
         {
             Multis.Save(Options.OutputPath);
@@ -568,7 +608,9 @@ namespace UoFiddler.Controls.UserControls
                 MessageBoxDefaultButton.Button1);
             Options.ChangedUltimaClass["Multis"] = false;
         }
+        #endregion
 
+        #region OnClickRemove
         private void OnClickRemove(object sender, EventArgs e)
         {
             if (TreeViewMulti.SelectedNode == null)
@@ -595,7 +637,9 @@ namespace UoFiddler.Controls.UserControls
             Options.ChangedUltimaClass["Multis"] = true;
             ControlEvents.FireMultiChangeEvent(this, id);
         }
+        #endregion
 
+        #region OnClickImport
         private void OnClickImport(object sender, EventArgs e)
         {
             MultiComponentList multi = (MultiComponentList)TreeViewMulti.SelectedNode.Tag;
@@ -615,26 +659,35 @@ namespace UoFiddler.Controls.UserControls
                 dialog.ShowDialog();
             }
         }
+        #endregion
 
+        #region OnClick_SaveAllBmp
         private void OnClick_SaveAllBmp(object sender, EventArgs e)
         {
             ExportAllMultis(ImageFormat.Bmp, _backgroundImageColor);
         }
+        #endregion
 
+        #region OnClick_SaveAllTiff
         private void OnClick_SaveAllTiff(object sender, EventArgs e)
         {
             ExportAllMultis(ImageFormat.Tiff, _backgroundImageColor);
         }
+        #endregion
 
+        #region OnClick_SaveAllJpg
         private void OnClick_SaveAllJpg(object sender, EventArgs e)
         {
             ExportAllMultis(ImageFormat.Jpeg, _backgroundImageColor);
         }
+        #endregion
 
+        #region OnClick_SaveAllPng
         private void OnClick_SaveAllPng(object sender, EventArgs e)
         {
             ExportAllMultis(ImageFormat.Png, _useTransparencyForPng ? Color.Transparent : _backgroundImageColor);
         }
+        #endregion
 
         #region ExportAllMulti
         private void ExportAllMultis(ImageFormat imageFormat, Color backgroundColor)
