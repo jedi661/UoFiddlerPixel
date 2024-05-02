@@ -67,6 +67,7 @@ namespace UoFiddler.Controls.UserControls
             copyDecAdressToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             toolStripSeparator10 = new System.Windows.Forms.ToolStripSeparator();
             saveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            colorsTexturesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             toolStrip = new System.Windows.Forms.ToolStrip();
             toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
             toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
@@ -97,9 +98,9 @@ namespace UoFiddler.Controls.UserControls
             // 
             // contextMenuStrip
             // 
-            contextMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { showFreeSlotsToolStripMenuItem, toolStripSeparator5, exportImageToolStripMenuItem, toolStripSeparator2, findNextFreeSlotToolStripMenuItem, removeToolStripMenuItem, replaceToolStripMenuItem, replaceStartingFromToolStripMenuItem, insertAtToolStripMenuItem, toolStripSeparator6, copyToolStripMenuItem, importFromClipboardToolStripMenuItem, importByTempToolStripMenuItem, toolStripSeparator7, um90GradToolStripMenuItem, toolStripSeparator9, copyHexAdressToolStripMenuItem, copyDecAdressToolStripMenuItem, toolStripSeparator10, saveToolStripMenuItem });
+            contextMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { showFreeSlotsToolStripMenuItem, toolStripSeparator5, exportImageToolStripMenuItem, toolStripSeparator2, findNextFreeSlotToolStripMenuItem, removeToolStripMenuItem, replaceToolStripMenuItem, replaceStartingFromToolStripMenuItem, insertAtToolStripMenuItem, toolStripSeparator6, copyToolStripMenuItem, importFromClipboardToolStripMenuItem, importByTempToolStripMenuItem, toolStripSeparator7, um90GradToolStripMenuItem, colorsTexturesToolStripMenuItem, toolStripSeparator9, copyHexAdressToolStripMenuItem, copyDecAdressToolStripMenuItem, toolStripSeparator10, saveToolStripMenuItem });
             contextMenuStrip.Name = "contextMenuStrip1";
-            contextMenuStrip.Size = new System.Drawing.Size(194, 348);
+            contextMenuStrip.Size = new System.Drawing.Size(194, 392);
             // 
             // showFreeSlotsToolStripMenuItem
             // 
@@ -289,6 +290,15 @@ namespace UoFiddler.Controls.UserControls
             saveToolStripMenuItem.Text = "Save";
             saveToolStripMenuItem.ToolTipText = "Save Texture.Mul";
             saveToolStripMenuItem.Click += OnClickSave;
+            // 
+            // colorsTexturesToolStripMenuItem
+            // 
+            colorsTexturesToolStripMenuItem.Image = Properties.Resources.colordialog_background;
+            colorsTexturesToolStripMenuItem.Name = "colorsTexturesToolStripMenuItem";
+            colorsTexturesToolStripMenuItem.Size = new System.Drawing.Size(193, 22);
+            colorsTexturesToolStripMenuItem.Text = "colors Textures";
+            colorsTexturesToolStripMenuItem.ToolTipText = "Colors from Texture";
+            colorsTexturesToolStripMenuItem.Click += colorsTexturesToolStripMenuItem_Click;
             // 
             // toolStrip
             // 
@@ -564,5 +574,6 @@ namespace UoFiddler.Controls.UserControls
         private System.Windows.Forms.ToolStripButton PlaySoundtoolStripButton1;
         private System.Windows.Forms.ToolStripButton toolStripButtonTextureWindows;
         private System.Windows.Forms.ToolStripButton toolStripButtonPictureFusion;
+        private System.Windows.Forms.ToolStripMenuItem colorsTexturesToolStripMenuItem;
     }
 }

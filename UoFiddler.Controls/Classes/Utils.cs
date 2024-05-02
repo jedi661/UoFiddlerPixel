@@ -86,12 +86,62 @@ namespace UoFiddler.Controls.Classes
                     {
                         curNew[x] = cur[x];
                     }
+
+                    /*if (cur[x] != 32768) // True Black
+                    {
+                        curNew[x] = cur[x];
+                    }*/
                 }
             }
             bmp.UnlockBits(bd);
             bmpNew.UnlockBits(bdNew);
             return bmpNew;
         }
+
+        //Switch
+        /*public static unsafe Bitmap ConvertBmp(Bitmap bmp, bool copyBlack, bool copyWhite)
+        {
+            BitmapData bd = bmp.LockBits(new Rectangle(0, 0, bmp.Width, bmp.Height), ImageLockMode.ReadOnly, PixelFormat.Format16bppArgb1555);
+            ushort* line = (ushort*)bd.Scan0;
+            int delta = bd.Stride >> 1;
+
+            Bitmap bmpNew = new Bitmap(bmp.Width, bmp.Height, PixelFormat.Format16bppArgb1555);
+            BitmapData bdNew = bmpNew.LockBits(new Rectangle(0, 0, bmpNew.Width, bmpNew.Height), ImageLockMode.WriteOnly, PixelFormat.Format16bppArgb1555);
+
+            ushort* lineNew = (ushort*)bdNew.Scan0;
+            int deltaNew = bdNew.Stride >> 1;
+
+            for (int y = 0; y < bmp.Height; ++y, line += delta, lineNew += deltaNew)
+            {
+                ushort* cur = line;
+                ushort* curNew = lineNew;
+                for (int x = 0; x < bmp.Width; ++x)
+                {
+                    switch (cur[x])
+                    {
+                        case 32768: // True Black
+                            if (copyBlack)
+                            {
+                                curNew[x] = cur[x];
+                            }
+                            break;
+                        case 65535: // True White
+                            if (copyWhite)
+                            {
+                                curNew[x] = cur[x];
+                            }
+                            break;
+                        default:
+                            curNew[x] = cur[x];
+                            break;
+                    }
+                }
+            }
+            bmp.UnlockBits(bd);
+            bmpNew.UnlockBits(bdNew);
+            return bmpNew;
+        }
+        */
 
         public static string GetFileExtensionFor(ImageFormat imageFormat)
         {

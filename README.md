@@ -19,6 +19,7 @@ Version : 4.12.4
 - Added functionality to toggle LandTilesTileView background color between white and black upon clicking background.
 - Add a ColorBox that enables interactive analysis of color information in an image. 
   By selecting pixels, the associated color values are determined and displayed in a RichTextBox.
+- Add a ColorBox Texture.
 
 
 Version : 4.12.3

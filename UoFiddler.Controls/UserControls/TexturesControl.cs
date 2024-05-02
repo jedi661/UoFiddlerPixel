@@ -17,11 +17,13 @@ using System.IO;
 using System.Linq;
 using System.Media;
 using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using Ultima;
 using UoFiddler.Controls.Classes;
 using UoFiddler.Controls.Forms;
 using UoFiddler.Controls.Helpers;
+using static UoFiddler.Controls.UserControls.LandTilesControl;
 
 namespace UoFiddler.Controls.UserControls
 {
@@ -1268,5 +1270,148 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
+        #region colorsTexturesToolStripMenuItem
+        private void colorsTexturesToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // Use the selected texture ID directly
+            int selectedId = _selectedTextureId;
+
+            // Create a new form
+            Form colorForm = new Form
+            {
+                Text = $"Color Values for Texture ID: {selectedId}",
+                Width = 500,
+                Height = 970
+            };
+
+            // Create a new SplitContainer
+            SplitContainer splitContainer = new SplitContainer
+            {
+                Dock = DockStyle.Fill,
+                Orientation = Orientation.Horizontal
+            };
+
+            // Add the SplitContainer to the form
+            colorForm.Controls.Add(splitContainer);
+
+            // Create a new PixelBox
+            PixelBox pixelBox = new PixelBox
+            {
+                Dock = DockStyle.Fill,
+                Cursor = Cursors.Cross // Place the mouse cursor here
+            };
+
+            // Create a new RichTextBox
+            RichTextBox colorBox = new RichTextBox
+            {
+                Dock = DockStyle.Fill
+            };
+
+            // Add an event handler for the MouseClick event
+            colorBox.MouseClick += (sender, e) =>
+            {
+                // Check if a row is selected
+                if (colorBox.GetLineFromCharIndex(colorBox.SelectionStart) == colorBox.GetLineFromCharIndex(colorBox.SelectionStart + colorBox.SelectionLength - 1))
+                {
+                    // Extract the color code from the selected row
+                    string selectedLine = colorBox.Lines[colorBox.GetLineFromCharIndex(colorBox.SelectionStart)];
+                    Match match = Regex.Match(selectedLine, @"Hex: (#?[0-9A-Fa-f]{6})");
+                    if (match.Success)
+                    {
+                        // Copy the color code to the clipboard
+                        Clipboard.SetText(match.Value);
+                    }
+                }
+            };
+
+            // Add the RichTextBox to the SplitContainer
+            splitContainer.Panel2.Controls.Add(colorBox);
+
+            // Add the PixelBox to the SplitContainer
+            splitContainer.Panel1.Controls.Add(pixelBox);
+
+            // Get the selected texture
+            Bitmap selectedTexture = null;
+            if (selectedId >= 0 && selectedId < Textures.GetIdxLength())
+            {
+                selectedTexture = Textures.GetTexture(selectedId);
+            }
+
+            // Set the PixelBox's image to the selected texture
+            pixelBox.Image = selectedTexture;
+
+            pixelBox.PixelSelected += (x, y) =>
+            {
+                // Check that the x and y coordinates are within the boundaries of the texture
+                if (x >= 0 && x < selectedTexture.Width && y >= 0 && y < selectedTexture.Height)
+                {
+                    // Reset the text color for all text in the RichTextBox
+                    colorBox.SelectAll();
+                    colorBox.SelectionColor = Color.Black;
+                    colorBox.DeselectAll();
+
+                    // Find the line in the RichTextBox that corresponds to the selected pixel                   
+                    int lineIndex = y * selectedTexture.Width + x;
+
+                    // Get the color of the current pixel                    
+                    Color pixelColor = selectedTexture.GetPixel(x, y);
+
+                    // Convert the RGB color values into a hex color code
+                    string hexColor = ColorTranslator.ToHtml(pixelColor);
+
+                    // Extract the hex color code from the selected row
+                    string selectedLine = colorBox.Lines[lineIndex];
+                    Match match = Regex.Match(selectedLine, @"Hex: (#?[0-9A-Fa-f]{6})");
+                    if (match.Success)
+                    {
+                        string selectedHexColor = match.Groups[1].Value;
+
+                        // Compare the hex color codes                      
+                        if (hexColor == selectedHexColor)
+                        {
+                            // The color codes match, highlight the line in the RichTextBox
+                            colorBox.Select(colorBox.GetFirstCharIndexFromLine(lineIndex), colorBox.Lines[lineIndex].Length);
+
+                            // Change the text color of the selected line
+                            colorBox.SelectionColor = Color.LightGray;
+
+                            // Scroll to the selected line in the RichTextBox
+                            colorBox.ScrollToCaret();
+                        }
+                    }
+                }
+            };
+
+            // Loop through every pixel in the texture
+            for (int y = 0; y < selectedTexture.Height; y++)
+            {
+                for (int x = 0; x < selectedTexture.Width; x++)
+                {
+                    // Get the color of the current pixel
+                    Color pixelColor = selectedTexture.GetPixel(x, y);
+
+                    // Add the RGB color values and the hex color code to the RichTextBox
+                    string hexColor = ColorTranslator.ToHtml(pixelColor);
+
+                    // Add the RGB color values and the Hex color code to the RichTextBox
+                    string colorText = $"Pixel ({x}, {y}): Color [R={pixelColor.R}, G={pixelColor.G}, B={pixelColor.B}], Hex: {hexColor}";
+                    colorBox.AppendText(colorText);
+
+                    // Add 5 spaces without color
+                    colorBox.AppendText("     ");
+
+                    // Add 5 spaces with the background color
+                    colorBox.SelectionBackColor = pixelColor;
+                    colorBox.AppendText("     ");
+                    colorBox.SelectionBackColor = Color.White;
+
+                    // Add a new line
+                    colorBox.AppendText("\n");
+                }
+            }
+            // View the form
+            colorForm.Show();
+        }
+        #endregion
     }
 }
