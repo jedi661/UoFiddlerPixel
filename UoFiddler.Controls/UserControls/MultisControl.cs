@@ -1232,10 +1232,10 @@ namespace UoFiddler.Controls.UserControls
         private UoFiddler.Controls.Forms.MultiScript multiScriptForm;
         private void toolStripButtonMultiScript_Click(object sender, EventArgs e)
         {
-            // Überprüfen, ob die Form bereits geöffnet ist
+            // Check if the form is already open
             if (multiScriptForm == null || multiScriptForm.IsDisposed)
             {
-                // Wenn nicht, erstellen Sie eine neue Instanz der Form und öffnen Sie sie
+                // If not, create a new instance of the shape and open it
                 multiScriptForm = new UoFiddler.Controls.Forms.MultiScript();
                 multiScriptForm.Show();
             }
@@ -1246,27 +1246,27 @@ namespace UoFiddler.Controls.UserControls
         private static MultiScript currentInstance = null;
         private void fillMultiScripterToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            // Überprüfen Sie, ob bereits eine Instanz von MultiScript existiert
+            // Check whether an instance of MultiScript already exists
             if (currentInstance == null || currentInstance.IsDisposed)
             {
-                // Erstellen Sie eine neue Instanz von MultiScript, wenn keine existiert
+                // Create a new instance of MultiScript if one does not exist
                 currentInstance = new MultiScript();
 
-                // Übertragen Sie die Komponenteninformationen von MultiComponentBox in tbIndexImage
+                // Transfer the component information from MultiComponentBox to tbIndexImage
                 currentInstance.IndexImageText = GetComponentsFromMultiComponentBox();
             }
 
-            // Bringen Sie die MultiScript-Form in den Vordergrund
+            // Bring the MultiScript form to the foreground
             currentInstance.BringToFront();
 
-            // Öffnen Sie die MultiScript-Form
+            // Open the MultiScript form
             currentInstance.Show();
         }
 
         private string GetComponentsFromMultiComponentBox()
         {
-            // Hier holen Sie die Komponenteninformationen aus MultiComponentBox
-            // Dies ist nur ein Platzhalter und muss durch Ihren tatsächlichen Code ersetzt werden
+            // Here you get the component information from MultiComponentBox
+            // This is just a placeholder and needs to be replaced with your actual code
             return MultiComponentBox.Text;
         }
         #endregion
