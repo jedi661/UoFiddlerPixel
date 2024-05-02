@@ -47,6 +47,7 @@ namespace UoFiddler.Controls.UserControls
         private bool _loaded;
         private int _selectedTextureId = -1;
 
+        #region SelectedTextureId
         public int SelectedTextureId
         {
             get => _selectedTextureId;
@@ -57,7 +58,9 @@ namespace UoFiddler.Controls.UserControls
                 TextureTileView.FocusIndex = _textureList.IndexOf(_selectedTextureId);
             }
         }
+        #endregion
 
+        #region Reload
         private void Reload()
         {
             if (!_loaded)
@@ -74,9 +77,9 @@ namespace UoFiddler.Controls.UserControls
 
             OnLoad(this, EventArgs.Empty);
         }
+        #endregion
 
-
-
+        #region SearchGraphic
         private bool SearchGraphic(int graphic)
         {
             if (_textureList.All(id => id != graphic))
@@ -90,7 +93,9 @@ namespace UoFiddler.Controls.UserControls
 
             return true;
         }
+        #endregion
 
+        #region OnLoad
         private void OnLoad(object sender, EventArgs e)
         {
             if (IsAncestorSiteInDesignMode || FormsDesignerHelper.IsInDesignMode())
@@ -123,7 +128,9 @@ namespace UoFiddler.Controls.UserControls
 
             Cursor.Current = Cursors.Default;
         }
+        #endregion
 
+        #region OnTextureChangeEvent
         private void OnTextureChangeEvent(object sender, int index)
         {
             if (!_loaded)
@@ -177,14 +184,18 @@ namespace UoFiddler.Controls.UserControls
             TextureTileView.VirtualListSize = _textureList.Count;
             TextureTileView.Invalidate();
         }
+        #endregion
 
+        #region OnFilePathChangeEvent
         private void OnFilePathChangeEvent()
         {
             Reload();
         }
+        #endregion
 
         private TextureSearchForm _showForm;
 
+        #region OnClickSearch
         private void OnClickSearch(object sender, EventArgs e)
         {
             if (_showForm?.IsDisposed == false)
@@ -198,7 +209,9 @@ namespace UoFiddler.Controls.UserControls
             };
             _showForm.Show();
         }
+        #endregion
 
+        #region OnClickFindNext
         private void OnClickFindNext(object sender, EventArgs e)
         {
             if (_showFreeSlots)
@@ -244,7 +257,9 @@ namespace UoFiddler.Controls.UserControls
                 }
             }
         }
+        #endregion
 
+        #region OnClickRemove
         private void OnClickRemove(object sender, EventArgs e)
         {
             if (_selectedTextureId < 0)
@@ -279,7 +294,9 @@ namespace UoFiddler.Controls.UserControls
 
             Options.ChangedUltimaClass["Texture"] = true;
         }
+        #endregion
 
+        #region OnClickReplace
         private void OnClickReplace(object sender, EventArgs e)
         {
             if (_selectedTextureId < 0)
@@ -333,7 +350,9 @@ namespace UoFiddler.Controls.UserControls
                 }
             }
         }
+        #endregion
 
+        #region OnTextChangedInsert
         private void OnTextChangedInsert(object sender, EventArgs e)
         {
             if (Utils.ConvertStringToInt(InsertText.Text, out int index, 0, 0x3FFF))
@@ -345,7 +364,9 @@ namespace UoFiddler.Controls.UserControls
                 InsertText.ForeColor = Color.Red;
             }
         }
+        #endregion
 
+        #region OnKeyDownInsert
         private void OnKeyDownInsert(object sender, KeyEventArgs e)
         {
             if (e.KeyCode != Keys.Enter)
@@ -424,7 +445,9 @@ namespace UoFiddler.Controls.UserControls
                 }
             }
         }
+        #endregion
 
+        #region OnClickSave
         private void OnClickSave(object sender, EventArgs e)
         {
             Cursor.Current = Cursors.WaitCursor;
@@ -434,27 +457,37 @@ namespace UoFiddler.Controls.UserControls
                 MessageBoxDefaultButton.Button1);
             Options.ChangedUltimaClass["Texture"] = false;
         }
+        #endregion
 
+        #region OnClickExportBmp
         private void OnClickExportBmp(object sender, EventArgs e)
         {
             ExportTextureImage(_selectedTextureId, ImageFormat.Bmp);
         }
+        #endregion
 
+        #region OnClickExportTiff
         private void OnClickExportTiff(object sender, EventArgs e)
         {
             ExportTextureImage(_selectedTextureId, ImageFormat.Tiff);
         }
+        #endregion
 
+        #region OnClickExportJpg
         private void OnClickExportJpg(object sender, EventArgs e)
         {
             ExportTextureImage(_selectedTextureId, ImageFormat.Jpeg);
         }
+        #endregion
 
+        #region OnClickExportPng
         private void OnClickExportPng(object sender, EventArgs e)
         {
             ExportTextureImage(_selectedTextureId, ImageFormat.Png);
         }
+        #endregion
 
+        #region ExportTextureImage
         private void ExportTextureImage(int index, ImageFormat imageFormat)
         {
             if (!Textures.TestTexture(index))
@@ -483,7 +516,9 @@ namespace UoFiddler.Controls.UserControls
                     MessageBoxDefaultButton.Button1);
             }
         }
+        #endregion
 
+        #region TextureTileView_ItemSelectionChanged
         private void TextureTileView_ItemSelectionChanged(object sender, ListViewItemSelectionChangedEventArgs e)
         {
             if (!e.IsSelected)
@@ -500,6 +535,7 @@ namespace UoFiddler.Controls.UserControls
                 ? _textureList[0]
                 : _textureList[e.ItemIndex];
         }
+        #endregion
 
         #region Graphic Label
         private void UpdateLabels(int graphic)
@@ -510,6 +546,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
+        #region TextureTileView_DrawItem
         private void TextureTileView_DrawItem(object sender, TileView.TileViewControl.DrawTileListItemEventArgs e)
         {
             if (IsAncestorSiteInDesignMode || FormsDesignerHelper.IsInDesignMode())
@@ -562,27 +599,37 @@ namespace UoFiddler.Controls.UserControls
                 e.Graphics.Clip = previousClip;
             }
         }
+        #endregion
 
+        #region ExportAllAsBmp
         private void ExportAllAsBmp_Click(object sender, EventArgs e)
         {
             ExportAllTextures(ImageFormat.Bmp);
         }
+        #endregion
 
+        #region ExportAllAsTiff
         private void ExportAllAsTiff_Click(object sender, EventArgs e)
         {
             ExportAllTextures(ImageFormat.Tiff);
         }
+        #endregion
 
+        #region ExportAllAsJpeg
         private void ExportAllAsJpeg_Click(object sender, EventArgs e)
         {
             ExportAllTextures(ImageFormat.Jpeg);
         }
+        #endregion
 
+        #region ExportAllAsPng
         private void ExportAllAsPng_Click(object sender, EventArgs e)
         {
             ExportAllTextures(ImageFormat.Png);
         }
+        #endregion
 
+        #region ExportAllTextures
         private void ExportAllTextures(ImageFormat imageFormat)
         {
             string fileExtension = Utils.GetFileExtensionFor(imageFormat);
@@ -618,7 +665,9 @@ namespace UoFiddler.Controls.UserControls
                     MessageBoxIcon.Information, MessageBoxDefaultButton.Button1);
             }
         }
+        #endregion
 
+        #region ReplaceStartingFrom
         private void ReplaceStartingFrom_OnInsert(object sender, KeyEventArgs e)
         {
             if (e.KeyCode != Keys.Enter)
@@ -674,7 +723,9 @@ namespace UoFiddler.Controls.UserControls
                 Options.ChangedUltimaClass["Texture"] = true;
             }
         }
+        #endregion
 
+        #region IsIndexValid
         /// <summary>
         /// Check if it's valid index for texture. Textures has fixed size 0x4000.
         /// </summary>
@@ -683,7 +734,9 @@ namespace UoFiddler.Controls.UserControls
         {
             return index < 0x4000;
         }
+        #endregion
 
+        #region AddSingleTexture
         /// <summary>
         /// Adds a single texture.
         /// </summary>
@@ -733,7 +786,9 @@ namespace UoFiddler.Controls.UserControls
                 }
             }
         }
+        #endregion
 
+        #region UpdateTileView
         public void UpdateTileView()
         {
             TextureTileView.TileBorderColor = Options.RemoveTileBorder
@@ -751,7 +806,9 @@ namespace UoFiddler.Controls.UserControls
             TextureTileView.TileHighlightColor = Options.TileSelectionColor;
             TextureTileView.Invalidate();
         }
+        #endregion
 
+        #region ShowFreeSlotsToolStripMenuItem
         private void ShowFreeSlotsToolStripMenuItem_Click(object sender, EventArgs e)
         {
             _showFreeSlots = !_showFreeSlots;
@@ -789,6 +846,8 @@ namespace UoFiddler.Controls.UserControls
                 Reload();
             }
         }
+        #endregion
+
         #region Copy clipboard
         private void copyToolStripMenuItem_Click(object sender, EventArgs e)
         {
