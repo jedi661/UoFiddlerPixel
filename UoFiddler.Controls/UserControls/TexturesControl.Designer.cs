@@ -62,12 +62,12 @@ namespace UoFiddler.Controls.UserControls
             importByTempToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             toolStripSeparator7 = new System.Windows.Forms.ToolStripSeparator();
             um90GradToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            colorsTexturesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             toolStripSeparator9 = new System.Windows.Forms.ToolStripSeparator();
             copyHexAdressToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             copyDecAdressToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             toolStripSeparator10 = new System.Windows.Forms.ToolStripSeparator();
             saveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            colorsTexturesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             toolStrip = new System.Windows.Forms.ToolStrip();
             toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
             toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
@@ -90,6 +90,7 @@ namespace UoFiddler.Controls.UserControls
             panel1 = new System.Windows.Forms.Panel();
             statusStrip = new System.Windows.Forms.StatusStrip();
             GraphicLabel = new System.Windows.Forms.ToolStripStatusLabel();
+            toolStripColor = new System.Windows.Forms.ToolStripButton();
             contextMenuStrip.SuspendLayout();
             toolStrip.SuspendLayout();
             panel1.SuspendLayout();
@@ -100,7 +101,7 @@ namespace UoFiddler.Controls.UserControls
             // 
             contextMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { showFreeSlotsToolStripMenuItem, toolStripSeparator5, exportImageToolStripMenuItem, toolStripSeparator2, findNextFreeSlotToolStripMenuItem, removeToolStripMenuItem, replaceToolStripMenuItem, replaceStartingFromToolStripMenuItem, insertAtToolStripMenuItem, toolStripSeparator6, copyToolStripMenuItem, importFromClipboardToolStripMenuItem, importByTempToolStripMenuItem, toolStripSeparator7, um90GradToolStripMenuItem, colorsTexturesToolStripMenuItem, toolStripSeparator9, copyHexAdressToolStripMenuItem, copyDecAdressToolStripMenuItem, toolStripSeparator10, saveToolStripMenuItem });
             contextMenuStrip.Name = "contextMenuStrip1";
-            contextMenuStrip.Size = new System.Drawing.Size(194, 392);
+            contextMenuStrip.Size = new System.Drawing.Size(194, 370);
             // 
             // showFreeSlotsToolStripMenuItem
             // 
@@ -256,6 +257,15 @@ namespace UoFiddler.Controls.UserControls
             um90GradToolStripMenuItem.ToolTipText = "Rotate by 90 degrees.";
             um90GradToolStripMenuItem.Click += um90GradToolStripMenuItem_Click;
             // 
+            // colorsTexturesToolStripMenuItem
+            // 
+            colorsTexturesToolStripMenuItem.Image = Properties.Resources.colordialog_background;
+            colorsTexturesToolStripMenuItem.Name = "colorsTexturesToolStripMenuItem";
+            colorsTexturesToolStripMenuItem.Size = new System.Drawing.Size(193, 22);
+            colorsTexturesToolStripMenuItem.Text = "colors Textures";
+            colorsTexturesToolStripMenuItem.ToolTipText = "Colors from Texture";
+            colorsTexturesToolStripMenuItem.Click += colorsTexturesToolStripMenuItem_Click;
+            // 
             // toolStripSeparator9
             // 
             toolStripSeparator9.Name = "toolStripSeparator9";
@@ -291,19 +301,10 @@ namespace UoFiddler.Controls.UserControls
             saveToolStripMenuItem.ToolTipText = "Save Texture.Mul";
             saveToolStripMenuItem.Click += OnClickSave;
             // 
-            // colorsTexturesToolStripMenuItem
-            // 
-            colorsTexturesToolStripMenuItem.Image = Properties.Resources.colordialog_background;
-            colorsTexturesToolStripMenuItem.Name = "colorsTexturesToolStripMenuItem";
-            colorsTexturesToolStripMenuItem.Size = new System.Drawing.Size(193, 22);
-            colorsTexturesToolStripMenuItem.Text = "colors Textures";
-            colorsTexturesToolStripMenuItem.ToolTipText = "Colors from Texture";
-            colorsTexturesToolStripMenuItem.Click += colorsTexturesToolStripMenuItem_Click;
-            // 
             // toolStrip
             // 
             toolStrip.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
-            toolStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { toolStripSeparator3, toolStripSeparator4, SaveButton, toolStripSeparator1, IndexToolStripLabel, searchByIdToolStripTextBox, SearchButton, toolStripSeparator8, MiscToolStripDropDownButton, PlaySoundtoolStripButton1, toolStripButtonTextureWindows, toolStripButtonPictureFusion });
+            toolStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { toolStripSeparator3, toolStripSeparator4, SaveButton, toolStripSeparator1, IndexToolStripLabel, searchByIdToolStripTextBox, SearchButton, toolStripSeparator8, MiscToolStripDropDownButton, PlaySoundtoolStripButton1, toolStripButtonTextureWindows, toolStripButtonPictureFusion, toolStripColor });
             toolStrip.Location = new System.Drawing.Point(0, 0);
             toolStrip.Name = "toolStrip";
             toolStrip.RenderMode = System.Windows.Forms.ToolStripRenderMode.System;
@@ -501,6 +502,16 @@ namespace UoFiddler.Controls.UserControls
             GraphicLabel.Size = new System.Drawing.Size(51, 17);
             GraphicLabel.Text = "Graphic:";
             // 
+            // toolStripColor
+            // 
+            toolStripColor.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            toolStripColor.Image = Properties.Resources.colordialog;
+            toolStripColor.ImageTransparentColor = System.Drawing.Color.Magenta;
+            toolStripColor.Name = "toolStripColor";
+            toolStripColor.Size = new System.Drawing.Size(23, 22);
+            toolStripColor.Text = "toolStripColor";
+            toolStripColor.Click += toolStripColor_Click;
+            // 
             // TexturesControl
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -575,5 +586,6 @@ namespace UoFiddler.Controls.UserControls
         private System.Windows.Forms.ToolStripButton toolStripButtonTextureWindows;
         private System.Windows.Forms.ToolStripButton toolStripButtonPictureFusion;
         private System.Windows.Forms.ToolStripMenuItem colorsTexturesToolStripMenuItem;
+        private System.Windows.Forms.ToolStripButton toolStripColor;
     }
 }

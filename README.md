@@ -20,7 +20,7 @@ Version : 4.12.4
 - Add a ColorBox that enables interactive analysis of color information in an image. 
   By selecting pixels, the associated color values are determined and displayed in a RichTextBox.
 - Add a ColorBox Texture.
-
+- Add TextureColorForm allows for interactive color adjustments of textures.
 
 Version : 4.12.3
 - Add Items Image Colors and Update.

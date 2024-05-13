@@ -29,6 +29,8 @@ namespace UoFiddler.Controls.UserControls
 {
     public partial class TexturesControl : UserControl
     {
+        private TextureColorForm _textureColorForm; // TextureColorForm
+
         private bool playCustomSound = false;
 
         private Textures _textures; // TextureWindowForm
@@ -40,6 +42,8 @@ namespace UoFiddler.Controls.UserControls
             SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer | ControlStyles.UserPaint, true);
 
             _textures = new Textures(); // TextureWindowForm
+
+            _textureColorForm = new TextureColorForm(); // TextureColorForm
         }
 
         private List<int> _textureList = new List<int>();
@@ -534,6 +538,13 @@ namespace UoFiddler.Controls.UserControls
             SelectedTextureId = e.ItemIndex < 0 || e.ItemIndex > _textureList.Count
                 ? _textureList[0]
                 : _textureList[e.ItemIndex];
+
+            // Check that _textureColorForm is null before calling UpdateImage
+            if (_textureColorForm != null)
+            {
+                // Aktualisieren Sie das Bild in der PictureBox
+                _textureColorForm.UpdateImage();
+            }
         }
         #endregion
 
@@ -1470,6 +1481,28 @@ namespace UoFiddler.Controls.UserControls
             }
             // View the form
             colorForm.Show();
+        }
+        #endregion
+
+        #region toolStripColor
+        private TextureColorForm textureColorForm; // Class field
+
+        private void toolStripColor_Click(object sender, EventArgs e)
+        {
+            // Check if the form is already open
+            if (textureColorForm == null || textureColorForm.IsDisposed)
+            {
+                // Create a new instance of the form if it is not already open
+                textureColorForm = new TextureColorForm();
+            }
+
+            // Set the currentTextureId in the TextureColorForm to the SelectedTextureId in the TexturesControl
+            textureColorForm.SetCurrentTextureId(SelectedTextureId);
+
+            // Update the image in the PictureBox
+            textureColorForm.UpdateImage();
+
+            textureColorForm.Show();
         }
         #endregion
     }
