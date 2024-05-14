@@ -429,7 +429,7 @@ namespace UoFiddler.Controls.Forms
             FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             Icon = (System.Drawing.Icon)resources.GetObject("$this.Icon");
             Name = "TextureColorForm";
-            Text = "Texture Painter and Color";
+            Text = "Texture Painter and Color and Pattern ";
             ((System.ComponentModel.ISupportInitialize)PictureBoxImageColor).EndInit();
             panel1.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)trackBarColor).EndInit();
