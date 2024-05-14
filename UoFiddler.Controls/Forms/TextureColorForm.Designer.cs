@@ -406,7 +406,7 @@ namespace UoFiddler.Controls.Forms
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            ClientSize = new System.Drawing.Size(694, 438);
+            ClientSize = new System.Drawing.Size(694, 443);
             Controls.Add(btnLoadImage);
             Controls.Add(btnImportClipbord);
             Controls.Add(buttonGenerateSquare);
