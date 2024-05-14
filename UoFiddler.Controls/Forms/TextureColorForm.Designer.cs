@@ -60,6 +60,7 @@ namespace UoFiddler.Controls.Forms
             lbIDNumber = new System.Windows.Forms.Label();
             buttonGeneratePattern = new System.Windows.Forms.Button();
             buttonGenerateSquare = new System.Windows.Forms.Panel();
+            checkBoxKeepPreviousPattern = new System.Windows.Forms.CheckBox();
             LoadButton = new System.Windows.Forms.Button();
             SaveButton = new System.Windows.Forms.Button();
             labelSize = new System.Windows.Forms.Label();
@@ -263,6 +264,7 @@ namespace UoFiddler.Controls.Forms
             // buttonGenerateSquare
             // 
             buttonGenerateSquare.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
+            buttonGenerateSquare.Controls.Add(checkBoxKeepPreviousPattern);
             buttonGenerateSquare.Controls.Add(LoadButton);
             buttonGenerateSquare.Controls.Add(SaveButton);
             buttonGenerateSquare.Controls.Add(labelSize);
@@ -277,6 +279,16 @@ namespace UoFiddler.Controls.Forms
             buttonGenerateSquare.Name = "buttonGenerateSquare";
             buttonGenerateSquare.Size = new System.Drawing.Size(343, 131);
             buttonGenerateSquare.TabIndex = 18;
+            // 
+            // checkBoxKeepPreviousPattern
+            // 
+            checkBoxKeepPreviousPattern.AutoSize = true;
+            checkBoxKeepPreviousPattern.Location = new System.Drawing.Point(150, 110);
+            checkBoxKeepPreviousPattern.Name = "checkBoxKeepPreviousPattern";
+            checkBoxKeepPreviousPattern.Size = new System.Drawing.Size(124, 19);
+            checkBoxKeepPreviousPattern.TabIndex = 27;
+            checkBoxKeepPreviousPattern.Text = "More Pattern Load";
+            checkBoxKeepPreviousPattern.UseVisualStyleBackColor = true;
             // 
             // LoadButton
             // 
@@ -319,7 +331,7 @@ namespace UoFiddler.Controls.Forms
             // checkBoxRandomSize
             // 
             checkBoxRandomSize.AutoSize = true;
-            checkBoxRandomSize.Location = new System.Drawing.Point(150, 96);
+            checkBoxRandomSize.Location = new System.Drawing.Point(150, 85);
             checkBoxRandomSize.Name = "checkBoxRandomSize";
             checkBoxRandomSize.Size = new System.Drawing.Size(94, 19);
             checkBoxRandomSize.TabIndex = 22;
@@ -328,7 +340,7 @@ namespace UoFiddler.Controls.Forms
             // 
             // trackBarSize
             // 
-            trackBarSize.Location = new System.Drawing.Point(140, 52);
+            trackBarSize.Location = new System.Drawing.Point(140, 48);
             trackBarSize.Maximum = 41;
             trackBarSize.Minimum = 4;
             trackBarSize.Name = "trackBarSize";
@@ -340,7 +352,7 @@ namespace UoFiddler.Controls.Forms
             // 
             // trackBarCount
             // 
-            trackBarCount.Location = new System.Drawing.Point(140, 6);
+            trackBarCount.Location = new System.Drawing.Point(140, 2);
             trackBarCount.Maximum = 50;
             trackBarCount.Minimum = 1;
             trackBarCount.Name = "trackBarCount";
@@ -461,5 +473,6 @@ namespace UoFiddler.Controls.Forms
         private System.Windows.Forms.Button SaveButton;
         private System.Windows.Forms.Button btnImportClipbord;
         private System.Windows.Forms.Button btnLoadImage;
+        private System.Windows.Forms.CheckBox checkBoxKeepPreviousPattern;
     }
 }

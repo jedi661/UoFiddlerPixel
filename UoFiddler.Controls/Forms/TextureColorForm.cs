@@ -986,7 +986,11 @@ namespace UoFiddler.Controls.Forms
         // Load the points from a file
         private void LoadPattern(string filename)
         {
-            points.Clear();
+            // Only delete the points if the CheckBox is not activated
+            if (!checkBoxKeepPreviousPattern.Checked)
+            {
+                points.Clear();
+            }
 
             using (StreamReader reader = new StreamReader(filename))
             {
@@ -1002,6 +1006,7 @@ namespace UoFiddler.Controls.Forms
 
             PictureBoxImageColor.Invalidate(); // Redraw the pattern
         }
+
         #endregion
 
         #region btnImportClipbord
