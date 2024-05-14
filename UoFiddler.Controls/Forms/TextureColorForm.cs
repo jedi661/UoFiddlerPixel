@@ -30,10 +30,13 @@ namespace UoFiddler.Controls.Forms
         private int currentTextureId = 0; // Start with texture ID 0
         private Bitmap originalImage; // To store the original image
         private int savedTrackBarPosition; // To store the position of the track bar
-        private List<Point> points = new List<Point>(); // Um den Pfad der Maus zu speichern
+        private List<Point> points = new List<Point>(); // To save the path of the mouse
         private bool isSelecting = false; // To track whether the user is currently making a selection
         private Point imagePosition; // To save the position of the image
         private List<Point> savedPattern = null;
+        private Random random = null; // Generator Line Circle Shapes 
+        private List<List<Point>> circles = new List<List<Point>>(); // Point circles
+        private List<List<Point>> shapes = new List<List<Point>>(); // shapes
 
 
         private Cursor CustomCursor { get; set; }
@@ -101,12 +104,33 @@ namespace UoFiddler.Controls.Forms
                 int imageX = (PictureBoxImageColor.Width - textureImage.Width) / 2;
                 int imageY = (PictureBoxImageColor.Height - textureImage.Height) / 2;
 
-                // Store the position for later use
-                // (you would need to add these fields to your class)
+                // Store the position for later use                
                 this.imagePosition = new Point(imageX, imageY);
+
+                // Convert the ID to a hexadecimal string
+                string hexId = "0x" + currentTextureId.ToString("X4");
+
+                // Update the label with the ID, the size and the Hex address of the image
+                lbIDNumber.Text = $"ID: {currentTextureId} (Hex: {hexId}), Size: {PictureBoxImageColor.Image.Size}";
             }
         }
         #endregion
+
+        private string GetHexAddress(Image image)
+        {
+            // Convert the image to a byte array
+            ImageConverter converter = new ImageConverter();
+            byte[] imageBytes = (byte[])converter.ConvertTo(image, typeof(byte[]));
+
+            // Convert the byte array to a hex string
+            StringBuilder hex = new StringBuilder(imageBytes.Length * 2);
+            foreach (byte b in imageBytes)
+            {
+                hex.AppendFormat("{0:x2}", b);
+            }
+
+            return hex.ToString();
+        }
 
         #region buttonPrevious
         private void buttonPrevious_Click(object sender, EventArgs e)
@@ -221,7 +245,17 @@ namespace UoFiddler.Controls.Forms
         #region trackBarColor_MouseUp
         private void trackBarColor_MouseUp(object sender, MouseEventArgs e)
         {
-            ChangeImageColor();
+            // Check if there are any shapes
+            if (shapes.Count > 0)
+            {
+                // If there are shapes, call the ChangeImageColorCircleSquares method
+                ChangeImageColorCircleSquares();
+            }
+            else
+            {
+                // If there are no shapes, call the ChangeImageColor method
+                ChangeImageColor();
+            }
         }
         #endregion
 
@@ -293,6 +327,104 @@ namespace UoFiddler.Controls.Forms
         }
         #endregion
 
+        #region ChangeImageColorCircleSquares
+        private void ChangeImageColorCircleSquares()
+        {
+            // Get the current value of the track bar
+            int hueShift = trackBarColor.Value;
+
+            // If the value is 0, reset the image to the original
+            if (hueShift == 0)
+            {
+                PictureBoxImageColor.Image = new Bitmap(originalImage);
+                return;
+            }
+
+            // Get the current image from the PictureBox
+            Bitmap bmp = new Bitmap(PictureBoxImageColor.Image);
+
+            // Check if there are any shapes
+            if (shapes.Count > 0)
+            {
+                // Iterate over each shape
+                foreach (List<Point> shape in shapes)
+                {
+                    // Create a GraphicsPath from the shape
+                    GraphicsPath shapePath = new GraphicsPath();
+                    shapePath.AddPolygon(shape.ToArray());
+
+                    // Iterate over the pixels in the image
+                    for (int x = 0; x < bmp.Width; x++)
+                    {
+                        for (int y = 0; y < bmp.Height; y++)
+                        {
+                            // Check if the pixel is within the shape
+                            if (shapePath.IsVisible(x, y))
+                            {
+                                // Get the current pixel color
+                                Color pixelColor = bmp.GetPixel(x, y);
+
+                                // Convert the color to HSL
+                                double h;
+                                double s;
+                                double l;
+                                ColorToHSL(pixelColor, out h, out s, out l);
+
+                                // Shift the hue value
+                                h = (h + hueShift) % 360;
+
+                                // Convert back to RGB
+                                Color newColor = HSLToColor(h, s, l);
+
+                                // Set the new pixel color
+                                bmp.SetPixel(x, y, newColor);
+
+                                // Update the label with the current color values
+                                labelColorValues.Text = $"R: {newColor.R}, G: {newColor.G}, B: {newColor.B}";
+                            }
+                        }
+                    }
+                }
+            }
+            else
+            {
+                // If there are no shapes, change the color of all pixels
+                for (int x = 0; x < bmp.Width; x++)
+                {
+                    for (int y = 0; y < bmp.Height; y++)
+                    {
+                        // Get the current pixel color
+                        Color pixelColor = bmp.GetPixel(x, y);
+
+                        // Convert the color to HSL
+                        double h;
+                        double s;
+                        double l;
+                        ColorToHSL(pixelColor, out h, out s, out l);
+
+                        // Shift the hue value
+                        h = (h + hueShift) % 360;
+
+                        // Convert back to RGB
+                        Color newColor = HSLToColor(h, s, l);
+
+                        // Set the new pixel color
+                        bmp.SetPixel(x, y, newColor);
+
+                        // Update the label with the current color values
+                        labelColorValues.Text = $"R: {newColor.R}, G: {newColor.G}, B: {newColor.B}";
+                    }
+                }
+            }
+
+            // Update the PictureBox with the new image
+            PictureBoxImageColor.Image = bmp;
+
+            // Update the color display
+            UpdateColorDisplay();
+        }
+        #endregion
+
         #region trackBarColor_Scroll
         private void trackBarColor_Scroll(object sender, EventArgs e)
         {
@@ -309,7 +441,17 @@ namespace UoFiddler.Controls.Forms
         {
             if (e.KeyCode == Keys.Left || e.KeyCode == Keys.Right)
             {
-                ChangeImageColor();
+                // Check if there are any shapes
+                if (shapes.Count > 0)
+                {
+                    // If there are shapes, call the ChangeImageColorCircleSquares method
+                    ChangeImageColorCircleSquares();
+                }
+                else
+                {
+                    // If there are no shapes, call the ChangeImageColor method
+                    ChangeImageColor();
+                }
             }
         }
         #endregion
@@ -441,6 +583,20 @@ namespace UoFiddler.Controls.Forms
                 // Draw the cursor pixel at the current mouse position
                 e.Graphics.FillRectangle(new SolidBrush(this.CursorPixelColor), cursorPosition.X, cursorPosition.Y, 1, 1);
             }
+
+            // Draw the shapes
+            foreach (List<Point> shape in shapes)
+            {
+                // Create a new list of points adjusted for the image position
+                List<Point> adjustedShape = new List<Point>();
+                foreach (Point point in shape)
+                {
+                    adjustedShape.Add(new Point(point.X + imagePosition.X, point.Y + imagePosition.Y));
+                }
+
+                // Draw the shape using the adjusted points
+                e.Graphics.DrawLines(new Pen(this.CursorPixelColor), adjustedShape.ToArray());
+            }
         }
         #endregion
 
@@ -534,6 +690,7 @@ namespace UoFiddler.Controls.Forms
         {
             // Clear the list of points
             points.Clear();
+            shapes.Clear();
 
             // Redraw the image
             PictureBoxImageColor.Invalidate();
@@ -542,7 +699,7 @@ namespace UoFiddler.Controls.Forms
 
         #region UpdateColorDisplay
         private void UpdateColorDisplay()
-        {            
+        {
             string[] colorParts = labelColorValues.Text.Split(new[] { ',', ':' }, StringSplitOptions.RemoveEmptyEntries);
 
             // Convert the parts to integers
@@ -555,6 +712,295 @@ namespace UoFiddler.Controls.Forms
 
             // Set the panel background color to the selected color
             panelColor.BackColor = color;
+        }
+        #endregion
+
+
+        #region buttonGeneratePattern
+        private void buttonGeneratePattern_Click(object sender, EventArgs e)
+        {
+            GenerateRandomPoints(50); //Points 50 
+            PictureBoxImageColor.Invalidate();
+        }
+        #endregion
+
+        #region buttonGenerateCircles
+        private void buttonGenerateCircles_Click(object sender, EventArgs e)
+        {
+            if (random == null)
+            {
+                random = new Random();
+            }
+
+            int minSize = checkBoxRandomSize.Checked ? 3 : trackBarSize.Value;
+            int maxSize = checkBoxRandomSize.Checked ? 15 : trackBarSize.Value;
+
+            GenerateRandomCircles(trackBarCount.Value, minSize, maxSize);
+            PictureBoxImageColor.Invalidate();
+        }
+        #endregion
+
+        #region buttonGenerateSquares
+        private void buttonGenerateSquares_Click(object sender, EventArgs e)
+        {
+            if (random == null)
+            {
+                random = new Random();
+            }
+
+            int minSize = checkBoxRandomSize.Checked ? 10 : trackBarSize.Value;
+            int maxSize = checkBoxRandomSize.Checked ? 31 : trackBarSize.Value;
+
+            GenerateRandomSquares(trackBarCount.Value, minSize, maxSize);
+            PictureBoxImageColor.Invalidate();
+        }
+        #endregion
+
+
+        #region GenerateRandomPoints
+        private void GenerateRandomPoints(int count)
+        {
+            if (random == null)
+            {
+                random = new Random();
+            }
+
+            points.Clear();
+
+            for (int i = 0; i < count; i++)
+            {
+                int x = random.Next(PictureBoxImageColor.Image.Width);
+                int y = random.Next(PictureBoxImageColor.Image.Height);
+                points.Add(new Point(x, y));
+            }
+        }
+        #endregion
+
+        #region GenerateRandomCircles
+        private void GenerateRandomCircles(int count, int minRadius, int maxRadius)
+        {
+            if (random == null)
+            {
+                random = new Random();
+            }
+
+            shapes.Clear(); // Clear the list of shapes at the beginning
+
+            for (int i = 0; i < count; i++)
+            {
+                int radius = random.Next(minRadius, maxRadius + 1);
+                int x, y;
+
+                int maxAttempts = 100; // Maximum number of attempts to generate a non-overlapping shape
+                do
+                {
+                    x = random.Next(radius + 3, PictureBoxImageColor.Image.Width - radius - 3); // Add padding to x
+                    y = random.Next(radius + 3, PictureBoxImageColor.Image.Height - radius - 3); // Add padding to y
+                    maxAttempts--;
+                }
+                while (CirclesOverlap(x, y, radius) && maxAttempts > 0);
+
+                if (maxAttempts <= 0) continue; // When the maximum number of attempts is reached, move on to the next form
+
+                List<Point> circle = new List<Point>();
+
+                for (int angle = 0; angle < 360; angle++)
+                {
+                    int circleX = (int)(x + radius * Math.Cos(angle * Math.PI / 180));
+                    int circleY = (int)(y + radius * Math.Sin(angle * Math.PI / 180));
+                    circle.Add(new Point(circleX, circleY));
+                }
+
+                shapes.Add(circle);
+            }
+
+            PictureBoxImageColor.Invalidate();
+        }
+        #endregion
+
+        #region CirclesOverlap
+        private bool CirclesOverlap(int x, int y, int radius)
+        {
+            foreach (List<Point> shape in shapes)
+            {
+                int dx = shape[0].X - x;
+                int dy = shape[0].Y - y;
+                int distance = (int)Math.Sqrt(dx * dx + dy * dy);
+
+                if (distance < radius * 2)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+        #endregion
+
+        #region SquaresOverlap
+        private bool SquaresOverlap(int x, int y, int size)
+        {
+            int padding = 3; // Put the desired distance between the squares
+            Rectangle newSquare = new Rectangle(x - padding, y - padding, size + 2 * padding, size + 2 * padding);
+
+            foreach (List<Point> shape in shapes)
+            {
+                int existingWidth = shape[1].X - shape[0].X;
+                int existingHeight = shape[2].Y - shape[0].Y;
+                Rectangle existingSquare = new Rectangle(shape[0].X, shape[0].Y, existingWidth, existingHeight);
+
+                if (existingSquare.IntersectsWith(newSquare))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        #endregion
+
+        #region GenerateRandomSquares
+        private void GenerateRandomSquares(int count, int minSize, int maxSize)
+        {
+            if (random == null)
+            {
+                random = new Random();
+            }
+
+            shapes.Clear(); // Clear the list of shapes at the beginning
+
+            for (int i = 0; i < count; i++)
+            {
+                int size;
+                int x;
+                int y;
+
+                // Generate squares until you find one that doesn't overlap
+                int maxAttempts = 100; // Maximum number of attempts to generate a non-overlapping shape
+                do
+                {
+                    size = random.Next(minSize, maxSize + 1);
+                    x = random.Next(size + 3, PictureBoxImageColor.Image.Width - size - 3); // Add padding to x
+                    y = random.Next(size + 3, PictureBoxImageColor.Image.Height - size - 3); // Add padding to y
+                    maxAttempts--;
+                }
+                while (SquaresOverlap(x, y, size) && maxAttempts > 0);
+
+                if (maxAttempts <= 0) continue; // When the maximum number of attempts is reached, move on to the next form
+
+                List<Point> square = new List<Point>();
+
+                // Generate the points for the top and bottom sides of the square
+                for (int dx = 0; dx < size; dx++)
+                {
+                    square.Add(new Point(x + dx, y));
+                    square.Add(new Point(x + dx, y + size - 1));
+                }
+
+                // Generate the points for the left and right sides of the square
+                for (int dy = 0; dy < size; dy++)
+                {
+                    square.Add(new Point(x, y + dy));
+                    square.Add(new Point(x + size - 1, y + dy));
+                }
+
+                shapes.Add(square);
+            }
+
+            PictureBoxImageColor.Invalidate();
+        }
+        #endregion
+
+        #region trackBarCount_Scroll
+        private void trackBarCount_Scroll(object sender, EventArgs e)
+        {
+            // Update the label with the current value of trackBarCount
+            labelCount.Text = $"Count: {trackBarCount.Value}";
+
+            // Update the number of squares and circles when the user moves the TrackBar
+            GenerateRandomSquares(trackBarCount.Value, trackBarSize.Value, trackBarSize.Value);
+            GenerateRandomCircles(trackBarCount.Value, trackBarSize.Value, trackBarSize.Value);
+        }
+        #endregion
+
+        #region trackBarSize_Scroll
+        private void trackBarSize_Scroll(object sender, EventArgs e)
+        {
+            // Update the label with the current value of trackBarSize
+            labelSize.Text = $"Size: {trackBarSize.Value}";
+
+            // Update the size of the squares and circles when the user moves the TrackBar
+            GenerateRandomSquares(trackBarCount.Value, trackBarSize.Value, trackBarSize.Value);
+            GenerateRandomCircles(trackBarCount.Value, trackBarSize.Value, trackBarSize.Value);
+        }
+        #endregion
+
+        #region SaveButton
+        private void SaveButton_Click(object sender, EventArgs e)
+        {
+            // Open a SaveFileDialog to let the user select a file
+            using (SaveFileDialog saveFileDialog = new SaveFileDialog())
+            {
+                saveFileDialog.Filter = "Text Files|*.txt";
+                if (saveFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    // Save the points to the selected file
+                    SavePattern(saveFileDialog.FileName);
+                }
+            }
+        }
+        #endregion
+
+        #region LoadButton
+        private void LoadButton_Click(object sender, EventArgs e)
+        {
+            // Open an OpenFileDialog to let the user select a file
+            using (OpenFileDialog openFileDialog = new OpenFileDialog())
+            {
+                openFileDialog.Filter = "Text Files|*.txt";
+                if (openFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    // Load the points from the selected file
+                    LoadPattern(openFileDialog.FileName);
+                }
+            }
+        }
+        #endregion
+
+        #region SavePattern
+        // Save the points to a file
+        private void SavePattern(string filename)
+        {
+            using (StreamWriter writer = new StreamWriter(filename))
+            {
+                foreach (Point point in points)
+                {
+                    writer.WriteLine($"{point.X},{point.Y}");
+                }
+            }
+        }
+        #endregion
+
+        #region LoadPattern
+        // Load the points from a file
+        private void LoadPattern(string filename)
+        {
+            points.Clear();
+
+            using (StreamReader reader = new StreamReader(filename))
+            {
+                string line;
+                while ((line = reader.ReadLine()) != null)
+                {
+                    string[] parts = line.Split(',');
+                    int x = int.Parse(parts[0]);
+                    int y = int.Parse(parts[1]);
+                    points.Add(new Point(x, y));
+                }
+            }
+
+            PictureBoxImageColor.Invalidate(); // Redraw the pattern
         }
         #endregion
     }
