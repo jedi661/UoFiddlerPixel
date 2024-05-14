@@ -1018,5 +1018,21 @@ namespace UoFiddler.Controls.Forms
             }
         }
         #endregion
+
+        private void btnLoadImage_Click(object sender, EventArgs e)
+        {
+            using (OpenFileDialog openFileDialog = new OpenFileDialog())
+            {
+                // Only .bmp, .png and .tiff files are permitted
+                openFileDialog.Filter = "Image files|*.bmp;*.png;*.tiff";
+
+                if (openFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    // Load the image from the selected file
+                    Image image = Image.FromFile(openFileDialog.FileName);
+                    PictureBoxImageColor.Image = image;
+                }
+            }
+        }
     }
 }

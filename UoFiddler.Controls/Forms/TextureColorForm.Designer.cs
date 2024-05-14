@@ -70,6 +70,7 @@ namespace UoFiddler.Controls.Forms
             buttonGenerateSquares = new System.Windows.Forms.Button();
             buttonGenerateCircles = new System.Windows.Forms.Button();
             btnImportClipbord = new System.Windows.Forms.Button();
+            btnLoadImage = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)PictureBoxImageColor).BeginInit();
             panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)trackBarColor).BeginInit();
@@ -379,11 +380,22 @@ namespace UoFiddler.Controls.Forms
             btnImportClipbord.UseVisualStyleBackColor = true;
             btnImportClipbord.Click += btnImportClipbord_Click;
             // 
+            // btnLoadImage
+            // 
+            btnLoadImage.Location = new System.Drawing.Point(562, 172);
+            btnLoadImage.Name = "btnLoadImage";
+            btnLoadImage.Size = new System.Drawing.Size(59, 23);
+            btnLoadImage.TabIndex = 20;
+            btnLoadImage.Text = "Load";
+            btnLoadImage.UseVisualStyleBackColor = true;
+            btnLoadImage.Click += btnLoadImage_Click;
+            // 
             // TextureColorForm
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             ClientSize = new System.Drawing.Size(694, 438);
+            Controls.Add(btnLoadImage);
             Controls.Add(btnImportClipbord);
             Controls.Add(buttonGenerateSquare);
             Controls.Add(lbIDNumber);
@@ -448,5 +460,6 @@ namespace UoFiddler.Controls.Forms
         private System.Windows.Forms.Button LoadButton;
         private System.Windows.Forms.Button SaveButton;
         private System.Windows.Forms.Button btnImportClipbord;
+        private System.Windows.Forms.Button btnLoadImage;
     }
 }
