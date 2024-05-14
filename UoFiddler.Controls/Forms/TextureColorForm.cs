@@ -1003,5 +1003,20 @@ namespace UoFiddler.Controls.Forms
             PictureBoxImageColor.Invalidate(); // Redraw the pattern
         }
         #endregion
+
+        #region btnImportClipbord
+        private void btnImportClipbord_Click(object sender, EventArgs e)
+        {
+            if (Clipboard.ContainsImage())
+            {
+                Image image = Clipboard.GetImage();
+                PictureBoxImageColor.Image = image;
+            }
+            else
+            {
+                MessageBox.Show("The clipboard does not contain an image.");
+            }
+        }
+        #endregion
     }
 }

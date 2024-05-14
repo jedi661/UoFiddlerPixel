@@ -69,6 +69,7 @@ namespace UoFiddler.Controls.Forms
             trackBarCount = new System.Windows.Forms.TrackBar();
             buttonGenerateSquares = new System.Windows.Forms.Button();
             buttonGenerateCircles = new System.Windows.Forms.Button();
+            btnImportClipbord = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)PictureBoxImageColor).BeginInit();
             panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)trackBarColor).BeginInit();
@@ -368,11 +369,22 @@ namespace UoFiddler.Controls.Forms
             buttonGenerateCircles.UseVisualStyleBackColor = true;
             buttonGenerateCircles.Click += buttonGenerateCircles_Click;
             // 
+            // btnImportClipbord
+            // 
+            btnImportClipbord.Location = new System.Drawing.Point(562, 143);
+            btnImportClipbord.Name = "btnImportClipbord";
+            btnImportClipbord.Size = new System.Drawing.Size(59, 23);
+            btnImportClipbord.TabIndex = 19;
+            btnImportClipbord.Text = "Import";
+            btnImportClipbord.UseVisualStyleBackColor = true;
+            btnImportClipbord.Click += btnImportClipbord_Click;
+            // 
             // TextureColorForm
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             ClientSize = new System.Drawing.Size(694, 438);
+            Controls.Add(btnImportClipbord);
             Controls.Add(buttonGenerateSquare);
             Controls.Add(lbIDNumber);
             Controls.Add(panelColor);
@@ -435,5 +447,6 @@ namespace UoFiddler.Controls.Forms
         private System.Windows.Forms.Label labelCount;
         private System.Windows.Forms.Button LoadButton;
         private System.Windows.Forms.Button SaveButton;
+        private System.Windows.Forms.Button btnImportClipbord;
     }
 }
