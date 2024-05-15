@@ -194,23 +194,33 @@ namespace UoFiddler.Controls.UserControls
             CurrAnim = CurrAnim;
         }
 
+        #region OnClickStartStop
         private void OnClickStartStop(object sender, EventArgs e)
         {
-            if (_mTimer != null)
+            if (_selAnimdataEntry != null)
             {
-                StopTimer();
+                if (_mTimer != null)
+                {
+                    StopTimer();
+                }
+                else
+                {
+                    _mTimer = new Timer
+                    {
+                        Interval = (100 * _selAnimdataEntry.FrameInterval) + 1
+                    };
+                    _mTimer.Tick += Timer_Tick;
+                    _timerFrame = 0;
+                    _mTimer.Start();
+                }
             }
             else
             {
-                _mTimer = new Timer
-                {
-                    Interval = (100 * _selAnimdataEntry.FrameInterval) + 1
-                };
-                _mTimer.Tick += Timer_Tick;
-                _timerFrame = 0;
-                _mTimer.Start();
+                // Handle the case where _selAnimdataEntry is null.
+                // For example, you could show a message to the user or write a log.
             }
         }
+        #endregion
 
         private void Timer_Tick(object sender, EventArgs e)
         {
