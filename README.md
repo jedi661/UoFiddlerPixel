@@ -21,6 +21,8 @@ Version : 4.12.4
   By selecting pixels, the associated color values are determined and displayed in a RichTextBox.
 - Add a ColorBox Texture.
 - Add TextureColorForm allows for interactive color adjustments of textures.
+- Fixed importing unicode font characters
+- Fixed Amindata Start Error/stop error
 
 Version : 4.12.3
 - Add Items Image Colors and Update.
