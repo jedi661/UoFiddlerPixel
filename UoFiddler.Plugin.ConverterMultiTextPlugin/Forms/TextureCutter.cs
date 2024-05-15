@@ -2839,22 +2839,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             }
         }
 
-        private bool shouldDrawRectangle = false; //??
-
-        /*private void pictureBox1_MouseDown2(object sender, MouseEventArgs e)
-        {
-            if (checkBoxFreehand.Checked && e.Button == MouseButtons.Left)
-            {
-                points.Clear();
-                points.Add(e.Location);
-            }
-            else if (e.Button == MouseButtons.Left)
-            {
-                startPoint = e.Location;
-                isDragging = true;
-                cropArea = new Rectangle(startPoint.X, startPoint.Y, 0, 0);
-            }
-        }*/
+        private bool shouldDrawRectangle = false; //??        
 
         private void pictureBox1_MouseDown2(object sender, MouseEventArgs e)
         {

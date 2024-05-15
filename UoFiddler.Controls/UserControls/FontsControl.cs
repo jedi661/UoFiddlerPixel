@@ -27,6 +27,7 @@ namespace UoFiddler.Controls.UserControls
     {
         private bool playCustomSound = false; //Sound True
 
+        #region FontsControl InitializeComponent
         public FontsControl()
         {
             InitializeComponent();
@@ -39,11 +40,13 @@ namespace UoFiddler.Controls.UserControls
 
             this.KeyDown += Form_KeyDown;
         }
+        #endregion
 
         private bool _loaded;
         private static FontsControl _refMarker;
         private List<int> _fonts = new List<int>();
 
+        #region Reload
         /// <summary>
         /// Reload when loaded (file changed)
         /// </summary>
@@ -54,7 +57,9 @@ namespace UoFiddler.Controls.UserControls
                 OnLoad(this, EventArgs.Empty);
             }
         }
+        #endregion
 
+        #region RefreshOnCharChange
         /// <summary>
         /// Refreshes view if Offset of Unicode char is changed
         /// </summary>
@@ -79,7 +84,9 @@ namespace UoFiddler.Controls.UserControls
                     UnicodeFonts.Fonts[(int)_refMarker.treeView.SelectedNode.Tag].Chars[i].XOffset,
                     UnicodeFonts.Fonts[(int)_refMarker.treeView.SelectedNode.Tag].Chars[i].YOffset);
         }
+        #endregion
 
+        #region OnLoad
         private void OnLoad(object sender, EventArgs e)
         {
             if (IsAncestorSiteInDesignMode || FormsDesignerHelper.IsInDesignMode())
@@ -153,12 +160,16 @@ namespace UoFiddler.Controls.UserControls
             _loaded = true;
             Cursor.Current = Cursors.Default;
         }
+        #endregion
 
+        #region OnFilePathChangeEvent
         private void OnFilePathChangeEvent()
         {
             Reload();
         }
+        #endregion
 
+        #region OnSelect
         private void OnSelect(object sender, TreeViewEventArgs e)
         {
             if (treeView.SelectedNode.Parent == null)
@@ -201,7 +212,9 @@ namespace UoFiddler.Controls.UserControls
                 FontsTileView.Invalidate();
             }
         }
+        #endregion
 
+        #region OnClickExport
         private void OnClickExport(object sender, EventArgs e)
         {
             if (FontsTileView.SelectedIndices.Count == 0)
@@ -234,9 +247,10 @@ namespace UoFiddler.Controls.UserControls
             MessageBox.Show($"Character saved to {fileName}", "Saved", MessageBoxButtons.OK, MessageBoxIcon.Information,
                 MessageBoxDefaultButton.Button1);
         }
-
+        #endregion
         private static int AsciiFontOffset => 32;
 
+        #region OnClickImport
         private void OnClickImport(object sender, EventArgs e)
         {
             if (FontsTileView.SelectedIndices.Count == 0)
@@ -281,7 +295,9 @@ namespace UoFiddler.Controls.UserControls
                 FontsTileView.Invalidate();
             }
         }
+        #endregion
 
+        #region OnClickSave
         private void OnClickSave(object sender, EventArgs e)
         {
             string path = Options.OutputPath;
@@ -301,9 +317,11 @@ namespace UoFiddler.Controls.UserControls
                 Options.ChangedUltimaClass["ASCIIFont"] = false;
             }
         }
+        #endregion
+
+        #region OnClickSetOffsets
 
         private FontOffsetForm _form;
-
         private void OnClickSetOffsets(object sender, EventArgs e)
         {
             if (treeView.SelectedNode == null)
@@ -331,7 +349,9 @@ namespace UoFiddler.Controls.UserControls
 
             RefreshOnCharChange();
         }
+        #endregion
 
+        #region OnClickWriteText
         private void OnClickWriteText(object sender, EventArgs e)
         {
             int type = (int)treeView.SelectedNode.Parent.Tag;
@@ -339,7 +359,9 @@ namespace UoFiddler.Controls.UserControls
 
             new FontTextForm(type, font).Show();
         }
+        #endregion
 
+        #region FontsTileView_DrawItem
         private void FontsTileView_DrawItem(object sender, TileView.TileViewControl.DrawTileListItemEventArgs e)
         {
             if (treeView.Nodes.Count == 0)
@@ -402,7 +424,9 @@ namespace UoFiddler.Controls.UserControls
                 e.Graphics.DrawImage(AsciiText.Fonts[font].Characters[_fonts[i]], new Point(e.Bounds.X + 2, e.Bounds.Y + 2));
             }
         }
+        #endregion
 
+        #region FontsTileView_ItemSelectionChanged
         private void FontsTileView_ItemSelectionChanged(object sender, ListViewItemSelectionChangedEventArgs e)
         {
             if (!e.IsSelected)
@@ -417,7 +441,9 @@ namespace UoFiddler.Controls.UserControls
 
             UpdateStatusStrip();
         }
+        #endregion
 
+        #region UpdateStatusStrip
         private void UpdateStatusStrip()
         {
             if (FontsTileView.SelectedIndices.Count == 0)
@@ -434,7 +460,9 @@ namespace UoFiddler.Controls.UserControls
                     UnicodeFonts.Fonts[(int)treeView.SelectedNode.Tag].Chars[i].YOffset)
                 : string.Format("'{0}' : {1} (0x{1:X})", (char)(_fonts[i] + AsciiFontOffset), _fonts[i] + AsciiFontOffset);
         }
+        #endregion
 
+        #region LoadUnicodeFontsCheckBox_CheckedChanged
         private void LoadUnicodeFontsCheckBox_CheckedChanged(object sender, EventArgs e)
         {
             string message = LoadUnicodeFontsCheckBox.Checked
@@ -451,12 +479,16 @@ namespace UoFiddler.Controls.UserControls
 
             Reload();
         }
+        #endregion
 
+        #region FontsControl_Resize
         private void FontsControl_Resize(object sender, EventArgs e)
         {
             splitContainer2.SplitterDistance = splitContainer2.Height - 40;
         }
+        #endregion
 
+        #region UpdateTileView(
         public void UpdateTileView()
         {
             FontsTileView.TileBorderColor = Options.RemoveTileBorder
@@ -474,7 +506,9 @@ namespace UoFiddler.Controls.UserControls
             FontsTileView.TileHighlightColor = Options.TileSelectionColor;
             FontsTileView.Invalidate();
         }
-        #region Import und copy to clipbord
+        #endregion       
+
+        #region importClipbordToolStripMenuItem_Click
         private void importClipbordToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (Clipboard.ContainsImage())
@@ -515,7 +549,9 @@ namespace UoFiddler.Controls.UserControls
                 MessageBox.Show("Clipboard does not contain an image.");
             }
         }
+        #endregion
 
+        #region copyClipbordToolStripMenuItem_Click
         private void copyClipbordToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (FontsTileView.SelectedIndices.Count == 0)
@@ -562,6 +598,9 @@ namespace UoFiddler.Controls.UserControls
                 }
             }
         }
+        #endregion
+
+        #region Form_KeyDown
         private void Form_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.Control && e.KeyCode == Keys.X)
@@ -573,7 +612,7 @@ namespace UoFiddler.Controls.UserControls
                 importClipbordToolStripMenuItem_Click(sender, e);
             }
         }
-        #endregion
+        #endregion        
 
         #region Soundbutton
         private void toolStripSplitSound_ButtonClick(object sender, EventArgs e)

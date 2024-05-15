@@ -5,15 +5,19 @@ using System.IO;
 
 namespace Ultima
 {
+    #region class UnicodeFont
     public sealed class UnicodeFont
     {
         public UnicodeChar[] Chars { get; }
 
+        #region UnicodeFont
         public UnicodeFont()
         {
             Chars = new UnicodeChar[0x10000];
         }
+        #endregion
 
+        #region GetWidth
         /// <summary>
         /// Returns width of text
         /// </summary>
@@ -36,7 +40,9 @@ namespace Ultima
 
             return width;
         }
+        #endregion
 
+        #region GetHeight
         /// <summary>
         /// Returns max height of text
         /// </summary>
@@ -58,8 +64,11 @@ namespace Ultima
 
             return height;
         }
+        #endregion
     }
+    #endregion
 
+    #region class UnicodeChar
     public sealed class UnicodeChar
     {
         public byte[] Bytes { get; set; }
@@ -68,6 +77,7 @@ namespace Ultima
         public int Height { get; set; }
         public int Width { get; set; }
 
+        #region unsafe Bitmap GetImage
         /// <summary>
         /// Gets Bitmap of Char with Background -1
         /// </summary>
@@ -103,7 +113,9 @@ namespace Ultima
 
             return bmp;
         }
+        #endregion
 
+        #region IsPixelSet
         private static bool IsPixelSet(byte[] data, int width, int x, int y)
         {
             int offset = (x / 8) + (y * ((width + 7) / 8));
@@ -114,37 +126,60 @@ namespace Ultima
 
             return (data[offset] & (1 << (7 - (x % 8)))) != 0;
         }
+        #endregion
 
+        #region SetBuffer
         /// <summary>
-        /// Resets Buffer with Bitmap
+        /// Converts a bitmap into a byte array representing the set pixels in the bitmap.
         /// </summary>
-        /// <param name="bmp"></param>
+        /// <param name="bmp">The bitmap to convert.</param>
         public unsafe void SetBuffer(Bitmap bmp)
         {
+            // Initialize the byte array based on the height and width of the bitmap
             Bytes = new byte[bmp.Height * (((bmp.Width - 1) / 8) + 1)];
-            BitmapData bd = bmp.LockBits(new Rectangle(0, 0, bmp.Width, bmp.Height), ImageLockMode.WriteOnly, PixelFormat.Format16bppArgb1555);
+
+            // Reset the XOffset and YOffset to 0
+            XOffset = 0;
+            YOffset = 0;
+
+            // Set the Width and Height to the width and height of the bitmap
+            Width = bmp.Width;
+            Height = bmp.Height;
+
+            // Lock the bits of the bitmap for direct memory access
+            var bd = bmp.LockBits(new Rectangle(0, 0, bmp.Width, bmp.Height), ImageLockMode.ReadOnly, PixelFormat.Format16bppArgb1555);
             var line = (ushort*)bd.Scan0;
-            for (int y = 0; y < bmp.Height; ++y)
+            int delta = bd.Stride >> 1;
+
+            // Iterate through the pixels of the bitmap
+            for (int y = 0; y < bmp.Height; ++y, line += delta)
             {
                 ushort* cur = line;
                 for (int x = 0; x < bmp.Width; ++x)
                 {
+                    // Check if the current pixel is set
                     if (cur[x] != 0x8000)
                     {
                         continue;
                     }
 
+                    // Calculate the offset in the Bytes array and set the corresponding bit
                     int offset = (x / 8) + (y * ((bmp.Width + 7) / 8));
                     Bytes[offset] |= (byte)(1 << (7 - (x % 8)));
                 }
             }
 
+            // Unlock the bits of the bitmap
             bmp.UnlockBits(bd);
         }
+        #endregion
     }
+    #endregion
 
+    #region class UnicodeFonts
     public static class UnicodeFonts
     {
+        #region static readonly
         private static readonly string[] _files = {
             "unifont.mul",
             "unifont1.mul",
@@ -159,15 +194,20 @@ namespace Ultima
             "unifont10.mul",
             "unifont11.mul",
             "unifont12.mul"
-        };
+        };       
 
-        public static readonly UnicodeFont[] Fonts = new UnicodeFont[13];
+        public static readonly UnicodeFont[] Fonts = new UnicodeFont[13]; //index
 
+        #endregion
+
+        #region UnicodeFonts()
         static UnicodeFonts()
         {
             Initialize();
         }
+        #endregion
 
+        #region Initialize()
         /// <summary>
         /// Reads unifont*.mul
         /// </summary>
@@ -216,7 +256,9 @@ namespace Ultima
                 }
             }
         }
+        #endregion
 
+        #region WriteText
         /// <summary>
         /// Draws Text with font in Bitmap and returns
         /// </summary>
@@ -244,7 +286,9 @@ namespace Ultima
 
             return result;
         }
+        #endregion
 
+        #region Save
         /// <summary>
         /// Saves Font and returns string Filename
         /// </summary>
@@ -282,5 +326,7 @@ namespace Ultima
 
             return fileName;
         }
+        #endregion
     }
+    #endregion
 }

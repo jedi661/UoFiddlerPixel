@@ -5,6 +5,7 @@ using System.IO;
 // ascii text support written by arul
 namespace Ultima
 {
+    #region class AsciiFont
     public sealed class AsciiFont
     {
         public byte Header { get; }
@@ -12,6 +13,7 @@ namespace Ultima
         public Bitmap[] Characters { get; set; }
         public int Height { get; set; }
 
+        #region AsciiFont
         public AsciiFont(byte header)
         {
             Header = header;
@@ -19,7 +21,9 @@ namespace Ultima
             Unk = new byte[224];
             Characters = new Bitmap[224];
         }
+        #endregion
 
+        #region Bitmap GetBitmap
         /// <summary>
         /// Gets Bitmap of given character
         /// </summary>
@@ -29,7 +33,9 @@ namespace Ultima
         {
             return Characters[((character - 0x20) & 0x7FFFFFFF) % 224];
         }
+        #endregion
 
+        #region GetWidth
         public int GetWidth(string text)
         {
             if (string.IsNullOrEmpty(text))
@@ -46,13 +52,17 @@ namespace Ultima
 
             return width;
         }
+        #endregion
 
+        #region ReplaceCharacter
         public void ReplaceCharacter(int character, Bitmap import)
         {
             Characters[character] = import;
             Height = import.Height;
         }
+        #endregion
 
+        #region AsciiFont GetFixed
         public static AsciiFont GetFixed(int font, AsciiFont[] fonts)
         {
             if (font is < 0 or > 9)
@@ -62,17 +72,21 @@ namespace Ultima
 
             return fonts[font];
         }
+        #endregion
     }
+    #endregion
 
+    #region class AsciiText
     public static class AsciiText
     {
-        public static readonly AsciiFont[] Fonts = new AsciiFont[10];
+        public static readonly AsciiFont[] Fonts = new AsciiFont[10]; // Index
 
         static AsciiText()
         {
             Initialize();
         }
 
+        #region Initialize fonts.mul
         /// <summary>
         /// Reads fonts.mul
         /// </summary>
@@ -91,7 +105,7 @@ namespace Ultima
                 fixed (byte* bin = buffer)
                 {
                     byte* read = bin;
-                    for (int i = 0; i < 10; ++i)
+                    for (int i = 0; i < 10; ++i) // index
                     {
                         byte header = *read++;
                         Fonts[i] = new AsciiFont(header);
@@ -143,7 +157,9 @@ namespace Ultima
                 }
             }
         }
+        #endregion
 
+        #region Save
         public static unsafe void Save(string fileName)
         {
             using (var fs = new FileStream(fileName, FileMode.Create, FileAccess.Write, FileShare.Write))
@@ -184,7 +200,9 @@ namespace Ultima
                 }
             }
         }
+        #endregion
 
+        #region Bitmap DrawText
         /// <summary>
         /// Draws Text with font in Bitmap and returns
         /// </summary>
@@ -210,5 +228,7 @@ namespace Ultima
 
             return result;
         }
+        #endregion
     }
+    #endregion
 }

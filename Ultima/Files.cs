@@ -10,11 +10,14 @@ namespace Ultima
         public delegate void FileSaveHandler();
         public static event FileSaveHandler FileSaveEvent;
 
+        #region FireFileSaveEvent
         public static void FireFileSaveEvent()
         {
             FileSaveEvent?.Invoke();
         }
+        #endregion
 
+        #region readonly static
         /// <summary>
         /// Should loaded Data be cached
         /// </summary>
@@ -29,12 +32,12 @@ namespace Ultima
         /// Gets a list of paths to the Client's data files.
         /// </summary>
         public static string Directory { get; private set; }
-
+        
         /// <summary>
         /// Contains the rootDir (so relative values are possible for <see cref="MulPath"/>
         /// </summary>
         public static string RootDir { get; set; }
-
+        
         private readonly static string[] _uoFiles = {
             "anim.idx",
             "anim.mul",
@@ -170,16 +173,21 @@ namespace Ultima
             "unifont10.mul",
             "unifont11.mul",
             "unifont12.mul",
+            //"unifont13.mul", //new
             "uotd.exe",
             "verdata.mul"
         };
+        #endregion
 
+        #region static Files
         static Files()
         {
             Directory = LoadDirectory();
             LoadMulPath();
         }
+        #endregion
 
+        #region ReLoadDirectory
         /// <summary>
         /// ReReads Registry Client dir
         /// </summary>
@@ -187,7 +195,9 @@ namespace Ultima
         {
             Directory = LoadDirectory();
         }
+        #endregion
 
+        #region LoadMulPath
         /// <summary>
         /// Fills <see cref="MulPath"/> with <see cref="Files.Directory"/>
         /// </summary>
@@ -203,7 +213,9 @@ namespace Ultima
                 MulPath[file] = File.Exists(filePath) ? file : string.Empty;
             }
         }
+        #endregion
 
+        #region SetMulPath
         /// <summary>
         /// ReSets <see cref="MulPath"/> with given path
         /// </summary>
@@ -242,7 +254,9 @@ namespace Ultima
                 MulPath[file] = File.Exists(filePath) ? filePath : string.Empty;
             }
         }
+        #endregion
 
+        #region SetMulPath
         /// <summary>
         /// Sets <see cref="MulPath"/> key to path
         /// </summary>
@@ -252,7 +266,9 @@ namespace Ultima
         {
             MulPath[key] = path;
         }
+        #endregion
 
+        #region GetFilePath
         /// <summary>
         ///     Looks up a given <paramref name="file" /> in <see cref="Files.MulPath" />
         /// </summary>
@@ -285,7 +301,9 @@ namespace Ultima
 
             return File.Exists(path) ? path : null;
         }
+        #endregion
 
+        #region GetFilePath
         internal static string GetFilePath(string format, params object[] args)
         {
             return GetFilePath(string.Format(format, args));
@@ -316,7 +334,9 @@ namespace Ultima
             "Install Dir",
             "InstallDir"
         };
+        #endregion
 
+        #region LoadDirectory
         private static string LoadDirectory()
         {
             string dir = null;
@@ -335,7 +355,9 @@ namespace Ultima
 
             return dir;
         }
+        #endregion
 
+        #region GetPath
         private static string GetPath(string regKey)
         {
             try
@@ -398,4 +420,5 @@ namespace Ultima
             }
         }
     }
+    #endregion
 }
