@@ -436,11 +436,37 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 
         private void btnGenerateTransition_Click(object sender, EventArgs e)
         {
+            // Check if textures and alpha images are selected
             if (textures1.Count == 0 || textures2.Count == 0 || alphaImages.Count == 0)
             {
                 MessageBox.Show("Please select textures and alpha images before generating the transitions.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
+
+            // Check if the TextBoxes are empty and set default values if they are
+            if (string.IsNullOrEmpty(tbStartHexDec.Text))
+            {
+                tbStartHexDec.Text = "0001";
+            }
+            if (string.IsNullOrEmpty(textBoxNameTextureA.Text))
+            {
+                textBoxNameTextureA.Text = "Name1";
+            }
+            if (string.IsNullOrEmpty(textBoxNameTextureB.Text))
+            {
+                textBoxNameTextureB.Text = "Name2";
+            }
+            if (string.IsNullOrEmpty(textBoxBrushNumberA.Text))
+            {
+                textBoxBrushNumberA.Text = "0001";
+            }
+            if (string.IsNullOrEmpty(textBoxBrushNumberB.Text))
+            {
+                textBoxBrushNumberB.Text = "0002";
+            }
+
+            // Show a message to inform the user that default values have been set
+            MessageBox.Show("Default values have been set for empty fields. You can adjust these values for the XML file.");
 
             // Get the path to the program directory
             string programDirectory = Application.StartupPath;

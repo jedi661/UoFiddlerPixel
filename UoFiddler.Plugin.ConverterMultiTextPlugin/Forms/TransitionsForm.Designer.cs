@@ -79,6 +79,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             labelContrastValue = new System.Windows.Forms.Label();
             labelFlouValue = new System.Windows.Forms.Label();
             btEditTransition = new System.Windows.Forms.Button();
+            lbInfo = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)pictureBoxPreview).BeginInit();
             ((System.ComponentModel.ISupportInitialize)pictureBoxLandtile).BeginInit();
             ((System.ComponentModel.ISupportInitialize)trackBarContrast).BeginInit();
@@ -445,11 +446,21 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             btEditTransition.UseVisualStyleBackColor = true;
             btEditTransition.Click += btEditTransition_Click;
             // 
+            // lbInfo
+            // 
+            lbInfo.AutoSize = true;
+            lbInfo.Location = new System.Drawing.Point(490, 499);
+            lbInfo.Name = "lbInfo";
+            lbInfo.Size = new System.Drawing.Size(210, 75);
+            lbInfo.TabIndex = 41;
+            lbInfo.Text = "Dir Data:\r\n\r\nFolder:\r\nTextures = graphics textures\r\nAlpaName = Alpha (Grayscale) Texture";
+            // 
             // TransitionsForm
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             ClientSize = new System.Drawing.Size(1178, 691);
+            Controls.Add(lbInfo);
             Controls.Add(btEditTransition);
             Controls.Add(labelFlouValue);
             Controls.Add(labelContrastValue);
@@ -542,5 +553,6 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private System.Windows.Forms.Label labelContrastValue;
         private System.Windows.Forms.Label labelFlouValue;
         private System.Windows.Forms.Button btEditTransition;
+        private System.Windows.Forms.Label lbInfo;
     }
 }
