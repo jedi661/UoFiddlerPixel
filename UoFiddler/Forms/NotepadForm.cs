@@ -46,9 +46,7 @@ namespace UoFiddler.Forms
         // Create a new DateTimePicker
         DateTimePicker dateTimePicker = new DateTimePicker();
 
-        private bool isFirstInstance = true; // no value assigned yet
-
-        // Globale Variable, um das Formular zu speichern
+        // Global variable to save the form
         private System.Windows.Forms.Form replaceForm = null;
 
         public NotepadForm()
@@ -843,11 +841,6 @@ namespace UoFiddler.Forms
             }
         }
         #endregion
-
-        private void richTextBoxNotPad_KeyDown(object sender, KeyEventArgs e)
-        {
-
-        }
 
         #region Keypress
         private void richTextBoxNotPad_KeyPress(object sender, KeyPressEventArgs e)

@@ -112,7 +112,6 @@ namespace UoFiddler.Forms
             richTextBoxNotPad.SelectionChanged += richTextBoxNotPad_SelectionChanged;
             richTextBoxNotPad.VScroll += richTextBoxNotPad_VScroll;
             richTextBoxNotPad.TextChanged += richTextBoxNotPad_TextChanged_1;
-            richTextBoxNotPad.KeyDown += richTextBoxNotPad_KeyDown;
             richTextBoxNotPad.KeyPress += richTextBoxNotPad_KeyPress;
             // 
             // contextMenuStrip1
@@ -233,11 +232,11 @@ namespace UoFiddler.Forms
             // checkBox1
             // 
             checkBox1.AutoSize = true;
-            checkBox1.Location = new System.Drawing.Point(397, 38);
+            checkBox1.Location = new System.Drawing.Point(345, 41);
             checkBox1.Name = "checkBox1";
-            checkBox1.Size = new System.Drawing.Size(83, 19);
+            checkBox1.Size = new System.Drawing.Size(106, 19);
             checkBox1.TabIndex = 9;
-            checkBox1.Text = "checkBox1";
+            checkBox1.Text = "ToggleBoldText";
             checkBox1.UseVisualStyleBackColor = true;
             checkBox1.CheckedChanged += checkBox1_CheckedChanged;
             // 
