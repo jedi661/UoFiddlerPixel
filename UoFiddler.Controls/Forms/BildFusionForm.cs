@@ -40,12 +40,12 @@ namespace UoFiddler.Controls.Forms
         private PictureBox currentPictureBox;
 
         //not yet awarded
-        private Bitmap originalBackgroundImage64;
-        private Bitmap originalBackgroundImage128;
-        private Bitmap originalBackgroundImage256;
-        private Bitmap originalOverlayImage64;
-        private Bitmap originalOverlayImage128;
-        private Bitmap originalOverlayImage256;
+        //private Bitmap originalBackgroundImage64;
+        //private Bitmap originalBackgroundImage128;
+        //private Bitmap originalBackgroundImage256;
+        //private Bitmap originalOverlayImage64;
+        //private Bitmap originalOverlayImage128;
+        //private Bitmap originalOverlayImage256;
         //
 
         private Bitmap rotatedBackgroundImage64;
