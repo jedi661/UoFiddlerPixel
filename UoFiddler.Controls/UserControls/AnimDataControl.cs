@@ -79,6 +79,7 @@ namespace UoFiddler.Controls.UserControls
             }
         }
 
+        #region Reload
         /// <summary>
         /// ReLoads if loaded
         /// </summary>
@@ -89,7 +90,9 @@ namespace UoFiddler.Controls.UserControls
                 OnLoad(this, EventArgs.Empty);
             }
         }
+        #endregion
 
+        #region OnLoad
         private void OnLoad(object sender, EventArgs e)
         {
             if (IsAncestorSiteInDesignMode || FormsDesignerHelper.IsInDesignMode())
@@ -157,13 +160,41 @@ namespace UoFiddler.Controls.UserControls
 
             _loaded = true;
             Cursor.Current = Cursors.Default;
-        }
 
+            // After all nodes are added, select the node with hex address 0x03ae
+            SelectNodeById(ConvertHexAddressToId("0x03ae"));
+        }
+        #endregion
+
+        #region SelectNodeById
+        private void SelectNodeById(int id)
+        {
+            foreach (TreeNode node in treeView1.Nodes)
+            {
+                if ((int)node.Tag == id)
+                {
+                    treeView1.SelectedNode = node;
+                    break;
+                }
+            }
+        }
+        #endregion
+
+        #region ConvertHexAddressToId from SelectNodeById hex to id
+        private int ConvertHexAddressToId(string hexAddress)
+        {
+            return int.Parse(hexAddress.Substring(2), System.Globalization.NumberStyles.HexNumber);
+        }
+        #endregion
+
+        #region OnFilePathChangeEvent
         private void OnFilePathChangeEvent()
         {
             Reload();
         }
+        #endregion
 
+        #region AfterNodeSelect
         private void AfterNodeSelect(object sender, TreeViewEventArgs e)
         {
             if (treeView1.SelectedNode == null)
@@ -182,7 +213,9 @@ namespace UoFiddler.Controls.UserControls
                 CurrAnim = (int)treeView1.SelectedNode.Parent.Tag;
             }
         }
+        #endregion
 
+        #region AfterSelectTreeViewFrames
         private void AfterSelectTreeViewFrames(object sender, TreeViewEventArgs e)
         {
             _curFrame = treeViewFrames.SelectedNode.Index;
@@ -193,6 +226,7 @@ namespace UoFiddler.Controls.UserControls
 
             CurrAnim = CurrAnim;
         }
+        #endregion
 
         #region OnClickStartStop
         private void OnClickStartStop(object sender, EventArgs e)
@@ -216,12 +250,12 @@ namespace UoFiddler.Controls.UserControls
             }
             else
             {
-                // Handle the case where _selAnimdataEntry is null.
-                // For example, you could show a message to the user or write a log.
+                // Handle the case where _selAnimdataEntry is null.                
             }
         }
         #endregion
 
+        #region Timer_Tick
         private void Timer_Tick(object sender, EventArgs e)
         {
             ++_timerFrame;
@@ -232,7 +266,9 @@ namespace UoFiddler.Controls.UserControls
 
             pictureBox1.Image = Art.GetStatic(CurrAnim + _selAnimdataEntry.FrameData[_timerFrame]);
         }
+        #endregion
 
+        #region OnValueChangedStartDelay
         private void OnValueChangedStartDelay(object sender, EventArgs e)
         {
             if (_selAnimdataEntry == null)
@@ -248,7 +284,9 @@ namespace UoFiddler.Controls.UserControls
             _selAnimdataEntry.FrameStart = (byte)numericUpDownStartDelay.Value;
             Options.ChangedUltimaClass["Animdata"] = true;
         }
+        #endregion
 
+        #region OnValueChangedFrameDelay
         private void OnValueChangedFrameDelay(object sender, EventArgs e)
         {
             if (_selAnimdataEntry == null)
@@ -269,7 +307,9 @@ namespace UoFiddler.Controls.UserControls
 
             Options.ChangedUltimaClass["Animdata"] = true;
         }
+        #endregion
 
+        #region OnClickFrameDown
         private void OnClickFrameDown(object sender, EventArgs e)
         {
             if (_selAnimdataEntry == null)
@@ -309,7 +349,9 @@ namespace UoFiddler.Controls.UserControls
             treeViewFrames.SelectedNode = treeViewFrames.Nodes[index + 1];
             Options.ChangedUltimaClass["Animdata"] = true;
         }
+        #endregion
 
+        #region OnClickFrameU
         private void OnClickFrameUp(object sender, EventArgs e)
         {
             if (_selAnimdataEntry == null)
@@ -349,7 +391,9 @@ namespace UoFiddler.Controls.UserControls
 
             Options.ChangedUltimaClass["Animdata"] = true;
         }
+        #endregion
 
+        #region  OnTextChanged
         private void OnTextChanged(object sender, EventArgs e)
         {
             bool canDone = Utils.ConvertStringToInt(textBoxAddFrame.Text, out int index);
@@ -372,12 +416,16 @@ namespace UoFiddler.Controls.UserControls
                 textBoxAddFrame.ForeColor = Color.Red;
             }
         }
+        #endregion
 
+        #region OnCheckChange
         private void OnCheckChange(object sender, EventArgs e)
         {
             OnTextChanged(this, EventArgs.Empty);
         }
+        #endregion
 
+        #region OnClickAdd
         private void OnClickAdd(object sender, EventArgs e)
         {
             if (_selAnimdataEntry == null)
@@ -432,7 +480,9 @@ namespace UoFiddler.Controls.UserControls
 
             Options.ChangedUltimaClass["Animdata"] = true;
         }
+        #endregion
 
+        #region  OnClickRemove
         private void OnClickRemove(object sender, EventArgs e)
         {
             if (_selAnimdataEntry == null || treeViewFrames.SelectedNode == null)
@@ -479,7 +529,9 @@ namespace UoFiddler.Controls.UserControls
             treeView1.EndUpdate();
             Options.ChangedUltimaClass["Animdata"] = true;
         }
+        #endregion
 
+        #region OnClickSave
         private void OnClickSave(object sender, EventArgs e)
         {
             Cursor.Current = Cursors.WaitCursor;
@@ -492,7 +544,9 @@ namespace UoFiddler.Controls.UserControls
                 MessageBoxDefaultButton.Button1);
             Options.ChangedUltimaClass["Animdata"] = false;
         }
+        #endregion
 
+        #region OnClickRemoveAnim
         private void OnClickRemoveAnim(object sender, EventArgs e)
         {
             if (treeView1.SelectedNode == null)
@@ -504,7 +558,9 @@ namespace UoFiddler.Controls.UserControls
             Options.ChangedUltimaClass["Animdata"] = true;
             treeView1.SelectedNode.Remove();
         }
+        #endregion
 
+        #region OnClickNode
         private void OnClickNode(object sender, TreeNodeMouseClickEventArgs e)
         {
             if (e.Button == MouseButtons.Right)
@@ -512,7 +568,9 @@ namespace UoFiddler.Controls.UserControls
                 treeView1.SelectedNode = e.Node;
             }
         }
+        #endregion
 
+        #region OnTextChangeAdd
         private void OnTextChangeAdd(object sender, EventArgs e)
         {
             if (Utils.ConvertStringToInt(AddTextBox.Text, out int index, 0, Art.GetMaxItemId()))
@@ -524,7 +582,9 @@ namespace UoFiddler.Controls.UserControls
                 AddTextBox.ForeColor = Color.Red;
             }
         }
+        #endregion
 
+        #region OnKeyDownAdd
         private void OnKeyDownAdd(object sender, KeyEventArgs e)
         {
             if (e.KeyCode != Keys.Enter)
@@ -568,7 +628,9 @@ namespace UoFiddler.Controls.UserControls
 
             Options.ChangedUltimaClass["Animdata"] = true;
         }
+        #endregion
 
+        #region StopTimer
         private void StopTimer()
         {
             if (_mTimer.Enabled)
@@ -580,6 +642,7 @@ namespace UoFiddler.Controls.UserControls
             _mTimer = null;
             _timerFrame = 0;
         }
+        #endregion
 
         #region ConextMenuStriip Opering
         private void ContextMenuStrip1_Opening(object sender, CancelEventArgs e)
@@ -603,6 +666,7 @@ namespace UoFiddler.Controls.UserControls
         #endregion
     }
 
+    #region class AnimdataSorter
     public class AnimdataSorter : IComparer
     {
         public int Compare(object x, object y)
@@ -630,4 +694,5 @@ namespace UoFiddler.Controls.UserControls
             }
         }
     }
+    #endregion
 }
