@@ -17,6 +17,7 @@ namespace Ultima
             Initialize();
         }
 
+        #region Initialize static
         /// <summary>
         /// Reads animdata.mul and fills <see cref="AnimData"/>
         /// </summary>
@@ -81,7 +82,9 @@ namespace Ultima
                 }
             }
         }
+        #endregion
 
+        #region AnimdataEntry GetAnimData
         /// <summary>
         /// Gets Animation <see cref="AnimdataEntry"/>
         /// </summary>
@@ -90,7 +93,9 @@ namespace Ultima
         {
             return AnimData.TryGetValue(id, out AnimdataEntry value) ? value : null;
         }
+        #endregion
 
+        #region Save
         public static void Save(string path)
         {
             string fileName = Path.Combine(path, "animdata.mul");
@@ -143,7 +148,9 @@ namespace Ultima
                 }
             }
         }
+        #endregion
 
+        #region class AnimdataEntry
         public class AnimdataEntry
         {
             public sbyte[] FrameData { get; set; }
@@ -164,5 +171,6 @@ namespace Ultima
                 FrameStart = frameStart;
             }
         }
+        #endregion
     }
 }
