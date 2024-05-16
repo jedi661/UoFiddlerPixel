@@ -38,7 +38,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private List<int> _tileList = new List<int>(); // List for storing items Tiles
         private int _selectedGraphicId = -1;
         public bool IsLoaded { get; private set; }
-        private bool _showFreeSlots;
+        private bool _showFreeSlots = true; // or false 
 
         private List<string> copiedIdAddresses = new List<string>(); // Copy List Hex ID
         private List<string> copiedHexAddresses = new List<string>(); // Insert Paint Grid Hex ID

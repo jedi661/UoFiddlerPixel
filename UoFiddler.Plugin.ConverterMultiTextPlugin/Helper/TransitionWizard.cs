@@ -28,7 +28,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Helper
         //private Art UOArt;
         private bool ViewTiles;
         //private Transition.Transition iTransition;
-        private TransitionTable iTransitionTable;
+        //private TransitionTable iTransitionTable;
 
         private TreeNode iMapNode;
         private TreeNode iStaticNode;

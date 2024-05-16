@@ -17,6 +17,7 @@ Version : 4.12.4 #XG1
 - Fixed Amindata Start Error/stop error
 - Added export to XML (centred+ format) in Multis tab (author Prapilk)
 - Add support for import/export AnimData by @KevinEady
+- Add TIFUnicode from (author Prapilk)
 
 Version : 4.12.3 #XG1
 - Add Items Image Colors and Update.

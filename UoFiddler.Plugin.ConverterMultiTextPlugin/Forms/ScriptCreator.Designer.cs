@@ -363,7 +363,6 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             tbAxeIdName2 = new System.Windows.Forms.TextBox();
             btCopyToClipBoardAxe = new System.Windows.Forms.Button();
             lbAxeAttackChance = new System.Windows.Forms.Label();
-            textBox1 = new System.Windows.Forms.TextBox();
             lbAxeDefendChance = new System.Windows.Forms.Label();
             tbAxeDefendChance = new System.Windows.Forms.TextBox();
             lbAxeValue2 = new System.Windows.Forms.Label();
@@ -392,12 +391,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             lbAxeHue = new System.Windows.Forms.Label();
             tbAxeHue = new System.Windows.Forms.TextBox();
             lbAxeItemID = new System.Windows.Forms.Label();
-            textBox17 = new System.Windows.Forms.TextBox();
             lbAxeItemName = new System.Windows.Forms.Label();
             tbAxeItemName = new System.Windows.Forms.TextBox();
-            lbAxeIdName = new System.Windows.Forms.Label();
             tbAxeIdName1 = new System.Windows.Forms.TextBox();
-            label19 = new System.Windows.Forms.Label();
+            lbClass = new System.Windows.Forms.Label();
             tbAxeClassName = new System.Windows.Forms.TextBox();
             lbAxeClassName = new System.Windows.Forms.Label();
             tbAxeName = new System.Windows.Forms.TextBox();
@@ -535,7 +532,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             tbGiftLabelNumber = new System.Windows.Forms.TextBox();
             lbGiftBoxClassScriptNameBaseContainer = new System.Windows.Forms.Label();
             tbGiftBaseContainer = new System.Windows.Forms.TextBox();
-            button1 = new System.Windows.Forms.Button();
+            btCopyToClipboard1 = new System.Windows.Forms.Button();
             lbGiftBoxClassScriptName = new System.Windows.Forms.Label();
             tbGiftBoxClassScriptName = new System.Windows.Forms.TextBox();
             btCreateGiftBoxScript = new System.Windows.Forms.Button();
@@ -549,11 +546,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             tbBloodmoss = new System.Windows.Forms.TextBox();
             lbReagents = new System.Windows.Forms.Label();
             tbBlackPearl = new System.Windows.Forms.TextBox();
-            label5 = new System.Windows.Forms.Label();
+            lbMuch = new System.Windows.Forms.Label();
             tbBagOfReagentsBagMuch = new System.Windows.Forms.TextBox();
             lbBagOfReagentsBag = new System.Windows.Forms.Label();
             tbBagOfReagentsBag = new System.Windows.Forms.TextBox();
-            button2 = new System.Windows.Forms.Button();
+            btCopyToClipboardChair2 = new System.Windows.Forms.Button();
             lbCreateBagOfReagentsScript = new System.Windows.Forms.Label();
             tbCreateBagOfReagentsScript = new System.Windows.Forms.TextBox();
             btCreateBagOfReagentsScript = new System.Windows.Forms.Button();
@@ -3571,7 +3568,6 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             tabPageAxe.Controls.Add(tbAxeIdName2);
             tabPageAxe.Controls.Add(btCopyToClipBoardAxe);
             tabPageAxe.Controls.Add(lbAxeAttackChance);
-            tabPageAxe.Controls.Add(textBox1);
             tabPageAxe.Controls.Add(lbAxeDefendChance);
             tabPageAxe.Controls.Add(tbAxeDefendChance);
             tabPageAxe.Controls.Add(lbAxeValue2);
@@ -3600,12 +3596,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             tabPageAxe.Controls.Add(lbAxeHue);
             tabPageAxe.Controls.Add(tbAxeHue);
             tabPageAxe.Controls.Add(lbAxeItemID);
-            tabPageAxe.Controls.Add(textBox17);
             tabPageAxe.Controls.Add(lbAxeItemName);
             tabPageAxe.Controls.Add(tbAxeItemName);
-            tabPageAxe.Controls.Add(lbAxeIdName);
             tabPageAxe.Controls.Add(tbAxeIdName1);
-            tabPageAxe.Controls.Add(label19);
+            tabPageAxe.Controls.Add(lbClass);
             tabPageAxe.Controls.Add(tbAxeClassName);
             tabPageAxe.Controls.Add(lbAxeClassName);
             tabPageAxe.Controls.Add(tbAxeName);
@@ -3620,7 +3614,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // lbAxeValue3
             // 
             lbAxeValue3.AutoSize = true;
-            lbAxeValue3.Location = new System.Drawing.Point(74, 582);
+            lbAxeValue3.Location = new System.Drawing.Point(74, 557);
             lbAxeValue3.Name = "lbAxeValue3";
             lbAxeValue3.Size = new System.Drawing.Size(41, 15);
             lbAxeValue3.TabIndex = 193;
@@ -3628,7 +3622,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // 
             // tbAxeValue3
             // 
-            tbAxeValue3.Location = new System.Drawing.Point(121, 579);
+            tbAxeValue3.Location = new System.Drawing.Point(121, 554);
             tbAxeValue3.Name = "tbAxeValue3";
             tbAxeValue3.Size = new System.Drawing.Size(57, 23);
             tbAxeValue3.TabIndex = 192;
@@ -3637,7 +3631,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // lbAxeWeaponAttributes3
             // 
             lbAxeWeaponAttributes3.AutoSize = true;
-            lbAxeWeaponAttributes3.Location = new System.Drawing.Point(5, 557);
+            lbAxeWeaponAttributes3.Location = new System.Drawing.Point(5, 532);
             lbAxeWeaponAttributes3.Name = "lbAxeWeaponAttributes3";
             lbAxeWeaponAttributes3.Size = new System.Drawing.Size(109, 15);
             lbAxeWeaponAttributes3.TabIndex = 191;
@@ -3645,7 +3639,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // 
             // tbAxeWeaponAttributes3
             // 
-            tbAxeWeaponAttributes3.Location = new System.Drawing.Point(121, 554);
+            tbAxeWeaponAttributes3.Location = new System.Drawing.Point(121, 529);
             tbAxeWeaponAttributes3.Name = "tbAxeWeaponAttributes3";
             tbAxeWeaponAttributes3.Size = new System.Drawing.Size(123, 23);
             tbAxeWeaponAttributes3.TabIndex = 190;
@@ -3654,7 +3648,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // lbAxeStrRequirement
             // 
             lbAxeStrRequirement.AutoSize = true;
-            lbAxeStrRequirement.Location = new System.Drawing.Point(20, 532);
+            lbAxeStrRequirement.Location = new System.Drawing.Point(20, 507);
             lbAxeStrRequirement.Name = "lbAxeStrRequirement";
             lbAxeStrRequirement.Size = new System.Drawing.Size(95, 15);
             lbAxeStrRequirement.TabIndex = 189;
@@ -3662,7 +3656,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // 
             // tbAxeStrRequirement
             // 
-            tbAxeStrRequirement.Location = new System.Drawing.Point(121, 529);
+            tbAxeStrRequirement.Location = new System.Drawing.Point(121, 504);
             tbAxeStrRequirement.Name = "tbAxeStrRequirement";
             tbAxeStrRequirement.Size = new System.Drawing.Size(57, 23);
             tbAxeStrRequirement.TabIndex = 188;
@@ -3671,7 +3665,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // lbAxeCastSpeed
             // 
             lbAxeCastSpeed.AutoSize = true;
-            lbAxeCastSpeed.Location = new System.Drawing.Point(47, 507);
+            lbAxeCastSpeed.Location = new System.Drawing.Point(47, 482);
             lbAxeCastSpeed.Name = "lbAxeCastSpeed";
             lbAxeCastSpeed.Size = new System.Drawing.Size(68, 15);
             lbAxeCastSpeed.TabIndex = 187;
@@ -3679,7 +3673,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // 
             // tbAxeCastSpeed
             // 
-            tbAxeCastSpeed.Location = new System.Drawing.Point(121, 504);
+            tbAxeCastSpeed.Location = new System.Drawing.Point(121, 479);
             tbAxeCastSpeed.Name = "tbAxeCastSpeed";
             tbAxeCastSpeed.Size = new System.Drawing.Size(57, 23);
             tbAxeCastSpeed.TabIndex = 186;
@@ -3706,24 +3700,16 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // lbAxeAttackChance
             // 
             lbAxeAttackChance.AutoSize = true;
-            lbAxeAttackChance.Location = new System.Drawing.Point(29, 237);
+            lbAxeAttackChance.Location = new System.Drawing.Point(29, 212);
             lbAxeAttackChance.Name = "lbAxeAttackChance";
             lbAxeAttackChance.Size = new System.Drawing.Size(87, 15);
             lbAxeAttackChance.TabIndex = 183;
             lbAxeAttackChance.Text = "AttackChance :";
             // 
-            // textBox1
-            // 
-            textBox1.Location = new System.Drawing.Point(180, 138);
-            textBox1.Name = "textBox1";
-            textBox1.Size = new System.Drawing.Size(57, 23);
-            textBox1.TabIndex = 182;
-            textBox1.Text = "0x4EF";
-            // 
             // lbAxeDefendChance
             // 
             lbAxeDefendChance.AutoSize = true;
-            lbAxeDefendChance.Location = new System.Drawing.Point(24, 483);
+            lbAxeDefendChance.Location = new System.Drawing.Point(24, 458);
             lbAxeDefendChance.Name = "lbAxeDefendChance";
             lbAxeDefendChance.Size = new System.Drawing.Size(91, 15);
             lbAxeDefendChance.TabIndex = 181;
@@ -3731,7 +3717,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // 
             // tbAxeDefendChance
             // 
-            tbAxeDefendChance.Location = new System.Drawing.Point(121, 480);
+            tbAxeDefendChance.Location = new System.Drawing.Point(121, 455);
             tbAxeDefendChance.Name = "tbAxeDefendChance";
             tbAxeDefendChance.Size = new System.Drawing.Size(57, 23);
             tbAxeDefendChance.TabIndex = 180;
@@ -3740,7 +3726,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // lbAxeValue2
             // 
             lbAxeValue2.AutoSize = true;
-            lbAxeValue2.Location = new System.Drawing.Point(74, 457);
+            lbAxeValue2.Location = new System.Drawing.Point(74, 432);
             lbAxeValue2.Name = "lbAxeValue2";
             lbAxeValue2.Size = new System.Drawing.Size(41, 15);
             lbAxeValue2.TabIndex = 179;
@@ -3748,7 +3734,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // 
             // tbAxeValue2
             // 
-            tbAxeValue2.Location = new System.Drawing.Point(121, 454);
+            tbAxeValue2.Location = new System.Drawing.Point(121, 429);
             tbAxeValue2.Name = "tbAxeValue2";
             tbAxeValue2.Size = new System.Drawing.Size(57, 23);
             tbAxeValue2.TabIndex = 178;
@@ -3757,7 +3743,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // lbAxeWeaponAttributes2
             // 
             lbAxeWeaponAttributes2.AutoSize = true;
-            lbAxeWeaponAttributes2.Location = new System.Drawing.Point(6, 433);
+            lbAxeWeaponAttributes2.Location = new System.Drawing.Point(6, 408);
             lbAxeWeaponAttributes2.Name = "lbAxeWeaponAttributes2";
             lbAxeWeaponAttributes2.Size = new System.Drawing.Size(109, 15);
             lbAxeWeaponAttributes2.TabIndex = 177;
@@ -3765,7 +3751,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // 
             // tbAxeWeaponAttributes2
             // 
-            tbAxeWeaponAttributes2.Location = new System.Drawing.Point(121, 430);
+            tbAxeWeaponAttributes2.Location = new System.Drawing.Point(121, 405);
             tbAxeWeaponAttributes2.Name = "tbAxeWeaponAttributes2";
             tbAxeWeaponAttributes2.Size = new System.Drawing.Size(123, 23);
             tbAxeWeaponAttributes2.TabIndex = 176;
@@ -3774,7 +3760,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // lbAxeValue1
             // 
             lbAxeValue1.AutoSize = true;
-            lbAxeValue1.Location = new System.Drawing.Point(74, 409);
+            lbAxeValue1.Location = new System.Drawing.Point(74, 384);
             lbAxeValue1.Name = "lbAxeValue1";
             lbAxeValue1.Size = new System.Drawing.Size(41, 15);
             lbAxeValue1.TabIndex = 175;
@@ -3782,7 +3768,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // 
             // tbAxeValue1
             // 
-            tbAxeValue1.Location = new System.Drawing.Point(121, 406);
+            tbAxeValue1.Location = new System.Drawing.Point(121, 381);
             tbAxeValue1.Name = "tbAxeValue1";
             tbAxeValue1.Size = new System.Drawing.Size(57, 23);
             tbAxeValue1.TabIndex = 174;
@@ -3791,7 +3777,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // lbAxeWeaponAttributes1
             // 
             lbAxeWeaponAttributes1.AutoSize = true;
-            lbAxeWeaponAttributes1.Location = new System.Drawing.Point(6, 385);
+            lbAxeWeaponAttributes1.Location = new System.Drawing.Point(6, 360);
             lbAxeWeaponAttributes1.Name = "lbAxeWeaponAttributes1";
             lbAxeWeaponAttributes1.Size = new System.Drawing.Size(109, 15);
             lbAxeWeaponAttributes1.TabIndex = 173;
@@ -3799,7 +3785,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // 
             // tbAxeWeaponAttributes1
             // 
-            tbAxeWeaponAttributes1.Location = new System.Drawing.Point(121, 382);
+            tbAxeWeaponAttributes1.Location = new System.Drawing.Point(121, 357);
             tbAxeWeaponAttributes1.Name = "tbAxeWeaponAttributes1";
             tbAxeWeaponAttributes1.Size = new System.Drawing.Size(123, 23);
             tbAxeWeaponAttributes1.TabIndex = 172;
@@ -3808,7 +3794,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // lbAxeLootType
             // 
             lbAxeLootType.AutoSize = true;
-            lbAxeLootType.Location = new System.Drawing.Point(54, 361);
+            lbAxeLootType.Location = new System.Drawing.Point(54, 336);
             lbAxeLootType.Name = "lbAxeLootType";
             lbAxeLootType.Size = new System.Drawing.Size(61, 15);
             lbAxeLootType.TabIndex = 171;
@@ -3816,7 +3802,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // 
             // tbAxeLootType
             // 
-            tbAxeLootType.Location = new System.Drawing.Point(121, 358);
+            tbAxeLootType.Location = new System.Drawing.Point(121, 333);
             tbAxeLootType.Name = "tbAxeLootType";
             tbAxeLootType.Size = new System.Drawing.Size(57, 23);
             tbAxeLootType.TabIndex = 170;
@@ -3825,7 +3811,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // lbAxeInitMinHits
             // 
             lbAxeInitMinHits.AutoSize = true;
-            lbAxeInitMinHits.Location = new System.Drawing.Point(43, 312);
+            lbAxeInitMinHits.Location = new System.Drawing.Point(43, 287);
             lbAxeInitMinHits.Name = "lbAxeInitMinHits";
             lbAxeInitMinHits.Size = new System.Drawing.Size(72, 15);
             lbAxeInitMinHits.TabIndex = 169;
@@ -3833,7 +3819,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // 
             // tbAxeInitMinHits
             // 
-            tbAxeInitMinHits.Location = new System.Drawing.Point(121, 309);
+            tbAxeInitMinHits.Location = new System.Drawing.Point(121, 284);
             tbAxeInitMinHits.Name = "tbAxeInitMinHits";
             tbAxeInitMinHits.Size = new System.Drawing.Size(57, 23);
             tbAxeInitMinHits.TabIndex = 168;
@@ -3842,7 +3828,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // lbAxeInitMaxHits
             // 
             lbAxeInitMaxHits.AutoSize = true;
-            lbAxeInitMaxHits.Location = new System.Drawing.Point(41, 337);
+            lbAxeInitMaxHits.Location = new System.Drawing.Point(41, 312);
             lbAxeInitMaxHits.Name = "lbAxeInitMaxHits";
             lbAxeInitMaxHits.Size = new System.Drawing.Size(74, 15);
             lbAxeInitMaxHits.TabIndex = 167;
@@ -3850,7 +3836,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // 
             // tbAxeInitMaxHits
             // 
-            tbAxeInitMaxHits.Location = new System.Drawing.Point(121, 334);
+            tbAxeInitMaxHits.Location = new System.Drawing.Point(121, 309);
             tbAxeInitMaxHits.Name = "tbAxeInitMaxHits";
             tbAxeInitMaxHits.Size = new System.Drawing.Size(57, 23);
             tbAxeInitMaxHits.TabIndex = 166;
@@ -3858,7 +3844,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // 
             // tbAttackChance
             // 
-            tbAttackChance.Location = new System.Drawing.Point(121, 234);
+            tbAttackChance.Location = new System.Drawing.Point(121, 209);
             tbAttackChance.Name = "tbAttackChance";
             tbAttackChance.Size = new System.Drawing.Size(57, 23);
             tbAttackChance.TabIndex = 165;
@@ -3867,7 +3853,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // lbAxeIsArtifact
             // 
             lbAxeIsArtifact.AutoSize = true;
-            lbAxeIsArtifact.Location = new System.Drawing.Point(57, 189);
+            lbAxeIsArtifact.Location = new System.Drawing.Point(57, 164);
             lbAxeIsArtifact.Name = "lbAxeIsArtifact";
             lbAxeIsArtifact.Size = new System.Drawing.Size(60, 15);
             lbAxeIsArtifact.TabIndex = 164;
@@ -3875,7 +3861,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // 
             // tbAxeIsArtifact
             // 
-            tbAxeIsArtifact.Location = new System.Drawing.Point(121, 186);
+            tbAxeIsArtifact.Location = new System.Drawing.Point(121, 161);
             tbAxeIsArtifact.Name = "tbAxeIsArtifact";
             tbAxeIsArtifact.Size = new System.Drawing.Size(57, 23);
             tbAxeIsArtifact.TabIndex = 163;
@@ -3884,7 +3870,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // lbAxeWeaponDamage
             // 
             lbAxeWeaponDamage.AutoSize = true;
-            lbAxeWeaponDamage.Location = new System.Drawing.Point(16, 287);
+            lbAxeWeaponDamage.Location = new System.Drawing.Point(16, 262);
             lbAxeWeaponDamage.Name = "lbAxeWeaponDamage";
             lbAxeWeaponDamage.Size = new System.Drawing.Size(101, 15);
             lbAxeWeaponDamage.TabIndex = 162;
@@ -3892,7 +3878,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // 
             // tbAxeWeaponDamage
             // 
-            tbAxeWeaponDamage.Location = new System.Drawing.Point(121, 284);
+            tbAxeWeaponDamage.Location = new System.Drawing.Point(121, 259);
             tbAxeWeaponDamage.Name = "tbAxeWeaponDamage";
             tbAxeWeaponDamage.Size = new System.Drawing.Size(57, 23);
             tbAxeWeaponDamage.TabIndex = 161;
@@ -3901,7 +3887,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // lbAxeWeaponSpeed
             // 
             lbAxeWeaponSpeed.AutoSize = true;
-            lbAxeWeaponSpeed.Location = new System.Drawing.Point(31, 262);
+            lbAxeWeaponSpeed.Location = new System.Drawing.Point(31, 237);
             lbAxeWeaponSpeed.Name = "lbAxeWeaponSpeed";
             lbAxeWeaponSpeed.Size = new System.Drawing.Size(89, 15);
             lbAxeWeaponSpeed.TabIndex = 160;
@@ -3909,7 +3895,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // 
             // tbAxeWeaponSpeed
             // 
-            tbAxeWeaponSpeed.Location = new System.Drawing.Point(121, 259);
+            tbAxeWeaponSpeed.Location = new System.Drawing.Point(121, 234);
             tbAxeWeaponSpeed.Name = "tbAxeWeaponSpeed";
             tbAxeWeaponSpeed.Size = new System.Drawing.Size(57, 23);
             tbAxeWeaponSpeed.TabIndex = 159;
@@ -3918,7 +3904,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // lbAxeLabelNumber
             // 
             lbAxeLabelNumber.AutoSize = true;
-            lbAxeLabelNumber.Location = new System.Drawing.Point(32, 213);
+            lbAxeLabelNumber.Location = new System.Drawing.Point(32, 188);
             lbAxeLabelNumber.Name = "lbAxeLabelNumber";
             lbAxeLabelNumber.Size = new System.Drawing.Size(85, 15);
             lbAxeLabelNumber.TabIndex = 156;
@@ -3926,7 +3912,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // 
             // tbAxeLabelNumber
             // 
-            tbAxeLabelNumber.Location = new System.Drawing.Point(121, 210);
+            tbAxeLabelNumber.Location = new System.Drawing.Point(121, 185);
             tbAxeLabelNumber.Name = "tbAxeLabelNumber";
             tbAxeLabelNumber.Size = new System.Drawing.Size(57, 23);
             tbAxeLabelNumber.TabIndex = 155;
@@ -3935,7 +3921,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // lbAxeHue
             // 
             lbAxeHue.AutoSize = true;
-            lbAxeHue.Location = new System.Drawing.Point(83, 165);
+            lbAxeHue.Location = new System.Drawing.Point(83, 140);
             lbAxeHue.Name = "lbAxeHue";
             lbAxeHue.Size = new System.Drawing.Size(35, 15);
             lbAxeHue.TabIndex = 154;
@@ -3943,7 +3929,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // 
             // tbAxeHue
             // 
-            tbAxeHue.Location = new System.Drawing.Point(121, 162);
+            tbAxeHue.Location = new System.Drawing.Point(121, 137);
             tbAxeHue.Name = "tbAxeHue";
             tbAxeHue.Size = new System.Drawing.Size(57, 23);
             tbAxeHue.TabIndex = 153;
@@ -3952,19 +3938,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // lbAxeItemID
             // 
             lbAxeItemID.AutoSize = true;
-            lbAxeItemID.Location = new System.Drawing.Point(68, 141);
+            lbAxeItemID.Location = new System.Drawing.Point(68, 91);
             lbAxeItemID.Name = "lbAxeItemID";
             lbAxeItemID.Size = new System.Drawing.Size(51, 15);
             lbAxeItemID.TabIndex = 152;
             lbAxeItemID.Text = "Item ID :";
-            // 
-            // textBox17
-            // 
-            textBox17.Location = new System.Drawing.Point(121, 138);
-            textBox17.Name = "textBox17";
-            textBox17.Size = new System.Drawing.Size(57, 23);
-            textBox17.TabIndex = 151;
-            textBox17.Text = "0x4F2";
             // 
             // lbAxeItemName
             // 
@@ -3983,15 +3961,6 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             tbAxeItemName.TabIndex = 149;
             tbAxeItemName.Text = "AxeOfAbandon";
             // 
-            // lbAxeIdName
-            // 
-            lbAxeIdName.AutoSize = true;
-            lbAxeIdName.Location = new System.Drawing.Point(71, 91);
-            lbAxeIdName.Name = "lbAxeIdName";
-            lbAxeIdName.Size = new System.Drawing.Size(48, 15);
-            lbAxeIdName.TabIndex = 148;
-            lbAxeIdName.Text = "ItemID :";
-            // 
             // tbAxeIdName1
             // 
             tbAxeIdName1.Location = new System.Drawing.Point(121, 88);
@@ -4000,14 +3969,14 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             tbAxeIdName1.TabIndex = 147;
             tbAxeIdName1.Text = "0xF47";
             // 
-            // label19
+            // lbClass
             // 
-            label19.AutoSize = true;
-            label19.Location = new System.Drawing.Point(81, 66);
-            label19.Name = "label19";
-            label19.Size = new System.Drawing.Size(38, 15);
-            label19.TabIndex = 146;
-            label19.Text = "class :";
+            lbClass.AutoSize = true;
+            lbClass.Location = new System.Drawing.Point(81, 66);
+            lbClass.Name = "lbClass";
+            lbClass.Size = new System.Drawing.Size(38, 15);
+            lbClass.TabIndex = 146;
+            lbClass.Text = "class :";
             // 
             // tbAxeClassName
             // 
@@ -4999,7 +4968,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             tabPageGiftBox.Controls.Add(tbGiftLabelNumber);
             tabPageGiftBox.Controls.Add(lbGiftBoxClassScriptNameBaseContainer);
             tabPageGiftBox.Controls.Add(tbGiftBaseContainer);
-            tabPageGiftBox.Controls.Add(button1);
+            tabPageGiftBox.Controls.Add(btCopyToClipboard1);
             tabPageGiftBox.Controls.Add(lbGiftBoxClassScriptName);
             tabPageGiftBox.Controls.Add(tbGiftBoxClassScriptName);
             tabPageGiftBox.Controls.Add(btCreateGiftBoxScript);
@@ -5352,15 +5321,15 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             tbGiftBaseContainer.TabIndex = 64;
             tbGiftBaseContainer.Text = "BaseContainer";
             // 
-            // button1
+            // btCopyToClipboard1
             // 
-            button1.Location = new System.Drawing.Point(91, 3);
-            button1.Name = "button1";
-            button1.Size = new System.Drawing.Size(42, 23);
-            button1.TabIndex = 63;
-            button1.Text = "Clip..";
-            button1.UseVisualStyleBackColor = true;
-            button1.Click += btCopyToClipboardChair_Click;
+            btCopyToClipboard1.Location = new System.Drawing.Point(91, 3);
+            btCopyToClipboard1.Name = "btCopyToClipboard1";
+            btCopyToClipboard1.Size = new System.Drawing.Size(42, 23);
+            btCopyToClipboard1.TabIndex = 63;
+            btCopyToClipboard1.Text = "Clip..";
+            btCopyToClipboard1.UseVisualStyleBackColor = true;
+            btCopyToClipboard1.Click += btCopyToClipboardChair_Click;
             // 
             // lbGiftBoxClassScriptName
             // 
@@ -5400,11 +5369,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             tabPageBag.Controls.Add(tbBloodmoss);
             tabPageBag.Controls.Add(lbReagents);
             tabPageBag.Controls.Add(tbBlackPearl);
-            tabPageBag.Controls.Add(label5);
+            tabPageBag.Controls.Add(lbMuch);
             tabPageBag.Controls.Add(tbBagOfReagentsBagMuch);
             tabPageBag.Controls.Add(lbBagOfReagentsBag);
             tabPageBag.Controls.Add(tbBagOfReagentsBag);
-            tabPageBag.Controls.Add(button2);
+            tabPageBag.Controls.Add(btCopyToClipboardChair2);
             tabPageBag.Controls.Add(lbCreateBagOfReagentsScript);
             tabPageBag.Controls.Add(tbCreateBagOfReagentsScript);
             tabPageBag.Controls.Add(btCreateBagOfReagentsScript);
@@ -5492,14 +5461,14 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             tbBlackPearl.TabIndex = 85;
             tbBlackPearl.Text = "BlackPearl";
             // 
-            // label5
+            // lbMuch
             // 
-            label5.AutoSize = true;
-            label5.Location = new System.Drawing.Point(76, 162);
-            label5.Name = "label5";
-            label5.Size = new System.Drawing.Size(44, 15);
-            label5.TabIndex = 84;
-            label5.Text = "Much :";
+            lbMuch.AutoSize = true;
+            lbMuch.Location = new System.Drawing.Point(76, 162);
+            lbMuch.Name = "lbMuch";
+            lbMuch.Size = new System.Drawing.Size(44, 15);
+            lbMuch.TabIndex = 84;
+            lbMuch.Text = "Much :";
             // 
             // tbBagOfReagentsBagMuch
             // 
@@ -5526,15 +5495,15 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             tbBagOfReagentsBag.TabIndex = 81;
             tbBagOfReagentsBag.Text = "Bag";
             // 
-            // button2
+            // btCopyToClipboardChair2
             // 
-            button2.Location = new System.Drawing.Point(94, 76);
-            button2.Name = "button2";
-            button2.Size = new System.Drawing.Size(42, 23);
-            button2.TabIndex = 80;
-            button2.Text = "Clip..";
-            button2.UseVisualStyleBackColor = true;
-            button2.Click += btCopyToClipboardChair_Click;
+            btCopyToClipboardChair2.Location = new System.Drawing.Point(94, 76);
+            btCopyToClipboardChair2.Name = "btCopyToClipboardChair2";
+            btCopyToClipboardChair2.Size = new System.Drawing.Size(42, 23);
+            btCopyToClipboardChair2.TabIndex = 80;
+            btCopyToClipboardChair2.Text = "Clip..";
+            btCopyToClipboardChair2.UseVisualStyleBackColor = true;
+            btCopyToClipboardChair2.Click += btCopyToClipboardChair_Click;
             // 
             // lbCreateBagOfReagentsScript
             // 
@@ -5869,7 +5838,6 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private System.Windows.Forms.TabPage tabPageAxe;
         private System.Windows.Forms.Button btCopyToClipBoardAxe;
         private System.Windows.Forms.Label lbAxeAttackChance;
-        private System.Windows.Forms.TextBox textBox1;
         private System.Windows.Forms.Label lbAxeDefendChance;
         private System.Windows.Forms.TextBox tbAxeDefendChance;
         private System.Windows.Forms.Label lbAxeValue2;
@@ -5898,12 +5866,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private System.Windows.Forms.Label lbAxeHue;
         private System.Windows.Forms.TextBox tbAxeHue;
         private System.Windows.Forms.Label lbAxeItemID;
-        private System.Windows.Forms.TextBox textBox17;
         private System.Windows.Forms.Label lbAxeItemName;
         private System.Windows.Forms.TextBox tbAxeItemName;
-        private System.Windows.Forms.Label lbAxeIdName;
         private System.Windows.Forms.TextBox tbAxeIdName1;
-        private System.Windows.Forms.Label label19;
+        private System.Windows.Forms.Label lbClass;
         private System.Windows.Forms.TextBox tbAxeClassName;
         private System.Windows.Forms.Label lbAxeClassName;
         private System.Windows.Forms.TextBox tbAxeName;
@@ -6112,7 +6078,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private System.Windows.Forms.TabPage tabPageGiftBox;
         private System.Windows.Forms.Label lbGiftBoxClassScriptNameBaseContainer;
         private System.Windows.Forms.TextBox tbGiftBaseContainer;
-        private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.Button btCopyToClipboard1;
         private System.Windows.Forms.Label lbGiftBoxClassScriptName;
         private System.Windows.Forms.TextBox tbGiftBoxClassScriptName;
         private System.Windows.Forms.Button btCreateGiftBoxScript;
@@ -6154,19 +6120,19 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private System.Windows.Forms.TextBox tbCommodityDeedBoxGump;
         private System.Windows.Forms.Label lbCommodityDeedBoxRewardItem;
         private System.Windows.Forms.TextBox tbCommodityDeedBoxRewardItem;
-        private System.Windows.Forms.TextBox textBox2;
-        private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.TextBox textBox3;
-        private System.Windows.Forms.Label label3;
-        private System.Windows.Forms.TextBox textBox4;
-        private System.Windows.Forms.TextBox textBox5;
-        private System.Windows.Forms.Label label4;
-        private System.Windows.Forms.TextBox textBox6;
-        private System.Windows.Forms.Label label5;
+        //private System.Windows.Forms.TextBox textBox2;
+        //private System.Windows.Forms.Label label2;
+        //private System.Windows.Forms.TextBox textBox3;
+        //private System.Windows.Forms.Label label3;
+        //private System.Windows.Forms.TextBox textBox4;
+        //private System.Windows.Forms.TextBox textBox5;
+        //private System.Windows.Forms.Label label4;
+        //private System.Windows.Forms.TextBox textBox6;
+        private System.Windows.Forms.Label lbMuch;
         private System.Windows.Forms.TextBox tbBagOfReagentsBagMuch;
         private System.Windows.Forms.Label lbBagOfReagentsBag;
         private System.Windows.Forms.TextBox tbBagOfReagentsBag;
-        private System.Windows.Forms.Button button2;
+        private System.Windows.Forms.Button btCopyToClipboardChair2;
         private System.Windows.Forms.Label lbCreateBagOfReagentsScript;
         private System.Windows.Forms.TextBox tbCreateBagOfReagentsScript;
         private System.Windows.Forms.Button btCreateBagOfReagentsScript;
@@ -6179,6 +6145,6 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private System.Windows.Forms.TextBox tbBloodmoss;
         private System.Windows.Forms.Label lbReagents;
         private System.Windows.Forms.TextBox tbBlackPearl;
-        private System.Windows.Forms.Label lbBagOfReagentsHue;
+        //private System.Windows.Forms.Label lbBagOfReagentsHue;
     }
 }

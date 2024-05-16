@@ -1,27 +1,26 @@
 ﻿// /***************************************************************************
 //  *
-//  * $Author: Nikodemus
+//  * $Author: Turley
+//  * Advanced Nikodemus
 //  * 
-//  * "THE WINE-WARE LICENSE"
+//  * \"THE BEER-WINE-WARE LICENSE\"
 //  * As long as you retain this notice you can do whatever you want with 
 //  * this stuff. If we meet some day, and you think this stuff is worth it,
-//  * you can buy me a Wine in return.
+//  * you can buy me a beer and Wine in return.
 //  *
 //  ***************************************************************************/
 
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Media;
 using System.Text;
-using System.Threading.Tasks;
-using System.IO;
-using System.Xml.Linq;
-using System.Windows.Forms;
 using System.Text.RegularExpressions;
+using System.Windows.Forms;
+using System.Xml.Linq;
 
 namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 {

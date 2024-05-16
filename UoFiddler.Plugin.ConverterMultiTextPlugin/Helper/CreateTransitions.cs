@@ -28,7 +28,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Helper
 {
     public partial class CreateTransitions : Form
     {
-        private VScrollBar _LandItems;
+        //private VScrollBar _LandItems;
         private bool ImageTest;
         private ClsTerrainTable iGroups;
         private ClsTerrain iSelectedGroup;

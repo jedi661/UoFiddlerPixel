@@ -2079,7 +2079,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         #endregion       
 
         #region Create Teture imagees
-        private TextureFileCreator textureFileCreator;
+        //private TextureFileCreator textureFileCreator;
 
         private void btCreateTextur_Click(object sender, EventArgs e)
         {

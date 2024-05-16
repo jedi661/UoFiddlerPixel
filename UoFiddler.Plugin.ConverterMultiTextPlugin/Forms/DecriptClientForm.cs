@@ -25,7 +25,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
     public partial class DecriptClientForm : Form
     {
         private static string m_ClientFileLocation = AppDomain.CurrentDomain.BaseDirectory; // App's working directory
-        string CLIENT = "client.exe";  // Name of un-decrypted client file
+        //string CLIENT = "client.exe";  // Name of un-decrypted client file
         private static byte[] bytes;    // Byte array client's read into
         public static long FileSize;    // Length of the client read into the byte arra
 

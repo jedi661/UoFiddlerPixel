@@ -40,7 +40,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private const int ViewStrtV = 0;
         private int ViewSizeH;
         private int ViewSizeV;
-        private OpenFileDialog openFileDialog;
+        //private OpenFileDialog openFileDialog;
 
         private Dictionary<string, Tuple<int, int>> mapSizes = new Dictionary<string, Tuple<int, int>>
         {

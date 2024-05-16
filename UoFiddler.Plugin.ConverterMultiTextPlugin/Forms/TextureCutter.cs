@@ -41,7 +41,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private Rectangle cropArea;
         private bool isDragging = false;
         private bool showGrid2 = false;
-        private Rectangle selectedRectangle; // The selected range.
+        //private Rectangle selectedRectangle; // The selected range.
         private List<Point> points = new List<Point>();
 
         public TextureCutter()
