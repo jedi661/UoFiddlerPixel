@@ -10,6 +10,8 @@
 //  *
 //  ***************************************************************************/
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -30,7 +32,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Class
         {
             XDocument xmlDocument = new XDocument(new XElement("transition"));
 
-            string currentID = InitialLandTypeId; // Declared outside of the call to GenerateXML
+            //string currentID = InitialLandTypeId; // Declared outside of the call to GenerateXML
+            string currentID = InitialLandTypeId ?? "Default value";
+
 
             GenerateBrush(xmlDocument, nameTextureA, nameTextureB, ref currentID, texture1FilePaths, alphaImageFileNames.Where(x => x.Contains("A_")).ToList(), brushIdB, nameTextureB, brushIdA);
             GenerateBrush(xmlDocument, brushIdA, brushIdB, ref currentID, texture2FilePaths, alphaImageFileNames.Where(x => x.Contains("B_")).ToList(), nameTextureB, nameTextureA, nameTextureA);
@@ -127,3 +131,4 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Class
         }
     }
 }
+#nullable restore
