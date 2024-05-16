@@ -21,7 +21,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
     {
         private PropertyGrid _PropertyGrid1;
         private ClsTerrainTable iTerrain;
-        internal object SelectGroupName;
+        
+        internal object SelectGroupName = new object();
 
         public GroupSelect()
         {
