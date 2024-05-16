@@ -98,6 +98,7 @@ namespace UoFiddler.Controls.UserControls
             MultiComponentBox = new System.Windows.Forms.RichTextBox();
             toolTip = new System.Windows.Forms.ToolTip(components);
             colorDialog = new System.Windows.Forms.ColorDialog();
+            toXMLFileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)splitContainer2).BeginInit();
             splitContainer2.Panel1.SuspendLayout();
             splitContainer2.Panel2.SuspendLayout();
@@ -357,7 +358,7 @@ namespace UoFiddler.Controls.UserControls
             // 
             // exportAllPartsToolStripMenuItem
             // 
-            exportAllPartsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { toTextFileToolStripMenuItem1, toUOAFileToolStripMenuItem, toWSCFileToolStripMenuItem, toCSVFileToolStripMenuItem, toUOX3FileToolStripMenuItem });
+            exportAllPartsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { toTextFileToolStripMenuItem1, toUOAFileToolStripMenuItem, toWSCFileToolStripMenuItem, toCSVFileToolStripMenuItem, toUOX3FileToolStripMenuItem, toXMLFileToolStripMenuItem });
             exportAllPartsToolStripMenuItem.Name = "exportAllPartsToolStripMenuItem";
             exportAllPartsToolStripMenuItem.Size = new System.Drawing.Size(212, 22);
             exportAllPartsToolStripMenuItem.Text = "Export All Parts";
@@ -365,35 +366,35 @@ namespace UoFiddler.Controls.UserControls
             // toTextFileToolStripMenuItem1
             // 
             toTextFileToolStripMenuItem1.Name = "toTextFileToolStripMenuItem1";
-            toTextFileToolStripMenuItem1.Size = new System.Drawing.Size(140, 22);
+            toTextFileToolStripMenuItem1.Size = new System.Drawing.Size(196, 22);
             toTextFileToolStripMenuItem1.Text = "To Text File";
             toTextFileToolStripMenuItem1.Click += OnClick_SaveAllText;
             // 
             // toUOAFileToolStripMenuItem
             // 
             toUOAFileToolStripMenuItem.Name = "toUOAFileToolStripMenuItem";
-            toUOAFileToolStripMenuItem.Size = new System.Drawing.Size(140, 22);
+            toUOAFileToolStripMenuItem.Size = new System.Drawing.Size(196, 22);
             toUOAFileToolStripMenuItem.Text = "To UOA File";
             toUOAFileToolStripMenuItem.Click += OnClick_SaveAllUOA;
             // 
             // toWSCFileToolStripMenuItem
             // 
             toWSCFileToolStripMenuItem.Name = "toWSCFileToolStripMenuItem";
-            toWSCFileToolStripMenuItem.Size = new System.Drawing.Size(140, 22);
+            toWSCFileToolStripMenuItem.Size = new System.Drawing.Size(196, 22);
             toWSCFileToolStripMenuItem.Text = "To WSC File";
             toWSCFileToolStripMenuItem.Click += OnClick_SaveAllWSC;
             // 
             // toCSVFileToolStripMenuItem
             // 
             toCSVFileToolStripMenuItem.Name = "toCSVFileToolStripMenuItem";
-            toCSVFileToolStripMenuItem.Size = new System.Drawing.Size(140, 22);
+            toCSVFileToolStripMenuItem.Size = new System.Drawing.Size(196, 22);
             toCSVFileToolStripMenuItem.Text = "To CSV File";
             toCSVFileToolStripMenuItem.Click += OnClick_SaveAllCSV;
             // 
             // toUOX3FileToolStripMenuItem
             // 
             toUOX3FileToolStripMenuItem.Name = "toUOX3FileToolStripMenuItem";
-            toUOX3FileToolStripMenuItem.Size = new System.Drawing.Size(140, 22);
+            toUOX3FileToolStripMenuItem.Size = new System.Drawing.Size(196, 22);
             toUOX3FileToolStripMenuItem.Text = "To UOX3 File";
             toUOX3FileToolStripMenuItem.Click += OnClick_SaveAllUox3;
             // 
@@ -620,6 +621,13 @@ namespace UoFiddler.Controls.UserControls
             // 
             colorDialog.Color = System.Drawing.Color.White;
             // 
+            // toXMLFileToolStripMenuItem
+            // 
+            toXMLFileToolStripMenuItem.Name = "toXMLFileToolStripMenuItem";
+            toXMLFileToolStripMenuItem.Size = new System.Drawing.Size(196, 22);
+            toXMLFileToolStripMenuItem.Text = "To XML File (CentrED+)";
+            toXMLFileToolStripMenuItem.Click += OnClick_SaveAllToXML;
+            // 
             // MultisControl
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -720,5 +728,6 @@ namespace UoFiddler.Controls.UserControls
         private System.Windows.Forms.ToolStripLabel toolStripIndex;
         private System.Windows.Forms.ToolStripButton toolStripButtonMultiScript;
         private System.Windows.Forms.ToolStripMenuItem fillMultiScripterToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem toXMLFileToolStripMenuItem;
     }
 }
