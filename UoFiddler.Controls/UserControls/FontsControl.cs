@@ -640,5 +640,15 @@ namespace UoFiddler.Controls.UserControls
             }
         }
         #endregion
+
+        #region tTFunicodeToolStripMenuItem
+        private void tTFunicodeToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // Call the static method to get the current instance of the shape
+            UoFiddler.Controls.Forms.TTFunicodeForm form = UoFiddler.Controls.Forms.TTFunicodeForm.GetCurrentInstance();
+            form.Show();
+            form.BringToFront();
+        }
+        #endregion
     }
 }
