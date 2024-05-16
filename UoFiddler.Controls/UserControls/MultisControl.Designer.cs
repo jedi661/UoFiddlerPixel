@@ -74,6 +74,7 @@ namespace UoFiddler.Controls.UserControls
             toWSCFileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             toCSVFileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             toUOX3FileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            toXMLFileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             saveToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             tabControl3 = new System.Windows.Forms.TabControl();
@@ -98,7 +99,6 @@ namespace UoFiddler.Controls.UserControls
             MultiComponentBox = new System.Windows.Forms.RichTextBox();
             toolTip = new System.Windows.Forms.ToolTip(components);
             colorDialog = new System.Windows.Forms.ColorDialog();
-            toXMLFileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)splitContainer2).BeginInit();
             splitContainer2.Panel1.SuspendLayout();
             splitContainer2.Panel2.SuspendLayout();
@@ -398,6 +398,13 @@ namespace UoFiddler.Controls.UserControls
             toUOX3FileToolStripMenuItem.Text = "To UOX3 File";
             toUOX3FileToolStripMenuItem.Click += OnClick_SaveAllUox3;
             // 
+            // toXMLFileToolStripMenuItem
+            // 
+            toXMLFileToolStripMenuItem.Name = "toXMLFileToolStripMenuItem";
+            toXMLFileToolStripMenuItem.Size = new System.Drawing.Size(196, 22);
+            toXMLFileToolStripMenuItem.Text = "To XML File (CentrED+)";
+            toXMLFileToolStripMenuItem.Click += OnClick_SaveAllToXML;
+            // 
             // toolStripSeparator2
             // 
             toolStripSeparator2.Name = "toolStripSeparator2";
@@ -620,13 +627,6 @@ namespace UoFiddler.Controls.UserControls
             // colorDialog
             // 
             colorDialog.Color = System.Drawing.Color.White;
-            // 
-            // toXMLFileToolStripMenuItem
-            // 
-            toXMLFileToolStripMenuItem.Name = "toXMLFileToolStripMenuItem";
-            toXMLFileToolStripMenuItem.Size = new System.Drawing.Size(196, 22);
-            toXMLFileToolStripMenuItem.Text = "To XML File (CentrED+)";
-            toXMLFileToolStripMenuItem.Click += OnClick_SaveAllToXML;
             // 
             // MultisControl
             // 
