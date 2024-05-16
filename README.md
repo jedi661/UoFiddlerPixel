@@ -23,6 +23,8 @@ Version : 4.12.4
 - Add TextureColorForm allows for interactive color adjustments of textures.
 - Fixed importing unicode font characters
 - Fixed Amindata Start Error/stop error
+- Added export to XML (centred+ format) in Multis tab (author Prapilk)
+- Add support for import/export AnimData by @KevinEady
 
 Version : 4.12.3
 - Add Items Image Colors and Update.
