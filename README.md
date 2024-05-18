@@ -26,6 +26,7 @@ Version : 4.12.4
 - Added export to XML (centred+ format) in Multis tab (author Prapilk)
 - Add support for import/export AnimData by @KevinEady
 - Add TIFUnicode from (author Prapilk)
+- Add Implemented color selection and saving for form and controls.
 
 Version : 4.12.3
 - Add Items Image Colors and Update.

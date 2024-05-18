@@ -241,4 +241,34 @@
   <data name="animation-monster-oder-pet" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\animation-monster-oder-pet.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="Color" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Color.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="reset" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\reset.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="reset(1)" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\reset(1).png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="reset(2)" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\reset(2).png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="reset-(1)" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\reset-(1).png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="reset-(2)" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\reset-(2).png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="reset-(3)" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\reset-(3).png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="reset-mit-pfeil-einstellung" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\reset-mit-pfeil-einstellung.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="reset-mit-pfeil-einstellung(1)" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\reset-mit-pfeil-einstellung(1).png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="resetC" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\resetC.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
 </root>

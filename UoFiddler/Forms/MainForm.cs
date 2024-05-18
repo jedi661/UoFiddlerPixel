@@ -174,6 +174,9 @@ namespace UoFiddler.Forms
             {
                 this.Location = Properties.Settings.Default.FormLocationAlarm;
             }
+
+            // Bind the Load event handler
+            this.Load += new EventHandler(MainForm_Load);
         }
 
         #region TabPanel_DrawItem => tab design
@@ -1490,6 +1493,58 @@ namespace UoFiddler.Forms
                 calendarForm.Focus();
             }
         }
-        #endregion        
+        #endregion
+
+        #region colorBackgroundToolStripMenuItem
+        private void colorBackgroundToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            using (ColorDialog colorDialog = new ColorDialog())
+            {
+                if (colorDialog.ShowDialog() == DialogResult.OK)
+                {
+                    // Set the background color of the shape and other controls
+                    this.BackColor = colorDialog.Color;
+                    tsMainMenu.BackColor = colorDialog.Color;
+                    contextMenuStripMainForm.BackColor = colorDialog.Color;
+                    toolTip.BackColor = colorDialog.Color;
+
+                    // Save the selected color in user settings
+                    Properties.Settings.Default.BackgroundColor = colorDialog.Color.ToArgb();
+                    Properties.Settings.Default.Save();
+                }
+            }
+        }
+        #endregion
+
+        #region MainForm_Load
+        private void MainForm_Load(object sender, EventArgs e)
+        {
+            // Load the saved background color
+            int savedColorArgb = Properties.Settings.Default.BackgroundColor;
+            Color savedColor = Color.FromArgb(savedColorArgb);
+
+            this.BackColor = savedColor;
+            tsMainMenu.BackColor = savedColor;
+            contextMenuStripMainForm.BackColor = savedColor;
+            toolTip.BackColor = savedColor;
+        }
+        #endregion
+
+        #region resetColorToolStripMenuItem
+        private void resetColorToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // Reset the background color to the default color
+            Color defaultColor = SystemColors.Control;
+
+            this.BackColor = defaultColor;
+            tsMainMenu.BackColor = defaultColor;
+            contextMenuStripMainForm.BackColor = defaultColor;
+            toolTip.BackColor = defaultColor;
+
+            // Save the default color in user settings
+            Properties.Settings.Default.BackgroundColor = defaultColor.ToArgb();
+            Properties.Settings.Default.Save();
+        }
+        #endregion
     }
 }
