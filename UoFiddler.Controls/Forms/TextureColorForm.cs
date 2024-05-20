@@ -37,6 +37,7 @@ namespace UoFiddler.Controls.Forms
         private Random random = null; // Generator Line Circle Shapes 
         private List<List<Point>> circles = new List<List<Point>>(); // Point circles
         private List<List<Point>> shapes = new List<List<Point>>(); // shapes
+        private bool isPickingColor = false; // To track the color selection mode
 
 
         private Cursor CustomCursor { get; set; }
@@ -550,6 +551,21 @@ namespace UoFiddler.Controls.Forms
                 // Redraw the PictureBox
                 PictureBoxImageColor.Invalidate();
             }
+            if (isPickingColor)
+            {
+                // Calculate the mouse position relative to the PictureBox
+                Point mousePosition = new Point(e.X - PictureBoxImageColor.Left + 9, e.Y - PictureBoxImageColor.Top + 9);
+
+                // Convert the mouse coordinates to image coordinates
+                Point imagePoint = ConvertMouseToImageCoordinates(mousePosition);
+
+                // Get the color of the pixel at the current position
+                Color pixelColor = ((Bitmap)PictureBoxImageColor.Image).GetPixel(imagePoint.X, imagePoint.Y);
+
+                // Update the panelColor and tbColorCode with the new color
+                panelColor.BackColor = pixelColor;
+                tbColorCode.Text = ColorTranslator.ToHtml(pixelColor);
+            }
         }
         #endregion
 
@@ -1038,6 +1054,37 @@ namespace UoFiddler.Controls.Forms
                     Image image = Image.FromFile(openFileDialog.FileName);
                     PictureBoxImageColor.Image = image;
                 }
+            }
+        }
+        #endregion        
+
+        #region btColorPincers
+        private void btColorPincers_Click(object sender, EventArgs e)
+        {
+            isPickingColor = !isPickingColor; // Switch mode when button is clicked
+        }
+        #endregion
+
+        #region PictureBoxImageColor_MouseClick
+        private void PictureBoxImageColor_MouseClick(object sender, MouseEventArgs e)
+        {
+            if (isPickingColor)
+            {
+                // Calculate the mouse position relative to the PictureBox
+                Point mousePosition = new Point(e.X - PictureBoxImageColor.Left + 9, e.Y - PictureBoxImageColor.Top + 9);
+
+                // Convert the mouse coordinates to image coordinates
+                Point imagePoint = ConvertMouseToImageCoordinates(mousePosition);
+
+                // Get the color of the pixel at the current position
+                Color pixelColor = ((Bitmap)PictureBoxImageColor.Image).GetPixel(imagePoint.X, imagePoint.Y);
+
+                // Update the panelColor and tbColorCode with the new color
+                panelColor.BackColor = pixelColor;
+                tbColorCode.Text = ColorTranslator.ToHtml(pixelColor);
+
+                // Deactivate the color picking mode
+                isPickingColor = false;
             }
         }
         #endregion

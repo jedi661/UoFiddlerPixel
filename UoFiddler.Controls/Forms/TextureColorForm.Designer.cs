@@ -72,6 +72,8 @@ namespace UoFiddler.Controls.Forms
             buttonGenerateCircles = new System.Windows.Forms.Button();
             btnImportClipbord = new System.Windows.Forms.Button();
             btnLoadImage = new System.Windows.Forms.Button();
+            tbColorCode = new System.Windows.Forms.TextBox();
+            btColorPincers = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)PictureBoxImageColor).BeginInit();
             panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)trackBarColor).BeginInit();
@@ -89,6 +91,7 @@ namespace UoFiddler.Controls.Forms
             PictureBoxImageColor.TabIndex = 0;
             PictureBoxImageColor.TabStop = false;
             PictureBoxImageColor.Paint += PictureBoxImageColor_Paint;
+            PictureBoxImageColor.MouseClick += PictureBoxImageColor_MouseClick;
             PictureBoxImageColor.MouseDown += PictureBoxImageColor_MouseDown;
             PictureBoxImageColor.MouseEnter += PictureBoxImageColor_MouseEnter;
             PictureBoxImageColor.MouseLeave += PictureBoxImageColor_MouseLeave;
@@ -402,11 +405,30 @@ namespace UoFiddler.Controls.Forms
             btnLoadImage.UseVisualStyleBackColor = true;
             btnLoadImage.Click += btnLoadImage_Click;
             // 
+            // tbColorCode
+            // 
+            tbColorCode.Location = new System.Drawing.Point(529, 275);
+            tbColorCode.Name = "tbColorCode";
+            tbColorCode.Size = new System.Drawing.Size(92, 23);
+            tbColorCode.TabIndex = 21;
+            // 
+            // btColorPincers
+            // 
+            btColorPincers.Location = new System.Drawing.Point(529, 246);
+            btColorPincers.Name = "btColorPincers";
+            btColorPincers.Size = new System.Drawing.Size(65, 23);
+            btColorPincers.TabIndex = 22;
+            btColorPincers.Text = "Pipette";
+            btColorPincers.UseVisualStyleBackColor = true;
+            btColorPincers.Click += btColorPincers_Click;
+            // 
             // TextureColorForm
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             ClientSize = new System.Drawing.Size(694, 443);
+            Controls.Add(btColorPincers);
+            Controls.Add(tbColorCode);
             Controls.Add(btnLoadImage);
             Controls.Add(btnImportClipbord);
             Controls.Add(buttonGenerateSquare);
@@ -474,5 +496,7 @@ namespace UoFiddler.Controls.Forms
         private System.Windows.Forms.Button btnImportClipbord;
         private System.Windows.Forms.Button btnLoadImage;
         private System.Windows.Forms.CheckBox checkBoxKeepPreviousPattern;
+        private System.Windows.Forms.TextBox tbColorCode;
+        private System.Windows.Forms.Button btColorPincers;
     }
 }
