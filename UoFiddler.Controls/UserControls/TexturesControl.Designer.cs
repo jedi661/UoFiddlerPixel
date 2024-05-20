@@ -86,11 +86,11 @@ namespace UoFiddler.Controls.UserControls
             PlaySoundtoolStripButton1 = new System.Windows.Forms.ToolStripButton();
             toolStripButtonTextureWindows = new System.Windows.Forms.ToolStripButton();
             toolStripButtonPictureFusion = new System.Windows.Forms.ToolStripButton();
+            toolStripColor = new System.Windows.Forms.ToolStripButton();
             TextureTileView = new TileView.TileViewControl();
             panel1 = new System.Windows.Forms.Panel();
             statusStrip = new System.Windows.Forms.StatusStrip();
             GraphicLabel = new System.Windows.Forms.ToolStripStatusLabel();
-            toolStripColor = new System.Windows.Forms.ToolStripButton();
             contextMenuStrip.SuspendLayout();
             toolStrip.SuspendLayout();
             panel1.SuspendLayout();
@@ -451,6 +451,16 @@ namespace UoFiddler.Controls.UserControls
             toolStripButtonPictureFusion.ToolTipText = "make one picture out of two pictures";
             toolStripButtonPictureFusion.Click += toolStripButtonPictureFusion_Click;
             // 
+            // toolStripColor
+            // 
+            toolStripColor.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            toolStripColor.Image = Properties.Resources.colordialog;
+            toolStripColor.ImageTransparentColor = System.Drawing.Color.Magenta;
+            toolStripColor.Name = "toolStripColor";
+            toolStripColor.Size = new System.Drawing.Size(23, 22);
+            toolStripColor.Text = "Texture Painter and Color and Pattern ";
+            toolStripColor.Click += toolStripColor_Click;
+            // 
             // TextureTileView
             // 
             TextureTileView.AutoScroll = true;
@@ -501,16 +511,6 @@ namespace UoFiddler.Controls.UserControls
             GraphicLabel.Name = "GraphicLabel";
             GraphicLabel.Size = new System.Drawing.Size(51, 17);
             GraphicLabel.Text = "Graphic:";
-            // 
-            // toolStripColor
-            // 
-            toolStripColor.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            toolStripColor.Image = Properties.Resources.colordialog;
-            toolStripColor.ImageTransparentColor = System.Drawing.Color.Magenta;
-            toolStripColor.Name = "toolStripColor";
-            toolStripColor.Size = new System.Drawing.Size(23, 22);
-            toolStripColor.Text = "toolStripColor";
-            toolStripColor.Click += toolStripColor_Click;
             // 
             // TexturesControl
             // 

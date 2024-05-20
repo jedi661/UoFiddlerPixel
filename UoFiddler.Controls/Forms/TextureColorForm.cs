@@ -1024,6 +1024,7 @@ namespace UoFiddler.Controls.Forms
         }
         #endregion
 
+        #region btnLoadImage
         private void btnLoadImage_Click(object sender, EventArgs e)
         {
             using (OpenFileDialog openFileDialog = new OpenFileDialog())
@@ -1039,5 +1040,6 @@ namespace UoFiddler.Controls.Forms
                 }
             }
         }
+        #endregion
     }
 }
