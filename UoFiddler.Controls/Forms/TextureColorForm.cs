@@ -1088,5 +1088,63 @@ namespace UoFiddler.Controls.Forms
             }
         }
         #endregion
+
+        #region btExchangeSelectiveColors
+        private void btExchangeSelectiveColors_Click(object sender, EventArgs e)
+        {
+            // Open a ColorDialog to select the new color
+            using (ColorDialog colorDialog = new ColorDialog())
+            {
+                if (colorDialog.ShowDialog() == DialogResult.OK)
+                {
+                    // Convert the color code in tbColorCode to a Color instance
+                    Color oldColor = ColorTranslator.FromHtml(tbColorCode.Text);
+
+                    // Call the method to exchange the colors
+                    ExchangeColor(oldColor, colorDialog.Color);
+                }
+            }
+        }
+        #endregion
+
+        #region ExchangeColor
+        private void ExchangeColor(Color oldColor, Color newColor)
+        {
+            // Get the current image from the PictureBox
+            Bitmap bmp = new Bitmap(PictureBoxImageColor.Image);
+
+            // Create a GraphicsPath from the points
+            GraphicsPath path = new GraphicsPath();
+            if (points.Count > 1)
+            {
+                path.AddLines(points.ToArray());
+            }
+            else
+            {
+                // If no points were drawn, set the path to the entire image
+                path.AddRectangle(new Rectangle(0, 0, bmp.Width, bmp.Height));
+            }
+
+            // Iterate through each pixel in the image (or in the selection, if one exists)
+            for (int x = 0; x < bmp.Width; x++)
+            {
+                for (int y = 0; y < bmp.Height; y++)
+                {
+                    // Check if the pixel is within the selected area
+                    if (path.IsVisible(x, y))
+                    {
+                        // If the pixel has the old color, change it to the new color
+                        if (bmp.GetPixel(x, y) == oldColor)
+                        {
+                            bmp.SetPixel(x, y, newColor);
+                        }
+                    }
+                }
+            }
+
+            // Update the image in the PictureBox
+            PictureBoxImageColor.Image = bmp;
+        }
+        #endregion
     }
 }

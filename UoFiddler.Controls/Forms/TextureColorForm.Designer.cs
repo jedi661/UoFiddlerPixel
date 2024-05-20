@@ -74,6 +74,7 @@ namespace UoFiddler.Controls.Forms
             btnLoadImage = new System.Windows.Forms.Button();
             tbColorCode = new System.Windows.Forms.TextBox();
             btColorPincers = new System.Windows.Forms.Button();
+            btExchangeSelectiveColors = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)PictureBoxImageColor).BeginInit();
             panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)trackBarColor).BeginInit();
@@ -220,7 +221,7 @@ namespace UoFiddler.Controls.Forms
             // 
             // RestorePatternButton
             // 
-            RestorePatternButton.Location = new System.Drawing.Point(428, 246);
+            RestorePatternButton.Location = new System.Drawing.Point(422, 246);
             RestorePatternButton.Name = "RestorePatternButton";
             RestorePatternButton.Size = new System.Drawing.Size(95, 23);
             RestorePatternButton.TabIndex = 13;
@@ -230,7 +231,7 @@ namespace UoFiddler.Controls.Forms
             // 
             // btnClear
             // 
-            btnClear.Location = new System.Drawing.Point(428, 275);
+            btnClear.Location = new System.Drawing.Point(422, 275);
             btnClear.Name = "btnClear";
             btnClear.Size = new System.Drawing.Size(95, 23);
             btnClear.TabIndex = 14;
@@ -407,26 +408,37 @@ namespace UoFiddler.Controls.Forms
             // 
             // tbColorCode
             // 
-            tbColorCode.Location = new System.Drawing.Point(529, 275);
+            tbColorCode.Location = new System.Drawing.Point(518, 275);
             tbColorCode.Name = "tbColorCode";
             tbColorCode.Size = new System.Drawing.Size(92, 23);
             tbColorCode.TabIndex = 21;
             // 
             // btColorPincers
             // 
-            btColorPincers.Location = new System.Drawing.Point(529, 246);
+            btColorPincers.Location = new System.Drawing.Point(518, 246);
             btColorPincers.Name = "btColorPincers";
-            btColorPincers.Size = new System.Drawing.Size(65, 23);
+            btColorPincers.Size = new System.Drawing.Size(56, 23);
             btColorPincers.TabIndex = 22;
             btColorPincers.Text = "Pipette";
             btColorPincers.UseVisualStyleBackColor = true;
             btColorPincers.Click += btColorPincers_Click;
+            // 
+            // btExchangeSelectiveColors
+            // 
+            btExchangeSelectiveColors.Location = new System.Drawing.Point(575, 246);
+            btExchangeSelectiveColors.Name = "btExchangeSelectiveColors";
+            btExchangeSelectiveColors.Size = new System.Drawing.Size(70, 23);
+            btExchangeSelectiveColors.TabIndex = 23;
+            btExchangeSelectiveColors.Text = "Exchange";
+            btExchangeSelectiveColors.UseVisualStyleBackColor = true;
+            btExchangeSelectiveColors.Click += btExchangeSelectiveColors_Click;
             // 
             // TextureColorForm
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             ClientSize = new System.Drawing.Size(694, 443);
+            Controls.Add(btExchangeSelectiveColors);
             Controls.Add(btColorPincers);
             Controls.Add(tbColorCode);
             Controls.Add(btnLoadImage);
@@ -498,5 +510,6 @@ namespace UoFiddler.Controls.Forms
         private System.Windows.Forms.CheckBox checkBoxKeepPreviousPattern;
         private System.Windows.Forms.TextBox tbColorCode;
         private System.Windows.Forms.Button btColorPincers;
+        private System.Windows.Forms.Button btExchangeSelectiveColors;
     }
 }
