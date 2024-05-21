@@ -390,7 +390,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             // 
             // btConverter
             // 
-            btConverter.Image = Properties.Resources.create_art_abd_mul_file2;
+            btConverter.Image = Properties.Resources.convert_image_1_;
             btConverter.Location = new System.Drawing.Point(209, 193);
             btConverter.Name = "btConverter";
             btConverter.Size = new System.Drawing.Size(56, 64);
