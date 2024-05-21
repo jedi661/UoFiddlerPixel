@@ -766,7 +766,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             toolTip1.InitialDelay = 1000;
             toolTip1.ReshowDelay = 500;
             toolTip1.ShowAlways = true;
-            toolTip1.SetToolTip(this.BtTileArtForm, "TileArtForm");
+            toolTip1.SetToolTip(this.BtTileArtForm, "TileArt");
 
             var tileArtForm = new TileArtForm();
             tileArtForm.FormClosed += TileArtForm_FormClosed;
@@ -865,6 +865,41 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
 
             // Umgewandelte Einträge in textBox2 anzeigen
             textBox2.Text = string.Join("\r\n", entries.Select(x => $"0x{x.m_ItemID.ToString("X4")} {x.m_OffsetX} {x.m_OffsetY} {x.m_OffsetZ} {x.m_Flags} {x.m_Unk1}"));
+        }
+        #endregion
+
+        #region btConverter
+        private bool isConverterFormOpen = false;
+
+        private void btConverter_Click(object sender, EventArgs e)
+        {
+            if (isConverterFormOpen)
+            {
+                return;
+            }
+
+            ToolTip toolTip1 = new ToolTip();
+            toolTip1.AutoPopDelay = 5000;
+            toolTip1.InitialDelay = 1000;
+            toolTip1.ReshowDelay = 500;
+            toolTip1.ShowAlways = true;
+            toolTip1.SetToolTip(this.btConverter, "Converter");
+
+            var converterForm = new UoFiddler.Plugin.ConverterMultiTextPlugin.Forms.ConverterForm();
+            converterForm.FormClosed += ConverterForm_FormClosed;
+            converterForm.Show();
+            isConverterFormOpen = true;
+
+            btConverter.Enabled = false;
+        }
+
+        private void ConverterForm_FormClosed(object sender, EventArgs e)
+        {
+            if (isConverterFormOpen)
+            {
+                isConverterFormOpen = false;
+                btConverter.Enabled = true;
+            }
         }
         #endregion
     }

@@ -66,6 +66,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             btAnimationVDForm = new System.Windows.Forms.Button();
             btAnimationEditFormButton = new System.Windows.Forms.Button();
             tabPageGraphic = new System.Windows.Forms.TabPage();
+            lbConverter = new System.Windows.Forms.Label();
+            btConverter = new System.Windows.Forms.Button();
             lbTransitions = new System.Windows.Forms.Label();
             btTransitions = new System.Windows.Forms.Button();
             lbTileArtForm = new System.Windows.Forms.Label();
@@ -354,6 +356,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             // 
             // tabPageGraphic
             // 
+            tabPageGraphic.Controls.Add(lbConverter);
+            tabPageGraphic.Controls.Add(btConverter);
             tabPageGraphic.Controls.Add(lbTransitions);
             tabPageGraphic.Controls.Add(btTransitions);
             tabPageGraphic.Controls.Add(lbTileArtForm);
@@ -374,6 +378,25 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             tabPageGraphic.TabIndex = 2;
             tabPageGraphic.Text = "Graphic";
             tabPageGraphic.UseVisualStyleBackColor = true;
+            // 
+            // lbConverter
+            // 
+            lbConverter.AutoSize = true;
+            lbConverter.Location = new System.Drawing.Point(209, 260);
+            lbConverter.Name = "lbConverter";
+            lbConverter.Size = new System.Drawing.Size(59, 15);
+            lbConverter.TabIndex = 26;
+            lbConverter.Text = "Converter";
+            // 
+            // btConverter
+            // 
+            btConverter.Image = Properties.Resources.create_art_abd_mul_file2;
+            btConverter.Location = new System.Drawing.Point(209, 193);
+            btConverter.Name = "btConverter";
+            btConverter.Size = new System.Drawing.Size(56, 64);
+            btConverter.TabIndex = 25;
+            btConverter.UseVisualStyleBackColor = true;
+            btConverter.Click += btConverter_Click;
             // 
             // lbTransitions
             // 
@@ -860,5 +883,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
         private System.Windows.Forms.Label lbTransitions;
         private System.Windows.Forms.Button btTransitions;
         private System.Windows.Forms.Button btTest;
+        private System.Windows.Forms.Label lbConverter;
+        private System.Windows.Forms.Button btConverter;
     }
 }

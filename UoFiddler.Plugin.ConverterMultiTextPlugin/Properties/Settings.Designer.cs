@@ -70,5 +70,17 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Properties {
                 this["ExecutablePath"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string CustomColors {
+            get {
+                return ((string)(this["CustomColors"]));
+            }
+            set {
+                this["CustomColors"] = value;
+            }
+        }
     }
 }
