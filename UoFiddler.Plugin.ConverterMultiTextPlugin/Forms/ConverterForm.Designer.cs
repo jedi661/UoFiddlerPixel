@@ -49,6 +49,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             lbBlackWhite = new System.Windows.Forms.Label();
             btMirrorImages = new System.Windows.Forms.Button();
             panelFunctions = new System.Windows.Forms.Panel();
+            btConvert = new System.Windows.Forms.Button();
+            comboBoxFileType = new System.Windows.Forms.ComboBox();
             btRotateImages = new System.Windows.Forms.Button();
             btConverterTransparent = new System.Windows.Forms.Button();
             lbFunction = new System.Windows.Forms.Label();
@@ -132,6 +134,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // panelFunctions
             // 
             panelFunctions.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            panelFunctions.Controls.Add(btConvert);
+            panelFunctions.Controls.Add(comboBoxFileType);
             panelFunctions.Controls.Add(btRotateImages);
             panelFunctions.Controls.Add(btConverterTransparent);
             panelFunctions.Controls.Add(lbFunction);
@@ -140,6 +144,25 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             panelFunctions.Name = "panelFunctions";
             panelFunctions.Size = new System.Drawing.Size(200, 100);
             panelFunctions.TabIndex = 4;
+            // 
+            // btConvert
+            // 
+            btConvert.Location = new System.Drawing.Point(126, 59);
+            btConvert.Name = "btConvert";
+            btConvert.Size = new System.Drawing.Size(53, 22);
+            btConvert.TabIndex = 8;
+            btConvert.Text = "FileTyp";
+            btConvert.UseVisualStyleBackColor = true;
+            btConvert.Click += btConvert_Click;
+            // 
+            // comboBoxFileType
+            // 
+            comboBoxFileType.FormattingEnabled = true;
+            comboBoxFileType.Items.AddRange(new object[] { "bmp", "png", "jpg", "tiff" });
+            comboBoxFileType.Location = new System.Drawing.Point(70, 59);
+            comboBoxFileType.Name = "comboBoxFileType";
+            comboBoxFileType.Size = new System.Drawing.Size(55, 23);
+            comboBoxFileType.TabIndex = 7;
             // 
             // btRotateImages
             // 
@@ -175,13 +198,13 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            ClientSize = new System.Drawing.Size(425, 335);
+            ClientSize = new System.Drawing.Size(425, 116);
             Controls.Add(panelFunctions);
             Controls.Add(panelColor);
             FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             Icon = (System.Drawing.Icon)resources.GetObject("$this.Icon");
             Name = "ConverterForm";
-            Text = "Converter Imges or other";
+            Text = "Converter all Imges or other";
             panelColor.ResumeLayout(false);
             panelColor.PerformLayout();
             panelFunctions.ResumeLayout(false);
@@ -202,5 +225,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private System.Windows.Forms.Label lbFunction;
         private System.Windows.Forms.Button btConverterTransparent;
         private System.Windows.Forms.Button btRotateImages;
+        private System.Windows.Forms.ComboBox comboBoxFileType;
+        private System.Windows.Forms.Button btConvert;
     }
 }

@@ -20,11 +20,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Drawing.Imaging;
+
 
 namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 {
     public partial class ConverterForm : Form
-    {
+    {   
         public ConverterForm()
         {
             InitializeComponent();
@@ -80,22 +82,21 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             using (var fbd = new FolderBrowserDialog())
             {
                 DialogResult result = fbd.ShowDialog();
-
                 if (result == DialogResult.OK && !string.IsNullOrWhiteSpace(fbd.SelectedPath))
                 {
                     string directoryPath = fbd.SelectedPath;
                     string newDirectoryPath = Path.Combine(directoryPath, folderName);
-
                     // Creates the new directory if it does not exist
                     if (!Directory.Exists(newDirectoryPath))
                     {
                         Directory.CreateDirectory(newDirectoryPath);
                     }
 
+                    int count = 0; // Counter for processed images
+
                     foreach (var filePath in Directory.GetFiles(directoryPath))
                     {
                         string extension = Path.GetExtension(filePath).ToLower();
-
                         if (extension == ".bmp" || extension == ".png" || extension == ".jpg" || extension == ".tiff")
                         {
                             using (var img = Image.FromFile(filePath))
@@ -105,25 +106,24 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                                     for (int x = 0; x < img.Width; x++)
                                     {
                                         Color pixelColor = ((Bitmap)img).GetPixel(x, y);
-
                                         if (pixelColor.R == fromColor.R && pixelColor.G == fromColor.G && pixelColor.B == fromColor.B)
                                         {
                                             ((Bitmap)img).SetPixel(x, y, toColor);
                                         }
                                     }
                                 }
-
                                 // Saves the image in the new directory
                                 string newFilePath = Path.Combine(newDirectoryPath, Path.GetFileName(filePath));
                                 img.Save(newFilePath);
+                                count++; // Increment the counter
                             }
                         }
                     }
-
-                    MessageBox.Show("All images have been successfully processed!");
+                    MessageBox.Show($"{count} images have been successfully processed!");
                 }
             }
         }
+
         #endregion
 
         #region btnOpenColorDialog
@@ -168,6 +168,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                         Directory.CreateDirectory(newDirectoryPath);
                     }
 
+                    int count = 0; // Counter for processed images
+
                     foreach (var filePath in Directory.GetFiles(directoryPath))
                     {
                         string extension = Path.GetExtension(filePath).ToLower();
@@ -181,11 +183,13 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                                 // Saves the mirrored image in the new directory
                                 string newFilePath = Path.Combine(newDirectoryPath, Path.GetFileName(filePath));
                                 img.Save(newFilePath);
+
+                                count++; // Increment the counter
                             }
                         }
                     }
 
-                    MessageBox.Show("All images have been successfully mirrored!");
+                    MessageBox.Show($"{count} images have been successfully mirrored!");
                 }
             }
         }
@@ -219,6 +223,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         #region ConvertColorToTransparent
         private void ConvertColorToTransparent(string directoryPath, string newDirectoryPath, Color fromColor)
         {
+            int count = 0; // Counter for processed images
+
             foreach (var filePath in Directory.GetFiles(directoryPath))
             {
                 string extension = Path.GetExtension(filePath).ToLower();
@@ -234,12 +240,15 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                         // Saves the image in the new directory
                         string newFilePath = Path.Combine(newDirectoryPath, Path.GetFileName(filePath));
                         bitmap.Save(newFilePath);
+
+                        count++; // Increment the counter
                     }
                 }
             }
 
-            MessageBox.Show("All images were processed successfully!");
+            MessageBox.Show($"{count} images were processed successfully!");
         }
+
         #endregion
 
         #region btRotateImages
@@ -261,6 +270,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         #region RotateImages
         private void RotateImages(string directoryPath)
         {
+            int count = 0; // Counter for processed images
+
             foreach (var filePath in Directory.GetFiles(directoryPath))
             {
                 string extension = Path.GetExtension(filePath).ToLower();
@@ -274,11 +285,83 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 
                         // Save the rotated image
                         img.Save(filePath);
+
+                        count++; // Increment the counter
                     }
                 }
             }
 
-            MessageBox.Show("All images have been successfully rotated!.");
+            MessageBox.Show($"{count} images have been successfully rotated!");
+        }
+        #endregion
+
+        #region btConvert
+        private void btConvert_Click(object sender, EventArgs e)
+        {
+            if (comboBoxFileType.SelectedItem == null)
+            {
+                MessageBox.Show("Please select a file type from the drop down list.");
+                return;
+            }
+
+            string selectedFileType = comboBoxFileType.SelectedItem.ToString();
+
+            using (var fbd = new FolderBrowserDialog())
+            {
+                DialogResult result = fbd.ShowDialog();
+
+                if (result == DialogResult.OK && !string.IsNullOrWhiteSpace(fbd.SelectedPath))
+                {
+                    string directoryPath = fbd.SelectedPath;
+                    string newDirectoryPath = Path.Combine(directoryPath, selectedFileType);
+
+                    // Creates the new directory if it does not exist
+                    if (!Directory.Exists(newDirectoryPath))
+                    {
+                        Directory.CreateDirectory(newDirectoryPath);
+                    }
+
+                    int count = 0; // Counter for processed images
+
+                    foreach (var filePath in Directory.GetFiles(directoryPath))
+                    {
+                        string extension = Path.GetExtension(filePath).ToLower();
+
+                        if (extension == ".bmp" || extension == ".png" || extension == ".jpg" || extension == ".tiff")
+                        {
+                            using (var img = Image.FromFile(filePath))
+                            {
+                                // Saves the image in the new directory with selected format
+                                string newFilePath = Path.Combine(newDirectoryPath, Path.GetFileNameWithoutExtension(filePath) + $".{selectedFileType}");
+                                img.Save(newFilePath, GetImageFormat(selectedFileType));
+
+                                count++; // Increment the counter
+                            }
+                        }
+                    }
+
+                    MessageBox.Show($"{count} images have been successfully converted to .{selectedFileType} format!");
+                }
+            }
+        }
+        #endregion
+
+        #region ImageFormat
+        private ImageFormat GetImageFormat(string fileType)
+        {
+            switch (fileType.ToLower())
+            {
+                case "bmp":
+                    return ImageFormat.Bmp;
+                case "png":
+                    return ImageFormat.Png;
+                case "jpg":
+                    return ImageFormat.Jpeg;
+                case "tiff":
+                    return ImageFormat.Tiff;
+                default:
+                    return ImageFormat.Png;
+            }
         }
         #endregion
     }
