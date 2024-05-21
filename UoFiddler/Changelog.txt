@@ -19,6 +19,7 @@ Version : 4.12.4 #XG1
 - Add support for import/export AnimData by @KevinEady
 - Add TIFUnicode from (author Prapilk)
 - Add Implemented color selection and saving for form and controls.
+- Add image converter black white different colors and reflection.
 
 Version : 4.12.3 #XG1
 - Add Items Image Colors and Update.
