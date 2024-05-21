@@ -49,6 +49,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             lbBlackWhite = new System.Windows.Forms.Label();
             btMirrorImages = new System.Windows.Forms.Button();
             panelFunctions = new System.Windows.Forms.Panel();
+            btRotateImages = new System.Windows.Forms.Button();
+            btConverterTransparent = new System.Windows.Forms.Button();
             lbFunction = new System.Windows.Forms.Label();
             panelColor.SuspendLayout();
             panelFunctions.SuspendLayout();
@@ -130,12 +132,34 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // panelFunctions
             // 
             panelFunctions.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            panelFunctions.Controls.Add(btRotateImages);
+            panelFunctions.Controls.Add(btConverterTransparent);
             panelFunctions.Controls.Add(lbFunction);
             panelFunctions.Controls.Add(btMirrorImages);
             panelFunctions.Location = new System.Drawing.Point(218, 12);
             panelFunctions.Name = "panelFunctions";
             panelFunctions.Size = new System.Drawing.Size(200, 100);
             panelFunctions.TabIndex = 4;
+            // 
+            // btRotateImages
+            // 
+            btRotateImages.Location = new System.Drawing.Point(13, 59);
+            btRotateImages.Name = "btRotateImages";
+            btRotateImages.Size = new System.Drawing.Size(51, 23);
+            btRotateImages.TabIndex = 6;
+            btRotateImages.Text = "Rotate";
+            btRotateImages.UseVisualStyleBackColor = true;
+            btRotateImages.Click += btRotateImages_Click;
+            // 
+            // btConverterTransparent
+            // 
+            btConverterTransparent.Location = new System.Drawing.Point(70, 30);
+            btConverterTransparent.Name = "btConverterTransparent";
+            btConverterTransparent.Size = new System.Drawing.Size(79, 23);
+            btConverterTransparent.TabIndex = 5;
+            btConverterTransparent.Text = "Transparent";
+            btConverterTransparent.UseVisualStyleBackColor = true;
+            btConverterTransparent.Click += btConverterTransparent_Click;
             // 
             // lbFunction
             // 
@@ -151,7 +175,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            ClientSize = new System.Drawing.Size(556, 335);
+            ClientSize = new System.Drawing.Size(425, 335);
             Controls.Add(panelFunctions);
             Controls.Add(panelColor);
             FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
@@ -176,5 +200,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private System.Windows.Forms.Button btMirrorImages;
         private System.Windows.Forms.Panel panelFunctions;
         private System.Windows.Forms.Label lbFunction;
+        private System.Windows.Forms.Button btConverterTransparent;
+        private System.Windows.Forms.Button btRotateImages;
     }
 }

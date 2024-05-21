@@ -190,5 +190,96 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             }
         }
         #endregion
+
+        #region btConverterTransparent
+        private void btConverterTransparent_Click(object sender, EventArgs e)
+        {
+            using (var fbd = new FolderBrowserDialog())
+            {
+                DialogResult result = fbd.ShowDialog();
+
+                if (result == DialogResult.OK && !string.IsNullOrWhiteSpace(fbd.SelectedPath))
+                {
+                    string directoryPath = fbd.SelectedPath;
+                    string newDirectoryPath = Path.Combine(directoryPath, "transparent");
+
+                    // Creates the new directory if it does not exist
+                    if (!Directory.Exists(newDirectoryPath))
+                    {
+                        Directory.CreateDirectory(newDirectoryPath);
+                    }
+
+                    ConvertColorToTransparent(directoryPath, newDirectoryPath, Color.Black);
+                    ConvertColorToTransparent(directoryPath, newDirectoryPath, Color.White);
+                }
+            }
+        }
+        #endregion
+
+        #region ConvertColorToTransparent
+        private void ConvertColorToTransparent(string directoryPath, string newDirectoryPath, Color fromColor)
+        {
+            foreach (var filePath in Directory.GetFiles(directoryPath))
+            {
+                string extension = Path.GetExtension(filePath).ToLower();
+
+                if (extension == ".bmp" || extension == ".png" || extension == ".jpg" || extension == ".tiff")
+                {
+                    using (var img = Image.FromFile(filePath))
+                    {
+                        Bitmap bitmap = new Bitmap(img);
+
+                        bitmap.MakeTransparent(fromColor);
+
+                        // Saves the image in the new directory
+                        string newFilePath = Path.Combine(newDirectoryPath, Path.GetFileName(filePath));
+                        bitmap.Save(newFilePath);
+                    }
+                }
+            }
+
+            MessageBox.Show("All images were processed successfully!");
+        }
+        #endregion
+
+        #region btRotateImages
+        private void btRotateImages_Click(object sender, EventArgs e)
+        {
+            using (var fbd = new FolderBrowserDialog())
+            {
+                DialogResult result = fbd.ShowDialog();
+
+                if (result == DialogResult.OK && !string.IsNullOrWhiteSpace(fbd.SelectedPath))
+                {
+                    string directoryPath = fbd.SelectedPath;
+                    RotateImages(directoryPath);
+                }
+            }
+        }
+        #endregion
+
+        #region RotateImages
+        private void RotateImages(string directoryPath)
+        {
+            foreach (var filePath in Directory.GetFiles(directoryPath))
+            {
+                string extension = Path.GetExtension(filePath).ToLower();
+
+                if (extension == ".bmp" || extension == ".png" || extension == ".jpg" || extension == ".tiff")
+                {
+                    using (var img = Image.FromFile(filePath))
+                    {
+                        // Rotate the image 90 degrees to the left
+                        img.RotateFlip(RotateFlipType.Rotate270FlipNone);
+
+                        // Save the rotated image
+                        img.Save(filePath);
+                    }
+                }
+            }
+
+            MessageBox.Show("All images have been successfully rotated!.");
+        }
+        #endregion
     }
 }
