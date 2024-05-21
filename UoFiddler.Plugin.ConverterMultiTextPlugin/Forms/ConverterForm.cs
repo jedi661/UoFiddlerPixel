@@ -26,202 +26,188 @@ using System.Drawing.Imaging;
 namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 {
     public partial class ConverterForm : Form
-    {   
+    {
         public ConverterForm()
         {
             InitializeComponent();
         }
 
-        #region btConverterBlack
-        private void btConverterBlack_Click(object sender, EventArgs e)
+        #region BtConverterBlack
+        private void BtConverterBlack_Click(object sender, EventArgs e)
         {
             ConvertColor(Color.White, Color.Black, "black");
         }
         #endregion
 
         #region btConverterWhite
-        private void btConverterWhite_Click(object sender, EventArgs e)
+        private void BtConverterWhite_Click(object sender, EventArgs e)
         {
             ConvertColor(Color.Black, Color.White, "white");
         }
         #endregion
 
-        #region btConverterCustom
-        private void btConverterCustom_Click(object sender, EventArgs e)
+        #region BtConverterCustom
+        private void BtConverterCustom_Click(object sender, EventArgs e)
         {
-            using (var colorDialog = new ColorDialog())
+            using var colorDialog = new ColorDialog();
+            // Load the custom colors from the application settings
+            string customColorsSetting = Properties.Settings.Default.CustomColors;
+            if (!string.IsNullOrEmpty(customColorsSetting))
             {
-                // Load the custom colors from the application settings
-                string customColorsSetting = Properties.Settings.Default.CustomColors;
-                if (!string.IsNullOrEmpty(customColorsSetting))
-                {
-                    int[] customColors = customColorsSetting.Split(',').Select(int.Parse).ToArray();
-                    colorDialog.CustomColors = customColors;
-                }
+                int[] customColors = customColorsSetting.Split(',').Select(int.Parse).ToArray();
+                colorDialog.CustomColors = customColors;
+            }
 
-                if (colorDialog.ShowDialog() == DialogResult.OK)
-                {
-                    Color newColor = colorDialog.Color;
-                    string folderName = $"custom_{newColor.R}_{newColor.G}_{newColor.B}";
+            if (colorDialog.ShowDialog() == DialogResult.OK)
+            {
+                Color newColor = colorDialog.Color;
+                string folderName = $"custom_{newColor.R}_{newColor.G}_{newColor.B}";
 
-                    ConvertColor(Color.Black, newColor, folderName);
-                    ConvertColor(Color.White, newColor, folderName);
+                ConvertColor(Color.Black, newColor, folderName);
+                ConvertColor(Color.White, newColor, folderName);
 
-                    // Save the custom colors in the application settings
-                    customColorsSetting = string.Join(",", colorDialog.CustomColors);
-                    Properties.Settings.Default.CustomColors = customColorsSetting;
-                    Properties.Settings.Default.Save();
-                }
+                // Save the custom colors in the application settings
+                customColorsSetting = string.Join(",", colorDialog.CustomColors);
+                Properties.Settings.Default.CustomColors = customColorsSetting;
+                Properties.Settings.Default.Save();
             }
         }
         #endregion
 
         #region ConvertColor
-        private void ConvertColor(Color fromColor, Color toColor, string folderName)
+        private static void ConvertColor(Color fromColor, Color toColor, string folderName)
         {
-            using (var fbd = new FolderBrowserDialog())
+            using var fbd = new FolderBrowserDialog();
+            DialogResult result = fbd.ShowDialog();
+            if (result == DialogResult.OK && !string.IsNullOrWhiteSpace(fbd.SelectedPath))
             {
-                DialogResult result = fbd.ShowDialog();
-                if (result == DialogResult.OK && !string.IsNullOrWhiteSpace(fbd.SelectedPath))
+                string directoryPath = fbd.SelectedPath;
+                string newDirectoryPath = Path.Combine(directoryPath, folderName);
+                // Creates the new directory if it does not exist
+                if (!Directory.Exists(newDirectoryPath))
                 {
-                    string directoryPath = fbd.SelectedPath;
-                    string newDirectoryPath = Path.Combine(directoryPath, folderName);
-                    // Creates the new directory if it does not exist
-                    if (!Directory.Exists(newDirectoryPath))
-                    {
-                        Directory.CreateDirectory(newDirectoryPath);
-                    }
+                    Directory.CreateDirectory(newDirectoryPath);
+                }
 
-                    int count = 0; // Counter for processed images
+                int count = 0; // Counter for processed images
 
-                    foreach (var filePath in Directory.GetFiles(directoryPath))
+                foreach (var filePath in Directory.GetFiles(directoryPath))
+                {
+                    string extension = Path.GetExtension(filePath).ToLower();
+                    if (extension == ".bmp" || extension == ".png" || extension == ".jpg" || extension == ".tiff")
                     {
-                        string extension = Path.GetExtension(filePath).ToLower();
-                        if (extension == ".bmp" || extension == ".png" || extension == ".jpg" || extension == ".tiff")
+                        using var img = Image.FromFile(filePath);
+                        for (int y = 0; y < img.Height; y++)
                         {
-                            using (var img = Image.FromFile(filePath))
+                            for (int x = 0; x < img.Width; x++)
                             {
-                                for (int y = 0; y < img.Height; y++)
+                                Color pixelColor = ((Bitmap)img).GetPixel(x, y);
+                                if (pixelColor.R == fromColor.R && pixelColor.G == fromColor.G && pixelColor.B == fromColor.B)
                                 {
-                                    for (int x = 0; x < img.Width; x++)
-                                    {
-                                        Color pixelColor = ((Bitmap)img).GetPixel(x, y);
-                                        if (pixelColor.R == fromColor.R && pixelColor.G == fromColor.G && pixelColor.B == fromColor.B)
-                                        {
-                                            ((Bitmap)img).SetPixel(x, y, toColor);
-                                        }
-                                    }
+                                    ((Bitmap)img).SetPixel(x, y, toColor);
                                 }
-                                // Saves the image in the new directory
-                                string newFilePath = Path.Combine(newDirectoryPath, Path.GetFileName(filePath));
-                                img.Save(newFilePath);
-                                count++; // Increment the counter
                             }
                         }
+                        // Saves the image in the new directory
+                        string newFilePath = Path.Combine(newDirectoryPath, Path.GetFileName(filePath));
+                        img.Save(newFilePath);
+                        count++; // Increment the counter
                     }
-                    MessageBox.Show($"{count} images have been successfully processed!");
                 }
+                MessageBox.Show($"{count} images have been successfully processed!");
             }
         }
 
         #endregion
 
         #region btnOpenColorDialog
-        private void btnOpenColorDialog_Click(object sender, EventArgs e)
+        private void BtnOpenColorDialog_Click(object sender, EventArgs e)
         {
-            using (var colorDialog = new ColorDialog())
+            using var colorDialog = new ColorDialog();
+            // Load the custom colors from the application settings
+            string customColorsSetting = Properties.Settings.Default.CustomColors;
+            if (!string.IsNullOrEmpty(customColorsSetting))
             {
-                // Load the custom colors from the application settings
-                string customColorsSetting = Properties.Settings.Default.CustomColors;
-                if (!string.IsNullOrEmpty(customColorsSetting))
-                {
-                    int[] customColors = customColorsSetting.Split(',').Select(int.Parse).ToArray();
-                    colorDialog.CustomColors = customColors;
-                }
+                int[] customColors = customColorsSetting.Split(',').Select(int.Parse).ToArray();
+                colorDialog.CustomColors = customColors;
+            }
 
-                if (colorDialog.ShowDialog() == DialogResult.OK)
-                {
-                    // Save the custom colors in the application settings
-                    customColorsSetting = string.Join(",", colorDialog.CustomColors);
-                    Properties.Settings.Default.CustomColors = customColorsSetting;
-                    Properties.Settings.Default.Save();
-                }
+            if (colorDialog.ShowDialog() == DialogResult.OK)
+            {
+                // Save the custom colors in the application settings
+                customColorsSetting = string.Join(",", colorDialog.CustomColors);
+                Properties.Settings.Default.CustomColors = customColorsSetting;
+                Properties.Settings.Default.Save();
             }
         }
         #endregion
 
         #region btMirrorImages
-        private void btMirrorImages_Click(object sender, EventArgs e)
+        private void BtMirrorImages_Click(object sender, EventArgs e)
         {
-            using (var fbd = new FolderBrowserDialog())
+            using var fbd = new FolderBrowserDialog();
+            DialogResult result = fbd.ShowDialog();
+
+            if (result == DialogResult.OK && !string.IsNullOrWhiteSpace(fbd.SelectedPath))
             {
-                DialogResult result = fbd.ShowDialog();
+                string directoryPath = fbd.SelectedPath;
+                string newDirectoryPath = Path.Combine(directoryPath, "mirror");
 
-                if (result == DialogResult.OK && !string.IsNullOrWhiteSpace(fbd.SelectedPath))
+                // Creates the new directory if it does not exist
+                if (!Directory.Exists(newDirectoryPath))
                 {
-                    string directoryPath = fbd.SelectedPath;
-                    string newDirectoryPath = Path.Combine(directoryPath, "mirror");
-
-                    // Creates the new directory if it does not exist
-                    if (!Directory.Exists(newDirectoryPath))
-                    {
-                        Directory.CreateDirectory(newDirectoryPath);
-                    }
-
-                    int count = 0; // Counter for processed images
-
-                    foreach (var filePath in Directory.GetFiles(directoryPath))
-                    {
-                        string extension = Path.GetExtension(filePath).ToLower();
-
-                        if (extension == ".bmp" || extension == ".png" || extension == ".jpg" || extension == ".tiff")
-                        {
-                            using (var img = (Bitmap)Image.FromFile(filePath))
-                            {
-                                img.RotateFlip(RotateFlipType.RotateNoneFlipX);
-
-                                // Saves the mirrored image in the new directory
-                                string newFilePath = Path.Combine(newDirectoryPath, Path.GetFileName(filePath));
-                                img.Save(newFilePath);
-
-                                count++; // Increment the counter
-                            }
-                        }
-                    }
-
-                    MessageBox.Show($"{count} images have been successfully mirrored!");
+                    Directory.CreateDirectory(newDirectoryPath);
                 }
+
+                int count = 0; // Counter for processed images
+
+                foreach (var filePath in Directory.GetFiles(directoryPath))
+                {
+                    string extension = Path.GetExtension(filePath).ToLower();
+
+                    if (extension == ".bmp" || extension == ".png" || extension == ".jpg" || extension == ".tiff")
+                    {
+                        using var img = (Bitmap)Image.FromFile(filePath);
+                        img.RotateFlip(RotateFlipType.RotateNoneFlipX);
+
+                        // Saves the mirrored image in the new directory
+                        string newFilePath = Path.Combine(newDirectoryPath, Path.GetFileName(filePath));
+                        img.Save(newFilePath);
+
+                        count++; // Increment the counter
+                    }
+                }
+
+                MessageBox.Show($"{count} images have been successfully mirrored!");
             }
         }
         #endregion
 
         #region btConverterTransparent
-        private void btConverterTransparent_Click(object sender, EventArgs e)
+        private void BtConverterTransparent_Click(object sender, EventArgs e)
         {
-            using (var fbd = new FolderBrowserDialog())
+            using var fbd = new FolderBrowserDialog();
+            DialogResult result = fbd.ShowDialog();
+
+            if (result == DialogResult.OK && !string.IsNullOrWhiteSpace(fbd.SelectedPath))
             {
-                DialogResult result = fbd.ShowDialog();
+                string directoryPath = fbd.SelectedPath;
+                string newDirectoryPath = Path.Combine(directoryPath, "transparent");
 
-                if (result == DialogResult.OK && !string.IsNullOrWhiteSpace(fbd.SelectedPath))
+                // Creates the new directory if it does not exist
+                if (!Directory.Exists(newDirectoryPath))
                 {
-                    string directoryPath = fbd.SelectedPath;
-                    string newDirectoryPath = Path.Combine(directoryPath, "transparent");
-
-                    // Creates the new directory if it does not exist
-                    if (!Directory.Exists(newDirectoryPath))
-                    {
-                        Directory.CreateDirectory(newDirectoryPath);
-                    }
-
-                    ConvertColorToTransparent(directoryPath, newDirectoryPath, Color.Black);
-                    ConvertColorToTransparent(directoryPath, newDirectoryPath, Color.White);
+                    Directory.CreateDirectory(newDirectoryPath);
                 }
+
+                ConvertColorToTransparent(directoryPath, newDirectoryPath, Color.Black);
+                ConvertColorToTransparent(directoryPath, newDirectoryPath, Color.White);
             }
         }
         #endregion
 
         #region ConvertColorToTransparent
-        private void ConvertColorToTransparent(string directoryPath, string newDirectoryPath, Color fromColor)
+        private static void ConvertColorToTransparent(string directoryPath, string newDirectoryPath, Color fromColor)
         {
             int count = 0; // Counter for processed images
 
@@ -231,18 +217,16 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 
                 if (extension == ".bmp" || extension == ".png" || extension == ".jpg" || extension == ".tiff")
                 {
-                    using (var img = Image.FromFile(filePath))
-                    {
-                        Bitmap bitmap = new Bitmap(img);
+                    using var img = Image.FromFile(filePath);
+                    Bitmap bitmap = new(img);
 
-                        bitmap.MakeTransparent(fromColor);
+                    bitmap.MakeTransparent(fromColor);
 
-                        // Saves the image in the new directory
-                        string newFilePath = Path.Combine(newDirectoryPath, Path.GetFileName(filePath));
-                        bitmap.Save(newFilePath);
+                    // Saves the image in the new directory
+                    string newFilePath = Path.Combine(newDirectoryPath, Path.GetFileName(filePath));
+                    bitmap.Save(newFilePath);
 
-                        count++; // Increment the counter
-                    }
+                    count++; // Increment the counter
                 }
             }
 
@@ -252,23 +236,21 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         #endregion
 
         #region btRotateImages
-        private void btRotateImages_Click(object sender, EventArgs e)
+        private void BtRotateImages_Click(object sender, EventArgs e)
         {
-            using (var fbd = new FolderBrowserDialog())
-            {
-                DialogResult result = fbd.ShowDialog();
+            using var fbd = new FolderBrowserDialog();
+            DialogResult result = fbd.ShowDialog();
 
-                if (result == DialogResult.OK && !string.IsNullOrWhiteSpace(fbd.SelectedPath))
-                {
-                    string directoryPath = fbd.SelectedPath;
-                    RotateImages(directoryPath);
-                }
+            if (result == DialogResult.OK && !string.IsNullOrWhiteSpace(fbd.SelectedPath))
+            {
+                string directoryPath = fbd.SelectedPath;
+                RotateImages(directoryPath);
             }
         }
         #endregion
 
         #region RotateImages
-        private void RotateImages(string directoryPath)
+        private static void RotateImages(string directoryPath)
         {
             int count = 0; // Counter for processed images
 
@@ -278,16 +260,14 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 
                 if (extension == ".bmp" || extension == ".png" || extension == ".jpg" || extension == ".tiff")
                 {
-                    using (var img = Image.FromFile(filePath))
-                    {
-                        // Rotate the image 90 degrees to the left
-                        img.RotateFlip(RotateFlipType.Rotate270FlipNone);
+                    using var img = Image.FromFile(filePath);
+                    // Rotate the image 90 degrees to the left
+                    img.RotateFlip(RotateFlipType.Rotate270FlipNone);
 
-                        // Save the rotated image
-                        img.Save(filePath);
+                    // Save the rotated image
+                    img.Save(filePath);
 
-                        count++; // Increment the counter
-                    }
+                    count++; // Increment the counter
                 }
             }
 
@@ -296,7 +276,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         #endregion
 
         #region btConvert
-        private void btConvert_Click(object sender, EventArgs e)
+        private void BtConvert_Click(object sender, EventArgs e)
         {
             if (comboBoxFileType.SelectedItem == null)
             {
@@ -306,62 +286,53 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 
             string selectedFileType = comboBoxFileType.SelectedItem.ToString();
 
-            using (var fbd = new FolderBrowserDialog())
+            using var fbd = new FolderBrowserDialog();
+            DialogResult result = fbd.ShowDialog();
+
+            if (result == DialogResult.OK && !string.IsNullOrWhiteSpace(fbd.SelectedPath))
             {
-                DialogResult result = fbd.ShowDialog();
+                string directoryPath = fbd.SelectedPath;
+                string newDirectoryPath = Path.Combine(directoryPath, selectedFileType);
 
-                if (result == DialogResult.OK && !string.IsNullOrWhiteSpace(fbd.SelectedPath))
+                // Creates the new directory if it does not exist
+                if (!Directory.Exists(newDirectoryPath))
                 {
-                    string directoryPath = fbd.SelectedPath;
-                    string newDirectoryPath = Path.Combine(directoryPath, selectedFileType);
-
-                    // Creates the new directory if it does not exist
-                    if (!Directory.Exists(newDirectoryPath))
-                    {
-                        Directory.CreateDirectory(newDirectoryPath);
-                    }
-
-                    int count = 0; // Counter for processed images
-
-                    foreach (var filePath in Directory.GetFiles(directoryPath))
-                    {
-                        string extension = Path.GetExtension(filePath).ToLower();
-
-                        if (extension == ".bmp" || extension == ".png" || extension == ".jpg" || extension == ".tiff")
-                        {
-                            using (var img = Image.FromFile(filePath))
-                            {
-                                // Saves the image in the new directory with selected format
-                                string newFilePath = Path.Combine(newDirectoryPath, Path.GetFileNameWithoutExtension(filePath) + $".{selectedFileType}");
-                                img.Save(newFilePath, GetImageFormat(selectedFileType));
-
-                                count++; // Increment the counter
-                            }
-                        }
-                    }
-
-                    MessageBox.Show($"{count} images have been successfully converted to .{selectedFileType} format!");
+                    Directory.CreateDirectory(newDirectoryPath);
                 }
+
+                int count = 0; // Counter for processed images
+
+                foreach (var filePath in Directory.GetFiles(directoryPath))
+                {
+                    string extension = Path.GetExtension(filePath).ToLower();
+
+                    if (extension == ".bmp" || extension == ".png" || extension == ".jpg" || extension == ".tiff")
+                    {
+                        using var img = Image.FromFile(filePath);
+                        // Saves the image in the new directory with selected format
+                        string newFilePath = Path.Combine(newDirectoryPath, Path.GetFileNameWithoutExtension(filePath) + $".{selectedFileType}");
+                        img.Save(newFilePath, GetImageFormat(selectedFileType));
+
+                        count++; // Increment the counter
+                    }
+                }
+
+                MessageBox.Show($"{count} images have been successfully converted to .{selectedFileType} format!");
             }
         }
         #endregion
 
         #region ImageFormat
-        private ImageFormat GetImageFormat(string fileType)
+        private static ImageFormat GetImageFormat(string fileType)
         {
-            switch (fileType.ToLower())
+            return fileType.ToLower() switch
             {
-                case "bmp":
-                    return ImageFormat.Bmp;
-                case "png":
-                    return ImageFormat.Png;
-                case "jpg":
-                    return ImageFormat.Jpeg;
-                case "tiff":
-                    return ImageFormat.Tiff;
-                default:
-                    return ImageFormat.Png;
-            }
+                "bmp" => ImageFormat.Bmp,
+                "png" => ImageFormat.Png,
+                "jpg" => ImageFormat.Jpeg,
+                "tiff" => ImageFormat.Tiff,
+                _ => ImageFormat.Png,
+            };
         }
         #endregion
     }

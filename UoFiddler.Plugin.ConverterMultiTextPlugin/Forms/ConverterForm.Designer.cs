@@ -41,75 +41,75 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ConverterForm));
-            btConverterWhite = new System.Windows.Forms.Button();
-            btConverterBlack = new System.Windows.Forms.Button();
+            BtConverterWhite = new System.Windows.Forms.Button();
+            BtConverterBlack = new System.Windows.Forms.Button();
             panelColor = new System.Windows.Forms.Panel();
-            btnOpenColorDialog = new System.Windows.Forms.Button();
-            btConverterCustom = new System.Windows.Forms.Button();
+            BtnOpenColorDialog = new System.Windows.Forms.Button();
+            BtConverterCustom = new System.Windows.Forms.Button();
             lbBlackWhite = new System.Windows.Forms.Label();
-            btMirrorImages = new System.Windows.Forms.Button();
+            BtMirrorImages = new System.Windows.Forms.Button();
             panelFunctions = new System.Windows.Forms.Panel();
-            btConvert = new System.Windows.Forms.Button();
+            BtConvert = new System.Windows.Forms.Button();
             comboBoxFileType = new System.Windows.Forms.ComboBox();
-            btRotateImages = new System.Windows.Forms.Button();
-            btConverterTransparent = new System.Windows.Forms.Button();
+            BtRotateImages = new System.Windows.Forms.Button();
+            BtConverterTransparent = new System.Windows.Forms.Button();
             lbFunction = new System.Windows.Forms.Label();
             panelColor.SuspendLayout();
             panelFunctions.SuspendLayout();
             SuspendLayout();
             // 
-            // btConverterWhite
+            // BtConverterWhite
             // 
-            btConverterWhite.Location = new System.Drawing.Point(14, 29);
-            btConverterWhite.Name = "btConverterWhite";
-            btConverterWhite.Size = new System.Drawing.Size(54, 23);
-            btConverterWhite.TabIndex = 0;
-            btConverterWhite.Text = "White";
-            btConverterWhite.UseVisualStyleBackColor = true;
-            btConverterWhite.Click += btConverterWhite_Click;
+            BtConverterWhite.Location = new System.Drawing.Point(14, 29);
+            BtConverterWhite.Name = "BtConverterWhite";
+            BtConverterWhite.Size = new System.Drawing.Size(54, 23);
+            BtConverterWhite.TabIndex = 0;
+            BtConverterWhite.Text = "White";
+            BtConverterWhite.UseVisualStyleBackColor = true;
+            BtConverterWhite.Click += BtConverterWhite_Click;
             // 
-            // btConverterBlack
+            // BtConverterBlack
             // 
-            btConverterBlack.Location = new System.Drawing.Point(14, 58);
-            btConverterBlack.Name = "btConverterBlack";
-            btConverterBlack.Size = new System.Drawing.Size(54, 23);
-            btConverterBlack.TabIndex = 1;
-            btConverterBlack.Text = "Black";
-            btConverterBlack.UseVisualStyleBackColor = true;
-            btConverterBlack.Click += btConverterBlack_Click;
+            BtConverterBlack.Location = new System.Drawing.Point(14, 58);
+            BtConverterBlack.Name = "BtConverterBlack";
+            BtConverterBlack.Size = new System.Drawing.Size(54, 23);
+            BtConverterBlack.TabIndex = 1;
+            BtConverterBlack.Text = "Black";
+            BtConverterBlack.UseVisualStyleBackColor = true;
+            BtConverterBlack.Click += BtConverterBlack_Click;
             // 
             // panelColor
             // 
             panelColor.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            panelColor.Controls.Add(btnOpenColorDialog);
-            panelColor.Controls.Add(btConverterCustom);
+            panelColor.Controls.Add(BtnOpenColorDialog);
+            panelColor.Controls.Add(BtConverterCustom);
             panelColor.Controls.Add(lbBlackWhite);
-            panelColor.Controls.Add(btConverterBlack);
-            panelColor.Controls.Add(btConverterWhite);
+            panelColor.Controls.Add(BtConverterBlack);
+            panelColor.Controls.Add(BtConverterWhite);
             panelColor.Location = new System.Drawing.Point(12, 12);
             panelColor.Name = "panelColor";
             panelColor.Size = new System.Drawing.Size(200, 100);
             panelColor.TabIndex = 2;
             // 
-            // btnOpenColorDialog
+            // BtnOpenColorDialog
             // 
-            btnOpenColorDialog.Location = new System.Drawing.Point(89, 58);
-            btnOpenColorDialog.Name = "btnOpenColorDialog";
-            btnOpenColorDialog.Size = new System.Drawing.Size(100, 23);
-            btnOpenColorDialog.TabIndex = 3;
-            btnOpenColorDialog.Text = "Colors Save";
-            btnOpenColorDialog.UseVisualStyleBackColor = true;
-            btnOpenColorDialog.Click += btnOpenColorDialog_Click;
+            BtnOpenColorDialog.Location = new System.Drawing.Point(89, 58);
+            BtnOpenColorDialog.Name = "BtnOpenColorDialog";
+            BtnOpenColorDialog.Size = new System.Drawing.Size(100, 23);
+            BtnOpenColorDialog.TabIndex = 3;
+            BtnOpenColorDialog.Text = "Colors Save";
+            BtnOpenColorDialog.UseVisualStyleBackColor = true;
+            BtnOpenColorDialog.Click += BtnOpenColorDialog_Click;
             // 
-            // btConverterCustom
+            // BtConverterCustom
             // 
-            btConverterCustom.Location = new System.Drawing.Point(89, 29);
-            btConverterCustom.Name = "btConverterCustom";
-            btConverterCustom.Size = new System.Drawing.Size(100, 23);
-            btConverterCustom.TabIndex = 4;
-            btConverterCustom.Text = "Custom Color";
-            btConverterCustom.UseVisualStyleBackColor = true;
-            btConverterCustom.Click += btConverterCustom_Click;
+            BtConverterCustom.Location = new System.Drawing.Point(89, 29);
+            BtConverterCustom.Name = "BtConverterCustom";
+            BtConverterCustom.Size = new System.Drawing.Size(100, 23);
+            BtConverterCustom.TabIndex = 4;
+            BtConverterCustom.Text = "Custom Color";
+            BtConverterCustom.UseVisualStyleBackColor = true;
+            BtConverterCustom.Click += BtConverterCustom_Click;
             // 
             // lbBlackWhite
             // 
@@ -121,39 +121,39 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             lbBlackWhite.TabIndex = 3;
             lbBlackWhite.Text = "Convert Image Black or White :";
             // 
-            // btMirrorImages
+            // BtMirrorImages
             // 
-            btMirrorImages.Location = new System.Drawing.Point(13, 30);
-            btMirrorImages.Name = "btMirrorImages";
-            btMirrorImages.Size = new System.Drawing.Size(51, 23);
-            btMirrorImages.TabIndex = 3;
-            btMirrorImages.Text = "Mirror";
-            btMirrorImages.UseVisualStyleBackColor = true;
-            btMirrorImages.Click += btMirrorImages_Click;
+            BtMirrorImages.Location = new System.Drawing.Point(13, 30);
+            BtMirrorImages.Name = "BtMirrorImages";
+            BtMirrorImages.Size = new System.Drawing.Size(51, 23);
+            BtMirrorImages.TabIndex = 3;
+            BtMirrorImages.Text = "Mirror";
+            BtMirrorImages.UseVisualStyleBackColor = true;
+            BtMirrorImages.Click += BtMirrorImages_Click;
             // 
             // panelFunctions
             // 
             panelFunctions.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            panelFunctions.Controls.Add(btConvert);
+            panelFunctions.Controls.Add(BtConvert);
             panelFunctions.Controls.Add(comboBoxFileType);
-            panelFunctions.Controls.Add(btRotateImages);
-            panelFunctions.Controls.Add(btConverterTransparent);
+            panelFunctions.Controls.Add(BtRotateImages);
+            panelFunctions.Controls.Add(BtConverterTransparent);
             panelFunctions.Controls.Add(lbFunction);
-            panelFunctions.Controls.Add(btMirrorImages);
+            panelFunctions.Controls.Add(BtMirrorImages);
             panelFunctions.Location = new System.Drawing.Point(218, 12);
             panelFunctions.Name = "panelFunctions";
             panelFunctions.Size = new System.Drawing.Size(200, 100);
             panelFunctions.TabIndex = 4;
             // 
-            // btConvert
+            // BtConvert
             // 
-            btConvert.Location = new System.Drawing.Point(126, 59);
-            btConvert.Name = "btConvert";
-            btConvert.Size = new System.Drawing.Size(53, 22);
-            btConvert.TabIndex = 8;
-            btConvert.Text = "FileTyp";
-            btConvert.UseVisualStyleBackColor = true;
-            btConvert.Click += btConvert_Click;
+            BtConvert.Location = new System.Drawing.Point(126, 59);
+            BtConvert.Name = "BtConvert";
+            BtConvert.Size = new System.Drawing.Size(53, 22);
+            BtConvert.TabIndex = 8;
+            BtConvert.Text = "FileTyp";
+            BtConvert.UseVisualStyleBackColor = true;
+            BtConvert.Click += BtConvert_Click;
             // 
             // comboBoxFileType
             // 
@@ -164,25 +164,25 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             comboBoxFileType.Size = new System.Drawing.Size(55, 23);
             comboBoxFileType.TabIndex = 7;
             // 
-            // btRotateImages
+            // BtRotateImages
             // 
-            btRotateImages.Location = new System.Drawing.Point(13, 59);
-            btRotateImages.Name = "btRotateImages";
-            btRotateImages.Size = new System.Drawing.Size(51, 23);
-            btRotateImages.TabIndex = 6;
-            btRotateImages.Text = "Rotate";
-            btRotateImages.UseVisualStyleBackColor = true;
-            btRotateImages.Click += btRotateImages_Click;
+            BtRotateImages.Location = new System.Drawing.Point(13, 59);
+            BtRotateImages.Name = "BtRotateImages";
+            BtRotateImages.Size = new System.Drawing.Size(51, 23);
+            BtRotateImages.TabIndex = 6;
+            BtRotateImages.Text = "Rotate";
+            BtRotateImages.UseVisualStyleBackColor = true;
+            BtRotateImages.Click += BtRotateImages_Click;
             // 
-            // btConverterTransparent
+            // BtConverterTransparent
             // 
-            btConverterTransparent.Location = new System.Drawing.Point(70, 30);
-            btConverterTransparent.Name = "btConverterTransparent";
-            btConverterTransparent.Size = new System.Drawing.Size(79, 23);
-            btConverterTransparent.TabIndex = 5;
-            btConverterTransparent.Text = "Transparent";
-            btConverterTransparent.UseVisualStyleBackColor = true;
-            btConverterTransparent.Click += btConverterTransparent_Click;
+            BtConverterTransparent.Location = new System.Drawing.Point(70, 30);
+            BtConverterTransparent.Name = "BtConverterTransparent";
+            BtConverterTransparent.Size = new System.Drawing.Size(79, 23);
+            BtConverterTransparent.TabIndex = 5;
+            BtConverterTransparent.Text = "Transparent";
+            BtConverterTransparent.UseVisualStyleBackColor = true;
+            BtConverterTransparent.Click += BtConverterTransparent_Click;
             // 
             // lbFunction
             // 
@@ -214,18 +214,18 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 
         #endregion
 
-        private System.Windows.Forms.Button btConverterWhite;
-        private System.Windows.Forms.Button btConverterBlack;
+        private System.Windows.Forms.Button BtConverterWhite;
+        private System.Windows.Forms.Button BtConverterBlack;
         private System.Windows.Forms.Panel panelColor;
         private System.Windows.Forms.Label lbBlackWhite;
-        private System.Windows.Forms.Button btConverterCustom;
-        private System.Windows.Forms.Button btnOpenColorDialog;
-        private System.Windows.Forms.Button btMirrorImages;
+        private System.Windows.Forms.Button BtConverterCustom;
+        private System.Windows.Forms.Button BtnOpenColorDialog;
+        private System.Windows.Forms.Button BtMirrorImages;
         private System.Windows.Forms.Panel panelFunctions;
         private System.Windows.Forms.Label lbFunction;
-        private System.Windows.Forms.Button btConverterTransparent;
-        private System.Windows.Forms.Button btRotateImages;
+        private System.Windows.Forms.Button BtConverterTransparent;
+        private System.Windows.Forms.Button BtRotateImages;
         private System.Windows.Forms.ComboBox comboBoxFileType;
-        private System.Windows.Forms.Button btConvert;
+        private System.Windows.Forms.Button BtConvert;
     }
 }

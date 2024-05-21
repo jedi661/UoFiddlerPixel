@@ -29,10 +29,10 @@ namespace UoFiddler.Forms
     public partial class MainForm : Form
     {
         //Bin_Dec_Hex_ConverterForm
-        private Bin_Dec_Hex_ConverterForm binDecHexConverterForm;
+        private Bin_Dec_Hex_ConverterForm _binDecHexConverterForm;
 
         //AlarmClock
-        private AlarmClockForm alarmClockForm;
+        private AlarmClockForm _alarmClockForm;
         public MainForm()
         {
             InitializeComponent();
@@ -1029,7 +1029,7 @@ namespace UoFiddler.Forms
         #endregion
 
         #region Animation Html
-        private void animationsToolStripMenuItem_Click(object sender, EventArgs e)
+        private void AnimationsToolStripMenuItem_Click(object sender, EventArgs e)
         {
             using (HelpDokuForm helpDokuForm = new HelpDokuForm())
             {
@@ -1040,7 +1040,7 @@ namespace UoFiddler.Forms
         #endregion
 
         #region Animation Install German
-        private void animationInstallToolStripMenuItem_Click(object sender, EventArgs e)
+        private void AnimationInstallToolStripMenuItem_Click(object sender, EventArgs e)
         {
             using (HelpDokuForm helpDokuForm = new HelpDokuForm())
             {
@@ -1051,7 +1051,7 @@ namespace UoFiddler.Forms
         #endregion
 
         #region Animation Install Englisch
-        private void animationInstallEnglischToolStripMenuItem_Click(object sender, EventArgs e)
+        private void AnimationInstallEnglischToolStripMenuItem_Click(object sender, EventArgs e)
         {
             using (HelpDokuForm helpDokuForm = new HelpDokuForm())
             {
@@ -1072,7 +1072,7 @@ namespace UoFiddler.Forms
         #endregion
 
         #region Changelog
-        private void changelogToolStripMenuItem_Click(object sender, EventArgs e)
+        private void ChangelogToolStripMenuItem_Click(object sender, EventArgs e)
         {
             using (ChangeLogForm changelogForm = new ChangeLogForm())
             {
@@ -1098,7 +1098,7 @@ namespace UoFiddler.Forms
         #endregion
 
         #region Image Switch
-        private void toolStripComboBoxImage_Click(object sender, EventArgs e)
+        private void ToolStripComboBoxImage_Click(object sender, EventArgs e)
         {
             // Add the available images to the toolStripComboBoxImage.
             toolStripComboBoxImage.Items.AddRange(new[] { "UOFiddler", "UOFiddler1", "UOFiddler2", "UOFiddler3", "UOFiddler4", "UOFiddler5", "UOFiddler6", "UOFiddler7", "UOFiddler8", "UOFiddler9", "UOFiddler10", "UOFiddler11", "UOFiddler12" });
@@ -1159,7 +1159,7 @@ namespace UoFiddler.Forms
         #endregion
 
         #region Links
-        private void toolStripMenuItem1_Click(object sender, EventArgs e)
+        private void ToolStripMenuItem1_Click(object sender, EventArgs e)
         {
             Process.Start(new ProcessStartInfo
             {
@@ -1168,7 +1168,7 @@ namespace UoFiddler.Forms
             });
         }
 
-        private void toolStripMenuItem2_Click(object sender, EventArgs e)
+        private void ToolStripMenuItem2_Click(object sender, EventArgs e)
         {
             Process.Start(new ProcessStartInfo
             {
@@ -1177,7 +1177,7 @@ namespace UoFiddler.Forms
             });
         }
 
-        private void uodevuofreeshardsdeToolStripMenuItem_Click(object sender, EventArgs e)
+        private void UodevuofreeshardsdeToolStripMenuItem_Click(object sender, EventArgs e)
         {
             Process.Start(new ProcessStartInfo
             {
@@ -1189,7 +1189,7 @@ namespace UoFiddler.Forms
         #endregion
 
         #region Directory
-        private void directoryToolStripMenuItem_Click(object sender, EventArgs e)
+        private void DirectoryToolStripMenuItem_Click(object sender, EventArgs e)
         {
             // Get the output path from the Options class
             string path = Options.OutputPath;
@@ -1200,25 +1200,25 @@ namespace UoFiddler.Forms
         #endregion
 
         #region DecimalHexConverter
-        private void binaryDecimalHexadecimalConverterToolStripMenuItem_Click_1(object sender, EventArgs e)
+        private void BinaryDecimalHexadecimalConverterToolStripMenuItem_Click_1(object sender, EventArgs e)
         {
-            if (binDecHexConverterForm == null || binDecHexConverterForm.IsDisposed)
+            if (_binDecHexConverterForm == null || _binDecHexConverterForm.IsDisposed)
             {
-                binDecHexConverterForm = new Bin_Dec_Hex_ConverterForm()
+                _binDecHexConverterForm = new Bin_Dec_Hex_ConverterForm()
                 {
                     TopMost = true
                 };
-                binDecHexConverterForm.Show();
+                _binDecHexConverterForm.Show();
             }
             else
             {
-                binDecHexConverterForm.Focus();
+                _binDecHexConverterForm.Focus();
             }
         }
         #endregion
 
         #region Links Servuo.com and Discord 
-        private void toolStripMenuItemLink3_Click(object sender, EventArgs e)
+        private void ToolStripMenuItemLink3_Click(object sender, EventArgs e)
         {
             Process.Start(new ProcessStartInfo
             {
@@ -1308,7 +1308,7 @@ namespace UoFiddler.Forms
         #endregion
 
         #region Open Tempdir
-        private void tempDirToolStripMenuItem_Click(object sender, EventArgs e)
+        private void TempDirToolStripMenuItem_Click(object sender, EventArgs e)
         {
             string path = Path.Combine(Application.StartupPath, "tempGrafic");
             if (Directory.Exists(path))
@@ -1323,38 +1323,38 @@ namespace UoFiddler.Forms
         #endregion
 
         #region AlarmClock
-        private void alarmClockToolStripMenuItem_Click(object sender, EventArgs e)
+        private void AlarmClockToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (alarmClockForm == null || alarmClockForm.IsDisposed)
+            if (_alarmClockForm == null || _alarmClockForm.IsDisposed)
             {
-                alarmClockForm = new AlarmClockForm()
+                _alarmClockForm = new AlarmClockForm()
                 {
                     TopMost = true
                 };
-                alarmClockForm.Show();
+                _alarmClockForm.Show();
             }
             else
             {
-                alarmClockForm.Focus();
+                _alarmClockForm.Focus();
             }
         }
         #endregion
 
         #region Notepad Editor
-        private NotepadForm notepadForm; // Declare an instance of NotepadForm
-        private void notPadToolStripMenuItem_Click(object sender, EventArgs e)
+        private NotepadForm _notepadForm; // Declare an instance of NotepadForm
+        private void NotPadToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (notepadForm == null || notepadForm.IsDisposed)
+            if (_notepadForm == null || _notepadForm.IsDisposed)
             {
-                notepadForm = new NotepadForm()
+                _notepadForm = new NotepadForm()
                 {
                     TopMost = true
                 };
-                notepadForm.Show();
+                _notepadForm.Show();
             }
             else
             {
-                notepadForm.Focus();
+                _notepadForm.Focus();
             }
         }
         #endregion
@@ -1457,7 +1457,7 @@ namespace UoFiddler.Forms
         #endregion
 
         #region Screenshot
-        private void screenshotToolStripMenuItem_Click(object sender, EventArgs e)
+        private void ScreenshotToolStripMenuItem_Click(object sender, EventArgs e)
         {
             // Create a new Bitmap object with the dimensions of your form
             using (Bitmap bmp = new Bitmap(this.Width, this.Height))
@@ -1477,26 +1477,26 @@ namespace UoFiddler.Forms
 
         #region Calendarform
 
-        private CalendarForm calendarForm; // Declare an instance of NotepadForm
-        private void calendarToolStripMenuItem_Click(object sender, EventArgs e)
+        private CalendarForm _calendarForm; // Declare an instance of NotepadForm
+        private void CalendarToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (calendarForm == null || calendarForm.IsDisposed)
+            if (_calendarForm == null || _calendarForm.IsDisposed)
             {
-                calendarForm = new CalendarForm()
+                _calendarForm = new CalendarForm()
                 {
                     TopMost = true
                 };
-                calendarForm.Show();
+                _calendarForm.Show();
             }
             else
             {
-                calendarForm.Focus();
+                _calendarForm.Focus();
             }
         }
         #endregion
 
         #region colorBackgroundToolStripMenuItem
-        private void colorBackgroundToolStripMenuItem_Click(object sender, EventArgs e)
+        private void ColorBackgroundToolStripMenuItem_Click(object sender, EventArgs e)
         {
             using (ColorDialog colorDialog = new ColorDialog())
             {
@@ -1530,8 +1530,8 @@ namespace UoFiddler.Forms
         }
         #endregion
 
-        #region resetColorToolStripMenuItem
-        private void resetColorToolStripMenuItem_Click(object sender, EventArgs e)
+        #region ResetColorToolStripMenuItem
+        private void ResetColorToolStripMenuItem_Click(object sender, EventArgs e)
         {
             // Reset the background color to the default color
             Color defaultColor = SystemColors.Control;

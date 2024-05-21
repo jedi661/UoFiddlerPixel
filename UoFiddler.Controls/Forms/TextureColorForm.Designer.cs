@@ -43,22 +43,22 @@ namespace UoFiddler.Controls.Forms
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(TextureColorForm));
             PictureBoxImageColor = new System.Windows.Forms.PictureBox();
             panel1 = new System.Windows.Forms.Panel();
-            buttonPrevious = new System.Windows.Forms.Button();
-            buttonNext = new System.Windows.Forms.Button();
-            trackBarColor = new System.Windows.Forms.TrackBar();
+            ButtonPrevious = new System.Windows.Forms.Button();
+            ButtonNext = new System.Windows.Forms.Button();
+            TrackBarColor = new System.Windows.Forms.TrackBar();
             labelColorShift = new System.Windows.Forms.Label();
             labelColorValues = new System.Windows.Forms.Label();
-            buttonSavePosition = new System.Windows.Forms.Button();
-            buttonLoadPosition = new System.Windows.Forms.Button();
-            buttonCopyToClipboard = new System.Windows.Forms.Button();
-            buttonSaveToFile = new System.Windows.Forms.Button();
-            buttonChangeCursorColor = new System.Windows.Forms.Button();
+            ButtonSavePosition = new System.Windows.Forms.Button();
+            ButtonLoadPosition = new System.Windows.Forms.Button();
+            ButtonCopyToClipboard = new System.Windows.Forms.Button();
+            ButtonSaveToFile = new System.Windows.Forms.Button();
+            ButtonChangeCursorColor = new System.Windows.Forms.Button();
             SavePatternButton = new System.Windows.Forms.Button();
             RestorePatternButton = new System.Windows.Forms.Button();
-            btnClear = new System.Windows.Forms.Button();
+            BtnClear = new System.Windows.Forms.Button();
             panelColor = new System.Windows.Forms.Panel();
             lbIDNumber = new System.Windows.Forms.Label();
-            buttonGeneratePattern = new System.Windows.Forms.Button();
+            ButtonGeneratePattern = new System.Windows.Forms.Button();
             buttonGenerateSquare = new System.Windows.Forms.Panel();
             checkBoxKeepPreviousPattern = new System.Windows.Forms.CheckBox();
             LoadButton = new System.Windows.Forms.Button();
@@ -68,16 +68,16 @@ namespace UoFiddler.Controls.Forms
             checkBoxRandomSize = new System.Windows.Forms.CheckBox();
             trackBarSize = new System.Windows.Forms.TrackBar();
             trackBarCount = new System.Windows.Forms.TrackBar();
-            buttonGenerateSquares = new System.Windows.Forms.Button();
-            buttonGenerateCircles = new System.Windows.Forms.Button();
-            btnImportClipbord = new System.Windows.Forms.Button();
-            btnLoadImage = new System.Windows.Forms.Button();
+            ButtonGenerateSquares = new System.Windows.Forms.Button();
+            ButtonGenerateCircles = new System.Windows.Forms.Button();
+            BtnImportClipbord = new System.Windows.Forms.Button();
+            BtnLoadImage = new System.Windows.Forms.Button();
             tbColorCode = new System.Windows.Forms.TextBox();
-            btColorPincers = new System.Windows.Forms.Button();
-            btExchangeSelectiveColors = new System.Windows.Forms.Button();
+            BtColorPincers = new System.Windows.Forms.Button();
+            BtExchangeSelectiveColors = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)PictureBoxImageColor).BeginInit();
             panel1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)trackBarColor).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)TrackBarColor).BeginInit();
             buttonGenerateSquare.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)trackBarSize).BeginInit();
             ((System.ComponentModel.ISupportInitialize)trackBarCount).BeginInit();
@@ -108,38 +108,38 @@ namespace UoFiddler.Controls.Forms
             panel1.Size = new System.Drawing.Size(277, 278);
             panel1.TabIndex = 1;
             // 
-            // buttonPrevious
+            // ButtonPrevious
             // 
-            buttonPrevious.Location = new System.Drawing.Point(40, 354);
-            buttonPrevious.Name = "buttonPrevious";
-            buttonPrevious.Size = new System.Drawing.Size(75, 23);
-            buttonPrevious.TabIndex = 2;
-            buttonPrevious.Text = "previous";
-            buttonPrevious.UseVisualStyleBackColor = true;
-            buttonPrevious.Click += buttonPrevious_Click;
+            ButtonPrevious.Location = new System.Drawing.Point(40, 354);
+            ButtonPrevious.Name = "ButtonPrevious";
+            ButtonPrevious.Size = new System.Drawing.Size(75, 23);
+            ButtonPrevious.TabIndex = 2;
+            ButtonPrevious.Text = "previous";
+            ButtonPrevious.UseVisualStyleBackColor = true;
+            ButtonPrevious.Click += ButtonPrevious_Click;
             // 
-            // buttonNext
+            // ButtonNext
             // 
-            buttonNext.Location = new System.Drawing.Point(186, 354);
-            buttonNext.Name = "buttonNext";
-            buttonNext.Size = new System.Drawing.Size(75, 23);
-            buttonNext.TabIndex = 3;
-            buttonNext.Text = "Next";
-            buttonNext.UseVisualStyleBackColor = true;
-            buttonNext.Click += buttonNext_Click;
+            ButtonNext.Location = new System.Drawing.Point(186, 354);
+            ButtonNext.Name = "ButtonNext";
+            ButtonNext.Size = new System.Drawing.Size(75, 23);
+            ButtonNext.TabIndex = 3;
+            ButtonNext.Text = "Next";
+            ButtonNext.UseVisualStyleBackColor = true;
+            ButtonNext.Click += ButtonNext_Click;
             // 
-            // trackBarColor
+            // TrackBarColor
             // 
-            trackBarColor.Location = new System.Drawing.Point(335, 67);
-            trackBarColor.Maximum = 256;
-            trackBarColor.Minimum = -256;
-            trackBarColor.Name = "trackBarColor";
-            trackBarColor.RightToLeft = System.Windows.Forms.RightToLeft.No;
-            trackBarColor.Size = new System.Drawing.Size(227, 45);
-            trackBarColor.TabIndex = 4;
-            trackBarColor.Scroll += trackBarColor_Scroll;
-            trackBarColor.KeyUp += trackBarColor_KeyUp;
-            trackBarColor.MouseUp += trackBarColor_MouseUp;
+            TrackBarColor.Location = new System.Drawing.Point(335, 67);
+            TrackBarColor.Maximum = 256;
+            TrackBarColor.Minimum = -256;
+            TrackBarColor.Name = "TrackBarColor";
+            TrackBarColor.RightToLeft = System.Windows.Forms.RightToLeft.No;
+            TrackBarColor.Size = new System.Drawing.Size(227, 45);
+            TrackBarColor.TabIndex = 4;
+            TrackBarColor.Scroll += TrackBarColor_Scroll;
+            TrackBarColor.KeyUp += TrackBarColor_KeyUp;
+            TrackBarColor.MouseUp += TrackBarColor_MouseUp;
             // 
             // labelColorShift
             // 
@@ -159,55 +159,55 @@ namespace UoFiddler.Controls.Forms
             labelColorValues.TabIndex = 6;
             labelColorValues.Text = "color values:";
             // 
-            // buttonSavePosition
+            // ButtonSavePosition
             // 
-            buttonSavePosition.Location = new System.Drawing.Point(339, 143);
-            buttonSavePosition.Name = "buttonSavePosition";
-            buttonSavePosition.Size = new System.Drawing.Size(46, 23);
-            buttonSavePosition.TabIndex = 7;
-            buttonSavePosition.Text = "Mark";
-            buttonSavePosition.UseVisualStyleBackColor = true;
-            buttonSavePosition.Click += buttonSavePosition_Click;
+            ButtonSavePosition.Location = new System.Drawing.Point(339, 143);
+            ButtonSavePosition.Name = "ButtonSavePosition";
+            ButtonSavePosition.Size = new System.Drawing.Size(46, 23);
+            ButtonSavePosition.TabIndex = 7;
+            ButtonSavePosition.Text = "Mark";
+            ButtonSavePosition.UseVisualStyleBackColor = true;
+            ButtonSavePosition.Click += ButtonSavePosition_Click;
             // 
-            // buttonLoadPosition
+            // ButtonLoadPosition
             // 
-            buttonLoadPosition.Location = new System.Drawing.Point(391, 143);
-            buttonLoadPosition.Name = "buttonLoadPosition";
-            buttonLoadPosition.Size = new System.Drawing.Size(64, 23);
-            buttonLoadPosition.TabIndex = 8;
-            buttonLoadPosition.Text = "Position";
-            buttonLoadPosition.UseVisualStyleBackColor = true;
-            buttonLoadPosition.Click += buttonLoadPosition_Click;
+            ButtonLoadPosition.Location = new System.Drawing.Point(391, 143);
+            ButtonLoadPosition.Name = "ButtonLoadPosition";
+            ButtonLoadPosition.Size = new System.Drawing.Size(64, 23);
+            ButtonLoadPosition.TabIndex = 8;
+            ButtonLoadPosition.Text = "Position";
+            ButtonLoadPosition.UseVisualStyleBackColor = true;
+            ButtonLoadPosition.Click += ButtonLoadPosition_Click;
             // 
-            // buttonCopyToClipboard
+            // ButtonCopyToClipboard
             // 
-            buttonCopyToClipboard.Location = new System.Drawing.Point(481, 143);
-            buttonCopyToClipboard.Name = "buttonCopyToClipboard";
-            buttonCopyToClipboard.Size = new System.Drawing.Size(75, 23);
-            buttonCopyToClipboard.TabIndex = 9;
-            buttonCopyToClipboard.Text = "Clipboard";
-            buttonCopyToClipboard.UseVisualStyleBackColor = true;
-            buttonCopyToClipboard.Click += buttonCopyToClipboard_Click;
+            ButtonCopyToClipboard.Location = new System.Drawing.Point(481, 143);
+            ButtonCopyToClipboard.Name = "ButtonCopyToClipboard";
+            ButtonCopyToClipboard.Size = new System.Drawing.Size(75, 23);
+            ButtonCopyToClipboard.TabIndex = 9;
+            ButtonCopyToClipboard.Text = "Clipboard";
+            ButtonCopyToClipboard.UseVisualStyleBackColor = true;
+            ButtonCopyToClipboard.Click += ButtonCopyToClipboard_Click;
             // 
-            // buttonSaveToFile
+            // ButtonSaveToFile
             // 
-            buttonSaveToFile.Location = new System.Drawing.Point(481, 172);
-            buttonSaveToFile.Name = "buttonSaveToFile";
-            buttonSaveToFile.Size = new System.Drawing.Size(75, 23);
-            buttonSaveToFile.TabIndex = 10;
-            buttonSaveToFile.Text = "Save to";
-            buttonSaveToFile.UseVisualStyleBackColor = true;
-            buttonSaveToFile.Click += buttonSaveToFile_Click;
+            ButtonSaveToFile.Location = new System.Drawing.Point(481, 172);
+            ButtonSaveToFile.Name = "ButtonSaveToFile";
+            ButtonSaveToFile.Size = new System.Drawing.Size(75, 23);
+            ButtonSaveToFile.TabIndex = 10;
+            ButtonSaveToFile.Text = "Save to";
+            ButtonSaveToFile.UseVisualStyleBackColor = true;
+            ButtonSaveToFile.Click += ButtonSaveToFile_Click;
             // 
-            // buttonChangeCursorColor
+            // ButtonChangeCursorColor
             // 
-            buttonChangeCursorColor.Location = new System.Drawing.Point(339, 275);
-            buttonChangeCursorColor.Name = "buttonChangeCursorColor";
-            buttonChangeCursorColor.Size = new System.Drawing.Size(83, 23);
-            buttonChangeCursorColor.TabIndex = 11;
-            buttonChangeCursorColor.Text = "Color Cursor";
-            buttonChangeCursorColor.UseVisualStyleBackColor = true;
-            buttonChangeCursorColor.Click += buttonChangeCursorColor_Click;
+            ButtonChangeCursorColor.Location = new System.Drawing.Point(339, 275);
+            ButtonChangeCursorColor.Name = "ButtonChangeCursorColor";
+            ButtonChangeCursorColor.Size = new System.Drawing.Size(83, 23);
+            ButtonChangeCursorColor.TabIndex = 11;
+            ButtonChangeCursorColor.Text = "Color Cursor";
+            ButtonChangeCursorColor.UseVisualStyleBackColor = true;
+            ButtonChangeCursorColor.Click += ButtonChangeCursorColor_Click;
             // 
             // SavePatternButton
             // 
@@ -229,15 +229,15 @@ namespace UoFiddler.Controls.Forms
             RestorePatternButton.UseVisualStyleBackColor = true;
             RestorePatternButton.Click += RestorePatternButton_Click;
             // 
-            // btnClear
+            // BtnClear
             // 
-            btnClear.Location = new System.Drawing.Point(422, 275);
-            btnClear.Name = "btnClear";
-            btnClear.Size = new System.Drawing.Size(95, 23);
-            btnClear.TabIndex = 14;
-            btnClear.Text = "Clear Pattern";
-            btnClear.UseVisualStyleBackColor = true;
-            btnClear.Click += btnClear_Click;
+            BtnClear.Location = new System.Drawing.Point(422, 275);
+            BtnClear.Name = "BtnClear";
+            BtnClear.Size = new System.Drawing.Size(95, 23);
+            BtnClear.TabIndex = 14;
+            BtnClear.Text = "Clear Pattern";
+            BtnClear.UseVisualStyleBackColor = true;
+            BtnClear.Click += BtnClear_Click;
             // 
             // panelColor
             // 
@@ -255,15 +255,15 @@ namespace UoFiddler.Controls.Forms
             lbIDNumber.TabIndex = 16;
             lbIDNumber.Text = "Info:";
             // 
-            // buttonGeneratePattern
+            // ButtonGeneratePattern
             // 
-            buttonGeneratePattern.Location = new System.Drawing.Point(3, 4);
-            buttonGeneratePattern.Name = "buttonGeneratePattern";
-            buttonGeneratePattern.Size = new System.Drawing.Size(113, 23);
-            buttonGeneratePattern.TabIndex = 17;
-            buttonGeneratePattern.Text = "Generate Pattern";
-            buttonGeneratePattern.UseVisualStyleBackColor = true;
-            buttonGeneratePattern.Click += buttonGeneratePattern_Click;
+            ButtonGeneratePattern.Location = new System.Drawing.Point(3, 4);
+            ButtonGeneratePattern.Name = "ButtonGeneratePattern";
+            ButtonGeneratePattern.Size = new System.Drawing.Size(113, 23);
+            ButtonGeneratePattern.TabIndex = 17;
+            ButtonGeneratePattern.Text = "Generate Pattern";
+            ButtonGeneratePattern.UseVisualStyleBackColor = true;
+            ButtonGeneratePattern.Click += ButtonGeneratePattern_Click;
             // 
             // buttonGenerateSquare
             // 
@@ -276,9 +276,9 @@ namespace UoFiddler.Controls.Forms
             buttonGenerateSquare.Controls.Add(checkBoxRandomSize);
             buttonGenerateSquare.Controls.Add(trackBarSize);
             buttonGenerateSquare.Controls.Add(trackBarCount);
-            buttonGenerateSquare.Controls.Add(buttonGenerateSquares);
-            buttonGenerateSquare.Controls.Add(buttonGenerateCircles);
-            buttonGenerateSquare.Controls.Add(buttonGeneratePattern);
+            buttonGenerateSquare.Controls.Add(ButtonGenerateSquares);
+            buttonGenerateSquare.Controls.Add(ButtonGenerateCircles);
+            buttonGenerateSquare.Controls.Add(ButtonGeneratePattern);
             buttonGenerateSquare.Location = new System.Drawing.Point(339, 304);
             buttonGenerateSquare.Name = "buttonGenerateSquare";
             buttonGenerateSquare.Size = new System.Drawing.Size(343, 131);
@@ -352,7 +352,7 @@ namespace UoFiddler.Controls.Forms
             trackBarSize.TabIndex = 21;
             trackBarSize.TickStyle = System.Windows.Forms.TickStyle.TopLeft;
             trackBarSize.Value = 5;
-            trackBarSize.Scroll += trackBarSize_Scroll;
+            trackBarSize.Scroll += TrackBarSize_Scroll;
             // 
             // trackBarCount
             // 
@@ -364,47 +364,47 @@ namespace UoFiddler.Controls.Forms
             trackBarCount.TabIndex = 20;
             trackBarCount.TickStyle = System.Windows.Forms.TickStyle.TopLeft;
             trackBarCount.Value = 5;
-            trackBarCount.Scroll += trackBarCount_Scroll;
+            trackBarCount.Scroll += TrackBarCount_Scroll;
             // 
-            // buttonGenerateSquares
+            // ButtonGenerateSquares
             // 
-            buttonGenerateSquares.Location = new System.Drawing.Point(3, 52);
-            buttonGenerateSquares.Name = "buttonGenerateSquares";
-            buttonGenerateSquares.Size = new System.Drawing.Size(113, 23);
-            buttonGenerateSquares.TabIndex = 19;
-            buttonGenerateSquares.Text = "Generate Squares";
-            buttonGenerateSquares.UseVisualStyleBackColor = true;
-            buttonGenerateSquares.Click += buttonGenerateSquares_Click;
+            ButtonGenerateSquares.Location = new System.Drawing.Point(3, 52);
+            ButtonGenerateSquares.Name = "ButtonGenerateSquares";
+            ButtonGenerateSquares.Size = new System.Drawing.Size(113, 23);
+            ButtonGenerateSquares.TabIndex = 19;
+            ButtonGenerateSquares.Text = "Generate Squares";
+            ButtonGenerateSquares.UseVisualStyleBackColor = true;
+            ButtonGenerateSquares.Click += ButtonGenerateSquares_Click;
             // 
-            // buttonGenerateCircles
+            // ButtonGenerateCircles
             // 
-            buttonGenerateCircles.Location = new System.Drawing.Point(3, 28);
-            buttonGenerateCircles.Name = "buttonGenerateCircles";
-            buttonGenerateCircles.Size = new System.Drawing.Size(113, 23);
-            buttonGenerateCircles.TabIndex = 18;
-            buttonGenerateCircles.Text = "Generate Circles";
-            buttonGenerateCircles.UseVisualStyleBackColor = true;
-            buttonGenerateCircles.Click += buttonGenerateCircles_Click;
+            ButtonGenerateCircles.Location = new System.Drawing.Point(3, 28);
+            ButtonGenerateCircles.Name = "ButtonGenerateCircles";
+            ButtonGenerateCircles.Size = new System.Drawing.Size(113, 23);
+            ButtonGenerateCircles.TabIndex = 18;
+            ButtonGenerateCircles.Text = "Generate Circles";
+            ButtonGenerateCircles.UseVisualStyleBackColor = true;
+            ButtonGenerateCircles.Click += ButtonGenerateCircles_Click;
             // 
-            // btnImportClipbord
+            // BtnImportClipbord
             // 
-            btnImportClipbord.Location = new System.Drawing.Point(562, 143);
-            btnImportClipbord.Name = "btnImportClipbord";
-            btnImportClipbord.Size = new System.Drawing.Size(59, 23);
-            btnImportClipbord.TabIndex = 19;
-            btnImportClipbord.Text = "Import";
-            btnImportClipbord.UseVisualStyleBackColor = true;
-            btnImportClipbord.Click += btnImportClipbord_Click;
+            BtnImportClipbord.Location = new System.Drawing.Point(562, 143);
+            BtnImportClipbord.Name = "BtnImportClipbord";
+            BtnImportClipbord.Size = new System.Drawing.Size(59, 23);
+            BtnImportClipbord.TabIndex = 19;
+            BtnImportClipbord.Text = "Import";
+            BtnImportClipbord.UseVisualStyleBackColor = true;
+            BtnImportClipbord.Click += BtnImportClipbord_Click;
             // 
-            // btnLoadImage
+            // BtnLoadImage
             // 
-            btnLoadImage.Location = new System.Drawing.Point(562, 172);
-            btnLoadImage.Name = "btnLoadImage";
-            btnLoadImage.Size = new System.Drawing.Size(59, 23);
-            btnLoadImage.TabIndex = 20;
-            btnLoadImage.Text = "Load";
-            btnLoadImage.UseVisualStyleBackColor = true;
-            btnLoadImage.Click += btnLoadImage_Click;
+            BtnLoadImage.Location = new System.Drawing.Point(562, 172);
+            BtnLoadImage.Name = "BtnLoadImage";
+            BtnLoadImage.Size = new System.Drawing.Size(59, 23);
+            BtnLoadImage.TabIndex = 20;
+            BtnLoadImage.Text = "Load";
+            BtnLoadImage.UseVisualStyleBackColor = true;
+            BtnLoadImage.Click += BtnLoadImage_Click;
             // 
             // tbColorCode
             // 
@@ -413,52 +413,52 @@ namespace UoFiddler.Controls.Forms
             tbColorCode.Size = new System.Drawing.Size(92, 23);
             tbColorCode.TabIndex = 21;
             // 
-            // btColorPincers
+            // BtColorPincers
             // 
-            btColorPincers.Location = new System.Drawing.Point(518, 246);
-            btColorPincers.Name = "btColorPincers";
-            btColorPincers.Size = new System.Drawing.Size(56, 23);
-            btColorPincers.TabIndex = 22;
-            btColorPincers.Text = "Pipette";
-            btColorPincers.UseVisualStyleBackColor = true;
-            btColorPincers.Click += btColorPincers_Click;
+            BtColorPincers.Location = new System.Drawing.Point(518, 246);
+            BtColorPincers.Name = "BtColorPincers";
+            BtColorPincers.Size = new System.Drawing.Size(56, 23);
+            BtColorPincers.TabIndex = 22;
+            BtColorPincers.Text = "Pipette";
+            BtColorPincers.UseVisualStyleBackColor = true;
+            BtColorPincers.Click += BtColorPincers_Click;
             // 
-            // btExchangeSelectiveColors
+            // BtExchangeSelectiveColors
             // 
-            btExchangeSelectiveColors.Location = new System.Drawing.Point(575, 246);
-            btExchangeSelectiveColors.Name = "btExchangeSelectiveColors";
-            btExchangeSelectiveColors.Size = new System.Drawing.Size(70, 23);
-            btExchangeSelectiveColors.TabIndex = 23;
-            btExchangeSelectiveColors.Text = "Exchange";
-            btExchangeSelectiveColors.UseVisualStyleBackColor = true;
-            btExchangeSelectiveColors.Click += btExchangeSelectiveColors_Click;
+            BtExchangeSelectiveColors.Location = new System.Drawing.Point(575, 246);
+            BtExchangeSelectiveColors.Name = "BtExchangeSelectiveColors";
+            BtExchangeSelectiveColors.Size = new System.Drawing.Size(70, 23);
+            BtExchangeSelectiveColors.TabIndex = 23;
+            BtExchangeSelectiveColors.Text = "Exchange";
+            BtExchangeSelectiveColors.UseVisualStyleBackColor = true;
+            BtExchangeSelectiveColors.Click += BtExchangeSelectiveColors_Click;
             // 
             // TextureColorForm
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             ClientSize = new System.Drawing.Size(694, 443);
-            Controls.Add(btExchangeSelectiveColors);
-            Controls.Add(btColorPincers);
+            Controls.Add(BtExchangeSelectiveColors);
+            Controls.Add(BtColorPincers);
             Controls.Add(tbColorCode);
-            Controls.Add(btnLoadImage);
-            Controls.Add(btnImportClipbord);
+            Controls.Add(BtnLoadImage);
+            Controls.Add(BtnImportClipbord);
             Controls.Add(buttonGenerateSquare);
             Controls.Add(lbIDNumber);
             Controls.Add(panelColor);
-            Controls.Add(btnClear);
+            Controls.Add(BtnClear);
             Controls.Add(RestorePatternButton);
             Controls.Add(SavePatternButton);
-            Controls.Add(buttonChangeCursorColor);
-            Controls.Add(buttonSaveToFile);
-            Controls.Add(buttonCopyToClipboard);
-            Controls.Add(buttonLoadPosition);
-            Controls.Add(buttonSavePosition);
+            Controls.Add(ButtonChangeCursorColor);
+            Controls.Add(ButtonSaveToFile);
+            Controls.Add(ButtonCopyToClipboard);
+            Controls.Add(ButtonLoadPosition);
+            Controls.Add(ButtonSavePosition);
             Controls.Add(labelColorValues);
             Controls.Add(labelColorShift);
-            Controls.Add(trackBarColor);
-            Controls.Add(buttonNext);
-            Controls.Add(buttonPrevious);
+            Controls.Add(TrackBarColor);
+            Controls.Add(ButtonNext);
+            Controls.Add(ButtonPrevious);
             Controls.Add(panel1);
             FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             Icon = (System.Drawing.Icon)resources.GetObject("$this.Icon");
@@ -466,7 +466,7 @@ namespace UoFiddler.Controls.Forms
             Text = "Texture Painter and Color and Pattern ";
             ((System.ComponentModel.ISupportInitialize)PictureBoxImageColor).EndInit();
             panel1.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)trackBarColor).EndInit();
+            ((System.ComponentModel.ISupportInitialize)TrackBarColor).EndInit();
             buttonGenerateSquare.ResumeLayout(false);
             buttonGenerateSquare.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)trackBarSize).EndInit();
@@ -479,25 +479,25 @@ namespace UoFiddler.Controls.Forms
 
         private System.Windows.Forms.PictureBox PictureBoxImageColor;
         private System.Windows.Forms.Panel panel1;
-        private System.Windows.Forms.Button buttonPrevious;
-        private System.Windows.Forms.Button buttonNext;
-        private System.Windows.Forms.TrackBar trackBarColor;
+        private System.Windows.Forms.Button ButtonPrevious;
+        private System.Windows.Forms.Button ButtonNext;
+        private System.Windows.Forms.TrackBar TrackBarColor;
         private System.Windows.Forms.Label labelColorShift;
         private System.Windows.Forms.Label labelColorValues;
-        private System.Windows.Forms.Button buttonSavePosition;
-        private System.Windows.Forms.Button buttonLoadPosition;
-        private System.Windows.Forms.Button buttonCopyToClipboard;
-        private System.Windows.Forms.Button buttonSaveToFile;
-        private System.Windows.Forms.Button buttonChangeCursorColor;
+        private System.Windows.Forms.Button ButtonSavePosition;
+        private System.Windows.Forms.Button ButtonLoadPosition;
+        private System.Windows.Forms.Button ButtonCopyToClipboard;
+        private System.Windows.Forms.Button ButtonSaveToFile;
+        private System.Windows.Forms.Button ButtonChangeCursorColor;
         private System.Windows.Forms.Button SavePatternButton;
         private System.Windows.Forms.Button RestorePatternButton;
-        private System.Windows.Forms.Button btnClear;
+        private System.Windows.Forms.Button BtnClear;
         private System.Windows.Forms.Panel panelColor;
         private System.Windows.Forms.Label lbIDNumber;
-        private System.Windows.Forms.Button buttonGeneratePattern;
+        private System.Windows.Forms.Button ButtonGeneratePattern;
         private System.Windows.Forms.Panel buttonGenerateSquare;
-        private System.Windows.Forms.Button buttonGenerateCircles;
-        private System.Windows.Forms.Button buttonGenerateSquares;
+        private System.Windows.Forms.Button ButtonGenerateCircles;
+        private System.Windows.Forms.Button ButtonGenerateSquares;
         private System.Windows.Forms.TrackBar trackBarSize;
         private System.Windows.Forms.TrackBar trackBarCount;
         private System.Windows.Forms.CheckBox checkBoxRandomSize;
@@ -505,11 +505,11 @@ namespace UoFiddler.Controls.Forms
         private System.Windows.Forms.Label labelCount;
         private System.Windows.Forms.Button LoadButton;
         private System.Windows.Forms.Button SaveButton;
-        private System.Windows.Forms.Button btnImportClipbord;
-        private System.Windows.Forms.Button btnLoadImage;
+        private System.Windows.Forms.Button BtnImportClipbord;
+        private System.Windows.Forms.Button BtnLoadImage;
         private System.Windows.Forms.CheckBox checkBoxKeepPreviousPattern;
         private System.Windows.Forms.TextBox tbColorCode;
-        private System.Windows.Forms.Button btColorPincers;
-        private System.Windows.Forms.Button btExchangeSelectiveColors;
+        private System.Windows.Forms.Button BtColorPincers;
+        private System.Windows.Forms.Button BtExchangeSelectiveColors;
     }
 }

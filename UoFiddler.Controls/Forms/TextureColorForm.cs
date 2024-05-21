@@ -27,17 +27,17 @@ namespace UoFiddler.Controls.Forms
 {
     public partial class TextureColorForm : Form
     {
-        private int currentTextureId = 0; // Start with texture ID 0
-        private Bitmap originalImage; // To store the original image
-        private int savedTrackBarPosition; // To store the position of the track bar
-        private List<Point> points = new List<Point>(); // To save the path of the mouse
-        private bool isSelecting = false; // To track whether the user is currently making a selection
-        private Point imagePosition; // To save the position of the image
-        private List<Point> savedPattern = null;
-        private Random random = null; // Generator Line Circle Shapes 
-        private List<List<Point>> circles = new List<List<Point>>(); // Point circles
-        private List<List<Point>> shapes = new List<List<Point>>(); // shapes
-        private bool isPickingColor = false; // To track the color selection mode
+        private int _currentTextureId = 0; // Start with texture ID 0
+        private Bitmap _originalImage; // To store the original image
+        private int _savedTrackBarPosition; // To store the position of the track bar
+        private List<Point> _points = new List<Point>(); // To save the path of the mouse
+        private bool _isSelecting = false; // To track whether the user is currently making a selection
+        private Point _imagePosition; // To save the position of the image
+        private List<Point> _savedPattern = null;
+        private Random _random = null; // Generator Line Circle Shapes 
+        private List<List<Point>> _circles = new List<List<Point>>(); // Point circles
+        private List<List<Point>> _shapes = new List<List<Point>>(); // shapes
+        private bool _isPickingColor = false; // To track the color selection mode
 
 
         private Cursor CustomCursor { get; set; }
@@ -87,7 +87,7 @@ namespace UoFiddler.Controls.Forms
         #region SetCurrentTextureId
         public void SetCurrentTextureId(int textureId)
         {
-            currentTextureId = textureId;
+            _currentTextureId = textureId;
         }
         #endregion
 
@@ -95,24 +95,24 @@ namespace UoFiddler.Controls.Forms
         public void UpdateImage()
         {
             // Check whether the texture exists before displaying it
-            if (Textures.TestTexture(currentTextureId))
+            if (Textures.TestTexture(_currentTextureId))
             {
-                Image textureImage = Textures.GetTexture(currentTextureId);
+                Image textureImage = Textures.GetTexture(_currentTextureId);
                 PictureBoxImageColor.Image = textureImage;
-                originalImage = new Bitmap(textureImage); // Save a copy of the original image
+                _originalImage = new Bitmap(textureImage); // Save a copy of the original image
 
                 // Calculate the position of the image within the PictureBox
                 int imageX = (PictureBoxImageColor.Width - textureImage.Width) / 2;
                 int imageY = (PictureBoxImageColor.Height - textureImage.Height) / 2;
 
                 // Store the position for later use                
-                this.imagePosition = new Point(imageX, imageY);
+                this._imagePosition = new Point(imageX, imageY);
 
                 // Convert the ID to a hexadecimal string
-                string hexId = "0x" + currentTextureId.ToString("X4");
+                string hexId = "0x" + _currentTextureId.ToString("X4");
 
                 // Update the label with the ID, the size and the Hex address of the image
-                lbIDNumber.Text = $"ID: {currentTextureId} (Hex: {hexId}), Size: {PictureBoxImageColor.Image.Size}";
+                lbIDNumber.Text = $"ID: {_currentTextureId} (Hex: {hexId}), Size: {PictureBoxImageColor.Image.Size}";
             }
         }
         #endregion
@@ -134,29 +134,29 @@ namespace UoFiddler.Controls.Forms
         }
 
         #region buttonPrevious
-        private void buttonPrevious_Click(object sender, EventArgs e)
+        private void ButtonPrevious_Click(object sender, EventArgs e)
         {
             // Decrease the texture ID but stop at 0
             do
             {
-                if (currentTextureId > 0)
+                if (_currentTextureId > 0)
                 {
-                    currentTextureId--;
+                    _currentTextureId--;
                 }
-            } while (!Textures.TestTexture(currentTextureId) && currentTextureId > 0);
+            } while (!Textures.TestTexture(_currentTextureId) && _currentTextureId > 0);
 
             UpdateImage();
         }
         #endregion
 
         #region buttonNext
-        private void buttonNext_Click(object sender, EventArgs e)
+        private void ButtonNext_Click(object sender, EventArgs e)
         {
             // Increase the texture ID and refresh the image
             do
             {
-                currentTextureId++;
-            } while (!Textures.TestTexture(currentTextureId) && currentTextureId < Textures.GetIdxLength());
+                _currentTextureId++;
+            } while (!Textures.TestTexture(_currentTextureId) && _currentTextureId < Textures.GetIdxLength());
 
             UpdateImage();
         }
@@ -244,10 +244,10 @@ namespace UoFiddler.Controls.Forms
         #endregion
 
         #region trackBarColor_MouseUp
-        private void trackBarColor_MouseUp(object sender, MouseEventArgs e)
+        private void TrackBarColor_MouseUp(object sender, MouseEventArgs e)
         {
             // Check if there are any shapes
-            if (shapes.Count > 0)
+            if (_shapes.Count > 0)
             {
                 // If there are shapes, call the ChangeImageColorCircleSquares method
                 ChangeImageColorCircleSquares();
@@ -264,12 +264,12 @@ namespace UoFiddler.Controls.Forms
         private void ChangeImageColor()
         {
             // Get the current value of the track bar
-            int hueShift = trackBarColor.Value;
+            int hueShift = TrackBarColor.Value;
 
             // If the value is 0, reset the image to the original
             if (hueShift == 0)
             {
-                PictureBoxImageColor.Image = new Bitmap(originalImage);
+                PictureBoxImageColor.Image = new Bitmap(_originalImage);
                 return;
             }
 
@@ -278,9 +278,9 @@ namespace UoFiddler.Controls.Forms
 
             // Create a GraphicsPath from the points
             GraphicsPath path = new GraphicsPath();
-            if (points.Count > 1)
+            if (_points.Count > 1)
             {
-                path.AddLines(points.ToArray());
+                path.AddLines(_points.ToArray());
             }
             else
             {
@@ -332,12 +332,12 @@ namespace UoFiddler.Controls.Forms
         private void ChangeImageColorCircleSquares()
         {
             // Get the current value of the track bar
-            int hueShift = trackBarColor.Value;
+            int hueShift = TrackBarColor.Value;
 
             // If the value is 0, reset the image to the original
             if (hueShift == 0)
             {
-                PictureBoxImageColor.Image = new Bitmap(originalImage);
+                PictureBoxImageColor.Image = new Bitmap(_originalImage);
                 return;
             }
 
@@ -345,10 +345,10 @@ namespace UoFiddler.Controls.Forms
             Bitmap bmp = new Bitmap(PictureBoxImageColor.Image);
 
             // Check if there are any shapes
-            if (shapes.Count > 0)
+            if (_shapes.Count > 0)
             {
                 // Iterate over each shape
-                foreach (List<Point> shape in shapes)
+                foreach (List<Point> shape in _shapes)
                 {
                     // Create a GraphicsPath from the shape
                     GraphicsPath shapePath = new GraphicsPath();
@@ -427,10 +427,10 @@ namespace UoFiddler.Controls.Forms
         #endregion
 
         #region trackBarColor_Scroll
-        private void trackBarColor_Scroll(object sender, EventArgs e)
+        private void TrackBarColor_Scroll(object sender, EventArgs e)
         {
             // Get the current value of the track bar
-            int colorShift = trackBarColor.Value;
+            int colorShift = TrackBarColor.Value;
 
             // Update the label with the current value
             labelColorShift.Text = $"Color shift: {colorShift}";
@@ -438,12 +438,12 @@ namespace UoFiddler.Controls.Forms
         #endregion
 
         #region trackBarColor_KeyUp
-        private void trackBarColor_KeyUp(object sender, KeyEventArgs e)
+        private void TrackBarColor_KeyUp(object sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.Left || e.KeyCode == Keys.Right)
             {
                 // Check if there are any shapes
-                if (shapes.Count > 0)
+                if (_shapes.Count > 0)
                 {
                     // If there are shapes, call the ChangeImageColorCircleSquares method
                     ChangeImageColorCircleSquares();
@@ -458,21 +458,21 @@ namespace UoFiddler.Controls.Forms
         #endregion
 
         #region buttonSavePosition
-        private void buttonSavePosition_Click(object sender, EventArgs e)
+        private void ButtonSavePosition_Click(object sender, EventArgs e)
         {
             // Save the current position of the track bar
-            savedTrackBarPosition = trackBarColor.Value;
+            _savedTrackBarPosition = TrackBarColor.Value;
         }
         #endregion
 
         #region buttonLoadPosition
-        private void buttonLoadPosition_Click(object sender, EventArgs e)
+        private void ButtonLoadPosition_Click(object sender, EventArgs e)
         {
             // Set the position of the track bar to the saved value
-            trackBarColor.Value = savedTrackBarPosition;
+            TrackBarColor.Value = _savedTrackBarPosition;
 
             // Update the label with the current value
-            labelColorShift.Text = $"Color shift: {savedTrackBarPosition}";
+            labelColorShift.Text = $"Color shift: {_savedTrackBarPosition}";
 
             // Update the image color
             ChangeImageColor();
@@ -480,7 +480,7 @@ namespace UoFiddler.Controls.Forms
         #endregion
 
         #region buttonCopyToClipboard
-        private void buttonCopyToClipboard_Click(object sender, EventArgs e)
+        private void ButtonCopyToClipboard_Click(object sender, EventArgs e)
         {
             if (PictureBoxImageColor.Image != null)
             {
@@ -490,7 +490,7 @@ namespace UoFiddler.Controls.Forms
         #endregion
 
         #region buttonSaveToFile_Click
-        private void buttonSaveToFile_Click(object sender, EventArgs e)
+        private void ButtonSaveToFile_Click(object sender, EventArgs e)
         {
             if (PictureBoxImageColor.Image != null)
             {
@@ -511,10 +511,10 @@ namespace UoFiddler.Controls.Forms
         private void PictureBoxImageColor_MouseDown(object sender, MouseEventArgs e)
         {
             // Start selecting
-            isSelecting = true;
+            _isSelecting = true;
 
             // Clear the list of points
-            points.Clear();
+            _points.Clear();
 
             // Calculate the mouse position relative to the PictureBox
             Point mousePosition = new Point(e.X - PictureBoxImageColor.Left + 9, e.Y - PictureBoxImageColor.Top + 9);
@@ -523,7 +523,7 @@ namespace UoFiddler.Controls.Forms
             Point imagePoint = ConvertMouseToImageCoordinates(mousePosition);
 
             // Add the current point to the list
-            points.Add(imagePoint);
+            _points.Add(imagePoint);
 
             // Redraw the PictureBox
             PictureBoxImageColor.Invalidate();
@@ -533,7 +533,7 @@ namespace UoFiddler.Controls.Forms
         #region PictureBoxImageColor_MouseMove
         private void PictureBoxImageColor_MouseMove(object sender, MouseEventArgs e)
         {
-            if (isSelecting)
+            if (_isSelecting)
             {
                 // Calculate the mouse position relative to the PictureBox
                 Point mousePosition = new Point(e.X - PictureBoxImageColor.Left + 9, e.Y - PictureBoxImageColor.Top + 9);
@@ -543,7 +543,7 @@ namespace UoFiddler.Controls.Forms
                 Point imagePoint = ConvertMouseToImageCoordinates(mousePosition);
 
                 // Add the current point to the list
-                points.Add(imagePoint);
+                _points.Add(imagePoint);
 
                 // Update the position of the cursor pixel
                 this.CursorPixelPosition = e.Location;
@@ -551,7 +551,7 @@ namespace UoFiddler.Controls.Forms
                 // Redraw the PictureBox
                 PictureBoxImageColor.Invalidate();
             }
-            if (isPickingColor)
+            if (_isPickingColor)
             {
                 // Calculate the mouse position relative to the PictureBox
                 Point mousePosition = new Point(e.X - PictureBoxImageColor.Left + 9, e.Y - PictureBoxImageColor.Top + 9);
@@ -573,7 +573,7 @@ namespace UoFiddler.Controls.Forms
         private void PictureBoxImageColor_MouseUp(object sender, MouseEventArgs e)
         {
             // Stop selecting
-            isSelecting = false;
+            _isSelecting = false;
         }
         #endregion
 
@@ -581,13 +581,13 @@ namespace UoFiddler.Controls.Forms
         private void PictureBoxImageColor_Paint(object sender, PaintEventArgs e)
         {
             // Draw the path of the selection if there are enough points
-            if (points.Count > 1)
+            if (_points.Count > 1)
             {
                 // Create a new list of points adjusted for the image position
                 List<Point> adjustedPoints = new List<Point>();
-                foreach (Point point in points)
+                foreach (Point point in _points)
                 {
-                    adjustedPoints.Add(new Point(point.X + imagePosition.X, point.Y + imagePosition.Y));
+                    adjustedPoints.Add(new Point(point.X + _imagePosition.X, point.Y + _imagePosition.Y));
                 }
 
                 // Draw the lines using the adjusted points
@@ -601,13 +601,13 @@ namespace UoFiddler.Controls.Forms
             }
 
             // Draw the shapes
-            foreach (List<Point> shape in shapes)
+            foreach (List<Point> shape in _shapes)
             {
                 // Create a new list of points adjusted for the image position
                 List<Point> adjustedShape = new List<Point>();
                 foreach (Point point in shape)
                 {
-                    adjustedShape.Add(new Point(point.X + imagePosition.X, point.Y + imagePosition.Y));
+                    adjustedShape.Add(new Point(point.X + _imagePosition.X, point.Y + _imagePosition.Y));
                 }
 
                 // Draw the shape using the adjusted points
@@ -656,7 +656,7 @@ namespace UoFiddler.Controls.Forms
         #endregion
 
         #region buttonChangeCursorColor
-        private void buttonChangeCursorColor_Click(object sender, EventArgs e)
+        private void ButtonChangeCursorColor_Click(object sender, EventArgs e)
         {
             // Open a color dialog to change the color of the cursor pixel
             using (ColorDialog colorDialog = new ColorDialog())
@@ -673,14 +673,14 @@ namespace UoFiddler.Controls.Forms
         private void SavePatternButton_Click(object sender, EventArgs e)
         {
             // If there is a current pattern, save it
-            if (points.Count > 0)
+            if (_points.Count > 0)
             {
-                savedPattern = new List<Point>(points);
+                _savedPattern = new List<Point>(_points);
             }
             // If there is no current pattern but there is a saved pattern, restore the saved pattern
-            else if (savedPattern != null)
+            else if (_savedPattern != null)
             {
-                points = new List<Point>(savedPattern);
+                _points = new List<Point>(_savedPattern);
                 PictureBoxImageColor.Invalidate();  // Redraw the image to see the restored pattern
             }
         }
@@ -690,10 +690,10 @@ namespace UoFiddler.Controls.Forms
         private void RestorePatternButton_Click(object sender, EventArgs e)
         {
             // Check whether a pattern has been saved
-            if (savedPattern != null)
+            if (_savedPattern != null)
             {
                 // Restore the saved pattern
-                points = new List<Point>(savedPattern);
+                _points = new List<Point>(_savedPattern);
 
                 // Redraw the image to see the restored pattern
                 PictureBoxImageColor.Invalidate();
@@ -702,11 +702,11 @@ namespace UoFiddler.Controls.Forms
         #endregion
 
         #region btnClear_Click
-        private void btnClear_Click(object sender, EventArgs e)
+        private void BtnClear_Click(object sender, EventArgs e)
         {
             // Clear the list of points
-            points.Clear();
-            shapes.Clear();
+            _points.Clear();
+            _shapes.Clear();
 
             // Redraw the image
             PictureBoxImageColor.Invalidate();
@@ -733,7 +733,7 @@ namespace UoFiddler.Controls.Forms
 
 
         #region buttonGeneratePattern
-        private void buttonGeneratePattern_Click(object sender, EventArgs e)
+        private void ButtonGeneratePattern_Click(object sender, EventArgs e)
         {
             GenerateRandomPoints(50); //Points 50 
             PictureBoxImageColor.Invalidate();
@@ -741,11 +741,11 @@ namespace UoFiddler.Controls.Forms
         #endregion
 
         #region buttonGenerateCircles
-        private void buttonGenerateCircles_Click(object sender, EventArgs e)
+        private void ButtonGenerateCircles_Click(object sender, EventArgs e)
         {
-            if (random == null)
+            if (_random == null)
             {
-                random = new Random();
+                _random = new Random();
             }
 
             int minSize = checkBoxRandomSize.Checked ? 3 : trackBarSize.Value;
@@ -757,11 +757,11 @@ namespace UoFiddler.Controls.Forms
         #endregion
 
         #region buttonGenerateSquares
-        private void buttonGenerateSquares_Click(object sender, EventArgs e)
+        private void ButtonGenerateSquares_Click(object sender, EventArgs e)
         {
-            if (random == null)
+            if (_random == null)
             {
-                random = new Random();
+                _random = new Random();
             }
 
             int minSize = checkBoxRandomSize.Checked ? 10 : trackBarSize.Value;
@@ -776,18 +776,18 @@ namespace UoFiddler.Controls.Forms
         #region GenerateRandomPoints
         private void GenerateRandomPoints(int count)
         {
-            if (random == null)
+            if (_random == null)
             {
-                random = new Random();
+                _random = new Random();
             }
 
-            points.Clear();
+            _points.Clear();
 
             for (int i = 0; i < count; i++)
             {
-                int x = random.Next(PictureBoxImageColor.Image.Width);
-                int y = random.Next(PictureBoxImageColor.Image.Height);
-                points.Add(new Point(x, y));
+                int x = _random.Next(PictureBoxImageColor.Image.Width);
+                int y = _random.Next(PictureBoxImageColor.Image.Height);
+                _points.Add(new Point(x, y));
             }
         }
         #endregion
@@ -795,23 +795,23 @@ namespace UoFiddler.Controls.Forms
         #region GenerateRandomCircles
         private void GenerateRandomCircles(int count, int minRadius, int maxRadius)
         {
-            if (random == null)
+            if (_random == null)
             {
-                random = new Random();
+                _random = new Random();
             }
 
-            shapes.Clear(); // Clear the list of shapes at the beginning
+            _shapes.Clear(); // Clear the list of shapes at the beginning
 
             for (int i = 0; i < count; i++)
             {
-                int radius = random.Next(minRadius, maxRadius + 1);
+                int radius = _random.Next(minRadius, maxRadius + 1);
                 int x, y;
 
                 int maxAttempts = 100; // Maximum number of attempts to generate a non-overlapping shape
                 do
                 {
-                    x = random.Next(radius + 3, PictureBoxImageColor.Image.Width - radius - 3); // Add padding to x
-                    y = random.Next(radius + 3, PictureBoxImageColor.Image.Height - radius - 3); // Add padding to y
+                    x = _random.Next(radius + 3, PictureBoxImageColor.Image.Width - radius - 3); // Add padding to x
+                    y = _random.Next(radius + 3, PictureBoxImageColor.Image.Height - radius - 3); // Add padding to y
                     maxAttempts--;
                 }
                 while (CirclesOverlap(x, y, radius) && maxAttempts > 0);
@@ -827,7 +827,7 @@ namespace UoFiddler.Controls.Forms
                     circle.Add(new Point(circleX, circleY));
                 }
 
-                shapes.Add(circle);
+                _shapes.Add(circle);
             }
 
             PictureBoxImageColor.Invalidate();
@@ -837,7 +837,7 @@ namespace UoFiddler.Controls.Forms
         #region CirclesOverlap
         private bool CirclesOverlap(int x, int y, int radius)
         {
-            foreach (List<Point> shape in shapes)
+            foreach (List<Point> shape in _shapes)
             {
                 int dx = shape[0].X - x;
                 int dy = shape[0].Y - y;
@@ -859,7 +859,7 @@ namespace UoFiddler.Controls.Forms
             int padding = 3; // Put the desired distance between the squares
             Rectangle newSquare = new Rectangle(x - padding, y - padding, size + 2 * padding, size + 2 * padding);
 
-            foreach (List<Point> shape in shapes)
+            foreach (List<Point> shape in _shapes)
             {
                 int existingWidth = shape[1].X - shape[0].X;
                 int existingHeight = shape[2].Y - shape[0].Y;
@@ -879,12 +879,12 @@ namespace UoFiddler.Controls.Forms
         #region GenerateRandomSquares
         private void GenerateRandomSquares(int count, int minSize, int maxSize)
         {
-            if (random == null)
+            if (_random == null)
             {
-                random = new Random();
+                _random = new Random();
             }
 
-            shapes.Clear(); // Clear the list of shapes at the beginning
+            _shapes.Clear(); // Clear the list of shapes at the beginning
 
             for (int i = 0; i < count; i++)
             {
@@ -896,9 +896,9 @@ namespace UoFiddler.Controls.Forms
                 int maxAttempts = 100; // Maximum number of attempts to generate a non-overlapping shape
                 do
                 {
-                    size = random.Next(minSize, maxSize + 1);
-                    x = random.Next(size + 3, PictureBoxImageColor.Image.Width - size - 3); // Add padding to x
-                    y = random.Next(size + 3, PictureBoxImageColor.Image.Height - size - 3); // Add padding to y
+                    size = _random.Next(minSize, maxSize + 1);
+                    x = _random.Next(size + 3, PictureBoxImageColor.Image.Width - size - 3); // Add padding to x
+                    y = _random.Next(size + 3, PictureBoxImageColor.Image.Height - size - 3); // Add padding to y
                     maxAttempts--;
                 }
                 while (SquaresOverlap(x, y, size) && maxAttempts > 0);
@@ -921,7 +921,7 @@ namespace UoFiddler.Controls.Forms
                     square.Add(new Point(x + size - 1, y + dy));
                 }
 
-                shapes.Add(square);
+                _shapes.Add(square);
             }
 
             PictureBoxImageColor.Invalidate();
@@ -929,7 +929,7 @@ namespace UoFiddler.Controls.Forms
         #endregion
 
         #region trackBarCount_Scroll
-        private void trackBarCount_Scroll(object sender, EventArgs e)
+        private void TrackBarCount_Scroll(object sender, EventArgs e)
         {
             // Update the label with the current value of trackBarCount
             labelCount.Text = $"Count: {trackBarCount.Value}";
@@ -941,7 +941,7 @@ namespace UoFiddler.Controls.Forms
         #endregion
 
         #region trackBarSize_Scroll
-        private void trackBarSize_Scroll(object sender, EventArgs e)
+        private void TrackBarSize_Scroll(object sender, EventArgs e)
         {
             // Update the label with the current value of trackBarSize
             labelSize.Text = $"Size: {trackBarSize.Value}";
@@ -990,7 +990,7 @@ namespace UoFiddler.Controls.Forms
         {
             using (StreamWriter writer = new StreamWriter(filename))
             {
-                foreach (Point point in points)
+                foreach (Point point in _points)
                 {
                     writer.WriteLine($"{point.X},{point.Y}");
                 }
@@ -1005,7 +1005,7 @@ namespace UoFiddler.Controls.Forms
             // Only delete the points if the CheckBox is not activated
             if (!checkBoxKeepPreviousPattern.Checked)
             {
-                points.Clear();
+                _points.Clear();
             }
 
             using (StreamReader reader = new StreamReader(filename))
@@ -1016,7 +1016,7 @@ namespace UoFiddler.Controls.Forms
                     string[] parts = line.Split(',');
                     int x = int.Parse(parts[0]);
                     int y = int.Parse(parts[1]);
-                    points.Add(new Point(x, y));
+                    _points.Add(new Point(x, y));
                 }
             }
 
@@ -1026,7 +1026,7 @@ namespace UoFiddler.Controls.Forms
         #endregion
 
         #region btnImportClipbord
-        private void btnImportClipbord_Click(object sender, EventArgs e)
+        private void BtnImportClipbord_Click(object sender, EventArgs e)
         {
             if (Clipboard.ContainsImage())
             {
@@ -1041,7 +1041,7 @@ namespace UoFiddler.Controls.Forms
         #endregion
 
         #region btnLoadImage
-        private void btnLoadImage_Click(object sender, EventArgs e)
+        private void BtnLoadImage_Click(object sender, EventArgs e)
         {
             using (OpenFileDialog openFileDialog = new OpenFileDialog())
             {
@@ -1059,16 +1059,16 @@ namespace UoFiddler.Controls.Forms
         #endregion        
 
         #region btColorPincers
-        private void btColorPincers_Click(object sender, EventArgs e)
+        private void BtColorPincers_Click(object sender, EventArgs e)
         {
-            isPickingColor = !isPickingColor; // Switch mode when button is clicked
+            _isPickingColor = !_isPickingColor; // Switch mode when button is clicked
         }
         #endregion
 
         #region PictureBoxImageColor_MouseClick
         private void PictureBoxImageColor_MouseClick(object sender, MouseEventArgs e)
         {
-            if (isPickingColor)
+            if (_isPickingColor)
             {
                 // Calculate the mouse position relative to the PictureBox
                 Point mousePosition = new Point(e.X - PictureBoxImageColor.Left + 9, e.Y - PictureBoxImageColor.Top + 9);
@@ -1084,13 +1084,13 @@ namespace UoFiddler.Controls.Forms
                 tbColorCode.Text = ColorTranslator.ToHtml(pixelColor);
 
                 // Deactivate the color picking mode
-                isPickingColor = false;
+                _isPickingColor = false;
             }
         }
         #endregion
 
-        #region btExchangeSelectiveColors
-        private void btExchangeSelectiveColors_Click(object sender, EventArgs e)
+        #region BtExchangeSelectiveColors
+        private void BtExchangeSelectiveColors_Click(object sender, EventArgs e)
         {
             // Open a ColorDialog to select the new color
             using (ColorDialog colorDialog = new ColorDialog())
@@ -1115,9 +1115,9 @@ namespace UoFiddler.Controls.Forms
 
             // Create a GraphicsPath from the points
             GraphicsPath path = new GraphicsPath();
-            if (points.Count > 1)
+            if (_points.Count > 1)
             {
-                path.AddLines(points.ToArray());
+                path.AddLines(_points.ToArray());
             }
             else
             {
