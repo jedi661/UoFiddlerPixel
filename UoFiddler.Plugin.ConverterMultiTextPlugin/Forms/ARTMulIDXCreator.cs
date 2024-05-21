@@ -1729,7 +1729,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         public class DataStream
         {
             public ushort RowHeader { get; set; }
-            private ushort _RowOfs;
+            private ushort _rowOfs;
 
             public DataStream()
             {
@@ -1756,7 +1756,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             {
                 get
                 {
-                    return _RowOfs & 0x3F;
+                    return _rowOfs & 0x3F;
                 }
             }
 
@@ -1764,7 +1764,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             {
                 get
                 {
-                    return _RowOfs >> 6;
+                    return _rowOfs >> 6;
                 }
             }
         }
