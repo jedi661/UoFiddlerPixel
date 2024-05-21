@@ -47,8 +47,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             importClipbordToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             fillTextureToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            buttonLoadImage = new System.Windows.Forms.Button();
-            buttonTextureCutter = new System.Windows.Forms.Button();
+            ButtonLoadImage = new System.Windows.Forms.Button();
+            ButtonTextureCutter = new System.Windows.Forms.Button();
             openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             checkBox44x44 = new System.Windows.Forms.CheckBox();
             checkBox64x64 = new System.Windows.Forms.CheckBox();
@@ -61,13 +61,13 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             label1 = new System.Windows.Forms.Label();
             label2 = new System.Windows.Forms.Label();
             checkBox1 = new System.Windows.Forms.CheckBox();
-            buttonOpenTempGrafic = new System.Windows.Forms.Button();
+            ButtonOpenTempGrafic = new System.Windows.Forms.Button();
             ButtonShrinkTexture = new System.Windows.Forms.Button();
-            buttonsharp = new System.Windows.Forms.Button();
-            buttonSaveImage = new System.Windows.Forms.Button();
+            Buttonsharp = new System.Windows.Forms.Button();
+            ButtonSaveImage = new System.Windows.Forms.Button();
             panel2 = new System.Windows.Forms.Panel();
             checkBoxRGB = new System.Windows.Forms.CheckBox();
-            btColorNormalization = new System.Windows.Forms.Button();
+            BtColorNormalization = new System.Windows.Forms.Button();
             checkboxDarken = new System.Windows.Forms.CheckBox();
             LabelWhiteBalance = new System.Windows.Forms.Label();
             TrackbarWhiteBalance = new System.Windows.Forms.TrackBar();
@@ -75,11 +75,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             labelTolerance = new System.Windows.Forms.Label();
             trackBarSharpness = new System.Windows.Forms.TrackBar();
             trackBarTolerance = new System.Windows.Forms.TrackBar();
-            button45Degrees = new System.Windows.Forms.Button();
-            buttonWhite = new System.Windows.Forms.Button();
+            Button45Degrees = new System.Windows.Forms.Button();
+            ButtonWhite = new System.Windows.Forms.Button();
             ButtonRotateTexture = new System.Windows.Forms.Button();
             ButtonAutoTexture = new System.Windows.Forms.Button();
-            buttonOptimize = new System.Windows.Forms.Button();
+            ButtonOptimize = new System.Windows.Forms.Button();
             BtMirroImage = new System.Windows.Forms.Button();
             textBoxColorToAdress2 = new System.Windows.Forms.TextBox();
             checkBox33x33 = new System.Windows.Forms.CheckBox();
@@ -96,17 +96,17 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             checkBoxParticelGreyHue = new System.Windows.Forms.CheckBox();
             checkBoxToTextboxColor = new System.Windows.Forms.CheckBox();
             checkBoxLines = new System.Windows.Forms.CheckBox();
-            btPaintBoxPin = new System.Windows.Forms.Button();
-            selectColorButton2 = new System.Windows.Forms.Button();
-            btphotorandomColor = new System.Windows.Forms.Button();
+            BtPaintBoxPin = new System.Windows.Forms.Button();
+            SelectColorButton2 = new System.Windows.Forms.Button();
+            BtphotorandomColor = new System.Windows.Forms.Button();
             panelIsPickingColor = new System.Windows.Forms.Panel();
-            buttonRedToBlueColors = new System.Windows.Forms.Button();
+            ButtonRedToBlueColors = new System.Windows.Forms.Button();
             checkBox2Colors = new System.Windows.Forms.CheckBox();
-            btModusColorChange = new System.Windows.Forms.Button();
-            zoomButton = new System.Windows.Forms.Button();
-            btEvaluateColor = new System.Windows.Forms.Button();
-            resetButton2 = new System.Windows.Forms.Button();
-            btcolorlistimage = new System.Windows.Forms.Button();
+            BtModusColorChange = new System.Windows.Forms.Button();
+            ZoomButton = new System.Windows.Forms.Button();
+            BtEvaluateColor = new System.Windows.Forms.Button();
+            ResetButton2 = new System.Windows.Forms.Button();
+            Btcolorlistimage = new System.Windows.Forms.Button();
             checkBoxFreehand = new System.Windows.Forms.CheckBox();
             checkBoxCircle = new System.Windows.Forms.CheckBox();
             checkBoxtoleranz35 = new System.Windows.Forms.CheckBox();
@@ -118,17 +118,17 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             checkBoxtoleranz75 = new System.Windows.Forms.CheckBox();
             checkBoxtoleranz50 = new System.Windows.Forms.CheckBox();
             checkBoxtoleranz25 = new System.Windows.Forms.CheckBox();
-            eraseButton = new System.Windows.Forms.Button();
-            drawButton = new System.Windows.Forms.Button();
-            convertToIndexedButton = new System.Windows.Forms.Button();
-            selectColorButton = new System.Windows.Forms.Button();
-            btPickColor = new System.Windows.Forms.Button();
-            btToUpdate = new System.Windows.Forms.Button();
+            EraseButton = new System.Windows.Forms.Button();
+            DrawButton = new System.Windows.Forms.Button();
+            ConvertToIndexedButton = new System.Windows.Forms.Button();
+            SelectColorButton = new System.Windows.Forms.Button();
+            BtPickColor = new System.Windows.Forms.Button();
+            BtToUpdate = new System.Windows.Forms.Button();
             checkBoxDelete = new System.Windows.Forms.CheckBox();
             checkBoxChange = new System.Windows.Forms.CheckBox();
-            zoomInButton = new System.Windows.Forms.Button();
-            zoomOutButton = new System.Windows.Forms.Button();
-            resetButton = new System.Windows.Forms.Button();
+            ZoomInButton = new System.Windows.Forms.Button();
+            ZoomOutButton = new System.Windows.Forms.Button();
+            ResetButton = new System.Windows.Forms.Button();
             coordinatesLabel = new System.Windows.Forms.Label();
             colorLabel = new System.Windows.Forms.Label();
             openFileDialog2 = new System.Windows.Forms.OpenFileDialog();
@@ -155,66 +155,66 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             pictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
             pictureBox1.TabIndex = 0;
             pictureBox1.TabStop = false;
-            pictureBox1.Paint += pictureBox1_Paint;
-            pictureBox1.MouseClick += pictureBox1_MouseClick;
-            pictureBox1.MouseDown += pictureBox1_MouseDown2;
-            pictureBox1.MouseMove += pictureBox1_MouseMove;
-            pictureBox1.MouseUp += pictureBox1_MouseUp;
+            pictureBox1.Paint += PictureBox1_Paint;
+            pictureBox1.MouseClick += PictureBox1_MouseClick;
+            pictureBox1.MouseDown += PictureBox1_MouseDown2;
+            pictureBox1.MouseMove += PictureBox1_MouseMove;
+            pictureBox1.MouseUp += PictureBox1_MouseUp;
             // 
             // contextMenuStrip1
             // 
             contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { copyClipboardToolStripMenuItem, importClipbordToolStripMenuItem, toolStripSeparator1, fillTextureToolStripMenuItem });
             contextMenuStrip1.Name = "contextMenuStrip1";
-            contextMenuStrip1.Size = new System.Drawing.Size(181, 98);
+            contextMenuStrip1.Size = new System.Drawing.Size(160, 76);
             // 
             // copyClipboardToolStripMenuItem
             // 
             copyClipboardToolStripMenuItem.Image = Properties.Resources.Copy;
             copyClipboardToolStripMenuItem.Name = "copyClipboardToolStripMenuItem";
-            copyClipboardToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            copyClipboardToolStripMenuItem.Size = new System.Drawing.Size(159, 22);
             copyClipboardToolStripMenuItem.Text = "Copy Clipboard";
-            copyClipboardToolStripMenuItem.Click += copyClipboardToolStripMenuItem_Click;
+            copyClipboardToolStripMenuItem.Click += CopyClipboardToolStripMenuItem_Click;
             // 
             // importClipbordToolStripMenuItem
             // 
             importClipbordToolStripMenuItem.Image = Properties.Resources.import;
             importClipbordToolStripMenuItem.Name = "importClipbordToolStripMenuItem";
-            importClipbordToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            importClipbordToolStripMenuItem.Size = new System.Drawing.Size(159, 22);
             importClipbordToolStripMenuItem.Text = "Import Clipbord";
-            importClipbordToolStripMenuItem.Click += importClipbordToolStripMenuItem_Click;
+            importClipbordToolStripMenuItem.Click += ImportClipbordToolStripMenuItem_Click;
             // 
             // toolStripSeparator1
             // 
             toolStripSeparator1.Name = "toolStripSeparator1";
-            toolStripSeparator1.Size = new System.Drawing.Size(177, 6);
+            toolStripSeparator1.Size = new System.Drawing.Size(156, 6);
             // 
             // fillTextureToolStripMenuItem
             // 
             fillTextureToolStripMenuItem.Image = Properties.Resources.fill;
             fillTextureToolStripMenuItem.Name = "fillTextureToolStripMenuItem";
-            fillTextureToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            fillTextureToolStripMenuItem.Size = new System.Drawing.Size(159, 22);
             fillTextureToolStripMenuItem.Text = "Fill Texture";
-            fillTextureToolStripMenuItem.Click += fillTextureToolStripMenuItem_Click;
+            fillTextureToolStripMenuItem.Click += FillTextureToolStripMenuItem_Click;
             // 
-            // buttonLoadImage
+            // ButtonLoadImage
             // 
-            buttonLoadImage.Location = new System.Drawing.Point(644, 73);
-            buttonLoadImage.Name = "buttonLoadImage";
-            buttonLoadImage.Size = new System.Drawing.Size(48, 23);
-            buttonLoadImage.TabIndex = 1;
-            buttonLoadImage.Text = "Load";
-            buttonLoadImage.UseVisualStyleBackColor = true;
-            buttonLoadImage.Click += buttonLoadImage_Click;
+            ButtonLoadImage.Location = new System.Drawing.Point(644, 73);
+            ButtonLoadImage.Name = "ButtonLoadImage";
+            ButtonLoadImage.Size = new System.Drawing.Size(48, 23);
+            ButtonLoadImage.TabIndex = 1;
+            ButtonLoadImage.Text = "Load";
+            ButtonLoadImage.UseVisualStyleBackColor = true;
+            ButtonLoadImage.Click += ButtonLoadImage_Click;
             // 
-            // buttonTextureCutter
+            // ButtonTextureCutter
             // 
-            buttonTextureCutter.Location = new System.Drawing.Point(693, 73);
-            buttonTextureCutter.Name = "buttonTextureCutter";
-            buttonTextureCutter.Size = new System.Drawing.Size(48, 23);
-            buttonTextureCutter.TabIndex = 2;
-            buttonTextureCutter.Text = "Cut";
-            buttonTextureCutter.UseVisualStyleBackColor = true;
-            buttonTextureCutter.Click += buttonTextureCutter_Click;
+            ButtonTextureCutter.Location = new System.Drawing.Point(693, 73);
+            ButtonTextureCutter.Name = "ButtonTextureCutter";
+            ButtonTextureCutter.Size = new System.Drawing.Size(48, 23);
+            ButtonTextureCutter.TabIndex = 2;
+            ButtonTextureCutter.Text = "Cut";
+            ButtonTextureCutter.UseVisualStyleBackColor = true;
+            ButtonTextureCutter.Click += ButtonTextureCutter_Click;
             // 
             // openFileDialog1
             // 
@@ -321,15 +321,15 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             checkBox1.Text = "Allow size";
             checkBox1.UseVisualStyleBackColor = true;
             // 
-            // buttonOpenTempGrafic
+            // ButtonOpenTempGrafic
             // 
-            buttonOpenTempGrafic.Location = new System.Drawing.Point(378, 576);
-            buttonOpenTempGrafic.Name = "buttonOpenTempGrafic";
-            buttonOpenTempGrafic.Size = new System.Drawing.Size(75, 23);
-            buttonOpenTempGrafic.TabIndex = 16;
-            buttonOpenTempGrafic.Text = "Open Dir";
-            buttonOpenTempGrafic.UseVisualStyleBackColor = true;
-            buttonOpenTempGrafic.Click += buttonOpenTempGrafic_Click;
+            ButtonOpenTempGrafic.Location = new System.Drawing.Point(378, 576);
+            ButtonOpenTempGrafic.Name = "ButtonOpenTempGrafic";
+            ButtonOpenTempGrafic.Size = new System.Drawing.Size(75, 23);
+            ButtonOpenTempGrafic.TabIndex = 16;
+            ButtonOpenTempGrafic.Text = "Open Dir";
+            ButtonOpenTempGrafic.UseVisualStyleBackColor = true;
+            ButtonOpenTempGrafic.Click += ButtonOpenTempGrafic_Click;
             // 
             // ButtonShrinkTexture
             // 
@@ -341,31 +341,31 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             ButtonShrinkTexture.UseVisualStyleBackColor = true;
             ButtonShrinkTexture.Click += ButtonShrinkTexture_Click;
             // 
-            // buttonsharp
+            // Buttonsharp
             // 
-            buttonsharp.Location = new System.Drawing.Point(13, 44);
-            buttonsharp.Name = "buttonsharp";
-            buttonsharp.Size = new System.Drawing.Size(75, 23);
-            buttonsharp.TabIndex = 18;
-            buttonsharp.Text = "Sharp";
-            buttonsharp.UseVisualStyleBackColor = true;
-            buttonsharp.Click += buttonsharp_Click;
+            Buttonsharp.Location = new System.Drawing.Point(13, 44);
+            Buttonsharp.Name = "Buttonsharp";
+            Buttonsharp.Size = new System.Drawing.Size(75, 23);
+            Buttonsharp.TabIndex = 18;
+            Buttonsharp.Text = "Sharp";
+            Buttonsharp.UseVisualStyleBackColor = true;
+            Buttonsharp.Click += Buttonsharp_Click;
             // 
-            // buttonSaveImage
+            // ButtonSaveImage
             // 
-            buttonSaveImage.Location = new System.Drawing.Point(320, 576);
-            buttonSaveImage.Name = "buttonSaveImage";
-            buttonSaveImage.Size = new System.Drawing.Size(57, 23);
-            buttonSaveImage.TabIndex = 19;
-            buttonSaveImage.Text = "Save";
-            buttonSaveImage.UseVisualStyleBackColor = true;
-            buttonSaveImage.Click += buttonSaveImage_Click;
+            ButtonSaveImage.Location = new System.Drawing.Point(320, 576);
+            ButtonSaveImage.Name = "ButtonSaveImage";
+            ButtonSaveImage.Size = new System.Drawing.Size(57, 23);
+            ButtonSaveImage.TabIndex = 19;
+            ButtonSaveImage.Text = "Save";
+            ButtonSaveImage.UseVisualStyleBackColor = true;
+            ButtonSaveImage.Click += ButtonSaveImage_Click;
             // 
             // panel2
             // 
             panel2.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
             panel2.Controls.Add(checkBoxRGB);
-            panel2.Controls.Add(btColorNormalization);
+            panel2.Controls.Add(BtColorNormalization);
             panel2.Controls.Add(checkboxDarken);
             panel2.Controls.Add(LabelWhiteBalance);
             panel2.Controls.Add(TrackbarWhiteBalance);
@@ -373,12 +373,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             panel2.Controls.Add(labelTolerance);
             panel2.Controls.Add(trackBarSharpness);
             panel2.Controls.Add(trackBarTolerance);
-            panel2.Controls.Add(button45Degrees);
-            panel2.Controls.Add(buttonWhite);
+            panel2.Controls.Add(Button45Degrees);
+            panel2.Controls.Add(ButtonWhite);
             panel2.Controls.Add(ButtonRotateTexture);
             panel2.Controls.Add(ButtonAutoTexture);
-            panel2.Controls.Add(buttonOptimize);
-            panel2.Controls.Add(buttonsharp);
+            panel2.Controls.Add(ButtonOptimize);
+            panel2.Controls.Add(Buttonsharp);
             panel2.Controls.Add(ButtonShrinkTexture);
             panel2.Controls.Add(BtMirroImage);
             panel2.Location = new System.Drawing.Point(456, 156);
@@ -396,15 +396,15 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             checkBoxRGB.Text = "RGB";
             checkBoxRGB.UseVisualStyleBackColor = true;
             // 
-            // btColorNormalization
+            // BtColorNormalization
             // 
-            btColorNormalization.Location = new System.Drawing.Point(221, 132);
-            btColorNormalization.Name = "btColorNormalization";
-            btColorNormalization.Size = new System.Drawing.Size(119, 23);
-            btColorNormalization.TabIndex = 41;
-            btColorNormalization.Text = "ColorNormalization";
-            btColorNormalization.UseVisualStyleBackColor = true;
-            btColorNormalization.Click += btColorNormalization_Click;
+            BtColorNormalization.Location = new System.Drawing.Point(221, 132);
+            BtColorNormalization.Name = "BtColorNormalization";
+            BtColorNormalization.Size = new System.Drawing.Size(119, 23);
+            BtColorNormalization.TabIndex = 41;
+            BtColorNormalization.Text = "ColorNormalization";
+            BtColorNormalization.UseVisualStyleBackColor = true;
+            BtColorNormalization.Click += BtColorNormalization_Click;
             // 
             // checkboxDarken
             // 
@@ -457,7 +457,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             trackBarSharpness.Name = "trackBarSharpness";
             trackBarSharpness.Size = new System.Drawing.Size(104, 45);
             trackBarSharpness.TabIndex = 41;
-            trackBarSharpness.Scroll += trackBarSharpness_Scroll;
+            trackBarSharpness.Scroll += TrackBarSharpness_Scroll;
             // 
             // trackBarTolerance
             // 
@@ -465,27 +465,27 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             trackBarTolerance.Name = "trackBarTolerance";
             trackBarTolerance.Size = new System.Drawing.Size(92, 45);
             trackBarTolerance.TabIndex = 26;
-            trackBarTolerance.Scroll += trackBarTolerance_Scroll;
+            trackBarTolerance.Scroll += TrackBarTolerance_Scroll;
             // 
-            // button45Degrees
+            // Button45Degrees
             // 
-            button45Degrees.Location = new System.Drawing.Point(13, 131);
-            button45Degrees.Name = "button45Degrees";
-            button45Degrees.Size = new System.Drawing.Size(75, 23);
-            button45Degrees.TabIndex = 25;
-            button45Degrees.Text = "Create Tiles";
-            button45Degrees.UseVisualStyleBackColor = true;
-            button45Degrees.Click += button45Degrees_Click;
+            Button45Degrees.Location = new System.Drawing.Point(13, 131);
+            Button45Degrees.Name = "Button45Degrees";
+            Button45Degrees.Size = new System.Drawing.Size(75, 23);
+            Button45Degrees.TabIndex = 25;
+            Button45Degrees.Text = "Create Tiles";
+            Button45Degrees.UseVisualStyleBackColor = true;
+            Button45Degrees.Click += Button45Degrees_Click;
             // 
-            // buttonWhite
+            // ButtonWhite
             // 
-            buttonWhite.Location = new System.Drawing.Point(74, 102);
-            buttonWhite.Name = "buttonWhite";
-            buttonWhite.Size = new System.Drawing.Size(92, 23);
-            buttonWhite.TabIndex = 24;
-            buttonWhite.Text = "White Balance";
-            buttonWhite.UseVisualStyleBackColor = true;
-            buttonWhite.Click += buttonWhite_Click;
+            ButtonWhite.Location = new System.Drawing.Point(74, 102);
+            ButtonWhite.Name = "ButtonWhite";
+            ButtonWhite.Size = new System.Drawing.Size(92, 23);
+            ButtonWhite.TabIndex = 24;
+            ButtonWhite.Text = "White Balance";
+            ButtonWhite.UseVisualStyleBackColor = true;
+            ButtonWhite.Click += ButtonWhite_Click;
             // 
             // ButtonRotateTexture
             // 
@@ -507,15 +507,15 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             ButtonAutoTexture.UseVisualStyleBackColor = true;
             ButtonAutoTexture.Click += ButtonAutoTexture_Click;
             // 
-            // buttonOptimize
+            // ButtonOptimize
             // 
-            buttonOptimize.Location = new System.Drawing.Point(91, 16);
-            buttonOptimize.Name = "buttonOptimize";
-            buttonOptimize.Size = new System.Drawing.Size(75, 23);
-            buttonOptimize.TabIndex = 20;
-            buttonOptimize.Text = "Optimize";
-            buttonOptimize.UseVisualStyleBackColor = true;
-            buttonOptimize.Click += buttonOptimize_Click;
+            ButtonOptimize.Location = new System.Drawing.Point(91, 16);
+            ButtonOptimize.Name = "ButtonOptimize";
+            ButtonOptimize.Size = new System.Drawing.Size(75, 23);
+            ButtonOptimize.TabIndex = 20;
+            ButtonOptimize.Text = "Optimize";
+            ButtonOptimize.UseVisualStyleBackColor = true;
+            ButtonOptimize.Click += ButtonOptimize_Click;
             // 
             // BtMirroImage
             // 
@@ -550,7 +550,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             textBoxColorAdress.Name = "textBoxColorAdress";
             textBoxColorAdress.Size = new System.Drawing.Size(67, 23);
             textBoxColorAdress.TabIndex = 22;
-            textBoxColorAdress.TextChanged += textBoxColorAdress_TextChanged;
+            textBoxColorAdress.TextChanged += TextBoxColorAdress_TextChanged;
             // 
             // textBoxColorErase
             // 
@@ -558,7 +558,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             textBoxColorErase.Name = "textBoxColorErase";
             textBoxColorErase.Size = new System.Drawing.Size(67, 23);
             textBoxColorErase.TabIndex = 23;
-            textBoxColorErase.TextChanged += textBoxColorErase_TextChanged;
+            textBoxColorErase.TextChanged += TextBoxColorErase_TextChanged;
             // 
             // textBoxColorToAdress
             // 
@@ -566,7 +566,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             textBoxColorToAdress.Name = "textBoxColorToAdress";
             textBoxColorToAdress.Size = new System.Drawing.Size(67, 23);
             textBoxColorToAdress.TabIndex = 24;
-            textBoxColorToAdress.TextChanged += textBoxColorToAdress_TextChanged;
+            textBoxColorToAdress.TextChanged += TextBoxColorToAdress_TextChanged;
             // 
             // lbColorValue01
             // 
@@ -603,7 +603,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             comboBoxColorValue.Name = "comboBoxColorValue";
             comboBoxColorValue.Size = new System.Drawing.Size(67, 23);
             comboBoxColorValue.TabIndex = 29;
-            comboBoxColorValue.SelectedIndexChanged += comboBoxColorValue_SelectedIndexChanged;
+            comboBoxColorValue.SelectedIndexChanged += ComboBoxColorValue_SelectedIndexChanged;
             // 
             // lbColorValue03
             // 
@@ -621,17 +621,17 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             panel3.Controls.Add(checkBoxParticelGreyHue);
             panel3.Controls.Add(checkBoxToTextboxColor);
             panel3.Controls.Add(checkBoxLines);
-            panel3.Controls.Add(btPaintBoxPin);
-            panel3.Controls.Add(selectColorButton2);
-            panel3.Controls.Add(btphotorandomColor);
+            panel3.Controls.Add(BtPaintBoxPin);
+            panel3.Controls.Add(SelectColorButton2);
+            panel3.Controls.Add(BtphotorandomColor);
             panel3.Controls.Add(panelIsPickingColor);
-            panel3.Controls.Add(buttonRedToBlueColors);
+            panel3.Controls.Add(ButtonRedToBlueColors);
             panel3.Controls.Add(checkBox2Colors);
-            panel3.Controls.Add(btModusColorChange);
-            panel3.Controls.Add(zoomButton);
-            panel3.Controls.Add(btEvaluateColor);
-            panel3.Controls.Add(resetButton2);
-            panel3.Controls.Add(btcolorlistimage);
+            panel3.Controls.Add(BtModusColorChange);
+            panel3.Controls.Add(ZoomButton);
+            panel3.Controls.Add(BtEvaluateColor);
+            panel3.Controls.Add(ResetButton2);
+            panel3.Controls.Add(Btcolorlistimage);
             panel3.Controls.Add(textBoxColorToAdress2);
             panel3.Controls.Add(checkBoxFreehand);
             panel3.Controls.Add(checkBoxCircle);
@@ -644,12 +644,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             panel3.Controls.Add(checkBoxtoleranz75);
             panel3.Controls.Add(checkBoxtoleranz50);
             panel3.Controls.Add(checkBoxtoleranz25);
-            panel3.Controls.Add(eraseButton);
-            panel3.Controls.Add(drawButton);
-            panel3.Controls.Add(convertToIndexedButton);
-            panel3.Controls.Add(selectColorButton);
-            panel3.Controls.Add(btPickColor);
-            panel3.Controls.Add(btToUpdate);
+            panel3.Controls.Add(EraseButton);
+            panel3.Controls.Add(DrawButton);
+            panel3.Controls.Add(ConvertToIndexedButton);
+            panel3.Controls.Add(SelectColorButton);
+            panel3.Controls.Add(BtPickColor);
+            panel3.Controls.Add(BtToUpdate);
             panel3.Controls.Add(checkBoxDelete);
             panel3.Controls.Add(checkBoxChange);
             panel3.Controls.Add(textBoxColorToAdress);
@@ -674,7 +674,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             checkBoxParticelGreyHueShadow.TabIndex = 55;
             checkBoxParticelGreyHueShadow.Text = "Particle Grey Shadow";
             checkBoxParticelGreyHueShadow.UseVisualStyleBackColor = true;
-            checkBoxParticelGreyHueShadow.CheckedChanged += checkBoxParticelGreyHueShadow_CheckedChanged;
+            checkBoxParticelGreyHueShadow.CheckedChanged += CheckBoxParticelGreyHueShadow_CheckedChanged;
             // 
             // checkBoxParticelGreyHue
             // 
@@ -685,7 +685,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             checkBoxParticelGreyHue.TabIndex = 54;
             checkBoxParticelGreyHue.Text = "Particle Grey no Shadow";
             checkBoxParticelGreyHue.UseVisualStyleBackColor = true;
-            checkBoxParticelGreyHue.CheckedChanged += checkBoxParticelGreyHue_CheckedChanged;
+            checkBoxParticelGreyHue.CheckedChanged += CheckBoxParticelGreyHue_CheckedChanged;
             // 
             // checkBoxToTextboxColor
             // 
@@ -696,7 +696,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             checkBoxToTextboxColor.TabIndex = 53;
             checkBoxToTextboxColor.Text = "To";
             checkBoxToTextboxColor.UseVisualStyleBackColor = true;
-            checkBoxToTextboxColor.CheckedChanged += checkBoxToTextboxColor_CheckedChanged;
+            checkBoxToTextboxColor.CheckedChanged += CheckBoxToTextboxColor_CheckedChanged;
             // 
             // checkBoxLines
             // 
@@ -707,37 +707,37 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             checkBoxLines.TabIndex = 41;
             checkBoxLines.Text = "Lines";
             checkBoxLines.UseVisualStyleBackColor = true;
-            checkBoxLines.CheckedChanged += checkBox_CheckedChanged;
+            checkBoxLines.CheckedChanged += CheckBox_CheckedChanged;
             // 
-            // btPaintBoxPin
+            // BtPaintBoxPin
             // 
-            btPaintBoxPin.Location = new System.Drawing.Point(341, 61);
-            btPaintBoxPin.Name = "btPaintBoxPin";
-            btPaintBoxPin.Size = new System.Drawing.Size(75, 23);
-            btPaintBoxPin.TabIndex = 41;
-            btPaintBoxPin.Text = "Paint Box";
-            btPaintBoxPin.UseVisualStyleBackColor = true;
-            btPaintBoxPin.Click += btPaintBox_Click;
+            BtPaintBoxPin.Location = new System.Drawing.Point(341, 61);
+            BtPaintBoxPin.Name = "BtPaintBoxPin";
+            BtPaintBoxPin.Size = new System.Drawing.Size(75, 23);
+            BtPaintBoxPin.TabIndex = 41;
+            BtPaintBoxPin.Text = "Paint Box";
+            BtPaintBoxPin.UseVisualStyleBackColor = true;
+            BtPaintBoxPin.Click += BtPaintBox_Click;
             // 
-            // selectColorButton2
+            // SelectColorButton2
             // 
-            selectColorButton2.Location = new System.Drawing.Point(149, 109);
-            selectColorButton2.Name = "selectColorButton2";
-            selectColorButton2.Size = new System.Drawing.Size(92, 23);
-            selectColorButton2.TabIndex = 52;
-            selectColorButton2.Text = "ColorDialog 2";
-            selectColorButton2.UseVisualStyleBackColor = true;
-            selectColorButton2.Click += selectColorButton2_Click;
+            SelectColorButton2.Location = new System.Drawing.Point(149, 109);
+            SelectColorButton2.Name = "SelectColorButton2";
+            SelectColorButton2.Size = new System.Drawing.Size(92, 23);
+            SelectColorButton2.TabIndex = 52;
+            SelectColorButton2.Text = "ColorDialog 2";
+            SelectColorButton2.UseVisualStyleBackColor = true;
+            SelectColorButton2.Click += SelectColorButton2_Click;
             // 
-            // btphotorandomColor
+            // BtphotorandomColor
             // 
-            btphotorandomColor.Location = new System.Drawing.Point(372, 190);
-            btphotorandomColor.Name = "btphotorandomColor";
-            btphotorandomColor.Size = new System.Drawing.Size(29, 23);
-            btphotorandomColor.TabIndex = 42;
-            btphotorandomColor.Text = "R2";
-            btphotorandomColor.UseVisualStyleBackColor = true;
-            btphotorandomColor.Click += btphotorandomColor_Click;
+            BtphotorandomColor.Location = new System.Drawing.Point(372, 190);
+            BtphotorandomColor.Name = "BtphotorandomColor";
+            BtphotorandomColor.Size = new System.Drawing.Size(29, 23);
+            BtphotorandomColor.TabIndex = 42;
+            BtphotorandomColor.Text = "R2";
+            BtphotorandomColor.UseVisualStyleBackColor = true;
+            BtphotorandomColor.Click += BtphotorandomColor_Click;
             // 
             // panelIsPickingColor
             // 
@@ -746,15 +746,15 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             panelIsPickingColor.Size = new System.Drawing.Size(24, 22);
             panelIsPickingColor.TabIndex = 41;
             // 
-            // buttonRedToBlueColors
+            // ButtonRedToBlueColors
             // 
-            buttonRedToBlueColors.Location = new System.Drawing.Point(372, 166);
-            buttonRedToBlueColors.Name = "buttonRedToBlueColors";
-            buttonRedToBlueColors.Size = new System.Drawing.Size(29, 22);
-            buttonRedToBlueColors.TabIndex = 41;
-            buttonRedToBlueColors.Text = "R1";
-            buttonRedToBlueColors.UseVisualStyleBackColor = true;
-            buttonRedToBlueColors.Click += buttonRedToBlueColors_Click;
+            ButtonRedToBlueColors.Location = new System.Drawing.Point(372, 166);
+            ButtonRedToBlueColors.Name = "ButtonRedToBlueColors";
+            ButtonRedToBlueColors.Size = new System.Drawing.Size(29, 22);
+            ButtonRedToBlueColors.TabIndex = 41;
+            ButtonRedToBlueColors.Text = "R1";
+            ButtonRedToBlueColors.UseVisualStyleBackColor = true;
+            ButtonRedToBlueColors.Click += ButtonRedToBlueColors_Click;
             // 
             // checkBox2Colors
             // 
@@ -766,55 +766,55 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             checkBox2Colors.Text = "2 Colors";
             checkBox2Colors.UseVisualStyleBackColor = true;
             // 
-            // btModusColorChange
+            // BtModusColorChange
             // 
-            btModusColorChange.Location = new System.Drawing.Point(208, 220);
-            btModusColorChange.Name = "btModusColorChange";
-            btModusColorChange.Size = new System.Drawing.Size(75, 23);
-            btModusColorChange.TabIndex = 51;
-            btModusColorChange.Text = "Modus";
-            btModusColorChange.UseVisualStyleBackColor = true;
-            btModusColorChange.Click += btModusColorChange_Click;
+            BtModusColorChange.Location = new System.Drawing.Point(208, 220);
+            BtModusColorChange.Name = "BtModusColorChange";
+            BtModusColorChange.Size = new System.Drawing.Size(75, 23);
+            BtModusColorChange.TabIndex = 51;
+            BtModusColorChange.Text = "Modus";
+            BtModusColorChange.UseVisualStyleBackColor = true;
+            BtModusColorChange.Click += BtModusColorChange_Click;
             // 
-            // zoomButton
+            // ZoomButton
             // 
-            zoomButton.Location = new System.Drawing.Point(111, 220);
-            zoomButton.Name = "zoomButton";
-            zoomButton.Size = new System.Drawing.Size(47, 24);
-            zoomButton.TabIndex = 40;
-            zoomButton.Text = "Zoom";
-            zoomButton.UseVisualStyleBackColor = true;
-            zoomButton.Click += zoomButton_Click;
+            ZoomButton.Location = new System.Drawing.Point(111, 220);
+            ZoomButton.Name = "ZoomButton";
+            ZoomButton.Size = new System.Drawing.Size(47, 24);
+            ZoomButton.TabIndex = 40;
+            ZoomButton.Text = "Zoom";
+            ZoomButton.UseVisualStyleBackColor = true;
+            ZoomButton.Click += ZoomButton_Click;
             // 
-            // btEvaluateColor
+            // BtEvaluateColor
             // 
-            btEvaluateColor.Location = new System.Drawing.Point(316, 84);
-            btEvaluateColor.Name = "btEvaluateColor";
-            btEvaluateColor.Size = new System.Drawing.Size(100, 24);
-            btEvaluateColor.TabIndex = 50;
-            btEvaluateColor.Text = "Evaluate Color";
-            btEvaluateColor.UseVisualStyleBackColor = true;
-            btEvaluateColor.Click += btEvaluateColor_Click;
+            BtEvaluateColor.Location = new System.Drawing.Point(316, 84);
+            BtEvaluateColor.Name = "BtEvaluateColor";
+            BtEvaluateColor.Size = new System.Drawing.Size(100, 24);
+            BtEvaluateColor.TabIndex = 50;
+            BtEvaluateColor.Text = "Evaluate Color";
+            BtEvaluateColor.UseVisualStyleBackColor = true;
+            BtEvaluateColor.Click += BtEvaluateColor_Click;
             // 
-            // resetButton2
+            // ResetButton2
             // 
-            resetButton2.Location = new System.Drawing.Point(158, 220);
-            resetButton2.Name = "resetButton2";
-            resetButton2.Size = new System.Drawing.Size(47, 24);
-            resetButton2.TabIndex = 39;
-            resetButton2.Text = "Reset";
-            resetButton2.UseVisualStyleBackColor = true;
-            resetButton2.Click += resetButton2_Click;
+            ResetButton2.Location = new System.Drawing.Point(158, 220);
+            ResetButton2.Name = "ResetButton2";
+            ResetButton2.Size = new System.Drawing.Size(47, 24);
+            ResetButton2.TabIndex = 39;
+            ResetButton2.Text = "Reset";
+            ResetButton2.UseVisualStyleBackColor = true;
+            ResetButton2.Click += ResetButton2_Click;
             // 
-            // btcolorlistimage
+            // Btcolorlistimage
             // 
-            btcolorlistimage.Location = new System.Drawing.Point(341, 108);
-            btcolorlistimage.Name = "btcolorlistimage";
-            btcolorlistimage.Size = new System.Drawing.Size(75, 24);
-            btcolorlistimage.TabIndex = 49;
-            btcolorlistimage.Text = "Color List";
-            btcolorlistimage.UseVisualStyleBackColor = true;
-            btcolorlistimage.Click += btcolorlistimage_Click;
+            Btcolorlistimage.Location = new System.Drawing.Point(341, 108);
+            Btcolorlistimage.Name = "Btcolorlistimage";
+            Btcolorlistimage.Size = new System.Drawing.Size(75, 24);
+            Btcolorlistimage.TabIndex = 49;
+            Btcolorlistimage.Text = "Color List";
+            Btcolorlistimage.UseVisualStyleBackColor = true;
+            Btcolorlistimage.Click += Btcolorlistimage_Click;
             // 
             // checkBoxFreehand
             // 
@@ -825,7 +825,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             checkBoxFreehand.TabIndex = 38;
             checkBoxFreehand.Text = "Freehand";
             checkBoxFreehand.UseVisualStyleBackColor = true;
-            checkBoxFreehand.CheckedChanged += checkBox_CheckedChanged;
+            checkBoxFreehand.CheckedChanged += CheckBox_CheckedChanged;
             // 
             // checkBoxCircle
             // 
@@ -836,7 +836,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             checkBoxCircle.TabIndex = 37;
             checkBoxCircle.Text = "Circle";
             checkBoxCircle.UseVisualStyleBackColor = true;
-            checkBoxCircle.CheckedChanged += checkBox_CheckedChanged;
+            checkBoxCircle.CheckedChanged += CheckBox_CheckedChanged;
             // 
             // checkBoxtoleranz35
             // 
@@ -928,67 +928,67 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             checkBoxtoleranz25.Text = "25";
             checkBoxtoleranz25.UseVisualStyleBackColor = true;
             // 
-            // eraseButton
+            // EraseButton
             // 
-            eraseButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            eraseButton.Location = new System.Drawing.Point(60, 220);
-            eraseButton.Name = "eraseButton";
-            eraseButton.Size = new System.Drawing.Size(49, 23);
-            eraseButton.TabIndex = 39;
-            eraseButton.Text = "Erase";
-            eraseButton.UseVisualStyleBackColor = true;
-            eraseButton.Click += eraseButton_Click;
+            EraseButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            EraseButton.Location = new System.Drawing.Point(60, 220);
+            EraseButton.Name = "EraseButton";
+            EraseButton.Size = new System.Drawing.Size(49, 23);
+            EraseButton.TabIndex = 39;
+            EraseButton.Text = "Erase";
+            EraseButton.UseVisualStyleBackColor = true;
+            EraseButton.Click += EraseButton_Click;
             // 
-            // drawButton
+            // DrawButton
             // 
-            drawButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            drawButton.Location = new System.Drawing.Point(6, 220);
-            drawButton.Name = "drawButton";
-            drawButton.Size = new System.Drawing.Size(49, 23);
-            drawButton.TabIndex = 38;
-            drawButton.Text = "Paint";
-            drawButton.UseVisualStyleBackColor = true;
-            drawButton.Click += drawButton_Click;
+            DrawButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            DrawButton.Location = new System.Drawing.Point(6, 220);
+            DrawButton.Name = "DrawButton";
+            DrawButton.Size = new System.Drawing.Size(49, 23);
+            DrawButton.TabIndex = 38;
+            DrawButton.Text = "Paint";
+            DrawButton.UseVisualStyleBackColor = true;
+            DrawButton.Click += DrawButton_Click;
             // 
-            // convertToIndexedButton
+            // ConvertToIndexedButton
             // 
-            convertToIndexedButton.Location = new System.Drawing.Point(171, 191);
-            convertToIndexedButton.Name = "convertToIndexedButton";
-            convertToIndexedButton.Size = new System.Drawing.Size(75, 23);
-            convertToIndexedButton.TabIndex = 37;
-            convertToIndexedButton.Text = "indexed";
-            convertToIndexedButton.UseVisualStyleBackColor = true;
-            convertToIndexedButton.Click += convertToIndexedButton_Click;
+            ConvertToIndexedButton.Location = new System.Drawing.Point(171, 191);
+            ConvertToIndexedButton.Name = "ConvertToIndexedButton";
+            ConvertToIndexedButton.Size = new System.Drawing.Size(75, 23);
+            ConvertToIndexedButton.TabIndex = 37;
+            ConvertToIndexedButton.Text = "indexed";
+            ConvertToIndexedButton.UseVisualStyleBackColor = true;
+            ConvertToIndexedButton.Click += ConvertToIndexedButton_Click;
             // 
-            // selectColorButton
+            // SelectColorButton
             // 
-            selectColorButton.Location = new System.Drawing.Point(149, 80);
-            selectColorButton.Name = "selectColorButton";
-            selectColorButton.Size = new System.Drawing.Size(92, 23);
-            selectColorButton.TabIndex = 36;
-            selectColorButton.Text = "ColorDialog 1";
-            selectColorButton.UseVisualStyleBackColor = true;
-            selectColorButton.Click += selectColorButton_Click;
+            SelectColorButton.Location = new System.Drawing.Point(149, 80);
+            SelectColorButton.Name = "SelectColorButton";
+            SelectColorButton.Size = new System.Drawing.Size(92, 23);
+            SelectColorButton.TabIndex = 36;
+            SelectColorButton.Text = "ColorDialog 1";
+            SelectColorButton.UseVisualStyleBackColor = true;
+            SelectColorButton.Click += SelectColorButton_Click;
             // 
-            // btPickColor
+            // BtPickColor
             // 
-            btPickColor.Location = new System.Drawing.Point(83, 191);
-            btPickColor.Name = "btPickColor";
-            btPickColor.Size = new System.Drawing.Size(62, 23);
-            btPickColor.TabIndex = 34;
-            btPickColor.Text = "Pipette";
-            btPickColor.UseVisualStyleBackColor = true;
-            btPickColor.Click += btPickColor_Click;
+            BtPickColor.Location = new System.Drawing.Point(83, 191);
+            BtPickColor.Name = "BtPickColor";
+            BtPickColor.Size = new System.Drawing.Size(62, 23);
+            BtPickColor.TabIndex = 34;
+            BtPickColor.Text = "Pipette";
+            BtPickColor.UseVisualStyleBackColor = true;
+            BtPickColor.Click += BtPickColor_Click;
             // 
-            // btToUpdate
+            // BtToUpdate
             // 
-            btToUpdate.Location = new System.Drawing.Point(6, 191);
-            btToUpdate.Name = "btToUpdate";
-            btToUpdate.Size = new System.Drawing.Size(75, 23);
-            btToUpdate.TabIndex = 33;
-            btToUpdate.Text = "To update";
-            btToUpdate.UseVisualStyleBackColor = true;
-            btToUpdate.Click += btToUpdate_Click;
+            BtToUpdate.Location = new System.Drawing.Point(6, 191);
+            BtToUpdate.Name = "BtToUpdate";
+            BtToUpdate.Size = new System.Drawing.Size(75, 23);
+            BtToUpdate.TabIndex = 33;
+            BtToUpdate.Text = "To update";
+            BtToUpdate.UseVisualStyleBackColor = true;
+            BtToUpdate.Click += BtToUpdate_Click;
             // 
             // checkBoxDelete
             // 
@@ -1010,35 +1010,35 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             checkBoxChange.Text = "Change";
             checkBoxChange.UseVisualStyleBackColor = true;
             // 
-            // zoomInButton
+            // ZoomInButton
             // 
-            zoomInButton.Location = new System.Drawing.Point(706, 130);
-            zoomInButton.Name = "zoomInButton";
-            zoomInButton.Size = new System.Drawing.Size(75, 23);
-            zoomInButton.TabIndex = 32;
-            zoomInButton.Text = "Zoom In";
-            zoomInButton.UseVisualStyleBackColor = true;
-            zoomInButton.Click += zoomInButton_Click;
+            ZoomInButton.Location = new System.Drawing.Point(706, 130);
+            ZoomInButton.Name = "ZoomInButton";
+            ZoomInButton.Size = new System.Drawing.Size(75, 23);
+            ZoomInButton.TabIndex = 32;
+            ZoomInButton.Text = "Zoom In";
+            ZoomInButton.UseVisualStyleBackColor = true;
+            ZoomInButton.Click += ZoomInButton_Click;
             // 
-            // zoomOutButton
+            // ZoomOutButton
             // 
-            zoomOutButton.Location = new System.Drawing.Point(784, 130);
-            zoomOutButton.Name = "zoomOutButton";
-            zoomOutButton.Size = new System.Drawing.Size(75, 23);
-            zoomOutButton.TabIndex = 33;
-            zoomOutButton.Text = "Zoom Out";
-            zoomOutButton.UseVisualStyleBackColor = true;
-            zoomOutButton.Click += zoomOutButton_Click;
+            ZoomOutButton.Location = new System.Drawing.Point(784, 130);
+            ZoomOutButton.Name = "ZoomOutButton";
+            ZoomOutButton.Size = new System.Drawing.Size(75, 23);
+            ZoomOutButton.TabIndex = 33;
+            ZoomOutButton.Text = "Zoom Out";
+            ZoomOutButton.UseVisualStyleBackColor = true;
+            ZoomOutButton.Click += ZoomOutButton_Click;
             // 
-            // resetButton
+            // ResetButton
             // 
-            resetButton.Location = new System.Drawing.Point(811, 73);
-            resetButton.Name = "resetButton";
-            resetButton.Size = new System.Drawing.Size(48, 23);
-            resetButton.TabIndex = 34;
-            resetButton.Text = "Reset";
-            resetButton.UseVisualStyleBackColor = true;
-            resetButton.Click += resetButton_Click;
+            ResetButton.Location = new System.Drawing.Point(811, 73);
+            ResetButton.Name = "ResetButton";
+            ResetButton.Size = new System.Drawing.Size(48, 23);
+            ResetButton.TabIndex = 34;
+            ResetButton.Text = "Reset";
+            ResetButton.UseVisualStyleBackColor = true;
+            ResetButton.Click += ResetButton_Click;
             // 
             // coordinatesLabel
             // 
@@ -1109,14 +1109,14 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             Controls.Add(label3);
             Controls.Add(colorLabel);
             Controls.Add(coordinatesLabel);
-            Controls.Add(resetButton);
-            Controls.Add(zoomOutButton);
-            Controls.Add(buttonSaveImage);
-            Controls.Add(zoomInButton);
+            Controls.Add(ResetButton);
+            Controls.Add(ZoomOutButton);
+            Controls.Add(ButtonSaveImage);
+            Controls.Add(ZoomInButton);
             Controls.Add(panel3);
             Controls.Add(checkBox33x33);
             Controls.Add(panel2);
-            Controls.Add(buttonOpenTempGrafic);
+            Controls.Add(ButtonOpenTempGrafic);
             Controls.Add(checkBox1);
             Controls.Add(label2);
             Controls.Add(label1);
@@ -1128,8 +1128,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             Controls.Add(checkBox128x128);
             Controls.Add(checkBox64x64);
             Controls.Add(checkBox44x44);
-            Controls.Add(buttonTextureCutter);
-            Controls.Add(buttonLoadImage);
+            Controls.Add(ButtonTextureCutter);
+            Controls.Add(ButtonLoadImage);
             FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             Icon = (System.Drawing.Icon)resources.GetObject("$this.Icon");
             KeyPreview = true;
@@ -1158,8 +1158,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         #endregion
 
         private System.Windows.Forms.PictureBox pictureBox1;
-        private System.Windows.Forms.Button buttonLoadImage;
-        private System.Windows.Forms.Button buttonTextureCutter;
+        private System.Windows.Forms.Button ButtonLoadImage;
+        private System.Windows.Forms.Button ButtonTextureCutter;
         private System.Windows.Forms.OpenFileDialog openFileDialog1;
         private System.Windows.Forms.CheckBox checkBox44x44;
         private System.Windows.Forms.CheckBox checkBox64x64;
@@ -1172,18 +1172,18 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.CheckBox checkBox1;
-        private System.Windows.Forms.Button buttonOpenTempGrafic;
+        private System.Windows.Forms.Button ButtonOpenTempGrafic;
         private System.Windows.Forms.Button ButtonShrinkTexture;
-        private System.Windows.Forms.Button buttonsharp;
-        private System.Windows.Forms.Button buttonSaveImage;
+        private System.Windows.Forms.Button Buttonsharp;
+        private System.Windows.Forms.Button ButtonSaveImage;
         private System.Windows.Forms.Panel panel2;
-        private System.Windows.Forms.Button buttonOptimize;
+        private System.Windows.Forms.Button ButtonOptimize;
         private System.Windows.Forms.TextBox textBoxColorToAdress2;
         private System.Windows.Forms.Button ButtonAutoTexture;
         private System.Windows.Forms.Button ButtonRotateTexture;
-        private System.Windows.Forms.Button buttonWhite;
+        private System.Windows.Forms.Button ButtonWhite;
         private System.Windows.Forms.CheckBox checkBox33x33;
-        private System.Windows.Forms.Button button45Degrees;
+        private System.Windows.Forms.Button Button45Degrees;
         private System.Windows.Forms.ContextMenuStrip contextMenuStrip1;
         private System.Windows.Forms.ToolStripMenuItem copyClipboardToolStripMenuItem;
         private System.Windows.Forms.TextBox textBoxColorAdress;
@@ -1198,18 +1198,18 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private System.Windows.Forms.CheckBox checkBoxDelete;
         private System.Windows.Forms.CheckBox checkBoxChange;
         private System.Windows.Forms.ToolStripMenuItem importClipbordToolStripMenuItem;
-        private System.Windows.Forms.Button btToUpdate;
-        private System.Windows.Forms.Button btPickColor;
+        private System.Windows.Forms.Button BtToUpdate;
+        private System.Windows.Forms.Button BtPickColor;
         private System.Windows.Forms.Button BtMirroImage;
-        private System.Windows.Forms.Button zoomInButton;
-        private System.Windows.Forms.Button zoomOutButton;
-        private System.Windows.Forms.Button resetButton;
-        private System.Windows.Forms.Button selectColorButton;
+        private System.Windows.Forms.Button ZoomInButton;
+        private System.Windows.Forms.Button ZoomOutButton;
+        private System.Windows.Forms.Button ResetButton;
+        private System.Windows.Forms.Button SelectColorButton;
         private System.Windows.Forms.Label coordinatesLabel;
-        private System.Windows.Forms.Button convertToIndexedButton;
+        private System.Windows.Forms.Button ConvertToIndexedButton;
         private System.Windows.Forms.Label colorLabel;
-        private System.Windows.Forms.Button drawButton;
-        private System.Windows.Forms.Button eraseButton;
+        private System.Windows.Forms.Button DrawButton;
+        private System.Windows.Forms.Button EraseButton;
         private System.Windows.Forms.CheckBox checkBoxtoleranz25;
         private System.Windows.Forms.CheckBox checkBoxtoleranz100;
         private System.Windows.Forms.CheckBox checkBoxtoleranz75;
@@ -1219,15 +1219,15 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private System.Windows.Forms.CheckBox checkBoxtoleranz30;
         private System.Windows.Forms.CheckBox checkBoxtoleranz10;
         private System.Windows.Forms.CheckBox checkBoxtoleranz15;
-        private System.Windows.Forms.Button btcolorlistimage;
-        private System.Windows.Forms.Button btEvaluateColor;
-        private System.Windows.Forms.Button btModusColorChange;
+        private System.Windows.Forms.Button Btcolorlistimage;
+        private System.Windows.Forms.Button BtEvaluateColor;
+        private System.Windows.Forms.Button BtModusColorChange;
         private System.Windows.Forms.CheckBox checkBoxFreehand;
         private System.Windows.Forms.CheckBox checkBoxCircle;
         private System.Windows.Forms.ToolStripMenuItem fillTextureToolStripMenuItem;
         private System.Windows.Forms.OpenFileDialog openFileDialog2;
-        private System.Windows.Forms.Button resetButton2;
-        private System.Windows.Forms.Button zoomButton;
+        private System.Windows.Forms.Button ResetButton2;
+        private System.Windows.Forms.Button ZoomButton;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.Label zoomLabel;
@@ -1242,13 +1242,13 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private System.Windows.Forms.TrackBar TrackbarWhiteBalance;
         private System.Windows.Forms.CheckBox checkboxDarken;
         private System.Windows.Forms.CheckBox checkBox2Colors;
-        private System.Windows.Forms.Button selectColorButton2;
+        private System.Windows.Forms.Button SelectColorButton2;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
-        private System.Windows.Forms.Button btColorNormalization;
-        private System.Windows.Forms.Button buttonRedToBlueColors;
-        private System.Windows.Forms.Button btphotorandomColor;
+        private System.Windows.Forms.Button BtColorNormalization;
+        private System.Windows.Forms.Button ButtonRedToBlueColors;
+        private System.Windows.Forms.Button BtphotorandomColor;
         private System.Windows.Forms.CheckBox checkBoxToTextboxColor;
-        private System.Windows.Forms.Button btPaintBoxPin;
+        private System.Windows.Forms.Button BtPaintBoxPin;
         private System.Windows.Forms.CheckBox checkBoxLines;
         private System.Windows.Forms.CheckBox checkBoxParticelGreyHue;
         private System.Windows.Forms.CheckBox checkBoxParticelGreyHueShadow;

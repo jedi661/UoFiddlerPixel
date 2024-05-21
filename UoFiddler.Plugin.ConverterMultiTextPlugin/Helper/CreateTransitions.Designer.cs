@@ -328,7 +328,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Helper
             launchTransitionWizardToolStripMenuItem.Name = "launchTransitionWizardToolStripMenuItem";
             launchTransitionWizardToolStripMenuItem.Size = new System.Drawing.Size(151, 20);
             launchTransitionWizardToolStripMenuItem.Text = "Launch Transition Wizard";
-            launchTransitionWizardToolStripMenuItem.Click += launchTransitionWizardToolStripMenuItem_Click;
+            launchTransitionWizardToolStripMenuItem.Click += LaunchTransitionWizardToolStripMenuItem_Click;
             // 
             // ListBox1
             // 
@@ -515,7 +515,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Helper
             toolStripButton9.Size = new System.Drawing.Size(34, 34);
             toolStripButton9.Tag = "8";
             toolStripButton9.Text = "9";
-            toolStripButton9.Click += toolStripButton9_Click;
+            toolStripButton9.Click += ToolStripButton9_Click;
             // 
             // label4
             // 

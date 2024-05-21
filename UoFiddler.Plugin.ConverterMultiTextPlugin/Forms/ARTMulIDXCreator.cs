@@ -20,7 +20,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         }
 
         #region btCreateARTIDXMul
-        private void btCreateARTIDXMul_Click(object sender, EventArgs e)
+        private void BtCreateARTIDXMul_Click(object sender, EventArgs e)
         {
             var artIndexFile = new ArtIndexFile();
 
@@ -50,7 +50,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         #endregion
 
         #region btFileOrder
-        private void btFileOrder_Click(object sender, EventArgs e)
+        private void BtFileOrder_Click(object sender, EventArgs e)
         {
             using (var folderBrowserDialog = new FolderBrowserDialog())
             {
@@ -61,7 +61,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             }
         }
 
-        private void btnCountEntries_Click(object sender, EventArgs e)
+        private void BtnCountEntries_Click(object sender, EventArgs e)
         {
             using (var folderBrowserDialog = new FolderBrowserDialog())
             {
@@ -80,7 +80,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         #endregion
 
         #region btnShowInfo
-        private void btnShowInfo_Click(object sender, EventArgs e)
+        private void BtnShowInfo_Click(object sender, EventArgs e)
         {
             using (var folderBrowserDialog = new FolderBrowserDialog())
             {
@@ -106,7 +106,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         #endregion
 
         #region Long 
-        private void btnReadArtIdx_Click(object sender, EventArgs e)
+        private void BtnReadArtIdx_Click(object sender, EventArgs e)
         {
             using (var folderBrowserDialog = new FolderBrowserDialog())
             {
@@ -139,7 +139,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         #endregion
 
         #region Unit
-        private void btCreateARTIDXMul_uint_Click(object sender, EventArgs e)
+        private void BtCreateARTIDXMul_uint_Click(object sender, EventArgs e)
         {
             var artIndexFile = new ArtIndexFile();
 
@@ -169,7 +169,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         #endregion
 
         #region int
-        private void btCreateARTIDXMul_Int_Click(object sender, EventArgs e)
+        private void BtCreateARTIDXMul_Int_Click(object sender, EventArgs e)
         {
             var artIndexFile = new ArtIndexFile();
 
@@ -199,7 +199,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         #endregion
 
         #region Ushort
-        private void btCreateARTIDXMul_Ushort_Click(object sender, EventArgs e)
+        private void BtCreateARTIDXMul_Ushort_Click(object sender, EventArgs e)
         {
             var artIndexFile = new ArtIndexFile();
 
@@ -229,7 +229,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         #endregion
 
         #region Short
-        private void btCreateARTIDXMul_Short_Click(object sender, EventArgs e)
+        private void BtCreateARTIDXMul_Short_Click(object sender, EventArgs e)
         {
             var artIndexFile = new ArtIndexFile();
 
@@ -259,7 +259,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         #endregion
 
         #region Byte
-        private void btCreateARTIDXMul_Byte_Click(object sender, EventArgs e)
+        private void BtCreateARTIDXMul_Byte_Click(object sender, EventArgs e)
         {
             var artIndexFile = new ArtIndexFile();
 
@@ -290,7 +290,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         #endregion
 
         #region Ulong
-        private void btCreateARTIDXMul_Ulong_Click(object sender, EventArgs e)
+        private void BtCreateARTIDXMul_Ulong_Click(object sender, EventArgs e)
         {
             var artIndexFile = new ArtIndexFile();
 
@@ -320,9 +320,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         #endregion
 
         #region Rename
-        private void comboBoxMuls_SelectedIndexChanged(object sender, EventArgs e)
+        private void ComboBoxMuls_SelectedIndexChanged(object sender, EventArgs e)
         {
-            string selectedValue = comboBoxMuls.SelectedItem.ToString();
+            string selectedValue = ComboBoxMuls.SelectedItem.ToString();
 
             if (selectedValue == "Texture")
             {
@@ -350,7 +350,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         #endregion
 
         #region CreateTiledata
-        private void btCreateTiledata_Click(object sender, EventArgs e)
+        private void BtCreateTiledata_Click(object sender, EventArgs e)
         {
             using (var fbd = new FolderBrowserDialog())
             {
@@ -381,7 +381,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         #endregion
 
         #region  Tiledatainfo
-        private void btTiledatainfo_Click(object sender, EventArgs e)
+        private void BtTiledatainfo_Click(object sender, EventArgs e)
         {
             using (var fbd = new FolderBrowserDialog())
             {
@@ -422,7 +422,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         #endregion
 
         #region Create Button Empty
-        private void btCreateTiledataEmpty_Click(object sender, EventArgs e)
+        private void BtCreateTiledataEmpty_Click(object sender, EventArgs e)
         {
             using (var fbd = new FolderBrowserDialog())
             {
@@ -451,7 +451,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         #endregion
 
         #region Crete Button Emtpy2
-        private void btCreateTiledataEmpty2_Click(object sender, EventArgs e)
+        private void BtCreateTiledataEmpty2_Click(object sender, EventArgs e)
         {
             using (var fbd = new FolderBrowserDialog())
             {
@@ -479,7 +479,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         #endregion
 
         #region ReadIndexTiledata
-        private void btReadIndexTiledata_Click(object sender, EventArgs e)
+        private void BtReadIndexTiledata_Click(object sender, EventArgs e)
         {
             using (var fbd = new FolderBrowserDialog())
             {
@@ -501,7 +501,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         #endregion
 
         #region Button Hex
-        public void btTReadHexAndSelectDirectory_Click(object sender, EventArgs e)
+        public void BtTReadHexAndSelectDirectory_Click(object sender, EventArgs e)
         {
             using (var fbd = new FolderBrowserDialog())
             {
@@ -545,14 +545,14 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         #endregion
 
         #region Button Land
-        public void btReadLandTile_Click(object sender, EventArgs e)
+        public void BtReadLandTile_Click(object sender, EventArgs e)
         {
             ReadTileData("Land");
         }
         #endregion
 
         #region Button Static
-        public void btReadStaticTile_Click(object sender, EventArgs e)
+        public void BtReadStaticTile_Click(object sender, EventArgs e)
         {
             ReadTileData("Static");
         }
@@ -579,7 +579,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         #endregion
 
         #region btnCountTileDataEntries
-        private void btnCountTileDataEntries_Click(object sender, EventArgs e)
+        private void BtnCountTileDataEntries_Click(object sender, EventArgs e)
         {
             using (var folderBrowserDialog = new FolderBrowserDialog())
             {
@@ -596,7 +596,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         #endregion
 
         #region Button SimpleTiledata
-        private void btCreateSimpleTiledata_Click(object sender, EventArgs e)
+        private void BtCreateSimpleTiledata_Click(object sender, EventArgs e)
         {
             using (var fbd = new FolderBrowserDialog())
             {
@@ -635,7 +635,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         #endregion
 
         #region ReadTileFlags Button
-        private void btReadTileFlags_Click(object sender, EventArgs e)
+        private void BtReadTileFlags_Click(object sender, EventArgs e)
         {
             using (var fbd = new FolderBrowserDialog())
             {
@@ -730,21 +730,21 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         #region class ArtIndexFile
         public class ArtIndexFile
         {
-            private List<ArtIndexEntry> entries;
+            private List<ArtIndexEntry> _entries;
 
             #region
             public ArtIndexFile()
             {
-                entries = new List<ArtIndexEntry>();
+                _entries = new List<ArtIndexEntry>();
             }
             #endregion
 
             #region ArtIndexEntry GetEntry
             public ArtIndexEntry GetEntry(int index)
             {
-                if (index >= 0 && index < entries.Count)
+                if (index >= 0 && index < _entries.Count)
                 {
-                    return entries[index];
+                    return _entries[index];
                 }
                 else
                 {
@@ -756,14 +756,14 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             #region
             public void AddEntry(ArtIndexEntry entry)
             {
-                entries.Add(entry);
+                _entries.Add(entry);
             }
             #endregion
 
             #region LoadFromFile
             public void LoadFromFile(string filename)
             {
-                entries.Clear(); // Delete all existing entries
+                _entries.Clear(); // Delete all existing entries
 
                 using (var fs = new FileStream(filename, FileMode.Open))
                 {
@@ -776,7 +776,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                             uint unknown = reader.ReadUInt32();
 
                             var entry = new ArtIndexEntry(lookup, size, unknown);
-                            entries.Add(entry);
+                            _entries.Add(entry);
                         }
                     }
                 }
@@ -786,7 +786,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             #region CountEntries
             public int CountEntries()
             {
-                return entries.Count;
+                return _entries.Count;
             }
             #endregion
 
@@ -797,7 +797,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 {
                     using (BinaryWriter writer = new BinaryWriter(fs))
                     {
-                        foreach (var entry in entries)
+                        foreach (var entry in _entries)
                         {
                             entry.WriteToStream(writer);
                         }
@@ -872,7 +872,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         #region TiledataFlags
         public class TileDataFlags
         {
-            private Dictionary<string, ulong> flagNameMasks = new Dictionary<string, ulong>
+            private Dictionary<string, ulong> _flagNameMasks = new Dictionary<string, ulong>
             {
                 {"background", 0x1},
                 {"weapon", 0x2},
@@ -940,7 +940,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 {"unknown24", 0x8000000000000000}
             };
 
-            private ulong value;
+            private ulong _value;
             public ulong Value { get; set; }
 
             public TileDataFlags()
@@ -965,10 +965,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                     var trimmedFlagName = flagName.Trim();
 
                     // Check whether the flag name is valid
-                    if (flagNameMasks.ContainsKey(trimmedFlagName))
+                    if (_flagNameMasks.ContainsKey(trimmedFlagName))
                     {
                         // If yes, set the appropriate one Bit in `value`
-                        value |= flagNameMasks[trimmedFlagName];
+                        _value |= _flagNameMasks[trimmedFlagName];
                     }
                     else
                     {
@@ -981,7 +981,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 
             public ulong MaskForName(string flagName)
             {
-                if (flagNameMasks.TryGetValue(flagName, out ulong mask))
+                if (_flagNameMasks.TryGetValue(flagName, out ulong mask))
                 {
                     return mask;
                 }
@@ -996,18 +996,18 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 ulong mask = (ulong)1 << bit;
                 if (value)
                 {
-                    this.value |= mask;
+                    this._value |= mask;
                 }
                 else
                 {
-                    this.value &= ~mask;
+                    this._value &= ~mask;
                 }
             }
 
             public bool BitValue(int bit)
             {
                 ulong mask = (ulong)1 << bit;
-                return (value & mask) != 0;
+                return (_value & mask) != 0;
             }
         }
         #endregion
@@ -1015,18 +1015,18 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         #region class ArtDataFile
         public class ArtDataFile
         {
-            private List<ArtDataEntry> entries;
+            private List<ArtDataEntry> _entries;
 
             public ArtDataFile()
             {
-                entries = new List<ArtDataEntry>();
+                _entries = new List<ArtDataEntry>();
             }
 
             public ArtDataEntry GetEntry(int index)
             {
-                if (index >= 0 && index < entries.Count)
+                if (index >= 0 && index < _entries.Count)
                 {
-                    return entries[index];
+                    return _entries[index];
                 }
                 else
                 {
@@ -1037,14 +1037,14 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             #region CountEntries
             public int CountEntries()
             {
-                return entries.Count;
+                return _entries.Count;
             }
             #endregion           
 
             #region LoadFromFile
             public void LoadFromFile(string filename)
             {
-                entries.Clear(); // Delete all existing entries
+                _entries.Clear(); // Delete all existing entries
 
                 using (var fs = new FileStream(filename, FileMode.Open))
                 {
@@ -1082,7 +1082,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                                 }
 
                                 var entry = new ArtDataEntry(image);
-                                entries.Add(entry);
+                                _entries.Add(entry);
                             }
                             else
                             {
@@ -1182,16 +1182,16 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             #region AddEntry
             public void AddEntry(ArtDataEntry entry)
             {
-                entries.Add(entry);
+                _entries.Add(entry);
             }
             #endregion
 
             #region GetImage
             public Bitmap GetImage(int index)
             {
-                if (index >= 0 && index < entries.Count)
+                if (index >= 0 && index < _entries.Count)
                 {
-                    return entries[index].Image;
+                    return _entries[index].Image;
                 }
                 else
                 {
@@ -1207,7 +1207,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 {
                     using (BinaryWriter writer = new BinaryWriter(fs))
                     {
-                        foreach (var entry in entries)
+                        foreach (var entry in _entries)
                         {
                             entry.WriteToStream(writer);
                         }
@@ -1219,7 +1219,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             #region LoadFromFileForCounting
             public void LoadFromFileForCounting(string filename)
             {
-                entries.Clear(); // Delete all existing entries
+                _entries.Clear(); // Delete all existing entries
 
                 using (var fs = new FileStream(filename, FileMode.Open))
                 {
@@ -1232,7 +1232,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                     while (fs.Position + landTileGroupSize <= fileSize)
                     {
                         fs.Position += landTileGroupSize; // Skip Land Tile Group
-                        entries.Add(new ArtDataEntry(null));
+                        _entries.Add(new ArtDataEntry(null));
                         numLandTileGroups++;
                     }
 
@@ -1241,7 +1241,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                     while (fs.Position + staticTileGroupSize <= fileSize)
                     {
                         fs.Position += staticTileGroupSize; // Skip Static Tile Group
-                        entries.Add(new ArtDataEntry(null));
+                        _entries.Add(new ArtDataEntry(null));
                         numStaticTileGroups++;
                     }
 
@@ -1435,18 +1435,18 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         #region Class Tiledata2 !!
         public class TileData2
         {
-            private string directory;
-            private string filePath;
+            private string _directory;
+            private string _filePath;
 
             public TileData2(string directory)
             {
-                this.directory = directory;
-                this.filePath = Path.Combine(this.directory, "TileData.mul");
+                this._directory = directory;
+                this._filePath = Path.Combine(this._directory, "TileData.mul");
             }
 
             public void CreateTileData(int landBlockCount, int staticBlockCount)
             {
-                using (BinaryWriter writer = new BinaryWriter(File.Open(this.filePath, FileMode.Create)))
+                using (BinaryWriter writer = new BinaryWriter(File.Open(this._filePath, FileMode.Create)))
                 {
                     for (int i = 0; i < landBlockCount; i++)
                     {
@@ -1493,7 +1493,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             public int CountIndices()
             {
                 int count = 0;
-                using (BinaryReader reader = new BinaryReader(File.Open(this.filePath, FileMode.Open)))
+                using (BinaryReader reader = new BinaryReader(File.Open(this._filePath, FileMode.Open)))
                 {
                     while (reader.BaseStream.Position != reader.BaseStream.Length)
                     {
@@ -1530,13 +1530,13 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         #region class Texture
         public class TextureFileCreator
         {
-            private string texMapsFileName;
-            private string texIdxFileName;
+            private string _texMapsFileName;
+            private string _texIdxFileName;
 
             public TextureFileCreator(string texMapsFileName, string texIdxFileName)
             {
-                this.texMapsFileName = texMapsFileName;
-                this.texIdxFileName = texIdxFileName;
+                this._texMapsFileName = texMapsFileName;
+                this._texIdxFileName = texIdxFileName;
             }
 
             public void CreateFiles(int extra, short[] imageColors)
@@ -1545,7 +1545,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 int height = width;
 
                 // Create TexMaps.mul file
-                using (BinaryWriter texMapsFile = new BinaryWriter(File.Open(texMapsFileName, FileMode.Create)))
+                using (BinaryWriter texMapsFile = new BinaryWriter(File.Open(_texMapsFileName, FileMode.Create)))
                 {
                     foreach (short color in imageColors)
                     {
@@ -1554,7 +1554,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 }
 
                 // Create TexIdx.mul file
-                using (BinaryWriter texIdxFile = new BinaryWriter(File.Open(texIdxFileName, FileMode.Create)))
+                using (BinaryWriter texIdxFile = new BinaryWriter(File.Open(_texIdxFileName, FileMode.Create)))
                 {
                     texIdxFile.Write(width);
                     texIdxFile.Write(height);
@@ -1567,11 +1567,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         #region Class RadarColors
         public class RadarColors
         {
-            private short[] colors;
+            private short[] _colors;
 
             public RadarColors(string filePath)
             {
-                colors = new short[0x8000];
+                _colors = new short[0x8000];
                 LoadColorsFromFile(filePath);
             }
 
@@ -1584,21 +1584,21 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 
                 using (BinaryReader reader = new BinaryReader(File.Open(filePath, FileMode.Open)))
                 {
-                    for (int i = 0; i < colors.Length; i++)
+                    for (int i = 0; i < _colors.Length; i++)
                     {
-                        colors[i] = reader.ReadInt16();
+                        _colors[i] = reader.ReadInt16();
                     }
                 }
             }
 
             public short GetColor(int index)
             {
-                if (index < 0 || index >= colors.Length)
+                if (index < 0 || index >= _colors.Length)
                 {
                     throw new IndexOutOfRangeException("The index is out of range.");
                 }
 
-                return colors[index];
+                return _colors[index];
             }
         }
 
@@ -1776,26 +1776,26 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Size = 26, Pack = 1)]
             private unsafe struct OldLandData
             {
-                private uint _Flags;
-                private ushort _TexID;
+                private uint _flags;
+                private ushort _texID;
                 public fixed byte _Name[20]; // Change the access modifier to public
             }
 
             [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Size = 37, Pack = 1)]
             private unsafe struct OldItemData
             {
-                private uint _Flags;
-                private byte _Weight;
-                private byte _Quality;
-                private ushort _Miscdata;
-                private byte _Unk1;
-                private byte _Quantity;
-                private ushort _Animation;
-                private byte _Unk2;
-                private byte _Hue;
-                private byte _StackingOff;
-                private byte _Value;
-                private byte _Height;
+                private uint _flags;
+                private byte _weight;
+                private byte _quality;
+                private ushort _miscdata;
+                private byte _unk1;
+                private byte _quantity;
+                private ushort _animation;
+                private byte _unk2;
+                private byte _hue;
+                private byte _stackingOff;
+                private byte _value;
+                private byte _height;
                 public fixed byte _Name[20]; // Change the access modifier to public
             }
 
@@ -1803,18 +1803,18 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             private unsafe struct NewItemData
             {
                 [MarshalAs(UnmanagedType.U8)]
-                private ulong _Flags;
-                private byte _Weight;
-                private byte _Quality;
-                private ushort _Miscdata;
-                private byte _Unk1;
-                private byte _Quantity;
-                private ushort _Animation;
-                private byte _Unk2;
-                private byte _Hue;
-                private byte _StackingOff;
-                private byte _Value;
-                private byte _Height;
+                private ulong _flags;
+                private byte _weight;
+                private byte _quality;
+                private ushort _miscdata;
+                private byte _unk1;
+                private byte _quantity;
+                private ushort _animation;
+                private byte _unk2;
+                private byte _hue;
+                private byte _stackingOff;
+                private byte _value;
+                private byte _height;
                 public fixed byte _Name[20]; // Change the access modifier to public
             }
 
@@ -1851,30 +1851,30 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         }
         #endregion
 
-        private BinaryReader reader;
-        private int itemsLoaded = 0;
+        private BinaryReader _reader;
+        private int _itemsLoaded = 0;
 
         #region LoadItems
         private void LoadItems()
         {
             // Empty the ListView when it first loads
-            if (itemsLoaded == 0)
+            if (_itemsLoaded == 0)
             {
                 listViewTileData.Items.Clear();
             }
 
             // Load up to 50 items
-            for (int i = 0; i < 50 && reader.BaseStream.Position < reader.BaseStream.Length; i++)
+            for (int i = 0; i < 50 && _reader.BaseStream.Position < _reader.BaseStream.Length; i++)
             {
                 // Read the data for each country tile group
-                ulong flags = reader.ReadUInt64();
-                ushort textureId = reader.ReadUInt16();
-                string tileName = Encoding.Default.GetString(reader.ReadBytes(20));
+                ulong flags = _reader.ReadUInt64();
+                ushort textureId = _reader.ReadUInt16();
+                string tileName = Encoding.Default.GetString(_reader.ReadBytes(20));
 
                 // Paste the information into the ListView as a new entry
                 ListViewItem item = new ListViewItem(new string[]
                 {
-                    reader.BaseStream.Position.ToString("X"),
+                    _reader.BaseStream.Position.ToString("X"),
                     tileName,
                     textureId.ToString(),
                     Convert.ToString((long)flags, 2).PadLeft(33, '0')
@@ -1888,7 +1888,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 }
 
                 listViewTileData.Items.Add(item);
-                itemsLoaded++;
+                _itemsLoaded++;
             }
         }
         #endregion
@@ -1899,11 +1899,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // Check if the spacebar was pressed
             if (e.KeyCode == Keys.Space)
             {
-                if (landItemsLoaded < 16000)
+                if (_landItemsLoaded < 16000)
                 {
                     LoadLandTiles();
                 }
-                else if (staticItemsLoaded < 65500)
+                else if (_staticItemsLoaded < 65500)
                 {
                     LoadStaticTiles();
                 }
@@ -1912,45 +1912,45 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         #endregion
 
         #region buttonReadTileData
-        private void buttonReadTileData_Click(object sender, EventArgs e)
+        private void ButtonReadTileData_Click(object sender, EventArgs e)
         {
             OpenFileDialog openFileDialog = new OpenFileDialog();
             if (openFileDialog.ShowDialog() == DialogResult.OK)
             {
-                reader = new BinaryReader(File.Open(openFileDialog.FileName, FileMode.Open));
+                _reader = new BinaryReader(File.Open(openFileDialog.FileName, FileMode.Open));
                 LoadItems();
             }
         }
         #endregion
 
-        private int landItemsLoaded = 0;
-        private int staticItemsLoaded = 0;
+        private int _landItemsLoaded = 0;
+        private int _staticItemsLoaded = 0;
 
         #region LoadLandTiles
         private void LoadLandTiles()
         {
             // Load up to 50 items
-            for (int i = 0; i < 50 && reader.BaseStream.Position < reader.BaseStream.Length; i++)
+            for (int i = 0; i < 50 && _reader.BaseStream.Position < _reader.BaseStream.Length; i++)
             {
                 // Read the data for each country tile group
-                uint flags = reader.ReadUInt32();
+                uint flags = _reader.ReadUInt32();
                 Console.WriteLine("Flags: " + flags);
-                ushort textureId = reader.ReadUInt16();
+                ushort textureId = _reader.ReadUInt16();
                 Console.WriteLine("Texture ID: " + textureId);
-                string tileName = Encoding.Default.GetString(reader.ReadBytes(20));
+                string tileName = Encoding.Default.GetString(_reader.ReadBytes(20));
                 Console.WriteLine("Tile Name: " + tileName);
 
                 // Paste the information into the ListView as a new entry
                 ListViewItem item = new ListViewItem(new string[]
                 {
-            reader.BaseStream.Position.ToString("X"),
+            _reader.BaseStream.Position.ToString("X"),
             flags.ToString(),
             textureId.ToString(),
             tileName
                 });
 
                 listViewTileData.Items.Add(item);
-                landItemsLoaded++;
+                _landItemsLoaded++;
             }
         }
         #endregion
@@ -1959,26 +1959,26 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private void LoadStaticTiles()
         {
             // Load up to 50 items
-            for (int i = 0; i < 50 && reader.BaseStream.Position < reader.BaseStream.Length; i++)
+            for (int i = 0; i < 50 && _reader.BaseStream.Position < _reader.BaseStream.Length; i++)
             {
-                uint unknown = reader.ReadUInt32();
-                uint flags = reader.ReadUInt32();
-                byte weight = reader.ReadByte();
-                byte quality = reader.ReadByte();
-                ushort unknown1 = reader.ReadUInt16();
-                byte unknown2 = reader.ReadByte();
-                byte quantity = reader.ReadByte();
-                ushort animId = reader.ReadUInt16();
-                byte unknown3 = reader.ReadByte();
-                byte hue = reader.ReadByte();
-                ushort unknown4 = reader.ReadUInt16();
-                byte height = reader.ReadByte();
-                string tileName = Encoding.Default.GetString(reader.ReadBytes(20));
+                uint unknown = _reader.ReadUInt32();
+                uint flags = _reader.ReadUInt32();
+                byte weight = _reader.ReadByte();
+                byte quality = _reader.ReadByte();
+                ushort unknown1 = _reader.ReadUInt16();
+                byte unknown2 = _reader.ReadByte();
+                byte quantity = _reader.ReadByte();
+                ushort animId = _reader.ReadUInt16();
+                byte unknown3 = _reader.ReadByte();
+                byte hue = _reader.ReadByte();
+                ushort unknown4 = _reader.ReadUInt16();
+                byte height = _reader.ReadByte();
+                string tileName = Encoding.Default.GetString(_reader.ReadBytes(20));
 
                 // Paste the information into the ListView as a new entry
                 ListViewItem item = new ListViewItem(new string[]
                 {
-            reader.BaseStream.Position.ToString("X"),
+            _reader.BaseStream.Position.ToString("X"),
             unknown.ToString(),
             flags.ToString(),
             weight.ToString(),
@@ -1995,37 +1995,37 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 });
 
                 listViewTileData.Items.Add(item);
-                staticItemsLoaded++;
+                _staticItemsLoaded++;
             }
         }
         #endregion
 
         #region buttonReadLandTileData
-        private void buttonReadLandTileData_Click(object sender, EventArgs e)
+        private void ButtonReadLandTileData_Click(object sender, EventArgs e)
         {
             OpenFileDialog openFileDialog = new OpenFileDialog();
             if (openFileDialog.ShowDialog() == DialogResult.OK)
             {
-                reader = new BinaryReader(File.Open(openFileDialog.FileName, FileMode.Open));
+                _reader = new BinaryReader(File.Open(openFileDialog.FileName, FileMode.Open));
                 LoadLandTiles();
             }
         }
         #endregion
 
         #region buttonReadStaticTileData
-        private void buttonReadStaticTileData_Click(object sender, EventArgs e)
+        private void ButtonReadStaticTileData_Click(object sender, EventArgs e)
         {
             OpenFileDialog openFileDialog = new OpenFileDialog();
             if (openFileDialog.ShowDialog() == DialogResult.OK)
             {
-                reader = new BinaryReader(File.Open(openFileDialog.FileName, FileMode.Open));
+                _reader = new BinaryReader(File.Open(openFileDialog.FileName, FileMode.Open));
                 LoadStaticTiles();
             }
         }
         #endregion
 
         #region listViewTileData
-        private void listViewTileData_MouseClick(object sender, MouseEventArgs e)
+        private void ListViewTileData_MouseClick(object sender, MouseEventArgs e)
         {
             if (listViewTileData.SelectedItems.Count > 0)
             {
@@ -2081,7 +2081,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         #region Create Teture imagees
         //private TextureFileCreator textureFileCreator;
 
-        private void btCreateTextur_Click(object sender, EventArgs e)
+        private void BtCreateTextur_Click(object sender, EventArgs e)
         {
             using (FolderBrowserDialog dialog = new FolderBrowserDialog())
             {
@@ -2230,9 +2230,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 
         #region Create Orginal Palette
 
-        private Palette palette = new Palette();
+        private Palette _palette = new Palette();
 
-        private void btCreatePalette_Click(object sender, EventArgs e)
+        private void BtCreatePalette_Click(object sender, EventArgs e)
         {
             // Create the palette and add the colors you want
             CreateDefaultPalette();
@@ -2242,7 +2242,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 if (folderBrowserDialog.ShowDialog() == DialogResult.OK)
                 {
                     string filename = Path.Combine(folderBrowserDialog.SelectedPath, "Palette.mul");
-                    palette.Save(filename);
+                    _palette.Save(filename);
                 }
             }
         }
@@ -2251,278 +2251,278 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         #region CreateDefaultPalette Orginal Colors
         private void CreateDefaultPalette()
         {
-            palette = new Palette();
+            _palette = new Palette();
 
             // Add the desired RGB values ​​here
-            palette.AddColor(Color.FromArgb(0, 0, 0)); // RGB Value 0: R=0, G=0, B=0
-            palette.AddColor(Color.FromArgb(255, 0, 255)); // RGB Value 1: R=255, G=0, B=255
-            palette.AddColor(Color.FromArgb(255, 0, 255)); // RGB Value 2: R=255, G=0, B=255
-            palette.AddColor(Color.FromArgb(255, 0, 255)); // RGB Value 3: R=255, G=0, B=255
-            palette.AddColor(Color.FromArgb(255, 0, 255)); // RGB Value 4: R=255, G=0, B=255
-            palette.AddColor(Color.FromArgb(255, 0, 255)); // RGB Value 5: R=255, G=0, B=255
-            palette.AddColor(Color.FromArgb(255, 0, 255)); // RGB Value 6: R=255, G=0, B=255
-            palette.AddColor(Color.FromArgb(255, 0, 255)); // RGB Value 7: R=255, G=0, B=255
-            palette.AddColor(Color.FromArgb(255, 0, 255)); // RGB Value 8: R=255, G=0, B=255
-            palette.AddColor(Color.FromArgb(255, 0, 255)); // RGB Value 9: R=255, G=0, B=255
-            palette.AddColor(Color.FromArgb(199, 75, 0)); // RGB Value 10: R=199, G=75, B=0
-            palette.AddColor(Color.FromArgb(207, 99, 0)); // RGB Value 11: R=207, G=99, B=0
-            palette.AddColor(Color.FromArgb(215, 127, 0)); // RGB Value 12: R=215, G=127, B=0
-            palette.AddColor(Color.FromArgb(227, 155, 0)); // RGB Value 13: R=227, G=155, B=0
-            palette.AddColor(Color.FromArgb(235, 187, 0)); // RGB Value 14: R=235, G=187, B=0
-            palette.AddColor(Color.FromArgb(243, 219, 0)); // RGB Value 15: R=243, G=219, B=0
-            palette.AddColor(Color.FromArgb(255, 255, 0)); // RGB Value 16: R=255, G=255, B=0
-            palette.AddColor(Color.FromArgb(255, 255, 95)); // RGB Value 17: R=255, G=255, B=95
-            palette.AddColor(Color.FromArgb(255, 255, 147)); // RGB Value 18: R=255, G=255, B=147
-            palette.AddColor(Color.FromArgb(255, 255, 195)); // RGB Value 19: R=255, G=255, B=195
-            palette.AddColor(Color.FromArgb(255, 255, 247)); // RGB Value 20: R=255, G=255, B=247
-            palette.AddColor(Color.FromArgb(59, 27, 7)); // RGB Value 21: R=59, G=27, B=7
-            palette.AddColor(Color.FromArgb(67, 31, 7)); // RGB Value 22: R=67, G=31, B=7
-            palette.AddColor(Color.FromArgb(75, 35, 11)); // RGB Value 23: R=75, G=35, B=11
-            palette.AddColor(Color.FromArgb(83, 43, 15)); // RGB Value 24: R=83, G=43, B=15
-            palette.AddColor(Color.FromArgb(91, 47, 23)); // RGB Value 25: R=91, G=47, B=23
-            palette.AddColor(Color.FromArgb(99, 55, 27)); // RGB Value 26: R=99, G=55, B=27
-            palette.AddColor(Color.FromArgb(107, 63, 31)); // RGB Value 27: R=107, G=63, B=31
-            palette.AddColor(Color.FromArgb(115, 67, 39)); // RGB Value 28: R=115, G=67, B=39
-            palette.AddColor(Color.FromArgb(123, 75, 47)); // RGB Value 29: R=123, G=75, B=47
-            palette.AddColor(Color.FromArgb(131, 83, 51)); // RGB Value 30: R=131, G=83, B=51
-            palette.AddColor(Color.FromArgb(139, 91, 59)); // RGB Value 31: R=139, G=91, B=59
-            palette.AddColor(Color.FromArgb(147, 99, 67)); // RGB Value 32: R=147, G=99, B=67
-            palette.AddColor(Color.FromArgb(155, 107, 79)); // RGB Value 33: R=155, G=107, B=79
-            palette.AddColor(Color.FromArgb(163, 115, 87)); // RGB Value 34: R=163, G=115, B=87
-            palette.AddColor(Color.FromArgb(171, 127, 95)); // RGB Value 35: R=171, G=127, B=95
-            palette.AddColor(Color.FromArgb(179, 135, 107)); // RGB Value 36: R=179, G=135, B=107
-            palette.AddColor(Color.FromArgb(187, 147, 115)); // RGB Value 37: R=187, G=147, B=115
-            palette.AddColor(Color.FromArgb(195, 155, 127)); // RGB Value 38: R=195, G=155, B=127
-            palette.AddColor(Color.FromArgb(203, 167, 139)); // RGB Value 39: R=203, G=167, B=139
-            palette.AddColor(Color.FromArgb(211, 175, 151)); // RGB Value 40: R=211, G=175, B=151
-            palette.AddColor(Color.FromArgb(219, 187, 163)); // RGB Value 41: R=219, G=187, B=163
-            palette.AddColor(Color.FromArgb(231, 199, 179)); // RGB Value 42: R=231, G=199, B=179
-            palette.AddColor(Color.FromArgb(239, 211, 191)); // RGB Value 43: R=239, G=211, B=191
-            palette.AddColor(Color.FromArgb(247, 223, 207)); // RGB Value 44: R=247, G=223, B=207
-            palette.AddColor(Color.FromArgb(59, 59, 43)); // RGB Value 45: R=59, G=59, B=43
-            palette.AddColor(Color.FromArgb(79, 79, 59)); // RGB Value 46: R=79, G=79, B=59
-            palette.AddColor(Color.FromArgb(103, 103, 79)); // RGB Value 47: R=103, G=103, B=79
-            palette.AddColor(Color.FromArgb(127, 127, 103)); // RGB Value 48: R=127, G=127, B=103
-            palette.AddColor(Color.FromArgb(147, 147, 123)); // RGB Value 49: R=147, G=147, B=123
-            palette.AddColor(Color.FromArgb(171, 171, 147)); // RGB Value 50: R=171, G=171, B=147
-            palette.AddColor(Color.FromArgb(195, 195, 171)); // RGB Value 51: R=195, G=195, B=171
-            palette.AddColor(Color.FromArgb(219, 219, 199)); // RGB Value 52: R=219, G=219, B=199
-            palette.AddColor(Color.FromArgb(39, 0, 0)); // RGB Value 53: R=39, G=0, B=0
-            palette.AddColor(Color.FromArgb(51, 0, 0)); // RGB Value 54: R=51, G=0, B=0
-            palette.AddColor(Color.FromArgb(67, 11, 7)); // RGB Value 55: R=67, G=11, B=7
-            palette.AddColor(Color.FromArgb(79, 19, 11)); // RGB Value 56: R=79, G=19, B=11
-            palette.AddColor(Color.FromArgb(95, 31, 15)); // RGB Value 57: R=95, G=31, B=15
-            palette.AddColor(Color.FromArgb(111, 43, 27)); // RGB Value 58: R=111, G=43, B=27
-            palette.AddColor(Color.FromArgb(123, 59, 35)); // RGB Value 59: R=123, G=59, B=35
-            palette.AddColor(Color.FromArgb(60, 139, 75)); // RGB Value 60 R=60, G=139, B=75
-            palette.AddColor(Color.FromArgb(151, 91, 59)); // RGB Value 61: R=151, G=91, B=59
-            palette.AddColor(Color.FromArgb(167, 111, 71)); // RGB Value 62: R=167, G=111, B=71
-            palette.AddColor(Color.FromArgb(183, 127, 87)); // RGB Value 63: R=183, G=127, B=87
-            palette.AddColor(Color.FromArgb(195, 147, 103)); // RGB Value 64: R=195, G=147, B=103
-            palette.AddColor(Color.FromArgb(211, 167, 123)); // RGB Value 65: R=211, G=167, B=123
-            palette.AddColor(Color.FromArgb(223, 187, 143)); // RGB Value 66: R=223, G=187, B=143
-            palette.AddColor(Color.FromArgb(239, 211, 163)); // RGB Value 67: R=239, G=211, B=163
-            palette.AddColor(Color.FromArgb(255, 231, 187)); // RGB Value 68: R=255, G=231, B=187
-            palette.AddColor(Color.FromArgb(23, 23, 0)); // RGB Value 69: R=23, G=23, B=0
-            palette.AddColor(Color.FromArgb(35, 35, 0)); // RGB Value 70: R=35, G=35, B=0
-            palette.AddColor(Color.FromArgb(51, 47, 0)); // RGB Value 71: R=51, G=47, B=0
-            palette.AddColor(Color.FromArgb(67, 63, 7)); // RGB Value 72: R=67, G=63, B=7
-            palette.AddColor(Color.FromArgb(83, 75, 15)); // RGB Value 73: R=83, G=75, B=15
-            palette.AddColor(Color.FromArgb(99, 87, 19)); // RGB Value 74: R=99, G=87, B=19
-            palette.AddColor(Color.FromArgb(111, 99, 27)); // RGB Value 75: R=111, G=99, B=27
-            palette.AddColor(Color.FromArgb(127, 111, 39)); // RGB Value 76: R=127, G=111, B=39
-            palette.AddColor(Color.FromArgb(143, 123, 51)); // RGB Value 77: R=143, G=123, B=51
-            palette.AddColor(Color.FromArgb(159, 135, 63)); // RGB Value 78: R=159, G=135, B=63
-            palette.AddColor(Color.FromArgb(175, 147, 79)); // RGB Value 79: R=175, G=147, B=79
-            palette.AddColor(Color.FromArgb(187, 159, 95)); // RGB Value 80: R=187, G=159, B=95
-            palette.AddColor(Color.FromArgb(203, 175, 111)); // RGB Value 81: R=203, G=175, B=111
-            palette.AddColor(Color.FromArgb(219, 187, 131)); // RGB Value 82: R=219, G=187, B=131
-            palette.AddColor(Color.FromArgb(235, 203, 147)); // RGB Value 83: R=235, G=203, B=147
-            palette.AddColor(Color.FromArgb(251, 219, 171)); // RGB Value 84: R=251, G=219, B=171
-            palette.AddColor(Color.FromArgb(0, 0, 43)); // RGB Value 85: R=0, G=0, B=43
-            palette.AddColor(Color.FromArgb(0, 0, 55)); // RGB Value 86: R=0, G=0, B=55
-            palette.AddColor(Color.FromArgb(7, 7, 71)); // RGB Value 87: R=7, G=7, B=71
-            palette.AddColor(Color.FromArgb(15, 15, 83)); // RGB Value 88: R=15, G=15, B=83
-            palette.AddColor(Color.FromArgb(23, 23, 99)); // RGB Value 89: R=23, G=23, B=99
-            palette.AddColor(Color.FromArgb(31, 31, 111)); // RGB Value 90: R=31, G=31, B=111
-            palette.AddColor(Color.FromArgb(43, 43, 127)); // RGB Value 91: R=43, G=43, B=127
-            palette.AddColor(Color.FromArgb(59, 59, 139)); // RGB Value 92: R=59, G=59, B=139
-            palette.AddColor(Color.FromArgb(75, 75, 155)); // RGB Value 93: R=75, G=75, B=155
-            palette.AddColor(Color.FromArgb(91, 91, 167)); // RGB Value 94: R=91, G=91, B=167
-            palette.AddColor(Color.FromArgb(111, 111, 183)); // RGB Value 95: R=111, G=111, B=183
-            palette.AddColor(Color.FromArgb(131, 131, 195)); // RGB Value 96: R=131, G=131, B=195
-            palette.AddColor(Color.FromArgb(155, 155, 211)); // RGB Value 97: R=155, G=155, B=211
-            palette.AddColor(Color.FromArgb(179, 179, 227)); // RGB Value 98: R=179, G=179, B=227
-            palette.AddColor(Color.FromArgb(207, 207, 239)); // RGB Value 99: R=207, G=207, B=239
-            palette.AddColor(Color.FromArgb(235, 235, 255)); // RGB Value 100: R=235, G=235, B=255
-            palette.AddColor(Color.FromArgb(27, 27, 111)); // RGB Value 101: R=27, G=27, B=111
-            palette.AddColor(Color.FromArgb(35, 39, 131)); // RGB Value 102: R=35, G=39, B=131
-            palette.AddColor(Color.FromArgb(47, 55, 151)); // RGB Value 103: R=47, G=55, B=151
-            palette.AddColor(Color.FromArgb(63, 71, 171)); // RGB Value 104: R=63, G=71, B=171
-            palette.AddColor(Color.FromArgb(79, 91, 191)); // RGB Value 105: R=79, G=91, B=191
-            palette.AddColor(Color.FromArgb(95, 111, 211)); // RGB Value 106: R=95, G=111, B=211
-            palette.AddColor(Color.FromArgb(115, 135, 231)); // RGB Value 107: R=115, G=135, B=231
-            palette.AddColor(Color.FromArgb(139, 159, 255)); // RGB Value 108: R=139, G=159, B=255
-            palette.AddColor(Color.FromArgb(27, 135, 135)); // RGB Value 109: R=27, G=135, B=135
-            palette.AddColor(Color.FromArgb(43, 151, 151)); // RGB Value 110: R=43, G=151, B=151
-            palette.AddColor(Color.FromArgb(59, 167, 167)); // RGB Value 111: R=59, G=167, B=167
-            palette.AddColor(Color.FromArgb(79, 183, 183)); // RGB Value 112: R=79, G=183, B=183
-            palette.AddColor(Color.FromArgb(107, 203, 203)); // RGB Value 113: R=107, G=203, B=203
-            palette.AddColor(Color.FromArgb(131, 219, 219)); // RGB Value 114: R=131, G=219, B=219
-            palette.AddColor(Color.FromArgb(163, 235, 235)); // RGB Value 115: R=163, G=235, B=235
-            palette.AddColor(Color.FromArgb(195, 255, 255)); // RGB Value 116: R=195, G=255, B=255
-            palette.AddColor(Color.FromArgb(67, 0, 67)); // RGB Value 117: R=67, G=0, B=67
-            palette.AddColor(Color.FromArgb(91, 11, 91)); // RGB Value 118: R=91, G=11, B=91
-            palette.AddColor(Color.FromArgb(119, 27, 119)); // RGB Value 119: R=119, G=27, B=119
-            palette.AddColor(Color.FromArgb(147, 51, 147)); // RGB Value 120: R=147, G=51, B=147
-            palette.AddColor(Color.FromArgb(171, 83, 171)); // RGB Value 121: R=171, G=83, B=171
-            palette.AddColor(Color.FromArgb(199, 123, 199)); // RGB Value 122: R=199, G=123, B=199
-            palette.AddColor(Color.FromArgb(227, 167, 227)); // RGB Value 123: R=227, G=167, B=227
-            palette.AddColor(Color.FromArgb(255, 219, 255)); // RGB Value 124: R=255, G=219, B=255
-            palette.AddColor(Color.FromArgb(55, 127, 59)); // RGB Value 125: R=55, G=127, B=59
-            palette.AddColor(Color.FromArgb(71, 143, 75)); // RGB Value 126: R=71, G=143, B=75
-            palette.AddColor(Color.FromArgb(91, 163, 91)); // RGB Value 127: R=91, G=163, B=91
-            palette.AddColor(Color.FromArgb(111, 179, 111)); // RGB Value 128: R=111, G=179, B=111
-            palette.AddColor(Color.FromArgb(131, 199, 135)); // RGB Value 129: R=131, G=199, B=135
-            palette.AddColor(Color.FromArgb(155, 215, 159)); // RGB Value 130: R=155, G=215, B=159
-            palette.AddColor(Color.FromArgb(183, 235, 183)); // RGB Value 131: R=183, G=235, B=183
-            palette.AddColor(Color.FromArgb(215, 255, 215)); // RGB Value 132: R=215, G=255, B=215
-            palette.AddColor(Color.FromArgb(31, 39, 0)); // RGB Value 133: R=31, G=39, B=0
-            palette.AddColor(Color.FromArgb(43, 51, 0)); // RGB Value 134: R=43, G=51, B=0
-            palette.AddColor(Color.FromArgb(55, 67, 7)); // RGB Value 135: R=55, G=67, B=7
-            palette.AddColor(Color.FromArgb(67, 79, 7)); // RGB Value 136: R=67, G=79, B=7
-            palette.AddColor(Color.FromArgb(83, 95, 15)); // RGB Value 137: R=83, G=95, B=15
-            palette.AddColor(Color.FromArgb(99, 111, 23)); // RGB Value 138: R=99, G=111, B=23
-            palette.AddColor(Color.FromArgb(111, 123, 31)); // RGB Value 139: R=111, G=123, B=31
-            palette.AddColor(Color.FromArgb(127, 139, 43)); // RGB Value 140: R=127, G=139, B=43
-            palette.AddColor(Color.FromArgb(143, 151, 55)); // RGB Value 141: R=143, G=151, B=55
-            palette.AddColor(Color.FromArgb(159, 167, 67)); // RGB Value 142: R=159, G=167, B=67
-            palette.AddColor(Color.FromArgb(175, 183, 79)); // RGB Value 143: R=175, G=183, B=79
-            palette.AddColor(Color.FromArgb(191, 195, 95)); // RGB Value 144: R=191, G=195, B=95
-            palette.AddColor(Color.FromArgb(207, 211, 111)); // RGB Value 145: R=207, G=211, B=111
-            palette.AddColor(Color.FromArgb(223, 223, 131)); // RGB Value 146: R=223, G=223, B=131
-            palette.AddColor(Color.FromArgb(239, 239, 151)); // RGB Value 147: R=239, G=239, B=151
-            palette.AddColor(Color.FromArgb(255, 255, 171)); // RGB Value 148: R=255, G=255, B=171
-            palette.AddColor(Color.FromArgb(0, 35, 19)); // RGB Value 149: R=0, G=35, B=19
-            palette.AddColor(Color.FromArgb(0, 47, 27)); // RGB Value 150: R=0, G=47, B=27
-            palette.AddColor(Color.FromArgb(7, 63, 39)); // RGB Value 151: R=7, G=63, B=39
-            palette.AddColor(Color.FromArgb(11, 79, 55)); // RGB Value 152: R=11, G=79, B=55
-            palette.AddColor(Color.FromArgb(19, 91, 67)); // RGB Value 153: R=19, G=91, B=67
-            palette.AddColor(Color.FromArgb(27, 107, 83)); // RGB Value 154: R=27, G=107, B=83
-            palette.AddColor(Color.FromArgb(35, 123, 99)); // RGB Value 155: R=35, G=123, B=99
-            palette.AddColor(Color.FromArgb(43, 139, 115)); // RGB Value 156: R=43, G=139, B=115
-            palette.AddColor(Color.FromArgb(59, 151, 131)); // RGB Value 157: R=59, G=151, B=131
-            palette.AddColor(Color.FromArgb(79, 167, 151)); // RGB Value 158: R=79, G=167, B=151
-            palette.AddColor(Color.FromArgb(99, 179, 167)); // RGB Value 159: R=99, G=179, B=167
-            palette.AddColor(Color.FromArgb(115, 195, 187)); // RGB Value 160: R=115, G=195, B=187
-            palette.AddColor(Color.FromArgb(139, 211, 203)); // RGB Value 161: R=139, G=211, B=203
-            palette.AddColor(Color.FromArgb(159, 223, 219)); // RGB Value 162: R=159, G=223, B=219
-            palette.AddColor(Color.FromArgb(183, 239, 235)); // RGB Value 163: R=183, G=239, B=235
-            palette.AddColor(Color.FromArgb(211, 255, 255)); // RGB Value 164: R=211, G=255, B=255
-            palette.AddColor(Color.FromArgb(0, 19, 0)); // RGB Value 165: R=0, G=19, B=0
-            palette.AddColor(Color.FromArgb(0, 35, 0)); // RGB Value 166: R=0, G=35, B=0
-            palette.AddColor(Color.FromArgb(0, 47, 7)); // RGB Value 167: R=0, G=47, B=7
-            palette.AddColor(Color.FromArgb(7, 63, 11)); // RGB Value 168: R=7, G=63, B=11
-            palette.AddColor(Color.FromArgb(15, 79, 19)); // RGB Value 169: R=15, G=79, B=19
-            palette.AddColor(Color.FromArgb(23, 95, 27)); // RGB Value 170: R=23, G=95, B=27
-            palette.AddColor(Color.FromArgb(35, 111, 39)); // RGB Value 171: R=35, G=111, B=39
-            palette.AddColor(Color.FromArgb(43, 127, 51)); // RGB Value 172: R=43, G=127, B=51
-            palette.AddColor(Color.FromArgb(59, 143, 67)); // RGB Value 173: R=59, G=143, B=67
-            palette.AddColor(Color.FromArgb(75, 159, 79)); // RGB Value 174: R=75, G=159, B=79
-            palette.AddColor(Color.FromArgb(91, 175, 99)); // RGB Value 175: R=91, G=175, B=99
-            palette.AddColor(Color.FromArgb(107, 191, 115)); // RGB Value 176: R=107, G=191, B=115
-            palette.AddColor(Color.FromArgb(127, 207, 139)); // RGB Value 177: R=127, G=207, B=139
-            palette.AddColor(Color.FromArgb(151, 223, 159)); // RGB Value 178: R=151, G=223, B=159
-            palette.AddColor(Color.FromArgb(171, 239, 183)); // RGB Value 179: R=171, G=239, B=183
-            palette.AddColor(Color.FromArgb(199, 255, 207)); // RGB Value 180: R=199, G=255, B=207
-            palette.AddColor(Color.FromArgb(131, 71, 43)); // RGB Value 181: R=131, G=71, B=43
-            palette.AddColor(Color.FromArgb(147, 83, 47)); // RGB Value 182: R=147, G=83, B=47
-            palette.AddColor(Color.FromArgb(163, 95, 55)); // RGB Value 183: R=163, G=95, B=55
-            palette.AddColor(Color.FromArgb(183, 107, 63)); // RGB Value 184: R=183, G=107, B=63
-            palette.AddColor(Color.FromArgb(199, 123, 71)); // RGB Value 185: R=199, G=123, B=71
-            palette.AddColor(Color.FromArgb(219, 139, 79)); // RGB Value 186: R=219, G=139, B=79
-            palette.AddColor(Color.FromArgb(235, 155, 87)); // RGB Value 187: R=235, G=155, B=87
-            palette.AddColor(Color.FromArgb(255, 171, 95)); // RGB Value 188: R=255, G=171, B=95
-            palette.AddColor(Color.FromArgb(175, 151, 55)); // RGB Value 189: R=175, G=151, B=55
-            palette.AddColor(Color.FromArgb(191, 171, 55)); // RGB Value 190: R=191, G=171, B=55
-            palette.AddColor(Color.FromArgb(211, 195, 55)); // RGB Value 191: R=211, G=195, B=55
-            palette.AddColor(Color.FromArgb(231, 219, 51)); // RGB Value 192: R=231, G=219, B=51
-            palette.AddColor(Color.FromArgb(251, 247, 51)); // RGB Value 193: R=251, G=247, B=51
-            palette.AddColor(Color.FromArgb(27, 7, 0)); // RGB Value 194: R=27, G=7, B=0
-            palette.AddColor(Color.FromArgb(55, 11, 0)); // RGB Value 195: R=55, G=11, B=0
-            palette.AddColor(Color.FromArgb(83, 15, 0)); // RGB Value 196: R=83, G=15, B=0
-            palette.AddColor(Color.FromArgb(111, 15, 0)); // RGB Value 197: R=111, G=15, B=0
-            palette.AddColor(Color.FromArgb(139, 15, 0)); // RGB Value 198: R=139, G=15, B=0
-            palette.AddColor(Color.FromArgb(167, 11, 0)); // RGB Value 199: R=167, G=11, B=0
-            palette.AddColor(Color.FromArgb(195, 7, 0)); // RGB Value 200: R=195, G=7, B=0
-            palette.AddColor(Color.FromArgb(223, 0, 0)); // RGB Value 201: R=223, G=0, B=0
-            palette.AddColor(Color.FromArgb(227, 23, 23)); // RGB Value 202: R=227, G=23, B=23
-            palette.AddColor(Color.FromArgb(231, 51, 51)); // RGB Value 203: R=231, G=51, B=51
-            palette.AddColor(Color.FromArgb(235, 79, 79)); // RGB Value 204: R=235, G=79, B=79
-            palette.AddColor(Color.FromArgb(239, 111, 111)); // RGB Value 205: R=239, G=111, B=111
-            palette.AddColor(Color.FromArgb(243, 139, 139)); // RGB Value 206: R=243, G=139, B=139
-            palette.AddColor(Color.FromArgb(247, 171, 171)); // RGB Value 207: R=247, G=171, B=171
-            palette.AddColor(Color.FromArgb(251, 203, 203)); // RGB Value 208: R=251, G=203, B=203
-            palette.AddColor(Color.FromArgb(255, 239, 239)); // RGB Value 209: R=255, G=239, B=239
-            palette.AddColor(Color.FromArgb(7, 7, 7)); // RGB Value 210: R=7, G=7, B=7
-            palette.AddColor(Color.FromArgb(15, 15, 15)); // RGB Value 211: R=15, G=15, B=15
-            palette.AddColor(Color.FromArgb(27, 27, 27)); // RGB Value 212: R=27, G=27, B=27
-            palette.AddColor(Color.FromArgb(39, 39, 39)); // RGB Value 213: R=39, G=39, B=39
-            palette.AddColor(Color.FromArgb(51, 51, 47)); // RGB Value 214: R=51, G=51, B=47
-            palette.AddColor(Color.FromArgb(59, 59, 59)); // RGB Value 215: R=59, G=59, B=59
-            palette.AddColor(Color.FromArgb(71, 71, 71)); // RGB Value 216: R=71, G=71, B=71
-            palette.AddColor(Color.FromArgb(83, 83, 79)); // RGB Value 217: R=83, G=83, B=79
-            palette.AddColor(Color.FromArgb(91, 91, 91)); // RGB Value 218: R=91, G=91, B=91
-            palette.AddColor(Color.FromArgb(103, 103, 99)); // RGB Value 219: R=103, G=103, B=99
-            palette.AddColor(Color.FromArgb(115, 115, 111)); // RGB Value 220: R=115, G=115, B=111
-            palette.AddColor(Color.FromArgb(127, 127, 123)); // RGB Value 221: R=127, G=127, B=123
-            palette.AddColor(Color.FromArgb(127, 127, 123)); // RGB Value 222: R=127, G=127, B=123
-            palette.AddColor(Color.FromArgb(135, 135, 131)); // RGB Value 223: R=135, G=135, B=131
-            palette.AddColor(Color.FromArgb(147, 147, 143)); // RGB Value 224: R=147, G=147, B=143
-            palette.AddColor(Color.FromArgb(159, 159, 151)); // RGB Value 225: R=159, G=159, B=151
-            palette.AddColor(Color.FromArgb(171, 171, 163)); // RGB Value 226: R=171, G=171, B=163
-            palette.AddColor(Color.FromArgb(179, 179, 171)); // RGB Value 227: R=179, G=179, B=171
-            palette.AddColor(Color.FromArgb(191, 191, 183)); // RGB Value 228: R=191, G=191, B=183
-            palette.AddColor(Color.FromArgb(203, 203, 191)); // RGB Value 229: R=203, G=203, B=191
-            palette.AddColor(Color.FromArgb(211, 211, 199)); // RGB Value 230: R=211, G=211, B=199
-            palette.AddColor(Color.FromArgb(223, 223, 211)); // RGB Value 231: R=223, G=223, B=211
-            palette.AddColor(Color.FromArgb(235, 235, 219)); // RGB Value 232: R=235, G=235, B=219
-            palette.AddColor(Color.FromArgb(247, 247, 231)); // RGB Value 233: R=247, G=247, B=231
-            palette.AddColor(Color.FromArgb(0, 255, 0)); // RGB Value 234: R=0, G=255, B=0
-            palette.AddColor(Color.FromArgb(0, 255, 0)); // RGB Value 235: R=0, G=255, B=0
-            palette.AddColor(Color.FromArgb(0, 255, 0)); // RGB Value 236: R=0, G=255, B=0
-            palette.AddColor(Color.FromArgb(0, 255, 0)); // RGB Value 237: R=0, G=255, B=0
-            palette.AddColor(Color.FromArgb(0, 255, 0)); // RGB Value 238: R=0, G=255, B=0
-            palette.AddColor(Color.FromArgb(0, 255, 0)); // RGB Value 239: R=0, G=255, B=0
-            palette.AddColor(Color.FromArgb(0, 255, 0)); // RGB Value 240: R=0, G=255, B=0
-            palette.AddColor(Color.FromArgb(0, 255, 0)); // RGB Value 241: R=0, G=255, B=0
-            palette.AddColor(Color.FromArgb(0, 255, 0)); // RGB Value 242: R=0, G=255, B=0
-            palette.AddColor(Color.FromArgb(0, 255, 0)); // RGB Value 243: R=0, G=255, B=0
-            palette.AddColor(Color.FromArgb(0, 255, 0)); // RGB Value 244: R=0, G=255, B=0
-            palette.AddColor(Color.FromArgb(0, 255, 0)); // RGB Value 245: R=0, G=255, B=0
-            palette.AddColor(Color.FromArgb(255, 0, 255)); // RGB Value 246: R=255, G=0, B=255
-            palette.AddColor(Color.FromArgb(255, 0, 255)); // RGB Value 247: R=255, G=0, B=255
-            palette.AddColor(Color.FromArgb(255, 0, 255)); // RGB Value 248: R=255, G=0, B=255
-            palette.AddColor(Color.FromArgb(255, 0, 247)); // RGB Value 249: R=255, G=0, B=247
-            palette.AddColor(Color.FromArgb(255, 0, 255)); // RGB Value 250: R=255, G=0, B=255
-            palette.AddColor(Color.FromArgb(255, 0, 255)); // RGB Value 251: R=255, G=0, B=255
-            palette.AddColor(Color.FromArgb(255, 0, 255)); // RGB Value 252: R=255, G=0, B=255
-            palette.AddColor(Color.FromArgb(255, 0, 255)); // RGB Value 253: R=255, G=0, B=255
-            palette.AddColor(Color.FromArgb(127, 127, 127)); // RGB Value 254: R=127, G=127, B=127
-            palette.AddColor(Color.FromArgb(255, 255, 255)); // RGB Value 255: R=255, G=255, B=255
+            _palette.AddColor(Color.FromArgb(0, 0, 0)); // RGB Value 0: R=0, G=0, B=0
+            _palette.AddColor(Color.FromArgb(255, 0, 255)); // RGB Value 1: R=255, G=0, B=255
+            _palette.AddColor(Color.FromArgb(255, 0, 255)); // RGB Value 2: R=255, G=0, B=255
+            _palette.AddColor(Color.FromArgb(255, 0, 255)); // RGB Value 3: R=255, G=0, B=255
+            _palette.AddColor(Color.FromArgb(255, 0, 255)); // RGB Value 4: R=255, G=0, B=255
+            _palette.AddColor(Color.FromArgb(255, 0, 255)); // RGB Value 5: R=255, G=0, B=255
+            _palette.AddColor(Color.FromArgb(255, 0, 255)); // RGB Value 6: R=255, G=0, B=255
+            _palette.AddColor(Color.FromArgb(255, 0, 255)); // RGB Value 7: R=255, G=0, B=255
+            _palette.AddColor(Color.FromArgb(255, 0, 255)); // RGB Value 8: R=255, G=0, B=255
+            _palette.AddColor(Color.FromArgb(255, 0, 255)); // RGB Value 9: R=255, G=0, B=255
+            _palette.AddColor(Color.FromArgb(199, 75, 0)); // RGB Value 10: R=199, G=75, B=0
+            _palette.AddColor(Color.FromArgb(207, 99, 0)); // RGB Value 11: R=207, G=99, B=0
+            _palette.AddColor(Color.FromArgb(215, 127, 0)); // RGB Value 12: R=215, G=127, B=0
+            _palette.AddColor(Color.FromArgb(227, 155, 0)); // RGB Value 13: R=227, G=155, B=0
+            _palette.AddColor(Color.FromArgb(235, 187, 0)); // RGB Value 14: R=235, G=187, B=0
+            _palette.AddColor(Color.FromArgb(243, 219, 0)); // RGB Value 15: R=243, G=219, B=0
+            _palette.AddColor(Color.FromArgb(255, 255, 0)); // RGB Value 16: R=255, G=255, B=0
+            _palette.AddColor(Color.FromArgb(255, 255, 95)); // RGB Value 17: R=255, G=255, B=95
+            _palette.AddColor(Color.FromArgb(255, 255, 147)); // RGB Value 18: R=255, G=255, B=147
+            _palette.AddColor(Color.FromArgb(255, 255, 195)); // RGB Value 19: R=255, G=255, B=195
+            _palette.AddColor(Color.FromArgb(255, 255, 247)); // RGB Value 20: R=255, G=255, B=247
+            _palette.AddColor(Color.FromArgb(59, 27, 7)); // RGB Value 21: R=59, G=27, B=7
+            _palette.AddColor(Color.FromArgb(67, 31, 7)); // RGB Value 22: R=67, G=31, B=7
+            _palette.AddColor(Color.FromArgb(75, 35, 11)); // RGB Value 23: R=75, G=35, B=11
+            _palette.AddColor(Color.FromArgb(83, 43, 15)); // RGB Value 24: R=83, G=43, B=15
+            _palette.AddColor(Color.FromArgb(91, 47, 23)); // RGB Value 25: R=91, G=47, B=23
+            _palette.AddColor(Color.FromArgb(99, 55, 27)); // RGB Value 26: R=99, G=55, B=27
+            _palette.AddColor(Color.FromArgb(107, 63, 31)); // RGB Value 27: R=107, G=63, B=31
+            _palette.AddColor(Color.FromArgb(115, 67, 39)); // RGB Value 28: R=115, G=67, B=39
+            _palette.AddColor(Color.FromArgb(123, 75, 47)); // RGB Value 29: R=123, G=75, B=47
+            _palette.AddColor(Color.FromArgb(131, 83, 51)); // RGB Value 30: R=131, G=83, B=51
+            _palette.AddColor(Color.FromArgb(139, 91, 59)); // RGB Value 31: R=139, G=91, B=59
+            _palette.AddColor(Color.FromArgb(147, 99, 67)); // RGB Value 32: R=147, G=99, B=67
+            _palette.AddColor(Color.FromArgb(155, 107, 79)); // RGB Value 33: R=155, G=107, B=79
+            _palette.AddColor(Color.FromArgb(163, 115, 87)); // RGB Value 34: R=163, G=115, B=87
+            _palette.AddColor(Color.FromArgb(171, 127, 95)); // RGB Value 35: R=171, G=127, B=95
+            _palette.AddColor(Color.FromArgb(179, 135, 107)); // RGB Value 36: R=179, G=135, B=107
+            _palette.AddColor(Color.FromArgb(187, 147, 115)); // RGB Value 37: R=187, G=147, B=115
+            _palette.AddColor(Color.FromArgb(195, 155, 127)); // RGB Value 38: R=195, G=155, B=127
+            _palette.AddColor(Color.FromArgb(203, 167, 139)); // RGB Value 39: R=203, G=167, B=139
+            _palette.AddColor(Color.FromArgb(211, 175, 151)); // RGB Value 40: R=211, G=175, B=151
+            _palette.AddColor(Color.FromArgb(219, 187, 163)); // RGB Value 41: R=219, G=187, B=163
+            _palette.AddColor(Color.FromArgb(231, 199, 179)); // RGB Value 42: R=231, G=199, B=179
+            _palette.AddColor(Color.FromArgb(239, 211, 191)); // RGB Value 43: R=239, G=211, B=191
+            _palette.AddColor(Color.FromArgb(247, 223, 207)); // RGB Value 44: R=247, G=223, B=207
+            _palette.AddColor(Color.FromArgb(59, 59, 43)); // RGB Value 45: R=59, G=59, B=43
+            _palette.AddColor(Color.FromArgb(79, 79, 59)); // RGB Value 46: R=79, G=79, B=59
+            _palette.AddColor(Color.FromArgb(103, 103, 79)); // RGB Value 47: R=103, G=103, B=79
+            _palette.AddColor(Color.FromArgb(127, 127, 103)); // RGB Value 48: R=127, G=127, B=103
+            _palette.AddColor(Color.FromArgb(147, 147, 123)); // RGB Value 49: R=147, G=147, B=123
+            _palette.AddColor(Color.FromArgb(171, 171, 147)); // RGB Value 50: R=171, G=171, B=147
+            _palette.AddColor(Color.FromArgb(195, 195, 171)); // RGB Value 51: R=195, G=195, B=171
+            _palette.AddColor(Color.FromArgb(219, 219, 199)); // RGB Value 52: R=219, G=219, B=199
+            _palette.AddColor(Color.FromArgb(39, 0, 0)); // RGB Value 53: R=39, G=0, B=0
+            _palette.AddColor(Color.FromArgb(51, 0, 0)); // RGB Value 54: R=51, G=0, B=0
+            _palette.AddColor(Color.FromArgb(67, 11, 7)); // RGB Value 55: R=67, G=11, B=7
+            _palette.AddColor(Color.FromArgb(79, 19, 11)); // RGB Value 56: R=79, G=19, B=11
+            _palette.AddColor(Color.FromArgb(95, 31, 15)); // RGB Value 57: R=95, G=31, B=15
+            _palette.AddColor(Color.FromArgb(111, 43, 27)); // RGB Value 58: R=111, G=43, B=27
+            _palette.AddColor(Color.FromArgb(123, 59, 35)); // RGB Value 59: R=123, G=59, B=35
+            _palette.AddColor(Color.FromArgb(60, 139, 75)); // RGB Value 60 R=60, G=139, B=75
+            _palette.AddColor(Color.FromArgb(151, 91, 59)); // RGB Value 61: R=151, G=91, B=59
+            _palette.AddColor(Color.FromArgb(167, 111, 71)); // RGB Value 62: R=167, G=111, B=71
+            _palette.AddColor(Color.FromArgb(183, 127, 87)); // RGB Value 63: R=183, G=127, B=87
+            _palette.AddColor(Color.FromArgb(195, 147, 103)); // RGB Value 64: R=195, G=147, B=103
+            _palette.AddColor(Color.FromArgb(211, 167, 123)); // RGB Value 65: R=211, G=167, B=123
+            _palette.AddColor(Color.FromArgb(223, 187, 143)); // RGB Value 66: R=223, G=187, B=143
+            _palette.AddColor(Color.FromArgb(239, 211, 163)); // RGB Value 67: R=239, G=211, B=163
+            _palette.AddColor(Color.FromArgb(255, 231, 187)); // RGB Value 68: R=255, G=231, B=187
+            _palette.AddColor(Color.FromArgb(23, 23, 0)); // RGB Value 69: R=23, G=23, B=0
+            _palette.AddColor(Color.FromArgb(35, 35, 0)); // RGB Value 70: R=35, G=35, B=0
+            _palette.AddColor(Color.FromArgb(51, 47, 0)); // RGB Value 71: R=51, G=47, B=0
+            _palette.AddColor(Color.FromArgb(67, 63, 7)); // RGB Value 72: R=67, G=63, B=7
+            _palette.AddColor(Color.FromArgb(83, 75, 15)); // RGB Value 73: R=83, G=75, B=15
+            _palette.AddColor(Color.FromArgb(99, 87, 19)); // RGB Value 74: R=99, G=87, B=19
+            _palette.AddColor(Color.FromArgb(111, 99, 27)); // RGB Value 75: R=111, G=99, B=27
+            _palette.AddColor(Color.FromArgb(127, 111, 39)); // RGB Value 76: R=127, G=111, B=39
+            _palette.AddColor(Color.FromArgb(143, 123, 51)); // RGB Value 77: R=143, G=123, B=51
+            _palette.AddColor(Color.FromArgb(159, 135, 63)); // RGB Value 78: R=159, G=135, B=63
+            _palette.AddColor(Color.FromArgb(175, 147, 79)); // RGB Value 79: R=175, G=147, B=79
+            _palette.AddColor(Color.FromArgb(187, 159, 95)); // RGB Value 80: R=187, G=159, B=95
+            _palette.AddColor(Color.FromArgb(203, 175, 111)); // RGB Value 81: R=203, G=175, B=111
+            _palette.AddColor(Color.FromArgb(219, 187, 131)); // RGB Value 82: R=219, G=187, B=131
+            _palette.AddColor(Color.FromArgb(235, 203, 147)); // RGB Value 83: R=235, G=203, B=147
+            _palette.AddColor(Color.FromArgb(251, 219, 171)); // RGB Value 84: R=251, G=219, B=171
+            _palette.AddColor(Color.FromArgb(0, 0, 43)); // RGB Value 85: R=0, G=0, B=43
+            _palette.AddColor(Color.FromArgb(0, 0, 55)); // RGB Value 86: R=0, G=0, B=55
+            _palette.AddColor(Color.FromArgb(7, 7, 71)); // RGB Value 87: R=7, G=7, B=71
+            _palette.AddColor(Color.FromArgb(15, 15, 83)); // RGB Value 88: R=15, G=15, B=83
+            _palette.AddColor(Color.FromArgb(23, 23, 99)); // RGB Value 89: R=23, G=23, B=99
+            _palette.AddColor(Color.FromArgb(31, 31, 111)); // RGB Value 90: R=31, G=31, B=111
+            _palette.AddColor(Color.FromArgb(43, 43, 127)); // RGB Value 91: R=43, G=43, B=127
+            _palette.AddColor(Color.FromArgb(59, 59, 139)); // RGB Value 92: R=59, G=59, B=139
+            _palette.AddColor(Color.FromArgb(75, 75, 155)); // RGB Value 93: R=75, G=75, B=155
+            _palette.AddColor(Color.FromArgb(91, 91, 167)); // RGB Value 94: R=91, G=91, B=167
+            _palette.AddColor(Color.FromArgb(111, 111, 183)); // RGB Value 95: R=111, G=111, B=183
+            _palette.AddColor(Color.FromArgb(131, 131, 195)); // RGB Value 96: R=131, G=131, B=195
+            _palette.AddColor(Color.FromArgb(155, 155, 211)); // RGB Value 97: R=155, G=155, B=211
+            _palette.AddColor(Color.FromArgb(179, 179, 227)); // RGB Value 98: R=179, G=179, B=227
+            _palette.AddColor(Color.FromArgb(207, 207, 239)); // RGB Value 99: R=207, G=207, B=239
+            _palette.AddColor(Color.FromArgb(235, 235, 255)); // RGB Value 100: R=235, G=235, B=255
+            _palette.AddColor(Color.FromArgb(27, 27, 111)); // RGB Value 101: R=27, G=27, B=111
+            _palette.AddColor(Color.FromArgb(35, 39, 131)); // RGB Value 102: R=35, G=39, B=131
+            _palette.AddColor(Color.FromArgb(47, 55, 151)); // RGB Value 103: R=47, G=55, B=151
+            _palette.AddColor(Color.FromArgb(63, 71, 171)); // RGB Value 104: R=63, G=71, B=171
+            _palette.AddColor(Color.FromArgb(79, 91, 191)); // RGB Value 105: R=79, G=91, B=191
+            _palette.AddColor(Color.FromArgb(95, 111, 211)); // RGB Value 106: R=95, G=111, B=211
+            _palette.AddColor(Color.FromArgb(115, 135, 231)); // RGB Value 107: R=115, G=135, B=231
+            _palette.AddColor(Color.FromArgb(139, 159, 255)); // RGB Value 108: R=139, G=159, B=255
+            _palette.AddColor(Color.FromArgb(27, 135, 135)); // RGB Value 109: R=27, G=135, B=135
+            _palette.AddColor(Color.FromArgb(43, 151, 151)); // RGB Value 110: R=43, G=151, B=151
+            _palette.AddColor(Color.FromArgb(59, 167, 167)); // RGB Value 111: R=59, G=167, B=167
+            _palette.AddColor(Color.FromArgb(79, 183, 183)); // RGB Value 112: R=79, G=183, B=183
+            _palette.AddColor(Color.FromArgb(107, 203, 203)); // RGB Value 113: R=107, G=203, B=203
+            _palette.AddColor(Color.FromArgb(131, 219, 219)); // RGB Value 114: R=131, G=219, B=219
+            _palette.AddColor(Color.FromArgb(163, 235, 235)); // RGB Value 115: R=163, G=235, B=235
+            _palette.AddColor(Color.FromArgb(195, 255, 255)); // RGB Value 116: R=195, G=255, B=255
+            _palette.AddColor(Color.FromArgb(67, 0, 67)); // RGB Value 117: R=67, G=0, B=67
+            _palette.AddColor(Color.FromArgb(91, 11, 91)); // RGB Value 118: R=91, G=11, B=91
+            _palette.AddColor(Color.FromArgb(119, 27, 119)); // RGB Value 119: R=119, G=27, B=119
+            _palette.AddColor(Color.FromArgb(147, 51, 147)); // RGB Value 120: R=147, G=51, B=147
+            _palette.AddColor(Color.FromArgb(171, 83, 171)); // RGB Value 121: R=171, G=83, B=171
+            _palette.AddColor(Color.FromArgb(199, 123, 199)); // RGB Value 122: R=199, G=123, B=199
+            _palette.AddColor(Color.FromArgb(227, 167, 227)); // RGB Value 123: R=227, G=167, B=227
+            _palette.AddColor(Color.FromArgb(255, 219, 255)); // RGB Value 124: R=255, G=219, B=255
+            _palette.AddColor(Color.FromArgb(55, 127, 59)); // RGB Value 125: R=55, G=127, B=59
+            _palette.AddColor(Color.FromArgb(71, 143, 75)); // RGB Value 126: R=71, G=143, B=75
+            _palette.AddColor(Color.FromArgb(91, 163, 91)); // RGB Value 127: R=91, G=163, B=91
+            _palette.AddColor(Color.FromArgb(111, 179, 111)); // RGB Value 128: R=111, G=179, B=111
+            _palette.AddColor(Color.FromArgb(131, 199, 135)); // RGB Value 129: R=131, G=199, B=135
+            _palette.AddColor(Color.FromArgb(155, 215, 159)); // RGB Value 130: R=155, G=215, B=159
+            _palette.AddColor(Color.FromArgb(183, 235, 183)); // RGB Value 131: R=183, G=235, B=183
+            _palette.AddColor(Color.FromArgb(215, 255, 215)); // RGB Value 132: R=215, G=255, B=215
+            _palette.AddColor(Color.FromArgb(31, 39, 0)); // RGB Value 133: R=31, G=39, B=0
+            _palette.AddColor(Color.FromArgb(43, 51, 0)); // RGB Value 134: R=43, G=51, B=0
+            _palette.AddColor(Color.FromArgb(55, 67, 7)); // RGB Value 135: R=55, G=67, B=7
+            _palette.AddColor(Color.FromArgb(67, 79, 7)); // RGB Value 136: R=67, G=79, B=7
+            _palette.AddColor(Color.FromArgb(83, 95, 15)); // RGB Value 137: R=83, G=95, B=15
+            _palette.AddColor(Color.FromArgb(99, 111, 23)); // RGB Value 138: R=99, G=111, B=23
+            _palette.AddColor(Color.FromArgb(111, 123, 31)); // RGB Value 139: R=111, G=123, B=31
+            _palette.AddColor(Color.FromArgb(127, 139, 43)); // RGB Value 140: R=127, G=139, B=43
+            _palette.AddColor(Color.FromArgb(143, 151, 55)); // RGB Value 141: R=143, G=151, B=55
+            _palette.AddColor(Color.FromArgb(159, 167, 67)); // RGB Value 142: R=159, G=167, B=67
+            _palette.AddColor(Color.FromArgb(175, 183, 79)); // RGB Value 143: R=175, G=183, B=79
+            _palette.AddColor(Color.FromArgb(191, 195, 95)); // RGB Value 144: R=191, G=195, B=95
+            _palette.AddColor(Color.FromArgb(207, 211, 111)); // RGB Value 145: R=207, G=211, B=111
+            _palette.AddColor(Color.FromArgb(223, 223, 131)); // RGB Value 146: R=223, G=223, B=131
+            _palette.AddColor(Color.FromArgb(239, 239, 151)); // RGB Value 147: R=239, G=239, B=151
+            _palette.AddColor(Color.FromArgb(255, 255, 171)); // RGB Value 148: R=255, G=255, B=171
+            _palette.AddColor(Color.FromArgb(0, 35, 19)); // RGB Value 149: R=0, G=35, B=19
+            _palette.AddColor(Color.FromArgb(0, 47, 27)); // RGB Value 150: R=0, G=47, B=27
+            _palette.AddColor(Color.FromArgb(7, 63, 39)); // RGB Value 151: R=7, G=63, B=39
+            _palette.AddColor(Color.FromArgb(11, 79, 55)); // RGB Value 152: R=11, G=79, B=55
+            _palette.AddColor(Color.FromArgb(19, 91, 67)); // RGB Value 153: R=19, G=91, B=67
+            _palette.AddColor(Color.FromArgb(27, 107, 83)); // RGB Value 154: R=27, G=107, B=83
+            _palette.AddColor(Color.FromArgb(35, 123, 99)); // RGB Value 155: R=35, G=123, B=99
+            _palette.AddColor(Color.FromArgb(43, 139, 115)); // RGB Value 156: R=43, G=139, B=115
+            _palette.AddColor(Color.FromArgb(59, 151, 131)); // RGB Value 157: R=59, G=151, B=131
+            _palette.AddColor(Color.FromArgb(79, 167, 151)); // RGB Value 158: R=79, G=167, B=151
+            _palette.AddColor(Color.FromArgb(99, 179, 167)); // RGB Value 159: R=99, G=179, B=167
+            _palette.AddColor(Color.FromArgb(115, 195, 187)); // RGB Value 160: R=115, G=195, B=187
+            _palette.AddColor(Color.FromArgb(139, 211, 203)); // RGB Value 161: R=139, G=211, B=203
+            _palette.AddColor(Color.FromArgb(159, 223, 219)); // RGB Value 162: R=159, G=223, B=219
+            _palette.AddColor(Color.FromArgb(183, 239, 235)); // RGB Value 163: R=183, G=239, B=235
+            _palette.AddColor(Color.FromArgb(211, 255, 255)); // RGB Value 164: R=211, G=255, B=255
+            _palette.AddColor(Color.FromArgb(0, 19, 0)); // RGB Value 165: R=0, G=19, B=0
+            _palette.AddColor(Color.FromArgb(0, 35, 0)); // RGB Value 166: R=0, G=35, B=0
+            _palette.AddColor(Color.FromArgb(0, 47, 7)); // RGB Value 167: R=0, G=47, B=7
+            _palette.AddColor(Color.FromArgb(7, 63, 11)); // RGB Value 168: R=7, G=63, B=11
+            _palette.AddColor(Color.FromArgb(15, 79, 19)); // RGB Value 169: R=15, G=79, B=19
+            _palette.AddColor(Color.FromArgb(23, 95, 27)); // RGB Value 170: R=23, G=95, B=27
+            _palette.AddColor(Color.FromArgb(35, 111, 39)); // RGB Value 171: R=35, G=111, B=39
+            _palette.AddColor(Color.FromArgb(43, 127, 51)); // RGB Value 172: R=43, G=127, B=51
+            _palette.AddColor(Color.FromArgb(59, 143, 67)); // RGB Value 173: R=59, G=143, B=67
+            _palette.AddColor(Color.FromArgb(75, 159, 79)); // RGB Value 174: R=75, G=159, B=79
+            _palette.AddColor(Color.FromArgb(91, 175, 99)); // RGB Value 175: R=91, G=175, B=99
+            _palette.AddColor(Color.FromArgb(107, 191, 115)); // RGB Value 176: R=107, G=191, B=115
+            _palette.AddColor(Color.FromArgb(127, 207, 139)); // RGB Value 177: R=127, G=207, B=139
+            _palette.AddColor(Color.FromArgb(151, 223, 159)); // RGB Value 178: R=151, G=223, B=159
+            _palette.AddColor(Color.FromArgb(171, 239, 183)); // RGB Value 179: R=171, G=239, B=183
+            _palette.AddColor(Color.FromArgb(199, 255, 207)); // RGB Value 180: R=199, G=255, B=207
+            _palette.AddColor(Color.FromArgb(131, 71, 43)); // RGB Value 181: R=131, G=71, B=43
+            _palette.AddColor(Color.FromArgb(147, 83, 47)); // RGB Value 182: R=147, G=83, B=47
+            _palette.AddColor(Color.FromArgb(163, 95, 55)); // RGB Value 183: R=163, G=95, B=55
+            _palette.AddColor(Color.FromArgb(183, 107, 63)); // RGB Value 184: R=183, G=107, B=63
+            _palette.AddColor(Color.FromArgb(199, 123, 71)); // RGB Value 185: R=199, G=123, B=71
+            _palette.AddColor(Color.FromArgb(219, 139, 79)); // RGB Value 186: R=219, G=139, B=79
+            _palette.AddColor(Color.FromArgb(235, 155, 87)); // RGB Value 187: R=235, G=155, B=87
+            _palette.AddColor(Color.FromArgb(255, 171, 95)); // RGB Value 188: R=255, G=171, B=95
+            _palette.AddColor(Color.FromArgb(175, 151, 55)); // RGB Value 189: R=175, G=151, B=55
+            _palette.AddColor(Color.FromArgb(191, 171, 55)); // RGB Value 190: R=191, G=171, B=55
+            _palette.AddColor(Color.FromArgb(211, 195, 55)); // RGB Value 191: R=211, G=195, B=55
+            _palette.AddColor(Color.FromArgb(231, 219, 51)); // RGB Value 192: R=231, G=219, B=51
+            _palette.AddColor(Color.FromArgb(251, 247, 51)); // RGB Value 193: R=251, G=247, B=51
+            _palette.AddColor(Color.FromArgb(27, 7, 0)); // RGB Value 194: R=27, G=7, B=0
+            _palette.AddColor(Color.FromArgb(55, 11, 0)); // RGB Value 195: R=55, G=11, B=0
+            _palette.AddColor(Color.FromArgb(83, 15, 0)); // RGB Value 196: R=83, G=15, B=0
+            _palette.AddColor(Color.FromArgb(111, 15, 0)); // RGB Value 197: R=111, G=15, B=0
+            _palette.AddColor(Color.FromArgb(139, 15, 0)); // RGB Value 198: R=139, G=15, B=0
+            _palette.AddColor(Color.FromArgb(167, 11, 0)); // RGB Value 199: R=167, G=11, B=0
+            _palette.AddColor(Color.FromArgb(195, 7, 0)); // RGB Value 200: R=195, G=7, B=0
+            _palette.AddColor(Color.FromArgb(223, 0, 0)); // RGB Value 201: R=223, G=0, B=0
+            _palette.AddColor(Color.FromArgb(227, 23, 23)); // RGB Value 202: R=227, G=23, B=23
+            _palette.AddColor(Color.FromArgb(231, 51, 51)); // RGB Value 203: R=231, G=51, B=51
+            _palette.AddColor(Color.FromArgb(235, 79, 79)); // RGB Value 204: R=235, G=79, B=79
+            _palette.AddColor(Color.FromArgb(239, 111, 111)); // RGB Value 205: R=239, G=111, B=111
+            _palette.AddColor(Color.FromArgb(243, 139, 139)); // RGB Value 206: R=243, G=139, B=139
+            _palette.AddColor(Color.FromArgb(247, 171, 171)); // RGB Value 207: R=247, G=171, B=171
+            _palette.AddColor(Color.FromArgb(251, 203, 203)); // RGB Value 208: R=251, G=203, B=203
+            _palette.AddColor(Color.FromArgb(255, 239, 239)); // RGB Value 209: R=255, G=239, B=239
+            _palette.AddColor(Color.FromArgb(7, 7, 7)); // RGB Value 210: R=7, G=7, B=7
+            _palette.AddColor(Color.FromArgb(15, 15, 15)); // RGB Value 211: R=15, G=15, B=15
+            _palette.AddColor(Color.FromArgb(27, 27, 27)); // RGB Value 212: R=27, G=27, B=27
+            _palette.AddColor(Color.FromArgb(39, 39, 39)); // RGB Value 213: R=39, G=39, B=39
+            _palette.AddColor(Color.FromArgb(51, 51, 47)); // RGB Value 214: R=51, G=51, B=47
+            _palette.AddColor(Color.FromArgb(59, 59, 59)); // RGB Value 215: R=59, G=59, B=59
+            _palette.AddColor(Color.FromArgb(71, 71, 71)); // RGB Value 216: R=71, G=71, B=71
+            _palette.AddColor(Color.FromArgb(83, 83, 79)); // RGB Value 217: R=83, G=83, B=79
+            _palette.AddColor(Color.FromArgb(91, 91, 91)); // RGB Value 218: R=91, G=91, B=91
+            _palette.AddColor(Color.FromArgb(103, 103, 99)); // RGB Value 219: R=103, G=103, B=99
+            _palette.AddColor(Color.FromArgb(115, 115, 111)); // RGB Value 220: R=115, G=115, B=111
+            _palette.AddColor(Color.FromArgb(127, 127, 123)); // RGB Value 221: R=127, G=127, B=123
+            _palette.AddColor(Color.FromArgb(127, 127, 123)); // RGB Value 222: R=127, G=127, B=123
+            _palette.AddColor(Color.FromArgb(135, 135, 131)); // RGB Value 223: R=135, G=135, B=131
+            _palette.AddColor(Color.FromArgb(147, 147, 143)); // RGB Value 224: R=147, G=147, B=143
+            _palette.AddColor(Color.FromArgb(159, 159, 151)); // RGB Value 225: R=159, G=159, B=151
+            _palette.AddColor(Color.FromArgb(171, 171, 163)); // RGB Value 226: R=171, G=171, B=163
+            _palette.AddColor(Color.FromArgb(179, 179, 171)); // RGB Value 227: R=179, G=179, B=171
+            _palette.AddColor(Color.FromArgb(191, 191, 183)); // RGB Value 228: R=191, G=191, B=183
+            _palette.AddColor(Color.FromArgb(203, 203, 191)); // RGB Value 229: R=203, G=203, B=191
+            _palette.AddColor(Color.FromArgb(211, 211, 199)); // RGB Value 230: R=211, G=211, B=199
+            _palette.AddColor(Color.FromArgb(223, 223, 211)); // RGB Value 231: R=223, G=223, B=211
+            _palette.AddColor(Color.FromArgb(235, 235, 219)); // RGB Value 232: R=235, G=235, B=219
+            _palette.AddColor(Color.FromArgb(247, 247, 231)); // RGB Value 233: R=247, G=247, B=231
+            _palette.AddColor(Color.FromArgb(0, 255, 0)); // RGB Value 234: R=0, G=255, B=0
+            _palette.AddColor(Color.FromArgb(0, 255, 0)); // RGB Value 235: R=0, G=255, B=0
+            _palette.AddColor(Color.FromArgb(0, 255, 0)); // RGB Value 236: R=0, G=255, B=0
+            _palette.AddColor(Color.FromArgb(0, 255, 0)); // RGB Value 237: R=0, G=255, B=0
+            _palette.AddColor(Color.FromArgb(0, 255, 0)); // RGB Value 238: R=0, G=255, B=0
+            _palette.AddColor(Color.FromArgb(0, 255, 0)); // RGB Value 239: R=0, G=255, B=0
+            _palette.AddColor(Color.FromArgb(0, 255, 0)); // RGB Value 240: R=0, G=255, B=0
+            _palette.AddColor(Color.FromArgb(0, 255, 0)); // RGB Value 241: R=0, G=255, B=0
+            _palette.AddColor(Color.FromArgb(0, 255, 0)); // RGB Value 242: R=0, G=255, B=0
+            _palette.AddColor(Color.FromArgb(0, 255, 0)); // RGB Value 243: R=0, G=255, B=0
+            _palette.AddColor(Color.FromArgb(0, 255, 0)); // RGB Value 244: R=0, G=255, B=0
+            _palette.AddColor(Color.FromArgb(0, 255, 0)); // RGB Value 245: R=0, G=255, B=0
+            _palette.AddColor(Color.FromArgb(255, 0, 255)); // RGB Value 246: R=255, G=0, B=255
+            _palette.AddColor(Color.FromArgb(255, 0, 255)); // RGB Value 247: R=255, G=0, B=255
+            _palette.AddColor(Color.FromArgb(255, 0, 255)); // RGB Value 248: R=255, G=0, B=255
+            _palette.AddColor(Color.FromArgb(255, 0, 247)); // RGB Value 249: R=255, G=0, B=247
+            _palette.AddColor(Color.FromArgb(255, 0, 255)); // RGB Value 250: R=255, G=0, B=255
+            _palette.AddColor(Color.FromArgb(255, 0, 255)); // RGB Value 251: R=255, G=0, B=255
+            _palette.AddColor(Color.FromArgb(255, 0, 255)); // RGB Value 252: R=255, G=0, B=255
+            _palette.AddColor(Color.FromArgb(255, 0, 255)); // RGB Value 253: R=255, G=0, B=255
+            _palette.AddColor(Color.FromArgb(127, 127, 127)); // RGB Value 254: R=127, G=127, B=127
+            _palette.AddColor(Color.FromArgb(255, 255, 255)); // RGB Value 255: R=255, G=255, B=255
         }
         #endregion
 
         #region Create Gray Palette RGB
-        private void btCreatePaletteFull_Click(object sender, EventArgs e)
+        private void BtCreatePaletteFull_Click(object sender, EventArgs e)
         {
             using (FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog())
             {
                 if (folderBrowserDialog.ShowDialog() == DialogResult.OK)
                 {
                     string filename = Path.Combine(folderBrowserDialog.SelectedPath, "Palette.mul");
-                    palette.CreateDefaultPalette();
-                    palette.Save(filename);
+                    _palette.CreateDefaultPalette();
+                    _palette.Save(filename);
                 }
             }
         }
@@ -2536,7 +2536,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 openFileDialog.Filter = "mul files (*.mul)|*.mul";
                 if (openFileDialog.ShowDialog() == DialogResult.OK)
                 {
-                    palette.Load(openFileDialog.FileName);
+                    _palette.Load(openFileDialog.FileName);
                     DrawPalette();
                     DisplayRGBValues();
                 }
@@ -2550,7 +2550,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             Bitmap bitmap = new Bitmap(pictureBoxPalette.Width, pictureBoxPalette.Height);
             using (Graphics g = Graphics.FromImage(bitmap))
             {
-                palette.DrawPalette(g, pictureBoxPalette.Width, pictureBoxPalette.Height);
+                _palette.DrawPalette(g, pictureBoxPalette.Width, pictureBoxPalette.Height);
             }
             pictureBoxPalette.Image = bitmap;
         }
@@ -2560,9 +2560,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private void DisplayRGBValues()
         {
             StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < palette.RGBValues.Count; i++)
+            for (int i = 0; i < _palette.RGBValues.Count; i++)
             {
-                sb.AppendLine($"RGB Value {i}: R={palette.RGBValues[i].R}, G={palette.RGBValues[i].G}, B={palette.RGBValues[i].B}");
+                sb.AppendLine($"RGB Value {i}: R={_palette.RGBValues[i].R}, G={_palette.RGBValues[i].G}, B={_palette.RGBValues[i].B}");
             }
             //rgbValuesLabel.Text = sb.ToString();
             textBoxRgbValues.Text = sb.ToString();
@@ -2574,7 +2574,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 
         #region Animation
         #region btnLoadAnimationMulData
-        private void btnLoadAnimationMulData_Click(object sender, EventArgs e)
+        private void BtnLoadAnimationMulData_Click(object sender, EventArgs e)
         {
             // Open the file dialog to let the user select the directory
             using (var fbd = new FolderBrowserDialog())
@@ -2739,9 +2739,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         }
         #endregion
 
-        #region BtnReadArtIdx
+        #region BtnReadArtIdx2
         private int _indexCount = 0;        
-        private void BtnReadArtIdx_Click(object sender, EventArgs e)
+        private void BtnReadArtIdx2_Click(object sender, EventArgs e)
         {
             OpenFileDialog openFileDialog = new OpenFileDialog();
             openFileDialog.Filter = "MUL Files|*.mul";
@@ -2829,7 +2829,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         #endregion
 
         #region btnCreateNewArtidx
-        private void btnCreateNewArtidx(object sender, EventArgs e)
+        private void BtnCreateNewArtidx(object sender, EventArgs e)
         {
             // Open a FolderBrowserDialog to select the destination path
             FolderBrowserDialog fbd = new FolderBrowserDialog();
@@ -2872,7 +2872,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         #endregion
 
         #region btnCreateNewArtidx2
-        private void btnCreateNewArtidx2(object sender, EventArgs e)
+        private void BtnCreateNewArtidx2(object sender, EventArgs e)
         {
             // Open a FolderBrowserDialog to select the destination path
             FolderBrowserDialog fbd = new FolderBrowserDialog();
@@ -2913,7 +2913,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         #endregion
 
         #region btnCreateOldVersionArtidx
-        private void btnCreateOldVersionArtidx(object sender, EventArgs e)
+        private void BtnCreateOldVersionArtidx(object sender, EventArgs e)
         {
             // Open a FolderBrowserDialog to select the destination path
             FolderBrowserDialog fbd = new FolderBrowserDialog();
@@ -2953,7 +2953,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         #endregion
 
         #region btnSingleEmptyAnimMul_Click
-        private void btnSingleEmptyAnimMul_Click(object sender, EventArgs e)
+        private void BtnSingleEmptyAnimMul_Click(object sender, EventArgs e)
         {
             using (FolderBrowserDialog fbd = new FolderBrowserDialog())
             {
@@ -2975,19 +2975,19 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 
         #region Constants
         // Constants for the sizes of different creature types
-        const int cHighDetail = 110;
-        const int cLowDetail = 65;
-        const int cHuman = 175;
+        const int _cHighDetail = 110;
+        const int _cLowDetail = 65;
+        const int _cHuman = 175;
 
-        const int cHighDetailOLd = 1; // Old Version
-        const int cLowDetailOld = 2; // Old Version
-        const int cHumanOld = 3; // Old Version
+        const int _cHighDetailOLd = 1; // Old Version
+        const int _cLowDetailOld = 2; // Old Version
+        const int _cHumanOld = 3; // Old Version
 
-        private int newIdCount = 0;
+        private int _newIdCount = 0;
         #endregion
 
         #region btnBrowseClick
-        private void btnBrowseClick(object sender, EventArgs e)
+        private void BtnBrowseClick(object sender, EventArgs e)
         {
             OpenFileDialog openFileDialog = new OpenFileDialog();
             if (openFileDialog.ShowDialog() == DialogResult.OK)
@@ -2998,7 +2998,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         #endregion
 
         #region btnSetOutputDirectoryClick
-        private void btnSetOutputDirectoryClick(object sender, EventArgs e)
+        private void BtnSetOutputDirectoryClick(object sender, EventArgs e)
         {
             // Open a FolderBrowserDialog to select the output directory
             FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog();
@@ -3011,7 +3011,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         #endregion
 
         #region btnProcessClick
-        private void btnProcessClick(object sender, EventArgs e)
+        private void BtnProcessClick(object sender, EventArgs e)
         {
             // Flush tbProcessAminidx with every new process
             tbProcessAminidx.Clear();
@@ -3038,15 +3038,15 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 int copyCount;
                 if (chkHighDetail.Checked)
                 {
-                    copyCount = cHighDetail;
+                    copyCount = _cHighDetail;
                 }
                 else if (chkLowDetail.Checked)
                 {
-                    copyCount = cLowDetail;
+                    copyCount = _cLowDetail;
                 }
                 else if (chkHuman.Checked)
                 {
-                    copyCount = cHuman;
+                    copyCount = _cHuman;
                 }
                 else
                 {
@@ -3118,10 +3118,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                     tbProcessAminidx.AppendText($"Wrote {readLength} bytes of index-data to cID {creatureID}\n");
 
                     // Increment the counter for each ID created
-                    newIdCount++;
+                    _newIdCount++;
                 }
                 // Update the label with the number of IDs created
-                lblNewIdCount.Text = $"Number of IDs created: {newIdCount}";
+                lblNewIdCount.Text = $"Number of IDs created: {_newIdCount}";
             }
         }
         #endregion        
@@ -3162,7 +3162,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         #endregion
 
         #region btnCountIndices
-        private async void btnCountIndices_Click(object sender, EventArgs e)
+        private async void BtnCountIndices_Click(object sender, EventArgs e)
         {
             OpenFileDialog openFileDialog = new OpenFileDialog();
             openFileDialog.Filter = "Animation Index File (ANIM.IDX)|ANIM.IDX";
@@ -3197,27 +3197,27 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         {
             if (creatureID <= 199)
             {
-                indexOffset = creatureID * cHighDetail;
-                readLength = cHighDetail * 12;
+                indexOffset = creatureID * _cHighDetail;
+                readLength = _cHighDetail * 12;
                 creatureType = "High Detail Critter";
             }
             else if (creatureID > 199 && creatureID <= 399)
             {
-                indexOffset = (creatureID - 200) * cLowDetail + 22000;
-                readLength = cLowDetail * 12;
+                indexOffset = (creatureID - 200) * _cLowDetail + 22000;
+                readLength = _cLowDetail * 12;
                 creatureType = "Low Detail Critter";
             }
             else
             {
-                indexOffset = (creatureID - 400) * cHuman + 35000;
-                readLength = cHuman * 12;
+                indexOffset = (creatureID - 400) * _cHuman + 35000;
+                readLength = _cHuman * 12;
                 creatureType = "Human or an Accessoire";
             }
         }
         #endregion
 
         #region btnProcessClickOldVersion
-        private void btnProcessClickOldVersion(object sender, EventArgs e)
+        private void BtnProcessClickOldVersion(object sender, EventArgs e)
         {
             // Flush tbProcessAminidx with every new process
             tbProcessAminidx.Clear();
@@ -3258,21 +3258,21 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                     {
                         indexOffset = creatureID * 110;
                         readLength = 110 * 12;
-                        cAnimType = cHighDetailOLd;
+                        cAnimType = _cHighDetailOLd;
                         tbProcessAminidx.AppendText("Creature is a High Detail Critter\n");
                     }
                     else if (creatureID > 199 && creatureID <= 399)
                     {
                         indexOffset = (creatureID - 200) * 65 + 22000;
                         readLength = 65 * 12;
-                        cAnimType = cLowDetailOld;
+                        cAnimType = _cLowDetailOld;
                         tbProcessAminidx.AppendText("Creature is a Low Detail Critter\n");
                     }
                     else
                     {
                         indexOffset = (creatureID - 400) * 175 + 35000;
                         readLength = 175 * 12;
-                        cAnimType = cHumanOld;
+                        cAnimType = _cHumanOld;
                         tbProcessAminidx.AppendText("Creature is a Human or an Accessoire\n");
                     }
 
@@ -3297,13 +3297,13 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                         // Perform different actions based on the creature type
                         switch (cAnimType)
                         {
-                            case cHighDetailOLd:
+                            case _cHighDetailOLd:
                                 // Perform some action for high detail creatures
                                 break;
-                            case cLowDetailOld:
+                            case _cLowDetailOld:
                                 // Perform some action for low detail creatures
                                 break;
-                            case cHumanOld:
+                            case _cHumanOld:
                                 // Perform some action for human creatures
                                 break;
                         }

@@ -29,25 +29,25 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Helper
     public partial class CreateTransitions : Form
     {
         //private VScrollBar _LandItems;
-        private bool ImageTest;
-        private ClsTerrainTable iGroups;
-        private ClsTerrain iSelectedGroup;
-        private ClsTerrain m_SelectedGroupA;
-        private ClsTerrain m_SelectedGroupB;
-        private ClsTerrain m_SelectedGroupC;
+        private bool _imageTest;
+        private ClsTerrainTable _iGroups;
+        private ClsTerrain _iSelectedGroup;
+        private ClsTerrain _selectedGroupA;
+        private ClsTerrain _selectedGroupB;
+        private ClsTerrain _selectedGroupC;
         private bool _iSelected;
-        private Transition.Transition iTransition;
-        private TransitionTable iTransitionTable;
+        private Transition.Transition _iTransition;
+        private TransitionTable _iTransitionTable;
 
         public ClsTerrain Selected_Terrain_A
         {
             get
             {
-                return this.m_SelectedGroupA;
+                return this._selectedGroupA;
             }
             set
             {
-                this.m_SelectedGroupA = value;
+                this._selectedGroupA = value;
             }
         }
 
@@ -55,11 +55,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Helper
         {
             get
             {
-                return this.m_SelectedGroupB;
+                return this._selectedGroupB;
             }
             set
             {
-                this.m_SelectedGroupB = value;
+                this._selectedGroupB = value;
             }
         }
 
@@ -67,11 +67,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Helper
         {
             get
             {
-                return this.m_SelectedGroupC;
+                return this._selectedGroupC;
             }
             set
             {
-                this.m_SelectedGroupC = value;
+                this._selectedGroupC = value;
             }
         }
 
@@ -80,25 +80,25 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Helper
             InitializeComponent();
 
             this.Load += new EventHandler(this.TEdit_Load);
-            this.ImageTest = false;
-            this.iGroups = new ClsTerrainTable();
+            this._imageTest = false;
+            this._iGroups = new ClsTerrainTable();
             this._iSelected = false;
-            this.iTransition = new Transition.Transition();
-            this.iTransitionTable = new TransitionTable();
+            this._iTransition = new Transition.Transition();
+            this._iTransitionTable = new TransitionTable();
         }
 
         private void TEdit_Load(object sender, EventArgs e)
         {
-            this.iGroups.Load();
-            this.iGroups.Display(this.GroupSelect);
+            this._iGroups.Load();
+            this._iGroups.Display(this.GroupSelect);
         }
 
         private void GroupSelect_SelectedIndexChanged(object sender, EventArgs e)
         {
-            this.iSelectedGroup = (ClsTerrain)this.GroupSelect.SelectedItem;
-            this.PictureBox3.Image = (Image)Art.GetLand((int)this.iSelectedGroup.TileID);
-            this.Box_TileID.Text = StringType.FromInteger((int)this.iSelectedGroup.TileID);
-            this.Box_TileID_Hex.Text = string.Format("{0:X4}", (object)this.iSelectedGroup.TileID);
+            this._iSelectedGroup = (ClsTerrain)this.GroupSelect.SelectedItem;
+            this.PictureBox3.Image = (Image)Art.GetLand((int)this._iSelectedGroup.TileID);
+            this.Box_TileID.Text = StringType.FromInteger((int)this._iSelectedGroup.TileID);
+            this.Box_TileID_Hex.Text = string.Format("{0:X4}", (object)this._iSelectedGroup.TileID);
         }
 
         private void PictureBox1_Paint(object sender, PaintEventArgs e)
@@ -106,33 +106,33 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Helper
             Graphics graphics1 = e.Graphics;
             this.LandImage.Image = (Image)null;
             this.StaticImage.Image = (Image)null;
-            this.Box_Description.Text = this.iTransition.Description;
-            this.Lbl_HashKey.Text = this.iTransition.HashKey;
-            this.BoxFileName.Text = this.iTransition.File;
-            this.iTransition.GetStaticTiles.Display(this.StaticTileList);
-            this.iTransition.GetMapTiles.Display(this.MapTileList);
+            this.Box_Description.Text = this._iTransition.Description;
+            this.Lbl_HashKey.Text = this._iTransition.HashKey;
+            this.BoxFileName.Text = this._iTransition.File;
+            this._iTransition.GetStaticTiles.Display(this.StaticTileList);
+            this._iTransition.GetMapTiles.Display(this.MapTileList);
             graphics1.Clear(Color.LightGray);
             Graphics graphics2 = graphics1;
-            Bitmap land1 = Art.GetLand((int)this.iGroups.TerrianGroup((int)this.iTransition.GetKey(0)).TileID);
+            Bitmap land1 = Art.GetLand((int)this._iGroups.TerrianGroup((int)this._iTransition.GetKey(0)).TileID);
             Point point1 = new Point(61, 15);
             Point point2 = point1;
             graphics2.DrawImage((Image)land1, point2);
             Graphics graphics3 = graphics1;
-            Bitmap land2 = Art.GetLand((int)this.iGroups.TerrianGroup((int)this.iTransition.GetKey(1)).TileID);
+            Bitmap land2 = Art.GetLand((int)this._iGroups.TerrianGroup((int)this._iTransition.GetKey(1)).TileID);
             point1 = new Point(84, 38);
             Point point3 = point1;
             graphics3.DrawImage((Image)land2, point3);
             Graphics graphics4 = graphics1;
-            Bitmap land3 = Art.GetLand((int)this.iGroups.TerrianGroup((int)this.iTransition.GetKey(2)).TileID);
+            Bitmap land3 = Art.GetLand((int)this._iGroups.TerrianGroup((int)this._iTransition.GetKey(2)).TileID);
             point1 = new Point(107, 61);
             Point point4 = point1;
             graphics4.DrawImage((Image)land3, point4);
             Graphics graphics5 = graphics1;
-            Bitmap land4 = Art.GetLand((int)this.iGroups.TerrianGroup((int)this.iTransition.GetKey(3)).TileID);
+            Bitmap land4 = Art.GetLand((int)this._iGroups.TerrianGroup((int)this._iTransition.GetKey(3)).TileID);
             point1 = new Point(38, 38);
             Point point5 = point1;
             graphics5.DrawImage((Image)land4, point5);
-            if (this.ImageTest)
+            if (this._imageTest)
             {
                 Graphics graphics6 = graphics1;
                 Bitmap land5 = Art.GetLand(IntegerType.FromString(this.Map_TileID.Text));
@@ -143,28 +143,28 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Helper
             else
             {
                 Graphics graphics6 = graphics1;
-                Bitmap land5 = Art.GetLand((int)this.iGroups.TerrianGroup((int)this.iTransition.GetKey(4)).TileID);
+                Bitmap land5 = Art.GetLand((int)this._iGroups.TerrianGroup((int)this._iTransition.GetKey(4)).TileID);
                 point1 = new Point(61, 61);
                 Point point6 = point1;
                 graphics6.DrawImage((Image)land5, point6);
             }
             Graphics graphics7 = graphics1;
-            Bitmap land6 = Art.GetLand((int)this.iGroups.TerrianGroup((int)this.iTransition.GetKey(5)).TileID);
+            Bitmap land6 = Art.GetLand((int)this._iGroups.TerrianGroup((int)this._iTransition.GetKey(5)).TileID);
             point1 = new Point(84, 84);
             Point point7 = point1;
             graphics7.DrawImage((Image)land6, point7);
             Graphics graphics8 = graphics1;
-            Bitmap land7 = Art.GetLand((int)this.iGroups.TerrianGroup((int)this.iTransition.GetKey(6)).TileID);
+            Bitmap land7 = Art.GetLand((int)this._iGroups.TerrianGroup((int)this._iTransition.GetKey(6)).TileID);
             point1 = new Point(15, 61);
             Point point8 = point1;
             graphics8.DrawImage((Image)land7, point8);
             Graphics graphics9 = graphics1;
-            Bitmap land8 = Art.GetLand((int)this.iGroups.TerrianGroup((int)this.iTransition.GetKey(7)).TileID);
+            Bitmap land8 = Art.GetLand((int)this._iGroups.TerrianGroup((int)this._iTransition.GetKey(7)).TileID);
             point1 = new Point(38, 84);
             Point point9 = point1;
             graphics9.DrawImage((Image)land8, point9);
             Graphics graphics10 = graphics1;
-            Bitmap land9 = Art.GetLand((int)this.iGroups.TerrianGroup((int)this.iTransition.GetKey(8)).TileID);
+            Bitmap land9 = Art.GetLand((int)this._iGroups.TerrianGroup((int)this._iTransition.GetKey(8)).TileID);
             point1 = new Point(61, 107);
             Point point10 = point1;
             graphics10.DrawImage((Image)land9, point10);
@@ -211,7 +211,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Helper
             ClsTerrain clsTerrain = (ClsTerrain)this.GroupSelect.SelectedItem;
             if (clsTerrain == null)
                 return;
-            this.iTransition.SetHashKey(IntegerType.FromObject(button.Tag), checked((byte)clsTerrain.GroupID));
+            this._iTransition.SetHashKey(IntegerType.FromObject(button.Tag), checked((byte)clsTerrain.GroupID));
             this.PictureBox1.Refresh();
         }
 
@@ -226,7 +226,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Helper
             ClsTerrain clsTerrain = (ClsTerrain)this.GroupSelect.SelectedItem;
             if (clsTerrain == null)
                 return;
-            this.iTransition.SetHashKey(IntegerType.FromObject(button.Tag), checked((byte)clsTerrain.GroupID));
+            this._iTransition.SetHashKey(IntegerType.FromObject(button.Tag), checked((byte)clsTerrain.GroupID));
             this.PictureBox1.Refresh();
         }
 
@@ -241,7 +241,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Helper
             ClsTerrain clsTerrain = (ClsTerrain)this.GroupSelect.SelectedItem;
             if (clsTerrain == null)
                 return;
-            this.iTransition.SetHashKey(IntegerType.FromObject(button.Tag), checked((byte)clsTerrain.GroupID));
+            this._iTransition.SetHashKey(IntegerType.FromObject(button.Tag), checked((byte)clsTerrain.GroupID));
             this.PictureBox1.Refresh();
         }
 
@@ -256,7 +256,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Helper
             ClsTerrain clsTerrain = (ClsTerrain)this.GroupSelect.SelectedItem;
             if (clsTerrain == null)
                 return;
-            this.iTransition.SetHashKey(IntegerType.FromObject(button.Tag), checked((byte)clsTerrain.GroupID));
+            this._iTransition.SetHashKey(IntegerType.FromObject(button.Tag), checked((byte)clsTerrain.GroupID));
             this.PictureBox1.Refresh();
         }
 
@@ -271,7 +271,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Helper
             ClsTerrain clsTerrain = (ClsTerrain)this.GroupSelect.SelectedItem;
             if (clsTerrain == null)
                 return;
-            this.iTransition.SetHashKey(IntegerType.FromObject(button.Tag), checked((byte)clsTerrain.GroupID));
+            this._iTransition.SetHashKey(IntegerType.FromObject(button.Tag), checked((byte)clsTerrain.GroupID));
             this.PictureBox1.Refresh();
         }
 
@@ -286,7 +286,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Helper
             ClsTerrain clsTerrain = (ClsTerrain)this.GroupSelect.SelectedItem;
             if (clsTerrain == null)
                 return;
-            this.iTransition.SetHashKey(IntegerType.FromObject(button.Tag), checked((byte)clsTerrain.GroupID));
+            this._iTransition.SetHashKey(IntegerType.FromObject(button.Tag), checked((byte)clsTerrain.GroupID));
             this.PictureBox1.Refresh();
         }
 
@@ -301,7 +301,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Helper
             ClsTerrain clsTerrain = (ClsTerrain)this.GroupSelect.SelectedItem;
             if (clsTerrain == null)
                 return;
-            this.iTransition.SetHashKey(IntegerType.FromObject(button.Tag), checked((byte)clsTerrain.GroupID));
+            this._iTransition.SetHashKey(IntegerType.FromObject(button.Tag), checked((byte)clsTerrain.GroupID));
             this.PictureBox1.Refresh();
         }
 
@@ -316,11 +316,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Helper
             ClsTerrain clsTerrain = (ClsTerrain)this.GroupSelect.SelectedItem;
             if (clsTerrain == null)
                 return;
-            this.iTransition.SetHashKey(IntegerType.FromObject(button.Tag), checked((byte)clsTerrain.GroupID));
+            this._iTransition.SetHashKey(IntegerType.FromObject(button.Tag), checked((byte)clsTerrain.GroupID));
             this.PictureBox1.Refresh();
         }
 
-        private void toolStripButton9_Click(object sender, EventArgs e)
+        private void ToolStripButton9_Click(object sender, EventArgs e)
         {
             ToolStripButton button = sender as ToolStripButton;
             if (button == null)
@@ -331,7 +331,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Helper
             ClsTerrain clsTerrain = (ClsTerrain)this.GroupSelect.SelectedItem;
             if (clsTerrain == null)
                 return;
-            this.iTransition.SetHashKey(IntegerType.FromObject(button.Tag), checked((byte)clsTerrain.GroupID));
+            this._iTransition.SetHashKey(IntegerType.FromObject(button.Tag), checked((byte)clsTerrain.GroupID));
             this.PictureBox1.Refresh();
         }
         #endregion
@@ -481,8 +481,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Helper
             {
                 if (StringType.StrCmp(this.Map_TileID.Text, string.Empty, false) == 0)
                     return;
-                this.iTransition.AddMapTile(ShortType.FromString(this.Map_TileID.Text), Convert.ToInt16(this.Map_AltIDMod.Value));
-                this.iTransition.GetMapTiles.Display(this.MapTileList);
+                this._iTransition.AddMapTile(ShortType.FromString(this.Map_TileID.Text), Convert.ToInt16(this.Map_AltIDMod.Value));
+                this._iTransition.GetMapTiles.Display(this.MapTileList);
             }
         }
         #endregion
@@ -503,8 +503,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Helper
                 if (iMapTile == null)
                     return;
                 this.LandImage.Image = (Image)null;
-                this.iTransition.RemoveMapTile(iMapTile);
-                this.iTransition.GetMapTiles.Display(this.MapTileList);
+                this._iTransition.RemoveMapTile(iMapTile);
+                this._iTransition.GetMapTiles.Display(this.MapTileList);
             }
         }
         #endregion
@@ -523,7 +523,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Helper
             {
                 if (StringType.StrCmp(this.Map_TileID.Text, string.Empty, false) == 0)
                     return;
-                this.ImageTest = !this.ImageTest;
+                this._imageTest = !this._imageTest;
                 this.PictureBox1.Refresh();
                 this.LandImage.Image = Art.GetLand(IntegerType.FromString(this.Map_TileID.Text)) != null ? (Image)Art.GetLand(IntegerType.FromString(this.Map_TileID.Text)) : (Image)null;
             }
@@ -531,7 +531,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Helper
         #endregion
 
         #region mapZoom
-        private MapZoom mapZoom;
+        private MapZoom _mapZoom;
         private void ToolBarButton13_Click(object sender, EventArgs e)
         {
             ToolStripButton button = sender as ToolStripButton;
@@ -543,16 +543,16 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Helper
             object tag = button.Tag;
             if (ObjectType.ObjTst(tag, (object)"Select", false) == 0)
             {
-                if (mapZoom == null || mapZoom.IsDisposed)
+                if (_mapZoom == null || _mapZoom.IsDisposed)
                 {
-                    mapZoom = new MapZoom();
-                    mapZoom.Tag = (object)this.LandItems;
-                    mapZoom.Show();
+                    _mapZoom = new MapZoom();
+                    _mapZoom.Tag = (object)this.LandItems;
+                    _mapZoom.Show();
                 }
                 else
                 {
                     // Das Formular ist bereits geöffnet. Sie können es in den Vordergrund bringen, wenn Sie möchten.
-                    mapZoom.BringToFront();
+                    _mapZoom.BringToFront();
                 }
             }
         }
@@ -572,8 +572,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Helper
             {
                 if (StringType.StrCmp(this.Static_TileID.Text, string.Empty, false) == 0)
                     return;
-                this.iTransition.AddStaticTile(ShortType.FromString(this.Static_TileID.Text), Convert.ToInt16(this.Static_AltIDMod.Value));
-                this.iTransition.GetStaticTiles.Display(this.StaticTileList);
+                this._iTransition.AddStaticTile(ShortType.FromString(this.Static_TileID.Text), Convert.ToInt16(this.Static_AltIDMod.Value));
+                this._iTransition.GetStaticTiles.Display(this.StaticTileList);
             }
         }
         #endregion
@@ -594,14 +594,14 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Helper
                 if (iStaticTile == null)
                     return;
                 this.StaticImage.Image = (Image)null;
-                this.iTransition.RemoveStaticTile(iStaticTile);
-                this.iTransition.GetStaticTiles.Display(this.StaticTileList);
+                this._iTransition.RemoveStaticTile(iStaticTile);
+                this._iTransition.GetStaticTiles.Display(this.StaticTileList);
             }
         }
         #endregion
 
         #region ToolBarButton16
-        private StaticZoom staticZoom;
+        private StaticZoom _staticZoom;
         private void ToolBarButton16_Click(object sender, EventArgs e)
         {
             ToolStripButton button = sender as ToolStripButton;
@@ -613,85 +613,85 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Helper
             object tag = button.Tag;
             if (ObjectType.ObjTst(tag, (object)"Select", false) == 0)
             {
-                if (staticZoom == null || staticZoom.IsDisposed)
+                if (_staticZoom == null || _staticZoom.IsDisposed)
                 {
-                    staticZoom = new StaticZoom();
-                    staticZoom.Tag = (object)this.StaticItems;
-                    staticZoom.Show();
+                    _staticZoom = new StaticZoom();
+                    _staticZoom.Tag = (object)this.StaticItems;
+                    _staticZoom.Show();
                 }
                 else
                 {
                     // Das Formular ist bereits geöffnet. Sie können es in den Vordergrund bringen, wenn Sie möchten.
-                    staticZoom.BringToFront();
+                    _staticZoom.BringToFront();
                 }
             }
         }
         #endregion
 
         #region MenuTerrainA
-        private GroupSelect groupSelectA;
+        private GroupSelect _groupSelectA;
         private void MenuTerrainA_Click(object sender, EventArgs e)
         {
-            if (groupSelectA == null || groupSelectA.IsDisposed)
+            if (_groupSelectA == null || _groupSelectA.IsDisposed)
             {
-                groupSelectA = new GroupSelect();
-                Label selectGroupNameLabel = groupSelectA.SelectGroupName as Label;
+                _groupSelectA = new GroupSelect();
+                Label selectGroupNameLabel = _groupSelectA.SelectGroupName as Label;
                 if (selectGroupNameLabel != null)
                 {
                     selectGroupNameLabel.Text = "Select Group A";
                 }
-                groupSelectA.Tag = (object)this;
-                groupSelectA.Show();
+                _groupSelectA.Tag = (object)this;
+                _groupSelectA.Show();
             }
             else
             {
-                groupSelectA.BringToFront();
+                _groupSelectA.BringToFront();
             }
         }
         #endregion
 
         #region MenuTerrainB
-        private GroupSelect groupSelectB;
+        private GroupSelect _groupSelectB;
         private void MenuTerrainB_Click(object sender, EventArgs e)
         {
-            if (groupSelectB == null || groupSelectB.IsDisposed)
+            if (_groupSelectB == null || _groupSelectB.IsDisposed)
             {
-                groupSelectB = new GroupSelect();
-                Label selectGroupNameLabel = groupSelectB.SelectGroupName as Label;
+                _groupSelectB = new GroupSelect();
+                Label selectGroupNameLabel = _groupSelectB.SelectGroupName as Label;
                 if (selectGroupNameLabel != null)
                 {
                     selectGroupNameLabel.Text = "Select Group B";
                 }
-                groupSelectB.Tag = (object)this;
-                groupSelectB.Show();
+                _groupSelectB.Tag = (object)this;
+                _groupSelectB.Show();
             }
             else
             {
                 // Das Formular ist bereits geöffnet. Sie können es in den Vordergrund bringen, wenn Sie möchten.
-                groupSelectB.BringToFront();
+                _groupSelectB.BringToFront();
             }
         }
         #endregion
 
         #region MenuTerrainC
-        private GroupSelect groupSelectC;
+        private GroupSelect _groupSelectC;
         private void MenuTerrainC_Click(object sender, EventArgs e)
         {
-            if (groupSelectC == null || groupSelectC.IsDisposed)
+            if (_groupSelectC == null || _groupSelectC.IsDisposed)
             {
-                groupSelectC = new GroupSelect();
-                Label selectGroupNameLabel = groupSelectC.SelectGroupName as Label;
+                _groupSelectC = new GroupSelect();
+                Label selectGroupNameLabel = _groupSelectC.SelectGroupName as Label;
                 if (selectGroupNameLabel != null)
                 {
                     selectGroupNameLabel.Text = "Select Group C";
                 }
-                groupSelectC.Tag = (object)this;
-                groupSelectC.Show();
+                _groupSelectC.Tag = (object)this;
+                _groupSelectC.Show();
             }
             else
             {
                 // Das Formular ist bereits geöffnet. Sie können es in den Vordergrund bringen, wenn Sie möchten.
-                groupSelectC.BringToFront();
+                _groupSelectC.BringToFront();
             }
         }
         #endregion
@@ -702,7 +702,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Helper
             Transition.Transition transition = (Transition.Transition)this.ListBox1.SelectedItem;
             if (transition == null)
                 return;
-            this.iTransition = transition;
+            this._iTransition = transition;
             this.PictureBox1.Refresh();
         }
         #endregion
@@ -710,9 +710,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Helper
         #region MenuNew
         private void MenuNew_Click(object sender, EventArgs e)
         {
-            this.iTransitionTable.Clear();
-            this.iTransitionTable.Display(this.ListBox1);
-            this.iTransition = new Transition.Transition();
+            this._iTransitionTable.Clear();
+            this._iTransitionTable.Display(this.ListBox1);
+            this._iTransition = new Transition.Transition();
             this.PictureBox1.Refresh();
         }
         #endregion
@@ -720,19 +720,19 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Helper
         #region MenuLoad
         private void MenuLoad_Click(object sender, EventArgs e)
         {
-            this.iTransitionTable.Clear();
+            this._iTransitionTable.Clear();
             OpenFileDialog openFileDialog = new OpenFileDialog();
             if (openFileDialog.ShowDialog() != DialogResult.OK)
                 return;
-            this.iTransitionTable.Load(openFileDialog.FileName);
-            this.iTransitionTable.Display(this.ListBox1);
+            this._iTransitionTable.Load(openFileDialog.FileName);
+            this._iTransitionTable.Display(this.ListBox1);
         }
         #endregion
 
         #region MenuSave
         private void MenuSave_Click(object sender, EventArgs e)
         {
-            this.iTransitionTable.Save(this.Box_Description.Text);
+            this._iTransitionTable.Save(this.Box_Description.Text);
         }
         #endregion
 
@@ -765,9 +765,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Helper
         #region MenuAddKey
         private void MenuAddKey_Click(object sender, EventArgs e)
         {
-            this.iTransitionTable.Add(this.iTransition);
-            this.iTransition = new Transition.Transition();
-            this.iTransitionTable.Display(this.ListBox1);
+            this._iTransitionTable.Add(this._iTransition);
+            this._iTransition = new Transition.Transition();
+            this._iTransitionTable.Display(this.ListBox1);
             this.PictureBox1.Refresh();
         }
         #endregion
@@ -778,16 +778,16 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Helper
             Transition.Transition iValue = (Transition.Transition)this.ListBox1.SelectedItem;
             if (iValue == null)
                 return;
-            this.iTransitionTable.Remove(iValue);
-            this.iTransitionTable.Display(this.ListBox1);
+            this._iTransitionTable.Remove(iValue);
+            this._iTransitionTable.Display(this.ListBox1);
         }
         #endregion
 
         #region MenuCopyKey
         private void MenuCopyKey_Click(object sender, EventArgs e)
         {
-            this.iTransitionTable.Add(this.iTransition);
-            this.iTransitionTable.Display(this.ListBox1);
+            this._iTransitionTable.Add(this._iTransition);
+            this._iTransitionTable.Display(this.ListBox1);
             this.PictureBox1.Refresh();
         }
         #endregion
@@ -795,7 +795,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Helper
         #region MenuItem1
         private void MenuItem1_Click(object sender, EventArgs e)
         {
-            this.iTransition = new Transition.Transition();
+            this._iTransition = new Transition.Transition();
             this.PictureBox1.Refresh();
         }
         #endregion
@@ -803,8 +803,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Helper
         #region BoxFileName_TextChanged
         private void BoxFileName_TextChanged(object sender, EventArgs e)
         {
-            this.iTransition.File = this.BoxFileName.Text;
-            this.iTransitionTable.Display(this.ListBox1);
+            this._iTransition.File = this.BoxFileName.Text;
+            this._iTransitionTable.Display(this.ListBox1);
         }
         #endregion
 
@@ -825,20 +825,20 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Helper
         #region Box_Description_Leave
         private void Box_Description_Leave(object sender, EventArgs e)
         {
-            this.iTransition.Description = this.Box_Description.Text;
-            this.iTransitionTable.Display(this.ListBox1);
+            this._iTransition.Description = this.Box_Description.Text;
+            this._iTransitionTable.Display(this.ListBox1);
         }
         #endregion
 
         #region Menu2Way
         private void Menu2Way_Click(object sender, EventArgs e)
         {
-            if (this.m_SelectedGroupA == null || this.m_SelectedGroupB == null || StringType.StrCmp(this.m_SelectedGroupA.Name, this.m_SelectedGroupB.Name, false) == 0)
+            if (this._selectedGroupA == null || this._selectedGroupB == null || StringType.StrCmp(this._selectedGroupA.Name, this._selectedGroupB.Name, false) == 0)
                 return;
-            string iDescription = string.Format("{0} To {1}", (object)this.m_SelectedGroupA.Name, (object)this.m_SelectedGroupB.Name);
+            string iDescription = string.Format("{0} To {1}", (object)this._selectedGroupA.Name, (object)this._selectedGroupB.Name);
             string filename = string.Format("{0}Data\\System\\2Way_Template.xml", (object)AppDomain.CurrentDomain.BaseDirectory);
             XmlDocument xmlDocument = new XmlDocument();
-            this.iTransitionTable.Clear();
+            this._iTransitionTable.Clear();
             try
             {
                 xmlDocument.Load(filename);
@@ -847,7 +847,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Helper
                     foreach (XmlElement xmlElement in xmlDocument.SelectNodes("//Wizard/Tile"))
                     {
                         string attribute = xmlElement.GetAttribute("Pattern");
-                        this.iTransitionTable.Add(new Transition.Transition(iDescription, this.m_SelectedGroupA, this.m_SelectedGroupB, attribute));
+                        this._iTransitionTable.Add(new Transition.Transition(iDescription, this._selectedGroupA, this._selectedGroupB, attribute));
                     }
                 }
                 finally
@@ -863,19 +863,19 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Helper
                 int num = (int)Interaction.MsgBox((object)string.Format("XMLFile:{0}", (object)filename), MsgBoxStyle.OkOnly, (object)null);
                 ProjectData.ClearProjectError();
             }
-            this.iTransitionTable.Display(this.ListBox1);
+            this._iTransitionTable.Display(this.ListBox1);
         }
         #endregion
 
         #region Menu3Way
         private void Menu3Way_Click(object sender, EventArgs e)
         {
-            if (this.m_SelectedGroupA == null || this.m_SelectedGroupB == null || (this.m_SelectedGroupC == null || StringType.StrCmp(this.m_SelectedGroupA.Name, this.m_SelectedGroupB.Name, false) == 0))
+            if (this._selectedGroupA == null || this._selectedGroupB == null || (this._selectedGroupC == null || StringType.StrCmp(this._selectedGroupA.Name, this._selectedGroupB.Name, false) == 0))
                 return;
-            string iDescription = string.Format("{0}-{1}-{2}", (object)this.m_SelectedGroupA.Name, (object)this.m_SelectedGroupB.Name, (object)this.m_SelectedGroupC.Name);
+            string iDescription = string.Format("{0}-{1}-{2}", (object)this._selectedGroupA.Name, (object)this._selectedGroupB.Name, (object)this._selectedGroupC.Name);
             string filename = string.Format("{0}Data\\System\\3Way_Template.xml", (object)AppDomain.CurrentDomain.BaseDirectory);
             XmlDocument xmlDocument = new XmlDocument();
-            this.iTransitionTable.Clear();
+            this._iTransitionTable.Clear();
             try
             {
                 xmlDocument.Load(filename);
@@ -884,7 +884,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Helper
                     foreach (XmlElement xmlElement in xmlDocument.SelectNodes("//Wizard/Tile"))
                     {
                         string attribute = xmlElement.GetAttribute("Pattern");
-                        this.iTransitionTable.Add(new Transition.Transition(iDescription, this.m_SelectedGroupA, this.m_SelectedGroupB, this.m_SelectedGroupC, attribute));
+                        this._iTransitionTable.Add(new Transition.Transition(iDescription, this._selectedGroupA, this._selectedGroupB, this._selectedGroupC, attribute));
                     }
                 }
                 finally
@@ -900,7 +900,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Helper
                 int num = (int)Interaction.MsgBox((object)string.Format("XMLFile:{0}", (object)filename), MsgBoxStyle.OkOnly, (object)null);
                 ProjectData.ClearProjectError();
             }
-            this.iTransitionTable.Display(this.ListBox1);
+            this._iTransitionTable.Display(this.ListBox1);
         }
         #endregion
 
@@ -943,16 +943,16 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Helper
         #region MenuItem10
         private void MenuItem10_Click(object sender, EventArgs e)
         {
-            if (this.m_SelectedGroupA == null || this.m_SelectedGroupB == null)
+            if (this._selectedGroupA == null || this._selectedGroupB == null)
                 return;
-            this.iTransitionTable.Clear();
+            this._iTransitionTable.Clear();
             OpenFileDialog openFileDialog = new OpenFileDialog();
             if (openFileDialog.ShowDialog() == DialogResult.OK)
-                this.iTransitionTable.Load(openFileDialog.FileName);
+                this._iTransitionTable.Load(openFileDialog.FileName);
             try
             {
-                foreach (Transition.Transition transition in (IEnumerable)this.iTransitionTable.GetTransitionTable.Values)
-                    transition.Clone(this.m_SelectedGroupA, this.m_SelectedGroupB);
+                foreach (Transition.Transition transition in (IEnumerable)this._iTransitionTable.GetTransitionTable.Values)
+                    transition.Clone(this._selectedGroupA, this._selectedGroupB);
             }
             finally
             {
@@ -960,23 +960,23 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Helper
                 if (enumerator is IDisposable)
                     ((IDisposable)enumerator).Dispose();
             }
-            this.iTransitionTable.Save(openFileDialog.FileName.Replace(this.m_SelectedGroupA.Name, this.m_SelectedGroupB.Name));
+            this._iTransitionTable.Save(openFileDialog.FileName.Replace(this._selectedGroupA.Name, this._selectedGroupB.Name));
         }
         #endregion
 
         #region
-        private UoFiddler.Plugin.ConverterMultiTextPlugin.Helper.TransitionWizard transitionWizardForm = null;
-        private void launchTransitionWizardToolStripMenuItem_Click(object sender, EventArgs e)
+        private UoFiddler.Plugin.ConverterMultiTextPlugin.Helper.TransitionWizard _transitionWizardForm = null;
+        private void LaunchTransitionWizardToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (this.transitionWizardForm == null || this.transitionWizardForm.IsDisposed)
+            if (this._transitionWizardForm == null || this._transitionWizardForm.IsDisposed)
             {
-                this.transitionWizardForm = new UoFiddler.Plugin.ConverterMultiTextPlugin.Helper.TransitionWizard();
-                this.transitionWizardForm.Show();
+                this._transitionWizardForm = new UoFiddler.Plugin.ConverterMultiTextPlugin.Helper.TransitionWizard();
+                this._transitionWizardForm.Show();
             }
             else
             {
                 // Das Formular ist bereits geöffnet, also bringen wir es in den Vordergrund
-                this.transitionWizardForm.BringToFront();
+                this._transitionWizardForm.BringToFront();
             }
         }
         #endregion

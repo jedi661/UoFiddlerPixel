@@ -41,14 +41,14 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ARTMulIDXCreator));
             textBox1 = new System.Windows.Forms.TextBox();
-            btCreateARTIDXMul = new System.Windows.Forms.Button();
-            btFileOrder = new System.Windows.Forms.Button();
+            BtCreateARTIDXMul = new System.Windows.Forms.Button();
+            BtFileOrder = new System.Windows.Forms.Button();
             textBox2 = new System.Windows.Forms.TextBox();
             lblEntryCount = new System.Windows.Forms.Label();
-            btnCountEntries = new System.Windows.Forms.Button();
-            btnShowInfo = new System.Windows.Forms.Button();
+            BtnCountEntries = new System.Windows.Forms.Button();
+            BtnShowInfo = new System.Windows.Forms.Button();
             textBoxInfo = new System.Windows.Forms.TextBox();
-            btnReadArtIdx = new System.Windows.Forms.Button();
+            BtnReadArtIdx = new System.Windows.Forms.Button();
             textBoxIndex = new System.Windows.Forms.TextBox();
             label1 = new System.Windows.Forms.Label();
             label2 = new System.Windows.Forms.Label();
@@ -59,27 +59,27 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             label14 = new System.Windows.Forms.Label();
             lbCreatedMul = new System.Windows.Forms.Label();
             label13 = new System.Windows.Forms.Label();
-            btCreateARTIDXMul_Ulong = new System.Windows.Forms.Button();
+            BtCreateARTIDXMul_Ulong = new System.Windows.Forms.Button();
             label12 = new System.Windows.Forms.Label();
-            btCreateARTIDXMul_Byte = new System.Windows.Forms.Button();
+            BtCreateARTIDXMul_Byte = new System.Windows.Forms.Button();
             label11 = new System.Windows.Forms.Label();
-            btCreateARTIDXMul_Sbyte = new System.Windows.Forms.Button();
+            BtCreateARTIDXMul_Sbyte = new System.Windows.Forms.Button();
             label10 = new System.Windows.Forms.Label();
             label9 = new System.Windows.Forms.Label();
-            btCreateARTIDXMul_Short = new System.Windows.Forms.Button();
+            BtCreateARTIDXMul_Short = new System.Windows.Forms.Button();
             label8 = new System.Windows.Forms.Label();
-            btCreateARTIDXMul_Ushort = new System.Windows.Forms.Button();
+            BtCreateARTIDXMul_Ushort = new System.Windows.Forms.Button();
             label7 = new System.Windows.Forms.Label();
-            btCreateARTIDXMul_Int = new System.Windows.Forms.Button();
+            BtCreateARTIDXMul_Int = new System.Windows.Forms.Button();
             label6 = new System.Windows.Forms.Label();
             label5 = new System.Windows.Forms.Label();
-            btCreateARTIDXMul_uint = new System.Windows.Forms.Button();
-            comboBoxMuls = new System.Windows.Forms.ComboBox();
+            BtCreateARTIDXMul_uint = new System.Windows.Forms.Button();
+            ComboBoxMuls = new System.Windows.Forms.ComboBox();
             tabPageTileData = new System.Windows.Forms.TabPage();
             groupBox1 = new System.Windows.Forms.GroupBox();
-            btCreateSimpleTiledata = new System.Windows.Forms.Button();
-            btCreateTiledataEmpty = new System.Windows.Forms.Button();
-            btCreateTiledataEmpty2 = new System.Windows.Forms.Button();
+            BtCreateSimpleTiledata = new System.Windows.Forms.Button();
+            BtCreateTiledataEmpty = new System.Windows.Forms.Button();
+            BtCreateTiledataEmpty2 = new System.Windows.Forms.Button();
             groupBoxTiledata = new System.Windows.Forms.GroupBox();
             CountIndices = new System.Windows.Forms.Button();
             label19 = new System.Windows.Forms.Label();
@@ -90,7 +90,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             landBlockCount = new System.Windows.Forms.TextBox();
             labelLand = new System.Windows.Forms.Label();
             labelStatic = new System.Windows.Forms.Label();
-            btnCountTileDataEntries = new System.Windows.Forms.Button();
+            BtnCountTileDataEntries = new System.Windows.Forms.Button();
             lblTileDataEntryCount = new System.Windows.Forms.Label();
             label17 = new System.Windows.Forms.Label();
             checkBoxTileData = new System.Windows.Forms.CheckBox();
@@ -100,12 +100,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             tbstaticTileGroups = new System.Windows.Forms.TextBox();
             tblandTileGroups = new System.Windows.Forms.TextBox();
             tbDirTileData = new System.Windows.Forms.TextBox();
-            btCreateTiledata = new System.Windows.Forms.Button();
+            BtCreateTiledata = new System.Windows.Forms.Button();
             tabPageTexturen = new System.Windows.Forms.TabPage();
             groupBoxTexture = new System.Windows.Forms.GroupBox();
             lbTextureinfo3 = new System.Windows.Forms.Label();
             BtCreateIndexes = new System.Windows.Forms.Button();
-            btCreateTextur = new System.Windows.Forms.Button();
+            BtCreateTextur = new System.Windows.Forms.Button();
             lbtextureinfo2 = new System.Windows.Forms.Label();
             tbIndexCountTexture = new System.Windows.Forms.TextBox();
             lbTextureIndexCountinfo = new System.Windows.Forms.Label();
@@ -123,50 +123,50 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             LoadPaletteButton = new System.Windows.Forms.Button();
             pictureBoxPalette = new System.Windows.Forms.PictureBox();
             lbCreateColorPalette = new System.Windows.Forms.Label();
-            btCreatePaletteFull = new System.Windows.Forms.Button();
+            BtCreatePaletteFull = new System.Windows.Forms.Button();
             lbCreatePalette = new System.Windows.Forms.Label();
-            btCreatePalette = new System.Windows.Forms.Button();
+            BtCreatePalette = new System.Windows.Forms.Button();
             tabPageAnimation = new System.Windows.Forms.TabPage();
             btnCountIndices = new System.Windows.Forms.Button();
             ReadAnimIdx = new System.Windows.Forms.Button();
-            button1 = new System.Windows.Forms.Button();
+            Button1 = new System.Windows.Forms.Button();
             txtOutputDirectory = new System.Windows.Forms.TextBox();
-            btnSetOutputDirectory = new System.Windows.Forms.Button();
+            BtnSetOutputDirectory = new System.Windows.Forms.Button();
             txtOutputFilename = new System.Windows.Forms.TextBox();
             lblNewIdCount = new System.Windows.Forms.Label();
-            btnProcessClickOld = new System.Windows.Forms.Button();
+            BtnProcessClickOld = new System.Windows.Forms.Button();
             panelCheckbox = new System.Windows.Forms.Panel();
             lbCopys = new System.Windows.Forms.Label();
             chkHighDetail = new System.Windows.Forms.CheckBox();
             chkLowDetail = new System.Windows.Forms.CheckBox();
             chkHuman = new System.Windows.Forms.CheckBox();
             tbfilename = new System.Windows.Forms.TextBox();
-            btnBrowse = new System.Windows.Forms.Button();
+            BtnBrowse = new System.Windows.Forms.Button();
             tbProcessAminidx = new System.Windows.Forms.TextBox();
             lbCopyManyTimes = new System.Windows.Forms.Label();
             txtNewCreatureID = new System.Windows.Forms.TextBox();
             lbCopyID = new System.Windows.Forms.Label();
             txtOrigCreatureID = new System.Windows.Forms.TextBox();
-            btnNewAnimIDXFiles = new System.Windows.Forms.Button();
+            BtnNewAnimIDXFiles = new System.Windows.Forms.Button();
             txtData = new System.Windows.Forms.TextBox();
-            btnLoadAnimationMulData = new System.Windows.Forms.Button();
+            BtnLoadAnimationMulData = new System.Windows.Forms.Button();
             tabPageReadMuls = new System.Windows.Forms.TabPage();
             tabPageReadOut = new System.Windows.Forms.TabPage();
             textBoxOutput = new System.Windows.Forms.TextBox();
             textBoxTileDataInfo = new System.Windows.Forms.TextBox();
-            buttonReadStaticTileData = new System.Windows.Forms.Button();
+            ButtonReadStaticTileData = new System.Windows.Forms.Button();
             groupBoxInfo = new System.Windows.Forms.GroupBox();
-            btReadLandTile = new System.Windows.Forms.Button();
-            btTiledatainfo = new System.Windows.Forms.Button();
-            btReadTileFlags = new System.Windows.Forms.Button();
+            BtReadLandTile = new System.Windows.Forms.Button();
+            BtTiledatainfo = new System.Windows.Forms.Button();
+            BtReadTileFlags = new System.Windows.Forms.Button();
             textBoxTiledataIndex = new System.Windows.Forms.TextBox();
-            btReadStaticTile = new System.Windows.Forms.Button();
+            BtReadStaticTile = new System.Windows.Forms.Button();
             lbIndexTiledata = new System.Windows.Forms.Label();
-            btReadIndexTiledata = new System.Windows.Forms.Button();
-            btSelectDirectory = new System.Windows.Forms.Button();
-            buttonReadLandTileData = new System.Windows.Forms.Button();
+            BtReadIndexTiledata = new System.Windows.Forms.Button();
+            BtSelectDirectory = new System.Windows.Forms.Button();
+            ButtonReadLandTileData = new System.Windows.Forms.Button();
             listViewTileData = new System.Windows.Forms.ListView();
-            buttonReadTileData = new System.Windows.Forms.Button();
+            ButtonReadTileData = new System.Windows.Forms.Button();
             tabPageArtmul = new System.Windows.Forms.TabPage();
             panel4 = new System.Windows.Forms.Panel();
             label20 = new System.Windows.Forms.Label();
@@ -175,11 +175,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             lbLandTilesCount = new System.Windows.Forms.Label();
             tbxLandTilesCount = new System.Windows.Forms.TextBox();
             tbxArtsCount = new System.Windows.Forms.TextBox();
-            button3 = new System.Windows.Forms.Button();
+            Button3 = new System.Windows.Forms.Button();
             panel3 = new System.Windows.Forms.Panel();
+            BtCreateOldVersionArtidx = new System.Windows.Forms.Button();
             lbinfoArt = new System.Windows.Forms.Label();
             tbxNewIndex = new System.Windows.Forms.TextBox();
-            button2 = new System.Windows.Forms.Button();
+            Button2 = new System.Windows.Forms.Button();
             ReadArtmul2 = new System.Windows.Forms.Button();
             BtnCreateArtIdx500K = new System.Windows.Forms.Button();
             BtnCreateArtIdx250K = new System.Windows.Forms.Button();
@@ -206,7 +207,6 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             CreateGumpButton = new System.Windows.Forms.Button();
             saveFileDialog = new System.Windows.Forms.SaveFileDialog();
             folderBrowserDialog = new System.Windows.Forms.FolderBrowserDialog();
-            btCreateOldVersionArtidx = new System.Windows.Forms.Button();
             tabControl1.SuspendLayout();
             tabPageCreateMuls.SuspendLayout();
             tabPageTileData.SuspendLayout();
@@ -238,25 +238,25 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             textBox1.Size = new System.Drawing.Size(181, 23);
             textBox1.TabIndex = 0;
             // 
-            // btCreateARTIDXMul
+            // BtCreateARTIDXMul
             // 
-            btCreateARTIDXMul.Location = new System.Drawing.Point(112, 93);
-            btCreateARTIDXMul.Name = "btCreateARTIDXMul";
-            btCreateARTIDXMul.Size = new System.Drawing.Size(97, 23);
-            btCreateARTIDXMul.TabIndex = 1;
-            btCreateARTIDXMul.Text = "Create \"long\"";
-            btCreateARTIDXMul.UseVisualStyleBackColor = true;
-            btCreateARTIDXMul.Click += btCreateARTIDXMul_Click;
+            BtCreateARTIDXMul.Location = new System.Drawing.Point(112, 93);
+            BtCreateARTIDXMul.Name = "BtCreateARTIDXMul";
+            BtCreateARTIDXMul.Size = new System.Drawing.Size(97, 23);
+            BtCreateARTIDXMul.TabIndex = 1;
+            BtCreateARTIDXMul.Text = "Create \"long\"";
+            BtCreateARTIDXMul.UseVisualStyleBackColor = true;
+            BtCreateARTIDXMul.Click += BtCreateARTIDXMul_Click;
             // 
-            // btFileOrder
+            // BtFileOrder
             // 
-            btFileOrder.Location = new System.Drawing.Point(6, 64);
-            btFileOrder.Name = "btFileOrder";
-            btFileOrder.Size = new System.Drawing.Size(100, 23);
-            btFileOrder.TabIndex = 2;
-            btFileOrder.Text = "Select file folder";
-            btFileOrder.UseVisualStyleBackColor = true;
-            btFileOrder.Click += btFileOrder_Click;
+            BtFileOrder.Location = new System.Drawing.Point(6, 64);
+            BtFileOrder.Name = "BtFileOrder";
+            BtFileOrder.Size = new System.Drawing.Size(100, 23);
+            BtFileOrder.TabIndex = 2;
+            BtFileOrder.Text = "Select file folder";
+            BtFileOrder.UseVisualStyleBackColor = true;
+            BtFileOrder.Click += BtFileOrder_Click;
             // 
             // textBox2
             // 
@@ -275,25 +275,25 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             lblEntryCount.TabIndex = 4;
             lblEntryCount.Text = "Index Count";
             // 
-            // btnCountEntries
+            // BtnCountEntries
             // 
-            btnCountEntries.Location = new System.Drawing.Point(8, 33);
-            btnCountEntries.Name = "btnCountEntries";
-            btnCountEntries.Size = new System.Drawing.Size(115, 23);
-            btnCountEntries.TabIndex = 5;
-            btnCountEntries.Text = "Count ArtIDX Read";
-            btnCountEntries.UseVisualStyleBackColor = true;
-            btnCountEntries.Click += btnCountEntries_Click;
+            BtnCountEntries.Location = new System.Drawing.Point(8, 33);
+            BtnCountEntries.Name = "BtnCountEntries";
+            BtnCountEntries.Size = new System.Drawing.Size(115, 23);
+            BtnCountEntries.TabIndex = 5;
+            BtnCountEntries.Text = "Count ArtIDX Read";
+            BtnCountEntries.UseVisualStyleBackColor = true;
+            BtnCountEntries.Click += BtnCountEntries_Click;
             // 
-            // btnShowInfo
+            // BtnShowInfo
             // 
-            btnShowInfo.Location = new System.Drawing.Point(8, 362);
-            btnShowInfo.Name = "btnShowInfo";
-            btnShowInfo.Size = new System.Drawing.Size(75, 23);
-            btnShowInfo.TabIndex = 9;
-            btnShowInfo.Text = "Index All";
-            btnShowInfo.UseVisualStyleBackColor = true;
-            btnShowInfo.Click += btnShowInfo_Click;
+            BtnShowInfo.Location = new System.Drawing.Point(8, 362);
+            BtnShowInfo.Name = "BtnShowInfo";
+            BtnShowInfo.Size = new System.Drawing.Size(75, 23);
+            BtnShowInfo.TabIndex = 9;
+            BtnShowInfo.Text = "Index All";
+            BtnShowInfo.UseVisualStyleBackColor = true;
+            BtnShowInfo.Click += BtnShowInfo_Click;
             // 
             // textBoxInfo
             // 
@@ -303,15 +303,15 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             textBoxInfo.Size = new System.Drawing.Size(253, 273);
             textBoxInfo.TabIndex = 10;
             // 
-            // btnReadArtIdx
+            // BtnReadArtIdx
             // 
-            btnReadArtIdx.Location = new System.Drawing.Point(89, 362);
-            btnReadArtIdx.Name = "btnReadArtIdx";
-            btnReadArtIdx.Size = new System.Drawing.Size(120, 23);
-            btnReadArtIdx.TabIndex = 11;
-            btnReadArtIdx.Text = "Selected index";
-            btnReadArtIdx.UseVisualStyleBackColor = true;
-            btnReadArtIdx.Click += btnReadArtIdx_Click;
+            BtnReadArtIdx.Location = new System.Drawing.Point(89, 362);
+            BtnReadArtIdx.Name = "BtnReadArtIdx";
+            BtnReadArtIdx.Size = new System.Drawing.Size(120, 23);
+            BtnReadArtIdx.TabIndex = 11;
+            BtnReadArtIdx.Text = "Selected index";
+            BtnReadArtIdx.UseVisualStyleBackColor = true;
+            BtnReadArtIdx.Click += BtnReadArtIdx2_Click;
             // 
             // textBoxIndex
             // 
@@ -382,27 +382,27 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             tabPageCreateMuls.Controls.Add(label14);
             tabPageCreateMuls.Controls.Add(lbCreatedMul);
             tabPageCreateMuls.Controls.Add(label13);
-            tabPageCreateMuls.Controls.Add(btCreateARTIDXMul_Ulong);
+            tabPageCreateMuls.Controls.Add(BtCreateARTIDXMul_Ulong);
             tabPageCreateMuls.Controls.Add(label12);
-            tabPageCreateMuls.Controls.Add(btCreateARTIDXMul_Byte);
+            tabPageCreateMuls.Controls.Add(BtCreateARTIDXMul_Byte);
             tabPageCreateMuls.Controls.Add(label11);
-            tabPageCreateMuls.Controls.Add(btCreateARTIDXMul_Sbyte);
+            tabPageCreateMuls.Controls.Add(BtCreateARTIDXMul_Sbyte);
             tabPageCreateMuls.Controls.Add(label10);
             tabPageCreateMuls.Controls.Add(label9);
-            tabPageCreateMuls.Controls.Add(btCreateARTIDXMul_Short);
+            tabPageCreateMuls.Controls.Add(BtCreateARTIDXMul_Short);
             tabPageCreateMuls.Controls.Add(label8);
-            tabPageCreateMuls.Controls.Add(btCreateARTIDXMul_Ushort);
+            tabPageCreateMuls.Controls.Add(BtCreateARTIDXMul_Ushort);
             tabPageCreateMuls.Controls.Add(label7);
-            tabPageCreateMuls.Controls.Add(btCreateARTIDXMul_Int);
+            tabPageCreateMuls.Controls.Add(BtCreateARTIDXMul_Int);
             tabPageCreateMuls.Controls.Add(label6);
             tabPageCreateMuls.Controls.Add(label5);
-            tabPageCreateMuls.Controls.Add(btCreateARTIDXMul_uint);
-            tabPageCreateMuls.Controls.Add(comboBoxMuls);
+            tabPageCreateMuls.Controls.Add(BtCreateARTIDXMul_uint);
+            tabPageCreateMuls.Controls.Add(ComboBoxMuls);
             tabPageCreateMuls.Controls.Add(textBox2);
             tabPageCreateMuls.Controls.Add(textBox1);
-            tabPageCreateMuls.Controls.Add(btCreateARTIDXMul);
+            tabPageCreateMuls.Controls.Add(BtCreateARTIDXMul);
             tabPageCreateMuls.Controls.Add(label2);
-            tabPageCreateMuls.Controls.Add(btFileOrder);
+            tabPageCreateMuls.Controls.Add(BtFileOrder);
             tabPageCreateMuls.Controls.Add(label1);
             tabPageCreateMuls.Location = new System.Drawing.Point(4, 24);
             tabPageCreateMuls.Name = "tabPageCreateMuls";
@@ -439,15 +439,15 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             label13.TabIndex = 32;
             label13.Text = " 0 bis 18.446.744.073.709.551.615";
             // 
-            // btCreateARTIDXMul_Ulong
+            // BtCreateARTIDXMul_Ulong
             // 
-            btCreateARTIDXMul_Ulong.Location = new System.Drawing.Point(112, 64);
-            btCreateARTIDXMul_Ulong.Name = "btCreateARTIDXMul_Ulong";
-            btCreateARTIDXMul_Ulong.Size = new System.Drawing.Size(97, 23);
-            btCreateARTIDXMul_Ulong.TabIndex = 31;
-            btCreateARTIDXMul_Ulong.Text = "Create \"ulong\"";
-            btCreateARTIDXMul_Ulong.UseVisualStyleBackColor = true;
-            btCreateARTIDXMul_Ulong.Click += btCreateARTIDXMul_Ulong_Click;
+            BtCreateARTIDXMul_Ulong.Location = new System.Drawing.Point(112, 64);
+            BtCreateARTIDXMul_Ulong.Name = "BtCreateARTIDXMul_Ulong";
+            BtCreateARTIDXMul_Ulong.Size = new System.Drawing.Size(97, 23);
+            BtCreateARTIDXMul_Ulong.TabIndex = 31;
+            BtCreateARTIDXMul_Ulong.Text = "Create \"ulong\"";
+            BtCreateARTIDXMul_Ulong.UseVisualStyleBackColor = true;
+            BtCreateARTIDXMul_Ulong.Click += BtCreateARTIDXMul_Ulong_Click;
             // 
             // label12
             // 
@@ -458,15 +458,15 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             label12.TabIndex = 30;
             label12.Text = "0 bis 255";
             // 
-            // btCreateARTIDXMul_Byte
+            // BtCreateARTIDXMul_Byte
             // 
-            btCreateARTIDXMul_Byte.Location = new System.Drawing.Point(112, 280);
-            btCreateARTIDXMul_Byte.Name = "btCreateARTIDXMul_Byte";
-            btCreateARTIDXMul_Byte.Size = new System.Drawing.Size(97, 23);
-            btCreateARTIDXMul_Byte.TabIndex = 29;
-            btCreateARTIDXMul_Byte.Text = "Create \"byte\"";
-            btCreateARTIDXMul_Byte.UseVisualStyleBackColor = true;
-            btCreateARTIDXMul_Byte.Click += btCreateARTIDXMul_Byte_Click;
+            BtCreateARTIDXMul_Byte.Location = new System.Drawing.Point(112, 280);
+            BtCreateARTIDXMul_Byte.Name = "BtCreateARTIDXMul_Byte";
+            BtCreateARTIDXMul_Byte.Size = new System.Drawing.Size(97, 23);
+            BtCreateARTIDXMul_Byte.TabIndex = 29;
+            BtCreateARTIDXMul_Byte.Text = "Create \"byte\"";
+            BtCreateARTIDXMul_Byte.UseVisualStyleBackColor = true;
+            BtCreateARTIDXMul_Byte.Click += BtCreateARTIDXMul_Byte_Click;
             // 
             // label11
             // 
@@ -477,14 +477,14 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             label11.TabIndex = 28;
             label11.Text = " -128 bis 127";
             // 
-            // btCreateARTIDXMul_Sbyte
+            // BtCreateARTIDXMul_Sbyte
             // 
-            btCreateARTIDXMul_Sbyte.Location = new System.Drawing.Point(112, 251);
-            btCreateARTIDXMul_Sbyte.Name = "btCreateARTIDXMul_Sbyte";
-            btCreateARTIDXMul_Sbyte.Size = new System.Drawing.Size(97, 23);
-            btCreateARTIDXMul_Sbyte.TabIndex = 27;
-            btCreateARTIDXMul_Sbyte.Text = "Create \"sbyte\"";
-            btCreateARTIDXMul_Sbyte.UseVisualStyleBackColor = true;
+            BtCreateARTIDXMul_Sbyte.Location = new System.Drawing.Point(112, 251);
+            BtCreateARTIDXMul_Sbyte.Name = "BtCreateARTIDXMul_Sbyte";
+            BtCreateARTIDXMul_Sbyte.Size = new System.Drawing.Size(97, 23);
+            BtCreateARTIDXMul_Sbyte.TabIndex = 27;
+            BtCreateARTIDXMul_Sbyte.Text = "Create \"sbyte\"";
+            BtCreateARTIDXMul_Sbyte.UseVisualStyleBackColor = true;
             // 
             // label10
             // 
@@ -504,15 +504,15 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             label9.TabIndex = 25;
             label9.Text = "von -32.768 bis 32.767";
             // 
-            // btCreateARTIDXMul_Short
+            // BtCreateARTIDXMul_Short
             // 
-            btCreateARTIDXMul_Short.Location = new System.Drawing.Point(112, 219);
-            btCreateARTIDXMul_Short.Name = "btCreateARTIDXMul_Short";
-            btCreateARTIDXMul_Short.Size = new System.Drawing.Size(97, 23);
-            btCreateARTIDXMul_Short.TabIndex = 24;
-            btCreateARTIDXMul_Short.Text = "Create \"short\"";
-            btCreateARTIDXMul_Short.UseVisualStyleBackColor = true;
-            btCreateARTIDXMul_Short.Click += btCreateARTIDXMul_Short_Click;
+            BtCreateARTIDXMul_Short.Location = new System.Drawing.Point(112, 219);
+            BtCreateARTIDXMul_Short.Name = "BtCreateARTIDXMul_Short";
+            BtCreateARTIDXMul_Short.Size = new System.Drawing.Size(97, 23);
+            BtCreateARTIDXMul_Short.TabIndex = 24;
+            BtCreateARTIDXMul_Short.Text = "Create \"short\"";
+            BtCreateARTIDXMul_Short.UseVisualStyleBackColor = true;
+            BtCreateARTIDXMul_Short.Click += BtCreateARTIDXMul_Short_Click;
             // 
             // label8
             // 
@@ -523,15 +523,15 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             label8.TabIndex = 23;
             label8.Text = " 0 bis 65.535";
             // 
-            // btCreateARTIDXMul_Ushort
+            // BtCreateARTIDXMul_Ushort
             // 
-            btCreateARTIDXMul_Ushort.Location = new System.Drawing.Point(112, 187);
-            btCreateARTIDXMul_Ushort.Name = "btCreateARTIDXMul_Ushort";
-            btCreateARTIDXMul_Ushort.Size = new System.Drawing.Size(97, 23);
-            btCreateARTIDXMul_Ushort.TabIndex = 22;
-            btCreateARTIDXMul_Ushort.Text = "Create \"ushort\"";
-            btCreateARTIDXMul_Ushort.UseVisualStyleBackColor = true;
-            btCreateARTIDXMul_Ushort.Click += btCreateARTIDXMul_Ushort_Click;
+            BtCreateARTIDXMul_Ushort.Location = new System.Drawing.Point(112, 187);
+            BtCreateARTIDXMul_Ushort.Name = "BtCreateARTIDXMul_Ushort";
+            BtCreateARTIDXMul_Ushort.Size = new System.Drawing.Size(97, 23);
+            BtCreateARTIDXMul_Ushort.TabIndex = 22;
+            BtCreateARTIDXMul_Ushort.Text = "Create \"ushort\"";
+            BtCreateARTIDXMul_Ushort.UseVisualStyleBackColor = true;
+            BtCreateARTIDXMul_Ushort.Click += BtCreateARTIDXMul_Ushort_Click;
             // 
             // label7
             // 
@@ -542,15 +542,15 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             label7.TabIndex = 21;
             label7.Text = "von -2.147.483.648 bis 2.147.483.647";
             // 
-            // btCreateARTIDXMul_Int
+            // BtCreateARTIDXMul_Int
             // 
-            btCreateARTIDXMul_Int.Location = new System.Drawing.Point(112, 158);
-            btCreateARTIDXMul_Int.Name = "btCreateARTIDXMul_Int";
-            btCreateARTIDXMul_Int.Size = new System.Drawing.Size(97, 23);
-            btCreateARTIDXMul_Int.TabIndex = 20;
-            btCreateARTIDXMul_Int.Text = "Create \"int\"";
-            btCreateARTIDXMul_Int.UseVisualStyleBackColor = true;
-            btCreateARTIDXMul_Int.Click += btCreateARTIDXMul_Int_Click;
+            BtCreateARTIDXMul_Int.Location = new System.Drawing.Point(112, 158);
+            BtCreateARTIDXMul_Int.Name = "BtCreateARTIDXMul_Int";
+            BtCreateARTIDXMul_Int.Size = new System.Drawing.Size(97, 23);
+            BtCreateARTIDXMul_Int.TabIndex = 20;
+            BtCreateARTIDXMul_Int.Text = "Create \"int\"";
+            BtCreateARTIDXMul_Int.UseVisualStyleBackColor = true;
+            BtCreateARTIDXMul_Int.Click += BtCreateARTIDXMul_Int_Click;
             // 
             // label6
             // 
@@ -570,31 +570,31 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             label5.TabIndex = 18;
             label5.Text = "von -9.223.372.036.854.775.808 \r\nbis 9.223.372.036.854.775.807 ";
             // 
-            // btCreateARTIDXMul_uint
+            // BtCreateARTIDXMul_uint
             // 
-            btCreateARTIDXMul_uint.Location = new System.Drawing.Point(112, 125);
-            btCreateARTIDXMul_uint.Name = "btCreateARTIDXMul_uint";
-            btCreateARTIDXMul_uint.Size = new System.Drawing.Size(97, 23);
-            btCreateARTIDXMul_uint.TabIndex = 17;
-            btCreateARTIDXMul_uint.Text = "Create \"uint\"";
-            btCreateARTIDXMul_uint.UseVisualStyleBackColor = true;
-            btCreateARTIDXMul_uint.Click += btCreateARTIDXMul_uint_Click;
+            BtCreateARTIDXMul_uint.Location = new System.Drawing.Point(112, 125);
+            BtCreateARTIDXMul_uint.Name = "BtCreateARTIDXMul_uint";
+            BtCreateARTIDXMul_uint.Size = new System.Drawing.Size(97, 23);
+            BtCreateARTIDXMul_uint.TabIndex = 17;
+            BtCreateARTIDXMul_uint.Text = "Create \"uint\"";
+            BtCreateARTIDXMul_uint.UseVisualStyleBackColor = true;
+            BtCreateARTIDXMul_uint.Click += BtCreateARTIDXMul_uint_Click;
             // 
-            // comboBoxMuls
+            // ComboBoxMuls
             // 
-            comboBoxMuls.FormattingEnabled = true;
-            comboBoxMuls.Items.AddRange(new object[] { "Texture" });
-            comboBoxMuls.Location = new System.Drawing.Point(412, 34);
-            comboBoxMuls.Name = "comboBoxMuls";
-            comboBoxMuls.Size = new System.Drawing.Size(121, 23);
-            comboBoxMuls.TabIndex = 16;
-            comboBoxMuls.SelectedIndexChanged += comboBoxMuls_SelectedIndexChanged;
+            ComboBoxMuls.FormattingEnabled = true;
+            ComboBoxMuls.Items.AddRange(new object[] { "Texture" });
+            ComboBoxMuls.Location = new System.Drawing.Point(412, 34);
+            ComboBoxMuls.Name = "ComboBoxMuls";
+            ComboBoxMuls.Size = new System.Drawing.Size(121, 23);
+            ComboBoxMuls.TabIndex = 16;
+            ComboBoxMuls.SelectedIndexChanged += ComboBoxMuls_SelectedIndexChanged;
             // 
             // tabPageTileData
             // 
             tabPageTileData.Controls.Add(groupBox1);
             tabPageTileData.Controls.Add(groupBoxTiledata);
-            tabPageTileData.Controls.Add(btnCountTileDataEntries);
+            tabPageTileData.Controls.Add(BtnCountTileDataEntries);
             tabPageTileData.Controls.Add(lblTileDataEntryCount);
             tabPageTileData.Controls.Add(label17);
             tabPageTileData.Controls.Add(checkBoxTileData);
@@ -604,7 +604,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             tabPageTileData.Controls.Add(tbstaticTileGroups);
             tabPageTileData.Controls.Add(tblandTileGroups);
             tabPageTileData.Controls.Add(tbDirTileData);
-            tabPageTileData.Controls.Add(btCreateTiledata);
+            tabPageTileData.Controls.Add(BtCreateTiledata);
             tabPageTileData.Location = new System.Drawing.Point(4, 24);
             tabPageTileData.Name = "tabPageTileData";
             tabPageTileData.Size = new System.Drawing.Size(745, 529);
@@ -614,9 +614,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // 
             // groupBox1
             // 
-            groupBox1.Controls.Add(btCreateSimpleTiledata);
-            groupBox1.Controls.Add(btCreateTiledataEmpty);
-            groupBox1.Controls.Add(btCreateTiledataEmpty2);
+            groupBox1.Controls.Add(BtCreateSimpleTiledata);
+            groupBox1.Controls.Add(BtCreateTiledataEmpty);
+            groupBox1.Controls.Add(BtCreateTiledataEmpty2);
             groupBox1.Location = new System.Drawing.Point(526, 21);
             groupBox1.Name = "groupBox1";
             groupBox1.Size = new System.Drawing.Size(200, 182);
@@ -624,35 +624,35 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             groupBox1.TabStop = false;
             groupBox1.Text = "Test";
             // 
-            // btCreateSimpleTiledata
+            // BtCreateSimpleTiledata
             // 
-            btCreateSimpleTiledata.Location = new System.Drawing.Point(84, 73);
-            btCreateSimpleTiledata.Name = "btCreateSimpleTiledata";
-            btCreateSimpleTiledata.Size = new System.Drawing.Size(110, 23);
-            btCreateSimpleTiledata.TabIndex = 20;
-            btCreateSimpleTiledata.Text = "Simple Tiledata";
-            btCreateSimpleTiledata.UseVisualStyleBackColor = true;
-            btCreateSimpleTiledata.Click += btCreateSimpleTiledata_Click;
+            BtCreateSimpleTiledata.Location = new System.Drawing.Point(84, 73);
+            BtCreateSimpleTiledata.Name = "BtCreateSimpleTiledata";
+            BtCreateSimpleTiledata.Size = new System.Drawing.Size(110, 23);
+            BtCreateSimpleTiledata.TabIndex = 20;
+            BtCreateSimpleTiledata.Text = "Simple Tiledata";
+            BtCreateSimpleTiledata.UseVisualStyleBackColor = true;
+            BtCreateSimpleTiledata.Click += BtCreateSimpleTiledata_Click;
             // 
-            // btCreateTiledataEmpty
+            // BtCreateTiledataEmpty
             // 
-            btCreateTiledataEmpty.Location = new System.Drawing.Point(99, 14);
-            btCreateTiledataEmpty.Name = "btCreateTiledataEmpty";
-            btCreateTiledataEmpty.Size = new System.Drawing.Size(95, 23);
-            btCreateTiledataEmpty.TabIndex = 11;
-            btCreateTiledataEmpty.Text = "Tiledata Empty";
-            btCreateTiledataEmpty.UseVisualStyleBackColor = true;
-            btCreateTiledataEmpty.Click += btCreateTiledataEmpty_Click;
+            BtCreateTiledataEmpty.Location = new System.Drawing.Point(99, 14);
+            BtCreateTiledataEmpty.Name = "BtCreateTiledataEmpty";
+            BtCreateTiledataEmpty.Size = new System.Drawing.Size(95, 23);
+            BtCreateTiledataEmpty.TabIndex = 11;
+            BtCreateTiledataEmpty.Text = "Tiledata Empty";
+            BtCreateTiledataEmpty.UseVisualStyleBackColor = true;
+            BtCreateTiledataEmpty.Click += BtCreateTiledataEmpty_Click;
             // 
-            // btCreateTiledataEmpty2
+            // BtCreateTiledataEmpty2
             // 
-            btCreateTiledataEmpty2.Location = new System.Drawing.Point(84, 44);
-            btCreateTiledataEmpty2.Name = "btCreateTiledataEmpty2";
-            btCreateTiledataEmpty2.Size = new System.Drawing.Size(110, 23);
-            btCreateTiledataEmpty2.TabIndex = 12;
-            btCreateTiledataEmpty2.Text = "Tile Data Empty2";
-            btCreateTiledataEmpty2.UseVisualStyleBackColor = true;
-            btCreateTiledataEmpty2.Click += btCreateTiledataEmpty2_Click;
+            BtCreateTiledataEmpty2.Location = new System.Drawing.Point(84, 44);
+            BtCreateTiledataEmpty2.Name = "BtCreateTiledataEmpty2";
+            BtCreateTiledataEmpty2.Size = new System.Drawing.Size(110, 23);
+            BtCreateTiledataEmpty2.TabIndex = 12;
+            BtCreateTiledataEmpty2.Text = "Tile Data Empty2";
+            BtCreateTiledataEmpty2.UseVisualStyleBackColor = true;
+            BtCreateTiledataEmpty2.Click += BtCreateTiledataEmpty2_Click;
             // 
             // groupBoxTiledata
             // 
@@ -753,15 +753,15 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             labelStatic.TabIndex = 24;
             labelStatic.Text = "Static";
             // 
-            // btnCountTileDataEntries
+            // BtnCountTileDataEntries
             // 
-            btnCountTileDataEntries.Location = new System.Drawing.Point(21, 112);
-            btnCountTileDataEntries.Name = "btnCountTileDataEntries";
-            btnCountTileDataEntries.Size = new System.Drawing.Size(94, 23);
-            btnCountTileDataEntries.TabIndex = 19;
-            btnCountTileDataEntries.Text = "Count Zähler";
-            btnCountTileDataEntries.UseVisualStyleBackColor = true;
-            btnCountTileDataEntries.Click += btnCountTileDataEntries_Click;
+            BtnCountTileDataEntries.Location = new System.Drawing.Point(21, 112);
+            BtnCountTileDataEntries.Name = "BtnCountTileDataEntries";
+            BtnCountTileDataEntries.Size = new System.Drawing.Size(94, 23);
+            BtnCountTileDataEntries.TabIndex = 19;
+            BtnCountTileDataEntries.Text = "Count Zähler";
+            BtnCountTileDataEntries.UseVisualStyleBackColor = true;
+            BtnCountTileDataEntries.Click += BtnCountTileDataEntries_Click;
             // 
             // lblTileDataEntryCount
             // 
@@ -839,15 +839,15 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             tbDirTileData.Size = new System.Drawing.Size(187, 23);
             tbDirTileData.TabIndex = 1;
             // 
-            // btCreateTiledata
+            // BtCreateTiledata
             // 
-            btCreateTiledata.Location = new System.Drawing.Point(214, 30);
-            btCreateTiledata.Name = "btCreateTiledata";
-            btCreateTiledata.Size = new System.Drawing.Size(75, 23);
-            btCreateTiledata.TabIndex = 0;
-            btCreateTiledata.Text = "Create Tiledata";
-            btCreateTiledata.UseVisualStyleBackColor = true;
-            btCreateTiledata.Click += btCreateTiledata_Click;
+            BtCreateTiledata.Location = new System.Drawing.Point(214, 30);
+            BtCreateTiledata.Name = "BtCreateTiledata";
+            BtCreateTiledata.Size = new System.Drawing.Size(75, 23);
+            BtCreateTiledata.TabIndex = 0;
+            BtCreateTiledata.Text = "Create Tiledata";
+            BtCreateTiledata.UseVisualStyleBackColor = true;
+            BtCreateTiledata.Click += BtCreateTiledata_Click;
             // 
             // tabPageTexturen
             // 
@@ -863,7 +863,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // 
             groupBoxTexture.Controls.Add(lbTextureinfo3);
             groupBoxTexture.Controls.Add(BtCreateIndexes);
-            groupBoxTexture.Controls.Add(btCreateTextur);
+            groupBoxTexture.Controls.Add(BtCreateTextur);
             groupBoxTexture.Controls.Add(lbtextureinfo2);
             groupBoxTexture.Controls.Add(tbIndexCountTexture);
             groupBoxTexture.Controls.Add(lbTextureIndexCountinfo);
@@ -896,15 +896,15 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             BtCreateIndexes.UseVisualStyleBackColor = true;
             BtCreateIndexes.Click += BtCreateIndexes_Click;
             // 
-            // btCreateTextur
+            // BtCreateTextur
             // 
-            btCreateTextur.Location = new System.Drawing.Point(6, 22);
-            btCreateTextur.Name = "btCreateTextur";
-            btCreateTextur.Size = new System.Drawing.Size(120, 23);
-            btCreateTextur.TabIndex = 0;
-            btCreateTextur.Text = "Create Texture";
-            btCreateTextur.UseVisualStyleBackColor = true;
-            btCreateTextur.Click += btCreateTextur_Click;
+            BtCreateTextur.Location = new System.Drawing.Point(6, 22);
+            BtCreateTextur.Name = "BtCreateTextur";
+            BtCreateTextur.Size = new System.Drawing.Size(120, 23);
+            BtCreateTextur.TabIndex = 0;
+            BtCreateTextur.Text = "Create Texture";
+            BtCreateTextur.UseVisualStyleBackColor = true;
+            BtCreateTextur.Click += BtCreateTextur_Click;
             // 
             // lbtextureinfo2
             // 
@@ -1017,9 +1017,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             tabPagePalette.Controls.Add(LoadPaletteButton);
             tabPagePalette.Controls.Add(pictureBoxPalette);
             tabPagePalette.Controls.Add(lbCreateColorPalette);
-            tabPagePalette.Controls.Add(btCreatePaletteFull);
+            tabPagePalette.Controls.Add(BtCreatePaletteFull);
             tabPagePalette.Controls.Add(lbCreatePalette);
-            tabPagePalette.Controls.Add(btCreatePalette);
+            tabPagePalette.Controls.Add(BtCreatePalette);
             tabPagePalette.Location = new System.Drawing.Point(4, 24);
             tabPagePalette.Name = "tabPagePalette";
             tabPagePalette.Size = new System.Drawing.Size(745, 529);
@@ -1073,15 +1073,15 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             lbCreateColorPalette.TabIndex = 3;
             lbCreateColorPalette.Text = "Create Color RGB - Palette ";
             // 
-            // btCreatePaletteFull
+            // BtCreatePaletteFull
             // 
-            btCreatePaletteFull.Location = new System.Drawing.Point(24, 55);
-            btCreatePaletteFull.Name = "btCreatePaletteFull";
-            btCreatePaletteFull.Size = new System.Drawing.Size(112, 23);
-            btCreatePaletteFull.TabIndex = 2;
-            btCreatePaletteFull.Text = "Create Palette";
-            btCreatePaletteFull.UseVisualStyleBackColor = true;
-            btCreatePaletteFull.Click += btCreatePaletteFull_Click;
+            BtCreatePaletteFull.Location = new System.Drawing.Point(24, 55);
+            BtCreatePaletteFull.Name = "BtCreatePaletteFull";
+            BtCreatePaletteFull.Size = new System.Drawing.Size(112, 23);
+            BtCreatePaletteFull.TabIndex = 2;
+            BtCreatePaletteFull.Text = "Create Palette";
+            BtCreatePaletteFull.UseVisualStyleBackColor = true;
+            BtCreatePaletteFull.Click += BtCreatePaletteFull_Click;
             // 
             // lbCreatePalette
             // 
@@ -1092,37 +1092,37 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             lbCreatePalette.TabIndex = 1;
             lbCreatePalette.Text = "Orginal Palette";
             // 
-            // btCreatePalette
+            // BtCreatePalette
             // 
-            btCreatePalette.Location = new System.Drawing.Point(24, 26);
-            btCreatePalette.Name = "btCreatePalette";
-            btCreatePalette.Size = new System.Drawing.Size(112, 23);
-            btCreatePalette.TabIndex = 0;
-            btCreatePalette.Text = "Create Palette";
-            btCreatePalette.UseVisualStyleBackColor = true;
-            btCreatePalette.Click += btCreatePalette_Click;
+            BtCreatePalette.Location = new System.Drawing.Point(24, 26);
+            BtCreatePalette.Name = "BtCreatePalette";
+            BtCreatePalette.Size = new System.Drawing.Size(112, 23);
+            BtCreatePalette.TabIndex = 0;
+            BtCreatePalette.Text = "Create Palette";
+            BtCreatePalette.UseVisualStyleBackColor = true;
+            BtCreatePalette.Click += BtCreatePalette_Click;
             // 
             // tabPageAnimation
             // 
             tabPageAnimation.Controls.Add(btnCountIndices);
             tabPageAnimation.Controls.Add(ReadAnimIdx);
-            tabPageAnimation.Controls.Add(button1);
+            tabPageAnimation.Controls.Add(Button1);
             tabPageAnimation.Controls.Add(txtOutputDirectory);
-            tabPageAnimation.Controls.Add(btnSetOutputDirectory);
+            tabPageAnimation.Controls.Add(BtnSetOutputDirectory);
             tabPageAnimation.Controls.Add(txtOutputFilename);
             tabPageAnimation.Controls.Add(lblNewIdCount);
-            tabPageAnimation.Controls.Add(btnProcessClickOld);
+            tabPageAnimation.Controls.Add(BtnProcessClickOld);
             tabPageAnimation.Controls.Add(panelCheckbox);
             tabPageAnimation.Controls.Add(tbfilename);
-            tabPageAnimation.Controls.Add(btnBrowse);
+            tabPageAnimation.Controls.Add(BtnBrowse);
             tabPageAnimation.Controls.Add(tbProcessAminidx);
             tabPageAnimation.Controls.Add(lbCopyManyTimes);
             tabPageAnimation.Controls.Add(txtNewCreatureID);
             tabPageAnimation.Controls.Add(lbCopyID);
             tabPageAnimation.Controls.Add(txtOrigCreatureID);
-            tabPageAnimation.Controls.Add(btnNewAnimIDXFiles);
+            tabPageAnimation.Controls.Add(BtnNewAnimIDXFiles);
             tabPageAnimation.Controls.Add(txtData);
-            tabPageAnimation.Controls.Add(btnLoadAnimationMulData);
+            tabPageAnimation.Controls.Add(BtnLoadAnimationMulData);
             tabPageAnimation.Location = new System.Drawing.Point(4, 24);
             tabPageAnimation.Name = "tabPageAnimation";
             tabPageAnimation.Size = new System.Drawing.Size(745, 529);
@@ -1138,7 +1138,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             btnCountIndices.TabIndex = 109;
             btnCountIndices.Text = "Indexe";
             btnCountIndices.UseVisualStyleBackColor = true;
-            btnCountIndices.Click += btnCountIndices_Click;
+            btnCountIndices.Click += BtnCountIndices_Click;
             // 
             // ReadAnimIdx
             // 
@@ -1150,15 +1150,15 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             ReadAnimIdx.UseVisualStyleBackColor = true;
             ReadAnimIdx.Click += ReadAnimIdx_Click;
             // 
-            // button1
+            // Button1
             // 
-            button1.Location = new System.Drawing.Point(24, 467);
-            button1.Name = "button1";
-            button1.Size = new System.Drawing.Size(120, 23);
-            button1.TabIndex = 107;
-            button1.Text = "Empty anim.mul";
-            button1.UseVisualStyleBackColor = true;
-            button1.Click += btnSingleEmptyAnimMul_Click;
+            Button1.Location = new System.Drawing.Point(24, 467);
+            Button1.Name = "Button1";
+            Button1.Size = new System.Drawing.Size(120, 23);
+            Button1.TabIndex = 107;
+            Button1.Text = "Empty anim.mul";
+            Button1.UseVisualStyleBackColor = true;
+            Button1.Click += BtnSingleEmptyAnimMul_Click;
             // 
             // txtOutputDirectory
             // 
@@ -1167,15 +1167,15 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             txtOutputDirectory.Size = new System.Drawing.Size(231, 23);
             txtOutputDirectory.TabIndex = 106;
             // 
-            // btnSetOutputDirectory
+            // BtnSetOutputDirectory
             // 
-            btnSetOutputDirectory.Location = new System.Drawing.Point(245, 50);
-            btnSetOutputDirectory.Name = "btnSetOutputDirectory";
-            btnSetOutputDirectory.Size = new System.Drawing.Size(52, 23);
-            btnSetOutputDirectory.TabIndex = 105;
-            btnSetOutputDirectory.Text = "outbut";
-            btnSetOutputDirectory.UseVisualStyleBackColor = true;
-            btnSetOutputDirectory.Click += btnSetOutputDirectoryClick;
+            BtnSetOutputDirectory.Location = new System.Drawing.Point(245, 50);
+            BtnSetOutputDirectory.Name = "BtnSetOutputDirectory";
+            BtnSetOutputDirectory.Size = new System.Drawing.Size(52, 23);
+            BtnSetOutputDirectory.TabIndex = 105;
+            BtnSetOutputDirectory.Text = "outbut";
+            BtnSetOutputDirectory.UseVisualStyleBackColor = true;
+            BtnSetOutputDirectory.Click += BtnSetOutputDirectoryClick;
             // 
             // txtOutputFilename
             // 
@@ -1193,15 +1193,15 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             lblNewIdCount.TabIndex = 103;
             lblNewIdCount.Text = "Count :";
             // 
-            // btnProcessClickOld
+            // BtnProcessClickOld
             // 
-            btnProcessClickOld.Location = new System.Drawing.Point(169, 164);
-            btnProcessClickOld.Name = "btnProcessClickOld";
-            btnProcessClickOld.Size = new System.Drawing.Size(126, 24);
-            btnProcessClickOld.TabIndex = 102;
-            btnProcessClickOld.Text = "C - Amin.IDX Old V";
-            btnProcessClickOld.UseVisualStyleBackColor = true;
-            btnProcessClickOld.Click += btnProcessClickOldVersion;
+            BtnProcessClickOld.Location = new System.Drawing.Point(169, 164);
+            BtnProcessClickOld.Name = "BtnProcessClickOld";
+            BtnProcessClickOld.Size = new System.Drawing.Size(126, 24);
+            BtnProcessClickOld.TabIndex = 102;
+            BtnProcessClickOld.Text = "C - Amin.IDX Old V";
+            BtnProcessClickOld.UseVisualStyleBackColor = true;
+            BtnProcessClickOld.Click += BtnProcessClickOldVersion;
             // 
             // panelCheckbox
             // 
@@ -1262,15 +1262,15 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             tbfilename.Size = new System.Drawing.Size(231, 23);
             tbfilename.TabIndex = 100;
             // 
-            // btnBrowse
+            // BtnBrowse
             // 
-            btnBrowse.Location = new System.Drawing.Point(245, 21);
-            btnBrowse.Name = "btnBrowse";
-            btnBrowse.Size = new System.Drawing.Size(52, 23);
-            btnBrowse.TabIndex = 99;
-            btnBrowse.Text = "load";
-            btnBrowse.UseVisualStyleBackColor = true;
-            btnBrowse.Click += btnBrowseClick;
+            BtnBrowse.Location = new System.Drawing.Point(245, 21);
+            BtnBrowse.Name = "BtnBrowse";
+            BtnBrowse.Size = new System.Drawing.Size(52, 23);
+            BtnBrowse.TabIndex = 99;
+            BtnBrowse.Text = "load";
+            BtnBrowse.UseVisualStyleBackColor = true;
+            BtnBrowse.Click += BtnBrowseClick;
             // 
             // tbProcessAminidx
             // 
@@ -1313,15 +1313,15 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             txtOrigCreatureID.Size = new System.Drawing.Size(100, 23);
             txtOrigCreatureID.TabIndex = 94;
             // 
-            // btnNewAnimIDXFiles
+            // BtnNewAnimIDXFiles
             // 
-            btnNewAnimIDXFiles.Location = new System.Drawing.Point(24, 268);
-            btnNewAnimIDXFiles.Name = "btnNewAnimIDXFiles";
-            btnNewAnimIDXFiles.Size = new System.Drawing.Size(126, 24);
-            btnNewAnimIDXFiles.TabIndex = 93;
-            btnNewAnimIDXFiles.Text = "Create Amin IDX";
-            btnNewAnimIDXFiles.UseVisualStyleBackColor = true;
-            btnNewAnimIDXFiles.Click += btnProcessClick;
+            BtnNewAnimIDXFiles.Location = new System.Drawing.Point(24, 268);
+            BtnNewAnimIDXFiles.Name = "BtnNewAnimIDXFiles";
+            BtnNewAnimIDXFiles.Size = new System.Drawing.Size(126, 24);
+            BtnNewAnimIDXFiles.TabIndex = 93;
+            BtnNewAnimIDXFiles.Text = "Create Amin IDX";
+            BtnNewAnimIDXFiles.UseVisualStyleBackColor = true;
+            BtnNewAnimIDXFiles.Click += BtnProcessClick;
             // 
             // txtData
             // 
@@ -1331,26 +1331,26 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             txtData.Size = new System.Drawing.Size(134, 195);
             txtData.TabIndex = 1;
             // 
-            // btnLoadAnimationMulData
+            // BtnLoadAnimationMulData
             // 
-            btnLoadAnimationMulData.Location = new System.Drawing.Point(369, 21);
-            btnLoadAnimationMulData.Name = "btnLoadAnimationMulData";
-            btnLoadAnimationMulData.Size = new System.Drawing.Size(75, 23);
-            btnLoadAnimationMulData.TabIndex = 0;
-            btnLoadAnimationMulData.Text = "button1";
-            btnLoadAnimationMulData.UseVisualStyleBackColor = true;
-            btnLoadAnimationMulData.Click += btnLoadAnimationMulData_Click;
+            BtnLoadAnimationMulData.Location = new System.Drawing.Point(369, 21);
+            BtnLoadAnimationMulData.Name = "BtnLoadAnimationMulData";
+            BtnLoadAnimationMulData.Size = new System.Drawing.Size(134, 23);
+            BtnLoadAnimationMulData.TabIndex = 0;
+            BtnLoadAnimationMulData.Text = "LoadAnimationMul";
+            BtnLoadAnimationMulData.UseVisualStyleBackColor = true;
+            BtnLoadAnimationMulData.Click += BtnLoadAnimationMulData_Click;
             // 
             // tabPageReadMuls
             // 
-            tabPageReadMuls.Controls.Add(btnCountEntries);
+            tabPageReadMuls.Controls.Add(BtnCountEntries);
             tabPageReadMuls.Controls.Add(label4);
             tabPageReadMuls.Controls.Add(lblEntryCount);
             tabPageReadMuls.Controls.Add(label3);
             tabPageReadMuls.Controls.Add(textBoxInfo);
             tabPageReadMuls.Controls.Add(textBoxIndex);
-            tabPageReadMuls.Controls.Add(btnShowInfo);
-            tabPageReadMuls.Controls.Add(btnReadArtIdx);
+            tabPageReadMuls.Controls.Add(BtnShowInfo);
+            tabPageReadMuls.Controls.Add(BtnReadArtIdx);
             tabPageReadMuls.Location = new System.Drawing.Point(4, 24);
             tabPageReadMuls.Name = "tabPageReadMuls";
             tabPageReadMuls.Padding = new System.Windows.Forms.Padding(3);
@@ -1363,11 +1363,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // 
             tabPageReadOut.Controls.Add(textBoxOutput);
             tabPageReadOut.Controls.Add(textBoxTileDataInfo);
-            tabPageReadOut.Controls.Add(buttonReadStaticTileData);
+            tabPageReadOut.Controls.Add(ButtonReadStaticTileData);
             tabPageReadOut.Controls.Add(groupBoxInfo);
-            tabPageReadOut.Controls.Add(buttonReadLandTileData);
+            tabPageReadOut.Controls.Add(ButtonReadLandTileData);
             tabPageReadOut.Controls.Add(listViewTileData);
-            tabPageReadOut.Controls.Add(buttonReadTileData);
+            tabPageReadOut.Controls.Add(ButtonReadTileData);
             tabPageReadOut.Location = new System.Drawing.Point(4, 24);
             tabPageReadOut.Name = "tabPageReadOut";
             tabPageReadOut.Size = new System.Drawing.Size(745, 529);
@@ -1391,26 +1391,26 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             textBoxTileDataInfo.Size = new System.Drawing.Size(299, 267);
             textBoxTileDataInfo.TabIndex = 8;
             // 
-            // buttonReadStaticTileData
+            // ButtonReadStaticTileData
             // 
-            buttonReadStaticTileData.Location = new System.Drawing.Point(190, 346);
-            buttonReadStaticTileData.Name = "buttonReadStaticTileData";
-            buttonReadStaticTileData.Size = new System.Drawing.Size(75, 23);
-            buttonReadStaticTileData.TabIndex = 27;
-            buttonReadStaticTileData.Text = "Static";
-            buttonReadStaticTileData.UseVisualStyleBackColor = true;
-            buttonReadStaticTileData.Click += buttonReadStaticTileData_Click;
+            ButtonReadStaticTileData.Location = new System.Drawing.Point(190, 346);
+            ButtonReadStaticTileData.Name = "ButtonReadStaticTileData";
+            ButtonReadStaticTileData.Size = new System.Drawing.Size(75, 23);
+            ButtonReadStaticTileData.TabIndex = 27;
+            ButtonReadStaticTileData.Text = "Static";
+            ButtonReadStaticTileData.UseVisualStyleBackColor = true;
+            ButtonReadStaticTileData.Click += ButtonReadStaticTileData_Click;
             // 
             // groupBoxInfo
             // 
-            groupBoxInfo.Controls.Add(btReadLandTile);
-            groupBoxInfo.Controls.Add(btTiledatainfo);
-            groupBoxInfo.Controls.Add(btReadTileFlags);
+            groupBoxInfo.Controls.Add(BtReadLandTile);
+            groupBoxInfo.Controls.Add(BtTiledatainfo);
+            groupBoxInfo.Controls.Add(BtReadTileFlags);
             groupBoxInfo.Controls.Add(textBoxTiledataIndex);
-            groupBoxInfo.Controls.Add(btReadStaticTile);
+            groupBoxInfo.Controls.Add(BtReadStaticTile);
             groupBoxInfo.Controls.Add(lbIndexTiledata);
-            groupBoxInfo.Controls.Add(btReadIndexTiledata);
-            groupBoxInfo.Controls.Add(btSelectDirectory);
+            groupBoxInfo.Controls.Add(BtReadIndexTiledata);
+            groupBoxInfo.Controls.Add(BtSelectDirectory);
             groupBoxInfo.Location = new System.Drawing.Point(445, 276);
             groupBoxInfo.Name = "groupBoxInfo";
             groupBoxInfo.Size = new System.Drawing.Size(297, 116);
@@ -1418,35 +1418,35 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             groupBoxInfo.TabStop = false;
             groupBoxInfo.Text = "Infos:";
             // 
-            // btReadLandTile
+            // BtReadLandTile
             // 
-            btReadLandTile.Location = new System.Drawing.Point(131, 41);
-            btReadLandTile.Name = "btReadLandTile";
-            btReadLandTile.Size = new System.Drawing.Size(44, 23);
-            btReadLandTile.TabIndex = 16;
-            btReadLandTile.Text = "Land";
-            btReadLandTile.UseVisualStyleBackColor = true;
-            btReadLandTile.Click += btReadLandTile_Click;
+            BtReadLandTile.Location = new System.Drawing.Point(131, 41);
+            BtReadLandTile.Name = "BtReadLandTile";
+            BtReadLandTile.Size = new System.Drawing.Size(44, 23);
+            BtReadLandTile.TabIndex = 16;
+            BtReadLandTile.Text = "Land";
+            BtReadLandTile.UseVisualStyleBackColor = true;
+            BtReadLandTile.Click += BtReadLandTile_Click;
             // 
-            // btTiledatainfo
+            // BtTiledatainfo
             // 
-            btTiledatainfo.Location = new System.Drawing.Point(212, 70);
-            btTiledatainfo.Name = "btTiledatainfo";
-            btTiledatainfo.Size = new System.Drawing.Size(75, 23);
-            btTiledatainfo.TabIndex = 7;
-            btTiledatainfo.Text = "Read";
-            btTiledatainfo.UseVisualStyleBackColor = true;
-            btTiledatainfo.Click += btTiledatainfo_Click;
+            BtTiledatainfo.Location = new System.Drawing.Point(212, 70);
+            BtTiledatainfo.Name = "BtTiledatainfo";
+            BtTiledatainfo.Size = new System.Drawing.Size(75, 23);
+            BtTiledatainfo.TabIndex = 7;
+            BtTiledatainfo.Text = "Read";
+            BtTiledatainfo.UseVisualStyleBackColor = true;
+            BtTiledatainfo.Click += BtTiledatainfo_Click;
             // 
-            // btReadTileFlags
+            // BtReadTileFlags
             // 
-            btReadTileFlags.Location = new System.Drawing.Point(131, 70);
-            btReadTileFlags.Name = "btReadTileFlags";
-            btReadTileFlags.Size = new System.Drawing.Size(75, 23);
-            btReadTileFlags.TabIndex = 21;
-            btReadTileFlags.Text = "Flags Read";
-            btReadTileFlags.UseVisualStyleBackColor = true;
-            btReadTileFlags.Click += btReadTileFlags_Click;
+            BtReadTileFlags.Location = new System.Drawing.Point(131, 70);
+            BtReadTileFlags.Name = "BtReadTileFlags";
+            BtReadTileFlags.Size = new System.Drawing.Size(75, 23);
+            BtReadTileFlags.TabIndex = 21;
+            BtReadTileFlags.Text = "Flags Read";
+            BtReadTileFlags.UseVisualStyleBackColor = true;
+            BtReadTileFlags.Click += BtReadTileFlags_Click;
             // 
             // textBoxTiledataIndex
             // 
@@ -1455,15 +1455,15 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             textBoxTiledataIndex.Size = new System.Drawing.Size(116, 23);
             textBoxTiledataIndex.TabIndex = 13;
             // 
-            // btReadStaticTile
+            // BtReadStaticTile
             // 
-            btReadStaticTile.Location = new System.Drawing.Point(181, 41);
-            btReadStaticTile.Name = "btReadStaticTile";
-            btReadStaticTile.Size = new System.Drawing.Size(50, 23);
-            btReadStaticTile.TabIndex = 17;
-            btReadStaticTile.Text = "Static";
-            btReadStaticTile.UseVisualStyleBackColor = true;
-            btReadStaticTile.Click += btReadStaticTile_Click;
+            BtReadStaticTile.Location = new System.Drawing.Point(181, 41);
+            BtReadStaticTile.Name = "BtReadStaticTile";
+            BtReadStaticTile.Size = new System.Drawing.Size(50, 23);
+            BtReadStaticTile.TabIndex = 17;
+            BtReadStaticTile.Text = "Static";
+            BtReadStaticTile.UseVisualStyleBackColor = true;
+            BtReadStaticTile.Click += BtReadStaticTile_Click;
             // 
             // lbIndexTiledata
             // 
@@ -1474,35 +1474,35 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             lbIndexTiledata.TabIndex = 18;
             lbIndexTiledata.Text = "Index:";
             // 
-            // btReadIndexTiledata
+            // BtReadIndexTiledata
             // 
-            btReadIndexTiledata.Location = new System.Drawing.Point(131, 12);
-            btReadIndexTiledata.Name = "btReadIndexTiledata";
-            btReadIndexTiledata.Size = new System.Drawing.Size(75, 23);
-            btReadIndexTiledata.TabIndex = 14;
-            btReadIndexTiledata.Text = "Index Read";
-            btReadIndexTiledata.UseVisualStyleBackColor = true;
-            btReadIndexTiledata.Click += btReadIndexTiledata_Click;
+            BtReadIndexTiledata.Location = new System.Drawing.Point(131, 12);
+            BtReadIndexTiledata.Name = "BtReadIndexTiledata";
+            BtReadIndexTiledata.Size = new System.Drawing.Size(75, 23);
+            BtReadIndexTiledata.TabIndex = 14;
+            BtReadIndexTiledata.Text = "Index Read";
+            BtReadIndexTiledata.UseVisualStyleBackColor = true;
+            BtReadIndexTiledata.Click += BtReadIndexTiledata_Click;
             // 
-            // btSelectDirectory
+            // BtSelectDirectory
             // 
-            btSelectDirectory.Location = new System.Drawing.Point(212, 12);
-            btSelectDirectory.Name = "btSelectDirectory";
-            btSelectDirectory.Size = new System.Drawing.Size(40, 23);
-            btSelectDirectory.TabIndex = 15;
-            btSelectDirectory.Text = "Hex";
-            btSelectDirectory.UseVisualStyleBackColor = true;
-            btSelectDirectory.Click += btTReadHexAndSelectDirectory_Click;
+            BtSelectDirectory.Location = new System.Drawing.Point(212, 12);
+            BtSelectDirectory.Name = "BtSelectDirectory";
+            BtSelectDirectory.Size = new System.Drawing.Size(40, 23);
+            BtSelectDirectory.TabIndex = 15;
+            BtSelectDirectory.Text = "Hex";
+            BtSelectDirectory.UseVisualStyleBackColor = true;
+            BtSelectDirectory.Click += BtTReadHexAndSelectDirectory_Click;
             // 
-            // buttonReadLandTileData
+            // ButtonReadLandTileData
             // 
-            buttonReadLandTileData.Location = new System.Drawing.Point(109, 346);
-            buttonReadLandTileData.Name = "buttonReadLandTileData";
-            buttonReadLandTileData.Size = new System.Drawing.Size(75, 23);
-            buttonReadLandTileData.TabIndex = 26;
-            buttonReadLandTileData.Text = "Land";
-            buttonReadLandTileData.UseVisualStyleBackColor = true;
-            buttonReadLandTileData.Click += buttonReadLandTileData_Click;
+            ButtonReadLandTileData.Location = new System.Drawing.Point(109, 346);
+            ButtonReadLandTileData.Name = "ButtonReadLandTileData";
+            ButtonReadLandTileData.Size = new System.Drawing.Size(75, 23);
+            ButtonReadLandTileData.TabIndex = 26;
+            ButtonReadLandTileData.Text = "Land";
+            ButtonReadLandTileData.UseVisualStyleBackColor = true;
+            ButtonReadLandTileData.Click += ButtonReadLandTileData_Click;
             // 
             // listViewTileData
             // 
@@ -1512,17 +1512,17 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             listViewTileData.TabIndex = 25;
             listViewTileData.UseCompatibleStateImageBehavior = false;
             listViewTileData.KeyDown += TiledataHex_KeyDown;
-            listViewTileData.MouseClick += listViewTileData_MouseClick;
+            listViewTileData.MouseClick += ListViewTileData_MouseClick;
             // 
-            // buttonReadTileData
+            // ButtonReadTileData
             // 
-            buttonReadTileData.Location = new System.Drawing.Point(5, 346);
-            buttonReadTileData.Name = "buttonReadTileData";
-            buttonReadTileData.Size = new System.Drawing.Size(98, 23);
-            buttonReadTileData.TabIndex = 24;
-            buttonReadTileData.Text = "Hexadressen";
-            buttonReadTileData.UseVisualStyleBackColor = true;
-            buttonReadTileData.Click += buttonReadTileData_Click;
+            ButtonReadTileData.Location = new System.Drawing.Point(5, 346);
+            ButtonReadTileData.Name = "ButtonReadTileData";
+            ButtonReadTileData.Size = new System.Drawing.Size(98, 23);
+            ButtonReadTileData.TabIndex = 24;
+            ButtonReadTileData.Text = "Hexadressen";
+            ButtonReadTileData.UseVisualStyleBackColor = true;
+            ButtonReadTileData.Click += ButtonReadTileData_Click;
             // 
             // tabPageArtmul
             // 
@@ -1556,7 +1556,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             panel4.Controls.Add(lbLandTilesCount);
             panel4.Controls.Add(tbxLandTilesCount);
             panel4.Controls.Add(tbxArtsCount);
-            panel4.Controls.Add(button3);
+            panel4.Controls.Add(Button3);
             panel4.Location = new System.Drawing.Point(309, 239);
             panel4.Name = "panel4";
             panel4.Size = new System.Drawing.Size(331, 100);
@@ -1613,27 +1613,37 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             tbxArtsCount.TabIndex = 14;
             tbxArtsCount.Text = "70000";
             // 
-            // button3
+            // Button3
             // 
-            button3.Location = new System.Drawing.Point(3, 66);
-            button3.Name = "button3";
-            button3.Size = new System.Drawing.Size(75, 23);
-            button3.TabIndex = 13;
-            button3.Text = "Create";
-            button3.UseVisualStyleBackColor = true;
-            button3.Click += btnCreateNewArtidx2;
+            Button3.Location = new System.Drawing.Point(3, 66);
+            Button3.Name = "Button3";
+            Button3.Size = new System.Drawing.Size(75, 23);
+            Button3.TabIndex = 13;
+            Button3.Text = "Create";
+            Button3.UseVisualStyleBackColor = true;
+            Button3.Click += BtnCreateNewArtidx2;
             // 
             // panel3
             // 
             panel3.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            panel3.Controls.Add(btCreateOldVersionArtidx);
+            panel3.Controls.Add(BtCreateOldVersionArtidx);
             panel3.Controls.Add(lbinfoArt);
             panel3.Controls.Add(tbxNewIndex);
-            panel3.Controls.Add(button2);
+            panel3.Controls.Add(Button2);
             panel3.Location = new System.Drawing.Point(5, 239);
             panel3.Name = "panel3";
             panel3.Size = new System.Drawing.Size(262, 100);
             panel3.TabIndex = 14;
+            // 
+            // BtCreateOldVersionArtidx
+            // 
+            BtCreateOldVersionArtidx.Location = new System.Drawing.Point(11, 21);
+            BtCreateOldVersionArtidx.Name = "BtCreateOldVersionArtidx";
+            BtCreateOldVersionArtidx.Size = new System.Drawing.Size(112, 23);
+            BtCreateOldVersionArtidx.TabIndex = 15;
+            BtCreateOldVersionArtidx.Text = "Old Veriant 2003";
+            BtCreateOldVersionArtidx.UseVisualStyleBackColor = true;
+            BtCreateOldVersionArtidx.Click += BtnCreateOldVersionArtidx;
             // 
             // lbinfoArt
             // 
@@ -1652,15 +1662,15 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             tbxNewIndex.TabIndex = 13;
             tbxNewIndex.Text = "65500";
             // 
-            // button2
+            // Button2
             // 
-            button2.Location = new System.Drawing.Point(11, 67);
-            button2.Name = "button2";
-            button2.Size = new System.Drawing.Size(75, 23);
-            button2.TabIndex = 12;
-            button2.Text = "Create";
-            button2.UseVisualStyleBackColor = true;
-            button2.Click += btnCreateNewArtidx;
+            Button2.Location = new System.Drawing.Point(11, 67);
+            Button2.Name = "Button2";
+            Button2.Size = new System.Drawing.Size(75, 23);
+            Button2.TabIndex = 12;
+            Button2.Text = "Create";
+            Button2.UseVisualStyleBackColor = true;
+            Button2.Click += BtnCreateNewArtidx;
             // 
             // ReadArtmul2
             // 
@@ -1894,16 +1904,6 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             CreateGumpButton.UseVisualStyleBackColor = true;
             CreateGumpButton.Click += CreateGumpButton_Click;
             // 
-            // btCreateOldVersionArtidx
-            // 
-            btCreateOldVersionArtidx.Location = new System.Drawing.Point(11, 21);
-            btCreateOldVersionArtidx.Name = "btCreateOldVersionArtidx";
-            btCreateOldVersionArtidx.Size = new System.Drawing.Size(112, 23);
-            btCreateOldVersionArtidx.TabIndex = 15;
-            btCreateOldVersionArtidx.Text = "Old Veriant 2003";
-            btCreateOldVersionArtidx.UseVisualStyleBackColor = true;
-            btCreateOldVersionArtidx.Click += btnCreateOldVersionArtidx;
-            // 
             // ARTMulIDXCreator
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -1958,14 +1958,14 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         #endregion
 
         private System.Windows.Forms.TextBox textBox1;
-        private System.Windows.Forms.Button btCreateARTIDXMul;
-        private System.Windows.Forms.Button btFileOrder;
+        private System.Windows.Forms.Button BtCreateARTIDXMul;
+        private System.Windows.Forms.Button BtFileOrder;
         private System.Windows.Forms.TextBox textBox2;
         private System.Windows.Forms.Label lblEntryCount;
-        private System.Windows.Forms.Button btnCountEntries;
-        private System.Windows.Forms.Button btnShowInfo;
+        private System.Windows.Forms.Button BtnCountEntries;
+        private System.Windows.Forms.Button BtnShowInfo;
         private System.Windows.Forms.TextBox textBoxInfo;
-        private System.Windows.Forms.Button btnReadArtIdx;
+        private System.Windows.Forms.Button BtnReadArtIdx;
         private System.Windows.Forms.TextBox textBoxIndex;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label label2;
@@ -1974,55 +1974,55 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private System.Windows.Forms.TabControl tabControl1;
         private System.Windows.Forms.TabPage tabPageCreateMuls;
         private System.Windows.Forms.TabPage tabPageReadMuls;
-        private System.Windows.Forms.ComboBox comboBoxMuls;
-        private System.Windows.Forms.Button btCreateARTIDXMul_uint;
+        private System.Windows.Forms.ComboBox ComboBoxMuls;
+        private System.Windows.Forms.Button BtCreateARTIDXMul_uint;
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.Label label5;
-        private System.Windows.Forms.Button btCreateARTIDXMul_Int;
+        private System.Windows.Forms.Button BtCreateARTIDXMul_Int;
         private System.Windows.Forms.Label label8;
-        private System.Windows.Forms.Button btCreateARTIDXMul_Ushort;
+        private System.Windows.Forms.Button BtCreateARTIDXMul_Ushort;
         private System.Windows.Forms.Label label7;
-        private System.Windows.Forms.Button btCreateARTIDXMul_Short;
+        private System.Windows.Forms.Button BtCreateARTIDXMul_Short;
         private System.Windows.Forms.Label label10;
         private System.Windows.Forms.Label label9;
         private System.Windows.Forms.Label label11;
-        private System.Windows.Forms.Button btCreateARTIDXMul_Sbyte;
-        private System.Windows.Forms.Button btCreateARTIDXMul_Byte;
+        private System.Windows.Forms.Button BtCreateARTIDXMul_Sbyte;
+        private System.Windows.Forms.Button BtCreateARTIDXMul_Byte;
         private System.Windows.Forms.Label label12;
-        private System.Windows.Forms.Button btCreateARTIDXMul_Ulong;
+        private System.Windows.Forms.Button BtCreateARTIDXMul_Ulong;
         private System.Windows.Forms.Label label13;
         private System.Windows.Forms.Label lbCreatedMul;
         private System.Windows.Forms.Label label14;
         private System.Windows.Forms.TabPage tabPageTileData;
-        private System.Windows.Forms.Button btCreateTiledata;
+        private System.Windows.Forms.Button BtCreateTiledata;
         private System.Windows.Forms.TextBox tbDirTileData;
         private System.Windows.Forms.Label lbTileDataCreate;
         private System.Windows.Forms.TextBox tbstaticTileGroups;
         private System.Windows.Forms.TextBox tblandTileGroups;
         private System.Windows.Forms.TextBox textBoxTileDataInfo;
-        private System.Windows.Forms.Button btTiledatainfo;
+        private System.Windows.Forms.Button BtTiledatainfo;
         private System.Windows.Forms.Label label16;
         private System.Windows.Forms.Label label15;
         private System.Windows.Forms.CheckBox checkBoxTileData;
         private System.Windows.Forms.Label label17;
-        private System.Windows.Forms.Button btCreateTiledataEmpty;
-        private System.Windows.Forms.Button btCreateTiledataEmpty2;
+        private System.Windows.Forms.Button BtCreateTiledataEmpty;
+        private System.Windows.Forms.Button BtCreateTiledataEmpty2;
         private System.Windows.Forms.TextBox textBoxTiledataIndex;
-        private System.Windows.Forms.Button btReadIndexTiledata;
-        private System.Windows.Forms.Button btSelectDirectory;
-        private System.Windows.Forms.Button btReadStaticTile;
-        private System.Windows.Forms.Button btReadLandTile;
+        private System.Windows.Forms.Button BtReadIndexTiledata;
+        private System.Windows.Forms.Button BtSelectDirectory;
+        private System.Windows.Forms.Button BtReadStaticTile;
+        private System.Windows.Forms.Button BtReadLandTile;
         private System.Windows.Forms.GroupBox groupBoxInfo;
         private System.Windows.Forms.Label lbIndexTiledata;
-        private System.Windows.Forms.Button btnCountTileDataEntries;
+        private System.Windows.Forms.Button BtnCountTileDataEntries;
         private System.Windows.Forms.Label lblTileDataEntryCount;
-        private System.Windows.Forms.Button btCreateSimpleTiledata;
-        private System.Windows.Forms.Button btReadTileFlags;
+        private System.Windows.Forms.Button BtCreateSimpleTiledata;
+        private System.Windows.Forms.Button BtReadTileFlags;
         private System.Windows.Forms.TabPage tabPageReadOut;
         private System.Windows.Forms.ListView listViewTileData;
-        private System.Windows.Forms.Button buttonReadTileData;
-        private System.Windows.Forms.Button buttonReadLandTileData;
-        private System.Windows.Forms.Button buttonReadStaticTileData;
+        private System.Windows.Forms.Button ButtonReadTileData;
+        private System.Windows.Forms.Button ButtonReadLandTileData;
+        private System.Windows.Forms.Button ButtonReadStaticTileData;
         private System.Windows.Forms.TextBox textBoxOutput;
         private System.Windows.Forms.Button CreateTiledataMul;
         private System.Windows.Forms.TextBox staticBlockCount;
@@ -2036,7 +2036,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private System.Windows.Forms.Button CountIndices;
         private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.TabPage tabPageTexturen;
-        private System.Windows.Forms.Button btCreateTextur;
+        private System.Windows.Forms.Button BtCreateTextur;
         private System.Windows.Forms.TextBox tbIndexCountTexture;
         private System.Windows.Forms.Label tbIndexCount;
         private System.Windows.Forms.CheckBox checkBoxTexture;
@@ -2053,8 +2053,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private System.Windows.Forms.TextBox indexCountTextBox;
         private System.Windows.Forms.Label lbRadarColor;
         private System.Windows.Forms.TabPage tabPagePalette;
-        private System.Windows.Forms.Button btCreatePalette;
-        private System.Windows.Forms.Button btCreatePaletteFull;
+        private System.Windows.Forms.Button BtCreatePalette;
+        private System.Windows.Forms.Button BtCreatePaletteFull;
         private System.Windows.Forms.Label lbCreatePalette;
         private System.Windows.Forms.Label lbCreateColorPalette;
         private System.Windows.Forms.Button LoadPaletteButton;
@@ -2062,7 +2062,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private System.Windows.Forms.Label rgbValuesLabel;
         private System.Windows.Forms.TextBox textBoxRgbValues;
         private System.Windows.Forms.TabPage tabPageAnimation;
-        private System.Windows.Forms.Button btnLoadAnimationMulData;
+        private System.Windows.Forms.Button BtnLoadAnimationMulData;
         private System.Windows.Forms.TextBox txtData;
         private System.Windows.Forms.TabPage tabPageArtmul;
         private System.Windows.Forms.Button BtnCreateArtIdx;
@@ -2077,24 +2077,24 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private System.Windows.Forms.Button BtnCreateArtIdx250K;
         private System.Windows.Forms.Button BtnCreateArtIdx500K;
         private System.Windows.Forms.TextBox txtOutputDirectory;
-        private System.Windows.Forms.Button btnSetOutputDirectory;
+        private System.Windows.Forms.Button BtnSetOutputDirectory;
         private System.Windows.Forms.TextBox txtOutputFilename;
         private System.Windows.Forms.Label lblNewIdCount;
-        private System.Windows.Forms.Button btnProcessClickOld;
+        private System.Windows.Forms.Button BtnProcessClickOld;
         private System.Windows.Forms.Panel panelCheckbox;
         private System.Windows.Forms.Label lbCopys;
         private System.Windows.Forms.CheckBox chkHighDetail;
         private System.Windows.Forms.CheckBox chkLowDetail;
         private System.Windows.Forms.CheckBox chkHuman;
         private System.Windows.Forms.TextBox tbfilename;
-        private System.Windows.Forms.Button btnBrowse;
+        private System.Windows.Forms.Button BtnBrowse;
         private System.Windows.Forms.TextBox tbProcessAminidx;
         private System.Windows.Forms.Label lbCopyManyTimes;
         private System.Windows.Forms.TextBox txtNewCreatureID;
         private System.Windows.Forms.Label lbCopyID;
         private System.Windows.Forms.TextBox txtOrigCreatureID;
-        private System.Windows.Forms.Button btnNewAnimIDXFiles;
-        private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.Button BtnNewAnimIDXFiles;
+        private System.Windows.Forms.Button Button1;
         private System.Windows.Forms.TabPage tabPageSound;
         private System.Windows.Forms.Panel panel1;
         private System.Windows.Forms.TextBox SoundIDXMul;
@@ -2112,17 +2112,17 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private System.Windows.Forms.Button ReadAnimIdx;
         private System.Windows.Forms.Button btnCountIndices;
         private System.Windows.Forms.TextBox tbxNewIndex;
-        private System.Windows.Forms.Button button2;
+        private System.Windows.Forms.Button Button2;
         private System.Windows.Forms.Panel panel3;
         private System.Windows.Forms.Label lbinfoArt;
         private System.Windows.Forms.Panel panel4;
-        private System.Windows.Forms.Button button3;
+        private System.Windows.Forms.Button Button3;
         private System.Windows.Forms.TextBox tbxArtsCount;
         private System.Windows.Forms.Label label20;
         private System.Windows.Forms.TextBox tbxNewIndex2;
         private System.Windows.Forms.Label lbArtsCount;
         private System.Windows.Forms.Label lbLandTilesCount;
         private System.Windows.Forms.TextBox tbxLandTilesCount;
-        private System.Windows.Forms.Button btCreateOldVersionArtidx;
+        private System.Windows.Forms.Button BtCreateOldVersionArtidx;
     }
 }

@@ -21,28 +21,28 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 {
     public partial class TextureCutter : Form
     {
-        private Point originalImageLocation = new Point(0, 0); //Determines the position in the picture box
-        private Bitmap resizedImage;
-        private bool isPickingColor = false;
+        private Point _originalImageLocation = new Point(0, 0); //Determines the position in the picture box
+        private Bitmap _resizedImage;
+        private bool _isPickingColor = false;
 
         // Save OrginalImage
-        private Bitmap originalImage;
+        private Bitmap _originalImage;
         // Save Orginal Size
-        private Size originalSize;
+        private Size _originalSize;
         // Define a variable to store the custom colors
-        private int[] customColors;
+        private int[] _customColors;
         // Draw
-        private bool isDrawing = false; // Variable to track drawing mode
-        private Point lastPoint;
+        private bool _isDrawing = false; // Variable to track drawing mode
+        private Point _lastPoint;
         // Delete
-        private bool isErasing = false;
+        private bool _isErasing = false;
         //PictureBox1
-        private Point startPoint;
-        private Rectangle cropArea;
-        private bool isDragging = false;
-        private bool showGrid2 = false;
+        private Point _startPoint;
+        private Rectangle _cropArea;
+        private bool _isDragging = false;
+        private bool _showGrid2;
         //private Rectangle selectedRectangle; // The selected range.
-        private List<Point> points = new List<Point>();
+        private List<Point> _points = new List<Point>();
 
         public TextureCutter()
         {
@@ -50,14 +50,14 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 
             labelImageSize.Text = "";
 
-            checkBoxChange.CheckedChanged += checkBoxChange_CheckedChanged;
+            checkBoxChange.CheckedChanged += CheckBoxChange_CheckedChanged;
 
             // Set the KeyPreview property of the form to true.
             this.KeyPreview = true;
             // Add a keyboard event handler to the form.
             this.KeyDown += Form1_KeyDown;
             //zoom
-            pictureBox1.MouseWheel += pictureBox1_MouseWheel;
+            pictureBox1.MouseWheel += PictureBox1_MouseWheel;
             // Set the initial value of the TrackBar control to the center
             trackBarTolerance.Value = trackBarTolerance.Maximum / 2;
             // Update the label with the current value of the TrackBar control
@@ -72,10 +72,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             LabelWhiteBalance.Text = $"change: {TrackbarWhiteBalance.Value}%";
 
             // ParticleGrey 
-            textBoxColorToAdress.TextChanged += (s, e) => checkBoxParticelGreyHue_CheckedChanged(s, e);
-            textBoxColorToAdress.TextChanged += (s, e) => checkBoxParticelGreyHueShadow_CheckedChanged(s, e);
+            textBoxColorToAdress.TextChanged += (s, e) => CheckBoxParticelGreyHue_CheckedChanged(s, e);
+            textBoxColorToAdress.TextChanged += (s, e) => CheckBoxParticelGreyHueShadow_CheckedChanged(s, e);
         }
-        private void buttonLoadImage_Click(object sender, EventArgs e)
+        private void ButtonLoadImage_Click(object sender, EventArgs e)
         {
             System.Windows.Forms.OpenFileDialog openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             openFileDialog1.Filter = "image files|*.bmp;*.png;*.jpeg;*.jpg;*.tiff;*.gif|All files|*.*";
@@ -91,16 +91,16 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 
                 // Create a new PictureBox and add it to the Panel.
                 pictureBox1 = new PictureBox();
-                pictureBox1.Location = originalImageLocation;
+                pictureBox1.Location = _originalImageLocation;
                 pictureBox1.SizeMode = PictureBoxSizeMode.AutoSize;
                 pictureBox1.Image = Image.FromFile(selectedImagePath);
                 panel1.Controls.Add(pictureBox1);
 
                 // Update originalImage to point to the new image
-                originalImage = new Bitmap(pictureBox1.Image);
+                _originalImage = new Bitmap(pictureBox1.Image);
 
                 // Save the original size of the image
-                originalSize = pictureBox1.Image.Size;
+                _originalSize = pictureBox1.Image.Size;
 
                 // Resetting the scroll position.
                 panel1.AutoScrollPosition = new Point(0, 0);
@@ -116,7 +116,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 }
             }
         }
-        private void buttonTextureCutter_Click(object sender, EventArgs e)
+        private void ButtonTextureCutter_Click(object sender, EventArgs e)
         {
             // Check if an image has been loaded into the picture box
             if (pictureBox1.Image == null)
@@ -250,7 +250,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             }
         }
 
-        private void buttonOpenTempGrafic_Click(object sender, EventArgs e)
+        private void ButtonOpenTempGrafic_Click(object sender, EventArgs e)
         {
             // Get the path to the program directory
             string programDirectory = Application.StartupPath;
@@ -429,7 +429,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             image.SetPixel(x, y, newPixel);
         }
 
-        private void buttonsharp_Click(object sender, EventArgs e)
+        private void Buttonsharp_Click(object sender, EventArgs e)
         {
             // Check if an image is loaded in the PictureBox.
             if (pictureBox1.Image == null)
@@ -473,13 +473,13 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             labelSharpnessValue.Text = $"Level of spiciness: {trackBarSharpness.Value}%";
         }
 
-        private void trackBarSharpness_Scroll(object sender, EventArgs e)
+        private void TrackBarSharpness_Scroll(object sender, EventArgs e)
         {
             // Update the label when the user moves the slider.
             UpdateSharpnessLabel();
         }
         #endregion
-        private void buttonSaveImage_Click(object sender, EventArgs e)
+        private void ButtonSaveImage_Click(object sender, EventArgs e)
         {
             if (pictureBox1.Image == null)
             {
@@ -551,10 +551,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             return result;
         }
         #region Optimize
-        private void buttonOptimize_Click(object sender, EventArgs e)
+        private void ButtonOptimize_Click(object sender, EventArgs e)
         {
             // Save the current image as the new original image
-            originalImage = new Bitmap(pictureBox1.Image);
+            _originalImage = new Bitmap(pictureBox1.Image);
 
             // Set the TrackBar control back to the center
             trackBarTolerance.Value = trackBarTolerance.Maximum / 2;
@@ -566,7 +566,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             trackBarTolerance.Focus();
         }
 
-        private void trackBarTolerance_Scroll(object sender, EventArgs e)
+        private void TrackBarTolerance_Scroll(object sender, EventArgs e)
         {
             // Update the label with the current value of the TrackBar control
             labelTolerance.Text = trackBarTolerance.Value.ToString();
@@ -579,7 +579,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             }
 
             // Optimize the image using the tolerance from the TrackBar
-            Bitmap optimizedImage = OptimizeImage(originalImage, trackBarTolerance.Value);
+            Bitmap optimizedImage = OptimizeImage(_originalImage, trackBarTolerance.Value);
 
             // If the RGB checkbox is checked, optimize the colors
             if (checkBoxRGB.Checked)
@@ -770,7 +770,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         }
         #endregion
         #region WhiteBalace
-        private void buttonWhite_Click(object sender, EventArgs e)
+        private void ButtonWhite_Click(object sender, EventArgs e)
         {
             // Check if an image is loaded in the PictureBox
             if (pictureBox1.Image == null)
@@ -906,7 +906,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         }
         #endregion
         #region Rotate 45 Degress
-        private void button45Degrees_Click(object sender, EventArgs e)
+        private void Button45Degrees_Click(object sender, EventArgs e)
         {
             // Check if an image is loaded in the PictureBox
             if (pictureBox1.Image == null)
@@ -916,13 +916,13 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             }
 
             // Resize the image to 33x33 pixels if it hasn't been resized yet
-            if (resizedImage == null)
+            if (_resizedImage == null)
             {
-                resizedImage = new Bitmap(pictureBox1.Image, new Size(33, 33));
+                _resizedImage = new Bitmap(pictureBox1.Image, new Size(33, 33));
             }
 
             // Rotate the resized image by -45 degrees
-            Image rotatedImage = RotateImageByAngle(resizedImage, -45);
+            Image rotatedImage = RotateImageByAngle(_resizedImage, -45);
 
             // Create a new Bitmap with size 44x44 and black background
             Bitmap newBackground = new Bitmap(44, 44);
@@ -942,10 +942,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             pictureBox1.Image = newBackground;
 
             // Free the previous image (optional to free up memory)
-            resizedImage.Dispose();
+            _resizedImage.Dispose();
 
             // Reset the resized image as a new image has now been loaded
-            resizedImage = null;
+            _resizedImage = null;
 
             // Refresh the display
             Size imageSize = newBackground.Size;
@@ -976,7 +976,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         #endregion
         #region Copy to Clipbord Image        
 
-        private void copyClipboardToolStripMenuItem_Click(object sender, EventArgs e)
+        private void CopyClipboardToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (pictureBox1.Image != null)
             {
@@ -1028,7 +1028,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 Clipboard.SetImage(image);
             }
         }
-        private void importClipbordToolStripMenuItem_Click(object sender, EventArgs e)
+        private void ImportClipbordToolStripMenuItem_Click(object sender, EventArgs e)
         {
             // Check if there is an image on the clipboard
             if (Clipboard.ContainsImage())
@@ -1044,8 +1044,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 pictureBox1.SizeMode = PictureBoxSizeMode.Normal; // This line has been added
 
                 // Save the original image and its size
-                originalImage = new Bitmap(pictureBox1.Image);
-                originalSize = pictureBox1.Image.Size;
+                _originalImage = new Bitmap(pictureBox1.Image);
+                _originalSize = pictureBox1.Image.Size;
 
                 // Set the text of the label to the size of the image
                 labelImageSize.Text = "Image Size: " + image.Width + " x " + image.Height;
@@ -1108,7 +1108,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 
         #region Textbox Color
 
-        private void textBoxColorAdress_TextChanged(object sender, EventArgs e)
+        private void TextBoxColorAdress_TextChanged(object sender, EventArgs e)
         {
             // Verify that the text you entered is a valid color value
             if (textBoxColorAdress.Text.Length == 7 && !IsValidColor(textBoxColorAdress.Text))
@@ -1139,7 +1139,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             }
         }
 
-        private void checkBoxToTextboxColor_CheckedChanged(object sender, EventArgs e)
+        private void CheckBoxToTextboxColor_CheckedChanged(object sender, EventArgs e)
         {
             // Wenn die Checkbox aktiviert ist, kopieren Sie den Text aus textBoxColorAdress in textBoxColorToAdress
             if (checkBoxToTextboxColor.Checked)
@@ -1148,7 +1148,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             }
         }
 
-        private void textBoxColorToAdress_TextChanged(object sender, EventArgs e)
+        private void TextBoxColorToAdress_TextChanged(object sender, EventArgs e)
         {
             // Verify that the text you entered is a valid color value
             if (textBoxColorToAdress.Text.Length == 7 && !IsValidColor(textBoxColorToAdress.Text))
@@ -1164,7 +1164,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             }
         }
 
-        private void textBoxColorErase_TextChanged(object sender, EventArgs e)
+        private void TextBoxColorErase_TextChanged(object sender, EventArgs e)
         {
             // Verify that the text you entered is a valid color value
             if (textBoxColorErase.Text.Length == 7 && !IsValidColor(textBoxColorErase.Text))
@@ -1208,7 +1208,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         #endregion
 
         #region Checkbox
-        private void checkBoxChange_CheckedChanged(object sender, EventArgs e)
+        private void CheckBoxChange_CheckedChanged(object sender, EventArgs e)
         {
             // Check if the checkBoxChange is checked
             if (checkBoxChange.Checked)
@@ -1217,7 +1217,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 textBoxColorToAdress.Text = comboBoxColorValue.Text;
             }
         }
-        private void comboBoxColorValue_SelectedIndexChanged(object sender, EventArgs e)
+        private void ComboBoxColorValue_SelectedIndexChanged(object sender, EventArgs e)
         {
             // Check if the checkBoxChange is checked
             if (checkBoxChange.Checked)
@@ -1236,7 +1236,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         #endregion
 
         #region To Update
-        private void btToUpdate_Click(object sender, EventArgs e)
+        private void BtToUpdate_Click(object sender, EventArgs e)
         {
             if (pictureBox1.Image != null)
             {
@@ -1299,7 +1299,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 pictureBox1.Image = image;
 
                 // Update the originalImage object
-                originalImage = new Bitmap(image);
+                _originalImage = new Bitmap(image);
             }
         }
         #endregion
@@ -1311,21 +1311,21 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             if (e.Control && e.KeyCode == Keys.X)
             {
                 // Invoke the copyClipboardToolStripMenuItem_Click method.
-                copyClipboardToolStripMenuItem_Click(sender, e);
+                CopyClipboardToolStripMenuItem_Click(sender, e);
             }
             if (e.Control && e.KeyCode == Keys.V)
             {
                 // Invoke the importClipbordToolStripMenuItem_Click method.
-                importClipbordToolStripMenuItem_Click(sender, e);
+                ImportClipbordToolStripMenuItem_Click(sender, e);
             }
         }
         #endregion
 
         #region Pipette
-        private void pictureBox1_MouseClick(object sender, MouseEventArgs e)
+        private void PictureBox1_MouseClick(object sender, MouseEventArgs e)
         {
             // Check if the dropper mode is activated.
-            if (isPickingColor)
+            if (_isPickingColor)
             {
                 // Check if there is an image in pictureBox1.
                 if (pictureBox1.Image != null)
@@ -1352,14 +1352,14 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 }
 
                 // Disable eyedropper mode
-                isPickingColor = false;
+                _isPickingColor = false;
             }
         }
 
-        private void btPickColor_Click(object sender, EventArgs e)
+        private void BtPickColor_Click(object sender, EventArgs e)
         {
             // Activate eyedropper mode
-            isPickingColor = true;
+            _isPickingColor = true;
         }
         #endregion
         #region Mirror
@@ -1389,22 +1389,22 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 
             // If the new size is less than half of the original size or greater than the size of the PictureBox,
             // adjust it to be within these bounds
-            newWidth = Math.Max(Math.Min(newWidth, panel1.Width), originalImage.Width / 2);
-            newHeight = Math.Max(Math.Min(newHeight, panel1.Height), originalImage.Height / 2);
+            newWidth = Math.Max(Math.Min(newWidth, panel1.Width), _originalImage.Width / 2);
+            newHeight = Math.Max(Math.Min(newHeight, panel1.Height), _originalImage.Height / 2);
 
             // Calculate the zoom percentage
-            double zoomPercentage = (double)newWidth / originalImage.Width * 100;
+            double zoomPercentage = (double)newWidth / _originalImage.Width * 100;
 
             // If the zoom percentage is close to 100%, restore the original image
             if (zoomPercentage >= 98.8 && zoomPercentage <= 102.7)
             {
-                pictureBox1.Image = new Bitmap(originalImage);
+                pictureBox1.Image = new Bitmap(_originalImage);
                 zoomLabel.Text = "Original size reached";
                 return;
             }
 
             // Create a new Bitmap object with the new size
-            Bitmap newImage = new Bitmap(originalImage, new Size(newWidth, newHeight));
+            Bitmap newImage = new Bitmap(_originalImage, new Size(newWidth, newHeight));
 
             // Dispose of the old image to free up memory
             pictureBox1.Image.Dispose();
@@ -1415,7 +1415,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // Update the zoom label
             zoomLabel.Text = $"Zoom: {Math.Round(zoomPercentage, 1)}%";
         }
-        private void zoomInButton_Click(object sender, EventArgs e)
+        private void ZoomInButton_Click(object sender, EventArgs e)
         {
             // Check that the Image object is not null
             if (pictureBox1.Image != null)
@@ -1424,17 +1424,17 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 ZoomImage(10);
             }
         }
-        private void zoomOutButton_Click(object sender, EventArgs e)
+        private void ZoomOutButton_Click(object sender, EventArgs e)
         {
             // Check that the Image object is not null and the new size is greater than half of the original size
-            if (pictureBox1.Image != null && pictureBox1.Image.Width > originalImage.Width / 2 && pictureBox1.Image.Height > originalImage.Height / 2)
+            if (pictureBox1.Image != null && pictureBox1.Image.Width > _originalImage.Width / 2 && pictureBox1.Image.Height > _originalImage.Height / 2)
             {
                 // Shrink
                 ZoomImage(-10);
             }
         }
 
-        private void pictureBox1_MouseWheel(object sender, MouseEventArgs e)
+        private void PictureBox1_MouseWheel(object sender, MouseEventArgs e)
         {
             // Check whether the mouse wheel has been rotated up or down
             /*if (e.Delta > 0)
@@ -1456,23 +1456,23 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 }
             }*/
         }
-        private void resetButton_Click(object sender, EventArgs e)
+        private void ResetButton_Click(object sender, EventArgs e)
         {
             // Resize the image in the PictureBox to its original size
-            pictureBox1.Image = new Bitmap(originalImage, originalSize);
+            pictureBox1.Image = new Bitmap(_originalImage, _originalSize);
         }
         #endregion
 
         #region Color Dialog
-        private void selectColorButton_Click(object sender, EventArgs e)
+        private void SelectColorButton_Click(object sender, EventArgs e)
         {
             // Create a new ColorDialog object
             ColorDialog colorDialog = new ColorDialog();
 
             // Restore the custom colors, if any
-            if (customColors != null)
+            if (_customColors != null)
             {
-                colorDialog.CustomColors = customColors;
+                colorDialog.CustomColors = _customColors;
             }
 
             // Display the ColorDialog and verify that the user clicked OK
@@ -1485,19 +1485,19 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 textBoxColorToAdress.Text = colorCode;
 
                 // Save the custom colors
-                customColors = colorDialog.CustomColors;
+                _customColors = colorDialog.CustomColors;
             }
         }
 
-        private void selectColorButton2_Click(object sender, EventArgs e)
+        private void SelectColorButton2_Click(object sender, EventArgs e)
         {
             // Create a new ColorDialog object
             ColorDialog colorDialog = new ColorDialog();
 
             // Restore the custom colors, if any
-            if (customColors != null)
+            if (_customColors != null)
             {
-                colorDialog.CustomColors = customColors;
+                colorDialog.CustomColors = _customColors;
             }
 
             // Display the ColorDialog and verify that the user clicked OK
@@ -1510,13 +1510,13 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 textBoxColorToAdress2.Text = colorCode;
 
                 // Save the custom colors
-                customColors = colorDialog.CustomColors;
+                _customColors = colorDialog.CustomColors;
             }
         }
         #endregion
         #region Coordinates of the mouse cursor.        
 
-        private void pictureBox1_MouseMove(object sender, MouseEventArgs e)
+        private void PictureBox1_MouseMove(object sender, MouseEventArgs e)
         {
             if (pictureBox1.Image != null)
             {
@@ -1525,7 +1525,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 // int y = e.Y * pictureBox1.Image.Height / pictureBox1.Height;
 
                 // Adjust the mouse coordinates for the zoom factor
-                int zoomFactor = (int)Math.Pow(2, zoomCounter);
+                int zoomFactor = (int)Math.Pow(2, _zoomCounter);
                 int x = (e.X * pictureBox1.Image.Width / pictureBox1.Width) / zoomFactor;
                 int y = (e.Y * pictureBox1.Image.Height / pictureBox1.Height) / zoomFactor;
 
@@ -1570,7 +1570,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             }
 
             // Check if erasing mode is enabled and if left mouse button is pressed
-            if (isErasing && e.Button == MouseButtons.Left)
+            if (_isErasing && e.Button == MouseButtons.Left)
             {
                 // Check if pictureBox1.Image is not null
                 if (pictureBox1.Image != null)
@@ -1589,7 +1589,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                     pictureBox1.Image = image;
                 }
             }
-            else if (isDrawing && e.Button == MouseButtons.Left)
+            else if (_isDrawing && e.Button == MouseButtons.Left)
             {
                 // Check if pictureBox1.Image is not null
                 if (pictureBox1.Image != null)
@@ -1615,8 +1615,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                             Pen pen = new Pen(penColor);
 
                             // Adjust the mouse coordinates for the zoom factor
-                            int zoomFactor = (int)Math.Pow(2, zoomCounter);
-                            Point adjustedLastPoint = new Point(lastPoint.X / zoomFactor, lastPoint.Y / zoomFactor);
+                            int zoomFactor = (int)Math.Pow(2, _zoomCounter);
+                            Point adjustedLastPoint = new Point(_lastPoint.X / zoomFactor, _lastPoint.Y / zoomFactor);
                             Point adjustedCurrentPoint = new Point(e.X / zoomFactor, e.Y / zoomFactor);
 
                             // Draw a line from the adjusted last position to the adjusted current position
@@ -1645,38 +1645,38 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                     pictureBox1.Image = image;
 
                     // Set the last point to the current position
-                    lastPoint = e.Location;
+                    _lastPoint = e.Location;
                 }
             }
 
             else if (checkBoxFreehand.Checked && e.Button == MouseButtons.Left)
             {
-                points.Add(e.Location);
+                _points.Add(e.Location);
                 pictureBox1.Invalidate();
             }
-            else if (e.Button == MouseButtons.Left && isDragging)
+            else if (e.Button == MouseButtons.Left && _isDragging)
             {
-                int width = e.X - startPoint.X;
-                int height = e.Y - startPoint.Y;
-                cropArea = new Rectangle(startPoint.X, startPoint.Y, width, height);
+                int width = e.X - _startPoint.X;
+                int height = e.Y - _startPoint.Y;
+                _cropArea = new Rectangle(_startPoint.X, _startPoint.Y, width, height);
                 pictureBox1.Invalidate();
             }
             else if (e.Button == MouseButtons.None)
             {
                 // Set the last point to the current position
-                lastPoint = e.Location;
+                _lastPoint = e.Location;
             }
 
             if (pictureBox1.Image != null && checkBoxLines.Checked && e.Button == MouseButtons.Left)
             {
-                points.Add(e.Location);
+                _points.Add(e.Location);
                 pictureBox1.Invalidate();
             }
         }
         #endregion
 
         #region indexed colors
-        private void convertToIndexedButton_Click(object sender, EventArgs e)
+        private void ConvertToIndexedButton_Click(object sender, EventArgs e)
         {
             // Check if there is an image on the clipboard
             if (Clipboard.ContainsImage())
@@ -1693,56 +1693,56 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             }
         }
 
-        private ToolTip toolTip = new ToolTip();
-        private void drawButton_Click(object sender, EventArgs e)
+        private ToolTip _toolTip = new ToolTip();
+        private void DrawButton_Click(object sender, EventArgs e)
         {
-            if (isDrawing)
+            if (_isDrawing)
             {
                 // Switch off drawing mode
-                isDrawing = false;
-                drawButton.FlatAppearance.MouseDownBackColor = Color.FromName("Control"); // Reset the button color
-                toolTip.SetToolTip(drawButton, "Draw mode is deactivated");
+                _isDrawing = false;
+                DrawButton.FlatAppearance.MouseDownBackColor = Color.FromName("Control"); // Reset the button color
+                _toolTip.SetToolTip(DrawButton, "Draw mode is deactivated");
             }
             else
             {
                 // Switch to drawing mode
-                isDrawing = true;
+                _isDrawing = true;
 
                 // Disable delete mode
-                isErasing = false;
+                _isErasing = false;
 
-                drawButton.FlatAppearance.MouseDownBackColor = Color.Red;
-                toolTip.SetToolTip(drawButton, "Draw mode is activated");
+                DrawButton.FlatAppearance.MouseDownBackColor = Color.Red;
+                _toolTip.SetToolTip(DrawButton, "Draw mode is activated");
             }
         }
-        private void pictureBox1_MouseDown(object sender, MouseEventArgs e)
+        private void PictureBox1_MouseDown(object sender, MouseEventArgs e)
         {
             // Check whether drawing mode is activated
-            if (isDrawing)
+            if (_isDrawing)
             {
                 // Set the last point to the current mouse position
-                lastPoint = e.Location;
+                _lastPoint = e.Location;
             }
         }
-        private void eraseButton_Click(object sender, EventArgs e)
+        private void EraseButton_Click(object sender, EventArgs e)
         {
-            if (isErasing)
+            if (_isErasing)
             {
                 // Switch off erase mode
-                isErasing = false;
-                eraseButton.FlatAppearance.MouseDownBackColor = Color.FromName("Control"); // Reset the button color
-                toolTip.SetToolTip(eraseButton, "Erase mode is deactivated");
+                _isErasing = false;
+                EraseButton.FlatAppearance.MouseDownBackColor = Color.FromName("Control"); // Reset the button color
+                _toolTip.SetToolTip(EraseButton, "Erase mode is deactivated");
             }
             else
             {
                 // Enter erase mode
-                isErasing = true;
+                _isErasing = true;
 
                 // Disable drawing mode
-                isDrawing = false;
+                _isDrawing = false;
 
-                eraseButton.FlatAppearance.MouseDownBackColor = Color.Red;
-                toolTip.SetToolTip(eraseButton, "Erase mode is activated");
+                EraseButton.FlatAppearance.MouseDownBackColor = Color.Red;
+                _toolTip.SetToolTip(EraseButton, "Erase mode is activated");
             }
         }
         #endregion
@@ -1778,14 +1778,14 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         #endregion
 
         #region Color Evaluate
-        private Form colorForm = null;
-        private Label mostCommonColorLabel = null;
+        private Form _colorForm = null;
+        private Label _mostCommonColorLabel = null;
 
-        private void btEvaluateColor_Click(object sender, EventArgs e)
+        private void BtEvaluateColor_Click(object sender, EventArgs e)
         {
-            if (colorForm != null && !colorForm.IsDisposed)
+            if (_colorForm != null && !_colorForm.IsDisposed)
             {
-                colorForm.Close();
+                _colorForm.Close();
             }
 
             if (pictureBox1.Image != null)
@@ -1811,18 +1811,18 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 }
                 var sortedColors = from pair in colors orderby pair.Value descending select pair;
                 int totalPixels = image.Width * image.Height;
-                colorForm = new Form();
-                colorForm.Text = "Evaluate Color";
+                _colorForm = new Form();
+                _colorForm.Text = "Evaluate Color";
 
-                colorForm.ShowIcon = false;
+                _colorForm.ShowIcon = false;
 
-                mostCommonColorLabel = new Label();
-                mostCommonColorLabel.Dock = DockStyle.Top;
+                _mostCommonColorLabel = new Label();
+                _mostCommonColorLabel.Dock = DockStyle.Top;
 
                 Button refreshButton = new Button();
                 refreshButton.Text = "Refresh";
                 refreshButton.Dock = DockStyle.Top;
-                refreshButton.Click += btEvaluateColor_Click;
+                refreshButton.Click += BtEvaluateColor_Click;
 
                 TreeView treeView = new TreeView();
                 treeView.Dock = DockStyle.Fill;
@@ -1875,28 +1875,28 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 
                     if (count == 0)
                     {
-                        mostCommonColorLabel.Text = "Most common color: " + pair.Key;
+                        _mostCommonColorLabel.Text = "Most common color: " + pair.Key;
                     }
 
                     count++;
                 }
 
-                colorForm.Controls.Add(treeView);
-                colorForm.Controls.Add(refreshButton);
-                colorForm.Controls.Add(mostCommonColorLabel);
+                _colorForm.Controls.Add(treeView);
+                _colorForm.Controls.Add(refreshButton);
+                _colorForm.Controls.Add(_mostCommonColorLabel);
 
-                colorForm.Show();
+                _colorForm.Show();
             }
         }
         #endregion
         #region Color List
         // Global variable to store the form
-        Form colorListForm = null;
+        Form _colorListForm = null;
 
-        private void btcolorlistimage_Click(object sender, EventArgs e)
+        private void Btcolorlistimage_Click(object sender, EventArgs e)
         {
             // Check if the form is already open
-            if (colorListForm != null)
+            if (_colorListForm != null)
             {
                 // The form is already open, so just return
                 return;
@@ -1906,19 +1906,19 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             if (pictureBox1.Image != null)
             {
                 // Create a new shape
-                colorListForm = new Form();
-                colorListForm.Text = "Color List";
-                colorListForm.FormClosed += (s, e) => { colorListForm = null; };
+                _colorListForm = new Form();
+                _colorListForm.Text = "Color List";
+                _colorListForm.FormClosed += (s, e) => { _colorListForm = null; };
 
                 // Create a TreeView and add it to the shape
                 TreeView treeView = new TreeView();
                 treeView.Dock = DockStyle.Fill;
-                colorListForm.Controls.Add(treeView);
+                _colorListForm.Controls.Add(treeView);
 
                 // Create a label to display the total number of colors
                 Label label = new Label();
                 label.Dock = DockStyle.Top;
-                colorListForm.Controls.Add(label);
+                _colorListForm.Controls.Add(label);
 
                 // Function to load the colors from the image
                 Action loadColors = () =>
@@ -2004,16 +2004,16 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                     }
                 };
 
-                colorListForm.Controls.Add(buttonSendToTextBoxColorAdress);
+                _colorListForm.Controls.Add(buttonSendToTextBoxColorAdress);
 
                 // Create a btToUpdate button and add it to the shape
                 Button buttonBtToUpdate = new Button();
                 buttonBtToUpdate.Text = "Update";
                 buttonBtToUpdate.Dock = DockStyle.Bottom;
 
-                buttonBtToUpdate.Click += btToUpdate_Click;
+                buttonBtToUpdate.Click += BtToUpdate_Click;
 
-                colorListForm.Controls.Add(buttonBtToUpdate);
+                _colorListForm.Controls.Add(buttonBtToUpdate);
 
                 // Create an update button and add it to the shape
                 Button buttonRefresh = new Button();
@@ -2025,42 +2025,42 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                     loadColors();
                 };
 
-                colorListForm.Controls.Add(buttonRefresh);
+                _colorListForm.Controls.Add(buttonRefresh);
 
                 // Display the shape
-                colorListForm.Show();
+                _colorListForm.Show();
             }
         }
         #endregion
         #region Modus
 
-        private Form colorChangeForm; // Instance variable for the shape
-        private void btModusColorChange_Click(object sender, EventArgs e)
+        private Form _colorChangeForm; // Instance variable for the shape
+        private void BtModusColorChange_Click(object sender, EventArgs e)
         {
             // Check if the shape already exists
-            if (colorChangeForm != null && colorChangeForm.Visible)
+            if (_colorChangeForm != null && _colorChangeForm.Visible)
             {
                 // The shape is already open, so bring it to the foreground
-                colorChangeForm.BringToFront();
+                _colorChangeForm.BringToFront();
             }
             else
             {
                 // The form does not exist or has been closed, so create a new one
-                colorChangeForm = new Form();
+                _colorChangeForm = new Form();
 
-                colorChangeForm.Size = new Size(250, 400); // Default is 800 pixels wide and 600 pixels high
+                _colorChangeForm.Size = new Size(250, 400); // Default is 800 pixels wide and 600 pixels high
 
                 // Set the title of the form
-                colorChangeForm.Text = "Modus";
+                _colorChangeForm.Text = "Modus";
 
                 // Remove the icon
-                colorChangeForm.ShowIcon = false;
+                _colorChangeForm.ShowIcon = false;
 
                 // Add the FormClosing event handler
-                colorChangeForm.FormClosing += (s, e) =>
+                _colorChangeForm.FormClosing += (s, e) =>
                 {
                     e.Cancel = true;  // Prevents the mold from closing
-                    colorChangeForm.Hide();  // Instead, hides the shape
+                    _colorChangeForm.Hide();  // Instead, hides the shape
                 };
 
                 // Create the checkbox
@@ -2138,9 +2138,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 // Add an event handler to change brightness in real time
                 brightnessTrackBar.Scroll += (s, e) =>
                 {
-                    if (originalImage != null)
+                    if (_originalImage != null)
                     {
-                        Bitmap image = new Bitmap(originalImage);
+                        Bitmap image = new Bitmap(_originalImage);
 
                         // Change the brightness of the image
                         float brightness = brightnessTrackBar.Value * 0.01f; //Increases the gradual brightness factor example 0.001f
@@ -2174,9 +2174,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 // Add an event handler to change the contrast in real time
                 contrastTrackBar.Scroll += (s, e) =>
                 {
-                    if (originalImage != null)
+                    if (_originalImage != null)
                     {
-                        Bitmap image = new Bitmap(originalImage);
+                        Bitmap image = new Bitmap(_originalImage);
                         // Change the contrast of the image
                         float contrast = (contrastTrackBar.Value + 100) * 0.01f;
                         float[][] ptsArray ={
@@ -2218,9 +2218,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 // Add an event handler to change gamma correction in real time
                 gammaTrackBar.Scroll += (s, e) =>
                 {
-                    if (originalImage != null)
+                    if (_originalImage != null)
                     {
-                        Bitmap image = new Bitmap(originalImage);
+                        Bitmap image = new Bitmap(_originalImage);
                         // Change the gamma of the image
                         float gamma = 1.0f + gammaTrackBar.Value * 0.01f; // Adjust gamma value
                         Bitmap adjustedImage = AdjustGamma(image, gamma);
@@ -2233,9 +2233,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 // Add an event handler to change saturation in real time
                 saturationTrackBar.Scroll += (s, e) =>
                 {
-                    if (originalImage != null)
+                    if (_originalImage != null)
                     {
-                        Bitmap image = new Bitmap(originalImage);
+                        Bitmap image = new Bitmap(_originalImage);
                         // Change the saturation of the image
                         float saturation = 1.0f + saturationTrackBar.Value * 0.01f; // Adjust saturation value
                         for (int y = 0; y < image.Height; y++)
@@ -2268,9 +2268,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 // Add an event handler to change the color in real time
                 colorTrackBar.Scroll += (sender, eventArgs) =>
                 {
-                    if (originalImage != null)
+                    if (_originalImage != null)
                     {
-                        Bitmap image = new Bitmap(originalImage);
+                        Bitmap image = new Bitmap(_originalImage);
                         // Change the color of the image
                         float hueChange = colorTrackBar.Value / 360.0f; // Adjust hue change value
 
@@ -2390,9 +2390,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                         // Change the brightness change function
                         brightnessTrackBar.Scroll += (senderBrightness, e) =>
                         {
-                            if (originalImage != null)
+                            if (_originalImage != null)
                             {
-                                Bitmap image = new Bitmap(originalImage);
+                                Bitmap image = new Bitmap(_originalImage);
                                 float brightness = brightnessTrackBar.Value * 0.01f; // Scale the value so that it is between -1 and 1
                                 for (int y = 0; y < image.Height; y++)
                                 {
@@ -2419,9 +2419,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                         // Change the contrast change function
                         contrastTrackBar.Scroll += (s, e) =>
                         {
-                            if (originalImage != null)
+                            if (_originalImage != null)
                             {
-                                Bitmap image = new Bitmap(originalImage);
+                                Bitmap image = new Bitmap(_originalImage);
                                 float contrast = (contrastTrackBar.Value + 100) * 0.01f;
                                 for (int y = 0; y < image.Height; y++)
                                 {
@@ -2448,9 +2448,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                         // Change the gamma correction function
                         gammaTrackBar.Scroll += (s, e) =>
                         {
-                            if (originalImage != null)
+                            if (_originalImage != null)
                             {
-                                Bitmap image = new Bitmap(originalImage);
+                                Bitmap image = new Bitmap(_originalImage);
                                 float gamma = 1.0f + gammaTrackBar.Value * 0.01f;
                                 for (int y = 0; y < image.Height; y++)
                                 {
@@ -2477,9 +2477,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                         // Change the saturation change function
                         saturationTrackBar.Scroll += (s, e) =>
                         {
-                            if (originalImage != null)
+                            if (_originalImage != null)
                             {
-                                Bitmap image = new Bitmap(originalImage);
+                                Bitmap image = new Bitmap(_originalImage);
                                 float saturation = 1.0f + saturationTrackBar.Value * 0.01f;
                                 for (int y = 0; y < image.Height; y++)
                                 {
@@ -2584,9 +2584,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                         // Change color change function
                         colorTrackBar.Scroll += (s, e) =>
                         {
-                            if (originalImage != null)
+                            if (_originalImage != null)
                             {
-                                Bitmap image = new Bitmap(originalImage);
+                                Bitmap image = new Bitmap(_originalImage);
                                 float hueChange = colorTrackBar.Value / 360.0f;
                                 for (int y = 0; y < image.Height; y++)
                                 {
@@ -2674,36 +2674,36 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 };
 
                 // Add the checkbox and button to the shape
-                colorChangeForm.Controls.Add(grayscaleCheckbox);
-                colorChangeForm.Controls.Add(brightnessTrackBar);
-                colorChangeForm.Controls.Add(brightnessLabel);
-                colorChangeForm.Controls.Add(applyButton);
+                _colorChangeForm.Controls.Add(grayscaleCheckbox);
+                _colorChangeForm.Controls.Add(brightnessTrackBar);
+                _colorChangeForm.Controls.Add(brightnessLabel);
+                _colorChangeForm.Controls.Add(applyButton);
                 // Add the new TrackBar and Label to the shape
-                colorChangeForm.Controls.Add(contrastTrackBar);
-                colorChangeForm.Controls.Add(contrastLabel);
+                _colorChangeForm.Controls.Add(contrastTrackBar);
+                _colorChangeForm.Controls.Add(contrastLabel);
                 // Add the new TrackBar and Label to the shape
-                colorChangeForm.Controls.Add(gammaTrackBar);
-                colorChangeForm.Controls.Add(gammaLabel);
+                _colorChangeForm.Controls.Add(gammaTrackBar);
+                _colorChangeForm.Controls.Add(gammaLabel);
                 // Add the new TrackBar and Label to the shape
-                colorChangeForm.Controls.Add(saturationTrackBar);
-                colorChangeForm.Controls.Add(saturationLabel);
+                _colorChangeForm.Controls.Add(saturationTrackBar);
+                _colorChangeForm.Controls.Add(saturationLabel);
                 // Add the new TrackBar and Label to the shape
-                colorChangeForm.Controls.Add(colorTrackBar);
-                colorChangeForm.Controls.Add(colorLabel);
+                _colorChangeForm.Controls.Add(colorTrackBar);
+                _colorChangeForm.Controls.Add(colorLabel);
                 // Add the checkbox to the form
-                colorChangeForm.Controls.Add(protectColorsCheckbox);
+                _colorChangeForm.Controls.Add(protectColorsCheckbox);
                 // Add the button to the form
-                colorChangeForm.Controls.Add(resetButton);
+                _colorChangeForm.Controls.Add(resetButton);
                 // Add the label to the shape
-                colorChangeForm.Controls.Add(updateLabel);
+                _colorChangeForm.Controls.Add(updateLabel);
 
                 // Display the shape
-                colorChangeForm.Show();
+                _colorChangeForm.Show();
             }
         }
         #endregion
         #region FillTeture
-        private void fillTextureToolStripMenuItem_Click(object sender, EventArgs e)
+        private void FillTextureToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (pictureBox1.Image == null)
             {
@@ -2711,7 +2711,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 return;
             }
 
-            if ((cropArea.Width <= 0 || cropArea.Height <= 0) && !checkBoxFreehand.Checked)
+            if ((_cropArea.Width <= 0 || _cropArea.Height <= 0) && !checkBoxFreehand.Checked)
             {
                 MessageBox.Show("No area has been selected.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
@@ -2729,8 +2729,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                     using (Graphics g = Graphics.FromImage(imageCopy))
                     {
                         // Adjust cropArea and points based on zoom level
-                        Rectangle adjustedCropArea = new Rectangle(cropArea.X / (int)Math.Pow(2, zoomCounter), cropArea.Y / (int)Math.Pow(2, zoomCounter), cropArea.Width / (int)Math.Pow(2, zoomCounter), cropArea.Height / (int)Math.Pow(2, zoomCounter));
-                        List<Point> adjustedPoints = points.Select(p => new Point(p.X / (int)Math.Pow(2, zoomCounter), p.Y / (int)Math.Pow(2, zoomCounter))).ToList();
+                        Rectangle adjustedCropArea = new Rectangle(_cropArea.X / (int)Math.Pow(2, _zoomCounter), _cropArea.Y / (int)Math.Pow(2, _zoomCounter), _cropArea.Width / (int)Math.Pow(2, _zoomCounter), _cropArea.Height / (int)Math.Pow(2, _zoomCounter));
+                        List<Point> adjustedPoints = _points.Select(p => new Point(p.X / (int)Math.Pow(2, _zoomCounter), p.Y / (int)Math.Pow(2, _zoomCounter))).ToList();
 
                         if (checkBoxCircle.Checked)
                         {
@@ -2839,20 +2839,20 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             }
         }
 
-        private bool shouldDrawRectangle = false; //??        
+        //private bool _shouldDrawRectangle = false; //??        
 
-        private void pictureBox1_MouseDown2(object sender, MouseEventArgs e)
+        private void PictureBox1_MouseDown2(object sender, MouseEventArgs e)
         {
             if (checkBoxFreehand.Checked && e.Button == MouseButtons.Left)
             {
-                points.Clear();
-                points.Add(e.Location);
+                _points.Clear();
+                _points.Add(e.Location);
             }
             else if (e.Button == MouseButtons.Left)
             {
-                startPoint = e.Location;
-                isDragging = true;
-                cropArea = new Rectangle(startPoint.X, startPoint.Y, 0, 0);
+                _startPoint = e.Location;
+                _isDragging = true;
+                _cropArea = new Rectangle(_startPoint.X, _startPoint.Y, 0, 0);
 
                 if (checkBox2Colors.Checked)
                 {
@@ -2884,10 +2884,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                         Pen pen2 = new Pen(penColor2);
 
                         // Draw a pixel at the current position with the first color
-                        g.DrawRectangle(pen1, startPoint.X, startPoint.Y, 1, 1);
+                        g.DrawRectangle(pen1, _startPoint.X, _startPoint.Y, 1, 1);
 
                         // Draw a pixel next to the current position with the second color
-                        g.DrawRectangle(pen2, startPoint.X + 1, startPoint.Y, 1, 1);
+                        g.DrawRectangle(pen2, _startPoint.X + 1, _startPoint.Y, 1, 1);
                     }
 
                     // Update the image in pictureBox1
@@ -2896,7 +2896,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             }
         }
 
-        private void checkBox_CheckedChanged(object sender, EventArgs e)
+        private void CheckBox_CheckedChanged(object sender, EventArgs e)
         {
             // Cast the sender to a CheckBox
             CheckBox checkBox = (CheckBox)sender;
@@ -2916,36 +2916,36 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         #endregion
 
 
-        private void pictureBox1_MouseUp(object sender, MouseEventArgs e)
+        private void PictureBox1_MouseUp(object sender, MouseEventArgs e)
         {
             if (checkBoxFreehand.Checked && e.Button == MouseButtons.Left)
             {
-                points.Add(points[0]);  // Connect the end to the beginning
+                _points.Add(_points[0]);  // Connect the end to the beginning
                 pictureBox1.Invalidate();
             }
-            else if (checkBoxLines.Checked && e.Button == MouseButtons.Left && points.Count > 0)
+            else if (checkBoxLines.Checked && e.Button == MouseButtons.Left && _points.Count > 0)
             {
                 // Don't connect the end to the beginning for lines
                 pictureBox1.Invalidate();
 
                 // Calculate the bounding box of the points
-                int minX = points.Min(p => p.X);
-                int minY = points.Min(p => p.Y);
-                int maxX = points.Max(p => p.X);
-                int maxY = points.Max(p => p.Y);
+                int minX = _points.Min(p => p.X);
+                int minY = _points.Min(p => p.Y);
+                int maxX = _points.Max(p => p.X);
+                int maxY = _points.Max(p => p.Y);
 
                 // Set the cropArea to the bounding box
-                cropArea = new Rectangle(minX, minY, maxX - minX, maxY - minY);
+                _cropArea = new Rectangle(minX, minY, maxX - minX, maxY - minY);
             }
             else if (e.Button == MouseButtons.Left)
             {
-                isDragging = false;
+                _isDragging = false;
             }
         }
 
 
 
-        private void pictureBox1_Paint(object sender, PaintEventArgs e)
+        private void PictureBox1_Paint(object sender, PaintEventArgs e)
         {
             using (Pen pen = new Pen(Color.Yellow))
             {
@@ -2954,33 +2954,33 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 if (checkBoxCircle.Checked)
                 {
                     // Draw a circle
-                    e.Graphics.DrawEllipse(pen, cropArea);
+                    e.Graphics.DrawEllipse(pen, _cropArea);
                 }
                 else
                 {
                     // Draw a rectangle
-                    e.Graphics.DrawRectangle(pen, cropArea);
+                    e.Graphics.DrawRectangle(pen, _cropArea);
                 }
 
-                if (checkBoxFreehand.Checked && points.Count > 1)
+                if (checkBoxFreehand.Checked && _points.Count > 1)
                 {
                     // Draw freehand
-                    e.Graphics.DrawLines(Pens.Yellow, points.ToArray());
+                    e.Graphics.DrawLines(Pens.Yellow, _points.ToArray());
                 }
 
                 if (checkBoxLines.Checked)
                 {
                     // Draw lines from point to point
-                    DrawLines(e.Graphics, points);
+                    DrawLines(e.Graphics, _points);
                 }
             }
         }
         #region Zoom
-        private int zoomCounter = 0;
-        private void zoomButton_Click(object sender, EventArgs e)
+        private int _zoomCounter = 0;
+        private void ZoomButton_Click(object sender, EventArgs e)
         {
             // Check if the zoom has already been applied twice
-            if (zoomCounter >= 2)
+            if (_zoomCounter >= 2)
             {
                 return;
             }
@@ -2993,34 +2993,34 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             pictureBox1.Height *= 2;
 
             // Increase the zoom counter
-            zoomCounter++;
+            _zoomCounter++;
         }
         #endregion
         #region Reset
-        private void resetButton2_Click(object sender, EventArgs e)
+        private void ResetButton2_Click(object sender, EventArgs e)
         {
             // Reset the SizeMode property to Normal
             pictureBox1.SizeMode = PictureBoxSizeMode.Normal;
 
             // Reset the size of the PictureBox to its original size
-            pictureBox1.Width /= (int)Math.Pow(2, zoomCounter);
-            pictureBox1.Height /= (int)Math.Pow(2, zoomCounter);
+            pictureBox1.Width /= (int)Math.Pow(2, _zoomCounter);
+            pictureBox1.Height /= (int)Math.Pow(2, _zoomCounter);
 
             // Reset the zoom counter
-            zoomCounter = 0;
+            _zoomCounter = 0;
 
             // Clear the list of points
-            points.Clear();
+            _points.Clear();
 
             // Reset the cropArea
-            cropArea = new Rectangle();
+            _cropArea = new Rectangle();
 
             // Update the PictureBox to reflect the changes
             pictureBox1.Invalidate();
         }
         #endregion
         # region Normalization
-        private void btColorNormalization_Click(object sender, EventArgs e)
+        private void BtColorNormalization_Click(object sender, EventArgs e)
         {
             if (Clipboard.ContainsImage())
             {
@@ -3069,9 +3069,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         #endregion
 
         #region Color mode
-        private int colorMode = 0;
+        private int _colorMode = 0;
 
-        private void buttonRedToBlueColors_Click(object sender, EventArgs e)
+        private void ButtonRedToBlueColors_Click(object sender, EventArgs e)
         {
             if (Clipboard.ContainsImage())
             {
@@ -3094,7 +3094,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 
                         // Depending on the color mode, perform the color conversion
                         Color newColor;
-                        switch (colorMode)
+                        switch (_colorMode)
                         {
                             case 0: // Red mode (default)
                                 if (pixelColor.R > pixelColor.G && pixelColor.R > pixelColor.B)
@@ -3210,7 +3210,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                                 break;
                             default: // Default to red mode 
                                 newColor = Color.FromArgb(pixelColor.A, pixelColor.B, pixelColor.G, pixelColor.R);
-                                colorMode = 0; //Reset the color mode to the default (red).
+                                _colorMode = 0; //Reset the color mode to the default (red).
                                 break;
                         }
 
@@ -3223,7 +3223,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 pictureBox1.Image = newImage;
 
                 // Increase the color mode for the next click
-                colorMode++;
+                _colorMode++;
             }
             else
             {
@@ -3231,7 +3231,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 MessageBox.Show("The clipboard does not contain an image.");
             }
         }
-        private void btphotorandomColor_Click(object sender, EventArgs e)
+        private void BtphotorandomColor_Click(object sender, EventArgs e)
         {
             Random rand = new Random();
 
@@ -3262,7 +3262,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                         int minColorValue = Math.Min(pixelColor.R, Math.Min(pixelColor.G, pixelColor.B));
                         int midColorValue = pixelColor.R + pixelColor.G + pixelColor.B - maxColorValue - minColorValue;
 
-                        switch (colorMode % 34) // 
+                        switch (_colorMode % 34) // 
                         {
                             case 0:
                                 newColor = Color.FromArgb(pixelColor.A, maxColorValue, midColorValue, minColorValue);
@@ -3382,7 +3382,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 }
 
                 pictureBox1.Image = newImage;
-                colorMode++;
+                _colorMode++;
             }
             else
             {
@@ -3392,9 +3392,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         }
 
         #region PaintBox and Mirror Drawing and Lines
-        private static Form PaintBoxForm = null;
+        private static Form _paintBoxForm = null;
 
-        private void btPaintBox_Click(object sender, EventArgs e)
+        private void BtPaintBox_Click(object sender, EventArgs e)
         {
             bool isLineDrawingActive = false;
             bool isDrawingActive = true;
@@ -3419,13 +3419,13 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             }
 
             // Declare imageRect outside the event
-            if (PaintBoxForm != null)
+            if (_paintBoxForm != null)
             {
                 //MessageBox.Show("The form is already opened.");
                 return;
             }
 
-            PaintBoxForm = new Form
+            _paintBoxForm = new Form
             {
                 Text = "Paint Box",
                 Size = new Size(900, 900),
@@ -3439,7 +3439,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 {
                     IntPtr hIcon = bmp.GetHicon(); // Create an icon handle from the bitmap
                     Icon icon = Icon.FromHandle(hIcon); // Create an Icon from the handle
-                    PaintBoxForm.Icon = icon;
+                    _paintBoxForm.Icon = icon;
                 }
             }
 
@@ -3448,7 +3448,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             pictureBox.Location = new Point(50, 50);
 
             // Add the picture box to the form
-            PaintBoxForm.Controls.Add(pictureBox);
+            _paintBoxForm.Controls.Add(pictureBox);
 
             // Create a color dialog
             ColorDialog colorDialog = new ColorDialog();
@@ -3459,7 +3459,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             pixelLabel.Location = new Point(464, 775); // Position it above the TextBox
 
             // Add the label to the shape
-            PaintBoxForm.Controls.Add(pixelLabel);
+            _paintBoxForm.Controls.Add(pixelLabel);
 
             // Create a button to draw on the picture box
             Button drawButton = new Button();
@@ -3563,13 +3563,13 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             };
 
             // Add the buttons and textbox to the form
-            PaintBoxForm.Controls.Add(drawButton);
-            PaintBoxForm.Controls.Add(pasteButton);
-            PaintBoxForm.Controls.Add(colorButton);
-            PaintBoxForm.Controls.Add(copyButton);
-            PaintBoxForm.Controls.Add(mirrorDrawButton);
-            PaintBoxForm.Controls.Add(penWidthTextBox);
-            PaintBoxForm.Controls.Add(undoButton);
+            _paintBoxForm.Controls.Add(drawButton);
+            _paintBoxForm.Controls.Add(pasteButton);
+            _paintBoxForm.Controls.Add(colorButton);
+            _paintBoxForm.Controls.Add(copyButton);
+            _paintBoxForm.Controls.Add(mirrorDrawButton);
+            _paintBoxForm.Controls.Add(penWidthTextBox);
+            _paintBoxForm.Controls.Add(undoButton);
 
             // Add mouse down event to start drawing
             pictureBox.MouseDown += (s, e) =>
@@ -3673,7 +3673,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             };
 
             // Add keydown event to handle Ctrl+V and Ctrl+X
-            PaintBoxForm.KeyDown += (s, e) =>
+            _paintBoxForm.KeyDown += (s, e) =>
             {
                 if (e.Control && e.KeyCode == Keys.V) // Ctrl+V
                 {
@@ -3742,10 +3742,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             timer.Start();
 
             // Add an event to reset the static variable when the form closes
-            PaintBoxForm.FormClosed += (s, e) => { PaintBoxForm = null; };
+            _paintBoxForm.FormClosed += (s, e) => { _paintBoxForm = null; };
 
             // Show the form
-            PaintBoxForm.Show();
+            _paintBoxForm.Show();
         }
         #endregion
 
@@ -3774,21 +3774,21 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 g.DrawLines(Pens.Yellow, points.ToArray());
             }
         }
-        private Point lastPointLines = Point.Empty; // Add this field to keep track of the last point
+        private Point _lastPointLines = Point.Empty; // Add this field to keep track of the last point
 
-        private void pictureBox1_MouseDownLines(object sender, MouseEventArgs e)
+        private void PictureBox1_MouseDownLines(object sender, MouseEventArgs e)
         {
             if (checkBoxLines.Checked && e.Button == MouseButtons.Left)
             {
-                if (lastPointLines.IsEmpty) // If this is the first point
+                if (_lastPointLines.IsEmpty) // If this is the first point
                 {
-                    points.Clear();
-                    points.Add(e.Location);
-                    lastPointLines = e.Location;
+                    _points.Clear();
+                    _points.Add(e.Location);
+                    _lastPointLines = e.Location;
                 }
                 else // If this is not the first point
                 {
-                    points.Add(e.Location);
+                    _points.Add(e.Location);
                 }
             }
         }
@@ -3797,7 +3797,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 
         #region ParticelGreyHue
 
-        private void checkBoxParticelGreyHue_CheckedChanged(object sender, EventArgs e)
+        private void CheckBoxParticelGreyHue_CheckedChanged(object sender, EventArgs e)
         {
 
             if (checkBoxParticelGreyHue.Checked)
@@ -3834,9 +3834,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // Convert the list to a HashSet for more efficient searching
             HashSet<string> colorsSet = new HashSet<string>(colorsToChange);
 
-            if (originalImage != null && checkBoxParticelGreyHue.Checked)
+            if (_originalImage != null && checkBoxParticelGreyHue.Checked)
             {
-                Bitmap image = new Bitmap(originalImage);
+                Bitmap image = new Bitmap(_originalImage);
 
                 // Convert the text in textBoxColorToAdress to a color value
                 string newColorCode = textBoxColorToAdress.Text;
@@ -3878,7 +3878,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         #endregion
 
         #region ParticelGreyHueShadow
-        private void checkBoxParticelGreyHueShadow_CheckedChanged(object sender, EventArgs e)
+        private void CheckBoxParticelGreyHueShadow_CheckedChanged(object sender, EventArgs e)
         {
             if (checkBoxParticelGreyHueShadow.Checked)
             {
@@ -3914,9 +3914,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // Convert the list to a HashSet for more efficient searching
             HashSet<string> colorsSet = new HashSet<string>(colorsToChange);
 
-            if (originalImage != null && checkBoxParticelGreyHueShadow.Checked)
+            if (_originalImage != null && checkBoxParticelGreyHueShadow.Checked)
             {
-                Bitmap image = new Bitmap(originalImage);
+                Bitmap image = new Bitmap(_originalImage);
 
                 // Convert the text in textBoxColorToAdress to a color value
                 string newColorCode = textBoxColorToAdress.Text;
