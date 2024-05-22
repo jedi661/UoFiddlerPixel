@@ -1,6 +1,6 @@
 ﻿// /***************************************************************************
 //  *
-//  * $Author: Turley
+//  * $Author: Nikodemus
 //  * Advanced Nikodemus
 //  * 
 //  * \"THE BEER-WINE-WARE LICENSE\"
