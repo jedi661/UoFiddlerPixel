@@ -40,32 +40,33 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(AdminToolForm));
-            btnPing = new System.Windows.Forms.Button();
-            label1 = new System.Windows.Forms.Label();
+            BtnPing = new System.Windows.Forms.Button();
+            labelIP = new System.Windows.Forms.Label();
             textBoxAdress = new System.Windows.Forms.TextBox();
             textBoxPingAusgabe = new System.Windows.Forms.TextBox();
             label2 = new System.Windows.Forms.Label();
-            btnTracert = new System.Windows.Forms.Button();
+            BtnTracert = new System.Windows.Forms.Button();
+            BtnCopyIP = new System.Windows.Forms.Button();
             SuspendLayout();
             // 
-            // btnPing
+            // BtnPing
             // 
-            btnPing.Location = new System.Drawing.Point(19, 17);
-            btnPing.Name = "btnPing";
-            btnPing.Size = new System.Drawing.Size(75, 23);
-            btnPing.TabIndex = 0;
-            btnPing.Text = "Ping";
-            btnPing.UseVisualStyleBackColor = true;
-            btnPing.Click += btnPing_Click;
+            BtnPing.Location = new System.Drawing.Point(19, 17);
+            BtnPing.Name = "BtnPing";
+            BtnPing.Size = new System.Drawing.Size(75, 23);
+            BtnPing.TabIndex = 0;
+            BtnPing.Text = "Ping";
+            BtnPing.UseVisualStyleBackColor = true;
+            BtnPing.Click += BtnPing_Click;
             // 
-            // label1
+            // labelIP
             // 
-            label1.AutoSize = true;
-            label1.Location = new System.Drawing.Point(188, 261);
-            label1.Name = "label1";
-            label1.Size = new System.Drawing.Size(38, 15);
-            label1.TabIndex = 1;
-            label1.Text = "label1";
+            labelIP.AutoSize = true;
+            labelIP.Location = new System.Drawing.Point(188, 261);
+            labelIP.Name = "labelIP";
+            labelIP.Size = new System.Drawing.Size(17, 15);
+            labelIP.TabIndex = 1;
+            labelIP.Text = "IP";
             // 
             // textBoxAdress
             // 
@@ -73,7 +74,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             textBoxAdress.Name = "textBoxAdress";
             textBoxAdress.Size = new System.Drawing.Size(100, 23);
             textBoxAdress.TabIndex = 2;
-            textBoxAdress.KeyDown += textBoxAdress_KeyDown;
+            textBoxAdress.KeyDown += TextBoxAdress_KeyDown;
             // 
             // textBoxPingAusgabe
             // 
@@ -93,27 +94,38 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             label2.TabIndex = 4;
             label2.Text = "Last Adress :";
             // 
-            // btnTracert
+            // BtnTracert
             // 
-            btnTracert.Location = new System.Drawing.Point(19, 52);
-            btnTracert.Name = "btnTracert";
-            btnTracert.Size = new System.Drawing.Size(75, 23);
-            btnTracert.TabIndex = 5;
-            btnTracert.Text = "Tracert";
-            btnTracert.UseVisualStyleBackColor = true;
-            btnTracert.Click += btnTracert_Click;
+            BtnTracert.Location = new System.Drawing.Point(19, 52);
+            BtnTracert.Name = "BtnTracert";
+            BtnTracert.Size = new System.Drawing.Size(75, 23);
+            BtnTracert.TabIndex = 5;
+            BtnTracert.Text = "Tracert";
+            BtnTracert.UseVisualStyleBackColor = true;
+            BtnTracert.Click += BtnTracert_Click;
+            // 
+            // BtnCopyIP
+            // 
+            BtnCopyIP.Location = new System.Drawing.Point(12, 257);
+            BtnCopyIP.Name = "BtnCopyIP";
+            BtnCopyIP.Size = new System.Drawing.Size(75, 23);
+            BtnCopyIP.TabIndex = 6;
+            BtnCopyIP.Text = "Clippbord";
+            BtnCopyIP.UseVisualStyleBackColor = true;
+            BtnCopyIP.Click += BtnCopyIP_Click;
             // 
             // AdminToolForm
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             ClientSize = new System.Drawing.Size(384, 285);
-            Controls.Add(btnTracert);
+            Controls.Add(BtnCopyIP);
+            Controls.Add(BtnTracert);
             Controls.Add(label2);
             Controls.Add(textBoxPingAusgabe);
             Controls.Add(textBoxAdress);
-            Controls.Add(label1);
-            Controls.Add(btnPing);
+            Controls.Add(labelIP);
+            Controls.Add(BtnPing);
             DoubleBuffered = true;
             FormBorderStyle = System.Windows.Forms.FormBorderStyle.Fixed3D;
             Icon = (System.Drawing.Icon)resources.GetObject("$this.Icon");
@@ -127,11 +139,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 
         #endregion
 
-        private System.Windows.Forms.Button btnPing;
-        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Button BtnPing;
+        private System.Windows.Forms.Label labelIP;
         private System.Windows.Forms.TextBox textBoxAdress;
         private System.Windows.Forms.TextBox textBoxPingAusgabe;
         private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.Button btnTracert;
+        private System.Windows.Forms.Button BtnTracert;
+        private System.Windows.Forms.Button BtnCopyIP;
     }
 }

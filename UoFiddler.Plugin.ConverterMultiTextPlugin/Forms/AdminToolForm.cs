@@ -1,6 +1,6 @@
 ﻿/***************************************************************************
  *
- * $Author: Turley
+ * $Author: Nikodemus
  * Coder: Nikodemus
  * 
  * "THE BEER-WARE LICENSE"
@@ -18,49 +18,50 @@ using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using System.Threading.Tasks;
 using System.Net.Sockets;
+using System.Linq;
 
 namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 {
     public partial class AdminToolForm : Form
     {
-        private static AdminToolForm instance; // Static variable to store the instance
-        private AdminToolForm adminToolForm;
+        private static AdminToolForm _instance; // Static variable to store the instance
+        private AdminToolForm _adminToolForm;
 
 
         public AdminToolForm()
         {
             // Check whether an instance of the shape is already open
-            if (instance != null && !instance.IsDisposed)
+            if (_instance != null && !_instance.IsDisposed)
             {
                 // An instance is already open, so show the existing instance and close the new instance
-                instance.Focus();
+                _instance.Focus();
                 Close();
                 return;
             }
 
             // No other instance was found, so save this instance
-            instance = this;
+            _instance = this;
 
             InitializeComponent();
 
-            label1.Text = "";
+            labelIP.Text = "";
         }
 
         #region ÖffneAdminToolForm
         public void ÖffneAdminToolForm()
         {
             // Check if the AdminToolForm has already been discarded or is null
-            if (adminToolForm == null || adminToolForm.IsDisposed)
+            if (_adminToolForm == null || _adminToolForm.IsDisposed)
             {
                 // Create a new instance of the AdminToolForm
-                adminToolForm = new AdminToolForm();
+                _adminToolForm = new AdminToolForm();
                 // Show the form
-                adminToolForm.Show();
+                _adminToolForm.Show();
             }
             else
             {
                 // Show the already existing form
-                adminToolForm.Focus();
+                _adminToolForm.Focus();
             }
         }
         #endregion
@@ -69,50 +70,66 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         // Method to get the already opened instance
         public static AdminToolForm GetInstance()
         {
-            if (instance == null || instance.IsDisposed)
+            if (_instance == null || _instance.IsDisposed)
             {
                 // If no instance exists or the instance has been discarded, create a new instance
-                instance = new AdminToolForm();
+                _instance = new AdminToolForm();
             }
 
-            return instance;
+            return _instance;
         }
         #endregion
 
         #region btnPing
-        private void btnPing_Click(object sender, System.EventArgs e)
+        private void BtnPing_Click(object sender, System.EventArgs e)
         {
             string address = textBoxAdress.Text;
+
             // Verify that the address is a valid IP address or domain
-            if (IsValidIPAddress(address) || IsValidDomainName(address))
+            if (!IsValidIPAddress(address) && !IsValidDomainName(address))
             {
-                Ping pingSender = new Ping();
-                for (int i = 0; i < 3; i++)
+                // If the address is invalid, display a message and exit the method
+                MessageBox.Show("The entered address is invalid. Please enter a valid IP address or domain.");
+                return;
+            }
+
+            // Create a new Ping object
+            Ping pingSender = new();
+
+            // Attempt to send three pings to the address
+            for (int i = 0; i < 3; i++)
+            {
+                try
                 {
                     PingReply reply = pingSender.Send(address);
+
                     if (reply.Status == IPStatus.Success)
                     {
-                        textBoxPingAusgabe.AppendText("Antwort von " + reply.Address.ToString() + ": Zeit=" + reply.RoundtripTime.ToString() + "ms\n");
+                        // If the ping is successful, display the reply information
+                        textBoxPingAusgabe.AppendText($"Answer from {reply.Address}: Time={reply.RoundtripTime}ms\n");
                     }
                     else
                     {
-                        textBoxPingAusgabe.AppendText("Fehler: " + reply.Status.ToString() + "\n");
+                        // If the ping fails, display the error status
+                        textBoxPingAusgabe.AppendText($"Error: {reply.Status}\n");
                     }
                 }
-            }
-            else
-            {
-                // If the address is invalid, a message will be displayed
-                MessageBox.Show("The entered address is invalid. Please enter a valid IP address or domain.");
+                catch (PingException ex)
+                {
+                    // If a PingException is thrown, display the exception message
+                    textBoxPingAusgabe.AppendText($"PingException: {ex.Message}\n");
+                }
             }
 
-            label1.Text = address;
+            // Display the address in the label
+            labelIP.Text = address;
         }
+
         #endregion
 
         #region IsValidIPAddress
         // Checks whether the specified string is a valid IP address
-        private bool IsValidIPAddress(string address)
+        private static bool IsValidIPAddress(string address)
         {
             // Check the IPv4 address
             string patternIPv4 = @"^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$";
@@ -122,7 +139,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             }
 
             // Check the IPv6 address
-            string patternIPv6 = @"^(?:[A-F0-9]{1,4}:){7}[A-F0-9]{1,4}$";
+            string patternIPv6 = @"^(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))$";
             if (Regex.IsMatch(address, patternIPv6))
             {
                 return true;
@@ -134,7 +151,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 
         #region IsValidDomainName
         // Checks whether the specified string is a valid domain
-        private bool IsValidDomainName(string address)
+        private static bool IsValidDomainName(string address)
         {
             string pattern = @"^([a-z0-9]+(-[a-z0-9]+)*\.)+[a-z]{2,}$";
             return Regex.IsMatch(address, pattern);
@@ -142,19 +159,19 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         #endregion
 
         #region textBoxAdress_KeyDown
-        private void textBoxAdress_KeyDown(object sender, KeyEventArgs e)
+        private void TextBoxAdress_KeyDown(object sender, KeyEventArgs e)
         {
             // Check if the Enter key was pressed
             if (e.KeyCode == Keys.Enter)
             {
                 // Start ping
-                btnPing_Click(this, EventArgs.Empty);
+                BtnPing_Click(this, EventArgs.Empty);
             }
         }
         #endregion
 
         #region btnTracert
-        private async void btnTracert_Click(object sender, EventArgs e)
+        private async void BtnTracert_Click(object sender, EventArgs e)
         {
             string address = textBoxAdress.Text;
             // Verify that the address is a valid IP address or domain
@@ -169,9 +186,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 // Goal achieved?
                 bool targetReached = false;
                 // Create ping object
-                Ping pingSender = new Ping();
+                Ping pingSender = new();
                 // Create ping options
-                PingOptions pingOptions = new PingOptions(currentHop, true);
+                PingOptions pingOptions = new(currentHop, true);
                 // Create buffer
                 byte[] buffer = new byte[32];
                 // Set timeout
@@ -181,7 +198,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                     // Create IPHostEntry object for the destination address
                     IPHostEntry hostEntry = Dns.GetHostEntry(address);
                     // Set target IP address
-                    IPAddress targetAddress = hostEntry.AddressList[0];
+                    IPAddress targetAddress = hostEntry.AddressList.FirstOrDefault(ip => ip.AddressFamily == AddressFamily.InterNetworkV6) ?? hostEntry.AddressList[0];
                     while (!targetReached && currentHop <= maxHops)
                     {
                         // Send ping
@@ -221,16 +238,15 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 
         #region IsValidIPAddressTracert
         // Checks whether the specified string is a valid IP address
-        private bool IsValidIPAddressTracert(string address)
+        private static bool IsValidIPAddressTracert(string address)
         {
-            IPAddress ipAddress;
-            return IPAddress.TryParse(address, out ipAddress);
+            return IPAddress.TryParse(address, out _);
         }
         #endregion
 
         #region IsValidDomainNameTracert
         // Checks whether the specified string is a valid domain
-        private bool IsValidDomainNameTracert(string address)
+        private static bool IsValidDomainNameTracert(string address)
         {
             return Uri.CheckHostName(address) != UriHostNameType.Unknown;
         }
@@ -238,11 +254,18 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 
         #region btnClose
         // Method of closing the form
-        private void btnClose_Click(object sender, EventArgs e)
+        private void BtnClose_Click(object sender, EventArgs e)
         {
             // Set the instance variable to null to allow the form to be reopened
-            instance = null;
+            _instance = null;
             Close();
+        }
+        #endregion
+
+        #region BtnCopyIP
+        private void BtnCopyIP_Click(object sender, EventArgs e)
+        {
+            Clipboard.SetText(labelIP.Text);
         }
         #endregion
     }
