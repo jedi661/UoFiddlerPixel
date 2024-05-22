@@ -1549,7 +1549,7 @@ namespace UoFiddler.Forms
 
         private LineConverterForm _lineConverterForm;        
 
-        private void convertLineToolStripMenuItem_Click(object sender, EventArgs e)
+        private void ConvertLineToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (_lineConverterForm == null || _lineConverterForm.IsDisposed)
             {

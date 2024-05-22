@@ -141,6 +141,7 @@ namespace UoFiddler.Forms
             Controls.Add(BtnConvert2);
             Controls.Add(BtnConvert);
             Controls.Add(TextBoxInputOutput);
+            FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             Icon = (System.Drawing.Icon)resources.GetObject("$this.Icon");
             Name = "LineConverterForm";
             Text = "Paragraph-to-Line Converter";

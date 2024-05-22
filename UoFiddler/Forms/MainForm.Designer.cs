@@ -1191,7 +1191,7 @@ namespace UoFiddler.Forms
             convertLineToolStripMenuItem.Size = new System.Drawing.Size(141, 22);
             convertLineToolStripMenuItem.Text = "Convert Line";
             convertLineToolStripMenuItem.ToolTipText = "Paragraph-to-Line Converter";
-            convertLineToolStripMenuItem.Click += convertLineToolStripMenuItem_Click;
+            convertLineToolStripMenuItem.Click += ConvertLineToolStripMenuItem_Click;
             // 
             // notPadToolStripMenuItem
             // 
