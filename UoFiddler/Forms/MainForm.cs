@@ -1546,5 +1546,23 @@ namespace UoFiddler.Forms
             Properties.Settings.Default.Save();
         }
         #endregion
+
+        private LineConverterForm _lineConverterForm;        
+
+        private void convertLineToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (_lineConverterForm == null || _lineConverterForm.IsDisposed)
+            {
+                _lineConverterForm = new LineConverterForm()
+                {
+                    TopMost = true
+                };
+                _lineConverterForm.Show();
+            }
+            else
+            {
+                _lineConverterForm.Focus();
+            }
+        }
     }
 }
