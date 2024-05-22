@@ -27,7 +27,8 @@ Version : 4.12.4
 - Add support for import/export AnimData by @KevinEady
 - Add TIFUnicode from (author Prapilk)
 - Add Implemented color selection and saving for form and controls.
-- Add image converter: black and white, different colors, and functions..
+- Add image converter: black and white, different colors, and functions.
+- Add Paragraph-to-Line Converter.
 
 Version : 4.12.3
 - Add Items Image Colors and Update.
