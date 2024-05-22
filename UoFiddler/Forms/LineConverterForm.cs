@@ -24,7 +24,7 @@ namespace UoFiddler.Forms
 {
     public partial class LineConverterForm : Form
     {
-        private string originalText;
+        private string _originalText;
 
         public LineConverterForm()
         {
@@ -34,7 +34,7 @@ namespace UoFiddler.Forms
         #region BtnConvert
         private void BtnConvert_Click(object sender, EventArgs e)
         {
-            originalText = TextBoxInputOutput.Text;
+            _originalText = TextBoxInputOutput.Text;
             TextBoxInputOutput.Text = ConvertParagraphsToLines(TextBoxInputOutput.Text);
             lbCounter.Text = TextBoxInputOutput.Text.Length.ToString();
         }
@@ -43,7 +43,7 @@ namespace UoFiddler.Forms
         #region BtnConvert2
         private void BtnConvert2_Click(object sender, EventArgs e)
         {
-            originalText = TextBoxInputOutput.Text;
+            _originalText = TextBoxInputOutput.Text;
             TextBoxInputOutput.Text = ConvertParagraphsToLines2(TextBoxInputOutput.Text);
             lbCounter.Text = TextBoxInputOutput.Text.Length.ToString();
         }
@@ -116,8 +116,8 @@ namespace UoFiddler.Forms
         private void BtnRestore_Click(object sender, EventArgs e)
         {
             // Stellt den ursprünglichen Text wieder her
-            TextBoxInputOutput.Text = originalText;
-            lbCounter.Text = originalText.Length.ToString();
+            TextBoxInputOutput.Text = _originalText;
+            lbCounter.Text = _originalText.Length.ToString();
         }
         #endregion
     }
