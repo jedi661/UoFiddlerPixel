@@ -54,6 +54,7 @@ namespace UoFiddler.Forms
             BtnConvertWithBlocks = new System.Windows.Forms.Button();
             chkBlockSize4000 = new System.Windows.Forms.CheckBox();
             lblBlockCount = new System.Windows.Forms.Label();
+            LbInfo = new System.Windows.Forms.Label();
             SuspendLayout();
             // 
             // TextBoxInputOutput
@@ -146,7 +147,7 @@ namespace UoFiddler.Forms
             // 
             // BtnConvertParagraphsToLines2WithoutComments
             // 
-            BtnConvertParagraphsToLines2WithoutComments.Location = new System.Drawing.Point(12, 480);
+            BtnConvertParagraphsToLines2WithoutComments.Location = new System.Drawing.Point(12, 497);
             BtnConvertParagraphsToLines2WithoutComments.Name = "BtnConvertParagraphsToLines2WithoutComments";
             BtnConvertParagraphsToLines2WithoutComments.Size = new System.Drawing.Size(75, 23);
             BtnConvertParagraphsToLines2WithoutComments.TabIndex = 9;
@@ -156,7 +157,7 @@ namespace UoFiddler.Forms
             // 
             // BtnConvertWithBlocks
             // 
-            BtnConvertWithBlocks.Location = new System.Drawing.Point(93, 480);
+            BtnConvertWithBlocks.Location = new System.Drawing.Point(93, 497);
             BtnConvertWithBlocks.Name = "BtnConvertWithBlocks";
             BtnConvertWithBlocks.Size = new System.Drawing.Size(150, 23);
             BtnConvertWithBlocks.TabIndex = 10;
@@ -167,7 +168,7 @@ namespace UoFiddler.Forms
             // chkBlockSize4000
             // 
             chkBlockSize4000.AutoSize = true;
-            chkBlockSize4000.Location = new System.Drawing.Point(249, 483);
+            chkBlockSize4000.Location = new System.Drawing.Point(249, 500);
             chkBlockSize4000.Name = "chkBlockSize4000";
             chkBlockSize4000.Size = new System.Drawing.Size(105, 19);
             chkBlockSize4000.TabIndex = 11;
@@ -177,17 +178,28 @@ namespace UoFiddler.Forms
             // lblBlockCount
             // 
             lblBlockCount.AutoSize = true;
-            lblBlockCount.Location = new System.Drawing.Point(425, 484);
+            lblBlockCount.Location = new System.Drawing.Point(425, 501);
             lblBlockCount.Name = "lblBlockCount";
             lblBlockCount.Size = new System.Drawing.Size(72, 15);
             lblBlockCount.TabIndex = 12;
             lblBlockCount.Text = "Block Count";
             // 
+            // LbInfo
+            // 
+            LbInfo.AutoSize = true;
+            LbInfo.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            LbInfo.Location = new System.Drawing.Point(12, 479);
+            LbInfo.Name = "LbInfo";
+            LbInfo.Size = new System.Drawing.Size(155, 15);
+            LbInfo.TabIndex = 13;
+            LbInfo.Text = "Without a comment block:";
+            // 
             // LineConverterForm
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            ClientSize = new System.Drawing.Size(1017, 508);
+            ClientSize = new System.Drawing.Size(1017, 528);
+            Controls.Add(LbInfo);
             Controls.Add(lblBlockCount);
             Controls.Add(chkBlockSize4000);
             Controls.Add(BtnConvertWithBlocks);
@@ -224,5 +236,6 @@ namespace UoFiddler.Forms
         private System.Windows.Forms.Button BtnConvertWithBlocks;
         private System.Windows.Forms.CheckBox chkBlockSize4000;
         private System.Windows.Forms.Label lblBlockCount;
+        private System.Windows.Forms.Label LbInfo;
     }
 }
