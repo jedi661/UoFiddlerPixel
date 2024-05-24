@@ -172,7 +172,13 @@ namespace UoFiddler.Forms
         {
             _originalText = TextBoxInputOutput.Text;
             string convertedText = ConvertParagraphsToLines2WithoutComments(TextBoxInputOutput.Text);
-            int blockSize = chkBlockSize4000.Checked ? 4000 : 8000;
+
+            // Verify that the input to TBBlockCount is a valid number and greater than 500
+            if (!int.TryParse(TBBlockCount.Text, out int blockSize) || blockSize < 500)
+            {
+                // If TBBlockCount does not contain a valid block size, use the checkboxes
+                blockSize = chkBlockSize4000.Checked ? 4000 : 8000;
+            }
 
             StringBuilder sb = new StringBuilder();
             int blockCount = 0;
@@ -210,9 +216,28 @@ namespace UoFiddler.Forms
         #region BtnRestore
         private void BtnRestore_Click(object sender, EventArgs e)
         {
-            // Stellt den ursprünglichen Text wieder her
+            // Restores the original text
             TextBoxInputOutput.Text = _originalText;
             lbCounter.Text = _originalText.Length.ToString();
+        }
+        #endregion
+
+        #region ToolStripTextBoxSearch
+        private void ToolStripTextBoxSearch_TextChanged(object sender, EventArgs e)
+        {
+            // Get the searched text from the ToolStripTextBoxSearch
+            string searchText = ToolStripTextBoxSearch.Text;
+
+            // If the search text is not empty, search and navigate
+            if (!string.IsNullOrEmpty(searchText))
+            {
+                int startIndex = TextBoxInputOutput.Text.IndexOf(searchText, StringComparison.CurrentCultureIgnoreCase);
+                if (startIndex != -1)
+                {
+                    TextBoxInputOutput.Select(startIndex, searchText.Length);
+                    TextBoxInputOutput.ScrollToCaret();
+                }
+            }
         }
         #endregion
     }

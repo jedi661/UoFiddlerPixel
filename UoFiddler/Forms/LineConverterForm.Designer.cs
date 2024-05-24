@@ -40,8 +40,12 @@ namespace UoFiddler.Forms
         /// </summary>
         private void InitializeComponent()
         {
+            components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(LineConverterForm));
             TextBoxInputOutput = new System.Windows.Forms.TextBox();
+            ContextMenuStripCovert = new System.Windows.Forms.ContextMenuStrip(components);
+            searchToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            ToolStripTextBoxSearch = new System.Windows.Forms.ToolStripTextBox();
             BtnConvert = new System.Windows.Forms.Button();
             BtnConvert2 = new System.Windows.Forms.Button();
             lbCounter = new System.Windows.Forms.Label();
@@ -55,10 +59,14 @@ namespace UoFiddler.Forms
             chkBlockSize4000 = new System.Windows.Forms.CheckBox();
             lblBlockCount = new System.Windows.Forms.Label();
             LbInfo = new System.Windows.Forms.Label();
+            TBBlockCount = new System.Windows.Forms.TextBox();
+            lbBlockSize = new System.Windows.Forms.Label();
+            ContextMenuStripCovert.SuspendLayout();
             SuspendLayout();
             // 
             // TextBoxInputOutput
             // 
+            TextBoxInputOutput.ContextMenuStrip = ContextMenuStripCovert;
             TextBoxInputOutput.Location = new System.Drawing.Point(12, 89);
             TextBoxInputOutput.MaxLength = 2000000;
             TextBoxInputOutput.Multiline = true;
@@ -66,6 +74,26 @@ namespace UoFiddler.Forms
             TextBoxInputOutput.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
             TextBoxInputOutput.Size = new System.Drawing.Size(993, 318);
             TextBoxInputOutput.TabIndex = 0;
+            // 
+            // ContextMenuStripCovert
+            // 
+            ContextMenuStripCovert.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { searchToolStripMenuItem });
+            ContextMenuStripCovert.Name = "ContextMenuStripCovert";
+            ContextMenuStripCovert.Size = new System.Drawing.Size(110, 26);
+            // 
+            // searchToolStripMenuItem
+            // 
+            searchToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { ToolStripTextBoxSearch });
+            searchToolStripMenuItem.Image = Properties.Resources.Mirror;
+            searchToolStripMenuItem.Name = "searchToolStripMenuItem";
+            searchToolStripMenuItem.Size = new System.Drawing.Size(109, 22);
+            searchToolStripMenuItem.Text = "Search";
+            // 
+            // ToolStripTextBoxSearch
+            // 
+            ToolStripTextBoxSearch.Name = "ToolStripTextBoxSearch";
+            ToolStripTextBoxSearch.Size = new System.Drawing.Size(100, 23);
+            ToolStripTextBoxSearch.TextChanged += ToolStripTextBoxSearch_TextChanged;
             // 
             // BtnConvert
             // 
@@ -157,7 +185,7 @@ namespace UoFiddler.Forms
             // 
             // BtnConvertWithBlocks
             // 
-            BtnConvertWithBlocks.Location = new System.Drawing.Point(93, 497);
+            BtnConvertWithBlocks.Location = new System.Drawing.Point(89, 497);
             BtnConvertWithBlocks.Name = "BtnConvertWithBlocks";
             BtnConvertWithBlocks.Size = new System.Drawing.Size(150, 23);
             BtnConvertWithBlocks.TabIndex = 10;
@@ -168,7 +196,7 @@ namespace UoFiddler.Forms
             // chkBlockSize4000
             // 
             chkBlockSize4000.AutoSize = true;
-            chkBlockSize4000.Location = new System.Drawing.Point(249, 500);
+            chkBlockSize4000.Location = new System.Drawing.Point(242, 500);
             chkBlockSize4000.Name = "chkBlockSize4000";
             chkBlockSize4000.Size = new System.Drawing.Size(105, 19);
             chkBlockSize4000.TabIndex = 11;
@@ -194,11 +222,30 @@ namespace UoFiddler.Forms
             LbInfo.TabIndex = 13;
             LbInfo.Text = "Without a comment block:";
             // 
+            // TBBlockCount
+            // 
+            TBBlockCount.Location = new System.Drawing.Point(353, 496);
+            TBBlockCount.Name = "TBBlockCount";
+            TBBlockCount.Size = new System.Drawing.Size(66, 23);
+            TBBlockCount.TabIndex = 14;
+            // 
+            // lbBlockSize
+            // 
+            lbBlockSize.AutoSize = true;
+            lbBlockSize.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            lbBlockSize.Location = new System.Drawing.Point(350, 478);
+            lbBlockSize.Name = "lbBlockSize";
+            lbBlockSize.Size = new System.Drawing.Size(107, 15);
+            lbBlockSize.TabIndex = 15;
+            lbBlockSize.Text = "Block Size manual";
+            // 
             // LineConverterForm
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             ClientSize = new System.Drawing.Size(1017, 528);
+            Controls.Add(lbBlockSize);
+            Controls.Add(TBBlockCount);
             Controls.Add(LbInfo);
             Controls.Add(lblBlockCount);
             Controls.Add(chkBlockSize4000);
@@ -217,6 +264,7 @@ namespace UoFiddler.Forms
             Icon = (System.Drawing.Icon)resources.GetObject("$this.Icon");
             Name = "LineConverterForm";
             Text = "Paragraph-to-Line Converter";
+            ContextMenuStripCovert.ResumeLayout(false);
             ResumeLayout(false);
             PerformLayout();
         }
@@ -237,5 +285,10 @@ namespace UoFiddler.Forms
         private System.Windows.Forms.CheckBox chkBlockSize4000;
         private System.Windows.Forms.Label lblBlockCount;
         private System.Windows.Forms.Label LbInfo;
+        private System.Windows.Forms.TextBox TBBlockCount;
+        private System.Windows.Forms.Label lbBlockSize;
+        private System.Windows.Forms.ContextMenuStrip ContextMenuStripCovert;
+        private System.Windows.Forms.ToolStripMenuItem searchToolStripMenuItem;
+        private System.Windows.Forms.ToolStripTextBox ToolStripTextBoxSearch;
     }
 }
