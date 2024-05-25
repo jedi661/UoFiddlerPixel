@@ -44,6 +44,7 @@ namespace UoFiddler.Controls.UserControls
             TreeViewMobs = new System.Windows.Forms.TreeView();
             contextMenuStrip2 = new System.Windows.Forms.ContextMenuStrip(components);
             removeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            animationlistEditToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             FacingBar = new System.Windows.Forms.TrackBar();
             tabControl1 = new System.Windows.Forms.TabControl();
             tabPage1 = new System.Windows.Forms.TabPage();
@@ -86,7 +87,6 @@ namespace UoFiddler.Controls.UserControls
             BaseGraphicLabel = new System.Windows.Forms.ToolStripStatusLabel();
             HueLabel = new System.Windows.Forms.ToolStripStatusLabel();
             toolStripStatusAminLabel = new System.Windows.Forms.ToolStripStatusLabel();
-            animationlistEditToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
             splitContainer1.Panel1.SuspendLayout();
             splitContainer1.Panel2.SuspendLayout();
@@ -153,12 +153,21 @@ namespace UoFiddler.Controls.UserControls
             removeToolStripMenuItem.ToolTipText = "Remove Animate";
             removeToolStripMenuItem.Click += OnClickRemove;
             // 
+            // animationlistEditToolStripMenuItem
+            // 
+            animationlistEditToolStripMenuItem.Image = Properties.Resources.Edit;
+            animationlistEditToolStripMenuItem.Name = "animationlistEditToolStripMenuItem";
+            animationlistEditToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            animationlistEditToolStripMenuItem.Text = "Animationlist Edit";
+            animationlistEditToolStripMenuItem.ToolTipText = "Open Animationlist Edit Form";
+            animationlistEditToolStripMenuItem.Click += animationlistEditToolStripMenuItem_Click;
+            // 
             // FacingBar
             // 
             FacingBar.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
             FacingBar.AutoSize = false;
             FacingBar.LargeChange = 1;
-            FacingBar.Location = new System.Drawing.Point(374, 363);
+            FacingBar.Location = new System.Drawing.Point(373, 363);
             FacingBar.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             FacingBar.Maximum = 7;
             FacingBar.Name = "FacingBar";
@@ -528,13 +537,6 @@ namespace UoFiddler.Controls.UserControls
             toolStripStatusAminLabel.Size = new System.Drawing.Size(39, 17);
             toolStripStatusAminLabel.Text = "Amin:";
             toolStripStatusAminLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // animationlistEditToolStripMenuItem
-            // 
-            animationlistEditToolStripMenuItem.Name = "animationlistEditToolStripMenuItem";
-            animationlistEditToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            animationlistEditToolStripMenuItem.Text = "Animationlist Edit";
-            animationlistEditToolStripMenuItem.Click += animationlistEditToolStripMenuItem_Click;
             // 
             // AnimationListControl
             // 
