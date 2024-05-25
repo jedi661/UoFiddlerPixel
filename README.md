@@ -30,6 +30,7 @@ Version : 4.12.4
 - Add image converter: black and white, different colors, and functions.
 - Add Paragraph-to-Line Converter.
 - Add XmlException if XML is missing Load Animationlist.
+- Add Animationlist Editor.
 
 Version : 4.12.3
 - Add Items Image Colors and Update.

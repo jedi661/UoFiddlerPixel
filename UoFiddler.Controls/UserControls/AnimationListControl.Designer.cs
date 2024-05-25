@@ -86,6 +86,7 @@ namespace UoFiddler.Controls.UserControls
             BaseGraphicLabel = new System.Windows.Forms.ToolStripStatusLabel();
             HueLabel = new System.Windows.Forms.ToolStripStatusLabel();
             toolStripStatusAminLabel = new System.Windows.Forms.ToolStripStatusLabel();
+            animationlistEditToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
             splitContainer1.Panel1.SuspendLayout();
             splitContainer1.Panel2.SuspendLayout();
@@ -139,15 +140,15 @@ namespace UoFiddler.Controls.UserControls
             // 
             // contextMenuStrip2
             // 
-            contextMenuStrip2.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { removeToolStripMenuItem });
+            contextMenuStrip2.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { removeToolStripMenuItem, animationlistEditToolStripMenuItem });
             contextMenuStrip2.Name = "contextMenuStrip2";
-            contextMenuStrip2.Size = new System.Drawing.Size(118, 26);
+            contextMenuStrip2.Size = new System.Drawing.Size(181, 70);
             // 
             // removeToolStripMenuItem
             // 
             removeToolStripMenuItem.Image = Properties.Resources.Remove;
             removeToolStripMenuItem.Name = "removeToolStripMenuItem";
-            removeToolStripMenuItem.Size = new System.Drawing.Size(117, 22);
+            removeToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             removeToolStripMenuItem.Text = "Remove";
             removeToolStripMenuItem.ToolTipText = "Remove Animate";
             removeToolStripMenuItem.Click += OnClickRemove;
@@ -157,7 +158,7 @@ namespace UoFiddler.Controls.UserControls
             FacingBar.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
             FacingBar.AutoSize = false;
             FacingBar.LargeChange = 1;
-            FacingBar.Location = new System.Drawing.Point(375, 363);
+            FacingBar.Location = new System.Drawing.Point(374, 363);
             FacingBar.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             FacingBar.Maximum = 7;
             FacingBar.Name = "FacingBar";
@@ -308,7 +309,7 @@ namespace UoFiddler.Controls.UserControls
             // 
             listView.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             listView.Dock = System.Windows.Forms.DockStyle.Fill;
-            listView.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            listView.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F);
             listView.Location = new System.Drawing.Point(4, 3);
             listView.Margin = new System.Windows.Forms.Padding(0);
             listView.MultiSelect = false;
@@ -528,6 +529,13 @@ namespace UoFiddler.Controls.UserControls
             toolStripStatusAminLabel.Text = "Amin:";
             toolStripStatusAminLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
+            // animationlistEditToolStripMenuItem
+            // 
+            animationlistEditToolStripMenuItem.Name = "animationlistEditToolStripMenuItem";
+            animationlistEditToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            animationlistEditToolStripMenuItem.Text = "Animationlist Edit";
+            animationlistEditToolStripMenuItem.Click += animationlistEditToolStripMenuItem_Click;
+            // 
             // AnimationListControl
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -604,5 +612,6 @@ namespace UoFiddler.Controls.UserControls
         private System.Windows.Forms.ToolStripMenuItem rewriteXml2ToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem tryToFindNewGraphicsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem animationEditToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem animationlistEditToolStripMenuItem;
     }
 }
