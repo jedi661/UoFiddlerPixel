@@ -584,7 +584,15 @@ namespace UoFiddler.Controls.UserControls
                 TreeViewMobs.Nodes.Clear();
 
                 XmlDocument dom = new XmlDocument();
-                dom.Load(fileName);
+                try
+                {
+                    dom.Load(fileName);
+                }
+                catch (XmlException ex)
+                {                    
+                    MessageBox.Show("There was a problem loading the XML file: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return false;
+                }
 
                 XmlElement xMobs = dom["Graphics"];
                 List<TreeNode> nodes = new List<TreeNode>();
