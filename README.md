@@ -29,6 +29,7 @@ Version : 4.12.4
 - Add Implemented color selection and saving for form and controls.
 - Add image converter: black and white, different colors, and functions.
 - Add Paragraph-to-Line Converter.
+- Add XmlException if XML is missing Load Animationlist.
 
 Version : 4.12.3
 - Add Items Image Colors and Update.
