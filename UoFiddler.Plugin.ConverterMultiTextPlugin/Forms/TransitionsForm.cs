@@ -243,9 +243,23 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         #region trackBarFlou_Scroll
         private void trackBarFlou_Scroll(object sender, EventArgs e)
         {
-            blurValue = (double)trackBarFlou.Value / 10.0 * 2;
-            labelFlouValue.Text = trackBarFlou.Value.ToString();
-            UpdatePreview();
+            // Verify that the value is within the expected range
+            if (trackBarFlou.Value >= trackBarFlou.Minimum && trackBarFlou.Value <= trackBarFlou.Maximum)
+            {
+                blurValue = (double)trackBarFlou.Value / 10.0 * 2;
+                // Show the value as a percentage
+                labelFlouValue.Text = $"{trackBarFlou.Value / (double)trackBarFlou.Maximum * 100}%";
+                // Only call UpdatePreview when the user releases the slider
+                if (!trackBarFlou.Capture)
+                {
+                    UpdatePreview();
+                }
+            }
+            else
+            {
+                //Show error message if value is invalid
+                MessageBox.Show("The value is outside the expected range.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
         #endregion
 

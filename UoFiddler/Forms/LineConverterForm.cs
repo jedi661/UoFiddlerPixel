@@ -24,7 +24,7 @@ namespace UoFiddler.Forms
 {
     public partial class LineConverterForm : Form
     {
-        private string _originalText;        
+        private string _originalText;
 
         public LineConverterForm()
         {
@@ -237,6 +237,34 @@ namespace UoFiddler.Forms
                     TextBoxInputOutput.Select(startIndex, searchText.Length);
                     TextBoxInputOutput.ScrollToCaret();
                 }
+            }
+        }
+        #endregion
+
+        #region BtnBullBlockSize
+        private void BtnBullBlockSize_Click(object sender, EventArgs e)
+        {
+            int blockSize;
+            if (int.TryParse(TBBlockCount.Text, out int inputBlockSize) && inputBlockSize >= 500)
+            {
+                blockSize = inputBlockSize; // Sets the block size to the value in TBBlockCount if it is valid and greater than or equal to 500
+            }
+            else
+            {
+                blockSize = chkBlockSize4000.Checked ? 4000 : 8000; // Sets the block size to 4000 if the checkbox is activated, otherwise to 8000
+            }
+
+            if (TextBoxInputOutput.Text.Length > 0)
+            {
+                int currentBlockSize = Math.Min(blockSize, TextBoxInputOutput.Text.Length); // Takes the smaller characters from 'blockSize' or the remaining length of the text
+
+                string textToTransfer = TextBoxInputOutput.Text.Substring(0, currentBlockSize); // Takes the first 'currentBlockSize' characters from the TextBox
+
+                Clipboard.SetText(textToTransfer); // Copies the text to the clipboard
+
+                TextBoxInputOutput.Text = TextBoxInputOutput.Text.Remove(0, currentBlockSize); // Removes the first 'currentBlockSize' characters from the TextBox
+
+                System.Threading.Thread.Sleep(5000); // Wait 5 seconds
             }
         }
         #endregion

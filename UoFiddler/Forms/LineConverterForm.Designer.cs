@@ -61,6 +61,7 @@ namespace UoFiddler.Forms
             LbInfo = new System.Windows.Forms.Label();
             TBBlockCount = new System.Windows.Forms.TextBox();
             lbBlockSize = new System.Windows.Forms.Label();
+            BtnBullBlockSize = new System.Windows.Forms.Button();
             ContextMenuStripCovert.SuspendLayout();
             SuspendLayout();
             // 
@@ -239,11 +240,22 @@ namespace UoFiddler.Forms
             lbBlockSize.TabIndex = 15;
             lbBlockSize.Text = "Block Size manual";
             // 
+            // BtnBullBlockSize
+            // 
+            BtnBullBlockSize.Location = new System.Drawing.Point(182, 471);
+            BtnBullBlockSize.Name = "BtnBullBlockSize";
+            BtnBullBlockSize.Size = new System.Drawing.Size(156, 23);
+            BtnBullBlockSize.TabIndex = 16;
+            BtnBullBlockSize.Text = "Copy Clipboard Delete";
+            BtnBullBlockSize.UseVisualStyleBackColor = true;
+            BtnBullBlockSize.Click += BtnBullBlockSize_Click;
+            // 
             // LineConverterForm
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             ClientSize = new System.Drawing.Size(1017, 528);
+            Controls.Add(BtnBullBlockSize);
             Controls.Add(lbBlockSize);
             Controls.Add(TBBlockCount);
             Controls.Add(LbInfo);
@@ -290,5 +302,6 @@ namespace UoFiddler.Forms
         private System.Windows.Forms.ContextMenuStrip ContextMenuStripCovert;
         private System.Windows.Forms.ToolStripMenuItem searchToolStripMenuItem;
         private System.Windows.Forms.ToolStripTextBox ToolStripTextBoxSearch;
+        private System.Windows.Forms.Button BtnBullBlockSize;
     }
 }
