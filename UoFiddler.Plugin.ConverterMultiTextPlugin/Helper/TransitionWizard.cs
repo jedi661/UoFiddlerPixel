@@ -1044,18 +1044,18 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Helper
         #region MenuItem8 //Load
         private void MenuItem8_Click(object sender, EventArgs e)
         {
-            // Erstellen Sie ein OpenFileDialog, um dem Benutzer die Auswahl einer Datei zu ermöglichen
+            // Create an OpenFileDialog to allow the user to select a file
             OpenFileDialog openFileDialog = new OpenFileDialog();
             openFileDialog.Filter = "XML files (*.xml)|*.xml";
 
             if (openFileDialog.ShowDialog() == DialogResult.OK)
             {
-                // Laden Sie die ausgewählte XML-Datei
+                // Load the selected XML file
                 string filePath = openFileDialog.FileName;
                 XmlDocument xmlDoc = new XmlDocument();
                 xmlDoc.Load(filePath);
 
-                // Verarbeiten Sie das geladene XML-Dokument
+                // Process the loaded XML document
                 foreach (XmlNode transInfoNode in xmlDoc.SelectNodes("//TransInfo"))
                 {
                     string description = transInfoNode.Attributes["Description"].Value;
@@ -1066,7 +1066,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Helper
                         string tileID = mapTileNode.Attributes["TileID"].Value;
                         string altIDMod = mapTileNode.Attributes["AltIDMod"].Value;
 
-                        // TODO: Verarbeiten Sie die MapTile Daten
+                        // TODO: Process the MapTile data
                     }
 
                     foreach (XmlNode staticTileNode in transInfoNode.SelectNodes("StaticTiles/StaticTile"))
@@ -1074,7 +1074,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Helper
                         string tileID = staticTileNode.Attributes["TileID"].Value;
                         string altIDMod = staticTileNode.Attributes["AltIDMod"].Value;
 
-                        // TODO: Verarbeiten Sie die StaticTile Daten
+                        // TODO: Process the StaticTile data
                     }
                 }
             }
