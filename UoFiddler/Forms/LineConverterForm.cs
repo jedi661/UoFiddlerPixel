@@ -31,6 +31,7 @@ namespace UoFiddler.Forms
         {
             InitializeComponent();
 
+            // Event handler for text changes
             TextBoxInputOutput.TextChanged += TextBoxInputOutput_TextChanged;
         }
 
