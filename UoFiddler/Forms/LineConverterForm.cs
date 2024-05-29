@@ -321,5 +321,90 @@ namespace UoFiddler.Forms
             }
         }
         #endregion
+
+        #region textReplacementToolStripMenuItem        
+        private int currentStartIndex = 0; // Global variable to store the starting index for the next search
+
+        private void textReplacementToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // Check if the text in TextBoxInputOutput is empty
+            if (string.IsNullOrEmpty(TextBoxInputOutput.Text))
+            {
+                MessageBox.Show("Please enter a text.");
+                return;
+            }
+
+            // Create a new shape
+            Form form = new Form();
+            form.Size = new Size(200, 230); // Set the width to 150 and the height to 230
+            form.Text = "Search and Replace"; // Set the title of the form
+            form.FormBorderStyle = FormBorderStyle.FixedSingle; // Set the FormBorderStyle to FixedSingle
+            form.ShowIcon = false; // Hide the icon
+            form.MaximizeBox = false; // Disable maximize
+            form.TopMost = true; // Put the form in the foreground
+
+            // Create the text boxes, buttons and labels
+            TextBox txtSearchText = new TextBox() { Top = 10, Left = 10 };
+            TextBox txtReplaceWith = new TextBox() { Top = 40, Left = 10 };
+            Button btnReplace = new Button() { Text = "Replace", Top = 70, Left = 10 };
+            Button btnReplaceAll = new Button() { Text = "Replace All", Top = 100, Left = 10 };
+            Button btnCancel = new Button() { Text = "Cancel", Top = 130, Left = 10 };
+            Label lblCount = new Label() { Top = 160, Left = 10 }; // Add a label
+
+            // Add the controls to the form
+            form.Controls.Add(txtSearchText);
+            form.Controls.Add(txtReplaceWith);
+            form.Controls.Add(btnReplace);
+            form.Controls.Add(btnReplaceAll);
+            form.Controls.Add(btnCancel);
+            form.Controls.Add(lblCount); // Add the label to the form
+
+            // Add event handlers
+            btnReplace.Click += (s, ea) =>
+            {
+                string searchText = txtSearchText.Text;
+                string replaceWithText = txtReplaceWith.Text;
+
+                if (currentStartIndex < TextBoxInputOutput.Text.Length && currentStartIndex != -1)
+                {
+                    currentStartIndex = TextBoxInputOutput.Text.IndexOf(searchText, currentStartIndex, StringComparison.CurrentCultureIgnoreCase);
+
+                    if (currentStartIndex != -1)
+                    {
+                        TextBoxInputOutput.Select(currentStartIndex, searchText.Length);
+                        TextBoxInputOutput.ScrollToCaret();
+
+                        // Replace the text and go to the next occurrence
+                        TextBoxInputOutput.SelectedText = replaceWithText;
+                        currentStartIndex += replaceWithText.Length;
+                    }
+                }
+
+                lblCount.Text = "Replacements: " + TextBoxInputOutput.Text.Split(new[] { replaceWithText }, StringSplitOptions.None).Length;
+            };
+
+            btnReplaceAll.Click += (s, ea) =>
+            {
+                string searchText = txtSearchText.Text;
+                string replaceWithText = txtReplaceWith.Text;
+
+                // Replace all occurrences of the text
+                TextBoxInputOutput.Text = TextBoxInputOutput.Text.Replace(searchText, replaceWithText);
+
+                // Update the label
+                int count = TextBoxInputOutput.Text.Split(new[] { replaceWithText }, StringSplitOptions.None).Length - 1;
+                lblCount.Text = "Replacements: " + count;
+            };
+
+            btnCancel.Click += (s, ea) =>
+            {
+                // Close the dialog
+                form.Close();
+            };
+
+            // Show the form
+            form.Show(); // Display the form as a non-modal dialog
+        }
+        #endregion
     }
 }
