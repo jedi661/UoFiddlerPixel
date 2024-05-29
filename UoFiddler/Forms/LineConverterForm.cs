@@ -271,10 +271,12 @@ namespace UoFiddler.Forms
         }
         #endregion
 
+        #region TextBoxInputOutput_TextChanged
         private void TextBoxInputOutput_TextChanged(object sender, EventArgs e)
         {
-            // Aktualisiere die Anzahl der Zeichen im Label
+            // Update the number of characters in the label
             LbCharactercounter.Text = TextBoxInputOutput.Text.Length.ToString();
         }
+        #endregion
     }
 }
