@@ -1,4 +1,4 @@
-﻿// /***************************************************************************
+﻿//  ***************************************************************************
 //  *
 //  * $Author: Nikodemus
 //  * Advanced Nikodemus
@@ -8,7 +8,7 @@
 //  * this stuff. If we meet some day, and you think this stuff is worth it,
 //  * you can buy me a beer and Wine in return.
 //  *
-//  ***************************************************************************/
+//  ***************************************************************************
 
 using System;
 using System.Collections.Generic;
@@ -313,7 +313,7 @@ namespace UoFiddler.Forms
         #endregion
 
         #region loadToolStripMenuItem
-        private void loadToolStripMenuItem_Click(object sender, EventArgs e)
+        private void LoadToolStripMenuItem_Click(object sender, EventArgs e)
         {
             using (OpenFileDialog openFileDialog = new OpenFileDialog())
             {
@@ -335,7 +335,7 @@ namespace UoFiddler.Forms
         #endregion
 
         #region saveToolStripMenuItem
-        private void saveToolStripMenuItem_Click(object sender, EventArgs e)
+        private void SaveToolStripMenuItem_Click(object sender, EventArgs e)
         {
             using (SaveFileDialog saveFileDialog = new SaveFileDialog())
             {
@@ -356,9 +356,9 @@ namespace UoFiddler.Forms
         #endregion
 
         #region textReplacementToolStripMenuItem        
-        private int currentStartIndex = 0; // Global variable to store the starting index for the next search
+        private int _currentStartIndex = 0; // Global variable to store the starting index for the next search
 
-        private void textReplacementToolStripMenuItem_Click(object sender, EventArgs e)
+        private void TextReplacementToolStripMenuItem_Click(object sender, EventArgs e)
         {
             // Check if the text in TextBoxInputOutput is empty
             if (string.IsNullOrEmpty(TextBoxInputOutput.Text))
@@ -398,18 +398,18 @@ namespace UoFiddler.Forms
                 string searchText = txtSearchText.Text;
                 string replaceWithText = txtReplaceWith.Text;
 
-                if (currentStartIndex < TextBoxInputOutput.Text.Length && currentStartIndex != -1)
+                if (_currentStartIndex < TextBoxInputOutput.Text.Length && _currentStartIndex != -1)
                 {
-                    currentStartIndex = TextBoxInputOutput.Text.IndexOf(searchText, currentStartIndex, StringComparison.CurrentCultureIgnoreCase);
+                    _currentStartIndex = TextBoxInputOutput.Text.IndexOf(searchText, _currentStartIndex, StringComparison.CurrentCultureIgnoreCase);
 
-                    if (currentStartIndex != -1)
+                    if (_currentStartIndex != -1)
                     {
-                        TextBoxInputOutput.Select(currentStartIndex, searchText.Length);
+                        TextBoxInputOutput.Select(_currentStartIndex, searchText.Length);
                         TextBoxInputOutput.ScrollToCaret();
 
                         // Replace the text and go to the next occurrence
                         TextBoxInputOutput.SelectedText = replaceWithText;
-                        currentStartIndex += replaceWithText.Length;
+                        _currentStartIndex += replaceWithText.Length;
                     }
                 }
 

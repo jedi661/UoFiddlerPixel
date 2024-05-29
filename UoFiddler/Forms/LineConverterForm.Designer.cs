@@ -111,7 +111,7 @@ namespace UoFiddler.Forms
             textReplacementToolStripMenuItem.Name = "textReplacementToolStripMenuItem";
             textReplacementToolStripMenuItem.Size = new System.Drawing.Size(164, 22);
             textReplacementToolStripMenuItem.Text = "Text replacement";
-            textReplacementToolStripMenuItem.Click += textReplacementToolStripMenuItem_Click;
+            textReplacementToolStripMenuItem.Click += TextReplacementToolStripMenuItem_Click;
             // 
             // toolStripSeparator1
             // 
@@ -124,7 +124,7 @@ namespace UoFiddler.Forms
             loadToolStripMenuItem.Name = "loadToolStripMenuItem";
             loadToolStripMenuItem.Size = new System.Drawing.Size(164, 22);
             loadToolStripMenuItem.Text = "Load";
-            loadToolStripMenuItem.Click += loadToolStripMenuItem_Click;
+            loadToolStripMenuItem.Click += LoadToolStripMenuItem_Click;
             // 
             // saveToolStripMenuItem
             // 
@@ -132,7 +132,7 @@ namespace UoFiddler.Forms
             saveToolStripMenuItem.Name = "saveToolStripMenuItem";
             saveToolStripMenuItem.Size = new System.Drawing.Size(164, 22);
             saveToolStripMenuItem.Text = "Save";
-            saveToolStripMenuItem.Click += saveToolStripMenuItem_Click;
+            saveToolStripMenuItem.Click += SaveToolStripMenuItem_Click;
             // 
             // BtnConvert
             // 
