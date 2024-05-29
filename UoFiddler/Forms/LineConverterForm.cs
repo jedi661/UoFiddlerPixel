@@ -278,5 +278,48 @@ namespace UoFiddler.Forms
             LbCharactercounter.Text = TextBoxInputOutput.Text.Length.ToString();
         }
         #endregion
+
+        #region loadToolStripMenuItem
+        private void loadToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            using (OpenFileDialog openFileDialog = new OpenFileDialog())
+            {
+                openFileDialog.InitialDirectory = "c:\\";
+                openFileDialog.Filter = "txt files (*.txt)|*.txt|All files (*.*)|*.*";
+                openFileDialog.FilterIndex = 2;
+                openFileDialog.RestoreDirectory = true;
+
+                if (openFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    // Get the selected file path
+                    string filePath = openFileDialog.FileName;
+
+                    // Load the text from the file into the TextBox
+                    TextBoxInputOutput.Text = System.IO.File.ReadAllText(filePath);
+                }
+            }
+        }
+        #endregion
+
+        #region saveToolStripMenuItem
+        private void saveToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            using (SaveFileDialog saveFileDialog = new SaveFileDialog())
+            {
+                saveFileDialog.Filter = "Text files (*.txt)|*.txt|C# files (*.cs)|*.cs|XML files (*.xml)|*.xml|All files (*.*)|*.*";
+                saveFileDialog.FilterIndex = 4;
+                saveFileDialog.RestoreDirectory = true;
+
+                if (saveFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    // Get the selected file path
+                    string filePath = saveFileDialog.FileName;
+
+                    // Save the text from the TextBox to the file
+                    System.IO.File.WriteAllText(filePath, TextBoxInputOutput.Text);
+                }
+            }
+        }
+        #endregion
     }
 }

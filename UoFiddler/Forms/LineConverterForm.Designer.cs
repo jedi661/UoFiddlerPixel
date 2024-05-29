@@ -46,6 +46,8 @@ namespace UoFiddler.Forms
             ContextMenuStripCovert = new System.Windows.Forms.ContextMenuStrip(components);
             searchToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             ToolStripTextBoxSearch = new System.Windows.Forms.ToolStripTextBox();
+            loadToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            saveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             BtnConvert = new System.Windows.Forms.Button();
             BtnConvert2 = new System.Windows.Forms.Button();
             lbCounter = new System.Windows.Forms.Label();
@@ -81,9 +83,9 @@ namespace UoFiddler.Forms
             // 
             // ContextMenuStripCovert
             // 
-            ContextMenuStripCovert.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { searchToolStripMenuItem });
+            ContextMenuStripCovert.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { searchToolStripMenuItem, loadToolStripMenuItem, saveToolStripMenuItem });
             ContextMenuStripCovert.Name = "ContextMenuStripCovert";
-            ContextMenuStripCovert.Size = new System.Drawing.Size(110, 26);
+            ContextMenuStripCovert.Size = new System.Drawing.Size(110, 70);
             // 
             // searchToolStripMenuItem
             // 
@@ -98,6 +100,22 @@ namespace UoFiddler.Forms
             ToolStripTextBoxSearch.Name = "ToolStripTextBoxSearch";
             ToolStripTextBoxSearch.Size = new System.Drawing.Size(100, 23);
             ToolStripTextBoxSearch.TextChanged += ToolStripTextBoxSearch_TextChanged;
+            // 
+            // loadToolStripMenuItem
+            // 
+            loadToolStripMenuItem.Image = Properties.Resources.Directory;
+            loadToolStripMenuItem.Name = "loadToolStripMenuItem";
+            loadToolStripMenuItem.Size = new System.Drawing.Size(109, 22);
+            loadToolStripMenuItem.Text = "Load";
+            loadToolStripMenuItem.Click += loadToolStripMenuItem_Click;
+            // 
+            // saveToolStripMenuItem
+            // 
+            saveToolStripMenuItem.Image = Properties.Resources.notepad;
+            saveToolStripMenuItem.Name = "saveToolStripMenuItem";
+            saveToolStripMenuItem.Size = new System.Drawing.Size(109, 22);
+            saveToolStripMenuItem.Text = "Save";
+            saveToolStripMenuItem.Click += saveToolStripMenuItem_Click;
             // 
             // BtnConvert
             // 
@@ -329,5 +347,7 @@ namespace UoFiddler.Forms
         private System.Windows.Forms.Button BtnBullBlockSize;
         private System.Windows.Forms.Label LbCharactercounter;
         private System.Windows.Forms.Label LbInfo2;
+        private System.Windows.Forms.ToolStripMenuItem loadToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem saveToolStripMenuItem;
     }
 }
