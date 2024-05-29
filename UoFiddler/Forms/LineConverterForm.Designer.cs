@@ -47,6 +47,7 @@ namespace UoFiddler.Forms
             searchToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             ToolStripTextBoxSearch = new System.Windows.Forms.ToolStripTextBox();
             textReplacementToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             loadToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             saveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             BtnConvert = new System.Windows.Forms.Button();
@@ -67,7 +68,6 @@ namespace UoFiddler.Forms
             BtnBullBlockSize = new System.Windows.Forms.Button();
             LbCharactercounter = new System.Windows.Forms.Label();
             LbInfo2 = new System.Windows.Forms.Label();
-            toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             ContextMenuStripCovert.SuspendLayout();
             SuspendLayout();
             // 
@@ -110,6 +110,11 @@ namespace UoFiddler.Forms
             textReplacementToolStripMenuItem.Size = new System.Drawing.Size(164, 22);
             textReplacementToolStripMenuItem.Text = "Text replacement";
             textReplacementToolStripMenuItem.Click += textReplacementToolStripMenuItem_Click;
+            // 
+            // toolStripSeparator1
+            // 
+            toolStripSeparator1.Name = "toolStripSeparator1";
+            toolStripSeparator1.Size = new System.Drawing.Size(161, 6);
             // 
             // loadToolStripMenuItem
             // 
@@ -299,11 +304,6 @@ namespace UoFiddler.Forms
             LbInfo2.Size = new System.Drawing.Size(115, 15);
             LbInfo2.TabIndex = 18;
             LbInfo2.Text = "Character Counter :";
-            // 
-            // toolStripSeparator1
-            // 
-            toolStripSeparator1.Name = "toolStripSeparator1";
-            toolStripSeparator1.Size = new System.Drawing.Size(161, 6);
             // 
             // LineConverterForm
             // 
