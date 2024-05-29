@@ -17,6 +17,7 @@ using System.Data;
 using System.Drawing;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -64,6 +65,15 @@ namespace UoFiddler.Forms
             TextBoxInputOutput.Text = ConvertParagraphsToLines2WithoutComments(TextBoxInputOutput.Text);
             lbCounter.Text = TextBoxInputOutput.Text.Length.ToString();
         }
+
+        #region BtnNewConversion
+        private void BtnNewConversion_Click(object sender, EventArgs e)
+        {
+            _originalText = TextBoxInputOutput.Text;
+            TextBoxInputOutput.Text = NewConversionMethod(TextBoxInputOutput.Text);
+            lbCounter.Text = TextBoxInputOutput.Text.Length.ToString();
+        }
+        #endregion
 
         #region ConvertParagraphsToLines
         private static string ConvertParagraphsToLines(string input)
@@ -195,6 +205,29 @@ namespace UoFiddler.Forms
             TextBoxInputOutput.Text = sb.ToString();
             lbCounter.Text = TextBoxInputOutput.Text.Length.ToString();
             lblBlockCount.Text = "Block Count: " + blockCount.ToString();
+        }
+        #endregion
+
+        #region NewConversionMethod
+        private static string NewConversionMethod(string input)
+        {
+            // Replace any multiple spaces with single spaces
+            string text = Regex.Replace(input, @"\s+", " ");
+
+            // Add spaces around operators and after commas
+            text = Regex.Replace(text, @"([^\s])([=+\-*/%<>!&|])([^\s])", "$1 $2 $3");
+            text = text.Replace(",", ", ");
+
+            // Insert line breaks after each semicolon, opening and closing braces
+            text = text.Replace(";", ";").Replace("{", "{").Replace("}", "}");
+
+            // Insert line breaks before each double slash (comment).
+            text = text.Replace("//", "//");
+
+            // Remove all line breaks
+            text = text.Replace("\n", "");
+
+            return text;
         }
         #endregion
 
@@ -405,6 +438,6 @@ namespace UoFiddler.Forms
             // Show the form
             form.Show(); // Display the form as a non-modal dialog
         }
-        #endregion
+        #endregion        
     }
 }
