@@ -68,7 +68,6 @@ namespace UoFiddler.Forms
             BtnBullBlockSize = new System.Windows.Forms.Button();
             LbCharactercounter = new System.Windows.Forms.Label();
             LbInfo2 = new System.Windows.Forms.Label();
-            button1 = new System.Windows.Forms.Button();
             BtnNewConversion = new System.Windows.Forms.Button();
             ContextMenuStripCovert.SuspendLayout();
             SuspendLayout();
@@ -307,15 +306,6 @@ namespace UoFiddler.Forms
             LbInfo2.TabIndex = 18;
             LbInfo2.Text = "Character Counter :";
             // 
-            // button1
-            // 
-            button1.Location = new System.Drawing.Point(0, 0);
-            button1.Name = "button1";
-            button1.Size = new System.Drawing.Size(75, 23);
-            button1.TabIndex = 19;
-            button1.Text = "button1";
-            button1.UseVisualStyleBackColor = true;
-            // 
             // BtnNewConversion
             // 
             BtnNewConversion.Location = new System.Drawing.Point(89, 451);
@@ -332,7 +322,6 @@ namespace UoFiddler.Forms
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             ClientSize = new System.Drawing.Size(1017, 528);
             Controls.Add(BtnNewConversion);
-            Controls.Add(button1);
             Controls.Add(LbInfo2);
             Controls.Add(LbCharactercounter);
             Controls.Add(BtnBullBlockSize);
@@ -389,7 +378,6 @@ namespace UoFiddler.Forms
         private System.Windows.Forms.ToolStripMenuItem saveToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem textReplacementToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
-        private System.Windows.Forms.Button button1;
         private System.Windows.Forms.Button BtnNewConversion;
     }
 }
