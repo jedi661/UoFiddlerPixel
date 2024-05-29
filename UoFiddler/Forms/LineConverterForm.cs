@@ -29,6 +29,8 @@ namespace UoFiddler.Forms
         public LineConverterForm()
         {
             InitializeComponent();
+
+            TextBoxInputOutput.TextChanged += TextBoxInputOutput_TextChanged;
         }
 
         #region BtnConvert
@@ -268,5 +270,11 @@ namespace UoFiddler.Forms
             }
         }
         #endregion
+
+        private void TextBoxInputOutput_TextChanged(object sender, EventArgs e)
+        {
+            // Aktualisiere die Anzahl der Zeichen im Label
+            LbCharactercounter.Text = TextBoxInputOutput.Text.Length.ToString();
+        }
     }
 }

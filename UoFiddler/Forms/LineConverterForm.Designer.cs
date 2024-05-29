@@ -62,6 +62,8 @@ namespace UoFiddler.Forms
             TBBlockCount = new System.Windows.Forms.TextBox();
             lbBlockSize = new System.Windows.Forms.Label();
             BtnBullBlockSize = new System.Windows.Forms.Button();
+            LbCharactercounter = new System.Windows.Forms.Label();
+            LbInfo2 = new System.Windows.Forms.Label();
             ContextMenuStripCovert.SuspendLayout();
             SuspendLayout();
             // 
@@ -75,6 +77,7 @@ namespace UoFiddler.Forms
             TextBoxInputOutput.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
             TextBoxInputOutput.Size = new System.Drawing.Size(993, 318);
             TextBoxInputOutput.TabIndex = 0;
+            TextBoxInputOutput.TextChanged += TextBoxInputOutput_TextChanged;
             // 
             // ContextMenuStripCovert
             // 
@@ -250,11 +253,32 @@ namespace UoFiddler.Forms
             BtnBullBlockSize.UseVisualStyleBackColor = true;
             BtnBullBlockSize.Click += BtnBullBlockSize_Click;
             // 
+            // LbCharactercounter
+            // 
+            LbCharactercounter.AutoSize = true;
+            LbCharactercounter.Location = new System.Drawing.Point(936, 426);
+            LbCharactercounter.Name = "LbCharactercounter";
+            LbCharactercounter.Size = new System.Drawing.Size(43, 15);
+            LbCharactercounter.TabIndex = 17;
+            LbCharactercounter.Text = "Count:";
+            // 
+            // LbInfo2
+            // 
+            LbInfo2.AutoSize = true;
+            LbInfo2.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            LbInfo2.Location = new System.Drawing.Point(820, 426);
+            LbInfo2.Name = "LbInfo2";
+            LbInfo2.Size = new System.Drawing.Size(115, 15);
+            LbInfo2.TabIndex = 18;
+            LbInfo2.Text = "Character Counter :";
+            // 
             // LineConverterForm
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             ClientSize = new System.Drawing.Size(1017, 528);
+            Controls.Add(LbInfo2);
+            Controls.Add(LbCharactercounter);
             Controls.Add(BtnBullBlockSize);
             Controls.Add(lbBlockSize);
             Controls.Add(TBBlockCount);
@@ -303,5 +327,7 @@ namespace UoFiddler.Forms
         private System.Windows.Forms.ToolStripMenuItem searchToolStripMenuItem;
         private System.Windows.Forms.ToolStripTextBox ToolStripTextBoxSearch;
         private System.Windows.Forms.Button BtnBullBlockSize;
+        private System.Windows.Forms.Label LbCharactercounter;
+        private System.Windows.Forms.Label LbInfo2;
     }
 }
