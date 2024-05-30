@@ -306,6 +306,5 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             }
         }
         #endregion
-
     }
 }
