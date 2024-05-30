@@ -32,6 +32,7 @@ Version : 4.12.4
 - Add XmlException if XML is missing Load Animationlist.
 - Add Animationlist Editor.
 - Add Main button added for Ultima Online directory.
+- Add Admin a HttpClient CheckInternetConnectionAsync.
 
 Version : 4.12.3
 - Add Items Image Colors and Update.

@@ -19,6 +19,8 @@ using System.Windows.Forms;
 using System.Threading.Tasks;
 using System.Net.Sockets;
 using System.Linq;
+using System.Drawing;
+using System.Net.Http;
 
 namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 {
@@ -45,7 +47,15 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             InitializeComponent();
 
             labelIP.Text = "";
+            this.Load += AdminToolForm_Load;
         }
+
+        #region AdminToolForm_Load
+        private async void AdminToolForm_Load(object sender, EventArgs e)
+        {
+            await CheckInternetConnectionAsync();
+        }
+        #endregion
 
         #region ÖffneAdminToolForm
         public void ÖffneAdminToolForm()
@@ -268,5 +278,34 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             Clipboard.SetText(labelIP.Text);
         }
         #endregion
+
+        #region CheckInternetConnectionAsync
+        private async Task CheckInternetConnectionAsync()
+        {
+            try
+            {
+                using (var client = new HttpClient())
+                {
+                    var response = await client.GetAsync("http://google.com/generate_204");
+                    if (response.IsSuccessStatusCode)
+                    {
+                        LabelInternetStatus.Text = "Internet connected";
+                        LabelInternetStatus.ForeColor = Color.Green;
+                    }
+                    else
+                    {
+                        LabelInternetStatus.Text = "Internet not connected";
+                        LabelInternetStatus.ForeColor = Color.Red;
+                    }
+                }
+            }
+            catch
+            {
+                LabelInternetStatus.Text = "Internet not connected";
+                LabelInternetStatus.ForeColor = Color.Red;
+            }
+        }
+        #endregion
+
     }
 }

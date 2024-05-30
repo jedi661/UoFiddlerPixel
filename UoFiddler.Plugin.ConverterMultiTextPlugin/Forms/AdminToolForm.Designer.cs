@@ -47,6 +47,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             label2 = new System.Windows.Forms.Label();
             BtnTracert = new System.Windows.Forms.Button();
             BtnCopyIP = new System.Windows.Forms.Button();
+            LabelInternetStatus = new System.Windows.Forms.Label();
             SuspendLayout();
             // 
             // BtnPing
@@ -114,11 +115,21 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             BtnCopyIP.UseVisualStyleBackColor = true;
             BtnCopyIP.Click += BtnCopyIP_Click;
             // 
+            // LabelInternetStatus
+            // 
+            LabelInternetStatus.AutoSize = true;
+            LabelInternetStatus.Location = new System.Drawing.Point(216, 21);
+            LabelInternetStatus.Name = "LabelInternetStatus";
+            LabelInternetStatus.Size = new System.Drawing.Size(54, 15);
+            LabelInternetStatus.TabIndex = 7;
+            LabelInternetStatus.Text = "Internet :";
+            // 
             // AdminToolForm
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             ClientSize = new System.Drawing.Size(384, 285);
+            Controls.Add(LabelInternetStatus);
             Controls.Add(BtnCopyIP);
             Controls.Add(BtnTracert);
             Controls.Add(label2);
@@ -146,5 +157,6 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Button BtnTracert;
         private System.Windows.Forms.Button BtnCopyIP;
+        private System.Windows.Forms.Label LabelInternetStatus;
     }
 }
