@@ -50,9 +50,9 @@ namespace UoFiddler.Forms
             ColorBackgroundToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             ResetBackgroundToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             toolStripSeparator5 = new System.Windows.Forms.ToolStripSeparator();
+            ultimaOnlineDirToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             DirectoryToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             TempDirToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            ultimaOnlineDirToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             toolStripSeparator6 = new System.Windows.Forms.ToolStripSeparator();
             NotesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             ScreenshotToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -223,13 +223,13 @@ namespace UoFiddler.Forms
             // 
             contextMenuStripMainForm.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { UnDockToolStripMenuItem, SwitchLogoImageToolStripMenuItem, ColorBackgroundToolStripMenuItem, ResetBackgroundToolStripMenuItem, toolStripSeparator5, ultimaOnlineDirToolStripMenuItem, DirectoryToolStripMenuItem, TempDirToolStripMenuItem, toolStripSeparator6, NotesToolStripMenuItem, ScreenshotToolStripMenuItem });
             contextMenuStripMainForm.Name = "contextMenuStrip1";
-            contextMenuStripMainForm.Size = new System.Drawing.Size(181, 236);
+            contextMenuStripMainForm.Size = new System.Drawing.Size(176, 214);
             // 
             // UnDockToolStripMenuItem
             // 
             UnDockToolStripMenuItem.Image = Properties.Resources.notepad;
             UnDockToolStripMenuItem.Name = "UnDockToolStripMenuItem";
-            UnDockToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            UnDockToolStripMenuItem.Size = new System.Drawing.Size(175, 22);
             UnDockToolStripMenuItem.Text = "UnDock";
             UnDockToolStripMenuItem.Click += OnClickUnDock;
             // 
@@ -238,7 +238,7 @@ namespace UoFiddler.Forms
             SwitchLogoImageToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { toolStripComboBoxImage });
             SwitchLogoImageToolStripMenuItem.Image = Properties.Resources._32x32;
             SwitchLogoImageToolStripMenuItem.Name = "SwitchLogoImageToolStripMenuItem";
-            SwitchLogoImageToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            SwitchLogoImageToolStripMenuItem.Size = new System.Drawing.Size(175, 22);
             SwitchLogoImageToolStripMenuItem.Text = "Switch Logo Image";
             // 
             // toolStripComboBoxImage
@@ -251,7 +251,7 @@ namespace UoFiddler.Forms
             // 
             ColorBackgroundToolStripMenuItem.Image = Properties.Resources.Color;
             ColorBackgroundToolStripMenuItem.Name = "ColorBackgroundToolStripMenuItem";
-            ColorBackgroundToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            ColorBackgroundToolStripMenuItem.Size = new System.Drawing.Size(175, 22);
             ColorBackgroundToolStripMenuItem.Text = "Color Background";
             ColorBackgroundToolStripMenuItem.Click += ColorBackgroundToolStripMenuItem_Click;
             // 
@@ -259,21 +259,29 @@ namespace UoFiddler.Forms
             // 
             ResetBackgroundToolStripMenuItem.Image = Properties.Resources.reset_2_;
             ResetBackgroundToolStripMenuItem.Name = "ResetBackgroundToolStripMenuItem";
-            ResetBackgroundToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            ResetBackgroundToolStripMenuItem.Size = new System.Drawing.Size(175, 22);
             ResetBackgroundToolStripMenuItem.Text = "Reset Background";
             ResetBackgroundToolStripMenuItem.Click += ResetColorToolStripMenuItem_Click;
             // 
             // toolStripSeparator5
             // 
             toolStripSeparator5.Name = "toolStripSeparator5";
-            toolStripSeparator5.Size = new System.Drawing.Size(177, 6);
+            toolStripSeparator5.Size = new System.Drawing.Size(172, 6);
+            // 
+            // ultimaOnlineDirToolStripMenuItem
+            // 
+            ultimaOnlineDirToolStripMenuItem.Image = Properties.Resources.ultima_online;
+            ultimaOnlineDirToolStripMenuItem.Name = "ultimaOnlineDirToolStripMenuItem";
+            ultimaOnlineDirToolStripMenuItem.Size = new System.Drawing.Size(175, 22);
+            ultimaOnlineDirToolStripMenuItem.Text = "Ultima Online Dir";
+            ultimaOnlineDirToolStripMenuItem.Click += ultimaOnlineDirToolStripMenuItem_Click;
             // 
             // DirectoryToolStripMenuItem
             // 
             DirectoryToolStripMenuItem.Image = Properties.Resources.Directory;
             DirectoryToolStripMenuItem.Name = "DirectoryToolStripMenuItem";
-            DirectoryToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            DirectoryToolStripMenuItem.Text = "Open Directory";
+            DirectoryToolStripMenuItem.Size = new System.Drawing.Size(175, 22);
+            DirectoryToolStripMenuItem.Text = "Output Path";
             DirectoryToolStripMenuItem.ToolTipText = "Opens the directory in Explorer that was specified in Options.";
             DirectoryToolStripMenuItem.Click += DirectoryToolStripMenuItem_Click;
             // 
@@ -281,28 +289,20 @@ namespace UoFiddler.Forms
             // 
             TempDirToolStripMenuItem.Image = Properties.Resources.Directory;
             TempDirToolStripMenuItem.Name = "TempDirToolStripMenuItem";
-            TempDirToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            TempDirToolStripMenuItem.Size = new System.Drawing.Size(175, 22);
             TempDirToolStripMenuItem.Text = "Temp Dir";
             TempDirToolStripMenuItem.Click += TempDirToolStripMenuItem_Click;
-            // 
-            // ultimaOnlineDirToolStripMenuItem
-            // 
-            ultimaOnlineDirToolStripMenuItem.Image = Properties.Resources.ultima_online;
-            ultimaOnlineDirToolStripMenuItem.Name = "ultimaOnlineDirToolStripMenuItem";
-            ultimaOnlineDirToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            ultimaOnlineDirToolStripMenuItem.Text = "Ultima Online Dir";
-            ultimaOnlineDirToolStripMenuItem.Click += ultimaOnlineDirToolStripMenuItem_Click;
             // 
             // toolStripSeparator6
             // 
             toolStripSeparator6.Name = "toolStripSeparator6";
-            toolStripSeparator6.Size = new System.Drawing.Size(177, 6);
+            toolStripSeparator6.Size = new System.Drawing.Size(172, 6);
             // 
             // NotesToolStripMenuItem
             // 
             NotesToolStripMenuItem.Image = Properties.Resources.notepad;
             NotesToolStripMenuItem.Name = "NotesToolStripMenuItem";
-            NotesToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            NotesToolStripMenuItem.Size = new System.Drawing.Size(175, 22);
             NotesToolStripMenuItem.Text = "Notes";
             NotesToolStripMenuItem.Click += NotesToolStripMenuItem_Click;
             // 
@@ -310,7 +310,7 @@ namespace UoFiddler.Forms
             // 
             ScreenshotToolStripMenuItem.Image = Properties.Resources.animation_edit_3_;
             ScreenshotToolStripMenuItem.Name = "ScreenshotToolStripMenuItem";
-            ScreenshotToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            ScreenshotToolStripMenuItem.Size = new System.Drawing.Size(175, 22);
             ScreenshotToolStripMenuItem.Text = "Screenshot";
             ScreenshotToolStripMenuItem.ToolTipText = "Takes a screenshot of the application and copies it to clipbord";
             ScreenshotToolStripMenuItem.Click += ScreenshotToolStripMenuItem_Click;
