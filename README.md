@@ -31,6 +31,7 @@ Version : 4.12.4
 - Add Paragraph-to-Line Converter.
 - Add XmlException if XML is missing Load Animationlist.
 - Add Animationlist Editor.
+- Add Main button added for Ultima Online directory.
 
 Version : 4.12.3
 - Add Items Image Colors and Update.

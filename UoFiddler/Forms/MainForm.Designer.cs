@@ -52,6 +52,7 @@ namespace UoFiddler.Forms
             toolStripSeparator5 = new System.Windows.Forms.ToolStripSeparator();
             DirectoryToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             TempDirToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            ultimaOnlineDirToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             toolStripSeparator6 = new System.Windows.Forms.ToolStripSeparator();
             NotesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             ScreenshotToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -159,7 +160,6 @@ namespace UoFiddler.Forms
             toolStripMenuItem2 = new System.Windows.Forms.ToolStripMenuItem();
             toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
             toolStripMenuItemLink3 = new System.Windows.Forms.ToolStripMenuItem();
-            ultimaOnlineDirToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             TabPanel.SuspendLayout();
             contextMenuStripMainForm.SuspendLayout();
             StartTab.SuspendLayout();
@@ -221,7 +221,7 @@ namespace UoFiddler.Forms
             // 
             // contextMenuStripMainForm
             // 
-            contextMenuStripMainForm.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { UnDockToolStripMenuItem, SwitchLogoImageToolStripMenuItem, ColorBackgroundToolStripMenuItem, ResetBackgroundToolStripMenuItem, toolStripSeparator5, DirectoryToolStripMenuItem, TempDirToolStripMenuItem, ultimaOnlineDirToolStripMenuItem, toolStripSeparator6, NotesToolStripMenuItem, ScreenshotToolStripMenuItem });
+            contextMenuStripMainForm.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { UnDockToolStripMenuItem, SwitchLogoImageToolStripMenuItem, ColorBackgroundToolStripMenuItem, ResetBackgroundToolStripMenuItem, toolStripSeparator5, ultimaOnlineDirToolStripMenuItem, DirectoryToolStripMenuItem, TempDirToolStripMenuItem, toolStripSeparator6, NotesToolStripMenuItem, ScreenshotToolStripMenuItem });
             contextMenuStripMainForm.Name = "contextMenuStrip1";
             contextMenuStripMainForm.Size = new System.Drawing.Size(181, 236);
             // 
@@ -284,6 +284,14 @@ namespace UoFiddler.Forms
             TempDirToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             TempDirToolStripMenuItem.Text = "Temp Dir";
             TempDirToolStripMenuItem.Click += TempDirToolStripMenuItem_Click;
+            // 
+            // ultimaOnlineDirToolStripMenuItem
+            // 
+            ultimaOnlineDirToolStripMenuItem.Image = Properties.Resources.ultima_online;
+            ultimaOnlineDirToolStripMenuItem.Name = "ultimaOnlineDirToolStripMenuItem";
+            ultimaOnlineDirToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            ultimaOnlineDirToolStripMenuItem.Text = "Ultima Online Dir";
+            ultimaOnlineDirToolStripMenuItem.Click += ultimaOnlineDirToolStripMenuItem_Click;
             // 
             // toolStripSeparator6
             // 
@@ -1301,13 +1309,6 @@ namespace UoFiddler.Forms
             toolStripMenuItemLink3.Size = new System.Drawing.Size(199, 22);
             toolStripMenuItemLink3.Text = "Servuo.com";
             toolStripMenuItemLink3.Click += ToolStripMenuItemLink3_Click;
-            // 
-            // ultimaOnlineDirToolStripMenuItem
-            // 
-            ultimaOnlineDirToolStripMenuItem.Name = "ultimaOnlineDirToolStripMenuItem";
-            ultimaOnlineDirToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            ultimaOnlineDirToolStripMenuItem.Text = "Ultima Online Dir";
-            ultimaOnlineDirToolStripMenuItem.Click += ultimaOnlineDirToolStripMenuItem_Click;
             // 
             // MainForm
             // 
