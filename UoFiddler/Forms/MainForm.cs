@@ -1547,7 +1547,8 @@ namespace UoFiddler.Forms
         }
         #endregion
 
-        private LineConverterForm _lineConverterForm;        
+        #region ConvertLineToolStripMenuItem
+        private LineConverterForm _lineConverterForm;
 
         private void ConvertLineToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -1564,5 +1565,27 @@ namespace UoFiddler.Forms
                 _lineConverterForm.Focus();
             }
         }
+        #endregion
+
+        #region ultimaOnlineDirToolStripMenuItem
+        private PathSettingsForm pathSettingsForm = new PathSettingsForm(); // Creates an instance of PathSettingsForm for use in this class.
+        private void ultimaOnlineDirToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // Accessing tsTbRootPath from pathSettingsForm
+            string path = pathSettingsForm.tsTbRootPath.Text;
+
+            // Check if the path exists
+            if (Directory.Exists(path))
+            {
+                // Start Windows Explorer with the path
+                System.Diagnostics.Process.Start("explorer.exe", path);
+            }
+            else
+            {
+                // Show an error message if the path does not exist
+                MessageBox.Show("The path does not exist.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+        #endregion
     }
 }

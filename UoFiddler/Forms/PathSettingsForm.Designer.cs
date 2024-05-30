@@ -161,10 +161,10 @@ namespace UoFiddler.Forms
         private System.Windows.Forms.ToolStripButton tsBtnReloadPaths;
         private System.Windows.Forms.ToolStripButton tsBtnSetPathManual;
         private System.Windows.Forms.ToolStrip tsPathSettingsMenu;
-        private System.Windows.Forms.ToolStripTextBox tsTbRootPath;
         private System.Windows.Forms.ContextMenuStrip contextMenuPath;
         private System.Windows.Forms.ToolStripMenuItem newDirAndMulToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem loadSingleMulFileToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem DeleteLineToolStripMenuItem;
+        public System.Windows.Forms.ToolStripTextBox tsTbRootPath;
     }
 }
