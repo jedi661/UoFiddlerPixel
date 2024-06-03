@@ -39,6 +39,7 @@ namespace UoFiddler.Controls.Forms
         /// </summary>
         private void InitializeComponent()
         {
+            components = new System.ComponentModel.Container();
             ButtonSearchNextName = new System.Windows.Forms.Button();
             textBoxGraphic = new System.Windows.Forms.TextBox();
             textBoxItemName = new System.Windows.Forms.TextBox();
@@ -46,7 +47,10 @@ namespace UoFiddler.Controls.Forms
             SearchButtonName = new System.Windows.Forms.Button();
             ListBoxSearch = new System.Windows.Forms.ListBox();
             pictureBoxGraphic = new System.Windows.Forms.PictureBox();
+            contextMenuStripListBox = new System.Windows.Forms.ContextMenuStrip(components);
+            clearToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)pictureBoxGraphic).BeginInit();
+            contextMenuStripListBox.SuspendLayout();
             SuspendLayout();
             // 
             // ButtonSearchNextName
@@ -98,6 +102,7 @@ namespace UoFiddler.Controls.Forms
             // 
             // ListBoxSearch
             // 
+            ListBoxSearch.ContextMenuStrip = contextMenuStripListBox;
             ListBoxSearch.FormattingEnabled = true;
             ListBoxSearch.ItemHeight = 15;
             ListBoxSearch.Location = new System.Drawing.Point(312, 70);
@@ -113,6 +118,20 @@ namespace UoFiddler.Controls.Forms
             pictureBoxGraphic.Size = new System.Drawing.Size(298, 229);
             pictureBoxGraphic.TabIndex = 11;
             pictureBoxGraphic.TabStop = false;
+            // 
+            // contextMenuStripListBox
+            // 
+            contextMenuStripListBox.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { clearToolStripMenuItem });
+            contextMenuStripListBox.Name = "contextMenuStripListBox";
+            contextMenuStripListBox.Size = new System.Drawing.Size(102, 26);
+            // 
+            // clearToolStripMenuItem
+            // 
+            clearToolStripMenuItem.Image = Properties.Resources.Delete04;
+            clearToolStripMenuItem.Name = "clearToolStripMenuItem";
+            clearToolStripMenuItem.Size = new System.Drawing.Size(101, 22);
+            clearToolStripMenuItem.Text = "Clear";
+            clearToolStripMenuItem.Click += clearToolStripMenuItem_Click;
             // 
             // ItemSearchForm
             // 
@@ -134,6 +153,7 @@ namespace UoFiddler.Controls.Forms
             StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             Text = "Item Search";
             ((System.ComponentModel.ISupportInitialize)pictureBoxGraphic).EndInit();
+            contextMenuStripListBox.ResumeLayout(false);
             ResumeLayout(false);
             PerformLayout();
         }
@@ -146,5 +166,7 @@ namespace UoFiddler.Controls.Forms
         private System.Windows.Forms.Button SearchButtonName;
         private System.Windows.Forms.ListBox ListBoxSearch;
         private System.Windows.Forms.PictureBox pictureBoxGraphic;
+        private System.Windows.Forms.ContextMenuStrip contextMenuStripListBox;
+        private System.Windows.Forms.ToolStripMenuItem clearToolStripMenuItem;
     }
 }

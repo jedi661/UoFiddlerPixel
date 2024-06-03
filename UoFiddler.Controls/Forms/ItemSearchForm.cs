@@ -68,7 +68,7 @@ namespace UoFiddler.Controls.Forms
             {
                 try
                 {
-                    int id = GetNextIdByName(textBoxItemName.Text);
+                    int id = GetNextIdByNamePartial(textBoxItemName.Text);
                     AddToListBox(textBoxItemName.Text, id);
                     ShowGraphic(id);
                 }
@@ -80,6 +80,32 @@ namespace UoFiddler.Controls.Forms
             }
 
             ShowNoItemFoundDialog();
+        }
+        #endregion
+
+        #region GetNextIdByNamePartial
+        private int GetNextIdByNamePartial(string partialName)
+        {
+            if (!_nameToIdsMap.ContainsKey(partialName))
+            {
+                _nameToIdsMap[partialName] = new List<int>();
+                _currentIndexMap[partialName] = 0;
+            }
+
+            // Start search from the next index after the current last found index
+            int startIndex = _currentIndexMap[partialName] + 1;
+
+            // Find the next ID for the given partial name
+            for (int id = startIndex; id <= Ultima.Art.GetMaxItemId(); id++)
+            {
+                if (TileData.ItemTable[id].Name.Contains(partialName, StringComparison.OrdinalIgnoreCase))
+                {
+                    _currentIndexMap[partialName] = id;
+                    return id;
+                }
+            }
+
+            throw new ArgumentException($"No more items found with name containing '{partialName}'");
         }
         #endregion
 
@@ -147,7 +173,7 @@ namespace UoFiddler.Controls.Forms
                 if (int.TryParse(idStr, out int id))
                 {
                     ShowGraphic(id);
-                    Search_Graphic(id);
+                    //Search_Graphic(id);
                 }
             }
         }
@@ -228,6 +254,13 @@ namespace UoFiddler.Controls.Forms
             {
                 Close();
             }
+        }
+        #endregion
+
+        #region clearToolStripMenuItem_Click
+        private void clearToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            ListBoxSearch.Items.Clear();
         }
         #endregion
     }
