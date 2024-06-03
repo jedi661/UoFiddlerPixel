@@ -39,100 +39,112 @@ namespace UoFiddler.Controls.Forms
         /// </summary>
         private void InitializeComponent()
         {
-            this.textBoxGraphic = new System.Windows.Forms.TextBox();
-            this.button1 = new System.Windows.Forms.Button();
-            this.textBoxItemName = new System.Windows.Forms.TextBox();
-            this.button2 = new System.Windows.Forms.Button();
-            this.button4 = new System.Windows.Forms.Button();
-            this.SuspendLayout();
+            ButtonSearchNextName = new System.Windows.Forms.Button();
+            textBoxGraphic = new System.Windows.Forms.TextBox();
+            textBoxItemName = new System.Windows.Forms.TextBox();
+            SearchButtonID = new System.Windows.Forms.Button();
+            SearchButtonName = new System.Windows.Forms.Button();
+            ListBoxSearch = new System.Windows.Forms.ListBox();
+            pictureBoxGraphic = new System.Windows.Forms.PictureBox();
+            ((System.ComponentModel.ISupportInitialize)pictureBoxGraphic).BeginInit();
+            SuspendLayout();
+            // 
+            // ButtonSearchNextName
+            // 
+            ButtonSearchNextName.Location = new System.Drawing.Point(392, 12);
+            ButtonSearchNextName.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            ButtonSearchNextName.Name = "ButtonSearchNextName";
+            ButtonSearchNextName.Size = new System.Drawing.Size(88, 52);
+            ButtonSearchNextName.TabIndex = 5;
+            ButtonSearchNextName.Text = "Search Next";
+            ButtonSearchNextName.UseVisualStyleBackColor = true;
+            ButtonSearchNextName.Click += SearchNextName;
             // 
             // textBoxGraphic
             // 
-            this.textBoxGraphic.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.textBoxGraphic.Location = new System.Drawing.Point(21, 14);
-            this.textBoxGraphic.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.textBoxGraphic.Name = "textBoxGraphic";
-            this.textBoxGraphic.Size = new System.Drawing.Size(301, 23);
-            this.textBoxGraphic.TabIndex = 0;
-            this.textBoxGraphic.KeyDown += new System.Windows.Forms.KeyEventHandler(this.OnKeyDownSearch);
-            // 
-            // button1
-            // 
-            this.button1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.button1.AutoSize = true;
-            this.button1.Location = new System.Drawing.Point(118, 45);
-            this.button1.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(122, 27);
-            this.button1.TabIndex = 1;
-            this.button1.Text = "Search ID";
-            this.button1.UseVisualStyleBackColor = true;
-            this.button1.Click += new System.EventHandler(this.Search_Graphic);
+            textBoxGraphic.Location = new System.Drawing.Point(8, 12);
+            textBoxGraphic.Name = "textBoxGraphic";
+            textBoxGraphic.Size = new System.Drawing.Size(298, 23);
+            textBoxGraphic.TabIndex = 6;
+            textBoxGraphic.KeyDown += OnKeyDownSearch;
             // 
             // textBoxItemName
             // 
-            this.textBoxItemName.Location = new System.Drawing.Point(21, 91);
-            this.textBoxItemName.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.textBoxItemName.Name = "textBoxItemName";
-            this.textBoxItemName.Size = new System.Drawing.Size(298, 23);
-            this.textBoxItemName.TabIndex = 2;
-            this.textBoxItemName.KeyDown += new System.Windows.Forms.KeyEventHandler(this.OnKeyDownSearch);
+            textBoxItemName.Location = new System.Drawing.Point(8, 41);
+            textBoxItemName.Name = "textBoxItemName";
+            textBoxItemName.Size = new System.Drawing.Size(298, 23);
+            textBoxItemName.TabIndex = 7;
+            textBoxItemName.KeyDown += OnKeyDownSearch;
             // 
-            // button2
+            // SearchButtonID
             // 
-            this.button2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.button2.AutoSize = true;
-            this.button2.Location = new System.Drawing.Point(63, 121);
-            this.button2.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(111, 27);
-            this.button2.TabIndex = 3;
-            this.button2.Text = "Search Name";
-            this.button2.UseVisualStyleBackColor = true;
-            this.button2.Click += new System.EventHandler(this.Search_ItemName);
+            SearchButtonID.Location = new System.Drawing.Point(312, 12);
+            SearchButtonID.Name = "SearchButtonID";
+            SearchButtonID.Size = new System.Drawing.Size(75, 23);
+            SearchButtonID.TabIndex = 8;
+            SearchButtonID.Text = "Search ID";
+            SearchButtonID.UseVisualStyleBackColor = true;
+            SearchButtonID.Click += Search_Graphic;
             // 
-            // button4
+            // SearchButtonName
             // 
-            this.button4.Location = new System.Drawing.Point(190, 121);
-            this.button4.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.button4.Name = "button4";
-            this.button4.Size = new System.Drawing.Size(88, 27);
-            this.button4.TabIndex = 5;
-            this.button4.Text = "Search Next";
-            this.button4.UseVisualStyleBackColor = true;
-            this.button4.Click += new System.EventHandler(this.SearchNextName);
+            SearchButtonName.Location = new System.Drawing.Point(312, 41);
+            SearchButtonName.Name = "SearchButtonName";
+            SearchButtonName.Size = new System.Drawing.Size(75, 23);
+            SearchButtonName.TabIndex = 9;
+            SearchButtonName.Text = "Name";
+            SearchButtonName.UseVisualStyleBackColor = true;
+            SearchButtonName.Click += Search_ItemName;
+            // 
+            // ListBoxSearch
+            // 
+            ListBoxSearch.FormattingEnabled = true;
+            ListBoxSearch.ItemHeight = 15;
+            ListBoxSearch.Location = new System.Drawing.Point(312, 70);
+            ListBoxSearch.Name = "ListBoxSearch";
+            ListBoxSearch.Size = new System.Drawing.Size(168, 229);
+            ListBoxSearch.TabIndex = 10;
+            ListBoxSearch.SelectedIndexChanged += ListBoxSearch_SelectedIndexChanged;
+            // 
+            // pictureBoxGraphic
+            // 
+            pictureBoxGraphic.Location = new System.Drawing.Point(8, 70);
+            pictureBoxGraphic.Name = "pictureBoxGraphic";
+            pictureBoxGraphic.Size = new System.Drawing.Size(298, 229);
+            pictureBoxGraphic.TabIndex = 11;
+            pictureBoxGraphic.TabStop = false;
             // 
             // ItemSearchForm
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(344, 161);
-            this.Controls.Add(this.button4);
-            this.Controls.Add(this.button2);
-            this.Controls.Add(this.textBoxItemName);
-            this.Controls.Add(this.button1);
-            this.Controls.Add(this.textBoxGraphic);
-            this.DoubleBuffered = true;
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow;
-            this.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.MaximizeBox = false;
-            this.Name = "ItemSearchForm";
-            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
-            this.Text = "Item Search";
-            this.ResumeLayout(false);
-            this.PerformLayout();
-
+            AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
+            AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            ClientSize = new System.Drawing.Size(485, 306);
+            Controls.Add(pictureBoxGraphic);
+            Controls.Add(ListBoxSearch);
+            Controls.Add(SearchButtonName);
+            Controls.Add(SearchButtonID);
+            Controls.Add(textBoxItemName);
+            Controls.Add(textBoxGraphic);
+            Controls.Add(ButtonSearchNextName);
+            DoubleBuffered = true;
+            FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow;
+            Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            MaximizeBox = false;
+            Name = "ItemSearchForm";
+            StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
+            Text = "Item Search";
+            ((System.ComponentModel.ISupportInitialize)pictureBoxGraphic).EndInit();
+            ResumeLayout(false);
+            PerformLayout();
         }
 
         #endregion
-
-        private System.Windows.Forms.Button button1;
-        private System.Windows.Forms.Button button2;
-        private System.Windows.Forms.Button button4;
+        private System.Windows.Forms.Button ButtonSearchNextName;
         private System.Windows.Forms.TextBox textBoxGraphic;
         private System.Windows.Forms.TextBox textBoxItemName;
+        private System.Windows.Forms.Button SearchButtonID;
+        private System.Windows.Forms.Button SearchButtonName;
+        private System.Windows.Forms.ListBox ListBoxSearch;
+        private System.Windows.Forms.PictureBox pictureBoxGraphic;
     }
 }

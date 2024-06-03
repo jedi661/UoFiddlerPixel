@@ -163,9 +163,7 @@
 		<Compile Update="Forms\ItemDetailForm.Designer.cs">
 			<DependentUpon>ItemDetailForm.cs</DependentUpon>
 		</Compile>
-		<Compile Update="Forms\ItemSearchForm.cs">
-			<SubType>Form</SubType>
-		</Compile>
+		<Compile Update="Forms\ItemSearchForm.cs" />
 		<Compile Update="Forms\ItemSearchForm.Designer.cs">
 			<DependentUpon>ItemSearchForm.cs</DependentUpon>
 		</Compile>
