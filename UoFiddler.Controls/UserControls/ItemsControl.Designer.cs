@@ -162,7 +162,7 @@ namespace UoFiddler.Controls.UserControls
             chkApplyColorChange.TabIndex = 1;
             chkApplyColorChange.Text = "Particele Grey";
             chkApplyColorChange.UseVisualStyleBackColor = true;
-            chkApplyColorChange.CheckedChanged += chkApplyColorChange_CheckedChanged;
+            chkApplyColorChange.CheckedChanged += ChkApplyColorChange_CheckedChanged;
             // 
             // DetailPictureBox
             // 
@@ -203,7 +203,7 @@ namespace UoFiddler.Controls.UserControls
             particleGraylToolStripMenuItem.Size = new System.Drawing.Size(212, 22);
             particleGraylToolStripMenuItem.Text = "Particle Grey";
             particleGraylToolStripMenuItem.ToolTipText = "Displays the colors that can be used for in-game coloring.";
-            particleGraylToolStripMenuItem.Click += particleGraylToolStripMenuItem_Click;
+            particleGraylToolStripMenuItem.Click += ParticleGraylToolStripMenuItem_Click;
             // 
             // particleGrayColorToolStripMenuItem
             // 
@@ -212,7 +212,7 @@ namespace UoFiddler.Controls.UserControls
             particleGrayColorToolStripMenuItem.Size = new System.Drawing.Size(212, 22);
             particleGrayColorToolStripMenuItem.Text = "Particle Grey Color";
             particleGrayColorToolStripMenuItem.ToolTipText = "Color Dialog for Particle Gray";
-            particleGrayColorToolStripMenuItem.Click += particleGrayColorToolStripMenuItem_Click;
+            particleGrayColorToolStripMenuItem.Click += ParticleGrayColorToolStripMenuItem_Click;
             // 
             // toolStripSeparator7
             // 
@@ -226,7 +226,7 @@ namespace UoFiddler.Controls.UserControls
             drawRhombusToolStripMenuItem.Size = new System.Drawing.Size(212, 22);
             drawRhombusToolStripMenuItem.Text = "Draw Rhombus";
             drawRhombusToolStripMenuItem.ToolTipText = "Draws a diamond shape on the image.";
-            drawRhombusToolStripMenuItem.Click += drawRhombusToolStripMenuItem_Click;
+            drawRhombusToolStripMenuItem.Click += DrawRhombusToolStripMenuItem_Click;
             // 
             // gridPictureToolStripMenuItem
             // 
@@ -235,7 +235,7 @@ namespace UoFiddler.Controls.UserControls
             gridPictureToolStripMenuItem.Size = new System.Drawing.Size(212, 22);
             gridPictureToolStripMenuItem.Text = "Grid Picture";
             gridPictureToolStripMenuItem.ToolTipText = "Create the grid picture.";
-            gridPictureToolStripMenuItem.Click += gridPictureToolStripMenuItem_Click;
+            gridPictureToolStripMenuItem.Click += GridPictureToolStripMenuItem_Click;
             // 
             // SelectColorToolStripMenuItem
             // 
@@ -258,7 +258,7 @@ namespace UoFiddler.Controls.UserControls
             copyClipboardToolStripMenuItem.Size = new System.Drawing.Size(212, 22);
             copyClipboardToolStripMenuItem.Text = "Copy Clipboard";
             copyClipboardToolStripMenuItem.ToolTipText = "Copy the image to the clipboard.";
-            copyClipboardToolStripMenuItem.Click += copyClipboardToolStripMenuItem_Click;
+            copyClipboardToolStripMenuItem.Click += CopyClipboardToolStripMenuItem_Click;
             // 
             // DetailTextBox
             // 
@@ -362,7 +362,7 @@ namespace UoFiddler.Controls.UserControls
             colorsImageToolStripMenuItem.Size = new System.Drawing.Size(212, 22);
             colorsImageToolStripMenuItem.Text = "Colors Image";
             colorsImageToolStripMenuItem.ToolTipText = "Show Colors from Image";
-            colorsImageToolStripMenuItem.Click += colorsImageToolStripMenuItem_Click;
+            colorsImageToolStripMenuItem.Click += ColorsImageToolStripMenuItem_Click;
             // 
             // toolStripSeparator3
             // 
@@ -514,7 +514,7 @@ namespace UoFiddler.Controls.UserControls
             imageSwapToolStripMenuItem.Size = new System.Drawing.Size(212, 22);
             imageSwapToolStripMenuItem.Text = "Image Swap";
             imageSwapToolStripMenuItem.ToolTipText = "Swap the graphics with each other";
-            imageSwapToolStripMenuItem.Click += imageSwapToolStripMenuItem_Click;
+            imageSwapToolStripMenuItem.Click += ImageSwapToolStripMenuItem_Click;
             // 
             // toolStripSeparator5
             // 
@@ -528,7 +528,7 @@ namespace UoFiddler.Controls.UserControls
             mirrorToolStripMenuItem.Size = new System.Drawing.Size(212, 22);
             mirrorToolStripMenuItem.Text = "Mirror";
             mirrorToolStripMenuItem.ToolTipText = "Mirror the image.";
-            mirrorToolStripMenuItem.Click += mirrorToolStripMenuItem_Click;
+            mirrorToolStripMenuItem.Click += MirrorToolStripMenuItem_Click;
             // 
             // toolStripSeparator1
             // 
@@ -542,7 +542,7 @@ namespace UoFiddler.Controls.UserControls
             copyToolStripMenuItem.Size = new System.Drawing.Size(212, 22);
             copyToolStripMenuItem.Text = "Copy";
             copyToolStripMenuItem.ToolTipText = "Copy the graphic to the clipboard.";
-            copyToolStripMenuItem.Click += copyToolStripMenuItem_Click;
+            copyToolStripMenuItem.Click += CopyToolStripMenuItem_Click;
             // 
             // importToolStripclipboardMenuItem
             // 
@@ -551,7 +551,7 @@ namespace UoFiddler.Controls.UserControls
             importToolStripclipboardMenuItem.Size = new System.Drawing.Size(212, 22);
             importToolStripclipboardMenuItem.Text = "Import";
             importToolStripclipboardMenuItem.ToolTipText = "Import clipbord image";
-            importToolStripclipboardMenuItem.Click += importToolStripclipboardMenuItem_Click;
+            importToolStripclipboardMenuItem.Click += ImportToolStripclipboardMenuItem_Click;
             // 
             // toolStripSeparator4
             // 
@@ -565,7 +565,7 @@ namespace UoFiddler.Controls.UserControls
             markToolStripMenuItem.Size = new System.Drawing.Size(212, 22);
             markToolStripMenuItem.Text = "Mark Position";
             markToolStripMenuItem.ToolTipText = "Mark Position";
-            markToolStripMenuItem.Click += markToolStripMenuItem_Click;
+            markToolStripMenuItem.Click += MarkToolStripMenuItem_Click;
             // 
             // gotoMarkToolStripMenuItem
             // 
@@ -574,7 +574,7 @@ namespace UoFiddler.Controls.UserControls
             gotoMarkToolStripMenuItem.Size = new System.Drawing.Size(212, 22);
             gotoMarkToolStripMenuItem.Text = "Goto Position";
             gotoMarkToolStripMenuItem.ToolTipText = "Strg+J Jump to Last Mark Position";
-            gotoMarkToolStripMenuItem.Click += goToMarkedPositionToolStripMenuItem_Click;
+            gotoMarkToolStripMenuItem.Click += GoToMarkedPositionToolStripMenuItem_Click;
             // 
             // toolStripSeparator9
             // 
@@ -668,7 +668,7 @@ namespace UoFiddler.Controls.UserControls
             searchByNameToolStripButton.Name = "searchByNameToolStripButton";
             searchByNameToolStripButton.Size = new System.Drawing.Size(60, 25);
             searchByNameToolStripButton.Text = "Find next";
-            searchByNameToolStripButton.Click += searchByNameToolStripButton_Click;
+            searchByNameToolStripButton.Click += SearchByNameToolStripButton_Click;
             // 
             // SearchToolStripButton
             // 

@@ -1164,13 +1164,13 @@ namespace UoFiddler.Controls.UserControls
             if (e.Control && e.KeyCode == Keys.V)
             {
                 // Calling the importToolStripclipboardMenuItem_Click method to import the graphic from the clipboard.
-                importToolStripclipboardMenuItem_Click(sender, e);
+                ImportToolStripclipboardMenuItem_Click(sender, e);
             }
             // Checking if the Ctrl+X key combination has been pressed.
             else if (e.Control && e.KeyCode == Keys.X)
             {
                 // Calling the cutToolStripclipboardMenuItem_Click method to cut the selected area.
-                copyToolStripMenuItem_Click(sender, e);
+                CopyToolStripMenuItem_Click(sender, e);
             }
             // Checking if the Page Down or Page Up key combination has been pressed.
             else if (e.KeyData == Keys.PageDown || e.KeyData == Keys.PageUp)
@@ -1181,13 +1181,13 @@ namespace UoFiddler.Controls.UserControls
             else if (e.Control && e.KeyCode == Keys.F3)
             {
                 // Call the searchByNameToolStripButton_Click method
-                searchByNameToolStripButton_Click(sender, e);
+                SearchByNameToolStripButton_Click(sender, e);
             }
             // Verify that the Ctrl+J key combination was pressed
             else if (e.Control && e.KeyCode == Keys.J)
             {
                 // Call the goToMarkedPositionToolStripMenuItem_Click method to jump to the marked position
-                goToMarkedPositionToolStripMenuItem_Click(sender, e);
+                GoToMarkedPositionToolStripMenuItem_Click(sender, e);
             }
         }
         #endregion
@@ -1403,7 +1403,7 @@ namespace UoFiddler.Controls.UserControls
         #endregion
 
         #region Copy clipboard
-        private void copyToolStripMenuItem_Click(object sender, EventArgs e)
+        private void CopyToolStripMenuItem_Click(object sender, EventArgs e)
         {
             // Check if any items are selected in the ItemsTileView
             if (ItemsTileView.SelectedIndices.Count == 0)
@@ -1453,7 +1453,7 @@ namespace UoFiddler.Controls.UserControls
         #endregion
 
         #region Import clipbord image 
-        private void importToolStripclipboardMenuItem_Click(object sender, EventArgs e)
+        private void ImportToolStripclipboardMenuItem_Click(object sender, EventArgs e)
         {
             // Check if the clipboard contains an image
             if (Clipboard.ContainsImage())
@@ -1551,7 +1551,7 @@ namespace UoFiddler.Controls.UserControls
         #endregion
 
         #region Mirror
-        private void mirrorToolStripMenuItem_Click(object sender, EventArgs e)
+        private void MirrorToolStripMenuItem_Click(object sender, EventArgs e)
         {
             // Check if any items are selected in the ItemsTileView.
             if (ItemsTileView.SelectedIndices.Count == 0)
@@ -1612,7 +1612,7 @@ namespace UoFiddler.Controls.UserControls
         {
             SearchName(searchByNameToolStripTextBox.Text, false);
         }
-        private void searchByNameToolStripButton_Click(object sender, EventArgs e)
+        private void SearchByNameToolStripButton_Click(object sender, EventArgs e)
         {
             SearchName(searchByNameToolStripTextBox.Text, true);
             // Update _reverseSearchIndex after forward search
@@ -1635,7 +1635,7 @@ namespace UoFiddler.Controls.UserControls
         #endregion
 
         #region Image swap
-        private void imageSwapToolStripMenuItem_Click(object sender, EventArgs e)
+        private void ImageSwapToolStripMenuItem_Click(object sender, EventArgs e)
         {
             // Make sure that exactly two items are selected
             if (ItemsTileView.SelectedIndices.Count != 2)
@@ -1737,7 +1737,7 @@ namespace UoFiddler.Controls.UserControls
         #endregion
 
         #region Paricle Gray Shadow
-        private void particleGraylToolStripMenuItem_Click(object sender, EventArgs e)
+        private void ParticleGraylToolStripMenuItem_Click(object sender, EventArgs e)
         {
 
             // Überprüfen, ob ein Bild vorhanden ist
@@ -1816,7 +1816,7 @@ namespace UoFiddler.Controls.UserControls
             }
         }
 
-        private void chkApplyColorChange_CheckedChanged(object sender, EventArgs e)
+        private void ChkApplyColorChange_CheckedChanged(object sender, EventArgs e)
         {
             ApplyColorChange();
         }
@@ -1836,14 +1836,14 @@ namespace UoFiddler.Controls.UserControls
             if (chkApplyColorChange.Checked)
             {
                 // Call the color change method directly
-                particleGraylToolStripMenuItem_Click(null, null);
+                ParticleGraylToolStripMenuItem_Click(null, null);
             }
         }
         #endregion
 
         #region Particle Gray ColorDialog
         private Color selectedColor = Color.Blue; // Standardfarbe
-        private void particleGrayColorToolStripMenuItem_Click(object sender, EventArgs e)
+        private void ParticleGrayColorToolStripMenuItem_Click(object sender, EventArgs e)
         {
             using (ColorDialog colorDialog = new ColorDialog())
             {
@@ -1856,7 +1856,7 @@ namespace UoFiddler.Controls.UserControls
         #endregion
 
         #region drawRhombus
-        private void drawRhombusToolStripMenuItem_Click(object sender, EventArgs e)
+        private void DrawRhombusToolStripMenuItem_Click(object sender, EventArgs e)
         {
             // Make sure there is an image in the PictureBox
             if (DetailPictureBox.Image == null)
@@ -1923,7 +1923,7 @@ namespace UoFiddler.Controls.UserControls
 
         private int currentImageID;
 
-        private void gridPictureToolStripMenuItem_Click(object sender, EventArgs e)
+        private void GridPictureToolStripMenuItem_Click(object sender, EventArgs e)
         {
             // Check if an image is selected
             if (currentImageID >= 0)
@@ -1968,7 +1968,7 @@ namespace UoFiddler.Controls.UserControls
         #endregion
 
         #region Copy Clipboard DetailPictureBox
-        private void copyClipboardToolStripMenuItem_Click(object sender, EventArgs e)
+        private void CopyClipboardToolStripMenuItem_Click(object sender, EventArgs e)
         {
             // Check whether an image is displayed in the DetailPictureBox
             if (DetailPictureBox.Image != null)
@@ -2030,7 +2030,7 @@ namespace UoFiddler.Controls.UserControls
         // Global variable for the DataGridView and the shape
         DataGridView colorGrid;
         Form colorForm;
-        private void colorsImageToolStripMenuItem_Click(object sender, EventArgs e)
+        private void ColorsImageToolStripMenuItem_Click(object sender, EventArgs e)
         {
             // Create a new shape
             colorForm = new Form();
@@ -2126,7 +2126,7 @@ namespace UoFiddler.Controls.UserControls
         private int markedPosition = -1;
 
         // Method of marking position
-        private void markToolStripMenuItem_Click(object sender, EventArgs e)
+        private void MarkToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (ItemsTileView.SelectedIndices.Count > 0)
             {
@@ -2137,7 +2137,7 @@ namespace UoFiddler.Controls.UserControls
 
         #region goToMarkedPositionToolStripMenuItem
         // Method to return to marked position
-        private void goToMarkedPositionToolStripMenuItem_Click(object sender, EventArgs e)
+        private void GoToMarkedPositionToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (markedPosition >= 0 && markedPosition < ItemsTileView.VirtualListSize)
             {

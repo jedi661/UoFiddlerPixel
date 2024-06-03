@@ -131,7 +131,7 @@ namespace UoFiddler.Controls.Forms
             clearToolStripMenuItem.Name = "clearToolStripMenuItem";
             clearToolStripMenuItem.Size = new System.Drawing.Size(101, 22);
             clearToolStripMenuItem.Text = "Clear";
-            clearToolStripMenuItem.Click += clearToolStripMenuItem_Click;
+            clearToolStripMenuItem.Click += ClearToolStripMenuItem_Click;
             // 
             // ItemSearchForm
             // 

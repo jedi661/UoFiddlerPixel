@@ -258,7 +258,7 @@ namespace UoFiddler.Controls.Forms
         #endregion
 
         #region clearToolStripMenuItem_Click
-        private void clearToolStripMenuItem_Click(object sender, EventArgs e)
+        private void ClearToolStripMenuItem_Click(object sender, EventArgs e)
         {
             ListBoxSearch.Items.Clear();
         }
