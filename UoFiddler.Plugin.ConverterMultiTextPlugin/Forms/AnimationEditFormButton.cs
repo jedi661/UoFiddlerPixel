@@ -44,6 +44,12 @@ namespace UoFiddler.Controls.Forms
 
         public static SelectablePictureBox[] boxes = new SelectablePictureBox[10];
 
+        private Dictionary<string, Image> originalImages = new Dictionary<string, Image>();
+        private Dictionary<string, Image> images = new Dictionary<string, Image>();
+        private int imageCounter = 1;
+        private Timer playTimer;
+        private int currentImageIndex = 0;
+
         public AnimationEditFormButton()
         {
             InitializeComponent();
@@ -343,6 +349,10 @@ namespace UoFiddler.Controls.Forms
                 // Call the UndoDrawing method on all PictureBox instances
                 SelectablePictureBoxHelper.UndoDrawing(pictureBoxes);
             }
+
+            // Initialisiere den Timer
+            playTimer = new Timer();
+            playTimer.Tick += new EventHandler(PlayTimer_Tick);
         }
         #region Time_Tick         
 
@@ -1228,6 +1238,262 @@ namespace UoFiddler.Controls.Forms
                 AnimationPictureBox2.BackgroundImage = null;
             }
         }
-        #endregion        
+        #endregion
+
+        #region clipbordAllSingleToolStripMenuItem
+        private void clipbordAllSingleToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (Clipboard.ContainsImage())
+            {
+                // Load the image from the cache
+                Image image = Clipboard.GetImage();
+
+                // Generate a unique name for the image
+                string imageName = "Item" + imageCounter.ToString("00");
+
+                // Save a copy of the original image
+                originalImages[imageName] = (Image)image.Clone();
+
+                // If the CheckBoxTransparent is activated, make the colors #000000 and #ffffff transparent
+                if (CheckBoxTransparent.Checked)
+                {
+                    image = MakeColorTransparent(image, Color.FromArgb(0, 0, 0)); // Black
+                    image = MakeColorTransparent(image, Color.FromArgb(255, 255, 255)); // White
+                }
+
+                // Add the image to the dictionary
+                images[imageName] = image;
+
+                // Add the image to the PictureBox and update it immediately
+                PictureBoxAll.Image = image;
+                PictureBoxAll.Refresh();
+
+                // Add an entry to the ListBox
+                ListBoxAll.Items.Add(imageName);
+
+                // Increase the counter for the next image
+                imageCounter++;
+
+                // Make sure not to add more than 30 images
+                if (imageCounter > 30)
+                {
+                    imageCounter = 30;
+                    MessageBox.Show("Maximum number of images reached.");
+                }
+            }
+            else
+            {
+                MessageBox.Show("The cache does not contain an image.");
+            }
+        }
+        #endregion
+
+        #region listBoxAll_SelectedIndexChanged
+        private void listBoxAll_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (ListBoxAll.SelectedItem != null)
+            {
+                string selectedItem = ListBoxAll.SelectedItem.ToString();
+                if (images.ContainsKey(selectedItem))
+                {
+                    PictureBoxAll.Image = images[selectedItem];
+                    PictureBoxAll.Refresh();
+                }
+                else
+                {
+                    MessageBox.Show("The selected image does not exist in the dictionary.");
+                }
+            }
+            else
+            {
+                MessageBox.Show("No image selected.");
+            }
+        }
+        #endregion
+
+        #region CheckBoxTransparent
+        private void CheckBoxTransparent_CheckedChanged(object sender, EventArgs e)
+        {
+            foreach (var key in images.Keys.ToList())
+            {
+                Image image;
+
+                if (CheckBoxTransparent.Checked)
+                {
+                    image = MakeColorTransparent(originalImages[key], Color.FromArgb(0, 0, 0)); // Black
+                    image = MakeColorTransparent(image, Color.FromArgb(255, 255, 255)); // White
+                }
+                else
+                {
+                    image = originalImages[key];
+                }
+
+                images[key] = image;
+            }
+
+            if (ListBoxAll.SelectedItem != null)
+            {
+                string selectedItem = ListBoxAll.SelectedItem.ToString();
+                if (images.ContainsKey(selectedItem))
+                {
+                    PictureBoxAll.Image = images[selectedItem];
+                    PictureBoxAll.Refresh();
+                }
+            }
+        }
+        #endregion
+
+        #region MakeColorTransparent
+        private Image MakeColorTransparent(Image image, Color color)
+        {
+            Bitmap bitmap = new Bitmap(image);
+            for (int i = 0; i < bitmap.Width; i++)
+            {
+                for (int j = 0; j < bitmap.Height; j++)
+                {
+                    Color pixelColor = bitmap.GetPixel(i, j);
+                    if (pixelColor.ToArgb() == color.ToArgb())
+                    {
+                        bitmap.SetPixel(i, j, Color.Transparent);
+                    }
+                }
+            }
+            return bitmap;
+        }
+        #endregion
+
+        #region deleteToolStripMenuItem
+        private void deleteToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (ListBoxAll.SelectedItem != null)
+            {
+                string selectedItem = ListBoxAll.SelectedItem.ToString();
+
+                // Remove the entry from the Dictionary objects
+                if (originalImages.ContainsKey(selectedItem))
+                {
+                    originalImages.Remove(selectedItem);
+                }
+                if (images.ContainsKey(selectedItem))
+                {
+                    images.Remove(selectedItem);
+                }
+
+                // Remove the entry from the ListBox
+                ListBoxAll.Items.Remove(selectedItem);
+
+                // Delete the image in the PictureBox if it is displayed
+                if (PictureBoxAll.Image != null && images.ContainsKey(selectedItem) && PictureBoxAll.Image == images[selectedItem])
+                {
+                    PictureBoxAll.Image = null;
+                }
+            }
+            else
+            {
+                MessageBox.Show("No image selected for deletion.");
+            }
+        }
+        #endregion
+
+        #region deleteAllToolStripMenuItem
+        private void deleteAllToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // Remove all entries from the Dictionary objects
+            originalImages.Clear();
+            images.Clear();
+
+            // Remove all entries from the ListBox
+            ListBoxAll.Items.Clear();
+
+            // Delete the picture in the PictureBox
+            PictureBoxAll.Image = null;
+        }
+        #endregion
+
+        #region playToolStripMenuItem
+        private void playToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (ListBoxAll.Items.Count > 0)
+            {
+                currentImageIndex = 0;
+                int frameDelay = (int)numericUpDownFrameDelay.Value;
+                playTimer.Interval = frameDelay > 0 ? 1000 / frameDelay : 1000;
+                playTimer.Start();
+            }
+            else
+            {
+                MessageBox.Show("No images available to play.");
+            }
+        }
+        #endregion
+
+        #region PlayTimer_Tick 
+        private void PlayTimer_Tick(object sender, EventArgs e)
+        {
+            if (currentImageIndex >= ListBoxAll.Items.Count)
+            {
+                currentImageIndex = 0;
+            }
+
+            if (ListBoxAll.Items.Count > 0 && currentImageIndex < ListBoxAll.Items.Count)
+            {
+                string selectedItem = ListBoxAll.Items[currentImageIndex].ToString();
+                if (images.ContainsKey(selectedItem))
+                {
+                    PictureBoxAll.Image = images[selectedItem];
+                    PictureBoxAll.Refresh();
+                }
+
+                currentImageIndex++;
+            }
+            else
+            {
+                playTimer.Stop();
+                MessageBox.Show("No images available to play.");
+            }
+        }
+        #endregion
+
+        #region stopToolStripMenuItem
+        private void stopToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            playTimer.Stop();
+        }
+        #endregion
+
+        #region exchangeToolStripMenuItem
+        private void exchangeToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (ListBoxAll.SelectedItem != null && Clipboard.ContainsImage())
+            {
+                string selectedItem = ListBoxAll.SelectedItem.ToString();
+                Image newImage = Clipboard.GetImage();
+
+                // Save a copy of the new image
+                originalImages[selectedItem] = (Image)newImage.Clone();
+
+                // If the CheckBoxTransparent is activated, make the colors #000000 and #ffffff transparent
+                if (CheckBoxTransparent.Checked)
+                {
+                    newImage = MakeColorTransparent(newImage, Color.FromArgb(0, 0, 0)); // Black
+                    newImage = MakeColorTransparent(newImage, Color.FromArgb(255, 255, 255)); // White
+                }
+
+                // Replace the picture in the dictionary
+                images[selectedItem] = newImage;
+
+                // Refresh the PictureBox if the selected image is displayed
+                if (PictureBoxAll.Image != null && images.ContainsKey(selectedItem) && PictureBoxAll.Image == images[selectedItem])
+                {
+                    PictureBoxAll.Image = newImage;
+                    PictureBoxAll.Refresh();
+                }
+            }
+            else
+            {
+                MessageBox.Show("No image selected or no image in buffer.");
+            }
+        }
+        #endregion
     }
 }

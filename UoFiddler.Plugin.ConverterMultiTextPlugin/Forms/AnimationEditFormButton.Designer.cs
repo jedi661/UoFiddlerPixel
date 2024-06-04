@@ -96,7 +96,7 @@
             panelFarbcode = new System.Windows.Forms.Panel();
             labelDrawAll = new System.Windows.Forms.Label();
             tabControl1 = new System.Windows.Forms.TabControl();
-            tabPage1 = new System.Windows.Forms.TabPage();
+            tabPageFrame = new System.Windows.Forms.TabPage();
             zoomOutButton10 = new System.Windows.Forms.Button();
             zoomInButton10 = new System.Windows.Forms.Button();
             zoomOutButton9 = new System.Windows.Forms.Button();
@@ -117,7 +117,19 @@
             zoomInButton2 = new System.Windows.Forms.Button();
             zoomOutButton1 = new System.Windows.Forms.Button();
             zoomInButton1 = new System.Windows.Forms.Button();
-            tabPage2 = new System.Windows.Forms.TabPage();
+            tabPageAnimtion = new System.Windows.Forms.TabPage();
+            CheckBoxTransparent = new System.Windows.Forms.CheckBox();
+            ListBoxAll = new System.Windows.Forms.ListBox();
+            ContextMenuStripListBox = new System.Windows.Forms.ContextMenuStrip(components);
+            deleteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            deleteAllToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            toolStripSeparator5 = new System.Windows.Forms.ToolStripSeparator();
+            playToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            stopToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            exchangeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            PictureBoxAll = new System.Windows.Forms.PictureBox();
+            ContextMenuStripImageAll = new System.Windows.Forms.ContextMenuStrip(components);
+            clipbordAllSingleToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             AnimationPictureBox2 = new System.Windows.Forms.PictureBox();
             comboBoxImageBackgrund = new System.Windows.Forms.ComboBox();
             statusStrip1 = new System.Windows.Forms.StatusStrip();
@@ -154,7 +166,11 @@
             ((System.ComponentModel.ISupportInitialize)numericUpDownImageShow).BeginInit();
             panelDrawControl.SuspendLayout();
             tabControl1.SuspendLayout();
-            tabPage1.SuspendLayout();
+            tabPageFrame.SuspendLayout();
+            tabPageAnimtion.SuspendLayout();
+            ContextMenuStripListBox.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)PictureBoxAll).BeginInit();
+            ContextMenuStripImageAll.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)AnimationPictureBox2).BeginInit();
             panelAnimationPictureBox.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)numericUpDownHighAnimationPictureBox).BeginInit();
@@ -169,7 +185,7 @@
             // 
             contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { loadToolStripMenuItem, toolStripMenuItemLoadSingeAll, toolStripSeparator4, loadOnImageAllMIrrorToolStripMenuItem, loadSingleAllMirrorToolStripMenuItem, toolStripSeparator2, startToolStripMenuItem, toolStripSeparator1, imageFadeinToolStripMenuItem });
             contextMenuStrip1.Name = "contextMenuStrip1";
-            contextMenuStrip1.Size = new System.Drawing.Size(213, 176);
+            contextMenuStrip1.Size = new System.Drawing.Size(213, 154);
             // 
             // loadToolStripMenuItem
             // 
@@ -418,7 +434,19 @@
             // 
             selectablePictureBox1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             selectablePictureBox1.CurrentIndex = 0;
-            selectablePictureBox1.DrawingBitmaps = new System.Drawing.Bitmap[] { null, null, null, null, null, null, null, null, null, null };
+            selectablePictureBox1.DrawingBitmaps = new System.Drawing.Bitmap[]
+    {
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null
+    };
             selectablePictureBox1.Location = new System.Drawing.Point(6, 28);
             selectablePictureBox1.Name = "selectablePictureBox1";
             selectablePictureBox1.OriginalImage = null;
@@ -432,7 +460,19 @@
             // 
             selectablePictureBox2.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             selectablePictureBox2.CurrentIndex = 0;
-            selectablePictureBox2.DrawingBitmaps = new System.Drawing.Bitmap[] { null, null, null, null, null, null, null, null, null, null };
+            selectablePictureBox2.DrawingBitmaps = new System.Drawing.Bitmap[]
+    {
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null
+    };
             selectablePictureBox2.Location = new System.Drawing.Point(130, 28);
             selectablePictureBox2.Name = "selectablePictureBox2";
             selectablePictureBox2.OriginalImage = null;
@@ -446,7 +486,19 @@
             // 
             selectablePictureBox3.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             selectablePictureBox3.CurrentIndex = 0;
-            selectablePictureBox3.DrawingBitmaps = new System.Drawing.Bitmap[] { null, null, null, null, null, null, null, null, null, null };
+            selectablePictureBox3.DrawingBitmaps = new System.Drawing.Bitmap[]
+    {
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null
+    };
             selectablePictureBox3.Location = new System.Drawing.Point(254, 28);
             selectablePictureBox3.Name = "selectablePictureBox3";
             selectablePictureBox3.OriginalImage = null;
@@ -460,7 +512,19 @@
             // 
             selectablePictureBox4.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             selectablePictureBox4.CurrentIndex = 0;
-            selectablePictureBox4.DrawingBitmaps = new System.Drawing.Bitmap[] { null, null, null, null, null, null, null, null, null, null };
+            selectablePictureBox4.DrawingBitmaps = new System.Drawing.Bitmap[]
+    {
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null
+    };
             selectablePictureBox4.Location = new System.Drawing.Point(378, 28);
             selectablePictureBox4.Name = "selectablePictureBox4";
             selectablePictureBox4.OriginalImage = null;
@@ -474,7 +538,19 @@
             // 
             selectablePictureBox5.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             selectablePictureBox5.CurrentIndex = 0;
-            selectablePictureBox5.DrawingBitmaps = new System.Drawing.Bitmap[] { null, null, null, null, null, null, null, null, null, null };
+            selectablePictureBox5.DrawingBitmaps = new System.Drawing.Bitmap[]
+    {
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null
+    };
             selectablePictureBox5.Location = new System.Drawing.Point(501, 28);
             selectablePictureBox5.Name = "selectablePictureBox5";
             selectablePictureBox5.OriginalImage = null;
@@ -488,7 +564,19 @@
             // 
             selectablePictureBox6.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             selectablePictureBox6.CurrentIndex = 0;
-            selectablePictureBox6.DrawingBitmaps = new System.Drawing.Bitmap[] { null, null, null, null, null, null, null, null, null, null };
+            selectablePictureBox6.DrawingBitmaps = new System.Drawing.Bitmap[]
+    {
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null
+    };
             selectablePictureBox6.Location = new System.Drawing.Point(625, 28);
             selectablePictureBox6.Name = "selectablePictureBox6";
             selectablePictureBox6.OriginalImage = null;
@@ -502,7 +590,19 @@
             // 
             selectablePictureBox7.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             selectablePictureBox7.CurrentIndex = 0;
-            selectablePictureBox7.DrawingBitmaps = new System.Drawing.Bitmap[] { null, null, null, null, null, null, null, null, null, null };
+            selectablePictureBox7.DrawingBitmaps = new System.Drawing.Bitmap[]
+    {
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null
+    };
             selectablePictureBox7.Location = new System.Drawing.Point(749, 28);
             selectablePictureBox7.Name = "selectablePictureBox7";
             selectablePictureBox7.OriginalImage = null;
@@ -516,7 +616,19 @@
             // 
             selectablePictureBox8.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             selectablePictureBox8.CurrentIndex = 0;
-            selectablePictureBox8.DrawingBitmaps = new System.Drawing.Bitmap[] { null, null, null, null, null, null, null, null, null, null };
+            selectablePictureBox8.DrawingBitmaps = new System.Drawing.Bitmap[]
+    {
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null
+    };
             selectablePictureBox8.Location = new System.Drawing.Point(873, 28);
             selectablePictureBox8.Name = "selectablePictureBox8";
             selectablePictureBox8.OriginalImage = null;
@@ -530,7 +642,19 @@
             // 
             selectablePictureBox9.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             selectablePictureBox9.CurrentIndex = 0;
-            selectablePictureBox9.DrawingBitmaps = new System.Drawing.Bitmap[] { null, null, null, null, null, null, null, null, null, null };
+            selectablePictureBox9.DrawingBitmaps = new System.Drawing.Bitmap[]
+    {
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null
+    };
             selectablePictureBox9.Location = new System.Drawing.Point(997, 28);
             selectablePictureBox9.Name = "selectablePictureBox9";
             selectablePictureBox9.OriginalImage = null;
@@ -544,7 +668,19 @@
             // 
             selectablePictureBox10.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             selectablePictureBox10.CurrentIndex = 0;
-            selectablePictureBox10.DrawingBitmaps = new System.Drawing.Bitmap[] { null, null, null, null, null, null, null, null, null, null };
+            selectablePictureBox10.DrawingBitmaps = new System.Drawing.Bitmap[]
+    {
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null
+    };
             selectablePictureBox10.Location = new System.Drawing.Point(1121, 28);
             selectablePictureBox10.Name = "selectablePictureBox10";
             selectablePictureBox10.OriginalImage = null;
@@ -795,63 +931,63 @@
             // 
             // tabControl1
             // 
-            tabControl1.Controls.Add(tabPage1);
-            tabControl1.Controls.Add(tabPage2);
+            tabControl1.Controls.Add(tabPageFrame);
+            tabControl1.Controls.Add(tabPageAnimtion);
             tabControl1.Location = new System.Drawing.Point(6, 27);
             tabControl1.Name = "tabControl1";
             tabControl1.SelectedIndex = 0;
             tabControl1.Size = new System.Drawing.Size(1261, 327);
             tabControl1.TabIndex = 47;
             // 
-            // tabPage1
+            // tabPageFrame
             // 
-            tabPage1.Controls.Add(zoomOutButton10);
-            tabPage1.Controls.Add(zoomInButton10);
-            tabPage1.Controls.Add(zoomOutButton9);
-            tabPage1.Controls.Add(zoomInButton9);
-            tabPage1.Controls.Add(zoomOutButton8);
-            tabPage1.Controls.Add(zoomInButton8);
-            tabPage1.Controls.Add(zoomOutButton7);
-            tabPage1.Controls.Add(zoomInButton7);
-            tabPage1.Controls.Add(zoomOutButton6);
-            tabPage1.Controls.Add(zoomInButton6);
-            tabPage1.Controls.Add(zoomOutButton5);
-            tabPage1.Controls.Add(zoomInButton5);
-            tabPage1.Controls.Add(zoomOutButton4);
-            tabPage1.Controls.Add(zoomInButton4);
-            tabPage1.Controls.Add(zoomOutButton3);
-            tabPage1.Controls.Add(zoomInButton3);
-            tabPage1.Controls.Add(zoomOutButton2);
-            tabPage1.Controls.Add(zoomInButton2);
-            tabPage1.Controls.Add(zoomOutButton1);
-            tabPage1.Controls.Add(zoomInButton1);
-            tabPage1.Controls.Add(checkBox8);
-            tabPage1.Controls.Add(checkBox1);
-            tabPage1.Controls.Add(checkBox2);
-            tabPage1.Controls.Add(checkBox3);
-            tabPage1.Controls.Add(checkBox4);
-            tabPage1.Controls.Add(selectablePictureBox10);
-            tabPage1.Controls.Add(checkBox5);
-            tabPage1.Controls.Add(selectablePictureBox9);
-            tabPage1.Controls.Add(checkBox6);
-            tabPage1.Controls.Add(selectablePictureBox8);
-            tabPage1.Controls.Add(checkBox7);
-            tabPage1.Controls.Add(selectablePictureBox7);
-            tabPage1.Controls.Add(checkBox9);
-            tabPage1.Controls.Add(selectablePictureBox6);
-            tabPage1.Controls.Add(checkBox10);
-            tabPage1.Controls.Add(selectablePictureBox5);
-            tabPage1.Controls.Add(selectablePictureBox1);
-            tabPage1.Controls.Add(selectablePictureBox4);
-            tabPage1.Controls.Add(selectablePictureBox2);
-            tabPage1.Controls.Add(selectablePictureBox3);
-            tabPage1.Location = new System.Drawing.Point(4, 24);
-            tabPage1.Name = "tabPage1";
-            tabPage1.Padding = new System.Windows.Forms.Padding(3);
-            tabPage1.Size = new System.Drawing.Size(1253, 299);
-            tabPage1.TabIndex = 0;
-            tabPage1.Text = "Frame";
-            tabPage1.UseVisualStyleBackColor = true;
+            tabPageFrame.Controls.Add(zoomOutButton10);
+            tabPageFrame.Controls.Add(zoomInButton10);
+            tabPageFrame.Controls.Add(zoomOutButton9);
+            tabPageFrame.Controls.Add(zoomInButton9);
+            tabPageFrame.Controls.Add(zoomOutButton8);
+            tabPageFrame.Controls.Add(zoomInButton8);
+            tabPageFrame.Controls.Add(zoomOutButton7);
+            tabPageFrame.Controls.Add(zoomInButton7);
+            tabPageFrame.Controls.Add(zoomOutButton6);
+            tabPageFrame.Controls.Add(zoomInButton6);
+            tabPageFrame.Controls.Add(zoomOutButton5);
+            tabPageFrame.Controls.Add(zoomInButton5);
+            tabPageFrame.Controls.Add(zoomOutButton4);
+            tabPageFrame.Controls.Add(zoomInButton4);
+            tabPageFrame.Controls.Add(zoomOutButton3);
+            tabPageFrame.Controls.Add(zoomInButton3);
+            tabPageFrame.Controls.Add(zoomOutButton2);
+            tabPageFrame.Controls.Add(zoomInButton2);
+            tabPageFrame.Controls.Add(zoomOutButton1);
+            tabPageFrame.Controls.Add(zoomInButton1);
+            tabPageFrame.Controls.Add(checkBox8);
+            tabPageFrame.Controls.Add(checkBox1);
+            tabPageFrame.Controls.Add(checkBox2);
+            tabPageFrame.Controls.Add(checkBox3);
+            tabPageFrame.Controls.Add(checkBox4);
+            tabPageFrame.Controls.Add(selectablePictureBox10);
+            tabPageFrame.Controls.Add(checkBox5);
+            tabPageFrame.Controls.Add(selectablePictureBox9);
+            tabPageFrame.Controls.Add(checkBox6);
+            tabPageFrame.Controls.Add(selectablePictureBox8);
+            tabPageFrame.Controls.Add(checkBox7);
+            tabPageFrame.Controls.Add(selectablePictureBox7);
+            tabPageFrame.Controls.Add(checkBox9);
+            tabPageFrame.Controls.Add(selectablePictureBox6);
+            tabPageFrame.Controls.Add(checkBox10);
+            tabPageFrame.Controls.Add(selectablePictureBox5);
+            tabPageFrame.Controls.Add(selectablePictureBox1);
+            tabPageFrame.Controls.Add(selectablePictureBox4);
+            tabPageFrame.Controls.Add(selectablePictureBox2);
+            tabPageFrame.Controls.Add(selectablePictureBox3);
+            tabPageFrame.Location = new System.Drawing.Point(4, 24);
+            tabPageFrame.Name = "tabPageFrame";
+            tabPageFrame.Padding = new System.Windows.Forms.Padding(3);
+            tabPageFrame.Size = new System.Drawing.Size(1253, 299);
+            tabPageFrame.TabIndex = 0;
+            tabPageFrame.Text = "Frame";
+            tabPageFrame.UseVisualStyleBackColor = true;
             // 
             // zoomOutButton10
             // 
@@ -1053,15 +1189,115 @@
             zoomInButton1.UseVisualStyleBackColor = true;
             zoomInButton1.Click += ZoomIn;
             // 
-            // tabPage2
+            // tabPageAnimtion
             // 
-            tabPage2.Location = new System.Drawing.Point(4, 24);
-            tabPage2.Name = "tabPage2";
-            tabPage2.Padding = new System.Windows.Forms.Padding(3);
-            tabPage2.Size = new System.Drawing.Size(1253, 299);
-            tabPage2.TabIndex = 1;
-            tabPage2.Text = "tabPage2";
-            tabPage2.UseVisualStyleBackColor = true;
+            tabPageAnimtion.Controls.Add(CheckBoxTransparent);
+            tabPageAnimtion.Controls.Add(ListBoxAll);
+            tabPageAnimtion.Controls.Add(PictureBoxAll);
+            tabPageAnimtion.Location = new System.Drawing.Point(4, 24);
+            tabPageAnimtion.Name = "tabPageAnimtion";
+            tabPageAnimtion.Padding = new System.Windows.Forms.Padding(3);
+            tabPageAnimtion.Size = new System.Drawing.Size(1253, 299);
+            tabPageAnimtion.TabIndex = 1;
+            tabPageAnimtion.Text = "Animation";
+            tabPageAnimtion.UseVisualStyleBackColor = true;
+            // 
+            // CheckBoxTransparent
+            // 
+            CheckBoxTransparent.AutoSize = true;
+            CheckBoxTransparent.Location = new System.Drawing.Point(388, 8);
+            CheckBoxTransparent.Name = "CheckBoxTransparent";
+            CheckBoxTransparent.Size = new System.Drawing.Size(87, 19);
+            CheckBoxTransparent.TabIndex = 2;
+            CheckBoxTransparent.Text = "Transparent";
+            CheckBoxTransparent.UseVisualStyleBackColor = true;
+            CheckBoxTransparent.CheckedChanged += CheckBoxTransparent_CheckedChanged;
+            // 
+            // ListBoxAll
+            // 
+            ListBoxAll.ContextMenuStrip = ContextMenuStripListBox;
+            ListBoxAll.FormattingEnabled = true;
+            ListBoxAll.ItemHeight = 15;
+            ListBoxAll.Location = new System.Drawing.Point(578, 33);
+            ListBoxAll.Name = "ListBoxAll";
+            ListBoxAll.Size = new System.Drawing.Size(117, 244);
+            ListBoxAll.TabIndex = 1;
+            ListBoxAll.SelectedIndexChanged += listBoxAll_SelectedIndexChanged;
+            // 
+            // ContextMenuStripListBox
+            // 
+            ContextMenuStripListBox.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { deleteToolStripMenuItem, deleteAllToolStripMenuItem, toolStripSeparator5, playToolStripMenuItem, stopToolStripMenuItem, exchangeToolStripMenuItem });
+            ContextMenuStripListBox.Name = "ContextMenuStripListBox";
+            ContextMenuStripListBox.Size = new System.Drawing.Size(181, 142);
+            // 
+            // deleteToolStripMenuItem
+            // 
+            deleteToolStripMenuItem.Image = UoFiddler.Plugin.ConverterMultiTextPlugin.Properties.Resources.Delete03;
+            deleteToolStripMenuItem.Name = "deleteToolStripMenuItem";
+            deleteToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            deleteToolStripMenuItem.Text = "Delete";
+            deleteToolStripMenuItem.Click += deleteToolStripMenuItem_Click;
+            // 
+            // deleteAllToolStripMenuItem
+            // 
+            deleteAllToolStripMenuItem.Image = UoFiddler.Plugin.ConverterMultiTextPlugin.Properties.Resources.Delete04;
+            deleteAllToolStripMenuItem.Name = "deleteAllToolStripMenuItem";
+            deleteAllToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            deleteAllToolStripMenuItem.Text = "Delete All";
+            deleteAllToolStripMenuItem.Click += deleteAllToolStripMenuItem_Click;
+            // 
+            // toolStripSeparator5
+            // 
+            toolStripSeparator5.Name = "toolStripSeparator5";
+            toolStripSeparator5.Size = new System.Drawing.Size(177, 6);
+            // 
+            // playToolStripMenuItem
+            // 
+            playToolStripMenuItem.Image = UoFiddler.Plugin.ConverterMultiTextPlugin.Properties.Resources.right;
+            playToolStripMenuItem.Name = "playToolStripMenuItem";
+            playToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            playToolStripMenuItem.Text = "Play";
+            playToolStripMenuItem.Click += playToolStripMenuItem_Click;
+            // 
+            // stopToolStripMenuItem
+            // 
+            stopToolStripMenuItem.Image = UoFiddler.Plugin.ConverterMultiTextPlugin.Properties.Resources.a_black_square_with_round_corners_and_within_the_b;
+            stopToolStripMenuItem.Name = "stopToolStripMenuItem";
+            stopToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            stopToolStripMenuItem.Text = "Stop";
+            stopToolStripMenuItem.Click += stopToolStripMenuItem_Click;
+            // 
+            // exchangeToolStripMenuItem
+            // 
+            exchangeToolStripMenuItem.Image = UoFiddler.Plugin.ConverterMultiTextPlugin.Properties.Resources.Copy;
+            exchangeToolStripMenuItem.Name = "exchangeToolStripMenuItem";
+            exchangeToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            exchangeToolStripMenuItem.Text = "Exchange";
+            exchangeToolStripMenuItem.Click += exchangeToolStripMenuItem_Click;
+            // 
+            // PictureBoxAll
+            // 
+            PictureBoxAll.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            PictureBoxAll.ContextMenuStrip = ContextMenuStripImageAll;
+            PictureBoxAll.Location = new System.Drawing.Point(385, 33);
+            PictureBoxAll.Name = "PictureBoxAll";
+            PictureBoxAll.Size = new System.Drawing.Size(176, 244);
+            PictureBoxAll.TabIndex = 0;
+            PictureBoxAll.TabStop = false;
+            // 
+            // ContextMenuStripImageAll
+            // 
+            ContextMenuStripImageAll.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { clipbordAllSingleToolStripMenuItem });
+            ContextMenuStripImageAll.Name = "ContextMenuStripImageAll";
+            ContextMenuStripImageAll.Size = new System.Drawing.Size(121, 26);
+            // 
+            // clipbordAllSingleToolStripMenuItem
+            // 
+            clipbordAllSingleToolStripMenuItem.Image = UoFiddler.Plugin.ConverterMultiTextPlugin.Properties.Resources.Clipbord;
+            clipbordAllSingleToolStripMenuItem.Name = "clipbordAllSingleToolStripMenuItem";
+            clipbordAllSingleToolStripMenuItem.Size = new System.Drawing.Size(120, 22);
+            clipbordAllSingleToolStripMenuItem.Text = "Clipbord";
+            clipbordAllSingleToolStripMenuItem.Click += clipbordAllSingleToolStripMenuItem_Click;
             // 
             // AnimationPictureBox2
             // 
@@ -1262,8 +1498,13 @@
             panelDrawControl.ResumeLayout(false);
             panelDrawControl.PerformLayout();
             tabControl1.ResumeLayout(false);
-            tabPage1.ResumeLayout(false);
-            tabPage1.PerformLayout();
+            tabPageFrame.ResumeLayout(false);
+            tabPageFrame.PerformLayout();
+            tabPageAnimtion.ResumeLayout(false);
+            tabPageAnimtion.PerformLayout();
+            ContextMenuStripListBox.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)PictureBoxAll).EndInit();
+            ContextMenuStripImageAll.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)AnimationPictureBox2).EndInit();
             panelAnimationPictureBox.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)numericUpDownHighAnimationPictureBox).EndInit();
@@ -1321,8 +1562,8 @@
         private System.Windows.Forms.Panel panelDrawControl;
         private System.Windows.Forms.Label labelDrawAll;
         private System.Windows.Forms.TabControl tabControl1;
-        private System.Windows.Forms.TabPage tabPage1;
-        private System.Windows.Forms.TabPage tabPage2;
+        private System.Windows.Forms.TabPage tabPageFrame;
+        private System.Windows.Forms.TabPage tabPageAnimtion;
         private System.Windows.Forms.PictureBox AnimationPictureBox2;
         private System.Windows.Forms.ComboBox comboBoxImageBackgrund;
         private System.Windows.Forms.NumericUpDown numericUpDownImageShow;
@@ -1381,5 +1622,17 @@
         private System.Windows.Forms.ToolStripMenuItem loadSingleAllMirrorToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
         private System.Windows.Forms.ToolStripMenuItem loadOneSingleAllMirorToolStripMenuItem;
+        private System.Windows.Forms.PictureBox PictureBoxAll;
+        private System.Windows.Forms.ListBox ListBoxAll;
+        private System.Windows.Forms.ContextMenuStrip ContextMenuStripImageAll;
+        private System.Windows.Forms.ToolStripMenuItem clipbordAllSingleToolStripMenuItem;
+        private System.Windows.Forms.CheckBox CheckBoxTransparent;
+        private System.Windows.Forms.ContextMenuStrip ContextMenuStripListBox;
+        private System.Windows.Forms.ToolStripMenuItem deleteToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem deleteAllToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator5;
+        private System.Windows.Forms.ToolStripMenuItem playToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem stopToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem exchangeToolStripMenuItem;
     }
 }
