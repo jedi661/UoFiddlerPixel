@@ -323,6 +323,16 @@ namespace UoFiddler.Controls.Properties {
         /// <summary>
         ///   Sucht eine lokalisierte Ressource vom Typ System.Drawing.Bitmap.
         /// </summary>
+        public static System.Drawing.Bitmap grayscale_image {
+            get {
+                object obj = ResourceManager.GetObject("grayscale-image", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Ressource vom Typ System.Drawing.Bitmap.
+        /// </summary>
         public static System.Drawing.Bitmap gumps_men_fantasy {
             get {
                 object obj = ResourceManager.GetObject("gumps-men-fantasy", resourceCulture);

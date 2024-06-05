@@ -57,6 +57,7 @@ namespace UoFiddler.Controls.UserControls
             SelectColorToolStripMenuItem = new ToolStripMenuItem();
             toolStripSeparator8 = new ToolStripSeparator();
             copyClipboardToolStripMenuItem = new ToolStripMenuItem();
+            grayscaleToolStripMenuItem = new ToolStripMenuItem();
             DetailTextBox = new RichTextBox();
             splitContainer1 = new SplitContainer();
             ItemsTileView = new TileView.TileViewControl();
@@ -117,7 +118,7 @@ namespace UoFiddler.Controls.UserControls
             toolStripButton1 = new ToolStripButton();
             colorDialog = new ColorDialog();
             collapsibleSplitter1 = new CollapsibleSplitter();
-            grayscaleToolStripMenuItem = new ToolStripMenuItem();
+            toolStripSeparator10 = new ToolStripSeparator();
             ((System.ComponentModel.ISupportInitialize)splitContainer2).BeginInit();
             splitContainer2.Panel1.SuspendLayout();
             splitContainer2.Panel2.SuspendLayout();
@@ -179,9 +180,9 @@ namespace UoFiddler.Controls.UserControls
             // 
             // DetailPictureBoxContextMenuStrip
             // 
-            DetailPictureBoxContextMenuStrip.Items.AddRange(new ToolStripItem[] { changeBackgroundColorToolStripMenuItemDetail, toolStripSeparator6, particleGraylToolStripMenuItem, particleGrayColorToolStripMenuItem, toolStripSeparator7, drawRhombusToolStripMenuItem, gridPictureToolStripMenuItem, SelectColorToolStripMenuItem, toolStripSeparator8, copyClipboardToolStripMenuItem, grayscaleToolStripMenuItem });
+            DetailPictureBoxContextMenuStrip.Items.AddRange(new ToolStripItem[] { changeBackgroundColorToolStripMenuItemDetail, toolStripSeparator6, particleGraylToolStripMenuItem, particleGrayColorToolStripMenuItem, toolStripSeparator10, grayscaleToolStripMenuItem, toolStripSeparator7, drawRhombusToolStripMenuItem, gridPictureToolStripMenuItem, SelectColorToolStripMenuItem, toolStripSeparator8, copyClipboardToolStripMenuItem });
             DetailPictureBoxContextMenuStrip.Name = "contextMenuStrip2";
-            DetailPictureBoxContextMenuStrip.Size = new System.Drawing.Size(213, 220);
+            DetailPictureBoxContextMenuStrip.Size = new System.Drawing.Size(213, 226);
             // 
             // changeBackgroundColorToolStripMenuItemDetail
             // 
@@ -260,6 +261,15 @@ namespace UoFiddler.Controls.UserControls
             copyClipboardToolStripMenuItem.Text = "Copy Clipboard";
             copyClipboardToolStripMenuItem.ToolTipText = "Copy the image to the clipboard.";
             copyClipboardToolStripMenuItem.Click += CopyClipboardToolStripMenuItem_Click;
+            // 
+            // grayscaleToolStripMenuItem
+            // 
+            grayscaleToolStripMenuItem.Image = Properties.Resources.grayscale_image;
+            grayscaleToolStripMenuItem.Name = "grayscaleToolStripMenuItem";
+            grayscaleToolStripMenuItem.Size = new System.Drawing.Size(212, 22);
+            grayscaleToolStripMenuItem.Text = "Grayscale";
+            grayscaleToolStripMenuItem.ToolTipText = "Grayscale image";
+            grayscaleToolStripMenuItem.Click += grayscaleToolStripMenuItem_Click;
             // 
             // DetailTextBox
             // 
@@ -781,12 +791,10 @@ namespace UoFiddler.Controls.UserControls
             collapsibleSplitter1.UseAnimations = false;
             collapsibleSplitter1.VisualStyle = VisualStyles.DoubleDots;
             // 
-            // grayscaleToolStripMenuItem
+            // toolStripSeparator10
             // 
-            grayscaleToolStripMenuItem.Name = "grayscaleToolStripMenuItem";
-            grayscaleToolStripMenuItem.Size = new System.Drawing.Size(212, 22);
-            grayscaleToolStripMenuItem.Text = "Grayscale";
-            grayscaleToolStripMenuItem.Click += grayscaleToolStripMenuItem_Click;
+            toolStripSeparator10.Name = "toolStripSeparator10";
+            toolStripSeparator10.Size = new System.Drawing.Size(209, 6);
             // 
             // ItemsControl
             // 
@@ -898,5 +906,6 @@ namespace UoFiddler.Controls.UserControls
         private ToolStripMenuItem gotoMarkToolStripMenuItem;
         private ToolStripSeparator toolStripSeparator9;
         private ToolStripMenuItem grayscaleToolStripMenuItem;
+        private ToolStripSeparator toolStripSeparator10;
     }
 }
