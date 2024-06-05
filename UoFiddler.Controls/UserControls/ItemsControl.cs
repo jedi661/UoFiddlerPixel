@@ -1546,8 +1546,6 @@ namespace UoFiddler.Controls.UserControls
                 MessageBox.Show("No image in the clipboard.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
-
-
         #endregion
 
         #region Mirror
@@ -1919,7 +1917,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region Grid
+        #region GridPictureToolStripMenuItem
 
         private int currentImageID;
 
@@ -1937,6 +1935,9 @@ namespace UoFiddler.Controls.UserControls
                 MessageBox.Show("Please first select an image from the ItemsTileView.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
+        #endregion
+
+        #region ShowImageWithBackground
         private void ShowImageWithBackground(int imageIndex)
         {
             // Load the image you want to display
