@@ -34,6 +34,7 @@ Version : 4.12.4
 - Add Main button added for Ultima Online directory.
 - Add Admin a HttpClient CheckInternetConnectionAsync.
 - Add "ItemSearchForm" expanded and restructured.
+- Add Items a Color to Grayscale.
 
 Version : 4.12.3
 - Add Items Image Colors and Update.
