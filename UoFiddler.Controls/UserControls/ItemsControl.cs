@@ -2159,5 +2159,172 @@ namespace UoFiddler.Controls.UserControls
             }
         }
         #endregion
+
+        #region grayscaleToolStripMenuItem
+        private void grayscaleToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // Define the predefined grayscale colors
+            List<Color> grayscaleColors = new List<Color>
+            {
+                ColorTranslator.FromHtml("#030303"), ColorTranslator.FromHtml("#040404"),
+                ColorTranslator.FromHtml("#050505"), ColorTranslator.FromHtml("#060606"),
+                ColorTranslator.FromHtml("#070707"), ColorTranslator.FromHtml("#080808"),
+                ColorTranslator.FromHtml("#090909"), ColorTranslator.FromHtml("#0A0A0A"),
+                ColorTranslator.FromHtml("#0B0B0B"), ColorTranslator.FromHtml("#0C0C0C"),
+                ColorTranslator.FromHtml("#0D0D0D"), ColorTranslator.FromHtml("#0E0E0E"),
+                ColorTranslator.FromHtml("#0F0F0F"), ColorTranslator.FromHtml("#101010"),
+                ColorTranslator.FromHtml("#111111"), ColorTranslator.FromHtml("#121212"),
+                ColorTranslator.FromHtml("#131313"), ColorTranslator.FromHtml("#141414"),
+                ColorTranslator.FromHtml("#151515"), ColorTranslator.FromHtml("#161616"),
+                ColorTranslator.FromHtml("#171717"), ColorTranslator.FromHtml("#181818"),
+                ColorTranslator.FromHtml("#191919"), ColorTranslator.FromHtml("#1A1A1A"),
+                ColorTranslator.FromHtml("#1B1B1B"), ColorTranslator.FromHtml("#1C1C1C"),
+                ColorTranslator.FromHtml("#1D1D1D"), ColorTranslator.FromHtml("#1E1E1E"),
+                ColorTranslator.FromHtml("#1F1F1F"), ColorTranslator.FromHtml("#202020"),
+                ColorTranslator.FromHtml("#212121"), ColorTranslator.FromHtml("#222222"),
+                ColorTranslator.FromHtml("#232323"), ColorTranslator.FromHtml("#242424"),
+                ColorTranslator.FromHtml("#252525"), ColorTranslator.FromHtml("#262626"),
+                ColorTranslator.FromHtml("#272727"), ColorTranslator.FromHtml("#282828"),
+                ColorTranslator.FromHtml("#292929"), ColorTranslator.FromHtml("#2A2A2A"),
+                ColorTranslator.FromHtml("#2B2B2B"), ColorTranslator.FromHtml("#2C2C2C"),
+                ColorTranslator.FromHtml("#2D2D2D"), ColorTranslator.FromHtml("#2E2E2E"),
+                ColorTranslator.FromHtml("#2F2F2F"), ColorTranslator.FromHtml("#303030"),
+                ColorTranslator.FromHtml("#313131"), ColorTranslator.FromHtml("#323232"),
+                ColorTranslator.FromHtml("#333333"), ColorTranslator.FromHtml("#343434"),
+                ColorTranslator.FromHtml("#353535"), ColorTranslator.FromHtml("#363636"),
+                ColorTranslator.FromHtml("#373737"), ColorTranslator.FromHtml("#383838"),
+                ColorTranslator.FromHtml("#393939"), ColorTranslator.FromHtml("#3A3A3A"),
+                ColorTranslator.FromHtml("#3B3B3B"), ColorTranslator.FromHtml("#3C3C3C"),
+                ColorTranslator.FromHtml("#3D3D3D"), ColorTranslator.FromHtml("#3E3E3E"),
+                ColorTranslator.FromHtml("#3F3F3F"), ColorTranslator.FromHtml("#404040"),
+                ColorTranslator.FromHtml("#414141"), ColorTranslator.FromHtml("#424242"),
+                ColorTranslator.FromHtml("#434343"), ColorTranslator.FromHtml("#444444"),
+                ColorTranslator.FromHtml("#454545"), ColorTranslator.FromHtml("#464646"),
+                ColorTranslator.FromHtml("#474747"), ColorTranslator.FromHtml("#484848"),
+                ColorTranslator.FromHtml("#494949"), ColorTranslator.FromHtml("#4A4A4A"),
+                ColorTranslator.FromHtml("#4B4B4B"), ColorTranslator.FromHtml("#4C4C4C"),
+                ColorTranslator.FromHtml("#4D4D4D"), ColorTranslator.FromHtml("#4E4E4E"),
+                ColorTranslator.FromHtml("#4F4F4F"), ColorTranslator.FromHtml("#505050"),
+                ColorTranslator.FromHtml("#515151"), ColorTranslator.FromHtml("#525252"),
+                ColorTranslator.FromHtml("#535353"), ColorTranslator.FromHtml("#545454"),
+                ColorTranslator.FromHtml("#555555"), ColorTranslator.FromHtml("#565656"),
+                ColorTranslator.FromHtml("#575757"), ColorTranslator.FromHtml("#585858"),
+                ColorTranslator.FromHtml("#595959"), ColorTranslator.FromHtml("#5A5A5A"),
+                ColorTranslator.FromHtml("#5B5B5B"), ColorTranslator.FromHtml("#5C5C5C"),
+                ColorTranslator.FromHtml("#5D5D5D"), ColorTranslator.FromHtml("#5E5E5E"),
+                ColorTranslator.FromHtml("#5F5F5F"), ColorTranslator.FromHtml("#606060"),
+                ColorTranslator.FromHtml("#616161"), ColorTranslator.FromHtml("#626262"),
+                ColorTranslator.FromHtml("#636363"), ColorTranslator.FromHtml("#646464"),
+                ColorTranslator.FromHtml("#656565"), ColorTranslator.FromHtml("#666666"),
+                ColorTranslator.FromHtml("#676767"), ColorTranslator.FromHtml("#686868"),
+                ColorTranslator.FromHtml("#696969"), ColorTranslator.FromHtml("#6A6A6A"),
+                ColorTranslator.FromHtml("#6B6B6B"), ColorTranslator.FromHtml("#6C6C6C"),
+                ColorTranslator.FromHtml("#6D6D6D"), ColorTranslator.FromHtml("#6E6E6E"),
+                ColorTranslator.FromHtml("#6F6F6F"), ColorTranslator.FromHtml("#707070"),
+                ColorTranslator.FromHtml("#717171"), ColorTranslator.FromHtml("#727272"),
+                ColorTranslator.FromHtml("#737373"), ColorTranslator.FromHtml("#747474"),
+                ColorTranslator.FromHtml("#757575"), ColorTranslator.FromHtml("#767676"),
+                ColorTranslator.FromHtml("#777777"), ColorTranslator.FromHtml("#787878"),
+                ColorTranslator.FromHtml("#797979"), ColorTranslator.FromHtml("#7A7A7A"),
+                ColorTranslator.FromHtml("#7B7B7B"), ColorTranslator.FromHtml("#7C7C7C"),
+                ColorTranslator.FromHtml("#7D7D7D"), ColorTranslator.FromHtml("#7E7E7E"),
+                ColorTranslator.FromHtml("#7F7F7F"), ColorTranslator.FromHtml("#808080"),
+                ColorTranslator.FromHtml("#818181"), ColorTranslator.FromHtml("#828282"),
+                ColorTranslator.FromHtml("#838383"), ColorTranslator.FromHtml("#848484"),
+                ColorTranslator.FromHtml("#858585"), ColorTranslator.FromHtml("#868686"),
+                ColorTranslator.FromHtml("#878787"), ColorTranslator.FromHtml("#888888"),
+                ColorTranslator.FromHtml("#898989"), ColorTranslator.FromHtml("#8A8A8A"),
+                ColorTranslator.FromHtml("#8B8B8B"), ColorTranslator.FromHtml("#8C8C8C"),
+                ColorTranslator.FromHtml("#8D8D8D"), ColorTranslator.FromHtml("#8E8E8E"),
+                ColorTranslator.FromHtml("#8F8F8F"), ColorTranslator.FromHtml("#909090"),
+                ColorTranslator.FromHtml("#919191"), ColorTranslator.FromHtml("#929292"),
+                ColorTranslator.FromHtml("#939393"), ColorTranslator.FromHtml("#949494"),
+                ColorTranslator.FromHtml("#959595"), ColorTranslator.FromHtml("#969696"),
+                ColorTranslator.FromHtml("#979797"), ColorTranslator.FromHtml("#989898"),
+                ColorTranslator.FromHtml("#999999"), ColorTranslator.FromHtml("#9A9A9A"),
+                ColorTranslator.FromHtml("#9B9B9B"), ColorTranslator.FromHtml("#9C9C9C"),
+                ColorTranslator.FromHtml("#9D9D9D"), ColorTranslator.FromHtml("#9E9E9E"),
+                ColorTranslator.FromHtml("#9F9F9F"), ColorTranslator.FromHtml("#A0A0A0"),
+                ColorTranslator.FromHtml("#A1A1A1"), ColorTranslator.FromHtml("#A2A2A2"),
+                ColorTranslator.FromHtml("#A3A3A3"), ColorTranslator.FromHtml("#A4A4A4"),
+                ColorTranslator.FromHtml("#A5A5A5"), ColorTranslator.FromHtml("#A6A6A6"),
+                ColorTranslator.FromHtml("#A7A7A7"), ColorTranslator.FromHtml("#A8A8A8"),
+                ColorTranslator.FromHtml("#A9A9A9"), ColorTranslator.FromHtml("#AAAAAA"),
+                ColorTranslator.FromHtml("#ABABAB"), ColorTranslator.FromHtml("#ACACAC"),
+                ColorTranslator.FromHtml("#ADADAD"), ColorTranslator.FromHtml("#AEAEAE"),
+                ColorTranslator.FromHtml("#AFAFAF"), ColorTranslator.FromHtml("#B0B0B0"),
+                ColorTranslator.FromHtml("#B1B1B1"), ColorTranslator.FromHtml("#B2B2B2"),
+                ColorTranslator.FromHtml("#B3B3B3"), ColorTranslator.FromHtml("#B4B4B4"),
+                ColorTranslator.FromHtml("#B5B5B5"), ColorTranslator.FromHtml("#B6B6B6"),
+                ColorTranslator.FromHtml("#B7B7B7"), ColorTranslator.FromHtml("#B8B8B8"),
+                ColorTranslator.FromHtml("#B9B9B9"), ColorTranslator.FromHtml("#BABABA"),
+                ColorTranslator.FromHtml("#BBBBBB"), ColorTranslator.FromHtml("#BCBCBC"),
+                ColorTranslator.FromHtml("#BDBDBD"), ColorTranslator.FromHtml("#BEBEBE"),
+                ColorTranslator.FromHtml("#BFBFBF"), ColorTranslator.FromHtml("#C0C0C0"),
+                ColorTranslator.FromHtml("#C1C1C1"), ColorTranslator.FromHtml("#C2C2C2"),
+                ColorTranslator.FromHtml("#C3C3C3"), ColorTranslator.FromHtml("#C4C4C4"),
+                ColorTranslator.FromHtml("#C5C5C5"), ColorTranslator.FromHtml("#C6C6C6"),
+                ColorTranslator.FromHtml("#C7C7C7"), ColorTranslator.FromHtml("#C8C8C8"),
+                ColorTranslator.FromHtml("#C9C9C9"), ColorTranslator.FromHtml("#CACACA"),
+                ColorTranslator.FromHtml("#CBCBCB"), ColorTranslator.FromHtml("#CCCCCC"),
+                ColorTranslator.FromHtml("#CDCDCD"), ColorTranslator.FromHtml("#CECECE"),
+                ColorTranslator.FromHtml("#CFCFCF"), ColorTranslator.FromHtml("#D0D0D0"),
+                ColorTranslator.FromHtml("#D1D1D1"), ColorTranslator.FromHtml("#D2D2D2"),
+                ColorTranslator.FromHtml("#D3D3D3"), ColorTranslator.FromHtml("#D4D4D4"),
+                ColorTranslator.FromHtml("#D5D5D5"), ColorTranslator.FromHtml("#D6D6D6"),
+                ColorTranslator.FromHtml("#D7D7D7"), ColorTranslator.FromHtml("#D8D8D8"),
+                ColorTranslator.FromHtml("#D9D9D9"), ColorTranslator.FromHtml("#DADADA"),
+                ColorTranslator.FromHtml("#DBDBDB"), ColorTranslator.FromHtml("#DCDCDC"),
+                ColorTranslator.FromHtml("#DDDDDD"), ColorTranslator.FromHtml("#DEDEDE"),
+                ColorTranslator.FromHtml("#DFDFDF"), ColorTranslator.FromHtml("#E0E0E0"),
+                ColorTranslator.FromHtml("#E1E1E1"), ColorTranslator.FromHtml("#E2E2E2"),
+                ColorTranslator.FromHtml("#E3E3E3"), ColorTranslator.FromHtml("#E4E4E4"),
+                ColorTranslator.FromHtml("#E5E5E5"), ColorTranslator.FromHtml("#E6E6E6"),
+                ColorTranslator.FromHtml("#E7E7E7"), ColorTranslator.FromHtml("#E8E8E8"),
+                ColorTranslator.FromHtml("#E9E9E9"), ColorTranslator.FromHtml("#EAEAEA"),
+                ColorTranslator.FromHtml("#EBEBEB"), ColorTranslator.FromHtml("#ECECEC"),
+                ColorTranslator.FromHtml("#EDEDED"), ColorTranslator.FromHtml("#EEEEEE"),
+                ColorTranslator.FromHtml("#EFEFEF"), ColorTranslator.FromHtml("#F0F0F0"),
+                ColorTranslator.FromHtml("#F1F1F1"), ColorTranslator.FromHtml("#F2F2F2"),
+                ColorTranslator.FromHtml("#F3F3F3"), ColorTranslator.FromHtml("#F4F4F4"),
+                ColorTranslator.FromHtml("#F5F5F5"), ColorTranslator.FromHtml("#F6F6F6"),
+                ColorTranslator.FromHtml("#F7F7F7"), ColorTranslator.FromHtml("#F8F8F8"),
+                ColorTranslator.FromHtml("#F9F9F9"), ColorTranslator.FromHtml("#FAFAFA"),
+                ColorTranslator.FromHtml("#FBFBFB")
+            };
+
+            // Get the current image from DetailPictureBox
+            Bitmap image = DetailPictureBox.Image as Bitmap;
+            if (image == null)
+            {
+                MessageBox.Show("No image selected.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            // Convert the image to grayscale
+            for (int y = 0; y < image.Height; y++)
+            {
+                for (int x = 0; x < image.Width; x++)
+                {
+                    Color originalColor = image.GetPixel(x, y);
+
+                    // Skip #000000 and #FFFFFF
+                    if (originalColor.ToArgb() == Color.Black.ToArgb() || originalColor.ToArgb() == Color.White.ToArgb())
+                    {
+                        continue;
+                    }
+
+                    int brightness = (int)(originalColor.GetBrightness() * (grayscaleColors.Count - 1)); // Ensure the index is within the range
+                    brightness = Math.Clamp(brightness, 0, grayscaleColors.Count - 1); // Ensure the index is within bounds
+                    Color newColor = grayscaleColors[brightness];
+                    image.SetPixel(x, y, newColor);
+                }
+            }
+
+            // Update the DetailPictureBox with the new grayscale image
+            DetailPictureBox.Image = image;
+            DetailPictureBox.Refresh();
+        }
+        #endregion
     }
 }

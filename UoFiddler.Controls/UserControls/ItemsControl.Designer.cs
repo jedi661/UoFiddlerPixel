@@ -117,6 +117,7 @@ namespace UoFiddler.Controls.UserControls
             toolStripButton1 = new ToolStripButton();
             colorDialog = new ColorDialog();
             collapsibleSplitter1 = new CollapsibleSplitter();
+            grayscaleToolStripMenuItem = new ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)splitContainer2).BeginInit();
             splitContainer2.Panel1.SuspendLayout();
             splitContainer2.Panel2.SuspendLayout();
@@ -178,9 +179,9 @@ namespace UoFiddler.Controls.UserControls
             // 
             // DetailPictureBoxContextMenuStrip
             // 
-            DetailPictureBoxContextMenuStrip.Items.AddRange(new ToolStripItem[] { changeBackgroundColorToolStripMenuItemDetail, toolStripSeparator6, particleGraylToolStripMenuItem, particleGrayColorToolStripMenuItem, toolStripSeparator7, drawRhombusToolStripMenuItem, gridPictureToolStripMenuItem, SelectColorToolStripMenuItem, toolStripSeparator8, copyClipboardToolStripMenuItem });
+            DetailPictureBoxContextMenuStrip.Items.AddRange(new ToolStripItem[] { changeBackgroundColorToolStripMenuItemDetail, toolStripSeparator6, particleGraylToolStripMenuItem, particleGrayColorToolStripMenuItem, toolStripSeparator7, drawRhombusToolStripMenuItem, gridPictureToolStripMenuItem, SelectColorToolStripMenuItem, toolStripSeparator8, copyClipboardToolStripMenuItem, grayscaleToolStripMenuItem });
             DetailPictureBoxContextMenuStrip.Name = "contextMenuStrip2";
-            DetailPictureBoxContextMenuStrip.Size = new System.Drawing.Size(213, 176);
+            DetailPictureBoxContextMenuStrip.Size = new System.Drawing.Size(213, 220);
             // 
             // changeBackgroundColorToolStripMenuItemDetail
             // 
@@ -323,7 +324,7 @@ namespace UoFiddler.Controls.UserControls
             // 
             TileViewContextMenuStrip.Items.AddRange(new ToolStripItem[] { showFreeSlotsToolStripMenuItem, findNextFreeSlotToolStripMenuItem, ChangeBackgroundColorToolStripMenuItem, colorsImageToolStripMenuItem, toolStripSeparator3, selectInTileDataTabToolStripMenuItem, selectInRadarColorTabToolStripMenuItem, SelectIDToHexToolStripMenuItem, selectInGumpsTabMaleToolStripMenuItem, selectInGumpsTabFemaleToolStripMenuItem, toolStripSeparator2, extractToolStripMenuItem, replaceToolStripMenuItem, replaceStartingFromToolStripMenuItem, removeToolStripMenuItem, insertAtToolStripMenuItem, imageSwapToolStripMenuItem, toolStripSeparator5, mirrorToolStripMenuItem, toolStripSeparator1, copyToolStripMenuItem, importToolStripclipboardMenuItem, toolStripSeparator4, markToolStripMenuItem, gotoMarkToolStripMenuItem, toolStripSeparator9, saveToolStripMenuItem });
             TileViewContextMenuStrip.Name = "contextMenuStrip1";
-            TileViewContextMenuStrip.Size = new System.Drawing.Size(213, 524);
+            TileViewContextMenuStrip.Size = new System.Drawing.Size(213, 502);
             TileViewContextMenuStrip.Closing += TileViewContextMenuStrip_Closing;
             TileViewContextMenuStrip.Opening += TileViewContextMenuStrip_Opening;
             // 
@@ -780,6 +781,13 @@ namespace UoFiddler.Controls.UserControls
             collapsibleSplitter1.UseAnimations = false;
             collapsibleSplitter1.VisualStyle = VisualStyles.DoubleDots;
             // 
+            // grayscaleToolStripMenuItem
+            // 
+            grayscaleToolStripMenuItem.Name = "grayscaleToolStripMenuItem";
+            grayscaleToolStripMenuItem.Size = new System.Drawing.Size(212, 22);
+            grayscaleToolStripMenuItem.Text = "Grayscale";
+            grayscaleToolStripMenuItem.Click += grayscaleToolStripMenuItem_Click;
+            // 
             // ItemsControl
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -889,5 +897,6 @@ namespace UoFiddler.Controls.UserControls
         private ToolStripMenuItem markToolStripMenuItem;
         private ToolStripMenuItem gotoMarkToolStripMenuItem;
         private ToolStripSeparator toolStripSeparator9;
+        private ToolStripMenuItem grayscaleToolStripMenuItem;
     }
 }
