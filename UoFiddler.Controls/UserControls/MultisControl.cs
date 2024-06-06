@@ -37,6 +37,9 @@ namespace UoFiddler.Controls.UserControls
         private string selectedMultiName;
         private int selectedMultiType;
 
+        private PictureBox _pictureBox;
+        private int _previousLineIndex = -1; // Stores the index of the previous line
+
         public MultisControl()
         {
             InitializeComponent();
@@ -67,7 +70,7 @@ namespace UoFiddler.Controls.UserControls
             // Event Handler für das KeyUp-Ereignis der ToolStripTextBoxSearch
             ToolStripTextBoxSearch.KeyUp += ToolStripTextBoxSearch_KeyUp;
 
-
+            InitializePictureBox(); // Visual highlighting Picturebox
         }
 
         private bool _loaded;
@@ -1188,7 +1191,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region Copy tabPage6 contextMenuStrip3
+        #region copyToolStripMenuItem
         private void copyToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (!string.IsNullOrEmpty(MultiComponentBox.Text))
@@ -1196,16 +1199,24 @@ namespace UoFiddler.Controls.UserControls
                 Clipboard.SetText(MultiComponentBox.Text);
             }
         }
+        #endregion
 
+        #region TabControl3_SelectedIndexChanged
         private void TabControl3_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (tabControl3.SelectedTab == tabPage5)
             {
                 MultiComponentBox.ContextMenuStrip = contextMenuStrip1;
+                _pictureBox.Visible = false; // Hide the PictureBox when on tabPage5
             }
             else if (tabControl3.SelectedTab == tabPage6)
             {
                 MultiComponentBox.ContextMenuStrip = contextMenuStrip3;
+                // Do nothing, allow the PictureBox to be controlled by MouseMove and other events
+            }
+            else
+            {
+                _pictureBox.Visible = false; // Hide the PictureBox for other tabs
             }
         }
         #endregion
@@ -1395,6 +1406,164 @@ namespace UoFiddler.Controls.UserControls
 
             MessageBox.Show($"All Multis saved to {fileName}", "Saved", MessageBoxButtons.OK,
                 MessageBoxIcon.Information, MessageBoxDefaultButton.Button1);
+        }
+        #endregion
+
+        #region InitializePictureBox
+        private void InitializePictureBox()
+        {
+            _pictureBox = new PictureBox
+            {
+                Size = new Size(200, 200),
+                BorderStyle = BorderStyle.FixedSingle,
+                BackColor = Color.White,
+                Visible = false  // Hide PictureBox first
+            };
+            Controls.Add(_pictureBox);
+            _pictureBox.BringToFront();
+        }
+        #endregion
+
+        #region MultiComponentBox_MouseMove
+        private void MultiComponentBox_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (MultiComponentBox.Lines.Length == 0) return; // Exit if there are no lines
+
+            int index = MultiComponentBox.GetCharIndexFromPosition(e.Location);
+            int lineIndex = MultiComponentBox.GetLineFromCharIndex(index);
+
+            // Ensure lineIndex is within the valid range
+            if (lineIndex < 0 || lineIndex >= MultiComponentBox.Lines.Length) return;
+
+            HighlightLine(lineIndex);
+            ShowGraphicForLine(lineIndex, e.Location);
+        }
+        #endregion
+
+        #region MultiComponentBox_SelectionChanged(
+        private void MultiComponentBox_SelectionChanged(object sender, EventArgs e)
+        {
+            int lineIndex = MultiComponentBox.GetLineFromCharIndex(MultiComponentBox.SelectionStart);
+            ShowGraphicForLine(lineIndex, MultiComponentBox.GetPositionFromCharIndex(MultiComponentBox.SelectionStart));
+        }
+        #endregion
+
+        #region MultiComponentBox_MouseLeave
+        private void MultiComponentBox_MouseLeave(object sender, EventArgs e)
+        {
+            _pictureBox.Visible = false; // Hide the PictureBox when the mouse leaves the MultiComponentBox
+            ClearHighlight(); // Remove the highlighting when the mouse leaves the MultiComponentBox
+        }
+        #endregion
+
+        #region HighlightLine
+        private void HighlightLine(int lineIndex)
+        {
+            if (MultiComponentBox.Lines.Length == 0) return; // Exit if there are no lines
+
+            // Ensure lineIndex is within the valid range
+            if (lineIndex < 0 || lineIndex >= MultiComponentBox.Lines.Length) return;
+
+            if (lineIndex != _previousLineIndex)
+            {
+                ClearHighlight(); // Unhighlight the previous line
+
+                // Highlight the current line
+                int start = MultiComponentBox.GetFirstCharIndexFromLine(lineIndex);
+                int length = MultiComponentBox.Lines[lineIndex].Length;
+
+                MultiComponentBox.Select(start, length);
+                MultiComponentBox.SelectionBackColor = Color.LightGray;
+                MultiComponentBox.DeselectAll();
+
+                _previousLineIndex = lineIndex;
+            }
+        }
+        #endregion
+
+        #region ClearHighligh
+        private void ClearHighlight()
+        {
+            if (_previousLineIndex != -1 && _previousLineIndex < MultiComponentBox.Lines.Length)
+            {
+                int start = MultiComponentBox.GetFirstCharIndexFromLine(_previousLineIndex);
+                int length = MultiComponentBox.Lines[_previousLineIndex].Length;
+
+                MultiComponentBox.Select(start, length);
+                MultiComponentBox.SelectionBackColor = MultiComponentBox.BackColor;
+                MultiComponentBox.DeselectAll();
+
+                _previousLineIndex = -1;
+            }
+        }
+        #endregion
+
+        #region ShowGraphicForLine
+        private void ShowGraphicForLine(int lineIndex, Point mousePosition)
+        {
+            if (MultiComponentBox == null || MultiComponentBox.Lines == null || MultiComponentBox.Lines.Length == 0)
+            {
+                return;
+            }
+
+            if (lineIndex < 0 || lineIndex >= MultiComponentBox.Lines.Length)
+            {
+                return;
+            }
+
+            string line = MultiComponentBox.Lines[lineIndex];
+            if (string.IsNullOrEmpty(line))
+            {
+                return;
+            }
+
+            string[] parts = line.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            if (parts.Length == 0)
+            {
+                return;
+            }
+
+            string hexAddress = parts[0];
+            if (string.IsNullOrEmpty(hexAddress))
+            {
+                return;
+            }
+
+            Bitmap graphic = LoadGraphic(hexAddress);
+            if (graphic != null)
+            {
+                _pictureBox.Image = graphic;
+                _pictureBox.Size = graphic.Size; // Adjust the size of the PictureBox to the size of the graphic
+
+                // Convert mouse position to screen coordinates
+                Point screenPoint = MultiComponentBox.PointToScreen(mousePosition);
+
+                // Set the position of the PictureBox relative to the shape
+                _pictureBox.Location = new Point(screenPoint.X + 60 - this.ParentForm.Location.X, screenPoint.Y - 80 - this.ParentForm.Location.Y); // Position directly to the right of the mouse pointer with + X 60 and - Y 80
+                _pictureBox.Visible = true;
+            }
+            else
+            {
+                _pictureBox.Visible = false;
+            }
+        }
+        #endregion
+
+        #region LoadGraphic
+        private Bitmap LoadGraphic(string hexAddress)
+        {
+            try
+            {
+                int id = Convert.ToInt32(hexAddress, 16); // Convert the hex address to an integer
+                Bitmap graphic = Art.GetStatic(id); // Use Art.GetStatic to load the graphic
+                return graphic;
+            }
+            catch (Exception ex)
+            {
+                // Debugging: output the error
+                MessageBox.Show($"Error loading graphic: {ex.Message}");
+                return null;
+            }
         }
         #endregion
     }

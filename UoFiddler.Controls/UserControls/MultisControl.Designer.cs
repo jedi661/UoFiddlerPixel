@@ -623,6 +623,9 @@ namespace UoFiddler.Controls.UserControls
             MultiComponentBox.Size = new System.Drawing.Size(489, 408);
             MultiComponentBox.TabIndex = 0;
             MultiComponentBox.Text = "";
+            MultiComponentBox.SelectionChanged += MultiComponentBox_SelectionChanged;
+            MultiComponentBox.MouseLeave += MultiComponentBox_MouseLeave;
+            MultiComponentBox.MouseMove += MultiComponentBox_MouseMove;
             // 
             // colorDialog
             // 
