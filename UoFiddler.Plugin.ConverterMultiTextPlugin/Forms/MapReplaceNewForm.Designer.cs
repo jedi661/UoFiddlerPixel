@@ -64,9 +64,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             groupBox1 = new System.Windows.Forms.GroupBox();
             checkBoxMap = new System.Windows.Forms.CheckBox();
             textBox1 = new System.Windows.Forms.TextBox();
-            button1 = new System.Windows.Forms.Button();
+            ButtonDir = new System.Windows.Forms.Button();
             button2 = new System.Windows.Forms.Button();
-            pictureBox1 = new System.Windows.Forms.PictureBox();
+            pictureBoxMap = new System.Windows.Forms.PictureBox();
             btLoadUODir = new System.Windows.Forms.Button();
             textBoxUltimaDir = new System.Windows.Forms.TextBox();
             button3 = new System.Windows.Forms.Button();
@@ -81,7 +81,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             ((System.ComponentModel.ISupportInitialize)numericUpDownX2).BeginInit();
             groupBox2.SuspendLayout();
             groupBox1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)pictureBoxMap).BeginInit();
             SuspendLayout();
             // 
             // label8
@@ -343,18 +343,18 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             textBox1.Size = new System.Drawing.Size(227, 23);
             textBox1.TabIndex = 25;
             // 
-            // button1
+            // ButtonDir
             // 
-            button1.AutoSize = true;
-            button1.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            button1.Location = new System.Drawing.Point(340, 6);
-            button1.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            button1.Name = "button1";
-            button1.Size = new System.Drawing.Size(26, 25);
-            button1.TabIndex = 26;
-            button1.Text = "...";
-            button1.UseVisualStyleBackColor = true;
-            button1.Click += OnClickBrowse;
+            ButtonDir.AutoSize = true;
+            ButtonDir.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            ButtonDir.Location = new System.Drawing.Point(340, 6);
+            ButtonDir.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            ButtonDir.Name = "ButtonDir";
+            ButtonDir.Size = new System.Drawing.Size(26, 25);
+            ButtonDir.TabIndex = 26;
+            ButtonDir.Text = "...";
+            ButtonDir.UseVisualStyleBackColor = true;
+            ButtonDir.Click += OnClickBrowse;
             // 
             // button2
             // 
@@ -367,13 +367,13 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             button2.UseVisualStyleBackColor = true;
             button2.Click += OnClickCopy;
             // 
-            // pictureBox1
+            // pictureBoxMap
             // 
-            pictureBox1.Location = new System.Drawing.Point(387, 107);
-            pictureBox1.Name = "pictureBox1";
-            pictureBox1.Size = new System.Drawing.Size(401, 311);
-            pictureBox1.TabIndex = 36;
-            pictureBox1.TabStop = false;
+            pictureBoxMap.Location = new System.Drawing.Point(387, 107);
+            pictureBoxMap.Name = "pictureBoxMap";
+            pictureBoxMap.Size = new System.Drawing.Size(401, 311);
+            pictureBoxMap.TabIndex = 36;
+            pictureBoxMap.TabStop = false;
             // 
             // btLoadUODir
             // 
@@ -421,7 +421,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             Controls.Add(button3);
             Controls.Add(textBoxUltimaDir);
             Controls.Add(btLoadUODir);
-            Controls.Add(pictureBox1);
+            Controls.Add(pictureBoxMap);
             Controls.Add(label8);
             Controls.Add(comboBoxMapID);
             Controls.Add(groupBox4);
@@ -431,7 +431,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             Controls.Add(groupBox2);
             Controls.Add(groupBox1);
             Controls.Add(textBox1);
-            Controls.Add(button1);
+            Controls.Add(ButtonDir);
             Controls.Add(button2);
             Icon = (System.Drawing.Icon)resources.GetObject("$this.Icon");
             Name = "MapReplaceNewForm";
@@ -450,7 +450,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             groupBox2.PerformLayout();
             groupBox1.ResumeLayout(false);
             groupBox1.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();
+            ((System.ComponentModel.ISupportInitialize)pictureBoxMap).EndInit();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -481,9 +481,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.CheckBox checkBoxMap;
         private System.Windows.Forms.TextBox textBox1;
-        private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.Button ButtonDir;
         private System.Windows.Forms.Button button2;
-        private System.Windows.Forms.PictureBox pictureBox1;
+        private System.Windows.Forms.PictureBox pictureBoxMap;
         private System.Windows.Forms.Button btLoadUODir;
         private System.Windows.Forms.TextBox textBoxUltimaDir;
         private System.Windows.Forms.Button button3;
