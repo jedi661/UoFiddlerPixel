@@ -36,6 +36,7 @@ Version : 4.12.4
 - Add "ItemSearchForm" expanded and restructured.
 - Add Items a Color to Grayscale.
 - Add Multi - Visual highlighting of index components in MultiComponentBox.
+- Add Item “Store Image Name and Hexadecimal Value in Temporary Storage".
 
 Version : 4.12.3
 - Add Items Image Colors and Update.
