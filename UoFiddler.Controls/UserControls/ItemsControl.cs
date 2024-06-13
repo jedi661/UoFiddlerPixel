@@ -21,6 +21,7 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using Ultima;
+using System.Media;
 using UoFiddler.Controls.Classes;
 using UoFiddler.Controls.Forms;
 using UoFiddler.Controls.Helpers;
@@ -2337,6 +2338,73 @@ namespace UoFiddler.Controls.UserControls
             DetailPictureBox.Image = image;
 
             DetailPictureBox.Update();
+        }
+        #endregion
+
+        #region SaveImageNameAndHexToTempToolStripMenuItem
+        private void SaveImageNameAndHexToTempToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // Check whether one or more graphics are selected
+            if (ItemsTileView.SelectedIndices.Count == 0)
+            {
+                MessageBox.Show("No graphics selected.");
+                return;
+            }
+
+            // Pfad zum temporären Verzeichnis abrufen
+            string programDirectory = Application.StartupPath;
+            string tempDirectory = Path.Combine(programDirectory, "tempGrafic");
+
+            // Create directory if it does not exist
+            if (!Directory.Exists(tempDirectory))
+            {
+                Directory.CreateDirectory(tempDirectory);
+            }
+
+            // Liste der gespeicherten Dateipfade
+            List<string> savedFiles = new List<string>();
+
+            // Iterate through the selected graphics and save
+            foreach (int selectedIndex in ItemsTileView.SelectedIndices)
+            {
+                int graphicId = _itemList[selectedIndex];
+                ItemData itemData = TileData.ItemTable[graphicId];
+
+                // Get graphics and details
+                Bitmap bitmap = Art.GetStatic(graphicId);
+                if (bitmap == null)
+                {
+                    MessageBox.Show($"Graphic with ID {graphicId} could not be retrieved.");
+                    continue;
+                }
+
+                string hexAddress = $"0x{graphicId:X}";
+                string imageName = itemData.Name;
+                string fileName = $"{hexAddress}_{imageName}.bmp";
+
+                // Save graphic
+                string filePath = Path.Combine(tempDirectory, fileName);
+                bitmap.Save(filePath, ImageFormat.Bmp);
+                savedFiles.Add(filePath);
+            }
+
+            // Play sound
+            string soundPath = Path.Combine(programDirectory, "Sound.wav");
+            if (File.Exists(soundPath))
+            {
+                using (SoundPlayer player = new SoundPlayer(soundPath))
+                {
+                    player.Play();
+                }
+            }
+            else
+            {
+                MessageBox.Show("Sound file not found.");
+            }
+
+            // Show MessageBox with the storage locations
+            string message = "The following graphics were saved:\n" + string.Join("\n", savedFiles);
+            MessageBox.Show(message);
         }
         #endregion
     }
