@@ -80,6 +80,7 @@ namespace UoFiddler.Controls.UserControls
             asJpgToolStripMenuItem1 = new ToolStripMenuItem();
             asPngToolStripMenuItem1 = new ToolStripMenuItem();
             SaveImageNameAndHexToTempToolStripMenuItem = new ToolStripMenuItem();
+            toolStripSeparator11 = new ToolStripSeparator();
             replaceToolStripMenuItem = new ToolStripMenuItem();
             replaceStartingFromToolStripMenuItem = new ToolStripMenuItem();
             ReplaceStartingFromText = new ToolStripTextBox();
@@ -120,7 +121,6 @@ namespace UoFiddler.Controls.UserControls
             toolStripButton1 = new ToolStripButton();
             colorDialog = new ColorDialog();
             collapsibleSplitter1 = new CollapsibleSplitter();
-            toolStripSeparator11 = new ToolStripSeparator();
             ((System.ComponentModel.ISupportInitialize)splitContainer2).BeginInit();
             splitContainer2.Panel1.SuspendLayout();
             splitContainer2.Panel2.SuspendLayout();
@@ -341,7 +341,7 @@ namespace UoFiddler.Controls.UserControls
             // 
             TileViewContextMenuStrip.Items.AddRange(new ToolStripItem[] { showFreeSlotsToolStripMenuItem, findNextFreeSlotToolStripMenuItem, ChangeBackgroundColorToolStripMenuItem, colorsImageToolStripMenuItem, toolStripSeparator3, selectInTileDataTabToolStripMenuItem, selectInRadarColorTabToolStripMenuItem, SelectIDToHexToolStripMenuItem, selectInGumpsTabMaleToolStripMenuItem, selectInGumpsTabFemaleToolStripMenuItem, toolStripSeparator2, extractToolStripMenuItem, SaveImageNameAndHexToTempToolStripMenuItem, toolStripSeparator11, replaceToolStripMenuItem, replaceStartingFromToolStripMenuItem, removeToolStripMenuItem, insertAtToolStripMenuItem, imageSwapToolStripMenuItem, toolStripSeparator5, mirrorToolStripMenuItem, toolStripSeparator1, copyToolStripMenuItem, importToolStripclipboardMenuItem, toolStripSeparator4, markToolStripMenuItem, gotoMarkToolStripMenuItem, toolStripSeparator9, saveToolStripMenuItem });
             TileViewContextMenuStrip.Name = "contextMenuStrip1";
-            TileViewContextMenuStrip.Size = new System.Drawing.Size(230, 530);
+            TileViewContextMenuStrip.Size = new System.Drawing.Size(230, 552);
             TileViewContextMenuStrip.Closing += TileViewContextMenuStrip_Closing;
             TileViewContextMenuStrip.Opening += TileViewContextMenuStrip_Opening;
             // 
@@ -481,9 +481,14 @@ namespace UoFiddler.Controls.UserControls
             SaveImageNameAndHexToTempToolStripMenuItem.Image = Properties.Resources.Image;
             SaveImageNameAndHexToTempToolStripMenuItem.Name = "SaveImageNameAndHexToTempToolStripMenuItem";
             SaveImageNameAndHexToTempToolStripMenuItem.Size = new System.Drawing.Size(229, 22);
-            SaveImageNameAndHexToTempToolStripMenuItem.Text = "Save Img Name_Hex to Temp";
+            SaveImageNameAndHexToTempToolStripMenuItem.Text = "Save Img Hex_Name to Temp";
             SaveImageNameAndHexToTempToolStripMenuItem.ToolTipText = "Save Graphic with Hex Address and Name to Temp";
             SaveImageNameAndHexToTempToolStripMenuItem.Click += SaveImageNameAndHexToTempToolStripMenuItem_Click;
+            // 
+            // toolStripSeparator11
+            // 
+            toolStripSeparator11.Name = "toolStripSeparator11";
+            toolStripSeparator11.Size = new System.Drawing.Size(226, 6);
             // 
             // replaceToolStripMenuItem
             // 
@@ -806,11 +811,6 @@ namespace UoFiddler.Controls.UserControls
             collapsibleSplitter1.TabStop = false;
             collapsibleSplitter1.UseAnimations = false;
             collapsibleSplitter1.VisualStyle = VisualStyles.DoubleDots;
-            // 
-            // toolStripSeparator11
-            // 
-            toolStripSeparator11.Name = "toolStripSeparator11";
-            toolStripSeparator11.Size = new System.Drawing.Size(226, 6);
             // 
             // ItemsControl
             // 
