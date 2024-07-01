@@ -120,6 +120,8 @@
             toolStripSeparator10 = new System.Windows.Forms.ToolStripSeparator();
             AnimationPictureBox = new System.Windows.Forms.PictureBox();
             EditSidePanel = new System.Windows.Forms.Panel();
+            buttonShow = new System.Windows.Forms.Button();
+            comboBoxMenWoman = new System.Windows.Forms.ComboBox();
             FramesGroupBox = new System.Windows.Forms.GroupBox();
             FramesTrackBar = new System.Windows.Forms.TrackBar();
             SpeedGroupBox = new System.Windows.Forms.GroupBox();
@@ -388,7 +390,7 @@
             // ProgressBar
             // 
             ProgressBar.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
-            ProgressBar.Location = new System.Drawing.Point(574, 628);
+            ProgressBar.Location = new System.Drawing.Point(561, 628);
             ProgressBar.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             ProgressBar.Name = "ProgressBar";
             ProgressBar.Size = new System.Drawing.Size(197, 20);
@@ -1077,6 +1079,8 @@
             // EditSidePanel
             // 
             EditSidePanel.BackColor = System.Drawing.SystemColors.Control;
+            EditSidePanel.Controls.Add(buttonShow);
+            EditSidePanel.Controls.Add(comboBoxMenWoman);
             EditSidePanel.Controls.Add(FramesGroupBox);
             EditSidePanel.Controls.Add(SpeedGroupBox);
             EditSidePanel.Controls.Add(LocationCenterGroupBox);
@@ -1088,6 +1092,29 @@
             EditSidePanel.Name = "EditSidePanel";
             EditSidePanel.Size = new System.Drawing.Size(190, 560);
             EditSidePanel.TabIndex = 0;
+            // 
+            // buttonShow
+            // 
+            buttonShow.Location = new System.Drawing.Point(89, 457);
+            buttonShow.Name = "buttonShow";
+            buttonShow.Size = new System.Drawing.Size(72, 23);
+            buttonShow.TabIndex = 25;
+            buttonShow.Text = "Show";
+            buttonShow.UseVisualStyleBackColor = true;
+            buttonShow.Click += buttonShow_Click;
+            // 
+            // comboBoxMenWoman
+            // 
+            comboBoxMenWoman.BackColor = System.Drawing.SystemColors.Info;
+            comboBoxMenWoman.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            comboBoxMenWoman.FormattingEnabled = true;
+            comboBoxMenWoman.Items.AddRange(new object[] { "men", "woman" });
+            comboBoxMenWoman.Location = new System.Drawing.Point(10, 457);
+            comboBoxMenWoman.Name = "comboBoxMenWoman";
+            comboBoxMenWoman.Size = new System.Drawing.Size(73, 23);
+            comboBoxMenWoman.TabIndex = 24;
+            comboBoxMenWoman.Text = "men";
+            comboBoxMenWoman.SelectedIndexChanged += comboBoxMenWoman_SelectedIndexChanged;
             // 
             // FramesGroupBox
             // 
@@ -1408,7 +1435,7 @@
             // 
             DirectionTrackBar.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
             DirectionTrackBar.AutoSize = false;
-            DirectionTrackBar.Location = new System.Drawing.Point(778, 626);
+            DirectionTrackBar.Location = new System.Drawing.Point(765, 626);
             DirectionTrackBar.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             DirectionTrackBar.Maximum = 4;
             DirectionTrackBar.Name = "DirectionTrackBar";
@@ -1676,5 +1703,7 @@
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator9;
         private System.Windows.Forms.ToolStripMenuItem saveToolStripMenuItem1;
         private System.Windows.Forms.ToolStripMenuItem editUoBodyconMobtypesToolStripMenuItem;
+        private System.Windows.Forms.Button buttonShow;
+        private System.Windows.Forms.ComboBox comboBoxMenWoman;
     }
 }

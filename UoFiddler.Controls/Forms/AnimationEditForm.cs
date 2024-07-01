@@ -47,6 +47,15 @@ namespace UoFiddler.Controls.Forms
         private static readonly SolidBrush _whiteUnDrawOpaque = new SolidBrush(Color.FromArgb(255, 255, 255, 255));
         private static SolidBrush _whiteUnDraw = _whiteUnDrawOpaque;
 
+        private static readonly Color _greyConvert = Color.FromArgb(255, 170, 170, 170);
+
+        private static bool _lockButton;
+
+        private bool isAnimationVisible = false; // Second animation
+        private AnimIdx additionalAnimation = null; // Second animation
+
+
+        #region [ AnimationEditForm ]
         public AnimationEditForm()
         {
             InitializeComponent();
@@ -61,7 +70,9 @@ namespace UoFiddler.Controls.Forms
             _showOnlyValid = false;
             _loaded = false;
         }
+        #endregion
 
+        #region [ _animNames ]
         private readonly string[][] _animNames =
         {
             new string[]
@@ -144,86 +155,9 @@ namespace UoFiddler.Controls.Forms
                 "Ingest_Eat_01"
             } //human
         };
+        #endregion
 
-        /*private void OnLoad(object sender, EventArgs e)
-        {
-            Options.LoadedUltimaClass["AnimationEdit"] = true;
-
-            AnimationListTreeView.BeginUpdate();
-            try
-            {
-                AnimationListTreeView.Nodes.Clear();
-                if (_fileType != 0)
-                {
-                    int count = Animations.GetAnimCount(_fileType);
-                    TreeNode[] nodes = new TreeNode[count];
-                    for (int i = 0; i < count; ++i)
-                    {
-                        int animLength = Animations.GetAnimLength(i, _fileType);
-                        string type = animLength == 22 ? "H" : animLength == 13 ? "L" : "P";
-                        TreeNode node = new TreeNode
-                        {
-                            Tag = i,
-                            Text = $"{type}: {i} ({BodyConverter.GetTrueBody(_fileType, i)})"
-                        };
-
-                        bool valid = false;
-                        for (int j = 0; j < animLength; ++j)
-                        {
-                            TreeNode treeNode = new TreeNode
-                            {
-                                Tag = j,
-                                Text = string.Format("{0:D2} {1}", j, _animNames[animLength == 22 ? 1 : animLength == 13 ? 0 : 2][j])
-                            };
-
-                            if (AnimationEdit.IsActionDefined(_fileType, i, j))
-                            {
-                                valid = true;
-                            }
-                            else
-                            {
-                                treeNode.ForeColor = Color.Red;
-                            }
-
-                            node.Nodes.Add(treeNode);
-                        }                        
-
-                        if (!valid)
-                        {
-                            if (_showOnlyValid)
-                            {
-                                continue;
-                            }
-
-                            //node.ForeColor = Color.Red;
-                            // If checkBoxIDBlue is checked, set the color to Blue. Otherwise, set it to Red.
-                            node.ForeColor = checkBoxIDBlue.Checked ? Color.Blue : Color.Red;
-                        }
-
-                        nodes[i] = node;
-                    }
-
-                    AnimationListTreeView.Nodes.AddRange(nodes.Where(n => n != null).ToArray());
-                }
-            }
-            finally
-            {
-                AnimationListTreeView.EndUpdate();
-            }
-
-            if (AnimationListTreeView.Nodes.Count > 0)
-            {
-                AnimationListTreeView.SelectedNode = AnimationListTreeView.Nodes[0];
-            }
-
-            if (!_loaded)
-            {
-                ControlEvents.FilePathChangeEvent += OnFilePathChangeEvent;
-            }
-
-            _loaded = true;
-        }*/
-
+        #region [ OnLoad ]
         private void OnLoad(object sender, EventArgs e)
         {
             Options.LoadedUltimaClass["AnimationEdit"] = true;
@@ -307,8 +241,9 @@ namespace UoFiddler.Controls.Forms
 
             _loaded = true;
         }
+        #endregion
 
-
+        #region [ OnFilePathChangeEvent ]
         private void OnFilePathChangeEvent()
         {
             if (!_loaded)
@@ -326,14 +261,18 @@ namespace UoFiddler.Controls.Forms
             ShowOnlyValidToolStripMenuItem.Checked = false;
             OnLoad(null);
         }
+        #endregion
 
+        #region [ TreeNode GetNode ]
         private TreeNode GetNode(int tag)
         {
             return _showOnlyValid
                 ? AnimationListTreeView.Nodes.Cast<TreeNode>().FirstOrDefault(node => (int)node.Tag == tag)
                 : AnimationListTreeView.Nodes[tag];
         }
+        #endregion
 
+        #region [ SetPaletteBox ]
         private unsafe void SetPaletteBox()
         {
             if (_fileType == 0)
@@ -368,7 +307,9 @@ namespace UoFiddler.Controls.Forms
             PalettePictureBox.Image?.Dispose();
             PalettePictureBox.Image = bmp;
         }
+        #endregion
 
+        #region [ AfterSelectTreeView ]
         private void AfterSelectTreeView(object sender, TreeViewEventArgs e)
         {
             if (AnimationListTreeView.SelectedNode == null)
@@ -457,8 +398,9 @@ namespace UoFiddler.Controls.Forms
             AnimationPictureBox.Invalidate();
             SetPaletteBox();
         }
+        #endregion
 
-        #region DrawFrameItem
+        #region [ DrawFrameItem ]
         private void DrawFrameItem(object sender, DrawListViewItemEventArgs e)
         {
             AnimIdx edit = AnimationEdit.GetAnimation(_fileType, _currentBody, _currentAction, _currentDir);
@@ -484,6 +426,7 @@ namespace UoFiddler.Controls.Forms
         }
         #endregion
 
+        #region [ OnAnimChanged ]
         private void OnAnimChanged(object sender, EventArgs e)
         {
             if (SelectFileToolStripComboBox.SelectedIndex == _fileType)
@@ -494,20 +437,45 @@ namespace UoFiddler.Controls.Forms
             _fileType = SelectFileToolStripComboBox.SelectedIndex;
             OnLoad(this, EventArgs.Empty);
         }
+        #endregion
 
-        private void OnDirectionChanged(object sender, EventArgs e)
+        /*private void OnDirectionChanged(object sender, EventArgs e)
         {
             _currentDir = DirectionTrackBar.Value;
             AfterSelectTreeView(null, null);
-        }
+        }*/
 
+        #region [ OnDirectionChanged ]
+        private void OnDirectionChanged(object sender, EventArgs e)
+        {
+            _currentDir = DirectionTrackBar.Value;
+
+            if (isAnimationVisible)
+            {
+                // Show animation based on selected gender
+                string selectedGender = comboBoxMenWoman.SelectedItem.ToString();
+                int animId = selectedGender == "men" ? 400 : 401;
+
+                // Get the corresponding animation based on the DirectionTrackBar value
+                additionalAnimation = AnimationEdit.GetAnimation(_fileType, animId, _currentAction, _currentDir);
+
+                // Redraw the PictureBox to reflect the changes
+                AnimationPictureBox.Invalidate();
+            }
+
+            AfterSelectTreeView(null, null);
+        }
+        #endregion
+
+        #region [ AnimationPictureBox_OnSizeChanged ]
         private void AnimationPictureBox_OnSizeChanged(object sender, EventArgs e)
         {
             _framePoint = new Point(AnimationPictureBox.Width / 2, AnimationPictureBox.Height / 2);
             AnimationPictureBox.Invalidate();
         }
-        //Soulblighter Modification
+        #endregion
 
+        #region [ AnimationPictureBox_OnPaintFrame ]
         private void AnimationPictureBox_OnPaintFrame(object sender, PaintEventArgs e)
         {
             AnimIdx edit = AnimationEdit.GetAnimation(_fileType, _currentBody, _currentAction, _currentDir);
@@ -521,6 +489,27 @@ namespace UoFiddler.Controls.Forms
             e.Graphics.Clear(Color.LightGray);
             e.Graphics.DrawLine(Pens.Black, new Point(_framePoint.X, 0), new Point(_framePoint.X, AnimationPictureBox.Height));
             e.Graphics.DrawLine(Pens.Black, new Point(0, _framePoint.Y), new Point(AnimationPictureBox.Width, _framePoint.Y));
+
+            // Men Woman Aninmation alignment
+            if (isAnimationVisible && additionalAnimation != null)
+            {
+                Bitmap[] additionalBits = additionalAnimation.GetFrames();
+                if (additionalBits?.Length > 0 && additionalBits[FramesTrackBar.Value] != null)
+                {
+                    // Determine the coordinates based on the selected gender
+                    string selectedGender = comboBoxMenWoman.SelectedItem.ToString();
+                    int xOffset = -12; // X-Offset is the same for both sexes                    
+                    int yOffset = selectedGender == "men" ? -53 : -52;
+
+                    // Define separate x and y coordinates for the additional animation
+                    int additionalX = _framePoint.X + xOffset;                    
+                    int additionalY = _framePoint.Y + yOffset;
+
+                    // Draw the additional animation at the specified position
+                    e.Graphics.DrawImage(additionalBits[FramesTrackBar.Value], additionalX, additionalY);
+                }
+            }
+            // Men Woman Aninmation alignment
 
             if (currentBits?.Length > 0 && currentBits[FramesTrackBar.Value] != null)
             {
@@ -561,7 +550,7 @@ namespace UoFiddler.Controls.Forms
                 e.Graphics.DrawRectangle(Pens.Red, new Rectangle(x, y, varW, varH));
                 e.Graphics.DrawImage(currentBits[FramesTrackBar.Value], x, y);
 
-                //e.Graphics.DrawLine(Pens.Red, new Point(0, 335-(int)numericUpDown1.Value), new Point(animationPictureBox.Width, 335-(int)numericUpDown1.Value));
+                //e.Graphics.DrawLine(Pens.Red, new Point(0, 335-(int)numericUpDown1.Value), new Point(animationPictureBox.Width, 335-(int)numericUpDown1.Value));                
             }
 
             // Draw Reference Point Arrow
@@ -578,9 +567,9 @@ namespace UoFiddler.Controls.Forms
             e.Graphics.FillPolygon(_whiteUnDraw, arrayPoints);
             e.Graphics.DrawPolygon(_blackUndraw, arrayPoints);
         }
-        //End of Soulblighter Modification
+        #endregion
 
-        //Soulblighter Modification
+        #region  [ OnFrameCountBarChange ]
         private void OnFrameCountBarChanged(object sender, EventArgs e)
         {
             if (_fileType == 0)
@@ -597,8 +586,9 @@ namespace UoFiddler.Controls.Forms
 
             AnimationPictureBox.Invalidate();
         }
-        //End of Soulblighter Modification
+        #endregion
 
+        #region [ OnCenterXValueChanged ]
         private void OnCenterXValueChanged(object sender, EventArgs e)
         {
             try
@@ -630,7 +620,9 @@ namespace UoFiddler.Controls.Forms
                 // ignored
             }
         }
+        #endregion
 
+        #region [ OnCenterYValueChanged ]
         private void OnCenterYValueChanged(object sender, EventArgs e)
         {
             try
@@ -662,7 +654,9 @@ namespace UoFiddler.Controls.Forms
                 // ignored
             }
         }
+        #endregion
 
+        #region [ OnClickExtractImages ]
         private void OnClickExtractImages(object sender, EventArgs e)
         {
             if (_fileType == 0)
@@ -769,7 +763,9 @@ namespace UoFiddler.Controls.Forms
             MessageBox.Show($"Frames saved to {path}", "Saved", MessageBoxButtons.OK, MessageBoxIcon.Information,
                 MessageBoxDefaultButton.Button1);
         }
+        #endregion
 
+        #region [ OnClickRemoveAction ]
         private void OnClickRemoveAction(object sender, EventArgs e)
         {
             if (_fileType == 0)
@@ -849,7 +845,9 @@ namespace UoFiddler.Controls.Forms
                 AfterSelectTreeView(this, null);
             }
         }
+        #endregion
 
+        #region [ OnClickSave ]
         private void OnClickSave(object sender, EventArgs e)
         {
             if (_fileType == 0)
@@ -863,8 +861,9 @@ namespace UoFiddler.Controls.Forms
             MessageBox.Show($"AnimationFile saved to {Options.OutputPath}", "Saved", MessageBoxButtons.OK,
                 MessageBoxIcon.Information, MessageBoxDefaultButton.Button1);
         }
+        #endregion
 
-        //My Soulblighter Modification
+        #region [ OnClickRemoveFrame ]        
         private void OnClickRemoveFrame(object sender, EventArgs e)
         {
             if (FramesListView.SelectedItems.Count <= 0)
@@ -895,8 +894,9 @@ namespace UoFiddler.Controls.Forms
                 Options.ChangedUltimaClass["Animations"] = true;
             }
         }
-        //End of Soulblighter Modification
+        #endregion
 
+        #region [ OnClickReplace ]
         private void OnClickReplace(object sender, EventArgs e)
         {
             if (FramesListView.SelectedItems.Count <= 0)
@@ -941,7 +941,9 @@ namespace UoFiddler.Controls.Forms
                 }
             }
         }
+        #endregion
 
+        #region [ OnClickAdd ]
         private void OnClickAdd(object sender, EventArgs e)
         {
             if (_fileType != 0)
@@ -1064,7 +1066,9 @@ namespace UoFiddler.Controls.Forms
             _currentDir = DirectionTrackBar.Value;
             AfterSelectTreeView(null, null);
         }
+        #endregion
 
+        #region [ AddImageAtCertainIndex ]
         private void AddImageAtCertainIndex(int frameCount, Bitmap[] bitBmp, Bitmap bmp, FrameDimension dimension, AnimIdx edit)
         {
             // Return an Image at a certain index
@@ -1110,7 +1114,9 @@ namespace UoFiddler.Controls.Forms
                 }
             }
         }
+        #endregion
 
+        #region [ OnClickExtractPalette ]
         private void OnClickExtractPalette(object sender, EventArgs e)
         {
             if (_fileType == 0)
@@ -1140,7 +1146,9 @@ namespace UoFiddler.Controls.Forms
             MessageBox.Show($"Palette saved to {Options.OutputPath}", "Saved", MessageBoxButtons.OK,
                 MessageBoxIcon.Information, MessageBoxDefaultButton.Button1);
         }
+        #endregion
 
+        #region [ OnClickImportPalette ]
         private void OnClickImportPalette(object sender, EventArgs e)
         {
             if (_fileType == 0)
@@ -1178,12 +1186,12 @@ namespace UoFiddler.Controls.Forms
                         }
 
                         palette[i++] = ushort.Parse(line);
-                        //My Soulblighter Modification
+                        
                         if (palette[i++] == 32768)
                         {
                             palette[i++] = 32769;
                         }
-                        //End of Soulblighter Modification
+                        
                         if (i >= 0x100)
                         {
                             break;
@@ -1196,7 +1204,9 @@ namespace UoFiddler.Controls.Forms
                 Options.ChangedUltimaClass["Animations"] = true;
             }
         }
+        #endregion
 
+        #region [ OnClickImportFromVD ]
         private void OnClickImportFromVD(object sender, EventArgs e)
         {
             if (_fileType == 0)
@@ -1294,7 +1304,9 @@ namespace UoFiddler.Controls.Forms
                 toolStripStatusLabelVDAminInfo.Text += $" - Selected slot: {_currentBody}";
             }
         }
+        #endregion
 
+        #region [ OnClickExportToVD ]
         private void OnClickExportToVD(object sender, EventArgs e)
         {
             if (_fileType == 0)
@@ -1309,7 +1321,9 @@ namespace UoFiddler.Controls.Forms
             MessageBox.Show($"Animation saved to {Options.OutputPath}", "Export", MessageBoxButtons.OK,
                 MessageBoxIcon.Information, MessageBoxDefaultButton.Button1);
         }
+        #endregion
 
+        #region [ OnClickShowOnlyValid ]
         private void OnClickShowOnlyValid(object sender, EventArgs e)
         {
             _showOnlyValid = !_showOnlyValid;
@@ -1337,8 +1351,9 @@ namespace UoFiddler.Controls.Forms
                 OnLoad(null);
             }
         }
+        #endregion
 
-        //My Soulblighter Modification
+        #region [ SameCenterButton ]
         private void SameCenterButton_Click(object sender, EventArgs e)
         {
             // TODO: there is no undo for same center button
@@ -1370,9 +1385,9 @@ namespace UoFiddler.Controls.Forms
                 // ignored
             }
         }
-        //End of Soulblighter Modification
+        #endregion
 
-        //My Soulblighter Modification
+        #region [ FromGifToolStripMenuItem ]
         private void FromGifToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (_fileType == 0)
@@ -1408,19 +1423,23 @@ namespace UoFiddler.Controls.Forms
                 Options.ChangedUltimaClass["Animations"] = true;
             }
         }
+        #endregion
 
+        #region [ ReferencePointX ]
         private void ReferencePointX(object sender, EventArgs e)
         {
             AnimationPictureBox.Invalidate();
         }
+        #endregion
 
+        #region [ ReferencePointY ]
         private void ReferencePointY(object sender, EventArgs e)
         {
             AnimationPictureBox.Invalidate();
         }
+        #endregion        
 
-        private static bool _lockButton;
-
+        #region [ AnimationPictureBox_MouseClick ]
         private void AnimationPictureBox_MouseClick(object sender, MouseEventArgs e)
         {
             if (_lockButton || !ToolStripLockButton.Enabled)
@@ -1433,7 +1452,9 @@ namespace UoFiddler.Controls.Forms
 
             AnimationPictureBox.Invalidate();
         }
+        #endregion
 
+        #region [ TxtSendData_KeyDown ]
         // Change center of frame on key press
         private void TxtSendData_KeyDown(object sender, KeyEventArgs e)
         {
@@ -1471,7 +1492,9 @@ namespace UoFiddler.Controls.Forms
             }
             AnimationPictureBox.Invalidate();
         }
+        #endregion
 
+        #region [ TxtSendData_KeyDown2 ]
         // Change center of Reference Point on key press
         private void TxtSendData_KeyDown2(object sender, KeyEventArgs e)
         {
@@ -1509,14 +1532,18 @@ namespace UoFiddler.Controls.Forms
             }
             AnimationPictureBox.Invalidate();
         }
+        #endregion
 
+        #region [ ToolStripLockButton ]
         private void ToolStripLockButton_Click(object sender, EventArgs e)
         {
             _lockButton = !_lockButton;
             RefXNumericUpDown.Enabled = !_lockButton;
             RefYNumericUpDown.Enabled = !_lockButton;
         }
+        #endregion
 
+        #region [ AllDirectionsAddToolStripMenuItem ]
         // Add in all Directions
         private void AllDirectionsAddToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -1569,7 +1596,9 @@ namespace UoFiddler.Controls.Forms
             _currentDir = DirectionTrackBar.Value;
             AfterSelectTreeView(null, null);
         }
+        #endregion
 
+        #region [ AddFilesAllDirections ]
         private void AddFilesAllDirections(OpenFileDialog dialog)
         {
             for (int w = 0; w < dialog.FileNames.Length; w++)
@@ -1627,19 +1656,25 @@ namespace UoFiddler.Controls.Forms
                 }
             }
         }
+        #endregion
 
+        #region [ DrawEmptyRectangleToolStripButton ]
         private void DrawEmptyRectangleToolStripButton_Click(object sender, EventArgs e)
         {
             _drawEmpty = !_drawEmpty;
             AnimationPictureBox.Invalidate();
         }
+        #endregion
 
+        #region [ DrawFullRectangleToolStripButton ]
         private void DrawFullRectangleToolStripButton_Click(object sender, EventArgs e)
         {
             _drawFull = !_drawFull;
             AnimationPictureBox.Invalidate();
         }
+        #endregion
 
+        #region [ AnimationEdit_FormClosing ]
         private void AnimationEdit_FormClosing(object sender, FormClosingEventArgs e)
         {
             AnimationTimer.Enabled = false;
@@ -1650,7 +1685,9 @@ namespace UoFiddler.Controls.Forms
 
             ControlEvents.FilePathChangeEvent -= OnFilePathChangeEvent;
         }
+        #endregion
 
+        #region [ AnimationTimer_Tick ]
         private void AnimationTimer_Tick(object sender, EventArgs e)
         {
             if (FramesTrackBar.Value < FramesTrackBar.Maximum)
@@ -1664,7 +1701,9 @@ namespace UoFiddler.Controls.Forms
 
             AnimationPictureBox.Invalidate();
         }
+        #endregion
 
+        #region [ ToolStripButtonPlayAnimation ]
         private void ToolStripButtonPlayAnimation_Click(object sender, EventArgs e)
         {
             if (AnimationTimer.Enabled)
@@ -1711,12 +1750,16 @@ namespace UoFiddler.Controls.Forms
 
             AnimationPictureBox.Invalidate();
         }
+        #endregion
 
+        #region [ AnimationSpeedTrackBar_ValueChanged ]
         private void AnimationSpeedTrackBar_ValueChanged(object sender, EventArgs e)
         {
             AnimationTimer.Interval = 50 + (AnimationSpeedTrackBar.Value * 30);
         }
+        #endregion
 
+        #region [ DrawReferencialPointToolStripButton ]
         private void DrawReferencialPointToolStripButton_Click(object sender, EventArgs e)
         {
             if (!DrawReferencialPointToolStripButton.Checked)
@@ -1746,7 +1789,9 @@ namespace UoFiddler.Controls.Forms
             }
             AnimationPictureBox.Invalidate();
         }
+        #endregion
 
+        #region [ AllDirectionsAddWithCanvasToolStripMenuItem_Click ]
         // All Directions with Canvas
         private void AllDirectionsAddWithCanvasToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -1807,7 +1852,9 @@ namespace UoFiddler.Controls.Forms
                 // ignored
             }
         }
+        #endregion
 
+        #region [ AddSelectedFiles ]
         private void AddSelectedFiles(OpenFileDialog dialog, Color customConvert)
         {
             for (int w = 0; w < dialog.FileNames.Length; w++)
@@ -1835,7 +1882,9 @@ namespace UoFiddler.Controls.Forms
                 }
             }
         }
+        #endregion
 
+        #region [ AddAnimationX1 ]
         private void AddAnimationX1(Color customConvert, Bitmap bmp)
         {
             AnimIdx edit = AnimationEdit.GetAnimation(_fileType, _currentBody, _currentAction, _currentDir);
@@ -2209,7 +2258,9 @@ namespace UoFiddler.Controls.Forms
             CenterYNumericUpDown.Value = edit.Frames[FramesTrackBar.Value].Center.Y;
             Options.ChangedUltimaClass["Animations"] = true;
         }
+        #endregion
 
+        #region [ AddWithCanvasToolStripMenuItem_Click ]
         //Add with Canvas
         private void AddWithCanvasToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -2256,7 +2307,9 @@ namespace UoFiddler.Controls.Forms
                 // ignored
             }
         }
+        #endregion
 
+        #region [ OnClickGeneratePalette ]
         private void OnClickGeneratePalette(object sender, EventArgs e)
         {
             using (OpenFileDialog dialog = new OpenFileDialog())
@@ -2286,8 +2339,9 @@ namespace UoFiddler.Controls.Forms
                 }
             }
         }
-        //End of Soulblighter Modification
+        #endregion
 
+        #region [ unsafe Bitmap ConvertBmpAnim ]
         private static unsafe Bitmap ConvertBmpAnim(Bitmap bmp, int red, int green, int blue)
         {
             //Extra background
@@ -2327,7 +2381,9 @@ namespace UoFiddler.Controls.Forms
             bmpNew.UnlockBits(bdNew);
             return bmpNew;
         }
+        #endregion
 
+        #region [ OnClickExportAllToVD ]
         private void OnClickExportAllToVD(object sender, EventArgs e)
         {
             if (_fileType == 0)
@@ -2361,7 +2417,9 @@ namespace UoFiddler.Controls.Forms
                     "Export", MessageBoxButtons.OK, MessageBoxIcon.Information, MessageBoxDefaultButton.Button1);
             }
         }
+        #endregion
 
+        #region [ CbSaveCoordinates_CheckedChanged ]
         private void CbSaveCoordinates_CheckedChanged(object sender, EventArgs e)
         {
             // Get position of all animations in array
@@ -2406,7 +2464,9 @@ namespace UoFiddler.Controls.Forms
                 SetCoordinatesButton.Enabled = false;
             }
         }
+        #endregion
 
+        #region [ SetButton_Click ]
         private void SetButton_Click(object sender, EventArgs e)
         {
             DirectionTrackBar.Value = 0;
@@ -2447,7 +2507,9 @@ namespace UoFiddler.Controls.Forms
             }
             DirectionTrackBar.Enabled = true;
         }
+        #endregion
 
+        #region [ AddDirectionsAddWithCanvasUniqueImageToolStripMenuItem ]
         // Add Directions with Canvas ( CV5 style GIF )
         private void AddDirectionsAddWithCanvasUniqueImageToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -2534,7 +2596,9 @@ namespace UoFiddler.Controls.Forms
                 DirectionTrackBar.Enabled = true;
             }
         }
+        #endregion
 
+        #region [ Cv5AnimIdxPositions ]
         private AnimIdx Cv5AnimIdxPositions(int frameCount, Bitmap[] bitBmp, FrameDimension dimension, AnimIdx edit, Bitmap bmp)
         {
             // position 0
@@ -2781,7 +2845,9 @@ namespace UoFiddler.Controls.Forms
 
             return edit;
         }
+        #endregion
 
+        #region [ Bitmap ConvertBmpAnimCv5 ]
         private static unsafe Bitmap ConvertBmpAnimCv5(Bitmap bmp, int red, int green, int blue)
         {
             //Extra background
@@ -2821,9 +2887,9 @@ namespace UoFiddler.Controls.Forms
             bmpNew.UnlockBits(bdNew);
             return bmpNew;
         }
+        #endregion        
 
-        private static readonly Color _greyConvert = Color.FromArgb(255, 170, 170, 170);
-
+        #region [ Cv5CanvasAlgorithm ]
         private static void Cv5CanvasAlgorithm(Bitmap[] bitBmp, int frameCount, FrameDimension dimension, Color customConvert)
         {
             // TODO: Needs better names
@@ -2848,17 +2914,23 @@ namespace UoFiddler.Controls.Forms
             // position 4
             Cv5ProcessFrames(bitBmp, dimension, customConvert, GetInitialFrameIndex(frameCount, frameDivider, 6), GetMaximumFrameIndex(frameCount, frameDivider, 6));
         }
+        #endregion
 
+        #region [ GetInitialFrameIndex ]
         private static int GetInitialFrameIndex(int frameCount, int frameDivider, int position)
         {
             return frameCount / frameDivider * position;
         }
+        #endregion
 
+        #region [ GetMaximumFrameIndex ]
         private static int GetMaximumFrameIndex(int frameCount, int frameDivider, int position)
         {
             return frameCount / frameDivider * (position + 1);
         }
+        #endregion
 
+        #region [ Cv5ProcessFrames ]
         private static void Cv5ProcessFrames(Bitmap[] bitBmp, FrameDimension dimension, Color customConvert, int initialFrameIndex, int maximumFrameIndex)
         {
             int top = 0;
@@ -3161,7 +3233,9 @@ namespace UoFiddler.Controls.Forms
                 bitBmp[index] = bitBmp[index].Clone(rect, PixelFormat.Format16bppArgb1555);
             }
         }
+        #endregion
 
+        #region [ CbLockColorControls_CheckedChanged ]
         private void CbLockColorControls_CheckedChanged(object sender, EventArgs e)
         {
             if (!LockColorControlsCheckBox.Checked)
@@ -3181,7 +3255,9 @@ namespace UoFiddler.Controls.Forms
                 numericUpDownBlue.Value = 255;
             }
         }
+        #endregion
 
+        #region [ AllDirectionsAddWithCanvasKRFrameEditorColorCorrectorToolStripMenuItem_Click ]
         // All directions Add KRFrameViewer
         private void AllDirectionsAddWithCanvasKRFrameEditorColorCorrectorToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -3268,7 +3344,9 @@ namespace UoFiddler.Controls.Forms
                 DirectionTrackBar.Enabled = true;
             }
         }
+        #endregion
 
+        #region [ AnimIdx KrAnimIdxPositions ]
         private AnimIdx KrAnimIdxPositions(int frameCount, Bitmap[] bitBmp, FrameDimension dimension, AnimIdx edit, Bitmap bmp)
         {
             // position 0
@@ -3515,7 +3593,9 @@ namespace UoFiddler.Controls.Forms
 
             return edit;
         }
+        #endregion
 
+        #region [ Bitmap ConvertBmpAnimKr ]
         private static unsafe Bitmap ConvertBmpAnimKr(Bitmap bmp, int red, int green, int blue)
         {
             // Extra background
@@ -3558,7 +3638,7 @@ namespace UoFiddler.Controls.Forms
                     }
                     //}
 
-                    //My Soulblighter Modification
+                    
                     // Convert color 0,0,0 to 0,0,8
                     if (cur[x] == 32768)
                     {
@@ -3568,15 +3648,16 @@ namespace UoFiddler.Controls.Forms
                     if (cur[x] != 65535 && cur[x] != 54965 && cur[x] != extraBack && cur[x] > 32768) //True White == BackGround
                     {
                         curNew[x] = cur[x];
-                    }
-                    //End of Soulblighter Modification
+                    }                    
                 }
             }
             bmp.UnlockBits(bd);
             bmpNew.UnlockBits(bdNew);
             return bmpNew;
         }
+        #endregion
 
+        #region [ KrCanvasAlgorithm ]
         private static void KrCanvasAlgorithm(Bitmap[] bitBmp, int frameCount, FrameDimension dimension, Color customConvert)
         {
             /*
@@ -3599,7 +3680,9 @@ namespace UoFiddler.Controls.Forms
             KrProcessFrames(bitBmp, dimension, customConvert, GetInitialFrameIndex(frameCount, frameDivider, 3), GetMaximumFrameIndex(frameCount, frameDivider, 3));
             KrProcessFrames(bitBmp, dimension, customConvert, GetInitialFrameIndex(frameCount, frameDivider, 4), GetMaximumFrameIndex(frameCount, frameDivider, 4));
         }
+        #endregion
 
+        #region [ KrProcessFrames ]
         private static void KrProcessFrames(Bitmap[] bitBmp, FrameDimension dimension, Color customConvert, int initialFrameIndex, int maximumFrameIndex)
         {
             int top = 0;
@@ -3902,7 +3985,9 @@ namespace UoFiddler.Controls.Forms
                 bitBmp[index] = bitBmp[index].Clone(rect, PixelFormat.Format16bppArgb1555);
             }
         }
+        #endregion
 
+        #region [ SetPaletteButton ]
         private void SetPaletteButton_Click(object sender, EventArgs e)
         {
             for (int x = 0; x < 5; x++)
@@ -3963,39 +4048,53 @@ namespace UoFiddler.Controls.Forms
                 }
             }
         }
+        #endregion
 
         // TODO: check why there is no RadioButton1_CheckedChanged event for selector 1?
 
+        #region [ RadioButton2_CheckedChanged ]
         private void RadioButton2_CheckedChanged(object sender, EventArgs e)
         {
             ConvertAndSetPalette(2);
         }
+        #endregion
 
+        #region [ RadioButton3_CheckedChanged ]
         private void RadioButton3_CheckedChanged(object sender, EventArgs e)
         {
             ConvertAndSetPalette(3);
         }
+        #endregion
 
+        #region [ RadioButton4_CheckedChanged ]
         private void RadioButton4_CheckedChanged(object sender, EventArgs e)
         {
             ConvertAndSetPalette(4);
         }
+        #endregion
 
+        #region [ RadioButton5_CheckedChanged ]
         private void RadioButton5_CheckedChanged(object sender, EventArgs e)
         {
             ConvertAndSetPalette(5);
         }
+        #endregion
 
+        #region [ RadioButton6_CheckedChanged ]
         private void RadioButton6_CheckedChanged(object sender, EventArgs e)
         {
             ConvertAndSetPalette(6);
         }
+        #endregion
 
+        #region [ ApplyButton ]
         private void ApplyButton_Click(object sender, EventArgs e)
         {
             ConvertAndSetPaletteWithReducer();
         }
+        #endregion
 
+        #region [ ConvertAndSetPaletteWithReducer ]
         private void ConvertAndSetPaletteWithReducer()
         {
             // TODO: except calling reducer here the whole logic is the same as in ConvertAndSetPalette()
@@ -4017,7 +4116,9 @@ namespace UoFiddler.Controls.Forms
                 }
             }
         }
+        #endregion
 
+        #region [ ConvertAndSetPalette ]
         private void ConvertAndSetPalette(int selector)
         {
             for (int x = 0; x < 5; x++)
@@ -4038,7 +4139,9 @@ namespace UoFiddler.Controls.Forms
                 }
             }
         }
+        #endregion
 
+        #region [ UpdateGifPalette ]
         public void UpdateGifPalette(Bitmap bit, AnimIdx animIdx)
         {
             using (MemoryStream imageStreamSource = new MemoryStream())
@@ -4091,7 +4194,9 @@ namespace UoFiddler.Controls.Forms
                 }
             }
         }
+        #endregion
 
+        #region [ UpdateImagePalette ]
         public unsafe void UpdateImagePalette(Bitmap bit, AnimIdx animIdx)
         {
             int count = 0;
@@ -4162,7 +4267,9 @@ namespace UoFiddler.Controls.Forms
                 line += delta;
             }
         }
+        #endregion
 
+        #region [ PaletteConverter ]
         public void PaletteConverter(int selector, AnimIdx animIdx)
         {
             int i;
@@ -4218,7 +4325,9 @@ namespace UoFiddler.Controls.Forms
                 }
             }
         }
+        #endregion
 
+        #region [ PaletteReducer ]
         public void PaletteReducer(int redP, int greenP, int blueP, AnimIdx animIdx)
         {
             int i;
@@ -4288,8 +4397,9 @@ namespace UoFiddler.Controls.Forms
                 }
             }
         }
+        #endregion
 
-        #region Copy image to Clipboard
+        #region [ Copy image to Clipboard ]
         private void copyFrameToClipboardToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (FramesListView.SelectedItems.Count == 0)
@@ -4314,7 +4424,7 @@ namespace UoFiddler.Controls.Forms
         }
         #endregion
 
-        #region Import Image from Clipboard
+        #region [ Import Image from Clipboard ]
         private void importImageToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (Clipboard.ContainsImage() && FramesListView.SelectedItems.Count > 0)
@@ -4352,7 +4462,7 @@ namespace UoFiddler.Controls.Forms
         }
         #endregion
 
-        #region Mirror Image
+        #region [ Mirror Image ]
 
         private void mirrorImageToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -4399,7 +4509,7 @@ namespace UoFiddler.Controls.Forms
         }
         #endregion
 
-        #region RotateLeft90Degrees
+        #region [ RotateLeft90Degrees ]
         private void rotateLeft90DegreesToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (FramesListView.SelectedItems.Count > 0)
@@ -4426,46 +4536,22 @@ namespace UoFiddler.Controls.Forms
         }
         #endregion
 
-        #region Find IDs
-        /*private async void FindFreeIDSlotsToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            await Task.Run(() =>
-            {
-                // Iteriere über TreeView Nodes
-                foreach (TreeNode node in AnimationListTreeView.Nodes)
-                {
-                    int bodyIndex = (int)node.Tag;
-
-                    // Überprüfe Action 0 
-                    if (!AnimationEdit.IsActionDefined(_fileType, bodyIndex, 0))
-                    {
-                        // Wenn undefined, ist Slot frei
-                        this.Invoke(new Action(() =>
-                        {
-                            node.ForeColor = Color.Blue;
-                            node.Text += " - FREE";
-                        }));
-                    }
-                }
-            });
-
-            AnimationListTreeView.Invalidate();
-        }*/
+        #region [ Find IDs ]
         private async void FindFreeIDSlotsToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            // Zeige Fortschrittsbalken an
+            // Show progress bars
             ProgressBar.Visible = true;
             ProgressBar.Maximum = AnimationListTreeView.Nodes.Count;
             ProgressBar.Value = 0;
 
             await Task.Run(() =>
             {
-                // Iteriere über TreeView Nodes
+                // Iterate over TreeView Nodes
                 foreach (TreeNode node in AnimationListTreeView.Nodes)
                 {
                     int bodyIndex = (int)node.Tag;
 
-                    // Überprüfe Action 0 
+                    // Check Action 0
                     if (!AnimationEdit.IsActionDefined(_fileType, bodyIndex, 0))
                     {
                         // Wenn undefined, ist Slot frei
@@ -4476,7 +4562,7 @@ namespace UoFiddler.Controls.Forms
                         }));
                     }
 
-                    // Aktualisiere Fortschrittsbalken
+                    // Update progress bars
                     this.Invoke(new Action(() =>
                     {
                         ProgressBar.Value++;
@@ -4484,14 +4570,14 @@ namespace UoFiddler.Controls.Forms
                 }
             });
 
-            // Verstecke Fortschrittsbalken
+            // Hide progress bars
             ProgressBar.Visible = false;
 
             AnimationListTreeView.Invalidate();
         }
         #endregion
 
-        #region Search Animation
+        #region [ Search Animation ] toolStripTextBoxSearch_TextChanged
         private void toolStripTextBoxSearch_TextChanged(object sender, EventArgs e)
         {
             var searchText = toolStripTextBoxSearch.Text;
@@ -4506,7 +4592,7 @@ namespace UoFiddler.Controls.Forms
         }
         #endregion
 
-        #region Edit Ultima Online Bodyconv.def and mobtypes.txt
+        #region [ Edit Ultima Online Bodyconv.def and mobtypes.txt ]
 
         private EditUoBodyconvMobtypes editUoBodyconvMobtypesForm;
 
@@ -4528,6 +4614,90 @@ namespace UoFiddler.Controls.Forms
             // Set the value of textBoxID in the EditUoBodyconvMobtypes form
             editUoBodyconvMobtypesForm.TextBoxID = _currentBody.ToString(); // ID
             editUoBodyconvMobtypesForm.TextBoxBody = BodyConverter.GetTrueBody(_fileType, _currentBody).ToString(); //Body ID
+        }
+        #endregion
+
+        #region [ buttonShow ] animation man woman
+        private void buttonShow_Click(object sender, EventArgs e)
+        {
+            if (isAnimationVisible)
+            {
+                // Hide animation
+                additionalAnimation = null;
+                buttonShow.Text = "Show";
+            }
+            else
+            {
+                // Show animation based on selected gender
+                string selectedGender = comboBoxMenWoman.SelectedItem.ToString();
+                int animId = selectedGender == "men" ? 400 : 401;
+                additionalAnimation = AnimationEdit.GetAnimation(_fileType, animId, _currentAction, _currentDir);
+                buttonShow.Text = "Hide";
+            }
+
+            isAnimationVisible = !isAnimationVisible;
+            AnimationPictureBox.Invalidate();
+        }
+        #endregion
+
+        #region [ ShowAdditionalAnimation ] animation man woman
+        private void ShowAdditionalAnimation(int animId)
+        {
+            // Retrieve and display AnimationImage via animId
+            Image animationImage = GetAnimationFrame(animId);
+            if (animationImage != null)
+            {
+                AnimationPictureBox.Image = animationImage;
+            }
+            else
+            {
+                MessageBox.Show($"Animation with ID {animId} could not be found.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+        #endregion
+
+        #region [ Image GetAnimationFrame ] animation man woman
+        private Image GetAnimationFrame(int animId)
+        {
+            //Logic to get and return animation image based on animId
+            var edit = AnimationEdit.GetAnimation(_fileType, animId, _currentAction, _currentDir);
+            Bitmap[] frames = edit?.GetFrames();
+            if (frames != null && frames.Length > 0)
+            {
+                return frames[0];
+            }
+            return null;
+        }
+        #endregion
+
+        #region [ comboBoxMenWoman_SelectedIndexChanged ] animation man woman
+        private void comboBoxMenWoman_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (isAnimationVisible)
+            {
+                string selectedGender = comboBoxMenWoman.SelectedItem.ToString();
+                int animId = selectedGender == "men" ? 400 : 401;
+                additionalAnimation = AnimationEdit.GetAnimation(_fileType, animId, _currentAction, _currentDir);
+                AnimationPictureBox.Invalidate();
+            }
+        }
+        #endregion
+
+        #region [ DirectionTrackBar_ValueChanged ] animation man woman
+        private void DirectionTrackBar_ValueChanged(object sender, EventArgs e)
+        {
+            if (isAnimationVisible)
+            {
+                // Show animation based on selected gender
+                string selectedGender = comboBoxMenWoman.SelectedItem.ToString();
+                int animId = selectedGender == "men" ? 400 : 401;
+
+                // Get the corresponding animation based on the DirectionTrackBar value
+                additionalAnimation = AnimationEdit.GetAnimation(_fileType, animId, _currentAction, DirectionTrackBar.Value);
+
+                // Redraw the PictureBox to reflect the changes
+                AnimationPictureBox.Invalidate();
+            }
         }
         #endregion
     }
