@@ -34,6 +34,7 @@ namespace UoFiddler.Controls.Forms
         private int _currentBody;
         private int _currentDir;
         private Point _framePoint;
+        private Point _additionalFramePoint; // Hinzugefügt
         private bool _showOnlyValid;
         private static bool _drawEmpty;
         private static bool _drawFull;
@@ -54,6 +55,74 @@ namespace UoFiddler.Controls.Forms
         private bool isAnimationVisible = false; // Second animation
         private AnimIdx additionalAnimation = null; // Second animation
 
+        private static readonly int[][][] Offsets = new int[][][]
+        {
+            new int[][] // Direction 0
+            {
+                new int[] { -12, -53 }, // Frame 0
+                new int[] { -13, -55 }, // Frame 1
+                new int[] { -12, -55 }, // Frame 2
+                new int[] { -12, -53 }, // Frame 3
+                new int[] { -12, -53 }, // Frame 4
+                new int[] { -12, -53 }, // Frame 5
+                new int[] { -12, -55 }, // Frame 6
+                new int[] { -11, -54 }, // Frame 7
+                new int[] { -12, -53 }, // Frame 8
+                new int[] { -12, -53 }  // Frame 9
+            },
+            new int[][] // Direction 1
+            {
+                new int[] { -16, -54 }, // Frame 0
+                new int[] { -14, -55 }, // Frame 1
+                new int[] { -13, -55 }, // Frame 2
+                new int[] { -13, -55 }, // Frame 3
+                new int[] { -16, -53 }, // Frame 4
+                new int[] { -19, -53 }, // Frame 5
+                new int[] { -12, -55 }, // Frame 6
+                new int[] { -9, -56 },  // Frame 7
+                new int[] { -10, -55 }, // Frame 8
+                new int[] { -14, -54 }  // Frame 9
+            },
+            new int[][] // Direction 2
+            {
+                new int[] { -22, -54 }, // Frame 0
+                new int[] { -14, -56 }, // Frame 1
+                new int[] { -11, -57 }, // Frame 2
+                new int[] { -13, -55 }, // Frame 3
+                new int[] { -18, -55 }, // Frame 4
+                new int[] { -22, -54 }, // Frame 5
+                new int[] { -13, -56 }, // Frame 6
+                new int[] { -14, -56 }, // Frame 7
+                new int[] { -15, -56 }, // Frame 8
+                new int[] { -16, -55 }  // Frame 9
+            },
+            new int[][] // Direction 3
+            {
+                new int[] { -17, -56 }, // Frame 0
+                new int[] { -12, -56 }, // Frame 1
+                new int[] { -13, -57 }, // Frame 2
+                new int[] { -15, -57 }, // Frame 3
+                new int[] { -15, -56 }, // Frame 4
+                new int[] { -16, -56 }, // Frame 5
+                new int[] { -16, -57 }, // Frame 6
+                new int[] { -14, -57 }, // Frame 7
+                new int[] { -14, -57 }, // Frame 8
+                new int[] { -15, -56 }  // Frame 9
+            },
+            new int[][] // Direction 4
+            {
+                new int[] { -10, -56 }, // Frame 0
+                new int[] { -11, -57 }, // Frame 1
+                new int[] { -11, -58 }, // Frame 2
+                new int[] { -11, -58 }, // Frame 3
+                new int[] { -12, -57 }, // Frame 4
+                new int[] { -12, -57 }, // Frame 5
+                new int[] { -12, -58 }, // Frame 6
+                new int[] { -12, -58 }, // Frame 7
+                new int[] { -11, -57 }, // Frame 8
+                new int[] { -10, -57 }  // Frame 9
+            }
+        };
 
         #region [ AnimationEditForm ]
         public AnimationEditForm()
@@ -439,13 +508,7 @@ namespace UoFiddler.Controls.Forms
         }
         #endregion
 
-        /*private void OnDirectionChanged(object sender, EventArgs e)
-        {
-            _currentDir = DirectionTrackBar.Value;
-            AfterSelectTreeView(null, null);
-        }*/
-
-        #region [ OnDirectionChanged ]
+        #region [ OnDirectionChanged ]        
         private void OnDirectionChanged(object sender, EventArgs e)
         {
             _currentDir = DirectionTrackBar.Value;
@@ -458,6 +521,9 @@ namespace UoFiddler.Controls.Forms
 
                 // Get the corresponding animation based on the DirectionTrackBar value
                 additionalAnimation = AnimationEdit.GetAnimation(_fileType, animId, _currentAction, _currentDir);
+
+                // Adjust the position of the additional animation
+                AdjustAdditionalAnimationPosition();
 
                 // Redraw the PictureBox to reflect the changes
                 AnimationPictureBox.Invalidate();
@@ -475,7 +541,29 @@ namespace UoFiddler.Controls.Forms
         }
         #endregion
 
-        #region [ AnimationPictureBox_OnPaintFrame ]
+        private void AdjustAdditionalAnimationPosition()
+        {
+            if (additionalAnimation != null)
+            {
+                Bitmap[] additionalBits = additionalAnimation.GetFrames();
+                if (additionalBits?.Length > 0 && additionalBits[FramesTrackBar.Value] != null)
+                {
+                    // Get the offsets for the current direction and frame
+                    int[] offsets = Offsets[_currentDir][FramesTrackBar.Value];
+                    int xOffset = offsets[0];
+                    int yOffset = offsets[1];
+
+                    // Define separate x and y coordinates for the additional animation
+                    int additionalX = _framePoint.X + xOffset;
+                    int additionalY = _framePoint.Y + yOffset;
+
+                    // Store the adjusted position
+                    _additionalFramePoint = new Point(additionalX, additionalY);
+                }
+            }
+        }
+
+        #region [ AnimationPictureBox_OnPaintFrame ] 
         private void AnimationPictureBox_OnPaintFrame(object sender, PaintEventArgs e)
         {
             AnimIdx edit = AnimationEdit.GetAnimation(_fileType, _currentBody, _currentAction, _currentDir);
@@ -490,26 +578,19 @@ namespace UoFiddler.Controls.Forms
             e.Graphics.DrawLine(Pens.Black, new Point(_framePoint.X, 0), new Point(_framePoint.X, AnimationPictureBox.Height));
             e.Graphics.DrawLine(Pens.Black, new Point(0, _framePoint.Y), new Point(AnimationPictureBox.Width, _framePoint.Y));
 
-            // Men Woman Aninmation alignment
+            // Men Woman Animation alignment
             if (isAnimationVisible && additionalAnimation != null)
             {
+                AdjustAdditionalAnimationPosition(); // Ensure this method is called
+
                 Bitmap[] additionalBits = additionalAnimation.GetFrames();
                 if (additionalBits?.Length > 0 && additionalBits[FramesTrackBar.Value] != null)
                 {
-                    // Determine the coordinates based on the selected gender
-                    string selectedGender = comboBoxMenWoman.SelectedItem.ToString();
-                    int xOffset = -12; // X-Offset is the same for both sexes                    
-                    int yOffset = selectedGender == "men" ? -53 : -52;
-
-                    // Define separate x and y coordinates for the additional animation
-                    int additionalX = _framePoint.X + xOffset;                    
-                    int additionalY = _framePoint.Y + yOffset;
-
                     // Draw the additional animation at the specified position
-                    e.Graphics.DrawImage(additionalBits[FramesTrackBar.Value], additionalX, additionalY);
+                    e.Graphics.DrawImage(additionalBits[FramesTrackBar.Value], _additionalFramePoint.X, _additionalFramePoint.Y);
                 }
             }
-            // Men Woman Aninmation alignment
+            // Men Woman Animation alignment
 
             if (currentBits?.Length > 0 && currentBits[FramesTrackBar.Value] != null)
             {
@@ -555,14 +636,14 @@ namespace UoFiddler.Controls.Forms
 
             // Draw Reference Point Arrow
             Point[] arrayPoints = {
-                new Point(418 - (int)RefXNumericUpDown.Value, 335 - (int)RefYNumericUpDown.Value),
-                new Point(418 - (int)RefXNumericUpDown.Value, 352 - (int)RefYNumericUpDown.Value),
-                new Point(422 - (int)RefXNumericUpDown.Value, 348 - (int)RefYNumericUpDown.Value),
-                new Point(425 - (int)RefXNumericUpDown.Value, 353 - (int)RefYNumericUpDown.Value),
-                new Point(427 - (int)RefXNumericUpDown.Value, 352 - (int)RefYNumericUpDown.Value),
-                new Point(425 - (int)RefXNumericUpDown.Value, 347 - (int)RefYNumericUpDown.Value),
-                new Point(430 - (int)RefXNumericUpDown.Value, 347 - (int)RefYNumericUpDown.Value)
-            };
+            new Point(418 - (int)RefXNumericUpDown.Value, 335 - (int)RefYNumericUpDown.Value),
+            new Point(418 - (int)RefXNumericUpDown.Value, 352 - (int)RefYNumericUpDown.Value),
+            new Point(422 - (int)RefXNumericUpDown.Value, 348 - (int)RefYNumericUpDown.Value),
+            new Point(425 - (int)RefXNumericUpDown.Value, 353 - (int)RefYNumericUpDown.Value),
+            new Point(427 - (int)RefXNumericUpDown.Value, 352 - (int)RefYNumericUpDown.Value),
+            new Point(425 - (int)RefXNumericUpDown.Value, 347 - (int)RefYNumericUpDown.Value),
+            new Point(430 - (int)RefXNumericUpDown.Value, 347 - (int)RefYNumericUpDown.Value)
+        };
 
             e.Graphics.FillPolygon(_whiteUnDraw, arrayPoints);
             e.Graphics.DrawPolygon(_blackUndraw, arrayPoints);
@@ -1186,12 +1267,12 @@ namespace UoFiddler.Controls.Forms
                         }
 
                         palette[i++] = ushort.Parse(line);
-                        
+
                         if (palette[i++] == 32768)
                         {
                             palette[i++] = 32769;
                         }
-                        
+
                         if (i >= 0x100)
                         {
                             break;
@@ -3638,7 +3719,7 @@ namespace UoFiddler.Controls.Forms
                     }
                     //}
 
-                    
+
                     // Convert color 0,0,0 to 0,0,8
                     if (cur[x] == 32768)
                     {
@@ -3648,7 +3729,7 @@ namespace UoFiddler.Controls.Forms
                     if (cur[x] != 65535 && cur[x] != 54965 && cur[x] != extraBack && cur[x] > 32768) //True White == BackGround
                     {
                         curNew[x] = cur[x];
-                    }                    
+                    }
                 }
             }
             bmp.UnlockBits(bd);
@@ -4698,6 +4779,70 @@ namespace UoFiddler.Controls.Forms
                 // Redraw the PictureBox to reflect the changes
                 AnimationPictureBox.Invalidate();
             }
+        }
+        #endregion
+
+        #region [ btnUp ]
+        private void btnUp_Click(object sender, EventArgs e)
+        {
+            int direction = DirectionTrackBar.Value;
+            int frame = FramesTrackBar.Value;
+            Offsets[direction][frame][1]--;
+            AnimationPictureBox.Invalidate(); // Redraw image
+        }
+        #endregion
+
+        #region [ btnDown ]
+        private void btnDown_Click(object sender, EventArgs e)
+        {
+            int direction = DirectionTrackBar.Value;
+            int frame = FramesTrackBar.Value;
+            Offsets[direction][frame][1]++;
+            AnimationPictureBox.Invalidate(); // Redraw image
+        }
+        #endregion
+
+        #region [ btnLeft ]
+        private void btnLeft_Click(object sender, EventArgs e)
+        {
+            int direction = DirectionTrackBar.Value;
+            int frame = FramesTrackBar.Value;
+            Offsets[direction][frame][0]--;
+            AnimationPictureBox.Invalidate(); // Redraw image
+        }
+        #endregion
+
+        #region [ btnRight ]
+        private void btnRight_Click(object sender, EventArgs e)
+        {
+            int direction = DirectionTrackBar.Value;
+            int frame = FramesTrackBar.Value;
+            Offsets[direction][frame][0]++;
+            AnimationPictureBox.Invalidate(); // Redraw image
+        }
+        #endregion
+
+        #region [ btn_ScreenShot ]
+        private void btn_ScreenShot_Click(object sender, EventArgs e)
+        {
+            // Define the path to save the screenshot
+            string path = Options.OutputPath;
+
+            // Create a unique filename using the current date and time
+            string timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
+            string fileName = Path.Combine(path, $"AnimationScreenshot_{timestamp}.png");
+
+            // Create a bitmap of the same size as the AnimationPictureBox
+            using (Bitmap bmp = new Bitmap(AnimationPictureBox.Width, AnimationPictureBox.Height))
+            {
+                // Draw the AnimationPictureBox onto the bitmap
+                AnimationPictureBox.DrawToBitmap(bmp, new Rectangle(0, 0, AnimationPictureBox.Width, AnimationPictureBox.Height));
+
+                // Save the bitmap as a .png file
+                bmp.Save(fileName, System.Drawing.Imaging.ImageFormat.Png);
+            }
+
+            MessageBox.Show($"Screenshot saved to {fileName}");
         }
         #endregion
     }

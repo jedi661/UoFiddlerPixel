@@ -120,6 +120,12 @@
             toolStripSeparator10 = new System.Windows.Forms.ToolStripSeparator();
             AnimationPictureBox = new System.Windows.Forms.PictureBox();
             EditSidePanel = new System.Windows.Forms.Panel();
+            btn_ScreenShot = new System.Windows.Forms.Button();
+            btnLeft = new System.Windows.Forms.Button();
+            btnDown = new System.Windows.Forms.Button();
+            btnRight = new System.Windows.Forms.Button();
+            btnUp = new System.Windows.Forms.Button();
+            LabelHumanBody = new System.Windows.Forms.Label();
             buttonShow = new System.Windows.Forms.Button();
             comboBoxMenWoman = new System.Windows.Forms.ComboBox();
             FramesGroupBox = new System.Windows.Forms.GroupBox();
@@ -390,7 +396,7 @@
             // ProgressBar
             // 
             ProgressBar.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
-            ProgressBar.Location = new System.Drawing.Point(561, 628);
+            ProgressBar.Location = new System.Drawing.Point(556, 628);
             ProgressBar.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             ProgressBar.Name = "ProgressBar";
             ProgressBar.Size = new System.Drawing.Size(197, 20);
@@ -1079,6 +1085,12 @@
             // EditSidePanel
             // 
             EditSidePanel.BackColor = System.Drawing.SystemColors.Control;
+            EditSidePanel.Controls.Add(btn_ScreenShot);
+            EditSidePanel.Controls.Add(btnLeft);
+            EditSidePanel.Controls.Add(btnDown);
+            EditSidePanel.Controls.Add(btnRight);
+            EditSidePanel.Controls.Add(btnUp);
+            EditSidePanel.Controls.Add(LabelHumanBody);
             EditSidePanel.Controls.Add(buttonShow);
             EditSidePanel.Controls.Add(comboBoxMenWoman);
             EditSidePanel.Controls.Add(FramesGroupBox);
@@ -1093,11 +1105,75 @@
             EditSidePanel.Size = new System.Drawing.Size(190, 560);
             EditSidePanel.TabIndex = 0;
             // 
+            // btn_ScreenShot
+            // 
+            btn_ScreenShot.Location = new System.Drawing.Point(143, 460);
+            btn_ScreenShot.Name = "btn_ScreenShot";
+            btn_ScreenShot.Size = new System.Drawing.Size(43, 23);
+            btn_ScreenShot.TabIndex = 31;
+            btn_ScreenShot.Text = "Pic..";
+            btn_ScreenShot.UseVisualStyleBackColor = true;
+            btn_ScreenShot.Click += btn_ScreenShot_Click;
+            // 
+            // btnLeft
+            // 
+            btnLeft.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            btnLeft.Location = new System.Drawing.Point(14, 511);
+            btnLeft.Name = "btnLeft";
+            btnLeft.Size = new System.Drawing.Size(33, 23);
+            btnLeft.TabIndex = 30;
+            btnLeft.Text = "L";
+            btnLeft.UseVisualStyleBackColor = true;
+            btnLeft.Click += btnLeft_Click;
+            // 
+            // btnDown
+            // 
+            btnDown.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            btnDown.Location = new System.Drawing.Point(48, 534);
+            btnDown.Name = "btnDown";
+            btnDown.Size = new System.Drawing.Size(33, 23);
+            btnDown.TabIndex = 29;
+            btnDown.Text = "D";
+            btnDown.UseVisualStyleBackColor = true;
+            btnDown.Click += btnDown_Click;
+            // 
+            // btnRight
+            // 
+            btnRight.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            btnRight.Location = new System.Drawing.Point(82, 511);
+            btnRight.Name = "btnRight";
+            btnRight.Size = new System.Drawing.Size(33, 23);
+            btnRight.TabIndex = 28;
+            btnRight.Text = "R";
+            btnRight.UseVisualStyleBackColor = true;
+            btnRight.Click += btnRight_Click;
+            // 
+            // btnUp
+            // 
+            btnUp.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            btnUp.Location = new System.Drawing.Point(48, 489);
+            btnUp.Name = "btnUp";
+            btnUp.Size = new System.Drawing.Size(33, 23);
+            btnUp.TabIndex = 27;
+            btnUp.Text = "U";
+            btnUp.UseVisualStyleBackColor = true;
+            btnUp.Click += btnUp_Click;
+            // 
+            // LabelHumanBody
+            // 
+            LabelHumanBody.AutoSize = true;
+            LabelHumanBody.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            LabelHumanBody.Location = new System.Drawing.Point(9, 440);
+            LabelHumanBody.Name = "LabelHumanBody";
+            LabelHumanBody.Size = new System.Drawing.Size(122, 15);
+            LabelHumanBody.TabIndex = 26;
+            LabelHumanBody.Text = "Human Body Control";
+            // 
             // buttonShow
             // 
-            buttonShow.Location = new System.Drawing.Point(89, 457);
+            buttonShow.Location = new System.Drawing.Point(85, 460);
             buttonShow.Name = "buttonShow";
-            buttonShow.Size = new System.Drawing.Size(72, 23);
+            buttonShow.Size = new System.Drawing.Size(57, 23);
             buttonShow.TabIndex = 25;
             buttonShow.Text = "Show";
             buttonShow.UseVisualStyleBackColor = true;
@@ -1109,9 +1185,9 @@
             comboBoxMenWoman.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             comboBoxMenWoman.FormattingEnabled = true;
             comboBoxMenWoman.Items.AddRange(new object[] { "men", "woman" });
-            comboBoxMenWoman.Location = new System.Drawing.Point(10, 457);
+            comboBoxMenWoman.Location = new System.Drawing.Point(10, 460);
             comboBoxMenWoman.Name = "comboBoxMenWoman";
-            comboBoxMenWoman.Size = new System.Drawing.Size(73, 23);
+            comboBoxMenWoman.Size = new System.Drawing.Size(72, 23);
             comboBoxMenWoman.TabIndex = 24;
             comboBoxMenWoman.Text = "men";
             comboBoxMenWoman.SelectedIndexChanged += comboBoxMenWoman_SelectedIndexChanged;
@@ -1120,6 +1196,7 @@
             // 
             FramesGroupBox.Controls.Add(FramesTrackBar);
             FramesGroupBox.Dock = System.Windows.Forms.DockStyle.Top;
+            FramesGroupBox.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
             FramesGroupBox.Location = new System.Drawing.Point(0, 380);
             FramesGroupBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             FramesGroupBox.Name = "FramesGroupBox";
@@ -1146,6 +1223,7 @@
             SpeedGroupBox.Controls.Add(PlayButton);
             SpeedGroupBox.Controls.Add(AnimationSpeedTrackBar);
             SpeedGroupBox.Dock = System.Windows.Forms.DockStyle.Top;
+            SpeedGroupBox.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
             SpeedGroupBox.Location = new System.Drawing.Point(0, 310);
             SpeedGroupBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             SpeedGroupBox.Name = "SpeedGroupBox";
@@ -1187,6 +1265,7 @@
             LocationCenterGroupBox.Controls.Add(CenterXNumericUpDown);
             LocationCenterGroupBox.Controls.Add(CenterYNumericUpDown);
             LocationCenterGroupBox.Dock = System.Windows.Forms.DockStyle.Top;
+            LocationCenterGroupBox.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
             LocationCenterGroupBox.Location = new System.Drawing.Point(0, 221);
             LocationCenterGroupBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             LocationCenterGroupBox.Name = "LocationCenterGroupBox";
@@ -1212,7 +1291,7 @@
             CenterXLabel.Location = new System.Drawing.Point(9, 24);
             CenterXLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             CenterXLabel.Name = "CenterXLabel";
-            CenterXLabel.Size = new System.Drawing.Size(14, 15);
+            CenterXLabel.Size = new System.Drawing.Size(15, 15);
             CenterXLabel.TabIndex = 17;
             CenterXLabel.Text = "X";
             // 
@@ -1262,6 +1341,7 @@
             ReferencialPointGroupBox.Controls.Add(RefXNumericUpDown);
             ReferencialPointGroupBox.Controls.Add(RefYNumericUpDown);
             ReferencialPointGroupBox.Dock = System.Windows.Forms.DockStyle.Top;
+            ReferencialPointGroupBox.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
             ReferencialPointGroupBox.Location = new System.Drawing.Point(0, 137);
             ReferencialPointGroupBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             ReferencialPointGroupBox.Name = "ReferencialPointGroupBox";
@@ -1300,7 +1380,7 @@
             RefXLabel.Location = new System.Drawing.Point(9, 24);
             RefXLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             RefXLabel.Name = "RefXLabel";
-            RefXLabel.Size = new System.Drawing.Size(14, 15);
+            RefXLabel.Size = new System.Drawing.Size(15, 15);
             RefXLabel.TabIndex = 9;
             RefXLabel.Text = "X";
             // 
@@ -1340,6 +1420,7 @@
             CoordinatesGroupBox.Controls.Add(SetCoordinatesButton);
             CoordinatesGroupBox.Controls.Add(SaveCoordinatesCheckBox);
             CoordinatesGroupBox.Dock = System.Windows.Forms.DockStyle.Top;
+            CoordinatesGroupBox.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
             CoordinatesGroupBox.Location = new System.Drawing.Point(0, 0);
             CoordinatesGroupBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             CoordinatesGroupBox.Name = "CoordinatesGroupBox";
@@ -1425,7 +1506,7 @@
             SaveCoordinatesCheckBox.Location = new System.Drawing.Point(10, 20);
             SaveCoordinatesCheckBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             SaveCoordinatesCheckBox.Name = "SaveCoordinatesCheckBox";
-            SaveCoordinatesCheckBox.Size = new System.Drawing.Size(50, 19);
+            SaveCoordinatesCheckBox.Size = new System.Drawing.Size(53, 19);
             SaveCoordinatesCheckBox.TabIndex = 15;
             SaveCoordinatesCheckBox.Text = "Save";
             SaveCoordinatesCheckBox.UseVisualStyleBackColor = false;
@@ -1435,7 +1516,7 @@
             // 
             DirectionTrackBar.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
             DirectionTrackBar.AutoSize = false;
-            DirectionTrackBar.Location = new System.Drawing.Point(765, 626);
+            DirectionTrackBar.Location = new System.Drawing.Point(760, 626);
             DirectionTrackBar.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             DirectionTrackBar.Maximum = 4;
             DirectionTrackBar.Name = "DirectionTrackBar";
@@ -1556,6 +1637,7 @@
             AnimationEditToolStrip.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)AnimationPictureBox).EndInit();
             EditSidePanel.ResumeLayout(false);
+            EditSidePanel.PerformLayout();
             FramesGroupBox.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)FramesTrackBar).EndInit();
             SpeedGroupBox.ResumeLayout(false);
@@ -1705,5 +1787,11 @@
         private System.Windows.Forms.ToolStripMenuItem editUoBodyconMobtypesToolStripMenuItem;
         private System.Windows.Forms.Button buttonShow;
         private System.Windows.Forms.ComboBox comboBoxMenWoman;
+        private System.Windows.Forms.Label LabelHumanBody;
+        private System.Windows.Forms.Button btnLeft;
+        private System.Windows.Forms.Button btnDown;
+        private System.Windows.Forms.Button btnRight;
+        private System.Windows.Forms.Button btnUp;
+        private System.Windows.Forms.Button btn_ScreenShot;
     }
 }
