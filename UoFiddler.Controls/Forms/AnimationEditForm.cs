@@ -34,7 +34,7 @@ namespace UoFiddler.Controls.Forms
         private int _currentBody;
         private int _currentDir;
         private Point _framePoint;
-        private Point _additionalFramePoint; // Hinzugefügt
+        private Point _additionalFramePoint;
         private bool _showOnlyValid;
         private static bool _drawEmpty;
         private static bool _drawFull;
