@@ -55,6 +55,7 @@ namespace UoFiddler.Controls.Forms
         private bool isAnimationVisible = false; // Second animation
         private AnimIdx additionalAnimation = null; // Second animation
 
+        #region [ Offsets Human ]
         private static readonly int[][][] Offsets = new int[][][]
         {
             new int[][] // Direction 0
@@ -123,6 +124,7 @@ namespace UoFiddler.Controls.Forms
                 new int[] { -10, -57 }  // Frame 9
             }
         };
+        #endregion
 
         #region [ AnimationEditForm ]
         public AnimationEditForm()
@@ -541,6 +543,7 @@ namespace UoFiddler.Controls.Forms
         }
         #endregion
 
+        #region [ AdjustAdditionalAnimationPosition ]
         private void AdjustAdditionalAnimationPosition()
         {
             if (additionalAnimation != null)
@@ -562,6 +565,7 @@ namespace UoFiddler.Controls.Forms
                 }
             }
         }
+        #endregion
 
         #region [ AnimationPictureBox_OnPaintFrame ] 
         private void AnimationPictureBox_OnPaintFrame(object sender, PaintEventArgs e)
