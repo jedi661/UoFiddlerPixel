@@ -1521,12 +1521,25 @@ namespace UoFiddler.Forms
         {
             // Load the saved background color
             int savedColorArgb = Properties.Settings.Default.BackgroundColor;
-            Color savedColor = Color.FromArgb(savedColorArgb);
 
-            this.BackColor = savedColor;
-            tsMainMenu.BackColor = savedColor;
-            contextMenuStripMainForm.BackColor = savedColor;
-            toolTip.BackColor = savedColor;
+            // Check if the color has been set by the player
+            if (savedColorArgb == 0) // Assuming 0 means the color has not been set
+            {
+                // If not set, use a default color
+                this.BackColor = SystemColors.Control; // or any other default color
+                tsMainMenu.BackColor = SystemColors.Control;
+                contextMenuStripMainForm.BackColor = SystemColors.Control;
+                toolTip.BackColor = SystemColors.Control;
+            }
+            else
+            {
+                // If set, use the saved color
+                Color savedColor = Color.FromArgb(savedColorArgb);
+                this.BackColor = savedColor;
+                tsMainMenu.BackColor = savedColor;
+                contextMenuStripMainForm.BackColor = savedColor;
+                toolTip.BackColor = savedColor;
+            }
         }
         #endregion
 
