@@ -120,6 +120,7 @@
             toolStripSeparator10 = new System.Windows.Forms.ToolStripSeparator();
             AnimationPictureBox = new System.Windows.Forms.PictureBox();
             EditSidePanel = new System.Windows.Forms.Panel();
+            checkBoxMount = new System.Windows.Forms.CheckBox();
             btn_ScreenShot = new System.Windows.Forms.Button();
             btnLeft = new System.Windows.Forms.Button();
             btnDown = new System.Windows.Forms.Button();
@@ -396,7 +397,7 @@
             // ProgressBar
             // 
             ProgressBar.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
-            ProgressBar.Location = new System.Drawing.Point(556, 628);
+            ProgressBar.Location = new System.Drawing.Point(553, 628);
             ProgressBar.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             ProgressBar.Name = "ProgressBar";
             ProgressBar.Size = new System.Drawing.Size(197, 20);
@@ -1085,6 +1086,7 @@
             // EditSidePanel
             // 
             EditSidePanel.BackColor = System.Drawing.SystemColors.Control;
+            EditSidePanel.Controls.Add(checkBoxMount);
             EditSidePanel.Controls.Add(btn_ScreenShot);
             EditSidePanel.Controls.Add(btnLeft);
             EditSidePanel.Controls.Add(btnDown);
@@ -1105,20 +1107,31 @@
             EditSidePanel.Size = new System.Drawing.Size(190, 560);
             EditSidePanel.TabIndex = 0;
             // 
+            // checkBoxMount
+            // 
+            checkBoxMount.AutoSize = true;
+            checkBoxMount.Location = new System.Drawing.Point(111, 489);
+            checkBoxMount.Name = "checkBoxMount";
+            checkBoxMount.Size = new System.Drawing.Size(75, 19);
+            checkBoxMount.TabIndex = 32;
+            checkBoxMount.Text = "Mounted";
+            checkBoxMount.UseVisualStyleBackColor = true;
+            checkBoxMount.CheckedChanged += checkBoxMount_CheckedChanged;
+            // 
             // btn_ScreenShot
             // 
             btn_ScreenShot.Location = new System.Drawing.Point(143, 460);
             btn_ScreenShot.Name = "btn_ScreenShot";
             btn_ScreenShot.Size = new System.Drawing.Size(43, 23);
             btn_ScreenShot.TabIndex = 31;
-            btn_ScreenShot.Text = "Pic..";
+            btn_ScreenShot.Text = "Shot..";
             btn_ScreenShot.UseVisualStyleBackColor = true;
             btn_ScreenShot.Click += btn_ScreenShot_Click;
             // 
             // btnLeft
             // 
             btnLeft.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-            btnLeft.Location = new System.Drawing.Point(14, 511);
+            btnLeft.Location = new System.Drawing.Point(7, 511);
             btnLeft.Name = "btnLeft";
             btnLeft.Size = new System.Drawing.Size(33, 23);
             btnLeft.TabIndex = 30;
@@ -1129,7 +1142,7 @@
             // btnDown
             // 
             btnDown.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-            btnDown.Location = new System.Drawing.Point(48, 534);
+            btnDown.Location = new System.Drawing.Point(39, 533);
             btnDown.Name = "btnDown";
             btnDown.Size = new System.Drawing.Size(33, 23);
             btnDown.TabIndex = 29;
@@ -1140,7 +1153,7 @@
             // btnRight
             // 
             btnRight.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-            btnRight.Location = new System.Drawing.Point(82, 511);
+            btnRight.Location = new System.Drawing.Point(71, 511);
             btnRight.Name = "btnRight";
             btnRight.Size = new System.Drawing.Size(33, 23);
             btnRight.TabIndex = 28;
@@ -1151,7 +1164,7 @@
             // btnUp
             // 
             btnUp.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-            btnUp.Location = new System.Drawing.Point(48, 489);
+            btnUp.Location = new System.Drawing.Point(39, 489);
             btnUp.Name = "btnUp";
             btnUp.Size = new System.Drawing.Size(33, 23);
             btnUp.TabIndex = 27;
@@ -1516,7 +1529,7 @@
             // 
             DirectionTrackBar.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
             DirectionTrackBar.AutoSize = false;
-            DirectionTrackBar.Location = new System.Drawing.Point(760, 626);
+            DirectionTrackBar.Location = new System.Drawing.Point(757, 626);
             DirectionTrackBar.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             DirectionTrackBar.Maximum = 4;
             DirectionTrackBar.Name = "DirectionTrackBar";
@@ -1793,5 +1806,6 @@
         private System.Windows.Forms.Button btnRight;
         private System.Windows.Forms.Button btnUp;
         private System.Windows.Forms.Button btn_ScreenShot;
+        private System.Windows.Forms.CheckBox checkBoxMount;
     }
 }

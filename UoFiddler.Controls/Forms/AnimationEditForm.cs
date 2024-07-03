@@ -18,6 +18,7 @@ using System.Linq;
 using System.Runtime.ConstrainedExecution;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 using Ultima;
 using UoFiddler.Controls.Classes;
@@ -53,7 +54,7 @@ namespace UoFiddler.Controls.Forms
         private static bool _lockButton;
 
         private bool isAnimationVisible = false; // Second animation
-        private AnimIdx additionalAnimation = null; // Second animation
+        private AnimIdx additionalAnimation = null; // Second animation        
 
         #region [ Offsets Human ]
         private static readonly int[][][] Offsets = new int[][][]
@@ -122,6 +123,52 @@ namespace UoFiddler.Controls.Forms
                 new int[] { -12, -58 }, // Frame 7
                 new int[] { -11, -57 }, // Frame 8
                 new int[] { -10, -57 }  // Frame 9
+            }
+        };
+        #endregion
+
+        #region [ HorseRunOffsets ]
+        private static readonly int[][][] HorseRunOffsets = new int[][][]
+        {
+            new int[][] // Direction 0
+            {
+                new int[] { -14, -73 }, // Frame 0
+                new int[] { -16, -74 }, // Frame 1
+                new int[] { -17, -69 }, // Frame 2
+                new int[] { -16, -73 }, // Frame 3
+                new int[] { -16, -74 }, // Frame 4                
+            },
+            new int[][] // Direction 1
+            {
+                new int[] { -18, -74 }, // Frame 0
+                new int[] { -20, -74 }, // Frame 1
+                new int[] { -21, -69 }, // Frame 2
+                new int[] { -20, -73 }, // Frame 3
+                new int[] { -18, -75 }, // Frame 4                
+            },
+            new int[][] // Direction 2
+            {
+                new int[] { -14, -75 }, // Frame 0
+                new int[] { -15, -76 }, // Frame 1
+                new int[] { -15, -71 }, // Frame 2
+                new int[] { -15, -75 }, // Frame 3
+                new int[] { -14, -76 }, // Frame 4                
+            },
+            new int[][] // Direction 3
+            {
+                new int[] { -18, -76 }, // Frame 0
+                new int[] { -19, -77 }, // Frame 1
+                new int[] { -20, -72 }, // Frame 2
+                new int[] { -19, -76 }, // Frame 3
+                new int[] { -19, -76 }, // Frame 4                
+            },
+            new int[][] // Direction 4
+            {
+                new int[] { -13, -76 }, // Frame 0
+                new int[] { -14, -77 }, // Frame 1
+                new int[] { -15, -73 }, // Frame 2
+                new int[] { -14, -76 }, // Frame 3
+                new int[] { -14, -77 }, // Frame 4                
             }
         };
         #endregion
@@ -451,14 +498,14 @@ namespace UoFiddler.Controls.Forms
                         CenterXNumericUpDown.Value = edit.Frames[FramesTrackBar.Value].Center.X;
                         CenterYNumericUpDown.Value = edit.Frames[FramesTrackBar.Value].Center.Y;
                     }
-                    //Soulblighter Modification
+                    
                     else
                     {
                         FramesTrackBar.Maximum = 0;
                         FramesTrackBar.Value = 0;
                         FramesTrackBar.Invalidate();
                     }
-                    //End of Soulblighter Modification
+                    
                 }
             }
             finally
@@ -510,10 +557,15 @@ namespace UoFiddler.Controls.Forms
         }
         #endregion
 
-        #region [ OnDirectionChanged ]        
+        #region [ OnDirectionChanged ]
         private void OnDirectionChanged(object sender, EventArgs e)
         {
             _currentDir = DirectionTrackBar.Value;
+
+            if (checkBoxMount.Checked)
+            {
+                _currentAction = 24; // Sets the action to 24 when riding animation is selected
+            }
 
             if (isAnimationVisible)
             {
@@ -543,25 +595,54 @@ namespace UoFiddler.Controls.Forms
         }
         #endregion
 
-        #region [ AdjustAdditionalAnimationPosition ]
+        #region [ AdjustAdditionalAnimationPosition ]  
         private void AdjustAdditionalAnimationPosition()
         {
             if (additionalAnimation != null)
             {
                 Bitmap[] additionalBits = additionalAnimation.GetFrames();
-                if (additionalBits?.Length > 0 && additionalBits[FramesTrackBar.Value] != null)
+                if (additionalBits?.Length > 0 && FramesTrackBar.Value >= 0 && FramesTrackBar.Value < additionalBits.Length && additionalBits[FramesTrackBar.Value] != null)
                 {
-                    // Get the offsets for the current direction and frame
-                    int[] offsets = Offsets[_currentDir][FramesTrackBar.Value];
-                    int xOffset = offsets[0];
-                    int yOffset = offsets[1];
+                    int[] offsets;
+                    if (checkBoxMount.Checked)
+                    {
+                        if (_currentDir >= 0 && _currentDir < HorseRunOffsets.Length && FramesTrackBar.Value < HorseRunOffsets[_currentDir].Length)
+                        {
+                            offsets = HorseRunOffsets[_currentDir][FramesTrackBar.Value];
+                        }
+                        else
+                        {
+                            // Log or handle error
+                            return;
+                        }
+                    }
+                    else
+                    {
+                        if (_currentDir >= 0 && _currentDir < Offsets.Length && FramesTrackBar.Value < Offsets[_currentDir].Length)
+                        {
+                            offsets = Offsets[_currentDir][FramesTrackBar.Value];
+                        }
+                        else
+                        {
+                            // Log or handle error
+                            return;
+                        }
+                    }
 
-                    // Define separate x and y coordinates for the additional animation
-                    int additionalX = _framePoint.X + xOffset;
-                    int additionalY = _framePoint.Y + yOffset;
+                    if (offsets.Length >= 2) // Ensure there are at least two elements
+                    {
+                        int xOffset = offsets[0];
+                        int yOffset = offsets[1];
 
-                    // Store the adjusted position
-                    _additionalFramePoint = new Point(additionalX, additionalY);
+                        int additionalX = _framePoint.X + xOffset;
+                        int additionalY = _framePoint.Y + yOffset;
+
+                        _additionalFramePoint = new Point(additionalX, additionalY);
+                    }
+                    else
+                    {
+                        // Log or handle error for invalid offsets
+                    }
                 }
             }
         }
@@ -588,7 +669,7 @@ namespace UoFiddler.Controls.Forms
                 AdjustAdditionalAnimationPosition(); // Ensure this method is called
 
                 Bitmap[] additionalBits = additionalAnimation.GetFrames();
-                if (additionalBits?.Length > 0 && additionalBits[FramesTrackBar.Value] != null)
+                if (additionalBits?.Length > 0 && FramesTrackBar.Value >= 0 && FramesTrackBar.Value < additionalBits.Length && additionalBits[FramesTrackBar.Value] != null)
                 {
                     // Draw the additional animation at the specified position
                     e.Graphics.DrawImage(additionalBits[FramesTrackBar.Value], _additionalFramePoint.X, _additionalFramePoint.Y);
@@ -596,7 +677,7 @@ namespace UoFiddler.Controls.Forms
             }
             // Men Woman Animation alignment
 
-            if (currentBits?.Length > 0 && currentBits[FramesTrackBar.Value] != null)
+            if (currentBits?.Length > 0 && FramesTrackBar.Value >= 0 && FramesTrackBar.Value < currentBits.Length && currentBits[FramesTrackBar.Value] != null)
             {
                 int varW;
                 int varH;
@@ -634,8 +715,6 @@ namespace UoFiddler.Controls.Forms
 
                 e.Graphics.DrawRectangle(Pens.Red, new Rectangle(x, y, varW, varH));
                 e.Graphics.DrawImage(currentBits[FramesTrackBar.Value], x, y);
-
-                //e.Graphics.DrawLine(Pens.Red, new Point(0, 335-(int)numericUpDown1.Value), new Point(animationPictureBox.Width, 335-(int)numericUpDown1.Value));                
             }
 
             // Draw Reference Point Arrow
@@ -651,10 +730,22 @@ namespace UoFiddler.Controls.Forms
 
             e.Graphics.FillPolygon(_whiteUnDraw, arrayPoints);
             e.Graphics.DrawPolygon(_blackUndraw, arrayPoints);
+
+            // Draw additional animation on top if checkbox is checked
+            if (checkBoxMount.Checked && isAnimationVisible && additionalAnimation != null)
+            {
+                AdjustAdditionalAnimationPosition();
+
+                Bitmap[] additionalBits = additionalAnimation.GetFrames();
+                if (additionalBits?.Length > 0 && FramesTrackBar.Value >= 0 && FramesTrackBar.Value < additionalBits.Length && additionalBits[FramesTrackBar.Value] != null)
+                {
+                    e.Graphics.DrawImage(additionalBits[FramesTrackBar.Value], _additionalFramePoint.X, _additionalFramePoint.Y);
+                }
+            }
         }
         #endregion
 
-        #region  [ OnFrameCountBarChange ]
+        #region  [ OnFrameCountBarChange ] 
         private void OnFrameCountBarChanged(object sender, EventArgs e)
         {
             if (_fileType == 0)
@@ -663,11 +754,33 @@ namespace UoFiddler.Controls.Forms
             }
 
             AnimIdx edit = AnimationEdit.GetAnimation(_fileType, _currentBody, _currentAction, _currentDir);
-            if (edit != null && edit.Frames.Count >= FramesTrackBar.Value)
+            if (edit == null)
             {
-                CenterXNumericUpDown.Value = edit.Frames[FramesTrackBar.Value].Center.X;
-                CenterYNumericUpDown.Value = edit.Frames[FramesTrackBar.Value].Center.Y;
+                // Log or error handling for zero animation
+                return;
             }
+
+            if (edit.Frames == null)
+            {
+                // Log or error handling for zero frames
+                return;
+            }
+
+            if (FramesTrackBar.Value >= edit.Frames.Count)
+            {
+                // Log or error handling for invalid FramesTrackBar value
+                return;
+            }
+
+            var currentFrame = edit.Frames[FramesTrackBar.Value];
+            if (currentFrame == null)
+            {
+                // Log or error handling for zero frame
+                return;
+            }
+
+            CenterXNumericUpDown.Value = currentFrame.Center.X;
+            CenterYNumericUpDown.Value = currentFrame.Center.Y;
 
             AnimationPictureBox.Invalidate();
         }
@@ -684,12 +797,17 @@ namespace UoFiddler.Controls.Forms
                 }
 
                 AnimIdx edit = AnimationEdit.GetAnimation(_fileType, _currentBody, _currentAction, _currentDir);
-                if (edit == null || edit.Frames.Count < FramesTrackBar.Value)
+                if (edit == null || edit.Frames == null || FramesTrackBar.Value >= edit.Frames.Count)
                 {
                     return;
                 }
 
                 FrameEdit frame = edit.Frames[FramesTrackBar.Value];
+                if (frame == null)
+                {
+                    return;
+                }
+
                 if (CenterXNumericUpDown.Value == frame.Center.X)
                 {
                     return;
@@ -1044,8 +1162,7 @@ namespace UoFiddler.Controls.Forms
                     {
                         FramesListView.BeginUpdate();
                         try
-                        {
-                            //My Soulblighter Modifications
+                        {                            
                             foreach (var fileName in dialog.FileNames)
                             {
                                 using (var bmpTemp = new Bitmap(fileName))
@@ -1094,7 +1211,7 @@ namespace UoFiddler.Controls.Forms
 
                                         Options.ChangedUltimaClass["Animations"] = true;
                                     }
-                                    //End of Soulblighter Modifications
+                                    
                                     else
                                     {
                                         edit.AddFrame(bitmap);
@@ -1784,6 +1901,7 @@ namespace UoFiddler.Controls.Forms
                 FramesTrackBar.Value = 0;
             }
 
+            OnFrameCountBarChanged(sender, e);
             AnimationPictureBox.Invalidate();
         }
         #endregion
@@ -4716,6 +4834,12 @@ namespace UoFiddler.Controls.Forms
                 // Show animation based on selected gender
                 string selectedGender = comboBoxMenWoman.SelectedItem.ToString();
                 int animId = selectedGender == "men" ? 400 : 401;
+
+                if (checkBoxMount.Checked)
+                {
+                    _currentAction = 24; // Sets the action to 24 when riding animation is selected
+                }
+
                 additionalAnimation = AnimationEdit.GetAnimation(_fileType, animId, _currentAction, _currentDir);
                 buttonShow.Text = "Hide";
             }
@@ -4762,6 +4886,12 @@ namespace UoFiddler.Controls.Forms
             {
                 string selectedGender = comboBoxMenWoman.SelectedItem.ToString();
                 int animId = selectedGender == "men" ? 400 : 401;
+
+                if (checkBoxMount.Checked)
+                {
+                    _currentAction = 24; // Sets the action to 24 when riding animation is selected
+                }
+
                 additionalAnimation = AnimationEdit.GetAnimation(_fileType, animId, _currentAction, _currentDir);
                 AnimationPictureBox.Invalidate();
             }
@@ -4777,9 +4907,13 @@ namespace UoFiddler.Controls.Forms
                 string selectedGender = comboBoxMenWoman.SelectedItem.ToString();
                 int animId = selectedGender == "men" ? 400 : 401;
 
+                if (checkBoxMount.Checked)
+                {
+                    _currentAction = 24; // Sets the action to 24 when riding animation is selected
+                }
+
                 // Get the corresponding animation based on the DirectionTrackBar value
                 additionalAnimation = AnimationEdit.GetAnimation(_fileType, animId, _currentAction, DirectionTrackBar.Value);
-
                 // Redraw the PictureBox to reflect the changes
                 AnimationPictureBox.Invalidate();
             }
@@ -4791,7 +4925,15 @@ namespace UoFiddler.Controls.Forms
         {
             int direction = DirectionTrackBar.Value;
             int frame = FramesTrackBar.Value;
-            Offsets[direction][frame][1]--;
+
+            if (checkBoxMount.Checked)
+            {
+                HorseRunOffsets[direction][frame][1]--;
+            }
+            else
+            {
+                Offsets[direction][frame][1]--;
+            }
             AnimationPictureBox.Invalidate(); // Redraw image
         }
         #endregion
@@ -4801,7 +4943,15 @@ namespace UoFiddler.Controls.Forms
         {
             int direction = DirectionTrackBar.Value;
             int frame = FramesTrackBar.Value;
-            Offsets[direction][frame][1]++;
+
+            if (checkBoxMount.Checked)
+            {
+                HorseRunOffsets[direction][frame][1]++;
+            }
+            else
+            {
+                Offsets[direction][frame][1]++;
+            }
             AnimationPictureBox.Invalidate(); // Redraw image
         }
         #endregion
@@ -4811,7 +4961,15 @@ namespace UoFiddler.Controls.Forms
         {
             int direction = DirectionTrackBar.Value;
             int frame = FramesTrackBar.Value;
-            Offsets[direction][frame][0]--;
+
+            if (checkBoxMount.Checked)
+            {
+                HorseRunOffsets[direction][frame][0]--;
+            }
+            else
+            {
+                Offsets[direction][frame][0]--;
+            }
             AnimationPictureBox.Invalidate(); // Redraw image
         }
         #endregion
@@ -4821,7 +4979,15 @@ namespace UoFiddler.Controls.Forms
         {
             int direction = DirectionTrackBar.Value;
             int frame = FramesTrackBar.Value;
-            Offsets[direction][frame][0]++;
+
+            if (checkBoxMount.Checked)
+            {
+                HorseRunOffsets[direction][frame][0]++;
+            }
+            else
+            {
+                Offsets[direction][frame][0]++;
+            }
             AnimationPictureBox.Invalidate(); // Redraw image
         }
         #endregion
@@ -4847,6 +5013,42 @@ namespace UoFiddler.Controls.Forms
             }
 
             MessageBox.Show($"Screenshot saved to {fileName}");
+        }
+        #endregion
+
+        #region [ checkBoxMount_CheckedChanged ]
+        private void checkBoxMount_CheckedChanged(object sender, EventArgs e)
+        {
+            UpdateAnimations();
+        }
+        #endregion
+
+        #region [ UpdateAnimation ]
+        private void UpdateAnimations()
+        {
+            if (isAnimationVisible)
+            {
+                // Animation ausblenden
+                additionalAnimation = null;
+                buttonShow.Text = "Show";
+            }
+            else
+            {
+                // Show animation based on selected gender
+                string selectedGender = comboBoxMenWoman.SelectedItem.ToString();
+                int animId = selectedGender == "men" ? 400 : 401;
+
+                if (checkBoxMount.Checked)
+                {
+                    _currentAction = 24; // Riding animation ID
+                }
+
+                additionalAnimation = AnimationEdit.GetAnimation(_fileType, animId, _currentAction, _currentDir);
+                buttonShow.Text = "Hide";
+            }
+
+            isAnimationVisible = !isAnimationVisible;
+            AnimationPictureBox.Invalidate();
         }
         #endregion
     }

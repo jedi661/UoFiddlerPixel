@@ -7,7 +7,7 @@ This is an extended version of UoFiddler that has more maps and more tools, as w
 version more than the original version. Also, some source codes from older and New projects that are no longer supported have been integrated.
 
 Version : 4.12.5
-- AminEdit added new features, Body Human display will be expanded.
+- AminEdit added new features, Body Human display will be expanded, and Mounted
 
 Version : 4.12.4
 - Add About revised, removed more Richtextbox and added a matrix animation with the names of the developers, new links, and new information.
