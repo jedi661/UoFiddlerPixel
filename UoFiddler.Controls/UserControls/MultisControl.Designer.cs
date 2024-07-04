@@ -300,40 +300,46 @@ namespace UoFiddler.Controls.UserControls
             // exportAllImagesToolStripMenuItem
             // 
             exportAllImagesToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { aToolStripMenuItem, asTiffToolStripMenuItem1, asJpgToolStripMenuItem, asPngToolStripMenuItem1 });
+            exportAllImagesToolStripMenuItem.Image = Properties.Resources.Export;
             exportAllImagesToolStripMenuItem.Name = "exportAllImagesToolStripMenuItem";
             exportAllImagesToolStripMenuItem.Size = new System.Drawing.Size(212, 22);
             exportAllImagesToolStripMenuItem.Text = "Export All Image";
             // 
             // aToolStripMenuItem
             // 
+            aToolStripMenuItem.Image = Properties.Resources.Image;
             aToolStripMenuItem.Name = "aToolStripMenuItem";
-            aToolStripMenuItem.Size = new System.Drawing.Size(115, 22);
+            aToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             aToolStripMenuItem.Text = "As Bmp";
             aToolStripMenuItem.Click += OnClick_SaveAllBmp;
             // 
             // asTiffToolStripMenuItem1
             // 
+            asTiffToolStripMenuItem1.Image = Properties.Resources.Image;
             asTiffToolStripMenuItem1.Name = "asTiffToolStripMenuItem1";
-            asTiffToolStripMenuItem1.Size = new System.Drawing.Size(115, 22);
+            asTiffToolStripMenuItem1.Size = new System.Drawing.Size(180, 22);
             asTiffToolStripMenuItem1.Text = "As Tiff";
             asTiffToolStripMenuItem1.Click += OnClick_SaveAllTiff;
             // 
             // asJpgToolStripMenuItem
             // 
+            asJpgToolStripMenuItem.Image = Properties.Resources.Image;
             asJpgToolStripMenuItem.Name = "asJpgToolStripMenuItem";
-            asJpgToolStripMenuItem.Size = new System.Drawing.Size(115, 22);
+            asJpgToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             asJpgToolStripMenuItem.Text = "As Jpg";
             asJpgToolStripMenuItem.Click += OnClick_SaveAllJpg;
             // 
             // asPngToolStripMenuItem1
             // 
+            asPngToolStripMenuItem1.Image = Properties.Resources.Image;
             asPngToolStripMenuItem1.Name = "asPngToolStripMenuItem1";
-            asPngToolStripMenuItem1.Size = new System.Drawing.Size(115, 22);
+            asPngToolStripMenuItem1.Size = new System.Drawing.Size(180, 22);
             asPngToolStripMenuItem1.Text = "As Png";
             asPngToolStripMenuItem1.Click += OnClick_SaveAllPng;
             // 
             // ChangeBackgroundColorToolStripMenuItem
             // 
+            ChangeBackgroundColorToolStripMenuItem.Image = Properties.Resources.Color;
             ChangeBackgroundColorToolStripMenuItem.Name = "ChangeBackgroundColorToolStripMenuItem";
             ChangeBackgroundColorToolStripMenuItem.Size = new System.Drawing.Size(212, 22);
             ChangeBackgroundColorToolStripMenuItem.Text = "Change background color";
@@ -359,12 +365,14 @@ namespace UoFiddler.Controls.UserControls
             // exportAllPartsToolStripMenuItem
             // 
             exportAllPartsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { toTextFileToolStripMenuItem1, toUOAFileToolStripMenuItem, toWSCFileToolStripMenuItem, toCSVFileToolStripMenuItem, toUOX3FileToolStripMenuItem, toXMLFileToolStripMenuItem });
+            exportAllPartsToolStripMenuItem.Image = Properties.Resources.Export;
             exportAllPartsToolStripMenuItem.Name = "exportAllPartsToolStripMenuItem";
             exportAllPartsToolStripMenuItem.Size = new System.Drawing.Size(212, 22);
             exportAllPartsToolStripMenuItem.Text = "Export All Parts";
             // 
             // toTextFileToolStripMenuItem1
             // 
+            toTextFileToolStripMenuItem1.Image = Properties.Resources.Export;
             toTextFileToolStripMenuItem1.Name = "toTextFileToolStripMenuItem1";
             toTextFileToolStripMenuItem1.Size = new System.Drawing.Size(196, 22);
             toTextFileToolStripMenuItem1.Text = "To Text File";
@@ -372,6 +380,7 @@ namespace UoFiddler.Controls.UserControls
             // 
             // toUOAFileToolStripMenuItem
             // 
+            toUOAFileToolStripMenuItem.Image = Properties.Resources.Export;
             toUOAFileToolStripMenuItem.Name = "toUOAFileToolStripMenuItem";
             toUOAFileToolStripMenuItem.Size = new System.Drawing.Size(196, 22);
             toUOAFileToolStripMenuItem.Text = "To UOA File";
@@ -379,6 +388,7 @@ namespace UoFiddler.Controls.UserControls
             // 
             // toWSCFileToolStripMenuItem
             // 
+            toWSCFileToolStripMenuItem.Image = Properties.Resources.Export;
             toWSCFileToolStripMenuItem.Name = "toWSCFileToolStripMenuItem";
             toWSCFileToolStripMenuItem.Size = new System.Drawing.Size(196, 22);
             toWSCFileToolStripMenuItem.Text = "To WSC File";
@@ -386,6 +396,7 @@ namespace UoFiddler.Controls.UserControls
             // 
             // toCSVFileToolStripMenuItem
             // 
+            toCSVFileToolStripMenuItem.Image = Properties.Resources.Export;
             toCSVFileToolStripMenuItem.Name = "toCSVFileToolStripMenuItem";
             toCSVFileToolStripMenuItem.Size = new System.Drawing.Size(196, 22);
             toCSVFileToolStripMenuItem.Text = "To CSV File";
@@ -393,6 +404,7 @@ namespace UoFiddler.Controls.UserControls
             // 
             // toUOX3FileToolStripMenuItem
             // 
+            toUOX3FileToolStripMenuItem.Image = Properties.Resources.Export;
             toUOX3FileToolStripMenuItem.Name = "toUOX3FileToolStripMenuItem";
             toUOX3FileToolStripMenuItem.Size = new System.Drawing.Size(196, 22);
             toUOX3FileToolStripMenuItem.Text = "To UOX3 File";
@@ -400,6 +412,7 @@ namespace UoFiddler.Controls.UserControls
             // 
             // toXMLFileToolStripMenuItem
             // 
+            toXMLFileToolStripMenuItem.Image = Properties.Resources.Export;
             toXMLFileToolStripMenuItem.Name = "toXMLFileToolStripMenuItem";
             toXMLFileToolStripMenuItem.Size = new System.Drawing.Size(196, 22);
             toXMLFileToolStripMenuItem.Text = "To XML File (CentrED+)";
