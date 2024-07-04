@@ -1,5 +1,5 @@
 Version : 4.12.5 #XG1
-- AminEdit added new features, Body Human display will be expanded, and Mounted
+- AminEdit added new features, Body Human display will be expanded, and Mounted.
 - Serilog package update.
 - IronSoftware.System.Drawing package update.
 - Octokit package update.
