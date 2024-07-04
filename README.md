@@ -13,6 +13,9 @@ Version : 4.12.5
 - Octokit package update.
 - Serlog.Sinks.File package update.
 - Microsoft.Web.WebVie2 package update.
+- Add package AnimatedGif.
+- Add support for hued AnimData, export AnimData to Gif.
+- 
 
 Version : 4.12.4
 - Add About revised, removed more Richtextbox and added a matrix animation with the names of the developers, new links, and new information.

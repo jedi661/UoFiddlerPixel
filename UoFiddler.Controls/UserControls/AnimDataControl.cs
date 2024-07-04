@@ -11,9 +11,12 @@
 
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
+using System.IO;
 using System.Windows.Forms;
+using AnimatedGif;
 using Ultima;
 using UoFiddler.Controls.Classes;
 using UoFiddler.Controls.Forms;
@@ -21,6 +24,7 @@ using UoFiddler.Controls.Helpers;
 
 namespace UoFiddler.Controls.UserControls
 {
+    #region [ class AnimDataControl ]
     public partial class AnimDataControl : UserControl
     {
         public AnimDataControl()
@@ -38,9 +42,17 @@ namespace UoFiddler.Controls.UserControls
         private int _timerFrame;
         private AnimDataImportForm _importForm;
         private AnimDataExportForm _exportForm;
+        private HuePopUpForm _showForm;
+        private int _customHue = 0;
+        private bool _hueOnlyGray = false;
+
+        // Must be non-null for synchronization. Can contain null values for invalid tiles.
+        private List<Bitmap> _huedFrames = [];
 
         [Browsable(false),
         DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+
+        #region [ CurrAnim ]
         private int CurrAnim
         {
             get => _currAnim;
@@ -81,8 +93,40 @@ namespace UoFiddler.Controls.UserControls
                 numericUpDownStartDelay.Value = _selAnimdataEntry.FrameStart;
             }
         }
+        #endregion
 
-        #region Reload
+        #region [ GenerateFramedHues ]
+        private void GenerateFramedHues()
+        {
+            if (_selAnimdataEntry != null)
+            {
+                // In a lock, since the Timer may read values from the list
+                lock (_huedFrames)
+                {
+                    foreach (var huedFrame in _huedFrames)
+                    {
+                        huedFrame?.Dispose();
+                    }
+                    _huedFrames.Clear();
+
+                    for (int i = 0; i < _selAnimdataEntry.FrameCount; ++i)
+                    {
+                        int graphic = _currAnim + _selAnimdataEntry.FrameData[i];
+                        var huedFrame = Art.GetStatic(graphic);
+                        if (huedFrame != null)
+                        {
+                            huedFrame = new Bitmap(huedFrame);
+                            Hue hueObject = Hues.List[_customHue - 1];
+                            hueObject.ApplyTo(huedFrame, _hueOnlyGray);
+                        }
+                        _huedFrames.Add(huedFrame);
+                    }
+                }
+            }
+        }
+        #endregion
+
+        #region [ Reload ]
         /// <summary>
         /// ReLoads if loaded
         /// </summary>
@@ -95,7 +139,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region OnLoad
+        #region [ OnLoad ]
         private void OnLoad(object sender, EventArgs e)
         {
             if (IsAncestorSiteInDesignMode || FormsDesignerHelper.IsInDesignMode())
@@ -169,7 +213,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region SelectNodeById
+        #region [ SelectNodeById ]
         private void SelectNodeById(int id)
         {
             foreach (TreeNode node in treeView1.Nodes)
@@ -183,21 +227,21 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region ConvertHexAddressToId from SelectNodeById hex to id
+        #region [ ConvertHexAddressToId from SelectNodeById hex to id ]
         private int ConvertHexAddressToId(string hexAddress)
         {
             return int.Parse(hexAddress.Substring(2), System.Globalization.NumberStyles.HexNumber);
         }
         #endregion
 
-        #region OnFilePathChangeEvent
+        #region [ OnFilePathChangeEvent ]
         private void OnFilePathChangeEvent()
         {
             Reload();
         }
         #endregion
 
-        #region AfterNodeSelect
+        #region [ AfterNodeSelect ]
         private void AfterNodeSelect(object sender, TreeViewEventArgs e)
         {
             if (treeView1.SelectedNode == null)
@@ -218,7 +262,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region AfterSelectTreeViewFrames
+        #region [ AfterSelectTreeViewFrames ]
         private void AfterSelectTreeViewFrames(object sender, TreeViewEventArgs e)
         {
             _curFrame = treeViewFrames.SelectedNode.Index;
@@ -231,7 +275,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region btnOnClickExport
+        #region [ btnOnClickExport ]
         private void btnOnClickExport_Click(object sender, EventArgs e)
         {
             if (_exportForm?.IsDisposed == false)
@@ -248,7 +292,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region btnOnClickImport
+        #region [ btnOnClickImport ]
         private void btnOnClickImport_Click(object sender, EventArgs e)
         {
             if (_importForm?.IsDisposed == false)
@@ -266,7 +310,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region OnClickStartStop
+        #region [ OnClickStartStop ]
         private void OnClickStartStop(object sender, EventArgs e)
         {
             if (_selAnimdataEntry != null)
@@ -293,7 +337,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region Timer_Tick
+        #region [ Timer_Tick ]
         private void Timer_Tick(object sender, EventArgs e)
         {
             ++_timerFrame;
@@ -306,7 +350,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region OnValueChangedStartDelay
+        #region [ OnValueChangedStartDelay ]
         private void OnValueChangedStartDelay(object sender, EventArgs e)
         {
             if (_selAnimdataEntry == null)
@@ -324,7 +368,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region OnValueChangedFrameDelay
+        #region [ OnValueChangedFrameDelay ]
         private void OnValueChangedFrameDelay(object sender, EventArgs e)
         {
             if (_selAnimdataEntry == null)
@@ -347,7 +391,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region OnClickFrameDown
+        #region [ OnClickFrameDown ]
         private void OnClickFrameDown(object sender, EventArgs e)
         {
             if (_selAnimdataEntry == null)
@@ -389,7 +433,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region OnClickFrameU
+        #region [ OnClickFrameU ]
         private void OnClickFrameUp(object sender, EventArgs e)
         {
             if (_selAnimdataEntry == null)
@@ -431,7 +475,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region  OnTextChanged
+        #region  [ OnTextChanged ]
         private void OnTextChanged(object sender, EventArgs e)
         {
             bool canDone = Utils.ConvertStringToInt(textBoxAddFrame.Text, out int index);
@@ -456,14 +500,14 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region OnCheckChange
+        #region [ OnCheckChange ]
         private void OnCheckChange(object sender, EventArgs e)
         {
             OnTextChanged(this, EventArgs.Empty);
         }
         #endregion
 
-        #region OnClickAdd
+        #region [ OnClickAdd ]
         private void OnClickAdd(object sender, EventArgs e)
         {
             if (_selAnimdataEntry == null)
@@ -520,7 +564,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region  OnClickRemove
+        #region  [ OnClickRemove ]
         private void OnClickRemove(object sender, EventArgs e)
         {
             if (_selAnimdataEntry == null || treeViewFrames.SelectedNode == null)
@@ -569,7 +613,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region OnClickSave
+        #region [ OnClickSave ]
         private void OnClickSave(object sender, EventArgs e)
         {
             Cursor.Current = Cursors.WaitCursor;
@@ -584,7 +628,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region OnClickRemoveAnim
+        #region [ OnClickRemoveAnim ]
         private void OnClickRemoveAnim(object sender, EventArgs e)
         {
             if (treeView1.SelectedNode == null)
@@ -598,7 +642,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region OnClickNode
+        #region [ OnClickNode ]
         private void OnClickNode(object sender, TreeNodeMouseClickEventArgs e)
         {
             if (e.Button == MouseButtons.Right)
@@ -608,7 +652,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region OnTextChangeAdd
+        #region [ OnTextChangeAdd ]
         private void OnTextChangeAdd(object sender, EventArgs e)
         {
             if (Utils.ConvertStringToInt(AddTextBox.Text, out int index, 0, Art.GetMaxItemId()))
@@ -622,7 +666,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region OnKeyDownAdd
+        #region [ OnKeyDownAdd ]
         private void OnKeyDownAdd(object sender, KeyEventArgs e)
         {
             if (e.KeyCode != Keys.Enter)
@@ -668,7 +712,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region StopTimer
+        #region [ StopTimer ]
         private void StopTimer()
         {
             if (_mTimer.Enabled)
@@ -702,9 +746,110 @@ namespace UoFiddler.Controls.UserControls
             }
         }
         #endregion
-    }
 
-    #region class AnimdataSorter
+        #region [ ChangeHue ]
+        public void ChangeHue(int select)
+        {
+            select += 1;
+            var newHue = select & ~0x8000;
+            var newHueOnlyGray = (select & 0x8000) != 0;
+
+            if (_customHue != newHue || _hueOnlyGray != newHueOnlyGray)
+            {
+                _customHue = newHue;
+                _hueOnlyGray = newHueOnlyGray;
+                toolStripStatusHue.Text = $"Hue: {_customHue}";
+                if (_customHue != 0)
+                {
+                    GenerateFramedHues();
+                }
+                else
+                {
+                    // In a lock, since the Timer may read from this list.
+                    lock (_huedFrames)
+                    {
+                        foreach (var huedFrame in _huedFrames)
+                        {
+                            huedFrame?.Dispose();
+                        }
+                        _huedFrames.Clear();
+                    }
+                }
+
+                if (_selAnimdataEntry != null && _mTimer == null)
+                {
+                    if (_customHue > 0)
+                    {
+                        var frame = Math.Max(0, _curFrame);
+                        pictureBox1.Image = _huedFrames[frame];
+
+                    }
+                    else
+                    {
+                        var graphic = _currAnim + (_curFrame == -1 ? 0 : _selAnimdataEntry.FrameData[_curFrame]);
+                        pictureBox1.Image = Art.GetStatic(graphic);
+                    }
+                }
+            }
+        }
+        #endregion
+
+        #region [ OnClick_Hue ]
+        private void OnClick_Hue(object sender, EventArgs e)
+        {
+            if (_showForm?.IsDisposed == false)
+            {
+                return;
+            }
+
+            _showForm = _customHue == 0
+                ? new HuePopUpForm(ChangeHue, 1)
+                : new HuePopUpForm(ChangeHue, _customHue - 1);
+
+            _showForm.TopMost = true;
+            _showForm.Show();
+        }
+        #endregion
+
+        #region [ OnClick_ExportAsGif ]
+        private void OnClick_ExportAsGif(object sender, EventArgs e)
+        {
+            if (_selAnimdataEntry != null)
+            {
+                var outputFile = Path.Combine(Options.OutputPath, $"AnimData 0x{_currAnim:X}.gif");
+                var delay = (100 * _selAnimdataEntry.FrameInterval) + 1;
+
+                {
+                    using var gif = AnimatedGif.AnimatedGif.Create(outputFile, delay);
+                    if (_customHue > 0)
+                    {
+                        // Not in a lock, since event runs on main thread, which is the only place it can be written.
+                        foreach (var huedFrame in _huedFrames)
+                        {
+                            if (huedFrame != null)
+                            {
+                                gif.AddFrame(huedFrame, delay: -1, quality: GifQuality.Bit8);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        for (int i = 0; i < _selAnimdataEntry.FrameCount; ++i)
+                        {
+                            int graphic = _currAnim + _selAnimdataEntry.FrameData[i];
+                            gif.AddFrame(Art.GetStatic(graphic), delay: -1, quality: GifQuality.Bit8);
+                        }
+                    }
+                }
+
+                MessageBox.Show($"Saved to {outputFile}");
+            }
+        }
+        #endregion
+    }
+    #endregion
+
+    #region [ class AnimdataSorter ]
     public class AnimdataSorter : IComparer
     {
         public int Compare(object x, object y)
