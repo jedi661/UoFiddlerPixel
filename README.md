@@ -8,6 +8,11 @@ version more than the original version. Also, some source codes from older and N
 
 Version : 4.12.5
 - AminEdit added new features, Body Human display will be expanded, and Mounted
+- Serilog package update.
+- IronSoftware.System.Drawing package update.
+- Octokit package update.
+- Serlog.Sinks.File package update.
+- Microsoft.Web.WebVie2 package update.
 
 Version : 4.12.4
 - Add About revised, removed more Richtextbox and added a matrix animation with the names of the developers, new links, and new information.
