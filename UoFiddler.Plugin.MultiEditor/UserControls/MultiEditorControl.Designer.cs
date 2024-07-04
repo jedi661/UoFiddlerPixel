@@ -58,6 +58,7 @@ namespace UoFiddler.Plugin.MultiEditor.UserControls
             treeViewMultiList = new System.Windows.Forms.TreeView();
             Save = new System.Windows.Forms.TabPage();
             groupBox4 = new System.Windows.Forms.GroupBox();
+            BTN_Export_XML = new System.Windows.Forms.Button();
             BTN_Export_UOX3 = new System.Windows.Forms.Button();
             BTN_Export_CSV = new System.Windows.Forms.Button();
             BTN_Export_WSC = new System.Windows.Forms.Button();
@@ -357,6 +358,7 @@ namespace UoFiddler.Plugin.MultiEditor.UserControls
             // groupBox4
             // 
             groupBox4.BackColor = System.Drawing.Color.Transparent;
+            groupBox4.Controls.Add(BTN_Export_XML);
             groupBox4.Controls.Add(BTN_Export_UOX3);
             groupBox4.Controls.Add(BTN_Export_CSV);
             groupBox4.Controls.Add(BTN_Export_WSC);
@@ -371,6 +373,17 @@ namespace UoFiddler.Plugin.MultiEditor.UserControls
             groupBox4.TabIndex = 6;
             groupBox4.TabStop = false;
             groupBox4.Text = "Export";
+            // 
+            // BTN_Export_XML
+            // 
+            BTN_Export_XML.Location = new System.Drawing.Point(149, 87);
+            BTN_Export_XML.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            BTN_Export_XML.Name = "BTN_Export_XML";
+            BTN_Export_XML.Size = new System.Drawing.Size(47, 27);
+            BTN_Export_XML.TabIndex = 6;
+            BTN_Export_XML.Text = ".xml";
+            BTN_Export_XML.UseVisualStyleBackColor = true;
+            BTN_Export_XML.Click += BTN_Export_XML_Click;
             // 
             // BTN_Export_UOX3
             // 
@@ -1149,5 +1162,6 @@ namespace UoFiddler.Plugin.MultiEditor.UserControls
 
         private System.Windows.Forms.Button BTN_Export_CSV;
         private System.Windows.Forms.Button BTN_Export_UOX3;
+        private System.Windows.Forms.Button BTN_Export_XML;
     }
 }

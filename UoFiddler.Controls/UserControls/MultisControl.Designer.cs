@@ -191,7 +191,7 @@ namespace UoFiddler.Controls.UserControls
             // 
             toTextfileToolStripMenuItem.Image = Properties.Resources.Export;
             toTextfileToolStripMenuItem.Name = "toTextfileToolStripMenuItem";
-            toTextfileToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            toTextfileToolStripMenuItem.Size = new System.Drawing.Size(126, 22);
             toTextfileToolStripMenuItem.Text = "To Textfile";
             toTextfileToolStripMenuItem.Click += OnExportTextFile;
             // 
@@ -199,7 +199,7 @@ namespace UoFiddler.Controls.UserControls
             // 
             toUOAToolStripMenuItem.Image = Properties.Resources.Export;
             toUOAToolStripMenuItem.Name = "toUOAToolStripMenuItem";
-            toUOAToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            toUOAToolStripMenuItem.Size = new System.Drawing.Size(126, 22);
             toUOAToolStripMenuItem.Text = "To UOA";
             toUOAToolStripMenuItem.Click += OnExportUOAFile;
             // 
@@ -207,7 +207,7 @@ namespace UoFiddler.Controls.UserControls
             // 
             toWscToolStripMenuItem.Image = Properties.Resources.Export;
             toWscToolStripMenuItem.Name = "toWscToolStripMenuItem";
-            toWscToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            toWscToolStripMenuItem.Size = new System.Drawing.Size(126, 22);
             toWscToolStripMenuItem.Text = "To WSC";
             toWscToolStripMenuItem.Click += OnExportWscFile;
             // 
@@ -215,7 +215,7 @@ namespace UoFiddler.Controls.UserControls
             // 
             toCsvToolStripMenuItem.Image = Properties.Resources.Export;
             toCsvToolStripMenuItem.Name = "toCsvToolStripMenuItem";
-            toCsvToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            toCsvToolStripMenuItem.Size = new System.Drawing.Size(126, 22);
             toCsvToolStripMenuItem.Text = "To CSV";
             toCsvToolStripMenuItem.Click += OnExportCsvFile;
             // 
@@ -223,7 +223,7 @@ namespace UoFiddler.Controls.UserControls
             // 
             toUOX3ToolStripMenuItem.Image = Properties.Resources.Export;
             toUOX3ToolStripMenuItem.Name = "toUOX3ToolStripMenuItem";
-            toUOX3ToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            toUOX3ToolStripMenuItem.Size = new System.Drawing.Size(126, 22);
             toUOX3ToolStripMenuItem.Text = "To UOX3";
             toUOX3ToolStripMenuItem.Click += OnExportUox3File;
             // 
@@ -556,7 +556,7 @@ namespace UoFiddler.Controls.UserControls
             // 
             contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { extractImageToolStripMenuItem, copyclipboardToolStripMenuItem1 });
             contextMenuStrip1.Name = "contextMenuStrip1";
-            contextMenuStrip1.Size = new System.Drawing.Size(181, 70);
+            contextMenuStrip1.Size = new System.Drawing.Size(153, 48);
             toolTip.SetToolTip(contextMenuStrip1, "Copied multi-graphic to clipboard.");
             // 
             // extractImageToolStripMenuItem
@@ -564,14 +564,14 @@ namespace UoFiddler.Controls.UserControls
             extractImageToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { asBmpToolStripMenuItem, asTiffToolStripMenuItem, asJpgToolStripMenuItem1, asPngToolStripMenuItem });
             extractImageToolStripMenuItem.Image = Properties.Resources.Export;
             extractImageToolStripMenuItem.Name = "extractImageToolStripMenuItem";
-            extractImageToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            extractImageToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             extractImageToolStripMenuItem.Text = "extract Image..";
             // 
             // asBmpToolStripMenuItem
             // 
             asBmpToolStripMenuItem.Image = Properties.Resources.Image;
             asBmpToolStripMenuItem.Name = "asBmpToolStripMenuItem";
-            asBmpToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            asBmpToolStripMenuItem.Size = new System.Drawing.Size(115, 22);
             asBmpToolStripMenuItem.Text = "As Bmp";
             asBmpToolStripMenuItem.Click += Extract_Image_ClickBmp;
             // 
@@ -579,7 +579,7 @@ namespace UoFiddler.Controls.UserControls
             // 
             asTiffToolStripMenuItem.Image = Properties.Resources.Image;
             asTiffToolStripMenuItem.Name = "asTiffToolStripMenuItem";
-            asTiffToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            asTiffToolStripMenuItem.Size = new System.Drawing.Size(115, 22);
             asTiffToolStripMenuItem.Text = "As Tiff";
             asTiffToolStripMenuItem.Click += Extract_Image_ClickTiff;
             // 
@@ -587,7 +587,7 @@ namespace UoFiddler.Controls.UserControls
             // 
             asJpgToolStripMenuItem1.Image = Properties.Resources.Image;
             asJpgToolStripMenuItem1.Name = "asJpgToolStripMenuItem1";
-            asJpgToolStripMenuItem1.Size = new System.Drawing.Size(180, 22);
+            asJpgToolStripMenuItem1.Size = new System.Drawing.Size(115, 22);
             asJpgToolStripMenuItem1.Text = "As Jpg";
             asJpgToolStripMenuItem1.Click += Extract_Image_ClickJpg;
             // 
@@ -595,7 +595,7 @@ namespace UoFiddler.Controls.UserControls
             // 
             asPngToolStripMenuItem.Image = Properties.Resources.Image;
             asPngToolStripMenuItem.Name = "asPngToolStripMenuItem";
-            asPngToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            asPngToolStripMenuItem.Size = new System.Drawing.Size(115, 22);
             asPngToolStripMenuItem.Text = "As Png";
             asPngToolStripMenuItem.Click += Extract_Image_ClickPng;
             // 

@@ -15,7 +15,8 @@ Version : 4.12.5
 - Microsoft.Web.WebVie2 package update.
 - Add package AnimatedGif.
 - Add support for hued AnimData, export AnimData to Gif.
-- 
+- Add ability to export design as XML in multi editor plugin.
+
 
 Version : 4.12.4
 - Add About revised, removed more Richtextbox and added a matrix animation with the names of the developers, new links, and new information.
