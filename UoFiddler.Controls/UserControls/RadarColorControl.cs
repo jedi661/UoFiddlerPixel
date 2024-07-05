@@ -1120,6 +1120,13 @@ namespace UoFiddler.Controls.UserControls
 
             buttonRevert.Enabled = enableRevert;
             buttonRevertAll.Enabled |= enableRevert;
+
+            // Verify that the 'RadarCol' key exists
+            if (!Options.ChangedUltimaClass.ContainsKey("RadarCol"))
+            {
+                Options.ChangedUltimaClass.Add("RadarCol", false);
+            }
+
             Options.ChangedUltimaClass["RadarCol"] |= enableRevert;
         }
         #endregion
@@ -1156,6 +1163,11 @@ namespace UoFiddler.Controls.UserControls
             if (enableRevertAll)
             {
                 buttonRevertAll.Enabled = true;
+
+                if (!Options.ChangedUltimaClass.ContainsKey("RadarCol")) // Verify that the 'RadarCol' key exists
+                {
+                    Options.ChangedUltimaClass.Add("RadarCol", false);
+                }
                 Options.ChangedUltimaClass["RadarCol"] = true;
             }
         }
@@ -1200,6 +1212,11 @@ namespace UoFiddler.Controls.UserControls
             if (enableRevertAll)
             {
                 buttonRevertAll.Enabled = true;
+
+                if (!Options.ChangedUltimaClass.ContainsKey("RadarCol")) // Verify that the 'RadarCol' key exists
+                {
+                    Options.ChangedUltimaClass.Add("RadarCol", false);
+                }
                 Options.ChangedUltimaClass["RadarCol"] = true;
             }
         }
@@ -1614,5 +1631,33 @@ namespace UoFiddler.Controls.UserControls
             SetAllCheckedStatus(treeViewLand, false);
         }
         #endregion
+
+        private void copyHexadressToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            TreeNode selectedNode = null;
+
+            if (tabControl2.SelectedIndex == 0) // Assuming 0 is for item tree
+            {
+                selectedNode = treeViewItem.SelectedNode;
+            }
+            else if (tabControl2.SelectedIndex == 1) // Assuming 1 is for land tree
+            {
+                selectedNode = treeViewLand.SelectedNode;
+            }
+
+            if (selectedNode != null)
+            {
+                int id = (int)selectedNode.Tag; // Assuming the ID is stored in the Tag property
+                string hexAddress = id.ToString("X"); // Convert ID to Hex string
+
+                // Copy the hex address to clipboard
+                Clipboard.SetText(hexAddress);
+            }
+            else
+            {
+                MessageBox.Show("Please select an item or land first.");
+            }
+        }
+
     }
 }
