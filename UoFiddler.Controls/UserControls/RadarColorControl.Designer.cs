@@ -40,11 +40,9 @@ namespace UoFiddler.Controls.UserControls
         private void InitializeComponent()
         {
             components = new System.ComponentModel.Container();
-            treeViewItem = new ColorTreeView();
             contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(components);
             selectInItemsTabToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             selectInTiledataTabToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            treeViewLand = new System.Windows.Forms.TreeView();
             contextMenuStrip2 = new System.Windows.Forms.ContextMenuStrip(components);
             toolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             toolStripMenuItem2 = new System.Windows.Forms.ToolStripMenuItem();
@@ -54,7 +52,27 @@ namespace UoFiddler.Controls.UserControls
             splitContainer6 = new System.Windows.Forms.SplitContainer();
             tabControl2 = new System.Windows.Forms.TabControl();
             tabPage3 = new System.Windows.Forms.TabPage();
+            splitContainer1 = new System.Windows.Forms.SplitContainer();
+            splitContainer2 = new System.Windows.Forms.SplitContainer();
+            textFilterItems = new System.Windows.Forms.TextBox();
+            buttonSelectNoneItems = new System.Windows.Forms.Button();
+            buttonSelectAllItems = new System.Windows.Forms.Button();
+            treeViewItem = new ColorTreeView();
             tabPage4 = new System.Windows.Forms.TabPage();
+            splitContainer3 = new System.Windows.Forms.SplitContainer();
+            splitContainer4 = new System.Windows.Forms.SplitContainer();
+            textFilterLand = new System.Windows.Forms.TextBox();
+            buttonSelectAllLand = new System.Windows.Forms.Button();
+            buttonSelectNoneLand = new System.Windows.Forms.Button();
+            treeViewLand = new ColorTreeView();
+            buttonRevert = new System.Windows.Forms.Button();
+            buttonRevertAll = new System.Windows.Forms.Button();
+            labelDot = new System.Windows.Forms.Label();
+            buttonRangeToRangeAverage = new System.Windows.Forms.Button();
+            buttonRangeToIndividualAverage = new System.Windows.Forms.Button();
+            buttonCurrentToRangeAverage = new System.Windows.Forms.Button();
+            radioUseRange = new System.Windows.Forms.RadioButton();
+            radioUseSelection = new System.Windows.Forms.RadioButton();
             btupdateTreeView = new System.Windows.Forms.Button();
             label6 = new System.Windows.Forms.Label();
             LabelTildataNameItemsLand = new System.Windows.Forms.Label();
@@ -70,8 +88,8 @@ namespace UoFiddler.Controls.UserControls
             progressBar2 = new System.Windows.Forms.ProgressBar();
             progressBar1 = new System.Windows.Forms.ProgressBar();
             button6 = new System.Windows.Forms.Button();
-            button5 = new System.Windows.Forms.Button();
-            button4 = new System.Windows.Forms.Button();
+            btnImport = new System.Windows.Forms.Button();
+            btnExport = new System.Windows.Forms.Button();
             numericUpDownShortCol = new System.Windows.Forms.NumericUpDown();
             textBoxMeanFrom = new System.Windows.Forms.TextBox();
             textBoxMeanTo = new System.Windows.Forms.TextBox();
@@ -79,8 +97,8 @@ namespace UoFiddler.Controls.UserControls
             numericUpDownB = new System.Windows.Forms.NumericUpDown();
             numericUpDownG = new System.Windows.Forms.NumericUpDown();
             numericUpDownR = new System.Windows.Forms.NumericUpDown();
-            button2 = new System.Windows.Forms.Button();
-            button1 = new System.Windows.Forms.Button();
+            btnSaveFile = new System.Windows.Forms.Button();
+            btnSaveColor = new System.Windows.Forms.Button();
             buttonMean = new System.Windows.Forms.Button();
             contextMenuStrip1.SuspendLayout();
             contextMenuStrip2.SuspendLayout();
@@ -96,25 +114,28 @@ namespace UoFiddler.Controls.UserControls
             splitContainer6.SuspendLayout();
             tabControl2.SuspendLayout();
             tabPage3.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
+            splitContainer1.Panel1.SuspendLayout();
+            splitContainer1.Panel2.SuspendLayout();
+            splitContainer1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)splitContainer2).BeginInit();
+            splitContainer2.Panel1.SuspendLayout();
+            splitContainer2.Panel2.SuspendLayout();
+            splitContainer2.SuspendLayout();
             tabPage4.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)splitContainer3).BeginInit();
+            splitContainer3.Panel1.SuspendLayout();
+            splitContainer3.Panel2.SuspendLayout();
+            splitContainer3.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)splitContainer4).BeginInit();
+            splitContainer4.Panel1.SuspendLayout();
+            splitContainer4.Panel2.SuspendLayout();
+            splitContainer4.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)numericUpDownShortCol).BeginInit();
             ((System.ComponentModel.ISupportInitialize)numericUpDownB).BeginInit();
             ((System.ComponentModel.ISupportInitialize)numericUpDownG).BeginInit();
             ((System.ComponentModel.ISupportInitialize)numericUpDownR).BeginInit();
             SuspendLayout();
-            // 
-            // treeViewItem
-            // 
-            treeViewItem.ContextMenuStrip = contextMenuStrip1;
-            treeViewItem.Dock = System.Windows.Forms.DockStyle.Fill;
-            treeViewItem.DrawMode = System.Windows.Forms.TreeViewDrawMode.OwnerDrawAll;
-            treeViewItem.HideSelection = false;
-            treeViewItem.Location = new System.Drawing.Point(4, 4);
-            treeViewItem.Margin = new System.Windows.Forms.Padding(4);
-            treeViewItem.Name = "treeViewItem";
-            treeViewItem.Size = new System.Drawing.Size(228, 193);
-            treeViewItem.TabIndex = 0;
-            treeViewItem.AfterSelect += AfterSelectTreeViewItem;
             // 
             // contextMenuStrip1
             // 
@@ -136,18 +157,6 @@ namespace UoFiddler.Controls.UserControls
             selectInTiledataTabToolStripMenuItem.Size = new System.Drawing.Size(182, 22);
             selectInTiledataTabToolStripMenuItem.Text = "Select in Tiledata tab";
             selectInTiledataTabToolStripMenuItem.Click += OnClickSelectItemTiledataTab;
-            // 
-            // treeViewLand
-            // 
-            treeViewLand.ContextMenuStrip = contextMenuStrip2;
-            treeViewLand.Dock = System.Windows.Forms.DockStyle.Fill;
-            treeViewLand.HideSelection = false;
-            treeViewLand.Location = new System.Drawing.Point(4, 4);
-            treeViewLand.Margin = new System.Windows.Forms.Padding(4);
-            treeViewLand.Name = "treeViewLand";
-            treeViewLand.Size = new System.Drawing.Size(228, 193);
-            treeViewLand.TabIndex = 0;
-            treeViewLand.AfterSelect += AfterSelectTreeViewLand;
             // 
             // contextMenuStrip2
             // 
@@ -172,7 +181,6 @@ namespace UoFiddler.Controls.UserControls
             // 
             // pictureBoxArt
             // 
-            pictureBoxArt.Dock = System.Windows.Forms.DockStyle.Fill;
             pictureBoxArt.Location = new System.Drawing.Point(0, 0);
             pictureBoxArt.Margin = new System.Windows.Forms.Padding(4);
             pictureBoxArt.Name = "pictureBoxArt";
@@ -202,6 +210,14 @@ namespace UoFiddler.Controls.UserControls
             // 
             // splitContainer5.Panel2
             // 
+            splitContainer5.Panel2.Controls.Add(buttonRevert);
+            splitContainer5.Panel2.Controls.Add(buttonRevertAll);
+            splitContainer5.Panel2.Controls.Add(labelDot);
+            splitContainer5.Panel2.Controls.Add(buttonRangeToRangeAverage);
+            splitContainer5.Panel2.Controls.Add(buttonRangeToIndividualAverage);
+            splitContainer5.Panel2.Controls.Add(buttonCurrentToRangeAverage);
+            splitContainer5.Panel2.Controls.Add(radioUseRange);
+            splitContainer5.Panel2.Controls.Add(radioUseSelection);
             splitContainer5.Panel2.Controls.Add(btupdateTreeView);
             splitContainer5.Panel2.Controls.Add(label6);
             splitContainer5.Panel2.Controls.Add(LabelTildataNameItemsLand);
@@ -217,8 +233,8 @@ namespace UoFiddler.Controls.UserControls
             splitContainer5.Panel2.Controls.Add(progressBar2);
             splitContainer5.Panel2.Controls.Add(progressBar1);
             splitContainer5.Panel2.Controls.Add(button6);
-            splitContainer5.Panel2.Controls.Add(button5);
-            splitContainer5.Panel2.Controls.Add(button4);
+            splitContainer5.Panel2.Controls.Add(btnImport);
+            splitContainer5.Panel2.Controls.Add(btnExport);
             splitContainer5.Panel2.Controls.Add(numericUpDownShortCol);
             splitContainer5.Panel2.Controls.Add(textBoxMeanFrom);
             splitContainer5.Panel2.Controls.Add(textBoxMeanTo);
@@ -226,8 +242,8 @@ namespace UoFiddler.Controls.UserControls
             splitContainer5.Panel2.Controls.Add(numericUpDownB);
             splitContainer5.Panel2.Controls.Add(numericUpDownG);
             splitContainer5.Panel2.Controls.Add(numericUpDownR);
-            splitContainer5.Panel2.Controls.Add(button2);
-            splitContainer5.Panel2.Controls.Add(button1);
+            splitContainer5.Panel2.Controls.Add(btnSaveFile);
+            splitContainer5.Panel2.Controls.Add(btnSaveColor);
             splitContainer5.Panel2.Controls.Add(buttonMean);
             splitContainer5.Panel2.Controls.Add(pictureBoxColor);
             splitContainer5.Size = new System.Drawing.Size(744, 388);
@@ -264,11 +280,11 @@ namespace UoFiddler.Controls.UserControls
             tabControl2.Name = "tabControl2";
             tabControl2.SelectedIndex = 0;
             tabControl2.Size = new System.Drawing.Size(244, 229);
-            tabControl2.TabIndex = 0;
+            tabControl2.TabIndex = 1;
             // 
             // tabPage3
             // 
-            tabPage3.Controls.Add(treeViewItem);
+            tabPage3.Controls.Add(splitContainer1);
             tabPage3.Location = new System.Drawing.Point(4, 24);
             tabPage3.Margin = new System.Windows.Forms.Padding(4);
             tabPage3.Name = "tabPage3";
@@ -278,9 +294,101 @@ namespace UoFiddler.Controls.UserControls
             tabPage3.Text = "Items";
             tabPage3.UseVisualStyleBackColor = true;
             // 
+            // splitContainer1
+            // 
+            splitContainer1.Dock = System.Windows.Forms.DockStyle.Fill;
+            splitContainer1.FixedPanel = System.Windows.Forms.FixedPanel.Panel1;
+            splitContainer1.IsSplitterFixed = true;
+            splitContainer1.Location = new System.Drawing.Point(4, 4);
+            splitContainer1.Margin = new System.Windows.Forms.Padding(0);
+            splitContainer1.Name = "splitContainer1";
+            splitContainer1.Orientation = System.Windows.Forms.Orientation.Horizontal;
+            // 
+            // splitContainer1.Panel1
+            // 
+            splitContainer1.Panel1.Controls.Add(splitContainer2);
+            splitContainer1.Panel1MinSize = 24;
+            // 
+            // splitContainer1.Panel2
+            // 
+            splitContainer1.Panel2.Controls.Add(treeViewItem);
+            splitContainer1.Size = new System.Drawing.Size(228, 193);
+            splitContainer1.SplitterDistance = 25;
+            splitContainer1.TabIndex = 2;
+            // 
+            // splitContainer2
+            // 
+            splitContainer2.Dock = System.Windows.Forms.DockStyle.Fill;
+            splitContainer2.FixedPanel = System.Windows.Forms.FixedPanel.Panel2;
+            splitContainer2.IsSplitterFixed = true;
+            splitContainer2.Location = new System.Drawing.Point(0, 0);
+            splitContainer2.Margin = new System.Windows.Forms.Padding(0);
+            splitContainer2.Name = "splitContainer2";
+            // 
+            // splitContainer2.Panel1
+            // 
+            splitContainer2.Panel1.Controls.Add(textFilterItems);
+            splitContainer2.Panel1MinSize = 0;
+            // 
+            // splitContainer2.Panel2
+            // 
+            splitContainer2.Panel2.Controls.Add(buttonSelectNoneItems);
+            splitContainer2.Panel2.Controls.Add(buttonSelectAllItems);
+            splitContainer2.Panel2MinSize = 170;
+            splitContainer2.Size = new System.Drawing.Size(228, 25);
+            splitContainer2.SplitterDistance = 54;
+            splitContainer2.TabIndex = 1;
+            // 
+            // textFilterItems
+            // 
+            textFilterItems.Dock = System.Windows.Forms.DockStyle.Top;
+            textFilterItems.Location = new System.Drawing.Point(0, 0);
+            textFilterItems.Name = "textFilterItems";
+            textFilterItems.PlaceholderText = "Filter";
+            textFilterItems.Size = new System.Drawing.Size(54, 23);
+            textFilterItems.TabIndex = 1;
+            textFilterItems.TextChanged += OnTextChangedFilterItems;
+            // 
+            // buttonSelectNoneItems
+            // 
+            buttonSelectNoneItems.Dock = System.Windows.Forms.DockStyle.Right;
+            buttonSelectNoneItems.Location = new System.Drawing.Point(85, 0);
+            buttonSelectNoneItems.Name = "buttonSelectNoneItems";
+            buttonSelectNoneItems.Size = new System.Drawing.Size(85, 25);
+            buttonSelectNoneItems.TabIndex = 3;
+            buttonSelectNoneItems.Text = "Select None";
+            buttonSelectNoneItems.UseVisualStyleBackColor = true;
+            buttonSelectNoneItems.Click += OnClickSelectNoneItems;
+            // 
+            // buttonSelectAllItems
+            // 
+            buttonSelectAllItems.Dock = System.Windows.Forms.DockStyle.Left;
+            buttonSelectAllItems.Location = new System.Drawing.Point(0, 0);
+            buttonSelectAllItems.Name = "buttonSelectAllItems";
+            buttonSelectAllItems.Size = new System.Drawing.Size(80, 25);
+            buttonSelectAllItems.TabIndex = 2;
+            buttonSelectAllItems.Text = "Select All";
+            buttonSelectAllItems.UseVisualStyleBackColor = true;
+            buttonSelectAllItems.Click += OnClickSelectAllItems;
+            // 
+            // treeViewItem
+            // 
+            treeViewItem.CheckBoxes = true;
+            treeViewItem.ContextMenuStrip = contextMenuStrip1;
+            treeViewItem.Dock = System.Windows.Forms.DockStyle.Fill;
+            treeViewItem.DrawMode = System.Windows.Forms.TreeViewDrawMode.OwnerDrawAll;
+            treeViewItem.HideSelection = false;
+            treeViewItem.Location = new System.Drawing.Point(0, 0);
+            treeViewItem.Margin = new System.Windows.Forms.Padding(4);
+            treeViewItem.Name = "treeViewItem";
+            treeViewItem.Size = new System.Drawing.Size(228, 164);
+            treeViewItem.TabIndex = 0;
+            treeViewItem.AfterCheck += AfterCheckTreeViewItem;
+            treeViewItem.AfterSelect += AfterSelectTreeViewItem;
+            // 
             // tabPage4
             // 
-            tabPage4.Controls.Add(treeViewLand);
+            tabPage4.Controls.Add(splitContainer3);
             tabPage4.Location = new System.Drawing.Point(4, 24);
             tabPage4.Margin = new System.Windows.Forms.Padding(4);
             tabPage4.Name = "tabPage4";
@@ -290,11 +398,185 @@ namespace UoFiddler.Controls.UserControls
             tabPage4.Text = "Land Tiles";
             tabPage4.UseVisualStyleBackColor = true;
             // 
+            // splitContainer3
+            // 
+            splitContainer3.Dock = System.Windows.Forms.DockStyle.Fill;
+            splitContainer3.FixedPanel = System.Windows.Forms.FixedPanel.Panel1;
+            splitContainer3.IsSplitterFixed = true;
+            splitContainer3.Location = new System.Drawing.Point(4, 4);
+            splitContainer3.Name = "splitContainer3";
+            splitContainer3.Orientation = System.Windows.Forms.Orientation.Horizontal;
+            // 
+            // splitContainer3.Panel1
+            // 
+            splitContainer3.Panel1.Controls.Add(splitContainer4);
+            splitContainer3.Panel1MinSize = 24;
+            // 
+            // splitContainer3.Panel2
+            // 
+            splitContainer3.Panel2.Controls.Add(treeViewLand);
+            splitContainer3.Size = new System.Drawing.Size(228, 193);
+            splitContainer3.SplitterDistance = 25;
+            splitContainer3.TabIndex = 0;
+            // 
+            // splitContainer4
+            // 
+            splitContainer4.Dock = System.Windows.Forms.DockStyle.Fill;
+            splitContainer4.FixedPanel = System.Windows.Forms.FixedPanel.Panel2;
+            splitContainer4.IsSplitterFixed = true;
+            splitContainer4.Location = new System.Drawing.Point(0, 0);
+            splitContainer4.Name = "splitContainer4";
+            // 
+            // splitContainer4.Panel1
+            // 
+            splitContainer4.Panel1.Controls.Add(textFilterLand);
+            // 
+            // splitContainer4.Panel2
+            // 
+            splitContainer4.Panel2.Controls.Add(buttonSelectAllLand);
+            splitContainer4.Panel2.Controls.Add(buttonSelectNoneLand);
+            splitContainer4.Panel2MinSize = 170;
+            splitContainer4.Size = new System.Drawing.Size(228, 25);
+            splitContainer4.SplitterDistance = 54;
+            splitContainer4.TabIndex = 0;
+            // 
+            // textFilterLand
+            // 
+            textFilterLand.Dock = System.Windows.Forms.DockStyle.Fill;
+            textFilterLand.Location = new System.Drawing.Point(0, 0);
+            textFilterLand.Name = "textFilterLand";
+            textFilterLand.PlaceholderText = "Filter";
+            textFilterLand.Size = new System.Drawing.Size(54, 23);
+            textFilterLand.TabIndex = 0;
+            textFilterLand.TextChanged += OnTextChangedFilterLand;
+            // 
+            // buttonSelectAllLand
+            // 
+            buttonSelectAllLand.Dock = System.Windows.Forms.DockStyle.Left;
+            buttonSelectAllLand.Location = new System.Drawing.Point(0, 0);
+            buttonSelectAllLand.Name = "buttonSelectAllLand";
+            buttonSelectAllLand.Size = new System.Drawing.Size(80, 25);
+            buttonSelectAllLand.TabIndex = 1;
+            buttonSelectAllLand.Text = "Select All";
+            buttonSelectAllLand.UseVisualStyleBackColor = true;
+            buttonSelectAllLand.Click += OnClickSelectAllLand;
+            // 
+            // buttonSelectNoneLand
+            // 
+            buttonSelectNoneLand.Dock = System.Windows.Forms.DockStyle.Right;
+            buttonSelectNoneLand.Location = new System.Drawing.Point(85, 0);
+            buttonSelectNoneLand.Name = "buttonSelectNoneLand";
+            buttonSelectNoneLand.Size = new System.Drawing.Size(85, 25);
+            buttonSelectNoneLand.TabIndex = 0;
+            buttonSelectNoneLand.Text = "Select None";
+            buttonSelectNoneLand.UseVisualStyleBackColor = true;
+            buttonSelectNoneLand.Click += OnClickSelectNoneLand;
+            // 
+            // treeViewLand
+            // 
+            treeViewLand.CheckBoxes = true;
+            treeViewLand.ContextMenuStrip = contextMenuStrip2;
+            treeViewLand.Dock = System.Windows.Forms.DockStyle.Fill;
+            treeViewLand.DrawMode = System.Windows.Forms.TreeViewDrawMode.OwnerDrawAll;
+            treeViewLand.HideSelection = false;
+            treeViewLand.Location = new System.Drawing.Point(0, 0);
+            treeViewLand.Margin = new System.Windows.Forms.Padding(4);
+            treeViewLand.Name = "treeViewLand";
+            treeViewLand.Size = new System.Drawing.Size(228, 164);
+            treeViewLand.TabIndex = 0;
+            treeViewLand.AfterCheck += AfterCheckTreeViewLand;
+            treeViewLand.AfterSelect += AfterSelectTreeViewLand;
+            // 
+            // buttonRevert
+            // 
+            buttonRevert.Location = new System.Drawing.Point(92, 214);
+            buttonRevert.Margin = new System.Windows.Forms.Padding(4);
+            buttonRevert.Name = "buttonRevert";
+            buttonRevert.Size = new System.Drawing.Size(84, 23);
+            buttonRevert.TabIndex = 42;
+            buttonRevert.Text = "Revert";
+            buttonRevert.UseVisualStyleBackColor = true;
+            buttonRevert.Click += OnClickRevert;
+            // 
+            // buttonRevertAll
+            // 
+            buttonRevertAll.Location = new System.Drawing.Point(6, 214);
+            buttonRevertAll.Margin = new System.Windows.Forms.Padding(4);
+            buttonRevertAll.Name = "buttonRevertAll";
+            buttonRevertAll.Size = new System.Drawing.Size(84, 23);
+            buttonRevertAll.TabIndex = 41;
+            buttonRevertAll.Text = "Revert All";
+            buttonRevertAll.UseVisualStyleBackColor = true;
+            buttonRevertAll.Click += OnClickRevertAll;
+            // 
+            // labelDot
+            // 
+            labelDot.AutoSize = true;
+            labelDot.Location = new System.Drawing.Point(357, 165);
+            labelDot.Name = "labelDot";
+            labelDot.Size = new System.Drawing.Size(16, 15);
+            labelDot.TabIndex = 40;
+            labelDot.Text = "...";
+            // 
+            // buttonRangeToRangeAverage
+            // 
+            buttonRangeToRangeAverage.Location = new System.Drawing.Point(288, 232);
+            buttonRangeToRangeAverage.Name = "buttonRangeToRangeAverage";
+            buttonRangeToRangeAverage.Size = new System.Drawing.Size(157, 23);
+            buttonRangeToRangeAverage.TabIndex = 39;
+            buttonRangeToRangeAverage.Text = "Selected tiles to selection average";
+            buttonRangeToRangeAverage.UseVisualStyleBackColor = true;
+            buttonRangeToRangeAverage.Click += OnClickRangeToRangeAverage;
+            // 
+            // buttonRangeToIndividualAverage
+            // 
+            buttonRangeToIndividualAverage.Location = new System.Drawing.Point(288, 208);
+            buttonRangeToIndividualAverage.Name = "buttonRangeToIndividualAverage";
+            buttonRangeToIndividualAverage.Size = new System.Drawing.Size(157, 23);
+            buttonRangeToIndividualAverage.TabIndex = 38;
+            buttonRangeToIndividualAverage.Text = "Selected tiles to individual average";
+            buttonRangeToIndividualAverage.UseVisualStyleBackColor = true;
+            buttonRangeToIndividualAverage.Click += OnClickRangeToIndividualAverage;
+            // 
+            // buttonCurrentToRangeAverage
+            // 
+            buttonCurrentToRangeAverage.Location = new System.Drawing.Point(288, 185);
+            buttonCurrentToRangeAverage.Name = "buttonCurrentToRangeAverage";
+            buttonCurrentToRangeAverage.Size = new System.Drawing.Size(157, 23);
+            buttonCurrentToRangeAverage.TabIndex = 37;
+            buttonCurrentToRangeAverage.Text = "Current tile to selection average";
+            buttonCurrentToRangeAverage.UseVisualStyleBackColor = true;
+            buttonCurrentToRangeAverage.Click += OnClickCurrentToRangeAverage;
+            // 
+            // radioUseRange
+            // 
+            radioUseRange.AutoSize = true;
+            radioUseRange.Location = new System.Drawing.Point(224, 162);
+            radioUseRange.Name = "radioUseRange";
+            radioUseRange.Size = new System.Drawing.Size(61, 19);
+            radioUseRange.TabIndex = 36;
+            radioUseRange.TabStop = true;
+            radioUseRange.Text = "Range:";
+            radioUseRange.UseVisualStyleBackColor = true;
+            radioUseRange.CheckedChanged += OnCheckedChangeUseRange;
+            // 
+            // radioUseSelection
+            // 
+            radioUseSelection.AutoSize = true;
+            radioUseSelection.Location = new System.Drawing.Point(291, 141);
+            radioUseSelection.Name = "radioUseSelection";
+            radioUseSelection.Size = new System.Drawing.Size(154, 19);
+            radioUseSelection.TabIndex = 35;
+            radioUseSelection.TabStop = true;
+            radioUseSelection.Text = "Selection / Checked tiles";
+            radioUseSelection.UseVisualStyleBackColor = true;
+            radioUseSelection.CheckedChanged += OnCheckedChangeUseSelection;
+            // 
             // btupdateTreeView
             // 
-            btupdateTreeView.Location = new System.Drawing.Point(97, 128);
+            btupdateTreeView.Location = new System.Drawing.Point(92, 132);
             btupdateTreeView.Name = "btupdateTreeView";
-            btupdateTreeView.Size = new System.Drawing.Size(108, 27);
+            btupdateTreeView.Size = new System.Drawing.Size(102, 23);
             btupdateTreeView.TabIndex = 31;
             btupdateTreeView.Text = "Update TreeView";
             btupdateTreeView.UseVisualStyleBackColor = true;
@@ -303,7 +585,7 @@ namespace UoFiddler.Controls.UserControls
             // label6
             // 
             label6.AutoSize = true;
-            label6.Location = new System.Drawing.Point(4, 270);
+            label6.Location = new System.Drawing.Point(4, 268);
             label6.Name = "label6";
             label6.Size = new System.Drawing.Size(79, 15);
             label6.TabIndex = 30;
@@ -312,7 +594,7 @@ namespace UoFiddler.Controls.UserControls
             // LabelTildataNameItemsLand
             // 
             LabelTildataNameItemsLand.AutoSize = true;
-            LabelTildataNameItemsLand.Location = new System.Drawing.Point(89, 270);
+            LabelTildataNameItemsLand.Location = new System.Drawing.Point(89, 268);
             LabelTildataNameItemsLand.Name = "LabelTildataNameItemsLand";
             LabelTildataNameItemsLand.Size = new System.Drawing.Size(39, 15);
             LabelTildataNameItemsLand.TabIndex = 29;
@@ -376,7 +658,7 @@ namespace UoFiddler.Controls.UserControls
             // LabelColorCode
             // 
             LabelColorCode.AutoSize = true;
-            LabelColorCode.Location = new System.Drawing.Point(4, 174);
+            LabelColorCode.Location = new System.Drawing.Point(4, 164);
             LabelColorCode.Name = "LabelColorCode";
             LabelColorCode.Size = new System.Drawing.Size(92, 15);
             LabelColorCode.TabIndex = 22;
@@ -385,7 +667,7 @@ namespace UoFiddler.Controls.UserControls
             // label2
             // 
             label2.AutoSize = true;
-            label2.Location = new System.Drawing.Point(226, 297);
+            label2.Location = new System.Drawing.Point(245, 342);
             label2.Name = "label2";
             label2.Size = new System.Drawing.Size(62, 15);
             label2.TabIndex = 21;
@@ -394,7 +676,7 @@ namespace UoFiddler.Controls.UserControls
             // label1
             // 
             label1.AutoSize = true;
-            label1.Location = new System.Drawing.Point(255, 270);
+            label1.Location = new System.Drawing.Point(274, 317);
             label1.Name = "label1";
             label1.Size = new System.Drawing.Size(39, 15);
             label1.TabIndex = 20;
@@ -402,14 +684,14 @@ namespace UoFiddler.Controls.UserControls
             // 
             // progressBar2
             // 
-            progressBar2.Location = new System.Drawing.Point(309, 292);
+            progressBar2.Location = new System.Drawing.Point(328, 337);
             progressBar2.Name = "progressBar2";
             progressBar2.Size = new System.Drawing.Size(117, 22);
             progressBar2.TabIndex = 19;
             // 
             // progressBar1
             // 
-            progressBar1.Location = new System.Drawing.Point(309, 264);
+            progressBar1.Location = new System.Drawing.Point(328, 311);
             progressBar1.Name = "progressBar1";
             progressBar1.Size = new System.Drawing.Size(117, 22);
             progressBar1.TabIndex = 18;
@@ -417,36 +699,36 @@ namespace UoFiddler.Controls.UserControls
             // button6
             // 
             button6.AutoSize = true;
-            button6.Location = new System.Drawing.Point(220, 227);
+            button6.Location = new System.Drawing.Point(239, 283);
             button6.Margin = new System.Windows.Forms.Padding(4);
             button6.Name = "button6";
-            button6.Size = new System.Drawing.Size(206, 31);
+            button6.Size = new System.Drawing.Size(206, 25);
             button6.TabIndex = 17;
             button6.Text = "Average All (Items and Land Tiles)";
             button6.UseVisualStyleBackColor = true;
             button6.Click += OnClickMeanColorAll;
             // 
-            // button5
+            // btnImport
             // 
-            button5.Location = new System.Drawing.Point(97, 232);
-            button5.Margin = new System.Windows.Forms.Padding(4);
-            button5.Name = "button5";
-            button5.Size = new System.Drawing.Size(88, 26);
-            button5.TabIndex = 16;
-            button5.Text = "Import..";
-            button5.UseVisualStyleBackColor = true;
-            button5.Click += OnClickImport;
+            btnImport.Location = new System.Drawing.Point(92, 239);
+            btnImport.Margin = new System.Windows.Forms.Padding(4);
+            btnImport.Name = "btnImport";
+            btnImport.Size = new System.Drawing.Size(84, 23);
+            btnImport.TabIndex = 16;
+            btnImport.Text = "Import..";
+            btnImport.UseVisualStyleBackColor = true;
+            btnImport.Click += OnClickImport;
             // 
-            // button4
+            // btnExport
             // 
-            button4.Location = new System.Drawing.Point(3, 232);
-            button4.Margin = new System.Windows.Forms.Padding(4);
-            button4.Name = "button4";
-            button4.Size = new System.Drawing.Size(88, 26);
-            button4.TabIndex = 15;
-            button4.Text = "Export..";
-            button4.UseVisualStyleBackColor = true;
-            button4.Click += OnClickExport;
+            btnExport.Location = new System.Drawing.Point(6, 238);
+            btnExport.Margin = new System.Windows.Forms.Padding(4);
+            btnExport.Name = "btnExport";
+            btnExport.Size = new System.Drawing.Size(84, 23);
+            btnExport.TabIndex = 15;
+            btnExport.Text = "Export..";
+            btnExport.UseVisualStyleBackColor = true;
+            btnExport.Click += OnClickExport;
             // 
             // numericUpDownShortCol
             // 
@@ -460,29 +742,31 @@ namespace UoFiddler.Controls.UserControls
             // 
             // textBoxMeanFrom
             // 
-            textBoxMeanFrom.Location = new System.Drawing.Point(220, 131);
+            textBoxMeanFrom.Location = new System.Drawing.Point(288, 161);
             textBoxMeanFrom.Margin = new System.Windows.Forms.Padding(4);
             textBoxMeanFrom.Name = "textBoxMeanFrom";
             textBoxMeanFrom.Size = new System.Drawing.Size(60, 23);
             textBoxMeanFrom.TabIndex = 13;
+            textBoxMeanFrom.Text = "from";
             // 
             // textBoxMeanTo
             // 
-            textBoxMeanTo.Location = new System.Drawing.Point(298, 131);
+            textBoxMeanTo.Location = new System.Drawing.Point(385, 161);
             textBoxMeanTo.Margin = new System.Windows.Forms.Padding(4);
             textBoxMeanTo.Name = "textBoxMeanTo";
             textBoxMeanTo.Size = new System.Drawing.Size(60, 23);
             textBoxMeanTo.TabIndex = 12;
+            textBoxMeanTo.Text = "to";
             // 
             // button3
             // 
             button3.AutoSize = true;
-            button3.Location = new System.Drawing.Point(220, 158);
+            button3.Location = new System.Drawing.Point(239, 257);
             button3.Margin = new System.Windows.Forms.Padding(4);
             button3.Name = "button3";
-            button3.Size = new System.Drawing.Size(183, 31);
+            button3.Size = new System.Drawing.Size(206, 25);
             button3.TabIndex = 11;
-            button3.Text = "Average Color from-to";
+            button3.Text = "Average Color from - to Textbox";
             button3.UseVisualStyleBackColor = true;
             button3.Click += OnClickMeanColorFromTo;
             // 
@@ -516,34 +800,34 @@ namespace UoFiddler.Controls.UserControls
             numericUpDownR.TabIndex = 7;
             numericUpDownR.ValueChanged += OnChangeR;
             // 
-            // button2
+            // btnSaveFile
             // 
-            button2.Location = new System.Drawing.Point(97, 197);
-            button2.Margin = new System.Windows.Forms.Padding(4);
-            button2.Name = "button2";
-            button2.Size = new System.Drawing.Size(88, 26);
-            button2.TabIndex = 5;
-            button2.Text = "Save File";
-            button2.UseVisualStyleBackColor = true;
-            button2.Click += OnClickSaveFile;
+            btnSaveFile.Location = new System.Drawing.Point(92, 190);
+            btnSaveFile.Margin = new System.Windows.Forms.Padding(4);
+            btnSaveFile.Name = "btnSaveFile";
+            btnSaveFile.Size = new System.Drawing.Size(84, 23);
+            btnSaveFile.TabIndex = 5;
+            btnSaveFile.Text = "Save File";
+            btnSaveFile.UseVisualStyleBackColor = true;
+            btnSaveFile.Click += OnClickSaveFile;
             // 
-            // button1
+            // btnSaveColor
             // 
-            button1.Location = new System.Drawing.Point(3, 197);
-            button1.Margin = new System.Windows.Forms.Padding(4);
-            button1.Name = "button1";
-            button1.Size = new System.Drawing.Size(88, 26);
-            button1.TabIndex = 4;
-            button1.Text = "Save Color";
-            button1.UseVisualStyleBackColor = true;
-            button1.Click += OnClickSaveColor;
+            btnSaveColor.Location = new System.Drawing.Point(6, 190);
+            btnSaveColor.Margin = new System.Windows.Forms.Padding(4);
+            btnSaveColor.Name = "btnSaveColor";
+            btnSaveColor.Size = new System.Drawing.Size(84, 23);
+            btnSaveColor.TabIndex = 4;
+            btnSaveColor.Text = "Save Color";
+            btnSaveColor.UseVisualStyleBackColor = true;
+            btnSaveColor.Click += OnClickSaveColor;
             // 
             // buttonMean
             // 
-            buttonMean.Location = new System.Drawing.Point(3, 129);
+            buttonMean.Location = new System.Drawing.Point(6, 132);
             buttonMean.Margin = new System.Windows.Forms.Padding(4);
             buttonMean.Name = "buttonMean";
-            buttonMean.Size = new System.Drawing.Size(88, 26);
+            buttonMean.Size = new System.Drawing.Size(84, 23);
             buttonMean.TabIndex = 1;
             buttonMean.Text = "Average Color";
             buttonMean.UseVisualStyleBackColor = true;
@@ -574,7 +858,25 @@ namespace UoFiddler.Controls.UserControls
             splitContainer6.ResumeLayout(false);
             tabControl2.ResumeLayout(false);
             tabPage3.ResumeLayout(false);
+            splitContainer1.Panel1.ResumeLayout(false);
+            splitContainer1.Panel2.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)splitContainer1).EndInit();
+            splitContainer1.ResumeLayout(false);
+            splitContainer2.Panel1.ResumeLayout(false);
+            splitContainer2.Panel1.PerformLayout();
+            splitContainer2.Panel2.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)splitContainer2).EndInit();
+            splitContainer2.ResumeLayout(false);
             tabPage4.ResumeLayout(false);
+            splitContainer3.Panel1.ResumeLayout(false);
+            splitContainer3.Panel2.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)splitContainer3).EndInit();
+            splitContainer3.ResumeLayout(false);
+            splitContainer4.Panel1.ResumeLayout(false);
+            splitContainer4.Panel1.PerformLayout();
+            splitContainer4.Panel2.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)splitContainer4).EndInit();
+            splitContainer4.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)numericUpDownShortCol).EndInit();
             ((System.ComponentModel.ISupportInitialize)numericUpDownB).EndInit();
             ((System.ComponentModel.ISupportInitialize)numericUpDownG).EndInit();
@@ -584,11 +886,11 @@ namespace UoFiddler.Controls.UserControls
 
         #endregion
 
-        private System.Windows.Forms.Button button1;
-        private System.Windows.Forms.Button button2;
+        private System.Windows.Forms.Button btnSaveColor;
+        private System.Windows.Forms.Button btnSaveFile;
         private System.Windows.Forms.Button button3;
-        private System.Windows.Forms.Button button4;
-        private System.Windows.Forms.Button button5;
+        private System.Windows.Forms.Button btnExport;
+        private System.Windows.Forms.Button btnImport;
         private System.Windows.Forms.Button buttonMean;
         private System.Windows.Forms.ContextMenuStrip contextMenuStrip1;
         private System.Windows.Forms.ContextMenuStrip contextMenuStrip2;
@@ -602,21 +904,16 @@ namespace UoFiddler.Controls.UserControls
         private System.Windows.Forms.ToolStripMenuItem selectInTiledataTabToolStripMenuItem;
         private System.Windows.Forms.SplitContainer splitContainer5;
         private System.Windows.Forms.SplitContainer splitContainer6;
-        private System.Windows.Forms.TabControl tabControl2;
-        private System.Windows.Forms.TabPage tabPage3;
-        private System.Windows.Forms.TabPage tabPage4;
         private System.Windows.Forms.TextBox textBoxMeanFrom;
         private System.Windows.Forms.TextBox textBoxMeanTo;
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem1;
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem2;
-        private System.Windows.Forms.TreeView treeViewLand;
         private System.Windows.Forms.Button button6;
         private System.Windows.Forms.ProgressBar progressBar1;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.ProgressBar progressBar2;
         private System.Windows.Forms.Label LabelColorCode;
-        private ColorTreeView treeViewItem;
         private System.Windows.Forms.CheckBox checkBoxHexCode;
         private System.Windows.Forms.TextBox textBoxHexCode;
         private System.Windows.Forms.TextBox textBoxPhotoshopCode;
@@ -626,5 +923,30 @@ namespace UoFiddler.Controls.UserControls
         private System.Windows.Forms.Label LabelTildataNameItemsLand;
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.Button btupdateTreeView;
+        private System.Windows.Forms.Button buttonRangeToRangeAverage;
+        private System.Windows.Forms.Button buttonRangeToIndividualAverage;
+        private System.Windows.Forms.Button buttonCurrentToRangeAverage;
+        private System.Windows.Forms.RadioButton radioUseRange;
+        private System.Windows.Forms.RadioButton radioUseSelection;
+        private System.Windows.Forms.Label labelDot;
+        private System.Windows.Forms.Button buttonRevertAll;
+        private System.Windows.Forms.Button buttonRevert;
+        private System.Windows.Forms.TabControl tabControl2;
+        private System.Windows.Forms.TabPage tabPage3;
+        private System.Windows.Forms.SplitContainer splitContainer1;
+        private System.Windows.Forms.SplitContainer splitContainer2;
+        private System.Windows.Forms.TextBox textFilterItems;
+        private System.Windows.Forms.Button buttonSelectNoneItems;
+        private System.Windows.Forms.Button buttonSelectAllItems;
+        private System.Windows.Forms.TabPage tabPage4;
+        private System.Windows.Forms.SplitContainer splitContainer3;
+        private System.Windows.Forms.SplitContainer splitContainer4;
+        private System.Windows.Forms.TextBox textFilterLand;
+        private System.Windows.Forms.Button buttonSelectAllLand;
+        private System.Windows.Forms.Button buttonSelectNoneLand;
+        //private System.Windows.Forms.TreeView treeViewLand; //
+        private ColorTreeView treeViewLand;
+        //private System.Windows.Forms.TreeView treeViewItem; //
+        private ColorTreeView treeViewItem;
     }
 }
