@@ -16,12 +16,13 @@ Version : 4.12.5
 - Add package AnimatedGif.
 - Add support for hued AnimData, export AnimData to Gif.
 - Add ability to export design as XML in multi editor plugin.
-- Various improvements to RadarCol control
-- - save radarcol on treeview selection change
-  - enable revert, revert all for radarcol changes
-  - add "range items to individual average"
-  - add "range items to range average"
-  - add filter and checkbox selections
+- Various improvements to RadarCol control.
+- - save radarcol on treeview selection change.
+  - enable revert, revert all for radarcol changes.
+  - add "range items to individual average".
+  - add "range items to range average".
+  - add filter and checkbox selections.
+- Add Copy hex address to clipboard.
 
 Version : 4.12.4
 - Add About revised, removed more Richtextbox and added a matrix animation with the names of the developers, new links, and new information.
