@@ -43,11 +43,19 @@ namespace UoFiddler.Controls.UserControls
             contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(components);
             selectInItemsTabToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             selectInTiledataTabToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
+            copyHexAdressToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
+            toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
+            setAsRangefromToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            setAsRangetoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             contextMenuStrip2 = new System.Windows.Forms.ContextMenuStrip(components);
             toolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             toolStripMenuItem2 = new System.Windows.Forms.ToolStripMenuItem();
             toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             copyHexadressToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
+            setAsRangefromToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
+            setAsRangeToToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             pictureBoxArt = new System.Windows.Forms.PictureBox();
             pictureBoxColor = new System.Windows.Forms.PictureBox();
             splitContainer5 = new System.Windows.Forms.SplitContainer();
@@ -102,14 +110,6 @@ namespace UoFiddler.Controls.UserControls
             btnSaveFile = new System.Windows.Forms.Button();
             btnSaveColor = new System.Windows.Forms.Button();
             buttonMean = new System.Windows.Forms.Button();
-            toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
-            copyHexAdressToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
-            setAsRangefromToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            setAsRangetoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
-            setAsRangefromToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
-            setAsRangeToToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
-            toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
             contextMenuStrip1.SuspendLayout();
             contextMenuStrip2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)pictureBoxArt).BeginInit();
@@ -170,6 +170,40 @@ namespace UoFiddler.Controls.UserControls
             selectInTiledataTabToolStripMenuItem.Text = "Select in Tiledata tab";
             selectInTiledataTabToolStripMenuItem.Click += OnClickSelectItemTiledataTab;
             // 
+            // toolStripSeparator2
+            // 
+            toolStripSeparator2.Name = "toolStripSeparator2";
+            toolStripSeparator2.Size = new System.Drawing.Size(183, 6);
+            // 
+            // copyHexAdressToolStripMenuItem1
+            // 
+            copyHexAdressToolStripMenuItem1.Image = Properties.Resources.hexdecimal_adresse_to_clipbord;
+            copyHexAdressToolStripMenuItem1.Name = "copyHexAdressToolStripMenuItem1";
+            copyHexAdressToolStripMenuItem1.Size = new System.Drawing.Size(186, 26);
+            copyHexAdressToolStripMenuItem1.Text = "Copy hex adress";
+            copyHexAdressToolStripMenuItem1.Click += copyHexadressToolStripMenuItem_Click;
+            // 
+            // toolStripSeparator3
+            // 
+            toolStripSeparator3.Name = "toolStripSeparator3";
+            toolStripSeparator3.Size = new System.Drawing.Size(183, 6);
+            // 
+            // setAsRangefromToolStripMenuItem
+            // 
+            setAsRangefromToolStripMenuItem.Image = Properties.Resources.set_a_from_textbox_range_to_hexadress;
+            setAsRangefromToolStripMenuItem.Name = "setAsRangefromToolStripMenuItem";
+            setAsRangefromToolStripMenuItem.Size = new System.Drawing.Size(186, 26);
+            setAsRangefromToolStripMenuItem.Text = "Set as Range \"from\"";
+            setAsRangefromToolStripMenuItem.Click += OnClickSetRangeFrom;
+            // 
+            // setAsRangetoToolStripMenuItem
+            // 
+            setAsRangetoToolStripMenuItem.Image = Properties.Resources.set_as_range_from;
+            setAsRangetoToolStripMenuItem.Name = "setAsRangetoToolStripMenuItem";
+            setAsRangetoToolStripMenuItem.Size = new System.Drawing.Size(186, 26);
+            setAsRangetoToolStripMenuItem.Text = "Set as Range \"to\"";
+            setAsRangetoToolStripMenuItem.Click += OnClickSetRangeTo;
+            // 
             // contextMenuStrip2
             // 
             contextMenuStrip2.ImageScalingSize = new System.Drawing.Size(20, 20);
@@ -196,7 +230,7 @@ namespace UoFiddler.Controls.UserControls
             // toolStripSeparator1
             // 
             toolStripSeparator1.Name = "toolStripSeparator1";
-            toolStripSeparator1.Size = new System.Drawing.Size(185, 6);
+            toolStripSeparator1.Size = new System.Drawing.Size(189, 6);
             // 
             // copyHexadressToolStripMenuItem
             // 
@@ -205,6 +239,27 @@ namespace UoFiddler.Controls.UserControls
             copyHexadressToolStripMenuItem.Size = new System.Drawing.Size(192, 26);
             copyHexadressToolStripMenuItem.Text = "Copy hex adress";
             copyHexadressToolStripMenuItem.Click += copyHexadressToolStripMenuItem_Click;
+            // 
+            // toolStripSeparator4
+            // 
+            toolStripSeparator4.Name = "toolStripSeparator4";
+            toolStripSeparator4.Size = new System.Drawing.Size(189, 6);
+            // 
+            // setAsRangefromToolStripMenuItem1
+            // 
+            setAsRangefromToolStripMenuItem1.Image = Properties.Resources.set_a_from_textbox_range_to_hexadress;
+            setAsRangefromToolStripMenuItem1.Name = "setAsRangefromToolStripMenuItem1";
+            setAsRangefromToolStripMenuItem1.Size = new System.Drawing.Size(192, 26);
+            setAsRangefromToolStripMenuItem1.Text = "Set as Range \"from\"";
+            setAsRangefromToolStripMenuItem1.Click += OnClickSetRangeFrom;
+            // 
+            // setAsRangeToToolStripMenuItem1
+            // 
+            setAsRangeToToolStripMenuItem1.Image = Properties.Resources.set_as_range_from;
+            setAsRangeToToolStripMenuItem1.Name = "setAsRangeToToolStripMenuItem1";
+            setAsRangeToToolStripMenuItem1.Size = new System.Drawing.Size(192, 26);
+            setAsRangeToToolStripMenuItem1.Text = "Set as Range \"to\"";
+            setAsRangeToToolStripMenuItem1.Click += OnClickSetRangeTo;
             // 
             // pictureBoxArt
             // 
@@ -859,61 +914,6 @@ namespace UoFiddler.Controls.UserControls
             buttonMean.Text = "Average Color";
             buttonMean.UseVisualStyleBackColor = true;
             buttonMean.Click += OnClickMeanColor;
-            // 
-            // toolStripSeparator2
-            // 
-            toolStripSeparator2.Name = "toolStripSeparator2";
-            toolStripSeparator2.Size = new System.Drawing.Size(179, 6);
-            // 
-            // copyHexAdressToolStripMenuItem1
-            // 
-            copyHexAdressToolStripMenuItem1.Image = Properties.Resources.hexdecimal_adresse_to_clipbord;
-            copyHexAdressToolStripMenuItem1.Name = "copyHexAdressToolStripMenuItem1";
-            copyHexAdressToolStripMenuItem1.Size = new System.Drawing.Size(186, 26);
-            copyHexAdressToolStripMenuItem1.Text = "Copy hex adress";
-            copyHexAdressToolStripMenuItem1.Click += copyHexadressToolStripMenuItem_Click;
-            // 
-            // setAsRangefromToolStripMenuItem
-            // 
-            setAsRangefromToolStripMenuItem.Image = Properties.Resources.set_a_from_textbox_range_to_hexadress;
-            setAsRangefromToolStripMenuItem.Name = "setAsRangefromToolStripMenuItem";
-            setAsRangefromToolStripMenuItem.Size = new System.Drawing.Size(186, 26);
-            setAsRangefromToolStripMenuItem.Text = "Set as Range \"from\"";
-            setAsRangefromToolStripMenuItem.Click += OnClickSetRangeFrom;
-            // 
-            // setAsRangetoToolStripMenuItem
-            // 
-            setAsRangetoToolStripMenuItem.Image = Properties.Resources.set_as_range_from;
-            setAsRangetoToolStripMenuItem.Name = "setAsRangetoToolStripMenuItem";
-            setAsRangetoToolStripMenuItem.Size = new System.Drawing.Size(186, 26);
-            setAsRangetoToolStripMenuItem.Text = "Set as Range \"to\"";
-            setAsRangetoToolStripMenuItem.Click += OnClickSetRangeTo;
-            // 
-            // toolStripSeparator3
-            // 
-            toolStripSeparator3.Name = "toolStripSeparator3";
-            toolStripSeparator3.Size = new System.Drawing.Size(179, 6);
-            // 
-            // setAsRangefromToolStripMenuItem1
-            // 
-            setAsRangefromToolStripMenuItem1.Image = Properties.Resources.set_a_from_textbox_range_to_hexadress;
-            setAsRangefromToolStripMenuItem1.Name = "setAsRangefromToolStripMenuItem1";
-            setAsRangefromToolStripMenuItem1.Size = new System.Drawing.Size(192, 26);
-            setAsRangefromToolStripMenuItem1.Text = "Set as Range \"from\"";
-            setAsRangefromToolStripMenuItem1.Click += OnClickSetRangeFrom;
-            // 
-            // setAsRangeToToolStripMenuItem1
-            // 
-            setAsRangeToToolStripMenuItem1.Image = Properties.Resources.set_as_range_from;
-            setAsRangeToToolStripMenuItem1.Name = "setAsRangeToToolStripMenuItem1";
-            setAsRangeToToolStripMenuItem1.Size = new System.Drawing.Size(192, 26);
-            setAsRangeToToolStripMenuItem1.Text = "Set as Range \"to\"";
-            setAsRangeToToolStripMenuItem1.Click += OnClickSetRangeTo;
-            // 
-            // toolStripSeparator4
-            // 
-            toolStripSeparator4.Name = "toolStripSeparator4";
-            toolStripSeparator4.Size = new System.Drawing.Size(185, 6);
             // 
             // RadarColorControl
             // 
