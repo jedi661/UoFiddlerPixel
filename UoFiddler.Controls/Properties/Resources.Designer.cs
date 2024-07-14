@@ -323,6 +323,16 @@ namespace UoFiddler.Controls.Properties {
         /// <summary>
         ///   Sucht eine lokalisierte Ressource vom Typ System.Drawing.Bitmap.
         /// </summary>
+        public static System.Drawing.Bitmap Grass {
+            get {
+                object obj = ResourceManager.GetObject("Grass", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Ressource vom Typ System.Drawing.Bitmap.
+        /// </summary>
         public static System.Drawing.Bitmap grayscale_image {
             get {
                 object obj = ResourceManager.GetObject("grayscale-image", resourceCulture);
@@ -1096,6 +1106,16 @@ namespace UoFiddler.Controls.Properties {
         public static System.Drawing.Bitmap volume {
             get {
                 object obj = ResourceManager.GetObject("volume", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Ressource vom Typ System.Drawing.Bitmap.
+        /// </summary>
+        public static System.Drawing.Bitmap Water {
+            get {
+                object obj = ResourceManager.GetObject("Water", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

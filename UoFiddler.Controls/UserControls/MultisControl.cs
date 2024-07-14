@@ -31,7 +31,7 @@ namespace UoFiddler.Controls.UserControls
         private readonly string _multiXmlFileName = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Multilist.xml");
         private readonly XmlDocument _xmlDocument;
         //private readonly XmlElement _xmlElementMultis;
-        private XmlElement _xmlElementMultis; // Readonly entfernt
+        private XmlElement _xmlElementMultis; // Readonly removed
 
         private int selectedId;
         private string selectedMultiName;
@@ -40,6 +40,7 @@ namespace UoFiddler.Controls.UserControls
         private PictureBox _pictureBox;
         private int _previousLineIndex = -1; // Stores the index of the previous line
 
+        #region [ MultisControl ]
         public MultisControl()
         {
             InitializeComponent();
@@ -67,11 +68,12 @@ namespace UoFiddler.Controls.UserControls
                 selectedMultiName = TreeViewMulti.SelectedNode.Text;
             }
 
-            // Event Handler für das KeyUp-Ereignis der ToolStripTextBoxSearch
+            // Event handler for the KeyUp event of the ToolStripTextBoxSearch
             ToolStripTextBoxSearch.KeyUp += ToolStripTextBoxSearch_KeyUp;
 
             InitializePictureBox(); // Visual highlighting Picturebox
         }
+        #endregion
 
         private bool _loaded;
         private bool _showFreeSlots;
@@ -79,7 +81,7 @@ namespace UoFiddler.Controls.UserControls
         private Color _backgroundImageColor = Color.White;
         private bool _useTransparencyForPng = true;
 
-        #region Reload
+        #region [ Reload ]
         /// <summary>
         /// ReLoads if loaded
         /// </summary>
@@ -92,7 +94,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region OnLoad
+        #region [ OnLoad ]
         private void OnLoad(object sender, EventArgs e)
         {
             if (IsAncestorSiteInDesignMode || FormsDesignerHelper.IsInDesignMode())
@@ -176,14 +178,14 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region OnFilePathChangeEvent
+        #region [ OnFilePathChangeEvent ]
         private void OnFilePathChangeEvent()
         {
             Reload();
         }
         #endregion
 
-        #region OnMultiChangeEvent
+        #region [ OnMultiChangeEvent ]
         private void OnMultiChangeEvent(object sender, int id)
         {
             if (!_loaded)
@@ -245,7 +247,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region ChangeMulti
+        #region [ ChangeMulti ]
         public void ChangeMulti(int id, MultiComponentList multi)
         {
             if (multi == MultiComponentList.Empty)
@@ -279,7 +281,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region AfterSelect_Multi
+        #region [ AfterSelect_Multi ]
         private void AfterSelect_Multi(object sender, TreeViewEventArgs e)
         {
             MultiComponentList multi = (MultiComponentList)TreeViewMulti.SelectedNode.Tag;
@@ -302,7 +304,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region OnPaint_MultiPic
+        #region [ OnPaint_MultiPic ]
         private void OnPaint_MultiPic(object sender, PaintEventArgs e)
         {
             if (TreeViewMulti.SelectedNode == null)
@@ -356,7 +358,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region OnValue_HeightChangeMulti
+        #region [ OnValue_HeightChangeMulti ]
         private void OnValue_HeightChangeMulti(object sender, EventArgs e)
         {
             toolTip.SetToolTip(HeightChangeMulti, $"MaxHeight: {HeightChangeMulti.Maximum - HeightChangeMulti.Value}");
@@ -364,7 +366,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region ChangeComponentList
+        #region [ ChangeComponentList ]
         private void ChangeComponentList(MultiComponentList multi)
         {
             MultiComponentBox.Clear();
@@ -390,35 +392,35 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region Extract_Image_ClickBmp
+        #region [ Extract_Image_ClickBmp ]
         private void Extract_Image_ClickBmp(object sender, EventArgs e)
         {
             ExtractMultiImage(ImageFormat.Bmp, _backgroundImageColor);
         }
         #endregion
 
-        #region Extract_Image_ClickTiff
+        #region [ Extract_Image_ClickTiff ]
         private void Extract_Image_ClickTiff(object sender, EventArgs e)
         {
             ExtractMultiImage(ImageFormat.Tiff, _backgroundImageColor);
         }
         #endregion
 
-        #region Extract_Image_ClickJpg
+        #region [ Extract_Image_ClickJpg ]
         private void Extract_Image_ClickJpg(object sender, EventArgs e)
         {
             ExtractMultiImage(ImageFormat.Jpeg, _backgroundImageColor);
         }
         #endregion
 
-        #region Extract_Image_ClickPng
+        #region [ Extract_Image_ClickPng ]
         private void Extract_Image_ClickPng(object sender, EventArgs e)
         {
             ExtractMultiImage(ImageFormat.Png, _useTransparencyForPng ? Color.Transparent : _backgroundImageColor);
         }
         #endregion
 
-        #region ExtractMultiImage
+        #region [ ExtractMultiImage ]
         private void ExtractMultiImage(ImageFormat imageFormat, Color backgroundColor)
         {
             string fileExtension = Utils.GetFileExtensionFor(imageFormat);
@@ -445,7 +447,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region SaveImage
+        #region [ SaveImage ]
         private static void SaveImage(Image sourceImage, string fileName, ImageFormat imageFormat, Color backgroundColor)
         {
             using (Bitmap newBitmap = new Bitmap(sourceImage.Width, sourceImage.Height))
@@ -460,7 +462,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region OnClickFreeSlots
+        #region [ OnClickFreeSlots ]
         private void OnClickFreeSlots(object sender, EventArgs e)
         {
             _showFreeSlots = !_showFreeSlots;
@@ -531,7 +533,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region OnExportTextFile
+        #region [ OnExportTextFile ]
         private void OnExportTextFile(object sender, EventArgs e)
         {
             if (TreeViewMulti.SelectedNode == null)
@@ -555,7 +557,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region OnExportWscFile
+        #region [ OnExportWscFile ]
         private void OnExportWscFile(object sender, EventArgs e)
         {
             if (TreeViewMulti.SelectedNode == null)
@@ -579,7 +581,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region OnExportUOAFile
+        #region [ OnExportUOAFile ]
         private void OnExportUOAFile(object sender, EventArgs e)
         {
             if (TreeViewMulti.SelectedNode == null)
@@ -603,7 +605,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region OnClickSave
+        #region [ OnClickSave ]
         private void OnClickSave(object sender, EventArgs e)
         {
             Multis.Save(Options.OutputPath);
@@ -613,7 +615,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region OnClickRemove
+        #region [ OnClickRemove ]
         private void OnClickRemove(object sender, EventArgs e)
         {
             if (TreeViewMulti.SelectedNode == null)
@@ -642,7 +644,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region OnClickImport
+        #region [ OnClickImport ]
         private void OnClickImport(object sender, EventArgs e)
         {
             MultiComponentList multi = (MultiComponentList)TreeViewMulti.SelectedNode.Tag;
@@ -664,35 +666,35 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region OnClick_SaveAllBmp
+        #region [ OnClick_SaveAllBmp ]
         private void OnClick_SaveAllBmp(object sender, EventArgs e)
         {
             ExportAllMultis(ImageFormat.Bmp, _backgroundImageColor);
         }
         #endregion
 
-        #region OnClick_SaveAllTiff
+        #region [ OnClick_SaveAllTiff ]
         private void OnClick_SaveAllTiff(object sender, EventArgs e)
         {
             ExportAllMultis(ImageFormat.Tiff, _backgroundImageColor);
         }
         #endregion
 
-        #region OnClick_SaveAllJpg
+        #region [ OnClick_SaveAllJpg ]
         private void OnClick_SaveAllJpg(object sender, EventArgs e)
         {
             ExportAllMultis(ImageFormat.Jpeg, _backgroundImageColor);
         }
         #endregion
 
-        #region OnClick_SaveAllPng
+        #region [ OnClick_SaveAllPng ]
         private void OnClick_SaveAllPng(object sender, EventArgs e)
         {
             ExportAllMultis(ImageFormat.Png, _useTransparencyForPng ? Color.Transparent : _backgroundImageColor);
         }
         #endregion
 
-        #region ExportAllMulti
+        #region [ ExportAllMulti ]
         private void ExportAllMultis(ImageFormat imageFormat, Color backgroundColor)
         {
             string fileExtension = Utils.GetFileExtensionFor(imageFormat);
@@ -732,7 +734,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region  OnClick_SaveAllText
+        #region  [ OnClick_SaveAllText ]
         private void OnClick_SaveAllText(object sender, EventArgs e)
         {
             using (FolderBrowserDialog dialog = new FolderBrowserDialog())
@@ -767,7 +769,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region OnClick_SaveAllUOA
+        #region [ OnClick_SaveAllUOA ]
         private void OnClick_SaveAllUOA(object sender, EventArgs e)
         {
             using (FolderBrowserDialog dialog = new FolderBrowserDialog())
@@ -802,7 +804,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region OnClick_SaveAllWSC
+        #region [ OnClick_SaveAllWSC ]
         private void OnClick_SaveAllWSC(object sender, EventArgs e)
         {
             using (FolderBrowserDialog dialog = new FolderBrowserDialog())
@@ -837,7 +839,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region OnClick_SaveAllCSV
+        #region [ OnClick_SaveAllCSV ]
         private void OnClick_SaveAllCSV(object sender, EventArgs e)
         {
             using (FolderBrowserDialog dialog = new FolderBrowserDialog())
@@ -872,7 +874,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region OnClick_SaveAllUox3
+        #region [ OnClick_SaveAllUox3 ]
         private void OnClick_SaveAllUox3(object sender, EventArgs e)
         {
             using (FolderBrowserDialog dialog = new FolderBrowserDialog())
@@ -907,7 +909,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region OnExportCsvFile
+        #region [ OnExportCsvFile ]
         private void OnExportCsvFile(object sender, EventArgs e)
         {
             if (TreeViewMulti.SelectedNode == null)
@@ -931,7 +933,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region OnExportUox3File
+        #region [ OnExportUox3File ]
         private void OnExportUox3File(object sender, EventArgs e)
         {
             if (TreeViewMulti.SelectedNode == null)
@@ -955,7 +957,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region ChangeBackgroundColorToolStripMenuItem
+        #region [ ChangeBackgroundColorToolStripMenuItem ]
         private void ChangeBackgroundColorToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (colorDialog.ShowDialog() != DialogResult.OK)
@@ -968,14 +970,14 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region UseTransparencyForPNGToolStripMenuItem
+        #region [ UseTransparencyForPNGToolStripMenuItem ]
         private void UseTransparencyForPNGToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
         {
             _useTransparencyForPng = UseTransparencyForPNGToolStripMenuItem.Checked;
         }
         #endregion  
 
-        #region Edit
+        #region [ Edit ] Old
 
         /*private void editToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -1150,7 +1152,7 @@ namespace UoFiddler.Controls.UserControls
 
         #endregion
 
-        #region copy Multilist.xml
+        #region [ copy Multilist.xml ]
         // Reload the Multilist.xml file.
         private void reloadToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -1191,7 +1193,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region copyToolStripMenuItem
+        #region [ copyToolStripMenuItem ]
         private void copyToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (!string.IsNullOrEmpty(MultiComponentBox.Text))
@@ -1201,7 +1203,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region TabControl3_SelectedIndexChanged
+        #region [ TabControl3_SelectedIndexChanged ]
         private void TabControl3_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (tabControl3.SelectedTab == tabPage5)
@@ -1221,8 +1223,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region Copy Image Clipboard
-
+        #region [ Copy Image Clipboard ]
         private void copyclipboardToolStripMenuItem1_Click(object sender, EventArgs e)
         {
             if (TreeViewMulti.SelectedNode != null)
@@ -1256,7 +1257,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region New Search KeyUp event of ToolStripTextBoxSearch.
+        #region [ New Search KeyUp event of ToolStripTextBoxSearch ]
         // Event handler for the KeyUp event of ToolStripTextBoxSearch.
         private void ToolStripTextBoxSearch_KeyUp(object sender, KeyEventArgs e)
         {
@@ -1292,7 +1293,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region toolStripButtonMultiScript
+        #region [ toolStripButtonMultiScript ]
         private UoFiddler.Controls.Forms.MultiScript multiScriptForm;
         private void toolStripButtonMultiScript_Click(object sender, EventArgs e)
         {
@@ -1306,7 +1307,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region fillMultiScripterToolStripMenuItem
+        #region [ fillMultiScripterToolStripMenuItem ]
         private static MultiScript currentInstance = null;
         private void fillMultiScripterToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -1335,7 +1336,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region OnClick_SaveAllToXML
+        #region [ OnClick_SaveAllToXML ]
         private void OnClick_SaveAllToXML(object sender, EventArgs e)
         {
             string path = Options.OutputPath;
@@ -1409,7 +1410,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region InitializePictureBox
+        #region [ InitializePictureBox ]
         private void InitializePictureBox()
         {
             _pictureBox = new PictureBox
@@ -1424,7 +1425,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region MultiComponentBox_MouseMove
+        #region [ MultiComponentBox_MouseMove ]
         private void MultiComponentBox_MouseMove(object sender, MouseEventArgs e)
         {
             if (MultiComponentBox.Lines.Length == 0) return; // Exit if there are no lines
@@ -1440,7 +1441,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region MultiComponentBox_SelectionChanged(
+        #region [ MultiComponentBox_SelectionChanged ]
         private void MultiComponentBox_SelectionChanged(object sender, EventArgs e)
         {
             int lineIndex = MultiComponentBox.GetLineFromCharIndex(MultiComponentBox.SelectionStart);
@@ -1448,7 +1449,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region MultiComponentBox_MouseLeave
+        #region [ MultiComponentBox_MouseLeave ]
         private void MultiComponentBox_MouseLeave(object sender, EventArgs e)
         {
             _pictureBox.Visible = false; // Hide the PictureBox when the mouse leaves the MultiComponentBox
@@ -1456,7 +1457,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region HighlightLine
+        #region [ HighlightLine ]
         private void HighlightLine(int lineIndex)
         {
             if (MultiComponentBox.Lines.Length == 0) return; // Exit if there are no lines
@@ -1481,7 +1482,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region ClearHighligh
+        #region [ ClearHighligh ]
         private void ClearHighlight()
         {
             if (_previousLineIndex != -1 && _previousLineIndex < MultiComponentBox.Lines.Length)
@@ -1498,7 +1499,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region ShowGraphicForLine
+        #region [ ShowGraphicForLine ]
         private void ShowGraphicForLine(int lineIndex, Point mousePosition)
         {
             if (MultiComponentBox == null || MultiComponentBox.Lines == null || MultiComponentBox.Lines.Length == 0)
@@ -1549,7 +1550,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region LoadGraphic
+        #region [ LoadGraphic ]
         private Bitmap LoadGraphic(string hexAddress)
         {
             try
@@ -1564,6 +1565,29 @@ namespace UoFiddler.Controls.UserControls
                 MessageBox.Show($"Error loading graphic: {ex.Message}");
                 return null;
             }
+        }
+        #endregion
+
+        #region [ greenToolStripMenuItem ]
+        private void greenToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Image grassImage = Properties.Resources.Grass;
+            MultiPictureBox.BackgroundImage = grassImage;
+        }
+        #endregion
+
+        #region [ waterToolStripMenuItem ]
+        private void waterToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Image waterImage = Properties.Resources.Water;
+            MultiPictureBox.BackgroundImage = waterImage;
+        }
+        #endregion
+
+        #region [ backgroundOffToolStripMenuItem ]
+        private void backgroundOffToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            MultiPictureBox.BackgroundImage = null;
         }
         #endregion
     }
