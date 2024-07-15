@@ -80,6 +80,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             checkBoxMap6 = new System.Windows.Forms.CheckBox();
             checkBoxMap7 = new System.Windows.Forms.CheckBox();
             checkBoxMap8 = new System.Windows.Forms.CheckBox();
+            panel1 = new System.Windows.Forms.Panel();
             ((System.ComponentModel.ISupportInitialize)numericUpDownToX1).BeginInit();
             ((System.ComponentModel.ISupportInitialize)numericUpDownToY1).BeginInit();
             ((System.ComponentModel.ISupportInitialize)numericUpDownY2).BeginInit();
@@ -91,6 +92,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             groupBox2.SuspendLayout();
             groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)pictureBoxMap).BeginInit();
+            panel1.SuspendLayout();
             SuspendLayout();
             // 
             // label8
@@ -242,7 +244,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // progressBar1
             // 
             progressBar1.Dock = System.Windows.Forms.DockStyle.Bottom;
-            progressBar1.Location = new System.Drawing.Point(0, 598);
+            progressBar1.Location = new System.Drawing.Point(0, 493);
             progressBar1.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             progressBar1.Name = "progressBar1";
             progressBar1.Size = new System.Drawing.Size(800, 27);
@@ -424,7 +426,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // checkBoxMap0
             // 
             checkBoxMap0.AutoSize = true;
-            checkBoxMap0.Location = new System.Drawing.Point(407, 12);
+            checkBoxMap0.Location = new System.Drawing.Point(6, 13);
             checkBoxMap0.Name = "checkBoxMap0";
             checkBoxMap0.Size = new System.Drawing.Size(59, 19);
             checkBoxMap0.TabIndex = 41;
@@ -435,7 +437,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // checkBoxMap1
             // 
             checkBoxMap1.AutoSize = true;
-            checkBoxMap1.Location = new System.Drawing.Point(472, 12);
+            checkBoxMap1.Location = new System.Drawing.Point(71, 13);
             checkBoxMap1.Name = "checkBoxMap1";
             checkBoxMap1.Size = new System.Drawing.Size(59, 19);
             checkBoxMap1.TabIndex = 42;
@@ -446,7 +448,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // checkBoxMap2
             // 
             checkBoxMap2.AutoSize = true;
-            checkBoxMap2.Location = new System.Drawing.Point(537, 12);
+            checkBoxMap2.Location = new System.Drawing.Point(136, 13);
             checkBoxMap2.Name = "checkBoxMap2";
             checkBoxMap2.Size = new System.Drawing.Size(59, 19);
             checkBoxMap2.TabIndex = 43;
@@ -457,7 +459,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // checkBoxMap3
             // 
             checkBoxMap3.AutoSize = true;
-            checkBoxMap3.Location = new System.Drawing.Point(602, 12);
+            checkBoxMap3.Location = new System.Drawing.Point(201, 13);
             checkBoxMap3.Name = "checkBoxMap3";
             checkBoxMap3.Size = new System.Drawing.Size(59, 19);
             checkBoxMap3.TabIndex = 44;
@@ -468,7 +470,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // checkBoxMap4
             // 
             checkBoxMap4.AutoSize = true;
-            checkBoxMap4.Location = new System.Drawing.Point(667, 12);
+            checkBoxMap4.Location = new System.Drawing.Point(266, 13);
             checkBoxMap4.Name = "checkBoxMap4";
             checkBoxMap4.Size = new System.Drawing.Size(59, 19);
             checkBoxMap4.TabIndex = 45;
@@ -479,7 +481,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // checkBoxMap5
             // 
             checkBoxMap5.AutoSize = true;
-            checkBoxMap5.Location = new System.Drawing.Point(729, 12);
+            checkBoxMap5.Location = new System.Drawing.Point(328, 13);
             checkBoxMap5.Name = "checkBoxMap5";
             checkBoxMap5.Size = new System.Drawing.Size(59, 19);
             checkBoxMap5.TabIndex = 46;
@@ -490,7 +492,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // checkBoxMap6
             // 
             checkBoxMap6.AutoSize = true;
-            checkBoxMap6.Location = new System.Drawing.Point(407, 37);
+            checkBoxMap6.Location = new System.Drawing.Point(6, 38);
             checkBoxMap6.Name = "checkBoxMap6";
             checkBoxMap6.Size = new System.Drawing.Size(59, 19);
             checkBoxMap6.TabIndex = 47;
@@ -501,7 +503,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // checkBoxMap7
             // 
             checkBoxMap7.AutoSize = true;
-            checkBoxMap7.Location = new System.Drawing.Point(472, 37);
+            checkBoxMap7.Location = new System.Drawing.Point(71, 38);
             checkBoxMap7.Name = "checkBoxMap7";
             checkBoxMap7.Size = new System.Drawing.Size(59, 19);
             checkBoxMap7.TabIndex = 48;
@@ -512,27 +514,35 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // checkBoxMap8
             // 
             checkBoxMap8.AutoSize = true;
-            checkBoxMap8.Location = new System.Drawing.Point(537, 37);
+            checkBoxMap8.Location = new System.Drawing.Point(136, 38);
             checkBoxMap8.Name = "checkBoxMap8";
             checkBoxMap8.Size = new System.Drawing.Size(59, 19);
             checkBoxMap8.TabIndex = 49;
             checkBoxMap8.Text = "Map 8";
             checkBoxMap8.UseVisualStyleBackColor = true;
             // 
+            // panel1
+            // 
+            panel1.Controls.Add(checkBoxMap3);
+            panel1.Controls.Add(checkBoxMap8);
+            panel1.Controls.Add(checkBoxMap0);
+            panel1.Controls.Add(checkBoxMap7);
+            panel1.Controls.Add(checkBoxMap1);
+            panel1.Controls.Add(checkBoxMap6);
+            panel1.Controls.Add(checkBoxMap2);
+            panel1.Controls.Add(checkBoxMap5);
+            panel1.Controls.Add(checkBoxMap4);
+            panel1.Location = new System.Drawing.Point(387, 8);
+            panel1.Name = "panel1";
+            panel1.Size = new System.Drawing.Size(401, 80);
+            panel1.TabIndex = 50;
+            // 
             // MapReplaceNewForm
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            ClientSize = new System.Drawing.Size(800, 625);
-            Controls.Add(checkBoxMap8);
-            Controls.Add(checkBoxMap7);
-            Controls.Add(checkBoxMap6);
-            Controls.Add(checkBoxMap5);
-            Controls.Add(checkBoxMap4);
-            Controls.Add(checkBoxMap3);
-            Controls.Add(checkBoxMap2);
-            Controls.Add(checkBoxMap1);
-            Controls.Add(checkBoxMap0);
+            ClientSize = new System.Drawing.Size(800, 520);
+            Controls.Add(panel1);
             Controls.Add(lbMulControl);
             Controls.Add(TestCord);
             Controls.Add(textBoxUltimaDir);
@@ -567,6 +577,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             groupBox1.ResumeLayout(false);
             groupBox1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)pictureBoxMap).EndInit();
+            panel1.ResumeLayout(false);
+            panel1.PerformLayout();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -613,5 +625,6 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private System.Windows.Forms.CheckBox checkBoxMap6;
         private System.Windows.Forms.CheckBox checkBoxMap7;
         private System.Windows.Forms.CheckBox checkBoxMap8;
+        private System.Windows.Forms.Panel panel1;
     }
 }
