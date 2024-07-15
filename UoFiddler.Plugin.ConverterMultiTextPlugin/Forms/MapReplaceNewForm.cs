@@ -9,7 +9,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 {
     public partial class MapReplaceNewForm : Form
     {
-        private Map _workingMap;
+        private Map _targetMap;
         private Map _sourceMap;
         private string _mulDirectoryPath;
 
@@ -33,10 +33,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             this.Controls.Add(this.checkBoxMap7);
         }
 
+        #region [ SetWorkingMap ]
         public void SetWorkingMap(Map map)
         {
-            _workingMap = map; // Führen Sie hier alle weiteren Initialisierungen durch, die von der Map abhängen
+            _targetMap = map;
         }
+        #endregion
 
         #region [ OnClickBrowse ]
         private void OnClickBrowse(object sender, EventArgs e)
@@ -57,7 +59,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         #endregion
 
         #region [ heckBoxMap_CheckedChanged ]
-        private void CheckBoxMap_CheckedChanged(object sender, EventArgs e)
+        /*private void CheckBoxMap_CheckedChanged(object sender, EventArgs e)
         {
             // Setzen der Zielkarte basierend auf der aktivierten CheckBox
             CheckBox checkBox = sender as CheckBox;
@@ -76,22 +78,101 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                     }
                 }
 
-                // Setzen der _workingMap basierend auf der ausgewählten CheckBox
+                // Setzen der _targetMap basierend auf der ausgewählten CheckBox
                 int mapIndex = int.Parse(checkBox.Text.Replace("Map", "").Replace(" als Ziel", ""));
-                _workingMap = new Map(mapIndex, GetMapWidth(mapIndex), GetMapHeight(mapIndex));
+                _targetMap = new Map(mapIndex, GetMapWidth(mapIndex), GetMapHeight(mapIndex));
             }
-            else
+        }*/
+
+        private void CheckBoxMap_CheckedChanged(object sender, EventArgs e)
+        {
+            // Setting the target card based on the activated CheckBox
+            CheckBox checkBox = sender as CheckBox;
+
+            if (checkBox == null)
+                return;
+
+            if (checkBox.Checked)
             {
-                // Setzen der _workingMap auf die Standard-Map (Map 0), wenn keine Checkbox ausgewählt ist
-                _workingMap = new Map(0, GetMapWidth(0), GetMapHeight(0));
+                // Deactivate the other checkboxes
+                foreach (var control in this.Controls)
+                {
+                    if (control is CheckBox && control != checkBox)
+                    {
+                        ((CheckBox)control).Checked = false;
+                    }
+                }
+
+                // Setting the _targetMap based on the selected CheckBox
+                int mapIndex = int.Parse(checkBox.Text.Replace("Map", "").Replace(" as goal", ""));
+                _targetMap = new Map(mapIndex, GetMapWidth(mapIndex), GetMapHeight(mapIndex));
+
+                // Check if _mulDirectoryPath is set
+                if (string.IsNullOrEmpty(_mulDirectoryPath))
+                {
+                    MessageBox.Show("The directory for the map files has not been set.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+
+                // Generate filenames based on CheckBox selection
+                string mapFileName = $"map{mapIndex}.mul";
+                string staidxFileName = $"staidx{mapIndex}.mul";
+                string staticsFileName = $"statics{mapIndex}.mul";
+
+                // Path of files based on the selected directory
+                string mapFilePath = Path.Combine(_mulDirectoryPath, mapFileName);
+                string staidxFilePath = Path.Combine(_mulDirectoryPath, staidxFileName);
+                string staticsFilePath = Path.Combine(_mulDirectoryPath, staticsFileName);
+
+                // Create or rename files
+                CreateOrRenameMapFiles(mapIndex, mapFilePath, staidxFilePath, staticsFilePath);
+
+                // Update label information or other UI elements
+                lbMulControl.Text = $"Selected directory: {_mulDirectoryPath}\n" +
+                                    $"Map file: {mapFilePath}\n" +
+                                    $"Staidx file: {staidxFilePath}\n" +
+                                    $"Statics file: {staticsFileName}";
             }
         }
         #endregion
 
+
+        #region [ CreateOrRenameMapFiles ]
+        private void CreateOrRenameMapFiles(int mapIndex, string mapFilePath, string staidxFilePath, string staticsFilePath)
+        {
+            string sourceDirectory = textBox1.Text;
+
+            // Make sure the directory exists
+            if (!Directory.Exists(sourceDirectory))
+            {
+                MessageBox.Show("Source directory does not exist!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            // Copy or rename the files
+            string sourceMapFile = Path.Combine(sourceDirectory, $"map{mapIndex}.mul");
+            string sourceStaidxFile = Path.Combine(sourceDirectory, $"staidx{mapIndex}.mul");
+            string sourceStaticsFile = Path.Combine(sourceDirectory, $"statics{mapIndex}.mul");
+
+            if (File.Exists(sourceMapFile))
+            {
+                File.Copy(sourceMapFile, mapFilePath, true);
+            }
+            if (File.Exists(sourceStaidxFile))
+            {
+                File.Copy(sourceStaidxFile, staidxFilePath, true);
+            }
+            if (File.Exists(sourceStaticsFile))
+            {
+                File.Copy(sourceStaticsFile, staticsFilePath, true);
+            }
+        }
+        #endregion
+
+        #region [ GetMapWidth ]
         private int GetMapWidth(int mapIndex)
         {
-            // Implementiere eine Methode, die die Breite der Karte basierend auf dem Index zurückgibt
-            // Beispiel:
+            // Implement a method that returns the width of the map based on the index            
             switch (mapIndex)
             {
                 case 0: return 7168; // Felucca
@@ -106,11 +187,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 default: return 0;
             }
         }
+        #endregion
 
+        #region [ GetMapHeight ]
         private int GetMapHeight(int mapIndex)
         {
-            // Implementiere eine Methode, die die Höhe der Karte basierend auf dem Index zurückgibt
-            // Beispiel:
             switch (mapIndex)
             {
                 case 0: return 4096; // Felucca
@@ -125,26 +206,29 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 default: return 0;
             }
         }
+        #endregion
 
         #region [ OnClickCopy ]
         private void OnClickCopy(object sender, EventArgs e)
         {
+            // Create a new Map instance for the target map based on the selected checkbox
+            Map targetMap = new Map(_targetMap.Id, GetMapWidth(_targetMap.Id), GetMapHeight(_targetMap.Id));
 
-            // Überprüfen Sie, ob eine Zielkarte ausgewählt wurde
-            if (_workingMap == null)
+            // Verify that a target card has been selected
+            if (targetMap == null)
             {
-                MessageBox.Show("Keine Zielkarte ausgewählt!", "Fehler", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("No target card selected!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
-            // Überprüfen Sie, ob eine Quellkarte ausgewählt wurde
+            // Verify that a source map is selected
             if (this._sourceMap == null)
             {
-                MessageBox.Show("Keine Quellkarte ausgewählt!", "Fehler", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("No source map selected!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
-            // Verwenden Sie _mulDirectoryPath anstelle von textBoxUltimaDir.Text
+            // Using _mulDirectoryPath
             string ultimaDirectory = _mulDirectoryPath;
 
             if (!Directory.Exists(ultimaDirectory))
@@ -153,28 +237,28 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 return;
             }
 
-            // Überprüfen Sie, ob das ausgewählte Element eine unterstützte Karte ist
+            // Check whether the selected item is a supported card
             if (!(comboBoxMapID.SelectedItem is SupportedMaps _sourceMap))
             {
                 MessageBox.Show("Invalid Map ID!", "Map Replace", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1);
                 return;
             }
 
-            // Holen Sie sich die ID der ausgewählten Karte
+            // Get the ID of the selected card
             int selectedMapId = int.Parse(_sourceMap.GetId());
 
-            // Überprüfen Sie, ob die ausgewählte Map-ID zwischen 1 und 5 liegt
+            // Check that the selected map ID is between 1 and 8
             if (selectedMapId < 1 || selectedMapId > 8) // from to
             {
-                MessageBox.Show("Invalid Map ID! Please select a map between 1 and 5.", "Map Replace", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1);
+                MessageBox.Show("Invalid Map ID! Please select a map between 1 and 8.", "Map Replace", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1);
                 return;
             }
-            
-            // Konstruktion der Pfadnamen für die benötigten .mul Dateien basierend auf dem ausgewählten Verzeichnis
-            string mapFilePath = Path.Combine(ultimaDirectory, $"map{_workingMap.Id}.mul");
+
+            // Construction of pathnames for the required .mul files based on the selected directory
+            string mapFilePath = Path.Combine(ultimaDirectory, $"map{targetMap.Id}.mul");
             string staticsFilePath = Path.Combine(ultimaDirectory, $"statics{_sourceMap.Id}.mul");
 
-            // Überprüfen, ob die Dateien existieren
+            // Check if the files exist
             if (!File.Exists(mapFilePath) || !File.Exists(staticsFilePath))
             {
                 MessageBox.Show("Map files not found in the directory.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -232,13 +316,13 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             }
 
 
-            if (tox < 0 || tox > _workingMap.Width || tox + (x2 - x1) > _workingMap.Width)
+            if (tox < 0 || tox > _targetMap.Width || tox + (x2 - x1) > _targetMap.Width)
             {
                 MessageBox.Show("Invalid toX coordinate!", "Map Replace", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1);
                 return;
             }
 
-            if (toy < 0 || toy > _workingMap.Height || toy + (y2 - y1) > _workingMap.Height)
+            if (toy < 0 || toy > _targetMap.Height || toy + (y2 - y1) > _targetMap.Height)
             {
                 MessageBox.Show("Invalid toX coordinate!", "Map Replace", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1);
                 return;
@@ -255,8 +339,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             int tox2 = x2 - x1 + tox;
             int toy2 = y2 - y1 + toy;
 
-            int blockY = _workingMap.Height >> 3;
-            int blockX = _workingMap.Width >> 3;
+            int blockY = _targetMap.Height >> 3;
+            int blockX = _targetMap.Width >> 3;
             int blockYReplace = _sourceMap.Height >> 3;
             // int blockxreplace = _sourceMap.Width >> 3; // TODO: unused variable?
 
@@ -286,7 +370,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 
                 FileStream mMapCopy = new FileStream(copyMap, FileMode.Open, FileAccess.Read, FileShare.Read);
                 BinaryReader mMapReaderCopy = new BinaryReader(mMapCopy);
-                string mapPath = Files.GetFilePath($"map{_workingMap.FileIndex}.mul");
+                string mapPath = Files.GetFilePath($"map{_targetMap.FileIndex}.mul");
 
                 BinaryReader mMapReader;
 
@@ -302,7 +386,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                     return;
                 }
 
-                string mul = Path.Combine(Options.OutputPath, $"map{_workingMap.FileIndex}.mul");
+                string mul = Path.Combine(Options.OutputPath, $"map{_targetMap.FileIndex}.mul");
                 using (FileStream fsMul = new FileStream(mul, FileMode.Create, FileAccess.Write, FileShare.Write))
                 {
                     using (BinaryWriter binMul = new BinaryWriter(fsMul))
@@ -366,7 +450,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 
             if (checkBoxStatics.Checked)
             {
-                string indexPath = Files.GetFilePath($"staidx{_workingMap.FileIndex}.mul");
+                string indexPath = Files.GetFilePath($"staidx{_targetMap.FileIndex}.mul");
                 BinaryReader mIndexReader;
 
                 if (indexPath != null)
@@ -380,7 +464,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                     return;
                 }
 
-                string staticsPath = Files.GetFilePath($"statics{_workingMap.FileIndex}.mul");
+                string staticsPath = Files.GetFilePath($"statics{_targetMap.FileIndex}.mul");
                 FileStream mStatics;
                 BinaryReader mStaticsReader;
 
@@ -415,8 +499,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 FileStream mStaticsCopy = new FileStream(copyStaticsPath, FileMode.Open, FileAccess.Read, FileShare.Read);
                 BinaryReader mStaticsReaderCopy = new BinaryReader(mStaticsCopy);
 
-                string idx = Path.Combine(Options.OutputPath, $"staidx{_workingMap.FileIndex}.mul");
-                string mul = Path.Combine(Options.OutputPath, $"statics{_workingMap.FileIndex}.mul");
+                string idx = Path.Combine(Options.OutputPath, $"staidx{_targetMap.FileIndex}.mul");
+                string mul = Path.Combine(Options.OutputPath, $"statics{_targetMap.FileIndex}.mul");
                 using (FileStream fsIdx = new FileStream(idx, FileMode.Create, FileAccess.Write, FileShare.Write),
                                   fsMul = new FileStream(mul, FileMode.Create, FileAccess.Write, FileShare.Write))
                 {
@@ -710,14 +794,13 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             };
 
             if (dialog.ShowDialog() == DialogResult.OK)
-            {
-                // Speichern Sie den Pfad in einer Eigenschaft oder Variable, auf die OnClickCopy zugreifen kann
+            {                
                 _mulDirectoryPath = dialog.SelectedPath;
 
-                // Zeigen Sie den Pfad in der textBoxUltimaDir an
+                // Display the path in the textBoxUltimaDir
                 textBoxUltimaDir.Text = _mulDirectoryPath;
 
-                // Aktualisieren Sie die comboBoxMapID mit den unterstützten Karten
+                // Update the comboBoxMapID with the supported maps
                 UpdateMapComboBox();
             }
 
@@ -725,13 +808,13 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         }
         #endregion
 
-        #region [ UpdateMapComboBox ]
-        private void UpdateMapComboBox()
-        {
-            // Leeren Sie die comboBoxMapID
-            comboBoxMapID.Items.Clear();
+        #region [ UpdateMapComboBox ]       
 
-            // Fügen Sie jede unterstützte Karte zur comboBoxMapID hinzu
+        private void UpdateMapComboBox()
+        {            
+            comboBoxMapID.Items.Clear(); // Clear
+
+            // Add each supported map to the comboBoxMapID
             comboBoxMapID.Items.Add(new RFeluccaOld());
             comboBoxMapID.Items.Add(new RFelucca());
             comboBoxMapID.Items.Add(new RTrammel());
@@ -743,101 +826,56 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             comboBoxMapID.Items.Add(new RDragon()); // Dragon
             comboBoxMapID.Items.Add(new Rintermediateworld()); // Intermediate World
 
-            // Wählen Sie das erste Element in der comboBoxMapID aus, wenn es eines gibt
+            // Select the first element in the comboBoxMapID if there is one
             if (comboBoxMapID.Items.Count > 0)
             {
                 comboBoxMapID.SelectedIndex = 0;
             }
 
-            // Fügen Sie einen Event-Handler für das SelectedIndexChanged-Event der ComboBox hinzu
+            // Add an event handler for the ComboBox's SelectedIndexChanged event
             comboBoxMapID.SelectedIndexChanged += ComboBoxMapID_SelectedIndexChanged;
         }
         #endregion
 
         #region [ TestCord ]
         private void TestCord_Click(object sender, EventArgs e)
-        {
-            // Ersetzen Sie diese Werte durch die tatsächlichen Koordinaten, die Sie verwenden möchten
-            int x1 = 0;
-            int x2 = 100;
-            int y1 = 0;
-            int y2 = 100;
+        {            
+            int x1 = 2089;
+            int x2 = 2232;
+            int y1 = 1170;
+            int y2 = 1279;
 
-            // Setzen Sie die Value-Eigenschaften Ihrer NumericUpDown-Steuerelemente auf die Koordinaten
+            // Coordinate fields
             numericUpDownX1.Value = x1;
             numericUpDownX2.Value = x2;
             numericUpDownY1.Value = y1;
             numericUpDownY2.Value = y2;
-            numericUpDownToX1.Value = x1; // Ersetzen Sie x1 durch den tatsächlichen Wert, den Sie verwenden möchten
-            numericUpDownToY1.Value = y1; // Ersetzen Sie y1 durch den tatsächlichen Wert, den Sie verwenden möchten
+            numericUpDownToX1.Value = x1;
+            numericUpDownToY1.Value = y1;
         }
         #endregion
 
         #region [ ComboBoxMapID_SelectedIndexChanged ]
-        /*private void ComboBoxMapID_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            // Holen Sie sich die ausgewählte Karte
-            SupportedMaps selectedMap = comboBoxMapID.SelectedItem as SupportedMaps;
-
-            // Überprüfen Sie, ob eine Karte ausgewählt wurde
-            if (selectedMap != null)
-            {
-                // Erstellen Sie eine neue Map-Instanz basierend auf der ausgewählten Karte
-                Map map = new Map(selectedMap.Id, selectedMap.Width, selectedMap.Height);
-
-                // Setzen Sie die _workingMap auf die neu erstellte Karte
-                SetWorkingMap(map);
-
-                // Setzen Sie die _sourceMap auf die neu erstellte Karte
-                _sourceMap = new Map(selectedMap.Id, selectedMap.Width, selectedMap.Height);
-
-                // Erstellen Sie den Dateinamen der Zieldatei basierend auf der ausgewählten Karte
-                string targetFileName = $"map{selectedMap.GetId()}.mul";
-
-                // Fügen Sie den Dateinamen zum Pfad des Zielverzeichnisses hinzu
-                string targetFilePath = Path.Combine(_mulDirectoryPath, targetFileName);
-
-                // Hier können Sie den Code hinzufügen, der die Datei kopiert oder erstellt
-                // Zum Beispiel:
-                string sourceFilePath = Path.Combine(textBox1.Text, $"map{selectedMap.GetId()}.mul");
-                if (File.Exists(sourceFilePath))
-                {
-                    File.Copy(sourceFilePath, targetFilePath, true);
-                }
-                else
-                {
-                    MessageBox.Show($"Die Quelldatei {sourceFilePath} existiert nicht.", "Fehler", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    return;
-                }
-            }
-
-            // Aktualisieren Sie den Text des Labels, wenn das ausgewählte Element geändert wird
-            string selectedMapId = ((SupportedMaps)comboBoxMapID.SelectedItem).GetId();
-            string mapFilePath = Path.Combine(_mulDirectoryPath, $"map{selectedMapId}.mul");
-            lbMulControl.Text = $"Ausgewähltes Verzeichnis: {_mulDirectoryPath}\nAusgewählte Datei: {mapFilePath}";
-        }*/
-
         private void ComboBoxMapID_SelectedIndexChanged(object sender, EventArgs e)
         {
-            // Holen Sie sich die ausgewählte Karte
+            // Get the selected card
             SupportedMaps selectedMap = comboBoxMapID.SelectedItem as SupportedMaps;
 
-            // Überprüfen Sie, ob eine Karte ausgewählt wurde
+            // Check whether a card has been selected
             if (selectedMap != null)
             {
-                // Setzen Sie die _sourceMap basierend auf der ausgewählten Karte
+                // Set the _sourceMap based on the selected map
                 _sourceMap = new Map(selectedMap.Id, selectedMap.Width, selectedMap.Height);
 
-                // Setzen Sie die _workingMap basierend auf der ausgewählten Karte
+                // Set the _sourceMap based on the selected map
                 SetWorkingMap(_sourceMap);
 
-                // Erstellen Sie den Dateinamen der Zieldatei basierend auf der ausgewählten Karte
+                // Create the target file name based on the selected map
                 string targetFileName = $"map{selectedMap.GetId()}.mul";
 
-                // Fügen Sie den Dateinamen zum Pfad des Zielverzeichnisses hinzu
+                // Add the file name to the path of the target directory
                 string targetFilePath = Path.Combine(_mulDirectoryPath, targetFileName);
-
-                // Hier können Sie den Code hinzufügen, der die Datei kopiert oder erstellt
+                
                 string sourceFilePath = Path.Combine(textBox1.Text, $"map{selectedMap.GetId()}.mul");
                 if (File.Exists(sourceFilePath))
                 {
@@ -845,19 +883,17 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 }
                 else
                 {
-                    MessageBox.Show($"Die Quelldatei {sourceFilePath} existiert nicht.", "Fehler", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show($"The source file {sourceFilePath} does not exist.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return;
                 }
             }
 
-            // Aktualisieren Sie den Text des Labels, wenn das ausgewählte Element geändert wird
+            // Update the label's text when the selected item changes
             string selectedMapId = ((SupportedMaps)comboBoxMapID.SelectedItem).GetId();
             string mapFilePath = Path.Combine(_mulDirectoryPath, $"map{selectedMapId}.mul");
-            lbMulControl.Text = $"Ausgewähltes Verzeichnis: {_mulDirectoryPath}\nAusgewählte Datei: {mapFilePath}";
+            lbMulControl.Text = $"Selected directory: {_mulDirectoryPath}\nSelected file: {mapFilePath}";
         }
-
         #endregion
-
     }
 
     #region [ class Map ]
@@ -867,7 +903,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         public int Width { get; set; }
         public int Height { get; set; }
 
-        public int FileIndex { get; set; } // Hinzufügen der FileIndex-Eigenschaft
+        public int FileIndex { get; set; } // Adding the FileIndex property
 
         public Map(int id, int width, int height)
         {
