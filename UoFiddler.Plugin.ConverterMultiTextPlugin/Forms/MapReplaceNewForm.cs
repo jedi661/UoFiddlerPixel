@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Windows.Forms;
 using Ultima;
 using UoFiddler.Controls.Classes;
+using System.Drawing;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
@@ -12,10 +14,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private Map _targetMap;
         private Map _sourceMap;
         private string _mulDirectoryPath;
+        private string mapPath;
 
         public MapReplaceNewForm()
         {
-            InitializeComponent();            
+            InitializeComponent();
             Icon = Options.GetFiddlerIcon();
             comboBoxMapID.BeginUpdate();
             comboBoxMapID.EndUpdate();
@@ -30,7 +33,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             this.Controls.Add(this.checkBoxMap4);
             this.Controls.Add(this.checkBoxMap5);
             this.Controls.Add(this.checkBoxMap6);
-            this.Controls.Add(this.checkBoxMap7);
+            this.Controls.Add(this.checkBoxMap7);            
+
+            mapPath = null;
         }
 
         #region [ SetWorkingMap ]
@@ -59,31 +64,6 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         #endregion
 
         #region [ heckBoxMap_CheckedChanged ]
-        /*private void CheckBoxMap_CheckedChanged(object sender, EventArgs e)
-        {
-            // Setzen der Zielkarte basierend auf der aktivierten CheckBox
-            CheckBox checkBox = sender as CheckBox;
-
-            if (checkBox == null)
-                return;
-
-            if (checkBox.Checked)
-            {
-                // Deaktivieren der anderen CheckBoxen
-                foreach (var control in this.Controls)
-                {
-                    if (control is CheckBox && control != checkBox)
-                    {
-                        ((CheckBox)control).Checked = false;
-                    }
-                }
-
-                // Setzen der _targetMap basierend auf der ausgewählten CheckBox
-                int mapIndex = int.Parse(checkBox.Text.Replace("Map", "").Replace(" als Ziel", ""));
-                _targetMap = new Map(mapIndex, GetMapWidth(mapIndex), GetMapHeight(mapIndex));
-            }
-        }*/
-
         private void CheckBoxMap_CheckedChanged(object sender, EventArgs e)
         {
             // Setting the target card based on the activated CheckBox
@@ -104,67 +84,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 }
 
                 // Setting the _targetMap based on the selected CheckBox
-                int mapIndex = int.Parse(checkBox.Text.Replace("Map", "").Replace(" as goal", ""));
+                int mapIndex = int.Parse(checkBox.Text.Replace("Map", "").Replace(" als Ziel", ""));
                 _targetMap = new Map(mapIndex, GetMapWidth(mapIndex), GetMapHeight(mapIndex));
-
-                // Check if _mulDirectoryPath is set
-                if (string.IsNullOrEmpty(_mulDirectoryPath))
-                {
-                    MessageBox.Show("The directory for the map files has not been set.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    return;
-                }
-
-                // Generate filenames based on CheckBox selection
-                string mapFileName = $"map{mapIndex}.mul";
-                string staidxFileName = $"staidx{mapIndex}.mul";
-                string staticsFileName = $"statics{mapIndex}.mul";
-
-                // Path of files based on the selected directory
-                string mapFilePath = Path.Combine(_mulDirectoryPath, mapFileName);
-                string staidxFilePath = Path.Combine(_mulDirectoryPath, staidxFileName);
-                string staticsFilePath = Path.Combine(_mulDirectoryPath, staticsFileName);
-
-                // Create or rename files
-                CreateOrRenameMapFiles(mapIndex, mapFilePath, staidxFilePath, staticsFilePath);
-
-                // Update label information or other UI elements
-                lbMulControl.Text = $"Selected directory: {_mulDirectoryPath}\n" +
-                                    $"Map file: {mapFilePath}\n" +
-                                    $"Staidx file: {staidxFilePath}\n" +
-                                    $"Statics file: {staticsFileName}";
-            }
-        }
-        #endregion
-
-
-        #region [ CreateOrRenameMapFiles ]
-        private void CreateOrRenameMapFiles(int mapIndex, string mapFilePath, string staidxFilePath, string staticsFilePath)
-        {
-            string sourceDirectory = textBox1.Text;
-
-            // Make sure the directory exists
-            if (!Directory.Exists(sourceDirectory))
-            {
-                MessageBox.Show("Source directory does not exist!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
-
-            // Copy or rename the files
-            string sourceMapFile = Path.Combine(sourceDirectory, $"map{mapIndex}.mul");
-            string sourceStaidxFile = Path.Combine(sourceDirectory, $"staidx{mapIndex}.mul");
-            string sourceStaticsFile = Path.Combine(sourceDirectory, $"statics{mapIndex}.mul");
-
-            if (File.Exists(sourceMapFile))
-            {
-                File.Copy(sourceMapFile, mapFilePath, true);
-            }
-            if (File.Exists(sourceStaidxFile))
-            {
-                File.Copy(sourceStaidxFile, staidxFilePath, true);
-            }
-            if (File.Exists(sourceStaticsFile))
-            {
-                File.Copy(sourceStaticsFile, staticsFilePath, true);
             }
         }
         #endregion
@@ -363,13 +284,13 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 string copyMap = Path.Combine(path, $"map{_sourceMap.Id}.mul");
                 if (!File.Exists(copyMap))
                 {
-                    MessageBox.Show("Map file not found!", "Map Replace", MessageBoxButtons.OK, MessageBoxIcon.Error,
-                        MessageBoxDefaultButton.Button1);
+                    MessageBox.Show("Map file not found!", "Map Replace", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1);
+
                     return;
                 }
 
-                FileStream mMapCopy = new FileStream(copyMap, FileMode.Open, FileAccess.Read, FileShare.Read);
-                BinaryReader mMapReaderCopy = new BinaryReader(mMapCopy);
+                using FileStream mMapCopy = new FileStream(copyMap, FileMode.Open, FileAccess.Read, FileShare.Read);
+                using BinaryReader mMapReaderCopy = new BinaryReader(mMapCopy);
                 string mapPath = Files.GetFilePath($"map{_targetMap.FileIndex}.mul");
 
                 BinaryReader mMapReader;
@@ -381,8 +302,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 }
                 else
                 {
-                    MessageBox.Show("Map file not found!", "Map Replace", MessageBoxButtons.OK, MessageBoxIcon.Error,
-                        MessageBoxDefaultButton.Button1);
+                    MessageBox.Show("Map file not found!", "Map Replace", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1);
+
                     return;
                 }
 
@@ -794,7 +715,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             };
 
             if (dialog.ShowDialog() == DialogResult.OK)
-            {                
+            {
                 _mulDirectoryPath = dialog.SelectedPath;
 
                 // Display the path in the textBoxUltimaDir
@@ -811,7 +732,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         #region [ UpdateMapComboBox ]       
 
         private void UpdateMapComboBox()
-        {            
+        {
             comboBoxMapID.Items.Clear(); // Clear
 
             // Add each supported map to the comboBoxMapID
@@ -839,11 +760,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 
         #region [ TestCord ]
         private void TestCord_Click(object sender, EventArgs e)
-        {            
-            int x1 = 2089;
-            int x2 = 2232;
-            int y1 = 1170;
-            int y2 = 1279;
+        {
+            int x1 = 811;
+            int x2 = 1138;
+            int y1 = 2746;
+            int y2 = 3087;
 
             // Coordinate fields
             numericUpDownX1.Value = x1;
@@ -869,29 +790,276 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 
                 // Set the _sourceMap based on the selected map
                 SetWorkingMap(_sourceMap);
-
-                // Create the target file name based on the selected map
-                string targetFileName = $"map{selectedMap.GetId()}.mul";
-
-                // Add the file name to the path of the target directory
-                string targetFilePath = Path.Combine(_mulDirectoryPath, targetFileName);
-                
-                string sourceFilePath = Path.Combine(textBox1.Text, $"map{selectedMap.GetId()}.mul");
-                if (File.Exists(sourceFilePath))
-                {
-                    File.Copy(sourceFilePath, targetFilePath, true);
-                }
-                else
-                {
-                    MessageBox.Show($"The source file {sourceFilePath} does not exist.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    return;
-                }
             }
 
             // Update the label's text when the selected item changes
             string selectedMapId = ((SupportedMaps)comboBoxMapID.SelectedItem).GetId();
             string mapFilePath = Path.Combine(_mulDirectoryPath, $"map{selectedMapId}.mul");
             lbMulControl.Text = $"Selected directory: {_mulDirectoryPath}\nSelected file: {mapFilePath}";
+
+            // Check if checkBoxCopyFile is checked
+            if (checkBoxCopyFile.Checked)
+            {
+                // Generate filenames based on ComboBox selection
+                string mapFileName = $"map{selectedMap.Id}.mul";
+                string staidxFileName = $"staidx{selectedMap.Id}.mul";
+                string staticsFileName = $"statics{selectedMap.Id}.mul";
+
+                // Path of files based on the source directory
+                string sourceMapFile = Path.Combine(textBox1.Text, mapFileName);
+                string sourceStaidxFile = Path.Combine(textBox1.Text, staidxFileName);
+                string sourceStaticsFile = Path.Combine(textBox1.Text, staticsFileName);
+
+                // Destination directory
+                string destinationDirectory = textBoxUltimaDir.Text;
+
+                // Copy the files
+                CopyFileIfExist(sourceMapFile, destinationDirectory);
+                CopyFileIfExist(sourceStaidxFile, destinationDirectory);
+                CopyFileIfExist(sourceStaticsFile, destinationDirectory);
+            }
+
+            pictureBoxMap.Invalidate();
+        }
+        #endregion
+
+        #region [ NumericUpDown_ValueChanged ]
+        private void NumericUpDown_ValueChanged(object sender, EventArgs e)
+        {
+            pictureBoxMap.Invalidate();
+        }
+        #endregion
+
+        #region [ TextBox1_TextChanged ]
+        private void TextBox1_TextChanged(object sender, EventArgs e)
+        {
+            // Update the map path when text in textBox1 changes
+            mapPath = textBox1.Text;
+            pictureBoxMap.Invalidate();
+        }
+        #endregion
+
+        #region [ btnRenameFiles ]
+        private void btnRenameFiles_Click(object sender, EventArgs e)
+        {
+            // Überprüfen der Checkboxen und Umbenennen der Dateien entsprechend
+            RenameFileIfChecked(checkBoxMap0, 0);
+            RenameFileIfChecked(checkBoxMap1, 1);
+            RenameFileIfChecked(checkBoxMap2, 2);
+            RenameFileIfChecked(checkBoxMap3, 3);
+            RenameFileIfChecked(checkBoxMap4, 4);
+            RenameFileIfChecked(checkBoxMap5, 5);
+            RenameFileIfChecked(checkBoxMap6, 6);
+            RenameFileIfChecked(checkBoxMap7, 7);
+            RenameFileIfChecked(checkBoxMap8, 8);
+
+            MessageBox.Show("Files renamed successfully!", "Rename Files", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+        }
+        #endregion
+
+        #region [ RenameFileIfChecked ]
+        private void RenameFileIfChecked(CheckBox checkBox, int mapIndex)
+        {
+            if (checkBox.Checked)
+            {
+                string[] fileTypes = new string[] { "map", "staidx", "statics" };
+
+                foreach (string fileType in fileTypes)
+                {
+                    for (int i = 0; i <= 8; i++)
+                    {
+                        string sourceFile = Path.Combine(Options.OutputPath, $"{fileType}{i}.mul");
+
+                        if (File.Exists(sourceFile))
+                        {
+                            string targetFile = Path.Combine(Options.OutputPath, $"{fileType}{mapIndex}.mul");
+
+                            if (sourceFile != targetFile)
+                            {
+                                if (File.Exists(targetFile))
+                                {
+                                    File.Delete(targetFile);
+                                }
+
+                                File.Move(sourceFile, targetFile);
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        #endregion
+
+        #region [ btOpenDir ]
+        private void btOpenDir_Click(object sender, EventArgs e)
+        {
+            string path = Options.OutputPath;
+            System.Diagnostics.Process.Start("explorer.exe", $"\"{path}\"");
+        }
+        #endregion
+
+        #region [ CopyFileIfExist ]
+        private void CopyFileIfExist(string sourceFile, string destinationDirectory)
+        {
+            if (File.Exists(sourceFile))
+            {
+                string destinationFile = Path.Combine(destinationDirectory, Path.GetFileName(sourceFile));
+                File.Copy(sourceFile, destinationFile, true);
+            }
+        }
+        #endregion
+
+        #region [ OnPaint ]
+        private void OnPaint(object sender, PaintEventArgs e)
+        {
+            // Überprüfen Sie, ob die Checkbox aktiviert ist
+            if (!checkBoxShowMapMulPicturebox.Checked)
+            {
+                return; // Beenden Sie die Methode, wenn die Checkbox nicht aktiviert ist
+            }
+
+            // Debugging output
+            Debug.WriteLine("OnPaint called");
+
+            if (string.IsNullOrEmpty(mapPath))
+            {
+                MessageBox.Show("mapPath is empty or null.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return; // Do not continue if mapPath is null or empty
+            }
+
+            if (comboBoxMapID.SelectedItem is SupportedMaps selectedMap)
+            {
+                string filePath = Path.Combine(mapPath, $"map{selectedMap.Id}.mul");
+
+                if (File.Exists(filePath))
+                {
+                    try
+                    {
+                        int x1 = (int)numericUpDownX1.Value;
+                        int x2 = (int)numericUpDownX2.Value;
+                        int y1 = (int)numericUpDownY1.Value;
+                        int y2 = (int)numericUpDownY2.Value;
+
+                        // Debugging output
+                        Debug.WriteLine($"coordinates: x1={x1}, x2={x2}, y1={y1}, y2={y2}");
+
+                        if (x1 < x2 && y1 < y2)
+                        {
+                            Rectangle section = new Rectangle(x1, y1, x2 - x1, y2 - y1);
+
+                            // Calculate the width and height of the map
+                            int mapWidth = GetMapWidth(selectedMap.Id);
+                            int mapHeight = GetMapHeight(selectedMap.Id);
+
+                            // Create a bitmap to draw the section of the map
+                            using (Bitmap bitmap = new Bitmap(section.Width, section.Height))
+                            {
+                                using (Graphics g = Graphics.FromImage(bitmap))
+                                {
+                                    // Delete artboard
+                                    g.Clear(Color.Transparent);
+
+                                    // Open the map file
+                                    using (FileStream fs = new FileStream(filePath, FileMode.Open, FileAccess.Read))
+                                    {
+                                        using (BinaryReader reader = new BinaryReader(fs))
+                                        {
+                                            int blockWidth = mapWidth / 8;
+                                            int blockHeight = mapHeight / 8;
+
+                                            // Loop through the blocks in the section and draw them
+                                            for (int y = y1; y < y2; y++)
+                                            {
+                                                for (int x = x1; x < x2; x++)
+                                                {
+                                                    // Calculate the position of the block and cell
+                                                    int xBlock = x / 8;
+                                                    int yBlock = y / 8;
+                                                    int blockNumber = xBlock * blockHeight + yBlock;
+                                                    int xCell = x % 8;
+                                                    int yCell = y % 8;
+
+                                                    // Calculate the position in the file for the current tile
+                                                    long position = blockNumber * 196 + 4 + (yCell * 8 + xCell) * 3;
+
+                                                    // Make sure the position is within the file length
+                                                    if (position + 3 > fs.Length)
+                                                    {
+                                                        continue;
+                                                    }
+
+                                                    fs.Seek(position, SeekOrigin.Begin);
+
+                                                    // Read the tile data
+                                                    short tileId = reader.ReadInt16();
+                                                    byte z = reader.ReadByte();
+
+                                                    // Debugging output
+                                                    Debug.WriteLine($"TileID: {tileId}, x: {x}, y: {y}");
+
+                                                    // Draw the tile (to make things easier, we'll just fill a rectangle with a color based on the tileId)
+                                                    Color color = Color.FromArgb((tileId * 50) % 255, (tileId * 100) % 255, (tileId * 150) % 255);
+                                                    g.FillRectangle(new SolidBrush(color), x - x1, y - y1, 1, 1);
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+
+                                // Draw the bitmap into the PictureBox, scaled appropriately
+                                e.Graphics.DrawImage(bitmap, new Rectangle(0, 0, pictureBoxMap.Width, pictureBoxMap.Height), new Rectangle(0, 0, bitmap.Width, bitmap.Height), GraphicsUnit.Pixel);
+                            }
+                        }
+                        else
+                        {
+                            MessageBox.Show("The coordinates are invalid. Make sure, that x1 < x2 und y1 < y2.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"Error loading map: {ex.Message}", "File error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
+                else
+                {
+                    MessageBox.Show($"The file {filePath} was not found.", "File error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+            else
+            {
+                MessageBox.Show("No supported card type selected.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+        #endregion
+
+        #region [ ButtonLoadTestImage ]
+        private void ButtonLoadTestImage_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                // Creating a test image
+                int width = 100;
+                int height = 100;
+                Bitmap testBitmap = new Bitmap(width, height);
+
+                using (Graphics g = Graphics.FromImage(testBitmap))
+                {
+                    // Set background color
+                    g.Clear(Color.White);
+
+                    // Simple drawing on the image (e.g. a red rectangle)
+                    g.FillRectangle(Brushes.Red, 10, 10, 80, 80);
+                }
+
+                // Loading the test image into the PictureBox
+                pictureBoxMap.Image = testBitmap;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error loading test image: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
         #endregion
     }

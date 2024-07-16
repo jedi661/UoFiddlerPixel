@@ -53,7 +53,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             numericUpDownY1 = new System.Windows.Forms.NumericUpDown();
             label2 = new System.Windows.Forms.Label();
             label3 = new System.Windows.Forms.Label();
-            label5 = new System.Windows.Forms.Label();
+            lbReplaceFrom = new System.Windows.Forms.Label();
             progressBar1 = new System.Windows.Forms.ProgressBar();
             label1 = new System.Windows.Forms.Label();
             groupBox3 = new System.Windows.Forms.GroupBox();
@@ -71,16 +71,21 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             TestCord = new System.Windows.Forms.Button();
             lbMulControl = new System.Windows.Forms.Label();
             pictureBoxMap = new System.Windows.Forms.PictureBox();
-            checkBoxMap0 = new System.Windows.Forms.CheckBox();
-            checkBoxMap1 = new System.Windows.Forms.CheckBox();
-            checkBoxMap2 = new System.Windows.Forms.CheckBox();
-            checkBoxMap3 = new System.Windows.Forms.CheckBox();
-            checkBoxMap4 = new System.Windows.Forms.CheckBox();
-            checkBoxMap5 = new System.Windows.Forms.CheckBox();
-            checkBoxMap6 = new System.Windows.Forms.CheckBox();
-            checkBoxMap7 = new System.Windows.Forms.CheckBox();
             checkBoxMap8 = new System.Windows.Forms.CheckBox();
-            groupBox5 = new System.Windows.Forms.GroupBox();
+            checkBoxMap5 = new System.Windows.Forms.CheckBox();
+            checkBoxMap4 = new System.Windows.Forms.CheckBox();
+            checkBoxMap2 = new System.Windows.Forms.CheckBox();
+            checkBoxMap6 = new System.Windows.Forms.CheckBox();
+            checkBoxMap1 = new System.Windows.Forms.CheckBox();
+            checkBoxMap3 = new System.Windows.Forms.CheckBox();
+            checkBoxMap7 = new System.Windows.Forms.CheckBox();
+            checkBoxMap0 = new System.Windows.Forms.CheckBox();
+            btnRenameFiles = new System.Windows.Forms.Button();
+            btOpenDir = new System.Windows.Forms.Button();
+            lbTo = new System.Windows.Forms.Label();
+            checkBoxCopyFile = new System.Windows.Forms.CheckBox();
+            ButtonLoadTestImage = new System.Windows.Forms.Button();
+            checkBoxShowMapMulPicturebox = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)numericUpDownToX1).BeginInit();
             ((System.ComponentModel.ISupportInitialize)numericUpDownToY1).BeginInit();
             ((System.ComponentModel.ISupportInitialize)numericUpDownY2).BeginInit();
@@ -92,18 +97,18 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             groupBox2.SuspendLayout();
             groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)pictureBoxMap).BeginInit();
-            groupBox5.SuspendLayout();
             SuspendLayout();
             // 
             // label8
             // 
             label8.AutoSize = true;
-            label8.Location = new System.Drawing.Point(13, 68);
+            label8.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            label8.Location = new System.Drawing.Point(41, 68);
             label8.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             label8.Name = "label8";
-            label8.Size = new System.Drawing.Size(45, 15);
+            label8.Size = new System.Drawing.Size(53, 15);
             label8.TabIndex = 35;
-            label8.Text = "Map ID";
+            label8.Text = "Map ID :";
             // 
             // label6
             // 
@@ -185,6 +190,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             numericUpDownY2.Name = "numericUpDownY2";
             numericUpDownY2.Size = new System.Drawing.Size(63, 23);
             numericUpDownY2.TabIndex = 10;
+            numericUpDownY2.ValueChanged += NumericUpDown_ValueChanged;
             // 
             // groupBox4
             // 
@@ -210,6 +216,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             numericUpDownY1.Name = "numericUpDownY1";
             numericUpDownY1.Size = new System.Drawing.Size(63, 23);
             numericUpDownY1.TabIndex = 6;
+            numericUpDownY1.ValueChanged += NumericUpDown_ValueChanged;
             // 
             // label2
             // 
@@ -231,15 +238,16 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             label3.TabIndex = 9;
             label3.Text = "X2";
             // 
-            // label5
+            // lbReplaceFrom
             // 
-            label5.AutoSize = true;
-            label5.Location = new System.Drawing.Point(13, 11);
-            label5.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            label5.Name = "label5";
-            label5.Size = new System.Drawing.Size(79, 15);
-            label5.TabIndex = 29;
-            label5.Text = "Replace From";
+            lbReplaceFrom.AutoSize = true;
+            lbReplaceFrom.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            lbReplaceFrom.Location = new System.Drawing.Point(13, 11);
+            lbReplaceFrom.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            lbReplaceFrom.Name = "lbReplaceFrom";
+            lbReplaceFrom.Size = new System.Drawing.Size(83, 15);
+            lbReplaceFrom.TabIndex = 29;
+            lbReplaceFrom.Text = "Replace From";
             // 
             // progressBar1
             // 
@@ -288,6 +296,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             numericUpDownX1.Name = "numericUpDownX1";
             numericUpDownX1.Size = new System.Drawing.Size(63, 23);
             numericUpDownX1.TabIndex = 4;
+            numericUpDownX1.ValueChanged += NumericUpDown_ValueChanged;
             // 
             // numericUpDownX2
             // 
@@ -298,6 +307,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             numericUpDownX2.Name = "numericUpDownX2";
             numericUpDownX2.Size = new System.Drawing.Size(63, 23);
             numericUpDownX2.TabIndex = 8;
+            numericUpDownX2.ValueChanged += NumericUpDown_ValueChanged;
             // 
             // groupBox2
             // 
@@ -353,6 +363,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             textBox1.Name = "textBox1";
             textBox1.Size = new System.Drawing.Size(227, 23);
             textBox1.TabIndex = 25;
+            textBox1.TextChanged += TextBox1_TextChanged;
             // 
             // ButtonDir
             // 
@@ -402,7 +413,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             TestCord.Name = "TestCord";
             TestCord.Size = new System.Drawing.Size(75, 23);
             TestCord.TabIndex = 39;
-            TestCord.Text = "button3";
+            TestCord.Text = "Test Cord";
             TestCord.UseVisualStyleBackColor = true;
             TestCord.Click += TestCord_Click;
             // 
@@ -417,71 +428,29 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // 
             // pictureBoxMap
             // 
+            pictureBoxMap.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             pictureBoxMap.Location = new System.Drawing.Point(387, 107);
             pictureBoxMap.Name = "pictureBoxMap";
             pictureBoxMap.Size = new System.Drawing.Size(401, 311);
             pictureBoxMap.TabIndex = 36;
             pictureBoxMap.TabStop = false;
+            pictureBoxMap.Paint += OnPaint;
             // 
-            // checkBoxMap0
+            // checkBoxMap8
             // 
-            checkBoxMap0.AutoSize = true;
-            checkBoxMap0.Location = new System.Drawing.Point(7, 19);
-            checkBoxMap0.Name = "checkBoxMap0";
-            checkBoxMap0.Size = new System.Drawing.Size(59, 19);
-            checkBoxMap0.TabIndex = 41;
-            checkBoxMap0.Text = "Map 0";
-            checkBoxMap0.UseVisualStyleBackColor = true;
-            checkBoxMap0.CheckedChanged += CheckBoxMap_CheckedChanged;
-            // 
-            // checkBoxMap1
-            // 
-            checkBoxMap1.AutoSize = true;
-            checkBoxMap1.Location = new System.Drawing.Point(72, 19);
-            checkBoxMap1.Name = "checkBoxMap1";
-            checkBoxMap1.Size = new System.Drawing.Size(59, 19);
-            checkBoxMap1.TabIndex = 42;
-            checkBoxMap1.Text = "Map 1";
-            checkBoxMap1.UseVisualStyleBackColor = true;
-            checkBoxMap1.CheckedChanged += CheckBoxMap_CheckedChanged;
-            // 
-            // checkBoxMap2
-            // 
-            checkBoxMap2.AutoSize = true;
-            checkBoxMap2.Location = new System.Drawing.Point(137, 19);
-            checkBoxMap2.Name = "checkBoxMap2";
-            checkBoxMap2.Size = new System.Drawing.Size(59, 19);
-            checkBoxMap2.TabIndex = 43;
-            checkBoxMap2.Text = "Map 2";
-            checkBoxMap2.UseVisualStyleBackColor = true;
-            checkBoxMap2.CheckedChanged += CheckBoxMap_CheckedChanged;
-            // 
-            // checkBoxMap3
-            // 
-            checkBoxMap3.AutoSize = true;
-            checkBoxMap3.Location = new System.Drawing.Point(202, 19);
-            checkBoxMap3.Name = "checkBoxMap3";
-            checkBoxMap3.Size = new System.Drawing.Size(59, 19);
-            checkBoxMap3.TabIndex = 44;
-            checkBoxMap3.Text = "Map 3";
-            checkBoxMap3.UseVisualStyleBackColor = true;
-            checkBoxMap3.CheckedChanged += CheckBoxMap_CheckedChanged;
-            // 
-            // checkBoxMap4
-            // 
-            checkBoxMap4.AutoSize = true;
-            checkBoxMap4.Location = new System.Drawing.Point(267, 19);
-            checkBoxMap4.Name = "checkBoxMap4";
-            checkBoxMap4.Size = new System.Drawing.Size(59, 19);
-            checkBoxMap4.TabIndex = 45;
-            checkBoxMap4.Text = "Map 4";
-            checkBoxMap4.UseVisualStyleBackColor = true;
-            checkBoxMap4.CheckedChanged += CheckBoxMap_CheckedChanged;
+            checkBoxMap8.AutoSize = true;
+            checkBoxMap8.Location = new System.Drawing.Point(517, 33);
+            checkBoxMap8.Name = "checkBoxMap8";
+            checkBoxMap8.Size = new System.Drawing.Size(59, 19);
+            checkBoxMap8.TabIndex = 49;
+            checkBoxMap8.Text = "Map 8";
+            checkBoxMap8.UseVisualStyleBackColor = true;
+            checkBoxMap8.CheckedChanged += CheckBoxMap_CheckedChanged;
             // 
             // checkBoxMap5
             // 
             checkBoxMap5.AutoSize = true;
-            checkBoxMap5.Location = new System.Drawing.Point(329, 19);
+            checkBoxMap5.Location = new System.Drawing.Point(709, 8);
             checkBoxMap5.Name = "checkBoxMap5";
             checkBoxMap5.Size = new System.Drawing.Size(59, 19);
             checkBoxMap5.TabIndex = 46;
@@ -489,10 +458,32 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             checkBoxMap5.UseVisualStyleBackColor = true;
             checkBoxMap5.CheckedChanged += CheckBoxMap_CheckedChanged;
             // 
+            // checkBoxMap4
+            // 
+            checkBoxMap4.AutoSize = true;
+            checkBoxMap4.Location = new System.Drawing.Point(647, 8);
+            checkBoxMap4.Name = "checkBoxMap4";
+            checkBoxMap4.Size = new System.Drawing.Size(59, 19);
+            checkBoxMap4.TabIndex = 45;
+            checkBoxMap4.Text = "Map 4";
+            checkBoxMap4.UseVisualStyleBackColor = true;
+            checkBoxMap4.CheckedChanged += CheckBoxMap_CheckedChanged;
+            // 
+            // checkBoxMap2
+            // 
+            checkBoxMap2.AutoSize = true;
+            checkBoxMap2.Location = new System.Drawing.Point(517, 8);
+            checkBoxMap2.Name = "checkBoxMap2";
+            checkBoxMap2.Size = new System.Drawing.Size(59, 19);
+            checkBoxMap2.TabIndex = 43;
+            checkBoxMap2.Text = "Map 2";
+            checkBoxMap2.UseVisualStyleBackColor = true;
+            checkBoxMap2.CheckedChanged += CheckBoxMap_CheckedChanged;
+            // 
             // checkBoxMap6
             // 
             checkBoxMap6.AutoSize = true;
-            checkBoxMap6.Location = new System.Drawing.Point(7, 44);
+            checkBoxMap6.Location = new System.Drawing.Point(387, 33);
             checkBoxMap6.Name = "checkBoxMap6";
             checkBoxMap6.Size = new System.Drawing.Size(59, 19);
             checkBoxMap6.TabIndex = 47;
@@ -500,10 +491,32 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             checkBoxMap6.UseVisualStyleBackColor = true;
             checkBoxMap6.CheckedChanged += CheckBoxMap_CheckedChanged;
             // 
+            // checkBoxMap1
+            // 
+            checkBoxMap1.AutoSize = true;
+            checkBoxMap1.Location = new System.Drawing.Point(452, 8);
+            checkBoxMap1.Name = "checkBoxMap1";
+            checkBoxMap1.Size = new System.Drawing.Size(59, 19);
+            checkBoxMap1.TabIndex = 42;
+            checkBoxMap1.Text = "Map 1";
+            checkBoxMap1.UseVisualStyleBackColor = true;
+            checkBoxMap1.CheckedChanged += CheckBoxMap_CheckedChanged;
+            // 
+            // checkBoxMap3
+            // 
+            checkBoxMap3.AutoSize = true;
+            checkBoxMap3.Location = new System.Drawing.Point(582, 8);
+            checkBoxMap3.Name = "checkBoxMap3";
+            checkBoxMap3.Size = new System.Drawing.Size(59, 19);
+            checkBoxMap3.TabIndex = 44;
+            checkBoxMap3.Text = "Map 3";
+            checkBoxMap3.UseVisualStyleBackColor = true;
+            checkBoxMap3.CheckedChanged += CheckBoxMap_CheckedChanged;
+            // 
             // checkBoxMap7
             // 
             checkBoxMap7.AutoSize = true;
-            checkBoxMap7.Location = new System.Drawing.Point(72, 44);
+            checkBoxMap7.Location = new System.Drawing.Point(452, 33);
             checkBoxMap7.Name = "checkBoxMap7";
             checkBoxMap7.Size = new System.Drawing.Size(59, 19);
             checkBoxMap7.TabIndex = 48;
@@ -511,49 +524,106 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             checkBoxMap7.UseVisualStyleBackColor = true;
             checkBoxMap7.CheckedChanged += CheckBoxMap_CheckedChanged;
             // 
-            // checkBoxMap8
+            // checkBoxMap0
             // 
-            checkBoxMap8.AutoSize = true;
-            checkBoxMap8.Location = new System.Drawing.Point(137, 44);
-            checkBoxMap8.Name = "checkBoxMap8";
-            checkBoxMap8.Size = new System.Drawing.Size(59, 19);
-            checkBoxMap8.TabIndex = 49;
-            checkBoxMap8.Text = "Map 8";
-            checkBoxMap8.UseVisualStyleBackColor = true;
+            checkBoxMap0.AutoSize = true;
+            checkBoxMap0.Location = new System.Drawing.Point(387, 8);
+            checkBoxMap0.Name = "checkBoxMap0";
+            checkBoxMap0.Size = new System.Drawing.Size(59, 19);
+            checkBoxMap0.TabIndex = 41;
+            checkBoxMap0.Text = "Map 0";
+            checkBoxMap0.UseVisualStyleBackColor = true;
+            checkBoxMap0.CheckedChanged += CheckBoxMap_CheckedChanged;
             // 
-            // groupBox5
+            // btnRenameFiles
             // 
-            groupBox5.Controls.Add(checkBoxMap3);
-            groupBox5.Controls.Add(checkBoxMap8);
-            groupBox5.Controls.Add(checkBoxMap4);
-            groupBox5.Controls.Add(checkBoxMap0);
-            groupBox5.Controls.Add(checkBoxMap5);
-            groupBox5.Controls.Add(checkBoxMap7);
-            groupBox5.Controls.Add(checkBoxMap2);
-            groupBox5.Controls.Add(checkBoxMap1);
-            groupBox5.Controls.Add(checkBoxMap6);
-            groupBox5.Location = new System.Drawing.Point(387, 8);
-            groupBox5.Name = "groupBox5";
-            groupBox5.Size = new System.Drawing.Size(401, 80);
-            groupBox5.TabIndex = 51;
-            groupBox5.TabStop = false;
-            groupBox5.Text = "Checkbox Map Size";
+            btnRenameFiles.Location = new System.Drawing.Point(728, 78);
+            btnRenameFiles.Name = "btnRenameFiles";
+            btnRenameFiles.Size = new System.Drawing.Size(60, 23);
+            btnRenameFiles.TabIndex = 50;
+            btnRenameFiles.Text = "Rename";
+            btnRenameFiles.UseVisualStyleBackColor = true;
+            btnRenameFiles.Click += btnRenameFiles_Click;
+            // 
+            // btOpenDir
+            // 
+            btOpenDir.Location = new System.Drawing.Point(647, 78);
+            btOpenDir.Name = "btOpenDir";
+            btOpenDir.Size = new System.Drawing.Size(75, 23);
+            btOpenDir.TabIndex = 51;
+            btOpenDir.Text = "Output Dir";
+            btOpenDir.UseVisualStyleBackColor = true;
+            btOpenDir.Click += btOpenDir_Click;
+            // 
+            // lbTo
+            // 
+            lbTo.AutoSize = true;
+            lbTo.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            lbTo.Location = new System.Drawing.Point(74, 40);
+            lbTo.Name = "lbTo";
+            lbTo.Size = new System.Drawing.Size(19, 15);
+            lbTo.TabIndex = 52;
+            lbTo.Text = "to";
+            // 
+            // checkBoxCopyFile
+            // 
+            checkBoxCopyFile.AutoSize = true;
+            checkBoxCopyFile.Location = new System.Drawing.Point(340, 68);
+            checkBoxCopyFile.Name = "checkBoxCopyFile";
+            checkBoxCopyFile.Size = new System.Drawing.Size(141, 19);
+            checkBoxCopyFile.TabIndex = 53;
+            checkBoxCopyFile.Text = "Copy Files from to Dir";
+            checkBoxCopyFile.UseVisualStyleBackColor = true;
+            // 
+            // ButtonLoadTestImage
+            // 
+            ButtonLoadTestImage.Location = new System.Drawing.Point(274, 372);
+            ButtonLoadTestImage.Name = "ButtonLoadTestImage";
+            ButtonLoadTestImage.Size = new System.Drawing.Size(75, 23);
+            ButtonLoadTestImage.TabIndex = 54;
+            ButtonLoadTestImage.Text = "Test Image";
+            ButtonLoadTestImage.UseVisualStyleBackColor = true;
+            ButtonLoadTestImage.Click += ButtonLoadTestImage_Click;
+            // 
+            // checkBoxShowMapMulPicturebox
+            // 
+            checkBoxShowMapMulPicturebox.AutoSize = true;
+            checkBoxShowMapMulPicturebox.Location = new System.Drawing.Point(517, 69);
+            checkBoxShowMapMulPicturebox.Name = "checkBoxShowMapMulPicturebox";
+            checkBoxShowMapMulPicturebox.Size = new System.Drawing.Size(82, 19);
+            checkBoxShowMapMulPicturebox.TabIndex = 55;
+            checkBoxShowMapMulPicturebox.Text = "Show Map";
+            checkBoxShowMapMulPicturebox.UseVisualStyleBackColor = true;
             // 
             // MapReplaceNewForm
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             ClientSize = new System.Drawing.Size(800, 520);
-            Controls.Add(groupBox5);
+            Controls.Add(checkBoxShowMapMulPicturebox);
+            Controls.Add(ButtonLoadTestImage);
+            Controls.Add(checkBoxCopyFile);
+            Controls.Add(lbTo);
+            Controls.Add(btOpenDir);
+            Controls.Add(btnRenameFiles);
+            Controls.Add(checkBoxMap3);
+            Controls.Add(checkBoxMap8);
             Controls.Add(lbMulControl);
+            Controls.Add(checkBoxMap4);
             Controls.Add(TestCord);
+            Controls.Add(checkBoxMap0);
             Controls.Add(textBoxUltimaDir);
+            Controls.Add(checkBoxMap5);
             Controls.Add(btLoadUODir);
+            Controls.Add(checkBoxMap7);
             Controls.Add(pictureBoxMap);
+            Controls.Add(checkBoxMap2);
+            Controls.Add(checkBoxMap1);
             Controls.Add(label8);
+            Controls.Add(checkBoxMap6);
             Controls.Add(comboBoxMapID);
             Controls.Add(groupBox4);
-            Controls.Add(label5);
+            Controls.Add(lbReplaceFrom);
             Controls.Add(progressBar1);
             Controls.Add(groupBox3);
             Controls.Add(groupBox2);
@@ -563,7 +633,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             Controls.Add(btReplace);
             Icon = (System.Drawing.Icon)resources.GetObject("$this.Icon");
             Name = "MapReplaceNewForm";
-            Text = "MapReplaceNewForm";
+            Text = "MapReplace Set directory for output dir and Copy";
             ((System.ComponentModel.ISupportInitialize)numericUpDownToX1).EndInit();
             ((System.ComponentModel.ISupportInitialize)numericUpDownToY1).EndInit();
             ((System.ComponentModel.ISupportInitialize)numericUpDownY2).EndInit();
@@ -579,8 +649,6 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             groupBox1.ResumeLayout(false);
             groupBox1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)pictureBoxMap).EndInit();
-            groupBox5.ResumeLayout(false);
-            groupBox5.PerformLayout();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -600,7 +668,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private System.Windows.Forms.NumericUpDown numericUpDownY1;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label label3;
-        private System.Windows.Forms.Label label5;
+        private System.Windows.Forms.Label lbReplaceFrom;
         private System.Windows.Forms.ProgressBar progressBar1;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.GroupBox groupBox3;
@@ -618,15 +686,20 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private System.Windows.Forms.Button TestCord;
         private System.Windows.Forms.Label lbMulControl;
         private System.Windows.Forms.PictureBox pictureBoxMap;
-        private System.Windows.Forms.CheckBox checkBoxMap0;
-        private System.Windows.Forms.CheckBox checkBoxMap1;
-        private System.Windows.Forms.CheckBox checkBoxMap2;
-        private System.Windows.Forms.CheckBox checkBoxMap3;
-        private System.Windows.Forms.CheckBox checkBoxMap4;
-        private System.Windows.Forms.CheckBox checkBoxMap5;
-        private System.Windows.Forms.CheckBox checkBoxMap6;
-        private System.Windows.Forms.CheckBox checkBoxMap7;
         private System.Windows.Forms.CheckBox checkBoxMap8;
-        private System.Windows.Forms.GroupBox groupBox5;
+        private System.Windows.Forms.CheckBox checkBoxMap5;
+        private System.Windows.Forms.CheckBox checkBoxMap4;
+        private System.Windows.Forms.CheckBox checkBoxMap2;
+        private System.Windows.Forms.CheckBox checkBoxMap6;
+        private System.Windows.Forms.CheckBox checkBoxMap1;
+        private System.Windows.Forms.CheckBox checkBoxMap3;
+        private System.Windows.Forms.CheckBox checkBoxMap7;
+        private System.Windows.Forms.CheckBox checkBoxMap0;
+        private System.Windows.Forms.Button btnRenameFiles;
+        private System.Windows.Forms.Button btOpenDir;
+        private System.Windows.Forms.Label lbTo;
+        private System.Windows.Forms.CheckBox checkBoxCopyFile;
+        private System.Windows.Forms.Button ButtonLoadTestImage;
+        private System.Windows.Forms.CheckBox checkBoxShowMapMulPicturebox;
     }
 }
