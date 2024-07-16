@@ -24,6 +24,7 @@ Version : 4.12.5
   - add filter and checkbox selections.
 - Add Copy hex address to clipboard.
 - Add Background water and grass added to the picture box in multis.
+- External Map Replace expanded in expansion.
 
 Version : 4.12.4
 - Add About revised, removed more Richtextbox and added a matrix animation with the names of the developers, new links, and new information.
