@@ -91,6 +91,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             checkBoxColorC = new System.Windows.Forms.CheckBox();
             checkBoxColorD = new System.Windows.Forms.CheckBox();
             checkBoxColorE = new System.Windows.Forms.CheckBox();
+            listBoxLastCoordinates = new System.Windows.Forms.ListBox();
+            btSaveLasCoordinates = new System.Windows.Forms.Button();
+            btDeleteEntry = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)numericUpDownToX1).BeginInit();
             ((System.ComponentModel.ISupportInitialize)numericUpDownToY1).BeginInit();
             ((System.ComponentModel.ISupportInitialize)numericUpDownY2).BeginInit();
@@ -385,10 +388,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // 
             // btReplace
             // 
-            btReplace.Location = new System.Drawing.Point(144, 339);
+            btReplace.Location = new System.Drawing.Point(15, 338);
             btReplace.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             btReplace.Name = "btReplace";
-            btReplace.Size = new System.Drawing.Size(88, 27);
+            btReplace.Size = new System.Drawing.Size(60, 27);
             btReplace.TabIndex = 27;
             btReplace.Text = "Replace";
             btReplace.UseVisualStyleBackColor = true;
@@ -414,9 +417,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // 
             // TestCord
             // 
-            TestCord.Location = new System.Drawing.Point(274, 343);
+            TestCord.Location = new System.Drawing.Point(301, 340);
             TestCord.Name = "TestCord";
-            TestCord.Size = new System.Drawing.Size(75, 23);
+            TestCord.Size = new System.Drawing.Size(69, 23);
             TestCord.TabIndex = 39;
             TestCord.Text = "Test Cord";
             TestCord.UseVisualStyleBackColor = true;
@@ -582,9 +585,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // 
             // ButtonLoadTestImage
             // 
-            ButtonLoadTestImage.Location = new System.Drawing.Point(274, 372);
+            ButtonLoadTestImage.Location = new System.Drawing.Point(709, 424);
             ButtonLoadTestImage.Name = "ButtonLoadTestImage";
-            ButtonLoadTestImage.Size = new System.Drawing.Size(75, 23);
+            ButtonLoadTestImage.Size = new System.Drawing.Size(79, 23);
             ButtonLoadTestImage.TabIndex = 54;
             ButtonLoadTestImage.Text = "Test Image";
             ButtonLoadTestImage.UseVisualStyleBackColor = true;
@@ -605,7 +608,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             checkBoxColorA.AutoSize = true;
             checkBoxColorA.Checked = true;
             checkBoxColorA.CheckState = System.Windows.Forms.CheckState.Checked;
-            checkBoxColorA.Location = new System.Drawing.Point(387, 436);
+            checkBoxColorA.Location = new System.Drawing.Point(387, 427);
             checkBoxColorA.Name = "checkBoxColorA";
             checkBoxColorA.Size = new System.Drawing.Size(34, 19);
             checkBoxColorA.TabIndex = 56;
@@ -616,7 +619,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // checkBoxColorB
             // 
             checkBoxColorB.AutoSize = true;
-            checkBoxColorB.Location = new System.Drawing.Point(427, 436);
+            checkBoxColorB.Location = new System.Drawing.Point(427, 427);
             checkBoxColorB.Name = "checkBoxColorB";
             checkBoxColorB.Size = new System.Drawing.Size(33, 19);
             checkBoxColorB.TabIndex = 57;
@@ -627,7 +630,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // checkBoxColorC
             // 
             checkBoxColorC.AutoSize = true;
-            checkBoxColorC.Location = new System.Drawing.Point(466, 436);
+            checkBoxColorC.Location = new System.Drawing.Point(466, 427);
             checkBoxColorC.Name = "checkBoxColorC";
             checkBoxColorC.Size = new System.Drawing.Size(34, 19);
             checkBoxColorC.TabIndex = 58;
@@ -638,7 +641,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // checkBoxColorD
             // 
             checkBoxColorD.AutoSize = true;
-            checkBoxColorD.Location = new System.Drawing.Point(506, 436);
+            checkBoxColorD.Location = new System.Drawing.Point(506, 427);
             checkBoxColorD.Name = "checkBoxColorD";
             checkBoxColorD.Size = new System.Drawing.Size(34, 19);
             checkBoxColorD.TabIndex = 59;
@@ -649,7 +652,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // checkBoxColorE
             // 
             checkBoxColorE.AutoSize = true;
-            checkBoxColorE.Location = new System.Drawing.Point(544, 436);
+            checkBoxColorE.Location = new System.Drawing.Point(544, 427);
             checkBoxColorE.Name = "checkBoxColorE";
             checkBoxColorE.Size = new System.Drawing.Size(32, 19);
             checkBoxColorE.TabIndex = 60;
@@ -657,11 +660,45 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             checkBoxColorE.UseVisualStyleBackColor = true;
             checkBoxColorE.CheckedChanged += CheckBoxColor_CheckedChanged;
             // 
+            // listBoxLastCoordinates
+            // 
+            listBoxLastCoordinates.FormattingEnabled = true;
+            listBoxLastCoordinates.ItemHeight = 15;
+            listBoxLastCoordinates.Location = new System.Drawing.Point(215, 389);
+            listBoxLastCoordinates.Name = "listBoxLastCoordinates";
+            listBoxLastCoordinates.ScrollAlwaysVisible = true;
+            listBoxLastCoordinates.Size = new System.Drawing.Size(154, 94);
+            listBoxLastCoordinates.TabIndex = 61;
+            listBoxLastCoordinates.SelectedIndexChanged += listBoxLastCoordinates_SelectedIndexChanged;
+            // 
+            // btSaveLasCoordinates
+            // 
+            btSaveLasCoordinates.Location = new System.Drawing.Point(215, 340);
+            btSaveLasCoordinates.Name = "btSaveLasCoordinates";
+            btSaveLasCoordinates.Size = new System.Drawing.Size(75, 43);
+            btSaveLasCoordinates.TabIndex = 62;
+            btSaveLasCoordinates.Text = "Save \r\ncoordinates";
+            btSaveLasCoordinates.UseVisualStyleBackColor = true;
+            btSaveLasCoordinates.Click += btSaveLasCoordinates_Click;
+            // 
+            // btDeleteEntry
+            // 
+            btDeleteEntry.Location = new System.Drawing.Point(301, 360);
+            btDeleteEntry.Name = "btDeleteEntry";
+            btDeleteEntry.Size = new System.Drawing.Size(69, 23);
+            btDeleteEntry.TabIndex = 63;
+            btDeleteEntry.Text = "Delete";
+            btDeleteEntry.UseVisualStyleBackColor = true;
+            btDeleteEntry.Click += btDeleteEntry_Click;
+            // 
             // MapReplaceNewForm
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             ClientSize = new System.Drawing.Size(800, 520);
+            Controls.Add(btDeleteEntry);
+            Controls.Add(btSaveLasCoordinates);
+            Controls.Add(listBoxLastCoordinates);
             Controls.Add(checkBoxColorE);
             Controls.Add(checkBoxColorD);
             Controls.Add(checkBoxColorC);
@@ -773,5 +810,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private System.Windows.Forms.CheckBox checkBoxColorC;
         private System.Windows.Forms.CheckBox checkBoxColorD;
         private System.Windows.Forms.CheckBox checkBoxColorE;
+        private System.Windows.Forms.ListBox listBoxLastCoordinates;
+        private System.Windows.Forms.Button btSaveLasCoordinates;
+        private System.Windows.Forms.Button btDeleteEntry;
     }
 }

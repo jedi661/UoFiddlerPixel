@@ -9,6 +9,8 @@ using System.Drawing.Drawing2D;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Xml.Linq;
+using System.Linq;
 
 namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 {
@@ -26,7 +28,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             InitializeComponent();
             Icon = Options.GetFiddlerIcon();
             comboBoxMapID.BeginUpdate();
-            comboBoxMapID.EndUpdate();            
+            comboBoxMapID.EndUpdate();
 
             checkBoxMap0.Checked = true;
             checkBoxColorA.Checked = true;
@@ -38,10 +40,18 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             this.Controls.Add(this.checkBoxMap4);
             this.Controls.Add(this.checkBoxMap5);
             this.Controls.Add(this.checkBoxMap6);
-            this.Controls.Add(this.checkBoxMap7);            
+            this.Controls.Add(this.checkBoxMap7);
 
             mapPath = null;
+            this.Load += Form_Load;
         }
+
+        #region [ Form_Load ]
+        private void Form_Load(object sender, EventArgs e)
+        {
+            LoadCoordinatesToListBox();
+        }
+        #endregion
 
         #region [ SetWorkingMap ]
         public void SetWorkingMap(Map map)
@@ -715,7 +725,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         {
             FolderBrowserDialog dialog = new FolderBrowserDialog
             {
-                Description = "Wählen Sie das Verzeichnis aus, das die .mul-Dateien enthält",
+                Description = "Select the directory that contains the .mul files",
                 ShowNewFolderButton = false
             };
 
@@ -734,8 +744,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         }
         #endregion
 
-        #region [ UpdateMapComboBox ]       
-
+        #region [ UpdateMapComboBox ]
         private void UpdateMapComboBox()
         {
             comboBoxMapID.Items.Clear(); // Clear
@@ -1085,9 +1094,6 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 MessageBox.Show("No supported card type selected.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
-
-
-
         #endregion
 
         #region [ LoadRadarColors ]
@@ -1155,6 +1161,152 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             catch (Exception ex)
             {
                 MessageBox.Show($"Error loading test image: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+        #endregion
+
+        #region [ btSaveLasCoordinates ]
+        private void btSaveLasCoordinates_Click(object sender, EventArgs e)
+        {
+            string dataDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data");
+            string coordinatesDirectory = Path.Combine(dataDirectory, "Coordinates");
+            string xmlFilePath = Path.Combine(coordinatesDirectory, "LastCoordinates.xml");
+
+            // Create the directory if it doesn't exist
+            if (!Directory.Exists(coordinatesDirectory))
+            {
+                Directory.CreateDirectory(coordinatesDirectory);
+            }
+
+            // Ask the user for a name for the coordinates
+            string name = Microsoft.VisualBasic.Interaction.InputBox("Enter a name for the coordinates", "Enter name", "Default", -1, -1);
+
+            // Create an XElement with the coordinates
+            XElement coordinates = new XElement("Coordinates",
+                new XAttribute("Name", name),
+                new XElement("X1", numericUpDownX1.Value),
+                new XElement("X2", numericUpDownX2.Value),
+                new XElement("Y1", numericUpDownY1.Value),
+                new XElement("Y2", numericUpDownY2.Value)
+            );
+
+            XDocument doc;
+            // Load the XML file if it exists, otherwise create a new one
+            if (File.Exists(xmlFilePath))
+            {
+                doc = XDocument.Load(xmlFilePath);
+                doc.Root.Add(coordinates);
+            }
+            else
+            {
+                doc = new XDocument(new XElement("Root", coordinates));
+            }
+
+            // Save the XML file
+            doc.Save(xmlFilePath);
+
+            // Add the name to the ListBox
+            listBoxLastCoordinates.Items.Add(name);
+        }
+        #endregion
+
+        #region [ listBoxLastCoordinates_SelectedIndexChanged ]
+        private void listBoxLastCoordinates_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            string selectedName = listBoxLastCoordinates.SelectedItem.ToString();
+            string xmlFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data", "Coordinates", "LastCoordinates.xml");
+
+            // Load the XML file
+            XDocument doc = XDocument.Load(xmlFilePath);
+
+            // Find the coordinates with the selected name
+            XElement selectedCoordinates = doc.Root.Elements("Coordinates").FirstOrDefault(c => c.Attribute("Name").Value == selectedName);
+
+            // Set the values ​​of the numericUpDown controls
+            if (selectedCoordinates != null)
+            {
+                numericUpDownX1.Value = decimal.Parse(selectedCoordinates.Element("X1").Value);
+                numericUpDownX2.Value = decimal.Parse(selectedCoordinates.Element("X2").Value);
+                numericUpDownY1.Value = decimal.Parse(selectedCoordinates.Element("Y1").Value);
+                numericUpDownY2.Value = decimal.Parse(selectedCoordinates.Element("Y2").Value);
+            }
+        }
+        #endregion
+
+        #region [ LoadCoordinatesToListBox ]
+        private void LoadCoordinatesToListBox()
+        {
+            string xmlFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data", "Coordinates", "LastCoordinates.xml");
+
+            // Check if the XML file exists
+            if (File.Exists(xmlFilePath))
+            {
+                // Load the XML file
+                XDocument doc = XDocument.Load(xmlFilePath);
+
+                // Loop through each coordinate in the XML file
+                foreach (XElement coordinate in doc.Root.Elements("Coordinates"))
+                {
+                    // Add the name of the coordinate to the ListBox
+                    listBoxLastCoordinates.Items.Add(coordinate.Attribute("Name").Value);
+                }
+            }
+        }
+        #endregion
+
+        #region [ btDeleteEntry ]
+        private void btDeleteEntry_Click(object sender, EventArgs e)
+        {
+            // Check whether an entry is selected
+            if (listBoxLastCoordinates.SelectedItem != null)
+            {
+                string selectedName = listBoxLastCoordinates.SelectedItem.ToString();
+                string xmlFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data", "Coordinates", "LastCoordinates.xml");
+
+                // Load the XML file
+                XDocument doc = XDocument.Load(xmlFilePath);
+
+                // Find the coordinates with the selected name
+                XElement selectedCoordinates = doc.Root.Elements("Coordinates").FirstOrDefault(c => c.Attribute("Name").Value == selectedName);
+
+                // Check whether the selected coordinates were found
+                if (selectedCoordinates != null)
+                {
+                    // Remove the selected coordinates from the XML file
+                    selectedCoordinates.Remove();
+
+                    // Save the XML file
+                    doc.Save(xmlFilePath);
+                }
+
+                // Load the entries from the updated XML file
+                LoadEntriesFromXml();
+            }
+            else
+            {
+                MessageBox.Show("Please select an entry to delete.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+        #endregion
+
+        #region [ LoadEntriesFromXml ]
+        private void LoadEntriesFromXml()
+        {
+            listBoxLastCoordinates.Items.Clear();
+
+            string xmlFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data", "Coordinates", "LastCoordinates.xml");
+
+            // Check if the XML file exists
+            if (File.Exists(xmlFilePath))
+            {
+                // Load the XML file
+                XDocument doc = XDocument.Load(xmlFilePath);
+
+                // Add each entry in the XML file to the ListBox
+                foreach (XElement coordinates in doc.Root.Elements("Coordinates"))
+                {
+                    listBoxLastCoordinates.Items.Add(coordinates.Attribute("Name").Value);
+                }
             }
         }
         #endregion
