@@ -15,6 +15,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Media;
+using System.Text;
 using System.Runtime.CompilerServices;
 using System.Runtime.ConstrainedExecution;
 using System.Windows.Controls.Primitives;
@@ -23,6 +24,7 @@ using Ultima;
 using UoFiddler.Controls.Classes;
 using UoFiddler.Controls.Forms;
 using UoFiddler.Controls.Helpers;
+using System.Xml;
 
 namespace UoFiddler.Controls.UserControls
 {
@@ -31,47 +33,8 @@ namespace UoFiddler.Controls.UserControls
         public TileDataControl()
         {
             InitializeComponent();
-            SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer | ControlStyles.UserPaint, true);
-
-            // Add the presets to the ToolStripComboBox
-            // toolStripComboBox1.Items.Add("Wall"); //1
-            //toolStripComboBox1.Items.Add("Door-E-L"); //2
-            //toolStripComboBox1.Items.Add("Door-E-R"); //3
-            //toolStripComboBox1.Items.Add("Door-S-L"); //4
-            //toolStripComboBox1.Items.Add("Door-S-R"); //5
-            //toolStripComboBox1.Items.Add("Window"); //6
-            //toolStripComboBox1.Items.Add("Roof"); //7
-            //toolStripComboBox1.Items.Add("Floor"); //8
-            //toolStripComboBox1.Items.Add("Water"); //9
-            //toolStripComboBox1.Items.Add("Stairs-W"); //10
-            //toolStripComboBox1.Items.Add("Stairs-N"); //11
-            //toolStripComboBox1.Items.Add("Stairs-E"); //12
-            //toolStripComboBox1.Items.Add("Stairs-S"); //13
-            //toolStripComboBox1.Items.Add("Stairs-W-N"); //14
-            //toolStripComboBox1.Items.Add("Stairs-N-E"); //15
-            //toolStripComboBox1.Items.Add("Stairs-E-S"); //16
-            //toolStripComboBox1.Items.Add("Stairs-S-W"); //17
-            //toolStripComboBox1.Items.Add("Stairs-Block"); //18
-            //toolStripComboBox1.Items.Add("Container"); //19
-            //toolStripComboBox1.Items.Add("Lamp Post"); //20
-            //toolStripComboBox1.Items.Add("Fence"); //21
-            //toolStripComboBox1.Items.Add("Cave Wall"); //22
-            //toolStripComboBox1.Items.Add("Clothing"); //23
-            //toolStripComboBox1.Items.Add("Plant"); //24
-            //toolStripComboBox1.Items.Add("Chair-Small-5"); //25
-            //toolStripComboBox1.Items.Add("Chair-35"); //26
-            //toolStripComboBox1.Items.Add("Chair-Wood-8"); //27
-            //toolStripComboBox1.Items.Add("Chair-Throne-15"); //28
-            // checkedListBox2
-            //toolStripComboBox1.Items.Add("LandTile Land"); //29
-            //toolStripComboBox1.Items.Add("LandTile Water"); //30
-            //toolStripComboBox1.Items.Add("LandTile Mountain"); //31
-            // checkedListBox2 End
-            //Tree
-            //toolStripComboBox1.Items.Add("Tree"); //32
-            //Clear
-            //toolStripComboBox1.Items.Add("Clear"); //33
-            // Add an event handler for toolStripComboBox1's SelectedIndexChanged event
+            SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer | ControlStyles.UserPaint, true);            
+            AssignToolTipsToLabels();
 
             toolStripComboBox1.ComboBox.DrawMode = DrawMode.OwnerDrawFixed;
             toolStripComboBox1.ComboBox.DrawItem += new DrawItemEventHandler(toolStripComboBox1_DrawItem);
@@ -2302,6 +2265,128 @@ namespace UoFiddler.Controls.UserControls
             SearchName(searchByNameToolStripTextBox.Text, true, landTilesSelected);
         }
         #endregion
+
+        #region [ AssignToolTipsToLabels ]
+        private void AssignToolTipsToLabels()
+        {
+            // Statics
+            toolTipComponent.SetToolTip(nameLabel, GetDescription(nameLabel));
+            toolTipComponent.SetToolTip(animLabel, GetDescription(animLabel));
+            toolTipComponent.SetToolTip(weightLabel, GetDescription(weightLabel));
+            toolTipComponent.SetToolTip(layerLabel, GetDescription(layerLabel));
+            toolTipComponent.SetToolTip(quantityLabel, GetDescription(quantityLabel));
+            toolTipComponent.SetToolTip(valueLabel, GetDescription(valueLabel));
+            toolTipComponent.SetToolTip(stackOffLabel, GetDescription(stackOffLabel));
+            toolTipComponent.SetToolTip(hueLabel, GetDescription(hueLabel));
+            toolTipComponent.SetToolTip(unknown2Label, GetDescription(unknown2Label));
+            toolTipComponent.SetToolTip(miscDataLabel, GetDescription(miscDataLabel));
+            toolTipComponent.SetToolTip(heightLabel, GetDescription(heightLabel));
+            toolTipComponent.SetToolTip(unknown3Label, GetDescription(unknown3Label));
+
+            // Land Tiles
+            toolTipComponent.SetToolTip(landNameLabel, GetDescription(landNameLabel));
+            toolTipComponent.SetToolTip(landTexIdLabel, GetDescription(landTexIdLabel));
+        }
+        #endregion
+
+        private string GetDescription(object sender)
+        {
+            string description = string.Empty;
+
+            if (sender == nameLabel)
+            {
+                description = "This field is for the name of the item, which can be a maximum of 20 characters.";
+            }
+            else if (sender == animLabel)
+            {
+                description = "This field is for the animation ID associated with the item.";
+            }
+            else if (sender == weightLabel)
+            {
+                description = "This field is for the weight of the item.";
+            }
+            else if (sender == layerLabel)
+            {
+                description = new StringBuilder()
+                    .AppendLine("This field is for the layer of the item:")
+                    .AppendLine("")
+                    .AppendLine("1 One handed weapon")
+                    .AppendLine("2 Two handed weapon, shield, or misc.")
+                    .AppendLine("3 Shoes")
+                    .AppendLine("4 Pants")
+                    .AppendLine("5 Shirt")
+                    .AppendLine("6 Helm / Line")
+                    .AppendLine("7 Gloves")
+                    .AppendLine("8 Ring")
+                    .AppendLine("9 Talisman")
+                    .AppendLine("10 Neck")
+                    .AppendLine("11 Hair")
+                    .AppendLine("12 Waist (half apron)")
+                    .AppendLine("13 Torso (inner) (chest armor)")
+                    .AppendLine("14 Bracelet")
+                    .AppendLine("15 Unused (but backpackers for backpackers go to 21)")
+                    .AppendLine("16 Facial Hair")
+                    .AppendLine("17 Torso (middle) (surcoat, tunic, full apron, sash)")
+                    .AppendLine("18 Earrings")
+                    .AppendLine("19 Arms")
+                    .AppendLine("20 Back (cloak)")
+                    .AppendLine("21 Backpack")
+                    .AppendLine("22 Torso (outer) (robe)")
+                    .AppendLine("23 Legs (outer) (skirt / kilt)")
+                    .AppendLine("24 Legs (inner) (leg armor)")
+                    .AppendLine("25 Mount (horse, ostard, etc)")
+                    .AppendLine("26 NPC Buy Restock container")
+                    .AppendLine("27 NPC Buy no restock container")
+                    .AppendLine("28 NPC Sell container")
+                    .ToString();
+            }
+            else if (sender == quantityLabel)
+            {
+                description = "This field is for the quantity of the item.";
+            }
+            else if (sender == valueLabel)
+            {
+                description = "This field is for the value of the item.";
+            }
+            else if (sender == stackOffLabel)
+            {
+                description = new StringBuilder()
+                    .AppendLine("StackOff refers to the stacking offset in pixels when multiple items are stacked.")
+                    .AppendLine("A higher StackOff value means the items will appear further apart from each other within the stack.")
+                    .ToString();
+            }
+            else if (sender == hueLabel)
+            {
+                description = "This field is for the hue (color) of the item.";
+            }
+            else if (sender == unknown2Label)
+            {
+                description = "This field is for the second unknown value.";
+            }
+            else if (sender == miscDataLabel)
+            {
+                description = "Old UO Demo weapon template definition";
+            }
+            else if (sender == heightLabel)
+            {
+                description = "This field is for the height of the item.";
+            }
+            else if (sender == unknown3Label)
+            {
+                description = "This field is for the third unknown value.";
+            }
+            else if (sender == landNameLabel)
+            {
+                description = "This field is for the name of the land tile, which can be a maximum of 20 characters.";
+            }
+            else if (sender == landTexIdLabel)
+            {
+                description = "This field is for the texture ID associated with the land tile.";
+            }
+
+            return description;
+        }
+
 
         #region middle mouse button copying the settings in the tiledata
 
