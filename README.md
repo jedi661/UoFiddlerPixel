@@ -27,7 +27,7 @@ Version : 4.12.5
 - External Map Replace expanded in expansion.
 - Updated tab order for radar color tab
 - Added gif export to Dress and Animation tabs  (author KevinEady)
-- UOPacker plugin can now unpack multicollection.uop (author Stefano Merotta)
+- Added UOPacker plugin can now unpack multicollection.uop (author Stefano Merotta)
 - Added tooltips to tiledata tab (author Dragon Slayer)
 
 Version : 4.12.4
