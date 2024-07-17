@@ -1310,6 +1310,15 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             }
         }
         #endregion
+
+        #region [ OpenLastCoordinatesDirectoryButton ]
+        private void OpenLastCoordinatesDirectoryButton_Click(object sender, EventArgs e)
+        {            
+            string xmlFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data", "Coordinates", "LastCoordinates.xml");            
+            string directoryPath = Path.GetDirectoryName(xmlFilePath);            
+            Process.Start("explorer.exe", directoryPath);
+        }
+        #endregion
     }
 
     #region [ class Map ]

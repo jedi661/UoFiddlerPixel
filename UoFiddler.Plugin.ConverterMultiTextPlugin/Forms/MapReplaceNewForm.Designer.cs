@@ -94,6 +94,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             listBoxLastCoordinates = new System.Windows.Forms.ListBox();
             btSaveLasCoordinates = new System.Windows.Forms.Button();
             btDeleteEntry = new System.Windows.Forms.Button();
+            OpenLastCoordinatesDirectoryButton = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)numericUpDownToX1).BeginInit();
             ((System.ComponentModel.ISupportInitialize)numericUpDownToY1).BeginInit();
             ((System.ComponentModel.ISupportInitialize)numericUpDownY2).BeginInit();
@@ -417,7 +418,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // 
             // TestCord
             // 
-            TestCord.Location = new System.Drawing.Point(301, 340);
+            TestCord.Location = new System.Drawing.Point(387, 460);
             TestCord.Name = "TestCord";
             TestCord.Size = new System.Drawing.Size(69, 23);
             TestCord.TabIndex = 39;
@@ -673,9 +674,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // 
             // btSaveLasCoordinates
             // 
-            btSaveLasCoordinates.Location = new System.Drawing.Point(215, 340);
+            btSaveLasCoordinates.Location = new System.Drawing.Point(215, 338);
             btSaveLasCoordinates.Name = "btSaveLasCoordinates";
-            btSaveLasCoordinates.Size = new System.Drawing.Size(75, 43);
+            btSaveLasCoordinates.Size = new System.Drawing.Size(80, 45);
             btSaveLasCoordinates.TabIndex = 62;
             btSaveLasCoordinates.Text = "Save \r\ncoordinates";
             btSaveLasCoordinates.UseVisualStyleBackColor = true;
@@ -691,11 +692,22 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             btDeleteEntry.UseVisualStyleBackColor = true;
             btDeleteEntry.Click += btDeleteEntry_Click;
             // 
+            // OpenLastCoordinatesDirectoryButton
+            // 
+            OpenLastCoordinatesDirectoryButton.Location = new System.Drawing.Point(301, 338);
+            OpenLastCoordinatesDirectoryButton.Name = "OpenLastCoordinatesDirectoryButton";
+            OpenLastCoordinatesDirectoryButton.Size = new System.Drawing.Size(69, 23);
+            OpenLastCoordinatesDirectoryButton.TabIndex = 64;
+            OpenLastCoordinatesDirectoryButton.Text = "XML Dir";
+            OpenLastCoordinatesDirectoryButton.UseVisualStyleBackColor = true;
+            OpenLastCoordinatesDirectoryButton.Click += OpenLastCoordinatesDirectoryButton_Click;
+            // 
             // MapReplaceNewForm
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             ClientSize = new System.Drawing.Size(800, 520);
+            Controls.Add(OpenLastCoordinatesDirectoryButton);
             Controls.Add(btDeleteEntry);
             Controls.Add(btSaveLasCoordinates);
             Controls.Add(listBoxLastCoordinates);
@@ -813,5 +825,6 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private System.Windows.Forms.ListBox listBoxLastCoordinates;
         private System.Windows.Forms.Button btSaveLasCoordinates;
         private System.Windows.Forms.Button btDeleteEntry;
+        private System.Windows.Forms.Button OpenLastCoordinatesDirectoryButton;
     }
 }
