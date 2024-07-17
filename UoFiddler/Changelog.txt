@@ -16,8 +16,7 @@ Version : 4.12.5 #XG1
   - add filter and checkbox selections.
 - Add Copy hex address to clipboard.
 - Add Background water and grass added to the picture box in multis.
-- External Map Replace expanded in expansion.
-- Updated tab order for radar color tab
+- External Map Replace expanded in expansion.- 
 - Added gif export to Dress and Animation tabs  (author KevinEady)
 - Added UOPacker plugin can now unpack multicollection.uop (author Stefano Merotta)
 - Added tooltips to tiledata tab (author Dragon Slayer)
