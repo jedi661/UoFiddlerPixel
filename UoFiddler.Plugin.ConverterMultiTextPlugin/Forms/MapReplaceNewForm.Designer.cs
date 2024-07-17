@@ -86,6 +86,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             checkBoxCopyFile = new System.Windows.Forms.CheckBox();
             ButtonLoadTestImage = new System.Windows.Forms.Button();
             checkBoxShowMapMulPicturebox = new System.Windows.Forms.CheckBox();
+            checkBoxColorA = new System.Windows.Forms.CheckBox();
+            checkBoxColorB = new System.Windows.Forms.CheckBox();
+            checkBoxColorC = new System.Windows.Forms.CheckBox();
+            checkBoxColorD = new System.Windows.Forms.CheckBox();
+            checkBoxColorE = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)numericUpDownToX1).BeginInit();
             ((System.ComponentModel.ISupportInitialize)numericUpDownToY1).BeginInit();
             ((System.ComponentModel.ISupportInitialize)numericUpDownY2).BeginInit();
@@ -595,11 +600,73 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             checkBoxShowMapMulPicturebox.Text = "Show Map";
             checkBoxShowMapMulPicturebox.UseVisualStyleBackColor = true;
             // 
+            // checkBoxColorA
+            // 
+            checkBoxColorA.AutoSize = true;
+            checkBoxColorA.Checked = true;
+            checkBoxColorA.CheckState = System.Windows.Forms.CheckState.Checked;
+            checkBoxColorA.Location = new System.Drawing.Point(387, 436);
+            checkBoxColorA.Name = "checkBoxColorA";
+            checkBoxColorA.Size = new System.Drawing.Size(34, 19);
+            checkBoxColorA.TabIndex = 56;
+            checkBoxColorA.Text = "A";
+            checkBoxColorA.UseVisualStyleBackColor = true;
+            checkBoxColorA.CheckedChanged += CheckBoxColor_CheckedChanged;
+            // 
+            // checkBoxColorB
+            // 
+            checkBoxColorB.AutoSize = true;
+            checkBoxColorB.Location = new System.Drawing.Point(427, 436);
+            checkBoxColorB.Name = "checkBoxColorB";
+            checkBoxColorB.Size = new System.Drawing.Size(33, 19);
+            checkBoxColorB.TabIndex = 57;
+            checkBoxColorB.Text = "B";
+            checkBoxColorB.UseVisualStyleBackColor = true;
+            checkBoxColorB.CheckedChanged += CheckBoxColor_CheckedChanged;
+            // 
+            // checkBoxColorC
+            // 
+            checkBoxColorC.AutoSize = true;
+            checkBoxColorC.Location = new System.Drawing.Point(466, 436);
+            checkBoxColorC.Name = "checkBoxColorC";
+            checkBoxColorC.Size = new System.Drawing.Size(34, 19);
+            checkBoxColorC.TabIndex = 58;
+            checkBoxColorC.Text = "C";
+            checkBoxColorC.UseVisualStyleBackColor = true;
+            checkBoxColorC.CheckedChanged += CheckBoxColor_CheckedChanged;
+            // 
+            // checkBoxColorD
+            // 
+            checkBoxColorD.AutoSize = true;
+            checkBoxColorD.Location = new System.Drawing.Point(506, 436);
+            checkBoxColorD.Name = "checkBoxColorD";
+            checkBoxColorD.Size = new System.Drawing.Size(34, 19);
+            checkBoxColorD.TabIndex = 59;
+            checkBoxColorD.Text = "D";
+            checkBoxColorD.UseVisualStyleBackColor = true;
+            checkBoxColorD.CheckedChanged += CheckBoxColor_CheckedChanged;
+            // 
+            // checkBoxColorE
+            // 
+            checkBoxColorE.AutoSize = true;
+            checkBoxColorE.Location = new System.Drawing.Point(544, 436);
+            checkBoxColorE.Name = "checkBoxColorE";
+            checkBoxColorE.Size = new System.Drawing.Size(32, 19);
+            checkBoxColorE.TabIndex = 60;
+            checkBoxColorE.Text = "E";
+            checkBoxColorE.UseVisualStyleBackColor = true;
+            checkBoxColorE.CheckedChanged += CheckBoxColor_CheckedChanged;
+            // 
             // MapReplaceNewForm
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             ClientSize = new System.Drawing.Size(800, 520);
+            Controls.Add(checkBoxColorE);
+            Controls.Add(checkBoxColorD);
+            Controls.Add(checkBoxColorC);
+            Controls.Add(checkBoxColorB);
+            Controls.Add(checkBoxColorA);
             Controls.Add(checkBoxShowMapMulPicturebox);
             Controls.Add(ButtonLoadTestImage);
             Controls.Add(checkBoxCopyFile);
@@ -701,5 +768,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private System.Windows.Forms.CheckBox checkBoxCopyFile;
         private System.Windows.Forms.Button ButtonLoadTestImage;
         private System.Windows.Forms.CheckBox checkBoxShowMapMulPicturebox;
+        private System.Windows.Forms.CheckBox checkBoxColorA;
+        private System.Windows.Forms.CheckBox checkBoxColorB;
+        private System.Windows.Forms.CheckBox checkBoxColorC;
+        private System.Windows.Forms.CheckBox checkBoxColorD;
+        private System.Windows.Forms.CheckBox checkBoxColorE;
     }
 }

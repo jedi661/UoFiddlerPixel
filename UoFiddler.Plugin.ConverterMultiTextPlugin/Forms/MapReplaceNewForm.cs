@@ -5,7 +5,10 @@ using System.Windows.Forms;
 using Ultima;
 using UoFiddler.Controls.Classes;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
+using System.Collections.Generic;
+using System.Globalization;
 
 namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 {
@@ -16,15 +19,17 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private string _mulDirectoryPath;
         private string mapPath;
 
+        private Dictionary<int, Color> radarColors = new Dictionary<int, Color>();
+
         public MapReplaceNewForm()
         {
             InitializeComponent();
             Icon = Options.GetFiddlerIcon();
             comboBoxMapID.BeginUpdate();
-            comboBoxMapID.EndUpdate();
-            //comboBoxMapID.SelectedIndex = 0;
+            comboBoxMapID.EndUpdate();            
 
             checkBoxMap0.Checked = true;
+            checkBoxColorA.Checked = true;
 
             this.Controls.Add(this.checkBoxMap0);
             this.Controls.Add(this.checkBoxMap1);
@@ -842,7 +847,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         #region [ btnRenameFiles ]
         private void btnRenameFiles_Click(object sender, EventArgs e)
         {
-            // Überprüfen der Checkboxen und Umbenennen der Dateien entsprechend
+            // Check the checkboxes and rename the files accordingly
             RenameFileIfChecked(checkBoxMap0, 0);
             RenameFileIfChecked(checkBoxMap1, 1);
             RenameFileIfChecked(checkBoxMap2, 2);
@@ -911,13 +916,13 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         }
         #endregion
 
-        #region [ OnPaint ]
+        #region [ OnPaint ]  
         private void OnPaint(object sender, PaintEventArgs e)
         {
-            // Überprüfen Sie, ob die Checkbox aktiviert ist
+            // Check whether the checkbox is activated
             if (!checkBoxShowMapMulPicturebox.Checked)
             {
-                return; // Beenden Sie die Methode, wenn die Checkbox nicht aktiviert ist
+                return; // Exit the method if the checkbox is not checked
             }
 
             // Debugging output
@@ -932,6 +937,18 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             if (comboBoxMapID.SelectedItem is SupportedMaps selectedMap)
             {
                 string filePath = Path.Combine(mapPath, $"map{selectedMap.Id}.mul");
+                string huesFilePath = Path.Combine(mapPath, "hues.mul");
+                string radarColorPath = Path.Combine(mapPath, "RadarColor.csv");
+
+                if (File.Exists(radarColorPath))
+                {
+                    LoadRadarColors(radarColorPath);
+                }
+                else
+                {
+                    MessageBox.Show($"The file {radarColorPath} was not found.", "File error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
 
                 if (File.Exists(filePath))
                 {
@@ -942,26 +959,21 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                         int y1 = (int)numericUpDownY1.Value;
                         int y2 = (int)numericUpDownY2.Value;
 
-                        // Debugging output
                         Debug.WriteLine($"coordinates: x1={x1}, x2={x2}, y1={y1}, y2={y2}");
 
                         if (x1 < x2 && y1 < y2)
                         {
                             Rectangle section = new Rectangle(x1, y1, x2 - x1, y2 - y1);
-
-                            // Calculate the width and height of the map
                             int mapWidth = GetMapWidth(selectedMap.Id);
                             int mapHeight = GetMapHeight(selectedMap.Id);
+                            Hues hues = new Hues(huesFilePath);
 
-                            // Create a bitmap to draw the section of the map
                             using (Bitmap bitmap = new Bitmap(section.Width, section.Height))
                             {
-                                using (Graphics g = Graphics.FromImage(bitmap))
+                                using (Graphics graphics = Graphics.FromImage(bitmap))
                                 {
-                                    // Delete artboard
-                                    g.Clear(Color.Transparent);
+                                    graphics.Clear(Color.Transparent);
 
-                                    // Open the map file
                                     using (FileStream fs = new FileStream(filePath, FileMode.Open, FileAccess.Read))
                                     {
                                         using (BinaryReader reader = new BinaryReader(fs))
@@ -969,46 +981,87 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                                             int blockWidth = mapWidth / 8;
                                             int blockHeight = mapHeight / 8;
 
-                                            // Loop through the blocks in the section and draw them
                                             for (int y = y1; y < y2; y++)
                                             {
                                                 for (int x = x1; x < x2; x++)
                                                 {
-                                                    // Calculate the position of the block and cell
                                                     int xBlock = x / 8;
                                                     int yBlock = y / 8;
                                                     int blockNumber = xBlock * blockHeight + yBlock;
                                                     int xCell = x % 8;
                                                     int yCell = y % 8;
-
-                                                    // Calculate the position in the file for the current tile
                                                     long position = blockNumber * 196 + 4 + (yCell * 8 + xCell) * 3;
 
-                                                    // Make sure the position is within the file length
                                                     if (position + 3 > fs.Length)
                                                     {
                                                         continue;
                                                     }
 
                                                     fs.Seek(position, SeekOrigin.Begin);
-
-                                                    // Read the tile data
                                                     short tileId = reader.ReadInt16();
                                                     byte z = reader.ReadByte();
 
-                                                    // Debugging output
                                                     Debug.WriteLine($"TileID: {tileId}, x: {x}, y: {y}");
 
-                                                    // Draw the tile (to make things easier, we'll just fill a rectangle with a color based on the tileId)
-                                                    Color color = Color.FromArgb((tileId * 50) % 255, (tileId * 100) % 255, (tileId * 150) % 255);
-                                                    g.FillRectangle(new SolidBrush(color), x - x1, y - y1, 1, 1);
+                                                    Color color = Color.Gray; // Set the default color to gray
+
+                                                    try
+                                                    {
+                                                        Hues.Hue hue = hues.GetHue(tileId);
+                                                        ushort colorValue = hue.ColorTable[0];
+                                                        int r = (colorValue >> 10) & 0x1F;
+                                                        int g = (colorValue >> 5) & 0x1F;
+                                                        int b = colorValue & 0x1F;
+                                                        r = (r << 3) | (r >> 2);
+                                                        g = (g << 3) | (g >> 2);
+                                                        b = (b << 3) | (b >> 2);
+
+                                                        if (checkBoxColorA.Checked)
+                                                        {
+                                                            color = Color.FromArgb(r, b, g);
+                                                        }
+                                                        else if (checkBoxColorB.Checked)
+                                                        {
+                                                            color = Color.FromArgb(b, r, g);
+                                                        }
+                                                        else if (checkBoxColorC.Checked)
+                                                        {
+                                                            color = Color.FromArgb(g, b, r);
+                                                        }
+                                                        else if (checkBoxColorD.Checked)
+                                                        {
+                                                            double brightnessFactorR = 1.2;
+                                                            double brightnessFactorG = 1.2;
+                                                            double brightnessFactorB = 1.2;
+                                                            r = (int)Math.Min(r * brightnessFactorR, 255);
+                                                            g = (int)Math.Min(g * brightnessFactorG, 255);
+                                                            b = (int)Math.Min(b * brightnessFactorB, 255);
+                                                            color = Color.FromArgb(r, g, b);
+                                                        }
+                                                        else if (checkBoxColorE.Checked)
+                                                        {
+                                                            r = colorValue & 0x1F;
+                                                            g = colorValue & 0x1F;
+                                                            b = colorValue & 0x1F;
+                                                            r = (r << 3) | (r >> 2);
+                                                            g = (g << 3) | (g >> 2);
+                                                            b = (b << 3) | (b >> 2);
+                                                            color = Color.FromArgb(b, r, g);
+                                                        }
+                                                    }
+                                                    catch
+                                                    {
+                                                        // Use default gray color if hue is not found
+                                                        color = Color.Gray;
+                                                    }
+
+                                                    graphics.FillRectangle(new SolidBrush(color), x - x1, y - y1, 1, 1);
                                                 }
                                             }
                                         }
                                     }
                                 }
 
-                                // Draw the bitmap into the PictureBox, scaled appropriately
                                 e.Graphics.DrawImage(bitmap, new Rectangle(0, 0, pictureBoxMap.Width, pictureBoxMap.Height), new Rectangle(0, 0, bitmap.Width, bitmap.Height), GraphicsUnit.Pixel);
                             }
                         }
@@ -1030,6 +1083,49 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             else
             {
                 MessageBox.Show("No supported card type selected.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+
+
+        #endregion
+
+        #region [ LoadRadarColors ]
+        private void LoadRadarColors(string filePath) // Doesn't work, not installed yet.
+        {
+            var lines = File.ReadAllLines(filePath);
+            foreach (var line in lines)
+            {
+                var parts = line.Split(';');
+                if (parts.Length == 2 && int.TryParse(parts[0], NumberStyles.HexNumber, CultureInfo.InvariantCulture, out int id))
+                {
+                    int colorValue = int.Parse(parts[1]);
+                    radarColors[id] = Color.FromArgb(
+                        (colorValue >> 16) & 0xFF, // R
+                        (colorValue >> 8) & 0xFF,  // G
+                        colorValue & 0xFF          // B
+                    );
+                }
+            }
+        }
+        #endregion
+
+        #region [ CheckBoxColor_CheckedChanged ]
+        private void CheckBoxColor_CheckedChanged(object sender, EventArgs e)
+        {
+            if (sender is CheckBox changedCheckBox)
+            {
+                if (changedCheckBox.Checked)
+                {
+                    // Uncheck all other checkboxes
+                    foreach (CheckBox checkBox in new[] { checkBoxColorA, checkBoxColorB, checkBoxColorC, checkBoxColorD, checkBoxColorE })
+                    {
+                        if (checkBox != changedCheckBox)
+                        {
+                            checkBox.Checked = false;
+                        }
+                    }
+                }
             }
         }
         #endregion
@@ -1078,6 +1174,64 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             Id = id;
             Width = width;
             Height = height;
+        }
+    }
+    #endregion
+
+    #region [ class Hues ]
+    public class Hues
+    {
+        public class Hue
+        {
+            public ushort[] ColorTable { get; set; }
+            public ushort TableStart { get; set; }
+            public ushort TableEnd { get; set; }
+            public string Name { get; set; }
+        }
+
+        private List<Hue> hues = new List<Hue>();
+
+        public Hues(string path)
+        {
+            using (FileStream fs = new FileStream(path, FileMode.Open, FileAccess.Read))
+            {
+                using (BinaryReader reader = new BinaryReader(fs))
+                {
+                    while (fs.Position < fs.Length)
+                    {
+                        uint header = reader.ReadUInt32();
+                        Hue[] hueEntries = new Hue[8];
+
+                        for (int i = 0; i < 8; i++)
+                        {
+                            hueEntries[i] = new Hue
+                            {
+                                ColorTable = new ushort[32],
+                                TableStart = reader.ReadUInt16(),
+                                TableEnd = reader.ReadUInt16(),
+                                Name = new string(reader.ReadChars(20)).TrimEnd('\0')
+                            };
+
+                            for (int j = 0; j < 32; j++)
+                            {
+                                hueEntries[i].ColorTable[j] = reader.ReadUInt16();
+                            }
+                        }
+
+                        hues.AddRange(hueEntries);
+                    }
+                }
+            }
+        }
+
+        public Hue GetHue(int index)
+        {
+            if (index < 0 || index >= hues.Count)
+            {
+                throw new IndexOutOfRangeException("Invalid hue index.");
+            }
+
+            return hues[index];
         }
     }
     #endregion
