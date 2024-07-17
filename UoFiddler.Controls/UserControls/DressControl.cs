@@ -17,6 +17,7 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
+using AnimatedGif;
 using Ultima;
 using UoFiddler.Controls.Classes;
 using UoFiddler.Controls.Forms;
@@ -93,6 +94,8 @@ namespace UoFiddler.Controls.UserControls
 
         private readonly Point _drawPoint = new Point(0, 0);
         private Point _drawPointAni = new Point(100, 100);
+        private Size _animSize = new Size(0, 0);
+        private Point _minDrawPointAni = new Point(int.MaxValue, int.MaxValue);
 
         private object[] _layers = new object[25];
         private readonly bool[] _layerVisible = new bool[25];
@@ -111,11 +114,14 @@ namespace UoFiddler.Controls.UserControls
         private readonly int[] _hues = new int[25];
         private int _mount;
 
+        #region [ SetHue ]
         public void SetHue(int index, int color)
         {
             _hues[index] = color;
         }
+        #endregion
 
+        #region [ Reload ]
         /// <summary>
         /// Reload when loaded
         /// </summary>
@@ -165,7 +171,9 @@ namespace UoFiddler.Controls.UserControls
 
             OnLoad(this, EventArgs.Empty);
         }
+        #endregion
 
+        #region [ OnLoad ]
         private void OnLoad(object sender, EventArgs e)
         {
             if (IsAncestorSiteInDesignMode || FormsDesignerHelper.IsInDesignMode())
@@ -211,12 +219,16 @@ namespace UoFiddler.Controls.UserControls
             _loaded = true;
             Cursor.Current = Cursors.Default;
         }
+        #endregion
 
+        #region [ OnFilePathChangeEvent ]
         private void OnFilePathChangeEvent()
         {
             Reload();
         }
+        #endregion
 
+        #region [ DrawPaperdoll ]
         private void DrawPaperdoll()
         {
             if (!_showPd)
@@ -339,7 +351,9 @@ namespace UoFiddler.Controls.UserControls
             }
             DressPic.Invalidate();
         }
+        #endregion
 
+        #region [ DrawAnimation ]
         private void DrawAnimation()
         {
             if (_animate)
@@ -488,7 +502,9 @@ namespace UoFiddler.Controls.UserControls
             }
             DressPic.Invalidate();
         }
+        #endregion
 
+        #region [ DoAnimation ]
         private void DoAnimation()
         {
             if (_mTimer != null)
@@ -496,6 +512,8 @@ namespace UoFiddler.Controls.UserControls
                 return;
             }
 
+            _animSize = new Size(0, 0);
+            _minDrawPointAni = new Point(int.MaxValue, int.MaxValue);
             int hue = 0;
             int back = 0;
             if (!_female)
@@ -552,10 +570,10 @@ namespace UoFiddler.Controls.UserControls
 
             for (int i = 0; i < count; ++i)
             {
-                _animation[i] = new Bitmap(DressPic.Width, DressPic.Height);
+                _animation[i] = new Bitmap(DressPic.Width, DressPic.Height, PixelFormat.Format32bppArgb);
                 using (Graphics graph = Graphics.FromImage(_animation[i]))
                 {
-                    graph.Clear(Color.WhiteSmoke);
+                    graph.Clear(Color.Transparent);
                     if (_mount != 0)
                     {
                         if (_action >= 23 && _action <= 29) //mount animations
@@ -584,6 +602,10 @@ namespace UoFiddler.Controls.UserControls
                                 {
                                     draw.X = _drawPointAni.X - mountFrame[i].Center.X;
                                     draw.Y = _drawPointAni.Y - mountFrame[i].Center.Y - mountFrame[i].Bitmap.Height;
+                                    _minDrawPointAni.X = Math.Min(_minDrawPointAni.X, draw.X);
+                                    _minDrawPointAni.Y = Math.Min(_minDrawPointAni.Y, draw.Y);
+                                    _animSize.Width = Math.Max(_animSize.Width, draw.X + mountFrame[i].Bitmap.Width);
+                                    _animSize.Height = Math.Max(_animSize.Height, draw.Y + mountFrame[i].Bitmap.Height);
                                     graph.DrawImage(mountFrame[i].Bitmap, draw);
                                 }
                             }
@@ -591,6 +613,11 @@ namespace UoFiddler.Controls.UserControls
                     }
                     draw.X = _drawPointAni.X - mobile[i].Center.X;
                     draw.Y = _drawPointAni.Y - mobile[i].Center.Y - mobile[i].Bitmap.Height;
+                    _minDrawPointAni.X = Math.Min(_minDrawPointAni.X, draw.X);
+                    _minDrawPointAni.Y = Math.Min(_minDrawPointAni.Y, draw.Y);
+                    _animSize.Width = Math.Max(_animSize.Width, draw.X + mobile[i].Bitmap.Width);
+                    _animSize.Height = Math.Max(_animSize.Height, draw.Y + mobile[i].Bitmap.Height);
+
                     graph.DrawImage(mobile[i].Bitmap, draw);
                     for (int j = 1; j < animOrder.Length; ++j)
                     {
@@ -626,7 +653,10 @@ namespace UoFiddler.Controls.UserControls
 
                         draw.X = _drawPointAni.X - frames[i].Center.X;
                         draw.Y = _drawPointAni.Y - frames[i].Center.Y - frames[i].Bitmap.Height;
-
+                        _minDrawPointAni.X = Math.Min(_minDrawPointAni.X, draw.X);
+                        _minDrawPointAni.Y = Math.Min(_minDrawPointAni.Y, draw.Y);
+                        _animSize.Width = Math.Max(_animSize.Width, draw.X + frames[i].Bitmap.Width);
+                        _animSize.Height = Math.Max(_animSize.Height, draw.Y + frames[i].Bitmap.Height);
                         graph.DrawImage(frames[i].Bitmap, draw);
                     }
                 }
@@ -639,7 +669,9 @@ namespace UoFiddler.Controls.UserControls
             _mTimer.Tick += AnimTick;
             _mTimer.Start();
         }
+        #endregion
 
+        #region [ AnimTick ]
         private void AnimTick(object sender, EventArgs e)
         {
             ++_mFrameIndex;
@@ -656,11 +688,14 @@ namespace UoFiddler.Controls.UserControls
 
             using (Graphics graph = Graphics.FromImage(DressPic.Image))
             {
+                graph.Clear(Color.Transparent);
                 graph.DrawImage(_animation[_mFrameIndex], _drawPoint);
             }
             DressPic.Invalidate();
         }
+        #endregion
 
+        #region [ AfterSelectTreeView ]
         private void AfterSelectTreeView(object sender, TreeViewEventArgs e)
         {
             int ani = TileData.ItemTable[(int)e.Node.Tag].Animation;
@@ -726,7 +761,9 @@ namespace UoFiddler.Controls.UserControls
             TextBox.AppendText(
                 $"ValidLayer: {Array.IndexOf(_drawOrder, TileData.ItemTable[(int)e.Node.Tag].Quality) != -1}");
         }
+        #endregion
 
+        #region [ OnClick_Animate ]
         private void OnClick_Animate(object sender, EventArgs e)
         {
             _animate = !_animate;
@@ -735,7 +772,9 @@ namespace UoFiddler.Controls.UserControls
 
             RefreshDrawing();
         }
+        #endregion
 
+        #region [ OnChangeFemale ]
         private void OnChangeFemale(object sender, EventArgs e)
         {
             _female = !_female;
@@ -745,7 +784,9 @@ namespace UoFiddler.Controls.UserControls
                 RefreshDrawing();
             }
         }
+        #endregion
 
+        #region [ OnChangeHuman ]
         private void OnChangeHuman(object sender, EventArgs e)
         {
             _human = checkBoxHuman.Checked;
@@ -755,7 +796,9 @@ namespace UoFiddler.Controls.UserControls
                 RefreshDrawing();
             }
         }
+        #endregion
 
+        #region [ OnChangeElve ]
         private void OnChangeElve(object sender, EventArgs e)
         {
             _elve = checkBoxElve.Checked;
@@ -765,7 +808,9 @@ namespace UoFiddler.Controls.UserControls
                 RefreshDrawing();
             }
         }
+        #endregion
 
+        #region [ OnChangeGargoyle ]
         private void OnChangeGargoyle(object sender, EventArgs e)
         {
             _gargoyle = checkBoxGargoyle.Checked;
@@ -775,12 +820,16 @@ namespace UoFiddler.Controls.UserControls
                 RefreshDrawing();
             }
         }
+        #endregion
 
+        #region [ OnClick_Dress ]
         private void OnClick_Dress(object sender, EventArgs e)
         {
             DressItem();
         }
+        #endregion
 
+        #region [ DressItem ]
         private void DressItem()
         {
             if (treeViewItems.SelectedNode == null)
@@ -805,7 +854,9 @@ namespace UoFiddler.Controls.UserControls
 
             RefreshDrawing();
         }
+        #endregion
 
+        #region [ OnClick_UnDress ]
         private void OnClick_UnDress(object sender, EventArgs e)
         {
             if (checkedListBoxWear.SelectedIndex == -1)
@@ -821,7 +872,9 @@ namespace UoFiddler.Controls.UserControls
 
             RefreshDrawing();
         }
+        #endregion
 
+        #region [ OnClickUndressAll ]
         private void OnClickUndressAll(object sender, EventArgs e)
         {
             for (int i = 0; i < _layers.Length; ++i)
@@ -833,7 +886,9 @@ namespace UoFiddler.Controls.UserControls
 
             RefreshDrawing();
         }
+        #endregion
 
+        #region [ CheckedListBox_ItemCheck ]
         private void CheckedListBox_ItemCheck(object sender, ItemCheckEventArgs e)
         {
             if (!_loaded)
@@ -845,7 +900,9 @@ namespace UoFiddler.Controls.UserControls
 
             RefreshDrawing();
         }
+        #endregion
 
+        #region [ CheckedListBox_Change ]
         private void CheckedListBox_Change(object sender, EventArgs e)
         {
             if (checkedListBoxWear.SelectedIndex == -1)
@@ -890,12 +947,16 @@ namespace UoFiddler.Controls.UserControls
             TextBox.AppendText($"Animation: 0x{ani:X4} (0x{TileData.ItemTable[objType].Animation:X4})\n");
             TextBox.AppendText($"ValidGump: {Gumps.IsValidIndex(gumpId)} ValidAnim: {Animations.IsActionDefined(ani, 0, 0)}");
         }
+        #endregion
 
+        #region [ OnChangeSort ]
         private void OnChangeSort(object sender, EventArgs e)
         {
             treeViewItems.TreeViewNodeSorter = LayerSort.Checked ? new LayerSorter() : (IComparer)new ObjTypeSorter();
         }
+        #endregion
 
+        #region [ OnClick_ChangeDisplay ]
         private void OnClick_ChangeDisplay(object sender, EventArgs e)
         {
             _showPd = !_showPd;
@@ -915,7 +976,9 @@ namespace UoFiddler.Controls.UserControls
 
             RefreshDrawing();
         }
+        #endregion
 
+        #region [ BuildDressList ]
         private void BuildDressList()
         {
             treeViewItems.BeginUpdate();
@@ -974,7 +1037,9 @@ namespace UoFiddler.Controls.UserControls
 
             treeViewItems.EndUpdate();
         }
+        #endregion
 
+        #region [ RefreshDrawing ]
         public void RefreshDrawing()
         {
             if (_mTimer != null)
@@ -1001,7 +1066,9 @@ namespace UoFiddler.Controls.UserControls
 
             DrawPaperdoll();
         }
+        #endregion
 
+        #region [ OnScroll_Facing ]
         private void OnScroll_Facing(object sender, EventArgs e)
         {
             _facing = (FacingBar.Value - 3) & 7;
@@ -1010,7 +1077,9 @@ namespace UoFiddler.Controls.UserControls
 
             RefreshDrawing();
         }
+        #endregion
 
+        #region [ OnScroll_Action ]
         private void OnScroll_Action(object sender, EventArgs e)
         {
             string[] tip =
@@ -1057,7 +1126,9 @@ namespace UoFiddler.Controls.UserControls
 
             RefreshDrawing();
         }
+        #endregion
 
+        #region [ OnResizePictureDress ]
         private void OnResizePictureDress(object sender, EventArgs e)
         {
             if (treeViewItems.SelectedNode == null)
@@ -1068,7 +1139,9 @@ namespace UoFiddler.Controls.UserControls
             pictureBoxDress.Image = new Bitmap(pictureBoxDress.Width, pictureBoxDress.Height);
             AfterSelectTreeView(this, new TreeViewEventArgs(treeViewItems.SelectedNode));
         }
+        #endregion
 
+        #region [ OnResizeDressPic ]
         private void OnResizeDressPic(object sender, EventArgs e)
         {
             DressPic.Image = new Bitmap(DressPic.Width, DressPic.Height);
@@ -1077,7 +1150,9 @@ namespace UoFiddler.Controls.UserControls
                 RefreshDrawing();
             }
         }
+        #endregion
 
+        #region [  ConvertGump ]
         private static void ConvertGump(ref int gumpId, ref int hue)
         {
             if (!GumpTable.Entries.ContainsKey(gumpId))
@@ -1089,7 +1164,9 @@ namespace UoFiddler.Controls.UserControls
             hue = entry.NewHue;
             gumpId = entry.NewId;
         }
+        #endregion
 
+        #region [ ConvertBody ]
         private void ConvertBody(ref int animId, ref int gumpId, ref int hue)
         {
             if (!_elve)
@@ -1147,9 +1224,10 @@ namespace UoFiddler.Controls.UserControls
                 }
             }
         }
+        #endregion
 
-        private HuePopUpDress _showForm;
-
+        #region [ OnClickHue ]
+        private HuePopUpDress _showForm;        
         private void OnClickHue(object sender, EventArgs e)
         {
             if (checkedListBoxWear.SelectedIndex == -1)
@@ -1168,13 +1246,17 @@ namespace UoFiddler.Controls.UserControls
             };
             _showForm.Show();
         }
+        #endregion
 
+        #region [ ChangeHue ]
         private void ChangeHue(int hue)
         {
             SetHue(checkedListBoxWear.SelectedIndex, hue);
             RefreshDrawing();
         }
+        #endregion
 
+        #region [ OnKeyDownHue ]
         private void OnKeyDownHue(object sender, KeyEventArgs e)
         {
             if (e.KeyCode != Keys.Enter)
@@ -1195,27 +1277,37 @@ namespace UoFiddler.Controls.UserControls
             _hues[checkedListBoxWear.SelectedIndex] = index;
             RefreshDrawing();
         }
+        #endregion
 
+        #region [ OnClickExtractImageBmp ]
         private void OnClickExtractImageBmp(object sender, EventArgs e)
         {
             ExportImage(ImageFormat.Bmp);
         }
+        #endregion
 
+        #region [ OnClickExtractImageTiff ]
         private void OnClickExtractImageTiff(object sender, EventArgs e)
         {
             ExportImage(ImageFormat.Tiff);
         }
+        #endregion
 
+        #region [ OnClickExtractImageJpg ]
         private void OnClickExtractImageJpg(object sender, EventArgs e)
         {
             ExportImage(ImageFormat.Jpeg);
         }
+        #endregion
 
+        #region [ OnClickExtractImagePng ]
         private void OnClickExtractImagePng(object sender, EventArgs e)
         {
             ExportImage(ImageFormat.Png);
         }
+        #endregion
 
+        #region [ ExportImage ]
         private void ExportImage(ImageFormat imageFormat)
         {
             string outputPath = Options.OutputPath;
@@ -1244,27 +1336,37 @@ namespace UoFiddler.Controls.UserControls
                     MessageBoxIcon.Information, MessageBoxDefaultButton.Button1);
             }
         }
+        #endregion
 
+        #region [ OnClickExtractAnimBmp ]
         private void OnClickExtractAnimBmp(object sender, EventArgs e)
         {
             ExportAnimation(ImageFormat.Bmp);
         }
+        #endregion
 
+        #region [ OnClickExtractAnimTiff ]
         private void OnClickExtractAnimTiff(object sender, EventArgs e)
         {
             ExportAnimation(ImageFormat.Tiff);
         }
+        #endregion
 
+        #region [ OnClickExtractAnimJpg ]
         private void OnClickExtractAnimJpg(object sender, EventArgs e)
         {
             ExportAnimation(ImageFormat.Jpeg);
         }
+        #endregion
 
+        #region [ OnClickExtractAnimPng ]
         private void OnClickExtractAnimPng(object sender, EventArgs e)
         {
             ExportAnimation(ImageFormat.Png);
         }
+        #endregion
 
+        #region [ ExportAnimation ]
         private void ExportAnimation(ImageFormat imageFormat)
         {
             const string fileName = "Dress Anim";
@@ -1280,7 +1382,88 @@ namespace UoFiddler.Controls.UserControls
             MessageBox.Show($"InGame Anim saved to '{fileName}-X.{fileExtension}'", "Saved", MessageBoxButtons.OK,
                 MessageBoxIcon.Information, MessageBoxDefaultButton.Button1);
         }
+        #endregion
 
+        #region [ ExportAnimatedGif ]
+        private void ExportAnimatedGif(bool looping)
+        {
+            string outputFile = Path.Combine(Options.OutputPath, "Dress Anim.gif");
+
+            // Check if the file exists and if so, increase the name
+            outputFile = GetUniqueFileName(outputFile);
+
+            using (var gif = AnimatedGif.AnimatedGif.Create(outputFile, delay: 150))
+            {
+                foreach (var animation in _animation)
+                {
+                    if (animation != null)
+                    {
+                        using (Bitmap target = new Bitmap(_animSize.Width - _minDrawPointAni.X, _animSize.Height - _minDrawPointAni.Y))
+                        {
+                            using (Graphics g = Graphics.FromImage(target))
+                            {
+                                g.DrawImage(animation,
+                                    new Rectangle(new Point(0, 0), _animSize),
+                                    new Rectangle(_minDrawPointAni.X, _minDrawPointAni.Y, _animSize.Width, _animSize.Height),
+                                    GraphicsUnit.Pixel);
+                            }
+                            gif.AddFrame(target, delay: -1, quality: GifQuality.Bit8);
+                        }
+                    }
+                }
+            }
+
+            if (!looping)
+            {
+                using (var stream = new FileStream(outputFile, FileMode.Open, FileAccess.Write))
+                {
+                    stream.Seek(28, SeekOrigin.Begin);
+                    stream.WriteByte(0);
+                }
+            }
+
+            MessageBox.Show($"InGame Anim saved to {outputFile}", "Saved", MessageBoxButtons.OK,
+                MessageBoxIcon.Information, MessageBoxDefaultButton.Button1);
+        }
+        #endregion
+
+        #region [ GetUniqueFileName ]
+        private string GetUniqueFileName(string filePath)
+        {
+            if (!File.Exists(filePath))
+                return filePath;
+
+            string directory = Path.GetDirectoryName(filePath);
+            string filename = Path.GetFileNameWithoutExtension(filePath);
+            string extension = Path.GetExtension(filePath);
+
+            int count = 1;
+            string newFilePath;
+            do
+            {
+                newFilePath = Path.Combine(directory, $"{filename}{count}{extension}");
+                count++;
+            } while (File.Exists(newFilePath));
+
+            return newFilePath;
+        }
+        #endregion
+
+        #region [ OnClickExtractAnimGifLooping ]
+        private void OnClickExtractAnimGifLooping(object sender, EventArgs e)
+        {
+            ExportAnimatedGif(true);
+        }
+        #endregion
+
+        #region [ OnClickExtractAnimGifNoLooping ]
+        private void OnClickExtractAnimGifNoLooping(object sender, EventArgs e)
+        {
+            ExportAnimatedGif(false);
+        }
+        #endregion
+
+        #region [ OnClickBuildAnimationList ]
         private void OnClickBuildAnimationList(object sender, EventArgs e)
         {
             const int maximumAnimationValue = 2048;
@@ -1546,7 +1729,9 @@ namespace UoFiddler.Controls.UserControls
             MessageBox.Show($"Report saved to '{fileName}'", "Saved", MessageBoxButtons.OK, MessageBoxIcon.Information,
                 MessageBoxDefaultButton.Button1);
         }
+        #endregion
 
+        #region [ MountTextBoxOnKeyDown ]
         private void MountTextBoxOnKeyDown(object sender, KeyEventArgs e)
         {
             if (e.KeyCode != Keys.Enter)
@@ -1567,13 +1752,15 @@ namespace UoFiddler.Controls.UserControls
             _mount = index;
             RefreshDrawing();
         }
+        #endregion
 
+        #region [ SearchByName ]
         private readonly List<TreeNode> _searchResults = new List<TreeNode>();
 
         private int _lastNodeIndex;
 
         private string _lastSearchText;
-
+        
         private void SearchByName()
         {
             var searchText = SearchItemTextBox.Text.Trim();
@@ -1610,7 +1797,9 @@ namespace UoFiddler.Controls.UserControls
 
             treeViewItems.SelectedNode = selectedNode;
         }
+        #endregion
 
+        #region [ SearchNodes ]
         private void SearchNodes(string searchText, TreeNode startNode)
         {
             while (startNode != null)
@@ -1623,30 +1812,40 @@ namespace UoFiddler.Controls.UserControls
                 startNode = startNode.NextNode;
             }
         }
+        #endregion
 
+        #region [ SearchItemTextBox_KeyUp ]
         private void SearchItemTextBox_KeyUp(object sender, KeyEventArgs e)
         {
             SearchByName();
         }
+        #endregion
 
+        #region [ FindNextItemButton ]
         private void FindNextItemButton_Click(object sender, EventArgs e)
         {
             SearchByName();
         }
+        #endregion
 
+        #region [ TreeViewItems_DoubleClick ]
         private void TreeViewItems_DoubleClick(object sender, EventArgs e)
         {
             DressItem();
         }
+        #endregion
     }
 
+    #region [ class TranslateAnimEntry ]
     public class TranslateAnimEntry
     {
         public int FileIndex { get; set; }
         public int BodyAndConf { get; set; }
         public bool BodyDef { get; set; }
     }
+    #endregion
 
+    #region [ class AnimEntry ]
     public class AnimEntry
     {
         //public struct EquipTableDef { public int Gump; public int Anim; } // TODO: unused?
@@ -1664,7 +1863,9 @@ namespace UoFiddler.Controls.UserControls
             TranslateAnim = new Dictionary<int, TranslateAnimEntry>();
         }
     }
+    #endregion
 
+    #region [ class ObjTypeSorter ]
     public class ObjTypeSorter : IComparer
     {
         public int Compare(object x, object y)
@@ -1674,7 +1875,9 @@ namespace UoFiddler.Controls.UserControls
             return string.CompareOrdinal(tx?.Text, ty?.Text);
         }
     }
+    #endregion
 
+    #region [ class LayerSorter ]
     public class LayerSorter : IComparer
     {
         public int Compare(object x, object y)
@@ -1698,7 +1901,9 @@ namespace UoFiddler.Controls.UserControls
             return 1;
         }
     }
+    #endregion
 
+    #region [ static class GumpTable ]
     public static class GumpTable
     {
         public static Dictionary<int, GumpTableEntry> Entries { get; }
@@ -1752,7 +1957,9 @@ namespace UoFiddler.Controls.UserControls
             }
         }
     }
+    #endregion
 
+    #region [ class GumpTableEntry ]
     public class GumpTableEntry
     {
         public int OldId { get; }
@@ -1766,7 +1973,9 @@ namespace UoFiddler.Controls.UserControls
             NewHue = newHue;
         }
     }
+    #endregion
 
+    #region [ static class EquipTable ]
     public static class EquipTable
     {
         public static Dictionary<int, EquipTableEntry> HumanMale { get; }
@@ -1869,7 +2078,9 @@ namespace UoFiddler.Controls.UserControls
             }
         }
     }
+    #endregion
 
+    #region [ class EquipTableEntry ]
     public class EquipTableEntry
     {
         public int NewId { get; }
@@ -1883,4 +2094,5 @@ namespace UoFiddler.Controls.UserControls
             NewAnim = newAnim;
         }
     }
+    #endregion
 }
