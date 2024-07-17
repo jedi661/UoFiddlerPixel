@@ -19,6 +19,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using System.Xml;
+using AnimatedGif;
 using Ultima;
 using UoFiddler.Controls.Classes;
 using UoFiddler.Controls.Forms;
@@ -1340,6 +1341,126 @@ namespace UoFiddler.Controls.UserControls
                 // The shape is already open, so let's bring it to the foreground
                 editorForm.BringToFront();
             }
+        }
+        #endregion
+
+        #region [ LoadFramesFromListView ]
+        private void LoadFramesFromListView()
+        {
+            // Number of entries in the ListView
+            int count = listView1.Items.Count;
+
+            // Initialize the _frames array with the number of entries in the ListView
+            _frames = new AnimationFrame[count];
+
+            for (int i = 0; i < count; i++)
+            {
+                // Get the tag of the ListView item that represents the index of the frame
+                int frameIndex = (int)listView1.Items[i].Tag;
+
+                // Load the corresponding frame from _animationList
+                Bitmap frameBitmap = _animationList[frameIndex];
+
+                // Initialize the AnimationFrame with the bitmap
+                _frames[i] = new AnimationFrame { Bitmap = frameBitmap };
+            }
+        }
+        #endregion
+
+        #region [ ExportAnimatedGif ]
+        private void ExportAnimatedGif(bool looping)
+        {
+            // Check if the frames are loaded
+            if (_frames == null || _frames.Length == 0)
+            {
+                MessageBox.Show("Frames not loaded.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            string baseFileName = $"{(_displayType == 1 ? "Equipment" : "Mob")} {_currentSelect}.gif";
+            string outputFile = Path.Combine(Options.OutputPath, baseFileName);
+            int fileIndex = 1;
+
+            // Check whether the path exists and is writable
+            if (!Directory.Exists(Options.OutputPath))
+            {
+                MessageBox.Show($"OutputPath {Options.OutputPath} does not exist.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            // Increment the filename if the file already exists
+            while (File.Exists(outputFile))
+            {
+                outputFile = Path.Combine(Options.OutputPath, $"{(_displayType == 1 ? "Equipment" : "Mob")} {_currentSelect} ({fileIndex}).gif");
+                fileIndex++;
+            }
+
+            try
+            {
+                var maxFrameSize = new Size(0, 0);
+
+                foreach (var frame in _frames)
+                {
+                    if (frame?.Bitmap != null)
+                    {
+                        maxFrameSize.Width = Math.Max(maxFrameSize.Width, frame.Bitmap.Width);
+                        maxFrameSize.Height = Math.Max(maxFrameSize.Height, frame.Bitmap.Height);
+                    }
+                }
+
+                using (var gif = AnimatedGif.AnimatedGif.Create(outputFile, delay: 150))
+                {
+                    foreach (var frame in _frames)
+                    {
+                        if (frame?.Bitmap == null)
+                        {
+                            continue;
+                        }
+
+                        using (Bitmap target = new Bitmap(maxFrameSize.Width, maxFrameSize.Height))
+                        {
+                            using (Graphics g = Graphics.FromImage(target))
+                            {
+                                g.DrawImage(frame.Bitmap, 0, 0);
+                            }
+                            gif.AddFrame(target, delay: -1, quality: GifQuality.Bit8);
+                        }
+                    }
+                }
+
+                if (!looping)
+                {
+                    using (var stream = new FileStream(outputFile, FileMode.Open, FileAccess.Write))
+                    {
+                        stream.Seek(28, SeekOrigin.Begin);
+                        stream.WriteByte(0);
+                    }
+                }
+
+                MessageBox.Show($"InGame Anim saved in {outputFile}", "Saved", MessageBoxButtons.OK,
+                    MessageBoxIcon.Information, MessageBoxDefaultButton.Button1);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error creating GIF: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+        #endregion
+
+        #region [ OnClickExtractAnimGifLooping ]
+        private void OnClickExtractAnimGifLooping(object sender, EventArgs e)
+        {
+            // Load frames from the ListView
+            LoadFramesFromListView();
+            ExportAnimatedGif(true);
+        }
+        #endregion
+
+        #region [ OnClickExtractAnimGifNoLooping ]
+        private void OnClickExtractAnimGifNoLooping(object sender, EventArgs e)
+        {            
+            LoadFramesFromListView();
+            ExportAnimatedGif(false);
         }
         #endregion
     }

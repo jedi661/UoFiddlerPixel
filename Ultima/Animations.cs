@@ -545,9 +545,11 @@ namespace Ultima
         private const int _doubleXor = (0x200 << 22) | (0x200 << 12);
 
         public static readonly AnimationFrame Empty = new AnimationFrame();
+        private Bitmap _bitmap;
+
         //public static readonly AnimationFrame[] EmptyFrames = new AnimationFrame[1] { Empty };
 
-        private AnimationFrame()
+        public AnimationFrame() // from private to public
         {
             Bitmap = new Bitmap(1, 1);
         }
@@ -617,6 +619,11 @@ namespace Ultima
 
             Center = new Point(xCenter, yCenter);
             Bitmap = bmp;
+        }
+
+        public AnimationFrame(Bitmap bitmap)
+        {
+            _bitmap = bitmap;
         }
     }
 }

@@ -60,6 +60,8 @@ namespace UoFiddler.Controls.UserControls
             asTiffToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             asJpgToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             asPngToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
+            asAnimatedGifToolStripMenuItemToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            asAnimatedGifnoLoopingToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             animateToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             tabPage2 = new System.Windows.Forms.TabPage();
             listView = new System.Windows.Forms.ListView();
@@ -87,6 +89,7 @@ namespace UoFiddler.Controls.UserControls
             BaseGraphicLabel = new System.Windows.Forms.ToolStripStatusLabel();
             HueLabel = new System.Windows.Forms.ToolStripStatusLabel();
             toolStripStatusAminLabel = new System.Windows.Forms.ToolStripStatusLabel();
+            toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             ((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
             splitContainer1.Panel1.SuspendLayout();
             splitContainer1.Panel2.SuspendLayout();
@@ -142,13 +145,13 @@ namespace UoFiddler.Controls.UserControls
             // 
             contextMenuStrip2.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { removeToolStripMenuItem, animationlistEditToolStripMenuItem });
             contextMenuStrip2.Name = "contextMenuStrip2";
-            contextMenuStrip2.Size = new System.Drawing.Size(181, 70);
+            contextMenuStrip2.Size = new System.Drawing.Size(169, 48);
             // 
             // removeToolStripMenuItem
             // 
             removeToolStripMenuItem.Image = Properties.Resources.Remove;
             removeToolStripMenuItem.Name = "removeToolStripMenuItem";
-            removeToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            removeToolStripMenuItem.Size = new System.Drawing.Size(168, 22);
             removeToolStripMenuItem.Text = "Remove";
             removeToolStripMenuItem.ToolTipText = "Remove Animate";
             removeToolStripMenuItem.Click += OnClickRemove;
@@ -157,7 +160,7 @@ namespace UoFiddler.Controls.UserControls
             // 
             animationlistEditToolStripMenuItem.Image = Properties.Resources.Edit;
             animationlistEditToolStripMenuItem.Name = "animationlistEditToolStripMenuItem";
-            animationlistEditToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            animationlistEditToolStripMenuItem.Size = new System.Drawing.Size(168, 22);
             animationlistEditToolStripMenuItem.Text = "Animationlist Edit";
             animationlistEditToolStripMenuItem.ToolTipText = "Open Animationlist Edit Form";
             animationlistEditToolStripMenuItem.Click += animationlistEditToolStripMenuItem_Click;
@@ -167,7 +170,7 @@ namespace UoFiddler.Controls.UserControls
             FacingBar.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
             FacingBar.AutoSize = false;
             FacingBar.LargeChange = 1;
-            FacingBar.Location = new System.Drawing.Point(373, 363);
+            FacingBar.Location = new System.Drawing.Point(369, 363);
             FacingBar.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             FacingBar.Maximum = 7;
             FacingBar.Name = "FacingBar";
@@ -217,14 +220,14 @@ namespace UoFiddler.Controls.UserControls
             // 
             contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { extractImageToolStripMenuItem, extractAnimationToolStripMenuItem, animateToolStripMenuItem1 });
             contextMenuStrip1.Name = "contextMenuStrip1";
-            contextMenuStrip1.Size = new System.Drawing.Size(174, 70);
+            contextMenuStrip1.Size = new System.Drawing.Size(181, 92);
             // 
             // extractImageToolStripMenuItem
             // 
             extractImageToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { asBMpToolStripMenuItem, asTiffToolStripMenuItem, asJpgToolStripMenuItem, asPngToolStripMenuItem2 });
             extractImageToolStripMenuItem.Image = Properties.Resources.Export;
             extractImageToolStripMenuItem.Name = "extractImageToolStripMenuItem";
-            extractImageToolStripMenuItem.Size = new System.Drawing.Size(173, 22);
+            extractImageToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             extractImageToolStripMenuItem.Text = "Export Image..";
             extractImageToolStripMenuItem.ToolTipText = "Export Images";
             // 
@@ -258,46 +261,66 @@ namespace UoFiddler.Controls.UserControls
             // 
             // extractAnimationToolStripMenuItem
             // 
-            extractAnimationToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { asBmpToolStripMenuItem1, asTiffToolStripMenuItem1, asJpgToolStripMenuItem1, asPngToolStripMenuItem1 });
+            extractAnimationToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { asBmpToolStripMenuItem1, asTiffToolStripMenuItem1, asJpgToolStripMenuItem1, asPngToolStripMenuItem1, toolStripSeparator2, asAnimatedGifToolStripMenuItemToolStripMenuItem, asAnimatedGifnoLoopingToolStripMenuItem });
             extractAnimationToolStripMenuItem.Image = Properties.Resources.Export;
             extractAnimationToolStripMenuItem.Name = "extractAnimationToolStripMenuItem";
-            extractAnimationToolStripMenuItem.Size = new System.Drawing.Size(173, 22);
+            extractAnimationToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             extractAnimationToolStripMenuItem.Text = "Export Animation..";
             extractAnimationToolStripMenuItem.ToolTipText = "Export Animate Images";
             // 
             // asBmpToolStripMenuItem1
             // 
+            asBmpToolStripMenuItem1.Image = Properties.Resources.Image;
             asBmpToolStripMenuItem1.Name = "asBmpToolStripMenuItem1";
-            asBmpToolStripMenuItem1.Size = new System.Drawing.Size(115, 22);
+            asBmpToolStripMenuItem1.Size = new System.Drawing.Size(227, 22);
             asBmpToolStripMenuItem1.Text = "As Bmp";
             asBmpToolStripMenuItem1.Click += OnClickExtractAnimBmp;
             // 
             // asTiffToolStripMenuItem1
             // 
+            asTiffToolStripMenuItem1.Image = Properties.Resources.Image;
             asTiffToolStripMenuItem1.Name = "asTiffToolStripMenuItem1";
-            asTiffToolStripMenuItem1.Size = new System.Drawing.Size(115, 22);
+            asTiffToolStripMenuItem1.Size = new System.Drawing.Size(227, 22);
             asTiffToolStripMenuItem1.Text = "As Tiff";
             asTiffToolStripMenuItem1.Click += OnClickExtractAnimTiff;
             // 
             // asJpgToolStripMenuItem1
             // 
+            asJpgToolStripMenuItem1.Image = Properties.Resources.Image;
             asJpgToolStripMenuItem1.Name = "asJpgToolStripMenuItem1";
-            asJpgToolStripMenuItem1.Size = new System.Drawing.Size(115, 22);
+            asJpgToolStripMenuItem1.Size = new System.Drawing.Size(227, 22);
             asJpgToolStripMenuItem1.Text = "As Jpg";
             asJpgToolStripMenuItem1.Click += OnClickExtractAnimJpg;
             // 
             // asPngToolStripMenuItem1
             // 
+            asPngToolStripMenuItem1.Image = Properties.Resources.Image;
             asPngToolStripMenuItem1.Name = "asPngToolStripMenuItem1";
-            asPngToolStripMenuItem1.Size = new System.Drawing.Size(115, 22);
+            asPngToolStripMenuItem1.Size = new System.Drawing.Size(227, 22);
             asPngToolStripMenuItem1.Text = "As Png";
             asPngToolStripMenuItem1.Click += OnClickExtractAnimPng;
+            // 
+            // asAnimatedGifToolStripMenuItemToolStripMenuItem
+            // 
+            asAnimatedGifToolStripMenuItemToolStripMenuItem.Image = Properties.Resources.Animate;
+            asAnimatedGifToolStripMenuItemToolStripMenuItem.Name = "asAnimatedGifToolStripMenuItemToolStripMenuItem";
+            asAnimatedGifToolStripMenuItemToolStripMenuItem.Size = new System.Drawing.Size(227, 22);
+            asAnimatedGifToolStripMenuItemToolStripMenuItem.Text = "As animated Gif (looping)";
+            asAnimatedGifToolStripMenuItemToolStripMenuItem.Click += OnClickExtractAnimGifLooping;
+            // 
+            // asAnimatedGifnoLoopingToolStripMenuItem
+            // 
+            asAnimatedGifnoLoopingToolStripMenuItem.Image = Properties.Resources.Animate;
+            asAnimatedGifnoLoopingToolStripMenuItem.Name = "asAnimatedGifnoLoopingToolStripMenuItem";
+            asAnimatedGifnoLoopingToolStripMenuItem.Size = new System.Drawing.Size(227, 22);
+            asAnimatedGifnoLoopingToolStripMenuItem.Text = "As animated Gif (no looping)";
+            asAnimatedGifnoLoopingToolStripMenuItem.Click += OnClickExtractAnimGifNoLooping;
             // 
             // animateToolStripMenuItem1
             // 
             animateToolStripMenuItem1.Image = Properties.Resources.Animate;
             animateToolStripMenuItem1.Name = "animateToolStripMenuItem1";
-            animateToolStripMenuItem1.Size = new System.Drawing.Size(173, 22);
+            animateToolStripMenuItem1.Size = new System.Drawing.Size(180, 22);
             animateToolStripMenuItem1.Text = "Animate";
             animateToolStripMenuItem1.ToolTipText = "Start Animate";
             animateToolStripMenuItem1.Click += Animate_Click;
@@ -538,6 +561,11 @@ namespace UoFiddler.Controls.UserControls
             toolStripStatusAminLabel.Text = "Amin:";
             toolStripStatusAminLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
+            // toolStripSeparator2
+            // 
+            toolStripSeparator2.Name = "toolStripSeparator2";
+            toolStripSeparator2.Size = new System.Drawing.Size(224, 6);
+            // 
             // AnimationListControl
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -615,5 +643,8 @@ namespace UoFiddler.Controls.UserControls
         private System.Windows.Forms.ToolStripMenuItem tryToFindNewGraphicsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem animationEditToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem animationlistEditToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem asAnimatedGifToolStripMenuItemToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem asAnimatedGifnoLoopingToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
     }
 }
