@@ -1732,7 +1732,7 @@ namespace UoFiddler.Controls.UserControls
         #region [ SelectInGumpsTab ]
         private const int _maleGumpOffset = 50_000;
         private const int _femaleGumpOffset = 60_000;
-        
+
         private static void SelectInGumpsTab(int tiledataIndex, bool female = false)
         {
             int gumpOffset = female ? _femaleGumpOffset : _maleGumpOffset;
@@ -2858,31 +2858,46 @@ namespace UoFiddler.Controls.UserControls
 
         #region [ lbChairInfo_Click ]
         private void lbChairInfo_Click(object sender, EventArgs e)
-        {            
+        {
             Image image = Properties.Resources.MakeChairsUseable;
-            
+
             Form form = new Form
-            {                
+            {
                 ClientSize = image.Size,
                 ShowIcon = false
             };
-           
+
             PictureBox pictureBox = new PictureBox
             {
                 Image = image,
                 SizeMode = PictureBoxSizeMode.AutoSize
             };
-            
+
             Panel panel = new Panel
             {
                 Dock = DockStyle.Fill,
                 AutoScroll = true
             };
             panel.Controls.Add(pictureBox);
-            
+
             form.Controls.Add(panel);
-            
+
             form.Show();
+        }
+        #endregion
+
+        #region [ findToolStripMenuItem ]
+        private void findToolStripMenuItem_Click(object sender, EventArgs e)
+        {            
+            string searchText = toolStripTextBoxFindText.Text;
+            
+            int index = richTextBoxEdit.Find(searchText);
+            
+            if (index != -1)
+            {                
+                richTextBoxEdit.Select(index, searchText.Length);                
+                richTextBoxEdit.Focus();
+            }
         }
         #endregion
     }

@@ -143,6 +143,9 @@ namespace UoFiddler.Controls.UserControls
             splitContainerCuo = new System.Windows.Forms.SplitContainer();
             panelEdit = new System.Windows.Forms.Panel();
             richTextBoxEdit = new System.Windows.Forms.RichTextBox();
+            contextMenuStripCou = new System.Windows.Forms.ContextMenuStrip(components);
+            findToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            toolStripTextBoxFindText = new System.Windows.Forms.ToolStripTextBox();
             buttonLoadTxt = new System.Windows.Forms.Button();
             lbcomboBoxLoadText = new System.Windows.Forms.Label();
             tbClassicUOPfad = new System.Windows.Forms.TextBox();
@@ -190,6 +193,7 @@ namespace UoFiddler.Controls.UserControls
             splitContainerCuo.Panel2.SuspendLayout();
             splitContainerCuo.SuspendLayout();
             panelEdit.SuspendLayout();
+            contextMenuStripCou.SuspendLayout();
             SuspendLayout();
             // 
             // ItemsContextMenuStrip
@@ -1240,12 +1244,33 @@ namespace UoFiddler.Controls.UserControls
             // 
             // richTextBoxEdit
             // 
+            richTextBoxEdit.ContextMenuStrip = contextMenuStripCou;
             richTextBoxEdit.Dock = System.Windows.Forms.DockStyle.Fill;
             richTextBoxEdit.Location = new System.Drawing.Point(0, 0);
             richTextBoxEdit.Name = "richTextBoxEdit";
             richTextBoxEdit.Size = new System.Drawing.Size(392, 482);
             richTextBoxEdit.TabIndex = 2;
             richTextBoxEdit.Text = "";
+            // 
+            // contextMenuStripCou
+            // 
+            contextMenuStripCou.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { findToolStripMenuItem });
+            contextMenuStripCou.Name = "contextMenuStripCou";
+            contextMenuStripCou.Size = new System.Drawing.Size(181, 48);
+            // 
+            // findToolStripMenuItem
+            // 
+            findToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { toolStripTextBoxFindText });
+            findToolStripMenuItem.Image = Properties.Resources.Edit;
+            findToolStripMenuItem.Name = "findToolStripMenuItem";
+            findToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            findToolStripMenuItem.Text = "Find";
+            findToolStripMenuItem.Click += findToolStripMenuItem_Click;
+            // 
+            // toolStripTextBoxFindText
+            // 
+            toolStripTextBoxFindText.Name = "toolStripTextBoxFindText";
+            toolStripTextBoxFindText.Size = new System.Drawing.Size(100, 23);
             // 
             // buttonLoadTxt
             // 
@@ -1301,9 +1326,9 @@ namespace UoFiddler.Controls.UserControls
             lbpathtosetCuotext.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
             lbpathtosetCuotext.Location = new System.Drawing.Point(30, 15);
             lbpathtosetCuotext.Name = "lbpathtosetCuotext";
-            lbpathtosetCuotext.Size = new System.Drawing.Size(197, 15);
+            lbpathtosetCuotext.Size = new System.Drawing.Size(234, 15);
             lbpathtosetCuotext.TabIndex = 6;
-            lbpathtosetCuotext.Text = "Set the path to the Cuo directory :";
+            lbpathtosetCuotext.Text = "Set the path to the Cuo directory (Data) :";
             // 
             // btSaveTxtCuo
             // 
@@ -1372,6 +1397,7 @@ namespace UoFiddler.Controls.UserControls
             ((System.ComponentModel.ISupportInitialize)splitContainerCuo).EndInit();
             splitContainerCuo.ResumeLayout(false);
             panelEdit.ResumeLayout(false);
+            contextMenuStripCou.ResumeLayout(false);
             ResumeLayout(false);
             PerformLayout();
         }
@@ -1488,5 +1514,8 @@ namespace UoFiddler.Controls.UserControls
         private System.Windows.Forms.Label lbChairInfo;
         private System.Windows.Forms.Label lbcomboBoxLoadText;
         private System.Windows.Forms.SplitContainer splitContainerCuo;
+        private System.Windows.Forms.ContextMenuStrip contextMenuStripCou;
+        private System.Windows.Forms.ToolStripMenuItem findToolStripMenuItem;
+        private System.Windows.Forms.ToolStripTextBox toolStripTextBoxFindText;
     }
 }
