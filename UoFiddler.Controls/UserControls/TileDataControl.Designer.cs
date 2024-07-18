@@ -139,6 +139,17 @@ namespace UoFiddler.Controls.UserControls
             label2 = new System.Windows.Forms.Label();
             checkedListBox1 = new System.Windows.Forms.CheckedListBox();
             tabcontrol = new System.Windows.Forms.TabControl();
+            tabPageCouEdit = new System.Windows.Forms.TabPage();
+            splitContainerCuo = new System.Windows.Forms.SplitContainer();
+            panelEdit = new System.Windows.Forms.Panel();
+            richTextBoxEdit = new System.Windows.Forms.RichTextBox();
+            buttonLoadTxt = new System.Windows.Forms.Button();
+            lbcomboBoxLoadText = new System.Windows.Forms.Label();
+            tbClassicUOPfad = new System.Windows.Forms.TextBox();
+            lbChairInfo = new System.Windows.Forms.Label();
+            comboBoxLoadText = new System.Windows.Forms.ComboBox();
+            lbpathtosetCuotext = new System.Windows.Forms.Label();
+            btSaveTxtCuo = new System.Windows.Forms.Button();
             toolTipComponent = new System.Windows.Forms.ToolTip(components);
             ItemsContextMenuStrip.SuspendLayout();
             LandTilesContextMenuStrip.SuspendLayout();
@@ -173,6 +184,12 @@ namespace UoFiddler.Controls.UserControls
             splitContainer3.Panel2.SuspendLayout();
             splitContainer3.SuspendLayout();
             tabcontrol.SuspendLayout();
+            tabPageCouEdit.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)splitContainerCuo).BeginInit();
+            splitContainerCuo.Panel1.SuspendLayout();
+            splitContainerCuo.Panel2.SuspendLayout();
+            splitContainerCuo.SuspendLayout();
+            panelEdit.SuspendLayout();
             SuspendLayout();
             // 
             // ItemsContextMenuStrip
@@ -1169,6 +1186,7 @@ namespace UoFiddler.Controls.UserControls
             // 
             tabcontrol.Controls.Add(tabPageItems);
             tabcontrol.Controls.Add(tabPageLand);
+            tabcontrol.Controls.Add(tabPageCouEdit);
             tabcontrol.Dock = System.Windows.Forms.DockStyle.Fill;
             tabcontrol.Location = new System.Drawing.Point(0, 25);
             tabcontrol.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
@@ -1176,6 +1194,127 @@ namespace UoFiddler.Controls.UserControls
             tabcontrol.SelectedIndex = 0;
             tabcontrol.Size = new System.Drawing.Size(759, 516);
             tabcontrol.TabIndex = 0;
+            // 
+            // tabPageCouEdit
+            // 
+            tabPageCouEdit.Controls.Add(splitContainerCuo);
+            tabPageCouEdit.Location = new System.Drawing.Point(4, 24);
+            tabPageCouEdit.Name = "tabPageCouEdit";
+            tabPageCouEdit.Padding = new System.Windows.Forms.Padding(3);
+            tabPageCouEdit.Size = new System.Drawing.Size(751, 488);
+            tabPageCouEdit.TabIndex = 2;
+            tabPageCouEdit.Text = "Edit CUO .txt Files";
+            tabPageCouEdit.UseVisualStyleBackColor = true;
+            // 
+            // splitContainerCuo
+            // 
+            splitContainerCuo.Dock = System.Windows.Forms.DockStyle.Fill;
+            splitContainerCuo.Location = new System.Drawing.Point(3, 3);
+            splitContainerCuo.Name = "splitContainerCuo";
+            // 
+            // splitContainerCuo.Panel1
+            // 
+            splitContainerCuo.Panel1.Controls.Add(panelEdit);
+            // 
+            // splitContainerCuo.Panel2
+            // 
+            splitContainerCuo.Panel2.Controls.Add(buttonLoadTxt);
+            splitContainerCuo.Panel2.Controls.Add(lbcomboBoxLoadText);
+            splitContainerCuo.Panel2.Controls.Add(tbClassicUOPfad);
+            splitContainerCuo.Panel2.Controls.Add(lbChairInfo);
+            splitContainerCuo.Panel2.Controls.Add(comboBoxLoadText);
+            splitContainerCuo.Panel2.Controls.Add(lbpathtosetCuotext);
+            splitContainerCuo.Panel2.Controls.Add(btSaveTxtCuo);
+            splitContainerCuo.Size = new System.Drawing.Size(745, 482);
+            splitContainerCuo.SplitterDistance = 392;
+            splitContainerCuo.TabIndex = 27;
+            // 
+            // panelEdit
+            // 
+            panelEdit.Controls.Add(richTextBoxEdit);
+            panelEdit.Dock = System.Windows.Forms.DockStyle.Fill;
+            panelEdit.Location = new System.Drawing.Point(0, 0);
+            panelEdit.Name = "panelEdit";
+            panelEdit.Size = new System.Drawing.Size(392, 482);
+            panelEdit.TabIndex = 1;
+            // 
+            // richTextBoxEdit
+            // 
+            richTextBoxEdit.Dock = System.Windows.Forms.DockStyle.Fill;
+            richTextBoxEdit.Location = new System.Drawing.Point(0, 0);
+            richTextBoxEdit.Name = "richTextBoxEdit";
+            richTextBoxEdit.Size = new System.Drawing.Size(392, 482);
+            richTextBoxEdit.TabIndex = 2;
+            richTextBoxEdit.Text = "";
+            // 
+            // buttonLoadTxt
+            // 
+            buttonLoadTxt.Location = new System.Drawing.Point(273, 33);
+            buttonLoadTxt.Name = "buttonLoadTxt";
+            buttonLoadTxt.Size = new System.Drawing.Size(44, 23);
+            buttonLoadTxt.TabIndex = 4;
+            buttonLoadTxt.Text = "Load";
+            buttonLoadTxt.UseVisualStyleBackColor = true;
+            buttonLoadTxt.Click += buttonLoadTxt_Click;
+            // 
+            // lbcomboBoxLoadText
+            // 
+            lbcomboBoxLoadText.AutoSize = true;
+            lbcomboBoxLoadText.Cursor = System.Windows.Forms.Cursors.Help;
+            lbcomboBoxLoadText.Location = new System.Drawing.Point(158, 65);
+            lbcomboBoxLoadText.Name = "lbcomboBoxLoadText";
+            lbcomboBoxLoadText.Size = new System.Drawing.Size(12, 15);
+            lbcomboBoxLoadText.TabIndex = 26;
+            lbcomboBoxLoadText.Text = "?";
+            // 
+            // tbClassicUOPfad
+            // 
+            tbClassicUOPfad.Location = new System.Drawing.Point(30, 33);
+            tbClassicUOPfad.Name = "tbClassicUOPfad";
+            tbClassicUOPfad.Size = new System.Drawing.Size(237, 23);
+            tbClassicUOPfad.TabIndex = 2;
+            // 
+            // lbChairInfo
+            // 
+            lbChairInfo.AutoSize = true;
+            lbChairInfo.Cursor = System.Windows.Forms.Cursors.Help;
+            lbChairInfo.Location = new System.Drawing.Point(201, 65);
+            lbChairInfo.Name = "lbChairInfo";
+            lbChairInfo.Size = new System.Drawing.Size(35, 15);
+            lbChairInfo.TabIndex = 7;
+            lbChairInfo.Text = "Chair";
+            lbChairInfo.Click += lbChairInfo_Click;
+            // 
+            // comboBoxLoadText
+            // 
+            comboBoxLoadText.FormattingEnabled = true;
+            comboBoxLoadText.Items.AddRange(new object[] { "containers", "seasons", "lights", "lightshaders", "chair", "tree", "vegetation", "cave" });
+            comboBoxLoadText.Location = new System.Drawing.Point(31, 62);
+            comboBoxLoadText.Name = "comboBoxLoadText";
+            comboBoxLoadText.Size = new System.Drawing.Size(121, 23);
+            comboBoxLoadText.TabIndex = 3;
+            comboBoxLoadText.SelectedIndexChanged += comboBoxLoadText_SelectedIndexChanged;
+            // 
+            // lbpathtosetCuotext
+            // 
+            lbpathtosetCuotext.AutoSize = true;
+            lbpathtosetCuotext.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            lbpathtosetCuotext.Location = new System.Drawing.Point(30, 15);
+            lbpathtosetCuotext.Name = "lbpathtosetCuotext";
+            lbpathtosetCuotext.Size = new System.Drawing.Size(197, 15);
+            lbpathtosetCuotext.TabIndex = 6;
+            lbpathtosetCuotext.Text = "Set the path to the Cuo directory :";
+            // 
+            // btSaveTxtCuo
+            // 
+            btSaveTxtCuo.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            btSaveTxtCuo.Location = new System.Drawing.Point(242, 61);
+            btSaveTxtCuo.Name = "btSaveTxtCuo";
+            btSaveTxtCuo.Size = new System.Drawing.Size(75, 23);
+            btSaveTxtCuo.TabIndex = 5;
+            btSaveTxtCuo.Text = "Save Txt";
+            btSaveTxtCuo.UseVisualStyleBackColor = true;
+            btSaveTxtCuo.Click += btSaveTxtCuo_Click;
             // 
             // TileDataControl
             // 
@@ -1226,6 +1365,13 @@ namespace UoFiddler.Controls.UserControls
             ((System.ComponentModel.ISupportInitialize)splitContainer3).EndInit();
             splitContainer3.ResumeLayout(false);
             tabcontrol.ResumeLayout(false);
+            tabPageCouEdit.ResumeLayout(false);
+            splitContainerCuo.Panel1.ResumeLayout(false);
+            splitContainerCuo.Panel2.ResumeLayout(false);
+            splitContainerCuo.Panel2.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)splitContainerCuo).EndInit();
+            splitContainerCuo.ResumeLayout(false);
+            panelEdit.ResumeLayout(false);
             ResumeLayout(false);
             PerformLayout();
         }
@@ -1331,5 +1477,16 @@ namespace UoFiddler.Controls.UserControls
         private System.Windows.Forms.Label landTexIdLabel;
         private System.Windows.Forms.Label landNameLabel;
         private System.Windows.Forms.ToolTip toolTipComponent;
+        private System.Windows.Forms.TabPage tabPageCouEdit;
+        private System.Windows.Forms.RichTextBox richTextBoxEdit;
+        private System.Windows.Forms.Panel panelEdit;
+        private System.Windows.Forms.TextBox tbClassicUOPfad;
+        private System.Windows.Forms.ComboBox comboBoxLoadText;
+        private System.Windows.Forms.Button buttonLoadTxt;
+        private System.Windows.Forms.Button btSaveTxtCuo;
+        private System.Windows.Forms.Label lbpathtosetCuotext;
+        private System.Windows.Forms.Label lbChairInfo;
+        private System.Windows.Forms.Label lbcomboBoxLoadText;
+        private System.Windows.Forms.SplitContainer splitContainerCuo;
     }
 }

@@ -30,10 +30,13 @@ namespace UoFiddler.Controls.UserControls
 {
     public partial class TileDataControl : UserControl
     {
+        private Image image;
+
+        #region [ TileDataControl ]
         public TileDataControl()
         {
             InitializeComponent();
-            SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer | ControlStyles.UserPaint, true);            
+            SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer | ControlStyles.UserPaint, true);
             AssignToolTipsToLabels();
 
             toolStripComboBox1.ComboBox.DrawMode = DrawMode.OwnerDrawFixed;
@@ -53,8 +56,12 @@ namespace UoFiddler.Controls.UserControls
             ControlEvents.TileDataChangeEvent += OnTileDataChangeEvent;
 
             LabelDecimalAdress.Text = "";
-        }
 
+            tbClassicUOPfad.Text = Properties.Settings.Default.CUOTestPath; // Load Settings path
+        }
+        #endregion
+
+        #region [ InitLandTilesFlagsCheckBoxes ]
         private void InitLandTilesFlagsCheckBoxes()
         {
             checkedListBox2.BeginUpdate();
@@ -82,12 +89,16 @@ namespace UoFiddler.Controls.UserControls
                 checkedListBox2.EndUpdate();
             }
         }
+        #endregion
+
         #region ItemControl Select PiictureBox refresh
         public void RefreshPictureBoxItem()
         {
             pictureBoxItem.Refresh();
         }
         #endregion
+
+        #region [ InitItemsFlagsCheckBoxes ]
         private void InitItemsFlagsCheckBoxes()
         {
             checkedListBox1.BeginUpdate();
@@ -107,6 +118,7 @@ namespace UoFiddler.Controls.UserControls
                 checkedListBox1.EndUpdate();
             }
         }
+        #endregion
 
         private static TileDataControl _refMarker;
         private bool _changingIndex;
@@ -116,6 +128,7 @@ namespace UoFiddler.Controls.UserControls
         private int? _reselectGraphic;
         private bool? _reselectGraphicLand;
 
+        #region [ Select ]
         public static void Select(int graphic, bool land)
         {
             if (!_refMarker.IsLoaded)
@@ -127,7 +140,9 @@ namespace UoFiddler.Controls.UserControls
 
             SearchGraphic(graphic, land);
         }
+        #endregion
 
+        #region [ SearchGraphic ]
         public static bool SearchGraphic(int graphic, bool land)
         {
             const int index = 0;
@@ -168,7 +183,9 @@ namespace UoFiddler.Controls.UserControls
             }
             return false;
         }
+        #endregion
 
+        #region [ SearchName ]
         public static bool SearchName(string name, bool next, bool land)
         {
             int index = 0;
@@ -255,7 +272,9 @@ namespace UoFiddler.Controls.UserControls
 
             return false;
         }
+        #endregion
 
+        #region [ ApplyFilterItem ]
         public void ApplyFilterItem(ItemData item)
         {
             treeViewItem.BeginUpdate();
@@ -373,7 +392,9 @@ namespace UoFiddler.Controls.UserControls
                 treeViewItem.SelectedNode = _refMarker.treeViewItem.Nodes[0].Nodes[0];
             }
         }
+        #endregion
 
+        #region [ ApplyFilterLand ]
         public static void ApplyFilterLand(LandData land)
         {
             _refMarker.treeViewLand.BeginUpdate();
@@ -411,7 +432,9 @@ namespace UoFiddler.Controls.UserControls
                 _refMarker.treeViewLand.SelectedNode = _refMarker.treeViewLand.Nodes[0];
             }
         }
+        #endregion
 
+        #region [ Reload ]
         private void Reload()
         {
             if (IsLoaded)
@@ -419,7 +442,9 @@ namespace UoFiddler.Controls.UserControls
                 OnLoad(this, new MyEventArgs(MyEventArgs.Types.ForceReload));
             }
         }
+        #endregion
 
+        #region [ OnLoad ]
         public void OnLoad(object sender, EventArgs e)
         {
             if (IsAncestorSiteInDesignMode || FormsDesignerHelper.IsInDesignMode())
@@ -512,12 +537,16 @@ namespace UoFiddler.Controls.UserControls
             IsLoaded = true;
             Cursor.Current = Cursors.Default;
         }
+        #endregion
 
+        #region [ OnFilePathChangeEvent ]
         private void OnFilePathChangeEvent()
         {
             Reload();
         }
+        #endregion
 
+        #region [ OnTileDataChangeEvent ]
         private void OnTileDataChangeEvent(object sender, int index)
         {
             if (!IsLoaded)
@@ -586,7 +615,9 @@ namespace UoFiddler.Controls.UserControls
                 }
             }
         }
+        #endregion
 
+        #region [ AfterSelectTreeViewItem ]
         private void AfterSelectTreeViewItem(object sender, TreeViewEventArgs e)
         {
             if (e.Node?.Tag == null)
@@ -646,7 +677,9 @@ namespace UoFiddler.Controls.UserControls
             }
             _changingIndex = false;
         }
+        #endregion
 
+        #region [ AfterSelectTreeViewLand ]
         private void AfterSelectTreeViewLand(object sender, TreeViewEventArgs e)
         {
             if (e.Node == null)
@@ -690,7 +723,9 @@ namespace UoFiddler.Controls.UserControls
 
             _changingIndex = false;
         }
+        #endregion
 
+        #region [ OnClickSaveTiledata ]
         private void OnClickSaveTiledata(object sender, EventArgs e)
         {
             string path = Options.OutputPath;
@@ -700,7 +735,9 @@ namespace UoFiddler.Controls.UserControls
                 MessageBoxDefaultButton.Button1);
             Options.ChangedUltimaClass["TileData"] = false;
         }
+        #endregion
 
+        #region [ OnClickSaveChanges ]
         private void OnClickSaveChanges(object sender, EventArgs e)
         {
             if (tabcontrol.SelectedIndex == 0) // items
@@ -858,12 +895,16 @@ namespace UoFiddler.Controls.UserControls
                 }
             }
         }
+        #endregion
 
+        #region [ SaveDirectlyOnChangesToolStripMenuItemOnCheckedChanged ]
         private void SaveDirectlyOnChangesToolStripMenuItemOnCheckedChanged(object sender, EventArgs eventArgs)
         {
             Options.TileDataDirectlySaveOnChange = saveDirectlyOnChangesToolStripMenuItem.Checked;
         }
+        #endregion
 
+        #region [ OnTextChangedItemAnim ]
         private void OnTextChangedItemAnim(object sender, EventArgs e)
         {
             if (!saveDirectlyOnChangesToolStripMenuItem.Checked)
@@ -894,7 +935,9 @@ namespace UoFiddler.Controls.UserControls
             Options.ChangedUltimaClass["TileData"] = true;
             ControlEvents.FireTileDataChangeEvent(this, index + 0x4000);
         }
+        #endregion
 
+        #region [ OnTextChangedItemName ]
         private void OnTextChangedItemName(object sender, EventArgs e)
         {
             if (!saveDirectlyOnChangesToolStripMenuItem.Checked)
@@ -932,7 +975,9 @@ namespace UoFiddler.Controls.UserControls
             Options.ChangedUltimaClass["TileData"] = true;
             ControlEvents.FireTileDataChangeEvent(this, index + 0x4000);
         }
+        #endregion
 
+        #region [ TreeViewItemOnBeforeSelect ]
         private void TreeViewItemOnBeforeSelect(object sender, TreeViewCancelEventArgs treeViewCancelEventArgs)
         {
             if (!saveDirectlyOnChangesToolStripMenuItem.Checked)
@@ -954,7 +999,9 @@ namespace UoFiddler.Controls.UserControls
                 treeViewItem.SelectedNode.Text = string.Format("0x{0:X4} ({0}) {1}", index, item.Name);
             }
         }
+        #endregion
 
+        #region [ OnTextChangedItemWeight ]
         private void OnTextChangedItemWeight(object sender, EventArgs e)
         {
             if (!saveDirectlyOnChangesToolStripMenuItem.Checked)
@@ -985,7 +1032,9 @@ namespace UoFiddler.Controls.UserControls
             Options.ChangedUltimaClass["TileData"] = true;
             ControlEvents.FireTileDataChangeEvent(this, index + 0x4000);
         }
+        #endregion
 
+        #region [ OnTextChangedItemQuality ]
         private void OnTextChangedItemQuality(object sender, EventArgs e)
         {
             if (!saveDirectlyOnChangesToolStripMenuItem.Checked)
@@ -1016,7 +1065,9 @@ namespace UoFiddler.Controls.UserControls
             Options.ChangedUltimaClass["TileData"] = true;
             ControlEvents.FireTileDataChangeEvent(this, index + 0x4000);
         }
+        #endregion
 
+        #region [ OnTextChangedItemQuantity ]
         private void OnTextChangedItemQuantity(object sender, EventArgs e)
         {
             if (!saveDirectlyOnChangesToolStripMenuItem.Checked)
@@ -1047,7 +1098,9 @@ namespace UoFiddler.Controls.UserControls
             Options.ChangedUltimaClass["TileData"] = true;
             ControlEvents.FireTileDataChangeEvent(this, index + 0x4000);
         }
+        #endregion
 
+        #region [ OnTextChangedItemHue ]
         private void OnTextChangedItemHue(object sender, EventArgs e)
         {
             if (!saveDirectlyOnChangesToolStripMenuItem.Checked)
@@ -1078,7 +1131,9 @@ namespace UoFiddler.Controls.UserControls
             Options.ChangedUltimaClass["TileData"] = true;
             ControlEvents.FireTileDataChangeEvent(this, index + 0x4000);
         }
+        #endregion
 
+        #region [ OnTextChangedItemStackOff ]
         private void OnTextChangedItemStackOff(object sender, EventArgs e)
         {
             if (!saveDirectlyOnChangesToolStripMenuItem.Checked)
@@ -1109,7 +1164,9 @@ namespace UoFiddler.Controls.UserControls
             Options.ChangedUltimaClass["TileData"] = true;
             ControlEvents.FireTileDataChangeEvent(this, index + 0x4000);
         }
+        #endregion
 
+        #region [ OnTextChangedItemValue ]
         private void OnTextChangedItemValue(object sender, EventArgs e)
         {
             if (!saveDirectlyOnChangesToolStripMenuItem.Checked)
@@ -1140,7 +1197,9 @@ namespace UoFiddler.Controls.UserControls
             Options.ChangedUltimaClass["TileData"] = true;
             ControlEvents.FireTileDataChangeEvent(this, index + 0x4000);
         }
+        #endregion
 
+        #region [ OnTextChangedItemHeight ]
         private void OnTextChangedItemHeight(object sender, EventArgs e)
         {
             if (!saveDirectlyOnChangesToolStripMenuItem.Checked)
@@ -1171,7 +1230,9 @@ namespace UoFiddler.Controls.UserControls
             Options.ChangedUltimaClass["TileData"] = true;
             ControlEvents.FireTileDataChangeEvent(this, index + 0x4000);
         }
+        #endregion
 
+        #region [ OnTextChangedItemMiscData ]
         private void OnTextChangedItemMiscData(object sender, EventArgs e)
         {
             if (!saveDirectlyOnChangesToolStripMenuItem.Checked)
@@ -1202,7 +1263,9 @@ namespace UoFiddler.Controls.UserControls
             Options.ChangedUltimaClass["TileData"] = true;
             ControlEvents.FireTileDataChangeEvent(this, index + 0x4000);
         }
+        #endregion
 
+        #region [ OnTextChangedItemUnk2 ]
         private void OnTextChangedItemUnk2(object sender, EventArgs e)
         {
             if (!saveDirectlyOnChangesToolStripMenuItem.Checked)
@@ -1233,7 +1296,9 @@ namespace UoFiddler.Controls.UserControls
             Options.ChangedUltimaClass["TileData"] = true;
             ControlEvents.FireTileDataChangeEvent(this, index + 0x4000);
         }
+        #endregion
 
+        #region [ OnTextChangedItemUnk3 ]
         private void OnTextChangedItemUnk3(object sender, EventArgs e)
         {
             if (!saveDirectlyOnChangesToolStripMenuItem.Checked)
@@ -1264,7 +1329,9 @@ namespace UoFiddler.Controls.UserControls
             Options.ChangedUltimaClass["TileData"] = true;
             ControlEvents.FireTileDataChangeEvent(this, index + 0x4000);
         }
+        #endregion
 
+        #region [ OnTextChangedLandName ]
         private void OnTextChangedLandName(object sender, EventArgs e)
         {
             if (!saveDirectlyOnChangesToolStripMenuItem.Checked)
@@ -1302,7 +1369,9 @@ namespace UoFiddler.Controls.UserControls
             Options.ChangedUltimaClass["TileData"] = true;
             ControlEvents.FireTileDataChangeEvent(this, index);
         }
+        #endregion
 
+        #region OnTextChangedLandTexID
         private void OnTextChangedLandTexID(object sender, EventArgs e)
         {
             if (!saveDirectlyOnChangesToolStripMenuItem.Checked)
@@ -1333,7 +1402,9 @@ namespace UoFiddler.Controls.UserControls
             Options.ChangedUltimaClass["TileData"] = true;
             ControlEvents.FireTileDataChangeEvent(this, index);
         }
+        #endregion
 
+        #region [ OnFlagItemCheckItems ]
         private void OnFlagItemCheckItems(object sender, ItemCheckEventArgs e)
         {
             if (!saveDirectlyOnChangesToolStripMenuItem.Checked)
@@ -1389,7 +1460,9 @@ namespace UoFiddler.Controls.UserControls
                 ControlEvents.FireTileDataChangeEvent(this, index + 0x4000);
             }
         }
+        #endregion
 
+        #region [ OnFlagItemCheckLandTiles ]
         private void OnFlagItemCheckLandTiles(object sender, ItemCheckEventArgs e)
         {
             if (!saveDirectlyOnChangesToolStripMenuItem.Checked)
@@ -1469,7 +1542,9 @@ namespace UoFiddler.Controls.UserControls
                 ControlEvents.FireTileDataChangeEvent(this, index);
             }
         }
+        #endregion
 
+        #region [ OnClickExport ]
         private void OnClickExport(object sender, EventArgs e)
         {
             string path = Options.OutputPath;
@@ -1486,7 +1561,9 @@ namespace UoFiddler.Controls.UserControls
                 MessageBox.Show($"LandData saved to {fileName}", "Saved", MessageBoxButtons.OK, MessageBoxIcon.Information, MessageBoxDefaultButton.Button1);
             }
         }
+        #endregion
 
+        #region [ OnClickSearch ]
         private TileDataSearchForm _showForm1;
         private TileDataSearchForm _showForm2;
 
@@ -1519,7 +1596,9 @@ namespace UoFiddler.Controls.UserControls
                 _showForm2.Show();
             }
         }
+        #endregion
 
+        #region [ OnClickSelectItem ]
         private void OnClickSelectItem(object sender, EventArgs e)
         {
             if (treeViewItem.SelectedNode?.Tag == null)
@@ -1534,7 +1613,9 @@ namespace UoFiddler.Controls.UserControls
                 MessageBox.Show("You need to load Items tab first.", "Information");
             }
         }
+        #endregion
 
+        #region [ OnClickSelectInLandTiles ]
         private void OnClickSelectInLandTiles(object sender, EventArgs e)
         {
             if (treeViewLand.SelectedNode == null)
@@ -1549,7 +1630,9 @@ namespace UoFiddler.Controls.UserControls
                 MessageBox.Show("You need to load LandTiles tab first.", "Information");
             }
         }
+        #endregion
 
+        #region [ OnClickSelectRadarItem ]
         private void OnClickSelectRadarItem(object sender, EventArgs e)
         {
             if (treeViewItem.SelectedNode == null)
@@ -1560,7 +1643,9 @@ namespace UoFiddler.Controls.UserControls
             int index = (int)treeViewItem.SelectedNode.Tag;
             RadarColorControl.Select(index, false);
         }
+        #endregion
 
+        #region [ OnClickSelectRadarLand ]
         private void OnClickSelectRadarLand(object sender, EventArgs e)
         {
             if (treeViewLand.SelectedNode == null)
@@ -1571,7 +1656,9 @@ namespace UoFiddler.Controls.UserControls
             int index = (int)treeViewLand.SelectedNode.Tag;
             RadarColorControl.Select(index, true);
         }
+        #endregion
 
+        #region [ OnClickImport ]
         private void OnClickImport(object sender, EventArgs e)
         {
             OpenFileDialog dialog = new OpenFileDialog
@@ -1597,7 +1684,9 @@ namespace UoFiddler.Controls.UserControls
             }
             dialog.Dispose();
         }
+        #endregion
 
+        #region [ OnClickSetFilter ]
         private TileDataFilterForm _filterFormForm;
 
         private void OnClickSetFilter(object sender, EventArgs e)
@@ -1613,7 +1702,9 @@ namespace UoFiddler.Controls.UserControls
             };
             _filterFormForm.Show();
         }
+        #endregion
 
+        #region [ OnItemDataNodeExpanded ]
         private void OnItemDataNodeExpanded(object sender, TreeViewCancelEventArgs e)
         {
             // workaround for 65536 items microsoft bug
@@ -1622,7 +1713,9 @@ namespace UoFiddler.Controls.UserControls
                 treeViewItem.CollapseAll();
             }
         }
+        #endregion
 
+        #region [ TileData_KeyUp ]
         private void TileData_KeyUp(object sender, KeyEventArgs e)
         {
             if (e.KeyCode != Keys.F || !e.Control)
@@ -1634,10 +1727,12 @@ namespace UoFiddler.Controls.UserControls
             e.SuppressKeyPress = true;
             e.Handled = true;
         }
+        #endregion
 
+        #region [ SelectInGumpsTab ]
         private const int _maleGumpOffset = 50_000;
         private const int _femaleGumpOffset = 60_000;
-
+        
         private static void SelectInGumpsTab(int tiledataIndex, bool female = false)
         {
             int gumpOffset = female ? _femaleGumpOffset : _maleGumpOffset;
@@ -1645,7 +1740,9 @@ namespace UoFiddler.Controls.UserControls
 
             GumpControl.Select(animation + gumpOffset);
         }
+        #endregion
 
+        #region [ SelectInGumpsTabMaleToolStripMenuItem_Click ]
         private void SelectInGumpsTabMaleToolStripMenuItem_Click(object sender, EventArgs e)
         {
             var selectedItemTag = treeViewItem.SelectedNode?.Tag;
@@ -1656,7 +1753,9 @@ namespace UoFiddler.Controls.UserControls
 
             SelectInGumpsTab((int)selectedItemTag);
         }
+        #endregion
 
+        #region [ SelectInGumpsTabFemaleToolStripMenuItem_Click ]
         private void SelectInGumpsTabFemaleToolStripMenuItem_Click(object sender, EventArgs e)
         {
             var selectedItemTag = treeViewItem.SelectedNode?.Tag;
@@ -1667,7 +1766,9 @@ namespace UoFiddler.Controls.UserControls
 
             SelectInGumpsTab((int)selectedItemTag, true);
         }
+        #endregion
 
+        #region [ ItemsContextMenuStrip_Opening ]
         private void ItemsContextMenuStrip_Opening(object sender, System.ComponentModel.CancelEventArgs e)
         {
             var selectedItemTag = treeViewItem.SelectedNode?.Tag;
@@ -1695,7 +1796,9 @@ namespace UoFiddler.Controls.UserControls
                 }
             }
         }
+        #endregion
 
+        #region [ TextBoxTexID_DoubleClick ]
         /// <summary>
         /// DoubleClick event handler on the TextBoxTexID. Sets the TexID to the Tag value of the node
         /// i.e. 0x256 (598) lava -> 598.
@@ -1717,7 +1820,9 @@ namespace UoFiddler.Controls.UserControls
 
             textBoxTexID.Text = $"{index}";
         }
+        #endregion
 
+        #region [ SetTextureMenuItem ]
         /// <summary>
         /// Click event handler on the "Set Textures" menu item. Sets all the land tiles TextureId to their index.
         /// This is written under the assumption that LandTileID == TextureId for every LandTile.
@@ -1760,6 +1865,8 @@ namespace UoFiddler.Controls.UserControls
 
             MessageBox.Show(updated > 0 ? $"Updated {updated} land tile(s)." : "Nothing was updated.", "Set textures");
         }
+        #endregion
+
         #region ToolStripComboBox and More
 
         #region LoadImages
@@ -1772,18 +1879,19 @@ namespace UoFiddler.Controls.UserControls
                 icons.Add("Stairs-N", Properties.Resources.Stairs03);
                 icons.Add("Stairs-W", Properties.Resources.Stairs04);
                 icons.Add("Stairs-E-S", Properties.Resources.Stairs05);
-                icons.Add("Stairs-N-E", Properties.Resources.Stairs06);                
+                icons.Add("Stairs-N-E", Properties.Resources.Stairs06);
                 icons.Add("Stairs-S-W", Properties.Resources.Stairs07);
                 icons.Add("Stairs-W-N", Properties.Resources.Stairs08);
             }
         }
         #endregion
 
-        #region Define Dictionary with Bitmap instead of Icon
+        #region [ Define Dictionary with Bitmap instead of Icon ]
         // Define Dictionary with Bitmap instead of Icon
         Dictionary<string, Bitmap> icons = new Dictionary<string, Bitmap>();
         #endregion
-        #region toolStripComboBox1_DrawItem
+
+        #region [ toolStripComboBox1_DrawItem ]
         void toolStripComboBox1_DrawItem(object sender, DrawItemEventArgs e)
         {
             e.DrawBackground();
@@ -1801,7 +1909,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region ToolStripComboBox1_SelectedIndexChanged
+        #region [ ToolStripComboBox1_SelectedIndexChanged ]
         private void ToolStripComboBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
             // Set all elements to unchecked
@@ -2122,23 +2230,23 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
         #endregion
-        #region toolStripButton6 for Sound
 
+        #region [ Search and Sound ]
         private bool playCustomSound = false;
 
+        #region [ toolStripButton6 ]
         private void toolStripButton6_Click(object sender, EventArgs e)
         {
             toolStripButton6.Checked = !toolStripButton6.Checked;
             playCustomSound = !playCustomSound;
         }
-        #endregion
-
-        #region Save last Ideas
+        #endregion        
 
         bool toolStripButton7IsActive = false;
         List<int> savedCheckedIndices = new List<int>();
         Dictionary<TextBox, string> savedTextBoxTexts = new Dictionary<TextBox, string>();
 
+        #region [ toolStripButton7 ]
         private void toolStripButton7_Click(object sender, EventArgs e)
         {
             if (!toolStripButton7IsActive)
@@ -2203,6 +2311,9 @@ namespace UoFiddler.Controls.UserControls
                 toolStripButton7IsActive = false;
             }
         }
+        #endregion
+
+        #region [ toolStripPushMarkedButton8 ]
         private void toolStripPushMarkedButton8_Click(object sender, EventArgs e)
         {
             if (toolStripButton7IsActive)
@@ -2226,7 +2337,8 @@ namespace UoFiddler.Controls.UserControls
             }
         }
         #endregion
-        #region Search New
+
+        #region [ SearchByIdToolStripTextBox_KeyUp ]
         private void SearchByIdToolStripTextBox_KeyUp(object sender, KeyEventArgs e)
         {
             if (!Utils.ConvertStringToInt(searchByIdToolStripTextBox.Text, out int indexValue, 0, Art.GetMaxItemId()))
@@ -2250,14 +2362,18 @@ namespace UoFiddler.Controls.UserControls
 
             SearchGraphic(indexValue, landTilesSelected);
         }
+        #endregion
 
+        #region [ SearchByNameToolStripTextBox_KeyUp ]
         private void SearchByNameToolStripTextBox_KeyUp(object sender, KeyEventArgs e)
         {
             var landTilesSelected = tabcontrol.SelectedIndex != 0;
 
             SearchName(searchByNameToolStripTextBox.Text, false, landTilesSelected);
         }
+        #endregion
 
+        #region [ SearchByNameToolStripButton_Click ]
         private void SearchByNameToolStripButton_Click(object sender, EventArgs e)
         {
             var landTilesSelected = tabcontrol.SelectedIndex != 0;
@@ -2265,10 +2381,13 @@ namespace UoFiddler.Controls.UserControls
             SearchName(searchByNameToolStripTextBox.Text, true, landTilesSelected);
         }
         #endregion
+        #endregion
 
         #region [ AssignToolTipsToLabels ]
         private void AssignToolTipsToLabels()
         {
+            image = Properties.Resources.MakeChairsUseable;
+
             // Statics
             toolTipComponent.SetToolTip(nameLabel, GetDescription(nameLabel));
             toolTipComponent.SetToolTip(animLabel, GetDescription(animLabel));
@@ -2286,9 +2405,13 @@ namespace UoFiddler.Controls.UserControls
             // Land Tiles
             toolTipComponent.SetToolTip(landNameLabel, GetDescription(landNameLabel));
             toolTipComponent.SetToolTip(landTexIdLabel, GetDescription(landTexIdLabel));
+
+            // Edit Cou Files
+            toolTipComponent.SetToolTip(lbcomboBoxLoadText, GetDescription(lbcomboBoxLoadText));
         }
         #endregion
 
+        #region [ GetDescription ]
         private string GetDescription(object sender)
         {
             string description = string.Empty;
@@ -2383,10 +2506,14 @@ namespace UoFiddler.Controls.UserControls
             {
                 description = "This field is for the texture ID associated with the land tile.";
             }
+            else if (sender == lbcomboBoxLoadText)
+            {
+                description = "This is how you load the text files into the richtext box for editing.";
+            }
 
             return description;
         }
-
+        #endregion
 
         #region middle mouse button copying the settings in the tiledata
 
@@ -2660,6 +2787,102 @@ namespace UoFiddler.Controls.UserControls
                 pictureBoxItem.Image = originalImage;
                 isZoomed = false; // Update the zoom state
             }
+        }
+        #endregion
+
+        #region [ buttonLoadTxt ]
+        private void buttonLoadTxt_Click(object sender, EventArgs e)
+        {
+            FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog();
+            if (folderBrowserDialog.ShowDialog() == DialogResult.OK)
+            {
+                // Set the text of tbClassicUOPfad to the selected path
+                tbClassicUOPfad.Text = folderBrowserDialog.SelectedPath;
+
+                // Save the path in Settings
+                Properties.Settings.Default.CUOTestPath = folderBrowserDialog.SelectedPath;
+                Properties.Settings.Default.Save();
+            }
+        }
+        #endregion
+
+        #region [ comboBoxLoadText_SelectedIndexChanged ]
+        private void comboBoxLoadText_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            // Get path from tbClassicUOPath
+            string path = tbClassicUOPfad.Text;
+
+            // Get selected file from comboBoxLoadText
+            string selectedFile = comboBoxLoadText.SelectedItem.ToString();
+
+            // Create full path to selected file
+            string fullPath = Path.Combine(path, selectedFile + ".txt");
+
+            // Check if the file exists
+            if (File.Exists(fullPath))
+            {
+                // Load file content into richTextBoxEdit
+                richTextBoxEdit.Text = File.ReadAllText(fullPath);
+            }
+            else
+            {
+                MessageBox.Show("The file does not exist.");
+            }
+        }
+        #endregion
+
+        #region [ btSaveTxtCuo ]
+        private void btSaveTxtCuo_Click(object sender, EventArgs e)
+        {
+            // Get path from tbClassicUOPath
+            string path = tbClassicUOPfad.Text;
+
+            // Get selected file from comboBoxLoadText
+            string selectedFile = comboBoxLoadText.SelectedItem.ToString();
+
+            // Create full path to selected file
+            string fullPath = Path.Combine(path, selectedFile + ".txt");
+
+            // Get text from the richTextBoxEdit
+            string textToSave = richTextBoxEdit.Text;
+
+            // Write text to the file
+            File.WriteAllText(fullPath, textToSave);
+
+            // Sound Effekt
+            SoundPlayer player = new SoundPlayer();
+            player.SoundLocation = "sound.wav";
+            player.Play();
+        }
+        #endregion
+
+        #region [ lbChairInfo_Click ]
+        private void lbChairInfo_Click(object sender, EventArgs e)
+        {            
+            Image image = Properties.Resources.MakeChairsUseable;
+            
+            Form form = new Form
+            {                
+                ClientSize = image.Size,
+                ShowIcon = false
+            };
+           
+            PictureBox pictureBox = new PictureBox
+            {
+                Image = image,
+                SizeMode = PictureBoxSizeMode.AutoSize
+            };
+            
+            Panel panel = new Panel
+            {
+                Dock = DockStyle.Fill,
+                AutoScroll = true
+            };
+            panel.Controls.Add(pictureBox);
+            
+            form.Controls.Add(panel);
+            
+            form.Show();
         }
         #endregion
     }

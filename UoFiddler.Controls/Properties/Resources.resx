@@ -253,6 +253,9 @@
   <data name="left-arrow3" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\left-arrow3.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="MakeChairsUseable" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\MakeChairsUseable.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="Map" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Map.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
