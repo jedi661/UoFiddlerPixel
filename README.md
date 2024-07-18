@@ -13,21 +13,22 @@ Version : 4.12.5
 - Octokit package update.
 - Serlog.Sinks.File package update.
 - Microsoft.Web.WebVie2 package update.
-- Add package AnimatedGif.
-- Add support for hued AnimData, export AnimData to Gif.
-- Add ability to export design as XML in multi editor plugin.
+- Added package AnimatedGif.
+- Added support for hued AnimData, export AnimData to Gif.
+- Added ability to export design as XML in multi editor plugin.
 - Various improvements to RadarCol control.
 - - save radarcol on treeview selection change.
   - enable revert, revert all for radarcol changes.
   - add "range items to individual average".
   - add "range items to range average".
   - add filter and checkbox selections.
-- Add Copy hex address to clipboard.
-- Add Background water and grass added to the picture box in multis.
+- Added Copy hex address to clipboard.
+- Added Background water and grass added to the picture box in multis.
 - External Map Replace expanded in expansion.- 
 - Added gif export to Dress and Animation tabs  (author KevinEady)
 - Added UOPacker plugin can now unpack multicollection.uop (author Stefano Merotta)
 - Added tooltips to tiledata tab (author Dragon Slayer)
+- Added edit function in Tiledata tab to edit Cou text files.
 
 Version : 4.12.4
 - Add About revised, removed more Richtextbox and added a matrix animation with the names of the developers, new links, and new information.
