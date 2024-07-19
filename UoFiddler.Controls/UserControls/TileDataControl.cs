@@ -2806,6 +2806,19 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
+        Dictionary<string, string> infoTexts = new Dictionary<string, string>()
+        {
+            { "chair", "2865,0,0,0,0,0,0,4 = 2865 is the article number of the chair.\n\nThe first four zeros in this line tell your character, \nno matter which direction you come from, you will always look north, \nwhen you sit in this chair.\n\nNorth-chair = 2865,0,0,0,0,\n\nEast-chair = 2863,2,2,2,2,6,6 \nThe first four numbers 2 always point east.\n\nSouth-chair = 2862,4,4,4,4,0,0 \nThe first four 4s are always to the southwest.\n\nDirected chair = 2864,6,6,6,6,-8,8 \n\nThe first four 6s will always face you \nWest stool.= 2910,0,2,4,6,-8,-8 \n\nStools are multidirectional.\nThat means, by adding \nAll 4 directions = ,0,2,4,6, \n\nThe last two numbers have to do with the positioning of the character." },
+            { "seasons", "Enter information text here" },
+            { "lights", "Enter information text here" },
+            { "lightshaders", "Enter information text here" },
+            { "tree", "Enter information text here" },
+            { "vegetation", "Enter information text here" },
+            { "cave", "Enter information text here" },
+            { "containers", "Enter information text here" }
+        };
+
+
         #region [ comboBoxLoadText_SelectedIndexChanged ]
         private void comboBoxLoadText_SelectedIndexChanged(object sender, EventArgs e)
         {
@@ -2823,10 +2836,22 @@ namespace UoFiddler.Controls.UserControls
             {
                 // Load file content into richTextBoxEdit
                 richTextBoxEdit.Text = File.ReadAllText(fullPath);
+
+                // Check if there is an info text for the selected file
+                if (infoTexts.ContainsKey(selectedFile))
+                {
+                    // Display the info text in textBoxInfoCuo
+                    richTextInfoCuo.Text = infoTexts[selectedFile];
+                }
+                else
+                {
+                    // Clear textBoxInfoCuo if there is no info text for the selected file
+                    richTextInfoCuo.Text = "";
+                }
             }
             else
             {
-                MessageBox.Show("The file does not exist.");
+                MessageBox.Show("Die Datei existiert nicht.");
             }
         }
         #endregion
