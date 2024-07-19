@@ -2508,7 +2508,10 @@ namespace UoFiddler.Controls.UserControls
             }
             else if (sender == lbcomboBoxLoadText)
             {
-                description = "This is how you load the text files into the richtext box for editing.";
+               description = new StringBuilder()
+                        .AppendLine("This is how you load the text files for editing into the rich text box to edit the text files.")
+                        .AppendLine("This allows you to embed new chairs, new colors, containers, and more for the client.")
+                        .ToString();
             }
 
             return description;
@@ -2806,6 +2809,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
+        #region [ Dictionary ]
         Dictionary<string, string> infoTexts = new Dictionary<string, string>()
         {
             { "chair", "2865,0,0,0,0,0,0,4 = 2865 is the article number of the chair.\n\nThe first four zeros in this line tell your character, \nno matter which direction you come from, you will always look north, \nwhen you sit in this chair.\n\nNorth-chair = 2865,0,0,0,0,\n\nEast-chair = 2863,2,2,2,2,6,6 \nThe first four numbers 2 always point east.\n\nSouth-chair = 2862,4,4,4,4,0,0 \nThe first four 4s are always to the southwest.\n\nDirected chair = 2864,6,6,6,6,-8,8 \n\nThe first four 6s will always face you \nWest stool.= 2910,0,2,4,6,-8,-8 \n\nStools are multidirectional.\nThat means, by adding \nAll 4 directions = ,0,2,4,6, \n\nThe last two numbers have to do with the positioning of the character." },
@@ -2817,7 +2821,7 @@ namespace UoFiddler.Controls.UserControls
             { "cave", "Enter information text here" },
             { "containers", "Enter information text here" }
         };
-
+        #endregion
 
         #region [ comboBoxLoadText_SelectedIndexChanged ]
         private void comboBoxLoadText_SelectedIndexChanged(object sender, EventArgs e)

@@ -146,6 +146,8 @@ namespace UoFiddler.Controls.UserControls
             contextMenuStripCou = new System.Windows.Forms.ContextMenuStrip(components);
             findToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             toolStripTextBoxFindText = new System.Windows.Forms.ToolStripTextBox();
+            toolStripSeparator7 = new System.Windows.Forms.ToolStripSeparator();
+            saveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             panel1 = new System.Windows.Forms.Panel();
             lbpathtosetCuotext = new System.Windows.Forms.Label();
             btSaveTxtCuo = new System.Windows.Forms.Button();
@@ -156,8 +158,6 @@ namespace UoFiddler.Controls.UserControls
             tbClassicUOPfad = new System.Windows.Forms.TextBox();
             richTextInfoCuo = new System.Windows.Forms.RichTextBox();
             toolTipComponent = new System.Windows.Forms.ToolTip(components);
-            saveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            toolStripSeparator7 = new System.Windows.Forms.ToolStripSeparator();
             ItemsContextMenuStrip.SuspendLayout();
             LandTilesContextMenuStrip.SuspendLayout();
             MainToolStrip.SuspendLayout();
@@ -1256,14 +1256,14 @@ namespace UoFiddler.Controls.UserControls
             // 
             contextMenuStripCou.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { findToolStripMenuItem, toolStripSeparator7, saveToolStripMenuItem });
             contextMenuStripCou.Name = "contextMenuStripCou";
-            contextMenuStripCou.Size = new System.Drawing.Size(181, 76);
+            contextMenuStripCou.Size = new System.Drawing.Size(99, 54);
             // 
             // findToolStripMenuItem
             // 
             findToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { toolStripTextBoxFindText });
             findToolStripMenuItem.Image = Properties.Resources.Edit;
             findToolStripMenuItem.Name = "findToolStripMenuItem";
-            findToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            findToolStripMenuItem.Size = new System.Drawing.Size(98, 22);
             findToolStripMenuItem.Text = "Find";
             findToolStripMenuItem.Click += findToolStripMenuItem_Click;
             // 
@@ -1271,6 +1271,19 @@ namespace UoFiddler.Controls.UserControls
             // 
             toolStripTextBoxFindText.Name = "toolStripTextBoxFindText";
             toolStripTextBoxFindText.Size = new System.Drawing.Size(100, 23);
+            // 
+            // toolStripSeparator7
+            // 
+            toolStripSeparator7.Name = "toolStripSeparator7";
+            toolStripSeparator7.Size = new System.Drawing.Size(95, 6);
+            // 
+            // saveToolStripMenuItem
+            // 
+            saveToolStripMenuItem.Image = Properties.Resources.save;
+            saveToolStripMenuItem.Name = "saveToolStripMenuItem";
+            saveToolStripMenuItem.Size = new System.Drawing.Size(98, 22);
+            saveToolStripMenuItem.Text = "Save";
+            saveToolStripMenuItem.Click += btSaveTxtCuo_Click;
             // 
             // panel1
             // 
@@ -1359,24 +1372,11 @@ namespace UoFiddler.Controls.UserControls
             // richTextInfoCuo
             // 
             richTextInfoCuo.Dock = System.Windows.Forms.DockStyle.Bottom;
-            richTextInfoCuo.Location = new System.Drawing.Point(0, 125);
+            richTextInfoCuo.Location = new System.Drawing.Point(0, 122);
             richTextInfoCuo.Name = "richTextInfoCuo";
-            richTextInfoCuo.Size = new System.Drawing.Size(349, 357);
+            richTextInfoCuo.Size = new System.Drawing.Size(349, 360);
             richTextInfoCuo.TabIndex = 27;
             richTextInfoCuo.Text = "";
-            // 
-            // saveToolStripMenuItem
-            // 
-            saveToolStripMenuItem.Image = Properties.Resources.save;
-            saveToolStripMenuItem.Name = "saveToolStripMenuItem";
-            saveToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            saveToolStripMenuItem.Text = "Save";
-            saveToolStripMenuItem.Click += btSaveTxtCuo_Click;
-            // 
-            // toolStripSeparator7
-            // 
-            toolStripSeparator7.Name = "toolStripSeparator7";
-            toolStripSeparator7.Size = new System.Drawing.Size(177, 6);
             // 
             // TileDataControl
             // 
