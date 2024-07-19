@@ -156,6 +156,7 @@ namespace UoFiddler.Controls.UserControls
             tbClassicUOPfad = new System.Windows.Forms.TextBox();
             richTextInfoCuo = new System.Windows.Forms.RichTextBox();
             toolTipComponent = new System.Windows.Forms.ToolTip(components);
+            saveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             ItemsContextMenuStrip.SuspendLayout();
             LandTilesContextMenuStrip.SuspendLayout();
             MainToolStrip.SuspendLayout();
@@ -1252,16 +1253,16 @@ namespace UoFiddler.Controls.UserControls
             // 
             // contextMenuStripCou
             // 
-            contextMenuStripCou.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { findToolStripMenuItem });
+            contextMenuStripCou.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { findToolStripMenuItem, saveToolStripMenuItem });
             contextMenuStripCou.Name = "contextMenuStripCou";
-            contextMenuStripCou.Size = new System.Drawing.Size(98, 26);
+            contextMenuStripCou.Size = new System.Drawing.Size(181, 70);
             // 
             // findToolStripMenuItem
             // 
             findToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { toolStripTextBoxFindText });
             findToolStripMenuItem.Image = Properties.Resources.Edit;
             findToolStripMenuItem.Name = "findToolStripMenuItem";
-            findToolStripMenuItem.Size = new System.Drawing.Size(97, 22);
+            findToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             findToolStripMenuItem.Text = "Find";
             findToolStripMenuItem.Click += findToolStripMenuItem_Click;
             // 
@@ -1362,6 +1363,14 @@ namespace UoFiddler.Controls.UserControls
             richTextInfoCuo.Size = new System.Drawing.Size(349, 357);
             richTextInfoCuo.TabIndex = 27;
             richTextInfoCuo.Text = "";
+            // 
+            // saveToolStripMenuItem
+            // 
+            saveToolStripMenuItem.Image = Properties.Resources.save;
+            saveToolStripMenuItem.Name = "saveToolStripMenuItem";
+            saveToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            saveToolStripMenuItem.Text = "Save";
+            saveToolStripMenuItem.Click += btSaveTxtCuo_Click;
             // 
             // TileDataControl
             // 
@@ -1542,5 +1551,6 @@ namespace UoFiddler.Controls.UserControls
         private System.Windows.Forms.ToolStripTextBox toolStripTextBoxFindText;
         private System.Windows.Forms.RichTextBox richTextInfoCuo;
         private System.Windows.Forms.Panel panel1;
+        private System.Windows.Forms.ToolStripMenuItem saveToolStripMenuItem;
     }
 }
