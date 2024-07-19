@@ -157,6 +157,7 @@ namespace UoFiddler.Controls.UserControls
             richTextInfoCuo = new System.Windows.Forms.RichTextBox();
             toolTipComponent = new System.Windows.Forms.ToolTip(components);
             saveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            toolStripSeparator7 = new System.Windows.Forms.ToolStripSeparator();
             ItemsContextMenuStrip.SuspendLayout();
             LandTilesContextMenuStrip.SuspendLayout();
             MainToolStrip.SuspendLayout();
@@ -1253,9 +1254,9 @@ namespace UoFiddler.Controls.UserControls
             // 
             // contextMenuStripCou
             // 
-            contextMenuStripCou.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { findToolStripMenuItem, saveToolStripMenuItem });
+            contextMenuStripCou.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { findToolStripMenuItem, toolStripSeparator7, saveToolStripMenuItem });
             contextMenuStripCou.Name = "contextMenuStripCou";
-            contextMenuStripCou.Size = new System.Drawing.Size(181, 70);
+            contextMenuStripCou.Size = new System.Drawing.Size(181, 76);
             // 
             // findToolStripMenuItem
             // 
@@ -1371,6 +1372,11 @@ namespace UoFiddler.Controls.UserControls
             saveToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             saveToolStripMenuItem.Text = "Save";
             saveToolStripMenuItem.Click += btSaveTxtCuo_Click;
+            // 
+            // toolStripSeparator7
+            // 
+            toolStripSeparator7.Name = "toolStripSeparator7";
+            toolStripSeparator7.Size = new System.Drawing.Size(177, 6);
             // 
             // TileDataControl
             // 
@@ -1552,5 +1558,6 @@ namespace UoFiddler.Controls.UserControls
         private System.Windows.Forms.RichTextBox richTextInfoCuo;
         private System.Windows.Forms.Panel panel1;
         private System.Windows.Forms.ToolStripMenuItem saveToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator7;
     }
 }
