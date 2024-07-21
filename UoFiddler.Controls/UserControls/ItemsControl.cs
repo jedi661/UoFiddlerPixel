@@ -32,6 +32,9 @@ namespace UoFiddler.Controls.UserControls
     public partial class ItemsControl : UserControl
     {
         private TileDataControl tileDataControl = new TileDataControl(); //Refesh image pictureBoxItem TiledataControl
+
+        private int occupiedItemCount = 0; // items counter
+
         public ItemsControl()
         {
             InitializeComponent();
@@ -2406,6 +2409,46 @@ namespace UoFiddler.Controls.UserControls
             string message = "The following graphics were saved:\n" + string.Join("\n", savedFiles);
             MessageBox.Show(message);
         }
+        #endregion
+
+        #region [ Items Counter ]
+        #region [ UpdateOccupiedItemCount ]
+        private void UpdateOccupiedItemCount()
+        {
+            toolStripStatusLabelItemHowMuch.Text = $"Occupied Items: {occupiedItemCount}";
+        }
+        #endregion
+
+        #region [ CountOccupiedItems ]
+        private void CountOccupiedItems()
+        {
+            occupiedItemCount = 0;
+            foreach (var itemId in _itemList)
+            {
+                if (IsItemOccupied(itemId))
+                {
+                    occupiedItemCount++;
+                }
+            }
+            UpdateOccupiedItemCount();
+        }
+        #endregion
+
+        #region [ IsItemOccupied ]
+        private bool IsItemOccupied(int itemId)
+        {
+            // Check if the item has an associated graphic
+            var bitmap = Art.GetStatic(itemId, out bool _);
+            return bitmap != null;
+        }
+        #endregion
+
+        #region [ countItemsToolStripMenuItem ]
+        private void countItemsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            CountOccupiedItems();
+        }
+        #endregion
         #endregion
     }
 }
