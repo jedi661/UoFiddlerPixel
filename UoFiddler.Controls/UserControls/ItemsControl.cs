@@ -70,11 +70,11 @@ namespace UoFiddler.Controls.UserControls
         public static TileViewControl TileView => RefMarker.ItemsTileView;
         public bool IsLoaded { get; private set; }
 
+        #region UpdateTileView
         /// <summary>
         /// Updates if TileSize is changed
         /// </summary>
         /// 
-        #region UpdateTileView
         public void UpdateTileView()
         {
             var newSize = new Size(Options.ArtItemSizeWidth, Options.ArtItemSizeHeight);
@@ -109,13 +109,13 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
+        #region SearchGraphic
         /// <summary>
         /// Searches graphic number and selects it
         /// </summary>
         /// <param name="graphic"></param>
         /// <returns></returns>
         /// 
-        #region SearchGraphic
         public static bool SearchGraphic(int graphic)
         {
             if (!RefMarker.IsLoaded)
@@ -136,6 +136,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
+        #region SearchName
         /// <summary>
         /// Searches for name and selects
         /// </summary>
@@ -143,7 +144,6 @@ namespace UoFiddler.Controls.UserControls
         /// <param name="next">starting from current selected</param>
         /// <returns></returns>
         /// 
-        #region SearchName
         public static bool SearchName(string name, bool next)
         {
             int index = 0;
@@ -246,11 +246,11 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
+        #region Reload
         /// <summary>
         /// ReLoads if loaded
         /// </summary>
         /// 
-        #region Reload
         private void Reload()
         {
             if (IsLoaded)
@@ -1215,10 +1215,10 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
+        #region SelectInGumpsTab
         private const int _maleGumpOffset = 50_000;
         private const int _femaleGumpOffset = 60_000;
-
-        #region SelectInGumpsTab
+        
         private static void SelectInGumpsTab(int graphicId, bool female = false)
         {
             int gumpOffset = female ? _femaleGumpOffset : _maleGumpOffset;
@@ -1329,13 +1329,13 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
+        #region AddSingleItem
         /// <summary>
         /// Adds a single static item.
         /// </summary>
         /// <param name="fileName">Filename of the image to add.</param>
         /// <param name="index">Index where the static item will be added.</param>
         /// 
-        #region AddSingleItem
         private void AddSingleItem(string fileName, int index)
         {
             using (var bmpTemp = new Bitmap(fileName))
@@ -1395,12 +1395,12 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
+        #region IsIndexValid
         /// <summary>
         /// Check if it's valid index for land tile. Land tiles has fixed size 0x4000.
         /// </summary>
         /// <param name="index">Starting Index</param>
         /// 
-        #region IsIndexValid
         private static bool IsIndexValid(int index)
         {
             return index >= 0 && index <= Art.GetMaxItemId();
