@@ -49,8 +49,7 @@ namespace UoFiddler.Controls.UserControls
         // Must be non-null for synchronization. Can contain null values for invalid tiles.
         private List<Bitmap> _huedFrames = [];
 
-        [Browsable(false),
-        DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 
         #region [ CurrAnim ]
         private int CurrAnim
@@ -87,7 +86,7 @@ namespace UoFiddler.Controls.UserControls
                         graphic += _selAnimdataEntry.FrameData[_curFrame];
                     }
 
-                    pictureBox1.Image = Art.GetStatic(graphic);
+                    AminDataMainPictureBox.Image = Art.GetStatic(graphic);
                 }
                 numericUpDownFrameDelay.Value = _selAnimdataEntry.FrameInterval;
                 numericUpDownStartDelay.Value = _selAnimdataEntry.FrameStart;
@@ -174,7 +173,16 @@ namespace UoFiddler.Controls.UserControls
                     node.ForeColor = Color.Blue;
                 }
 
+                // TODO: find a better approach to this
+                // we need to fix invalid entries as there cannot be more than 64 frames
+                if (animdataEntry.FrameCount > 64)
+                {
+                    animdataEntry.FrameCount = 64;
+                    Options.ChangedUltimaClass["Animdata"] = true;
+                }
+
                 treeView1.Nodes.Add(node);
+
                 for (int i = 0; i < animdataEntry.FrameCount; ++i)
                 {
                     int frame = id + animdataEntry.FrameData[i];
@@ -259,6 +267,8 @@ namespace UoFiddler.Controls.UserControls
                 _curFrame = treeView1.SelectedNode.Index;
                 CurrAnim = (int)treeView1.SelectedNode.Parent.Tag;
             }
+
+            frameCountLabel.Text = $"Frames: {treeViewFrames.Nodes.Count}";
         }
         #endregion
 
@@ -272,11 +282,13 @@ namespace UoFiddler.Controls.UserControls
             }
 
             CurrAnim = CurrAnim;
+            
+            frameCountLabel.Text = $"Frames: {treeViewFrames.Nodes.Count}";
         }
         #endregion
 
-        #region [ btnOnClickExport ]
-        private void btnOnClickExport_Click(object sender, EventArgs e)
+        #region [ BtnOnClickExport ]
+        private void BtnOnClickExport_Click(object sender, EventArgs e)
         {
             if (_exportForm?.IsDisposed == false)
             {
@@ -292,8 +304,8 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region [ btnOnClickImport ]
-        private void btnOnClickImport_Click(object sender, EventArgs e)
+        #region [ BtnOnClickImport ]
+        private void BtnOnClickImport_Click(object sender, EventArgs e)
         {
             if (_importForm?.IsDisposed == false)
             {
@@ -346,7 +358,7 @@ namespace UoFiddler.Controls.UserControls
                 _timerFrame = 0;
             }
 
-            pictureBox1.Image = Art.GetStatic(CurrAnim + _selAnimdataEntry.FrameData[_timerFrame]);
+            AminDataMainPictureBox.Image = Art.GetStatic(CurrAnim + _selAnimdataEntry.FrameData[_timerFrame]);
         }
         #endregion
 
@@ -781,13 +793,13 @@ namespace UoFiddler.Controls.UserControls
                     if (_customHue > 0)
                     {
                         var frame = Math.Max(0, _curFrame);
-                        pictureBox1.Image = _huedFrames[frame];
+                        AminDataMainPictureBox.Image = _huedFrames[frame];
 
                     }
                     else
                     {
                         var graphic = _currAnim + (_curFrame == -1 ? 0 : _selAnimdataEntry.FrameData[_curFrame]);
-                        pictureBox1.Image = Art.GetStatic(graphic);
+                        AminDataMainPictureBox.Image = Art.GetStatic(graphic);
                     }
                 }
             }
