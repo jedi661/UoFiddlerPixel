@@ -163,7 +163,7 @@ namespace UoFiddler.Controls.UserControls
             animationlistEditToolStripMenuItem.Size = new System.Drawing.Size(168, 22);
             animationlistEditToolStripMenuItem.Text = "Animationlist Edit";
             animationlistEditToolStripMenuItem.ToolTipText = "Open Animationlist Edit Form";
-            animationlistEditToolStripMenuItem.Click += animationlistEditToolStripMenuItem_Click;
+            animationlistEditToolStripMenuItem.Click += AnimationlistEditToolStripMenuItem_Click;
             // 
             // FacingBar
             // 
@@ -433,7 +433,7 @@ namespace UoFiddler.Controls.UserControls
             copyFrameToClipboardToolStripMenuItem.Size = new System.Drawing.Size(150, 22);
             copyFrameToClipboardToolStripMenuItem.Text = "Copy Image";
             copyFrameToClipboardToolStripMenuItem.ToolTipText = "Copy Image to Clipboard";
-            copyFrameToClipboardToolStripMenuItem.Click += copyFrameToClipboardToolStripMenuItem_Click;
+            copyFrameToClipboardToolStripMenuItem.Click += CopyFrameToClipboardToolStripMenuItem_Click;
             // 
             // importImageToolStripMenuItem
             // 
@@ -442,7 +442,7 @@ namespace UoFiddler.Controls.UserControls
             importImageToolStripMenuItem.Size = new System.Drawing.Size(150, 22);
             importImageToolStripMenuItem.Text = "Import Image";
             importImageToolStripMenuItem.ToolTipText = "Import Image from Clipboard";
-            importImageToolStripMenuItem.Click += importImageToolStripMenuItem_Click;
+            importImageToolStripMenuItem.Click += ImportImageToolStripMenuItem_Click;
             // 
             // statusStrip1
             // 

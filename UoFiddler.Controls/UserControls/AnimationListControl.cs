@@ -750,7 +750,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region ListViewDrawItem
+        #region ListViewDrawItem        
         private void ListViewDrawItem(object sender, DrawListViewItemEventArgs e)
         {
             int graphic = (int)e.Item.Tag;
@@ -776,8 +776,15 @@ namespace UoFiddler.Controls.UserControls
                 height = e.Bounds.Height;
             }
 
+            
+            if (listView.SelectedItems.Contains(e.Item))
+            {                
+                e.Graphics.FillRectangle(Brushes.LightBlue, e.Bounds);
+            }
+
             e.Graphics.DrawImage(bmp, e.Bounds.X, e.Bounds.Y, width, height);
             e.DrawText(TextFormatFlags.Bottom | TextFormatFlags.HorizontalCenter);
+
             if (listView.SelectedItems.Contains(e.Item))
             {
                 e.DrawFocusRectangle();
@@ -792,9 +799,9 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        private HuePopUpForm _showForm;
-
         #region OnClick_Hue
+
+        private HuePopUpForm _showForm;
         private void OnClick_Hue(object sender, EventArgs e)
         {
             if (_showForm?.IsDisposed == false)
@@ -1271,7 +1278,7 @@ namespace UoFiddler.Controls.UserControls
         #endregion
 
         #region OnClickCopyFrameToClipboard
-        private void copyFrameToClipboardToolStripMenuItem_Click(object sender, EventArgs e)
+        private void CopyFrameToClipboardToolStripMenuItem_Click(object sender, EventArgs e)
         {
             // Check if a frame is selected in listView1
             if (listView1.SelectedItems.Count > 0)
@@ -1290,7 +1297,7 @@ namespace UoFiddler.Controls.UserControls
         #endregion
 
         #region importImage
-        private void importImageToolStripMenuItem_Click(object sender, EventArgs e)
+        private void ImportImageToolStripMenuItem_Click(object sender, EventArgs e)
         {
             // Check if a frame is selected in listView1
             if (listView1.SelectedItems.Count > 0)
@@ -1325,21 +1332,21 @@ namespace UoFiddler.Controls.UserControls
         #endregion
 
         #region animationlistEditToolStripMenuItem
-        private AnimationListEditorForm editorForm = null;
+        private AnimationListEditorForm _editorForm = null;
 
-        private void animationlistEditToolStripMenuItem_Click(object sender, EventArgs e)
+        private void AnimationlistEditToolStripMenuItem_Click(object sender, EventArgs e)
         {
             string fileName = Path.Combine(Options.AppDataPath, "Animationlist.xml");
 
-            if (editorForm == null || editorForm.IsDisposed)
+            if (_editorForm == null || _editorForm.IsDisposed)
             {
-                editorForm = new AnimationListEditorForm(fileName);
-                editorForm.Show();
+                _editorForm = new AnimationListEditorForm(fileName);
+                _editorForm.Show();
             }
             else
             {
                 // The shape is already open, so let's bring it to the foreground
-                editorForm.BringToFront();
+                _editorForm.BringToFront();
             }
         }
         #endregion
