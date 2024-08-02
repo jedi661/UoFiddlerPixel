@@ -6,6 +6,9 @@ UOFiddler based on Ultima SDK it's a tool to view and alter almost every UO 2D c
 This is an extended version of UoFiddler that has more maps and more tools, as well as Map Edit, and will be expanded over time to support the Ultima standard 
 version more than the original version. Also, some source codes from older and New projects that are no longer supported have been integrated.
 
+Version : 4.12.6
+- Added backup directory copy feature (Path Settings). 
+
 Version : 4.12.5
 - AminEdit added new features, Body Human display will be expanded, and Mounted.
 - Serilog package update.
@@ -31,7 +34,6 @@ Version : 4.12.5
 - Added edit function in Tiledata tab to edit Cou text files.
 - Added occupied item counter Items tab.
 - Added Frame Counter.
-- Added backup directory copy feature (Path Settings). 
 
 Version : 4.12.4
 - Add About revised, removed more Richtextbox and added a matrix animation with the names of the developers, new links, and new information.
