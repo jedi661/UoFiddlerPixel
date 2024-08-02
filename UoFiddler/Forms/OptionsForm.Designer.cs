@@ -65,6 +65,8 @@ namespace UoFiddler.Forms
             FocusColorLabel = new System.Windows.Forms.Label();
             SelectedColorLabel = new System.Windows.Forms.Label();
             groupBox3 = new System.Windows.Forms.GroupBox();
+            map8Nametext = new System.Windows.Forms.TextBox();
+            label13 = new System.Windows.Forms.Label();
             map7Nametext = new System.Windows.Forms.TextBox();
             label12 = new System.Windows.Forms.Label();
             label11 = new System.Windows.Forms.Label();
@@ -88,8 +90,7 @@ namespace UoFiddler.Forms
             TileFocusColorComboBox = new System.Windows.Forms.ComboBox();
             buttonClose = new System.Windows.Forms.Button();
             btAppData = new System.Windows.Forms.Button();
-            label13 = new System.Windows.Forms.Label();
-            map8Nametext = new System.Windows.Forms.TextBox();
+            BtnLogDir = new System.Windows.Forms.Button();
             groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)numericUpDownItemSizeHeight).BeginInit();
             ((System.ComponentModel.ISupportInitialize)numericUpDownItemSizeWidth).BeginInit();
@@ -402,6 +403,23 @@ namespace UoFiddler.Forms
             groupBox3.TabStop = false;
             groupBox3.Text = "Map";
             // 
+            // map8Nametext
+            // 
+            map8Nametext.Location = new System.Drawing.Point(89, 256);
+            map8Nametext.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            map8Nametext.Name = "map8Nametext";
+            map8Nametext.Size = new System.Drawing.Size(116, 23);
+            map8Nametext.TabIndex = 21;
+            // 
+            // label13
+            // 
+            label13.AutoSize = true;
+            label13.Location = new System.Drawing.Point(7, 259);
+            label13.Name = "label13";
+            label13.Size = new System.Drawing.Size(72, 15);
+            label13.TabIndex = 20;
+            label13.Text = "map8 Name";
+            // 
             // map7Nametext
             // 
             map7Nametext.Location = new System.Drawing.Point(89, 226);
@@ -619,30 +637,24 @@ namespace UoFiddler.Forms
             btAppData.TabIndex = 9;
             btAppData.Text = "AppData";
             btAppData.UseVisualStyleBackColor = true;
-            btAppData.Click += btAppData_Click;
+            btAppData.Click += BtAppData_Click;
             // 
-            // label13
+            // BtnLogDir
             // 
-            label13.AutoSize = true;
-            label13.Location = new System.Drawing.Point(7, 259);
-            label13.Name = "label13";
-            label13.Size = new System.Drawing.Size(72, 15);
-            label13.TabIndex = 20;
-            label13.Text = "map8 Name";
-            // 
-            // map8Nametext
-            // 
-            map8Nametext.Location = new System.Drawing.Point(89, 256);
-            map8Nametext.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            map8Nametext.Name = "map8Nametext";
-            map8Nametext.Size = new System.Drawing.Size(116, 23);
-            map8Nametext.TabIndex = 21;
+            BtnLogDir.Location = new System.Drawing.Point(83, 532);
+            BtnLogDir.Name = "BtnLogDir";
+            BtnLogDir.Size = new System.Drawing.Size(59, 27);
+            BtnLogDir.TabIndex = 10;
+            BtnLogDir.Text = "Log Dir";
+            BtnLogDir.UseVisualStyleBackColor = true;
+            BtnLogDir.Click += BtnLogDir_Click;
             // 
             // OptionsForm
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             ClientSize = new System.Drawing.Size(518, 565);
+            Controls.Add(BtnLogDir);
             Controls.Add(btAppData);
             Controls.Add(buttonClose);
             Controls.Add(ColorsGroupBox);
@@ -725,5 +737,6 @@ namespace UoFiddler.Forms
         private System.Windows.Forms.Label label12;
         private System.Windows.Forms.TextBox map8Nametext;
         private System.Windows.Forms.Label label13;
+        private System.Windows.Forms.Button BtnLogDir;
     }
 }

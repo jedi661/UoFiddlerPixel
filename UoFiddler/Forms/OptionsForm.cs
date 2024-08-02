@@ -90,7 +90,7 @@ namespace UoFiddler.Forms
             textBoxOutputPath.Text = Options.OutputPath;
         }
 
-        #region OnClickApply
+        #region [ OnClickApply ]
         private void OnClickApply(object sender, EventArgs e)
         {
             Options.RightPanelInSoundsTab = checkBoxPanelSoundsDesign.Checked;
@@ -202,7 +202,7 @@ namespace UoFiddler.Forms
         }
         #endregion
 
-        #region OnClickBrowseOutputPath
+        #region [ OnClickBrowseOutputPath ]
         private void OnClickBrowseOutputPath(object sender, EventArgs e)
         {
             using (FolderBrowserDialog dialog = new FolderBrowserDialog())
@@ -218,7 +218,7 @@ namespace UoFiddler.Forms
         }
         #endregion
 
-        #region TileFocusColorComboBoxDrawItem
+        #region [ TileFocusColorComboBoxDrawItem ]
         private void TileFocusColorComboBoxDrawItem(object sender, DrawItemEventArgs e)
         {
             e.DrawBackground();
@@ -246,7 +246,7 @@ namespace UoFiddler.Forms
         }
         #endregion
 
-        #region TileSelectionColorComboBoxDrawItem
+        #region [ TileSelectionColorComboBoxDrawItem ]
         private void TileSelectionColorComboBoxDrawItem(object sender, DrawItemEventArgs e)
         {
             e.DrawBackground();
@@ -274,7 +274,7 @@ namespace UoFiddler.Forms
         }
         #endregion
 
-        #region RestoreDefaultsButton
+        #region [ RestoreDefaultsButton ]
         private void RestoreDefaultsButton_Click(object sender, EventArgs e)
         {
             const string title = "Restore defaults";
@@ -293,15 +293,15 @@ namespace UoFiddler.Forms
         }
         #endregion
 
-        #region OnClickClose
+        #region [ OnClickClose ]
         private void OnClickClose(object sender, EventArgs e)
         {
             Close();
         }
         #endregion
 
-        #region btAppData_Click
-        private void btAppData_Click(object sender, EventArgs e)
+        #region [ BtAppData_Click ]
+        private void BtAppData_Click(object sender, EventArgs e)
         {
             string path = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\UoFiddler";
             if (Directory.Exists(path))
@@ -311,6 +311,21 @@ namespace UoFiddler.Forms
             else
             {
                 MessageBox.Show("Directory does not exist: " + path);
+            }
+        }
+        #endregion
+
+        #region [ BtnLogDir ]
+        private void BtnLogDir_Click(object sender, EventArgs e)
+        {
+            string logPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), @"UoFiddler\log");
+            if (Directory.Exists(logPath))
+            {
+                System.Diagnostics.Process.Start("explorer.exe", logPath);
+            }
+            else
+            {
+                MessageBox.Show("Directory does not exist: " + logPath);
             }
         }
         #endregion
