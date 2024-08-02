@@ -31,6 +31,7 @@ Version : 4.12.5
 - Added edit function in Tiledata tab to edit Cou text files.
 - Added occupied item counter Items tab.
 - Added Frame Counter.
+- Added backup directory copy feature (Path Settings). 
 
 Version : 4.12.4
 - Add About revised, removed more Richtextbox and added a matrix animation with the names of the developers, new links, and new information.
