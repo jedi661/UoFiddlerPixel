@@ -34,7 +34,7 @@ namespace UoFiddler.Forms
             tsTbRootPath.Text = Files.RootDir;
         }
 
-        #region ReloadPath
+        #region [ ReloadPath ]
         private void ReloadPath(object sender, EventArgs e)
         {
             Files.ReLoadDirectory();
@@ -46,7 +46,7 @@ namespace UoFiddler.Forms
         }
         #endregion
 
-        #region OnClickManual
+        #region [ OnClickManual ]
         private void OnClickManual(object sender, EventArgs e)
         {
             using (FolderBrowserDialog dialog = new FolderBrowserDialog())
@@ -67,7 +67,7 @@ namespace UoFiddler.Forms
         }
         #endregion
 
-        #region OnKeyDownDir
+        #region [ OnKeyDownDir ]
         private void OnKeyDownDir(object sender, KeyEventArgs e)
         {
             if (e.KeyCode != Keys.Enter)
@@ -83,7 +83,7 @@ namespace UoFiddler.Forms
         }
         #endregion
 
-        #region newDirAndMulToolStripMenuItem
+        #region [ newDirAndMulToolStripMenuItem ]
         private void newDirAndMulToolStripMenuItem_Click(object sender, EventArgs e)
         {
             using (FolderBrowserDialog dialog = new FolderBrowserDialog())
@@ -108,7 +108,7 @@ namespace UoFiddler.Forms
         }
         #endregion
 
-        #region loadSingleMulFileToolStripMenuItem   
+        #region [ loadSingleMulFileToolStripMenuItem ]
         private void loadSingleMulFileToolStripMenuItem_Click(object sender, EventArgs e)
         {
             using (OpenFileDialog dialog = new OpenFileDialog())
@@ -136,7 +136,7 @@ namespace UoFiddler.Forms
 
         #endregion
 
-        #region DeleteLineToolStripMenuItem
+        #region [ DeleteLineToolStripMenuItem ]
         private void DeleteLineToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (pgPaths.SelectedGridItem != null)
