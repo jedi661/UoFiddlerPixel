@@ -1,5 +1,6 @@
 Version : 4.12.6 #XG1
-- Added backup directory copy feature (Path Settings). 
+- Added backup directory copy feature (Path Settings).
+- Added BtnLogDir Open Log Dir (Options).
 
 Version : 4.12.5 #XG1
 - AminEdit added new features, Body Human display will be expanded, and Mounted.

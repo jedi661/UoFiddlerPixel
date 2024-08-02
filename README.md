@@ -8,6 +8,7 @@ version more than the original version. Also, some source codes from older and N
 
 Version : 4.12.6
 - Added backup directory copy feature (Path Settings). 
+- Added BtnLogDir Open Log Dir (Options).
 
 Version : 4.12.5
 - AminEdit added new features, Body Human display will be expanded, and Mounted.
