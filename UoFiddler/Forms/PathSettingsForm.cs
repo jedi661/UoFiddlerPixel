@@ -151,7 +151,72 @@ namespace UoFiddler.Forms
             }
         }
         #endregion
+
+        #region [ tsBtnBackup ]
+        private void tsBtnBackup_Click(object sender, EventArgs e)
+        {
+            if (string.IsNullOrEmpty(tsTbRootPath.Text) || !Directory.Exists(tsTbRootPath.Text))
+            {
+                MessageBox.Show("Please specify a valid source directory in tsTbRootPath.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            using (FolderBrowserDialog dialog = new FolderBrowserDialog())
+            {
+                dialog.Description = "Select the destination directory for the backup";
+                dialog.ShowNewFolderButton = true;
+
+                if (dialog.ShowDialog() == DialogResult.OK)
+                {
+                    string sourceDir = tsTbRootPath.Text;
+                    string destDir = dialog.SelectedPath;
+
+                    DialogResult result = MessageBox.Show("This function will copy all files and folders from the source directory to the destination directory. Do you want to proceed?", "Confirm Backup", MessageBoxButtons.OKCancel, MessageBoxIcon.Information);
+
+                    if (result == DialogResult.OK)
+                    {
+                        try
+                        {
+                            CopyDirectory(sourceDir, destDir);
+                            MessageBox.Show("Backup completed successfully.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        }
+                        catch (Exception ex)
+                        {
+                            MessageBox.Show($"An error occurred during the backup: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        }
+                    }
+                }
+            }
+        }
+        #endregion
+
+        #region [ CopyDirectory ]
+        private void CopyDirectory(string sourceDir, string destDir)
+        {
+            DirectoryInfo dir = new DirectoryInfo(sourceDir);
+            DirectoryInfo[] dirs = dir.GetDirectories();
+
+            if (!Directory.Exists(destDir))
+            {
+                Directory.CreateDirectory(destDir);
+            }
+
+            FileInfo[] files = dir.GetFiles();
+            foreach (FileInfo file in files)
+            {
+                string tempPath = Path.Combine(destDir, file.Name);
+                file.CopyTo(tempPath, false);
+            }
+
+            foreach (DirectoryInfo subdir in dirs)
+            {
+                string tempPath = Path.Combine(destDir, subdir.Name);
+                CopyDirectory(subdir.FullName, tempPath);
+            }
+        }
+        #endregion
     }
+
 
     #region DictionaryPropertyGridAdapter
     internal class DictionaryPropertyGridAdapter : ICustomTypeDescriptor

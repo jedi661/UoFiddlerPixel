@@ -40,6 +40,7 @@ namespace UoFiddler.Forms
         private void InitializeComponent()
         {
             components = new System.ComponentModel.Container();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(PathSettingsForm));
             pgPaths = new System.Windows.Forms.PropertyGrid();
             contextMenuPath = new System.Windows.Forms.ContextMenuStrip(components);
             newDirAndMulToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -49,6 +50,7 @@ namespace UoFiddler.Forms
             tsBtnReloadPaths = new System.Windows.Forms.ToolStripButton();
             tsBtnSetPathManual = new System.Windows.Forms.ToolStripButton();
             tsTbRootPath = new System.Windows.Forms.ToolStripTextBox();
+            tsBtnBackup = new System.Windows.Forms.ToolStripButton();
             contextMenuPath.SuspendLayout();
             tsPathSettingsMenu.SuspendLayout();
             SuspendLayout();
@@ -102,7 +104,7 @@ namespace UoFiddler.Forms
             // tsPathSettingsMenu
             // 
             tsPathSettingsMenu.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
-            tsPathSettingsMenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { tsBtnReloadPaths, tsBtnSetPathManual, tsTbRootPath });
+            tsPathSettingsMenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { tsBtnReloadPaths, tsBtnSetPathManual, tsTbRootPath, tsBtnBackup });
             tsPathSettingsMenu.Location = new System.Drawing.Point(0, 0);
             tsPathSettingsMenu.Name = "tsPathSettingsMenu";
             tsPathSettingsMenu.RenderMode = System.Windows.Forms.ToolStripRenderMode.System;
@@ -133,6 +135,17 @@ namespace UoFiddler.Forms
             tsTbRootPath.Name = "tsTbRootPath";
             tsTbRootPath.Size = new System.Drawing.Size(408, 25);
             tsTbRootPath.KeyDown += OnKeyDownDir;
+            // 
+            // tsBtnBackup
+            // 
+            tsBtnBackup.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            tsBtnBackup.Image = (System.Drawing.Image)resources.GetObject("tsBtnBackup.Image");
+            tsBtnBackup.ImageTransparentColor = System.Drawing.Color.Magenta;
+            tsBtnBackup.Name = "tsBtnBackup";
+            tsBtnBackup.Size = new System.Drawing.Size(50, 22);
+            tsBtnBackup.Text = "Backup";
+            tsBtnBackup.ToolTipText = "Copies directory folder to destination folder 1 to 1";
+            tsBtnBackup.Click += tsBtnBackup_Click;
             // 
             // PathSettingsForm
             // 
@@ -166,5 +179,6 @@ namespace UoFiddler.Forms
         private System.Windows.Forms.ToolStripMenuItem loadSingleMulFileToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem DeleteLineToolStripMenuItem;
         public System.Windows.Forms.ToolStripTextBox tsTbRootPath;
+        private System.Windows.Forms.ToolStripButton tsBtnBackup;
     }
 }
