@@ -17,6 +17,7 @@ using System.Windows.Forms;
 using UoFiddler.Classes;
 using UoFiddler.Controls.Classes;
 using System.Drawing;
+using System.Net.Http;
 
 namespace UoFiddler.Forms
 {
@@ -116,10 +117,35 @@ namespace UoFiddler.Forms
         #endregion
 
         #region OnClickUpdate
-        private async void OnClickUpdate(object sender, EventArgs e)
+        /*private async void OnClickUpdate(object sender, EventArgs e)
         {
             await UpdateRunner.RunAsync(FiddlerOptions.RepositoryOwner, FiddlerOptions.RepositoryName, FiddlerOptions.AppVersion).ConfigureAwait(false);
+        }*/
+
+        private async void OnClickUpdate(object sender, EventArgs e)
+        {
+            try
+            {
+                await UpdateRunner.RunAsync(FiddlerOptions.RepositoryOwner, FiddlerOptions.RepositoryName, FiddlerOptions.AppVersion).ConfigureAwait(false);
+            }
+            catch (HttpRequestException ex)
+            {
+                // Logging the detailed error information
+                Console.WriteLine($"Request error: {ex.Message}");
+                if (ex.InnerException != null)
+                {
+                    Console.WriteLine($"Inner exception: {ex.InnerException.Message}");
+                }
+                MessageBox.Show("An error occurred while trying to check for updates. Please check your internet connection and try again.", "Update Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            catch (Exception ex)
+            {
+                // Logging other possible errors
+                Console.WriteLine($"Unexpected error: {ex.Message}");
+                MessageBox.Show("An unexpected error occurred. Please try again later.", "Update Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
+
         #endregion
 
         #region OnClickLink Old version 4.8
