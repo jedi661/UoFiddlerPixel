@@ -26,6 +26,8 @@ using UoFiddler.Controls.Classes;
 using UoFiddler.Controls.Forms;
 using UoFiddler.Controls.Helpers;
 using UoFiddler.Controls.UserControls.TileView;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 namespace UoFiddler.Controls.UserControls
 {
@@ -50,7 +52,7 @@ namespace UoFiddler.Controls.UserControls
 
         private int _selectedGraphicId = -1;
 
-        #region SelectedGraphicId
+        #region [ SelectedGraphicId ]
         public int SelectedGraphicId
         {
             get => _selectedGraphicId;
@@ -70,7 +72,7 @@ namespace UoFiddler.Controls.UserControls
         public static TileViewControl TileView => RefMarker.ItemsTileView;
         public bool IsLoaded { get; private set; }
 
-        #region UpdateTileView
+        #region [ UpdateTileView ]
         /// <summary>
         /// Updates if TileSize is changed
         /// </summary>
@@ -109,7 +111,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region SearchGraphic
+        #region [ SearchGraphic ]
         /// <summary>
         /// Searches graphic number and selects it
         /// </summary>
@@ -136,7 +138,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region SearchName
+        #region [ SearchName ]
         /// <summary>
         /// Searches for name and selects
         /// </summary>
@@ -186,7 +188,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region OnLoad
+        #region [ OnLoad ]
         public void OnLoad(object sender, EventArgs e)
         {
             if (IsAncestorSiteInDesignMode || FormsDesignerHelper.IsInDesignMode())
@@ -246,7 +248,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region Reload
+        #region [ Reload ]
         /// <summary>
         /// ReLoads if loaded
         /// </summary>
@@ -260,14 +262,14 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region OnFilePathChangeEvent
+        #region [ OnFilePathChangeEvent ]
         private void OnFilePathChangeEvent()
         {
             Reload();
         }
         #endregion
 
-        #region OnTileDataChangeEvent
+        #region [ OnTileDataChangeEvent ]
         private void OnTileDataChangeEvent(object sender, int id)
         {
             if (!IsLoaded)
@@ -297,7 +299,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region OnItemChangeEvent
+        #region [ OnItemChangeEvent ]
         private void OnItemChangeEvent(object sender, int index)
         {
             if (!IsLoaded)
@@ -351,9 +353,9 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        private Color _backgroundColorItem = Color.White;
+        #region [ ChangeBackgroundColorToolStripMenuItem ]
 
-        #region ChangeBackgroundColorToolStripMenuItem
+        private Color _backgroundColorItem = Color.White;        
         private void ChangeBackgroundColorToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (colorDialog.ShowDialog() != DialogResult.OK)
@@ -372,9 +374,9 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        private Color _backgroundDetailColor = Color.White;
+        #region [ UpdateDetail ]
 
-        #region UpdateDetail
+        private Color _backgroundDetailColor = Color.White;        
         private void UpdateDetail(int graphic)
         {
             if (IsAncestorSiteInDesignMode || FormsDesignerHelper.IsInDesignMode())
@@ -462,7 +464,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region ChangeBackgroundColorToolStripMenuItemDetail
+        #region [ ChangeBackgroundColorToolStripMenuItemDetail ]
         private void ChangeBackgroundColorToolStripMenuItemDetail_Click(object sender, EventArgs e)
         {
             if (colorDialog.ShowDialog() != DialogResult.OK)
@@ -478,10 +480,10 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
+        #region [ OnSearchClick ]
         private ItemSearchForm _showForm;
         private bool _scrolling;
-
-        #region OnSearchClick
+        
         private void OnSearchClick(object sender, EventArgs e)
         {
             if (_showForm?.IsDisposed == false)
@@ -497,7 +499,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region OnClickFindFree
+        #region [ OnClickFindFree ]
         private void OnClickFindFree(object sender, EventArgs e)
         {
             if (_showFreeSlots)
@@ -545,7 +547,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region OnClickReplace
+        #region [ OnClickReplace ]
         private void OnClickReplace(object sender, EventArgs e)
         {
             if (_selectedGraphicId < 0)
@@ -587,7 +589,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region OnClickRemove
+        #region [ OnClickRemove ]
         private void OnClickRemove(object sender, EventArgs e)
         {
             if (!Art.IsValidStatic(_selectedGraphicId))
@@ -618,7 +620,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region OnTextChangedInsert
+        #region [ OnTextChangedInsert ]
         private void OnTextChangedInsert(object sender, EventArgs e)
         {
             if (Utils.ConvertStringToInt(InsertText.Text, out int index, 0, Art.GetMaxItemId()))
@@ -632,7 +634,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region OnKeyDownInsertText
+        #region [ OnKeyDownInsertText ]
         private void OnKeyDownInsertText(object sender, KeyEventArgs e)
         {
             if (e.KeyCode != Keys.Enter)
@@ -669,7 +671,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region UpdateToolStripLabels
+        #region [ UpdateToolStripLabels ]
         private void UpdateToolStripLabels(int graphic)
         {
             if (IsAncestorSiteInDesignMode || FormsDesignerHelper.IsInDesignMode())
@@ -692,7 +694,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region OnClickSave
+        #region [ OnClickSave ]
         private void OnClickSave(object sender, EventArgs e)
         {
             DialogResult result = MessageBox.Show("Are you sure? Will take a while", "Save", MessageBoxButtons.YesNo,
@@ -714,8 +716,9 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
+        #region [ OnClickShowFreeSlots ]
         // This method is an event handler for a button or control click
-        #region OnClickShowFreeSlots
+
         private void OnClickShowFreeSlots(object sender, EventArgs e)
         {
             // Toggle the value of the _showFreeSlots variable
@@ -765,18 +768,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region Save format
-
-        //old
-        /*private void Extract_Image_ClickBmp(object sender, EventArgs e)
-        {
-            if (_selectedGraphicId == -1)
-            {
-                return;
-            }
-
-            ExportItemImage(_selectedGraphicId, ImageFormat.Bmp);
-        }*/
+        #region [ Save format ]
 
         private void Extract_Image_ClickBmp(object sender, EventArgs e)
         {
@@ -888,7 +880,7 @@ namespace UoFiddler.Controls.UserControls
 
         #endregion
 
-        #region OnClickSelectTiledata
+        #region [ OnClickSelectTiledata ]
         private void OnClickSelectTiledata(object sender, EventArgs e)
         {
             if (_selectedGraphicId == -1)
@@ -904,7 +896,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region OnClickSelectRadarCol
+        #region [ OnClickSelectRadarCol ]
         private void OnClickSelectRadarCol(object sender, EventArgs e)
         {
             if (_selectedGraphicId >= 0)
@@ -914,7 +906,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region Misc Save
+        #region [ Misc Save ]
         private void OnClick_SaveAllBmp(object sender, EventArgs e)
         {
             ExportAllItemImages(ImageFormat.Bmp);
@@ -988,7 +980,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region OnClickPreLoad
+        #region [ OnClickPreLoad ]
         private void OnClickPreLoad(object sender, EventArgs e)
         {
             if (PreLoader.IsBusy)
@@ -1005,7 +997,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region PreLoaderDoWork
+        #region [ PreLoaderDoWork ]
         private void PreLoaderDoWork(object sender, DoWorkEventArgs e)
         {
             foreach (int item in _itemList)
@@ -1016,21 +1008,21 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region PreLoaderProgressChanged
+        #region [ PreLoaderProgressChanged ]
         private void PreLoaderProgressChanged(object sender, ProgressChangedEventArgs e)
         {
             ProgressBar.PerformStep();
         }
         #endregion
 
-        #region PreLoaderCompleted
+        #region [ PreLoaderCompleted ]
         private void PreLoaderCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
             ProgressBar.Visible = false;
         }
         #endregion
 
-        #region ItemsTileView_DrawItem
+        #region [ ItemsTileView_DrawItem ]
         private void ItemsTileView_DrawItem(object sender, TileViewControl.DrawTileListItemEventArgs e)
         {
             if (IsAncestorSiteInDesignMode || FormsDesignerHelper.IsInDesignMode())
@@ -1101,7 +1093,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region ItemsTileView_ItemSelectionChanged
+        #region [ ItemsTileView_ItemSelectionChanged ]
         private void ItemsTileView_ItemSelectionChanged(object sender, ListViewItemSelectionChangedEventArgs e)
         {
             if (!e.IsSelected)
@@ -1117,7 +1109,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region ItemsTileView_FocusSelectionChanged
+        #region [ ItemsTileView_FocusSelectionChanged ]
         private void ItemsTileView_FocusSelectionChanged(object sender, TileViewControl.ListViewFocusedItemSelectionChangedEventArgs e)
         {
             if (!e.IsFocused)
@@ -1129,7 +1121,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region UpdateSelection
+        #region [ UpdateSelection ]
         private void UpdateSelection(int itemIndex)
         {
             // Update the currentImageID when a new image is selected - Grid
@@ -1146,7 +1138,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region ItemsTileView_MouseDoubleClick
+        #region [ ItemsTileView_MouseDoubleClick ]
         public void ItemsTileView_MouseDoubleClick(object sender, MouseEventArgs e)
         {
             if (ItemsTileView.SelectedIndices.Count == 0)
@@ -1162,7 +1154,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region ItemsTileView_KeyDown
+        #region [ ItemsTileView_KeyDown ]
         private void ItemsTileView_KeyDown(object sender, KeyEventArgs e)
         {
             // Check if the Ctrl+V key combination has been pressed
@@ -1197,7 +1189,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region ItemsTileView_KeyUp
+        #region [ ItemsTileView_KeyUp ]
         private void ItemsTileView_KeyUp(object sender, KeyEventArgs e)
         {
             if (e.KeyData != Keys.PageDown && e.KeyData != Keys.PageUp)
@@ -1215,10 +1207,10 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region SelectInGumpsTab
+        #region [ SelectInGumpsTab ]
         private const int _maleGumpOffset = 50_000;
         private const int _femaleGumpOffset = 60_000;
-        
+
         private static void SelectInGumpsTab(int graphicId, bool female = false)
         {
             int gumpOffset = female ? _femaleGumpOffset : _maleGumpOffset;
@@ -1228,7 +1220,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region SelectInGumpsTabMaleToolStripMenuItem
+        #region [ SelectInGumpsTabMaleToolStripMenuItem ]
         private void SelectInGumpsTabMaleToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (SelectedGraphicId <= 0)
@@ -1240,7 +1232,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region SelectInGumpsTabFemaleToolStripMenuItem
+        #region [ SelectInGumpsTabFemaleToolStripMenuItem ]
         private void SelectInGumpsTabFemaleToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (SelectedGraphicId <= 0)
@@ -1252,7 +1244,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region TileViewContextMenuStrip
+        #region [ TileViewContextMenuStrip ]
         private void TileViewContextMenuStrip_Opening(object sender, CancelEventArgs e)
         {
             if (SelectedGraphicId <= 0)
@@ -1281,7 +1273,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region ReplaceStartingFromText_KeyDown
+        #region [ ReplaceStartingFromText_KeyDown ]
         private void ReplaceStartingFromText_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.KeyCode != Keys.Enter)
@@ -1329,7 +1321,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region AddSingleItem
+        #region [ AddSingleItem ]
         /// <summary>
         /// Adds a single static item.
         /// </summary>
@@ -1395,7 +1387,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region IsIndexValid
+        #region [ IsIndexValid ]
         /// <summary>
         /// Check if it's valid index for land tile. Land tiles has fixed size 0x4000.
         /// </summary>
@@ -1407,7 +1399,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region Copy clipboard
+        #region [ Copy clipboard ]
         private void CopyToolStripMenuItem_Click(object sender, EventArgs e)
         {
             // Check if any items are selected in the ItemsTileView
@@ -1457,7 +1449,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region Import clipbord image 
+        #region [ Import clipbord image ]
         private void ImportToolStripclipboardMenuItem_Click(object sender, EventArgs e)
         {
             // Check if the clipboard contains an image
@@ -1553,7 +1545,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region Mirror
+        #region [ Mirror Image ]
         private void MirrorToolStripMenuItem_Click(object sender, EventArgs e)
         {
             // Check if any items are selected in the ItemsTileView.
@@ -1587,7 +1579,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region new Search
+        #region [ new Search ]
         private void SearchByIdToolStripTextBox_KeyUp(object sender, KeyEventArgs e)
         {
             if (!Utils.ConvertStringToInt(searchByIdToolStripTextBox.Text, out int indexValue))
@@ -1623,7 +1615,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region Select ID to Hex
+        #region [ Select ID to Hex ]
         private void SelectIDToHexToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (_selectedGraphicId >= 0)
@@ -1637,7 +1629,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region Image swap
+        #region [ Image swap ]
         private void ImageSwapToolStripMenuItem_Click(object sender, EventArgs e)
         {
             // Make sure that exactly two items are selected
@@ -1685,7 +1677,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region reverse search
+        #region [ reverse search ]
 
         // Global variable to store the current index of the backward search        
         private int _reverseSearchIndex = -1;
@@ -1739,7 +1731,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region Paricle Gray Shadow
+        #region [ Paricle Gray Shadow ]
         private void ParticleGraylToolStripMenuItem_Click(object sender, EventArgs e)
         {
 
@@ -1844,7 +1836,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region Particle Gray ColorDialog
+        #region [ Particle Gray ColorDialog ]
         private Color selectedColor = Color.Blue; // Standardfarbe
         private void ParticleGrayColorToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -1858,7 +1850,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region drawRhombus
+        #region [ drawRhombus ]
         private void DrawRhombusToolStripMenuItem_Click(object sender, EventArgs e)
         {
             // Make sure there is an image in the PictureBox
@@ -1922,7 +1914,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region GridPictureToolStripMenuItem
+        #region [ GridPictureToolStripMenuItem ]
 
         private int currentImageID;
 
@@ -1942,7 +1934,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region ShowImageWithBackground
+        #region [ ShowImageWithBackground ]
         private void ShowImageWithBackground(int imageIndex)
         {
             // Load the image you want to display
@@ -1973,7 +1965,7 @@ namespace UoFiddler.Controls.UserControls
 
         #endregion
 
-        #region Copy Clipboard DetailPictureBox
+        #region [ Copy Clipboard DetailPictureBox ]
         private void CopyClipboardToolStripMenuItem_Click(object sender, EventArgs e)
         {
             // Check whether an image is displayed in the DetailPictureBox
@@ -1990,7 +1982,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region Grid Color
+        #region [ Grid Color ]
         private Color selectedColorGrid = Color.FromArgb(244, 101, 255); // Default color #f465ff
 
         private void SelectColorToolStripMenuItem_Click(object sender, EventArgs e)
@@ -2032,7 +2024,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region colorsImageToolStripMenuIte
+        #region [ colorsImageToolStripMenuIte ]
         // Global variable for the DataGridView and the shape
         DataGridView colorGrid;
         Form colorForm;
@@ -2078,7 +2070,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region UpdateColors Datagridview
+        #region [ UpdateColors Datagridview ]
         private void UpdateColors()
         {
             // Check that colorGrid and colorForm are initialized and the shape is visible
@@ -2127,7 +2119,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region markToolStripMenuItem
+        #region [ markToolStripMenuItem ]
         // Variable for storing the marked position
         private int markedPosition = -1;
 
@@ -2141,7 +2133,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region goToMarkedPositionToolStripMenuItem
+        #region [ goToMarkedPositionToolStripMenuItem ]
         // Method to return to marked position
         private void GoToMarkedPositionToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -2154,7 +2146,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region TileViewContextMenuStrip_Closing
+        #region [ TileViewContextMenuStrip_Closing ]
         private void TileViewContextMenuStrip_Closing(object sender, ToolStripDropDownClosingEventArgs e)
         {
             // Check if any items are selected in the ItemsTileView
@@ -2166,8 +2158,8 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region grayscaleToolStripMenuItem     
-        #region ArrayList grayscaleColors
+        #region [ grayscaleToolStripMenuItem ] 
+        #region [ ArrayList grayscaleColors ]
         private ArrayList grayscaleColors =
         [
             ColorTranslator.FromHtml("#030303"), ColorTranslator.FromHtml("#040404"),
@@ -2344,7 +2336,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region SaveImageNameAndHexToTempToolStripMenuItem
+        #region [ SaveImageNameAndHexToTempToolStripMenuItem ]
         private void SaveImageNameAndHexToTempToolStripMenuItem_Click(object sender, EventArgs e)
         {
             // Check whether one or more graphics are selected
@@ -2449,6 +2441,246 @@ namespace UoFiddler.Controls.UserControls
             CountOccupiedItems();
         }
         #endregion
+        #endregion
+
+        #region [ toolStripButtonColorImag ]
+        private void toolStripButtonColorImage_Click(object sender, EventArgs e)
+        {
+            // Create a new form
+            Form colorForm = new Form
+            {
+                Text = "Color Values for Selected Image",
+                Width = 1000,
+                Height = 970
+            };
+
+            // Hide the icon
+            colorForm.ShowIcon = false;
+
+            // Create a new SplitContainer
+            SplitContainer splitContainer = new SplitContainer
+            {
+                Dock = DockStyle.Fill,
+                Orientation = Orientation.Vertical
+            };
+
+            // Add the SplitContainer to the form
+            colorForm.Controls.Add(splitContainer);
+
+            // Create a new PictureBox with Scrollbars
+            PictureBox pictureBox = new PictureBox
+            {
+                SizeMode = PictureBoxSizeMode.AutoSize
+            };
+
+            // Create a Panel to host the PictureBox and enable scrolling
+            Panel picturePanel = new Panel
+            {
+                AutoScroll = true,
+                Dock = DockStyle.Fill
+            };
+            picturePanel.Controls.Add(pictureBox);
+
+            // Create a new RichTextBox
+            RichTextBox colorBox = new RichTextBox
+            {
+                Dock = DockStyle.Fill
+            };
+
+            // Add the RichTextBox to the SplitContainer
+            splitContainer.Panel2.Controls.Add(colorBox);
+
+            // Add the Panel with the PictureBox to the SplitContainer
+            splitContainer.Panel1.Controls.Add(picturePanel);
+
+            // Get the selected image from the DetailPictureBox
+            Bitmap selectedImage = DetailPictureBox.Image as Bitmap;
+
+            // Check if the selectedImage is null
+            if (selectedImage == null)
+            {
+                MessageBox.Show("No image selected in DetailPictureBox.");
+                return;
+            }
+
+            // Calculate the zoomed image size
+            int zoomFactor = 10;
+            int zoomedWidth = selectedImage.Width * zoomFactor;
+            int zoomedHeight = selectedImage.Height * zoomFactor;
+
+            // Create a new bitmap to hold the zoomed image
+            Bitmap zoomedImage = new Bitmap(zoomedWidth, zoomedHeight);
+
+            using (Graphics g = Graphics.FromImage(zoomedImage))
+            {
+                // Draw the original image scaled by a factor of 10
+                g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
+                g.PixelOffsetMode = System.Drawing.Drawing2D.PixelOffsetMode.Half;
+                g.DrawImage(selectedImage, new Rectangle(0, 0, zoomedWidth, zoomedHeight));
+            }
+
+            // Set the PictureBox's image to the zoomed image
+            pictureBox.Image = zoomedImage;
+
+            // Create a StringBuilder to collect color text
+            StringBuilder colorTextBuilder = new StringBuilder();
+
+            // Array to hold the line indices of the colorBox
+            int[,] lineIndices = new int[selectedImage.Width, selectedImage.Height];
+
+            // Populate the RichTextBox with color information excluding black and white
+            Task.Run(() =>
+            {
+                int currentLineIndex = 0;
+                for (int y = 0; y < selectedImage.Height; y++)
+                {
+                    for (int x = 0; x < selectedImage.Width; x++)
+                    {
+                        Color pixelColor = selectedImage.GetPixel(x, y);
+                        string hexColor = ColorTranslator.ToHtml(pixelColor);
+
+                        // Skip the colors #FFFFFF (white) and #000000 (black)
+                        if (hexColor.Equals("#FFFFFF", StringComparison.OrdinalIgnoreCase) || hexColor.Equals("#000000", StringComparison.OrdinalIgnoreCase))
+                        {
+                            lineIndices[x, y] = -1; // Mark as skipped
+                            continue;
+                        }
+
+                        // Create the text for the color
+                        string colorText = $"Pixel ({x}, {y}): Color [R={pixelColor.R}, G={pixelColor.G}, B={pixelColor.B}], Hex: {hexColor}";
+                        lineIndices[x, y] = currentLineIndex++; // Store the line index for this pixel
+
+                        // Update the RichTextBox on the UI thread
+                        colorBox.Invoke((Action)(() =>
+                        {
+                            int start = colorBox.Text.Length;
+                            colorBox.AppendText(colorText);
+
+                            // Add 5 spaces without color
+                            colorBox.AppendText("     ");
+
+                            // Add 5 spaces with the background color
+                            int colorStart = colorBox.Text.Length;
+                            colorBox.AppendText("     ");
+                            colorBox.Select(colorStart, 5);
+                            colorBox.SelectionBackColor = pixelColor;
+
+                            // Add a new line
+                            colorBox.AppendText("\n");
+                        }));
+                    }
+                }
+            });
+
+            // Variable to store the previously highlighted line index
+            int previousLineIndex = -1;
+
+            pictureBox.MouseClick += (s, evt) =>
+            {
+                int x = evt.X / zoomFactor;
+                int y = evt.Y / zoomFactor;
+
+                if (x >= 0 && x < selectedImage.Width && y >= 0 && y < selectedImage.Height)
+                {
+                    int lineIndex = lineIndices[x, y];
+
+                    // Highlight the line only if it's not skipped
+                    if (lineIndex >= 0 && lineIndex < colorBox.Lines.Length)
+                    {
+                        // Clear previous highlight
+                        if (previousLineIndex >= 0 && previousLineIndex < colorBox.Lines.Length)
+                        {
+                            int prevStart = colorBox.GetFirstCharIndexFromLine(previousLineIndex);
+                            int prevLength = colorBox.Lines[previousLineIndex].IndexOf("Hex:") + 10; // Length up to and including the hex color
+                            colorBox.Select(prevStart, prevLength);
+                            colorBox.SelectionBackColor = colorBox.BackColor;
+
+                            // Restore color background for color square
+                            string prevLineText = colorBox.Lines[previousLineIndex];
+                            Match prevMatch = Regex.Match(prevLineText, @"Hex: (#?[0-9A-Fa-f]{6})");
+                            if (prevMatch.Success)
+                            {
+                                int prevColorStart = prevStart + prevLineText.Length + 5; // Color square position
+                                colorBox.Select(prevColorStart, 5);
+                                Color prevPixelColor = selectedImage.GetPixel(x, y);
+                                colorBox.SelectionBackColor = prevPixelColor;
+                            }
+                        }
+
+                        // Select the new line up to the hex color
+                        int start = colorBox.GetFirstCharIndexFromLine(lineIndex);
+                        int length = colorBox.Lines[lineIndex].IndexOf("Hex:") + 10; // Length up to and including the hex color
+                        colorBox.Select(start, length);
+                        colorBox.SelectionBackColor = Color.LightGray;
+
+                        // Scroll to the selected line
+                        colorBox.ScrollToCaret();
+
+                        // Copy the hex color code to clipboard
+                        string lineText = colorBox.Lines[lineIndex];
+                        Match match = Regex.Match(lineText, @"Hex: (#?[0-9A-Fa-f]{6})");
+                        if (match.Success)
+                        {
+                            Clipboard.SetText(match.Groups[1].Value);
+                        }
+
+                        // Update the previous line index
+                        previousLineIndex = lineIndex;
+                    }
+                    else
+                    {
+                        // Handle the case where black or white is clicked
+                        Color pixelColor = selectedImage.GetPixel(x, y);
+                        string hexColor = ColorTranslator.ToHtml(pixelColor);
+                        Clipboard.SetText(hexColor); // Copy the color code to the clipboard
+                        MessageBox.Show($"Selected color {hexColor} is not listed in the RichTextBox.");
+                    }
+                }
+            };
+
+            // View the form
+            colorForm.Show();
+        }
+        #endregion
+
+        #region [ class PixelBox ]
+        public class PixelBox : Control
+        {
+            public Bitmap Image { get; set; }
+            public event Action<int, int> PixelSelected;
+
+            protected override void OnPaint(PaintEventArgs e)
+            {
+                base.OnPaint(e);
+
+                if (Image != null)
+                {
+                    for (int x = 0; x < Image.Width; x++)
+                    {
+                        for (int y = 0; y < Image.Height; y++)
+                        {
+                            Color pixelColor = Image.GetPixel(x, y);
+                            using (Brush brush = new SolidBrush(pixelColor))
+                            {
+                                e.Graphics.FillRectangle(brush, x * 10, y * 10, 10, 10);
+                            }
+                        }
+                    }
+                }
+            }
+
+            #region OnMouseDown
+            protected override void OnMouseDown(MouseEventArgs e)
+            {
+                base.OnMouseDown(e);
+
+                int x = e.X / 10;
+                int y = e.Y / 10;
+
+                PixelSelected?.Invoke(x, y);
+            }
+            #endregion
+        }
         #endregion
     }
 }

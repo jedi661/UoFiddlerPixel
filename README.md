@@ -9,6 +9,7 @@ version more than the original version. Also, some source codes from older and N
 Version : 4.12.6
 - Added backup directory copy feature (Path Settings). 
 - Added BtnLogDir Open Log Dir (Options).
+- Added function reads the colors of an image, displays them in a RichTextBox, and allows visualization in a PictureBox through highlighting. (Items).
 
 Version : 4.12.5
 - AminEdit added new features, Body Human display will be expanded, and Mounted.
