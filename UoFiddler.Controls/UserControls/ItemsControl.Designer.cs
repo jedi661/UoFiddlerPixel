@@ -121,9 +121,9 @@ namespace UoFiddler.Controls.UserControls
             asJpgToolStripMenuItem = new ToolStripMenuItem();
             asPngToolStripMenuItem = new ToolStripMenuItem();
             toolStripButton1 = new ToolStripButton();
+            toolStripButtonColorImage = new ToolStripButton();
             colorDialog = new ColorDialog();
             collapsibleSplitter1 = new CollapsibleSplitter();
-            toolStripButtonColorImage = new ToolStripButton();
             ((System.ComponentModel.ISupportInitialize)splitContainer2).BeginInit();
             splitContainer2.Panel1.SuspendLayout();
             splitContainer2.Panel2.SuspendLayout();
@@ -677,7 +677,7 @@ namespace UoFiddler.Controls.UserControls
             // ToolStrip
             // 
             ToolStrip.GripStyle = ToolStripGripStyle.Hidden;
-            ToolStrip.Items.AddRange(new ToolStripItem[] { toolStripLabel1, searchByIdToolStripTextBox, toolStripLabel2, searchByNameToolStripTextBox, searchByNameToolStripButton, SearchToolStripButton, ReverseSearchToolStripButton, ProgressBar, PreloadItemsToolStripButton, MiscToolStripDropDownButton, toolStripButton1, toolStripButtonColorImage });
+            ToolStrip.Items.AddRange(new ToolStripItem[] { toolStripLabel1, searchByIdToolStripTextBox, toolStripLabel2, searchByNameToolStripTextBox, searchByNameToolStripButton, SearchToolStripButton, ReverseSearchToolStripButton, ProgressBar, PreloadItemsToolStripButton, MiscToolStripDropDownButton, toolStripButtonColorImage, toolStripButton1 });
             ToolStrip.Location = new System.Drawing.Point(0, 0);
             ToolStrip.Name = "ToolStrip";
             ToolStrip.RenderMode = ToolStripRenderMode.System;
@@ -812,6 +812,17 @@ namespace UoFiddler.Controls.UserControls
             toolStripButton1.ToolTipText = "Save Items.mul file";
             toolStripButton1.Click += OnClickSave;
             // 
+            // toolStripButtonColorImage
+            // 
+            toolStripButtonColorImage.DisplayStyle = ToolStripItemDisplayStyle.Image;
+            toolStripButtonColorImage.Image = Properties.Resources.colordialog;
+            toolStripButtonColorImage.ImageTransparentColor = System.Drawing.Color.Magenta;
+            toolStripButtonColorImage.Name = "toolStripButtonColorImage";
+            toolStripButtonColorImage.Size = new System.Drawing.Size(23, 25);
+            toolStripButtonColorImage.Text = "toolStripButton2";
+            toolStripButtonColorImage.ToolTipText = "Reads the colors from the item image, displays them in a PictureBox and in a RichTextBox.";
+            toolStripButtonColorImage.Click += toolStripButtonColorImage_Click;
+            // 
             // collapsibleSplitter1
             // 
             collapsibleSplitter1.AnimationDelay = 20;
@@ -828,16 +839,6 @@ namespace UoFiddler.Controls.UserControls
             collapsibleSplitter1.TabStop = false;
             collapsibleSplitter1.UseAnimations = false;
             collapsibleSplitter1.VisualStyle = VisualStyles.DoubleDots;
-            // 
-            // toolStripButtonColorImage
-            // 
-            toolStripButtonColorImage.DisplayStyle = ToolStripItemDisplayStyle.Image;
-            toolStripButtonColorImage.Image = (System.Drawing.Image)resources.GetObject("toolStripButtonColorImage.Image");
-            toolStripButtonColorImage.ImageTransparentColor = System.Drawing.Color.Magenta;
-            toolStripButtonColorImage.Name = "toolStripButtonColorImage";
-            toolStripButtonColorImage.Size = new System.Drawing.Size(23, 25);
-            toolStripButtonColorImage.Text = "toolStripButton2";
-            toolStripButtonColorImage.Click += toolStripButtonColorImage_Click;
             // 
             // ItemsControl
             // 
