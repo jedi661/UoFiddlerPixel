@@ -35,7 +35,7 @@ namespace UoFiddler.Controls.UserControls
         // Declaration of the isDrawingRectangle variable
         private bool isDrawingRectangle = false;
 
-        #region MapControl
+        #region [ MapControl ]
         public MapControl()
         {
             InitializeComponent();
@@ -54,8 +54,8 @@ namespace UoFiddler.Controls.UserControls
 
             //maps
             Options.MapNames = new string[] { "Map.Felucca", "Map.Trammel", "Map.Ilshenar", "Map.Malas", "Map.Tokuno", "Map.TerMur", "Map.Forell", "Map.Dragon", "Map.IntermediateWorld" }; // Namen festlegen für neue Karten.
-        
-        
+
+
         }
         #endregion
 
@@ -85,10 +85,10 @@ namespace UoFiddler.Controls.UserControls
         private int targetZoomLevel = 0;
         private const int ZoomTimerInterval = 10;
 
-        #region RectangleDrawnEventArgs = coordinates
+        #region [ class RectangleDrawnEventArgs ]
         // Delegate definition = coordinates
         public delegate void RectangleDrawnEventHandler(object sender, RectangleDrawnEventArgs e);
-
+       
         // Event definition = coordinates
         public event RectangleDrawnEventHandler RectangleDrawn;
 
@@ -100,7 +100,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region Reload
+        #region [ Reload ]
         /// <summary>
         /// ReLoads if loaded
         /// </summary>
@@ -122,7 +122,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region OnLoad
+        #region [ OnLoad ]
         private void OnLoad(object sender, EventArgs e)
         {
             if (IsAncestorSiteInDesignMode || FormsDesignerHelper.IsInDesignMode())
@@ -163,42 +163,42 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region OnMapDiffChangeEvent
+        #region [ OnMapDiffChangeEvent ]
         private void OnMapDiffChangeEvent()
         {
             pictureBox.Invalidate();
         }
         #endregion
 
-        #region OnMapNameChangeEvent
+        #region [ OnMapNameChangeEvent ]
         private void OnMapNameChangeEvent()
         {
             ChangeMapNames();
         }
         #endregion
 
-        #region OnMapSizeChangeEvent
+        #region [ OnMapSizeChangeEvent ]
         private void OnMapSizeChangeEvent()
         {
             Reload();
         }
         #endregion
 
-        #region OnFilePathChangeEvent
+        #region [ OnFilePathChangeEvent ]
         private void OnFilePathChangeEvent()
         {
             Reload();
         }
         #endregion
 
-        #region RefreshMap
+        #region [ RefreshMap ]
         public void RefreshMap()
         {
             pictureBox.Invalidate();
         }
         #endregion
 
-        #region ChangeMapNames
+        #region [ ChangeMapNames ]
         /// <summary>
         /// Changes the Names of maps
         /// </summary>        
@@ -224,21 +224,21 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region HandleScroll
+        #region [ HandleScroll ]
         private void HandleScroll(object sender, ScrollEventArgs e)
         {
             pictureBox.Invalidate();
         }
         #endregion
 
-        #region public static int Round
+        #region [ public static int Round ]
         public static int Round(int x)
         {
             return (x >> 3) << 3;
         }
         #endregion
 
-        #region ZoomMap
+        #region [ ZoomMap ]
         private void ZoomMap(ref Bitmap bmp0)
         {
             Bitmap bmp1 = new Bitmap((int)(_map.Width * Zoom), (int)(_map.Height * Zoom));
@@ -251,7 +251,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region SetScrollBarValues
+        #region [ SetScrollBarValues ]
         private void SetScrollBarValues()
         {
             vScrollBar.Minimum = 0;
@@ -266,7 +266,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region ChangeScrollBar
+        #region [ ChangeScrollBar ]
         private void ChangeScrollBar()
         {
             if (PreloadWorker.IsBusy)
@@ -301,7 +301,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region OnResize
+        #region [ OnResize ]
         private void OnResize(object sender, EventArgs e)
         {
             if (IsAncestorSiteInDesignMode || FormsDesignerHelper.IsInDesignMode())
@@ -324,7 +324,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region ChangeMap
+        #region [ ChangeMap ]
         private void ChangeMap()
         {
             PreloadMap.Visible = !CurrentMap.IsCached(showStaticsToolStripMenuItem1.Checked);
@@ -333,7 +333,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region ResetCheckedMap
+        #region [ ResetCheckedMap ]
         private void ResetCheckedMap()
         {
             feluccaToolStripMenuItem.Checked = false;
@@ -348,7 +348,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region ChangeMapFelucca
+        #region [ ChangeMapFelucca ]
         private void ChangeMapFelucca(object sender, EventArgs e)
         {
             if (feluccaToolStripMenuItem.Checked)
@@ -364,7 +364,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region ChangeMapTrammel
+        #region [ ChangeMapTrammel ]
         private void ChangeMapTrammel(object sender, EventArgs e)
         {
             if (trammelToolStripMenuItem.Checked)
@@ -380,7 +380,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region ChangeMapIlshenar
+        #region [ ChangeMapIlshenar ]
         private void ChangeMapIlshenar(object sender, EventArgs e)
         {
             if (ilshenarToolStripMenuItem.Checked)
@@ -396,7 +396,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region ChangeMapMalas
+        #region [ ChangeMapMalas ]
         private void ChangeMapMalas(object sender, EventArgs e)
         {
             if (malasToolStripMenuItem.Checked)
@@ -412,7 +412,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region ChangeMapTokuno
+        #region [ ChangeMapTokuno ]
         private void ChangeMapTokuno(object sender, EventArgs e)
         {
             if (tokunoToolStripMenuItem.Checked)
@@ -428,7 +428,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region ChangeMapTerMur
+        #region [ ChangeMapTerMur ]
         private void ChangeMapTerMur(object sender, EventArgs e)
         {
             if (terMurToolStripMenuItem.Checked)
@@ -444,7 +444,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region ChangeMapForell
+        #region [ ChangeMapForell ]
         private void ChangeMapForell(object sender, EventArgs e) //New Map
         {
             if (forellToolStripMenuItem.Checked)
@@ -459,7 +459,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region ChangeMapDragon
+        #region [ ChangeMapDragon ]
         private void ChangeMapDragon(object sender, EventArgs e) //New Map Dragon
         {
             if (dragonToolStripMenuItem.Checked)
@@ -474,7 +474,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region Intermediate World
+        #region [ Intermediate World ]
         private void ChangeIntermediateWorld(object sender, EventArgs e) //New Map Intermediate world
         {
             if (intermediateWorldToolStripMenuItem.Checked)
@@ -489,7 +489,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region OnMouseDown
+        #region [ OnMouseDown ]
         private void OnMouseDown(object sender, MouseEventArgs e)
         {
             // Check that we are in drawing mode
@@ -519,7 +519,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region OnMouseUp
+        #region [ OnMouseUp ]
         private void OnMouseUp(object sender, MouseEventArgs e)
         {
             if (PreloadWorker.IsBusy)
@@ -545,7 +545,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region OnMouseMove
+        #region [ OnMouseMove ]
         private void OnMouseMove(object sender, MouseEventArgs e)
         {
             // Check that we are in drawing mode and the left mouse button is pressed
@@ -593,14 +593,14 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region OnClick_ShowClientLoc
+        #region [ OnClick_ShowClientLoc ]
         private void OnClick_ShowClientLoc(object sender, EventArgs e)
         {
             _syncWithClient = !_syncWithClient;
         }
         #endregion
 
-        #region OnClick_GotoClientLoc
+        #region [ OnClick_GotoClientLoc ]
         private void OnClick_GotoClientLoc(object sender, EventArgs e)
         {
             int x = 0;
@@ -636,7 +636,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region SwitchMap        
+        #region [ SwitchMap ]  
         private void SwitchMap(int mapId)
         {
             // Create lists of ToolStripMenuItems and cards that correspond to the cards
@@ -652,7 +652,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region SyncClientTimer
+        #region [ SyncClientTimer ]
         private void SyncClientTimer(object sender, EventArgs e)
         {
             if (!_syncWithClient)
@@ -688,14 +688,14 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region  GetMapInfo
+        #region [ GetMapInfo ]
         private void GetMapInfo(object sender, EventArgs e)
         {
             new MapDetailsForm(CurrentMap, _currentPoint).Show();
         }
         #endregion
 
-        #region OnOpenContext
+        #region [ OnOpenContext ]
         private void OnOpenContext(object sender, CancelEventArgs e)  // Save for GetMapInfo
         {
             _currentPoint = pictureBox.PointToClient(MousePosition);
@@ -706,21 +706,21 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region OnContextClosed
+        #region [ OnContextClosed ]
         private void OnContextClosed(object sender, ToolStripDropDownClosedEventArgs e)
         {
             pictureBox.Invalidate();
         }
         #endregion
 
-        #region OnDropDownClosed
+        #region [ OnDropDownClosed ]
         private void OnDropDownClosed(object sender, EventArgs e)
         {
             pictureBox.Invalidate();
         }
         #endregion
 
-        #region OnMouseWheel
+        #region [ OnMouseWheel ]
         private void OnMouseWheel(object sender, MouseEventArgs e)
         {
             if (_renderingZoom)
@@ -744,7 +744,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region Zoom
+        #region [ Zoom ]
 
         private const double MaxZoom = 16; // Here you can set the zoom factor  4 or 8 or 16 or 32...
         private const double MinZoom = 0.25;
@@ -792,7 +792,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region OnPaint
+        #region [ OnPaint ]
         private void OnPaint(object sender, PaintEventArgs e)
         {
             if (IsAncestorSiteInDesignMode || FormsDesignerHelper.IsInDesignMode())
@@ -864,7 +864,6 @@ namespace UoFiddler.Controls.UserControls
                 }
             }
 
-
             // Check if we should draw a rectangle
             if (isDrawingRectangle)
             {
@@ -877,7 +876,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region OnKeyDownGoto
+        #region [ OnKeyDownGoto ]
         private void OnKeyDownGoto(object sender, KeyEventArgs e)
         {
             if (e.KeyCode != Keys.Enter)
@@ -908,7 +907,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region OnClickSendClient
+        #region [ OnClickSendClient ]
         private void OnClickSendClient(object sender, EventArgs e)
         {
             if (!Client.Running)
@@ -924,7 +923,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region OnClickSendClientToPos
+        #region [ OnClickSendClientToPos ]
         private void OnClickSendClientToPos(object sender, EventArgs e)
         {
             if (Client.Running)
@@ -934,7 +933,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region SendCharTo
+        #region [ SendCharTo ]
         private void SendCharTo(int x, int y)
         {
             string format = "{0} " + Options.MapArgs;
@@ -943,35 +942,35 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region ExtractMapBmp
+        #region [ ExtractMapBmp ]
         private void ExtractMapBmp(object sender, EventArgs e)
         {
             ExtractMapImage(ImageFormat.Bmp);
         }
         #endregion
 
-        #region ExtractMapTiff
+        #region [ ExtractMapTiff ]
         private void ExtractMapTiff(object sender, EventArgs e)
         {
             ExtractMapImage(ImageFormat.Tiff);
         }
         #endregion
 
-        #region ExtractMapJpg
+        #region [ ExtractMapJpg ]
         private void ExtractMapJpg(object sender, EventArgs e)
         {
             ExtractMapImage(ImageFormat.Jpeg);
         }
         #endregion
 
-        #region ExtractMapPng
+        #region [ ExtractMapPng ]
         private void ExtractMapPng(object sender, EventArgs e)
         {
             ExtractMapImage(ImageFormat.Png);
         }
         #endregion
 
-        #region ExtractMapImage       
+        #region [ ExtractMapImage ]
 
         private void ExtractMapImage(ImageFormat imageFormat)
         {
@@ -1018,7 +1017,8 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region MapMarkerForm
+        #region [ MapMarkerForm ]
+
         private MapMarkerForm _mapMarkerForm;
 
         private void OnClickInsertMarker(object sender, EventArgs e)
@@ -1040,7 +1040,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region AddOverlay
+        #region [ AddOverlay ]
         public static void AddOverlay(int x, int y, int mapId, Color color, string text)
         {
             // If the node for the map doesn't already exist, create it
@@ -1056,11 +1056,11 @@ namespace UoFiddler.Controls.UserControls
             OverlayCursor o = new OverlayCursor(new Point(x, y), mapId, text, color);
             TreeNode node = new TreeNode(text) { Tag = o };
             _refMarker.OverlayObjectTree.Nodes[mapId].Nodes.Add(node);
-            _refMarker.pictureBox.Invalidate();            
+            _refMarker.pictureBox.Invalidate();
         }
         #endregion
 
-        #region LoadMapOverlays
+        #region [ LoadMapOverlays ]
         public void LoadMapOverlays()
         {
             OverlayObjectTree.BeginUpdate();
@@ -1108,7 +1108,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region AddOverlayGroups        
+        #region [ AddOverlayGroups ] 
         private void AddOverlayGroups()
         {
             for (int i = 0; i < Options.MapNames.Length; i++)
@@ -1122,7 +1122,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion  
 
-        #region SaveMapOverlays
+        #region [ SaveMapOverlays ]
         public static void SaveMapOverlays()
         {
             if (!_loaded)
@@ -1165,7 +1165,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region OnClickPreloadMap
+        #region [ OnClickPreloadMap ]
         private void OnClickPreloadMap(object sender, EventArgs e)
         {
             if (PreloadWorker.IsBusy)
@@ -1182,7 +1182,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region PreLoadDoWork
+        #region [ PreLoadDoWork ]
         private void PreLoadDoWork(object sender, DoWorkEventArgs e)
         {
             //Ultima.Map workmap = (Ultima.Map)((object[])e.Argument)[0]; // TODO: unused variable?
@@ -1200,14 +1200,14 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region PreLoadProgressChanged
+        #region [ PreLoadProgressChanged ]
         private void PreLoadProgressChanged(object sender, ProgressChangedEventArgs e)
         {
             ProgressBar.PerformStep();
         }
         #endregion
 
-        #region PreLoadCompleted
+        #region [ PreLoadCompleted ]
         private void PreLoadCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
             ProgressBar.Visible = false;
@@ -1216,14 +1216,14 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region OnDoubleClickMarker
+        #region [ OnDoubleClickMarker ]
         private void OnDoubleClickMarker(object sender, TreeNodeMouseClickEventArgs e)
         {
             OnClickGotoMarker(this, null);
         }
         #endregion
 
-        #region OnClickGotoMarker
+        #region [ OnClickGotoMarker ]
         private void OnClickGotoMarker(object sender, EventArgs e)
         {
             if (OverlayObjectTree.SelectedNode?.Parent == null)
@@ -1245,7 +1245,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region OnClickRemoveMarker
+        #region [ OnClickRemoveMarker ]
         private void OnClickRemoveMarker(object sender, EventArgs e)
         {
             if (OverlayObjectTree.SelectedNode?.Parent == null)
@@ -1258,7 +1258,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region OnClickSwitchVisible
+        #region [ OnClickSwitchVisible ]
         private void OnClickSwitchVisible(object sender, EventArgs e)
         {
             if (OverlayObjectTree.SelectedNode?.Parent == null)
@@ -1275,7 +1275,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region OnChangeView
+        #region [ OnChangeView ]
         private void OnChangeView(object sender, EventArgs e)
         {
             PreloadMap.Visible = !CurrentMap.IsCached(showStaticsToolStripMenuItem1.Checked);
@@ -1283,7 +1283,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region OnClickDefragStatics
+        #region [ OnClickDefragStatics ]
         private void OnClickDefragStatics(object sender, EventArgs e)
         {
             Cursor.Current = Cursors.WaitCursor;
@@ -1294,7 +1294,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region OnClickDefragRemoveStatics
+        #region [ OnClickDefragRemoveStatics ]
         private void OnClickDefragRemoveStatics(object sender, EventArgs e)
         {
             Cursor.Current = Cursors.WaitCursor;
@@ -1305,7 +1305,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region OnResizeMap
+        #region [ OnResizeMap ]
         private void OnResizeMap(object sender, EventArgs e)
         {
             if (PreloadWorker.IsBusy)
@@ -1344,6 +1344,9 @@ namespace UoFiddler.Controls.UserControls
             zoomTimer.Tick += PerformZoomStep;
             zoomTimer.Start();
         }
+        #endregion
+
+        #region [ PerformZoomStep ]
         private void PerformZoomStep(object sender, EventArgs e)
         {
             // Zoom gradually until the desired zoom level is reached
@@ -1376,7 +1379,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region ReWriteMap
+        #region [ ReWriteMap ]
         private void OnClickRewriteMap(object sender, EventArgs e)
         {
             Cursor.Current = Cursors.WaitCursor;
@@ -1388,7 +1391,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region OnClickReportInvisStatics
+        #region [ OnClickReportInvisStatics ]
         private void OnClickReportInvisStatics(object sender, EventArgs e)
         {
             Cursor.Current = Cursors.WaitCursor;
@@ -1399,7 +1402,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region OnClickReportInvalidMapIDs
+        #region [ OnClickReportInvalidMapIDs ]
         private void OnClickReportInvalidMapIDs(object sender, EventArgs e)
         {
             Cursor.Current = Cursors.WaitCursor;
@@ -1410,9 +1413,9 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        private MapReplaceForm _showForm;
+        #region [ OnClickCopy ]
 
-        #region OnClickCopy
+        private MapReplaceForm _showForm;        
         private void OnClickCopy(object sender, EventArgs e)
         {
             if (_showForm?.IsDisposed == false)
@@ -1428,9 +1431,9 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        private MapDiffInsertForm _showFormMapDiff;
+        #region [ OnClickInsertDiffData ]
 
-        #region OnClickInsertDiffData
+        private MapDiffInsertForm _showFormMapDiff;        
         private void OnClickInsertDiffData(object sender, EventArgs e)
         {
             if (_showFormMapDiff?.IsDisposed == false)
@@ -1446,7 +1449,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region OnClickStaticImport
+        #region [ OnClickStaticImport ]
         private void OnClickStaticImport(object sender, EventArgs e)
         {
             OpenFileDialog dialog = new OpenFileDialog
@@ -1468,7 +1471,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region StaticImport
+        #region [ StaticImport ]
         private void StaticImport(string filename)
         {
             StreamReader ip = new StreamReader(filename);
@@ -1566,9 +1569,8 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        private MapMeltStaticsForm _showMeltStaticsForm;
-
-        #region OnClickMeltStatics
+        #region [ OnClickMeltStatics ]
+        private MapMeltStaticsForm _showMeltStaticsForm;        
         private void OnClickMeltStatics(object sender, EventArgs e)
         {
             if (_showMeltStaticsForm?.IsDisposed == false)
@@ -1584,9 +1586,8 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        private MapClearStaticsForm _showClearStaticsForm;
-
-        #region OnClickClearStatics
+        #region [ OnClickClearStatics ]
+        private MapClearStaticsForm _showClearStaticsForm;        
         private void OnClickClearStatics(object sender, EventArgs e)
         {
             if (_showClearStaticsForm?.IsDisposed == false)
@@ -1602,9 +1603,8 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        private MapReplaceTilesForm _showMapReplaceTilesForm;
-
-        #region OnClickReplaceTiles
+        #region [ OnClickReplaceTiles ]
+        private MapReplaceTilesForm _showMapReplaceTilesForm;        
         private void OnClickReplaceTiles(object sender, EventArgs e)
         {
             if (_showMapReplaceTilesForm?.IsDisposed == false)
@@ -1620,7 +1620,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region toolStripButtonMarkRegion
+        #region [ toolStripButtonMarkRegion ]
         private void toolStripButtonMarkRegion_Click(object sender, EventArgs e)
         {
             // Switch drawing mode
@@ -1628,9 +1628,10 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
+        #region [ // pictureBox_MouseClick ]
         private void pictureBox_MouseClick(object sender, MouseEventArgs e)
         {
-            // Überprüfen Sie, ob der Mausklick innerhalb des Rechtecks erfolgt
+            
             /*if (rect.Contains(e.Location))
             {
                 // Berechnen Sie die Koordinaten der oberen linken und unteren rechten Ecke
@@ -1641,9 +1642,25 @@ namespace UoFiddler.Controls.UserControls
                 MessageBox.Show($"Obere linke Ecke: {topLeft}\nUntere rechte Ecke: {bottomRight}", "Koordinaten des Rechtecks", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }*/
         }
+        #endregion
+
+        #region [ mapCordinateToolStripMenuItem ]
+        private void mapCordinateToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (!string.IsNullOrEmpty(CoordsLabel.Text))
+            {
+                Clipboard.SetText(CoordsLabel.Text);
+                MessageBox.Show("Coordinates have been copied to the clipboard.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            else
+            {
+                MessageBox.Show("No coordinates available to copy.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+        }
+        #endregion
     }
 
-    #region class OverlayObject
+    #region [ class OverlayObject ]
     public class OverlayObject
     {
         public virtual bool IsVisible(Rectangle bounds, int m, int hScrollBar, int vScrollBar, double zoom) { return false; }
@@ -1657,7 +1674,7 @@ namespace UoFiddler.Controls.UserControls
     }
     #endregion
 
-    #region class OverlayCursor
+    #region [ class OverlayCursor ]
     public class OverlayCursor : OverlayObject, IDisposable
     {
         private readonly string _text;
@@ -1679,7 +1696,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region public override bool IsVisible
+        #region [ public override bool IsVisible ]
         public override bool IsVisible(Rectangle bounds, int m, int hScrollBar, int vScrollBar, double zoom)
         {
             if (!Visible)
@@ -1699,7 +1716,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region public override void Draw
+        #region [ public override void Draw ]
         public override void Draw(Graphics g, int roundedHScrollbar, int roundedVScrollbar, double zoom, int width)
         {
             int x = (int)((Loc.X - roundedHScrollbar) * zoom);
@@ -1714,7 +1731,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region public override void Save
+        #region [ public override void Save ]
         public override void Save(XmlElement elem)
         {
             elem.SetAttribute("x", Loc.X.ToString());
@@ -1725,14 +1742,14 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region public override string
+        #region [ public override string ]
         public override string ToString()
         {
             return _text;
         }
         #endregion
 
-        #region public void Dispose
+        #region [ public void Dispose ]
         public void Dispose()
         {
             _pen?.Dispose();
