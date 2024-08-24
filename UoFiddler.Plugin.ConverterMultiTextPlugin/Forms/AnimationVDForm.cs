@@ -22,37 +22,38 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
     public partial class AnimationVDForm : Form
     {
         private List<Image> images = new List<Image>(10);
-        private int animationSpeed = 500; // Standardgeschwindigkeit in Millisekunden
+        private int animationSpeed = 500; // Default speed in milliseconds
         private CancellationTokenSource cancellationTokenSource;
-        private bool isPlaying = false; // Flag, um festzustellen, ob die Animation aktiv ist
+        private bool isPlaying = false; // Flag to determine if the animation is active
 
         public AnimationVDForm()
         {
             InitializeComponent();
             for (int i = 0; i < 10; i++)
             {
-                images.Add(null); // Initialisiere die Liste mit null-Werten
+                images.Add(null); // Initialize the list with null values
             }
 
-            checkedListBoxAminID.SetItemChecked(0, true); // Erste Checkbox beim Start aktivieren
+            checkedListBoxAminID.SetItemChecked(0, true); //Activate the first checkbox at startup
 
-            // Setze TrackBar auf den Standardwert (Mitte)
+            // Set TrackBar to default value (middle)
             trackBarSpeedAmin.Value = 3;
 
-            // Initialisiere das Label mit der Standardgeschwindigkeit
+            // Initialize the label at the default speed
             UpdateLabelSpeed();
 
-            // Event-Handler abonnieren
+            // Subscribe to event handler
             trackBarSpeedAmin.Scroll += TrackBarSpeedAmin_Scroll;
-            checkedListBoxAminID.ItemCheck += CheckedListBoxAminID_ItemCheck; // Event-Handler für CheckedListBox            
+            checkedListBoxAminID.ItemCheck += CheckedListBoxAminID_ItemCheck; // Event handler for CheckedListBox          
         }
 
+        #region [ CheckedListBoxAminID_ItemCheck ]
         private void CheckedListBoxAminID_ItemCheck(object sender, ItemCheckEventArgs e)
         {
-            // Zeige das Bild nur an, wenn die Animation nicht läuft
+            // Only show the image when the animation is not running
             if (!isPlaying && e.NewValue == CheckState.Checked)
             {
-                // Deaktiviere alle anderen Checkboxen
+                // Uncheck all other checkboxes
                 for (int i = 0; i < checkedListBoxAminID.Items.Count; i++)
                 {
                     if (i != e.Index)
@@ -75,15 +76,17 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             }
             else if (isPlaying)
             {
-                e.NewValue = e.CurrentValue; // Verhindert Änderungen, wenn die Animation läuft
+                e.NewValue = e.CurrentValue; // Prevents changes when the animation is running
             }
         }
+        #endregion
 
+        #region [ btLoadAminID ]
         private void btLoadAminID_Click(object sender, EventArgs e)
         {
             if (checkedListBoxAminID.SelectedIndex == -1)
             {
-                checkedListBoxAminID.SelectedIndex = 0; // Setze den SelectedIndex auf 0, falls keiner ausgewählt ist
+                checkedListBoxAminID.SelectedIndex = 0; // Set the SelectedIndex to 0 if none is selected
             }
 
             if (checkedListBoxAminID.SelectedIndex >= 0 && checkedListBoxAminID.SelectedIndex < 10)
@@ -95,7 +98,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                     Image img = Image.FromFile(openFileDialog.FileName);
                     images[checkedListBoxAminID.SelectedIndex] = img;
 
-                    // Zeige das geladene Bild sofort an, wenn die Animation nicht aktiv ist
+                    // Show the loaded image immediately if the animation is not active
                     if (!isPlaying)
                     {
                         pictureBoxAminImage.Image = img;
@@ -104,10 +107,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 }
             }
         }
+        #endregion
 
+        #region [ btPlayAminID ]
         private async void btPlayAminID_Click(object sender, EventArgs e)
         {
-            isPlaying = true; // Setze das Flag, dass die Animation läuft
+            isPlaying = true; // Set the flag that the animation is running
             cancellationTokenSource = new CancellationTokenSource();
             var token = cancellationTokenSource.Token;
 
@@ -121,19 +126,19 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                         {
                             if (img != null)
                             {
-                                // Überprüfen, ob die PictureBox noch gültig ist, bevor versucht wird, sie zu aktualisieren
+                                // Verify that the PictureBox is still valid before attempting to update it
                                 if (pictureBoxAminImage != null && !pictureBoxAminImage.IsDisposed && pictureBoxAminImage.IsHandleCreated)
                                 {
                                     pictureBoxAminImage.Invoke(new Action(() =>
                                     {
-                                        if (!pictureBoxAminImage.IsDisposed) // Nochmalige Prüfung
+                                        if (!pictureBoxAminImage.IsDisposed) // Check again
                                         {
                                             pictureBoxAminImage.Image = img;
                                             pictureBoxAminImage.Refresh();
                                         }
                                     }));
                                 }
-                                await Task.Delay(animationSpeed, token); // Wartezeit zwischen den Bildern
+                                await Task.Delay(animationSpeed, token); // Waiting time between pictures
                             }
                         }
                     } while (checkBoxLoop.Checked && !token.IsCancellationRequested);
@@ -141,64 +146,74 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             }
             catch (TaskCanceledException)
             {
-                // Aufgabe wurde abgebrochen, keine Aktion erforderlich
+                // Task canceled, no action required
             }
             finally
             {
-                isPlaying = false; // Animation beendet
+                isPlaying = false; // Animation ended
             }
         }
+        #endregion
 
+        #region [ TrackBarSpeedAmin_Scroll ]
         private void TrackBarSpeedAmin_Scroll(object sender, EventArgs e)
         {
-            // Berechnung der Geschwindigkeit basierend auf der Position der TrackBar
+            // Calculation of speed based on the position of the TrackBar
             switch (trackBarSpeedAmin.Value)
             {
                 case 1:
-                    animationSpeed = 2000; // Langsamste Geschwindigkeit
+                    animationSpeed = 2000; // Slowest speed
                     break;
                 case 2:
-                    animationSpeed = 1000; // Langsam
+                    animationSpeed = 1000; // Slow
                     break;
                 case 3:
-                    animationSpeed = 500; // Standardgeschwindigkeit
+                    animationSpeed = 500; // Standard speed
                     break;
                 case 4:
-                    animationSpeed = 100; // Schneller
+                    animationSpeed = 100; // Faster
                     break;
                 case 5:
-                    animationSpeed = 25; // Schnellste Geschwindigkeit
+                    animationSpeed = 25; // Fastest speed
                     break;
                 default:
-                    animationSpeed = 500; // Standardgeschwindigkeit
+                    animationSpeed = 500; // Standard speed
                     break;
             }
 
-            // Aktualisiere das Label mit der aktuellen Geschwindigkeit
+            // Update the label with the current speed
             UpdateLabelSpeed();
         }
+        #endregion
 
+        #region [ UpdateLabelSpeed ]
         private void UpdateLabelSpeed()
         {
             labelSpeed.Text = $"Speed: {animationSpeed} ms";
         }
+        #endregion
 
+        #region [ btStopAminID ]
         private void btStopAminID_Click(object sender, EventArgs e)
         {
-            StopAnimation(); // Stoppt die Animation sicher
+            StopAnimation(); // Stops the animation safely
         }
+        #endregion
 
+        #region [ AnimationVDForm_FormClosing ]
         private async void AnimationVDForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            // Wenn die Animation läuft, zuerst stoppen
+            // If the animation is running, stop it first
             if (isPlaying)
             {
-                e.Cancel = true; // Schließen abbrechen
-                await Task.Run(() => StopAnimation()); // Animation stoppen
-                this.Close(); // Form erneut schließen
+                e.Cancel = true; // Cancel close
+                await Task.Run(() => StopAnimation()); // Stop animation
+                this.Close(); // Close the mold again
             }
         }
+        #endregion
 
+        #region [ StopAnimation ]
         private void StopAnimation()
         {
             if (cancellationTokenSource != null)
@@ -207,7 +222,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 isPlaying = false;
             }
         }
+        #endregion
 
+        #region [ importImageToolStripMenuItem ]
         private void importImageToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (Clipboard.ContainsImage())
@@ -218,7 +235,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 {
                     images[checkedListBoxAminID.SelectedIndex] = img;
 
-                    // Zeige das geladene Bild sofort an, wenn die Animation nicht aktiv ist
+                    // Show the loaded image immediately if the animation is not active
                     if (!isPlaying)
                     {
                         pictureBoxAminImage.Image = img;
@@ -227,13 +244,14 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 }
                 else
                 {
-                    MessageBox.Show("Bitte wählen Sie eine gültige Checkbox aus.", "Fehler", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show("Please select a valid checkbox.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
             else
             {
-                MessageBox.Show("Kein Bild in der Zwischenablage gefunden.", "Fehler", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("No image found on clipboard.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
+        #endregion
     }
 }
