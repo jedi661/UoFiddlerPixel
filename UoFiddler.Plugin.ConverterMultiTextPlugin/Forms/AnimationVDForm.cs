@@ -16,6 +16,9 @@ using System.IO;
 using System.Windows.Forms;
 using System.Threading;
 using System.Threading.Tasks;
+using AnimatedGif;
+using System.Linq;
+using System.Diagnostics;
 
 namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 {
@@ -250,6 +253,80 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             else
             {
                 MessageBox.Show("No image found on clipboard.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+        #endregion
+
+        #region [ createGifToolStripMenuItem ]
+        private void createGifToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // Check if images are loaded
+            if (images.Count == 0 || images.All(img => img == null))
+            {
+                MessageBox.Show("No images loaded. Please load images before exporting the GIF.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            // Get the program directory
+            string programDirectory = Application.StartupPath;
+
+            // Define the path to the temporary directory
+            string tempGraficDirectory = Path.Combine(programDirectory, "tempGrafic");
+
+            // Create the directory if it doesn't exist
+            if (!Directory.Exists(tempGraficDirectory))
+            {
+                Directory.CreateDirectory(tempGraficDirectory);
+            }
+
+            // Set the default output path to the last used directory
+            SaveFileDialog saveFileDialog = new SaveFileDialog
+            {
+                Filter = "GIF Image|*.gif",
+                Title = "Speichern als GIF",
+                InitialDirectory = tempGraficDirectory,  // Use the tempGrafic directory as default
+                FileName = "Animation.gif"  // Default filename
+            };
+
+            // Show the dialog so the user can set the location and file name
+            if (saveFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                string gifPath = saveFileDialog.FileName;
+
+                // Define delay based on animationSpeed ​​(in milliseconds)
+                var delay = animationSpeed > 0 ? animationSpeed : 500;
+
+                // Create the GIF
+                using (var gif = AnimatedGif.AnimatedGif.Create(gifPath, delay))
+                {
+                    foreach (var img in images)
+                    {
+                        if (img != null)
+                        {
+                            gif.AddFrame(img, delay: -1, quality: GifQuality.Bit8);
+                        }
+                    }
+                }
+
+                MessageBox.Show($"GIF successfully under {gifPath} saved.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+        }
+        #endregion
+
+        #region [ ButtonOpenTempGrafic ]
+        private void ButtonOpenTempGrafic_Click_1(object sender, EventArgs e)
+        {            
+            string programDirectory = Application.StartupPath;           
+            string directory = Path.Combine(programDirectory, "tempGrafic");
+
+            // Check if the directory exists
+            if (Directory.Exists(directory))
+            {                
+                Process.Start("explorer.exe", directory);
+            }
+            else
+            {                
+                MessageBox.Show("The tempGrafic directory does not exist.");
             }
         }
         #endregion

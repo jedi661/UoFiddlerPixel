@@ -48,6 +48,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             playToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             stopToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            createGifToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             panel1 = new System.Windows.Forms.Panel();
             labelSpeed = new System.Windows.Forms.Label();
             btStopAminID = new System.Windows.Forms.Button();
@@ -56,6 +57,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             btPlayAminID = new System.Windows.Forms.Button();
             btLoadAminID = new System.Windows.Forms.Button();
             checkedListBoxAminID = new System.Windows.Forms.CheckedListBox();
+            ButtonOpenTempGrafic = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)pictureBoxAminImage).BeginInit();
             contextMenuStripPictureBox.SuspendLayout();
             panel1.SuspendLayout();
@@ -74,9 +76,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // 
             // contextMenuStripPictureBox
             // 
-            contextMenuStripPictureBox.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { importImageToolStripMenuItem, loadImageToolStripMenuItem, toolStripSeparator1, playToolStripMenuItem, stopToolStripMenuItem });
+            contextMenuStripPictureBox.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { importImageToolStripMenuItem, loadImageToolStripMenuItem, toolStripSeparator1, playToolStripMenuItem, stopToolStripMenuItem, createGifToolStripMenuItem });
             contextMenuStripPictureBox.Name = "contextMenuStripPictureBox";
-            contextMenuStripPictureBox.Size = new System.Drawing.Size(202, 98);
+            contextMenuStripPictureBox.Size = new System.Drawing.Size(202, 120);
             // 
             // importImageToolStripMenuItem
             // 
@@ -115,8 +117,16 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             stopToolStripMenuItem.Text = "Stop";
             stopToolStripMenuItem.Click += btStopAminID_Click;
             // 
+            // createGifToolStripMenuItem
+            // 
+            createGifToolStripMenuItem.Name = "createGifToolStripMenuItem";
+            createGifToolStripMenuItem.Size = new System.Drawing.Size(201, 22);
+            createGifToolStripMenuItem.Text = "Create Gif";
+            createGifToolStripMenuItem.Click += createGifToolStripMenuItem_Click;
+            // 
             // panel1
             // 
+            panel1.Controls.Add(ButtonOpenTempGrafic);
             panel1.Controls.Add(labelSpeed);
             panel1.Controls.Add(btStopAminID);
             panel1.Controls.Add(checkBoxLoop);
@@ -201,6 +211,16 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             checkedListBoxAminID.TabIndex = 1;
             checkedListBoxAminID.ItemCheck += CheckedListBoxAminID_ItemCheck;
             // 
+            // ButtonOpenTempGrafic
+            // 
+            ButtonOpenTempGrafic.Location = new System.Drawing.Point(246, 257);
+            ButtonOpenTempGrafic.Name = "ButtonOpenTempGrafic";
+            ButtonOpenTempGrafic.Size = new System.Drawing.Size(75, 23);
+            ButtonOpenTempGrafic.TabIndex = 8;
+            ButtonOpenTempGrafic.Text = "tempGrafic";
+            ButtonOpenTempGrafic.UseVisualStyleBackColor = true;
+            ButtonOpenTempGrafic.Click += ButtonOpenTempGrafic_Click_1;
+            // 
             // AnimationVDForm
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -237,5 +257,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private System.Windows.Forms.ToolStripMenuItem playToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem stopToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem loadImageToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem createGifToolStripMenuItem;
+        private System.Windows.Forms.Button ButtonOpenTempGrafic;
     }
 }
