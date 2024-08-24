@@ -40,6 +40,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private void InitializeComponent()
         {
             components = new System.ComponentModel.Container();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(AnimationVDForm));
             pictureBoxAminImage = new System.Windows.Forms.PictureBox();
             contextMenuStripPictureBox = new System.Windows.Forms.ContextMenuStrip(components);
             importImageToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -207,6 +208,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             ClientSize = new System.Drawing.Size(376, 372);
             Controls.Add(panel1);
             FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
+            Icon = (System.Drawing.Icon)resources.GetObject("$this.Icon");
             Name = "AnimationVDForm";
             Text = "Animation Playing";
             FormClosing += AnimationVDForm_FormClosing;
