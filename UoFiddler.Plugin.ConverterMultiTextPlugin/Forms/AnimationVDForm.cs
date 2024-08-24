@@ -315,19 +315,37 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 
         #region [ ButtonOpenTempGrafic ]
         private void ButtonOpenTempGrafic_Click_1(object sender, EventArgs e)
-        {            
-            string programDirectory = Application.StartupPath;           
+        {
+            string programDirectory = Application.StartupPath;
             string directory = Path.Combine(programDirectory, "tempGrafic");
 
             // Check if the directory exists
             if (Directory.Exists(directory))
-            {                
+            {
                 Process.Start("explorer.exe", directory);
             }
             else
-            {                
+            {
                 MessageBox.Show("The tempGrafic directory does not exist.");
             }
+        }
+        #endregion
+
+        #region [ btEmptyImages ]
+        private void btEmptyImages_Click(object sender, EventArgs e)
+        {
+            //Remove all images from the list and set them to zero
+            for (int i = 0; i < images.Count; i++)
+            {
+                images[i]?.Dispose();  // Optional: Dispose of the image to free memory
+                images[i] = null;  // Set the image space in the list to zero
+            }
+
+            // Leere die PictureBox
+            pictureBoxAminImage.Image = null;
+            pictureBoxAminImage.Refresh();  // Refresh the PictureBox display
+
+            MessageBox.Show("All images have been removed.", "Pictures emptied", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
         #endregion
     }
