@@ -263,7 +263,7 @@ namespace UoFiddler.Controls.UserControls
             copySettingsToolStripMenuItem.Size = new System.Drawing.Size(200, 22);
             copySettingsToolStripMenuItem.Text = "Copy settings";
             copySettingsToolStripMenuItem.ToolTipText = "Copy all settings";
-            copySettingsToolStripMenuItem.Click += copySettingsToolStripMenuItem_Click;
+            copySettingsToolStripMenuItem.Click += CopySettingsToolStripMenuItem_Click;
             // 
             // insertSettingsToolStripMenuItem
             // 
@@ -272,7 +272,7 @@ namespace UoFiddler.Controls.UserControls
             insertSettingsToolStripMenuItem.Size = new System.Drawing.Size(200, 22);
             insertSettingsToolStripMenuItem.Text = "Insert Settings";
             insertSettingsToolStripMenuItem.ToolTipText = "Insert all Settings";
-            insertSettingsToolStripMenuItem.Click += insertSettingsToolStripMenuItem_Click;
+            insertSettingsToolStripMenuItem.Click += InsertSettingsToolStripMenuItem_Click;
             // 
             // LandTilesContextMenuStrip
             // 
@@ -308,7 +308,7 @@ namespace UoFiddler.Controls.UserControls
             copySettingsLandToolStripMenuItem.Size = new System.Drawing.Size(200, 22);
             copySettingsLandToolStripMenuItem.Text = "Copy Settings";
             copySettingsLandToolStripMenuItem.ToolTipText = "Copy all Settings";
-            copySettingsLandToolStripMenuItem.Click += copySettingsLandToolStripMenuItem_Click;
+            copySettingsLandToolStripMenuItem.Click += CopySettingsLandToolStripMenuItem_Click;
             // 
             // insertSettingsLandToolStripMenuItem
             // 
@@ -317,7 +317,7 @@ namespace UoFiddler.Controls.UserControls
             insertSettingsLandToolStripMenuItem.Size = new System.Drawing.Size(200, 22);
             insertSettingsLandToolStripMenuItem.Text = "Insert Settings";
             insertSettingsLandToolStripMenuItem.ToolTipText = "Insert all Settings";
-            insertSettingsLandToolStripMenuItem.Click += insertSettingsLandToolStripMenuItem_Click;
+            insertSettingsLandToolStripMenuItem.Click += InsertSettingsLandToolStripMenuItem_Click;
             // 
             // MainToolStrip
             // 
@@ -499,7 +499,7 @@ namespace UoFiddler.Controls.UserControls
             toolStripButton6.Size = new System.Drawing.Size(23, 22);
             toolStripButton6.Text = "toolStripButton6";
             toolStripButton6.ToolTipText = "Message  box disabled and new Sound";
-            toolStripButton6.Click += toolStripButton6_Click;
+            toolStripButton6.Click += ToolStripButton6_Click;
             // 
             // toolStripButton7
             // 
@@ -510,7 +510,7 @@ namespace UoFiddler.Controls.UserControls
             toolStripButton7.Size = new System.Drawing.Size(23, 22);
             toolStripButton7.Text = "toolStripButton7";
             toolStripButton7.ToolTipText = "Copy setting";
-            toolStripButton7.Click += toolStripButton7_Click;
+            toolStripButton7.Click += ToolStripButton7_Click;
             // 
             // toolStripPushMarkedButton8
             // 
@@ -521,7 +521,7 @@ namespace UoFiddler.Controls.UserControls
             toolStripPushMarkedButton8.Size = new System.Drawing.Size(23, 22);
             toolStripPushMarkedButton8.Text = "toolStripButton8";
             toolStripPushMarkedButton8.ToolTipText = "Copying the settings one by one.";
-            toolStripPushMarkedButton8.Click += toolStripPushMarkedButton8_Click;
+            toolStripPushMarkedButton8.Click += ToolStripPushMarkedButton8_Click;
             // 
             // toolStripButton8Clear
             // 
@@ -531,7 +531,7 @@ namespace UoFiddler.Controls.UserControls
             toolStripButton8Clear.Name = "toolStripButton8Clear";
             toolStripButton8Clear.Size = new System.Drawing.Size(23, 22);
             toolStripButton8Clear.ToolTipText = "deletes input";
-            toolStripButton8Clear.Click += toolStripButton8Clear_Click;
+            toolStripButton8Clear.Click += ToolStripButton8Clear_Click;
             // 
             // tabPageLand
             // 
@@ -816,14 +816,14 @@ namespace UoFiddler.Controls.UserControls
             zoomToolStripMenuItem.Name = "zoomToolStripMenuItem";
             zoomToolStripMenuItem.Size = new System.Drawing.Size(137, 22);
             zoomToolStripMenuItem.Text = "Zoom Form";
-            zoomToolStripMenuItem.Click += zoomToolStripMenuItem_Click;
+            zoomToolStripMenuItem.Click += ZoomToolStripMenuItem_Click;
             // 
             // zoomImageToolStripMenuItem
             // 
             zoomImageToolStripMenuItem.Name = "zoomImageToolStripMenuItem";
             zoomImageToolStripMenuItem.Size = new System.Drawing.Size(137, 22);
             zoomImageToolStripMenuItem.Text = "Zoom";
-            zoomImageToolStripMenuItem.Click += zoomImageToolStripMenuItem_Click;
+            zoomImageToolStripMenuItem.Click += ZoomImageToolStripMenuItem_Click;
             // 
             // splitContainer3
             // 
@@ -1317,7 +1317,7 @@ namespace UoFiddler.Controls.UserControls
             findToolStripMenuItem.Name = "findToolStripMenuItem";
             findToolStripMenuItem.Size = new System.Drawing.Size(98, 22);
             findToolStripMenuItem.Text = "Find";
-            findToolStripMenuItem.Click += findToolStripMenuItem_Click;
+            findToolStripMenuItem.Click += FindToolStripMenuItem_Click;
             // 
             // toolStripTextBoxFindText
             // 
@@ -1335,7 +1335,7 @@ namespace UoFiddler.Controls.UserControls
             saveToolStripMenuItem.Name = "saveToolStripMenuItem";
             saveToolStripMenuItem.Size = new System.Drawing.Size(98, 22);
             saveToolStripMenuItem.Text = "Save";
-            saveToolStripMenuItem.Click += btSaveTxtCuo_Click;
+            saveToolStripMenuItem.Click += BtSaveTxtCuo_Click;
             // 
             // panel1
             // 
@@ -1371,7 +1371,7 @@ namespace UoFiddler.Controls.UserControls
             btSaveTxtCuo.TabIndex = 5;
             btSaveTxtCuo.Text = "Save Txt";
             btSaveTxtCuo.UseVisualStyleBackColor = true;
-            btSaveTxtCuo.Click += btSaveTxtCuo_Click;
+            btSaveTxtCuo.Click += BtSaveTxtCuo_Click;
             // 
             // buttonLoadTxt
             // 
@@ -1381,7 +1381,7 @@ namespace UoFiddler.Controls.UserControls
             buttonLoadTxt.TabIndex = 4;
             buttonLoadTxt.Text = "Load";
             buttonLoadTxt.UseVisualStyleBackColor = true;
-            buttonLoadTxt.Click += buttonLoadTxt_Click;
+            buttonLoadTxt.Click += ButtonLoadTxt_Click;
             // 
             // comboBoxLoadText
             // 
@@ -1391,7 +1391,7 @@ namespace UoFiddler.Controls.UserControls
             comboBoxLoadText.Name = "comboBoxLoadText";
             comboBoxLoadText.Size = new System.Drawing.Size(121, 23);
             comboBoxLoadText.TabIndex = 3;
-            comboBoxLoadText.SelectedIndexChanged += comboBoxLoadText_SelectedIndexChanged;
+            comboBoxLoadText.SelectedIndexChanged += ComboBoxLoadText_SelectedIndexChanged;
             // 
             // lbcomboBoxLoadText
             // 
@@ -1412,7 +1412,7 @@ namespace UoFiddler.Controls.UserControls
             lbChairInfo.Size = new System.Drawing.Size(35, 15);
             lbChairInfo.TabIndex = 7;
             lbChairInfo.Text = "Chair";
-            lbChairInfo.Click += lbChairInfo_Click;
+            lbChairInfo.Click += LbChairInfo_Click;
             // 
             // tbClassicUOPfad
             // 

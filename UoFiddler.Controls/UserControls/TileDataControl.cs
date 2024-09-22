@@ -30,7 +30,7 @@ namespace UoFiddler.Controls.UserControls
 {
     public partial class TileDataControl : UserControl
     {
-        private Image image;        
+        private Image _image;        
 
         #region [ TileDataControl ]
         public TileDataControl()
@@ -41,7 +41,7 @@ namespace UoFiddler.Controls.UserControls
             AssignToolTipsToLabels();
 
             toolStripComboBox1.ComboBox.DrawMode = DrawMode.OwnerDrawFixed;
-            toolStripComboBox1.ComboBox.DrawItem += new DrawItemEventHandler(toolStripComboBox1_DrawItem);
+            toolStripComboBox1.ComboBox.DrawItem += new DrawItemEventHandler(ToolStripComboBox1_DrawItem);
             LoadImages();  // Call the method to load the images
 
             toolStripComboBox1.SelectedIndexChanged += ToolStripComboBox1_SelectedIndexChanged;
@@ -121,9 +121,9 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        private Settings copiedSettings = null; // Global variable to store the copied settings
-        private List<TreeNode> selectedNodes = new List<TreeNode>(); // Veriable for multiple selection
-        private LandSettings copiedLandSettings = null; // Global variable for the copied country settings
+        private Settings _copiedSettings = null; // Global variable to store the copied settings
+        private List<TreeNode> _selectedNodes = new List<TreeNode>(); // Veriable for multiple selection
+        private LandSettings _copiedLandSettings = null; // Global variable for the copied country settings
 
         private static TileDataControl _refMarker;
         private bool _changingIndex;
@@ -636,16 +636,16 @@ namespace UoFiddler.Controls.UserControls
             if (isCtrlPressed)
             {
                 // Multi-select: Add or remove nodes from the list
-                if (selectedNodes.Contains(e.Node))
+                if (_selectedNodes.Contains(e.Node))
                 {
                     // Remove the node if it is already selected
-                    selectedNodes.Remove(e.Node);
+                    _selectedNodes.Remove(e.Node);
                     e.Node.BackColor = treeViewItem.BackColor;  // Deselect
                 }
                 else
                 {
                     // Adding the node if it is not already selected
-                    selectedNodes.Add(e.Node);
+                    _selectedNodes.Add(e.Node);
                     e.Node.BackColor = Color.LightBlue;  // Visual highlighting
                 }
             }
@@ -653,12 +653,12 @@ namespace UoFiddler.Controls.UserControls
             {
                 // Normal selection without Ctrl: Delete previous selection
                 ClearPreviousSelection();
-                selectedNodes.Add(e.Node);
+                _selectedNodes.Add(e.Node);
                 e.Node.BackColor = Color.LightBlue;  // Visual highlighting
             }
 
             // Apply logic to all selected nodes
-            foreach (var node in selectedNodes)
+            foreach (var node in _selectedNodes)
             {
                 ApplySettingsToNode(node);
             }
@@ -668,11 +668,11 @@ namespace UoFiddler.Controls.UserControls
         #region ClearPreviousSelection
         private void ClearPreviousSelection()
         {
-            foreach (TreeNode node in selectedNodes)
+            foreach (TreeNode node in _selectedNodes)
             {
                 node.BackColor = treeViewItem.BackColor; // Reset the background color to default
             }
-            selectedNodes.Clear();
+            _selectedNodes.Clear();
         }
         #endregion
 
@@ -695,10 +695,10 @@ namespace UoFiddler.Controls.UserControls
                 pictureBoxItem.Image?.Dispose();
                 pictureBoxItem.Image = newBit;
 
-                originalImage = pictureBoxItem.Image; // Update the original image -> Zoom
+                _originalImage = pictureBoxItem.Image; // Update the original image -> Zoom
 
                 // Update the image in the Zoom form
-                if (zoomForm != null && zoomForm.Visible)
+                if (_zoomForm != null && _zoomForm.Visible)
                 {
                     UpdateZoomFormImage();
                 }
@@ -798,14 +798,14 @@ namespace UoFiddler.Controls.UserControls
             if (tabcontrol.SelectedIndex == 0) // items
             {
                 // Check whether nodes have been marked
-                if (selectedNodes.Count == 0)
+                if (_selectedNodes.Count == 0)
                 {
                     MessageBox.Show("No nodes selected.");
                     return;
                 }
 
                 // Save changes for each selected node
-                foreach (TreeNode node in selectedNodes)
+                foreach (TreeNode node in _selectedNodes)
                 {
                     if (node?.Tag == null)
                     {
@@ -898,9 +898,9 @@ namespace UoFiddler.Controls.UserControls
                 }
 
                 // Save note
-                if (toolStripButton7IsActive && memorySaveWarningToolStripMenuItem.Checked)
+                if (_toolStripButton7IsActive && memorySaveWarningToolStripMenuItem.Checked)
                 {
-                    if (playCustomSound) // If Sound instead of MessageBox
+                    if (_playCustomSound) // If Sound instead of MessageBox
                     {
                         SoundPlayer player = new SoundPlayer();
                         player.SoundLocation = "sound.wav";
@@ -951,9 +951,9 @@ namespace UoFiddler.Controls.UserControls
                 ControlEvents.FireTileDataChangeEvent(this, index);
                 treeViewLand.SelectedNode.ForeColor = Color.Red;
 
-                if (toolStripButton7IsActive && memorySaveWarningToolStripMenuItem.Checked)
+                if (_toolStripButton7IsActive && memorySaveWarningToolStripMenuItem.Checked)
                 {
-                    if (playCustomSound)
+                    if (_playCustomSound)
                     {
                         SoundPlayer player = new SoundPlayer();
                         player.SoundLocation = "sound.wav";
@@ -1944,35 +1944,34 @@ namespace UoFiddler.Controls.UserControls
         #region LoadImages
         void LoadImages()
         {
-            if (!icons.ContainsKey("Stairs"))
+            if (!_icons.ContainsKey("Stairs"))
             {
-                icons.Add("Stairs-S", Properties.Resources.Stairs01);
-                icons.Add("Stairs-E", Properties.Resources.Stairs02);
-                icons.Add("Stairs-N", Properties.Resources.Stairs03);
-                icons.Add("Stairs-W", Properties.Resources.Stairs04);
-                icons.Add("Stairs-E-S", Properties.Resources.Stairs05);
-                icons.Add("Stairs-N-E", Properties.Resources.Stairs06);
-                icons.Add("Stairs-S-W", Properties.Resources.Stairs07);
-                icons.Add("Stairs-W-N", Properties.Resources.Stairs08);
+                _icons.Add("Stairs-S", Properties.Resources.Stairs01);
+                _icons.Add("Stairs-E", Properties.Resources.Stairs02);
+                _icons.Add("Stairs-N", Properties.Resources.Stairs03);
+                _icons.Add("Stairs-W", Properties.Resources.Stairs04);
+                _icons.Add("Stairs-E-S", Properties.Resources.Stairs05);
+                _icons.Add("Stairs-N-E", Properties.Resources.Stairs06);
+                _icons.Add("Stairs-S-W", Properties.Resources.Stairs07);
+                _icons.Add("Stairs-W-N", Properties.Resources.Stairs08);
             }
         }
         #endregion
 
         #region [ Define Dictionary with Bitmap instead of Icon ]
         // Define Dictionary with Bitmap instead of Icon
-        Dictionary<string, Bitmap> icons = new Dictionary<string, Bitmap>();
+        Dictionary<string, Bitmap> _icons = new Dictionary<string, Bitmap>();
         #endregion
 
         #region [ toolStripComboBox1_DrawItem ]
-        void toolStripComboBox1_DrawItem(object sender, DrawItemEventArgs e)
+        void ToolStripComboBox1_DrawItem(object sender, DrawItemEventArgs e)
         {
             e.DrawBackground();
             string name = toolStripComboBox1.Items[e.Index].ToString();
             // First draw the text
             e.Graphics.DrawString(name, e.Font, new SolidBrush(e.ForeColor), e.Bounds.Left, e.Bounds.Top);
-            if (icons.ContainsKey(name))  // Check whether the dictionary contains an image for this element
+            if (_icons.TryGetValue(name, out Bitmap bitmap))  // Use TryGetValue to check and get the image
             {
-                Bitmap bitmap = icons[name];
                 // Scale the image to the height of the line
                 int width = Convert.ToInt32(e.Graphics.MeasureString(name, e.Font).Width);
                 Rectangle destRect = new Rectangle(e.Bounds.Left + width, e.Bounds.Top, e.Bounds.Height, e.Bounds.Height);
@@ -2304,57 +2303,57 @@ namespace UoFiddler.Controls.UserControls
         #endregion
 
         #region [ Search and Sound ]
-        private bool playCustomSound = false;
+        private bool _playCustomSound = false;
 
         #region [ toolStripButton6 ]
-        private void toolStripButton6_Click(object sender, EventArgs e)
+        private void ToolStripButton6_Click(object sender, EventArgs e)
         {
             toolStripButton6.Checked = !toolStripButton6.Checked;
-            playCustomSound = !playCustomSound;
+            _playCustomSound = !_playCustomSound;
         }
         #endregion        
 
-        bool toolStripButton7IsActive = false;
-        List<int> savedCheckedIndices = new List<int>();
-        Dictionary<TextBox, string> savedTextBoxTexts = new Dictionary<TextBox, string>();
+        bool _toolStripButton7IsActive = false;
+        List<int> _savedCheckedIndices = new List<int>();
+        Dictionary<TextBox, string> _savedTextBoxTexts = new Dictionary<TextBox, string>();
 
         #region [ toolStripButton7 ]
-        private void toolStripButton7_Click(object sender, EventArgs e)
+        private void ToolStripButton7_Click(object sender, EventArgs e)
         {
-            if (!toolStripButton7IsActive)
+            if (!_toolStripButton7IsActive)
             {
                 // Save checked indices
                 foreach (int index in checkedListBox1.CheckedIndices)
                 {
-                    savedCheckedIndices.Add(index);
+                    _savedCheckedIndices.Add(index);
                 }
 
                 // Save text box texts
-                savedTextBoxTexts.Add(textBoxName, textBoxName.Text);
-                savedTextBoxTexts.Add(textBoxWeight, textBoxWeight.Text);
-                savedTextBoxTexts.Add(textBoxHue, textBoxHue.Text);
-                savedTextBoxTexts.Add(textBoxHeigth, textBoxHeigth.Text);
-                savedTextBoxTexts.Add(textBoxUnk3, textBoxUnk3.Text);
-                savedTextBoxTexts.Add(textBoxQuality, textBoxQuality.Text);
-                savedTextBoxTexts.Add(textBoxStackOff, textBoxStackOff.Text);
-                savedTextBoxTexts.Add(textBoxUnk1, textBoxUnk1.Text);
-                savedTextBoxTexts.Add(textBoxQuantity, textBoxQuantity.Text);
-                savedTextBoxTexts.Add(textBoxValue, textBoxValue.Text);
-                savedTextBoxTexts.Add(textBoxUnk2, textBoxUnk2.Text);
-                savedTextBoxTexts.Add(textBoxAnim, textBoxAnim.Text);
+                _savedTextBoxTexts.Add(textBoxName, textBoxName.Text);
+                _savedTextBoxTexts.Add(textBoxWeight, textBoxWeight.Text);
+                _savedTextBoxTexts.Add(textBoxHue, textBoxHue.Text);
+                _savedTextBoxTexts.Add(textBoxHeigth, textBoxHeigth.Text);
+                _savedTextBoxTexts.Add(textBoxUnk3, textBoxUnk3.Text);
+                _savedTextBoxTexts.Add(textBoxQuality, textBoxQuality.Text);
+                _savedTextBoxTexts.Add(textBoxStackOff, textBoxStackOff.Text);
+                _savedTextBoxTexts.Add(textBoxUnk1, textBoxUnk1.Text);
+                _savedTextBoxTexts.Add(textBoxQuantity, textBoxQuantity.Text);
+                _savedTextBoxTexts.Add(textBoxValue, textBoxValue.Text);
+                _savedTextBoxTexts.Add(textBoxUnk2, textBoxUnk2.Text);
+                _savedTextBoxTexts.Add(textBoxAnim, textBoxAnim.Text);
 
                 // Update toolStripButton7 appearance
                 toolStripButton7.Checked = true;
 
                 // Update toolStripButton7IsActive
-                toolStripButton7IsActive = true;
+                _toolStripButton7IsActive = true;
             }
             else
             {
                 // Restore checked indices
                 for (int i = 0; i < checkedListBox1.Items.Count; i++)
                 {
-                    if (savedCheckedIndices.Contains(i))
+                    if (_savedCheckedIndices.Contains(i))
                     {
                         checkedListBox1.SetItemChecked(i, true);
                     }
@@ -2365,41 +2364,41 @@ namespace UoFiddler.Controls.UserControls
                 }
 
                 // Clear savedCheckedIndices
-                savedCheckedIndices.Clear();
+                _savedCheckedIndices.Clear();
 
                 // Restore text box texts
-                foreach (KeyValuePair<TextBox, string> pair in savedTextBoxTexts)
+                foreach (KeyValuePair<TextBox, string> pair in _savedTextBoxTexts)
                 {
                     pair.Key.Text = pair.Value;
                 }
 
                 // Clear savedTextBoxTexts
-                savedTextBoxTexts.Clear();
+                _savedTextBoxTexts.Clear();
 
                 // Update toolStripButton7 appearance
                 toolStripButton7.Checked = false;
 
                 // Update toolStripButton7IsActive
-                toolStripButton7IsActive = false;
+                _toolStripButton7IsActive = false;
             }
         }
         #endregion
 
         #region [ toolStripPushMarkedButton8 ]
-        private void toolStripPushMarkedButton8_Click(object sender, EventArgs e)
+        private void ToolStripPushMarkedButton8_Click(object sender, EventArgs e)
         {
-            if (toolStripButton7IsActive)
+            if (_toolStripButton7IsActive)
             {
                 // Transferring the saved settings to the selected location.
 
                 // Transferring the checked indices.
-                foreach (int index in savedCheckedIndices)
+                foreach (int index in _savedCheckedIndices)
                 {
                     checkedListBox1.SetItemChecked(index, true);
                 }
 
                 // Transferring the textbox texts.
-                foreach (KeyValuePair<TextBox, string> pair in savedTextBoxTexts)
+                foreach (KeyValuePair<TextBox, string> pair in _savedTextBoxTexts)
                 {
                     pair.Key.Text = pair.Value;
                 }
@@ -2463,7 +2462,7 @@ namespace UoFiddler.Controls.UserControls
             {
                 if (treeViewItem.SelectedNode != null && toolStripButton7.Checked)
                 {
-                    toolStripPushMarkedButton8_Click(null, null);
+                    ToolStripPushMarkedButton8_Click(null, null);
                 }
             }
         }
@@ -2472,7 +2471,7 @@ namespace UoFiddler.Controls.UserControls
         {
             if (e.Control && e.KeyCode == Keys.Y && treeViewItem.SelectedNode != null)
             {
-                toolStripPushMarkedButton8_Click(null, null);
+                ToolStripPushMarkedButton8_Click(null, null);
             }
         }
         #endregion
@@ -2491,7 +2490,7 @@ namespace UoFiddler.Controls.UserControls
         #endregion
 
         #region Delete Button
-        private void toolStripButton8Clear_Click(object sender, EventArgs e)
+        private void ToolStripButton8Clear_Click(object sender, EventArgs e)
         {
             // Set the text of all TextBoxes to an empty string
             textBoxName.Text = "";
@@ -2569,7 +2568,7 @@ namespace UoFiddler.Controls.UserControls
             }
 
             // Play a sound when playCustomSound is set to true
-            if (playCustomSound)
+            if (_playCustomSound)
             {
                 SoundPlayer player = new SoundPlayer();
                 player.SoundLocation = "sound.wav";
@@ -2579,12 +2578,12 @@ namespace UoFiddler.Controls.UserControls
         #endregion
 
         #region Zoom
-        private bool isZoomed = false; // State of the zoom
-        private Image originalImage; // Original image
-        private Form zoomForm; // The zoom form
-        private PictureBox zoomPictureBox; // The PictureBox in zoom form
+        private bool _isZoomed = false; // State of the zoom
+        private Image _originalImage; // Original image
+        private Form _zoomForm; // The zoom form
+        private PictureBox _zoomPictureBox; // The PictureBox in zoom form
 
-        private void zoomToolStripMenuItem_Click(object sender, EventArgs e)
+        private void ZoomToolStripMenuItem_Click(object sender, EventArgs e)
         {
             // Check if an image is selected
             if (pictureBoxItem.Image == null)
@@ -2593,75 +2592,75 @@ namespace UoFiddler.Controls.UserControls
                 return;
             }
 
-            if (originalImage == null) // If the original image has not been saved yet
+            if (_originalImage == null) // If the original image has not been saved yet
             {
-                originalImage = pictureBoxItem.Image; // Save the original image
+                _originalImage = pictureBoxItem.Image; // Save the original image
             }
 
-            if (!isZoomed) // If not zoomed
+            if (!_isZoomed) // If not zoomed
             {
                 // Enlarge the image to twice its original size
-                Bitmap zoomedImage = new Bitmap(originalImage, originalImage.Width * 2, originalImage.Height * 2);
+                Bitmap zoomedImage = new Bitmap(_originalImage, _originalImage.Width * 2, _originalImage.Height * 2);
 
                 // Draw the original image onto the new bitmap, resizing it
                 using (Graphics g = Graphics.FromImage(zoomedImage))
                 {
-                    g.DrawImage(originalImage, 0, 0, zoomedImage.Width, zoomedImage.Height);
+                    g.DrawImage(_originalImage, 0, 0, zoomedImage.Width, zoomedImage.Height);
                 }
 
                 // Create the Zoom Shape and PictureBox if they are not already created
-                if (zoomForm == null)
+                if (_zoomForm == null)
                 {
-                    zoomForm = new Form();
-                    zoomPictureBox = new PictureBox
+                    _zoomForm = new Form();
+                    _zoomPictureBox = new PictureBox
                     {
                         Dock = DockStyle.Fill,
                         SizeMode = PictureBoxSizeMode.Normal // Set the SizeMode property to Normal
                     };
-                    zoomForm.Controls.Add(zoomPictureBox);
-                    zoomForm.FormClosed += (s, ev) => { zoomForm = null; zoomPictureBox = null; }; // Reset zoomForm and zoomPictureBox to null when the form is closed
+                    _zoomForm.Controls.Add(_zoomPictureBox);
+                    _zoomForm.FormClosed += (s, ev) => { _zoomForm = null; _zoomPictureBox = null; }; // Reset zoomForm and zoomPictureBox to null when the form is closed
 
                     // Set the size of the shape to 690, 580
-                    zoomForm.Size = new Size(690, 580);
+                    _zoomForm.Size = new Size(690, 580);
                 }
 
                 // Set the PictureBox's image in the zoom form to the new bitmap
-                zoomPictureBox.Image = zoomedImage;
+                _zoomPictureBox.Image = zoomedImage;
 
                 // Adjust the size of the shape to the size of the PictureBox
-                zoomForm.ClientSize = zoomPictureBox.Size;
+                _zoomForm.ClientSize = _zoomPictureBox.Size;
 
                 // Display the zoom shape
-                if (!zoomForm.Visible)
+                if (!_zoomForm.Visible)
                 {
-                    zoomForm.Show(this); // Display the shape as a modal dialog
+                    _zoomForm.Show(this); // Display the shape as a modal dialog
                 }
 
-                isZoomed = true; // Update the zoom state
+                _isZoomed = true; // Update the zoom state
 
                 // Add a click event handler that resizes the shape
-                zoomPictureBox.Click += (s, ev) =>
+                _zoomPictureBox.Click += (s, ev) =>
                 {
-                    if (zoomForm.Size.Width == 690 && zoomForm.Size.Height == 580)
+                    if (_zoomForm.Size.Width == 690 && _zoomForm.Size.Height == 580)
                     {
-                        zoomForm.Size = new Size(1432, 870);
+                        _zoomForm.Size = new Size(1432, 870);
                     }
                     else
                     {
-                        zoomForm.Size = new Size(690, 580);
+                        _zoomForm.Size = new Size(690, 580);
                     }
                 };
             }
             else // When zoomed
             {
                 // Reset the image to its original size
-                pictureBoxItem.Image = originalImage;
-                isZoomed = false; // Update the zoom state
+                pictureBoxItem.Image = _originalImage;
+                _isZoomed = false; // Update the zoom state
 
                 // Close the zoom shape
-                if (zoomForm != null)
+                if (_zoomForm != null)
                 {
-                    zoomForm.Close();
+                    _zoomForm.Close();
                 }
             }
         }
@@ -2669,24 +2668,24 @@ namespace UoFiddler.Controls.UserControls
         // UpdateZoomFormImage
         private void UpdateZoomFormImage()
         {
-            if (zoomForm != null && zoomPictureBox != null && originalImage != null && isZoomed)
+            if (_zoomForm != null && _zoomPictureBox != null && _originalImage != null && _isZoomed)
             {
                 // Enlarge the image to twice its original size
-                Bitmap zoomedImage = new Bitmap(originalImage, originalImage.Width * 2, originalImage.Height * 2);
+                Bitmap zoomedImage = new Bitmap(_originalImage, _originalImage.Width * 2, _originalImage.Height * 2);
 
                 // Draw the original image onto the new bitmap, resizing it
                 using (Graphics g = Graphics.FromImage(zoomedImage))
                 {
-                    g.DrawImage(originalImage, 0, 0, zoomedImage.Width, zoomedImage.Height);
+                    g.DrawImage(_originalImage, 0, 0, zoomedImage.Width, zoomedImage.Height);
                 }
 
                 // Set the PictureBox's image in the zoom form to the new bitmap
-                zoomPictureBox.Image = zoomedImage;
+                _zoomPictureBox.Image = zoomedImage;
             }
         }
 
         // ZoomImage
-        private void zoomImageToolStripMenuItem_Click(object sender, EventArgs e)
+        private void ZoomImageToolStripMenuItem_Click(object sender, EventArgs e)
         {
             // Check if an image is selected
             if (pictureBoxItem.Image == null)
@@ -2695,20 +2694,20 @@ namespace UoFiddler.Controls.UserControls
                 return;
             }
 
-            if (originalImage == null) // If the original image has not been saved yet
+            if (_originalImage == null) // If the original image has not been saved yet
             {
-                originalImage = pictureBoxItem.Image; // Save the original image
+                _originalImage = pictureBoxItem.Image; // Save the original image
             }
 
-            if (!isZoomed) // If not zoomed
+            if (!_isZoomed) // If not zoomed
             {
                 // Enlarge the image to twice its original size
-                Bitmap zoomedImage = new Bitmap(originalImage.Width * 2, originalImage.Height * 2);
+                Bitmap zoomedImage = new Bitmap(_originalImage.Width * 2, _originalImage.Height * 2);
 
                 // Draw the original image onto the new bitmap, resizing it
                 using (Graphics g = Graphics.FromImage(zoomedImage))
                 {
-                    g.DrawImage(originalImage, 0, 0, zoomedImage.Width, zoomedImage.Height);
+                    g.DrawImage(_originalImage, 0, 0, zoomedImage.Width, zoomedImage.Height);
                 }
 
                 // Set the PictureBox's image to the new bitmap
@@ -2718,19 +2717,19 @@ namespace UoFiddler.Controls.UserControls
                 pictureBoxItem.Left = (splitContainer2.Panel2.Width - pictureBoxItem.Width) / 2;
                 pictureBoxItem.Top = (splitContainer2.Panel2.Height - pictureBoxItem.Height) / 2;
 
-                isZoomed = true; // Update the zoom state
+                _isZoomed = true; // Update the zoom state
             }
             else // When zoomed
             {
                 // Reset the image to its original size
-                pictureBoxItem.Image = originalImage;
-                isZoomed = false; // Update the zoom state
+                pictureBoxItem.Image = _originalImage;
+                _isZoomed = false; // Update the zoom state
             }
         }
         #endregion
 
         #region [ buttonLoadTxt ]
-        private void buttonLoadTxt_Click(object sender, EventArgs e)
+        private void ButtonLoadTxt_Click(object sender, EventArgs e)
         {
             FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog();
             if (folderBrowserDialog.ShowDialog() == DialogResult.OK)
@@ -2746,7 +2745,7 @@ namespace UoFiddler.Controls.UserControls
         #endregion
 
         #region [ Dictionary ]
-        Dictionary<string, string> infoTexts = new Dictionary<string, string>()
+        Dictionary<string, string> _infoTexts = new Dictionary<string, string>()
         {
             { "chair", "2865,0,0,0,0,0,0,4 = 2865 is the article number of the chair.\n\nThe first four zeros in this line tell your character, \nno matter which direction you come from, you will always look north, \nwhen you sit in this chair.\n\nNorth-chair = 2865,0,0,0,0,\n\nEast-chair = 2863,2,2,2,2,6,6 \nThe first four numbers 2 always point east.\n\nSouth-chair = 2862,4,4,4,4,0,0 \nThe first four 4s are always to the southwest.\n\nDirected chair = 2864,6,6,6,6,-8,8 \n\nThe first four 6s will always face you \nWest stool.= 2910,0,2,4,6,-8,-8 \n\nStools are multidirectional.\nThat means, by adding \nAll 4 directions = ,0,2,4,6, \n\nThe last two numbers have to do with the positioning of the character." },
             { "seasons", "Enter information text here" },
@@ -2760,7 +2759,7 @@ namespace UoFiddler.Controls.UserControls
         #endregion
 
         #region [ comboBoxLoadText_SelectedIndexChanged ]
-        private void comboBoxLoadText_SelectedIndexChanged(object sender, EventArgs e)
+        private void ComboBoxLoadText_SelectedIndexChanged(object sender, EventArgs e)
         {
             // Get path from tbClassicUOPath
             string path = tbClassicUOPfad.Text;
@@ -2778,10 +2777,10 @@ namespace UoFiddler.Controls.UserControls
                 richTextBoxEdit.Text = File.ReadAllText(fullPath);
 
                 // Check if there is an info text for the selected file
-                if (infoTexts.ContainsKey(selectedFile))
+                if (_infoTexts.TryGetValue(selectedFile, out string infoText))
                 {
                     // Display the info text in textBoxInfoCuo
-                    richTextInfoCuo.Text = infoTexts[selectedFile];
+                    richTextInfoCuo.Text = infoText;
                 }
                 else
                 {
@@ -2794,10 +2793,11 @@ namespace UoFiddler.Controls.UserControls
                 MessageBox.Show("The file does not exist.");
             }
         }
+
         #endregion
 
         #region [ btSaveTxtCuo ]
-        private void btSaveTxtCuo_Click(object sender, EventArgs e)
+        private void BtSaveTxtCuo_Click(object sender, EventArgs e)
         {
             // Get path from tbClassicUOPath
             string path = tbClassicUOPfad.Text;
@@ -2822,7 +2822,7 @@ namespace UoFiddler.Controls.UserControls
         #endregion
 
         #region [ lbChairInfo_Click ]
-        private void lbChairInfo_Click(object sender, EventArgs e)
+        private void LbChairInfo_Click(object sender, EventArgs e)
         {
             Image image = Properties.Resources.MakeChairsUseable;
 
@@ -2852,7 +2852,7 @@ namespace UoFiddler.Controls.UserControls
         #endregion
 
         #region [ findToolStripMenuItem ]
-        private void findToolStripMenuItem_Click(object sender, EventArgs e)
+        private void FindToolStripMenuItem_Click(object sender, EventArgs e)
         {
             string searchText = toolStripTextBoxFindText.Text;
 
@@ -2867,9 +2867,9 @@ namespace UoFiddler.Controls.UserControls
         #endregion
 
         #region [ copySettingsToolStripMenuItem ]
-        private void copySettingsToolStripMenuItem_Click(object sender, EventArgs e)
+        private void CopySettingsToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            copiedSettings = new Settings
+            _copiedSettings = new Settings
             {
                 Name = textBoxName.Text,
                 Weight = textBoxWeight.Text,
@@ -2889,13 +2889,13 @@ namespace UoFiddler.Controls.UserControls
             // Save the state of CheckedListBox1
             foreach (int index in checkedListBox1.CheckedIndices)
             {
-                copiedSettings.CheckedList.Add(true);
+                _copiedSettings.CheckedList.Add(true);
             }
             for (int i = 0; i < checkedListBox1.Items.Count; i++)
             {
                 if (!checkedListBox1.CheckedIndices.Contains(i))
                 {
-                    copiedSettings.CheckedList.Add(false);
+                    _copiedSettings.CheckedList.Add(false);
                 }
             }
 
@@ -2909,31 +2909,31 @@ namespace UoFiddler.Controls.UserControls
         #endregion
 
         #region [ insertSettingsToolStripMenuItem ]
-        private void insertSettingsToolStripMenuItem_Click(object sender, EventArgs e)
+        private void InsertSettingsToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (copiedSettings == null)
+            if (_copiedSettings == null)
             {
                 MessageBox.Show("No settings copied yet.");
                 return;
             }
 
-            textBoxName.Text = copiedSettings.Name;
-            textBoxWeight.Text = copiedSettings.Weight;
-            textBoxAnim.Text = copiedSettings.Anim;
-            textBoxQuality.Text = copiedSettings.Quality;
-            textBoxQuantity.Text = copiedSettings.Quantity;
-            textBoxHue.Text = copiedSettings.Hue;
-            textBoxStackOff.Text = copiedSettings.StackOff;
-            textBoxValue.Text = copiedSettings.Value;
-            textBoxHeigth.Text = copiedSettings.Height;
-            textBoxUnk1.Text = copiedSettings.Unk1;
-            textBoxUnk2.Text = copiedSettings.Unk2;
-            textBoxUnk3.Text = copiedSettings.Unk3;
+            textBoxName.Text = _copiedSettings.Name;
+            textBoxWeight.Text = _copiedSettings.Weight;
+            textBoxAnim.Text = _copiedSettings.Anim;
+            textBoxQuality.Text = _copiedSettings.Quality;
+            textBoxQuantity.Text = _copiedSettings.Quantity;
+            textBoxHue.Text = _copiedSettings.Hue;
+            textBoxStackOff.Text = _copiedSettings.StackOff;
+            textBoxValue.Text = _copiedSettings.Value;
+            textBoxHeigth.Text = _copiedSettings.Height;
+            textBoxUnk1.Text = _copiedSettings.Unk1;
+            textBoxUnk2.Text = _copiedSettings.Unk2;
+            textBoxUnk3.Text = _copiedSettings.Unk3;
 
             // transfers back the state of the CheckedListBox1
             for (int i = 0; i < checkedListBox1.Items.Count; i++)
             {
-                checkedListBox1.SetItemChecked(i, copiedSettings.CheckedList[i]);
+                checkedListBox1.SetItemChecked(i, _copiedSettings.CheckedList[i]);
             }
 
             // MessageBox.Show("Settings inserted successfully!");
@@ -2965,9 +2965,9 @@ namespace UoFiddler.Controls.UserControls
         #endregion
 
         #region [ copySettingsLandToolStripMenuItem ]
-        private void copySettingsLandToolStripMenuItem_Click(object sender, EventArgs e)
+        private void CopySettingsLandToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            copiedLandSettings = new LandSettings
+            _copiedLandSettings = new LandSettings
             {
                 Name = textBoxNameLand.Text,
                 CheckedList = new List<bool>(),
@@ -2977,13 +2977,13 @@ namespace UoFiddler.Controls.UserControls
             // Save the state of CheckedListBox2
             foreach (int index in checkedListBox2.CheckedIndices)
             {
-                copiedLandSettings.CheckedList.Add(true);
+                _copiedLandSettings.CheckedList.Add(true);
             }
             for (int i = 0; i < checkedListBox2.Items.Count; i++)
             {
                 if (!checkedListBox2.CheckedIndices.Contains(i))
                 {
-                    copiedLandSettings.CheckedList.Add(false);
+                    _copiedLandSettings.CheckedList.Add(false);
                 }
             }
             
@@ -2994,9 +2994,9 @@ namespace UoFiddler.Controls.UserControls
         #endregion
 
         #region [ insertSettingsLandToolStripMenuItem ]
-        private void insertSettingsLandToolStripMenuItem_Click(object sender, EventArgs e)
+        private void InsertSettingsLandToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (copiedLandSettings == null)
+            if (_copiedLandSettings == null)
             {
                 MessageBox.Show("No settings copied yet.");
                 return;
@@ -3014,13 +3014,13 @@ namespace UoFiddler.Controls.UserControls
 
             // Transfer the copied settings to the current country item
             LandData land = TileData.LandTable[index];
-            land.Name = copiedLandSettings.Name;
-            land.TextureId = copiedLandSettings.TextureId;
+            land.Name = _copiedLandSettings.Name;
+            land.TextureId = _copiedLandSettings.TextureId;
 
             // Reset the state of the CheckedListBox2
             for (int i = 0; i < checkedListBox2.Items.Count; i++)
             {
-                checkedListBox2.SetItemChecked(i, copiedLandSettings.CheckedList[i]);
+                checkedListBox2.SetItemChecked(i, _copiedLandSettings.CheckedList[i]);
             }
 
             // Visual update of the node
@@ -3052,7 +3052,7 @@ namespace UoFiddler.Controls.UserControls
         #region [ AssignToolTipsToLabels ]
         private void AssignToolTipsToLabels()
         {
-            image = Properties.Resources.MakeChairsUseable;
+            _image = Properties.Resources.MakeChairsUseable;
 
             // Statics
             toolTipComponent.SetToolTip(nameLabel, GetDescription(nameLabel));
