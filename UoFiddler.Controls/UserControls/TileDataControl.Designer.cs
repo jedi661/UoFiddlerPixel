@@ -53,6 +53,7 @@ namespace UoFiddler.Controls.UserControls
             LandTilesContextMenuStrip = new System.Windows.Forms.ContextMenuStrip(components);
             selectInLandtilesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             selToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            toolStripSeparator9 = new System.Windows.Forms.ToolStripSeparator();
             copySettingsLandToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             insertSettingsLandToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             MainToolStrip = new System.Windows.Forms.ToolStrip();
@@ -106,6 +107,7 @@ namespace UoFiddler.Controls.UserControls
             zoomToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             zoomImageToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             splitContainer3 = new System.Windows.Forms.SplitContainer();
+            weightLabel = new System.Windows.Forms.Label();
             animLabel = new System.Windows.Forms.Label();
             unknown2Label = new System.Windows.Forms.Label();
             valueLabel = new System.Windows.Forms.Label();
@@ -116,7 +118,6 @@ namespace UoFiddler.Controls.UserControls
             unknown3Label = new System.Windows.Forms.Label();
             heightLabel = new System.Windows.Forms.Label();
             hueLabel = new System.Windows.Forms.Label();
-            weightLabel = new System.Windows.Forms.Label();
             nameLabel = new System.Windows.Forms.Label();
             textBoxName = new System.Windows.Forms.TextBox();
             label9 = new System.Windows.Forms.Label();
@@ -163,7 +164,6 @@ namespace UoFiddler.Controls.UserControls
             tbClassicUOPfad = new System.Windows.Forms.TextBox();
             richTextInfoCuo = new System.Windows.Forms.RichTextBox();
             toolTipComponent = new System.Windows.Forms.ToolTip(components);
-            toolStripSeparator9 = new System.Windows.Forms.ToolStripSeparator();
             ItemsContextMenuStrip.SuspendLayout();
             LandTilesContextMenuStrip.SuspendLayout();
             MainToolStrip.SuspendLayout();
@@ -262,7 +262,7 @@ namespace UoFiddler.Controls.UserControls
             copySettingsToolStripMenuItem.Name = "copySettingsToolStripMenuItem";
             copySettingsToolStripMenuItem.Size = new System.Drawing.Size(200, 22);
             copySettingsToolStripMenuItem.Text = "Copy settings";
-            copySettingsToolStripMenuItem.ToolTipText = "Copies all settings";
+            copySettingsToolStripMenuItem.ToolTipText = "Copy all settings";
             copySettingsToolStripMenuItem.Click += copySettingsToolStripMenuItem_Click;
             // 
             // insertSettingsToolStripMenuItem
@@ -271,14 +271,14 @@ namespace UoFiddler.Controls.UserControls
             insertSettingsToolStripMenuItem.Name = "insertSettingsToolStripMenuItem";
             insertSettingsToolStripMenuItem.Size = new System.Drawing.Size(200, 22);
             insertSettingsToolStripMenuItem.Text = "Insert Settings";
-            insertSettingsToolStripMenuItem.ToolTipText = "Inserts all settings";
+            insertSettingsToolStripMenuItem.ToolTipText = "Insert all Settings";
             insertSettingsToolStripMenuItem.Click += insertSettingsToolStripMenuItem_Click;
             // 
             // LandTilesContextMenuStrip
             // 
             LandTilesContextMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { selectInLandtilesToolStripMenuItem, selToolStripMenuItem, toolStripSeparator9, copySettingsLandToolStripMenuItem, insertSettingsLandToolStripMenuItem });
             LandTilesContextMenuStrip.Name = "contextMenuStrip2";
-            LandTilesContextMenuStrip.Size = new System.Drawing.Size(201, 120);
+            LandTilesContextMenuStrip.Size = new System.Drawing.Size(201, 98);
             // 
             // selectInLandtilesToolStripMenuItem
             // 
@@ -296,12 +296,18 @@ namespace UoFiddler.Controls.UserControls
             selToolStripMenuItem.Text = "Select In RadarColor tab";
             selToolStripMenuItem.Click += OnClickSelectRadarLand;
             // 
+            // toolStripSeparator9
+            // 
+            toolStripSeparator9.Name = "toolStripSeparator9";
+            toolStripSeparator9.Size = new System.Drawing.Size(197, 6);
+            // 
             // copySettingsLandToolStripMenuItem
             // 
             copySettingsLandToolStripMenuItem.Image = Properties.Resources.copy_for_settings;
             copySettingsLandToolStripMenuItem.Name = "copySettingsLandToolStripMenuItem";
             copySettingsLandToolStripMenuItem.Size = new System.Drawing.Size(200, 22);
             copySettingsLandToolStripMenuItem.Text = "Copy Settings";
+            copySettingsLandToolStripMenuItem.ToolTipText = "Copy all Settings";
             copySettingsLandToolStripMenuItem.Click += copySettingsLandToolStripMenuItem_Click;
             // 
             // insertSettingsLandToolStripMenuItem
@@ -310,6 +316,7 @@ namespace UoFiddler.Controls.UserControls
             insertSettingsLandToolStripMenuItem.Name = "insertSettingsLandToolStripMenuItem";
             insertSettingsLandToolStripMenuItem.Size = new System.Drawing.Size(200, 22);
             insertSettingsLandToolStripMenuItem.Text = "Insert Settings";
+            insertSettingsLandToolStripMenuItem.ToolTipText = "Insert all Settings";
             insertSettingsLandToolStripMenuItem.Click += insertSettingsLandToolStripMenuItem_Click;
             // 
             // MainToolStrip
@@ -830,6 +837,7 @@ namespace UoFiddler.Controls.UserControls
             // 
             // splitContainer3.Panel1
             // 
+            splitContainer3.Panel1.Controls.Add(weightLabel);
             splitContainer3.Panel1.Controls.Add(animLabel);
             splitContainer3.Panel1.Controls.Add(unknown2Label);
             splitContainer3.Panel1.Controls.Add(valueLabel);
@@ -840,7 +848,6 @@ namespace UoFiddler.Controls.UserControls
             splitContainer3.Panel1.Controls.Add(unknown3Label);
             splitContainer3.Panel1.Controls.Add(heightLabel);
             splitContainer3.Panel1.Controls.Add(hueLabel);
-            splitContainer3.Panel1.Controls.Add(weightLabel);
             splitContainer3.Panel1.Controls.Add(nameLabel);
             splitContainer3.Panel1.Controls.Add(textBoxName);
             splitContainer3.Panel1.Controls.Add(label9);
@@ -874,6 +881,16 @@ namespace UoFiddler.Controls.UserControls
             splitContainer3.SplitterDistance = 157;
             splitContainer3.SplitterWidth = 2;
             splitContainer3.TabIndex = 25;
+            // 
+            // weightLabel
+            // 
+            weightLabel.AutoSize = true;
+            weightLabel.Cursor = System.Windows.Forms.Cursors.Help;
+            weightLabel.Location = new System.Drawing.Point(118, 36);
+            weightLabel.Name = "weightLabel";
+            weightLabel.Size = new System.Drawing.Size(12, 15);
+            weightLabel.TabIndex = 36;
+            weightLabel.Text = "?";
             // 
             // animLabel
             // 
@@ -974,16 +991,6 @@ namespace UoFiddler.Controls.UserControls
             hueLabel.Size = new System.Drawing.Size(12, 15);
             hueLabel.TabIndex = 26;
             hueLabel.Text = "?";
-            // 
-            // weightLabel
-            // 
-            weightLabel.AutoSize = true;
-            weightLabel.Cursor = System.Windows.Forms.Cursors.Help;
-            weightLabel.Location = new System.Drawing.Point(118, 37);
-            weightLabel.Name = "weightLabel";
-            weightLabel.Size = new System.Drawing.Size(12, 15);
-            weightLabel.TabIndex = 25;
-            weightLabel.Text = "?";
             // 
             // nameLabel
             // 
@@ -1423,11 +1430,6 @@ namespace UoFiddler.Controls.UserControls
             richTextInfoCuo.TabIndex = 27;
             richTextInfoCuo.Text = "";
             // 
-            // toolStripSeparator9
-            // 
-            toolStripSeparator9.Name = "toolStripSeparator9";
-            toolStripSeparator9.Size = new System.Drawing.Size(197, 6);
-            // 
             // TileDataControl
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -1584,13 +1586,11 @@ namespace UoFiddler.Controls.UserControls
         private System.Windows.Forms.Label unknown3Label;
         private System.Windows.Forms.Label heightLabel;
         private System.Windows.Forms.Label hueLabel;
-        private System.Windows.Forms.Label weightLabel;
         private System.Windows.Forms.Label unknown2Label;
         private System.Windows.Forms.Label valueLabel;
         private System.Windows.Forms.Label animLabel;
         private System.Windows.Forms.Label landTexIdLabel;
         private System.Windows.Forms.Label landNameLabel;
-        private System.Windows.Forms.ToolTip toolTipComponent;
         private System.Windows.Forms.TabPage tabPageCouEdit;
         private System.Windows.Forms.RichTextBox richTextBoxEdit;
         private System.Windows.Forms.Panel panelEdit;
@@ -1615,5 +1615,7 @@ namespace UoFiddler.Controls.UserControls
         private System.Windows.Forms.ToolStripMenuItem copySettingsLandToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem insertSettingsLandToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator9;
+        private System.Windows.Forms.Label weightLabel;
+        private System.Windows.Forms.ToolTip toolTipComponent;
     }
 }
