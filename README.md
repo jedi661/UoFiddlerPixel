@@ -12,7 +12,7 @@ Version : 4.12.6
 - Added function reads the colors of an image, displays them in a RichTextBox, and allows visualization in a PictureBox through highlighting. (Items).
 - Added map cordinate to clipboard (map)
 - Added Image animation management with support for image import from clipboard and load and customizable animation speed.
-- Added Tiledata Copy and Insert all Settings, into contex menu.
+- Added Tiledata Item and Land Copy and Insert all Settings, into contex menu. And multiple import.
 
 Version : 4.12.5
 - AminEdit added new features, Body Human display will be expanded, and Mounted.

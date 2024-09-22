@@ -47,11 +47,14 @@ namespace UoFiddler.Controls.UserControls
             toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
             selectInGumpsTabMaleToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             selectInGumpsTabFemaleToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            toolStripSeparator8 = new System.Windows.Forms.ToolStripSeparator();
             copySettingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             insertSettingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             LandTilesContextMenuStrip = new System.Windows.Forms.ContextMenuStrip(components);
             selectInLandtilesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             selToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            copySettingsLandToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            insertSettingsLandToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             MainToolStrip = new System.Windows.Forms.ToolStrip();
             toolStripLabel1 = new System.Windows.Forms.ToolStripLabel();
             searchByIdToolStripTextBox = new System.Windows.Forms.ToolStripTextBox();
@@ -160,7 +163,7 @@ namespace UoFiddler.Controls.UserControls
             tbClassicUOPfad = new System.Windows.Forms.TextBox();
             richTextInfoCuo = new System.Windows.Forms.RichTextBox();
             toolTipComponent = new System.Windows.Forms.ToolTip(components);
-            toolStripSeparator8 = new System.Windows.Forms.ToolStripSeparator();
+            toolStripSeparator9 = new System.Windows.Forms.ToolStripSeparator();
             ItemsContextMenuStrip.SuspendLayout();
             LandTilesContextMenuStrip.SuspendLayout();
             MainToolStrip.SuspendLayout();
@@ -208,7 +211,7 @@ namespace UoFiddler.Controls.UserControls
             // 
             ItemsContextMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { selectInItemsToolStripMenuItem, selectRadarColorToolStripMenuItem, toolStripSeparator3, selectInGumpsTabMaleToolStripMenuItem, selectInGumpsTabFemaleToolStripMenuItem, toolStripSeparator8, copySettingsToolStripMenuItem, insertSettingsToolStripMenuItem });
             ItemsContextMenuStrip.Name = "contextMenuStrip1";
-            ItemsContextMenuStrip.Size = new System.Drawing.Size(201, 170);
+            ItemsContextMenuStrip.Size = new System.Drawing.Size(201, 148);
             ItemsContextMenuStrip.Opening += ItemsContextMenuStrip_Opening;
             // 
             // selectInItemsToolStripMenuItem
@@ -248,6 +251,11 @@ namespace UoFiddler.Controls.UserControls
             selectInGumpsTabFemaleToolStripMenuItem.Text = "Select in Gumps (F)";
             selectInGumpsTabFemaleToolStripMenuItem.Click += SelectInGumpsTabFemaleToolStripMenuItem_Click;
             // 
+            // toolStripSeparator8
+            // 
+            toolStripSeparator8.Name = "toolStripSeparator8";
+            toolStripSeparator8.Size = new System.Drawing.Size(197, 6);
+            // 
             // copySettingsToolStripMenuItem
             // 
             copySettingsToolStripMenuItem.Image = Properties.Resources.copy_for_settings;
@@ -268,9 +276,9 @@ namespace UoFiddler.Controls.UserControls
             // 
             // LandTilesContextMenuStrip
             // 
-            LandTilesContextMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { selectInLandtilesToolStripMenuItem, selToolStripMenuItem });
+            LandTilesContextMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { selectInLandtilesToolStripMenuItem, selToolStripMenuItem, toolStripSeparator9, copySettingsLandToolStripMenuItem, insertSettingsLandToolStripMenuItem });
             LandTilesContextMenuStrip.Name = "contextMenuStrip2";
-            LandTilesContextMenuStrip.Size = new System.Drawing.Size(201, 48);
+            LandTilesContextMenuStrip.Size = new System.Drawing.Size(201, 120);
             // 
             // selectInLandtilesToolStripMenuItem
             // 
@@ -287,6 +295,22 @@ namespace UoFiddler.Controls.UserControls
             selToolStripMenuItem.Size = new System.Drawing.Size(200, 22);
             selToolStripMenuItem.Text = "Select In RadarColor tab";
             selToolStripMenuItem.Click += OnClickSelectRadarLand;
+            // 
+            // copySettingsLandToolStripMenuItem
+            // 
+            copySettingsLandToolStripMenuItem.Image = Properties.Resources.copy_for_settings;
+            copySettingsLandToolStripMenuItem.Name = "copySettingsLandToolStripMenuItem";
+            copySettingsLandToolStripMenuItem.Size = new System.Drawing.Size(200, 22);
+            copySettingsLandToolStripMenuItem.Text = "Copy Settings";
+            copySettingsLandToolStripMenuItem.Click += copySettingsLandToolStripMenuItem_Click;
+            // 
+            // insertSettingsLandToolStripMenuItem
+            // 
+            insertSettingsLandToolStripMenuItem.Image = Properties.Resources.insert_settings_2_;
+            insertSettingsLandToolStripMenuItem.Name = "insertSettingsLandToolStripMenuItem";
+            insertSettingsLandToolStripMenuItem.Size = new System.Drawing.Size(200, 22);
+            insertSettingsLandToolStripMenuItem.Text = "Insert Settings";
+            insertSettingsLandToolStripMenuItem.Click += insertSettingsLandToolStripMenuItem_Click;
             // 
             // MainToolStrip
             // 
@@ -1399,10 +1423,10 @@ namespace UoFiddler.Controls.UserControls
             richTextInfoCuo.TabIndex = 27;
             richTextInfoCuo.Text = "";
             // 
-            // toolStripSeparator8
+            // toolStripSeparator9
             // 
-            toolStripSeparator8.Name = "toolStripSeparator8";
-            toolStripSeparator8.Size = new System.Drawing.Size(197, 6);
+            toolStripSeparator9.Name = "toolStripSeparator9";
+            toolStripSeparator9.Size = new System.Drawing.Size(197, 6);
             // 
             // TileDataControl
             // 
@@ -1588,5 +1612,8 @@ namespace UoFiddler.Controls.UserControls
         private System.Windows.Forms.ToolStripMenuItem copySettingsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem insertSettingsToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator8;
+        private System.Windows.Forms.ToolStripMenuItem copySettingsLandToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem insertSettingsLandToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator9;
     }
 }

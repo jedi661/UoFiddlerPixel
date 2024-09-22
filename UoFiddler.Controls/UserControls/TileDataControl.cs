@@ -32,6 +32,8 @@ namespace UoFiddler.Controls.UserControls
     {
         private Image image;
         private Settings copiedSettings = null; // Global variable to store the copied settings
+        private List<TreeNode> selectedNodes = new List<TreeNode>(); // Veriable for multiple selection
+        private LandSettings copiedLandSettings = null; // Global variable for the copied country settings
 
         #region [ TileDataControl ]
         public TileDataControl()
@@ -616,7 +618,7 @@ namespace UoFiddler.Controls.UserControls
                 }
             }
         }
-        #endregion
+        #endregion        
 
         #region [ AfterSelectTreeViewItem ]
         private void AfterSelectTreeViewItem(object sender, TreeViewEventArgs e)
@@ -626,7 +628,57 @@ namespace UoFiddler.Controls.UserControls
                 return;
             }
 
-            int index = (int)e.Node.Tag;
+            // Check whether the Ctrl key is pressed
+            bool isCtrlPressed = (Control.ModifierKeys & Keys.Control) == Keys.Control;
+
+            if (isCtrlPressed)
+            {
+                // Multi-select: Add or remove nodes from the list
+                if (selectedNodes.Contains(e.Node))
+                {
+                    // Remove the node if it is already selected
+                    selectedNodes.Remove(e.Node);
+                    e.Node.BackColor = treeViewItem.BackColor;  // Deselect
+                }
+                else
+                {
+                    // Adding the node if it is not already selected
+                    selectedNodes.Add(e.Node);
+                    e.Node.BackColor = Color.LightBlue;  // Visual highlighting
+                }
+            }
+            else
+            {
+                // Normal selection without Ctrl: Delete previous selection
+                ClearPreviousSelection();
+                selectedNodes.Add(e.Node);
+                e.Node.BackColor = Color.LightBlue;  // Visual highlighting
+            }
+
+            // Apply logic to all selected nodes
+            foreach (var node in selectedNodes)
+            {
+                ApplySettingsToNode(node);
+            }
+        }
+        #endregion
+
+        #region ClearPreviousSelection
+        private void ClearPreviousSelection()
+        {
+            foreach (TreeNode node in selectedNodes)
+            {
+                node.BackColor = treeViewItem.BackColor; // Reset the background color to default
+            }
+            selectedNodes.Clear();
+        }
+        #endregion
+
+        #region [ ApplySettingsToNode ]
+        private void ApplySettingsToNode(TreeNode node)
+        {
+            // Old logic
+            int index = (int)node.Tag;
 
             Bitmap bit = Art.GetStatic(index);
             if (bit != null)
@@ -738,110 +790,127 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region [ OnClickSaveChanges ]
+        #region [ OnClickSaveChanges ] 
         private void OnClickSaveChanges(object sender, EventArgs e)
         {
             if (tabcontrol.SelectedIndex == 0) // items
             {
-                if (treeViewItem.SelectedNode?.Tag == null)
+                // Check whether nodes have been marked
+                if (selectedNodes.Count == 0)
                 {
+                    MessageBox.Show("No nodes selected.");
                     return;
                 }
 
-                int index = (int)treeViewItem.SelectedNode.Tag;
-                ItemData item = TileData.ItemTable[index];
-                string name = textBoxName.Text;
-                if (name.Length > 20)
+                // Save changes for each selected node
+                foreach (TreeNode node in selectedNodes)
                 {
-                    name = name.Substring(0, 20);
-                }
-
-                item.Name = name;
-                treeViewItem.SelectedNode.Text = string.Format("0x{0:X4} ({0}) {1}", index, name);
-                if (short.TryParse(textBoxAnim.Text, out short shortRes))
-                {
-                    item.Animation = shortRes;
-                }
-
-                if (byte.TryParse(textBoxWeight.Text, out byte byteRes))
-                {
-                    item.Weight = byteRes;
-                }
-
-                if (byte.TryParse(textBoxQuality.Text, out byteRes))
-                {
-                    item.Quality = byteRes;
-                }
-
-                if (byte.TryParse(textBoxQuantity.Text, out byteRes))
-                {
-                    item.Quantity = byteRes;
-                }
-
-                if (byte.TryParse(textBoxHue.Text, out byteRes))
-                {
-                    item.Hue = byteRes;
-                }
-
-                if (byte.TryParse(textBoxStackOff.Text, out byteRes))
-                {
-                    item.StackingOffset = byteRes;
-                }
-
-                if (byte.TryParse(textBoxValue.Text, out byteRes))
-                {
-                    item.Value = byteRes;
-                }
-
-                if (byte.TryParse(textBoxHeigth.Text, out byteRes))
-                {
-                    item.Height = byteRes;
-                }
-
-                if (short.TryParse(textBoxUnk1.Text, out shortRes))
-                {
-                    item.MiscData = shortRes;
-                }
-
-                if (byte.TryParse(textBoxUnk2.Text, out byteRes))
-                {
-                    item.Unk2 = byteRes;
-                }
-
-                if (byte.TryParse(textBoxUnk3.Text, out byteRes))
-                {
-                    item.Unk3 = byteRes;
-                }
-
-                item.Flags = TileFlag.None;
-                Array enumValues = Enum.GetValues(typeof(TileFlag));
-                for (int i = 0; i < checkedListBox1.Items.Count; ++i)
-                {
-                    if (checkedListBox1.GetItemChecked(i))
+                    if (node?.Tag == null)
                     {
-                        item.Flags |= (TileFlag)enumValues.GetValue(i + 1);
+                        continue;
                     }
-                }
-                TileData.ItemTable[index] = item;
-                treeViewItem.SelectedNode.ForeColor = Color.Red;
-                Options.ChangedUltimaClass["TileData"] = true;
-                ControlEvents.FireTileDataChangeEvent(this, index + 0x4000);
 
+                    int index = (int)node.Tag;
+                    ItemData item = TileData.ItemTable[index];
+                    string name = textBoxName.Text;
+                    if (name.Length > 20)
+                    {
+                        name = name.Substring(0, 20);
+                    }
+
+                    item.Name = name;
+                    node.Text = string.Format("0x{0:X4} ({0}) {1}", index, name);
+
+                    if (short.TryParse(textBoxAnim.Text, out short shortRes))
+                    {
+                        item.Animation = shortRes;
+                    }
+
+                    if (byte.TryParse(textBoxWeight.Text, out byte byteRes))
+                    {
+                        item.Weight = byteRes;
+                    }
+
+                    if (byte.TryParse(textBoxQuality.Text, out byteRes))
+                    {
+                        item.Quality = byteRes;
+                    }
+
+                    if (byte.TryParse(textBoxQuantity.Text, out byteRes))
+                    {
+                        item.Quantity = byteRes;
+                    }
+
+                    if (byte.TryParse(textBoxHue.Text, out byteRes))
+                    {
+                        item.Hue = byteRes;
+                    }
+
+                    if (byte.TryParse(textBoxStackOff.Text, out byteRes))
+                    {
+                        item.StackingOffset = byteRes;
+                    }
+
+                    if (byte.TryParse(textBoxValue.Text, out byteRes))
+                    {
+                        item.Value = byteRes;
+                    }
+
+                    if (byte.TryParse(textBoxHeigth.Text, out byteRes))
+                    {
+                        item.Height = byteRes;
+                    }
+
+                    if (short.TryParse(textBoxUnk1.Text, out shortRes))
+                    {
+                        item.MiscData = shortRes;
+                    }
+
+                    if (byte.TryParse(textBoxUnk2.Text, out byteRes))
+                    {
+                        item.Unk2 = byteRes;
+                    }
+
+                    if (byte.TryParse(textBoxUnk3.Text, out byteRes))
+                    {
+                        item.Unk3 = byteRes;
+                    }
+
+                    // Set flags
+                    item.Flags = TileFlag.None;
+                    Array enumValues = Enum.GetValues(typeof(TileFlag));
+                    for (int i = 0; i < checkedListBox1.Items.Count; ++i)
+                    {
+                        if (checkedListBox1.GetItemChecked(i))
+                        {
+                            item.Flags |= (TileFlag)enumValues.GetValue(i + 1);
+                        }
+                    }
+
+                    TileData.ItemTable[index] = item;
+                    node.ForeColor = Color.Red; // Set the node to "changed"
+
+                    // Trigger events and option changes
+                    Options.ChangedUltimaClass["TileData"] = true;
+                    ControlEvents.FireTileDataChangeEvent(this, index + 0x4000);
+                }
+
+                // Save note
                 if (toolStripButton7IsActive && memorySaveWarningToolStripMenuItem.Checked)
                 {
-                    if (playCustomSound) //Land Tiles no MessageBox 
+                    if (playCustomSound) // If Sound instead of MessageBox
                     {
                         SoundPlayer player = new SoundPlayer();
                         player.SoundLocation = "sound.wav";
                         player.Play();
                     }
-                    else //new
-                        MessageBox.Show(
-                        string.Format(
-                            "Edits of 0x{0:X4} ({0}) saved to memory. Click 'Save Tiledata' to write to file.", index),
-                        "Saved", MessageBoxButtons.OK, MessageBoxIcon.Information, MessageBoxDefaultButton.Button1);
+                    else
+                    {
+                        // Note about saving
+                        MessageBox.Show("Changes saved to memory. Click 'Save Tiledata' to write to file.", "Saved",
+                            MessageBoxButtons.OK, MessageBoxIcon.Information, MessageBoxDefaultButton.Button1);
+                    }
                 }
-
             }
             else // land
             {
@@ -882,17 +951,17 @@ namespace UoFiddler.Controls.UserControls
 
                 if (toolStripButton7IsActive && memorySaveWarningToolStripMenuItem.Checked)
                 {
-                    if (playCustomSound) //Land Tiles no MessageBox 
+                    if (playCustomSound)
                     {
                         SoundPlayer player = new SoundPlayer();
                         player.SoundLocation = "sound.wav";
                         player.Play();
                     }
-                    else //new
-                        MessageBox.Show(
-                        string.Format(
-                            "Edits of 0x{0:X4} ({0}) saved to memory. Click 'Save Tiledata' to write to file.", index),
-                        "Saved", MessageBoxButtons.OK, MessageBoxIcon.Information, MessageBoxDefaultButton.Button1);
+                    else
+                    {
+                        MessageBox.Show("Changes saved to memory. Click 'Save Tiledata' to write to file.", "Saved",
+                            MessageBoxButtons.OK, MessageBoxIcon.Information, MessageBoxDefaultButton.Button1);
+                    }
                 }
             }
         }
@@ -2779,7 +2848,7 @@ namespace UoFiddler.Controls.UserControls
                 // Set the PictureBox's image to the new bitmap
                 pictureBoxItem.Image = zoomedImage;
 
-                // Zentrieren Sie die PictureBox im Panel
+                // Center the PictureBox in the panel
                 pictureBoxItem.Left = (splitContainer2.Panel2.Width - pictureBoxItem.Width) / 2;
                 pictureBoxItem.Top = (splitContainer2.Panel2.Height - pictureBoxItem.Height) / 2;
 
@@ -2856,7 +2925,7 @@ namespace UoFiddler.Controls.UserControls
             }
             else
             {
-                MessageBox.Show("Die Datei existiert nicht.");
+                MessageBox.Show("The file does not exist.");
             }
         }
         #endregion
@@ -3026,6 +3095,91 @@ namespace UoFiddler.Controls.UserControls
             public string Unk2 { get; set; }
             public string Unk3 { get; set; }
             public List<bool> CheckedList { get; set; } // Speichert die CheckedListBox Werte
+        }
+        #endregion
+
+        #region [ copySettingsLandToolStripMenuItem ]
+        private void copySettingsLandToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            copiedLandSettings = new LandSettings
+            {
+                Name = textBoxNameLand.Text,
+                CheckedList = new List<bool>(),
+                TextureId = ushort.TryParse(textBoxTexID.Text, out ushort texId) ? texId : (ushort)0
+            };
+
+            // Save the state of CheckedListBox2
+            foreach (int index in checkedListBox2.CheckedIndices)
+            {
+                copiedLandSettings.CheckedList.Add(true);
+            }
+            for (int i = 0; i < checkedListBox2.Items.Count; i++)
+            {
+                if (!checkedListBox2.CheckedIndices.Contains(i))
+                {
+                    copiedLandSettings.CheckedList.Add(false);
+                }
+            }
+            
+            SoundPlayer player = new SoundPlayer();
+            player.SoundLocation = "sound.wav";
+            player.Play();
+        }
+        #endregion
+
+        #region [ insertSettingsLandToolStripMenuItem ]
+        private void insertSettingsLandToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (copiedLandSettings == null)
+            {
+                MessageBox.Show("No settings copied yet.");
+                return;
+            }
+
+            if (treeViewLand.SelectedNode == null)
+            {
+                MessageBox.Show("No node selected.");
+                return;
+            }
+
+            // Get the currently selected node
+            TreeNode selectedNode = treeViewLand.SelectedNode;
+            int index = (int)selectedNode.Tag;
+
+            // Transfer the copied settings to the current country item
+            LandData land = TileData.LandTable[index];
+            land.Name = copiedLandSettings.Name;
+            land.TextureId = copiedLandSettings.TextureId;
+
+            // Reset the state of the CheckedListBox2
+            for (int i = 0; i < checkedListBox2.Items.Count; i++)
+            {
+                checkedListBox2.SetItemChecked(i, copiedLandSettings.CheckedList[i]);
+            }
+
+            // Visual update of the node
+            selectedNode.Text = $"0x{index:X4} {land.Name}";
+
+            // Save the changes
+            TileData.LandTable[index] = land;
+
+            // Optional: Mark the node as changed and update the event
+            selectedNode.ForeColor = Color.Red;
+            Options.ChangedUltimaClass["TileData"] = true;
+            ControlEvents.FireTileDataChangeEvent(this, index);
+            
+            SoundPlayer player = new SoundPlayer();
+            player.SoundLocation = "sound.wav";
+            player.Play();
+        }
+        #endregion
+
+        #region [ class LandSettings ]
+        public class LandSettings
+        {
+            public string Name { get; set; }
+            public ushort TextureId { get; set; }
+            public List<bool> CheckedList { get; set; } // Stores the CheckedListBox values
         }
         #endregion
     }
