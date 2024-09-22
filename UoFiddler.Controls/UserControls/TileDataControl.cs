@@ -31,6 +31,7 @@ namespace UoFiddler.Controls.UserControls
     public partial class TileDataControl : UserControl
     {
         private Image image;
+        private Settings copiedSettings = null; // Global variable to store the copied settings
 
         #region [ TileDataControl ]
         public TileDataControl()
@@ -2508,10 +2509,10 @@ namespace UoFiddler.Controls.UserControls
             }
             else if (sender == lbcomboBoxLoadText)
             {
-               description = new StringBuilder()
-                        .AppendLine("This is how you load the text files for editing into the rich text box to edit the text files.")
-                        .AppendLine("This allows you to embed new chairs, new colors, containers, and more for the client.")
-                        .ToString();
+                description = new StringBuilder()
+                         .AppendLine("This is how you load the text files for editing into the rich text box to edit the text files.")
+                         .AppendLine("This allows you to embed new chairs, new colors, containers, and more for the client.")
+                         .ToString();
             }
 
             return description;
@@ -2917,16 +2918,114 @@ namespace UoFiddler.Controls.UserControls
 
         #region [ findToolStripMenuItem ]
         private void findToolStripMenuItem_Click(object sender, EventArgs e)
-        {            
+        {
             string searchText = toolStripTextBoxFindText.Text;
-            
+
             int index = richTextBoxEdit.Find(searchText);
-            
+
             if (index != -1)
-            {                
-                richTextBoxEdit.Select(index, searchText.Length);                
+            {
+                richTextBoxEdit.Select(index, searchText.Length);
                 richTextBoxEdit.Focus();
             }
+        }
+        #endregion
+
+        #region [ copySettingsToolStripMenuItem ]
+        private void copySettingsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            copiedSettings = new Settings
+            {
+                Name = textBoxName.Text,
+                Weight = textBoxWeight.Text,
+                Anim = textBoxAnim.Text,
+                Quality = textBoxQuality.Text,
+                Quantity = textBoxQuantity.Text,
+                Hue = textBoxHue.Text,
+                StackOff = textBoxStackOff.Text,
+                Value = textBoxValue.Text,
+                Height = textBoxHeigth.Text,
+                Unk1 = textBoxUnk1.Text,
+                Unk2 = textBoxUnk2.Text,
+                Unk3 = textBoxUnk3.Text,
+                CheckedList = new List<bool>()
+            };
+
+            // Save the state of CheckedListBox1
+            foreach (int index in checkedListBox1.CheckedIndices)
+            {
+                copiedSettings.CheckedList.Add(true);
+            }
+            for (int i = 0; i < checkedListBox1.Items.Count; i++)
+            {
+                if (!checkedListBox1.CheckedIndices.Contains(i))
+                {
+                    copiedSettings.CheckedList.Add(false);
+                }
+            }
+
+            // MessageBox.Show("Settings copied successfully!");
+
+            // Sound Effekt
+            SoundPlayer player = new SoundPlayer();
+            player.SoundLocation = "sound.wav";
+            player.Play();
+        }
+        #endregion
+
+        #region [ insertSettingsToolStripMenuItem ]
+        private void insertSettingsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (copiedSettings == null)
+            {
+                MessageBox.Show("No settings copied yet.");
+                return;
+            }
+
+            textBoxName.Text = copiedSettings.Name;
+            textBoxWeight.Text = copiedSettings.Weight;
+            textBoxAnim.Text = copiedSettings.Anim;
+            textBoxQuality.Text = copiedSettings.Quality;
+            textBoxQuantity.Text = copiedSettings.Quantity;
+            textBoxHue.Text = copiedSettings.Hue;
+            textBoxStackOff.Text = copiedSettings.StackOff;
+            textBoxValue.Text = copiedSettings.Value;
+            textBoxHeigth.Text = copiedSettings.Height;
+            textBoxUnk1.Text = copiedSettings.Unk1;
+            textBoxUnk2.Text = copiedSettings.Unk2;
+            textBoxUnk3.Text = copiedSettings.Unk3;
+
+            // transfers back the state of the CheckedListBox1
+            for (int i = 0; i < checkedListBox1.Items.Count; i++)
+            {
+                checkedListBox1.SetItemChecked(i, copiedSettings.CheckedList[i]);
+            }
+
+            // MessageBox.Show("Settings inserted successfully!");
+
+            // Sound Effekt
+            SoundPlayer player = new SoundPlayer();
+            player.SoundLocation = "sound.wav";
+            player.Play();
+        }
+        #endregion
+
+        #region [ class Settings ] 
+        public class Settings // Copy for settings
+        {
+            public string Name { get; set; }
+            public string Weight { get; set; }
+            public string Anim { get; set; }
+            public string Quality { get; set; }
+            public string Quantity { get; set; }
+            public string Hue { get; set; }
+            public string StackOff { get; set; }
+            public string Value { get; set; }
+            public string Height { get; set; }
+            public string Unk1 { get; set; }
+            public string Unk2 { get; set; }
+            public string Unk3 { get; set; }
+            public List<bool> CheckedList { get; set; } // Speichert die CheckedListBox Werte
         }
         #endregion
     }

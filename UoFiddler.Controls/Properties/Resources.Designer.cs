@@ -173,6 +173,26 @@ namespace UoFiddler.Controls.Properties {
         /// <summary>
         ///   Sucht eine lokalisierte Ressource vom Typ System.Drawing.Bitmap.
         /// </summary>
+        public static System.Drawing.Bitmap copy_for_settings {
+            get {
+                object obj = ResourceManager.GetObject("copy-for-settings", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Ressource vom Typ System.Drawing.Bitmap.
+        /// </summary>
+        public static System.Drawing.Bitmap copy_for_settings_1_ {
+            get {
+                object obj = ResourceManager.GetObject("copy-for-settings(1)", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Ressource vom Typ System.Drawing.Bitmap.
+        /// </summary>
         public static System.Drawing.Bitmap Covert {
             get {
                 object obj = ResourceManager.GetObject("Covert", resourceCulture);
@@ -416,6 +436,26 @@ namespace UoFiddler.Controls.Properties {
         public static System.Drawing.Bitmap InportCSV {
             get {
                 object obj = ResourceManager.GetObject("InportCSV", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Ressource vom Typ System.Drawing.Bitmap.
+        /// </summary>
+        public static System.Drawing.Bitmap insert_settings_1_ {
+            get {
+                object obj = ResourceManager.GetObject("insert-settings(1)", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Ressource vom Typ System.Drawing.Bitmap.
+        /// </summary>
+        public static System.Drawing.Bitmap insert_settings_2_ {
+            get {
+                object obj = ResourceManager.GetObject("insert-settings(2)", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

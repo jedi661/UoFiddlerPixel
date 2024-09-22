@@ -47,6 +47,8 @@ namespace UoFiddler.Controls.UserControls
             toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
             selectInGumpsTabMaleToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             selectInGumpsTabFemaleToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            copySettingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            insertSettingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             LandTilesContextMenuStrip = new System.Windows.Forms.ContextMenuStrip(components);
             selectInLandtilesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             selToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -158,6 +160,7 @@ namespace UoFiddler.Controls.UserControls
             tbClassicUOPfad = new System.Windows.Forms.TextBox();
             richTextInfoCuo = new System.Windows.Forms.RichTextBox();
             toolTipComponent = new System.Windows.Forms.ToolTip(components);
+            toolStripSeparator8 = new System.Windows.Forms.ToolStripSeparator();
             ItemsContextMenuStrip.SuspendLayout();
             LandTilesContextMenuStrip.SuspendLayout();
             MainToolStrip.SuspendLayout();
@@ -203,9 +206,9 @@ namespace UoFiddler.Controls.UserControls
             // 
             // ItemsContextMenuStrip
             // 
-            ItemsContextMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { selectInItemsToolStripMenuItem, selectRadarColorToolStripMenuItem, toolStripSeparator3, selectInGumpsTabMaleToolStripMenuItem, selectInGumpsTabFemaleToolStripMenuItem });
+            ItemsContextMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { selectInItemsToolStripMenuItem, selectRadarColorToolStripMenuItem, toolStripSeparator3, selectInGumpsTabMaleToolStripMenuItem, selectInGumpsTabFemaleToolStripMenuItem, toolStripSeparator8, copySettingsToolStripMenuItem, insertSettingsToolStripMenuItem });
             ItemsContextMenuStrip.Name = "contextMenuStrip1";
-            ItemsContextMenuStrip.Size = new System.Drawing.Size(201, 98);
+            ItemsContextMenuStrip.Size = new System.Drawing.Size(201, 170);
             ItemsContextMenuStrip.Opening += ItemsContextMenuStrip_Opening;
             // 
             // selectInItemsToolStripMenuItem
@@ -244,6 +247,24 @@ namespace UoFiddler.Controls.UserControls
             selectInGumpsTabFemaleToolStripMenuItem.Size = new System.Drawing.Size(200, 22);
             selectInGumpsTabFemaleToolStripMenuItem.Text = "Select in Gumps (F)";
             selectInGumpsTabFemaleToolStripMenuItem.Click += SelectInGumpsTabFemaleToolStripMenuItem_Click;
+            // 
+            // copySettingsToolStripMenuItem
+            // 
+            copySettingsToolStripMenuItem.Image = Properties.Resources.copy_for_settings;
+            copySettingsToolStripMenuItem.Name = "copySettingsToolStripMenuItem";
+            copySettingsToolStripMenuItem.Size = new System.Drawing.Size(200, 22);
+            copySettingsToolStripMenuItem.Text = "Copy settings";
+            copySettingsToolStripMenuItem.ToolTipText = "Copies all settings";
+            copySettingsToolStripMenuItem.Click += copySettingsToolStripMenuItem_Click;
+            // 
+            // insertSettingsToolStripMenuItem
+            // 
+            insertSettingsToolStripMenuItem.Image = Properties.Resources.insert_settings_2_;
+            insertSettingsToolStripMenuItem.Name = "insertSettingsToolStripMenuItem";
+            insertSettingsToolStripMenuItem.Size = new System.Drawing.Size(200, 22);
+            insertSettingsToolStripMenuItem.Text = "Insert Settings";
+            insertSettingsToolStripMenuItem.ToolTipText = "Inserts all settings";
+            insertSettingsToolStripMenuItem.Click += insertSettingsToolStripMenuItem_Click;
             // 
             // LandTilesContextMenuStrip
             // 
@@ -1378,6 +1399,11 @@ namespace UoFiddler.Controls.UserControls
             richTextInfoCuo.TabIndex = 27;
             richTextInfoCuo.Text = "";
             // 
+            // toolStripSeparator8
+            // 
+            toolStripSeparator8.Name = "toolStripSeparator8";
+            toolStripSeparator8.Size = new System.Drawing.Size(197, 6);
+            // 
             // TileDataControl
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -1559,5 +1585,8 @@ namespace UoFiddler.Controls.UserControls
         private System.Windows.Forms.Panel panel1;
         private System.Windows.Forms.ToolStripMenuItem saveToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator7;
+        private System.Windows.Forms.ToolStripMenuItem copySettingsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem insertSettingsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator8;
     }
 }
