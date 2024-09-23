@@ -30,6 +30,7 @@ namespace UoFiddler.Controls.UserControls
     {
         private Dictionary<string, string> idNames = new Dictionary<string, string>(); //XML
 
+        #region [ GumpControl ]
         public GumpControl()
         {
             InitializeComponent();
@@ -47,15 +48,18 @@ namespace UoFiddler.Controls.UserControls
             // Fügen Sie den listBox_KeyDown-Ereignishandler hinzu
             listBox.KeyDown += listBox_KeyDown;
         }
+        #endregion
 
         private static GumpControl _refMarker;
         private bool _loaded;
         private bool _showFreeSlots;
+        private GumpSearchForm _showForm; // _showForm
+
+        #region [ Reload ]
 
         /// <summary>
         /// Reload when loaded (file changed)
-        /// </summary>
-        #region Reload
+        /// </summary> 
         private void Reload()
         {
             if (!_loaded)
@@ -68,7 +72,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region OnLoad
+        #region [ OnLoad ]
         protected override void OnLoad(EventArgs e)
         {
             if (IsAncestorSiteInDesignMode || FormsDesignerHelper.IsInDesignMode())
@@ -101,7 +105,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region LoadIdNamesFromXml
+        #region [ LoadIdNamesFromXml ]
         private void LoadIdNamesFromXml()
         {
             // Path to XML file
@@ -133,7 +137,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region PopulateListBox
+        #region [ PopulateListBox ]
         private void PopulateListBox(bool showOnlyValid)
         {
             listBox.BeginUpdate();
@@ -186,14 +190,14 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region OnFilePathChangeEven
+        #region [ OnFilePathChangeEven ]
         private void OnFilePathChangeEvent()
         {
             Reload();
         }
         #endregion
 
-        #region OnGumpChangeEvent
+        #region [ OnGumpChangeEvent ]
         private void OnGumpChangeEvent(object sender, int index)
         {
             if (!_loaded)
@@ -249,7 +253,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region ListBox Drawitem
+        #region [ ListBox_DrawItem ]
         private void ListBox_DrawItem(object sender, DrawItemEventArgs e)
         {
             if (e.Index < 0)
@@ -309,14 +313,14 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region MeasureItem
+        #region [ ListBox_MeasureItem ]
         private void ListBox_MeasureItem(object sender, MeasureItemEventArgs e)
         {
             e.ItemHeight = 60;
         }
         #endregion
 
-        #region ListBox SelectedIndexChanged
+        #region [ ListBox_SelectedIndexChanged ]
         private void ListBox_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (listBox.SelectedIndex == -1)
@@ -354,7 +358,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region JumpToMaleInvalistate
+        #region [ JumpToMaleInvalistate ]
         private void JumpToMaleFemaleInvalidate()
         {
             if (listBox.SelectedIndex == -1)
@@ -386,7 +390,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region OnClickReplace
+        #region [ OnClickReplace ]
         private void OnClickReplace(object sender, EventArgs e)
         {
             if (listBox.SelectedItems.Count != 1)
@@ -447,7 +451,7 @@ namespace UoFiddler.Controls.UserControls
 
         #endregion
 
-        #region OnClickSave
+        #region [ OnClickSave ]
         private void OnClickSave(object sender, EventArgs e)
         {
             DialogResult result = MessageBox.Show("Are you sure? Will take a while", "Save", MessageBoxButtons.YesNo,
@@ -466,7 +470,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region OnClickRemove
+        #region [ OnClickRemove ]
         private void OnClickRemove(object sender, EventArgs e)
         {
             // Split the string at the hyphen location and use only the first part
@@ -508,7 +512,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region Click Find Free
+        #region [ OnClickFindFree ]
         private void OnClickFindFree(object sender, EventArgs e)
         {
             // Split the string at the hyphen location and use only the first part
@@ -564,7 +568,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region Show all free slots
+        #region [ AddShowAllFreeSlotsButton ]
         private void AddShowAllFreeSlotsButton_Click(object sender, EventArgs e)
         {
 
@@ -573,7 +577,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region On Text Changed InsertAT
+        #region [ OnTextChanged_InsertAt ]
         private void OnTextChanged_InsertAt(object sender, EventArgs e)
         {
             if (Utils.ConvertStringToInt(InsertText.Text, out int index, 0, Gumps.GetCount()))
@@ -587,7 +591,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region OnKeydown_InserText
+        #region [ OnKeydown_InserText ]
         private void OnKeydown_InsertText(object sender, KeyEventArgs e)
         {
             if (e.KeyCode != Keys.Enter)
@@ -671,7 +675,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region Extract Images
+        #region [ Extract_Image_ClickBmp ]
         private void Extract_Image_ClickBmp(object sender, EventArgs e)
         {
             string itemString = listBox.Items[listBox.SelectedIndex].ToString();
@@ -681,7 +685,9 @@ namespace UoFiddler.Controls.UserControls
                 ExportGumpImage(i, ImageFormat.Bmp);
             }
         }
+        #endregion
 
+        #region [ Extract_Image_ClickTiff ]
         private void Extract_Image_ClickTiff(object sender, EventArgs e)
         {
             string itemString = listBox.Items[listBox.SelectedIndex].ToString();
@@ -691,7 +697,9 @@ namespace UoFiddler.Controls.UserControls
                 ExportGumpImage(i, ImageFormat.Tiff);
             }
         }
+        #endregion
 
+        #region [ Extract_Image_ClickJpg ]
         private void Extract_Image_ClickJpg(object sender, EventArgs e)
         {
             string itemString = listBox.Items[listBox.SelectedIndex].ToString();
@@ -701,7 +709,9 @@ namespace UoFiddler.Controls.UserControls
                 ExportGumpImage(i, ImageFormat.Jpeg);
             }
         }
+        #endregion
 
+        #region [ Extract_Image_ClickPng ]
         private void Extract_Image_ClickPng(object sender, EventArgs e)
         {
             string itemString = listBox.Items[listBox.SelectedIndex].ToString();
@@ -711,8 +721,9 @@ namespace UoFiddler.Controls.UserControls
                 ExportGumpImage(i, ImageFormat.Png);
             }
         }
+        #endregion
 
-
+        #region [ ExportGumpImage ]
         private static void ExportGumpImage(int index, ImageFormat imageFormat)
         {
             string fileExtension = Utils.GetFileExtensionFor(imageFormat);
@@ -730,27 +741,37 @@ namespace UoFiddler.Controls.UserControls
                 MessageBoxIcon.Information,
                 MessageBoxDefaultButton.Button1);
         }
+        #endregion
 
+        #region [ OnClick_SaveAllBmp ]
         private void OnClick_SaveAllBmp(object sender, EventArgs e)
         {
             ExportAllGumps(ImageFormat.Bmp);
         }
+        #endregion
 
+        #region [ OnClick_SaveAllTiff ]
         private void OnClick_SaveAllTiff(object sender, EventArgs e)
         {
             ExportAllGumps(ImageFormat.Tiff);
         }
+        #endregion
 
+        #region [ OnClick_SaveAllJpg ]
         private void OnClick_SaveAllJpg(object sender, EventArgs e)
         {
             ExportAllGumps(ImageFormat.Jpeg);
         }
+        #endregion
 
+        #region [ OnClick_SaveAllPng ]
         private void OnClick_SaveAllPng(object sender, EventArgs e)
         {
             ExportAllGumps(ImageFormat.Png);
         }
+        #endregion
 
+        #region [ ExportAllGumps ]
         private void ExportAllGumps(ImageFormat imageFormat)
         {
             string fileExtension = Utils.GetFileExtensionFor(imageFormat);
@@ -781,7 +802,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region OnClickShowFreeSlots
+        #region [ OnClickShowFreeSlots ]
         private void OnClickShowFreeSlots(object sender, EventArgs e)
         {
             _showFreeSlots = !_showFreeSlots;
@@ -789,7 +810,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region onClickPreload
+        #region [ onClickPreload ]
         private void OnClickPreLoad(object sender, EventArgs e)
         {
             if (PreLoader.IsBusy)
@@ -825,7 +846,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region Static Void Select
+        #region [ Static Void Select ]
         internal static void Select(int gumpId)
         {
             if (!_refMarker._loaded)
@@ -837,7 +858,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region HasGumpId
+        #region [ HasGumpId ]
 
         public static bool HasGumpId(int gumpId) // HasGumpId is cross-class to identify items on Gumps with it.
         {
@@ -855,36 +876,9 @@ namespace UoFiddler.Controls.UserControls
                 return false;
             });
         }
-        // Old HasGumpID
-        /*public static bool HasGumpId(int gumpId)
-        {
-            if (!_refMarker._loaded)
-            {
-                _refMarker.OnLoad(EventArgs.Empty);
-            }
-
-            return _refMarker.listBox.Items.Cast<object>().Any(id => (int)id == gumpId);
-        }*/
-
         #endregion
 
-        #region JumptoMaleFemale
-
-        // Old version
-        /*private void JumpToMaleFemale_Click(object sender, EventArgs e)
-        {
-            if (listBox.SelectedIndex == -1)
-            {
-                return;
-            }
-
-            int gumpId = (int)listBox.SelectedItem;
-            gumpId = gumpId < 60000 ? (gumpId % 10000) + 60000 : (gumpId % 10000) + 50000;
-
-            Select(gumpId);
-        }*/
-
-        // New Version
+        #region [ JumpToMaleFemale_Click ]        
         private void JumpToMaleFemale_Click(object sender, EventArgs e)
         {
             if (listBox.SelectedIndex == -1)
@@ -910,7 +904,9 @@ namespace UoFiddler.Controls.UserControls
                 }
             }
         }
+        #endregion
 
+        #region [ JumpToMaleFemale2_Click ]
         // all in one Disabled
         // Here is a method that combines three functions but one of them is deactivated.
         // I left the function there as an example: 'JumpToMaleFemale, HasGumpId, JumpToMaleFemaleInvalidate'
@@ -977,17 +973,16 @@ namespace UoFiddler.Controls.UserControls
                 jumpToMaleFemale.Text = "Jump to Male/Female";
             }
         }
-        #endregion
-        private GumpSearchForm _showForm; // _showForm
+        #endregion        
 
-        #region SearchWrapper
+        #region [ SearchWrapper ]
         public bool SearchWrapper(int id)
         {
             return Search(id.ToString());
         }
         #endregion
 
-        #region Search Click
+        #region [ Search Click ]
         private void Search_Click(object sender, EventArgs e)
         {
             if (_showForm?.IsDisposed == false)
@@ -1000,7 +995,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region Search
+        #region [ Search ]
         public bool Search(string searchQuery)
         {
             if (!_refMarker._loaded)
@@ -1042,7 +1037,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region Gump Keyup
+        #region [ Gump_KeyUp ]
         private void Gump_KeyUp(object sender, KeyEventArgs e)
         {
             if (e.KeyCode != Keys.F || !e.Control)
@@ -1056,7 +1051,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region Insert Starting Form TB_KeyDown
+        #region [ InsertStartingFromTb_KeyDown ]]
         private void InsertStartingFromTb_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.KeyCode != Keys.Enter)
@@ -1101,13 +1096,14 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
+        #region [ CheckForIndexes ]
         /// <summary>
         /// Check if all the indexes from baseIndex to baseIndex + count are valid
         /// </summary>
         /// <param name="baseIndex">Starting Index</param>
         /// <param name="count">Number of the indexes to check.</param>
         /// <returns></returns>
-        #region CheckForIndexes
+
         private bool CheckForIndexes(int baseIndex, int count)
         {
             for (int i = baseIndex; i < baseIndex + count; i++)
@@ -1121,13 +1117,13 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
+        #region [ AddSingleGump ]
+
         /// <summary>
         /// Adds a single Gump.
         /// </summary>
         /// <param name="fileName">Filename of the gump to add</param>
         /// <param name="index">Index where the gump shall be added.</param>
-
-        #region AddSingleGump
         private void AddSingleGump(string fileName, int index)
         {
             using (var bmpTemp = new Bitmap(fileName))
@@ -1175,7 +1171,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region Copy clipboard
+        #region [ copyToolStripMenuItem ]
         private void copyToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (listBox.SelectedIndex != -1)
@@ -1262,7 +1258,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region Import Import clipboard - Import graphics from clipboard.
+        #region [ importToolStripMenuItem = Import Import clipboard - Import graphics from clipboard ]
         private void importToolStripMenuItem_Click(object sender, EventArgs e)
         {
             // Check if the clipboard contains an image
@@ -1362,7 +1358,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region Search New TopMenuToolStrip
+        #region [ SearchByIdToolStripTextBox_KeyUp ]
         private void SearchByIdToolStripTextBox_KeyUp(object sender, KeyEventArgs e)
         {
             var searchQuery = searchByIdToolStripTextBox.Text;
@@ -1375,7 +1371,7 @@ namespace UoFiddler.Controls.UserControls
 
         #endregion
 
-        #region Add Id Names Form
+        #region [ addIDNamesToolStripMenuItem = Add Id Names Form ]
         private void addIDNamesToolStripMenuItem_Click(object sender, EventArgs e)
         {
             // Create a new shape
@@ -1462,7 +1458,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region UpdateIdNameInXml
+        #region [ UpdateIdNameInXml ]
         private void UpdateIdNameInXml(string id, string name)
         {
             // Pfad zur XML-Datei
@@ -1494,7 +1490,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region Sound Button
+        #region [ Sound Button ]
         private bool isSoundMessageActive = false;
         private bool playCustomSound = false; // You can use it to select any sound
         private SoundPlayer player = new SoundPlayer();
@@ -1529,13 +1525,13 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region Mark
-        private string lastSelectedId = "50320"; // Standardwert
+        #region [ Mark ]
+        private string lastSelectedId = "50320"; // Default value
 
         #region listBox_MouseDouvleClick
         private void listBox_MouseDoubleClick(object sender, MouseEventArgs e)
         {
-            // Speichern Sie den ausgewählten ID-Wert, wenn auf ein Element in der ListBox doppelgeklickt wird
+            // Save the selected ID value when an item in the ListBox is double-clicked
             string itemString = listBox.SelectedItem.ToString();
             lastSelectedId = itemString.Split('-')[0].Trim();
 
@@ -1586,7 +1582,7 @@ namespace UoFiddler.Controls.UserControls
 
         #endregion
 
-        #region CoustomSound
+        #region [ CoustomSound ]
         private void customSoundToolStripMenuItem_Click(object sender, EventArgs e)
         {
             OpenFileDialog openFileDialog = new OpenFileDialog();
@@ -1600,7 +1596,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region PreviewKeyDown // Pagedown and up
+        #region [ PreviewKeyDown // Pagedown and up ]
         private void listBox_PreviewKeyDown(object sender, PreviewKeyDownEventArgs e)
         {
             switch (e.KeyCode)
@@ -1613,7 +1609,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region zweite Keydown als ersatz
+        #region [ second keydown as a replacement ]
         private void listBox_KeyDown(object sender, KeyEventArgs e)
         {
             int visibleItems = listBox.ClientSize.Height / listBox.ItemHeight;
