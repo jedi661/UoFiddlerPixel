@@ -1640,5 +1640,189 @@ namespace UoFiddler.Controls.UserControls
             }
         }
         #endregion
+
+        #region [ exportAllIDsToTextToolStripMenuItem_Click ]
+        private void exportAllIDsToTextToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            ExportAllGumpIDs();
+        }
+        #endregion
+
+        #region [ ExportAllGumpIDs ]
+        private void ExportAllGumpIDs()
+        {            
+            var format = MessageBox.Show("What format do you want to export in? Decimal?", "Select format", MessageBoxButtons.YesNo) == DialogResult.Yes ? "Decimal" : "Hex";            
+            var includeFree = MessageBox.Show("Would you also like to export the free IDs?", "Include free IDs", MessageBoxButtons.YesNo) == DialogResult.Yes;
+
+            // Create the default filename with "GumpExport" and current date
+            string defaultFileName = $"GumpExport_{DateTime.Now:yyyyMMdd}.txt";
+
+            SaveFileDialog saveFileDialog = new SaveFileDialog
+            {
+                Filter = "Text files (*.txt)|*.txt",
+                Title = "Gump IDs save",
+                FileName = defaultFileName  // Set the default file name
+            };
+            
+            if (saveFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                using (StreamWriter writer = new StreamWriter(saveFileDialog.FileName))
+                {
+                    int maxGumpID = Gumps.GetCount();  // Get the maximum Gump ID from the Gump mul file
+                    for (int gumpId = 0; gumpId < maxGumpID; gumpId++)
+                    {
+                        bool isOccupied = Gumps.IsValidIndex(gumpId);  // Check whether the Gump entry is occupied
+
+                        // Skip free IDs if the user doesn't want to include them
+                        if (!isOccupied && !includeFree)
+                            continue;
+
+                        // Convert the ID to the desired format (decimal or hexadecimal)
+                        string formattedID = format == "Decimal" ? gumpId.ToString() : $"0x{gumpId:X}";
+                        writer.WriteLine($"{formattedID} - {(isOccupied ? "Gump Image" : "Free")}");
+                    }
+                }
+
+                MessageBox.Show("The export was successfully completed!", "Export status", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+        }
+        #endregion
+
+        #region [ importAllImagesFromTextToolStripMenuItem ] 
+        private void importAllImagesFromTextToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            using (FolderBrowserDialog folderDialog = new FolderBrowserDialog())
+            {
+                folderDialog.Description = "Select the directory with the text file and Gump images";
+
+                if (folderDialog.ShowDialog() != DialogResult.OK)
+                {
+                    return;
+                }
+
+                string selectedDirectory = folderDialog.SelectedPath;
+
+                OpenFileDialog openFileDialog = new OpenFileDialog
+                {
+                    Filter = "Text files (*.txt)|*.txt",
+                    Title = "Select the text file with the Gump addresses",
+                    InitialDirectory = selectedDirectory
+                };
+
+                if (openFileDialog.ShowDialog() != DialogResult.OK)
+                {
+                    return;
+                }
+
+                string textFilePath = openFileDialog.FileName;
+
+                // Read the text file
+                string[] lines = File.ReadAllLines(textFilePath);
+
+                foreach (string line in lines)
+                {
+                    string[] parts = line.Split('-');
+                    if (parts.Length < 1)
+                    {
+                        continue;
+                    }
+
+                    string gumpAddress = parts[0].Trim();
+                    int gumpId;
+
+                    // Recognize hex or decimal
+                    if (gumpAddress.StartsWith("0x", StringComparison.OrdinalIgnoreCase))
+                    {
+                        if (!int.TryParse(gumpAddress.Substring(2), System.Globalization.NumberStyles.HexNumber, null, out gumpId))
+                        {
+                            MessageBox.Show($"Invalid hex address: {gumpAddress}");
+                            continue;
+                        }
+                    }
+                    else if (!int.TryParse(gumpAddress, out gumpId))
+                    {
+                        MessageBox.Show($"Invalid decimal address: {gumpAddress}");
+                        continue;
+                    }
+
+                    string imagePath = FindImageForGumpId(selectedDirectory, gumpAddress);
+                    if (string.IsNullOrEmpty(imagePath))
+                    {
+                        MessageBox.Show($"No image found for Gump ID: {gumpAddress}");
+                        continue;
+                    }
+
+                    // Convert to BMP if necessary
+                    using (var bmpTemp = new Bitmap(imagePath))
+                    {
+                        Bitmap bitmap = new Bitmap(bmpTemp);
+                        
+                        if (imagePath.Contains(".bmp"))
+                        {
+                            bitmap = Utils.ConvertBmp(bitmap);
+                        }
+
+                        // Import the image to the Gump ID
+                        Gumps.ReplaceGump(gumpId, bitmap);
+
+                        // Enable GumpChangeEvent to ensure the ListBox is updated
+                        ControlEvents.FireGumpChangeEvent(this, gumpId);
+
+                        // Update the ListBox
+                        UpdateListBoxWithGump(gumpId);
+                    }
+                }
+                                
+                PopulateListBox(false); // Here the ListBox is reloaded after the import
+
+                // Force redraw the ListBox
+                listBox.Invalidate();
+                MessageBox.Show("Import complete!", "Import status", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+        }
+        #endregion
+
+        #region [ FindImageForGumpId ]
+        // Auxiliary method for image search
+        private string FindImageForGumpId(string directory, string gumpAddress)
+        {
+            string[] imageFormats = { "bmp", "png", "jpg", "jpeg", "tif", "tiff" };
+            foreach (var format in imageFormats)
+            {
+                string filePath = Path.Combine(directory, $"{gumpAddress}.{format}");
+                if (File.Exists(filePath))
+                {
+                    return filePath;
+                }
+            }
+
+            return null;
+        }
+        #endregion
+
+        #region [ UpdateListBoxWithGump ]
+        // ListBox update
+        private void UpdateListBoxWithGump(int gumpId)
+        {
+            bool alreadyExists = false;
+            for (int i = 0; i < listBox.Items.Count; i++)
+            {
+                string item = listBox.Items[i].ToString().Split('-')[0].Trim();
+                if (int.TryParse(item, System.Globalization.NumberStyles.HexNumber, null, out int listGumpId) && listGumpId == gumpId)
+                {
+                    listBox.Items[i] = $"0x{gumpId:X} - Replaced with new Gump";
+                    alreadyExists = true;
+                    break;
+                }
+            }
+
+            if (!alreadyExists)
+            {
+                listBox.Items.Add($"0x{gumpId:X} - Replaced with new Gump");
+            }
+
+            listBox.Refresh();
+        }
+        #endregion
     }
 }

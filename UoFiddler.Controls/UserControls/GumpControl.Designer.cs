@@ -80,6 +80,8 @@ namespace UoFiddler.Controls.UserControls
             asPngToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             showFreeSlotsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             customSoundToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            exportAllIDsToTextToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            importAllImagesFromTextToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             toolStripSeparator6 = new System.Windows.Forms.ToolStripSeparator();
             saveToolStripButton = new System.Windows.Forms.ToolStripButton();
             toolStripButtonSoundMessage = new System.Windows.Forms.ToolStripButton();
@@ -91,6 +93,7 @@ namespace UoFiddler.Controls.UserControls
             Preload = new System.Windows.Forms.ToolStripButton();
             toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
             PreLoader = new System.ComponentModel.BackgroundWorker();
+            toolStripSeparator9 = new System.Windows.Forms.ToolStripSeparator();
             ((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
             splitContainer1.Panel1.SuspendLayout();
             splitContainer1.Panel2.SuspendLayout();
@@ -373,7 +376,7 @@ namespace UoFiddler.Controls.UserControls
             // toolStripDropDownButton1
             // 
             toolStripDropDownButton1.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            toolStripDropDownButton1.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { exportAllToolStripMenuItem, showFreeSlotsToolStripMenuItem, customSoundToolStripMenuItem });
+            toolStripDropDownButton1.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { exportAllToolStripMenuItem, showFreeSlotsToolStripMenuItem, customSoundToolStripMenuItem, toolStripSeparator9, exportAllIDsToTextToolStripMenuItem, importAllImagesFromTextToolStripMenuItem });
             toolStripDropDownButton1.ImageTransparentColor = System.Drawing.Color.Magenta;
             toolStripDropDownButton1.Name = "toolStripDropDownButton1";
             toolStripDropDownButton1.Size = new System.Drawing.Size(45, 22);
@@ -382,8 +385,9 @@ namespace UoFiddler.Controls.UserControls
             // exportAllToolStripMenuItem
             // 
             exportAllToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { asBmpToolStripMenuItem1, asTiffToolStripMenuItem1, asJpgToolStripMenuItem, asPngToolStripMenuItem });
+            exportAllToolStripMenuItem.Image = Properties.Resources.Export;
             exportAllToolStripMenuItem.Name = "exportAllToolStripMenuItem";
-            exportAllToolStripMenuItem.Size = new System.Drawing.Size(156, 22);
+            exportAllToolStripMenuItem.Size = new System.Drawing.Size(255, 22);
             exportAllToolStripMenuItem.Text = "Export All..";
             // 
             // asBmpToolStripMenuItem1
@@ -417,17 +421,35 @@ namespace UoFiddler.Controls.UserControls
             // showFreeSlotsToolStripMenuItem
             // 
             showFreeSlotsToolStripMenuItem.CheckOnClick = true;
+            showFreeSlotsToolStripMenuItem.Image = Properties.Resources.Search;
             showFreeSlotsToolStripMenuItem.Name = "showFreeSlotsToolStripMenuItem";
-            showFreeSlotsToolStripMenuItem.Size = new System.Drawing.Size(156, 22);
+            showFreeSlotsToolStripMenuItem.Size = new System.Drawing.Size(255, 22);
             showFreeSlotsToolStripMenuItem.Text = "Show Free Slots";
             showFreeSlotsToolStripMenuItem.Click += OnClickShowFreeSlots;
             // 
             // customSoundToolStripMenuItem
             // 
+            customSoundToolStripMenuItem.Image = Properties.Resources.volume;
             customSoundToolStripMenuItem.Name = "customSoundToolStripMenuItem";
-            customSoundToolStripMenuItem.Size = new System.Drawing.Size(156, 22);
+            customSoundToolStripMenuItem.Size = new System.Drawing.Size(255, 22);
             customSoundToolStripMenuItem.Text = "Custom Sound";
             customSoundToolStripMenuItem.Click += customSoundToolStripMenuItem_Click;
+            // 
+            // exportAllIDsToTextToolStripMenuItem
+            // 
+            exportAllIDsToTextToolStripMenuItem.Image = Properties.Resources.Export;
+            exportAllIDsToTextToolStripMenuItem.Name = "exportAllIDsToTextToolStripMenuItem";
+            exportAllIDsToTextToolStripMenuItem.Size = new System.Drawing.Size(255, 22);
+            exportAllIDsToTextToolStripMenuItem.Text = "Export all IDs to Text";
+            exportAllIDsToTextToolStripMenuItem.Click += exportAllIDsToTextToolStripMenuItem_Click;
+            // 
+            // importAllImagesFromTextToolStripMenuItem
+            // 
+            importAllImagesFromTextToolStripMenuItem.Image = Properties.Resources.import;
+            importAllImagesFromTextToolStripMenuItem.Name = "importAllImagesFromTextToolStripMenuItem";
+            importAllImagesFromTextToolStripMenuItem.Size = new System.Drawing.Size(255, 22);
+            importAllImagesFromTextToolStripMenuItem.Text = "Import all Images from Text adress";
+            importAllImagesFromTextToolStripMenuItem.Click += importAllImagesFromTextToolStripMenuItem_Click;
             // 
             // toolStripSeparator6
             // 
@@ -525,6 +547,11 @@ namespace UoFiddler.Controls.UserControls
             PreLoader.ProgressChanged += PreLoaderProgressChanged;
             PreLoader.RunWorkerCompleted += PreLoaderCompleted;
             // 
+            // toolStripSeparator9
+            // 
+            toolStripSeparator9.Name = "toolStripSeparator9";
+            toolStripSeparator9.Size = new System.Drawing.Size(252, 6);
+            // 
             // GumpControl
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -602,5 +629,8 @@ namespace UoFiddler.Controls.UserControls
         private System.Windows.Forms.ToolStripMenuItem markToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator8;
         private System.Windows.Forms.ToolStripMenuItem customSoundToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem exportAllIDsToTextToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem importAllImagesFromTextToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator9;
     }
 }
