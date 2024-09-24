@@ -67,6 +67,7 @@ namespace UoFiddler.Controls.UserControls
             importToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             toolStripSeparator7 = new System.Windows.Forms.ToolStripSeparator();
             addIDNamesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            mirrorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             topMenuToolStrip = new System.Windows.Forms.ToolStrip();
             IndexToolStripLabel = new System.Windows.Forms.ToolStripLabel();
             searchByIdToolStripTextBox = new System.Windows.Forms.ToolStripTextBox();
@@ -80,6 +81,7 @@ namespace UoFiddler.Controls.UserControls
             asPngToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             showFreeSlotsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             customSoundToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            toolStripSeparator9 = new System.Windows.Forms.ToolStripSeparator();
             exportAllIDsToTextToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             importAllImagesFromTextToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             toolStripSeparator6 = new System.Windows.Forms.ToolStripSeparator();
@@ -93,7 +95,7 @@ namespace UoFiddler.Controls.UserControls
             Preload = new System.Windows.Forms.ToolStripButton();
             toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
             PreLoader = new System.ComponentModel.BackgroundWorker();
-            toolStripSeparator9 = new System.Windows.Forms.ToolStripSeparator();
+            toolStripSeparator10 = new System.Windows.Forms.ToolStripSeparator();
             ((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
             splitContainer1.Panel1.SuspendLayout();
             splitContainer1.Panel2.SuspendLayout();
@@ -148,9 +150,9 @@ namespace UoFiddler.Controls.UserControls
             // 
             // contextMenuStrip
             // 
-            contextMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { extractImageToolStripMenuItem, toolStripSeparator2, AddShowAllFreeSlotsButton, findNextFreeSlotToolStripMenuItem, jumpToMaleFemale, markToolStripMenuItem, toolStripSeparator8, replaceGumpToolStripMenuItem, removeToolStripMenuItem, insertToolStripMenuItem, toolStripMenuItem1, toolStripSeparator1, saveToolStripMenuItem, toolStripSeparator4, copyToolStripMenuItem, importToolStripMenuItem, toolStripSeparator7, addIDNamesToolStripMenuItem });
+            contextMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { extractImageToolStripMenuItem, toolStripSeparator2, AddShowAllFreeSlotsButton, findNextFreeSlotToolStripMenuItem, jumpToMaleFemale, markToolStripMenuItem, toolStripSeparator10, mirrorToolStripMenuItem, toolStripSeparator8, replaceGumpToolStripMenuItem, removeToolStripMenuItem, insertToolStripMenuItem, toolStripMenuItem1, toolStripSeparator1, saveToolStripMenuItem, toolStripSeparator4, copyToolStripMenuItem, importToolStripMenuItem, toolStripSeparator7, addIDNamesToolStripMenuItem });
             contextMenuStrip.Name = "contextMenuStrip1";
-            contextMenuStrip.Size = new System.Drawing.Size(190, 320);
+            contextMenuStrip.Size = new System.Drawing.Size(190, 370);
             // 
             // extractImageToolStripMenuItem
             // 
@@ -334,6 +336,14 @@ namespace UoFiddler.Controls.UserControls
             addIDNamesToolStripMenuItem.Text = "Add ID Names";
             addIDNamesToolStripMenuItem.Click += addIDNamesToolStripMenuItem_Click;
             // 
+            // mirrorToolStripMenuItem
+            // 
+            mirrorToolStripMenuItem.Image = Properties.Resources.reload;
+            mirrorToolStripMenuItem.Name = "mirrorToolStripMenuItem";
+            mirrorToolStripMenuItem.Size = new System.Drawing.Size(189, 22);
+            mirrorToolStripMenuItem.Text = "Mirror";
+            mirrorToolStripMenuItem.Click += mirrorToolStripMenuItem_Click;
+            // 
             // topMenuToolStrip
             // 
             topMenuToolStrip.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
@@ -434,6 +444,11 @@ namespace UoFiddler.Controls.UserControls
             customSoundToolStripMenuItem.Size = new System.Drawing.Size(255, 22);
             customSoundToolStripMenuItem.Text = "Custom Sound";
             customSoundToolStripMenuItem.Click += customSoundToolStripMenuItem_Click;
+            // 
+            // toolStripSeparator9
+            // 
+            toolStripSeparator9.Name = "toolStripSeparator9";
+            toolStripSeparator9.Size = new System.Drawing.Size(252, 6);
             // 
             // exportAllIDsToTextToolStripMenuItem
             // 
@@ -547,10 +562,10 @@ namespace UoFiddler.Controls.UserControls
             PreLoader.ProgressChanged += PreLoaderProgressChanged;
             PreLoader.RunWorkerCompleted += PreLoaderCompleted;
             // 
-            // toolStripSeparator9
+            // toolStripSeparator10
             // 
-            toolStripSeparator9.Name = "toolStripSeparator9";
-            toolStripSeparator9.Size = new System.Drawing.Size(252, 6);
+            toolStripSeparator10.Name = "toolStripSeparator10";
+            toolStripSeparator10.Size = new System.Drawing.Size(186, 6);
             // 
             // GumpControl
             // 
@@ -632,5 +647,7 @@ namespace UoFiddler.Controls.UserControls
         private System.Windows.Forms.ToolStripMenuItem exportAllIDsToTextToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem importAllImagesFromTextToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator9;
+        private System.Windows.Forms.ToolStripMenuItem mirrorToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator10;
     }
 }

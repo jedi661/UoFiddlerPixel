@@ -7,6 +7,7 @@ Version : 4.12.6 #XG1
 - Added Tiledata Item and Land Copy and Insert all Settings, into contex menu. And multiple import.
 - Added an export function in Gump for all addresses to a text file in decimal or hexadecimal format. 
   Also added an import function to import from a text file and directory with decimal or hexadecimal image names to the specified address.
+- Added Gump Mirror function.
 
 Version : 4.12.5 #XG1
 - AminEdit added new features, Body Human display will be expanded, and Mounted.

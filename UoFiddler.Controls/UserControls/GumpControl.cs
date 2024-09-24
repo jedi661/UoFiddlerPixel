@@ -1650,8 +1650,8 @@ namespace UoFiddler.Controls.UserControls
 
         #region [ ExportAllGumpIDs ]
         private void ExportAllGumpIDs()
-        {            
-            var format = MessageBox.Show("What format do you want to export in? Decimal?", "Select format", MessageBoxButtons.YesNo) == DialogResult.Yes ? "Decimal" : "Hex";            
+        {
+            var format = MessageBox.Show("What format do you want to export in? Decimal?", "Select format", MessageBoxButtons.YesNo) == DialogResult.Yes ? "Decimal" : "Hex";
             var includeFree = MessageBox.Show("Would you also like to export the free IDs?", "Include free IDs", MessageBoxButtons.YesNo) == DialogResult.Yes;
 
             // Create the default filename with "GumpExport" and current date
@@ -1663,7 +1663,7 @@ namespace UoFiddler.Controls.UserControls
                 Title = "Gump IDs save",
                 FileName = defaultFileName  // Set the default file name
             };
-            
+
             if (saveFileDialog.ShowDialog() == DialogResult.OK)
             {
                 using (StreamWriter writer = new StreamWriter(saveFileDialog.FileName))
@@ -1756,7 +1756,7 @@ namespace UoFiddler.Controls.UserControls
                     using (var bmpTemp = new Bitmap(imagePath))
                     {
                         Bitmap bitmap = new Bitmap(bmpTemp);
-                        
+
                         if (imagePath.Contains(".bmp"))
                         {
                             bitmap = Utils.ConvertBmp(bitmap);
@@ -1772,7 +1772,7 @@ namespace UoFiddler.Controls.UserControls
                         UpdateListBoxWithGump(gumpId);
                     }
                 }
-                                
+
                 PopulateListBox(false); // Here the ListBox is reloaded after the import
 
                 // Force redraw the ListBox
@@ -1822,6 +1822,29 @@ namespace UoFiddler.Controls.UserControls
             }
 
             listBox.Refresh();
+        }
+        #endregion
+
+        #region [ mirrorToolStripMenuItem ]
+        private void mirrorToolStripMenuItem_Click(object sender, EventArgs e)
+        {            
+            if (pictureBox.BackgroundImage == null)
+            {
+                MessageBox.Show("No image available to mirror.");
+                return;
+            }
+            
+            Bitmap originalImage = new Bitmap(pictureBox.BackgroundImage);
+            
+            Bitmap mirroredBitmap = new Bitmap(originalImage.Width, originalImage.Height);
+            
+            using (Graphics g = Graphics.FromImage(mirroredBitmap))
+            {                
+                g.DrawImage(originalImage, new Rectangle(0, 0, originalImage.Width, originalImage.Height),
+                    new Rectangle(originalImage.Width, 0, -originalImage.Width, originalImage.Height), GraphicsUnit.Pixel);
+            }
+            
+            pictureBox.BackgroundImage = mirroredBitmap;
         }
         #endregion
     }
