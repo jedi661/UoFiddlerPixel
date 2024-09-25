@@ -34,6 +34,7 @@ namespace UoFiddler.Plugin.Compare.UserControls
         private string settingsFileName = "CompareiItemsDirectoryisSettings.txt"; // Text file name
         private string settingsFilePath;
 
+        #region [ CompareItemControl ]
         public CompareItemControl()
         {
             InitializeComponent();
@@ -43,6 +44,7 @@ namespace UoFiddler.Plugin.Compare.UserControls
             EnsureSettingsDirectoryExists(); // Ensure the directory exists on app start
             LoadComboBoxSaveDir(); // Load saved directories into comboBoxSaveDir on startup
         }
+        #endregion
 
         #region [ OnLoad ]
         private void OnLoad(object sender, EventArgs e)
