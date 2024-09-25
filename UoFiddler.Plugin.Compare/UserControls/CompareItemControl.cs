@@ -868,7 +868,7 @@ namespace UoFiddler.Plugin.Compare.UserControls
         }
         #endregion
 
-        #region Buttons and left and right 
+        #region [ btLeftMoveItem ]
         private void btLeftMoveItem_Click(object sender, EventArgs e)
         {
             if (listBoxSec.SelectedIndex == -1)
@@ -917,7 +917,9 @@ namespace UoFiddler.Plugin.Compare.UserControls
             // Update pictureBoxOrg with the selected item
             pictureBoxOrg.BackgroundImage = Art.GetStatic(i);
         }
+        #endregion
 
+        #region [ btLeftMoveItemMore ]
         private void btLeftMoveItemMore_Click(object sender, EventArgs e)
         {
             if (listBoxSec.SelectedIndices.Count == 0)
@@ -974,7 +976,9 @@ namespace UoFiddler.Plugin.Compare.UserControls
             int firstSelectedIndex = int.Parse(listBoxSec.Items[listBoxSec.SelectedIndices[0]].ToString());
             pictureBoxOrg.BackgroundImage = Art.GetStatic(firstSelectedIndex);
         }
+        #endregion
 
+        #region [ ListBoxSec_KeyDown ]
         private void ListBoxSec_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.Left)
@@ -988,7 +992,9 @@ namespace UoFiddler.Plugin.Compare.UserControls
                 e.Handled = true; // Prevents the default behavior of the right arrow key
             }
         }
+        #endregion
 
+        #region [ btremoveitemfromindex ]
         private void btremoveitemfromindex_Click(object sender, EventArgs e)
         {
             if (listBoxOrg.SelectedIndex != -1)
@@ -1005,7 +1011,7 @@ namespace UoFiddler.Plugin.Compare.UserControls
         }
         #endregion
 
-        #region [  BtDataDirectoryisSettings ]
+        #region [ BtDataDirectoryisSettings ]
         private void BtDataDirectoryisSettings_Click(object sender, EventArgs e)
         {
             string settingsDirectory = Path.Combine("Data", "DirectoryisSettings"); // Directory Data/DirectoryisSettings
