@@ -29,14 +29,22 @@ namespace UoFiddler.Plugin.Compare.UserControls
         private readonly ImageConverter _ic = new ImageConverter();
         private readonly SHA256 _sha256 = SHA256.Create();
 
+        private string lastSelectedPath;
+        private string settingsDirectory = Path.Combine("data", "DirectoryisSettings"); // Creates data/DirectoryisSettings directory
+        private string settingsFileName = "CompareiItemsDirectoryisSettings.txt"; // Text file name
+        private string settingsFilePath;
+
         public CompareItemControl()
         {
             InitializeComponent();
             listBoxSec.SelectedIndexChanged += OnSelectedIndexChangedSec; //Replace graphic
             listBoxSec.KeyDown += ListBoxSec_KeyDown;
+
+            EnsureSettingsDirectoryExists(); // Ensure the directory exists on app start
+            LoadComboBoxSaveDir(); // Load saved directories into comboBoxSaveDir on startup
         }
 
-        #region OnLoad
+        #region [ OnLoad ]
         private void OnLoad(object sender, EventArgs e)
         {
             listBoxOrg.Items.Clear();
@@ -68,7 +76,7 @@ namespace UoFiddler.Plugin.Compare.UserControls
         }
         #endregion
 
-        #region LoadSettingsDirectoryComboBox
+        #region [ LoadSettingsDirectoryComboBox ]
         private void LoadSettingsDirectoryComboBox()
         {
             string settingsDirectory = "DirectoryisSettings";
@@ -85,7 +93,7 @@ namespace UoFiddler.Plugin.Compare.UserControls
         }
         #endregion
 
-        #region OnIndexChangedOrg
+        #region [ OnIndexChangedOrg ]
         private void OnIndexChangedOrg(object sender, EventArgs e)
         {
             if (listBoxOrg.SelectedIndex == -1 || listBoxOrg.Items.Count < 1)
@@ -114,7 +122,7 @@ namespace UoFiddler.Plugin.Compare.UserControls
         }
         #endregion
 
-        #region DrawItemOrg
+        #region [ DrawItemOrg ]
         private void DrawItemOrg(object sender, DrawItemEventArgs e)
         {
             if (e.Index == -1)
@@ -149,31 +157,14 @@ namespace UoFiddler.Plugin.Compare.UserControls
         }
         #endregion
 
-        #region MeasureOrg
+        #region [ MeasureOrg ]
         private void MeasureOrg(object sender, MeasureItemEventArgs e)
         {
             e.ItemHeight = 13;
         }
         #endregion
 
-        /*private void OnClickLoadSecond(object sender, EventArgs e)
-        {
-            if (string.IsNullOrWhiteSpace(textBoxSecondDir.Text))
-            {
-                return;
-            }
-
-            string path = textBoxSecondDir.Text;
-            string file = Path.Combine(path, "art.mul");
-            string file2 = Path.Combine(path, "artidx.mul");
-            if (File.Exists(file) && File.Exists(file2))
-            {
-                SecondArt.SetFileIndex(file2, file);
-                LoadSecond();
-            }
-        }*/
-
-        #region OnClickLoadSecond
+        #region [ OnClickLoadSecond ]
         private void OnClickLoadSecond(object sender, EventArgs e)
         {
             if (string.IsNullOrWhiteSpace(textBoxSecondDir.Text))
@@ -198,7 +189,7 @@ namespace UoFiddler.Plugin.Compare.UserControls
         }
         #endregion
 
-        #region LoadSecond
+        #region [ LoadSecond ]
         private void LoadSecond()
         {
             _mCompare.Clear();
@@ -213,11 +204,9 @@ namespace UoFiddler.Plugin.Compare.UserControls
             listBoxSec.Items.AddRange(cache.ToArray());
             listBoxSec.EndUpdate();
         }
-        #endregion
+        #endregion        
 
-        //Colors 
-
-        #region DrawItemSec
+        #region [ DrawItemSec ]
         private void DrawItemSec(object sender, DrawItemEventArgs e)
         {
             if (e.Index == -1)
@@ -259,7 +248,7 @@ namespace UoFiddler.Plugin.Compare.UserControls
         }
         #endregion
 
-        #region listBoxSec_DrawItem
+        #region [ listBoxSec_DrawItem ]
         private void listBoxSec_DrawItem(object sender, DrawItemEventArgs e)
         {
             if (e.Index == -1)
@@ -299,14 +288,14 @@ namespace UoFiddler.Plugin.Compare.UserControls
         }
         #endregion
 
-        #region MeasureSec
+        #region [ MeasureSec ]
         private void MeasureSec(object sender, MeasureItemEventArgs e)
         {
             e.ItemHeight = 13;
         }
         #endregion
 
-        #region OnIndexChangedSec
+        #region [ OnIndexChangedSec ]
         private void OnIndexChangedSec(object sender, EventArgs e)
         {
             if (listBoxSec.SelectedIndex == -1 || listBoxSec.Items.Count < 1)
@@ -329,7 +318,7 @@ namespace UoFiddler.Plugin.Compare.UserControls
         }
         #endregion
 
-        #region Compare
+        #region [ Compare ]
         private bool Compare(int index)
         {
             if (_mCompare.ContainsKey(index))
@@ -372,7 +361,7 @@ namespace UoFiddler.Plugin.Compare.UserControls
         }
         #endregion
 
-        #region OnChangeShowDiff
+        #region [ OnChangeShowDiff ]
         private void OnChangeShowDiff(object sender, EventArgs e)
         {
             if (_mCompare.Count < 1)
@@ -782,15 +771,23 @@ namespace UoFiddler.Plugin.Compare.UserControls
 
         #endregion
 
-        #region OnClickBrowse
+        #region [ EnsureSettingsDirectoryExists ]      
 
-        private string lastSelectedPath;
-        private string settingsDirectory = "DirectoryisSettings"; //Creates DirectoryisSettings
-        private string settingsFileName = "CompareiItemsDirectoryisSettings.txt"; //Creates Text file
-        private string settingsFilePath;
+        private void EnsureSettingsDirectoryExists()
+        {
+            if (!Directory.Exists(settingsDirectory))
+            {
+                Directory.CreateDirectory(settingsDirectory);
+            }
+            settingsFilePath = Path.Combine(settingsDirectory, settingsFileName);
+        }
+        #endregion
 
+        #region [ OnClickBrowse ]
         private void OnClickBrowse(object sender, EventArgs e)
         {
+            EnsureSettingsDirectoryExists();
+
             using (FolderBrowserDialog dialog = new FolderBrowserDialog())
             {
                 dialog.Description = "Select directory containing the art files";
@@ -804,14 +801,15 @@ namespace UoFiddler.Plugin.Compare.UserControls
                 {
                     textBoxSecondDir.Text = dialog.SelectedPath;
                     lastSelectedPath = dialog.SelectedPath;
-                    File.WriteAllText(settingsFilePath, lastSelectedPath);
-                    SaveLastDirectory(lastSelectedPath);
+                    File.WriteAllText(settingsFilePath, lastSelectedPath); // Save path to the file
+                    SaveLastDirectory(lastSelectedPath); // Save in last directories list
+                    LoadComboBoxSaveDir(); // Refresh the ComboBox to include the new directory
                 }
             }
         }
         #endregion        
 
-        #region comboBoxSaveDir
+        #region [ comboBoxSaveDir_SelectedIndexChanged ]
         private void comboBoxSaveDir_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (comboBoxSaveDir.SelectedIndex != -1)
@@ -819,24 +817,52 @@ namespace UoFiddler.Plugin.Compare.UserControls
                 textBoxSecondDir.Text = comboBoxSaveDir.SelectedItem.ToString();
             }
         }
+        #endregion
 
+        #region [ SaveLastDirectory ]
         private void SaveLastDirectory(string directory)
         {
-            string settingsDirectory = "DirectoryisSettings"; //Directory DirectoryisSettings
             string lastDirectoriesFileName = "CompareiItemsLastDirectories.txt";
             string lastDirectoriesFilePath = Path.Combine(settingsDirectory, lastDirectoriesFileName);
             List<string> lastDirectories = new List<string>();
+
+            // Read existing directories if file exists
             if (File.Exists(lastDirectoriesFilePath))
             {
                 lastDirectories.AddRange(File.ReadAllLines(lastDirectoriesFilePath));
             }
+
+            // Ensure the new directory is unique and at the top
             lastDirectories.Remove(directory);
             lastDirectories.Insert(0, directory);
-            if (lastDirectories.Count > 10) //10 lines limited 
+
+            // Limit to the last 10 entries
+            if (lastDirectories.Count > 10)
             {
                 lastDirectories = lastDirectories.Take(10).ToList();
             }
+
+            // Write back the updated list to the file
             File.WriteAllLines(lastDirectoriesFilePath, lastDirectories);
+        }
+        #endregion
+
+        #region [ LoadComboBoxSaveDir ]
+        private void LoadComboBoxSaveDir()
+        {
+            comboBoxSaveDir.Items.Clear(); // Clear existing items
+
+            string lastDirectoriesFileName = "CompareiItemsLastDirectories.txt";
+            string lastDirectoriesFilePath = Path.Combine(settingsDirectory, lastDirectoriesFileName);
+
+            if (File.Exists(lastDirectoriesFilePath))
+            {
+                string[] lastDirectories = File.ReadAllLines(lastDirectoriesFilePath);
+                foreach (string dir in lastDirectories)
+                {
+                    comboBoxSaveDir.Items.Add(dir);
+                }
+            }
         }
         #endregion
 
@@ -977,9 +1003,19 @@ namespace UoFiddler.Plugin.Compare.UserControls
         }
         #endregion
 
-        private void label2_Click(object sender, EventArgs e)
+        #region [  BtDataDirectoryisSettings ]
+        private void BtDataDirectoryisSettings_Click(object sender, EventArgs e)
         {
-
+            string settingsDirectory = Path.Combine("Data", "DirectoryisSettings"); // Directory Data/DirectoryisSettings
+            if (Directory.Exists(settingsDirectory))
+            {
+                System.Diagnostics.Process.Start("explorer.exe", settingsDirectory);
+            }
+            else
+            {
+                MessageBox.Show("The directory does not exist.");
+            }
         }
+        #endregion
     }
 }

@@ -53,6 +53,8 @@ namespace UoFiddler.Controls.UserControls
             findNextFreeSlotToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             jumpToMaleFemale = new System.Windows.Forms.ToolStripMenuItem();
             markToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            toolStripSeparator10 = new System.Windows.Forms.ToolStripSeparator();
+            mirrorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             toolStripSeparator8 = new System.Windows.Forms.ToolStripSeparator();
             replaceGumpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             removeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -67,7 +69,6 @@ namespace UoFiddler.Controls.UserControls
             importToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             toolStripSeparator7 = new System.Windows.Forms.ToolStripSeparator();
             addIDNamesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            mirrorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             topMenuToolStrip = new System.Windows.Forms.ToolStrip();
             IndexToolStripLabel = new System.Windows.Forms.ToolStripLabel();
             searchByIdToolStripTextBox = new System.Windows.Forms.ToolStripTextBox();
@@ -95,7 +96,6 @@ namespace UoFiddler.Controls.UserControls
             Preload = new System.Windows.Forms.ToolStripButton();
             toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
             PreLoader = new System.ComponentModel.BackgroundWorker();
-            toolStripSeparator10 = new System.Windows.Forms.ToolStripSeparator();
             ((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
             splitContainer1.Panel1.SuspendLayout();
             splitContainer1.Panel2.SuspendLayout();
@@ -152,7 +152,7 @@ namespace UoFiddler.Controls.UserControls
             // 
             contextMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { extractImageToolStripMenuItem, toolStripSeparator2, AddShowAllFreeSlotsButton, findNextFreeSlotToolStripMenuItem, jumpToMaleFemale, markToolStripMenuItem, toolStripSeparator10, mirrorToolStripMenuItem, toolStripSeparator8, replaceGumpToolStripMenuItem, removeToolStripMenuItem, insertToolStripMenuItem, toolStripMenuItem1, toolStripSeparator1, saveToolStripMenuItem, toolStripSeparator4, copyToolStripMenuItem, importToolStripMenuItem, toolStripSeparator7, addIDNamesToolStripMenuItem });
             contextMenuStrip.Name = "contextMenuStrip1";
-            contextMenuStrip.Size = new System.Drawing.Size(190, 370);
+            contextMenuStrip.Size = new System.Drawing.Size(190, 348);
             // 
             // extractImageToolStripMenuItem
             // 
@@ -231,6 +231,20 @@ namespace UoFiddler.Controls.UserControls
             markToolStripMenuItem.Text = "Mark";
             markToolStripMenuItem.ToolTipText = "marks the gump";
             markToolStripMenuItem.Click += markToolStripMenuItem_Click;
+            // 
+            // toolStripSeparator10
+            // 
+            toolStripSeparator10.Name = "toolStripSeparator10";
+            toolStripSeparator10.Size = new System.Drawing.Size(186, 6);
+            // 
+            // mirrorToolStripMenuItem
+            // 
+            mirrorToolStripMenuItem.Image = Properties.Resources.reload;
+            mirrorToolStripMenuItem.Name = "mirrorToolStripMenuItem";
+            mirrorToolStripMenuItem.Size = new System.Drawing.Size(189, 22);
+            mirrorToolStripMenuItem.Text = "Mirror";
+            mirrorToolStripMenuItem.ToolTipText = "Mirror Image";
+            mirrorToolStripMenuItem.Click += mirrorToolStripMenuItem_Click;
             // 
             // toolStripSeparator8
             // 
@@ -335,14 +349,6 @@ namespace UoFiddler.Controls.UserControls
             addIDNamesToolStripMenuItem.Size = new System.Drawing.Size(189, 22);
             addIDNamesToolStripMenuItem.Text = "Add ID Names";
             addIDNamesToolStripMenuItem.Click += addIDNamesToolStripMenuItem_Click;
-            // 
-            // mirrorToolStripMenuItem
-            // 
-            mirrorToolStripMenuItem.Image = Properties.Resources.reload;
-            mirrorToolStripMenuItem.Name = "mirrorToolStripMenuItem";
-            mirrorToolStripMenuItem.Size = new System.Drawing.Size(189, 22);
-            mirrorToolStripMenuItem.Text = "Mirror";
-            mirrorToolStripMenuItem.Click += mirrorToolStripMenuItem_Click;
             // 
             // topMenuToolStrip
             // 
@@ -456,6 +462,7 @@ namespace UoFiddler.Controls.UserControls
             exportAllIDsToTextToolStripMenuItem.Name = "exportAllIDsToTextToolStripMenuItem";
             exportAllIDsToTextToolStripMenuItem.Size = new System.Drawing.Size(255, 22);
             exportAllIDsToTextToolStripMenuItem.Text = "Export all IDs to Text";
+            exportAllIDsToTextToolStripMenuItem.ToolTipText = "Export all IDs to Text.";
             exportAllIDsToTextToolStripMenuItem.Click += exportAllIDsToTextToolStripMenuItem_Click;
             // 
             // importAllImagesFromTextToolStripMenuItem
@@ -464,6 +471,7 @@ namespace UoFiddler.Controls.UserControls
             importAllImagesFromTextToolStripMenuItem.Name = "importAllImagesFromTextToolStripMenuItem";
             importAllImagesFromTextToolStripMenuItem.Size = new System.Drawing.Size(255, 22);
             importAllImagesFromTextToolStripMenuItem.Text = "Import all Images from Text adress";
+            importAllImagesFromTextToolStripMenuItem.ToolTipText = "import all Images from Text Adress.";
             importAllImagesFromTextToolStripMenuItem.Click += importAllImagesFromTextToolStripMenuItem_Click;
             // 
             // toolStripSeparator6
@@ -561,11 +569,6 @@ namespace UoFiddler.Controls.UserControls
             PreLoader.DoWork += PreLoaderDoWork;
             PreLoader.ProgressChanged += PreLoaderProgressChanged;
             PreLoader.RunWorkerCompleted += PreLoaderCompleted;
-            // 
-            // toolStripSeparator10
-            // 
-            toolStripSeparator10.Name = "toolStripSeparator10";
-            toolStripSeparator10.Size = new System.Drawing.Size(186, 6);
             // 
             // GumpControl
             // 

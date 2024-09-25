@@ -62,6 +62,7 @@ namespace UoFiddler.Plugin.Compare.UserControls
             tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
             tableLayoutPanel2 = new System.Windows.Forms.TableLayoutPanel();
             splitContainer1 = new System.Windows.Forms.SplitContainer();
+            BtDataDirectoryisSettings = new System.Windows.Forms.Button();
             btremoveitemfromindex = new System.Windows.Forms.Button();
             btLeftMoveItemMore = new System.Windows.Forms.Button();
             btLeftMoveItem = new System.Windows.Forms.Button();
@@ -93,7 +94,7 @@ namespace UoFiddler.Plugin.Compare.UserControls
             listBoxOrg.Location = new System.Drawing.Point(4, 3);
             listBoxOrg.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             listBoxOrg.Name = "listBoxOrg";
-            listBoxOrg.Size = new System.Drawing.Size(220, 257);
+            listBoxOrg.Size = new System.Drawing.Size(220, 255);
             listBoxOrg.TabIndex = 0;
             listBoxOrg.DrawItem += DrawItemOrg;
             listBoxOrg.MeasureItem += MeasureOrg;
@@ -131,7 +132,7 @@ namespace UoFiddler.Plugin.Compare.UserControls
             listBoxSec.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             listBoxSec.Name = "listBoxSec";
             listBoxSec.SelectionMode = System.Windows.Forms.SelectionMode.MultiExtended;
-            listBoxSec.Size = new System.Drawing.Size(221, 257);
+            listBoxSec.Size = new System.Drawing.Size(221, 255);
             listBoxSec.TabIndex = 1;
             listBoxSec.DrawItem += DrawItemSec;
             listBoxSec.MeasureItem += MeasureSec;
@@ -201,7 +202,7 @@ namespace UoFiddler.Plugin.Compare.UserControls
             pictureBoxOrg.Location = new System.Drawing.Point(5, 4);
             pictureBoxOrg.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             pictureBoxOrg.Name = "pictureBoxOrg";
-            pictureBoxOrg.Size = new System.Drawing.Size(362, 121);
+            pictureBoxOrg.Size = new System.Drawing.Size(362, 120);
             pictureBoxOrg.TabIndex = 2;
             pictureBoxOrg.TabStop = false;
             // 
@@ -209,10 +210,10 @@ namespace UoFiddler.Plugin.Compare.UserControls
             // 
             pictureBoxSec.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
             pictureBoxSec.Dock = System.Windows.Forms.DockStyle.Fill;
-            pictureBoxSec.Location = new System.Drawing.Point(5, 132);
+            pictureBoxSec.Location = new System.Drawing.Point(5, 131);
             pictureBoxSec.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             pictureBoxSec.Name = "pictureBoxSec";
-            pictureBoxSec.Size = new System.Drawing.Size(362, 121);
+            pictureBoxSec.Size = new System.Drawing.Size(362, 120);
             pictureBoxSec.TabIndex = 3;
             pictureBoxSec.TabStop = false;
             // 
@@ -262,7 +263,7 @@ namespace UoFiddler.Plugin.Compare.UserControls
             tableLayoutPanel1.RowCount = 2;
             tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
             tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            tableLayoutPanel1.Size = new System.Drawing.Size(372, 257);
+            tableLayoutPanel1.Size = new System.Drawing.Size(372, 255);
             tableLayoutPanel1.TabIndex = 7;
             // 
             // tableLayoutPanel2
@@ -280,7 +281,7 @@ namespace UoFiddler.Plugin.Compare.UserControls
             tableLayoutPanel2.Name = "tableLayoutPanel2";
             tableLayoutPanel2.RowCount = 1;
             tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            tableLayoutPanel2.Size = new System.Drawing.Size(837, 263);
+            tableLayoutPanel2.Size = new System.Drawing.Size(837, 261);
             tableLayoutPanel2.TabIndex = 8;
             // 
             // splitContainer1
@@ -300,6 +301,7 @@ namespace UoFiddler.Plugin.Compare.UserControls
             // 
             // splitContainer1.Panel2
             // 
+            splitContainer1.Panel2.Controls.Add(BtDataDirectoryisSettings);
             splitContainer1.Panel2.Controls.Add(btremoveitemfromindex);
             splitContainer1.Panel2.Controls.Add(btLeftMoveItemMore);
             splitContainer1.Panel2.Controls.Add(btLeftMoveItem);
@@ -313,9 +315,19 @@ namespace UoFiddler.Plugin.Compare.UserControls
             splitContainer1.Panel2.Controls.Add(checkBox1);
             splitContainer1.Panel2.Controls.Add(button1);
             splitContainer1.Size = new System.Drawing.Size(837, 432);
-            splitContainer1.SplitterDistance = 263;
+            splitContainer1.SplitterDistance = 261;
             splitContainer1.SplitterWidth = 5;
             splitContainer1.TabIndex = 9;
+            // 
+            // BtDataDirectoryisSettings
+            // 
+            BtDataDirectoryisSettings.Location = new System.Drawing.Point(573, 42);
+            BtDataDirectoryisSettings.Name = "BtDataDirectoryisSettings";
+            BtDataDirectoryisSettings.Size = new System.Drawing.Size(36, 23);
+            BtDataDirectoryisSettings.TabIndex = 16;
+            BtDataDirectoryisSettings.Text = "Dir";
+            BtDataDirectoryisSettings.UseVisualStyleBackColor = true;
+            BtDataDirectoryisSettings.Click += BtDataDirectoryisSettings_Click;
             // 
             // btremoveitemfromindex
             // 
@@ -377,7 +389,7 @@ namespace UoFiddler.Plugin.Compare.UserControls
             // 
             // OnClickSearch
             // 
-            OnClickSearch.Location = new System.Drawing.Point(519, 42);
+            OnClickSearch.Location = new System.Drawing.Point(515, 42);
             OnClickSearch.Name = "OnClickSearch";
             OnClickSearch.Size = new System.Drawing.Size(57, 23);
             OnClickSearch.TabIndex = 9;
@@ -461,5 +473,6 @@ namespace UoFiddler.Plugin.Compare.UserControls
         private System.Windows.Forms.Button btLeftMoveItem;
         private System.Windows.Forms.Button btLeftMoveItemMore;
         private System.Windows.Forms.Button btremoveitemfromindex;
+        private System.Windows.Forms.Button BtDataDirectoryisSettings;
     }
 }
