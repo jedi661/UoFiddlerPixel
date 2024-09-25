@@ -337,7 +337,7 @@ namespace UoFiddler.Plugin.Compare.UserControls
             btremoveitemfromindex.Size = new System.Drawing.Size(52, 53);
             btremoveitemfromindex.TabIndex = 15;
             btremoveitemfromindex.UseVisualStyleBackColor = true;
-            btremoveitemfromindex.Click += btremoveitemfromindex_Click;
+            btremoveitemfromindex.Click += Btremoveitemfromindex_Click;
             // 
             // btLeftMoveItemMore
             // 
@@ -347,7 +347,7 @@ namespace UoFiddler.Plugin.Compare.UserControls
             btLeftMoveItemMore.Size = new System.Drawing.Size(52, 53);
             btLeftMoveItemMore.TabIndex = 14;
             btLeftMoveItemMore.UseVisualStyleBackColor = true;
-            btLeftMoveItemMore.Click += btLeftMoveItemMore_Click;
+            btLeftMoveItemMore.Click += BtLeftMoveItemMore_Click;
             // 
             // btLeftMoveItem
             // 
@@ -357,7 +357,7 @@ namespace UoFiddler.Plugin.Compare.UserControls
             btLeftMoveItem.Size = new System.Drawing.Size(53, 53);
             btLeftMoveItem.TabIndex = 13;
             btLeftMoveItem.UseVisualStyleBackColor = true;
-            btLeftMoveItem.Click += btLeftMoveItem_Click;
+            btLeftMoveItem.Click += BtLeftMoveItem_Click;
             // 
             // comboBoxSaveDir
             // 
@@ -367,7 +367,7 @@ namespace UoFiddler.Plugin.Compare.UserControls
             comboBoxSaveDir.Name = "comboBoxSaveDir";
             comboBoxSaveDir.Size = new System.Drawing.Size(278, 23);
             comboBoxSaveDir.TabIndex = 12;
-            comboBoxSaveDir.SelectedIndexChanged += comboBoxSaveDir_SelectedIndexChanged;
+            comboBoxSaveDir.SelectedIndexChanged += ComboBoxSaveDir_SelectedIndexChanged;
             // 
             // label2
             // 
