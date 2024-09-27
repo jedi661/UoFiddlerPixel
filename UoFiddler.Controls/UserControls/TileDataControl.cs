@@ -2869,6 +2869,7 @@ namespace UoFiddler.Controls.UserControls
         #region [ copySettingsToolStripMenuItem ]
         private void CopySettingsToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            // Create a new instance of Settings and copy the values from text boxes and checked list
             _copiedSettings = new Settings
             {
                 Name = textBoxName.Text,
@@ -2886,22 +2887,17 @@ namespace UoFiddler.Controls.UserControls
                 CheckedList = new List<bool>()
             };
 
-            // Save the state of CheckedListBox1
-            foreach (int index in checkedListBox1.CheckedIndices)
-            {
-                _copiedSettings.CheckedList.Add(true);
-            }
+            // Save the state of the CheckedListBox1 by iterating over each item
             for (int i = 0; i < checkedListBox1.Items.Count; i++)
             {
-                if (!checkedListBox1.CheckedIndices.Contains(i))
-                {
-                    _copiedSettings.CheckedList.Add(false);
-                }
+                // Add true if the item is checked, false otherwise
+                _copiedSettings.CheckedList.Add(checkedListBox1.GetItemChecked(i));
             }
 
+            // Optionally, display a message to indicate successful copying
             // MessageBox.Show("Settings copied successfully!");
 
-            // Sound Effekt
+            // Play a sound effect after settings have been copied
             SoundPlayer player = new SoundPlayer();
             player.SoundLocation = "sound.wav";
             player.Play();
@@ -2911,12 +2907,14 @@ namespace UoFiddler.Controls.UserControls
         #region [ insertSettingsToolStripMenuItem ]
         private void InsertSettingsToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            // Check if any settings were copied before attempting to insert them
             if (_copiedSettings == null)
             {
                 MessageBox.Show("No settings copied yet.");
                 return;
             }
 
+            // Restore the settings by assigning values back to the text boxes
             textBoxName.Text = _copiedSettings.Name;
             textBoxWeight.Text = _copiedSettings.Weight;
             textBoxAnim.Text = _copiedSettings.Anim;
@@ -2930,15 +2928,16 @@ namespace UoFiddler.Controls.UserControls
             textBoxUnk2.Text = _copiedSettings.Unk2;
             textBoxUnk3.Text = _copiedSettings.Unk3;
 
-            // transfers back the state of the CheckedListBox1
+            // Restore the state of the CheckedListBox1 from the copied settings
             for (int i = 0; i < checkedListBox1.Items.Count; i++)
             {
                 checkedListBox1.SetItemChecked(i, _copiedSettings.CheckedList[i]);
             }
 
+            // Optionally, display a message to indicate successful insertion
             // MessageBox.Show("Settings inserted successfully!");
 
-            // Sound Effekt
+            // Play a sound effect after settings have been inserted
             SoundPlayer player = new SoundPlayer();
             player.SoundLocation = "sound.wav";
             player.Play();
