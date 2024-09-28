@@ -16,6 +16,7 @@ Version : 4.12.6
 - Added an export function in Gump for all addresses to a text file in decimal or hexadecimal format. 
   Also added an import function to import from a text file and directory with decimal or hexadecimal image names to the specified address.
 - Added Gump Mirror function.
+- Added hotkey (Ctrl + Alt + P) to bring the window to the front and play a sound.
 
 Version : 4.12.5
 - AminEdit added new features, Body Human display will be expanded, and Mounted.

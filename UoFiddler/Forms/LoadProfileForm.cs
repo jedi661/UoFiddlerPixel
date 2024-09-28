@@ -14,12 +14,23 @@ using System.IO;
 using System.Windows.Forms;
 using UoFiddler.Controls.Classes;
 using UoFiddler.Classes;
+using System.Runtime.InteropServices;
+using System.Media;
 
 namespace UoFiddler.Forms
 {
     public partial class LoadProfileForm : Form
     {
         private readonly string[] _profiles;
+
+        private const int HOTKEY_ID = 1;
+
+        [DllImport("user32.dll")] // Register the hotkey (Ctrl + Alt + P)
+        private static extern bool RegisterHotKey(IntPtr hWnd, int id, uint fsModifiers, uint vk);
+
+        [DllImport("user32.dll")] // Register the hotkey (Ctrl + Alt + P)
+        private static extern bool UnregisterHotKey(IntPtr hWnd, int id);
+
 
         public LoadProfileForm()
         {
@@ -37,8 +48,46 @@ namespace UoFiddler.Forms
             int index = Array.IndexOf(_profiles, lastSelectedProfile);
             comboBoxLoad.SelectedIndex = index != -1 ? index : 0;
             comboBoxBasedOn.SelectedIndex = 0;
+            
+            RegisterHotKey(this.Handle, HOTKEY_ID, 0x0003, (uint)Keys.P); // Register the hotkey (Ctrl + Alt + P)
         }
 
+        #region [ WndProc ]
+        protected override void WndProc(ref Message m)
+        {
+            const int WM_HOTKEY = 0x0312;
+            if (m.Msg == WM_HOTKEY && m.WParam.ToInt32() == HOTKEY_ID)
+            {
+                BringToFrontAndCenter();
+            }
+            base.WndProc(ref m);
+        }
+        #endregion
+
+        #region [ BringToFrontAndCenter ]
+        private void BringToFrontAndCenter()
+        {
+            this.WindowState = FormWindowState.Normal;
+            this.StartPosition = FormStartPosition.CenterScreen;
+            this.BringToFront();
+            this.Activate();
+
+            // Play a sound effect after settings have been inserted
+            SoundPlayer player = new SoundPlayer();
+            player.SoundLocation = "sound.wav";
+            player.Play();
+        }
+        #endregion
+
+        #region [ OnFormClosed ]
+        protected override void OnFormClosed(FormClosedEventArgs e)
+        {
+            UnregisterHotKey(this.Handle, HOTKEY_ID);
+            base.OnFormClosed(e);
+        }
+        #endregion
+
+        #region [ GetProfiles ]
         private static string[] GetProfiles()
         {
             string[] files = Directory.GetFiles(Options.AppDataPath, "Options_*.xml", SearchOption.TopDirectoryOnly);
@@ -52,14 +101,18 @@ namespace UoFiddler.Forms
 
             return files;
         }
+        #endregion
 
+        #region [ OnClickLoad ]
         private void OnClickLoad(object sender, EventArgs e)
         {
             LoadSelectedProfile();
             Properties.Settings.Default.LastSelectedProfile = _profiles[comboBoxLoad.SelectedIndex];
             Properties.Settings.Default.Save(); //Profile Save Propeties
         }
+        #endregion
 
+        #region [ LoadSelectedProfile ]
         private void LoadSelectedProfile()
         {
             if (comboBoxLoad.SelectedIndex == -1)
@@ -73,7 +126,9 @@ namespace UoFiddler.Forms
 
             Close();
         }
+        #endregion
 
+        #region [ OnClickCreate ]
         private void OnClickCreate(object sender, EventArgs e)
         {
             if (string.IsNullOrEmpty(textBoxCreate.Text))
@@ -88,7 +143,9 @@ namespace UoFiddler.Forms
 
             Close();
         }
+        #endregion
 
+        #region [ ComboBoxLoad_KeyDown ]
         private void ComboBoxLoad_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.Enter)
@@ -96,17 +153,23 @@ namespace UoFiddler.Forms
                 LoadSelectedProfile();
             }
         }
+        #endregion
 
+        #region [ ComboBoxLoad_SelectedIndexChanged ]
         private void ComboBoxLoad_SelectedIndexChanged(object sender, EventArgs e)
         {
             button1.Enabled = comboBoxLoad.SelectedIndex != -1;
         }
+        #endregion
 
+        #region [ ComboBoxLoad_KeyUp ]
         private void ComboBoxLoad_KeyUp(object sender, KeyEventArgs e)
         {
             button1.Enabled = comboBoxLoad.SelectedIndex != -1;
         }
+        #endregion
 
+        #region [ LoadProfile_FormClosed ]
         private void LoadProfile_FormClosed(object sender, FormClosedEventArgs e)
         {
             if (DialogResult == DialogResult.Cancel)
@@ -114,8 +177,9 @@ namespace UoFiddler.Forms
                 Application.Exit();
             }
         }
+        #endregion
 
-        #region Delete Entry
+        #region [ Delete Entry ]
         private void bt_Delete_List_Click(object sender, EventArgs e)
         {
             if (comboBoxBasedOn.SelectedIndex == -1)
@@ -135,28 +199,28 @@ namespace UoFiddler.Forms
         }
         #endregion
 
+        #region [ class ProfileManager ]
         public class ProfileManager
-{
-    private const string LastSelectedProfileKey = "LastSelectedProfile";
-
-    public string LastSelectedProfile
-    {
-        get
         {
-            if (Properties.Settings.Default[LastSelectedProfileKey] is string profile)
+            private const string LastSelectedProfileKey = "LastSelectedProfile";
+            
+            public string LastSelectedProfile
             {
-                return profile;
+                get
+                {
+                    if (Properties.Settings.Default[LastSelectedProfileKey] is string profile)
+                    {
+                        return profile;
+                    }
+                    return null;
+                }
+                set
+                {
+                    Properties.Settings.Default[LastSelectedProfileKey] = value;
+                    Properties.Settings.Default.Save();
+                }
             }
-
-            return null;
         }
-        set
-        {
-            Properties.Settings.Default[LastSelectedProfileKey] = value;
-            Properties.Settings.Default.Save();
-        }
-    }
-}
-
+        #endregion
     }
 }
