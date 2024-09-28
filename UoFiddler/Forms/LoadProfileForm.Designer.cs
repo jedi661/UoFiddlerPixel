@@ -45,9 +45,11 @@ namespace UoFiddler.Forms
             button2 = new System.Windows.Forms.Button();
             groupBox1 = new System.Windows.Forms.GroupBox();
             groupBox2 = new System.Windows.Forms.GroupBox();
+            bt_Delete_List = new System.Windows.Forms.Button();
             label1 = new System.Windows.Forms.Label();
             comboBoxBasedOn = new System.Windows.Forms.ComboBox();
-            bt_Delete_List = new System.Windows.Forms.Button();
+            LBStrgAltP = new System.Windows.Forms.Label();
+            groupBox1.SuspendLayout();
             groupBox2.SuspendLayout();
             SuspendLayout();
             // 
@@ -97,6 +99,7 @@ namespace UoFiddler.Forms
             // 
             // groupBox1
             // 
+            groupBox1.Controls.Add(LBStrgAltP);
             groupBox1.Location = new System.Drawing.Point(14, 14);
             groupBox1.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             groupBox1.Name = "groupBox1";
@@ -122,6 +125,16 @@ namespace UoFiddler.Forms
             groupBox2.TabStop = false;
             groupBox2.Text = "Create";
             // 
+            // bt_Delete_List
+            // 
+            bt_Delete_List.Location = new System.Drawing.Point(224, 53);
+            bt_Delete_List.Name = "bt_Delete_List";
+            bt_Delete_List.Size = new System.Drawing.Size(53, 23);
+            bt_Delete_List.TabIndex = 6;
+            bt_Delete_List.Text = "Delete";
+            bt_Delete_List.UseVisualStyleBackColor = true;
+            bt_Delete_List.Click += bt_Delete_List_Click;
+            // 
             // label1
             // 
             label1.AutoSize = true;
@@ -141,15 +154,14 @@ namespace UoFiddler.Forms
             comboBoxBasedOn.Size = new System.Drawing.Size(140, 23);
             comboBoxBasedOn.TabIndex = 4;
             // 
-            // bt_Delete_List
+            // LBStrgAltP
             // 
-            bt_Delete_List.Location = new System.Drawing.Point(224, 53);
-            bt_Delete_List.Name = "bt_Delete_List";
-            bt_Delete_List.Size = new System.Drawing.Size(53, 23);
-            bt_Delete_List.TabIndex = 6;
-            bt_Delete_List.Text = "Delete";
-            bt_Delete_List.UseVisualStyleBackColor = true;
-            bt_Delete_List.Click += bt_Delete_List_Click;
+            LBStrgAltP.AutoSize = true;
+            LBStrgAltP.Location = new System.Drawing.Point(10, 48);
+            LBStrgAltP.Name = "LBStrgAltP";
+            LBStrgAltP.Size = new System.Drawing.Size(78, 15);
+            LBStrgAltP.TabIndex = 6;
+            LBStrgAltP.Text = "Strg + Alt + P";
             // 
             // LoadProfileForm
             // 
@@ -169,6 +181,8 @@ namespace UoFiddler.Forms
             StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             Text = "Choose Profile";
             FormClosed += LoadProfile_FormClosed;
+            groupBox1.ResumeLayout(false);
+            groupBox1.PerformLayout();
             groupBox2.ResumeLayout(false);
             groupBox2.PerformLayout();
             ResumeLayout(false);
@@ -185,5 +199,6 @@ namespace UoFiddler.Forms
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.TextBox textBoxCreate;
         private System.Windows.Forms.Button bt_Delete_List;
+        private System.Windows.Forms.Label LBStrgAltP;
     }
 }
