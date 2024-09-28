@@ -17,6 +17,7 @@ Version : 4.12.6
   Also added an import function to import from a text file and directory with decimal or hexadecimal image names to the specified address.
 - Added Gump Mirror function.
 - Added hotkey (Ctrl + Alt + P) to bring the Profile window to the front and play a sound.
+- Added UOP Packer autofill feature that automatically populates textboxes based on file selection and file type when the checkbox is enabled.
 
 Version : 4.12.5
 - AminEdit added new features, Body Human display will be expanded, and Mounted.
