@@ -584,6 +584,10 @@ namespace UoFiddler.Plugin.UopPacker.UserControls
                         inidx.Text = null; // Map files don't have an idx file
                         outuop.Text = Path.Combine(directory, "mapLegacyMUL.uop");
                         break;
+                    case FileType.MultiCollection:
+                        inidx.Text = Path.Combine(directory, "multi.idx");
+                        outuop.Text = Path.Combine(directory, "MultiCollection.uop");
+                        break;
                     default:
                         MessageBox.Show("Unknown file type");
                         break;
