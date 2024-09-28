@@ -84,6 +84,7 @@ namespace UoFiddler.Plugin.UopPacker.UserControls
             inputfolder = new System.Windows.Forms.TextBox();
             SelectFolderButton = new System.Windows.Forms.Button();
             ExtractSingleFileTabPage = new System.Windows.Forms.TabPage();
+            CheckBoxAutoFill = new System.Windows.Forms.CheckBox();
             checkBoxOverwriteSaveUop = new System.Windows.Forms.CheckBox();
             MainStatusStrip = new System.Windows.Forms.StatusStrip();
             toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
@@ -565,6 +566,7 @@ namespace UoFiddler.Plugin.UopPacker.UserControls
             // 
             // ExtractSingleFileTabPage
             // 
+            ExtractSingleFileTabPage.Controls.Add(CheckBoxAutoFill);
             ExtractSingleFileTabPage.Controls.Add(checkBoxOverwriteSaveUop);
             ExtractSingleFileTabPage.Controls.Add(label1);
             ExtractSingleFileTabPage.Controls.Add(label2);
@@ -604,6 +606,17 @@ namespace UoFiddler.Plugin.UopPacker.UserControls
             ExtractSingleFileTabPage.TabIndex = 0;
             ExtractSingleFileTabPage.Text = "One file";
             ExtractSingleFileTabPage.UseVisualStyleBackColor = true;
+            // 
+            // CheckBoxAutoFill
+            // 
+            CheckBoxAutoFill.AutoSize = true;
+            CheckBoxAutoFill.Location = new System.Drawing.Point(294, 136);
+            CheckBoxAutoFill.Name = "CheckBoxAutoFill";
+            CheckBoxAutoFill.Size = new System.Drawing.Size(65, 19);
+            CheckBoxAutoFill.TabIndex = 41;
+            CheckBoxAutoFill.Text = "Autofill";
+            CheckBoxAutoFill.UseVisualStyleBackColor = true;
+            CheckBoxAutoFill.CheckedChanged += CheckBoxAutoFill_CheckedChanged;
             // 
             // checkBoxOverwriteSaveUop
             // 
@@ -750,5 +763,6 @@ namespace UoFiddler.Plugin.UopPacker.UserControls
         private System.Windows.Forms.CheckBox checkBoxOverwriteSaveUop;
         private System.Windows.Forms.Button SingleFileUopArtExtractButton;
         private System.Windows.Forms.Button SingleFileExtractButton;
+        private System.Windows.Forms.CheckBox CheckBoxAutoFill;
     }
 }

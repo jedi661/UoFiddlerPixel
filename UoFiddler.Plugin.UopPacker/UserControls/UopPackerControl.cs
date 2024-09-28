@@ -17,10 +17,14 @@ using UoFiddler.Plugin.UopPacker.Classes;
 
 namespace UoFiddler.Plugin.UopPacker.UserControls
 {
+    #region [ class UopPackerControl ]
     public partial class UopPackerControl : UserControl
     {
         private readonly LegacyMulFileConverter _conv;
+        private int _total;
+        private int _success;
 
+        #region [ UopPackerControl ]
         private UopPackerControl()
         {
             InitializeComponent();
@@ -35,6 +39,7 @@ namespace UoFiddler.Plugin.UopPacker.UserControls
             checkBoxOverwriteSaveUop.Checked = Properties.Settings.Default.OverwriteSaveUop;
 
         }
+        #endregion
 
         #region UopPackerControl
         public UopPackerControl(string version) : this()
@@ -52,6 +57,11 @@ namespace UoFiddler.Plugin.UopPacker.UserControls
             if (FileDialog.ShowDialog() == DialogResult.OK)
             {
                 inmul.Text = FileDialog.FileName;
+
+                if (CheckBoxAutoFill.Checked) // Autofill
+                {
+                    AutoFillTextBoxes();
+                }
             }
         }
         #endregion
@@ -263,9 +273,6 @@ namespace UoFiddler.Plugin.UopPacker.UserControls
             }
         }
         #endregion
-
-        private int _total;
-        private int _success;
 
         #region Extract
         private void Extract(string inFile, string outFile, string outIdx, FileType type, int typeIndex)
@@ -535,5 +542,59 @@ namespace UoFiddler.Plugin.UopPacker.UserControls
             }
         }
         #endregion
+
+        #region [ CheckBoxAutoFill_CheckedChanged ]
+        private void CheckBoxAutoFill_CheckedChanged(object sender, EventArgs e)
+        {
+            if (CheckBoxAutoFill.Checked)
+            {
+                AutoFillTextBoxes();
+            }
+        }
+        #endregion
+
+        #region [ AutoFillTextBoxes ]
+        private void AutoFillTextBoxes()
+        {
+            if (string.IsNullOrEmpty(inmul.Text))
+            {
+                return;
+            }
+
+            string directory = Path.GetDirectoryName(inmul.Text);
+            string selectedFileType = multype?.SelectedValue?.ToString() ?? string.Empty;
+
+            if (Enum.TryParse(selectedFileType, out FileType fileType))
+            {
+                switch (fileType)
+                {
+                    case FileType.ArtLegacyMul:
+                        inidx.Text = Path.Combine(directory, "artidx.mul");
+                        outuop.Text = Path.Combine(directory, "artLegacyMUL.uop");
+                        break;
+                    case FileType.GumpartLegacyMul:
+                        inidx.Text = Path.Combine(directory, "gumpidx.mul");
+                        outuop.Text = Path.Combine(directory, "gumpartLegacyMUL.uop");
+                        break;
+                    case FileType.SoundLegacyMul:
+                        inidx.Text = Path.Combine(directory, "soundidx.mul");
+                        outuop.Text = Path.Combine(directory, "soundLegacyMUL.uop");
+                        break;
+                    case FileType.MapLegacyMul:
+                        inidx.Text = null; // Map files don't have an idx file
+                        outuop.Text = Path.Combine(directory, "mapLegacyMUL.uop");
+                        break;
+                    default:
+                        MessageBox.Show("Unknown file type");
+                        break;
+                }
+            }
+            else
+            {
+                MessageBox.Show("Invalid file type selected");
+            }
+        }
+        #endregion
     }
+    #endregion
 }
