@@ -498,14 +498,14 @@ namespace UoFiddler.Controls.Forms
                         CenterXNumericUpDown.Value = edit.Frames[FramesTrackBar.Value].Center.X;
                         CenterYNumericUpDown.Value = edit.Frames[FramesTrackBar.Value].Center.Y;
                     }
-                    
+
                     else
                     {
                         FramesTrackBar.Maximum = 0;
                         FramesTrackBar.Value = 0;
                         FramesTrackBar.Invalidate();
                     }
-                    
+
                 }
             }
             finally
@@ -1162,7 +1162,7 @@ namespace UoFiddler.Controls.Forms
                     {
                         FramesListView.BeginUpdate();
                         try
-                        {                            
+                        {
                             foreach (var fileName in dialog.FileNames)
                             {
                                 using (var bmpTemp = new Bitmap(fileName))
@@ -1211,7 +1211,7 @@ namespace UoFiddler.Controls.Forms
 
                                         Options.ChangedUltimaClass["Animations"] = true;
                                     }
-                                    
+
                                     else
                                     {
                                         edit.AddFrame(bitmap);
@@ -5051,5 +5051,86 @@ namespace UoFiddler.Controls.Forms
             AnimationPictureBox.Invalidate();
         }
         #endregion
+
+        #region [ ListIDToTextToolStripMenuItem ]
+        private void ListIDToTextToolStripMenuItem_Click(object sender, EventArgs e)
+        {            
+            string defaultFileName = "AminID.txt"; // Set default file name
+
+            SaveFileDialog saveFileDialog = new SaveFileDialog
+            {
+                FileName = defaultFileName,
+                Filter = "Text file (*.txt)|*.txt",
+                Title = "Save the ID overview"
+            };
+
+            if (saveFileDialog.ShowDialog() == DialogResult.OK)
+            {                
+                DialogResult result = MessageBox.Show("Would you also like to list the free IDs?",
+                                                      "ID selection", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+
+                bool includeFreeIDs = result == DialogResult.Yes; // If "Yes", free IDs are also listed
+
+                // Counter for used and free IDs
+                int occupiedCount = 0;
+                int freeCount = 0;
+
+                try
+                {
+                    using (StreamWriter writer = new StreamWriter(saveFileDialog.FileName))
+                    {                        
+                        writer.WriteLine("Overview of IDs:");
+                        writer.WriteLine("--------------------");
+
+                        // Looping through all nodes in the AnimationListTreeView
+                        foreach (TreeNode node in AnimationListTreeView.Nodes)
+                        {
+                            if (node.Tag != null)
+                            {
+                                int id = (int)node.Tag;
+                                bool valid = false;
+
+                                // Check all actions for this ID
+                                foreach (TreeNode actionNode in node.Nodes)
+                                {
+                                    int actionId = (int)actionNode.Tag;
+                                    if (AnimationEdit.IsActionDefined(_fileType, id, actionId))
+                                    {
+                                        valid = true; // At least one action defined
+                                        break;
+                                    }
+                                }
+                                
+                                if (valid)
+                                {
+                                    writer.WriteLine($"ID: {id} - Status: Occupied");
+                                    occupiedCount++;
+                                }
+                                else if (includeFreeIDs)
+                                {
+                                    writer.WriteLine($"ID: {id} - Status: Not occupied");
+                                    freeCount++;
+                                }
+                            }
+                        }
+                        
+                        writer.WriteLine("\n--------------------");
+                        writer.WriteLine("Summary:");
+                        writer.WriteLine($"Occupied IDs: {occupiedCount}");
+                        if (includeFreeIDs)
+                        {
+                            writer.WriteLine($"Free IDs: {freeCount}");
+                        }
+                    }
+
+                    MessageBox.Show("The ID overview was saved successfully.", "Successful", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Error saving file: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+            #endregion
+        }
     }
 }
