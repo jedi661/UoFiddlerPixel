@@ -18,6 +18,7 @@ Version : 4.12.6
 - Added Gump Mirror function.
 - Added hotkey (Ctrl + Alt + P) to bring the Profile window to the front and play a sound.
 - Added UOP Packer autofill feature that automatically populates textboxes based on file selection and file type when the checkbox is enabled.
+- Added AnimationEdit Lists all IDs in a text file.
 
 Version : 4.12.5
 - AminEdit added new features, Body Human display will be expanded, and Mounted.
