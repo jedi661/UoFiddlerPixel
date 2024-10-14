@@ -102,6 +102,7 @@ namespace UoFiddler.Controls.UserControls
             StatusStrip = new StatusStrip();
             NameLabel = new ToolStripStatusLabel();
             GraphicLabel = new ToolStripStatusLabel();
+            toolStripStatusLabelGraficDecimal = new ToolStripStatusLabel();
             toolStripStatusLabelItemHowMuch = new ToolStripStatusLabel();
             PreLoader = new System.ComponentModel.BackgroundWorker();
             ToolStrip = new ToolStrip();
@@ -120,8 +121,8 @@ namespace UoFiddler.Controls.UserControls
             asTiffToolStripMenuItem = new ToolStripMenuItem();
             asJpgToolStripMenuItem = new ToolStripMenuItem();
             asPngToolStripMenuItem = new ToolStripMenuItem();
-            toolStripButton1 = new ToolStripButton();
             toolStripButtonColorImage = new ToolStripButton();
+            toolStripButton1 = new ToolStripButton();
             colorDialog = new ColorDialog();
             collapsibleSplitter1 = new CollapsibleSplitter();
             ((System.ComponentModel.ISupportInitialize)splitContainer2).BeginInit();
@@ -635,7 +636,7 @@ namespace UoFiddler.Controls.UserControls
             // 
             // StatusStrip
             // 
-            StatusStrip.Items.AddRange(new ToolStripItem[] { NameLabel, GraphicLabel, toolStripStatusLabelItemHowMuch });
+            StatusStrip.Items.AddRange(new ToolStripItem[] { NameLabel, GraphicLabel, toolStripStatusLabelGraficDecimal, toolStripStatusLabelItemHowMuch });
             StatusStrip.Location = new System.Drawing.Point(0, 378);
             StatusStrip.Name = "StatusStrip";
             StatusStrip.Padding = new Padding(1, 0, 16, 0);
@@ -660,6 +661,12 @@ namespace UoFiddler.Controls.UserControls
             GraphicLabel.Size = new System.Drawing.Size(150, 17);
             GraphicLabel.Text = "Graphic:";
             GraphicLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // toolStripStatusLabelGraficDecimal
+            // 
+            toolStripStatusLabelGraficDecimal.Name = "toolStripStatusLabelGraficDecimal";
+            toolStripStatusLabelGraficDecimal.Size = new System.Drawing.Size(51, 17);
+            toolStripStatusLabelGraficDecimal.Text = "Graphic:";
             // 
             // toolStripStatusLabelItemHowMuch
             // 
@@ -801,17 +808,6 @@ namespace UoFiddler.Controls.UserControls
             asPngToolStripMenuItem.Text = "As Png";
             asPngToolStripMenuItem.Click += OnClick_SaveAllPng;
             // 
-            // toolStripButton1
-            // 
-            toolStripButton1.DisplayStyle = ToolStripItemDisplayStyle.Image;
-            toolStripButton1.Image = Properties.Resources.Save2;
-            toolStripButton1.ImageTransparentColor = System.Drawing.Color.Magenta;
-            toolStripButton1.Name = "toolStripButton1";
-            toolStripButton1.Size = new System.Drawing.Size(23, 25);
-            toolStripButton1.Text = "toolStripButtonSave";
-            toolStripButton1.ToolTipText = "Save Items.mul file";
-            toolStripButton1.Click += OnClickSave;
-            // 
             // toolStripButtonColorImage
             // 
             toolStripButtonColorImage.DisplayStyle = ToolStripItemDisplayStyle.Image;
@@ -822,6 +818,17 @@ namespace UoFiddler.Controls.UserControls
             toolStripButtonColorImage.Text = "toolStripButton2";
             toolStripButtonColorImage.ToolTipText = "Reads the colors from the item image, displays them in a PictureBox and in a RichTextBox.";
             toolStripButtonColorImage.Click += toolStripButtonColorImage_Click;
+            // 
+            // toolStripButton1
+            // 
+            toolStripButton1.DisplayStyle = ToolStripItemDisplayStyle.Image;
+            toolStripButton1.Image = Properties.Resources.Save2;
+            toolStripButton1.ImageTransparentColor = System.Drawing.Color.Magenta;
+            toolStripButton1.Name = "toolStripButton1";
+            toolStripButton1.Size = new System.Drawing.Size(23, 25);
+            toolStripButton1.Text = "toolStripButtonSave";
+            toolStripButton1.ToolTipText = "Save Items.mul file";
+            toolStripButton1.Click += OnClickSave;
             // 
             // collapsibleSplitter1
             // 
@@ -956,5 +963,6 @@ namespace UoFiddler.Controls.UserControls
         private ToolStripStatusLabel toolStripStatusLabelItemHowMuch;
         private ToolStripMenuItem countItemsToolStripMenuItem;
         private ToolStripButton toolStripButtonColorImage;
+        private ToolStripStatusLabel toolStripStatusLabelGraficDecimal;
     }
 }

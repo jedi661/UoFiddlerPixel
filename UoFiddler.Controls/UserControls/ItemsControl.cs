@@ -690,7 +690,8 @@ namespace UoFiddler.Controls.UserControls
             }
 
             NameLabel.Text = !Art.IsValidStatic(graphic) ? "Name: FREE" : $"Name: {TileData.ItemTable[graphic].Name}";
-            GraphicLabel.Text = $"Graphic: 0x{graphic:X4} ({graphic})";
+            GraphicLabel.Text = $"Graphic Hex: 0x{graphic:X4} ";
+            toolStripStatusLabelGraficDecimal.Text = $"Graphic Decimal: {graphic}";
         }
         #endregion
 
