@@ -19,6 +19,7 @@ Version : 4.12.6
 - Added hotkey (Ctrl + Alt + P) to bring the Profile window to the front and play a sound.
 - Added UOP Packer autofill feature that automatically populates textboxes based on file selection and file type when the checkbox is enabled.
 - Added AnimationEdit Lists all IDs in a text file.
+- Added a new label to the Items toolstrip to display decimals, making it more user-friendly than before.
 
 Version : 4.12.5
 - AminEdit added new features, Body Human display will be expanded, and Mounted.
