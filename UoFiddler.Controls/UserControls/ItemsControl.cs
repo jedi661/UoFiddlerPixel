@@ -2689,6 +2689,10 @@ namespace UoFiddler.Controls.UserControls
         private void toolStripButtondrawRhombus_Click(object sender, EventArgs e)
         {
             ToggleRhombusDrawing();
+
+            SoundPlayer player = new SoundPlayer();
+            player.SoundLocation = "sound.wav";
+            player.Play();
         }
         #endregion
 
