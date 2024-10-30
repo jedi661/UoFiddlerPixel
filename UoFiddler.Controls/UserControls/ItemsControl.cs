@@ -36,6 +36,7 @@ namespace UoFiddler.Controls.UserControls
         private TileDataControl tileDataControl = new TileDataControl(); //Refesh image pictureBoxItem TiledataControl
 
         private int occupiedItemCount = 0; // items counter
+        private bool isDrawingRhombusActive = false; // DrawRhombus
 
         public ItemsControl()
         {
@@ -355,7 +356,7 @@ namespace UoFiddler.Controls.UserControls
 
         #region [ ChangeBackgroundColorToolStripMenuItem ]
 
-        private Color _backgroundColorItem = Color.White;        
+        private Color _backgroundColorItem = Color.White;
         private void ChangeBackgroundColorToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (colorDialog.ShowDialog() != DialogResult.OK)
@@ -376,7 +377,7 @@ namespace UoFiddler.Controls.UserControls
 
         #region [ UpdateDetail ]
 
-        private Color _backgroundDetailColor = Color.White;        
+        private Color _backgroundDetailColor = Color.White;
         private void UpdateDetail(int graphic)
         {
             if (IsAncestorSiteInDesignMode || FormsDesignerHelper.IsInDesignMode())
@@ -483,7 +484,7 @@ namespace UoFiddler.Controls.UserControls
         #region [ OnSearchClick ]
         private ItemSearchForm _showForm;
         private bool _scrolling;
-        
+
         private void OnSearchClick(object sender, EventArgs e)
         {
             if (_showForm?.IsDisposed == false)
@@ -2681,6 +2682,74 @@ namespace UoFiddler.Controls.UserControls
                 PixelSelected?.Invoke(x, y);
             }
             #endregion
+        }
+        #endregion
+
+        #region [ toolStripButtondrawRhombus ]
+        private void toolStripButtondrawRhombus_Click(object sender, EventArgs e)
+        {
+            ToggleRhombusDrawing();
+        }
+        #endregion
+
+        #region [ ToggleRhombusDrawing ]
+        private void ToggleRhombusDrawing()
+        {
+            isDrawingRhombusActive = !isDrawingRhombusActive;
+            toolStripButtondrawRhombus.Checked = isDrawingRhombusActive;
+            DetailPictureBox.Invalidate(); // Force repaint to show/hide the rhombus
+        }
+        #endregion
+
+        #region [ DetailPictureBox_Paint ]
+        private void DetailPictureBox_Paint(object sender, PaintEventArgs e)
+        {
+            if (isDrawingRhombusActive)
+            {
+                DrawRhombus(e.Graphics);
+            }
+        }
+        #endregion
+
+        #region [ DrawRhombus ]
+        private void DrawRhombus(Graphics g)
+        {
+            if (DetailPictureBox.Image == null)
+            {
+                return;
+            }
+
+            Point[] pointsUpper = new Point[4];
+            pointsUpper[0] = new Point(DetailPictureBox.Image.Width / 2, 0);
+            pointsUpper[1] = new Point(DetailPictureBox.Image.Width / 2 + 22, 22);
+            pointsUpper[2] = new Point(DetailPictureBox.Image.Width / 2, 44);
+            pointsUpper[3] = new Point(DetailPictureBox.Image.Width / 2 - 22, 22);
+
+            g.DrawPolygon(Pens.Black, pointsUpper);
+            g.DrawLine(Pens.Black, pointsUpper[0], new Point(pointsUpper[0].X, 0));
+            g.DrawLine(Pens.Black, pointsUpper[1], new Point(pointsUpper[1].X, 0));
+            g.DrawLine(Pens.Black, pointsUpper[3], new Point(pointsUpper[3].X, 0));
+
+            int lineWidth = 100;
+            int lineStartX = (DetailPictureBox.Image.Width - lineWidth) / 2;
+            int lineEndX = lineStartX + lineWidth;
+            int imageHeight = DetailPictureBox.Image.Height;
+            g.DrawLine(Pens.Black, new Point(lineStartX, imageHeight - 66), new Point(lineEndX, imageHeight - 66));
+
+            Point[] pointsLower = new Point[4];
+            pointsLower[0] = new Point(DetailPictureBox.Image.Width / 2, imageHeight - 66);
+            pointsLower[1] = new Point(DetailPictureBox.Image.Width / 2 + 22, imageHeight - 88);
+            pointsLower[2] = new Point(DetailPictureBox.Image.Width / 2, imageHeight - 110);
+            pointsLower[3] = new Point(DetailPictureBox.Image.Width / 2 - 22, imageHeight - 88);
+
+            g.DrawPolygon(Pens.Black, pointsLower);
+            g.DrawLine(Pens.Black, pointsLower[0], new Point(pointsLower[0].X, pointsLower[0].Y - 22));
+            g.DrawLine(Pens.Black, pointsLower[1], new Point(pointsLower[1].X, pointsLower[1].Y - 22));
+            g.DrawLine(Pens.Black, pointsLower[3], new Point(pointsLower[3].X, pointsLower[3].Y - 22));
+
+            g.DrawLine(Pens.Black, pointsUpper[0], pointsLower[0]);
+            g.DrawLine(Pens.Black, pointsUpper[1], pointsLower[1]);
+            g.DrawLine(Pens.Black, pointsUpper[3], pointsLower[3]);
         }
         #endregion
     }

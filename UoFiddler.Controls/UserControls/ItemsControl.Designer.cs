@@ -122,6 +122,7 @@ namespace UoFiddler.Controls.UserControls
             asJpgToolStripMenuItem = new ToolStripMenuItem();
             asPngToolStripMenuItem = new ToolStripMenuItem();
             toolStripButtonColorImage = new ToolStripButton();
+            toolStripButtondrawRhombus = new ToolStripButton();
             toolStripButton1 = new ToolStripButton();
             colorDialog = new ColorDialog();
             collapsibleSplitter1 = new CollapsibleSplitter();
@@ -183,6 +184,7 @@ namespace UoFiddler.Controls.UserControls
             DetailPictureBox.SizeMode = PictureBoxSizeMode.CenterImage;
             DetailPictureBox.TabIndex = 0;
             DetailPictureBox.TabStop = false;
+            DetailPictureBox.Paint += DetailPictureBox_Paint;
             // 
             // DetailPictureBoxContextMenuStrip
             // 
@@ -684,7 +686,7 @@ namespace UoFiddler.Controls.UserControls
             // ToolStrip
             // 
             ToolStrip.GripStyle = ToolStripGripStyle.Hidden;
-            ToolStrip.Items.AddRange(new ToolStripItem[] { toolStripLabel1, searchByIdToolStripTextBox, toolStripLabel2, searchByNameToolStripTextBox, searchByNameToolStripButton, SearchToolStripButton, ReverseSearchToolStripButton, ProgressBar, PreloadItemsToolStripButton, MiscToolStripDropDownButton, toolStripButtonColorImage, toolStripButton1 });
+            ToolStrip.Items.AddRange(new ToolStripItem[] { toolStripLabel1, searchByIdToolStripTextBox, toolStripLabel2, searchByNameToolStripTextBox, searchByNameToolStripButton, SearchToolStripButton, ReverseSearchToolStripButton, ProgressBar, PreloadItemsToolStripButton, MiscToolStripDropDownButton, toolStripButtonColorImage, toolStripButtondrawRhombus, toolStripButton1 });
             ToolStrip.Location = new System.Drawing.Point(0, 0);
             ToolStrip.Name = "ToolStrip";
             ToolStrip.RenderMode = ToolStripRenderMode.System;
@@ -818,6 +820,16 @@ namespace UoFiddler.Controls.UserControls
             toolStripButtonColorImage.Text = "toolStripButton2";
             toolStripButtonColorImage.ToolTipText = "Reads the colors from the item image, displays them in a PictureBox and in a RichTextBox.";
             toolStripButtonColorImage.Click += toolStripButtonColorImage_Click;
+            // 
+            // toolStripButtondrawRhombus
+            // 
+            toolStripButtondrawRhombus.DisplayStyle = ToolStripItemDisplayStyle.Image;
+            toolStripButtondrawRhombus.Image = Properties.Resources.diamand_;
+            toolStripButtondrawRhombus.ImageTransparentColor = System.Drawing.Color.Magenta;
+            toolStripButtondrawRhombus.Name = "toolStripButtondrawRhombus";
+            toolStripButtondrawRhombus.Size = new System.Drawing.Size(23, 25);
+            toolStripButtondrawRhombus.Text = "Draws a diamond shape on the image.";
+            toolStripButtondrawRhombus.Click += toolStripButtondrawRhombus_Click;
             // 
             // toolStripButton1
             // 
@@ -964,5 +976,6 @@ namespace UoFiddler.Controls.UserControls
         private ToolStripMenuItem countItemsToolStripMenuItem;
         private ToolStripButton toolStripButtonColorImage;
         private ToolStripStatusLabel toolStripStatusLabelGraficDecimal;
+        private ToolStripButton toolStripButtondrawRhombus;
     }
 }
