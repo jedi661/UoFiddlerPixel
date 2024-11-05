@@ -2760,7 +2760,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region [ DetailPictureBox_MouseDoubleClick ] // Picturebox 1000x1000
+        #region [ DetailPictureBox_MouseDoubleClick ] // Double Click - Picturebox 1000x1000
         private void DetailPictureBox_MouseDoubleClick(object sender, MouseEventArgs e)
         {
             // Check if any image is selected in the ItemsTileView
@@ -2825,6 +2825,6 @@ namespace UoFiddler.Controls.UserControls
             // Initial image load
             UpdateImageInForm();
         }
-        #endregion
+        #endregion 
     }
 }
