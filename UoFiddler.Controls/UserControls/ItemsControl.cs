@@ -38,6 +38,9 @@ namespace UoFiddler.Controls.UserControls
         private int occupiedItemCount = 0; // items counter
         private bool isDrawingRhombusActive = false; // DrawRhombus
 
+        private Form imageForm; // DetailPictureBox_MouseDoubleClick
+        private PictureBox imagePictureBox; // DetailPictureBox_MouseDoubleClick
+
         public ItemsControl()
         {
             InitializeComponent();
@@ -2754,6 +2757,73 @@ namespace UoFiddler.Controls.UserControls
             g.DrawLine(Pens.Black, pointsUpper[0], pointsLower[0]);
             g.DrawLine(Pens.Black, pointsUpper[1], pointsLower[1]);
             g.DrawLine(Pens.Black, pointsUpper[3], pointsLower[3]);
+        }
+        #endregion
+
+        #region [ DetailPictureBox_MouseDoubleClick ] // Picturebox 1000x1000
+        private void DetailPictureBox_MouseDoubleClick(object sender, MouseEventArgs e)
+        {
+            // Check if any image is selected in the ItemsTileView
+            if (ItemsTileView.SelectedIndices.Count == 0)
+            {
+                MessageBox.Show("Please select an image from the list.", "No image selected", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            // If the form is not open or has been disposed, create a new one
+            if (imageForm == null || imageForm.IsDisposed)
+            {
+                // Initialize a new form to display the image
+                imageForm = new Form
+                {
+                    Text = "Enlarged image view",
+                    Size = new Size(1020, 1020), // 1000x1000 plus margin
+                    StartPosition = FormStartPosition.Manual,
+                    Location = new Point(this.Location.X + this.Width + 10, this.Location.Y), // Position next to main form
+                    FormBorderStyle = FormBorderStyle.FixedToolWindow, // Simple window, no maximize button
+                    ShowIcon = false // Disable the icon in the title bar
+                };
+
+                // Initialize a new PictureBox to display the selected image
+                imagePictureBox = new PictureBox
+                {
+                    Size = new Size(1000, 1000),
+                    SizeMode = PictureBoxSizeMode.CenterImage,
+                    Location = new Point(10, 10) // Centered with padding
+                };
+
+                imageForm.Controls.Add(imagePictureBox);
+                imageForm.Show(); // Show the form as a non-modal window
+
+                // Add a selection change event to dynamically update the image when selection changes
+                ItemsTileView.ItemSelectionChanged += (s, ev) =>
+                {
+                    // Only update if a new item is selected and form is open
+                    if (ev.IsSelected && imageForm != null && !imageForm.IsDisposed)
+                    {
+                        UpdateImageInForm();
+                    }
+                };
+            }
+
+            // Method to update the image in the PictureBox
+            void UpdateImageInForm()
+            {
+                int selectedIndex = ItemsTileView.SelectedIndices[0];
+                var bitmap = Art.GetStatic(_itemList[selectedIndex]);
+
+                if (bitmap != null)
+                {
+                    imagePictureBox.Image = bitmap;
+                }
+                else
+                {
+                    MessageBox.Show("The selected image could not be loaded.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+
+            // Initial image load
+            UpdateImageInForm();
         }
         #endregion
     }

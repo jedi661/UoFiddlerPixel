@@ -21,6 +21,7 @@ Version : 4.12.6
 - Added AnimationEdit Lists all IDs in a text file.
 - Added a new label to the Items toolstrip to display decimals, making it more user-friendly than before.
 - Added Items - toggle for rhombus function via button.
+- Added an additional PictureBox with dimensions 1000x1000 to display larger images for testing.
 
 Version : 4.12.5
 - AminEdit added new features, Body Human display will be expanded, and Mounted.

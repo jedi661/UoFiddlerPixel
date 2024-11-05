@@ -185,6 +185,7 @@ namespace UoFiddler.Controls.UserControls
             DetailPictureBox.TabIndex = 0;
             DetailPictureBox.TabStop = false;
             DetailPictureBox.Paint += DetailPictureBox_Paint;
+            DetailPictureBox.MouseDoubleClick += DetailPictureBox_MouseDoubleClick;
             // 
             // DetailPictureBoxContextMenuStrip
             // 
