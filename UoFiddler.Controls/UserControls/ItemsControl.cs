@@ -2760,7 +2760,11 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region [ DetailPictureBox_MouseDoubleClick ] // Double Click - Picturebox 1000x1000
+        #region [ DetailPictureBox_MouseDoubleClick ] // Double Click - Picturebox 1000x1000 and zoom
+        private float zoomFactor = 1.0f; // Initial zoom factor
+        private const float zoomStep = 0.1f; // Increment/decrement for zooming
+
+        #region [ DetailPictureBox_MouseDoubleClick ]
         private void DetailPictureBox_MouseDoubleClick(object sender, MouseEventArgs e)
         {
             // Check if any image is selected in the ItemsTileView
@@ -2787,10 +2791,11 @@ namespace UoFiddler.Controls.UserControls
                 // Initialize a new PictureBox to display the selected image
                 imagePictureBox = new PictureBox
                 {
-                    Size = new Size(1000, 1000),
-                    SizeMode = PictureBoxSizeMode.CenterImage,
-                    Location = new Point(10, 10) // Centered with padding
+                    SizeMode = PictureBoxSizeMode.Zoom, // Enable zoom support
                 };
+
+                // Add MouseWheel event handler for zoom functionality
+                imagePictureBox.MouseWheel += ImagePictureBox_MouseWheel;
 
                 imageForm.Controls.Add(imagePictureBox);
                 imageForm.Show(); // Show the form as a non-modal window
@@ -2814,7 +2819,10 @@ namespace UoFiddler.Controls.UserControls
 
                 if (bitmap != null)
                 {
+                    // Reset zoom factor on new image load
+                    zoomFactor = 1.0f;
                     imagePictureBox.Image = bitmap;
+                    AdjustZoom();
                 }
                 else
                 {
@@ -2825,6 +2833,46 @@ namespace UoFiddler.Controls.UserControls
             // Initial image load
             UpdateImageInForm();
         }
-        #endregion 
+        #endregion
+
+        #region [ ImagePictureBox_MouseWheel ]
+        // Handle MouseWheel event to zoom in and out
+        private void ImagePictureBox_MouseWheel(object sender, MouseEventArgs e)
+        {
+            // Update zoom factor based on scroll direction
+            if (e.Delta > 0)
+            {
+                zoomFactor += zoomStep; // Zoom in
+            }
+            else if (e.Delta < 0 && zoomFactor > zoomStep)
+            {
+                zoomFactor -= zoomStep; // Zoom out
+            }
+            AdjustZoom();
+        }
+        #endregion
+
+        #region [ AdjustZoom ]
+        // Adjust the PictureBox to the current zoom factor and center it
+        private void AdjustZoom()
+        {
+            if (imagePictureBox.Image != null)
+            {
+                int newWidth = (int)(imagePictureBox.Image.Width * zoomFactor);
+                int newHeight = (int)(imagePictureBox.Image.Height * zoomFactor);
+
+                // Set the size based on zoom
+                imagePictureBox.Size = new Size(newWidth, newHeight);
+
+                // Center the PictureBox within the form
+                imagePictureBox.Location = new Point(
+                    (imageForm.ClientSize.Width - newWidth) / 2,
+                    (imageForm.ClientSize.Height - newHeight) / 2
+                );
+            }
+        }
+        #endregion
+        #endregion
+
     }
 }
