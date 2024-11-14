@@ -23,6 +23,7 @@ using UoFiddler.Classes;
 using UoFiddler.Controls.Classes;
 using UoFiddler.Controls.Plugin;
 using UoFiddler.Plugin.ConverterMultiTextPlugin.Forms;
+using WMPLib;
 
 namespace UoFiddler.Forms
 {
@@ -30,6 +31,11 @@ namespace UoFiddler.Forms
     {
         //Bin_Dec_Hex_ConverterForm
         private Bin_Dec_Hex_ConverterForm _binDecHexConverterForm;
+
+        private WindowsMediaPlayer _player = new WindowsMediaPlayer(); // load Mp3 from Uo Directory
+        private Timer timer; // Timer Mp3
+        private bool isStoppedByUser = false; // Stop Timer Mp3
+
 
         //AlarmClock
         private AlarmClockForm _alarmClockForm;
@@ -175,11 +181,18 @@ namespace UoFiddler.Forms
                 this.Location = Properties.Settings.Default.FormLocationAlarm;
             }
 
+            _player.PlayStateChange += Player_PlayStateChange; // Event registrieren
+            
+            // Initialize the timer
+            timer = new Timer(); 
+            timer.Interval = 1000; // 1 second
+            timer.Tick += Timer_Tick;
+
             // Bind the Load event handler
             this.Load += new EventHandler(MainForm_Load);
         }
 
-        #region TabPanel_DrawItem => tab design
+        #region [ TabPanel_DrawItem => tab design ]
         // The TabPanel_DrawItem method is an event handler for the DrawItem event of the TabPanel control
         private void TabPanel_DrawItem(object sender, DrawItemEventArgs e)
         {
@@ -266,7 +279,7 @@ namespace UoFiddler.Forms
         }
         #endregion
 
-        #region PathSettingsForm
+        #region [ PathSettingsForm ]
         private PathSettingsForm _pathSettingsForm = new PathSettingsForm();
 
         private void Click_path(object sender, EventArgs e)
@@ -285,7 +298,7 @@ namespace UoFiddler.Forms
         }
         #endregion
 
-        #region OnClickAlwaysTop
+        #region [ OnClickAlwaysTop ]
         private void OnClickAlwaysTop(object sender, EventArgs e)
         {
             TopMost = AlwaysOnTopMenuitem.Checked;
@@ -293,7 +306,7 @@ namespace UoFiddler.Forms
         }
         #endregion
 
-        #region Reload Files
+        #region [ Reload Files ]
         private void ReloadFiles(object sender, EventArgs e)
         {
             Cursor.Current = Cursors.WaitCursor;
@@ -390,11 +403,12 @@ namespace UoFiddler.Forms
         }
         #endregion
 
+        #region [ LoadExternToolsStripMenu ]
+
         /// <summary>
         /// Reloads the Extern Tools DropDown <see cref="FiddlerOptions.ExternTools"/>
         /// </summary>
-        /// 
-        #region LoadExternToolsStripMenu
+        ///
         public void LoadExternToolStripMenu()
         {
             ExternToolsDropDown.DropDownItems.Clear();
@@ -448,7 +462,7 @@ namespace UoFiddler.Forms
         }
         #endregion
 
-        #region ExternTool
+        #region [ ExternTool ]
         private static void ExternTool_ItemClicked(object sender, ToolStripItemClickedEventArgs e)
         {
             int argInfo = (int)e.ClickedItem.Tag;
@@ -482,7 +496,7 @@ namespace UoFiddler.Forms
         }
         #endregion
 
-        #region ManageToolsForm
+        #region [ ManageToolsForm ]
         private ManageToolsForm _manageForm;
 
         private void OnClickToolManage(object sender, EventArgs e)
@@ -500,7 +514,7 @@ namespace UoFiddler.Forms
         }
         #endregion
 
-        #region OptionsForm
+        #region [ OptionsForm ]
         private OptionsForm _optionsForm;
 
         private void OnClickOptions(object sender, EventArgs e)
@@ -522,11 +536,11 @@ namespace UoFiddler.Forms
         }
         #endregion
 
+        #region [ UpdateAllTilesViews ]
         /// <summary>
         /// Updates all tile view tabs
         /// </summary>
         /// 
-        #region UpdateAllTilesViews
         private void UpdateAllTileViews()
         {
             UpdateItemsTab();
@@ -536,55 +550,58 @@ namespace UoFiddler.Forms
         }
         #endregion
 
+        #region [ UpdateItemsTab ]
         /// <summary>
         /// Updates Item tab
         /// </summary>
         /// 
-        #region UpdateItemsTab
         private void UpdateItemsTab()
         {
             itemShowControl.UpdateTileView();
         }
         #endregion
 
+        #region [ UpdateTileTab ]
         /// <summary>
         /// Updates Land tiles tab
         /// </summary>
         /// 
-        #region UpdateTileTab
         private void UpdateLandTilesTab()
         {
             landTilesControl.UpdateTileView();
         }
         #endregion
 
+        #region [ UpdateTextureTab ]
+
         /// <summary>
         /// Updates Textures tab
         /// </summary>
         /// 
-        #region UpdateTextureTab
         private void UpdateTexturesTab()
         {
             textureControl.UpdateTileView();
         }
         #endregion
 
+        #region [ UpdateFontsTab ]
+
         /// <summary>
         /// Updates Fonts tab
         /// </summary>
         /// 
-        #region UpdateFontsTab
         private void UpdateFontsTab()
         {
             fontsControl.UpdateTileView();
         }
         #endregion
 
+        #region [ UpdateMapTab ]
+
         /// <summary>
         /// Updates Map tab
         /// </summary>
         /// 
-        #region UpdateMapTab
         private void UpdateMapTab()
         {
             if (Options.LoadedUltimaClass["Map"])
@@ -596,18 +613,19 @@ namespace UoFiddler.Forms
         }
         #endregion
 
+        #region [ UpdateSoundTab ]
+
         /// <summary>
         /// Updates Sounds tab
         /// </summary>
         /// 
-        #region UpdateSoundTab
         private void UpdateSoundTab()
         {
             soundControl.Reload();
         }
         #endregion
 
-        #region Dock and Undock
+        #region [ Dock and Undock ]
         private void OnClickUnDock(object sender, EventArgs e)
         {
             int tag = (int)TabPanel.SelectedTab.Tag;
@@ -648,7 +666,7 @@ namespace UoFiddler.Forms
         }
         #endregion
 
-        #region ManagePlugins
+        #region [ ManagePlugins ]
         private ManagePluginsForm _pluginsFormForm;
 
         private void OnClickManagePlugins(object sender, EventArgs e)
@@ -666,7 +684,7 @@ namespace UoFiddler.Forms
         }
         #endregion
 
-        #region OnClosing
+        #region [ OnClosing ]
         private void OnClosing(object sender, FormClosingEventArgs e)
         {
             FiddlerOptions.Logger.Information("MainForm - OnClosing - start");
@@ -687,19 +705,6 @@ namespace UoFiddler.Forms
                 }
             }
 
-            /*
-            // Speichern Sie die Position des MainForm-Fensters
-            Properties.Settings.Default.MainFormPos = this.Location;
-
-            //Speichert Size
-            Properties.Settings.Default.MainFormSize = this.Size;
-            //Speichert das Maximiert
-            Properties.Settings.Default.MainFormMaximized = (this.WindowState == FormWindowState.Maximized);
-            // Speichern Sie die Einstellungen in die User.Config
-            Properties.Settings.Default.Save();
-            //ende
-            */
-
             FiddlerOptions.MaximisedForm = WindowState == FormWindowState.Maximized;
             FiddlerOptions.FormPosition = this.Location;
             FiddlerOptions.FormSize = this.Size;
@@ -711,91 +716,19 @@ namespace UoFiddler.Forms
         }
         #endregion
 
-        #region IsOkFormStateLocation
-        // orginal
-        /*private static bool IsOkFormStateLocation(Point loc, Size size)
-        {
-            if (loc.X < 0 || loc.Y < 0)
-            {
-                return false;
-            }
-
-            if (loc.X + size.Width > Screen.PrimaryScreen.WorkingArea.Width)
-            {
-                return false;
-            }
-
-            return loc.Y + size.Height <= Screen.PrimaryScreen.WorkingArea.Height;
-        }*/
-
-        /*private bool IsOkFormStateLocation(Point loc, Size size)
-        {
-            int maxX = Screen.PrimaryScreen.WorkingArea.Width;
-            int maxY = Screen.PrimaryScreen.WorkingArea.Height;
-
-            // Überprüfen Sie die X-Koordinate
-            // Check the X coordinate
-            if (loc.X < 0 || loc.X + size.Width > maxX)
-            {
-                loc.X = Math.Max(0, maxX - size.Width);
-            }
-
-            // Überprüfen Sie die Y-Koordinate
-            // Check the Y coordinate
-            if (loc.Y < 0 || loc.Y + size.Height > maxY)
-            {
-                loc.Y = Math.Max(0, maxY - size.Height);
-            }
-
-            // Überprüfen Sie auch die Größe
-            // Also check the size
-            if (size.Width <= Screen.PrimaryScreen.WorkingArea.Width &&
-                size.Height <= Screen.PrimaryScreen.WorkingArea.Height)
-            {
-                // Die Größe ist in Ordnung
-                // The size is okay
-            }
-            else
-            {
-                // Die Größe ist zu groß, passen Sie sie an
-                // The size is too big, adjust it
-                size = new Size(
-                    Math.Min(size.Width, Screen.PrimaryScreen.WorkingArea.Width),
-                    Math.Min(size.Height, Screen.PrimaryScreen.WorkingArea.Height)
-                );
-            }
-
-            // Überprüfen Sie, ob die Position und Größe gültig sind und geben Sie das Ergebnis zurück
-            // Check if the position and size are valid and return the result
-            bool isValid = (loc.X >= 0 &&
-                            loc.Y >= 0 &&
-                            loc.X + size.Width <= maxX &&
-                            loc.Y + size.Height <= maxY);
-
-            if (!isValid)
-            {
-                throw new Exception("Die Position oder Größe des Fensters ist ungültig.");
-                // Throw an exception if the position or size of the window is invalid.
-            }
-
-            return isValid;
-        }*/
-
+        #region [ IsOkFormStateLocation ]
         private bool IsOkFormStateLocation(Point loc, Size size)
         {
             int maxX = Screen.PrimaryScreen.WorkingArea.Width;
             int maxY = Screen.PrimaryScreen.WorkingArea.Height;
 
-            // Adjust the X and Y coordinates
-            // Passen Sie die X- und Y-Koordinaten an
+            // Adjust the X and Y coordinates            
             loc = AdjustCoordinates(loc, size, maxX, maxY);
 
-            // Adjust the size
-            // Passen Sie die Größe an
+            // Adjust the size            
             size = AdjustSize(size);
 
-            // Check if the position and size are valid and return the result
-            // Überprüfen Sie, ob die Position und Größe gültig sind und geben Sie das Ergebnis zurück
+            // Check if the position and size are valid and return the result            
             bool isValid = (loc.X >= 0 &&
                             loc.Y >= 0 &&
                             loc.X + size.Width <= maxX &&
@@ -812,15 +745,13 @@ namespace UoFiddler.Forms
 
         private Point AdjustCoordinates(Point loc, Size size, int maxX, int maxY)
         {
-            // Check the X coordinate
-            // Überprüfen Sie die X-Koordinate
+            // Check the X coordinate            
             if (loc.X < 0 || loc.X + size.Width > maxX)
             {
                 loc.X = Math.Max(0, maxX - size.Width);
             }
 
-            // Check the Y coordinate
-            // Überprüfen Sie die Y-Koordinate
+            // Check the Y coordinate            
             if (loc.Y < 0 || loc.Y + size.Height > maxY)
             {
                 loc.Y = Math.Max(0, maxY - size.Height);
@@ -831,13 +762,11 @@ namespace UoFiddler.Forms
 
         private Size AdjustSize(Size size)
         {
-            // Also check the size
-            // Überprüfen Sie auch die Größe
+            // Also check the size            
             if (size.Width > Screen.PrimaryScreen.WorkingArea.Width ||
                 size.Height > Screen.PrimaryScreen.WorkingArea.Height)
             {
-                // The size is too big, adjust it
-                // Die Größe ist zu groß, passen Sie sie an
+                // The size is too big, adjust it                
                 size = new Size(
                     Math.Min(size.Width, Screen.PrimaryScreen.WorkingArea.Width),
                     Math.Min(size.Height, Screen.PrimaryScreen.WorkingArea.Height)
@@ -849,7 +778,7 @@ namespace UoFiddler.Forms
 
         #endregion
 
-        #region View Tab List
+        #region [ View Tab List ]
         private void ToggleView(object sender, EventArgs e)
         {
             ToolStripMenuItem theMenuItem = (ToolStripMenuItem)sender;
@@ -995,7 +924,7 @@ namespace UoFiddler.Forms
         }
         #endregion
 
-        #region Polserver Link
+        #region [ Polserver Link ]
         private void ToolStripMenuItemHelp_Click(object sender, EventArgs e)
         {
             using (HelpDokuForm helpDokuForm = new HelpDokuForm())
@@ -1006,7 +935,7 @@ namespace UoFiddler.Forms
         }
         #endregion
 
-        #region FileFormatGerman Html
+        #region [ FileFormatGerman Html ]
         private void ToolStripMenuItemFileFormatsGerman_Click(object sender, EventArgs e)
         {
             using (HelpDokuForm helpDokuForm = new HelpDokuForm())
@@ -1017,7 +946,7 @@ namespace UoFiddler.Forms
         }
         #endregion
 
-        #region FileFormatEnglisch Html
+        #region [ FileFormatEnglisch Html ]
         private void ToolStripMenuItemFileFormatsEnglisch_Click(object sender, EventArgs e)
         {
             using (HelpDokuForm helpDokuForm = new HelpDokuForm())
@@ -1028,7 +957,7 @@ namespace UoFiddler.Forms
         }
         #endregion
 
-        #region Animation Html
+        #region [ Animation Html ]
         private void AnimationsToolStripMenuItem_Click(object sender, EventArgs e)
         {
             using (HelpDokuForm helpDokuForm = new HelpDokuForm())
@@ -1039,7 +968,7 @@ namespace UoFiddler.Forms
         }
         #endregion
 
-        #region Animation Install German
+        #region [ Animation Install German ]
         private void AnimationInstallToolStripMenuItem_Click(object sender, EventArgs e)
         {
             using (HelpDokuForm helpDokuForm = new HelpDokuForm())
@@ -1050,7 +979,7 @@ namespace UoFiddler.Forms
         }
         #endregion
 
-        #region Animation Install Englisch
+        #region [ Animation Install Englisch ]
         private void AnimationInstallEnglischToolStripMenuItem_Click(object sender, EventArgs e)
         {
             using (HelpDokuForm helpDokuForm = new HelpDokuForm())
@@ -1061,7 +990,7 @@ namespace UoFiddler.Forms
         }
         #endregion
 
-        #region About
+        #region [ About ]
         private void ToolStripMenuItemAbout_Click(object sender, EventArgs e)
         {
             using (AboutBoxForm aboutBoxForm = new AboutBoxForm())
@@ -1071,7 +1000,7 @@ namespace UoFiddler.Forms
         }
         #endregion
 
-        #region Changelog
+        #region [ Changelog ]
         private void ChangelogToolStripMenuItem_Click(object sender, EventArgs e)
         {
             using (ChangeLogForm changelogForm = new ChangeLogForm())
@@ -1081,7 +1010,7 @@ namespace UoFiddler.Forms
         }
         #endregion
 
-        #region Delete WebView Cache
+        #region [ Delete WebView Cache ]
         private void HelpDokuForm_FormClosed(object sender, FormClosedEventArgs e)
         {
             // Get the path to the %LOCALAPPDATA% directory
@@ -1097,7 +1026,7 @@ namespace UoFiddler.Forms
         }
         #endregion
 
-        #region Image Switch
+        #region [ Image Switch ]
         private void ToolStripComboBoxImage_Click(object sender, EventArgs e)
         {
             // Add the available images to the toolStripComboBoxImage.
@@ -1158,7 +1087,7 @@ namespace UoFiddler.Forms
         }
         #endregion
 
-        #region Links
+        #region [ Links ]
         private void ToolStripMenuItem1_Click(object sender, EventArgs e)
         {
             Process.Start(new ProcessStartInfo
@@ -1188,7 +1117,7 @@ namespace UoFiddler.Forms
 
         #endregion
 
-        #region Directory
+        #region [ Directory ]
         private void DirectoryToolStripMenuItem_Click(object sender, EventArgs e)
         {
             // Get the output path from the Options class
@@ -1199,7 +1128,7 @@ namespace UoFiddler.Forms
         }
         #endregion
 
-        #region DecimalHexConverter
+        #region [ DecimalHexConverter ]
         private void BinaryDecimalHexadecimalConverterToolStripMenuItem_Click_1(object sender, EventArgs e)
         {
             if (_binDecHexConverterForm == null || _binDecHexConverterForm.IsDisposed)
@@ -1217,7 +1146,7 @@ namespace UoFiddler.Forms
         }
         #endregion
 
-        #region Links Servuo.com and Discord 
+        #region [ Links Servuo.com and Discord ]
         private void ToolStripMenuItemLink3_Click(object sender, EventArgs e)
         {
             Process.Start(new ProcessStartInfo
@@ -1236,7 +1165,7 @@ namespace UoFiddler.Forms
         }
         #endregion
 
-        #region F1-F12
+        #region [ F1-F12 ]
         protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
         {
             // Check if any of the F1-F12 keys were pressed
@@ -1307,7 +1236,7 @@ namespace UoFiddler.Forms
         }
         #endregion
 
-        #region Open Tempdir
+        #region [ Open Tempdir ]
         private void TempDirToolStripMenuItem_Click(object sender, EventArgs e)
         {
             string path = Path.Combine(Application.StartupPath, "tempGrafic");
@@ -1322,7 +1251,7 @@ namespace UoFiddler.Forms
         }
         #endregion
 
-        #region AlarmClock
+        #region [ AlarmClock ]
         private void AlarmClockToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (_alarmClockForm == null || _alarmClockForm.IsDisposed)
@@ -1340,7 +1269,7 @@ namespace UoFiddler.Forms
         }
         #endregion
 
-        #region Notepad Editor
+        #region [ Notepad Editor ]
         private NotepadForm _notepadForm; // Declare an instance of NotepadForm
         private void NotPadToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -1359,7 +1288,7 @@ namespace UoFiddler.Forms
         }
         #endregion
 
-        #region Notes
+        #region [ Notes ]
         private void NotesToolStripMenuItem_Click(object sender, EventArgs e)
         {
             // Creating a new form
@@ -1456,7 +1385,7 @@ namespace UoFiddler.Forms
         }
         #endregion
 
-        #region Screenshot
+        #region [ Screenshot ]
         private void ScreenshotToolStripMenuItem_Click(object sender, EventArgs e)
         {
             // Create a new Bitmap object with the dimensions of your form
@@ -1475,7 +1404,7 @@ namespace UoFiddler.Forms
         }
         #endregion
 
-        #region Calendarform
+        #region [ Calendarform ]
 
         private CalendarForm _calendarForm; // Declare an instance of NotepadForm
         private void CalendarToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1495,7 +1424,7 @@ namespace UoFiddler.Forms
         }
         #endregion
 
-        #region colorBackgroundToolStripMenuItem
+        #region [ colorBackgroundToolStripMenuItem ]
         private void ColorBackgroundToolStripMenuItem_Click(object sender, EventArgs e)
         {
             using (ColorDialog colorDialog = new ColorDialog())
@@ -1516,7 +1445,7 @@ namespace UoFiddler.Forms
         }
         #endregion
 
-        #region MainForm_Load
+        #region [ MainForm_Load ]
         private void MainForm_Load(object sender, EventArgs e)
         {
             // Load the saved background color
@@ -1543,7 +1472,7 @@ namespace UoFiddler.Forms
         }
         #endregion
 
-        #region ResetColorToolStripMenuItem
+        #region [ ResetColorToolStripMenuItem ]
         private void ResetColorToolStripMenuItem_Click(object sender, EventArgs e)
         {
             // Reset the background color to the default color
@@ -1560,7 +1489,7 @@ namespace UoFiddler.Forms
         }
         #endregion
 
-        #region ConvertLineToolStripMenuItem
+        #region [ ConvertLineToolStripMenuItem ]
         private LineConverterForm _lineConverterForm;
 
         private void ConvertLineToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1580,7 +1509,7 @@ namespace UoFiddler.Forms
         }
         #endregion
 
-        #region ultimaOnlineDirToolStripMenuItem
+        #region [ ultimaOnlineDirToolStripMenuItem ]
         private PathSettingsForm pathSettingsForm = new PathSettingsForm(); // Creates an instance of PathSettingsForm for use in this class.
         private void ultimaOnlineDirToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -1597,6 +1526,120 @@ namespace UoFiddler.Forms
             {
                 // Show an error message if the path does not exist
                 MessageBox.Show("The path does not exist.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+        #endregion
+
+        #region [ soundPlayToolStripMenuItem from Ultima Dir ] 
+        private void soundPlayToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // Load directory from saved settings
+            string savedPath = Properties.Settings.Default.MusicDirectory;
+
+            // Check if a valid directory exists
+            if (string.IsNullOrEmpty(savedPath) || !Directory.Exists(savedPath))
+            {
+                using (FolderBrowserDialog dialog = new FolderBrowserDialog())
+                {
+                    dialog.Description = "Select a directory with MP3 files";
+                    if (dialog.ShowDialog() == DialogResult.OK)
+                    {
+                        savedPath = dialog.SelectedPath;
+                        Properties.Settings.Default.MusicDirectory = savedPath;
+                        Properties.Settings.Default.Save();
+                    }
+                    else
+                    {
+                        MessageBox.Show("No directory selected.", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        return;
+                    }
+                }
+            }
+
+            // Load MP3 files from the directory
+            string[] mp3Files = Directory.GetFiles(savedPath, "*.mp3");
+
+            // Check if MP3 files exist
+            if (mp3Files.Length == 0)
+            {
+                MessageBox.Show("No MP3 files found in the selected directory.", "Information", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            // Select and play a random MP3 file
+            PlayRandomMp3(mp3Files);
+        }
+        #endregion
+
+        #region [ PlayRandomMp3 ]
+        private void PlayRandomMp3(string[] mp3Files)
+        {
+            Random random = new Random();
+            string randomMp3 = mp3Files[random.Next(mp3Files.Length)];
+
+            _player.URL = randomMp3;
+            _player.controls.play();
+        }
+        #endregion
+
+        #region [  Player_PlayStateChange ]
+        private void Player_PlayStateChange(int newState)
+        {
+            if ((WMPPlayState)newState == WMPPlayState.wmppsMediaEnded ||
+                ((WMPPlayState)newState == WMPPlayState.wmppsStopped && !isStoppedByUser))
+            {
+                // Only start timer when the sound ends normally
+                isStoppedByUser = false; // Reset the variable for the next song
+                timer.Start();
+            }
+        }
+        #endregion
+
+        #region [ Timer_Tick ]
+        private void Timer_Tick(object sender, EventArgs e)
+        {
+            timer.Stop(); // Stop the timer to prevent it from triggering again
+
+            string savedPath = Properties.Settings.Default.MusicDirectory;
+            if (!string.IsNullOrEmpty(savedPath) && Directory.Exists(savedPath))
+            {
+                string[] mp3Files = Directory.GetFiles(savedPath, "*.mp3");
+                if (mp3Files.Length > 0)
+                {
+                    PlayRandomMp3(mp3Files);
+                }
+            }
+        }
+        #endregion
+
+        #region [ stopSoundToolStripMenuItem ]
+        private void stopSoundToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            isStoppedByUser = true;
+            _player.controls.stop();
+            timer.Stop(); // Stop the timer here too
+        }
+        #endregion
+
+        #region [ newDirLoadToolStripMenuItem ]
+        private void newDirLoadToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            using (FolderBrowserDialog dialog = new FolderBrowserDialog())
+            {
+                dialog.Description = "Select a new directory for the MP3 files";
+
+                if (dialog.ShowDialog() == DialogResult.OK)
+                {
+                    // Save the new directory in settings
+                    Properties.Settings.Default.MusicDirectory = dialog.SelectedPath;
+                    Properties.Settings.Default.Save();
+
+                    MessageBox.Show("New directory has been specified.", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+                else
+                {
+                    MessageBox.Show("No directory selected.", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
             }
         }
         #endregion
