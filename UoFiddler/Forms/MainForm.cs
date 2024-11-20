@@ -1,3 +1,15 @@
+// /***************************************************************************
+//  *
+//  * $Author: Turley
+//  * Advanced Nikodemus
+//  * 
+//  * \"THE BEER-WINE-WARE LICENSE\"
+//  * As long as you retain this notice you can do whatever you want with 
+//  * this stuff. If we meet some day, and you think this stuff is worth it,
+//  * you can buy me a beer and Wine in return.
+//  *
+//  ***************************************************************************/
+
 /***************************************************************************
  *
  * $Author: Turley
@@ -15,7 +27,6 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using Ultima;
 using Ultima.Helpers;
@@ -35,6 +46,7 @@ namespace UoFiddler.Forms
         private WindowsMediaPlayer _player = new WindowsMediaPlayer(); // load Mp3 from Uo Directory
         private Timer timer; // Timer Mp3
         private bool isStoppedByUser = false; // Stop Timer Mp3
+
 
 
         //AlarmClock
@@ -181,10 +193,11 @@ namespace UoFiddler.Forms
                 this.Location = Properties.Settings.Default.FormLocationAlarm;
             }
 
+
             _player.PlayStateChange += Player_PlayStateChange; // Event registrieren
-            
+
             // Initialize the timer
-            timer = new Timer(); 
+            timer = new Timer();
             timer.Interval = 1000; // 1 second
             timer.Tick += Timer_Tick;
 
@@ -1533,6 +1546,7 @@ namespace UoFiddler.Forms
         #region [ soundPlayToolStripMenuItem from Ultima Dir ] 
         private void soundPlayToolStripMenuItem_Click(object sender, EventArgs e)
         {
+
             // Load directory from saved settings
             string savedPath = Properties.Settings.Default.MusicDirectory;
 
@@ -1617,7 +1631,7 @@ namespace UoFiddler.Forms
         {
             isStoppedByUser = true;
             _player.controls.stop();
-            timer.Stop(); // Stop the timer here too
+            timer.Stop(); // Stop the timer here too            
         }
         #endregion
 

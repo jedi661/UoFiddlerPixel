@@ -6,6 +6,9 @@ UOFiddler based on Ultima SDK it's a tool to view and alter almost every UO 2D c
 This is an extended version of UoFiddler that has more maps and more tools, as well as Map Edit, and will be expanded over time to support the Ultima standard 
 version more than the original version. Also, some source codes from older and New projects that are no longer supported have been integrated.
 
+Version : 4.12.8
+- Bugs fixed and revised
+
 Version : 4.12.7
 - Added methods to load, stop, and play random MP3 files from a directory, 
   including logic to prevent song replay when manually stopped and enabling randomized song selection upon song end.

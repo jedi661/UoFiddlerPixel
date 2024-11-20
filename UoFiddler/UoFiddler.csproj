@@ -9,9 +9,9 @@
 		<AssemblyTitle>UoFiddler</AssemblyTitle>
 		<Product>UoFiddler</Product>
 		<Copyright>Copyright © 2023</Copyright>
-		<AssemblyVersion>4.12.7</AssemblyVersion>
-		<FileVersion>4.12.7</FileVersion>
-		<Version>4.12.7</Version>
+		<AssemblyVersion>4.12.8</AssemblyVersion>
+		<FileVersion>4.12.8</FileVersion>
+		<Version>4.12.8</Version>
 		<GenerateResourceUsePreserializedResources>true</GenerateResourceUsePreserializedResources>
 	</PropertyGroup>
 	<PropertyGroup>
@@ -185,14 +185,11 @@
 		</None>
 	</ItemGroup>
 	<ItemGroup>
-		<PackageReference Include="CommandLineParser" Version="2.9.1" />
-		<PackageReference Include="IronSoftware.System.Drawing" Version="2024.9.15" />
 		<PackageReference Include="Microsoft.Web.WebView2" Version="1.0.2849.39" />
 		<PackageReference Include="Octokit" Version="13.0.1" />
 		<PackageReference Include="Serilog" Version="4.1.0" />
 		<PackageReference Include="Serilog.Sinks.File" Version="6.0.0" />
 		<PackageReference Include="System.Resources.Extensions" Version="9.0.0" />
-		<PackageReference Include="System.Text.Json" Version="9.0.0" />
 	</ItemGroup>
 	<ItemGroup>
 	  <None Update="Changelog.txt">

@@ -1,20 +1,7 @@
-﻿/***************************************************************************
- *
- * $Author: Bittiez
- * Advanced Nikodemus
- * 
- * "THE BEER-WINE-WARE LICENSE"
- * As long as you retain this notice you can do whatever you want with 
- * this stuff. If we meet some day, and you think this stuff is worth it,
- * you can buy me a beer and Wine in return.
- *
- ***************************************************************************/
-
-using System;
-using System.Windows.Forms;
+﻿using System;
 using System.Drawing;
 using System.IO;
-
+using System.Windows.Forms;
 using UoFiddler.Plugin.ConverterMultiTextPlugin.Forms;
 using System.Diagnostics;
 
@@ -22,12 +9,14 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 {
     public partial class IsoTiloSlicer : Form
     {
-        private ImageHandler imageHandler;
+        private ImageHandler1 imageHandler1;
+        private ImageHandler2 imageHandler2;
 
         public IsoTiloSlicer()
         {
             InitializeComponent();
-            imageHandler = new ImageHandler();
+            imageHandler1 = new ImageHandler1();
+            imageHandler2 = new ImageHandler2();
         }
 
         #region BtnSelectImage
@@ -40,10 +29,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                     txtImagePath.Text = openFileDialog.FileName;
                     Image image = Image.FromFile(openFileDialog.FileName);
                     picImagePreview.Image = image;
-                    imageHandler.ImagePath = openFileDialog.FileName;
+                    imageHandler1.ImagePath = openFileDialog.FileName;
+                    imageHandler2.ImagePath = openFileDialog.FileName;
 
                     // Display the size of the image in the lbImageSize label
-                    lbImageSize.Text = $"Image size: {image.Width} x {image.Height}";
+                    lbImageSize.Text = $"Bildgröße: {image.Width} x {image.Height}";
                 }
             }
         }
@@ -57,23 +47,30 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             switch (command)
             {
                 case "--image path":
-                    imageHandler.ImagePath = txtImagePath.Text;
+                    imageHandler1.ImagePath = txtImagePath.Text;
+                    imageHandler2.ImagePath = txtImagePath.Text;
                     break;
                 case "--tilesize 44":
-                    imageHandler.TileWidth = 44;
-                    imageHandler.TileHeight = 44;
+                    imageHandler1.TileWidth = 44;
+                    imageHandler1.TileHeight = 44;
+                    imageHandler2.TileWidth = 44;
+                    imageHandler2.TileHeight = 44;
                     break;
                 case "--offset 1":
-                    imageHandler.Offset = 1;
+                    imageHandler1.Offset = 1;
+                    imageHandler2.Offset = 1;
                     break;
                 case "--output out":
-                    imageHandler.OutputDirectory = Path.GetDirectoryName(txtImagePath.Text);
+                    imageHandler1.OutputDirectory = Path.GetDirectoryName(txtImagePath.Text);
+                    imageHandler2.OutputDirectory = Path.GetDirectoryName(txtImagePath.Text);
                     break;
                 case "--filename {0}":
-                    imageHandler.FileNameFormat = "{0}";
+                    imageHandler1.FileNameFormat = "{0}";
+                    imageHandler2.FileNameFormat = "{0}";
                     break;
                 case "--startingnumber 0":
-                    imageHandler.StartingFileNumber = 0;
+                    imageHandler1.StartingFileNumber = 0;
+                    imageHandler2.StartingFileNumber = 0;
                     break;
             }
         }
@@ -89,10 +86,39 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             string directory = Path.Combine(programDirectory, "tempGrafic");
 
             // Set the output directory of the image handler
-            imageHandler.OutputDirectory = directory;
+            imageHandler1.OutputDirectory = directory;
 
-            // Process the image
-            imageHandler.Process();
+            // Process the image with ImageHandler1
+            if (!imageHandler1.Process())
+            {
+                MessageBox.Show(imageHandler1.LastErrorMessage);
+                return;
+            }
+
+            MessageBox.Show("Image processed with ImageHandler1.");
+        }
+        #endregion
+
+        #region BtnRun2
+        private void BtnRun2_Click(object sender, EventArgs e)
+        {
+            // Get the path to the program directory
+            string programDirectory = Application.StartupPath;
+
+            // Define the path to the temporary directory in the program directory
+            string directory = Path.Combine(programDirectory, "tempGrafic");
+
+            // Set the output directory of the image handler
+            imageHandler2.OutputDirectory = directory;
+
+            // Process the image with ImageHandler2
+            if (!imageHandler2.Process())
+            {
+                MessageBox.Show(imageHandler2.LastErrorMessage);
+                return;
+            }
+
+            MessageBox.Show("Image processed with ImageHandler2.");
         }
         #endregion
 
@@ -114,7 +140,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             else
             {
                 // Display a message to the user indicating that the directory does not exist
-                MessageBox.Show("The directory tempGraphic does not exist.");
+                MessageBox.Show("Das Verzeichnis tempGrafic existiert nicht.");
             }
         }
         #endregion
@@ -131,7 +157,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                     picImagePreview.Image = image;
 
                     // Display the size of the image in the lbImageSize label
-                    lbImageSize.Text = $"Image size: {image.Width} x {image.Height}";
+                    lbImageSize.Text = $"Bildgröße: {image.Width} x {image.Height}";
                 }
             }
         }
@@ -143,14 +169,14 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // Check if there is an image in the PictureBox
             if (picImagePreview.Image == null)
             {
-                MessageBox.Show("Please insert a picture into the PictureBox.");
+                MessageBox.Show("Bitte ein Bild in die PictureBox einfügen.");
                 return;
             }
 
             // Verify that a selection was made using cmbCommands
             if (cmbCommands.SelectedItem == null)
             {
-                MessageBox.Show("Please make a selection using cmbCommands.");
+                MessageBox.Show("Bitte eine Auswahl mit cmbCommands treffen.");
                 return;
             }
 
@@ -161,7 +187,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             string directory = Path.Combine(programDirectory, "tempGrafic");
 
             // Set the output directory of the image handler
-            imageHandler.OutputDirectory = directory;
+            imageHandler1.OutputDirectory = directory;
 
             // Convert the Image in the PictureBox to a Bitmap and save it to a temporary file
             Bitmap bmp = new Bitmap(picImagePreview.Image);
@@ -169,10 +195,16 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             bmp.Save(tempFilePath);
 
             // Set the ImagePath of the image handler to the temporary file
-            imageHandler.ImagePath = tempFilePath;
+            imageHandler1.ImagePath = tempFilePath;
 
-            // Process the image
-            imageHandler.Process();
+            // Process the image with ImageHandler1
+            if (!imageHandler1.Process())
+            {
+                MessageBox.Show(imageHandler1.LastErrorMessage);
+                return;
+            }
+
+            MessageBox.Show("Image processed with ImageHandler1.");
         }
         #endregion
 
@@ -185,11 +217,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 picImagePreview.Image = image;
 
                 // Display the size of the image in the lbImageSize label
-                lbImageSize.Text = $"Image size: {image.Width} x {image.Height}";
+                lbImageSize.Text = $"Bildgröße: {image.Width} x {image.Height}";
             }
             else
             {
-                MessageBox.Show("The clipboard does not contain an image.");
+                MessageBox.Show("Die Zwischenablage enthält kein Bild.");
             }
         }
         #endregion
@@ -205,7 +237,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             }
             else
             {
-                MessageBox.Show("There is no image to mirror in the PictureBox.");
+                MessageBox.Show("Es gibt kein Bild in der PictureBox, das gespiegelt werden kann.");
             }
         }
         #endregion

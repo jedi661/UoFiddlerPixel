@@ -1,29 +1,26 @@
-﻿/***************************************************************************
- *
- * $Author: Bittiez
- * 
- * 
- * "THE BEER-WINE-WARE LICENSE"
- * As long as you retain this notice you can do whatever you want with 
- * this stuff. If we meet some day, and you think this stuff is worth it,
- * you can buy me a beer and Wine in return.
- *
- ***************************************************************************/
+﻿// /***************************************************************************
+//  *
+//  * $Author: Turley
+//  * Advanced Nikodemus
+//  * 
+//  * \"THE BEER-WINE-WARE LICENSE\"
+//  * As long as you retain this notice you can do whatever you want with 
+//  * this stuff. If we meet some day, and you think this stuff is worth it,
+//  * you can buy me a beer and Wine in return.
+//  *
+//  ***************************************************************************/
 
-using IronSoftware.Drawing;
-using System.Text;
-using Color = IronSoftware.Drawing.Color;
-using Point = IronSoftware.Drawing.Point;
-using System.Collections.Generic;
-using System.IO;
 using System;
-
+using System.Collections.Generic;
+using System.Drawing;
+using System.IO;
+using System.Text;
 
 namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 {
-    internal class ImageHandler
+    internal class ImageHandler2
     {
-        public ImageHandler(string imagePath = "", int tileWidth = 44, int tileHeight = 44, int offset = 1, string outputDirectory = "out")
+        public ImageHandler2(string imagePath = "", int tileWidth = 44, int tileHeight = 44, int offset = 1, string outputDirectory = "out")
         {
             ImagePath = imagePath;
             TileWidth = tileWidth;
@@ -38,8 +35,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         public int TileHeight { get; set; }
         public int Offset { get; set; }
         public string OutputDirectory { get; set; }
-        public AnyBitmap OriginalImage { get; private set; }
-        public List<AnyBitmap> Slices { get; private set; } = new List<AnyBitmap>();
+        public Bitmap OriginalImage { get; private set; }
+        public List<Bitmap> Slices { get; private set; } = new List<Bitmap>();
         public string LastErrorMessage { get; private set; } = string.Empty;
         public string FileNameFormat { get; set; } = "{0}";
         public int StartingFileNumber { get; set; } = 0;
@@ -50,15 +47,15 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         {
             if (File.Exists(ImagePath))
             {
-                OriginalImage = AnyBitmap.FromFile(ImagePath);
+                OriginalImage = new Bitmap(ImagePath);
 
-                xSlices = (int)Math.Ceiling((double)OriginalImage.Width / (double)TileWidth) + 1;
-                ySlices = 2 * (int)Math.Ceiling((double)OriginalImage.Height / (double)TileHeight) + 1;
+                xSlices = (int)Math.Ceiling((double)OriginalImage.Width / TileWidth) + 1;
+                ySlices = 2 * (int)Math.Ceiling((double)OriginalImage.Height / TileHeight) + 1;
 
                 SplitImage();
                 SaveImages();
                 CreateHtmlLayout();
-                Console.WriteLine("Sliced succesfully.");
+                Console.WriteLine("Sliced successfully.");
                 return true;
             }
             else
@@ -79,67 +76,65 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 {
                     var start = GetSectionStartPosition(row, col);
 
-                    AnyBitmap slice = new AnyBitmap(TileWidth, TileHeight, BackgroundColor);
-
-
-                    int offset = Offset;
-                    bool reverse = false;
-
-                    for (int yPixel = 0; yPixel < TileHeight; yPixel++)
+                    Bitmap slice = new Bitmap(TileWidth, TileHeight);
+                    using (Graphics g = Graphics.FromImage(slice))
                     {
-                        //0, 0 -> 0, 1 -> 0, 44
+                        g.Clear(BackgroundColor);
+                        int offset = Offset;
+                        bool reverse = false;
 
-                        int grabX = (TileWidth / 2) - offset; // = 21
-                        int grabQty = offset * 2; //2
-
-                        for (int i = 0; i < grabQty; i++)
+                        for (int yPixel = 0; yPixel < TileHeight; yPixel++)
                         {
-                            if (grabX + i + (int)start.X < 0 || grabX + i + (int)start.X >= OriginalImage.Width || yPixel + (int)start.Y < 0 || yPixel + (int)start.Y >= OriginalImage.Height)
+                            int grabX = (TileWidth / 2) - offset;
+                            int grabQty = offset * 2;
+
+                            for (int i = 0; i < grabQty; i++)
                             {
-                                continue;
+                                if (grabX + i + start.X < 0 || grabX + i + start.X >= OriginalImage.Width || yPixel + start.Y < 0 || yPixel + start.Y >= OriginalImage.Height)
+                                {
+                                    continue;
+                                }
+                                Color pixelColor = OriginalImage.GetPixel(grabX + i + start.X, yPixel + start.Y);
+                                slice.SetPixel(grabX + i, yPixel, pixelColor);
                             }
-                            slice.SetPixel(grabX + i, yPixel, OriginalImage.GetPixel(grabX + i + (int)start.X, yPixel + (int)start.Y));
-                        }
 
-                        if (!reverse)
-                        {
-                            offset++;
-                            if ((TileWidth / 2) - offset < 0)
+                            if (!reverse)
                             {
-                                offset--; //Keep offset the same for this run
-                                reverse = true;
+                                offset++;
+                                if ((TileWidth / 2) - offset < 0)
+                                {
+                                    offset--;
+                                    reverse = true;
+                                }
+                            }
+                            else
+                            {
+                                offset--;
                             }
                         }
-                        else
-                        {
-                            offset--;
-                        }
-                        //20, 4
                     }
                     Slices.Add(slice);
-
                 }
             }
         }
 
-        private IronSoftware.Drawing.Point GetSectionStartPosition(int row, int column)
+        private Point GetSectionStartPosition(int row, int column)
         {
             int x = column * TileWidth;
             int y = (row * (TileHeight / 2)) - (TileHeight / 2);
 
-            if (row % 2 == 0) //Number is even
+            if (row % 2 == 0)
             {
                 x -= (TileWidth / 2);
             }
 
-            return new IronSoftware.Drawing.Point(x, y);
+            return new Point(x, y);
         }
 
-        private AnyBitmap GenSampleGrid()
+        private Bitmap GenSampleGrid()
         {
-            AnyBitmap grid = new AnyBitmap(TileWidth, TileHeight);
-
-            Color gColor = new Color(100, 0, 255, 0);
+            Bitmap grid = new Bitmap(TileWidth, TileHeight);
+            Color gColor = Color.FromArgb(100, 0, 255, 0);
 
             int x = 0, y = grid.Height / 2;
 
@@ -161,7 +156,6 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 
             x = grid.Width / 2;
             y = 0;
-
             while (x > 0 && y < grid.Height)
             {
                 grid.SetPixel(x, y, gColor);
@@ -191,20 +185,19 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                     Directory.CreateDirectory(OutputDirectory);
                 }
 
-                image.SaveAs(Path.Combine(OutputDirectory, string.Format(FileNameFormat + ".bmp", startingNumber)), AnyBitmap.ImageFormat.Bmp);
+                image.Save(Path.Combine(OutputDirectory, string.Format(FileNameFormat + ".bmp", startingNumber)), System.Drawing.Imaging.ImageFormat.Bmp);
                 startingNumber++;
             }
 
-            GenSampleGrid().SaveAs(Path.Combine(OutputDirectory, "grid.png"), AnyBitmap.ImageFormat.Png);
+            GenSampleGrid().Save(Path.Combine(OutputDirectory, "grid.png"), System.Drawing.Imaging.ImageFormat.Png);
         }
 
         public void CreateHtmlLayout()
         {
             StringBuilder sb = new StringBuilder();
-            sb.AppendLine($"<body bgcolor='{BackgroundColor.ToHtmlCssColorCode()}' style='padding: 0px; border: 0px; margin: 0px;'>\n");
+            sb.AppendLine($"<body bgcolor='{ColorTranslator.ToHtml(BackgroundColor)}' style='padding: 0px; border: 0px; margin: 0px;'>\n");
 
             int startingNumber = StartingFileNumber;
-
             string[][] tables = new string[ySlices][];
 
             for (int i = 0; i < tables.Length; i++)
@@ -212,12 +205,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 tables[i] = new string[xSlices];
             }
 
-
             int c = 0, r = 0;
             foreach (var image in Slices)
             {
                 string fname = string.Format(FileNameFormat + ".bmp", startingNumber);
-
                 int gx = c;
                 int gy = r;
 
@@ -238,16 +229,15 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 startingNumber++;
             }
 
-            for (int i = 0; i < tables.Length; i++) //Rows
+            for (int i = 0; i < tables.Length; i++)
             {
-                for (int ic = 0; ic < tables[i].Length; ic++) //Column
+                for (int ic = 0; ic < tables[i].Length; ic++)
                 {
                     sb.AppendLine(tables[i][ic]);
                 }
             }
 
             sb.AppendLine($"<div style=\"background-image: url('grid.png'); position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;\"></div>");
-
             sb.AppendLine("</body>");
 
             try
@@ -261,3 +251,4 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         }
     }
 }
+

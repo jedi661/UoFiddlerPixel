@@ -57,9 +57,9 @@ namespace UoFiddler.Forms
             NotesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             ScreenshotToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             toolStripSeparator8 = new System.Windows.Forms.ToolStripSeparator();
-            soundPlayToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            startSoundToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             stopSoundToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            newDirLoadToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            loadDirToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             StartTab = new System.Windows.Forms.TabPage();
             Versionlabel = new System.Windows.Forms.Label();
             MultisTab = new System.Windows.Forms.TabPage();
@@ -67,6 +67,7 @@ namespace UoFiddler.Forms
             AnimationTab = new System.Windows.Forms.TabPage();
             animationsControl = new AnimationListControl();
             ItemsTab = new System.Windows.Forms.TabPage();
+            itemShowControl = new ItemsControl();
             LandTilesTab = new System.Windows.Forms.TabPage();
             landTilesControl = new LandTilesControl();
             TextureTab = new System.Windows.Forms.TabPage();
@@ -96,6 +97,7 @@ namespace UoFiddler.Forms
             DressTab = new System.Windows.Forms.TabPage();
             dressControl = new DressControl();
             TileDataTab = new System.Windows.Forms.TabPage();
+            tileDataControl = new TileDataControl();
             RadarColTab = new System.Windows.Forms.TabPage();
             radarColControl = new RadarColorControl();
             SkillGrpTab = new System.Windows.Forms.TabPage();
@@ -167,6 +169,7 @@ namespace UoFiddler.Forms
             StartTab.SuspendLayout();
             MultisTab.SuspendLayout();
             AnimationTab.SuspendLayout();
+            ItemsTab.SuspendLayout();
             LandTilesTab.SuspendLayout();
             TextureTab.SuspendLayout();
             GumpsTab.SuspendLayout();
@@ -181,6 +184,7 @@ namespace UoFiddler.Forms
             AnimDataTab.SuspendLayout();
             MultiMapTab.SuspendLayout();
             DressTab.SuspendLayout();
+            TileDataTab.SuspendLayout();
             RadarColTab.SuspendLayout();
             SkillGrpTab.SuspendLayout();
             tsMainMenu.SuspendLayout();
@@ -221,7 +225,7 @@ namespace UoFiddler.Forms
             // 
             // contextMenuStripMainForm
             // 
-            contextMenuStripMainForm.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { UnDockToolStripMenuItem, SwitchLogoImageToolStripMenuItem, ColorBackgroundToolStripMenuItem, ResetBackgroundToolStripMenuItem, toolStripSeparator5, ultimaOnlineDirToolStripMenuItem, DirectoryToolStripMenuItem, TempDirToolStripMenuItem, toolStripSeparator6, NotesToolStripMenuItem, ScreenshotToolStripMenuItem, toolStripSeparator8, soundPlayToolStripMenuItem, stopSoundToolStripMenuItem, newDirLoadToolStripMenuItem });
+            contextMenuStripMainForm.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { UnDockToolStripMenuItem, SwitchLogoImageToolStripMenuItem, ColorBackgroundToolStripMenuItem, ResetBackgroundToolStripMenuItem, toolStripSeparator5, ultimaOnlineDirToolStripMenuItem, DirectoryToolStripMenuItem, TempDirToolStripMenuItem, toolStripSeparator6, NotesToolStripMenuItem, ScreenshotToolStripMenuItem, toolStripSeparator8, startSoundToolStripMenuItem, stopSoundToolStripMenuItem, loadDirToolStripMenuItem });
             contextMenuStripMainForm.Name = "contextMenuStrip1";
             contextMenuStripMainForm.Size = new System.Drawing.Size(176, 286);
             // 
@@ -320,14 +324,14 @@ namespace UoFiddler.Forms
             toolStripSeparator8.Name = "toolStripSeparator8";
             toolStripSeparator8.Size = new System.Drawing.Size(172, 6);
             // 
-            // soundPlayToolStripMenuItem
+            // startSoundToolStripMenuItem
             // 
-            soundPlayToolStripMenuItem.Image = Properties.Resources.play_musik_icon_1_;
-            soundPlayToolStripMenuItem.Name = "soundPlayToolStripMenuItem";
-            soundPlayToolStripMenuItem.Size = new System.Drawing.Size(175, 22);
-            soundPlayToolStripMenuItem.Text = "Sound Play";
-            soundPlayToolStripMenuItem.ToolTipText = "Sets the directory and plays Mp3.";
-            soundPlayToolStripMenuItem.Click += soundPlayToolStripMenuItem_Click;
+            startSoundToolStripMenuItem.Image = Properties.Resources.play_musik_icon_1_;
+            startSoundToolStripMenuItem.Name = "startSoundToolStripMenuItem";
+            startSoundToolStripMenuItem.Size = new System.Drawing.Size(175, 22);
+            startSoundToolStripMenuItem.Text = "Start Sound";
+            startSoundToolStripMenuItem.ToolTipText = "Play MP3 Sound";
+            startSoundToolStripMenuItem.Click += soundPlayToolStripMenuItem_Click;
             // 
             // stopSoundToolStripMenuItem
             // 
@@ -335,17 +339,17 @@ namespace UoFiddler.Forms
             stopSoundToolStripMenuItem.Name = "stopSoundToolStripMenuItem";
             stopSoundToolStripMenuItem.Size = new System.Drawing.Size(175, 22);
             stopSoundToolStripMenuItem.Text = "Stop Sound";
-            stopSoundToolStripMenuItem.ToolTipText = "Stop the music";
+            stopSoundToolStripMenuItem.ToolTipText = "Stop Mp3 Sound";
             stopSoundToolStripMenuItem.Click += stopSoundToolStripMenuItem_Click;
             // 
-            // newDirLoadToolStripMenuItem
+            // loadDirToolStripMenuItem
             // 
-            newDirLoadToolStripMenuItem.Image = Properties.Resources.dir_musik_icon;
-            newDirLoadToolStripMenuItem.Name = "newDirLoadToolStripMenuItem";
-            newDirLoadToolStripMenuItem.Size = new System.Drawing.Size(175, 22);
-            newDirLoadToolStripMenuItem.Text = "New Dir Load";
-            newDirLoadToolStripMenuItem.ToolTipText = "Resets the directory";
-            newDirLoadToolStripMenuItem.Click += newDirLoadToolStripMenuItem_Click;
+            loadDirToolStripMenuItem.Image = Properties.Resources.dir_musik_icon;
+            loadDirToolStripMenuItem.Name = "loadDirToolStripMenuItem";
+            loadDirToolStripMenuItem.Size = new System.Drawing.Size(175, 22);
+            loadDirToolStripMenuItem.Text = "Load Dir";
+            loadDirToolStripMenuItem.ToolTipText = "Load DIr New";
+            loadDirToolStripMenuItem.Click += newDirLoadToolStripMenuItem_Click;
             // 
             // StartTab
             // 
@@ -423,6 +427,7 @@ namespace UoFiddler.Forms
             // 
             // ItemsTab
             // 
+            ItemsTab.Controls.Add(itemShowControl);
             ItemsTab.Location = new System.Drawing.Point(4, 24);
             ItemsTab.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             ItemsTab.Name = "ItemsTab";
@@ -432,6 +437,16 @@ namespace UoFiddler.Forms
             ItemsTab.Tag = 3;
             ItemsTab.Text = "Items";
             ItemsTab.UseVisualStyleBackColor = true;
+            // 
+            // itemShowControl
+            // 
+            itemShowControl.Dock = System.Windows.Forms.DockStyle.Fill;
+            itemShowControl.Location = new System.Drawing.Point(4, 3);
+            itemShowControl.Margin = new System.Windows.Forms.Padding(5, 3, 5, 3);
+            itemShowControl.Name = "itemShowControl";
+            itemShowControl.SelectedGraphicId = 0;
+            itemShowControl.Size = new System.Drawing.Size(898, 592);
+            itemShowControl.TabIndex = 0;
             // 
             // LandTilesTab
             // 
@@ -744,6 +759,7 @@ namespace UoFiddler.Forms
             // 
             // TileDataTab
             // 
+            TileDataTab.Controls.Add(tileDataControl);
             TileDataTab.Location = new System.Drawing.Point(4, 24);
             TileDataTab.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             TileDataTab.Name = "TileDataTab";
@@ -752,6 +768,15 @@ namespace UoFiddler.Forms
             TileDataTab.Tag = 18;
             TileDataTab.Text = "TileData";
             TileDataTab.UseVisualStyleBackColor = true;
+            // 
+            // tileDataControl
+            // 
+            tileDataControl.Dock = System.Windows.Forms.DockStyle.Fill;
+            tileDataControl.Location = new System.Drawing.Point(0, 0);
+            tileDataControl.Margin = new System.Windows.Forms.Padding(5, 3, 5, 3);
+            tileDataControl.Name = "tileDataControl";
+            tileDataControl.Size = new System.Drawing.Size(906, 598);
+            tileDataControl.TabIndex = 0;
             // 
             // RadarColTab
             // 
@@ -1341,6 +1366,7 @@ namespace UoFiddler.Forms
             StartTab.PerformLayout();
             MultisTab.ResumeLayout(false);
             AnimationTab.ResumeLayout(false);
+            ItemsTab.ResumeLayout(false);
             LandTilesTab.ResumeLayout(false);
             TextureTab.ResumeLayout(false);
             GumpsTab.ResumeLayout(false);
@@ -1355,6 +1381,7 @@ namespace UoFiddler.Forms
             AnimDataTab.ResumeLayout(false);
             MultiMapTab.ResumeLayout(false);
             DressTab.ResumeLayout(false);
+            TileDataTab.ResumeLayout(false);
             RadarColTab.ResumeLayout(false);
             SkillGrpTab.ResumeLayout(false);
             tsMainMenu.ResumeLayout(false);
@@ -1483,10 +1510,9 @@ namespace UoFiddler.Forms
         private System.Windows.Forms.ToolStripMenuItem convertLineToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator7;
         private System.Windows.Forms.ToolStripMenuItem ultimaOnlineDirToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem soundPlayToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem stopSoundToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator8;
-        private System.Windows.Forms.ToolStripMenuItem newDirLoadToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem startSoundToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem stopSoundToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem loadDirToolStripMenuItem;
     }
 }
-

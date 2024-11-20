@@ -48,14 +48,15 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             contextMenuStripPixtureBox = new System.Windows.Forms.ContextMenuStrip(components);
             loadToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             importToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            runClipbordToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             mirrorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
+            runClipbordToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             cmbCommands = new System.Windows.Forms.ComboBox();
             BtnRun = new System.Windows.Forms.Button();
             buttonOpenTempGrafic = new System.Windows.Forms.Button();
             lbImageSize = new System.Windows.Forms.Label();
-            toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
-            toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
+            BtnRun2 = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)picImagePreview).BeginInit();
             contextMenuStripPixtureBox.SuspendLayout();
             SuspendLayout();
@@ -92,13 +93,13 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // 
             contextMenuStripPixtureBox.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { loadToolStripMenuItem, importToolStripMenuItem, toolStripSeparator1, mirrorToolStripMenuItem, toolStripSeparator2, runClipbordToolStripMenuItem });
             contextMenuStripPixtureBox.Name = "contextMenuStripPixtureBox";
-            contextMenuStripPixtureBox.Size = new System.Drawing.Size(181, 126);
+            contextMenuStripPixtureBox.Size = new System.Drawing.Size(166, 104);
             // 
             // loadToolStripMenuItem
             // 
             loadToolStripMenuItem.Image = Properties.Resources.Load;
             loadToolStripMenuItem.Name = "loadToolStripMenuItem";
-            loadToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            loadToolStripMenuItem.Size = new System.Drawing.Size(165, 22);
             loadToolStripMenuItem.Text = "Load";
             loadToolStripMenuItem.ToolTipText = "Load Image";
             loadToolStripMenuItem.Click += LoadToolStripMenuItem_Click;
@@ -107,27 +108,37 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // 
             importToolStripMenuItem.Image = Properties.Resources.import;
             importToolStripMenuItem.Name = "importToolStripMenuItem";
-            importToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            importToolStripMenuItem.Size = new System.Drawing.Size(165, 22);
             importToolStripMenuItem.Text = "Import Clipboard";
             importToolStripMenuItem.ToolTipText = "Copy from Clipboard";
             importToolStripMenuItem.Click += importToolStripMenuItem_Click;
             // 
-            // runClipbordToolStripMenuItem
+            // toolStripSeparator1
             // 
-            runClipbordToolStripMenuItem.Image = Properties.Resources.right;
-            runClipbordToolStripMenuItem.Name = "runClipbordToolStripMenuItem";
-            runClipbordToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            runClipbordToolStripMenuItem.Text = "Run Clipbord";
-            runClipbordToolStripMenuItem.ToolTipText = "Start Conversion";
-            runClipbordToolStripMenuItem.Click += runClipbordToolStripMenuItem_Click;
+            toolStripSeparator1.Name = "toolStripSeparator1";
+            toolStripSeparator1.Size = new System.Drawing.Size(162, 6);
             // 
             // mirrorToolStripMenuItem
             // 
             mirrorToolStripMenuItem.Image = Properties.Resources.mirror_single_image;
             mirrorToolStripMenuItem.Name = "mirrorToolStripMenuItem";
-            mirrorToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            mirrorToolStripMenuItem.Size = new System.Drawing.Size(165, 22);
             mirrorToolStripMenuItem.Text = "Mirror";
             mirrorToolStripMenuItem.Click += mirrorToolStripMenuItem_Click;
+            // 
+            // toolStripSeparator2
+            // 
+            toolStripSeparator2.Name = "toolStripSeparator2";
+            toolStripSeparator2.Size = new System.Drawing.Size(162, 6);
+            // 
+            // runClipbordToolStripMenuItem
+            // 
+            runClipbordToolStripMenuItem.Image = Properties.Resources.right;
+            runClipbordToolStripMenuItem.Name = "runClipbordToolStripMenuItem";
+            runClipbordToolStripMenuItem.Size = new System.Drawing.Size(165, 22);
+            runClipbordToolStripMenuItem.Text = "Run Clipbord";
+            runClipbordToolStripMenuItem.ToolTipText = "Start Conversion";
+            runClipbordToolStripMenuItem.Click += runClipbordToolStripMenuItem_Click;
             // 
             // cmbCommands
             // 
@@ -140,11 +151,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // 
             // BtnRun
             // 
-            BtnRun.Location = new System.Drawing.Point(174, 73);
+            BtnRun.Location = new System.Drawing.Point(12, 73);
             BtnRun.Name = "BtnRun";
-            BtnRun.Size = new System.Drawing.Size(49, 23);
+            BtnRun.Size = new System.Drawing.Size(90, 23);
             BtnRun.TabIndex = 4;
-            BtnRun.Text = "Run";
+            BtnRun.Text = "Straight view";
             BtnRun.UseVisualStyleBackColor = true;
             BtnRun.Click += BtnRun_Click;
             // 
@@ -167,21 +178,22 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             lbImageSize.TabIndex = 6;
             lbImageSize.Text = "Size";
             // 
-            // toolStripSeparator1
+            // BtnRun2
             // 
-            toolStripSeparator1.Name = "toolStripSeparator1";
-            toolStripSeparator1.Size = new System.Drawing.Size(177, 6);
-            // 
-            // toolStripSeparator2
-            // 
-            toolStripSeparator2.Name = "toolStripSeparator2";
-            toolStripSeparator2.Size = new System.Drawing.Size(177, 6);
+            BtnRun2.Location = new System.Drawing.Point(133, 73);
+            BtnRun2.Name = "BtnRun2";
+            BtnRun2.Size = new System.Drawing.Size(90, 23);
+            BtnRun2.TabIndex = 7;
+            BtnRun2.Text = "Grid view";
+            BtnRun2.UseVisualStyleBackColor = true;
+            BtnRun2.Click += BtnRun2_Click;
             // 
             // IsoTiloSlicer
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             ClientSize = new System.Drawing.Size(673, 477);
+            Controls.Add(BtnRun2);
             Controls.Add(lbImageSize);
             Controls.Add(buttonOpenTempGrafic);
             Controls.Add(BtnRun);
@@ -215,5 +227,6 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private System.Windows.Forms.ToolStripMenuItem mirrorToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
+        private System.Windows.Forms.Button BtnRun2;
     }
 }
