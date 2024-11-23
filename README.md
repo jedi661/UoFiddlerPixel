@@ -7,8 +7,8 @@ This is an extended version of UoFiddler that has more maps and more tools, as w
 version more than the original version. Also, some source codes from older and New projects that are no longer supported have been integrated.
 
 Version : 4.12.8
-- Bugs fixed and revised
-
+- Bugs fixed and revised.
+- Nuget Update System Drawing Common 6.0.
 Version : 4.12.7
 - Added methods to load, stop, and play random MP3 files from a directory, 
   including logic to prevent song replay when manually stopped and enabling randomized song selection upon song end.

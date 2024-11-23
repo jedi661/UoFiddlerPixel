@@ -21,6 +21,9 @@
 		<GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
 	</PropertyGroup>
 	<ItemGroup>
+	  <PackageReference Include="System.Drawing.Common" Version="6.0.0" />
+	</ItemGroup>
+	<ItemGroup>
 		<Compile Update="Forms\ExampleForm.cs">
 			<SubType>Form</SubType>
 		</Compile>

@@ -24,6 +24,9 @@
 		<GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
 	</PropertyGroup>
 	<ItemGroup>
+	  <PackageReference Include="System.Drawing.Common" Version="6.0.0" />
+	</ItemGroup>
+	<ItemGroup>
 		<ProjectReference Include="..\Ultima\Ultima.csproj">
 			<Private>false</Private>
 			<ExcludeAssets>runtime</ExcludeAssets>

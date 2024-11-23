@@ -1,5 +1,6 @@
 Version : 4.12.8 #XG1
-- Bugs fixed and revised
+- Bugs fixed and revised.
+- Nuget Update System Drawing Common 6.0.
 
 Version : 4.12.7 #XG1
 - Added methods to load, stop, and play random MP3 files from a directory, 
