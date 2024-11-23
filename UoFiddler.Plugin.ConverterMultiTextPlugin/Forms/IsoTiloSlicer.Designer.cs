@@ -57,6 +57,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             buttonOpenTempGrafic = new System.Windows.Forms.Button();
             lbImageSize = new System.Windows.Forms.Label();
             BtnRun2 = new System.Windows.Forms.Button();
+            BtnDeleteTempFiles = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)picImagePreview).BeginInit();
             contextMenuStripPixtureBox.SuspendLayout();
             SuspendLayout();
@@ -188,11 +189,22 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             BtnRun2.UseVisualStyleBackColor = true;
             BtnRun2.Click += BtnRun2_Click;
             // 
+            // BtnDeleteTempFiles
+            // 
+            BtnDeleteTempFiles.Location = new System.Drawing.Point(174, 131);
+            BtnDeleteTempFiles.Name = "BtnDeleteTempFiles";
+            BtnDeleteTempFiles.Size = new System.Drawing.Size(49, 23);
+            BtnDeleteTempFiles.TabIndex = 8;
+            BtnDeleteTempFiles.Text = "Delete";
+            BtnDeleteTempFiles.UseVisualStyleBackColor = true;
+            BtnDeleteTempFiles.Click += BtnDeleteTempFiles_Click;
+            // 
             // IsoTiloSlicer
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             ClientSize = new System.Drawing.Size(673, 477);
+            Controls.Add(BtnDeleteTempFiles);
             Controls.Add(BtnRun2);
             Controls.Add(lbImageSize);
             Controls.Add(buttonOpenTempGrafic);
@@ -228,5 +240,6 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
         private System.Windows.Forms.Button BtnRun2;
+        private System.Windows.Forms.Button BtnDeleteTempFiles;
     }
 }

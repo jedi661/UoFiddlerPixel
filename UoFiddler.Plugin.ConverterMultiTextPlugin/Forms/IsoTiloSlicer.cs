@@ -19,7 +19,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             imageHandler2 = new ImageHandler2();
         }
 
-        #region BtnSelectImage
+        #region [ BtnSelectImage ]
         private void BtnSelectImage_Click(object sender, EventArgs e)
         {
             using (OpenFileDialog openFileDialog = new OpenFileDialog())
@@ -33,13 +33,13 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                     imageHandler2.ImagePath = openFileDialog.FileName;
 
                     // Display the size of the image in the lbImageSize label
-                    lbImageSize.Text = $"Bildgröße: {image.Width} x {image.Height}";
+                    lbImageSize.Text = $"Image size: {image.Width} x {image.Height}";
                 }
             }
         }
         #endregion
 
-        #region CmbCommands
+        #region [ CmbCommands ]
         private void CmbCommands_SelectedIndexChanged(object sender, EventArgs e)
         {
             string command = cmbCommands.SelectedItem.ToString();
@@ -76,7 +76,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         }
         #endregion
 
-        #region BtnRun
+        #region [ BtnRun ]
         private void BtnRun_Click(object sender, EventArgs e)
         {
             // Get the path to the program directory
@@ -99,7 +99,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         }
         #endregion
 
-        #region BtnRun2
+        #region [ BtnRun2 ]
         private void BtnRun2_Click(object sender, EventArgs e)
         {
             // Get the path to the program directory
@@ -122,7 +122,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         }
         #endregion
 
-        #region buttonOpenTempGrafic
+        #region [ buttonOpenTempGrafic ]
         private void buttonOpenTempGrafic_Click(object sender, EventArgs e)
         {
             // Get the path to the program directory
@@ -140,12 +140,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             else
             {
                 // Display a message to the user indicating that the directory does not exist
-                MessageBox.Show("Das Verzeichnis tempGrafic existiert nicht.");
+                MessageBox.Show("The directory tempGrafic does not exist.");
             }
         }
         #endregion
 
-        #region LoadToolStripMenuItem
+        #region [ LoadToolStripMenuItem ]
         private void LoadToolStripMenuItem_Click(object sender, EventArgs e)
         {
             using (OpenFileDialog openFileDialog = new OpenFileDialog())
@@ -157,26 +157,26 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                     picImagePreview.Image = image;
 
                     // Display the size of the image in the lbImageSize label
-                    lbImageSize.Text = $"Bildgröße: {image.Width} x {image.Height}";
+                    lbImageSize.Text = $"Image size: {image.Width} x {image.Height}";
                 }
             }
         }
         #endregion
 
-        #region runClipbordToolStripMenuItem
+        #region [ runClipbordToolStripMenuItem ]
         private void runClipbordToolStripMenuItem_Click(object sender, EventArgs e)
         {
             // Check if there is an image in the PictureBox
             if (picImagePreview.Image == null)
             {
-                MessageBox.Show("Bitte ein Bild in die PictureBox einfügen.");
+                MessageBox.Show("Please insert a picture into the PictureBox.");
                 return;
             }
 
             // Verify that a selection was made using cmbCommands
             if (cmbCommands.SelectedItem == null)
             {
-                MessageBox.Show("Bitte eine Auswahl mit cmbCommands treffen.");
+                MessageBox.Show("Please make a selection with cmbCommands.");
                 return;
             }
 
@@ -208,7 +208,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         }
         #endregion
 
-        #region importToolStripMenuItem
+        #region [ importToolStripMenuItem ]
         private void importToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (Clipboard.ContainsImage())
@@ -217,16 +217,16 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 picImagePreview.Image = image;
 
                 // Display the size of the image in the lbImageSize label
-                lbImageSize.Text = $"Bildgröße: {image.Width} x {image.Height}";
+                lbImageSize.Text = $"Image size: {image.Width} x {image.Height}";
             }
             else
             {
-                MessageBox.Show("Die Zwischenablage enthält kein Bild.");
+                MessageBox.Show("The clipboard does not contain an image.");
             }
         }
         #endregion
 
-        #region Mirror
+        #region [ Mirror ]
         private void mirrorToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (picImagePreview.Image != null)
@@ -237,7 +237,39 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             }
             else
             {
-                MessageBox.Show("Es gibt kein Bild in der PictureBox, das gespiegelt werden kann.");
+                MessageBox.Show("There is no image in the PictureBox that can be mirrored.");
+            }
+        }
+        #endregion
+
+        #region [ BtnDeleteTempFiles ]
+        private void BtnDeleteTempFiles_Click(object sender, EventArgs e)
+        {            
+            string programDirectory = Application.StartupPath;            
+            string directory = Path.Combine(programDirectory, "tempGrafic");
+            
+            if (Directory.Exists(directory))
+            {                
+                string[] files = Directory.GetFiles(directory);
+
+                // Delete all files in the directory
+                foreach (string file in files)
+                {
+                    try
+                    {
+                        File.Delete(file);
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"Error deleting file {file}: {ex.Message}");
+                    }
+                }
+
+                MessageBox.Show("All temporary files have been deleted.");
+            }
+            else
+            {
+                MessageBox.Show("The directory tempGrafic does not exist.");
             }
         }
         #endregion
