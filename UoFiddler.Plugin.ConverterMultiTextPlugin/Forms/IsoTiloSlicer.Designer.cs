@@ -112,7 +112,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             importToolStripMenuItem.Size = new System.Drawing.Size(165, 22);
             importToolStripMenuItem.Text = "Import Clipboard";
             importToolStripMenuItem.ToolTipText = "Copy from Clipboard";
-            importToolStripMenuItem.Click += importToolStripMenuItem_Click;
+            importToolStripMenuItem.Click += ImportToolStripMenuItem_Click;
             // 
             // toolStripSeparator1
             // 
@@ -125,7 +125,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             mirrorToolStripMenuItem.Name = "mirrorToolStripMenuItem";
             mirrorToolStripMenuItem.Size = new System.Drawing.Size(165, 22);
             mirrorToolStripMenuItem.Text = "Mirror";
-            mirrorToolStripMenuItem.Click += mirrorToolStripMenuItem_Click;
+            mirrorToolStripMenuItem.Click += MirrorToolStripMenuItem_Click;
             // 
             // toolStripSeparator2
             // 
@@ -139,7 +139,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             runClipbordToolStripMenuItem.Size = new System.Drawing.Size(165, 22);
             runClipbordToolStripMenuItem.Text = "Run Clipbord";
             runClipbordToolStripMenuItem.ToolTipText = "Start Conversion";
-            runClipbordToolStripMenuItem.Click += runClipbordToolStripMenuItem_Click;
+            runClipbordToolStripMenuItem.Click += RunClipbordToolStripMenuItem_Click;
             // 
             // cmbCommands
             // 
@@ -162,13 +162,13 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // 
             // buttonOpenTempGrafic
             // 
-            buttonOpenTempGrafic.Location = new System.Drawing.Point(174, 102);
+            buttonOpenTempGrafic.Location = new System.Drawing.Point(174, 73);
             buttonOpenTempGrafic.Name = "buttonOpenTempGrafic";
             buttonOpenTempGrafic.Size = new System.Drawing.Size(49, 23);
             buttonOpenTempGrafic.TabIndex = 5;
             buttonOpenTempGrafic.Text = "Temp";
             buttonOpenTempGrafic.UseVisualStyleBackColor = true;
-            buttonOpenTempGrafic.Click += buttonOpenTempGrafic_Click;
+            buttonOpenTempGrafic.Click += ButtonOpenTempGrafic_Click;
             // 
             // lbImageSize
             // 
@@ -181,7 +181,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // 
             // BtnRun2
             // 
-            BtnRun2.Location = new System.Drawing.Point(133, 73);
+            BtnRun2.Location = new System.Drawing.Point(12, 102);
             BtnRun2.Name = "BtnRun2";
             BtnRun2.Size = new System.Drawing.Size(90, 23);
             BtnRun2.TabIndex = 7;
@@ -191,7 +191,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // 
             // BtnDeleteTempFiles
             // 
-            BtnDeleteTempFiles.Location = new System.Drawing.Point(174, 131);
+            BtnDeleteTempFiles.Location = new System.Drawing.Point(174, 102);
             BtnDeleteTempFiles.Name = "BtnDeleteTempFiles";
             BtnDeleteTempFiles.Size = new System.Drawing.Size(49, 23);
             BtnDeleteTempFiles.TabIndex = 8;

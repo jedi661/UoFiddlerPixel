@@ -9,14 +9,14 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 {
     public partial class IsoTiloSlicer : Form
     {
-        private ImageHandler1 imageHandler1;
-        private ImageHandler2 imageHandler2;
+        private ImageHandler1 _imageHandler1;
+        private ImageHandler2 _imageHandler2;
 
         public IsoTiloSlicer()
         {
             InitializeComponent();
-            imageHandler1 = new ImageHandler1();
-            imageHandler2 = new ImageHandler2();
+            _imageHandler1 = new ImageHandler1();
+            _imageHandler2 = new ImageHandler2();
         }
 
         #region [ BtnSelectImage ]
@@ -29,8 +29,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                     txtImagePath.Text = openFileDialog.FileName;
                     Image image = Image.FromFile(openFileDialog.FileName);
                     picImagePreview.Image = image;
-                    imageHandler1.ImagePath = openFileDialog.FileName;
-                    imageHandler2.ImagePath = openFileDialog.FileName;
+                    _imageHandler1.ImagePath = openFileDialog.FileName;
+                    _imageHandler2.ImagePath = openFileDialog.FileName;
 
                     // Display the size of the image in the lbImageSize label
                     lbImageSize.Text = $"Image size: {image.Width} x {image.Height}";
@@ -47,30 +47,30 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             switch (command)
             {
                 case "--image path":
-                    imageHandler1.ImagePath = txtImagePath.Text;
-                    imageHandler2.ImagePath = txtImagePath.Text;
+                    _imageHandler1.ImagePath = txtImagePath.Text;
+                    _imageHandler2.ImagePath = txtImagePath.Text;
                     break;
                 case "--tilesize 44":
-                    imageHandler1.TileWidth = 44;
-                    imageHandler1.TileHeight = 44;
-                    imageHandler2.TileWidth = 44;
-                    imageHandler2.TileHeight = 44;
+                    _imageHandler1.TileWidth = 44;
+                    _imageHandler1.TileHeight = 44;
+                    _imageHandler2.TileWidth = 44;
+                    _imageHandler2.TileHeight = 44;
                     break;
                 case "--offset 1":
-                    imageHandler1.Offset = 1;
-                    imageHandler2.Offset = 1;
+                    _imageHandler1.Offset = 1;
+                    _imageHandler2.Offset = 1;
                     break;
                 case "--output out":
-                    imageHandler1.OutputDirectory = Path.GetDirectoryName(txtImagePath.Text);
-                    imageHandler2.OutputDirectory = Path.GetDirectoryName(txtImagePath.Text);
+                    _imageHandler1.OutputDirectory = Path.GetDirectoryName(txtImagePath.Text);
+                    _imageHandler2.OutputDirectory = Path.GetDirectoryName(txtImagePath.Text);
                     break;
                 case "--filename {0}":
-                    imageHandler1.FileNameFormat = "{0}";
-                    imageHandler2.FileNameFormat = "{0}";
+                    _imageHandler1.FileNameFormat = "{0}";
+                    _imageHandler2.FileNameFormat = "{0}";
                     break;
                 case "--startingnumber 0":
-                    imageHandler1.StartingFileNumber = 0;
-                    imageHandler2.StartingFileNumber = 0;
+                    _imageHandler1.StartingFileNumber = 0;
+                    _imageHandler2.StartingFileNumber = 0;
                     break;
             }
         }
@@ -86,12 +86,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             string directory = Path.Combine(programDirectory, "tempGrafic");
 
             // Set the output directory of the image handler
-            imageHandler1.OutputDirectory = directory;
+            _imageHandler1.OutputDirectory = directory;
 
             // Process the image with ImageHandler1
-            if (!imageHandler1.Process())
+            if (!_imageHandler1.Process())
             {
-                MessageBox.Show(imageHandler1.LastErrorMessage);
+                MessageBox.Show(_imageHandler1.LastErrorMessage);
                 return;
             }
 
@@ -109,12 +109,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             string directory = Path.Combine(programDirectory, "tempGrafic");
 
             // Set the output directory of the image handler
-            imageHandler2.OutputDirectory = directory;
+            _imageHandler2.OutputDirectory = directory;
 
             // Process the image with ImageHandler2
-            if (!imageHandler2.Process())
+            if (!_imageHandler2.Process())
             {
-                MessageBox.Show(imageHandler2.LastErrorMessage);
+                MessageBox.Show(_imageHandler2.LastErrorMessage);
                 return;
             }
 
@@ -123,7 +123,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         #endregion
 
         #region [ buttonOpenTempGrafic ]
-        private void buttonOpenTempGrafic_Click(object sender, EventArgs e)
+        private void ButtonOpenTempGrafic_Click(object sender, EventArgs e)
         {
             // Get the path to the program directory
             string programDirectory = Application.StartupPath;
@@ -164,7 +164,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         #endregion
 
         #region [ runClipbordToolStripMenuItem ]
-        private void runClipbordToolStripMenuItem_Click(object sender, EventArgs e)
+        private void RunClipbordToolStripMenuItem_Click(object sender, EventArgs e)
         {
             // Check if there is an image in the PictureBox
             if (picImagePreview.Image == null)
@@ -187,7 +187,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             string directory = Path.Combine(programDirectory, "tempGrafic");
 
             // Set the output directory of the image handler
-            imageHandler1.OutputDirectory = directory;
+            _imageHandler1.OutputDirectory = directory;
 
             // Convert the Image in the PictureBox to a Bitmap and save it to a temporary file
             Bitmap bmp = new Bitmap(picImagePreview.Image);
@@ -195,12 +195,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             bmp.Save(tempFilePath);
 
             // Set the ImagePath of the image handler to the temporary file
-            imageHandler1.ImagePath = tempFilePath;
+            _imageHandler1.ImagePath = tempFilePath;
 
             // Process the image with ImageHandler1
-            if (!imageHandler1.Process())
+            if (!_imageHandler1.Process())
             {
-                MessageBox.Show(imageHandler1.LastErrorMessage);
+                MessageBox.Show(_imageHandler1.LastErrorMessage);
                 return;
             }
 
@@ -209,7 +209,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         #endregion
 
         #region [ importToolStripMenuItem ]
-        private void importToolStripMenuItem_Click(object sender, EventArgs e)
+        private void ImportToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (Clipboard.ContainsImage())
             {
@@ -227,7 +227,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         #endregion
 
         #region [ Mirror ]
-        private void mirrorToolStripMenuItem_Click(object sender, EventArgs e)
+        private void MirrorToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (picImagePreview.Image != null)
             {
@@ -244,12 +244,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 
         #region [ BtnDeleteTempFiles ]
         private void BtnDeleteTempFiles_Click(object sender, EventArgs e)
-        {            
-            string programDirectory = Application.StartupPath;            
+        {
+            string programDirectory = Application.StartupPath;
             string directory = Path.Combine(programDirectory, "tempGrafic");
-            
+
             if (Directory.Exists(directory))
-            {                
+            {
                 string[] files = Directory.GetFiles(directory);
 
                 // Delete all files in the directory
