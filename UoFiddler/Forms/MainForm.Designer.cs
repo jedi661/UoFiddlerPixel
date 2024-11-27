@@ -380,6 +380,7 @@ namespace UoFiddler.Forms
             Versionlabel.TabIndex = 1;
             Versionlabel.Text = "Version";
             Versionlabel.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            Versionlabel.Click += Versionlabel_Click;
             // 
             // MultisTab
             // 

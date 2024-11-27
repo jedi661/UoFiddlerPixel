@@ -32,6 +32,7 @@
 	  <PackageReference Include="AnimatedGif" Version="1.0.5" />
 	  <PackageReference Include="CommandLineParser" Version="2.9.1" />
 	  <PackageReference Include="IronSoftware.System.Drawing" Version="2024.9.15" />
+	  <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
 	  <PackageReference Include="System.Text.Json" Version="9.0.0" />
 	</ItemGroup>
 	<ItemGroup>

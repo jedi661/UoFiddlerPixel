@@ -1657,5 +1657,46 @@ namespace UoFiddler.Forms
             }
         }
         #endregion
+
+        #region [ Versionlabel_Click CPU Memory Show]
+        private Form cpuMemoryForm;
+
+        private void Versionlabel_Click(object sender, EventArgs e)
+        {
+            if (cpuMemoryForm == null || cpuMemoryForm.IsDisposed)
+            {
+                cpuMemoryForm = new Form();
+                cpuMemoryForm.Text = "CPU and Memory Usage";
+                cpuMemoryForm.FormBorderStyle = FormBorderStyle.FixedSingle;
+                cpuMemoryForm.Size = new Size(300, 150);
+                cpuMemoryForm.MaximizeBox = false;
+                cpuMemoryForm.ShowIcon = false;
+
+                PerformanceCounter cpuCounter = new PerformanceCounter("Processor", "% Processor Time", "_Total");
+                PerformanceCounter memoryCounter = new PerformanceCounter("Memory", "Available MBytes");
+
+                Label cpuLabel = new Label();
+                cpuLabel.Location = new Point(10, 10);
+                cpuLabel.Size = new Size(250, 25);
+
+                Label memoryLabel = new Label();
+                memoryLabel.Location = new Point(10, 40);
+                memoryLabel.Size = new Size(250, 25);
+
+                Timer timer = new Timer();
+                timer.Interval = 1000; // Update every second
+                timer.Tick += (s, args) =>
+                {
+                    cpuLabel.Text = $"CPU Usage: {cpuCounter.NextValue()}%";
+                    memoryLabel.Text = $"Available Memory: {memoryCounter.NextValue()} MB";
+                };
+                timer.Start();
+
+                cpuMemoryForm.Controls.Add(cpuLabel);
+                cpuMemoryForm.Controls.Add(memoryLabel);
+                cpuMemoryForm.Show();
+            }
+        }
+        #endregion
     }
 }

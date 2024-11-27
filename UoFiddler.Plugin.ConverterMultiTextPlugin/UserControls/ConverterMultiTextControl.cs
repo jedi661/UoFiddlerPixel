@@ -46,12 +46,15 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             _timer.Start();
         }
 
+        #region [ Timer_Tick ]
         void Timer_Tick(object sender, EventArgs e)
         {
             // Update the text of the ToolStripStatusLabel with the current time
             toolStripStatusLabelTime.Text = DateTime.Now.ToString("HH:mm:ss") + " Uhr";
         }
+        #endregion
 
+        #region [ BtnMultiOpen_Click ]
         private void BtnMultiOpen_Click(object sender, EventArgs e)
         {
             OpenFileDialog openFileDialog = new OpenFileDialog();
@@ -97,7 +100,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
                 label1.Text = "The text has been inserted.";
             }
         }
+        #endregion
 
+        #region [ BtnSpeichernTxt_Click ]
         private void BtnSpeichernTxt_Click(object sender, EventArgs e)
         {
             // Check if TextBox2 has any content.
@@ -130,14 +135,15 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
                 label2.Text = "The text was successfully exported to the file.";
             }
         }
+        #endregion
 
+        #region [ BtnUmwandeln_Click ]
         private void BtnUmwandeln_Click(object sender, EventArgs e)
         {
             string inputText = textBox1.Text.Trim(); // Retrieve the text from TextBox1 and remove leading/trailing whitespace.
             if (string.IsNullOrEmpty(inputText)) // Check if textBox1 is empty.
             {
-                // Handle the case where textBox1 is empty.
-                // For example, display an error message to the user.
+                // Handle the case where textBox1 is empty.                
                 MessageBox.Show("Please enter text into the field.");
                 return; // Exit the method.
             }
@@ -168,17 +174,21 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
 
             textBox2.Text = outputText.ToString(); // Set the result in TextBox2
         }
+        #endregion
 
+        #region [ BtnCopyTBox2_Click ]
         private void BtnCopyTBox2_Click(object sender, EventArgs e)
         {
             Clipboard.SetText(textBox2.Text);
         }
+        #endregion
 
+        #region [ ButtonGraficCutterForm_Click ]
         private void ButtonGraficCutterForm_Click(object sender, EventArgs e)
         {
             if (_isFormOpen)
             {
-                return; // Exit the method if the form is already open.
+                return;
             }
 
             ToolTip toolTip1 = new ToolTip();
@@ -189,35 +199,34 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             toolTip1.SetToolTip(this.ButtonGraficCutterForm, "Graphic Cutter");
 
             GraphicCutterForm form = new GraphicCutterForm();
-            form.FormClosed += GraphicCutterForm_FormClosed; // Subscribe to the FormClosed event.
+            form.FormClosed += GraphicCutterForm_FormClosed;
             form.Show();
             _isFormOpen = true;
 
-            ButtonGraficCutterForm.Enabled = false; // Disable the button.
+            ButtonGraficCutterForm.Enabled = false;
         }
         private void GraphicCutterForm_FormClosed(object sender, FormClosedEventArgs e)
         {
             _isFormOpen = false;
-            ButtonGraficCutterForm.Enabled = true; // Enable the button again.
+            ButtonGraficCutterForm.Enabled = true;
         }
+        #endregion
 
+        #region [ TextureCutter_Click ]
         private void TextureCutter_Click(object sender, EventArgs e)
         {
             if (_isFormOpen)
             {
-                return; // Exit the method if the form is already open.
+                return;
             }
-
-            // Create a new instance of ToolTip.
+            
             ToolTip toolTip1 = new ToolTip();
-
-            // Set the delay properties.
+            
             toolTip1.AutoPopDelay = 5000;
             toolTip1.InitialDelay = 1000;
             toolTip1.ReshowDelay = 500;
-            // Force the text to appear right-aligned.
-            toolTip1.ShowAlways = true;
-            // Set the text that will be displayed when the mouse pointer is over the button.
+            
+            toolTip1.ShowAlways = true;            
             toolTip1.SetToolTip(this.TextureCutter, "Texture Cutter");
 
             TextureCutter form = new TextureCutter();
@@ -231,14 +240,16 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
         private void TextureCutter_FormClosed(object sender, FormClosedEventArgs e)
         {
             _isFormOpen = false;
-            TextureCutter.Enabled = true; // Enable the button again.
+            TextureCutter.Enabled = true;
         }
+        #endregion
 
+        #region [ BtDecriptClient ]
         private void BtDecriptClient_Click(object sender, EventArgs e)
         {
             if (_isFormOpen)
             {
-                return; // Exit the method if the form is already open.
+                return;
             }
 
             ToolTip toolTip1 = new ToolTip();
@@ -254,22 +265,22 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             form.Show();
             _isFormOpen = true;
 
-            form.Enabled = true;
-
-            //tabControl1.SelectedTab = tabPageClient;  //Example of how I can switch to tab from main
+            form.Enabled = true;            
         }
 
         private void DecriptClientForm_FormClosed(object sender, FormClosedEventArgs e)
         {
             _isFormOpen = false;
-            BtDecriptClient.Enabled = true; // Enable the button again.
+            BtDecriptClient.Enabled = true;
         }
+        #endregion
 
+        #region [ BtMapMaker_Click ]
         private void BtMapMaker_Click(object sender, EventArgs e)
         {
             if (_isFormOpen)
             {
-                return; // Exit the method if the form is already open.
+                return;
             }
 
             ToolTip toolTip1 = new ToolTip();
@@ -290,9 +301,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
         private void MapMaker_FormClosed(object sender, FormClosedEventArgs e)
         {
             _isFormOpen = false;
-            BtMapMaker.Enabled = true; // Enable the button again.
+            BtMapMaker.Enabled = true;
         }
+        #endregion
 
+        #region [ BtAnimationVDForm ]
         private void BtAnimationVDForm_Click(object sender, EventArgs e)
         {
             if (_isFormOpen)
@@ -315,7 +328,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
 
             BtAnimationVDForm.Enabled = false;
         }
-
+        
         private void AnimationVDForm_FormClosed(object sender, FormClosedEventArgs e)
         {
             if (_isFormOpen)
@@ -324,7 +337,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
                 BtAnimationVDForm.Enabled = true; // Enable the button again.
             }
         }
+        #endregion
 
+        #region [ BtAnimationEditFormButton_Click ]
         private void BtAnimationEditFormButton_Click(object sender, EventArgs e)
         {
             if (_isFormOpen)
@@ -347,7 +362,6 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
 
             BtAnimationEditFormButton.Enabled = false;
         }
-
         private void AnimationEditFormButton_FormClosed(object sender, FormClosedEventArgs e)
         {
             if (_isFormOpen)
@@ -356,9 +370,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
                 BtAnimationEditFormButton.Enabled = true; // Enable the button again.
             }
         }
+        #endregion
+
+        #region [ BtGumpsEdit ]
         private void BtGumpsEdit_Click(object sender, EventArgs e)
         {
-            if (_isFormOpen) // Wenn das Formular bereits geöffnet ist, beende die Methode.
+            if (_isFormOpen)
             {
                 return;
             }
@@ -378,7 +395,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
 
             BtGumpsEdit.Enabled = false;
         }
+        #endregion
 
+        #region [ GumpsEditClosed ]
         private void GumpsEditClosed(object sender, EventArgs e)
         {
             if (_isFormOpen)
@@ -387,8 +406,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
                 BtGumpsEdit.Enabled = true;
             }
         }
+        #endregion
 
-        #region AltitudeButton
+        #region [ AltitudeButton ]
         private void BtAltitudeTool_Click(object sender, EventArgs e)
         {
             if (_isFormOpen)
@@ -418,7 +438,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
         }
         #endregion
 
-        #region Button binary code
+        #region [ Button binary code ]
         private void BtBinaryCode_Click(object sender, EventArgs e)
         {
             try
@@ -446,13 +466,13 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             }
             catch (FormatException ex)
             {
-                MessageBox.Show("Fehler beim Umwandeln der Zeichenkette in eine Zahl: " + ex.Message);
+                MessageBox.Show("Error converting string to number: " + ex.Message);
             }
         }
 
         #endregion
 
-        #region MorseCode
+        #region [ MorseCode ]
         private void BtMorseCode_Click(object sender, EventArgs e)
         {
             Dictionary<char, string> morseCodeDictionary = new Dictionary<char, string>()
@@ -491,14 +511,14 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
         }
         #endregion
 
-        #region Clear
+        #region [ Clear ]
         private void Btclear_Click(object sender, EventArgs e)
         {
             textBox1.Text = string.Empty;
         }
         #endregion
 
-        #region Clipboard Text
+        #region [ Clipboard Text ]
         private void ImportClipboardToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (Clipboard.ContainsText())
@@ -512,13 +532,13 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
         }
         #endregion
 
-        #region Button Copy Replace Map
+        #region [ Copy Replace Map ]
 
         private void BtMapReplace_Click(object sender, EventArgs e)
         {
             if (_isFormOpen)
             {
-                return; // Verlassen Sie die Methode, wenn das Formular bereits geöffnet ist.
+                return; // Exit the method if the form is already open.
             }
 
             ToolTip toolTip1 = new ToolTip();
@@ -528,14 +548,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             toolTip1.ReshowDelay = 500;
             toolTip1.ShowAlways = true;
             toolTip1.SetToolTip(this.BtMapReplace, "Copy Replace Map");
-
-            // Das Formular, das geöffnet werden soll, heißt 'MapReplaceNewForm'.
+            
             MapReplaceNewForm form = new MapReplaceNewForm();
             form.FormClosed += BtMapReplace_FormClosed;
             form.Show();
             _isFormOpen = true;
-
-            // Deaktivieren Sie die Schaltfläche 'btMapReplace'.
+            
             this.BtMapReplace.Enabled = false;
         }
 
@@ -543,14 +561,13 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
         {
             if (_isFormOpen)
             {
-                _isFormOpen = false;
-                // Aktivieren Sie die Schaltfläche 'btMapReplace' erneut.
+                _isFormOpen = false;                
                 this.BtMapReplace.Enabled = true;
             }
         }
         #endregion
 
-        #region Art Mul Creator
+        #region [ Art Mul Creator ]
 
         private void BtArtMul_Click(object sender, EventArgs e)
         {
@@ -584,10 +601,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
         }
         #endregion
 
-        #region ScriptCreator
+        #region [ ScriptCreator ]
         private void BtScriptCreator_Click(object sender, EventArgs e)
         {
-            if (_isFormOpen) // If the form is already open, exit the method.
+            if (_isFormOpen)
             {
                 return;
             }
@@ -617,10 +634,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
         }
         #endregion
 
-        #region UOArtMerge
+        #region [ UOArtMerge ]
         private void BtUOArtMerge_Click(object sender, EventArgs e)
         {
-            if (_isFormOpen) // If the form is already open, exit the method.
+            if (_isFormOpen)
             {
                 return;
             }
@@ -650,10 +667,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
         }
         #endregion
 
-        #region Gump ID Rechner
+        #region [ Gump ID Rechner ]
         private void BtGumpIDRechner_Click(object sender, EventArgs e)
         {
-            if (_isFormOpen) // If the form is already open, exit the method.
+            if (_isFormOpen)
             {
                 return;
             }
@@ -683,7 +700,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
         }
         #endregion
 
-        #region IsoTiloSlicer
+        #region [ IsoTiloSlicer ]
         private void BtIsoTiloSlicer_Click(object sender, EventArgs e)
         {
             if (_isFormOpen)
@@ -717,12 +734,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
 
         #endregion
 
-        #region UOMap
+        #region [ UOMap ]
         private bool _isUOMapFormOpen = false;
 
         private void UOMap_Click(object sender, EventArgs e)
         {
-            if (_isUOMapFormOpen) // If the form is already open, exit the method.
+            if (_isUOMapFormOpen)
             {
                 return;
             }
@@ -752,11 +769,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
         }
         #endregion
 
-        #region BtTileArtForm
+        #region [ BtTileArtForm ]
         private bool _isTileArtFormOpen = false;
         private void BtTileArtForm_Click(object sender, EventArgs e)
         {
-            if (_isTileArtFormOpen) // Wenn das Formular bereits geöffnet ist, beenden Sie die Methode.
+            if (_isTileArtFormOpen)
             {
                 return;
             }
@@ -786,12 +803,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
         }
         #endregion
 
-        #region Transitions
+        #region [ Transitions ]
         private bool _isTransitionsFormOpen = false;
 
         private void BtTransitions_Click(object sender, EventArgs e)
         {
-            if (_isTransitionsFormOpen) // Wenn das Formular bereits geöffnet ist, beenden Sie die Methode.
+            if (_isTransitionsFormOpen) // If the form is already open, exit the method.
             {
                 return;
             }
@@ -822,7 +839,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
 
         #endregion
 
-        #region MultiTileEntry
+        #region [ MultiTileEntry ]
         public struct MultiTileEntry
         {
             public ushort m_ItemID;
@@ -832,43 +849,43 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
         }
         #endregion
 
-        #region btTest_Click
+        #region [ btTest_Click }
         private void BtTest_Click(object sender, EventArgs e)
         {
-            // Eingabe aus textBox1 holen
+            // Get input from textBox1
             string input = textBox1.Text;
 
-            // Eingabezeilen aufteilen
+            // split input lines
             string[] lines = input.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None);
 
-            // Liste zum Speichern der umgewandelten Einträge
+            // List for saving the converted entries
             List<MultiTileEntry> entries = new List<MultiTileEntry>();
 
-            // Jede Zeile verarbeiten
+            // Process each line
             foreach (string line in lines)
             {
-                // Zeile in Teile aufteilen
+                // Divide the line into parts
                 string[] parts = line.Split(',');
 
-                // Neuen Eintrag erstellen und Werte zuweisen
+                // Create new entry and assign values
                 MultiTileEntry entry = new MultiTileEntry();
                 entry.m_ItemID = Convert.ToUInt16(parts[2].Split(':')[1].Trim()); // ID
                 entry.m_OffsetX = (short)(short.Parse(parts[0].Split(':')[1].Trim()) - 1405); // X
                 entry.m_OffsetY = (short)(short.Parse(parts[1].Split(':')[1].Trim()) - 1709); // Y
                 entry.m_OffsetZ = short.Parse(parts[3].Split(':')[1].Trim()); // Z
-                entry.m_Flags = 0; // Color, setzen Sie hier den richtigen Wert
-                entry.m_Unk1 = 0;  // Setzen Sie hier den richtigen Wert
+                entry.m_Flags = 0;
+                entry.m_Unk1 = 0;
 
-                // Eintrag zur Liste hinzufügen
+                // Add entry to list
                 entries.Add(entry);
             }
 
-            // Umgewandelte Einträge in textBox2 anzeigen
+            // Show converted entries in textBox2
             textBox2.Text = string.Join("\r\n", entries.Select(x => $"0x{x.m_ItemID.ToString("X4")} {x.m_OffsetX} {x.m_OffsetY} {x.m_OffsetZ} {x.m_Flags} {x.m_Unk1}"));
         }
         #endregion
 
-        #region btConverter
+        #region [ btConverter ]
         private bool _isConverterFormOpen = false;
 
         private void BtConverter_Click(object sender, EventArgs e)
@@ -901,6 +918,6 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
                 BtConverter.Enabled = true;
             }
         }
-        #endregion
+        #endregion        
     }
 }
