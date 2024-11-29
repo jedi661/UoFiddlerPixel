@@ -219,14 +219,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             {
                 return;
             }
-            
+
             ToolTip toolTip1 = new ToolTip();
-            
             toolTip1.AutoPopDelay = 5000;
             toolTip1.InitialDelay = 1000;
             toolTip1.ReshowDelay = 500;
-            
-            toolTip1.ShowAlways = true;            
+            toolTip1.ShowAlways = true;
             toolTip1.SetToolTip(this.TextureCutter, "Texture Cutter");
 
             TextureCutter form = new TextureCutter();
@@ -265,7 +263,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             form.Show();
             _isFormOpen = true;
 
-            form.Enabled = true;            
+            form.Enabled = true;
         }
 
         private void DecriptClientForm_FormClosed(object sender, FormClosedEventArgs e)
@@ -328,7 +326,6 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
 
             BtAnimationVDForm.Enabled = false;
         }
-        
         private void AnimationVDForm_FormClosed(object sender, FormClosedEventArgs e)
         {
             if (_isFormOpen)
@@ -346,7 +343,6 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             {
                 return; // Exit the method if the form is already open.
             }
-
 
             ToolTip toolTip1 = new ToolTip();
             toolTip1.AutoPopDelay = 5000;
@@ -416,7 +412,6 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
                 return;
             }
 
-
             ToolTip toolTip1 = new ToolTip();
             toolTip1.AutoPopDelay = 5000;
             toolTip1.InitialDelay = 1000;
@@ -473,29 +468,29 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
         #endregion
 
         #region [ MorseCode ]
+        private static readonly Dictionary<char, string> _morseCodeDictionary = new Dictionary<char, string>()
+        {
+            {'A', ".-"}, {'B', "-..."}, {'C', "-.-."}, {'D', "-.."}, {'E', "."}, {'F', "..-."},
+            {'G', "--."}, {'H', "...."}, {'I', ".."}, {'J', ".---"}, {'K', "-.-"}, {'L', ".-.."},
+            {'M', "--"}, {'N', "-."}, {'O', "---"}, {'P', ".--."}, {'Q', "--.-"}, {'R', ".-."},
+            {'S', "..."}, {'T', "-"}, {'U', "..-"}, {'V', "...-"}, {'W', ".--"}, {'X', "-..-"},
+            {'Y', "-.--"}, {'Z', "--.."}, {'0', "-----"}, {'1', ".----"}, {'2', "..---"},
+            {'3', "...--"}, {'4', "....-"}, {'5', "....."}, {'6', "-...."}, {'7', "--..."},
+            {'8', "---.."}, {'9', "----."}, {' ', "/"}, {'Ä', ".-.-"}, {'Ö', "---."}, {'Ü', "..--"}
+        };
+
         private void BtMorseCode_Click(object sender, EventArgs e)
         {
-            Dictionary<char, string> morseCodeDictionary = new Dictionary<char, string>()
-            {
-                {'A', ".-"}, {'B', "-..."}, {'C', "-.-."}, {'D', "-.."}, {'E', "."}, {'F', "..-."},
-                {'G', "--."}, {'H', "...."}, {'I', ".."}, {'J', ".---"}, {'K', "-.-"}, {'L', ".-.."},
-                {'M', "--"}, {'N', "-."}, {'O', "---"}, {'P', ".--."}, {'Q', "--.-"}, {'R', ".-."},
-                {'S', "..."}, {'T', "-"}, {'U', "..-"}, {'V', "...-"}, {'W', ".--"}, {'X', "-..-"},
-                {'Y', "-.--"}, {'Z', "--.."}, {'0', "-----"}, {'1', ".----"}, {'2', "..---"},
-                {'3', "...--"}, {'4', "....-"}, {'5', "....."}, {'6', "-...."}, {'7', "--..."},
-                {'8', "---.."}, {'9', "----."}, {' ', "/"}, {'Ä', ".-.-"}, {'Ö', "---."}, {'Ü', "..--"}
-            };
-
             if (checkBoxASCII.Checked)
             {
                 string morseCode = textBox2.Text;
                 string text = "";
 
-                foreach (var word in morseCode.Split(new string[] { " / " }, StringSplitOptions.None))
+                foreach (var word in morseCode.Split([" / "], StringSplitOptions.None))
                 {
                     foreach (var letter in word.Split(' '))
                     {
-                        text += morseCodeDictionary.FirstOrDefault(x => x.Value == letter).Key;
+                        text += _morseCodeDictionary.FirstOrDefault(x => x.Value == letter).Key;
                     }
                     text += " ";
                 }
@@ -505,10 +500,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             else
             {
                 string text = textBox1.Text.ToUpper();
-                string morseCode = String.Join(" ", text.Select(c => morseCodeDictionary.ContainsKey(c) ? morseCodeDictionary[c] : ""));
+                string morseCode = String.Join(" ", text.Select(c => _morseCodeDictionary.TryGetValue(c, out string value) ? value : ""));
                 textBox2.Text = morseCode;
             }
         }
+
         #endregion
 
         #region [ Clear ]
@@ -548,12 +544,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             toolTip1.ReshowDelay = 500;
             toolTip1.ShowAlways = true;
             toolTip1.SetToolTip(this.BtMapReplace, "Copy Replace Map");
-            
             MapReplaceNewForm form = new MapReplaceNewForm();
             form.FormClosed += BtMapReplace_FormClosed;
             form.Show();
             _isFormOpen = true;
-            
             this.BtMapReplace.Enabled = false;
         }
 
@@ -561,7 +555,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
         {
             if (_isFormOpen)
             {
-                _isFormOpen = false;                
+                _isFormOpen = false;
                 this.BtMapReplace.Enabled = true;
             }
         }
@@ -849,7 +843,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
         }
         #endregion
 
-        #region [ btTest_Click }
+        #region [ BtTest_Click }
         private void BtTest_Click(object sender, EventArgs e)
         {
             // Get input from textBox1
@@ -885,7 +879,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
         }
         #endregion
 
-        #region [ btConverter ]
+        #region [ BtConverter ]
         private bool _isConverterFormOpen = false;
 
         private void BtConverter_Click(object sender, EventArgs e)

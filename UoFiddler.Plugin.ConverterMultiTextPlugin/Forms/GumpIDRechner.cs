@@ -25,10 +25,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
     {
         public GumpIDRechner()
         {
-            InitializeComponent();            
+            InitializeComponent();
         }
 
-        #region BtMen
+        #region [ BtMen ]
         private void BtMen_Click(object sender, EventArgs e)
         {
             string hexInput = tbInput.Text;
@@ -62,8 +62,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         }
         #endregion
 
-        #region btWoman
-        private void btWoman_Click(object sender, EventArgs e)
+        #region [ BtWoman ]
+        private void BtWoman_Click(object sender, EventArgs e)
         {
             string hexInput = tbInput.Text;
 
@@ -96,14 +96,14 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         }
         #endregion
 
-        #region tbInput2
+        #region [ tbInput2 ]
         private void tbInput2_TextChanged(object sender, EventArgs e)
         {
             ConvertInput();
         }
         #endregion
 
-        #region CheckBox_CheckedChanged
+        #region [ CheckBox_CheckedChanged ]
         private void CheckBox_CheckedChanged(object sender, EventArgs e)
         {
             // Ensure that only one checkbox is checked at a time
@@ -120,7 +120,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         }
         #endregion
 
-        #region ConvertInput
+        #region [ ConvertInput ]
         private void ConvertInput()
         {
             string input = tbInput2.Text;
@@ -238,7 +238,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         }
         #endregion
 
-        #region Clipboard
+        #region [ Clipboard ]
         private void tbOutput_MouseDoubleClick(object sender, MouseEventArgs e)
         {
             if (!string.IsNullOrEmpty(tbOutput.Text))
