@@ -98,6 +98,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             lbScriptCreator = new System.Windows.Forms.Label();
             btScriptCreator = new System.Windows.Forms.Button();
             tabPageTextureConverter = new System.Windows.Forms.TabPage();
+            LBMaximum = new System.Windows.Forms.Label();
+            LBMinimum = new System.Windows.Forms.Label();
+            BtnGenerate = new System.Windows.Forms.Button();
+            LBResult = new System.Windows.Forms.Label();
+            TBMaximum = new System.Windows.Forms.TextBox();
+            TBMinimum = new System.Windows.Forms.TextBox();
             BtTest = new System.Windows.Forms.Button();
             Btclear = new System.Windows.Forms.Button();
             BtMorseCode = new System.Windows.Forms.Button();
@@ -107,6 +113,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             statusStrip1 = new System.Windows.Forms.StatusStrip();
             toolStripStatusLabelTime = new System.Windows.Forms.ToolStripStatusLabel();
             timer1 = new System.Windows.Forms.Timer(components);
+            PanelMinMax = new System.Windows.Forms.Panel();
             contextMenuStrip1.SuspendLayout();
             TabControl1.SuspendLayout();
             tabPageMain.SuspendLayout();
@@ -117,6 +124,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             tabPageScript.SuspendLayout();
             tabPageTextureConverter.SuspendLayout();
             statusStrip1.SuspendLayout();
+            PanelMinMax.SuspendLayout();
             SuspendLayout();
             // 
             // BtnMultiOpen
@@ -688,6 +696,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             // 
             // tabPageTextureConverter
             // 
+            tabPageTextureConverter.Controls.Add(PanelMinMax);
+            tabPageTextureConverter.Controls.Add(BtnGenerate);
             tabPageTextureConverter.Controls.Add(BtTest);
             tabPageTextureConverter.Controls.Add(Btclear);
             tabPageTextureConverter.Controls.Add(BtMorseCode);
@@ -709,6 +719,63 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             tabPageTextureConverter.TabIndex = 1;
             tabPageTextureConverter.Text = "Text Converter";
             tabPageTextureConverter.UseVisualStyleBackColor = true;
+            // 
+            // LBMaximum
+            // 
+            LBMaximum.AutoSize = true;
+            LBMaximum.Location = new System.Drawing.Point(14, 165);
+            LBMaximum.Name = "LBMaximum";
+            LBMaximum.Size = new System.Drawing.Size(62, 15);
+            LBMaximum.TabIndex = 19;
+            LBMaximum.Text = "Maximum";
+            // 
+            // LBMinimum
+            // 
+            LBMinimum.AutoSize = true;
+            LBMinimum.Location = new System.Drawing.Point(14, 104);
+            LBMinimum.Name = "LBMinimum";
+            LBMinimum.Size = new System.Drawing.Size(60, 15);
+            LBMinimum.TabIndex = 18;
+            LBMinimum.Text = "Minimum";
+            // 
+            // BtnGenerate
+            // 
+            BtnGenerate.Location = new System.Drawing.Point(794, 290);
+            BtnGenerate.Name = "BtnGenerate";
+            BtnGenerate.Size = new System.Drawing.Size(75, 23);
+            BtnGenerate.TabIndex = 17;
+            BtnGenerate.Text = "Generate";
+            BtnGenerate.UseVisualStyleBackColor = true;
+            BtnGenerate.Click += BtnGenerate_Click;
+            // 
+            // LBResult
+            // 
+            LBResult.AutoSize = true;
+            LBResult.Location = new System.Drawing.Point(14, 28);
+            LBResult.Name = "LBResult";
+            LBResult.Size = new System.Drawing.Size(39, 15);
+            LBResult.TabIndex = 16;
+            LBResult.Text = "Result";
+            // 
+            // TBMaximum
+            // 
+            TBMaximum.Location = new System.Drawing.Point(14, 139);
+            TBMaximum.Name = "TBMaximum";
+            TBMaximum.Size = new System.Drawing.Size(100, 23);
+            TBMaximum.TabIndex = 15;
+            TBMaximum.Text = "100";
+            TBMaximum.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            TBMaximum.KeyPress += TB_KeyPress;
+            // 
+            // TBMinimum
+            // 
+            TBMinimum.Location = new System.Drawing.Point(14, 78);
+            TBMinimum.Name = "TBMinimum";
+            TBMinimum.Size = new System.Drawing.Size(100, 23);
+            TBMinimum.TabIndex = 14;
+            TBMinimum.Text = "1";
+            TBMinimum.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            TBMinimum.KeyPress += TB_KeyPress;
             // 
             // BtTest
             // 
@@ -783,6 +850,18 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             toolStripStatusLabelTime.Size = new System.Drawing.Size(33, 17);
             toolStripStatusLabelTime.Text = "Time";
             // 
+            // PanelMinMax
+            // 
+            PanelMinMax.Controls.Add(TBMaximum);
+            PanelMinMax.Controls.Add(LBMaximum);
+            PanelMinMax.Controls.Add(TBMinimum);
+            PanelMinMax.Controls.Add(LBMinimum);
+            PanelMinMax.Controls.Add(LBResult);
+            PanelMinMax.Location = new System.Drawing.Point(767, 6);
+            PanelMinMax.Name = "PanelMinMax";
+            PanelMinMax.Size = new System.Drawing.Size(154, 267);
+            PanelMinMax.TabIndex = 20;
+            // 
             // ConverterMultiTextControl
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -812,6 +891,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             tabPageTextureConverter.PerformLayout();
             statusStrip1.ResumeLayout(false);
             statusStrip1.PerformLayout();
+            PanelMinMax.ResumeLayout(false);
+            PanelMinMax.PerformLayout();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -885,5 +966,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
         private System.Windows.Forms.Button BtTest;
         private System.Windows.Forms.Label lbConverter;
         private System.Windows.Forms.Button BtConverter;
+        private System.Windows.Forms.Button BtnGenerate;
+        private System.Windows.Forms.Label LBResult;
+        private System.Windows.Forms.TextBox TBMaximum;
+        private System.Windows.Forms.TextBox TBMinimum;
+        private System.Windows.Forms.Label LBMinimum;
+        private System.Windows.Forms.Label LBMaximum;
+        private System.Windows.Forms.Panel PanelMinMax;
     }
 }

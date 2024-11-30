@@ -504,7 +504,6 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
                 textBox2.Text = morseCode;
             }
         }
-
         #endregion
 
         #region [ Clear ]
@@ -529,7 +528,6 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
         #endregion
 
         #region [ Copy Replace Map ]
-
         private void BtMapReplace_Click(object sender, EventArgs e)
         {
             if (_isFormOpen)
@@ -843,7 +841,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
         }
         #endregion
 
-        #region [ BtTest_Click }
+        #region [ BtTest_Click ]
         private void BtTest_Click(object sender, EventArgs e)
         {
             // Get input from textBox1
@@ -912,6 +910,44 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
                 BtConverter.Enabled = true;
             }
         }
-        #endregion        
+        #endregion
+
+
+        private Random random = new Random();
+
+        private void TB_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            // Allow only digits and control keys (backspace)
+            if (!char.IsDigit(e.KeyChar) && !char.IsControl(e.KeyChar))
+            {
+                e.Handled = true;
+            }
+        }
+        private void BtnGenerate_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                // Get the minimum and maximum values from the textboxes
+                int minValue = int.Parse(TBMinimum.Text);
+                int maxValue = int.Parse(TBMaximum.Text);
+
+                // Ensure min value is less than or equal to max value
+                if (minValue > maxValue)
+                {
+                    MessageBox.Show("Minimum value must be less than or equal to maximum value.");
+                    return;
+                }
+
+                // Generate a random number between minValue and maxValue (inclusive)
+                int randomNumber = random.Next(minValue, maxValue + 1);
+
+                // Display the result in the label
+                LBResult.Text = randomNumber.ToString();
+            }
+            catch (FormatException)
+            {
+                MessageBox.Show("Please enter valid numbers.");
+            }
+        }
     }
 }

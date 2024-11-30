@@ -53,7 +53,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             tbHex = new System.Windows.Forms.TextBox();
             tbDecimal = new System.Windows.Forms.TextBox();
             groupBoxGumpID = new System.Windows.Forms.GroupBox();
-            btWoman = new System.Windows.Forms.Button();
+            BtWoman = new System.Windows.Forms.Button();
             BtMen = new System.Windows.Forms.Button();
             lbInput = new System.Windows.Forms.Label();
             tbInput = new System.Windows.Forms.TextBox();
@@ -197,7 +197,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // 
             // groupBoxGumpID
             // 
-            groupBoxGumpID.Controls.Add(btWoman);
+            groupBoxGumpID.Controls.Add(BtWoman);
             groupBoxGumpID.Controls.Add(BtMen);
             groupBoxGumpID.Location = new System.Drawing.Point(237, 17);
             groupBoxGumpID.Name = "groupBoxGumpID";
@@ -206,15 +206,15 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             groupBoxGumpID.TabStop = false;
             groupBoxGumpID.Text = "Gump ID";
             // 
-            // btWoman
+            // BtWoman
             // 
-            btWoman.Location = new System.Drawing.Point(40, 56);
-            btWoman.Name = "btWoman";
-            btWoman.Size = new System.Drawing.Size(75, 23);
-            btWoman.TabIndex = 1;
-            btWoman.Text = "Woman";
-            btWoman.UseVisualStyleBackColor = true;
-            btWoman.Click += btWoman_Click;
+            BtWoman.Location = new System.Drawing.Point(40, 56);
+            BtWoman.Name = "BtWoman";
+            BtWoman.Size = new System.Drawing.Size(75, 23);
+            BtWoman.TabIndex = 1;
+            BtWoman.Text = "Woman";
+            BtWoman.UseVisualStyleBackColor = true;
+            BtWoman.Click += BtWoman_Click;
             // 
             // BtMen
             // 
@@ -442,7 +442,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private System.Windows.Forms.TextBox tbHex;
         private System.Windows.Forms.TextBox tbDecimal;
         private System.Windows.Forms.GroupBox groupBoxGumpID;
-        private System.Windows.Forms.Button btWoman;
+        private System.Windows.Forms.Button BtWoman;
         private System.Windows.Forms.Button BtMen;
         private System.Windows.Forms.Label lbInput;
         private System.Windows.Forms.Label lbiD;
