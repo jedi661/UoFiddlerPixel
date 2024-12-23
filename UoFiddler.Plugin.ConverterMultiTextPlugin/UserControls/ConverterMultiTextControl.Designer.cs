@@ -280,6 +280,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             // roundButton2
             // 
             roundButton2.BorderColor = System.Drawing.Color.White;
+            roundButton2.BorderThickness = 2;
             roundButton2.ButtonImage = Properties.Resources._0x1C13;
             roundButton2.FlatAppearance.BorderSize = 0;
             roundButton2.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
@@ -292,6 +293,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             // roundButton1
             // 
             roundButton1.BorderColor = System.Drawing.Color.White;
+            roundButton1.BorderThickness = 2;
             roundButton1.ButtonImage = null;
             roundButton1.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             roundButton1.Location = new System.Drawing.Point(17, 15);

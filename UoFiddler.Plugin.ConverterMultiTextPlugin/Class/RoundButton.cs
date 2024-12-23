@@ -25,6 +25,8 @@ namespace CustomControls
         private Color _borderColor = Color.White; // Default border color
         private Color _backColor = Color.Gray; // Default background color
         private Color _textColor = Color.White; // Default text color
+        private int borderThickness = 2; // Default borderThickness
+        private ImageLayout imageLayout = ImageLayout.Zoom; // Default ImagLayout
         private Image _buttonImage;
 
         [Browsable(true)]
@@ -61,6 +63,24 @@ namespace CustomControls
         {
             get { return _buttonImage; }
             set { _buttonImage = value; Invalidate(); }
+        }
+
+        [Browsable(true)]
+        [Category("Appearance")]
+        [Description("Sets the thickness of the border.")]
+        public int BorderThickness
+        {
+            get { return borderThickness; }
+            set { borderThickness = value; Invalidate(); }
+        }        
+
+        [Browsable(true)]
+        [Category("Appearance")]
+        [Description("Sets the layout of the button image.")]
+        public ImageLayout ImageLayout
+        {
+            get { return imageLayout; }
+            set { imageLayout = value; Invalidate(); }
         }
 
         public RoundButton()
@@ -117,7 +137,7 @@ namespace CustomControls
             pevent.Graphics.DrawString(this.Text, this.Font, new SolidBrush(this.ForeColor), circleRect, sf);
 
             // Draw border
-            using (Pen pen = new Pen(this.BorderColor, 2))
+            using (Pen pen = new Pen(this.BorderColor, this.BorderThickness))
             {
                 pevent.Graphics.DrawEllipse(pen, circleRect);
             }
@@ -134,6 +154,30 @@ namespace CustomControls
             GraphicsPath path = new GraphicsPath();
             path.AddEllipse(0, 0, this.Width, this.Height);
             this.Region = new Region(path);
+        }
+
+        protected override void OnMouseEnter(EventArgs e)
+        {
+            this.BackColor = Color.LightGray; // Hover color
+            base.OnMouseEnter(e);
+        }
+
+        protected override void OnMouseLeave(EventArgs e)
+        {
+            this.BackColor = Color.Gray; // Reset to default
+            base.OnMouseLeave(e);
+        }
+
+        protected override void OnMouseDown(MouseEventArgs mevent)
+        {
+            this.BackColor = Color.DarkGray; // Click color
+            base.OnMouseDown(mevent);
+        }
+
+        protected override void OnMouseUp(MouseEventArgs mevent)
+        {
+            this.BackColor = Color.Gray; // Reset after click
+            base.OnMouseUp(mevent);
         }
     }
 }
