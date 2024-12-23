@@ -913,7 +913,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
         #endregion
 
 
-        private Random random = new Random();
+        private Random _random = new Random();
 
         private void TB_KeyPress(object sender, KeyPressEventArgs e)
         {
@@ -939,7 +939,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
                 }
 
                 // Generate a random number between minValue and maxValue (inclusive)
-                int randomNumber = random.Next(minValue, maxValue + 1);
+                int randomNumber = _random.Next(minValue, maxValue + 1);
 
                 // Display the result in the label
                 LBResult.Text = randomNumber.ToString();
