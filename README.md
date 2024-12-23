@@ -14,6 +14,7 @@ Version : 4.12.7
   including logic to prevent song replay when manually stopped and enabling randomized song selection upon song end.
 - Added Com : medien player lib.
 - Update Nuget Paket.
+- RoundButton class added for toolbox.
 
 Version : 4.12.6
 - Added backup directory copy feature (Path Settings). 
