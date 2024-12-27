@@ -284,6 +284,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             roundButton2.ButtonImage = Properties.Resources._0x1C13;
             roundButton2.FlatAppearance.BorderSize = 0;
             roundButton2.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            roundButton2.ImageLayout = System.Windows.Forms.ImageLayout.Zoom;
             roundButton2.Location = new System.Drawing.Point(88, 15);
             roundButton2.Name = "roundButton2";
             roundButton2.Size = new System.Drawing.Size(55, 55);
@@ -296,6 +297,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             roundButton1.BorderThickness = 2;
             roundButton1.ButtonImage = null;
             roundButton1.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            roundButton1.ImageLayout = System.Windows.Forms.ImageLayout.Zoom;
             roundButton1.Location = new System.Drawing.Point(17, 15);
             roundButton1.Name = "roundButton1";
             roundButton1.Size = new System.Drawing.Size(55, 55);
