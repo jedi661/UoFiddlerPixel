@@ -15,6 +15,7 @@ Version : 4.12.7
 - Added Com : medien player lib.
 - Update Nuget Paket.
 - RoundButton class added for toolbox.
+- Items: Added Mass Removal and Select with Ctrl.
 
 Version : 4.12.6
 - Added backup directory copy feature (Path Settings). 

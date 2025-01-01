@@ -596,29 +596,63 @@ namespace UoFiddler.Controls.UserControls
         #region [ OnClickRemove ]
         private void OnClickRemove(object sender, EventArgs e)
         {
-            if (!Art.IsValidStatic(_selectedGraphicId))
-            {
-                return;
-            }
+            // Check if multiple artworks are selected
+            if (ItemsTileView.SelectedIndices.Count > 1)
+            {                
+                DialogResult result = MessageBox.Show($"Are you sure you want to remove the selected artworks?", "Remove artwork", MessageBoxButtons.YesNo, MessageBoxIcon.Question, MessageBoxDefaultButton.Button2);
+                if (result != DialogResult.Yes)
+                {
+                    return;
+                }
 
-            DialogResult result = MessageBox.Show($"Are you sure to remove 0x{_selectedGraphicId:X}", "Save",
-                MessageBoxButtons.YesNo, MessageBoxIcon.Question, MessageBoxDefaultButton.Button2);
-            if (result != DialogResult.Yes)
-            {
-                return;
-            }
+                // Create a list of indexes to remove
+                var indicesToRemove = ItemsTileView.SelectedIndices.Cast<int>().OrderByDescending(i => i).ToList();
 
-            Art.RemoveStatic(_selectedGraphicId);
-            ControlEvents.FireItemChangeEvent(this, _selectedGraphicId);
+                // Iterate through all selected indexes and remove artworks
+                foreach (int selectedIndex in indicesToRemove)
+                {
+                    int graphicId = _itemList[selectedIndex];
+                    if (Art.IsValidStatic(graphicId))
+                    {
+                        Art.RemoveStatic(graphicId);
+                        ControlEvents.FireItemChangeEvent(this, graphicId);
+                    }
 
-            if (!_showFreeSlots)
-            {
-                _itemList.Remove(_selectedGraphicId);
+                    // Remove from list
+                    _itemList.RemoveAt(selectedIndex);
+                }
+
+                // Update UI
                 ItemsTileView.VirtualListSize = _itemList.Count;
-                var moveToIndex = --_selectedGraphicId;
-                SelectedGraphicId = moveToIndex <= 0 ? 0 : _selectedGraphicId; // TODO: get last index visible instead just curr -1
+                SelectedGraphicId = _itemList.Count > 0 ? _itemList[0] : 0; // No selection if list empty
+                ItemsTileView.Invalidate();
             }
-            ItemsTileView.Invalidate();
+            else
+            {
+                // Remove single artwork (original logic)
+                if (!Art.IsValidStatic(_selectedGraphicId))
+                {
+                    return;
+                }
+
+                DialogResult result = MessageBox.Show($"Are you sure you want to use the artwork 0x{_selectedGraphicId:X} want to remove?", "Remove artwork", MessageBoxButtons.YesNo, MessageBoxIcon.Question, MessageBoxDefaultButton.Button2);
+                if (result != DialogResult.Yes)
+                {
+                    return;
+                }
+
+                Art.RemoveStatic(_selectedGraphicId);
+                ControlEvents.FireItemChangeEvent(this, _selectedGraphicId);
+
+                if (!_showFreeSlots)
+                {
+                    _itemList.Remove(_selectedGraphicId);
+                    ItemsTileView.VirtualListSize = _itemList.Count;
+                    var moveToIndex = --_selectedGraphicId;
+                    SelectedGraphicId = moveToIndex <= 0 ? 0 : _selectedGraphicId; // TODO: last visible index instead of just curr -1
+                }
+                ItemsTileView.Invalidate();
+            }
 
             Options.ChangedUltimaClass["Art"] = true;
         }
@@ -2874,5 +2908,35 @@ namespace UoFiddler.Controls.UserControls
         #endregion
         #endregion
 
+        #region [ RemoveAllToolStripMenuItem ]
+        private void RemoveAllToolStripMenuItem_Click(object sender, EventArgs e)
+        {            
+            DialogResult result = MessageBox.Show("Are you sure you want to remove all items?", "Remove all elements", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+            if (result != DialogResult.Yes)
+            {
+                return;
+            }
+
+            // Loop through all items in _itemList and remove
+            foreach (var itemId in _itemList.ToList())
+            {
+                if (Art.IsValidStatic(itemId))
+                {
+                    Art.RemoveStatic(itemId);
+                    ControlEvents.FireItemChangeEvent(this, itemId);
+                }
+            }
+
+            // Clear list and refresh UI
+            _itemList.Clear();
+            ItemsTileView.VirtualListSize = _itemList.Count;
+            SelectedGraphicId = 0; // Keine Auswahl
+            ItemsTileView.Invalidate();
+
+            // Update options
+            Options.ChangedUltimaClass["Art"] = true;
+            MessageBox.Show("All elements have been removed.", "Removal completed", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+        #endregion
     }
 }
