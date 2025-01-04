@@ -56,8 +56,6 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             label3 = new System.Windows.Forms.Label();
             TabControl1 = new System.Windows.Forms.TabControl();
             tabPageMain = new System.Windows.Forms.TabPage();
-            roundButton2 = new CustomControls.RoundButton();
-            roundButton1 = new CustomControls.RoundButton();
             lbIsoTiloSlicer = new System.Windows.Forms.Label();
             BtIsoTiloSlicer = new System.Windows.Forms.Button();
             lbAltitudeTool = new System.Windows.Forms.Label();
@@ -263,8 +261,6 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             // 
             // tabPageMain
             // 
-            tabPageMain.Controls.Add(roundButton2);
-            tabPageMain.Controls.Add(roundButton1);
             tabPageMain.Controls.Add(lbIsoTiloSlicer);
             tabPageMain.Controls.Add(BtIsoTiloSlicer);
             tabPageMain.Controls.Add(lbAltitudeTool);
@@ -276,34 +272,6 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             tabPageMain.TabIndex = 0;
             tabPageMain.Text = "Main";
             tabPageMain.UseVisualStyleBackColor = true;
-            // 
-            // roundButton2
-            // 
-            roundButton2.BorderColor = System.Drawing.Color.White;
-            roundButton2.BorderThickness = 2;
-            roundButton2.ButtonImage = Properties.Resources._0x1C13;
-            roundButton2.FlatAppearance.BorderSize = 0;
-            roundButton2.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            roundButton2.ImageLayout = System.Windows.Forms.ImageLayout.Zoom;
-            roundButton2.Location = new System.Drawing.Point(88, 15);
-            roundButton2.Name = "roundButton2";
-            roundButton2.Size = new System.Drawing.Size(55, 55);
-            roundButton2.TabIndex = 6;
-            roundButton2.UseVisualStyleBackColor = false;
-            // 
-            // roundButton1
-            // 
-            roundButton1.BorderColor = System.Drawing.Color.White;
-            roundButton1.BorderThickness = 2;
-            roundButton1.ButtonImage = null;
-            roundButton1.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            roundButton1.ImageLayout = System.Windows.Forms.ImageLayout.Zoom;
-            roundButton1.Location = new System.Drawing.Point(17, 15);
-            roundButton1.Name = "roundButton1";
-            roundButton1.Size = new System.Drawing.Size(55, 55);
-            roundButton1.TabIndex = 5;
-            roundButton1.Text = "test";
-            roundButton1.UseVisualStyleBackColor = true;
             // 
             // lbIsoTiloSlicer
             // 
@@ -1004,8 +972,6 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
         private System.Windows.Forms.TextBox TBMinimum;
         private System.Windows.Forms.Label LBMinimum;
         private System.Windows.Forms.Label LBMaximum;
-        private System.Windows.Forms.Panel PanelMinMax;
-        private CustomControls.RoundButton roundButton1;
-        private CustomControls.RoundButton roundButton2;
+        private System.Windows.Forms.Panel PanelMinMax;       
     }
 }

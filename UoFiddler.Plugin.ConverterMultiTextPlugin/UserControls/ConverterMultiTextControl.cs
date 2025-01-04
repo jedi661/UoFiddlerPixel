@@ -30,6 +30,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
         //One Form
         private bool _isFormOpen = false;
 
+        private Random _random = new Random();
+
         public ConverterMultiTextControl()
         {
             InitializeComponent();
@@ -912,9 +914,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
         }
         #endregion
 
-
-        private Random _random = new Random();
-
+        #region [ TB_KeyPress]
         private void TB_KeyPress(object sender, KeyPressEventArgs e)
         {
             // Allow only digits and control keys (backspace)
@@ -923,6 +923,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
                 e.Handled = true;
             }
         }
+        #endregion
+
+        #region [ BtnGenerate_Click ]
         private void BtnGenerate_Click(object sender, EventArgs e)
         {
             try
@@ -949,5 +952,6 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
                 MessageBox.Show("Please enter valid numbers.");
             }
         }
+        #endregion
     }
 }
