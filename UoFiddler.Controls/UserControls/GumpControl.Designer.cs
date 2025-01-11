@@ -151,7 +151,7 @@ namespace UoFiddler.Controls.UserControls
             // 
             // contextMenuStrip
             // 
-            contextMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { extractImageToolStripMenuItem, toolStripSeparator2, AddShowAllFreeSlotsButton, findNextFreeSlotToolStripMenuItem, jumpToMaleFemale, markToolStripMenuItem, toolStripSeparator10, mirrorToolStripMenuItem, toolStripSeparator8, replaceGumpToolStripMenuItem, removeToolStripMenuItem, insertToolStripMenuItem, toolStripMenuItem1, toolStripSeparator1, saveToolStripMenuItem, toolStripSeparator4, copyToolStripMenuItem, importToolStripMenuItem, toolStripSeparator7, addIDNamesToolStripMenuItem, listingToolStripMenuItem });
+            contextMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { extractImageToolStripMenuItem, toolStripSeparator2, AddShowAllFreeSlotsButton, findNextFreeSlotToolStripMenuItem, jumpToMaleFemale, markToolStripMenuItem, listingToolStripMenuItem, toolStripSeparator10, mirrorToolStripMenuItem, toolStripSeparator8, replaceGumpToolStripMenuItem, removeToolStripMenuItem, insertToolStripMenuItem, toolStripMenuItem1, toolStripSeparator1, saveToolStripMenuItem, toolStripSeparator4, copyToolStripMenuItem, importToolStripMenuItem, toolStripSeparator7, addIDNamesToolStripMenuItem });
             contextMenuStrip.Name = "contextMenuStrip1";
             contextMenuStrip.Size = new System.Drawing.Size(190, 392);
             // 
@@ -357,6 +357,7 @@ namespace UoFiddler.Controls.UserControls
             listingToolStripMenuItem.Name = "listingToolStripMenuItem";
             listingToolStripMenuItem.Size = new System.Drawing.Size(189, 22);
             listingToolStripMenuItem.Text = "Listing";
+            listingToolStripMenuItem.ToolTipText = "Helps you find marked addresses faster.";
             listingToolStripMenuItem.Click += listingToolStripMenuItem_Click;
             // 
             // topMenuToolStrip
