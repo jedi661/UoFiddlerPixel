@@ -17,6 +17,7 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Media;
+using System.Net;
 using System.Windows.Forms;
 using System.Xml.Linq;
 using Ultima;
@@ -54,6 +55,7 @@ namespace UoFiddler.Controls.UserControls
         private bool _loaded;
         private bool _showFreeSlots;
         private GumpSearchForm _showForm; // _showForm
+        private AddressListForm addressListForm; // To list the addresses
 
         #region [ Reload ]
 
@@ -301,7 +303,6 @@ namespace UoFiddler.Controls.UserControls
 
                 fontBrush = Brushes.Red;
             }
-
             // Retrieving the name from the dictionary
             string name = idNames.TryGetValue(i.ToString(), out string idName) ? idName : "";
 
@@ -310,6 +311,25 @@ namespace UoFiddler.Controls.UserControls
                 new PointF(105,
                     e.Bounds.Y + ((e.Bounds.Height / 2) -
                                   (e.Graphics.MeasureString($"0x{i:X} ({i}) {name}", Font).Height / 2))));
+
+            // To list the addresses
+            if (e.Index == listBox.SelectedIndex)
+            {
+                string address = itemString.Split('-')[0].Trim();
+                addressListForm?.AddAddress(address);
+            }
+        }
+        #endregion
+
+        #region [ SelectAddress ]
+        public void SelectAddress(string address)
+        {
+            int addressIndex = listBox.Items.Cast<string>().ToList().FindIndex(item => item.StartsWith(address));
+            if (addressIndex >= 0)
+            {
+                listBox.SelectedIndex = addressIndex;
+                listBox.TopIndex = addressIndex;
+            }
         }
         #endregion
 
@@ -1827,24 +1847,78 @@ namespace UoFiddler.Controls.UserControls
 
         #region [ mirrorToolStripMenuItem ]
         private void mirrorToolStripMenuItem_Click(object sender, EventArgs e)
-        {            
+        {
             if (pictureBox.BackgroundImage == null)
             {
                 MessageBox.Show("No image available to mirror.");
                 return;
             }
-            
+
             Bitmap originalImage = new Bitmap(pictureBox.BackgroundImage);
-            
+
             Bitmap mirroredBitmap = new Bitmap(originalImage.Width, originalImage.Height);
-            
+
             using (Graphics g = Graphics.FromImage(mirroredBitmap))
-            {                
+            {
                 g.DrawImage(originalImage, new Rectangle(0, 0, originalImage.Width, originalImage.Height),
                     new Rectangle(originalImage.Width, 0, -originalImage.Width, originalImage.Height), GraphicsUnit.Pixel);
             }
-            
+
             pictureBox.BackgroundImage = mirroredBitmap;
+        }
+        #endregion
+
+        #region [ listingToolStripMenuItem_Click ]
+        private void listingToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (addressListForm == null || addressListForm.IsDisposed)
+            {
+                addressListForm = new AddressListForm();
+                addressListForm.AddressSelected += AddressListForm_AddressSelected;
+                addressListForm.Show();
+            }
+        }
+        #endregion
+
+        #region [ AddressListForm_AddressSelected ]
+        private void AddressListForm_AddressSelected(object sender, string address)
+        {
+            SelectAddress(address);
+        }
+        #endregion
+
+        #region [ class AddressListForm : Form]
+        public class AddressListForm : Form
+        {
+            private ListBox addressListBox;
+            public event EventHandler<string> AddressSelected;
+
+            public AddressListForm()
+            {
+                Initialize();
+            }
+
+            private void Initialize()
+            {
+                addressListBox = new ListBox() { Dock = DockStyle.Fill };
+                addressListBox.MouseDoubleClick += (sender, e) =>
+                {
+                    if (addressListBox.SelectedItem != null)
+                    {
+                        string selectedAddress = addressListBox.SelectedItem.ToString();
+                        AddressSelected?.Invoke(this, selectedAddress);
+                    }
+                };
+                Controls.Add(addressListBox);
+            }
+
+            public void AddAddress(string address)
+            {
+                if (!addressListBox.Items.Contains(address))
+                {
+                    addressListBox.Items.Add(address);
+                }
+            }
         }
         #endregion
     }
