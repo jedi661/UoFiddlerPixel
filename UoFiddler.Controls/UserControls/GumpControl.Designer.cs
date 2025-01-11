@@ -69,6 +69,7 @@ namespace UoFiddler.Controls.UserControls
             importToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             toolStripSeparator7 = new System.Windows.Forms.ToolStripSeparator();
             addIDNamesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            listingToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             topMenuToolStrip = new System.Windows.Forms.ToolStrip();
             IndexToolStripLabel = new System.Windows.Forms.ToolStripLabel();
             searchByIdToolStripTextBox = new System.Windows.Forms.ToolStripTextBox();
@@ -96,7 +97,6 @@ namespace UoFiddler.Controls.UserControls
             Preload = new System.Windows.Forms.ToolStripButton();
             toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
             PreLoader = new System.ComponentModel.BackgroundWorker();
-            listingToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
             splitContainer1.Panel1.SuspendLayout();
             splitContainer1.Panel2.SuspendLayout();
@@ -351,6 +351,14 @@ namespace UoFiddler.Controls.UserControls
             addIDNamesToolStripMenuItem.Text = "Add ID Names";
             addIDNamesToolStripMenuItem.Click += addIDNamesToolStripMenuItem_Click;
             // 
+            // listingToolStripMenuItem
+            // 
+            listingToolStripMenuItem.Image = Properties.Resources.Add2;
+            listingToolStripMenuItem.Name = "listingToolStripMenuItem";
+            listingToolStripMenuItem.Size = new System.Drawing.Size(189, 22);
+            listingToolStripMenuItem.Text = "Listing";
+            listingToolStripMenuItem.Click += listingToolStripMenuItem_Click;
+            // 
             // topMenuToolStrip
             // 
             topMenuToolStrip.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
@@ -570,13 +578,6 @@ namespace UoFiddler.Controls.UserControls
             PreLoader.DoWork += PreLoaderDoWork;
             PreLoader.ProgressChanged += PreLoaderProgressChanged;
             PreLoader.RunWorkerCompleted += PreLoaderCompleted;
-            // 
-            // listingToolStripMenuItem
-            // 
-            listingToolStripMenuItem.Name = "listingToolStripMenuItem";
-            listingToolStripMenuItem.Size = new System.Drawing.Size(189, 22);
-            listingToolStripMenuItem.Text = "Listing";
-            listingToolStripMenuItem.Click += listingToolStripMenuItem_Click;
             // 
             // GumpControl
             // 
