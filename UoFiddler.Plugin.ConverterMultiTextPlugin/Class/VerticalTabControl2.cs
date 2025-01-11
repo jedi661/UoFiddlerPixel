@@ -1,7 +1,7 @@
 ﻿// /***************************************************************************
 //  *
-//  * $Author: Turley
-//  * Advanced Nikodemus
+//  * $Author: Nikodemus
+//  * 
 //  * 
 //  * \"THE BEER-WINE-WARE LICENSE\"
 //  * As long as you retain this notice you can do whatever you want with 
@@ -57,4 +57,3 @@ namespace CustomControls
         }
     }
 }
-
