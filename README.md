@@ -16,6 +16,7 @@ Version : 4.12.7
 - Update Nuget Paket.
 - RoundButton class added for toolbox.
 - Items: Added Mass Removal and Select with Ctrl.
+- Gumps: Added listing methodform.
 
 Version : 4.12.6
 - Added backup directory copy feature (Path Settings). 
