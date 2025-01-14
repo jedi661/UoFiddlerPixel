@@ -241,7 +241,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region IsAlreadyDefine
+        #region [ IsAlreadyDefine ]
         /// <summary>
         /// Is Graphic already in TreeView
         /// </summary>
