@@ -37,7 +37,7 @@ namespace UoFiddler.Controls.UserControls
             SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer | ControlStyles.UserPaint, true);
         }
 
-        #region GetActionNames
+        #region [ GetActionNames ]
         public string[][] GetActionNames { get; } = {
             // Monster
             new[]
@@ -153,7 +153,7 @@ namespace UoFiddler.Controls.UserControls
         private int _displayType;
         private bool _loaded;
 
-        #region  Reload
+        #region  [ Reload ]
         /// <summary>
         /// ReLoads if loaded
         /// </summary>
@@ -180,7 +180,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region OnLoad
+        #region [ OnLoad ]
         private void OnLoad(object sender, EventArgs e)
         {
             if (IsAncestorSiteInDesignMode || FormsDesignerHelper.IsInDesignMode())
@@ -222,14 +222,14 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region  OnFilePathChangeEvent
+        #region  [ OnFilePathChangeEvent ]
         private void OnFilePathChangeEvent()
         {
             Reload();
         }
         #endregion
 
-        #region ChangeHue
+        #region [ ChangeHue ]
         /// <summary>
         /// Changes Hue of current Mob
         /// </summary>
@@ -254,7 +254,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region AddGraphic
+        #region [ AddGraphic ]
         /// <summary>
         /// Adds Graphic with type and name to List
         /// </summary>
@@ -308,7 +308,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region Animate
+        #region [ Animate ]
         private bool Animate
         {
             get => _animate;
@@ -328,7 +328,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region StopAnimation
+        #region [ StopAnimation ]
         private void StopAnimation()
         {
             if (_timer != null)
@@ -355,7 +355,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region CurrentSelect
+        #region [ CurrentSelect ]
         private int CurrentSelect
         {
             get => _currentSelect;
@@ -378,7 +378,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region SetPicture
+        #region [ SetPicture ]
         private void SetPicture()
         {
             _frames = null;
@@ -429,7 +429,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region Bitmap DoAnimation
+        #region [ Bitmap DoAnimation ]
         private Bitmap DoAnimation()
         {
             if (_timer != null)
@@ -468,7 +468,7 @@ namespace UoFiddler.Controls.UserControls
                 _animationList[i] = _frames[i].Bitmap;
             }
 
-            // TODO: avoid division by 0 - needs checking if this is valid logic for count.
+            // Check invalid count with division by 0
             if (count <= 0)
             {
                 count = 1;
@@ -480,16 +480,15 @@ namespace UoFiddler.Controls.UserControls
             };
             _timer.Tick += AnimTick;
             _timer.Start();
-
             _frameIndex = 0;
 
-            LoadListViewFrames(); // Reload FrameTab
+            LoadListViewFrames(); // Reload frames
 
             return _animationList[0] != null ? new Bitmap(_animationList[0]) : null;
         }
         #endregion
 
-        #region AnimTick
+        #region [ AnimTick ]
         private void AnimTick(object sender, EventArgs e)
         {
             ++_frameIndex;
@@ -505,7 +504,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region OnPaint_MainPicture
+        #region [ OnPaint_MainPicture ]
         private void OnPaint_MainPicture(object sender, PaintEventArgs e)
         {
             if (_imageInvalidated)
@@ -531,7 +530,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region Load Dsiplay Frame and more listView1
+        #region [ Load Dsiplay Frame and more listView1 ]
         private void TreeViewMobs_AfterSelect(object sender, TreeViewEventArgs e)
         {
             if (e.Node.Parent != null)
@@ -594,14 +593,14 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region Animate_Click
+        #region [ Animate_Click ]
         private void Animate_Click(object sender, EventArgs e)
         {
             Animate = !Animate;
         }
         #endregion
 
-        #region LoadXml
+        #region [ LoadXml ]
         private bool LoadXml()
         {
             string fileName = Path.Combine(Options.AppDataPath, "Animationlist.xml");
@@ -710,7 +709,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region LoadListView
+        #region [ LoadListView ]
         private void LoadListView()
         {
             listView.BeginUpdate();
@@ -733,7 +732,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region SelectChanged_listView
+        #region [ SelectChanged_listView ]
         private void SelectChanged_listView(object sender, EventArgs e)
         {
             if (listView.SelectedItems.Count > 0)
@@ -743,14 +742,14 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region ListView_DoubleClick
+        #region [ ListView_DoubleClick ]
         private void ListView_DoubleClick(object sender, MouseEventArgs e)
         {
             tabControl1.SelectTab(tabPage1);
         }
         #endregion
 
-        #region ListViewDrawItem        
+        #region [ ListViewDrawItem ]       
         private void ListViewDrawItem(object sender, DrawListViewItemEventArgs e)
         {
             int graphic = (int)e.Item.Tag;
@@ -799,8 +798,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region OnClick_Hue
-
+        #region [ OnClick_Hue ]
         private HuePopUpForm _showForm;
         private void OnClick_Hue(object sender, EventArgs e)
         {
@@ -818,13 +816,18 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region LoadListViewFrames
+        #region [ LoadListViewFrames ]
         private void LoadListViewFrames()
         {
+            if (_animationList == null || _animationList.Length == 0)
+            {
+                return;
+            }
+
             listView1.BeginUpdate();
             try
             {
-                listView1.Clear();
+                listView1.Items.Clear();
                 for (int frame = 0; frame < _animationList.Length; ++frame)
                 {
                     ListViewItem item = new ListViewItem(frame.ToString(), 0)
@@ -837,11 +840,12 @@ namespace UoFiddler.Controls.UserControls
             finally
             {
                 listView1.EndUpdate();
+                listView1.Invalidate(); // Make sure the ListView is updated
             }
         }
         #endregion
 
-        #region Frames_ListView_DrawItem
+        #region [ Frames_ListView_DrawItem ]
         private void Frames_ListView_DrawItem(object sender, DrawListViewItemEventArgs e)
         {
             if (_animationList == null)
@@ -879,15 +883,45 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region OnScrollFacing
+        #region [ OnScrollFacing ]
         private void OnScrollFacing(object sender, EventArgs e)
         {
             _facing = (FacingBar.Value - 3) & 7;
             CurrentSelect = CurrentSelect;
+
+            // Reload frames for the currently selected element
+            DoAnimation();
+
+            if (tabControl1.SelectedTab == tabPage3)
+            {
+                LoadListViewFrames();
+                listView1.Invalidate(); // Ensures that the ListView is updated
+            }
+            else
+            {
+                SetPicture();
+                MainPictureBox.Invalidate();
+            }
         }
         #endregion
 
-        #region OnClick_Sort
+        #region [ tabControl1_Selected ]
+        private void tabControl1_Selected(object sender, TabControlEventArgs e)
+        {
+            if (e.TabPage == tabPage3)
+            {
+                LoadListViewFrames();
+                listView1.Invalidate();
+            }
+            else
+            {
+                SetPicture();
+                MainPictureBox.Invalidate();
+            }
+        }
+        #endregion
+
+        #region [ OnClick_Sort ]
         private void OnClick_Sort(object sender, EventArgs e)
         {
             _sortAlpha = !_sortAlpha;
@@ -907,7 +941,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region OnClickRemove
+        #region [ OnClickRemove ]
         private void OnClickRemove(object sender, EventArgs e)
         {
             TreeNode node = TreeViewMobs.SelectedNode;
@@ -926,9 +960,8 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        private AnimationEditForm _animEditFormEntry;
-
-        #region OnClickAnimationEdit
+        #region [ OnClickAnimationEdit ]
+        private AnimationEditForm _animEditFormEntry;        
         private void OnClickAnimationEdit(object sender, EventArgs e)
         {
             if (_animEditFormEntry?.IsDisposed == false)
@@ -942,9 +975,8 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
+        #region [ OnClickFindNewEntries ]
         private AnimationListNewEntriesForm _animNewEntryForm;
-
-        #region OnClickFindNewEntries
         private void OnClickFindNewEntries(object sender, EventArgs e)
         {
             if (_animNewEntryForm?.IsDisposed == false)
@@ -960,7 +992,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region RewriteXml
+        #region [ RewriteXml ]
         private void RewriteXml(object sender, EventArgs e)
         {
             TreeViewMobs.BeginUpdate();
@@ -1019,7 +1051,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region RewriteXml2
+        #region [ RewriteXml2 ]
         private void RewriteXml2(object sender, EventArgs e)
         {
             TreeViewMobs.BeginUpdate();
@@ -1094,35 +1126,35 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region Extract_Image_ClickBmp
+        #region [ Extract_Image_ClickBmp ]
         private void Extract_Image_ClickBmp(object sender, EventArgs e)
         {
             ExtractImage(ImageFormat.Bmp);
         }
         #endregion
 
-        #region Extract_Image_ClickTiff
+        #region [ Extract_Image_ClickTiff ]
         private void Extract_Image_ClickTiff(object sender, EventArgs e)
         {
             ExtractImage(ImageFormat.Tiff);
         }
         #endregion
 
-        #region Extract_Image_ClickJpg
+        #region [ Extract_Image_ClickJpg ]
         private void Extract_Image_ClickJpg(object sender, EventArgs e)
         {
             ExtractImage(ImageFormat.Jpeg);
         }
         #endregion
 
-        #region Extract_Image_ClickPng
+        #region [ Extract_Image_ClickPng ]
         private void Extract_Image_ClickPng(object sender, EventArgs e)
         {
             ExtractImage(ImageFormat.Png);
         }
         #endregion
 
-        #region ExtractImage
+        #region [ ExtractImage ]
         private void ExtractImage(ImageFormat imageFormat)
         {
             string what = "Mob";
@@ -1152,35 +1184,35 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region OnClickExtractAnimBmp
+        #region [ OnClickExtractAnimBmp ]
         private void OnClickExtractAnimBmp(object sender, EventArgs e)
         {
             ExportAnimationFrames(ImageFormat.Bmp);
         }
         #endregion
 
-        #region OnClickExtractAnimTiff
+        #region [ OnClickExtractAnimTiff ]
         private void OnClickExtractAnimTiff(object sender, EventArgs e)
         {
             ExportAnimationFrames(ImageFormat.Tiff);
         }
         #endregion
 
-        #region OnClickExtractAnimJpg
+        #region [ OnClickExtractAnimJpg ]
         private void OnClickExtractAnimJpg(object sender, EventArgs e)
         {
             ExportAnimationFrames(ImageFormat.Jpeg);
         }
         #endregion
 
-        #region OnClickExtractAnimPng
+        #region [ OnClickExtractAnimPng ]
         private void OnClickExtractAnimPng(object sender, EventArgs e)
         {
             ExportAnimationFrames(ImageFormat.Png);
         }
         #endregion
 
-        #region ExportAnimationFrames
+        #region [ ExportAnimationFrames ]
         private void ExportAnimationFrames(ImageFormat imageFormat)
         {
             if (!Animate)
@@ -1217,35 +1249,35 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region OnClickExportFrameBmp
+        #region [ OnClickExportFrameBmp ]
         private void OnClickExportFrameBmp(object sender, EventArgs e)
         {
             ExportSingleFrame(ImageFormat.Bmp);
         }
         #endregion
 
-        #region OnClickExportFrameTiff
+        #region [ OnClickExportFrameTiff ]
         private void OnClickExportFrameTiff(object sender, EventArgs e)
         {
             ExportSingleFrame(ImageFormat.Tiff);
         }
         #endregion
 
-        #region OnClickExportFrameJpg
+        #region [ OnClickExportFrameJpg ]
         private void OnClickExportFrameJpg(object sender, EventArgs e)
         {
             ExportSingleFrame(ImageFormat.Jpeg);
         }
         #endregion
 
-        #region OnClickExportFramePng
+        #region [ OnClickExportFramePng ]
         private void OnClickExportFramePng(object sender, EventArgs e)
         {
             ExportSingleFrame(ImageFormat.Png);
         }
         #endregion
 
-        #region ExportSingleFrame
+        #region [ ExportSingleFrame ]
         private void ExportSingleFrame(ImageFormat imageFormat)
         {
             if (listView1.SelectedItems.Count < 1)
@@ -1277,7 +1309,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region OnClickCopyFrameToClipboard
+        #region [ OnClickCopyFrameToClipboard ]
         private void CopyFrameToClipboardToolStripMenuItem_Click(object sender, EventArgs e)
         {
             // Check if a frame is selected in listView1
@@ -1296,7 +1328,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region importImage
+        #region [ importImage ]
         private void ImportImageToolStripMenuItem_Click(object sender, EventArgs e)
         {
             // Check if a frame is selected in listView1
@@ -1331,7 +1363,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region animationlistEditToolStripMenuItem
+        #region [ animationlistEditToolStripMenuItem ]
         private AnimationListEditorForm _editorForm = null;
 
         private void AnimationlistEditToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1472,7 +1504,7 @@ namespace UoFiddler.Controls.UserControls
         #endregion
     }
 
-    #region class AlphaSorter
+    #region [ class AlphaSorter ]
     public class AlphaSorter : IComparer
     {
         public int Compare(object x, object y)
@@ -1493,7 +1525,7 @@ namespace UoFiddler.Controls.UserControls
     }
     #endregion
 
-    #region class GraphicSorter
+    #region [ class GraphicSorter ]
     public class GraphicSorter : IComparer
     {
         public int Compare(object x, object y)
