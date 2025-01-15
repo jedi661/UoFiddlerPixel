@@ -9,6 +9,9 @@ version more than the original version. Also, some source codes from older and N
 Version : 4.12.8
 - Bugs fixed and revised.
 - Nuget Update System Drawing Common 6.0.
+- Gumps: Added listing methodform.
+- Add Animation XML Editor.
+
 Version : 4.12.7
 - Added methods to load, stop, and play random MP3 files from a directory, 
   including logic to prevent song replay when manually stopped and enabling randomized song selection upon song end.
@@ -16,7 +19,6 @@ Version : 4.12.7
 - Update Nuget Paket.
 - RoundButton class added for toolbox.
 - Items: Added Mass Removal and Select with Ctrl.
-- Gumps: Added listing methodform.
 
 Version : 4.12.6
 - Added backup directory copy feature (Path Settings). 
