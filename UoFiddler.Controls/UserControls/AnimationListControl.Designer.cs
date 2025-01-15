@@ -173,7 +173,7 @@ namespace UoFiddler.Controls.UserControls
             FacingBar.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
             FacingBar.AutoSize = false;
             FacingBar.LargeChange = 1;
-            FacingBar.Location = new System.Drawing.Point(367, 363);
+            FacingBar.Location = new System.Drawing.Point(366, 363);
             FacingBar.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             FacingBar.Maximum = 7;
             FacingBar.Name = "FacingBar";
@@ -493,6 +493,7 @@ namespace UoFiddler.Controls.UserControls
             // animateToolStripMenuItem
             // 
             animateToolStripMenuItem.CheckOnClick = true;
+            animateToolStripMenuItem.Image = Properties.Resources.Animate;
             animateToolStripMenuItem.Name = "animateToolStripMenuItem";
             animateToolStripMenuItem.Size = new System.Drawing.Size(201, 22);
             animateToolStripMenuItem.Text = "Animate";
@@ -534,7 +535,7 @@ namespace UoFiddler.Controls.UserControls
             // 
             // tryToFindNewGraphicsToolStripMenuItem
             // 
-            tryToFindNewGraphicsToolStripMenuItem.Image = Properties.Resources.Animate;
+            tryToFindNewGraphicsToolStripMenuItem.Image = Properties.Resources.Mark;
             tryToFindNewGraphicsToolStripMenuItem.Name = "tryToFindNewGraphicsToolStripMenuItem";
             tryToFindNewGraphicsToolStripMenuItem.Size = new System.Drawing.Size(201, 22);
             tryToFindNewGraphicsToolStripMenuItem.Text = "Try to find new Graphics";
