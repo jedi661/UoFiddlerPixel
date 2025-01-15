@@ -775,9 +775,9 @@ namespace UoFiddler.Controls.UserControls
                 height = e.Bounds.Height;
             }
 
-            
+
             if (listView.SelectedItems.Contains(e.Item))
-            {                
+            {
                 e.Graphics.FillRectangle(Brushes.LightBlue, e.Bounds);
             }
 
@@ -961,7 +961,7 @@ namespace UoFiddler.Controls.UserControls
         #endregion
 
         #region [ OnClickAnimationEdit ]
-        private AnimationEditForm _animEditFormEntry;        
+        private AnimationEditForm _animEditFormEntry;
         private void OnClickAnimationEdit(object sender, EventArgs e)
         {
             if (_animEditFormEntry?.IsDisposed == false)
@@ -1497,10 +1497,31 @@ namespace UoFiddler.Controls.UserControls
 
         #region [ OnClickExtractAnimGifNoLooping ]
         private void OnClickExtractAnimGifNoLooping(object sender, EventArgs e)
-        {            
+        {
             LoadFramesFromListView();
             ExportAnimatedGif(false);
         }
+        #endregion
+
+        #region [ XMLEditorToolStripMenuItem_Click ]
+        private EditorXML _editorXmlInstance;
+
+        private void xMLEditorToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            string outputPath = Options.OutputPath; // Holen wir uns den Output Path aus den Optionen
+
+            if (_editorXmlInstance == null || _editorXmlInstance.IsDisposed)
+            {
+                // Übergabe des outputPath an den Konstruktor
+                _editorXmlInstance = new EditorXML(outputPath);
+                _editorXmlInstance.Show();
+            }
+            else
+            {
+                _editorXmlInstance.BringToFront();
+            }
+        }
+
         #endregion
     }
 
