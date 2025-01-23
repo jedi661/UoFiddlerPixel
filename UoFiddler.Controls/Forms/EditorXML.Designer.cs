@@ -55,6 +55,8 @@ namespace UoFiddler.Controls.Forms
             findToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             toolStripTextBoxFind = new System.Windows.Forms.ToolStripTextBox();
             resetToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            undoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            redoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             groupBoxEditXML = new System.Windows.Forms.GroupBox();
             flowLayoutPanel1 = new System.Windows.Forms.FlowLayoutPanel();
             checkBoxOutputPath = new System.Windows.Forms.CheckBox();
@@ -139,15 +141,15 @@ namespace UoFiddler.Controls.Forms
             // 
             // contextMenuStripXMLEdit
             // 
-            contextMenuStripXMLEdit.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { findToolStripMenuItem, resetToolStripMenuItem });
+            contextMenuStripXMLEdit.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { findToolStripMenuItem, resetToolStripMenuItem, undoToolStripMenuItem, redoToolStripMenuItem });
             contextMenuStripXMLEdit.Name = "contextMenuStripXMLEdit";
-            contextMenuStripXMLEdit.Size = new System.Drawing.Size(103, 48);
+            contextMenuStripXMLEdit.Size = new System.Drawing.Size(104, 92);
             // 
             // findToolStripMenuItem
             // 
             findToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { toolStripTextBoxFind });
             findToolStripMenuItem.Name = "findToolStripMenuItem";
-            findToolStripMenuItem.Size = new System.Drawing.Size(102, 22);
+            findToolStripMenuItem.Size = new System.Drawing.Size(103, 22);
             findToolStripMenuItem.Text = "Find";
             findToolStripMenuItem.Click += findToolStripMenuItem_Click;
             // 
@@ -159,9 +161,23 @@ namespace UoFiddler.Controls.Forms
             // resetToolStripMenuItem
             // 
             resetToolStripMenuItem.Name = "resetToolStripMenuItem";
-            resetToolStripMenuItem.Size = new System.Drawing.Size(102, 22);
+            resetToolStripMenuItem.Size = new System.Drawing.Size(103, 22);
             resetToolStripMenuItem.Text = "Reset";
             resetToolStripMenuItem.Click += resetToolStripMenuItem_Click;
+            // 
+            // undoToolStripMenuItem
+            // 
+            undoToolStripMenuItem.Name = "undoToolStripMenuItem";
+            undoToolStripMenuItem.Size = new System.Drawing.Size(103, 22);
+            undoToolStripMenuItem.Text = "Undo";
+            undoToolStripMenuItem.Click += undoToolStripMenuItem_Click;
+            // 
+            // redoToolStripMenuItem
+            // 
+            redoToolStripMenuItem.Name = "redoToolStripMenuItem";
+            redoToolStripMenuItem.Size = new System.Drawing.Size(103, 22);
+            redoToolStripMenuItem.Text = "Redo";
+            redoToolStripMenuItem.Click += redoToolStripMenuItem_Click;
             // 
             // groupBoxEditXML
             // 
@@ -282,5 +298,7 @@ namespace UoFiddler.Controls.Forms
         private System.Windows.Forms.ToolStripMenuItem designToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem darkModeToolStripMenuItem;
         private System.Windows.Forms.CheckBox checkBoxAutoSave;
+        private System.Windows.Forms.ToolStripMenuItem undoToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem redoToolStripMenuItem;
     }
 }

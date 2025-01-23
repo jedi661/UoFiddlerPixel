@@ -15,6 +15,8 @@ using System.IO;
 using System.Windows.Forms;
 using System.Drawing.Printing;
 using System.Drawing;
+using System.Text.RegularExpressions;
+using System.Collections.Generic;
 
 namespace UoFiddler.Controls.Forms
 {
@@ -27,16 +29,24 @@ namespace UoFiddler.Controls.Forms
         private bool _isDarkMode = false;
         private Timer autoSaveTimer;
         private string currentFilePath;
+        private bool _caseSensitive = false;
+        private bool _useRegex = false;
+        private Stack<string> undoStack = new Stack<string>();
+        private Stack<string> redoStack = new Stack<string>();
+        private bool isManualChange = true;
 
         public EditorXML(string outputPath)
         {
             InitializeComponent();
             this.outputPath = outputPath;
-
-            // Add KeyDown event for F5, F7, F8 functionality
-            this.KeyPreview = true;
-
+            this.KeyPreview = true;  // Add KeyDown event for F5, F7, F8 functionality
             InitializeAutoSave();
+
+            // Save initial state if text exists
+            if (!string.IsNullOrEmpty(richTextBoxXmlContent.Text))
+            {
+                SaveCurrentState();
+            }
         }
 
         #region [ AutoSaveTimer ]
@@ -53,7 +63,7 @@ namespace UoFiddler.Controls.Forms
         private void AutoSaveTimer_Tick(object sender, EventArgs e)
         {
             autoSaveTimer.Tag = DateTime.Now;
-                                              
+
             if (!string.IsNullOrEmpty(currentFilePath))
             {
                 File.WriteAllText(currentFilePath, richTextBoxXmlContent.Text);
@@ -121,6 +131,16 @@ namespace UoFiddler.Controls.Forms
                 e.Handled = true;
                 e.SuppressKeyPress = true;
                 ShowAutoSaveInformation();
+            }
+            if (e.Control && e.KeyCode == Keys.Z)
+            {
+                e.SuppressKeyPress = true; // Suppress the standard sound
+                undoToolStripMenuItem_Click(sender, e);
+            }
+            else if (e.Control && e.KeyCode == Keys.Y)
+            {
+                e.SuppressKeyPress = true;
+                redoToolStripMenuItem_Click(sender, e);
             }
         }
         #endregion
@@ -198,33 +218,27 @@ namespace UoFiddler.Controls.Forms
                 return;
             }
 
-            // Get directory and file name information
-            string directory = Path.GetDirectoryName(currentFilePath);
-            string fileName = Path.GetFileName(currentFilePath);
-
-            // Calculate the remaining time until the next auto-save
-            DateTime timerStart = (DateTime)autoSaveTimer.Tag; // Ensure Tag is a DateTime
+            FileInfo fileInfo = new FileInfo(currentFilePath);
+            DateTime timerStart = (DateTime)autoSaveTimer.Tag;
             TimeSpan timeElapsed = DateTime.Now - timerStart;
             int timeRemainingInSeconds = autoSaveTimer.Interval / 1000 - (int)timeElapsed.TotalSeconds;
 
-            if (timeRemainingInSeconds < 0) timeRemainingInSeconds = 0; // Ensure no negative values
-            
+            if (timeRemainingInSeconds < 0) timeRemainingInSeconds = 0;
             int minutesRemaining = timeRemainingInSeconds / 60;
             int secondsRemaining = timeRemainingInSeconds % 60;
 
-            // Display the information in a MessageBox
             MessageBox.Show(
                 $"Auto-Save Information:\n\n" +
-                $"- Directory: {directory}\n" +
-                $"- File Name: {fileName}\n" +
+                $"- Directory: {fileInfo.DirectoryName}\n" +
+                $"- File Name: {fileInfo.Name}\n" +
+                $"- File Size: {fileInfo.Length / 1024} KB\n" +
+                $"- Last Modified: {fileInfo.LastWriteTime}\n" +
                 $"- Time Remaining: {minutesRemaining} minutes and {secondsRemaining} seconds\n",
                 "Auto-Save Status",
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Information
             );
         }
-
-
         #endregion
 
         #region [ printToolStripMenuItem_Click ]
@@ -271,19 +285,44 @@ namespace UoFiddler.Controls.Forms
             }
 
             int searchStartIndex = _lastIndex + 1;
-            _lastIndex = richTextBoxXmlContent.Text.IndexOf(_searchText, searchStartIndex, StringComparison.OrdinalIgnoreCase);
+            StringComparison comparison = _caseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase;
 
-            if (_lastIndex != -1)
+            if (_useRegex)
             {
-                HighlightWord(_lastIndex, _searchText.Length);
-                UpdateStatus($"Word '{_searchText}' found at position: {_lastIndex + 1}");
+                try
+                {
+                    Regex regex = new Regex(_searchText, _caseSensitive ? RegexOptions.None : RegexOptions.IgnoreCase);
+                    Match match = regex.Match(richTextBoxXmlContent.Text, searchStartIndex);
+                    if (match.Success)
+                    {
+                        _lastIndex = match.Index;
+                        HighlightWord(_lastIndex, match.Length);
+                        UpdateStatus($"Regex match found at position: {_lastIndex + 1}");
+                    }
+                    else
+                    {
+                        MessageBox.Show("End of document reached. Start over?", "End of Search", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                        ResetState();
+                    }
+                }
+                catch (ArgumentException ex)
+                {
+                    MessageBox.Show($"Invalid regex: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
             }
             else
             {
-                MessageBox.Show("End of document reached. Start over?", "End of Search", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
-                ResetState();
-                CountOccurrences();
-                _lastIndex = -1;
+                _lastIndex = richTextBoxXmlContent.Text.IndexOf(_searchText, searchStartIndex, comparison);
+                if (_lastIndex != -1)
+                {
+                    HighlightWord(_lastIndex, _searchText.Length);
+                    UpdateStatus($"Word '{_searchText}' found at position: {_lastIndex + 1}");
+                }
+                else
+                {
+                    MessageBox.Show("End of document reached. Start over?", "End of Search", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                    ResetState();
+                }
             }
         }
 
@@ -345,7 +384,22 @@ namespace UoFiddler.Controls.Forms
         #region [ richTextBoxXmlContent_TextChanged ]
         private void richTextBoxXmlContent_TextChanged(object sender, EventArgs e)
         {
+            // Prevent Undo/Redo from triggering the event
+            if (isManualChange)
+            {
+                SaveCurrentState();
+            }
             UpdateTextStatistics();
+        }
+        #endregion
+
+        #region [ SaveInitialState ]
+        private void SaveInitialState()
+        {
+            if (isManualChange && undoStack.Count == 0)
+            {
+                undoStack.Push(richTextBoxXmlContent.Text);
+            }
         }
         #endregion
 
@@ -355,8 +409,9 @@ namespace UoFiddler.Controls.Forms
             int wordCount = richTextBoxXmlContent.Text.Split(new char[] { ' ', '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries).Length;
             int characterCount = richTextBoxXmlContent.Text.Length;
             int lineCount = richTextBoxXmlContent.Lines.Length;
+            int xmlTagCount = Regex.Matches(richTextBoxXmlContent.Text, @"<[^>]+>").Count;
 
-            toolStripStatusLabelTextStatistics.Text = $"Words: {wordCount}, Characters: {characterCount}, Lines: {lineCount}";
+            toolStripStatusLabelTextStatistics.Text = $"Words: {wordCount}, Characters: {characterCount}, Lines: {lineCount}, XML Tags: {xmlTagCount}";
         }
         #endregion
 
@@ -365,25 +420,76 @@ namespace UoFiddler.Controls.Forms
         {
             if (_isDarkMode)
             {
-                // Setze helle Farben
+                // Light Mode
                 this.BackColor = SystemColors.Control;
                 richTextBoxXmlContent.BackColor = Color.White;
                 richTextBoxXmlContent.ForeColor = Color.Black;
+                contextMenuStripXMLEdit.BackColor = SystemColors.Control;
+                contextMenuStripXMLEdit.ForeColor = SystemColors.ControlText;
             }
             else
             {
-                // Setze dunkle Farben
+                // Dark Mode
                 this.BackColor = Color.FromArgb(41, 44, 51);
                 richTextBoxXmlContent.BackColor = Color.FromArgb(30, 30, 30);
                 richTextBoxXmlContent.ForeColor = Color.FromArgb(230, 230, 230);
+                contextMenuStripXMLEdit.BackColor = Color.FromArgb(30, 30, 30);
+                contextMenuStripXMLEdit.ForeColor = Color.White;
             }
-
             _isDarkMode = !_isDarkMode;
         }
 
         private void designToolStripMenuItem_Click(object sender, EventArgs e)
         {
             ToggleDarkMode();
+        }
+        #endregion
+
+        #region [ SaveCurrentState ]
+        private void SaveCurrentState()
+        {
+            if (isManualChange)
+            {
+                undoStack.Push(richTextBoxXmlContent.Text);
+                redoStack.Clear(); // Empty redo stack when a new change is made
+                UpdateMenuState();
+            }
+        }
+        #endregion
+
+        #region [ undoToolStripMenuItem_Click ]
+        private void undoToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (undoStack.Count > 0)
+            {
+                isManualChange = false;
+                redoStack.Push(richTextBoxXmlContent.Text);
+                richTextBoxXmlContent.Text = undoStack.Pop();
+                UpdateMenuState();
+                isManualChange = true;
+            }
+        }
+        #endregion
+
+        #region [ redoToolStripMenuItem_Click ]
+        private void redoToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (redoStack.Count > 0)
+            {
+                isManualChange = false;
+                undoStack.Push(richTextBoxXmlContent.Text);
+                richTextBoxXmlContent.Text = redoStack.Pop();
+                UpdateMenuState();
+                isManualChange = true;
+            }
+        }
+        #endregion
+
+        #region [ UpdateMenuState ]
+        private void UpdateMenuState()
+        {
+            undoToolStripMenuItem.Enabled = undoStack.Count > 0;
+            redoToolStripMenuItem.Enabled = redoStack.Count > 0;
         }
         #endregion
     }
