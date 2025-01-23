@@ -143,13 +143,14 @@ namespace UoFiddler.Controls.Forms
             // 
             contextMenuStripXMLEdit.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { findToolStripMenuItem, resetToolStripMenuItem, undoToolStripMenuItem, redoToolStripMenuItem });
             contextMenuStripXMLEdit.Name = "contextMenuStripXMLEdit";
-            contextMenuStripXMLEdit.Size = new System.Drawing.Size(104, 92);
+            contextMenuStripXMLEdit.Size = new System.Drawing.Size(181, 114);
             // 
             // findToolStripMenuItem
             // 
             findToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { toolStripTextBoxFind });
+            findToolStripMenuItem.Image = Properties.Resources.Mark;
             findToolStripMenuItem.Name = "findToolStripMenuItem";
-            findToolStripMenuItem.Size = new System.Drawing.Size(103, 22);
+            findToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             findToolStripMenuItem.Text = "Find";
             findToolStripMenuItem.Click += findToolStripMenuItem_Click;
             // 
@@ -160,22 +161,25 @@ namespace UoFiddler.Controls.Forms
             // 
             // resetToolStripMenuItem
             // 
+            resetToolStripMenuItem.Image = Properties.Resources.Remove;
             resetToolStripMenuItem.Name = "resetToolStripMenuItem";
-            resetToolStripMenuItem.Size = new System.Drawing.Size(103, 22);
+            resetToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             resetToolStripMenuItem.Text = "Reset";
             resetToolStripMenuItem.Click += resetToolStripMenuItem_Click;
             // 
             // undoToolStripMenuItem
             // 
+            undoToolStripMenuItem.Image = Properties.Resources.left_arrow;
             undoToolStripMenuItem.Name = "undoToolStripMenuItem";
-            undoToolStripMenuItem.Size = new System.Drawing.Size(103, 22);
+            undoToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             undoToolStripMenuItem.Text = "Undo";
             undoToolStripMenuItem.Click += undoToolStripMenuItem_Click;
             // 
             // redoToolStripMenuItem
             // 
+            redoToolStripMenuItem.Image = Properties.Resources.Export;
             redoToolStripMenuItem.Name = "redoToolStripMenuItem";
-            redoToolStripMenuItem.Size = new System.Drawing.Size(103, 22);
+            redoToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             redoToolStripMenuItem.Text = "Redo";
             redoToolStripMenuItem.Click += redoToolStripMenuItem_Click;
             // 
