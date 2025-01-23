@@ -55,17 +55,20 @@ namespace UoFiddler.Controls.Forms
             findToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             toolStripTextBoxFind = new System.Windows.Forms.ToolStripTextBox();
             resetToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             undoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             redoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            copyClipboardToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             groupBoxEditXML = new System.Windows.Forms.GroupBox();
             flowLayoutPanel1 = new System.Windows.Forms.FlowLayoutPanel();
             checkBoxOutputPath = new System.Windows.Forms.CheckBox();
             checkBoxAutoSave = new System.Windows.Forms.CheckBox();
+            checkBoxXMLFormatted = new System.Windows.Forms.CheckBox();
             statusStrip1 = new System.Windows.Forms.StatusStrip();
             toolStripStatusLabelInfo = new System.Windows.Forms.ToolStripStatusLabel();
             toolStripStatusWord = new System.Windows.Forms.ToolStripStatusLabel();
             toolStripStatusLabelTextStatistics = new System.Windows.Forms.ToolStripStatusLabel();
-            toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
+            toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
             menuStripXMLEdit.SuspendLayout();
             contextMenuStripXMLEdit.SuspendLayout();
             groupBoxEditXML.SuspendLayout();
@@ -78,7 +81,7 @@ namespace UoFiddler.Controls.Forms
             menuStripXMLEdit.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { dateiToolStripMenuItem, designToolStripMenuItem });
             menuStripXMLEdit.Location = new System.Drawing.Point(0, 0);
             menuStripXMLEdit.Name = "menuStripXMLEdit";
-            menuStripXMLEdit.Size = new System.Drawing.Size(834, 24);
+            menuStripXMLEdit.Size = new System.Drawing.Size(849, 24);
             menuStripXMLEdit.TabIndex = 0;
             menuStripXMLEdit.Text = "menuStrip1";
             // 
@@ -142,9 +145,9 @@ namespace UoFiddler.Controls.Forms
             // 
             // contextMenuStripXMLEdit
             // 
-            contextMenuStripXMLEdit.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { findToolStripMenuItem, resetToolStripMenuItem, toolStripSeparator2, undoToolStripMenuItem, redoToolStripMenuItem });
+            contextMenuStripXMLEdit.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { findToolStripMenuItem, resetToolStripMenuItem, toolStripSeparator2, undoToolStripMenuItem, redoToolStripMenuItem, toolStripSeparator3, copyClipboardToolStripMenuItem });
             contextMenuStripXMLEdit.Name = "contextMenuStripXMLEdit";
-            contextMenuStripXMLEdit.Size = new System.Drawing.Size(181, 120);
+            contextMenuStripXMLEdit.Size = new System.Drawing.Size(181, 148);
             // 
             // findToolStripMenuItem
             // 
@@ -168,6 +171,11 @@ namespace UoFiddler.Controls.Forms
             resetToolStripMenuItem.Text = "Reset";
             resetToolStripMenuItem.Click += resetToolStripMenuItem_Click;
             // 
+            // toolStripSeparator2
+            // 
+            toolStripSeparator2.Name = "toolStripSeparator2";
+            toolStripSeparator2.Size = new System.Drawing.Size(177, 6);
+            // 
             // undoToolStripMenuItem
             // 
             undoToolStripMenuItem.Image = Properties.Resources.left_arrow;
@@ -184,6 +192,14 @@ namespace UoFiddler.Controls.Forms
             redoToolStripMenuItem.Text = "Redo";
             redoToolStripMenuItem.Click += redoToolStripMenuItem_Click;
             // 
+            // copyClipboardToolStripMenuItem
+            // 
+            copyClipboardToolStripMenuItem.Image = Properties.Resources.Text;
+            copyClipboardToolStripMenuItem.Name = "copyClipboardToolStripMenuItem";
+            copyClipboardToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            copyClipboardToolStripMenuItem.Text = "Copy Clipboard";
+            copyClipboardToolStripMenuItem.Click += copyClipboardToolStripMenuItem_Click;
+            // 
             // groupBoxEditXML
             // 
             groupBoxEditXML.Controls.Add(richTextBoxXmlContent);
@@ -198,9 +214,10 @@ namespace UoFiddler.Controls.Forms
             // 
             flowLayoutPanel1.Controls.Add(checkBoxOutputPath);
             flowLayoutPanel1.Controls.Add(checkBoxAutoSave);
+            flowLayoutPanel1.Controls.Add(checkBoxXMLFormatted);
             flowLayoutPanel1.Location = new System.Drawing.Point(718, 46);
             flowLayoutPanel1.Name = "flowLayoutPanel1";
-            flowLayoutPanel1.Size = new System.Drawing.Size(104, 508);
+            flowLayoutPanel1.Size = new System.Drawing.Size(119, 508);
             flowLayoutPanel1.TabIndex = 3;
             // 
             // checkBoxOutputPath
@@ -226,12 +243,22 @@ namespace UoFiddler.Controls.Forms
             checkBoxAutoSave.UseVisualStyleBackColor = true;
             checkBoxAutoSave.CheckedChanged += checkBoxAutoSave_CheckedChanged;
             // 
+            // checkBoxXMLFormatted
+            // 
+            checkBoxXMLFormatted.AutoSize = true;
+            checkBoxXMLFormatted.Location = new System.Drawing.Point(3, 53);
+            checkBoxXMLFormatted.Name = "checkBoxXMLFormatted";
+            checkBoxXMLFormatted.Size = new System.Drawing.Size(108, 19);
+            checkBoxXMLFormatted.TabIndex = 2;
+            checkBoxXMLFormatted.Text = "XML Formatted";
+            checkBoxXMLFormatted.UseVisualStyleBackColor = true;
+            // 
             // statusStrip1
             // 
             statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { toolStripStatusLabelInfo, toolStripStatusWord, toolStripStatusLabelTextStatistics });
             statusStrip1.Location = new System.Drawing.Point(0, 547);
             statusStrip1.Name = "statusStrip1";
-            statusStrip1.Size = new System.Drawing.Size(834, 22);
+            statusStrip1.Size = new System.Drawing.Size(849, 22);
             statusStrip1.TabIndex = 4;
             statusStrip1.Text = "statusStrip1";
             // 
@@ -253,16 +280,16 @@ namespace UoFiddler.Controls.Forms
             toolStripStatusLabelTextStatistics.Size = new System.Drawing.Size(76, 17);
             toolStripStatusLabelTextStatistics.Text = "Text statistics";
             // 
-            // toolStripSeparator2
+            // toolStripSeparator3
             // 
-            toolStripSeparator2.Name = "toolStripSeparator2";
-            toolStripSeparator2.Size = new System.Drawing.Size(177, 6);
+            toolStripSeparator3.Name = "toolStripSeparator3";
+            toolStripSeparator3.Size = new System.Drawing.Size(177, 6);
             // 
             // EditorXML
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            ClientSize = new System.Drawing.Size(834, 569);
+            ClientSize = new System.Drawing.Size(849, 569);
             Controls.Add(statusStrip1);
             Controls.Add(flowLayoutPanel1);
             Controls.Add(groupBoxEditXML);
@@ -311,5 +338,8 @@ namespace UoFiddler.Controls.Forms
         private System.Windows.Forms.ToolStripMenuItem undoToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem redoToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
+        private System.Windows.Forms.CheckBox checkBoxXMLFormatted;
+        private System.Windows.Forms.ToolStripMenuItem copyClipboardToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
     }
 }

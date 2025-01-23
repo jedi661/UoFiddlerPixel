@@ -172,7 +172,15 @@ namespace UoFiddler.Controls.Forms
                 {
                     currentFilePath = openFileDialog.FileName;
                     string xmlContent = File.ReadAllText(openFileDialog.FileName);
-                    richTextBoxXmlContent.Text = xmlContent;
+
+                    if (checkBoxXMLFormatted.Checked)
+                    {
+                        richTextBoxXmlContent.Rtf = ConvertXmlToRtf(xmlContent);
+                    }
+                    else
+                    {
+                        richTextBoxXmlContent.Text = xmlContent; // Show original content without conversion
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -490,6 +498,113 @@ namespace UoFiddler.Controls.Forms
         {
             undoToolStripMenuItem.Enabled = undoStack.Count > 0;
             redoToolStripMenuItem.Enabled = redoStack.Count > 0;
+        }
+        #endregion
+
+        #region [ ConvertXmlToRtf ]
+        private string ConvertXmlToRtf(string xmlContent)
+        {
+            var rtfBuilder = new System.Text.StringBuilder();
+            rtfBuilder.Append(@"{\rtf1\ansi\deff0{\fonttbl{\f0 Courier New;}}");
+            rtfBuilder.Append(@"{\colortbl ;\red0\green0\blue0;\red0\green0\blue255;\red255\green0\blue0;\red0\green128\blue0;\red128\green128\blue128;}");
+            rtfBuilder.Append(@"\viewkind4\uc1\pard\f0\fs20 ");
+
+            // Process XML declaration once
+            Match xmlDeclarationMatch = Regex.Match(xmlContent, @"<\?xml[^>]+>");
+            if (xmlDeclarationMatch.Success)
+            {
+                rtfBuilder.Append(@"\cf5 "); // Comment color
+                rtfBuilder.Append(EscapeRtf(xmlDeclarationMatch.Value));
+                rtfBuilder.Append(@"\par\cf1 ");
+                xmlContent = xmlContent.Replace(xmlDeclarationMatch.Value, ""); // Remove declaration from main content
+            }
+
+            // Main content of the XML
+            foreach (Match match in Regex.Matches(xmlContent, @"<[^>]+>|<!--.*?-->|[^<]+"))
+            {
+                string fragment = match.Value;
+
+                if (fragment.StartsWith("<"))
+                {
+                    if (fragment.StartsWith("<!--")) // Comments
+                    {
+                        rtfBuilder.Append(@"\cf5 "); // Comment color
+                        rtfBuilder.Append(EscapeRtf(fragment));
+                        rtfBuilder.Append(@"\cf1 ");
+                    }
+                    else if (fragment.StartsWith("</")) // Closing tags
+                    {
+                        rtfBuilder.Append(@"\cf2 "); // Tag color
+                        rtfBuilder.Append(EscapeRtf(fragment));
+                        rtfBuilder.Append(@"\cf1 ");
+                    }
+                    else // Opening tags
+                    {
+                        Match tagNameMatch = Regex.Match(fragment, @"<\s*[^!?/\s>]+");
+                        if (tagNameMatch.Success)
+                        {
+                            rtfBuilder.Append(@"\cf2 "); // Tag color
+                            rtfBuilder.Append(EscapeRtf(tagNameMatch.Value));
+                        }
+
+                        // Process attributes within the tag
+                        foreach (Match attrMatch in Regex.Matches(fragment, @"\b\w+\s*=\s*""[^""]*"""))
+                        {
+                            rtfBuilder.Append(@" "); // Spaces between attributes
+                            rtfBuilder.Append(@"\cf3 "); // Attribute color
+                            rtfBuilder.Append(EscapeRtf(attrMatch.Value));
+                        }
+
+                        // Closing characters of the tag
+                        if (fragment.EndsWith("/>") || fragment.EndsWith(">"))
+                        {
+                            rtfBuilder.Append(@"\cf2 ");
+                            rtfBuilder.Append(EscapeRtf(fragment.EndsWith("/>") ? " />" : ">"));
+                            rtfBuilder.Append(@"\cf1 ");
+                        }
+                    }
+                }
+                else // Text outside tags
+                {
+                    rtfBuilder.Append(EscapeRtf(fragment));
+                }
+            }
+
+            rtfBuilder.Append(@"}");
+            return rtfBuilder.ToString();
+        }
+
+        private string EscapeRtf(string text)
+        {
+            return text.Replace(@"\", @"\\")
+                       .Replace("{", @"\{")
+                       .Replace("}", @"\}")
+                       .Replace("\t", @"\tab ")
+                       .Replace("\n", @"\par ");
+        }
+        #endregion
+
+        #region [ copyClipboardToolStripMenuItem_Click ]
+        private void copyClipboardToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                // Überprüfen, ob es Text in der RichTextBox gibt
+                if (!string.IsNullOrEmpty(richTextBoxXmlContent.Text))
+                {
+                    // Kopieren des Inhalts in den Zwischenspeicher
+                    Clipboard.SetText(richTextBoxXmlContent.Text);
+                    MessageBox.Show("Text copied to clipboard.", "Copy to Clipboard", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+                else
+                {
+                    MessageBox.Show("There is no text to copy.", "Copy to Clipboard", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error copying text to clipboard: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
         #endregion
     }
