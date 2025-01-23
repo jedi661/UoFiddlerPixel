@@ -65,6 +65,7 @@ namespace UoFiddler.Controls.Forms
             toolStripStatusLabelInfo = new System.Windows.Forms.ToolStripStatusLabel();
             toolStripStatusWord = new System.Windows.Forms.ToolStripStatusLabel();
             toolStripStatusLabelTextStatistics = new System.Windows.Forms.ToolStripStatusLabel();
+            toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             menuStripXMLEdit.SuspendLayout();
             contextMenuStripXMLEdit.SuspendLayout();
             groupBoxEditXML.SuspendLayout();
@@ -141,9 +142,9 @@ namespace UoFiddler.Controls.Forms
             // 
             // contextMenuStripXMLEdit
             // 
-            contextMenuStripXMLEdit.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { findToolStripMenuItem, resetToolStripMenuItem, undoToolStripMenuItem, redoToolStripMenuItem });
+            contextMenuStripXMLEdit.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { findToolStripMenuItem, resetToolStripMenuItem, toolStripSeparator2, undoToolStripMenuItem, redoToolStripMenuItem });
             contextMenuStripXMLEdit.Name = "contextMenuStripXMLEdit";
-            contextMenuStripXMLEdit.Size = new System.Drawing.Size(181, 114);
+            contextMenuStripXMLEdit.Size = new System.Drawing.Size(181, 120);
             // 
             // findToolStripMenuItem
             // 
@@ -252,6 +253,11 @@ namespace UoFiddler.Controls.Forms
             toolStripStatusLabelTextStatistics.Size = new System.Drawing.Size(76, 17);
             toolStripStatusLabelTextStatistics.Text = "Text statistics";
             // 
+            // toolStripSeparator2
+            // 
+            toolStripSeparator2.Name = "toolStripSeparator2";
+            toolStripSeparator2.Size = new System.Drawing.Size(177, 6);
+            // 
             // EditorXML
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -304,5 +310,6 @@ namespace UoFiddler.Controls.Forms
         private System.Windows.Forms.CheckBox checkBoxAutoSave;
         private System.Windows.Forms.ToolStripMenuItem undoToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem redoToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
     }
 }
