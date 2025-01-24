@@ -17,6 +17,7 @@ using System.Drawing.Printing;
 using System.Drawing;
 using System.Text.RegularExpressions;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace UoFiddler.Controls.Forms
 {
@@ -605,6 +606,98 @@ namespace UoFiddler.Controls.Forms
             {
                 MessageBox.Show($"Error copying text to clipboard: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+        }
+        #endregion
+
+        #region [ addNewLineToolStripMenuItem_Click ]
+        private void addNewLineToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Form addForm = new Form
+            {
+                Text = "Add New Line",
+                Width = 400,
+                Height = 280, // increased height to accommodate the info label
+                FormBorderStyle = FormBorderStyle.FixedDialog, // Fixed border style
+                MaximizeBox = false, // Disable maximize button
+                MinimizeBox = false  // Disable minimize button
+            };
+
+            Label labelName = new Label { Text = "Mob Name:", Top = 20, Left = 10, Width = 100 };
+            TextBox textBoxMobName = new TextBox { Top = 20, Left = 120, Width = 250 };
+
+            Label labelBody = new Label { Text = "Body ID:", Top = 60, Left = 10, Width = 100 };
+            TextBox textBoxBody = new TextBox { Top = 60, Left = 120, Width = 250 };
+
+            Label labelType = new Label { Text = "Type:", Top = 100, Left = 10, Width = 100 };
+            ComboBox comboBoxType = new ComboBox
+            {
+                Top = 100,
+                Left = 120,
+                Width = 250,
+                DropDownStyle = ComboBoxStyle.DropDownList
+            };
+            comboBoxType.Items.AddRange(new object[] { "Monster", "Sea", "Animal", "Human/Equipment" });
+            comboBoxType.SelectedIndex = 0;
+
+            Label labelInfo = new Label
+            {
+                Text = "0 = Monster, 1 = Sea, 2 = Animal, 3 = Human - Equipment",
+                Top = 140,
+                Left = 10,
+                Width = 320
+            };
+
+            Button buttonAdd = new Button { Text = "Add", Top = 180, Left = 150, Width = 100 };
+            buttonAdd.Click += (formSender, formE) =>
+            {
+                if (int.TryParse(textBoxBody.Text, out int bodyId))
+                {
+                    if (IsBodyIdTaken(bodyId))
+                    {
+                        MessageBox.Show("The Body ID is already taken. Please choose a different ID.", "Duplicate Body ID", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        return;
+                    }
+
+                    int type = comboBoxType.SelectedIndex;
+                    string mobName = $"{textBoxMobName.Text} ({bodyId})";
+                    string newMobLine = $"  <Mob name=\"{mobName}\" body=\"{bodyId}\" type=\"{type}\" />"; // Add leading spaces
+                    AddLineToXml(newMobLine, bodyId);
+                    addForm.Close();
+                }
+                else
+                {
+                    MessageBox.Show("Please enter a valid Body ID.", "Invalid Input", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
+            };
+
+            addForm.Controls.Add(labelName);
+            addForm.Controls.Add(textBoxMobName);
+            addForm.Controls.Add(labelBody);
+            addForm.Controls.Add(textBoxBody);
+            addForm.Controls.Add(labelType);
+            addForm.Controls.Add(comboBoxType);
+            addForm.Controls.Add(labelInfo);
+            addForm.Controls.Add(buttonAdd);
+            addForm.ShowDialog();
+        }
+
+        private void AddLineToXml(string newLine, int lineNumber)
+        {
+            var lines = richTextBoxXmlContent.Lines.ToList();
+            if (lineNumber > lines.Count)
+            {
+                lines.Add(newLine); // Add at the end if the line number is greater than existing lines
+            }
+            else
+            {
+                lines.Insert(lineNumber - 1, newLine);
+            }
+            richTextBoxXmlContent.Lines = lines.ToArray();
+        }
+
+        private bool IsBodyIdTaken(int bodyId)
+        {
+            return richTextBoxXmlContent.Text.Contains($"body=\"{bodyId}\"");
         }
         #endregion
     }
