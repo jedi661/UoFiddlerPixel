@@ -609,7 +609,7 @@ namespace UoFiddler.Controls.Forms
         }
         #endregion
 
-        #region [ addNewLineToolStripMenuItem_Click ]
+        #region [ addNewLineToolStripMenuItem_Click ]        
         private void addNewLineToolStripMenuItem_Click(object sender, EventArgs e)
         {
             Form addForm = new Form
@@ -652,16 +652,18 @@ namespace UoFiddler.Controls.Forms
             {
                 if (int.TryParse(textBoxBody.Text, out int bodyId))
                 {
-                    if (IsBodyIdTaken(bodyId))
+                    int type = comboBoxType.SelectedIndex;
+                    string tagName = type == 3 ? "Equip" : "Mob";
+
+                    if (IsBodyIdTaken(bodyId, tagName))
                     {
-                        MessageBox.Show("The Body ID is already taken. Please choose a different ID.", "Duplicate Body ID", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        MessageBox.Show($"The Body ID is already taken in {tagName}. Please choose a different ID.", "Duplicate Body ID", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                         return;
                     }
 
-                    int type = comboBoxType.SelectedIndex;
                     string mobName = $"{textBoxMobName.Text} ({bodyId})";
-                    string newMobLine = $"  <Mob name=\"{mobName}\" body=\"{bodyId}\" type=\"{type}\" />"; // Add leading spaces
-                    AddLineToXml(newMobLine, bodyId);
+                    string newMobLine = $"  <{tagName} name=\"{mobName}\" body=\"{bodyId}\" type=\"{type}\" />"; // Add leading spaces
+                    AddLineToXml(newMobLine, bodyId, tagName);
                     addForm.Close();
                 }
                 else
@@ -681,23 +683,51 @@ namespace UoFiddler.Controls.Forms
             addForm.ShowDialog();
         }
 
-        private void AddLineToXml(string newLine, int lineNumber)
+        private void AddLineToXml(string newLine, int bodyId, string tagName)
         {
             var lines = richTextBoxXmlContent.Lines.ToList();
-            if (lineNumber > lines.Count)
+            bool lineAdded = false;
+
+            for (int i = 0; i < lines.Count; i++)
             {
-                lines.Add(newLine); // Add at the end if the line number is greater than existing lines
+                string line = lines[i];
+                int currentBodyId;
+                string currentTag;
+
+                if (TryGetBodyIdAndTagFromLine(line, out currentBodyId, out currentTag) && currentTag == tagName && currentBodyId > bodyId)
+                {
+                    lines.Insert(i, newLine);
+                    lineAdded = true;
+                    break;
+                }
             }
-            else
+
+            if (!lineAdded)
             {
-                lines.Insert(lineNumber - 1, newLine);
+                lines.Add(newLine); // Add at the end if no appropriate place is found
             }
+
             richTextBoxXmlContent.Lines = lines.ToArray();
         }
 
-        private bool IsBodyIdTaken(int bodyId)
+        private bool TryGetBodyIdAndTagFromLine(string line, out int bodyId, out string tagName)
         {
-            return richTextBoxXmlContent.Text.Contains($"body=\"{bodyId}\"");
+            var match = Regex.Match(line, @"<(?<tag>\w+) name=""[^""]*"" body=""(?<body>\d+)""");
+            if (match.Success)
+            {
+                bodyId = int.Parse(match.Groups["body"].Value);
+                tagName = match.Groups["tag"].Value;
+                return true;
+            }
+
+            bodyId = 0;
+            tagName = null;
+            return false;
+        }
+
+        private bool IsBodyIdTaken(int bodyId, string tagName)
+        {
+            return richTextBoxXmlContent.Text.Contains($"<{tagName} name=\"") && richTextBoxXmlContent.Text.Contains($"body=\"{bodyId}\"");
         }
         #endregion
     }
