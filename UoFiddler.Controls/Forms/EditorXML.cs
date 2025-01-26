@@ -730,5 +730,336 @@ namespace UoFiddler.Controls.Forms
             return richTextBoxXmlContent.Text.Contains($"<{tagName} name=\"") && richTextBoxXmlContent.Text.Contains($"body=\"{bodyId}\"");
         }
         #endregion
+
+        #region [ keyDownToolStripMenuItem_Click ]
+        private void keyDownToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Form infoForm = new Form
+            {
+                Text = "Key Bindings",
+                Width = 400,
+                Height = 400,
+                FormBorderStyle = FormBorderStyle.FixedDialog,
+                MaximizeBox = false,
+                MinimizeBox = false
+            };
+
+            Label labelInfo = new Label
+            {
+                Text = GetEnglishKeyBindings(),
+                Top = 20,
+                Left = 20,
+                Width = 360,
+                Height = 300
+            };
+
+            Button buttonSwitchLanguage = new Button
+            {
+                Text = "Switch to German",
+                Top = 330,
+                Left = 150,
+                Width = 100
+            };
+
+            buttonSwitchLanguage.Click += (btnSender, btnE) =>
+            {
+                if (labelInfo.Text == GetEnglishKeyBindings())
+                {
+                    labelInfo.Text = GetGermanKeyBindings();
+                    buttonSwitchLanguage.Text = "Wechseln zu Englisch";
+                }
+                else
+                {
+                    labelInfo.Text = GetEnglishKeyBindings();
+                    buttonSwitchLanguage.Text = "Switch to German";
+                }
+            };
+
+            infoForm.Controls.Add(labelInfo);
+            infoForm.Controls.Add(buttonSwitchLanguage);
+            infoForm.ShowDialog();
+        }
+
+        private string GetEnglishKeyBindings()
+        {
+            return
+            "F3: Search\n" +
+            "F5: Reset\n" +
+            "F6: Toggle Design\n" +
+            "F7: Print\n" +
+            "F8: Save\n" +
+            "F10: Show AutoSave Information\n" +
+            "Ctrl + Z: Undo\n" +
+            "Ctrl + Y: Redo";
+        }
+
+        private string GetGermanKeyBindings()
+        {
+            return
+            "F3: Suchen\n" +
+            "F5: Zurücksetzen\n" +
+            "F6: Design wechseln\n" +
+            "F7: Drucken\n" +
+            "F8: Speichern\n" +
+            "F10: Autosave-Informationen anzeigen\n" +
+            "Strg + Z: Rückgängig\n" +
+            "Strg + Y: Wiederherstellen";
+        }
+        #endregion
+
+        #region [ searchAndReplaceToolStripMenuItem_Click ]
+        private void searchAndReplaceToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // Stack for storing previous states
+            Stack<string> undoStack = new Stack<string>();
+
+            // Create shape
+            Form searchReplaceForm = new Form
+            {
+                Text = "Search and Replace",
+                Width = 500,
+                Height = 450,
+                FormBorderStyle = FormBorderStyle.FixedDialog,
+                MaximizeBox = false,
+                MinimizeBox = false
+            };
+
+            // search text label
+            Label labelSearch = new Label
+            {
+                Text = "Search:",
+                Top = 20,
+                Left = 10,
+                Width = 100
+            };
+            TextBox textBoxSearch = new TextBox
+            {
+                Top = 20,
+                Left = 120,
+                Width = 300
+            };
+
+            // label for replacement text
+            Label labelReplace = new Label
+            {
+                Text = "Replace with:",
+                Top = 60,
+                Left = 10,
+                Width = 100
+            };
+            TextBox textBoxReplace = new TextBox
+            {
+                Top = 60,
+                Left = 120,
+                Width = 300
+            };
+
+            // checkbox for case sensitivity
+            CheckBox checkBoxCaseSensitive = new CheckBox
+            {
+                Text = "Case Sensitive",
+                Top = 100,
+                Left = 120,
+                Width = 150
+            };
+
+            // checkbox for step-by-step replacement
+            CheckBox checkBoxStepByStep = new CheckBox
+            {
+                Text = "Step by Step Replace",
+                Top = 130,
+                Left = 120,
+                Width = 200
+            };
+
+            // Label for number of results found
+            Label labelMatches = new Label
+            {
+                Text = "Matches Found: 0",
+                Top = 170,
+                Left = 10,
+                Width = 200
+            };
+
+            // Label for number of replaced results
+            Label labelReplaced = new Label
+            {
+                Text = "Replaced: 0",
+                Top = 200,
+                Left = 10,
+                Width = 200
+            };
+
+            // Buttons
+            Button buttonFindMatches = new Button
+            {
+                Text = "Find Matches",
+                Top = 240,
+                Left = 50,
+                Width = 150
+            };
+            Button buttonExecuteReplace = new Button
+            {
+                Text = "Replace",
+                Top = 240,
+                Left = 250,
+                Width = 150
+            };
+            Button buttonUndo = new Button
+            {
+                Text = "Undo",
+                Top = 300,
+                Left = 170,
+                Width = 150,
+                Enabled = false // Disabled if no state is available
+            };
+
+            // "Find Matches" button - event handler
+            buttonFindMatches.Click += (formSender, formE) =>
+            {
+                string searchText = textBoxSearch.Text;
+                if (string.IsNullOrEmpty(searchText))
+                {
+                    MessageBox.Show("Please enter a search term.", "Invalid Input", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                StringComparison comparison = checkBoxCaseSensitive.Checked
+                    ? StringComparison.Ordinal
+                    : StringComparison.OrdinalIgnoreCase;
+
+                int matches = 0;
+                int startIndex = 0;
+                string content = richTextBoxXmlContent.Text;
+
+                while ((startIndex = content.IndexOf(searchText, startIndex, comparison)) != -1)
+                {
+                    matches++;
+                    startIndex += searchText.Length;
+                }
+
+                labelMatches.Text = $"Matches Found: {matches}";
+            };
+
+            // "Replace"-Button-Logik
+            buttonExecuteReplace.Click += (formSender, formE) =>
+            {
+                string searchText = textBoxSearch.Text;
+                string replaceText = textBoxReplace.Text;
+                if (string.IsNullOrEmpty(searchText))
+                {
+                    MessageBox.Show("Please enter a search term.", "Invalid Input", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                StringComparison comparison = checkBoxCaseSensitive.Checked
+                    ? StringComparison.Ordinal
+                    : StringComparison.OrdinalIgnoreCase;
+
+                int matches = 0;
+                int replacements = 0;
+                string content = richTextBoxXmlContent.Text;
+
+                // Save the current state for "Undo"
+                undoStack.Push(content);
+                buttonUndo.Enabled = true; // Activate "Undo" button
+
+                // Step-by-step replacement
+                if (checkBoxStepByStep.Checked)
+                {
+                    int startIndex = 0;
+                    while ((startIndex = content.IndexOf(searchText, startIndex, comparison)) != -1)
+                    {
+                        matches++;
+                        richTextBoxXmlContent.Select(startIndex, searchText.Length);
+                        richTextBoxXmlContent.ScrollToCaret();
+
+                        DialogResult result = MessageBox.Show(
+                            $"Match found at position {startIndex + 1}.\nReplace this occurrence?",
+                            "Replace Confirmation",
+                            MessageBoxButtons.YesNoCancel,
+                            MessageBoxIcon.Question);
+
+                        if (result == DialogResult.Yes)
+                        {
+                            content = content.Remove(startIndex, searchText.Length)
+                                             .Insert(startIndex, replaceText);
+                            replacements++;
+                            startIndex += replaceText.Length;
+                        }
+                        else if (result == DialogResult.No)
+                        {
+                            startIndex += searchText.Length;
+                        }
+                        else if (result == DialogResult.Cancel)
+                        {
+                            break;
+                        }
+                    }
+
+                    // Asks whether all remaining deposits should be replaced
+                    if (matches > replacements)
+                    {
+                        DialogResult replaceAll = MessageBox.Show(
+                            $"There are {matches - replacements} matches left.\nReplace all remaining occurrences?",
+                            "Replace All Confirmation",
+                            MessageBoxButtons.YesNo,
+                            MessageBoxIcon.Question);
+
+                        if (replaceAll == DialogResult.Yes)
+                        {
+                            content = content.Replace(searchText, replaceText);
+                            replacements = matches;
+                        }
+                    }
+                }
+                else // Automatic replacement of all occurrences
+                {
+                    matches = Regex.Matches(content, Regex.Escape(searchText),
+                        checkBoxCaseSensitive.Checked ? RegexOptions.None : RegexOptions.IgnoreCase).Count;
+
+                    content = checkBoxCaseSensitive.Checked
+                        ? content.Replace(searchText, replaceText)
+                        : Regex.Replace(content, Regex.Escape(searchText), replaceText, RegexOptions.IgnoreCase);
+
+                    replacements = matches;
+                }
+
+                richTextBoxXmlContent.Text = content;
+                labelMatches.Text = $"Matches Found: {matches}";
+                labelReplaced.Text = $"Replaced: {replacements}";
+
+                MessageBox.Show($"Replaced {replacements} occurrences of '{searchText}' with '{replaceText}'.",
+                    "Replace Complete",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
+            };
+
+            // "Undo"-Button-Logik
+            buttonUndo.Click += (formSender, formE) =>
+            {
+                if (undoStack.Count > 0)
+                {
+                    richTextBoxXmlContent.Text = undoStack.Pop();
+                    buttonUndo.Enabled = undoStack.Count > 0; // Disable button if no other states exist
+                }
+            };
+
+            // Add the controls to the form
+            searchReplaceForm.Controls.Add(labelSearch);
+            searchReplaceForm.Controls.Add(textBoxSearch);
+            searchReplaceForm.Controls.Add(labelReplace);
+            searchReplaceForm.Controls.Add(textBoxReplace);
+            searchReplaceForm.Controls.Add(checkBoxCaseSensitive);
+            searchReplaceForm.Controls.Add(checkBoxStepByStep);
+            searchReplaceForm.Controls.Add(labelMatches);
+            searchReplaceForm.Controls.Add(labelReplaced);
+            searchReplaceForm.Controls.Add(buttonFindMatches);
+            searchReplaceForm.Controls.Add(buttonExecuteReplace);
+            searchReplaceForm.Controls.Add(buttonUndo);
+
+            searchReplaceForm.ShowDialog();
+        }
+        #endregion
     }
 }
