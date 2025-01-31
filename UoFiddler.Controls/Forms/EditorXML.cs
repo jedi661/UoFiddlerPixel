@@ -1061,5 +1061,43 @@ namespace UoFiddler.Controls.Forms
             searchReplaceForm.ShowDialog();
         }
         #endregion
+
+        // Event to check if the dragged item is a valid .xml file
+        private void EditorXML_DragEnter(object sender, DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            {
+                string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
+                if (files.Length == 1 && Path.GetExtension(files[0]).Equals(".xml", StringComparison.OrdinalIgnoreCase))
+                {
+                    e.Effect = DragDropEffects.Copy; // Allow drop
+                }
+                else
+                {
+                    e.Effect = DragDropEffects.None; // Invalid file type
+                }
+            }
+        }
+
+        // Event to handle the drop action
+        private void EditorXML_DragDrop(object sender, DragEventArgs e)
+        {
+            try
+            {
+                string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
+                string filePath = files[0];
+
+                // Load the XML file content into the RichTextBox
+                string xmlContent = File.ReadAllText(filePath);
+                richTextBoxXmlContent.Text = xmlContent;
+
+                // Optional: Update the status bar or show a message
+                UpdateStatus($"Loaded file: {Path.GetFileName(filePath)}");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error loading file: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
     }
 }
