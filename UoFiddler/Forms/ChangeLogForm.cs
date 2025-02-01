@@ -24,6 +24,7 @@ namespace UoFiddler.Forms
 {
     public partial class ChangeLogForm : Form
     {
+        #region [ ChangeLogForm ]
         public ChangeLogForm()
         {
             InitializeComponent();
@@ -31,37 +32,53 @@ namespace UoFiddler.Forms
             // Add an event handler for the KeyDown event of the ToolStripTextBox
             toolStripTextBox1.KeyDown += (s, args) =>
             {
-                // Check if the Enter key was pressed
                 if (args.KeyCode == Keys.Enter)
                 {
-                    // Get the text from the RichTextBox
+                    args.SuppressKeyPress = true; // Prevents the "ding" sound when pressing Enter
+
+                    string searchText = toolStripTextBox1.Text;
+                    if (string.IsNullOrWhiteSpace(searchText)) return; // Prevents empty searches
+
+                    // Remove previous search highlighting
+                    ResetHighlighting();
+
                     string richText = richTextBox1.Text;
-                    // Get the search term from the ToolStripTextBox
-                    string searchTerm = toolStripTextBox1.Text;
+                    int index = 0;
 
-                    // Check if the search term is present in the text
-                    if (richText.Contains(searchTerm))
+                    // Search the text for all occurrences of the search term (case-insensitive)
+                    while ((index = richText.IndexOf(searchText, index, StringComparison.OrdinalIgnoreCase)) != -1)
                     {
-                        // Search the text for all occurrences of the search term
-                        int index = 0;
-                        while ((index = richText.IndexOf(searchTerm, index)) != -1)
-                        {
-                            // Highlight the current occurrence of the search term
-                            richTextBox1.Select(index, searchTerm.Length);
-                            richTextBox1.SelectionBackColor = Color.Yellow;
+                        // Highlight the current occurrence of the search term
+                        richTextBox1.Select(index, searchText.Length);
+                        richTextBox1.SelectionBackColor = Color.Yellow;
 
-                            // Continue the search
-                            index += searchTerm.Length;
-                        }
+                        // Move the index forward to continue searching
+                        index += searchText.Length;
+                    }
+
+                    // If the search term is found, set focus on the RichTextBox
+                    if (richText.IndexOf(searchText, StringComparison.OrdinalIgnoreCase) != -1)
+                    {
+                        richTextBox1.Focus();
                     }
                 }
             };
         }
+        #endregion
 
+        #region [ Reset Highlighting ]
+        private void ResetHighlighting()
+        {
+            richTextBox1.SelectAll();
+            richTextBox1.SelectionBackColor = richTextBox1.BackColor; // Resets the background color
+        }
+        #endregion
+
+        #region [ ChangeLogForm_Load ]
         private void ChangeLogForm_Load(object sender, EventArgs e)
         {
             // Read the contents of the "Changelog.txt" file into a string
-            string changelogText = File.ReadAllText("Changelog.txt");
+            string changelogText = File.ReadAllText("Changelog.txt", Encoding.UTF8);
 
             // Split the text into an array of lines
             string[] lines = changelogText.Split(new string[] { "\r\n", "\n" }, StringSplitOptions.None);
@@ -90,6 +107,7 @@ namespace UoFiddler.Forms
             // Set the RTF property of the richTextBox1 to the RTF text
             richTextBox1.Rtf = changelogRtf;
         }
+        #endregion
 
         /***********************************************************************
         * The ConvertToRtf method takes a plain text string as input and       *
@@ -123,6 +141,7 @@ namespace UoFiddler.Forms
         * returns the RTF text as a string.                                    *
         ***********************************************************************/
 
+        #region [ ConvertToRtf ]
         private string ConvertToRtf(string text)
         {
             // Create a new StringBuilder to build the RTF text
@@ -193,14 +212,17 @@ namespace UoFiddler.Forms
             // Return the RTF text as a string
             return rtf.ToString();
         }
+        #endregion
 
-
+        #region [ searchToolStripMenuItem_Click ]
         private void searchToolStripMenuItem_Click(object sender, EventArgs e)
         {
             // Set focus on the ToolStripTextBox.
             toolStripTextBox1.Focus();
-        } 
+        }
+        #endregion
 
+        #region [ richTextBox1_MouseDown ]
         private void richTextBox1_MouseDown(object sender, MouseEventArgs e)
         {
             // Check if the right mouse button was pressed.
@@ -210,5 +232,6 @@ namespace UoFiddler.Forms
                 contextMenuStrip1.Show(richTextBox1, e.Location);
             }
         }
+        #endregion
     }
 }

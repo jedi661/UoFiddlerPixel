@@ -11,6 +11,7 @@ Version : 4.12.8
 - Nuget Update System Drawing Common 6.0.
 - Gumps: Added listing methodform.
 - Add Animation XML Editor.
+- Changelog revised search revised.
 
 Version : 4.12.7
 - Added methods to load, stop, and play random MP3 files from a directory, 
