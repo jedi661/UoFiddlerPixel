@@ -7,10 +7,10 @@ Version : 4.12.9 #XG1
 - Animation Export Funktion Bnp tiff and jpg and png.
 - Export all Null function.
 - Gumpart and cliloc write encryption support.
-- Added ProgressBardialog add Cancel Button and funktion (items).
-- Added ProgressBardialog add Cancel Button and funktion (LandTiles).
-- Added ProgressBardialog add Cancel Button and funktion (Textures).
-- Added ProgressBardialog add Cancel Button and funktion (Gumps).
+- Added ProgressBardialog2 add Cancel Button and funktion (items).
+- Added ProgressBardialog2 add Cancel Button and funktion (LandTiles).
+- Added ProgressBardialog2 add Cancel Button and funktion (Textures).
+- Added ProgressBardialog2 add Cancel Button and funktion (Gumps).
 
 Version : 4.12.8 #XG1
 - Bugs fixed and revised.
