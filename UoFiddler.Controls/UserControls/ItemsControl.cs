@@ -735,7 +735,7 @@ namespace UoFiddler.Controls.UserControls
         #endregion
 
         #region [ OnClickSave ]
-        private void OnClickSave(object sender, EventArgs e)
+        /*private void OnClickSave(object sender, EventArgs e)
         {
             DialogResult result = MessageBox.Show("Are you sure? Will take a while", "Save", MessageBoxButtons.YesNo,
                 MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2);
@@ -753,6 +753,49 @@ namespace UoFiddler.Controls.UserControls
             Options.ChangedUltimaClass["Art"] = false;
             MessageBox.Show($"Saved to {Options.OutputPath}", "Save", MessageBoxButtons.OK, MessageBoxIcon.Information,
                 MessageBoxDefaultButton.Button1);
+        }*/
+
+        private void OnClickSave(object sender, EventArgs e)
+        {
+            DialogResult result = MessageBox.Show("Are you sure? Will take a while", "Save", MessageBoxButtons.YesNo,
+                MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2);
+
+            if (result != DialogResult.Yes)
+            {
+                return;
+            }
+
+            Cursor.Current = Cursors.WaitCursor;
+
+            int totalItems = Art.GetIdxLength();
+            var progressBarDialog = new ProgressBarDialog(totalItems, "Saving Art...");
+            bool isCancelled = false;
+
+            progressBarDialog.CancelClicked += () => isCancelled = true;
+
+            progressBarDialog.Show();
+
+            Task.Run(() =>
+            {
+                try
+                {
+                    Art.Save(Options.OutputPath); // Original speichern
+
+                    if (!isCancelled)
+                    {
+                        progressBarDialog.Invoke((Action)progressBarDialog.Close);
+                        Options.ChangedUltimaClass["Art"] = false; // Änderungen als gespeichert markieren
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Error: {ex.Message}", "Save Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+                finally
+                {
+                    Cursor.Current = Cursors.Default;
+                }
+            });
         }
         #endregion
 

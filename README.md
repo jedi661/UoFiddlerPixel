@@ -19,6 +19,7 @@ Version : 4.12.9
 - Added ProgressBardialog2 add Cancel Button and funktion (LandTiles).
 - Added ProgressBardialog2 add Cancel Button and funktion (Textures).
 - Added ProgressBardialog2 add Cancel Button and funktion (Gumps).
+- Added ProgressBardialog add Cancel Button and funktion (Items).
 
 Version : 4.12.8
 - Bugs fixed and revised.

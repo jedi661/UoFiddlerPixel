@@ -1,24 +1,17 @@
-﻿/***************************************************************************
- *
- * $Author: Turley
- *
- * "THE BEER-WARE LICENSE"
- * As long as you retain this notice you can do whatever you want with
- * this stuff. If we meet some day, and you think this stuff is worth it,
- * you can buy me a beer in return.
- *
- ***************************************************************************/
-
+﻿using System;
 using System.Windows.Forms;
 
 namespace UoFiddler.Controls.Forms
 {
     public partial class ProgressBarDialog : Form
     {
+        private bool _isCancelled = false;
+
+        public event Action CancelClicked; // Event für Abbruch
+
         public ProgressBarDialog()
         {
             InitializeComponent();
-
             SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer | ControlStyles.UserPaint, true);
         }
 
@@ -30,6 +23,7 @@ namespace UoFiddler.Controls.Forms
             progressBar.Minimum = 0;
             progressBar.Value = 0;
             progressBar.Step = 1;
+
             if (useFileSaveEvent)
             {
                 Ultima.Files.FileSaveEvent += OnChangeEvent;
@@ -42,9 +36,21 @@ namespace UoFiddler.Controls.Forms
             Show();
         }
 
-        private void OnChangeEvent()
+        public bool IsCancelled => _isCancelled;
+
+        public void OnChangeEvent()
         {
-            progressBar.PerformStep();
+            if (!_isCancelled)
+            {
+                progressBar.PerformStep();
+            }
+        }
+
+        private void CancelButton_Click(object sender, EventArgs e)
+        {
+            _isCancelled = true;
+            CancelClicked?.Invoke(); // Abbruch-Ereignis auslösen
+            Close();
         }
     }
 }
