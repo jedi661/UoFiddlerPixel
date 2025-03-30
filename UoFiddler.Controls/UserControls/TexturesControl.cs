@@ -641,96 +641,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region [ ExportAllTextures ]
-        /*private void ExportAllTextures(ImageFormat imageFormat)
-        {
-            string fileExtension = Utils.GetFileExtensionFor(imageFormat);
-
-            using (FolderBrowserDialog dialog = new FolderBrowserDialog())
-            {
-                dialog.Description = "Select directory";
-                dialog.ShowNewFolderButton = true;
-
-                if (dialog.ShowDialog() != DialogResult.OK)
-                {
-                    return;
-                }
-
-                // Create ProgressBarDialog (without "using" to keep it active)
-                var progressBarDialog = new ProgressBarDialog(_textureList.Count, $"Exporting Textures to {fileExtension}", false);
-                progressBarDialog.CancelClicked += () =>
-                {
-                    MessageBox.Show("Export was aborted.", "Cancel", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                };
-
-                // Display ProgressBarDialog in the UI thread
-                progressBarDialog.Show();
-
-                Cursor.Current = Cursors.WaitCursor;
-
-                // Start background task for exporting
-                Task.Run(() =>
-                {
-                    int exportedCount = 0;
-
-                    try
-                    {
-                        foreach (var index in _textureList)
-                        {
-                            // Check for cancellation
-                            if (progressBarDialog.IsCancelled)
-                            {
-                                Invoke((Action)(() =>
-                                {
-                                    MessageBox.Show("Export was aborted.", "Cancel", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                                }));
-                                break; // Abort the export
-                            }
-
-                            if (!Textures.TestTexture(index))
-                            {
-                                continue;
-                            }
-
-                            var texture = Textures.GetTexture(index);
-                            if (texture is null)
-                            {
-                                continue;
-                            }
-
-                            string fileName = Path.Combine(dialog.SelectedPath, $"Texture 0x{index:X4}.{fileExtension}");
-                            using (Bitmap bit = new Bitmap(texture))
-                            {
-                                bit.Save(fileName, imageFormat);
-                                exportedCount++; // Increment the count of successfully exported textures
-                            }
-
-                            // Update progress in the UI thread
-                            Invoke((Action)(() => progressBarDialog.OnChangeEvent()));
-                        }
-
-                        // Mark the process as finished
-                        Invoke((Action)(() => progressBarDialog.MarkProcessFinished()));
-                    }
-                    finally
-                    {
-                        // Update UI and close ProgressBarDialog
-                        Invoke((Action)(() =>
-                        {
-                            Cursor.Current = Cursors.Default;
-                            progressBarDialog.Close();
-
-                            if (!progressBarDialog.IsCancelled)
-                            {
-                                MessageBox.Show($"All textures have been saved to {dialog.SelectedPath}\n" +
-                                                $"Total textures exported: {exportedCount}",
-                                    "Save completed", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                            }
-                        }));
-                    }
-                });
-            }
-        }*/
+        #region [ ExportAllTextures ]       
         private void ExportAllTextures(ImageFormat imageFormat)
         {
             string fileExtension = Utils.GetFileExtensionFor(imageFormat);
@@ -820,7 +731,6 @@ namespace UoFiddler.Controls.UserControls
                 });
             }
         }
-
         #endregion
 
         #region ReplaceStartingFrom
