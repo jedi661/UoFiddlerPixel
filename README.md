@@ -6,6 +6,16 @@ UOFiddler based on Ultima SDK it's a tool to view and alter almost every UO 2D c
 This is an extended version of UoFiddler that has more maps and more tools, as well as Map Edit, and will be expanded over time to support the Ultima standard 
 version more than the original version. Also, some source codes from older and New projects that are no longer supported have been integrated.
 
+Version : 4.12.9 #XG1
+- Fixed importing animation frames from gif files.
+- Reading of compressed Cliloc files is possible but saving will still result in old cliloc format.
+- For Cliloc comparison tab you have now additional check boxes to decide if you want to read clilocs in new format.
+- In order to read new Clilocs you need to enable option in Settings -> Options (it's disabled by default).
+- Added PNG format when inserting or replacing graphics.
+- Animation Export Funktion Bnp tiff and jpg and png.
+- Export all Null function.
+- Gumpart and cliloc write encryption support by @Krubster
+
 Version : 4.12.8
 - Bugs fixed and revised.
 - Nuget Update System Drawing Common 6.0.

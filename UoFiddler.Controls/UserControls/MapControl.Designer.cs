@@ -26,7 +26,7 @@ namespace UoFiddler.Controls.UserControls
         {
             if (disposing && (components != null))
             {
-                components.Dispose();
+               components.Dispose();
             }
             if (disposing)
             {
@@ -58,6 +58,7 @@ namespace UoFiddler.Controls.UserControls
             gotoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             TextBoxGoto = new System.Windows.Forms.ToolStripTextBox();
             sendClientToPosToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            mapCordinateToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             feluccaToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             trammelToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -74,7 +75,6 @@ namespace UoFiddler.Controls.UserControls
             asTiffToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             asJpgToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             asPngToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            mapCordinateToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             hScrollBar = new System.Windows.Forms.HScrollBar();
             vScrollBar = new System.Windows.Forms.VScrollBar();
             timer1 = new System.Windows.Forms.Timer(components);
@@ -117,6 +117,7 @@ namespace UoFiddler.Controls.UserControls
             toolTip1 = new System.Windows.Forms.ToolTip(components);
             collapsibleSplitter2 = new CollapsibleSplitter();
             collapsibleSplitter1 = new CollapsibleSplitter();
+            MessageLabel = new System.Windows.Forms.ToolStripStatusLabel();
             statusStrip.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)pictureBox).BeginInit();
             contextMenuStrip1.SuspendLayout();
@@ -127,7 +128,7 @@ namespace UoFiddler.Controls.UserControls
             // 
             // statusStrip
             // 
-            statusStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { CoordsLabel, ClientLocLabel, ZoomLabel });
+            statusStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { CoordsLabel, ClientLocLabel, ZoomLabel, MessageLabel });
             statusStrip.Location = new System.Drawing.Point(0, 356);
             statusStrip.Name = "statusStrip";
             statusStrip.Padding = new System.Windows.Forms.Padding(1, 0, 16, 0);
@@ -180,7 +181,7 @@ namespace UoFiddler.Controls.UserControls
             // 
             contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { zoomToolStripMenuItem, zoomToolStripMenuItem1, getMapInfoToolStripMenuItem, insertMarkerToolStripMenuItem, toolStripSeparator4, gotoToolStripMenuItem, sendClientToPosToolStripMenuItem, mapCordinateToolStripMenuItem, toolStripSeparator2, feluccaToolStripMenuItem, trammelToolStripMenuItem, ilshenarToolStripMenuItem, malasToolStripMenuItem, tokunoToolStripMenuItem, terMurToolStripMenuItem, forellToolStripMenuItem, dragonToolStripMenuItem, intermediateWorldToolStripMenuItem, toolStripSeparator1, extractMapToolStripMenuItem });
             contextMenuStrip1.Name = "contextMenuStrip1";
-            contextMenuStrip1.Size = new System.Drawing.Size(209, 418);
+            contextMenuStrip1.Size = new System.Drawing.Size(209, 396);
             contextMenuStrip1.Closed += OnContextClosed;
             contextMenuStrip1.Opening += OnOpenContext;
             // 
@@ -241,6 +242,13 @@ namespace UoFiddler.Controls.UserControls
             sendClientToPosToolStripMenuItem.Size = new System.Drawing.Size(208, 22);
             sendClientToPosToolStripMenuItem.Text = "Send Client To Pos";
             sendClientToPosToolStripMenuItem.Click += OnClickSendClientToPos;
+            // 
+            // mapCordinateToolStripMenuItem
+            // 
+            mapCordinateToolStripMenuItem.Name = "mapCordinateToolStripMenuItem";
+            mapCordinateToolStripMenuItem.Size = new System.Drawing.Size(208, 22);
+            mapCordinateToolStripMenuItem.Text = "Map Cordinate Clipboard";
+            mapCordinateToolStripMenuItem.Click += mapCordinateToolStripMenuItem_Click;
             // 
             // toolStripSeparator2
             // 
@@ -354,13 +362,6 @@ namespace UoFiddler.Controls.UserControls
             asPngToolStripMenuItem.Size = new System.Drawing.Size(115, 22);
             asPngToolStripMenuItem.Text = "As Png";
             asPngToolStripMenuItem.Click += ExtractMapPng;
-            // 
-            // mapCordinateToolStripMenuItem
-            // 
-            mapCordinateToolStripMenuItem.Name = "mapCordinateToolStripMenuItem";
-            mapCordinateToolStripMenuItem.Size = new System.Drawing.Size(208, 22);
-            mapCordinateToolStripMenuItem.Text = "Map Cordinate Clipboard";
-            mapCordinateToolStripMenuItem.Click += mapCordinateToolStripMenuItem_Click;
             // 
             // hScrollBar
             // 
@@ -710,6 +711,14 @@ namespace UoFiddler.Controls.UserControls
             collapsibleSplitter1.UseAnimations = false;
             collapsibleSplitter1.VisualStyle = VisualStyles.DoubleDots;
             // 
+            // MessageLabel
+            // 
+            MessageLabel.AutoSize = false;
+            MessageLabel.ForeColor = System.Drawing.Color.Red;
+            MessageLabel.Name = "MessageLabel";
+            MessageLabel.Size = new System.Drawing.Size(200, 28);
+            MessageLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
             // MapControl
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -815,5 +824,6 @@ namespace UoFiddler.Controls.UserControls
         private System.Windows.Forms.ToolStripMenuItem dragonToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem intermediateWorldToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem mapCordinateToolStripMenuItem;
+        private System.Windows.Forms.ToolStripStatusLabel MessageLabel;
     }
 }

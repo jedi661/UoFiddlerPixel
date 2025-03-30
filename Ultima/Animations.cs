@@ -4,9 +4,10 @@ using System.IO;
 
 namespace Ultima
 {
-    public sealed class Animations
+    public static class Animations
     {
         public const int _maxAnimationValue = 2048; // bodyconv.def says it's maximum animation value so max bodyId?
+        public static readonly int PaletteCapacity = 0x100;
 
         private static FileIndex _fileIndex = new FileIndex("Anim.idx", "Anim.mul", 0x40000, 6);
         private static FileIndex _fileIndex2 = new FileIndex("Anim2.idx", "Anim2.mul", 0x10000, -1);
@@ -77,9 +78,9 @@ namespace Ultima
             AnimationFrame[] frames;
             using (var bin = new BinaryReader(memoryStream))
             {
-                var palette = new ushort[0x100];
+                var palette = new ushort[PaletteCapacity];
 
-                for (int i = 0; i < 0x100; ++i)
+                for (int i = 0; i < PaletteCapacity; ++i)
                 {
                     palette[i] = (ushort)(bin.ReadUInt16() ^ 0x8000);
                 }
@@ -147,9 +148,9 @@ namespace Ultima
 
             using (var bin = new BinaryReader(stream))
             {
-                var palette = new ushort[0x100];
+                var palette = new ushort[PaletteCapacity];
 
-                for (int i = 0; i < 0x100; ++i)
+                for (int i = 0; i < PaletteCapacity; ++i)
                 {
                     palette[i] = (ushort)(bin.ReadUInt16() ^ 0x8000);
                 }
@@ -231,29 +232,8 @@ namespace Ultima
             }
         }
 
-        /*private static void LoadTable()
-        {
-            // TODO: check why it was fixed at max 1697. Probably old code for anim.mul?
-            //int count = 400 + ((_fileIndex.Index.Length - 35000) / 175);
-
-            _table = new int[_maxAnimationValue + 1];
-
-            for (int i = 0; i < _table.Length; ++i)
-            {
-                var bodyTableEntryExist = BodyTable.Entries.TryGetValue(i, out BodyTableEntry bodyTableEntry);
-                if (!bodyTableEntryExist || BodyConverter.Contains(i))
-                {
-                    _table[i] = i;
-                }
-                else
-                {
-                    _table[i] = bodyTableEntry.OldId | (1 << 31) | ((bodyTableEntry.NewHue & 0xFFFF) << 15);
-                }
-            }
-        }*/
-
         #region LoadTable Method
-        private static void LoadTable()
+        /*private static void LoadTable()
         {
             _table = new int[_maxAnimationValue + 1];
 
@@ -261,11 +241,31 @@ namespace Ultima
             {
                 _table[i] = CalculateTableEntry(i);
             }
+        }*/
+
+        private static void LoadTable()
+        {
+            // Initialize the table
+            _table = new int[_maxAnimationValue + 1];
+
+            for (int i = 0; i < _table.Length; ++i)
+            {
+                if (!BodyTable.Entries.TryGetValue(i, out BodyTableEntry bodyTableEntry) || BodyConverter.Contains(i))
+                {
+                    // Use the direct logic from the second method
+                    _table[i] = i;
+                }
+                else
+                {
+                    // References to CalculateTableEntry for more complex logic
+                    _table[i] = CalculateTableEntry(bodyTableEntry);
+                }
+            }
         }
         #endregion
 
         #region CalculateTableEntry Method
-        private static int CalculateTableEntry(int index)
+        /*private static int CalculateTableEntry(int index)
         {
             var bodyTableEntryExist = BodyTable.Entries.TryGetValue(index, out BodyTableEntry bodyTableEntry);
             if (!bodyTableEntryExist || BodyConverter.Contains(index))
@@ -280,6 +280,15 @@ namespace Ultima
 
                 return bodyTableEntry.OldId | (1 << bitShiftForOldId) | ((bodyTableEntry.NewHue & newHueMask) << bitShiftForNewHue);
             }
+        }*/
+
+        private static int CalculateTableEntry(BodyTableEntry bodyTableEntry)
+        {
+            const int bitShiftForOldId = 31;
+            const int bitShiftForNewHue = 15;
+            const int newHueMask = 0xFFFF;
+
+            return bodyTableEntry.OldId | (1 << bitShiftForOldId) | ((bodyTableEntry.NewHue & newHueMask) << bitShiftForNewHue);
         }
         #endregion
 

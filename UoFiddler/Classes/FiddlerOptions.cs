@@ -49,6 +49,7 @@ namespace UoFiddler.Classes
         public static Point FormPosition { get; set; }
         public static Size FormSize { get; set; }
 
+        #region [ MoveFiles ]
         private static void MoveFiles(IEnumerable<FileInfo> files, string path)
         {
             foreach (FileInfo file in files)
@@ -64,7 +65,9 @@ namespace UoFiddler.Classes
                 file.CopyTo(destFileName);
             }
         }
+        #endregion
 
+        #region [ Startup ]
         public static void Startup()
         {
             if (!Directory.Exists(Options.AppDataPath))
@@ -95,7 +98,9 @@ namespace UoFiddler.Classes
                 throw new FileNotFoundException($"Can't load default profile file {fileName}", "Options_default.xml");
             }
         }
+        #endregion
 
+        #region [ SaveProfile ]
         public static void SaveProfile()
         {
             if (Options.ProfileName is null)
@@ -127,6 +132,11 @@ namespace UoFiddler.Classes
             sr.AppendChild(comment);
             elem = dom.CreateElement("ItemClip");
             elem.SetAttribute("active", Options.ArtItemClip.ToString());
+            sr.AppendChild(elem);
+            comment = dom.CreateComment("NewClilocFormat should cliloc be decompressed before reading");
+            sr.AppendChild(comment);
+            elem = dom.CreateElement("NewClilocFormat");
+            elem.SetAttribute("active", Options.NewClilocFormat.ToString());
             sr.AppendChild(elem);
             comment = dom.CreateComment("CacheData should mul entries be cached for faster load");
             sr.AppendChild(comment);
@@ -289,7 +299,9 @@ namespace UoFiddler.Classes
             dom.Save(fileName);
             Logger.Information("SaveProfile - done {Filename}", fileName);
         }
+        #endregion
 
+        #region [ LoadProfile ]
         public static void LoadProfile(string filename)
         {
             Logger.Information("LoadProfile - start: {Filename}", filename);
@@ -323,6 +335,12 @@ namespace UoFiddler.Classes
             {
                 Options.ArtItemSizeWidth = int.Parse(elem.GetAttribute("width"));
                 Options.ArtItemSizeHeight = int.Parse(elem.GetAttribute("height"));
+            }
+
+            elem = (XmlElement)xOptions.SelectSingleNode("NewClilocFormat");
+            if (elem != null)
+            {
+                Options.NewClilocFormat = bool.Parse(elem.GetAttribute("active"));
             }
 
             elem = (XmlElement)xOptions.SelectSingleNode("ItemClip");
@@ -468,5 +486,6 @@ namespace UoFiddler.Classes
 
             Logger.Information("LoadProfile - done: {Filename}", filename);
         }
+        #endregion
     }
 }

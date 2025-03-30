@@ -18,6 +18,7 @@ using System.Linq;
 using System.Media;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using Ultima;
 using UoFiddler.Controls.Classes;
@@ -313,7 +314,7 @@ namespace UoFiddler.Controls.UserControls
                 dialog.Multiselect = false;
                 dialog.Title = "Choose image file to replace";
                 dialog.CheckFileExists = true;
-                dialog.Filter = "Image files (*.tif;*.tiff;*.bmp)|*.tif;*.tiff;*.bmp";
+                dialog.Filter = "Image files (*.tif;*.tiff;*.bmp;*.png)|*.tif;*.tiff;*.bmp;*.png";
                 if (dialog.ShowDialog() != DialogResult.OK)
                 {
                     return;
@@ -395,7 +396,7 @@ namespace UoFiddler.Controls.UserControls
                 dialog.Multiselect = false;
                 dialog.Title = $"Choose image file to insert at 0x{index:X}";
                 dialog.CheckFileExists = true;
-                dialog.Filter = "Image files (*.tif;*.tiff;*.bmp)|*.tif;*.tiff;*.bmp";
+                dialog.Filter = "Image files (*.tif;*.tiff;*.bmp;*.png)|*.tif;*.tiff;*.bmp;*.png";
                 if (dialog.ShowDialog() != DialogResult.OK)
                 {
                     return;
@@ -640,7 +641,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region ExportAllTextures
+        #region [ ExportAllTextures ]
         private void ExportAllTextures(ImageFormat imageFormat)
         {
             string fileExtension = Utils.GetFileExtensionFor(imageFormat);
@@ -649,31 +650,85 @@ namespace UoFiddler.Controls.UserControls
             {
                 dialog.Description = "Select directory";
                 dialog.ShowNewFolderButton = true;
+
                 if (dialog.ShowDialog() != DialogResult.OK)
                 {
                     return;
                 }
 
+                // Create ProgressBarDialog (without "using" to keep it active)
+                var progressBarDialog = new ProgressBarDialog(_textureList.Count, $"Exporting Textures to {fileExtension}", false);
+                progressBarDialog.CancelClicked += () =>
+                {
+                    MessageBox.Show("Export was aborted.", "Cancel", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                };
+
+                // Display ProgressBarDialog in the UI thread
+                progressBarDialog.Show();
+
                 Cursor.Current = Cursors.WaitCursor;
 
-                foreach (var index in _textureList)
+                // Start background task for exporting
+                Task.Run(() =>
                 {
-                    if (!Textures.TestTexture(index))
+                    int exportedCount = 0;
+
+                    try
                     {
-                        continue;
-                    }
+                        foreach (var index in _textureList)
+                        {
+                            // Check for cancellation
+                            if (progressBarDialog.IsCancelled)
+                            {
+                                Invoke((Action)(() =>
+                                {
+                                    MessageBox.Show("Export was aborted.", "Cancel", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                                }));
+                                break; // Abort the export
+                            }
 
-                    string fileName = Path.Combine(dialog.SelectedPath, $"Texture 0x{index:X4}.{fileExtension}");
-                    using (Bitmap bit = new Bitmap(Textures.GetTexture(index)))
+                            if (!Textures.TestTexture(index))
+                            {
+                                continue;
+                            }
+
+                            var texture = Textures.GetTexture(index);
+                            if (texture is null)
+                            {
+                                continue;
+                            }
+
+                            string fileName = Path.Combine(dialog.SelectedPath, $"Texture 0x{index:X4}.{fileExtension}");
+                            using (Bitmap bit = new Bitmap(texture))
+                            {
+                                bit.Save(fileName, imageFormat);
+                                exportedCount++; // Increment the count of successfully exported textures
+                            }
+
+                            // Update progress in the UI thread
+                            Invoke((Action)(() => progressBarDialog.OnChangeEvent()));
+                        }
+
+                        // Mark the process as finished
+                        Invoke((Action)(() => progressBarDialog.MarkProcessFinished()));
+                    }
+                    finally
                     {
-                        bit.Save(fileName, imageFormat);
+                        // Update UI and close ProgressBarDialog
+                        Invoke((Action)(() =>
+                        {
+                            Cursor.Current = Cursors.Default;
+                            progressBarDialog.Close();
+
+                            if (!progressBarDialog.IsCancelled)
+                            {
+                                MessageBox.Show($"All textures have been saved to {dialog.SelectedPath}\n" +
+                                                $"Total textures exported: {exportedCount}",
+                                    "Save completed", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                            }
+                        }));
                     }
-                }
-
-                Cursor.Current = Cursors.Default;
-
-                MessageBox.Show($"All textures saved to {dialog.SelectedPath}", "Saved", MessageBoxButtons.OK,
-                    MessageBoxIcon.Information, MessageBoxDefaultButton.Button1);
+                });
             }
         }
         #endregion
@@ -709,7 +764,7 @@ namespace UoFiddler.Controls.UserControls
                 dialog.Multiselect = true;
                 dialog.Title = $"Choose images to replace starting at 0x{index:X}";
                 dialog.CheckFileExists = true;
-                dialog.Filter = "Image files (*.tif;*.tiff;*.bmp)|*.tif;*.tiff;*.bmp";
+                dialog.Filter = "Image files (*.tif;*.tiff;*.bmp;*.png)|*.tif;*.tiff;*.bmp;*.png";
 
 
                 if (dialog.ShowDialog() != DialogResult.OK)

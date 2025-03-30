@@ -21,7 +21,7 @@
 		<GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
 	</PropertyGroup>
 	<ItemGroup>
-	  <PackageReference Include="System.Drawing.Common" Version="6.0.0" />
+	  <PackageReference Include="System.Drawing.Common" Version="9.0.3" />
 	</ItemGroup>
 	<ItemGroup>
 		<Compile Update="Forms\ExampleForm.cs">

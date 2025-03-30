@@ -84,6 +84,7 @@ namespace UoFiddler.Plugin.UopPacker.UserControls
             inputfolder = new System.Windows.Forms.TextBox();
             SelectFolderButton = new System.Windows.Forms.Button();
             ExtractSingleFileTabPage = new System.Windows.Forms.TabPage();
+            compressionBox = new System.Windows.Forms.ComboBox();
             CheckBoxAutoFill = new System.Windows.Forms.CheckBox();
             checkBoxOverwriteSaveUop = new System.Windows.Forms.CheckBox();
             MainStatusStrip = new System.Windows.Forms.StatusStrip();
@@ -566,6 +567,7 @@ namespace UoFiddler.Plugin.UopPacker.UserControls
             // 
             // ExtractSingleFileTabPage
             // 
+            ExtractSingleFileTabPage.Controls.Add(compressionBox);
             ExtractSingleFileTabPage.Controls.Add(CheckBoxAutoFill);
             ExtractSingleFileTabPage.Controls.Add(checkBoxOverwriteSaveUop);
             ExtractSingleFileTabPage.Controls.Add(label1);
@@ -607,10 +609,21 @@ namespace UoFiddler.Plugin.UopPacker.UserControls
             ExtractSingleFileTabPage.Text = "One file";
             ExtractSingleFileTabPage.UseVisualStyleBackColor = true;
             // 
+            // compressionBox
+            // 
+            compressionBox.BackColor = System.Drawing.Color.White;
+            compressionBox.Items.AddRange(new object[] { "None", "Zlib", "Mythic" });
+            compressionBox.Location = new System.Drawing.Point(168, 134);
+            compressionBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            compressionBox.Name = "compressionBox";
+            compressionBox.Size = new System.Drawing.Size(191, 23);
+            compressionBox.TabIndex = 42;
+            compressionBox.Text = "None";
+            // 
             // CheckBoxAutoFill
             // 
             CheckBoxAutoFill.AutoSize = true;
-            CheckBoxAutoFill.Location = new System.Drawing.Point(294, 136);
+            CheckBoxAutoFill.Location = new System.Drawing.Point(294, 13);
             CheckBoxAutoFill.Name = "CheckBoxAutoFill";
             CheckBoxAutoFill.Size = new System.Drawing.Size(65, 19);
             CheckBoxAutoFill.TabIndex = 41;
@@ -621,7 +634,7 @@ namespace UoFiddler.Plugin.UopPacker.UserControls
             // checkBoxOverwriteSaveUop
             // 
             checkBoxOverwriteSaveUop.AutoSize = true;
-            checkBoxOverwriteSaveUop.Location = new System.Drawing.Point(176, 137);
+            checkBoxOverwriteSaveUop.Location = new System.Drawing.Point(173, 13);
             checkBoxOverwriteSaveUop.Name = "checkBoxOverwriteSaveUop";
             checkBoxOverwriteSaveUop.Size = new System.Drawing.Size(104, 19);
             checkBoxOverwriteSaveUop.TabIndex = 40;
@@ -764,5 +777,6 @@ namespace UoFiddler.Plugin.UopPacker.UserControls
         private System.Windows.Forms.Button SingleFileUopArtExtractButton;
         private System.Windows.Forms.Button SingleFileExtractButton;
         private System.Windows.Forms.CheckBox CheckBoxAutoFill;
+        private System.Windows.Forms.ComboBox compressionBox;
     }
 }

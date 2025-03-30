@@ -28,6 +28,7 @@ using UoFiddler.Controls.Helpers;
 using UoFiddler.Controls.UserControls.TileView;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Threading;
 
 namespace UoFiddler.Controls.UserControls
 {
@@ -564,7 +565,7 @@ namespace UoFiddler.Controls.UserControls
                 dialog.Multiselect = false;
                 dialog.Title = "Choose image file to replace";
                 dialog.CheckFileExists = true;
-                dialog.Filter = "Image files (*.tif;*.tiff;*.bmp)|*.tif;*.tiff;*.bmp";
+                dialog.Filter = "Image files (*.tif;*.tiff;*.bmp;*.png)|*.tif;*.tiff;*.bmp;*.png";
                 if (dialog.ShowDialog() != DialogResult.OK)
                 {
                     return;
@@ -697,7 +698,7 @@ namespace UoFiddler.Controls.UserControls
                 dialog.Multiselect = false;
                 dialog.Title = $"Choose images to replace starting at 0x{index:X}";
                 dialog.CheckFileExists = true;
-                dialog.Filter = "Image files (*.tif;*.tiff;*.bmp)|*.tif;*.tiff;*.bmp";
+                dialog.Filter = "Image files (*.tif;*.tiff;*.bmp;*.png)|*.tif;*.tiff;*.bmp;*.png";
 
                 if (dialog.ShowDialog() != DialogResult.OK)
                 {
@@ -945,7 +946,7 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region [ Misc Save ]
+        #region [ Misc Save ] // Save all items in a specified image format
         private void OnClick_SaveAllBmp(object sender, EventArgs e)
         {
             ExportAllItemImages(ImageFormat.Bmp);
@@ -965,14 +966,17 @@ namespace UoFiddler.Controls.UserControls
         {
             ExportAllItemImages(ImageFormat.Png);
         }
+        #endregion
 
         // This method exports all item images in a specified image format
+        #region [ ExportAllItemImages ]
+        private CancellationTokenSource _cancellationTokenSource;
+
         private void ExportAllItemImages(ImageFormat imageFormat)
         {
-            // Get the file extension for the specified image format
+            // Get file extension for the specified image format
             string fileExtension = Utils.GetFileExtensionFor(imageFormat);
 
-            // Create a new FolderBrowserDialog to prompt the user to select a directory
             using (FolderBrowserDialog dialog = new FolderBrowserDialog())
             {
                 dialog.Description = "Select directory";
@@ -982,42 +986,66 @@ namespace UoFiddler.Controls.UserControls
                     return;
                 }
 
-                // Set the cursor to the wait cursor
+                _cancellationTokenSource = new CancellationTokenSource(); // Initialize abort token
+
                 Cursor.Current = Cursors.WaitCursor;
 
-                // Create a new ProgressBarDialog to show the progress of the export
-                using (new ProgressBarDialog(_itemList.Count, $"Export to {fileExtension}", false))
+                int itemsExported = 0; // Counting variable for exported items
+
+                using (var progressBarDialog = new ProgressBarDialog(_itemList.Count, $"Export to {fileExtension}", false))
                 {
-                    // Loop through all items in the _itemList
-                    foreach (var artItemIndex in _itemList)
+                    progressBarDialog.CancelClicked += () => _cancellationTokenSource.Cancel(); // Link cancellation logic
+
+                    try
                     {
-                        // Update the progress bar
-                        ControlEvents.FireProgressChangeEvent();
-                        Application.DoEvents();
-
-                        int index = artItemIndex;
-                        if (index < 0)
+                        foreach (var artItemIndex in _itemList)
                         {
-                            continue;
-                        }
+                            // Check termination
+                            if (_cancellationTokenSource.Token.IsCancellationRequested || progressBarDialog.IsCancelled)
+                            {
+                                MessageBox.Show("The export was aborted.", "cancel", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                                break;
+                            }
 
-                        // Create the file name for the image
-                        string fileName = Path.Combine(dialog.SelectedPath, $"Item 0x{index:X4}.{fileExtension}");
-                        // Save the image to the specified file
-                        using (Bitmap bit = new Bitmap(Art.GetStatic(index)))
-                        {
-                            bit.Save(fileName, imageFormat);
+                            // Update progress bar
+                            ControlEvents.FireProgressChangeEvent();
+                            Application.DoEvents();
+
+                            int index = artItemIndex;
+                            if (index < 0)
+                            {
+                                continue;
+                            }
+
+                            // Retrieve and save graphics
+                            var artBitmap = Art.GetStatic(index);
+                            if (artBitmap is null)
+                            {
+                                continue;
+                            }
+
+                            string fileName = Path.Combine(dialog.SelectedPath, $"Item 0x{index:X4}.{fileExtension}");
+                            using (Bitmap bit = new Bitmap(artBitmap))
+                            {
+                                bit.Save(fileName, imageFormat);
+                            }
+
+                            itemsExported++; // Increment counter
                         }
                     }
+                    finally
+                    {
+                        Cursor.Current = Cursors.Default;
+                        progressBarDialog.Dispose();
+                    }
                 }
-                // Reset the cursor to the default cursor
-                Cursor.Current = Cursors.Default;
-                // Show a message that all items have been saved
-                MessageBox.Show($"All items saved to {dialog.SelectedPath}", "Saved", MessageBoxButtons.OK,
-                    MessageBoxIcon.Information, MessageBoxDefaultButton.Button1);
+
+                // Display the number of exported items at the end
+                MessageBox.Show($"All items saved to {dialog.SelectedPath}\nTotal items exported: {itemsExported}", "Saved",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information, MessageBoxDefaultButton.Button1);
             }
         }
-        #endregion
+        #endregion        
 
         #region [ OnClickPreLoad ]
         private void OnClickPreLoad(object sender, EventArgs e)
@@ -1332,7 +1360,7 @@ namespace UoFiddler.Controls.UserControls
                 dialog.Multiselect = true;
                 dialog.Title = $"Choose image file replace starting at 0x{index:X}";
                 dialog.CheckFileExists = true;
-                dialog.Filter = "Image files (*.tif;*.tiff;*.bmp)|*.tif;*.tiff;*.bmp";
+                dialog.Filter = "Image files (*.tif;*.tiff;*.bmp;*.png)|*.tif;*.tiff;*.bmp;*.png";
 
                 if (dialog.ShowDialog() != DialogResult.OK)
                 {

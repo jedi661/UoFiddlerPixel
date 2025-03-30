@@ -18,12 +18,14 @@ using System.IO;
 using System.Linq;
 using System.Media;
 using System.Net;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Xml.Linq;
 using Ultima;
 using UoFiddler.Controls.Classes;
 using UoFiddler.Controls.Forms;
 using UoFiddler.Controls.Helpers;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.Window;
 
 namespace UoFiddler.Controls.UserControls
 {
@@ -45,8 +47,7 @@ namespace UoFiddler.Controls.UserControls
             ProgressBar.Visible = false;
 
             _refMarker = this;
-
-            // Fügen Sie den listBox_KeyDown-Ereignishandler hinzu
+            
             listBox.KeyDown += listBox_KeyDown;
         }
         #endregion
@@ -423,7 +424,7 @@ namespace UoFiddler.Controls.UserControls
                 dialog.Multiselect = false;
                 dialog.Title = "Choose image file to replace";
                 dialog.CheckFileExists = true;
-                dialog.Filter = "Image files (*.tif;*.tiff;*.bmp)|*.tif;*.tiff;*.bmp";
+                dialog.Filter = "Image files (*.tif;*.tiff;*.bmp;*.png)|*.tif;*.tiff;*.bmp;*.png";
                 if (dialog.ShowDialog() != DialogResult.OK)
                 {
                     return;
@@ -638,7 +639,7 @@ namespace UoFiddler.Controls.UserControls
                 dialog.Multiselect = false;
                 dialog.Title = $"Choose image file to insert at 0x{index:X}";
                 dialog.CheckFileExists = true;
-                dialog.Filter = "Image files (*.tif;*.tiff;*.bmp)|*.tif;*.tiff;*.bmp";
+                dialog.Filter = "Image files (*.tif;*.tiff;*.bmp;*.png)|*.tif;*.tiff;*.bmp;*.png";
                 if (dialog.ShowDialog() != DialogResult.OK)
                 {
                     return;
@@ -747,7 +748,9 @@ namespace UoFiddler.Controls.UserControls
         private static void ExportGumpImage(int index, ImageFormat imageFormat)
         {
             string fileExtension = Utils.GetFileExtensionFor(imageFormat);
-            string fileName = Path.Combine(Options.OutputPath, $"Gump {index}.{fileExtension}");
+            //string fileName = Path.Combine(Options.OutputPath, $"Gump 0x{index:X4}.{fileExtension}");
+            string fileName = Path.Combine(Options.OutputPath, $"0x{index:X4}.{fileExtension}");
+
 
             using (Bitmap bit = new Bitmap(Gumps.GetGump(index)))
             {
@@ -795,29 +798,86 @@ namespace UoFiddler.Controls.UserControls
         private void ExportAllGumps(ImageFormat imageFormat)
         {
             string fileExtension = Utils.GetFileExtensionFor(imageFormat);
+
             using (FolderBrowserDialog dialog = new FolderBrowserDialog())
             {
                 dialog.Description = "Select directory";
                 dialog.ShowNewFolderButton = true;
+
                 if (dialog.ShowDialog() != DialogResult.OK)
                 {
                     return;
                 }
-                for (int i = 0; i < listBox.Items.Count; ++i)
+
+                var progressBarDialog = new ProgressBarDialog(listBox.Items.Count, $"Exporting Gumps to {fileExtension}", false);
+                progressBarDialog.CancelClicked += () =>
                 {
-                    string itemString = listBox.Items[i].ToString();
-                    string idString = itemString.Split('-')[0].Trim();
-                    if (!Int32.TryParse(idString, out int index))
+                    // Show message only in event
+                    MessageBox.Show("Export was aborted.", "Cancel", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                };
+
+                progressBarDialog.Show();
+
+                Cursor.Current = Cursors.WaitCursor;
+
+                Task.Run(() =>
+                {
+                    int exportedCount = 0;
+
+                    try
                     {
-                        continue;
+                        for (int i = 0; i < listBox.Items.Count; ++i)
+                        {
+                            if (progressBarDialog.IsCancelled)
+                            {
+                                break; // Abort
+                            }
+
+                            string itemString = listBox.Items[i].ToString();
+                            string idString = itemString.Split('-')[0].Trim();
+
+                            if (!int.TryParse(idString, out int index) || index < 0)
+                            {
+                                continue;
+                            }
+
+                            string fileName = Path.Combine(dialog.SelectedPath, $"0x{index:X4}.{fileExtension}");
+
+                            var gump = Gumps.GetGump(index);
+
+                            if (gump is null)
+                            {
+                                continue;
+                            }
+
+                            using (Bitmap bit = new Bitmap(gump))
+                            {
+                                bit.Save(fileName, imageFormat);
+                                exportedCount++;
+                            }
+
+                            Invoke((Action)(() => progressBarDialog.OnChangeEvent()));
+                        }
+
+                        // Mark process as complete
+                        Invoke((Action)(() => progressBarDialog.MarkProcessFinished()));
                     }
-                    string fileName = Path.Combine(dialog.SelectedPath, $"Gump {index}.{fileExtension}");
-                    using (Bitmap bit = new Bitmap(Gumps.GetGump(index)))
+                    finally
                     {
-                        bit.Save(fileName, imageFormat);
+                        Invoke((Action)(() =>
+                        {
+                            Cursor.Current = Cursors.Default;
+                            progressBarDialog.Close();
+
+                            if (!progressBarDialog.IsCancelled)
+                            {
+                                MessageBox.Show($"All Gumps were saved in {dialog.SelectedPath}\n" +
+                                                $"Total number of exported images: {exportedCount}",
+                                    "Save completed", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                            }
+                        }));
                     }
-                }
-                MessageBox.Show($"All Gumps saved to {dialog.SelectedPath}", "Saved", MessageBoxButtons.OK, MessageBoxIcon.Information, MessageBoxDefaultButton.Button1);
+                });
             }
         }
         #endregion
@@ -1092,7 +1152,7 @@ namespace UoFiddler.Controls.UserControls
                 dialog.Multiselect = true;
                 dialog.Title = $"Choose image file to insert at 0x{index:X}";
                 dialog.CheckFileExists = true;
-                dialog.Filter = "Image files (*.tif;*.tiff;*.bmp)|*.tif;*.tiff;*.bmp";
+                dialog.Filter = "Image files (*.tif;*.tiff;*.bmp;*.png)|*.tif;*.tiff;*.bmp;*.png";
                 if (dialog.ShowDialog() != DialogResult.OK)
                 {
                     return;

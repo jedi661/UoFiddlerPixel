@@ -59,18 +59,18 @@ namespace UoFiddler.Controls.UserControls
                 switch (value)
                 {
                     case 0:
-                        _cliloc = new StringList("enu");
+                        _cliloc = new StringList("enu", Options.NewClilocFormat);
                         break;
                     case 1:
-                        _cliloc = new StringList("deu");
+                        _cliloc = new StringList("deu", Options.NewClilocFormat);
                         break;
                     case 2:
                         TestCustomLang("cliloc.custom1");
-                        _cliloc = new StringList("custom1");
+                        _cliloc = new StringList("custom1", Options.NewClilocFormat);
                         break;
                     case 3:
                         TestCustomLang("cliloc.custom2");
-                        _cliloc = new StringList("custom2");
+                        _cliloc = new StringList("custom2", Options.NewClilocFormat);
                         break;
                 }
             }
@@ -245,7 +245,7 @@ namespace UoFiddler.Controls.UserControls
 
         private string currentSearchWord;
 
-        private void FindEntryClick(object sender, EventArgs e)
+        /*private void FindEntryClick(object sender, EventArgs e)
         {
             if (string.IsNullOrEmpty(FindEntry.Text) || FindEntry.Text == _searchTextPlaceholder)
             {
@@ -287,7 +287,54 @@ namespace UoFiddler.Controls.UserControls
             MessageBox.Show(hasErrors ? "Invalid regular expression." : "Entry not found.", "Find Entry",
                 MessageBoxButtons.OK, MessageBoxIcon.Error,
                 MessageBoxDefaultButton.Button1);
+        }*/
+
+        private void FindEntryClick(object sender, EventArgs e)
+        {
+            // Eingabevalidierung
+            if (string.IsNullOrEmpty(FindEntry.Text) || FindEntry.Text == _searchTextPlaceholder)
+            {
+                MessageBox.Show("Please provide search text", "Find Entry", MessageBoxButtons.OK, MessageBoxIcon.Error,
+                    MessageBoxDefaultButton.Button1);
+                return;
+            }
+
+            // Den aktuellen Suchtext speichern
+            currentSearchWord = FindEntry.Text.ToLower(); // Kleinbuchstaben wie in der ersten Methode
+
+            // Wähle die Suchmethode aus
+            var searchMethod = SearchHelper.GetSearchMethod(RegexToolStripButton.Checked);
+            bool hasErrors = false;
+
+            // Schleife über die Datensätze
+            for (int i = dataGridView1.Rows.GetFirstRow(DataGridViewElementStates.Selected) + 1; i < dataGridView1.Rows.Count; ++i)
+            {
+                var cellText = dataGridView1.Rows[i].Cells[1].Value.ToString().ToLower(); // Kleinbuchstabenvergleich
+                var searchResult = searchMethod(currentSearchWord, cellText);
+
+                if (searchResult.HasErrors)
+                {
+                    hasErrors = true;
+                    break;
+                }
+
+                if (!searchResult.EntryFound)
+                {
+                    continue; // Schleife fortsetzen
+                }
+
+                // Eintrag hervorheben und scrollen
+                dataGridView1.Rows[i].Selected = true;
+                dataGridView1.FirstDisplayedScrollingRowIndex = i;
+                return;
+            }
+
+            // Ansicht aktualisieren (falls nötig) und Feedback geben
+            dataGridView1.Refresh(); // Option aus der ersten Methode
+            MessageBox.Show(hasErrors ? "Invalid regular expression." : "Entry not found.", "Find Entry",
+                MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1);
         }
+
         #endregion
 
         #region dataGridView1_CellFormatting

@@ -17,6 +17,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using Ultima;
 using UoFiddler.Controls.Classes;
@@ -368,7 +369,7 @@ namespace UoFiddler.Controls.UserControls
                 dialog.Multiselect = false;
                 dialog.Title = "Choose image file to replace";
                 dialog.CheckFileExists = true;
-                dialog.Filter = "Image files (*.tif;*.tiff;*.bmp)|*.tif;*.tiff;*.bmp";
+                dialog.Filter = "Image files (*.tif;*.tiff;*.bmp;*.png)|*.tif;*.tiff;*.bmp;*.png";
                 if (dialog.ShowDialog() != DialogResult.OK)
                 {
                     return;
@@ -433,7 +434,7 @@ namespace UoFiddler.Controls.UserControls
                 dialog.Multiselect = false;
                 dialog.Title = $"Choose image file to insert at 0x{index:X}";
                 dialog.CheckFileExists = true;
-                dialog.Filter = "Image files (*.tif;*.tiff;*.bmp)|*.tif;*.tiff;*.bmp";
+                dialog.Filter = "Image files (*.tif;*.tiff;*.bmp;*.png)|*.tif;*.tiff;*.bmp;*.png";
 
                 if (dialog.ShowDialog() != DialogResult.OK)
                 {
@@ -508,7 +509,7 @@ namespace UoFiddler.Controls.UserControls
             Options.ChangedUltimaClass["Art"] = false;
         }
 
-        #region Save Format
+        #region [ OnClickExportBmp ]
         private void OnClickExportBmp(object sender, EventArgs e)
         {
             // Check if any items are selected
@@ -530,7 +531,9 @@ namespace UoFiddler.Controls.UserControls
                 }
             }
         }
+        #endregion
 
+        #region [ OnClickExportTiff ]
         private void OnClickExportTiff(object sender, EventArgs e)
         {
             // Check if any items are selected
@@ -552,18 +555,9 @@ namespace UoFiddler.Controls.UserControls
                 }
             }
         }
+        #endregion
 
-        //Old version
-        /*private void OnClickExportJpg(object sender, EventArgs e)
-        {
-            if (_selectedGraphicId < 0)
-            {
-                return;
-            }
-
-            ExportLandTileImage(_selectedGraphicId, ImageFormat.Jpeg);
-        }*/
-
+        #region [ OnClickExportJpg ]
         private void OnClickExportJpg(object sender, EventArgs e)
         {
             // Check if any items are selected
@@ -585,7 +579,9 @@ namespace UoFiddler.Controls.UserControls
                 }
             }
         }
+        #endregion
 
+        #region [ OnClickExportPng ]
         private void OnClickExportPng(object sender, EventArgs e)
         {
             // Check if any items are selected
@@ -607,8 +603,9 @@ namespace UoFiddler.Controls.UserControls
                 }
             }
         }
+        #endregion
 
-
+        #region [ ExportLandTileImage ]
         private static void ExportLandTileImage(int index, ImageFormat imageFormat)
         {
             if (!Art.IsValidLand(index))
@@ -627,9 +624,9 @@ namespace UoFiddler.Controls.UserControls
             MessageBox.Show($"Landtile saved to {fileName}", "Saved", MessageBoxButtons.OK, MessageBoxIcon.Information,
                 MessageBoxDefaultButton.Button1);
         }
-
         #endregion
 
+        #region [ OnClickSelectTiledata ]
         private void OnClickSelectTiledata(object sender, EventArgs e)
         {
             if (_selectedGraphicId >= 0)
@@ -637,7 +634,9 @@ namespace UoFiddler.Controls.UserControls
                 TileDataControl.Select(_selectedGraphicId, true);
             }
         }
+        #endregion
 
+        #region [ OnClickSelectRadarCol ]
         private void OnClickSelectRadarCol(object sender, EventArgs e)
         {
             if (_selectedGraphicId >= 0)
@@ -645,27 +644,37 @@ namespace UoFiddler.Controls.UserControls
                 RadarColorControl.Select(_selectedGraphicId, true);
             }
         }
+        #endregion
 
+        #region [ OnClick_SaveAllBmp ]
         private void OnClick_SaveAllBmp(object sender, EventArgs e)
         {
             ExportAllLandTiles(ImageFormat.Bmp);
         }
+        #endregion
 
+        #region [ OnClick_SaveAllTiff ]
         private void OnClick_SaveAllTiff(object sender, EventArgs e)
         {
             ExportAllLandTiles(ImageFormat.Tiff);
         }
+        #endregion
 
+        #region [ OnClick_SaveAllJpg ]
         private void OnClick_SaveAllJpg(object sender, EventArgs e)
         {
             ExportAllLandTiles(ImageFormat.Jpeg);
         }
+        #endregion
 
+        #region [ OnClick_SaveAllPng ]
         private void OnClick_SaveAllPng(object sender, EventArgs e)
         {
             ExportAllLandTiles(ImageFormat.Png);
         }
+        #endregion
 
+        #region [ ExportAllLandTiles ]
         private void ExportAllLandTiles(ImageFormat imageFormat)
         {
             string fileExtension = Utils.GetFileExtensionFor(imageFormat);
@@ -674,34 +683,84 @@ namespace UoFiddler.Controls.UserControls
             {
                 dialog.Description = "Select directory";
                 dialog.ShowNewFolderButton = true;
+
                 if (dialog.ShowDialog() != DialogResult.OK)
                 {
                     return;
                 }
 
+                var progressBarDialog = new ProgressBarDialog(_tileList.Count, $"Exporting Land Tiles to {fileExtension}", false);
+                progressBarDialog.CancelClicked += () =>
+                {
+                    MessageBox.Show("Export was aborted.", "Cancel", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                };
+
+                progressBarDialog.Show();
+
                 Cursor.Current = Cursors.WaitCursor;
 
-                foreach (var index in _tileList)
+                Task.Run(() =>
                 {
-                    if (!Art.IsValidLand(index))
+                    int exportedCount = 0;
+
+                    try
                     {
-                        continue;
-                    }
+                        foreach (var index in _tileList)
+                        {
+                            if (progressBarDialog.IsCancelled)
+                            {
+                                Invoke((Action)(() =>
+                                {
+                                    MessageBox.Show("Export was aborted.", "Cancel", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                                }));
+                                break;
+                            }
 
-                    string fileName = Path.Combine(dialog.SelectedPath, $"Landtile 0x{index:X4}.{fileExtension}");
-                    using (Bitmap bit = new Bitmap(Art.GetLand(index)))
+                            if (!Art.IsValidLand(index))
+                            {
+                                continue;
+                            }
+
+                            var landTile = Art.GetLand(index);
+                            if (landTile is null)
+                            {
+                                continue;
+                            }
+
+                            string fileName = Path.Combine(dialog.SelectedPath, $"0x{index:X4}.{fileExtension}");
+                            
+                            using (Bitmap bit = new Bitmap(landTile))
+                            {
+                                bit.Save(fileName, imageFormat);
+                            }
+
+                            exportedCount++;
+                            Invoke((Action)(() => progressBarDialog.OnChangeEvent()));
+                        }
+
+                        Invoke((Action)(() => progressBarDialog.MarkProcessFinished())); // Complete process
+                    }
+                    finally
                     {
-                        bit.Save(fileName, imageFormat);
+                        Invoke((Action)(() =>
+                        {
+                            Cursor.Current = Cursors.Default;
+                            progressBarDialog.Close();
+
+                            if (!progressBarDialog.IsCancelled)
+                            {
+                                MessageBox.Show($"All land tiles were saved in {dialog.SelectedPath}\n" +
+                                                $"Total number of exported land tiles: {exportedCount}",
+                                    "Save completed", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                            }
+                        }));
                     }
-                }
-
-                Cursor.Current = Cursors.Default;
-
-                MessageBox.Show($"All land tiles saved to {dialog.SelectedPath}", "Saved", MessageBoxButtons.OK,
-                    MessageBoxIcon.Information, MessageBoxDefaultButton.Button1);
+                });
             }
         }
+        #endregion
 
+        #region [ LandTilesTileView_DrawItem ]
         private void LandTilesTileView_DrawItem(object sender, TileView.TileViewControl.DrawTileListItemEventArgs e)
         {
             if (IsAncestorSiteInDesignMode || FormsDesignerHelper.IsInDesignMode())
@@ -746,8 +805,7 @@ namespace UoFiddler.Controls.UserControls
                 e.Graphics.Clip = previousClip;
             }
         }
-
-
+        #endregion
 
         private void LandTilesTileView_ItemSelectionChanged(object sender, ListViewItemSelectionChangedEventArgs e)
         {
@@ -790,7 +848,7 @@ namespace UoFiddler.Controls.UserControls
                 dialog.Multiselect = true;
                 dialog.Title = $"Choose images to replace starting at 0x{index:X}";
                 dialog.CheckFileExists = true;
-                dialog.Filter = "Image files (*.tif;*.tiff;*.bmp)|*.tif;*.tiff;*.bmp";
+                dialog.Filter = "Image files (*.tif;*.tiff;*.bmp;*.png)|*.tif;*.tiff;*.bmp;*.png";
 
                 if (dialog.ShowDialog() != DialogResult.OK)
                 {

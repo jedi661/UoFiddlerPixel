@@ -105,9 +105,9 @@ namespace UoFiddler.Controls.UserControls
         private bool _gargoyle;
         private bool _showPd = true;
         private bool _animate;
-        private Timer _mTimer;
+        private Timer _animationTimer;
         private Bitmap[] _animation;
-        private int _mFrameIndex;
+        private int _frameIndex;
         private int _facing = 1;
         private int _action = 1;
         private bool _loaded;
@@ -144,15 +144,15 @@ namespace UoFiddler.Controls.UserControls
             _facing = 1;
             _action = 1;
 
-            if (_mTimer != null)
+            if (_animationTimer != null)
             {
-                if (_mTimer.Enabled)
+                if (_animationTimer.Enabled)
                 {
-                    _mTimer.Stop();
+                    _animationTimer.Stop();
                 }
 
-                _mTimer.Dispose();
-                _mTimer = null;
+                _animationTimer.Dispose();
+                _animationTimer = null;
             }
 
             if (_animation != null)
@@ -164,7 +164,7 @@ namespace UoFiddler.Controls.UserControls
             }
 
             _animation = null;
-            _mFrameIndex = 0;
+            _frameIndex = 0;
 
             EquipTable.Initialize();
             GumpTable.Initialize();
@@ -507,7 +507,7 @@ namespace UoFiddler.Controls.UserControls
         #region [ DoAnimation ]
         private void DoAnimation()
         {
-            if (_mTimer != null)
+            if (_animationTimer != null)
             {
                 return;
             }
@@ -661,27 +661,27 @@ namespace UoFiddler.Controls.UserControls
                     }
                 }
             }
-            _mFrameIndex = 0;
-            _mTimer = new Timer
+            _frameIndex = 0;
+            _animationTimer = new Timer
             {
                 Interval = 150// 1000 / count;
             };
-            _mTimer.Tick += AnimTick;
-            _mTimer.Start();
+            _animationTimer.Tick += AnimTick;
+            _animationTimer.Start();
         }
         #endregion
 
         #region [ AnimTick ]
         private void AnimTick(object sender, EventArgs e)
         {
-            ++_mFrameIndex;
+            ++_frameIndex;
 
-            if (_mFrameIndex >= _animation.Length)
+            if (_frameIndex >= _animation.Length)
             {
-                _mFrameIndex = 0;
+                _frameIndex = 0;
             }
 
-            if (_animation?[_mFrameIndex] == null)
+            if (_animation?[_frameIndex] == null)
             {
                 return;
             }
@@ -689,7 +689,7 @@ namespace UoFiddler.Controls.UserControls
             using (Graphics graph = Graphics.FromImage(DressPic.Image))
             {
                 graph.Clear(Color.Transparent);
-                graph.DrawImage(_animation[_mFrameIndex], _drawPoint);
+                graph.DrawImage(_animation[_frameIndex], _drawPoint);
             }
             DressPic.Invalidate();
         }
@@ -1042,15 +1042,15 @@ namespace UoFiddler.Controls.UserControls
         #region [ RefreshDrawing ]
         public void RefreshDrawing()
         {
-            if (_mTimer != null)
+            if (_animationTimer != null)
             {
-                if (_mTimer.Enabled)
+                if (_animationTimer.Enabled)
                 {
-                    _mTimer.Stop();
+                    _animationTimer.Stop();
                 }
 
-                _mTimer.Dispose();
-                _mTimer = null;
+                _animationTimer.Dispose();
+                _animationTimer = null;
             }
 
             if (_animation != null)
@@ -1062,7 +1062,7 @@ namespace UoFiddler.Controls.UserControls
             }
 
             _animation = null;
-            _mFrameIndex = 0;
+            _frameIndex = 0;
 
             DrawPaperdoll();
         }

@@ -24,15 +24,9 @@
 		<GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
 	</PropertyGroup>
 	<ItemGroup>
-	  <PackageReference Include="System.Drawing.Common" Version="6.0.0" />
+	  <PackageReference Include="System.Drawing.Common" Version="9.0.3" />
 	</ItemGroup>
 	<ItemGroup>
-		<Compile Update="UserControls\CompareCliLocControl.cs">
-			<SubType>UserControl</SubType>
-		</Compile>
-		<Compile Update="UserControls\CompareCliLocControl.Designer.cs">
-			<DependentUpon>CompareCliLocControl.cs</DependentUpon>
-		</Compile>
 		<Compile Update="UserControls\CompareGumpControl.cs">
 			<SubType>UserControl</SubType>
 		</Compile>
@@ -86,9 +80,6 @@
 		</ProjectReference>
 	</ItemGroup>
 	<ItemGroup>
-		<EmbeddedResource Update="UserControls\CompareCliLocControl.resx">
-			<DependentUpon>CompareCliLocControl.cs</DependentUpon>
-		</EmbeddedResource>
 		<EmbeddedResource Update="UserControls\CompareGumpControl.resx">
 			<DependentUpon>CompareGumpControl.cs</DependentUpon>
 		</EmbeddedResource>

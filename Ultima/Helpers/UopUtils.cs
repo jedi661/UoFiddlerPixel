@@ -1,9 +1,13 @@
+using System.IO.Compression;
+using System.IO;
+using System;
+
 namespace Ultima.Helpers
 {
-    static internal class UopUtils
+    static public class UopUtils
     {
         /// <summary>
-        /// Method for calculating entry hash by it's name.
+        /// Method for calculating entry hash by its name.
         /// Taken from Mythic.Package.dll
         /// </summary>
         /// <param name="s"></param>
@@ -91,6 +95,66 @@ namespace Ultima.Helpers
             }
 
             return ((ulong)esi << 32) | eax;
+        }
+
+        /// <summary>
+        /// Method for decompressing zlib byte arrays inside .uop
+        /// </summary>
+        /// <param name="compressedData">Input compressed array of bytes</param>
+        /// <returns>decompressed byte[] data</returns>
+        public static (bool success, byte[] data) Decompress(byte[] compressedData)
+        {
+            if (compressedData == null || compressedData.Length == 0)
+            {
+                return (false, Array.Empty<byte>());
+            }
+
+            try
+            {
+                using (var compressedStream = new MemoryStream(compressedData))
+                using (var zlibStream = new ZLibStream(compressedStream, CompressionMode.Decompress, false))
+                using (var resultStream = new MemoryStream())
+                {
+                    zlibStream.CopyTo(resultStream);
+                    resultStream.Flush();
+                    zlibStream.Close();
+                    return (true, resultStream.ToArray());
+                }
+            }
+            catch (Exception)
+            {
+                return (false, Array.Empty<byte>());
+            }
+        }
+
+        /// <summary>
+        /// Method for compressing zlib byte arrays inside .uop
+        /// </summary>
+        /// <param name="compressedData">Input compressed array of bytes</param>
+        /// <returns>compressed byte[] data</returns>
+        public static (bool success, byte[] compressedData) Compress(byte[] rawData)
+        {
+            if (rawData == null || rawData.Length == 0)
+            {
+                return (false, Array.Empty<byte>());
+            }
+
+            try
+            {
+                using (var dataStream = new MemoryStream(rawData))
+                using (var resultStream = new MemoryStream())
+                using (var zlibStream = new ZLibStream(resultStream, CompressionLevel.Optimal))
+                {
+                    dataStream.CopyTo(zlibStream);
+                    zlibStream.Flush();
+                    zlibStream.Close();
+                    return (true, resultStream.ToArray());
+                }
+            }
+            catch (Exception)
+            {
+                return (false, Array.Empty<byte>());
+            }
         }
     }
 }

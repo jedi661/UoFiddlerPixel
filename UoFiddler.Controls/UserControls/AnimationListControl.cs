@@ -201,7 +201,6 @@ namespace UoFiddler.Controls.UserControls
             }
 
             LoadListView();
-            extractAnimationToolStripMenuItem.Visible = false;
             _currentSelect = 0;
             _currentSelectAction = 0;
 
@@ -320,7 +319,6 @@ namespace UoFiddler.Controls.UserControls
                 }
 
                 _animate = value;
-                extractAnimationToolStripMenuItem.Visible = _animate;
                 StopAnimation();
                 _imageInvalidated = true;
                 MainPictureBox.Invalidate();
@@ -1155,7 +1153,7 @@ namespace UoFiddler.Controls.UserControls
         #endregion
 
         #region [ ExtractImage ]
-        private void ExtractImage(ImageFormat imageFormat)
+        /*private void ExtractImage(ImageFormat imageFormat)
         {
             string what = "Mob";
             if (_displayType == 1)
@@ -1181,6 +1179,30 @@ namespace UoFiddler.Controls.UserControls
 
             MessageBox.Show($"{what} saved to {fileName}", "Saved", MessageBoxButtons.OK, MessageBoxIcon.Information,
                 MessageBoxDefaultButton.Button1);
+        }*/
+
+        private void ExtractImage(ImageFormat imageFormat)
+        {
+            string what = _displayType == 1 ? "Equipment" : "Mob";
+            string fileExtension = Utils.GetFileExtensionFor(imageFormat);
+            string fileName = Path.Combine(Options.OutputPath, $"{what} {_currentSelect}.{fileExtension}");
+
+            Bitmap sourceBitmap = Animate ? _animationList[0] : _mainPicture;
+            using (Bitmap newBitmap = new Bitmap(sourceBitmap.Width, sourceBitmap.Height))
+            {
+                using (Graphics newGraph = Graphics.FromImage(newBitmap))
+                {
+                    newGraph.FillRectangle(Brushes.White, 0, 0, newBitmap.Width, newBitmap.Height);
+                    newGraph.DrawImage(sourceBitmap, new Point(0, 0));
+                    newGraph.Save();
+                }
+
+                newBitmap.Save(fileName, imageFormat);
+            }
+
+            PlayCustomSound();
+
+            MessageBox.Show($"{what} saved to {fileName}", "Saved", MessageBoxButtons.OK, MessageBoxIcon.None);
         }
         #endregion
 
@@ -1215,37 +1237,49 @@ namespace UoFiddler.Controls.UserControls
         #region [ ExportAnimationFrames ]
         private void ExportAnimationFrames(ImageFormat imageFormat)
         {
-            if (!Animate)
+            if (listView1.Items.Count == 0)
             {
+                MessageBox.Show("No animation frames available to export.", "Error", MessageBoxButtons.OK, MessageBoxIcon.None);
                 return;
             }
 
-            string what = "Mob";
-            if (_displayType == 1)
-            {
-                what = "Equipment";
-            }
-
+            string what = _displayType == 1 ? "Equipment" : "Mob";
             string fileExtension = Utils.GetFileExtensionFor(imageFormat);
             string fileName = Path.Combine(Options.OutputPath, $"{what} {_currentSelect}");
 
-            for (int i = 0; i < _animationList.Length; ++i)
+            int exportedCount = 0;
+
+            try
             {
-                using (Bitmap newBitmap = new Bitmap(_animationList[i].Width, _animationList[i].Height))
+                foreach (ListViewItem item in listView1.Items)
                 {
-                    using (Graphics newGraph = Graphics.FromImage(newBitmap))
+                    if (item.Tag == null || !(item.Tag is int index) || index < 0 || index >= _animationList.Length)
+                        continue;
+
+                    Bitmap bmp = _animationList[index];
+                    using (Bitmap newBitmap = new Bitmap(bmp.Width, bmp.Height))
                     {
-                        newGraph.FillRectangle(Brushes.White, 0, 0, newBitmap.Width, newBitmap.Height);
-                        newGraph.DrawImage(_animationList[i], new Point(0, 0));
-                        newGraph.Save();
+                        using (Graphics newGraph = Graphics.FromImage(newBitmap))
+                        {
+                            newGraph.FillRectangle(Brushes.White, 0, 0, newBitmap.Width, newBitmap.Height);
+                            newGraph.DrawImage(bmp, new Point(0, 0));
+                            newGraph.Save();
+                        }
+
+                        string finalFileName = $"{fileName}-{index}.{fileExtension}";
+                        newBitmap.Save(finalFileName, imageFormat);
+                        exportedCount++;
                     }
-
-                    newBitmap.Save($"{fileName}-{i}.{fileExtension}", imageFormat);
                 }
-            }
 
-            MessageBox.Show($"{what} saved to '{fileName}-X.{fileExtension}'", "Saved", MessageBoxButtons.OK,
-                MessageBoxIcon.Information, MessageBoxDefaultButton.Button1);
+                PlayCustomSound();
+
+                MessageBox.Show($"{exportedCount} frames exported successfully to '{fileName}-X.{fileExtension}'", "Export Completed", MessageBoxButtons.OK, MessageBoxIcon.None);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"An error occurred while exporting frames: {ex.Message}", "Export Error", MessageBoxButtons.OK, MessageBoxIcon.None);
+            }
         }
         #endregion
 
@@ -1407,7 +1441,7 @@ namespace UoFiddler.Controls.UserControls
         #endregion
 
         #region [ ExportAnimatedGif ]
-        private void ExportAnimatedGif(bool looping)
+        /*private void ExportAnimatedGif(bool looping)
         {
             // Check if the frames are loaded
             if (_frames == null || _frames.Length == 0)
@@ -1483,6 +1517,96 @@ namespace UoFiddler.Controls.UserControls
             {
                 MessageBox.Show($"Error creating GIF: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+        }*/
+
+        private void ExportAnimatedGif(bool looping)
+        {
+            if (_frames == null || _frames.Length == 0)
+            {
+                MessageBox.Show("Frames not loaded.", "Error", MessageBoxButtons.OK, MessageBoxIcon.None);
+                return;
+            }
+
+            string baseFileName = $"{(_displayType == 1 ? "Equipment" : "Mob")} {_currentSelect}.gif";
+            string outputFile = Path.Combine(Options.OutputPath, baseFileName);
+            int fileIndex = 1;
+
+            if (!Directory.Exists(Options.OutputPath))
+            {
+                MessageBox.Show($"OutputPath {Options.OutputPath} does not exist.", "Error", MessageBoxButtons.OK, MessageBoxIcon.None);
+                return;
+            }
+
+            while (File.Exists(outputFile))
+            {
+                outputFile = Path.Combine(Options.OutputPath, $"{(_displayType == 1 ? "Equipment" : "Mob")} {_currentSelect} ({fileIndex}).gif");
+                fileIndex++;
+            }
+
+            try
+            {
+                var maxFrameSize = new Size(0, 0);
+
+                foreach (var frame in _frames)
+                {
+                    if (frame?.Bitmap != null)
+                    {
+                        maxFrameSize.Width = Math.Max(maxFrameSize.Width, frame.Bitmap.Width);
+                        maxFrameSize.Height = Math.Max(maxFrameSize.Height, frame.Bitmap.Height);
+                    }
+                }
+
+                using (var gif = AnimatedGif.AnimatedGif.Create(outputFile, delay: 150))
+                {
+                    foreach (var frame in _frames)
+                    {
+                        if (frame?.Bitmap == null)
+                        {
+                            continue;
+                        }
+
+                        using (Bitmap target = new Bitmap(maxFrameSize.Width, maxFrameSize.Height))
+                        {
+                            using (Graphics g = Graphics.FromImage(target))
+                            {
+                                g.DrawImage(frame.Bitmap, 0, 0);
+                            }
+                            gif.AddFrame(target, delay: -1, quality: GifQuality.Bit8);
+                        }
+                    }
+                }
+
+                if (!looping)
+                {
+                    using (var stream = new FileStream(outputFile, FileMode.Open, FileAccess.Write))
+                    {
+                        stream.Seek(28, SeekOrigin.Begin);
+                        stream.WriteByte(0);
+                    }
+                }
+
+                PlayCustomSound();
+
+                MessageBox.Show($"InGame Anim saved in {outputFile}", "Saved", MessageBoxButtons.OK, MessageBoxIcon.None);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error creating GIF: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.None);
+            }
+        }
+        #endregion
+
+        #region [ PlayCustomSound ]
+        private void PlayCustomSound()
+        {
+            string soundFilePath = Path.Combine(Application.StartupPath, "Sound.wav");
+            if (File.Exists(soundFilePath))
+            {
+                using (System.Media.SoundPlayer player = new System.Media.SoundPlayer(soundFilePath))
+                {
+                    player.PlaySync();
+                }
+            }
         }
         #endregion
 
@@ -1523,6 +1647,66 @@ namespace UoFiddler.Controls.UserControls
         }
 
         #endregion
+
+        #region [  frameToolStripMenuItem_Click ]
+        private bool PaintEventAttached = false;
+
+        private void frameToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (!PaintEventAttached)
+            {
+                MainPictureBox.Paint += DrawFrameBounds;
+                PaintEventAttached = true;
+            }
+            else
+            {
+                MainPictureBox.Paint -= DrawFrameBounds;
+                PaintEventAttached = false;
+            }
+
+            MainPictureBox.Invalidate(); // Sofortiges Neuzeichnen der PictureBox
+        }
+        #endregion
+
+        #region [ DrawFrameBounds ]
+        private void DrawFrameBounds(object sender, PaintEventArgs e)
+        {
+            if (_animationList == null || _animationList.Length == 0 || listView1.SelectedItems.Count == 0)
+                return; // Falls keine Frames vorhanden oder kein Frame ausgewählt ist
+
+            // Index des aktuell gewählten Frames ermitteln
+            if (!(listView1.SelectedItems[0].Tag is int index) || index < 0 || index >= _animationList.Length)
+                return;
+
+            Bitmap currentFrame = _animationList[index];
+
+            // Berechnung der Position innerhalb der PictureBox
+            int frameWidth = currentFrame.Width;
+            int frameHeight = currentFrame.Height;
+
+            // Die tatsächliche Position des Frames ermitteln (z.B. wenn es nicht links oben ist)
+            int x = (MainPictureBox.ClientSize.Width - frameWidth) / 2;
+            int y = (MainPictureBox.ClientSize.Height - frameHeight) / 2;
+
+            using (Pen pen = new Pen(Color.Red, 2)) // Roter Rahmen mit 2 Pixel Breite
+            {
+                e.Graphics.DrawRectangle(pen, x, y, frameWidth - 1, frameHeight - 1);
+            }
+        }
+        #endregion
+
+        #region [ ListView1_SelectedIndexChanged ]
+        // Diese Methode stellt sicher, dass der Rahmen aktualisiert wird, wenn das Frame wechselt
+        private void listView1_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (PaintEventAttached)
+            {
+                MainPictureBox.Invalidate(); // Neuzeichnen der PictureBox erzwingen
+            }
+        }
+        #endregion
+
+
     }
 
     #region [ class AlphaSorter ]

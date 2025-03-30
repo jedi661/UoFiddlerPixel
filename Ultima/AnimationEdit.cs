@@ -193,30 +193,7 @@ namespace Ultima
             }
 
             return cache[index] = new AnimIdx(index, fileIndex);
-        }
-
-        // Old version
-        /*public static bool IsActionDefined(int fileType, int body, int action)
-        {
-            AnimIdx[] cache = GetCache(fileType);
-
-            GetFileIndex(body, fileType, action, 0, out FileIndex fileIndex, out int index);
-
-            if (cache?[index] != null)
-            {
-                return cache[index].Frames?.Count > 0;
-            }
-
-            int animCount = Animations.GetAnimLength(body, fileType);
-            if (animCount < action)
-            {
-                return false;
-            }
-
-            bool valid = fileIndex.Valid(index, out int length, out int _, out bool _);
-
-            return valid && length >= 1;
-        }*/
+        }        
 
         #region IsActionDefined
         public static bool IsActionDefined(int fileType, int body, int action)
@@ -380,55 +357,16 @@ namespace Ultima
 
     public sealed class AnimIdx
     {
+        public readonly int PaletteCapacity = 0x100;
         private readonly int _idxExtra;
 
         public ushort[] Palette { get; private set; }
         public List<FrameEdit> Frames { get; private set; }
 
-
-        // Old version
-        /*public AnimIdx(int index, FileIndex fileIndex)
-        {
-            Palette = new ushort[0x100];
-            Stream stream = fileIndex.Seek(index, out int length, out int extra, out bool _);
-            if ((stream == null) || (length < 1))
-            {
-                return;
-            }
-
-            _idxExtra = extra;
-            using (var bin = new BinaryReader(stream))
-            {
-                for (int i = 0; i < 0x100; ++i)
-                {
-                    Palette[i] = (ushort)(bin.ReadUInt16() ^ 0x8000);
-                }
-
-                var start = (int)bin.BaseStream.Position;
-                int frameCount = bin.ReadInt32();
-
-                var lookups = new int[frameCount];
-
-                for (int i = 0; i < frameCount; ++i)
-                {
-                    lookups[i] = start + bin.ReadInt32();
-                }
-
-                Frames = new List<FrameEdit>();
-
-                for (int i = 0; i < frameCount; ++i)
-                {
-                    stream.Seek(lookups[i], SeekOrigin.Begin);
-                    Frames.Add(new FrameEdit(bin));
-                }
-            }
-            stream.Close();
-        }*/
-
         #region AnimIdx
         public AnimIdx(int index, FileIndex fileIndex)
         {
-            Palette = new ushort[0x100];
+            Palette = new ushort[PaletteCapacity];
             Stream stream = fileIndex.Seek(index, out int length, out int extra, out bool _);
             if ((stream == null) || (length < 1))
             {
@@ -438,7 +376,7 @@ namespace Ultima
             _idxExtra = extra;
             using (var bin = new BinaryReader(stream))
             {
-                for (int i = 0; i < 0x100; ++i)
+                for (int i = 0; i < PaletteCapacity; ++i)
                 {
                     Palette[i] = (ushort)(bin.ReadUInt16() ^ 0x8000);
                 }
@@ -471,11 +409,11 @@ namespace Ultima
         #endregion
 
         public AnimIdx(BinaryReader bin, int extra)
-        {
-            Palette = new ushort[0x100];
+        {            
             _idxExtra = extra;
 
-            for (int i = 0; i < 0x100; ++i)
+            Palette = new ushort[PaletteCapacity];
+            for (int i = 0; i < PaletteCapacity; ++i)
             {
                 Palette[i] = (ushort)(bin.ReadUInt16() ^ 0x8000);
             }
@@ -601,7 +539,7 @@ namespace Ultima
                 case 0:
                     using (var tex = new StreamWriter(new FileStream(filename, FileMode.Create, FileAccess.ReadWrite)))
                     {
-                        for (int i = 0; i < 0x100; ++i)
+                        for (int i = 0; i < PaletteCapacity; ++i)
                         {
                             tex.WriteLine(Palette[i]);
                         }
@@ -618,17 +556,17 @@ namespace Ultima
 
         private unsafe void SavePaletteImage(string filename, ImageFormat imageFormat)
         {
-            using (var bmp = new Bitmap(0x100, 20, PixelFormat.Format16bppArgb1555))
+            using (var bmp = new Bitmap(PaletteCapacity, 20, PixelFormat.Format16bppArgb1555))
             {
                 BitmapData bd = bmp.LockBits(
-                    new Rectangle(0, 0, 0x100, 20), ImageLockMode.WriteOnly, PixelFormat.Format16bppArgb1555);
+                    new Rectangle(0, 0, PaletteCapacity, 20), ImageLockMode.WriteOnly, PixelFormat.Format16bppArgb1555);
                 var line = (ushort*)bd.Scan0;
                 int delta = bd.Stride >> 1;
 
                 for (int y = 0; y < bd.Height; ++y, line += delta)
                 {
                     ushort* cur = line;
-                    for (int i = 0; i < 0x100; ++i)
+                    for (int i = 0; i < PaletteCapacity; ++i)
                     {
                         *cur++ = Palette[i];
                     }
@@ -654,20 +592,23 @@ namespace Ultima
                 idx.Write(-1);
                 idx.Write(-1);
                 idx.Write(-1);
+
                 return;
             }
             long start = bin.BaseStream.Position;
             idx.Write((int)start);
 
-            for (int i = 0; i < 0x100; ++i)
+            for (int i = 0; i < PaletteCapacity; ++i)
             {
                 bin.Write((ushort)(Palette[i] ^ 0x8000));
             }
 
             long startPosition = bin.BaseStream.Position;
             bin.Write(Frames.Count);
+
             long seek = bin.BaseStream.Position;
             long curr = bin.BaseStream.Position + (4 * Frames.Count);
+
             foreach (FrameEdit frame in Frames)
             {
                 bin.BaseStream.Seek(seek, SeekOrigin.Begin);
@@ -698,7 +639,7 @@ namespace Ultima
             indexpos = bin.BaseStream.Position;
             bin.BaseStream.Seek(animpos, SeekOrigin.Begin);
 
-            for (int i = 0; i < 0x100; ++i)
+            for (int i = 0; i < PaletteCapacity; ++i)
             {
                 bin.Write((ushort)(Palette[i] ^ 0x8000));
             }

@@ -73,9 +73,7 @@
 		<Compile Update="Forms\SoundsSearchForm.Designer.cs">
 			<DependentUpon>SoundsSearchForm.cs</DependentUpon>
 		</Compile>
-		<Compile Update="Forms\ProgressBarDialog.cs">
-			<SubType>Form</SubType>
-		</Compile>
+		<Compile Update="Forms\ProgressBarDialog.cs" />
 		<Compile Update="Forms\ProgressBarDialog.Designer.cs">
 			<DependentUpon>ProgressBarDialog.cs</DependentUpon>
 		</Compile>
@@ -463,9 +461,9 @@
 	</ItemGroup>
 	<ItemGroup>
 		<PackageReference Include="AnimatedGif" Version="1.0.5" />
-		<PackageReference Include="Serilog" Version="4.1.0" />
-		<PackageReference Include="System.Drawing.Common" Version="6.0.0" />
-		<PackageReference Include="System.Resources.Extensions" Version="9.0.0" />
+		<PackageReference Include="Serilog" Version="4.2.0" />
+		<PackageReference Include="System.Drawing.Common" Version="9.0.3" />
+		<PackageReference Include="System.Resources.Extensions" Version="9.0.3" />
 	</ItemGroup>
 	<ItemGroup>
 	  <None Update="Properties\Settings.settings">

@@ -91,6 +91,7 @@ namespace UoFiddler.Forms
             buttonClose = new System.Windows.Forms.Button();
             btAppData = new System.Windows.Forms.Button();
             BtnLogDir = new System.Windows.Forms.Button();
+            checkBoxNewClilocFormat = new System.Windows.Forms.CheckBox();
             groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)numericUpDownItemSizeHeight).BeginInit();
             ((System.ComponentModel.ISupportInitialize)numericUpDownItemSizeWidth).BeginInit();
@@ -107,7 +108,7 @@ namespace UoFiddler.Forms
             groupBox1.Controls.Add(checkBoxItemClip);
             groupBox1.Controls.Add(label1);
             groupBox1.Controls.Add(numericUpDownItemSizeWidth);
-            groupBox1.Location = new System.Drawing.Point(16, 164);
+            groupBox1.Location = new System.Drawing.Point(16, 197);
             groupBox1.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             groupBox1.Name = "groupBox1";
             groupBox1.Padding = new System.Windows.Forms.Padding(4, 3, 4, 3);
@@ -187,6 +188,7 @@ namespace UoFiddler.Forms
             // 
             // groupBox2
             // 
+            groupBox2.Controls.Add(checkBoxNewClilocFormat);
             groupBox2.Controls.Add(checkBoxPolSoundIdOffset);
             groupBox2.Controls.Add(checkBoxPanelSoundsDesign);
             groupBox2.Controls.Add(checkBoxuseDiff);
@@ -196,7 +198,7 @@ namespace UoFiddler.Forms
             groupBox2.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             groupBox2.Name = "groupBox2";
             groupBox2.Padding = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            groupBox2.Size = new System.Drawing.Size(258, 157);
+            groupBox2.Size = new System.Drawing.Size(250, 185);
             groupBox2.TabIndex = 3;
             groupBox2.TabStop = false;
             groupBox2.Text = "Misc";
@@ -649,6 +651,18 @@ namespace UoFiddler.Forms
             BtnLogDir.UseVisualStyleBackColor = true;
             BtnLogDir.Click += BtnLogDir_Click;
             // 
+            // checkBoxNewClilocFormat
+            // 
+            checkBoxNewClilocFormat.AutoSize = true;
+            checkBoxNewClilocFormat.Location = new System.Drawing.Point(7, 154);
+            checkBoxNewClilocFormat.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            checkBoxNewClilocFormat.Name = "checkBoxNewClilocFormat";
+            checkBoxNewClilocFormat.Size = new System.Drawing.Size(120, 19);
+            checkBoxNewClilocFormat.TabIndex = 9;
+            checkBoxNewClilocFormat.Text = "New cliloc format";
+            toolTip1.SetToolTip(checkBoxNewClilocFormat, "For client version 7.0.104 and newer this needs to be checked. It allows reading of new cliloc format. This option has only partial support so saving file will only produce old cliloc format.");
+            checkBoxNewClilocFormat.UseVisualStyleBackColor = true;
+            // 
             // OptionsForm
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -738,5 +752,6 @@ namespace UoFiddler.Forms
         private System.Windows.Forms.TextBox map8Nametext;
         private System.Windows.Forms.Label label13;
         private System.Windows.Forms.Button BtnLogDir;
+        private System.Windows.Forms.CheckBox checkBoxNewClilocFormat;
     }
 }
