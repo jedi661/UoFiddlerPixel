@@ -6,7 +6,7 @@ Version : 4.12.9 #XG1
 - Added PNG format when inserting or replacing graphics.
 - Animation Export Funktion Bnp tiff and jpg and png.
 - Export all Null function.
-- Gumpart and cliloc write encryption support by @Krubster
+- Gumpart and cliloc write encryption support.
 - Added ProgressBardialog add Cancel Button and funktion (items).
 - Added ProgressBardialog add Cancel Button and funktion (LandTiles).
 - Added ProgressBardialog add Cancel Button and funktion (Textures).
