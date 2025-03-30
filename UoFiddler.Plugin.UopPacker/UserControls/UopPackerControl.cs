@@ -96,7 +96,7 @@ namespace UoFiddler.Plugin.UopPacker.UserControls
         }
         #endregion
 
-        #region ToUop
+        #region ToUop 
         private void ToUop(object sender, EventArgs e)
         {
             var selectedFileType = multype?.SelectedValue?.ToString() ?? string.Empty;
@@ -106,19 +106,19 @@ namespace UoFiddler.Plugin.UopPacker.UserControls
                 return;
             }
 
-            if (inmul.Text.Length == 0)
+            if (string.IsNullOrWhiteSpace(inmul.Text))
             {
                 MessageBox.Show("You must specify the input mul");
                 return;
             }
 
-            if (inidx.Text.Length == 0)
+            if (string.IsNullOrWhiteSpace(inidx.Text))
             {
                 MessageBox.Show("You must specify the input idx");
                 return;
             }
 
-            if (outuop.Text.Length == 0)
+            if (string.IsNullOrWhiteSpace(outuop.Text))
             {
                 MessageBox.Show("You must specify the output uop");
                 return;
@@ -126,39 +126,35 @@ namespace UoFiddler.Plugin.UopPacker.UserControls
 
             if (!File.Exists(inmul.Text))
             {
-                MessageBox.Show("The input mul does not exists");
+                MessageBox.Show("The input mul does not exist");
                 return;
             }
 
             if (!File.Exists(inidx.Text))
             {
-                MessageBox.Show("The input idx does not exists");
-                return;
-            }
-
-            if (File.Exists(outuop.Text))
-            {
-                MessageBox.Show("Output file already exists");
+                MessageBox.Show("The input idx does not exist");
                 return;
             }
 
             if (File.Exists(outuop.Text) && !checkBoxOverwriteSaveUop.Checked)
             {
-                MessageBox.Show("Output file already exists");
+                MessageBox.Show("Output file already exists. Enable 'Overwrite' to replace it.");
                 return;
             }
+
             CompressionFlag selectedCompressionMethod = Enum.Parse<CompressionFlag>(compressionBox.SelectedItem.ToString());
 
             try
             {
                 multouop.Text = "Converting...";
                 multouop.Enabled = false;
-               
+
+                // If the method allows overriding, simply call it like this:
                 LegacyMulFileConverter.ToUop(inmul.Text, inidx.Text, outuop.Text, fileType, (int)mulMapIndex.Value, selectedCompressionMethod);
             }
-            catch
+            catch (Exception ex)
             {
-                MessageBox.Show("An error occurred");
+                MessageBox.Show($"An error occurred: {ex.Message}");
             }
             finally
             {
