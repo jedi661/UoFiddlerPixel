@@ -675,7 +675,7 @@ namespace UoFiddler.Controls.UserControls
         #endregion
 
         #region [ ExportAllLandTiles ]
-        private void ExportAllLandTiles(ImageFormat imageFormat)
+        /*private void ExportAllLandTiles(ImageFormat imageFormat)
         {
             string fileExtension = Utils.GetFileExtensionFor(imageFormat);
 
@@ -757,7 +757,92 @@ namespace UoFiddler.Controls.UserControls
                     }
                 });
             }
+        }*/
+
+        private void ExportAllLandTiles(ImageFormat imageFormat)
+        {
+            string fileExtension = Utils.GetFileExtensionFor(imageFormat);
+
+            using (FolderBrowserDialog dialog = new FolderBrowserDialog())
+            {
+                dialog.Description = "Select directory";
+                dialog.ShowNewFolderButton = true;
+
+                if (dialog.ShowDialog() != DialogResult.OK)
+                {
+                    return;
+                }
+
+                var progressBarDialog = new ProgressBarDialog2(_tileList.Count, $"Exporting Land Tiles to {fileExtension}", false);
+                progressBarDialog.CancelClicked += () =>
+                {
+                    MessageBox.Show("Export was aborted.", "Cancel", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                };
+
+                progressBarDialog.Show();
+
+                Cursor.Current = Cursors.WaitCursor;
+
+                Task.Run(() =>
+                {
+                    int exportedCount = 0;
+
+                    try
+                    {
+                        foreach (var index in _tileList)
+                        {
+                            if (progressBarDialog.IsCancelled)
+                            {
+                                Invoke((Action)(() =>
+                                {
+                                    MessageBox.Show("Export was aborted.", "Cancel", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                                }));
+                                break;
+                            }
+
+                            if (!Art.IsValidLand(index))
+                            {
+                                continue;
+                            }
+
+                            var landTile = Art.GetLand(index);
+                            if (landTile is null)
+                            {
+                                continue;
+                            }
+
+                            string fileName = Path.Combine(dialog.SelectedPath, $"0x{index:X4}.{fileExtension}");
+
+                            using (Bitmap bit = new Bitmap(landTile))
+                            {
+                                bit.Save(fileName, imageFormat);
+                            }
+
+                            exportedCount++;
+                            Invoke((Action)(() => progressBarDialog.OnChangeEvent()));
+                        }
+
+                        Invoke((Action)(() => progressBarDialog.MarkProcessFinished())); // Complete process
+                    }
+                    finally
+                    {
+                        Invoke((Action)(() =>
+                        {
+                            Cursor.Current = Cursors.Default;
+                            progressBarDialog.Close();
+
+                            if (!progressBarDialog.IsCancelled)
+                            {
+                                MessageBox.Show($"All land tiles were saved in {dialog.SelectedPath}\n" +
+                                                $"Total number of exported land tiles: {exportedCount}",
+                                    "Save completed", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                            }
+                        }));
+                    }
+                });
+            }
         }
+
         #endregion
 
         #region [ LandTilesTileView_DrawItem ]
