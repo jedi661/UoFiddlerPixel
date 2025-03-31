@@ -179,7 +179,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             listBoxOrg.Name = "listBoxOrg";
             listBoxOrg.Size = new System.Drawing.Size(174, 394);
             listBoxOrg.TabIndex = 0;
-            listBoxOrg.DrawItem += listBoxOrg_DrawItem;
+            listBoxOrg.DrawItem += ListBoxOrg_DrawItem;
             listBoxOrg.SelectedIndexChanged += OnIndexChangedOrg;
             // 
             // contextMenuStripListBoxOrg
@@ -209,7 +209,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             mirrorToolStripMenuItem.Size = new System.Drawing.Size(117, 22);
             mirrorToolStripMenuItem.Text = "Mirror";
             mirrorToolStripMenuItem.ToolTipText = "Mirror Image";
-            mirrorToolStripMenuItem.Click += mirrorToolStripMenuItem_Click;
+            mirrorToolStripMenuItem.Click += MirrorToolStripMenuItem_Click;
             // 
             // toolStripSeparator5
             // 
@@ -223,7 +223,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             removeToolStripMenuItem.Size = new System.Drawing.Size(117, 22);
             removeToolStripMenuItem.Text = "Remove";
             removeToolStripMenuItem.ToolTipText = "Remove Image";
-            removeToolStripMenuItem.Click += btremoveitemfromindex_Click;
+            removeToolStripMenuItem.Click += Btremoveitemfromindex_Click;
             // 
             // toolStripSeparator4
             // 
@@ -237,7 +237,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             copyToolStripMenuItem.Size = new System.Drawing.Size(117, 22);
             copyToolStripMenuItem.Text = "Copy";
             copyToolStripMenuItem.ToolTipText = "Copy Art Image to Clipboard";
-            copyToolStripMenuItem.Click += copyToolStripMenuItem_Click;
+            copyToolStripMenuItem.Click += CopyToolStripMenuItem_Click;
             // 
             // importToolStripMenuItem
             // 
@@ -246,7 +246,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             importToolStripMenuItem.Size = new System.Drawing.Size(117, 22);
             importToolStripMenuItem.Text = "Import";
             importToolStripMenuItem.ToolTipText = "Import Image from Clipboard";
-            importToolStripMenuItem.Click += importToolStripclipboardMenuItem_Click;
+            importToolStripMenuItem.Click += ImportToolStripclipboardMenuItem_Click;
             // 
             // toolStripSeparator6
             // 
@@ -278,7 +278,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             moveArtToolStripMenuItem1.Size = new System.Drawing.Size(123, 22);
             moveArtToolStripMenuItem1.Text = "Move Art";
             moveArtToolStripMenuItem1.ToolTipText = "Move Art Image";
-            moveArtToolStripMenuItem1.Click += btLeftMoveItem_Click;
+            moveArtToolStripMenuItem1.Click += BtLeftMoveItem_Click;
             // 
             // toolStripSeparator3
             // 
@@ -292,7 +292,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             copyToolStripMenuItemListBoxLeft.Size = new System.Drawing.Size(123, 22);
             copyToolStripMenuItemListBoxLeft.Text = "Copy";
             copyToolStripMenuItemListBoxLeft.ToolTipText = "Copy Art Image to Clipboard";
-            copyToolStripMenuItemListBoxLeft.Click += copyToolStripMenuItemListBoxLeft_Click;
+            copyToolStripMenuItemListBoxLeft.Click += CopyToolStripMenuItemListBoxLeft_Click;
             // 
             // listBoxLeft
             // 
@@ -303,8 +303,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             listBoxLeft.Name = "listBoxLeft";
             listBoxLeft.Size = new System.Drawing.Size(174, 394);
             listBoxLeft.TabIndex = 0;
-            listBoxLeft.DrawItem += listBoxLeft_DrawItem;
-            listBoxLeft.SelectedIndexChanged += listBoxLeft_SelectedIndexChanged;
+            listBoxLeft.DrawItem += ListBoxLeft_DrawItem;
+            listBoxLeft.SelectedIndexChanged += ListBoxLeft_SelectedIndexChanged;
             // 
             // panel1
             // 
@@ -410,8 +410,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             listBoxRight.Name = "listBoxRight";
             listBoxRight.Size = new System.Drawing.Size(174, 394);
             listBoxRight.TabIndex = 0;
-            listBoxRight.DrawItem += listBoxRight_DrawItem;
-            listBoxRight.SelectedIndexChanged += listBoxRight_SelectedIndexChanged;
+            listBoxRight.DrawItem += ListBoxRight_DrawItem;
+            listBoxRight.SelectedIndexChanged += ListBoxRight_SelectedIndexChanged;
             // 
             // contextMenuStripListBoxRight
             // 
@@ -426,7 +426,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             moveArtToolStripMenuItem.Size = new System.Drawing.Size(123, 22);
             moveArtToolStripMenuItem.Text = "Move Art";
             moveArtToolStripMenuItem.ToolTipText = "Move Art Image";
-            moveArtToolStripMenuItem.Click += btRightMoveItem_Click;
+            moveArtToolStripMenuItem.Click += BtRightMoveItem_Click;
             // 
             // toolStripSeparator1
             // 
@@ -440,7 +440,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             copyToolStripMenuItemListBoxRight.Size = new System.Drawing.Size(123, 22);
             copyToolStripMenuItemListBoxRight.Text = "Copy";
             copyToolStripMenuItemListBoxRight.ToolTipText = "Copy Art Image to Clipboard";
-            copyToolStripMenuItemListBoxRight.Click += copyToolStripMenuItemListBoxRight_Click;
+            copyToolStripMenuItemListBoxRight.Click += CopyToolStripMenuItemListBoxRight_Click;
             // 
             // btLeftLoad
             // 
@@ -450,7 +450,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             btLeftLoad.TabIndex = 6;
             btLeftLoad.Text = "Left Load";
             btLeftLoad.UseVisualStyleBackColor = true;
-            btLeftLoad.Click += btLeftLoad_Click;
+            btLeftLoad.Click += BtLeftLoad_Click;
             // 
             // textBoxLeftDir
             // 
@@ -467,7 +467,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             btDirLeft.TabIndex = 8;
             btDirLeft.Text = "...";
             btDirLeft.UseVisualStyleBackColor = true;
-            btDirLeft.Click += btDirLeft_Click;
+            btDirLeft.Click += BtDirLeft_Click;
             // 
             // comboBoxSaveDir
             // 
@@ -478,7 +478,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             comboBoxSaveDir.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
             comboBoxSaveDir.Size = new System.Drawing.Size(373, 23);
             comboBoxSaveDir.TabIndex = 13;
-            comboBoxSaveDir.SelectedIndexChanged += comboBoxSaveDir_SelectedIndexChanged;
+            comboBoxSaveDir.SelectedIndexChanged += ComboBoxSaveDir_SelectedIndexChanged;
             // 
             // contextMenuStripPictureboxLeft
             // 
@@ -493,7 +493,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             btRightLoad.TabIndex = 16;
             btRightLoad.Text = "Left Load";
             btRightLoad.UseVisualStyleBackColor = true;
-            btRightLoad.Click += btRightLoad_Click;
+            btRightLoad.Click += BtRightLoad_Click;
             // 
             // btDirRight
             // 
@@ -503,7 +503,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             btDirRight.TabIndex = 17;
             btDirRight.Text = "...";
             btDirRight.UseVisualStyleBackColor = true;
-            btDirRight.Click += btDirRight_Click;
+            btDirRight.Click += BtDirRight_Click;
             // 
             // textBoxRightDir
             // 
@@ -521,7 +521,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             checkBoxSameHeight.TabIndex = 19;
             checkBoxSameHeight.Text = "Same height";
             checkBoxSameHeight.UseVisualStyleBackColor = true;
-            checkBoxSameHeight.CheckedChanged += checkBoxSameHeight_CheckedChanged;
+            checkBoxSameHeight.CheckedChanged += CheckBoxSameHeight_CheckedChanged;
             // 
             // checkBoxOnChangeShowDiff
             // 
@@ -542,7 +542,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             btRightMoveItem.Size = new System.Drawing.Size(52, 49);
             btRightMoveItem.TabIndex = 21;
             btRightMoveItem.UseVisualStyleBackColor = true;
-            btRightMoveItem.Click += btRightMoveItem_Click;
+            btRightMoveItem.Click += BtRightMoveItem_Click;
             // 
             // checkBoxfFreeIDchoice
             // 
@@ -553,7 +553,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             checkBoxfFreeIDchoice.TabIndex = 22;
             checkBoxfFreeIDchoice.Text = "free ID choice";
             checkBoxfFreeIDchoice.UseVisualStyleBackColor = true;
-            checkBoxfFreeIDchoice.CheckedChanged += checkBoxfFreeIDchoice_CheckedChanged;
+            checkBoxfFreeIDchoice.CheckedChanged += CheckBoxfFreeIDchoice_CheckedChanged;
             // 
             // btLeftMoveItem
             // 
@@ -563,7 +563,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             btLeftMoveItem.Size = new System.Drawing.Size(52, 49);
             btLeftMoveItem.TabIndex = 23;
             btLeftMoveItem.UseVisualStyleBackColor = true;
-            btLeftMoveItem.Click += btLeftMoveItem_Click;
+            btLeftMoveItem.Click += BtLeftMoveItem_Click;
             // 
             // btSaveXML
             // 
@@ -573,7 +573,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             btSaveXML.TabIndex = 24;
             btSaveXML.Text = "Save XML";
             btSaveXML.UseVisualStyleBackColor = true;
-            btSaveXML.Click += btSaveXML_Click;
+            btSaveXML.Click += BtSaveXML_Click;
             // 
             // btDelete
             // 
@@ -583,7 +583,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             btDelete.TabIndex = 26;
             btDelete.Text = "Delete";
             btDelete.UseVisualStyleBackColor = true;
-            btDelete.Click += btDelete_Click;
+            btDelete.Click += BtDelete_Click;
             // 
             // comboBoxSaveDir2
             // 
@@ -593,7 +593,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             comboBoxSaveDir2.Name = "comboBoxSaveDir2";
             comboBoxSaveDir2.Size = new System.Drawing.Size(374, 23);
             comboBoxSaveDir2.TabIndex = 27;
-            comboBoxSaveDir2.SelectedIndexChanged += comboBoxSaveDir2_SelectedIndexChanged;
+            comboBoxSaveDir2.SelectedIndexChanged += ComboBoxSaveDir2_SelectedIndexChanged;
             // 
             // tbIDNr
             // 
@@ -612,7 +612,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             btremoveitemfromindex.Size = new System.Drawing.Size(59, 62);
             btremoveitemfromindex.TabIndex = 30;
             btremoveitemfromindex.UseVisualStyleBackColor = true;
-            btremoveitemfromindex.Click += btremoveitemfromindex_Click;
+            btremoveitemfromindex.Click += Btremoveitemfromindex_Click;
             // 
             // btSave
             // 

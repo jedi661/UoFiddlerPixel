@@ -147,8 +147,8 @@ namespace UoFiddler.Controls.UserControls
             listBox.SelectedIndexChanged += ListBox_SelectedIndexChanged;
             listBox.KeyDown += GumpControl_KeyDown;
             listBox.KeyUp += Gump_KeyUp;
-            listBox.MouseDoubleClick += listBox_MouseDoubleClick;
-            listBox.PreviewKeyDown += listBox_PreviewKeyDown;
+            listBox.MouseDoubleClick += ListBox_MouseDoubleClick;
+            listBox.PreviewKeyDown += ListBox_PreviewKeyDown;
             // 
             // contextMenuStrip
             // 
@@ -232,7 +232,7 @@ namespace UoFiddler.Controls.UserControls
             markToolStripMenuItem.Size = new System.Drawing.Size(189, 22);
             markToolStripMenuItem.Text = "Mark";
             markToolStripMenuItem.ToolTipText = "marks the gump";
-            markToolStripMenuItem.Click += markToolStripMenuItem_Click;
+            markToolStripMenuItem.Click += MarkToolStripMenuItem_Click;
             // 
             // toolStripSeparator10
             // 
@@ -246,7 +246,7 @@ namespace UoFiddler.Controls.UserControls
             mirrorToolStripMenuItem.Size = new System.Drawing.Size(189, 22);
             mirrorToolStripMenuItem.Text = "Mirror";
             mirrorToolStripMenuItem.ToolTipText = "Mirror Image";
-            mirrorToolStripMenuItem.Click += mirrorToolStripMenuItem_Click;
+            mirrorToolStripMenuItem.Click += MirrorToolStripMenuItem_Click;
             // 
             // toolStripSeparator8
             // 
@@ -328,7 +328,7 @@ namespace UoFiddler.Controls.UserControls
             copyToolStripMenuItem.Size = new System.Drawing.Size(189, 22);
             copyToolStripMenuItem.Text = "Copy";
             copyToolStripMenuItem.ToolTipText = "The graphic is being saved to the clipboard.";
-            copyToolStripMenuItem.Click += copyToolStripMenuItem_Click;
+            copyToolStripMenuItem.Click += CopyToolStripMenuItem_Click;
             // 
             // importToolStripMenuItem
             // 
@@ -337,7 +337,7 @@ namespace UoFiddler.Controls.UserControls
             importToolStripMenuItem.Size = new System.Drawing.Size(189, 22);
             importToolStripMenuItem.Text = "Import";
             importToolStripMenuItem.ToolTipText = "Paste graphic from clipboard.";
-            importToolStripMenuItem.Click += importToolStripMenuItem_Click;
+            importToolStripMenuItem.Click += ImportToolStripMenuItem_Click;
             // 
             // toolStripSeparator7
             // 
@@ -350,7 +350,7 @@ namespace UoFiddler.Controls.UserControls
             addIDNamesToolStripMenuItem.Name = "addIDNamesToolStripMenuItem";
             addIDNamesToolStripMenuItem.Size = new System.Drawing.Size(189, 22);
             addIDNamesToolStripMenuItem.Text = "Add ID Names";
-            addIDNamesToolStripMenuItem.Click += addIDNamesToolStripMenuItem_Click;
+            addIDNamesToolStripMenuItem.Click += AddIDNamesToolStripMenuItem_Click;
             // 
             // listingToolStripMenuItem
             // 
@@ -359,7 +359,7 @@ namespace UoFiddler.Controls.UserControls
             listingToolStripMenuItem.Size = new System.Drawing.Size(189, 22);
             listingToolStripMenuItem.Text = "Listing";
             listingToolStripMenuItem.ToolTipText = "Helps you find marked addresses faster.";
-            listingToolStripMenuItem.Click += listingToolStripMenuItem_Click;
+            listingToolStripMenuItem.Click += ListingToolStripMenuItem_Click;
             // 
             // topMenuToolStrip
             // 
@@ -460,7 +460,7 @@ namespace UoFiddler.Controls.UserControls
             customSoundToolStripMenuItem.Name = "customSoundToolStripMenuItem";
             customSoundToolStripMenuItem.Size = new System.Drawing.Size(255, 22);
             customSoundToolStripMenuItem.Text = "Custom Sound";
-            customSoundToolStripMenuItem.Click += customSoundToolStripMenuItem_Click;
+            customSoundToolStripMenuItem.Click += CustomSoundToolStripMenuItem_Click;
             // 
             // toolStripSeparator9
             // 
@@ -474,7 +474,7 @@ namespace UoFiddler.Controls.UserControls
             exportAllIDsToTextToolStripMenuItem.Size = new System.Drawing.Size(255, 22);
             exportAllIDsToTextToolStripMenuItem.Text = "Export all IDs to Text";
             exportAllIDsToTextToolStripMenuItem.ToolTipText = "Export all IDs to Text.";
-            exportAllIDsToTextToolStripMenuItem.Click += exportAllIDsToTextToolStripMenuItem_Click;
+            exportAllIDsToTextToolStripMenuItem.Click += ExportAllIDsToTextToolStripMenuItem_Click;
             // 
             // importAllImagesFromTextToolStripMenuItem
             // 
@@ -483,7 +483,7 @@ namespace UoFiddler.Controls.UserControls
             importAllImagesFromTextToolStripMenuItem.Size = new System.Drawing.Size(255, 22);
             importAllImagesFromTextToolStripMenuItem.Text = "Import all Images from Text adress";
             importAllImagesFromTextToolStripMenuItem.ToolTipText = "import all Images from Text Adress.";
-            importAllImagesFromTextToolStripMenuItem.Click += importAllImagesFromTextToolStripMenuItem_Click;
+            importAllImagesFromTextToolStripMenuItem.Click += ImportAllImagesFromTextToolStripMenuItem_Click;
             // 
             // toolStripSeparator6
             // 
@@ -509,7 +509,7 @@ namespace UoFiddler.Controls.UserControls
             toolStripButtonSoundMessage.Name = "toolStripButtonSoundMessage";
             toolStripButtonSoundMessage.Size = new System.Drawing.Size(23, 22);
             toolStripButtonSoundMessage.Text = "toolStripButton1";
-            toolStripButtonSoundMessage.Click += toolStripButtonSoundMessage_Click;
+            toolStripButtonSoundMessage.Click += ToolStripButtonSoundMessage_Click;
             // 
             // pictureBox
             // 

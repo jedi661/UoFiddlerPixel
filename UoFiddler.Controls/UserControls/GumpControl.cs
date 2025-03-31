@@ -48,7 +48,7 @@ namespace UoFiddler.Controls.UserControls
 
             _refMarker = this;
             
-            listBox.KeyDown += listBox_KeyDown;
+            listBox.KeyDown += ListBox_KeyDown;
         }
         #endregion
 
@@ -1252,8 +1252,8 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region [ copyToolStripMenuItem ]
-        private void copyToolStripMenuItem_Click(object sender, EventArgs e)
+        #region [ CopyToolStripMenuItem ]
+        private void CopyToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (listBox.SelectedIndex != -1)
             {
@@ -1339,8 +1339,8 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region [ importToolStripMenuItem = Import Import clipboard - Import graphics from clipboard ]
-        private void importToolStripMenuItem_Click(object sender, EventArgs e)
+        #region [ ImportToolStripMenuItem = Import Import clipboard - Import graphics from clipboard ]
+        private void ImportToolStripMenuItem_Click(object sender, EventArgs e)
         {
             // Check if the clipboard contains an image
             if (Clipboard.ContainsImage())
@@ -1428,13 +1428,13 @@ namespace UoFiddler.Controls.UserControls
             if (e.Control && e.KeyCode == Keys.V)
             {
                 // Calling the importToolStripMenuItem_Click method to import the graphic from the clipboard.
-                importToolStripMenuItem_Click(sender, e);
+                ImportToolStripMenuItem_Click(sender, e);
             }
             // Checking if the Ctrl+X key combination has been pressed
             else if (e.Control && e.KeyCode == Keys.X)
             {
                 // Calling the copyToolStripMenuItem_Click method to import the graphic from the clipboard.
-                copyToolStripMenuItem_Click(sender, e);
+                CopyToolStripMenuItem_Click(sender, e);
             }
         }
         #endregion
@@ -1452,8 +1452,8 @@ namespace UoFiddler.Controls.UserControls
 
         #endregion
 
-        #region [ addIDNamesToolStripMenuItem = Add Id Names Form ]
-        private void addIDNamesToolStripMenuItem_Click(object sender, EventArgs e)
+        #region [ AddIDNamesToolStripMenuItem = Add Id Names Form ]
+        private void AddIDNamesToolStripMenuItem_Click(object sender, EventArgs e)
         {
             // Create a new shape
             Form form = new Form
@@ -1576,7 +1576,7 @@ namespace UoFiddler.Controls.UserControls
         private bool playCustomSound = false; // You can use it to select any sound
         private SoundPlayer player = new SoundPlayer();
 
-        public void toolStripButtonSoundMessage_Click(object sender, EventArgs e)
+        public void ToolStripButtonSoundMessage_Click(object sender, EventArgs e)
         {
             // Toggle the state of isSoundMessageActive
             isSoundMessageActive = !isSoundMessageActive;
@@ -1609,8 +1609,8 @@ namespace UoFiddler.Controls.UserControls
         #region [ Mark ]
         private string lastSelectedId = "50320"; // Default value
 
-        #region listBox_MouseDouvleClick
-        private void listBox_MouseDoubleClick(object sender, MouseEventArgs e)
+        #region [ ListBox_MouseDouvleClick ]
+        private void ListBox_MouseDoubleClick(object sender, MouseEventArgs e)
         {
             // Save the selected ID value when an item in the ListBox is double-clicked
             string itemString = listBox.SelectedItem.ToString();
@@ -1631,8 +1631,8 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region Mark
-        private void markToolStripMenuItem_Click(object sender, EventArgs e)
+        #region [ MarkToolStripMenuItem_Click ]
+        private void MarkToolStripMenuItem_Click(object sender, EventArgs e)
         {
             for (int i = 0; i < listBox.Items.Count; ++i)
             {
@@ -1664,7 +1664,7 @@ namespace UoFiddler.Controls.UserControls
         #endregion
 
         #region [ CoustomSound ]
-        private void customSoundToolStripMenuItem_Click(object sender, EventArgs e)
+        private void CustomSoundToolStripMenuItem_Click(object sender, EventArgs e)
         {
             OpenFileDialog openFileDialog = new OpenFileDialog();
             openFileDialog.Filter = "Wave Sound File (*.wav)|*.wav";
@@ -1677,8 +1677,8 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region [ PreviewKeyDown // Pagedown and up ]
-        private void listBox_PreviewKeyDown(object sender, PreviewKeyDownEventArgs e)
+        #region [ ListBox_PreviewKeyDown ] // Pagedown and up 
+        private void ListBox_PreviewKeyDown(object sender, PreviewKeyDownEventArgs e)
         {
             switch (e.KeyCode)
             {
@@ -1690,8 +1690,8 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region [ second keydown as a replacement ]
-        private void listBox_KeyDown(object sender, KeyEventArgs e)
+        #region [ ListBox_KeyDown ] // second keydown as a replacement
+        private void ListBox_KeyDown(object sender, KeyEventArgs e)
         {
             int visibleItems = listBox.ClientSize.Height / listBox.ItemHeight;
 
@@ -1722,8 +1722,8 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region [ exportAllIDsToTextToolStripMenuItem_Click ]
-        private void exportAllIDsToTextToolStripMenuItem_Click(object sender, EventArgs e)
+        #region [ ExportAllIDsToTextToolStripMenuItem_Click ]
+        private void ExportAllIDsToTextToolStripMenuItem_Click(object sender, EventArgs e)
         {
             ExportAllGumpIDs();
         }
@@ -1769,8 +1769,8 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region [ importAllImagesFromTextToolStripMenuItem ] 
-        private void importAllImagesFromTextToolStripMenuItem_Click(object sender, EventArgs e)
+        #region [ ImportAllImagesFromTextToolStripMenuItem ] 
+        private void ImportAllImagesFromTextToolStripMenuItem_Click(object sender, EventArgs e)
         {
             using (FolderBrowserDialog folderDialog = new FolderBrowserDialog())
             {
@@ -1906,8 +1906,8 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region [ mirrorToolStripMenuItem ]
-        private void mirrorToolStripMenuItem_Click(object sender, EventArgs e)
+        #region [ MirrorToolStripMenuItem_Click ]
+        private void MirrorToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (pictureBox.BackgroundImage == null)
             {
@@ -1929,8 +1929,8 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region [ listingToolStripMenuItem_Click ]
-        private void listingToolStripMenuItem_Click(object sender, EventArgs e)
+        #region [ ListingToolStripMenuItem_Click ]
+        private void ListingToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (addressListForm == null || addressListForm.IsDisposed)
             {

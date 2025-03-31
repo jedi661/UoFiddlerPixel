@@ -43,7 +43,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             LoadOrg();
 
             listBoxOrg.DrawMode = DrawMode.OwnerDrawFixed;
-            listBoxOrg.DrawItem += listBoxOrg_DrawItem;
+            listBoxOrg.DrawItem += ListBoxOrg_DrawItem;
 
             listBoxLeft.DrawMode = DrawMode.OwnerDrawFixed;
             listBoxRight.DrawMode = DrawMode.OwnerDrawFixed;
@@ -149,8 +149,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         }
         #endregion
 
-        #region listBoxOrg_DrawItem
-        private void listBoxOrg_DrawItem(object sender, DrawItemEventArgs e)
+        #region [ ListBoxOrg_DrawItem ]
+        private void ListBoxOrg_DrawItem(object sender, DrawItemEventArgs e)
         {
             if (e.Index == -1)
             {
@@ -170,8 +170,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         }
         #endregion
 
-        #region btDirLeft
-        private void btDirLeft_Click(object sender, EventArgs e)
+        #region [ BtDirLeft ]
+        private void BtDirLeft_Click(object sender, EventArgs e)
         {
             using (FolderBrowserDialog dialog = new FolderBrowserDialog())
             {
@@ -189,8 +189,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         }
         #endregion
 
-        #region btLeftLoad
-        private void btLeftLoad_Click(object sender, EventArgs e)
+        #region [ BtLeftLoad ]
+        private void BtLeftLoad_Click(object sender, EventArgs e)
         {
             if (string.IsNullOrWhiteSpace(textBoxLeftDir.Text))
             {
@@ -224,8 +224,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         }
         #endregion
 
-        #region listBoxLeft_SelectedIndexChanged
-        private void listBoxLeft_SelectedIndexChanged(object sender, EventArgs e)
+        #region [ ListBoxLeft_SelectedIndexChanged ]
+        private void ListBoxLeft_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (listBoxLeft.SelectedIndex == -1)
             {
@@ -265,8 +265,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         }
         #endregion
 
-        #region listBoxLeft
-        private void listBoxLeft_DrawItem(object sender, DrawItemEventArgs e)
+        #region [ ListBoxLeft_DrawItem ]
+        private void ListBoxLeft_DrawItem(object sender, DrawItemEventArgs e)
         {
             if (e.Index == -1)
             {
@@ -286,8 +286,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         }
         #endregion
 
-        #region btDirRight
-        private void btDirRight_Click(object sender, EventArgs e)
+        #region [ BtDirRight ]
+        private void BtDirRight_Click(object sender, EventArgs e)
         {
             using (FolderBrowserDialog dialog = new FolderBrowserDialog())
             {
@@ -305,8 +305,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         }
         #endregion
 
-        #region btRightLoad
-        private void btRightLoad_Click(object sender, EventArgs e)
+        #region [ BtRightLoad ]
+        private void BtRightLoad_Click(object sender, EventArgs e)
         {
             if (string.IsNullOrWhiteSpace(textBoxRightDir.Text))
             {
@@ -340,8 +340,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         }
         #endregion
 
-        #region listBoxRight_SelectedIndexChanged
-        private void listBoxRight_SelectedIndexChanged(object sender, EventArgs e)
+        #region [ ListBoxRight_SelectedIndexChanged ]
+        private void ListBoxRight_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (listBoxRight.SelectedIndex == -1)
             {
@@ -381,8 +381,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         }
         #endregion
 
-        #region listBoxRight_DrawItem
-        private void listBoxRight_DrawItem(object sender, DrawItemEventArgs e)
+        #region [ ListBoxRight_DrawItem ]
+        private void ListBoxRight_DrawItem(object sender, DrawItemEventArgs e)
         {
             if (e.Index == -1)
             {
@@ -498,8 +498,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         }
         #endregion
 
-        #region btRightMoveItem
-        private void btRightMoveItem_Click(object sender, EventArgs e)
+        #region [ BtRightMoveItem ]
+        private void BtRightMoveItem_Click(object sender, EventArgs e)
         {
             if (listBoxRight.SelectedIndex == -1)
             {
@@ -568,8 +568,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         }
         #endregion
 
-        #region checkBoxSameHeight_CheckedChanged
-        private void checkBoxSameHeight_CheckedChanged(object sender, EventArgs e)
+        #region [ CheckBoxSameHeight_CheckedChanged ]
+        private void CheckBoxSameHeight_CheckedChanged(object sender, EventArgs e)
         {
             if (checkBoxSameHeight.Checked)
             {
@@ -578,8 +578,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         }
         #endregion
 
-        #region checkBoxfFreeIDchoice_CheckedChanged
-        private void checkBoxfFreeIDchoice_CheckedChanged(object sender, EventArgs e)
+        #region [ CheckBoxfFreeIDchoice_CheckedChanged ]
+        private void CheckBoxfFreeIDchoice_CheckedChanged(object sender, EventArgs e)
         {
             if (checkBoxfFreeIDchoice.Checked)
             {
@@ -588,8 +588,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         }
         #endregion
 
-        #region btLeftMoveItem
-        private void btLeftMoveItem_Click(object sender, EventArgs e)
+        #region [ BtLeftMoveItem ]
+        private void BtLeftMoveItem_Click(object sender, EventArgs e)
         {
             if (listBoxLeft.SelectedIndex == -1)
             {
@@ -658,8 +658,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         }
         #endregion
 
-        #region btSaveXML
-        private void btSaveXML_Click(object sender, EventArgs e)
+        #region [ BtSaveXML ]
+        private void BtSaveXML_Click(object sender, EventArgs e)
         {
             // Create the directory if it doesn't exist
             string settingsDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "DirectoryisSettings");
@@ -782,8 +782,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         }
         #endregion
 
-        #region comboBoxSaveDir_SelectedIndexChanged
-        private void comboBoxSaveDir_SelectedIndexChanged(object sender, EventArgs e)
+        #region [ ComboBoxSaveDir_SelectedIndexChanged ]
+        private void ComboBoxSaveDir_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (comboBoxSaveDir.SelectedItem != null)
             {
@@ -793,8 +793,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         }
         #endregion
 
-        #region comboBoxSaveDir2_SelectedIndexChanged
-        private void comboBoxSaveDir2_SelectedIndexChanged(object sender, EventArgs e)
+        #region [ ComboBoxSaveDir2_SelectedIndexChanged ]
+        private void ComboBoxSaveDir2_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (comboBoxSaveDir2.SelectedItem != null)
             {
@@ -854,8 +854,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 
         #endregion
 
-        #region btDelete
-        private void btDelete_Click(object sender, EventArgs e)
+        #region [ BtDelete ]
+        private void BtDelete_Click(object sender, EventArgs e)
         {
             // Read the ID from the textbox
             if (!int.TryParse(tbIDNr.Text, out int id))
@@ -872,8 +872,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         }
         #endregion
 
-        #region btremoveitemfromindex
-        private void btremoveitemfromindex_Click(object sender, EventArgs e)
+        #region [ Btremoveitemfromindex ]
+        private void Btremoveitemfromindex_Click(object sender, EventArgs e)
         {
             if (listBoxOrg.SelectedIndex != -1)
             {
@@ -970,8 +970,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         }
         #endregion
 
-        #region Mirror
-        private void mirrorToolStripMenuItem_Click(object sender, EventArgs e)
+        #region [ MirrorToolStripMenuItem_Click ]
+        private void MirrorToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (listBoxOrg.SelectedIndex != -1)
             {
@@ -1004,8 +1004,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         }
         #endregion
 
-        #region Copy Clipboard listBoxOrg
-        private void copyToolStripMenuItem_Click(object sender, EventArgs e)
+        #region [ CopyToolStripMenuItem_Click ]
+        private void CopyToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (listBoxOrg.SelectedIndex != -1)
             {
@@ -1026,9 +1026,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         }
         #endregion
 
-        #region listBoxRight
+        #region [ CopyToolStripMenuItemListBoxRight_Click ]
 
-        private void copyToolStripMenuItemListBoxRight_Click(object sender, EventArgs e)
+        private void CopyToolStripMenuItemListBoxRight_Click(object sender, EventArgs e)
         {
             if (listBoxRight.SelectedIndex != -1)
             {
@@ -1049,8 +1049,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         }
         #endregion
 
-        #region listBoxLeft
-        private void copyToolStripMenuItemListBoxLeft_Click(object sender, EventArgs e)
+        #region [ CopyToolStripMenuItemListBoxLeft_Click ]
+        private void CopyToolStripMenuItemListBoxLeft_Click(object sender, EventArgs e)
         {
             if (listBoxLeft.SelectedIndex != -1)
             {
@@ -1071,8 +1071,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         }
         #endregion
 
-        #region importToolStripclipboardMenuItem
-        private void importToolStripclipboardMenuItem_Click(object sender, EventArgs e)
+        #region [ ImportToolStripclipboardMenuItem_Click }
+        private void ImportToolStripclipboardMenuItem_Click(object sender, EventArgs e)
         {
             if (listBoxOrg.SelectedIndex != -1)
             {

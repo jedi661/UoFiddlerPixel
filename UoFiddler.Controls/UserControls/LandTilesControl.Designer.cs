@@ -252,7 +252,7 @@ namespace UoFiddler.Controls.UserControls
             copyToolStripMenuItem.Size = new System.Drawing.Size(200, 22);
             copyToolStripMenuItem.Text = "Copy";
             copyToolStripMenuItem.ToolTipText = "Copy the graphic to the clipboard.";
-            copyToolStripMenuItem.Click += copyToolStripMenuItem_Click;
+            copyToolStripMenuItem.Click += CopyToolStripMenuItem_Click;
             // 
             // importToolStripMenuItem
             // 
@@ -261,7 +261,7 @@ namespace UoFiddler.Controls.UserControls
             importToolStripMenuItem.Size = new System.Drawing.Size(200, 22);
             importToolStripMenuItem.Text = "Import";
             importToolStripMenuItem.ToolTipText = "Import the graphic from the clipboard.";
-            importToolStripMenuItem.Click += importToolStripMenuItem_Click;
+            importToolStripMenuItem.Click += ImportToolStripMenuItem_Click;
             // 
             // importToTempToolStripMenuItem
             // 
@@ -269,7 +269,7 @@ namespace UoFiddler.Controls.UserControls
             importToTempToolStripMenuItem.Name = "importToTempToolStripMenuItem";
             importToTempToolStripMenuItem.Size = new System.Drawing.Size(200, 22);
             importToTempToolStripMenuItem.Text = "Import to Temp";
-            importToTempToolStripMenuItem.Click += importToTempToolStripMenuItem_Click;
+            importToTempToolStripMenuItem.Click += ImportToTempToolStripMenuItem_Click;
             // 
             // toolStripSeparator8
             // 
@@ -282,7 +282,7 @@ namespace UoFiddler.Controls.UserControls
             rotateBy90DegreesToolStripMenuItem.Name = "rotateBy90DegreesToolStripMenuItem";
             rotateBy90DegreesToolStripMenuItem.Size = new System.Drawing.Size(200, 22);
             rotateBy90DegreesToolStripMenuItem.Text = "Rotate by 90 degrees.";
-            rotateBy90DegreesToolStripMenuItem.Click += rotateBy90DegreesToolStripMenuItem_Click;
+            rotateBy90DegreesToolStripMenuItem.Click += RotateBy90DegreesToolStripMenuItem_Click;
             // 
             // zoomImageToolStripMenuItem
             // 
@@ -291,7 +291,7 @@ namespace UoFiddler.Controls.UserControls
             zoomImageToolStripMenuItem.Size = new System.Drawing.Size(200, 22);
             zoomImageToolStripMenuItem.Text = "Zoom Image";
             zoomImageToolStripMenuItem.ToolTipText = "Zoom into Landtiles";
-            zoomImageToolStripMenuItem.Click += zoomImageToolStripMenuItem_Click;
+            zoomImageToolStripMenuItem.Click += ZoomImageToolStripMenuItem_Click;
             // 
             // toolStripSeparator5
             // 
@@ -305,7 +305,7 @@ namespace UoFiddler.Controls.UserControls
             markToolStripMenuItem.Size = new System.Drawing.Size(200, 22);
             markToolStripMenuItem.Text = "Mark Position";
             markToolStripMenuItem.ToolTipText = "Mark Position";
-            markToolStripMenuItem.Click += markToolStripMenuItem_Click;
+            markToolStripMenuItem.Click += MarkToolStripMenuItem_Click;
             // 
             // gotoMarkToolStripMenuItem
             // 
@@ -314,7 +314,7 @@ namespace UoFiddler.Controls.UserControls
             gotoMarkToolStripMenuItem.Size = new System.Drawing.Size(200, 22);
             gotoMarkToolStripMenuItem.Text = "Goto Position";
             gotoMarkToolStripMenuItem.ToolTipText = "Go To Position";
-            gotoMarkToolStripMenuItem.Click += gotoMarkToolStripMenuItem_Click;
+            gotoMarkToolStripMenuItem.Click += GotoMarkToolStripMenuItem_Click;
             // 
             // backgroundToolStripMenuItem
             // 
@@ -322,7 +322,7 @@ namespace UoFiddler.Controls.UserControls
             backgroundToolStripMenuItem.Name = "backgroundToolStripMenuItem";
             backgroundToolStripMenuItem.Size = new System.Drawing.Size(200, 22);
             backgroundToolStripMenuItem.Text = "Background";
-            backgroundToolStripMenuItem.Click += backgroundToolStripMenuItem_Click;
+            backgroundToolStripMenuItem.Click += BackgroundToolStripMenuItem_Click;
             // 
             // toolStripSeparator9
             // 
@@ -343,7 +343,7 @@ namespace UoFiddler.Controls.UserControls
             colorsImagesToolStripMenuItem.Name = "colorsImagesToolStripMenuItem";
             colorsImagesToolStripMenuItem.Size = new System.Drawing.Size(200, 22);
             colorsImagesToolStripMenuItem.Text = "Colors Images";
-            colorsImagesToolStripMenuItem.Click += colorsImagesToolStripMenuItem_Click;
+            colorsImagesToolStripMenuItem.Click += ColorsImagesToolStripMenuItem_Click;
             // 
             // LandTilesToolStrip
             // 

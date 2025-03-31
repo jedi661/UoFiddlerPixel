@@ -1017,8 +1017,8 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region Copy clipboard - Event handler for the click event of the copyToolStripMenuItem control
-        private void copyToolStripMenuItem_Click(object sender, EventArgs e)
+        #region [ CopyToolStripMenuItem_Click ] Copy clipboard - Event handler for the click event of the copyToolStripMenuItem control
+        private void CopyToolStripMenuItem_Click(object sender, EventArgs e)
         {
             // Check if a graphic is selected
             if (_selectedGraphicId >= 0)
@@ -1065,8 +1065,8 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region Cliport LandTiles - The graphics are imported from the clipboard.
-        private void importToolStripMenuItem_Click(object sender, EventArgs e)
+        #region [ ImportToolStripMenuItem_Click ] Clipboard LandTiles - The graphics are imported from the clipboard.
+        private void ImportToolStripMenuItem_Click(object sender, EventArgs e)
         {
             // Check if the clipboard contains an image
             if (Clipboard.ContainsImage())
@@ -1159,25 +1159,25 @@ namespace UoFiddler.Controls.UserControls
             if (e.Control && e.KeyCode == Keys.V)
             {
                 // Calling the importToolStripMenuItem_Click method to import the graphic from the clipboard.
-                importToolStripMenuItem_Click(sender, e);
+                ImportToolStripMenuItem_Click(sender, e);
             }
             // Checking if the Ctrl+X key combination has been pressed
             else if (e.Control && e.KeyCode == Keys.X)
             {
                 // Calling the copyToolStripMenuItem_Click method to import the graphic from the clipboard.
-                copyToolStripMenuItem_Click(sender, e);
+                CopyToolStripMenuItem_Click(sender, e);
             }
             // Verify that the Ctrl+J key combination was pressed
             else if (e.Control && e.KeyCode == Keys.J)
             {
                 // Call the gotoMarkToolStripMenuItem_Click method to jump to the marked position
-                gotoMarkToolStripMenuItem_Click(sender, e);
+                GotoMarkToolStripMenuItem_Click(sender, e);
             }
         }
         #endregion        
 
-        #region importToTempToolStripMenuItem  Save Image TempDir
-        private void importToTempToolStripMenuItem_Click(object sender, EventArgs e)
+        #region [ ImportToTempToolStripMenuItem_Click] // and Save Image TempDir
+        private void ImportToTempToolStripMenuItem_Click(object sender, EventArgs e)
         {
             // Check if the clipboard contains an image
             if (Clipboard.ContainsImage())
@@ -1276,8 +1276,8 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region Bitmap graphic 90 degrees to the left
-        private void rotateBy90DegreesToolStripMenuItem_Click(object sender, EventArgs e)
+        #region [ RotateBy90DegreesToolStripMenuItem_Click ] Bitmap graphic 90 degrees to the left
+        private void RotateBy90DegreesToolStripMenuItem_Click(object sender, EventArgs e)
         {
             // Check if a valid index is selected
             if (_selectedGraphicId < 0)
@@ -1315,8 +1315,8 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region Zoom Image
-        private void zoomImageToolStripMenuItem_Click(object sender, EventArgs e)
+        #region [ ZoomImageToolStripMenuItem_Click ] Zoom Image
+        private void ZoomImageToolStripMenuItem_Click(object sender, EventArgs e)
         {
             // Create a new shape
             Form zoomForm = new Form();
@@ -1424,10 +1424,10 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region markToolStripMenuItem
+        #region [ MarkToolStripMenuItem_Click ] // Mark the selected position
         // Variable for storing the marked position
         private int markedPosition = -1;
-        private void markToolStripMenuItem_Click(object sender, EventArgs e)
+        private void MarkToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (LandTilesTileView.SelectedIndices.Count > 0)
             {
@@ -1436,8 +1436,8 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region gotoMarkToolStripMenuItem
-        private void gotoMarkToolStripMenuItem_Click(object sender, EventArgs e)
+        #region [ GotoMarkToolStripMenuItem ]
+        private void GotoMarkToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (markedPosition >= 0 && markedPosition < LandTilesTileView.VirtualListSize)
             {
@@ -1448,9 +1448,9 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region backgroundToolStripMenuItem
+        #region [ BackgroundToolStripMenuItem_Click ]
         private bool isBackgroundWhite = true;
-        private void backgroundToolStripMenuItem_Click(object sender, EventArgs e)
+        private void BackgroundToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (isBackgroundWhite)
             {
@@ -1468,8 +1468,8 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region colorsImagesToolStripMenuItem 
-        private void colorsImagesToolStripMenuItem_Click(object sender, EventArgs e)
+        #region [ ColorsImagesToolStripMenuItem_Click ]
+        private void ColorsImagesToolStripMenuItem_Click(object sender, EventArgs e)
         {
             // Use the selected graphic ID directly
             int selectedId = _selectedGraphicId;
