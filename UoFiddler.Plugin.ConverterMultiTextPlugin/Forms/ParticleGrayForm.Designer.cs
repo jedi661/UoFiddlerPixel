@@ -95,9 +95,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // 
             ButtonPixel.Location = new System.Drawing.Point(6, 22);
             ButtonPixel.Name = "ButtonPixel";
-            ButtonPixel.Size = new System.Drawing.Size(75, 23);
+            ButtonPixel.Size = new System.Drawing.Size(87, 23);
             ButtonPixel.TabIndex = 0;
-            ButtonPixel.Text = "Pixel";
+            ButtonPixel.Text = "Pixel Analysis";
             ButtonPixel.UseVisualStyleBackColor = true;
             ButtonPixel.Click += ButtonPixel_Click;
             // 
