@@ -80,6 +80,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         }
         #endregion
 
+        #region [ ConvertParticleGrayToolStripMenuItem_Click ]
         private void ConvertParticleGrayToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (pictureBoxParticleGray.Image != null)
@@ -116,7 +117,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 MessageBox.Show("No image found in the PictureBox!", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
         }
+        #endregion
 
+        #region [ CopyToClipboardToolStripMenuItem_Click ]
         private void CopyToClipboardToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (pictureBoxParticleGray.Image != null)
@@ -136,7 +139,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 MessageBox.Show("No image found in the PictureBox to copy!", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
         }
+        #endregion
 
+        #region [ SaveImageToolStripMenuItem_Click ]
         private void SaveImageToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (pictureBoxParticleGray.Image != null)
@@ -191,7 +196,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 MessageBox.Show("No image found in the PictureBox to save!", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
         }
+        #endregion
 
+        #region [ ButtonPixel_Click ] // Pixel color analysis
         private void ButtonPixel_Click(object sender, EventArgs e)
         {
             Form colorForm = new Form
@@ -382,9 +389,6 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 
             colorForm.Show();
         }
-
-
-
-
+        #endregion
     }
 }
