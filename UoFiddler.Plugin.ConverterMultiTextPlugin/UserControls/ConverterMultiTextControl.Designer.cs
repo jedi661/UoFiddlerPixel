@@ -66,6 +66,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             BtAnimationVDForm = new System.Windows.Forms.Button();
             BtAnimationEditFormButton = new System.Windows.Forms.Button();
             tabPageGraphic = new System.Windows.Forms.TabPage();
+            labelParticleGray = new System.Windows.Forms.Label();
+            buttonParticleGray = new System.Windows.Forms.Button();
             lbConverter = new System.Windows.Forms.Label();
             BtConverter = new System.Windows.Forms.Button();
             lbTransitions = new System.Windows.Forms.Label();
@@ -364,6 +366,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             // 
             // tabPageGraphic
             // 
+            tabPageGraphic.Controls.Add(labelParticleGray);
+            tabPageGraphic.Controls.Add(buttonParticleGray);
             tabPageGraphic.Controls.Add(lbConverter);
             tabPageGraphic.Controls.Add(BtConverter);
             tabPageGraphic.Controls.Add(lbTransitions);
@@ -386,6 +390,25 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             tabPageGraphic.TabIndex = 2;
             tabPageGraphic.Text = "Graphic";
             tabPageGraphic.UseVisualStyleBackColor = true;
+            // 
+            // labelParticleGray
+            // 
+            labelParticleGray.AutoSize = true;
+            labelParticleGray.Location = new System.Drawing.Point(209, 171);
+            labelParticleGray.Name = "labelParticleGray";
+            labelParticleGray.Size = new System.Drawing.Size(73, 15);
+            labelParticleGray.TabIndex = 28;
+            labelParticleGray.Text = "Particle Gray";
+            // 
+            // buttonParticleGray
+            // 
+            buttonParticleGray.Image = Properties.Resources.particlegrayimage;
+            buttonParticleGray.Location = new System.Drawing.Point(209, 104);
+            buttonParticleGray.Name = "buttonParticleGray";
+            buttonParticleGray.Size = new System.Drawing.Size(56, 64);
+            buttonParticleGray.TabIndex = 27;
+            buttonParticleGray.UseVisualStyleBackColor = true;
+            buttonParticleGray.Click += ButtonParticleGray_Click;
             // 
             // lbConverter
             // 
@@ -972,6 +995,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
         private System.Windows.Forms.TextBox TBMinimum;
         private System.Windows.Forms.Label LBMinimum;
         private System.Windows.Forms.Label LBMaximum;
-        private System.Windows.Forms.Panel PanelMinMax;       
+        private System.Windows.Forms.Panel PanelMinMax;
+        private System.Windows.Forms.Label labelParticleGray;
+        private System.Windows.Forms.Button buttonParticleGray;
     }
 }

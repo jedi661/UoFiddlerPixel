@@ -1,3 +1,6 @@
+Version : 4.12.10 #XG1
+- ParticleGray Tool.
+
 Version : 4.12.9 #XG1
 - Fixed importing animation frames from gif files.
 - Reading of compressed Cliloc files is possible but saving will still result in old cliloc format.

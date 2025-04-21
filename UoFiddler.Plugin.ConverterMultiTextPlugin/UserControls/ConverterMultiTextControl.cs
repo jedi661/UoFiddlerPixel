@@ -953,5 +953,42 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             }
         }
         #endregion
+
+        #region [ ButtonParticleGray_Click ]
+        private ParticleGrayForm particleGrayFormInstance;
+
+        private void ButtonParticleGray_Click(object sender, EventArgs e)
+        {
+            if (particleGrayFormInstance == null || particleGrayFormInstance.IsDisposed)
+            {
+                // Create and configure the tooltip
+                ToolTip toolTipParticleGray = new ToolTip();
+                toolTipParticleGray.AutoPopDelay = 5000;
+                toolTipParticleGray.InitialDelay = 1000;
+                toolTipParticleGray.ReshowDelay = 500;
+                toolTipParticleGray.ShowAlways = true;
+                toolTipParticleGray.SetToolTip(this.buttonParticleGray, "Particle Gray Form");
+
+                // Open the form
+                particleGrayFormInstance = new ParticleGrayForm();
+                particleGrayFormInstance.FormClosed += ParticleGrayFormClosed;
+                particleGrayFormInstance.Show();
+            }
+            else
+            {
+                particleGrayFormInstance.BringToFront();
+            }
+        }
+
+        private void ParticleGrayFormClosed(object sender, EventArgs e)
+        {
+            if (_isFormOpen)
+            {
+                _isFormOpen = false;
+                buttonParticleGray.Enabled = true;
+                particleGrayFormInstance = null;
+            }
+        }
+        #endregion
     }
 }

@@ -629,20 +629,20 @@ namespace UoFiddler.Controls.UserControls
             // 
             backgroundOffToolStripMenuItem.Image = Properties.Resources.reload;
             backgroundOffToolStripMenuItem.Name = "backgroundOffToolStripMenuItem";
-            backgroundOffToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            backgroundOffToolStripMenuItem.Size = new System.Drawing.Size(156, 22);
             backgroundOffToolStripMenuItem.Text = "Background off";
             backgroundOffToolStripMenuItem.Click += backgroundOffToolStripMenuItem_Click;
             // 
             // toolStripSeparator4
             // 
             toolStripSeparator4.Name = "toolStripSeparator4";
-            toolStripSeparator4.Size = new System.Drawing.Size(177, 6);
+            toolStripSeparator4.Size = new System.Drawing.Size(153, 6);
             // 
             // greenToolStripMenuItem
             // 
             greenToolStripMenuItem.Image = Properties.Resources.Help;
             greenToolStripMenuItem.Name = "greenToolStripMenuItem";
-            greenToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            greenToolStripMenuItem.Size = new System.Drawing.Size(156, 22);
             greenToolStripMenuItem.Text = "Grass";
             greenToolStripMenuItem.Click += greenToolStripMenuItem_Click;
             // 
@@ -650,7 +650,7 @@ namespace UoFiddler.Controls.UserControls
             // 
             waterToolStripMenuItem.Image = Properties.Resources.Help;
             waterToolStripMenuItem.Name = "waterToolStripMenuItem";
-            waterToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            waterToolStripMenuItem.Size = new System.Drawing.Size(156, 22);
             waterToolStripMenuItem.Text = "Water";
             waterToolStripMenuItem.Click += waterToolStripMenuItem_Click;
             // 
