@@ -43,6 +43,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ParticleGrayForm));
             splitContainerParticleGray = new System.Windows.Forms.SplitContainer();
+            groupBoxColor = new System.Windows.Forms.GroupBox();
+            buttonColorfind = new System.Windows.Forms.Button();
+            labelHexcode = new System.Windows.Forms.Label();
+            textBoxColorHex = new System.Windows.Forms.TextBox();
+            ButtonColorizeGrayMask = new System.Windows.Forms.Button();
             groupBoxEdit = new System.Windows.Forms.GroupBox();
             ButtonRestoreColorFromMask = new System.Windows.Forms.Button();
             ButtonApplyCorrection = new System.Windows.Forms.Button();
@@ -65,6 +70,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             splitContainerParticleGray.Panel1.SuspendLayout();
             splitContainerParticleGray.Panel2.SuspendLayout();
             splitContainerParticleGray.SuspendLayout();
+            groupBoxColor.SuspendLayout();
             groupBoxEdit.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)pictureBoxParticleGray).BeginInit();
             contextMenuStripParticleGray.SuspendLayout();
@@ -79,6 +85,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // 
             // splitContainerParticleGray.Panel1
             // 
+            splitContainerParticleGray.Panel1.Controls.Add(groupBoxColor);
             splitContainerParticleGray.Panel1.Controls.Add(groupBoxEdit);
             // 
             // splitContainerParticleGray.Panel2
@@ -87,6 +94,55 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             splitContainerParticleGray.Size = new System.Drawing.Size(800, 450);
             splitContainerParticleGray.SplitterDistance = 388;
             splitContainerParticleGray.TabIndex = 0;
+            // 
+            // groupBoxColor
+            // 
+            groupBoxColor.Controls.Add(buttonColorfind);
+            groupBoxColor.Controls.Add(labelHexcode);
+            groupBoxColor.Controls.Add(textBoxColorHex);
+            groupBoxColor.Controls.Add(ButtonColorizeGrayMask);
+            groupBoxColor.Location = new System.Drawing.Point(12, 176);
+            groupBoxColor.Name = "groupBoxColor";
+            groupBoxColor.Size = new System.Drawing.Size(361, 175);
+            groupBoxColor.TabIndex = 1;
+            groupBoxColor.TabStop = false;
+            groupBoxColor.Text = "Color";
+            // 
+            // buttonColorfind
+            // 
+            buttonColorfind.Location = new System.Drawing.Point(12, 63);
+            buttonColorfind.Name = "buttonColorfind";
+            buttonColorfind.Size = new System.Drawing.Size(159, 23);
+            buttonColorfind.TabIndex = 3;
+            buttonColorfind.Text = "RGB color mixer";
+            buttonColorfind.UseVisualStyleBackColor = true;
+            buttonColorfind.Click += ButtonColorfind_Click;
+            // 
+            // labelHexcode
+            // 
+            labelHexcode.AutoSize = true;
+            labelHexcode.Location = new System.Drawing.Point(98, 16);
+            labelHexcode.Name = "labelHexcode";
+            labelHexcode.Size = new System.Drawing.Size(57, 15);
+            labelHexcode.TabIndex = 2;
+            labelHexcode.Text = "Hexcode:";
+            // 
+            // textBoxColorHex
+            // 
+            textBoxColorHex.Location = new System.Drawing.Point(95, 34);
+            textBoxColorHex.Name = "textBoxColorHex";
+            textBoxColorHex.Size = new System.Drawing.Size(76, 23);
+            textBoxColorHex.TabIndex = 1;
+            // 
+            // ButtonColorizeGrayMask
+            // 
+            ButtonColorizeGrayMask.Location = new System.Drawing.Point(12, 34);
+            ButtonColorizeGrayMask.Name = "ButtonColorizeGrayMask";
+            ButtonColorizeGrayMask.Size = new System.Drawing.Size(75, 23);
+            ButtonColorizeGrayMask.TabIndex = 0;
+            ButtonColorizeGrayMask.Text = "Dyeing in";
+            ButtonColorizeGrayMask.UseVisualStyleBackColor = true;
+            ButtonColorizeGrayMask.Click += ButtonColorizeGrayArea_Click;
             // 
             // groupBoxEdit
             // 
@@ -267,6 +323,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             splitContainerParticleGray.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)splitContainerParticleGray).EndInit();
             splitContainerParticleGray.ResumeLayout(false);
+            groupBoxColor.ResumeLayout(false);
+            groupBoxColor.PerformLayout();
             groupBoxEdit.ResumeLayout(false);
             groupBoxEdit.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)pictureBoxParticleGray).EndInit();
@@ -295,5 +353,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private System.Windows.Forms.CheckBox checkBoxCorrection;
         private System.Windows.Forms.Button ButtonApplyCorrection;
         private System.Windows.Forms.Button ButtonRestoreColorFromMask;
+        private System.Windows.Forms.GroupBox groupBoxColor;
+        private System.Windows.Forms.Button ButtonColorizeGrayMask;
+        private System.Windows.Forms.TextBox textBoxColorHex;
+        private System.Windows.Forms.Label labelHexcode;
+        private System.Windows.Forms.Button buttonColorfind;
     }
 }

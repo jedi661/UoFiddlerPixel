@@ -34,7 +34,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private int zoomLevel = 0; // 0 = original, max +2, min -2
         private const int MaxZoom = 2;
         private const int MinZoom = 0;
-        private Bitmap loadedImageOriginal;        
+        private Bitmap loadedImageOriginal;
         private List<Point> correctionPoints = new List<Point>(); // Yellow correction mask
         private bool correctionMode = false;
 
@@ -773,6 +773,151 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // Redraw
             pictureBoxParticleGray.Invalidate();
         }
+        #endregion
+
+        #region [ ButtonColorizeGrayArea_Click ]
+        private void ButtonColorizeGrayArea_Click(object sender, EventArgs e)
+        {
+            if (originalImage == null)
+            {
+                MessageBox.Show("No image loaded.");
+                return;
+            }
+
+            string hex = textBoxColorHex.Text.Trim();
+            if (!Regex.IsMatch(hex, @"^#?([0-9A-Fa-f]{6})$"))
+            {
+                MessageBox.Show("Invalid color code. Use, for example, #FF9933.");
+                return;
+            }
+
+            if (!hex.StartsWith("#"))
+                hex = "#" + hex;
+
+            Color targetColor = ColorTranslator.FromHtml(hex);
+
+            Bitmap updatedImage = new Bitmap(originalImage);
+
+            for (int y = 0; y < updatedImage.Height; y++)
+            {
+                for (int x = 0; x < updatedImage.Width; x++)
+                {
+                    Color px = updatedImage.GetPixel(x, y);
+
+                    // Only gray areas (R = G = B)
+                    if (px.R == px.G && px.G == px.B)
+                    {
+                        float intensity = px.R / 255f; // Gray brightness
+                        int r = (int)(targetColor.R * intensity);
+                        int g = (int)(targetColor.G * intensity);
+                        int b = (int)(targetColor.B * intensity);
+
+                        updatedImage.SetPixel(x, y, Color.FromArgb(r, g, b));
+                    }
+                }
+            }
+
+            originalImage.Dispose();
+            originalImage = updatedImage;
+
+            ApplyZoom();
+            pictureBoxParticleGray.Invalidate();
+        }
+        #endregion
+
+        #region [ RGB color mixer ]
+        #region [ ButtonColorfind_Click ]
+        private void ButtonColorfind_Click(object sender, EventArgs e)
+        {
+            using (FormRgbMixer mixer = new FormRgbMixer())
+            {
+                if (mixer.ShowDialog() == DialogResult.OK)
+                {
+                    textBoxColorHex.Text = mixer.SelectedHexColor;
+                }
+            }
+        }
+        #endregion
+
+        #region [ Clas FormRgbMixer ]
+        public class FormRgbMixer : Form
+        {
+            private TrackBar trackBarR;
+            private TrackBar trackBarG;
+            private TrackBar trackBarB;
+            private Label labelR;
+            private Label labelG;
+            private Label labelB;
+            private PictureBox pictureBoxPreview;
+            private TextBox textBoxHex;
+            private Button buttonOk;
+
+            public string SelectedHexColor { get; private set; }
+
+            public FormRgbMixer()
+            {
+                Text = "RGB color mixer";
+                FormBorderStyle = FormBorderStyle.FixedDialog;
+                MaximizeBox = false;
+                MinimizeBox = false;
+                ClientSize = new Size(300, 300);
+                StartPosition = FormStartPosition.CenterParent;
+
+                trackBarR = new TrackBar { Minimum = 0, Maximum = 255, TickFrequency = 5, Left = 20, Top = 30, Width = 200 };
+                trackBarG = new TrackBar { Minimum = 0, Maximum = 255, TickFrequency = 5, Left = 20, Top = 80, Width = 200 };
+                trackBarB = new TrackBar { Minimum = 0, Maximum = 255, TickFrequency = 5, Left = 20, Top = 130, Width = 200 };
+
+                labelR = new Label { Left = 230, Top = 30, Width = 40, Text = "0" };
+                labelG = new Label { Left = 230, Top = 80, Width = 40, Text = "0" };
+                labelB = new Label { Left = 230, Top = 130, Width = 40, Text = "0" };
+
+                pictureBoxPreview = new PictureBox { Left = 20, Top = 180, Width = 100, Height = 50, BorderStyle = BorderStyle.FixedSingle };
+                textBoxHex = new TextBox { Left = 130, Top = 190, Width = 130 };
+                buttonOk = new Button { Text = "OK", Left = 100, Top = 240, Width = 80 };
+
+                trackBarR.Scroll += (s, e) => UpdateColor();
+                trackBarG.Scroll += (s, e) => UpdateColor();
+                trackBarB.Scroll += (s, e) => UpdateColor();
+
+                buttonOk.Click += (s, e) =>
+                {
+                    SelectedHexColor = textBoxHex.Text;
+                    DialogResult = DialogResult.OK;
+                    Close();
+                };
+
+                Controls.Add(trackBarR);
+                Controls.Add(trackBarG);
+                Controls.Add(trackBarB);
+                Controls.Add(labelR);
+                Controls.Add(labelG);
+                Controls.Add(labelB);
+                Controls.Add(pictureBoxPreview);
+                Controls.Add(textBoxHex);
+                Controls.Add(buttonOk);
+
+                UpdateColor(); // Initial
+            }
+            #endregion
+
+            #region [ UpdateColor ]
+            private void UpdateColor()
+            {
+                int r = trackBarR.Value;
+                int g = trackBarG.Value;
+                int b = trackBarB.Value;
+
+                labelR.Text = r.ToString();
+                labelG.Text = g.ToString();
+                labelB.Text = b.ToString();
+
+                Color color = Color.FromArgb(r, g, b);
+                pictureBoxPreview.BackColor = color;
+
+                textBoxHex.Text = $"#{color.R:X2}{color.G:X2}{color.B:X2}";
+            }
+        }
+        #endregion
         #endregion
     }
 }
