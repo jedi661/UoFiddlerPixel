@@ -1,9 +1,8 @@
 ﻿// /***************************************************************************
 //  *
-//  * $Author: Turley
-//  * Advanced Nikodemus
+//  * $Author: Nikodemus 
 //  * 
-//  * \"THE BEER-WINE-WARE LICENSE\"
+//  * "THE BEER-WINE-WARE LICENSE"
 //  * As long as you retain this notice you can do whatever you want with 
 //  * this stuff. If we meet some day, and you think this stuff is worth it,
 //  * you can buy me a beer and Wine in return.
@@ -22,12 +21,22 @@ using System.Windows.Forms;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Text.RegularExpressions;
+using System.Drawing.Drawing2D;
 
 
 namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 {
     public partial class ParticleGrayForm : Form
     {
+        private bool isDrawing = false;
+        private List<Point> maskPoints = new List<Point>();
+        private Bitmap originalImage;
+        private int zoomLevel = 0; // 0 = original, max +2, min -2
+        private const int MaxZoom = 2;
+        private const int MinZoom = 0;
+        private Bitmap loadedImageOriginal;
+
+
         public ParticleGrayForm()
         {
             InitializeComponent();
@@ -48,6 +57,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                     {
                         pictureBoxParticleGray.Image = Image.FromFile(openFileDialog.FileName);
                         pictureBoxParticleGray.SizeMode = PictureBoxSizeMode.CenterImage;
+
+                        // Bild für spätere Bearbeitung speichern
+                        originalImage = new Bitmap(pictureBoxParticleGray.Image);
+                        loadedImageOriginal = new Bitmap(originalImage); // Originalzustand sichern
                     }
                     catch (Exception ex)
                     {
@@ -67,6 +80,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 {
                     pictureBoxParticleGray.Image = Clipboard.GetImage();
                     pictureBoxParticleGray.SizeMode = PictureBoxSizeMode.CenterImage; // Optional: Adjust image size
+
+                    // Bild für spätere Bearbeitung speichern
+                    originalImage = new Bitmap(pictureBoxParticleGray.Image);
+                    loadedImageOriginal = new Bitmap(originalImage); // Originalzustand sichern
                 }
                 catch (Exception ex)
                 {
@@ -388,6 +405,217 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             };
 
             colorForm.Show();
+        }
+        #endregion
+
+        #region [ pictureBoxParticleGray_MouseDown ]
+        private void pictureBoxParticleGray_MouseDown(object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Left)
+            {
+                isDrawing = true;
+                maskPoints.Clear();
+                maskPoints.Add(e.Location);
+            }
+        }
+        #endregion
+
+        #region [ pictureBoxParticleGray_MouseMove ]
+        private void pictureBoxParticleGray_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (isDrawing)
+            {
+                maskPoints.Add(e.Location);
+                pictureBoxParticleGray.Invalidate(); // Triggert Neuzeichnung
+            }
+        }
+        #endregion
+
+        #region [ pictureBoxParticleGray_MouseUp ]
+        private void pictureBoxParticleGray_MouseUp(object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Left)
+            {
+                isDrawing = false;
+            }
+        }
+        #endregion
+
+        #region [ pictureBoxParticleGray_Paint ]
+        private void pictureBoxParticleGray_Paint(object sender, PaintEventArgs e)
+        {
+            if (maskPoints.Count > 1)
+            {
+                using (Pen pen = new Pen(Color.Red, 2))
+                {
+                    e.Graphics.DrawLines(pen, maskPoints.ToArray());
+                }
+
+                using (Brush brush = new SolidBrush(Color.FromArgb(80, Color.Red)))
+                {
+                    e.Graphics.FillPolygon(brush, maskPoints.ToArray());
+                }
+            }
+        }
+        #endregion
+
+        #region [ ButtonConvertMask_Click ]
+        private void ButtonConvertMask_Click(object sender, EventArgs e)
+        {
+            if (originalImage == null || maskPoints.Count < 3)
+            {
+                MessageBox.Show("Kein Bild geladen oder keine gültige Maske gezeichnet.");
+                return;
+            }
+
+            // Maske in Bildkoordinaten transformieren
+            List<Point> translatedPoints = maskPoints.Select(p => TranslateToImageCoordinates(p)).ToList();
+
+            // Neues bearbeitetes Bild erstellen
+            Bitmap updatedImage = new Bitmap(originalImage);
+            using (GraphicsPath path = new GraphicsPath())
+            {
+                path.AddPolygon(translatedPoints.ToArray());
+
+                // Maske pixelweise in Graustufen umwandeln
+                for (int y = 0; y < updatedImage.Height; y++)
+                {
+                    for (int x = 0; x < updatedImage.Width; x++)
+                    {
+                        if (path.IsVisible(x, y))
+                        {
+                            Color c = updatedImage.GetPixel(x, y);
+                            int gray = (int)(c.R * 0.3 + c.G * 0.59 + c.B * 0.11);
+                            Color grayColor = Color.FromArgb(gray, gray, gray);
+                            updatedImage.SetPixel(x, y, grayColor);
+                        }
+                    }
+                }
+            }
+
+            // Vorheriges Bild korrekt freigeben
+            originalImage.Dispose();
+            originalImage = updatedImage;
+
+            // Die Bildanzeige aktualisieren
+            pictureBoxParticleGray.Image = new Bitmap(originalImage); // zwingt ein Neuladen
+            pictureBoxParticleGray.Invalidate();
+
+            // Zoom zurücksetzen und anwenden
+            zoomLevel = 0;
+            ApplyZoom();
+
+            // Maske löschen
+            maskPoints.Clear();
+        }
+        #endregion
+
+        #region [ Paint TranslateToImageCoordinates ]        
+        private Point TranslateToImageCoordinates(Point p)
+        {
+            if (pictureBoxParticleGray.Image == null)
+                return p;
+
+            float scale = 1f + zoomLevel * 0.5f;
+
+            PictureBoxSizeMode sizeMode = pictureBoxParticleGray.SizeMode;
+            Image image = pictureBoxParticleGray.Image;
+
+            int imgWidth = image.Width;
+            int imgHeight = image.Height;
+            int pbWidth = pictureBoxParticleGray.Width;
+            int pbHeight = pictureBoxParticleGray.Height;
+
+            int offsetX = (pbWidth - imgWidth) / 2;
+            int offsetY = (pbHeight - imgHeight) / 2;
+
+            // Mausposition auf Bildkoordinaten zurückrechnen (inkl. Zoom)
+            float imageX = (p.X - offsetX) / scale;
+            float imageY = (p.Y - offsetY) / scale;
+
+            return new Point((int)imageX, (int)imageY);
+        }
+        #endregion
+
+        #region [ ApplyZoom ]
+        private void ApplyZoom()
+        {
+            if (originalImage == null)
+                return;
+
+            // Berechne Skalierungsfaktor
+            float scale = 1f + zoomLevel * 0.5f; // z. B. 1.5f bei ZoomLevel 1
+
+            int newWidth = (int)(originalImage.Width * scale);
+            int newHeight = (int)(originalImage.Height * scale);
+
+            Bitmap zoomedImage = new Bitmap(newWidth, newHeight);
+            using (Graphics g = Graphics.FromImage(zoomedImage))
+            {
+                g.InterpolationMode = InterpolationMode.NearestNeighbor;
+                g.PixelOffsetMode = PixelOffsetMode.None;
+                g.DrawImage(originalImage, new Rectangle(0, 0, newWidth, newHeight));
+            }
+
+            pictureBoxParticleGray.Image = zoomedImage;
+            pictureBoxParticleGray.SizeMode = PictureBoxSizeMode.CenterImage;
+        }
+        #endregion
+
+        #region [ ButtonZoomIn_Click ]
+        private void ButtonZoomIn_Click(object sender, EventArgs e)
+        {
+            if (zoomLevel < MaxZoom)
+            {
+                zoomLevel++;
+                ApplyZoom();
+            }
+            else
+            {
+                MessageBox.Show("Maximaler Zoom erreicht.");
+            }
+        }
+        #endregion
+
+        #region [ ButtonZoomOut_Click ]
+        private void ButtonZoomOut_Click(object sender, EventArgs e)
+        {
+            if (zoomLevel > MinZoom)
+            {
+                zoomLevel--;
+                ApplyZoom();
+            }
+            else
+            {
+                MessageBox.Show("Bereits in Originalgröße.");
+            }
+        }
+        #endregion
+
+        #region [ ButtonZoomReset_Click ]
+        private void ButtonResetImage_Click(object sender, EventArgs e)
+        {
+            if (loadedImageOriginal == null)
+            {
+                MessageBox.Show("Kein Originalbild vorhanden.");
+                return;
+            }
+
+            // Altes Bild freigeben
+            originalImage?.Dispose();
+
+            // Original wiederherstellen
+            originalImage = new Bitmap(loadedImageOriginal);
+
+            // Zoom zurücksetzen
+            zoomLevel = 0;
+            ApplyZoom();
+
+            // Maske löschen
+            maskPoints.Clear();
+
+            // Neu zeichnen
+            pictureBoxParticleGray.Invalidate();
         }
         #endregion
     }

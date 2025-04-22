@@ -44,6 +44,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ParticleGrayForm));
             splitContainerParticleGray = new System.Windows.Forms.SplitContainer();
             groupBoxEdit = new System.Windows.Forms.GroupBox();
+            ButtonZoomOut = new System.Windows.Forms.Button();
+            ButtonZoomIn = new System.Windows.Forms.Button();
+            ButtonConvertMask = new System.Windows.Forms.Button();
             ButtonPixel = new System.Windows.Forms.Button();
             pictureBoxParticleGray = new System.Windows.Forms.PictureBox();
             contextMenuStripParticleGray = new System.Windows.Forms.ContextMenuStrip(components);
@@ -54,6 +57,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             toolStripSeparatorParticeGray1 = new System.Windows.Forms.ToolStripSeparator();
             CopyToClipboardToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             SaveImageToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            ButtonResetImage = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)splitContainerParticleGray).BeginInit();
             splitContainerParticleGray.Panel1.SuspendLayout();
             splitContainerParticleGray.Panel2.SuspendLayout();
@@ -83,6 +87,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // 
             // groupBoxEdit
             // 
+            groupBoxEdit.Controls.Add(ButtonResetImage);
+            groupBoxEdit.Controls.Add(ButtonZoomOut);
+            groupBoxEdit.Controls.Add(ButtonZoomIn);
+            groupBoxEdit.Controls.Add(ButtonConvertMask);
             groupBoxEdit.Controls.Add(ButtonPixel);
             groupBoxEdit.Location = new System.Drawing.Point(12, 12);
             groupBoxEdit.Name = "groupBoxEdit";
@@ -90,6 +98,36 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             groupBoxEdit.TabIndex = 0;
             groupBoxEdit.TabStop = false;
             groupBoxEdit.Text = "Edit";
+            // 
+            // ButtonZoomOut
+            // 
+            ButtonZoomOut.Location = new System.Drawing.Point(266, 101);
+            ButtonZoomOut.Name = "ButtonZoomOut";
+            ButtonZoomOut.Size = new System.Drawing.Size(75, 23);
+            ButtonZoomOut.TabIndex = 3;
+            ButtonZoomOut.Text = "Zoom Out";
+            ButtonZoomOut.UseVisualStyleBackColor = true;
+            ButtonZoomOut.Click += ButtonZoomOut_Click;
+            // 
+            // ButtonZoomIn
+            // 
+            ButtonZoomIn.Location = new System.Drawing.Point(266, 72);
+            ButtonZoomIn.Name = "ButtonZoomIn";
+            ButtonZoomIn.Size = new System.Drawing.Size(75, 23);
+            ButtonZoomIn.TabIndex = 2;
+            ButtonZoomIn.Text = "Zoom In";
+            ButtonZoomIn.UseVisualStyleBackColor = true;
+            ButtonZoomIn.Click += ButtonZoomIn_Click;
+            // 
+            // ButtonConvertMask
+            // 
+            ButtonConvertMask.Location = new System.Drawing.Point(257, 22);
+            ButtonConvertMask.Name = "ButtonConvertMask";
+            ButtonConvertMask.Size = new System.Drawing.Size(84, 23);
+            ButtonConvertMask.TabIndex = 1;
+            ButtonConvertMask.Text = "Convert Gray";
+            ButtonConvertMask.UseVisualStyleBackColor = true;
+            ButtonConvertMask.Click += ButtonConvertMask_Click;
             // 
             // ButtonPixel
             // 
@@ -112,6 +150,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             pictureBoxParticleGray.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage;
             pictureBoxParticleGray.TabIndex = 0;
             pictureBoxParticleGray.TabStop = false;
+            pictureBoxParticleGray.Paint += pictureBoxParticleGray_Paint;
+            pictureBoxParticleGray.MouseDown += pictureBoxParticleGray_MouseDown;
+            pictureBoxParticleGray.MouseMove += pictureBoxParticleGray_MouseMove;
+            pictureBoxParticleGray.MouseUp += pictureBoxParticleGray_MouseUp;
             // 
             // contextMenuStripParticleGray
             // 
@@ -164,6 +206,16 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             SaveImageToolStripMenuItem.Text = "Save Image";
             SaveImageToolStripMenuItem.Click += SaveImageToolStripMenuItem_Click;
             // 
+            // ButtonResetImage
+            // 
+            ButtonResetImage.Location = new System.Drawing.Point(195, 22);
+            ButtonResetImage.Name = "ButtonResetImage";
+            ButtonResetImage.Size = new System.Drawing.Size(56, 23);
+            ButtonResetImage.TabIndex = 4;
+            ButtonResetImage.Text = "Reset";
+            ButtonResetImage.UseVisualStyleBackColor = true;
+            ButtonResetImage.Click += ButtonResetImage_Click;
+            // 
             // ParticleGrayForm
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -198,5 +250,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private System.Windows.Forms.ToolStripMenuItem SaveImageToolStripMenuItem;
         private System.Windows.Forms.GroupBox groupBoxEdit;
         private System.Windows.Forms.Button ButtonPixel;
+        private System.Windows.Forms.Button ButtonConvertMask;
+        private System.Windows.Forms.Button ButtonZoomOut;
+        private System.Windows.Forms.Button ButtonZoomIn;
+        private System.Windows.Forms.Button ButtonResetImage;
     }
 }
