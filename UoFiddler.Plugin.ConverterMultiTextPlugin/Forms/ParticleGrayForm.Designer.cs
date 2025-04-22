@@ -44,6 +44,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ParticleGrayForm));
             splitContainerParticleGray = new System.Windows.Forms.SplitContainer();
             groupBoxEdit = new System.Windows.Forms.GroupBox();
+            ButtonApplyCorrection = new System.Windows.Forms.Button();
+            checkBoxCorrection = new System.Windows.Forms.CheckBox();
+            ButtonResetImage = new System.Windows.Forms.Button();
             ButtonZoomOut = new System.Windows.Forms.Button();
             ButtonZoomIn = new System.Windows.Forms.Button();
             ButtonConvertMask = new System.Windows.Forms.Button();
@@ -57,7 +60,6 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             toolStripSeparatorParticeGray1 = new System.Windows.Forms.ToolStripSeparator();
             CopyToClipboardToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             SaveImageToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            ButtonResetImage = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)splitContainerParticleGray).BeginInit();
             splitContainerParticleGray.Panel1.SuspendLayout();
             splitContainerParticleGray.Panel2.SuspendLayout();
@@ -87,6 +89,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // 
             // groupBoxEdit
             // 
+            groupBoxEdit.Controls.Add(ButtonApplyCorrection);
+            groupBoxEdit.Controls.Add(checkBoxCorrection);
             groupBoxEdit.Controls.Add(ButtonResetImage);
             groupBoxEdit.Controls.Add(ButtonZoomOut);
             groupBoxEdit.Controls.Add(ButtonZoomIn);
@@ -99,9 +103,40 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             groupBoxEdit.TabStop = false;
             groupBoxEdit.Text = "Edit";
             // 
+            // ButtonApplyCorrection
+            // 
+            ButtonApplyCorrection.Location = new System.Drawing.Point(6, 72);
+            ButtonApplyCorrection.Name = "ButtonApplyCorrection";
+            ButtonApplyCorrection.Size = new System.Drawing.Size(87, 23);
+            ButtonApplyCorrection.TabIndex = 6;
+            ButtonApplyCorrection.Text = "Correction";
+            ButtonApplyCorrection.UseVisualStyleBackColor = true;
+            ButtonApplyCorrection.Click += ButtonApplyCorrection_Click;
+            // 
+            // checkBoxCorrection
+            // 
+            checkBoxCorrection.AutoSize = true;
+            checkBoxCorrection.Location = new System.Drawing.Point(6, 105);
+            checkBoxCorrection.Name = "checkBoxCorrection";
+            checkBoxCorrection.Size = new System.Drawing.Size(165, 19);
+            checkBoxCorrection.TabIndex = 5;
+            checkBoxCorrection.Text = "Correction mode (cutting)";
+            checkBoxCorrection.UseVisualStyleBackColor = true;
+            checkBoxCorrection.CheckedChanged += checkBoxCorrection_CheckedChanged;
+            // 
+            // ButtonResetImage
+            // 
+            ButtonResetImage.Location = new System.Drawing.Point(208, 22);
+            ButtonResetImage.Name = "ButtonResetImage";
+            ButtonResetImage.Size = new System.Drawing.Size(56, 23);
+            ButtonResetImage.TabIndex = 4;
+            ButtonResetImage.Text = "Reset";
+            ButtonResetImage.UseVisualStyleBackColor = true;
+            ButtonResetImage.Click += ButtonResetImage_Click;
+            // 
             // ButtonZoomOut
             // 
-            ButtonZoomOut.Location = new System.Drawing.Point(266, 101);
+            ButtonZoomOut.Location = new System.Drawing.Point(279, 101);
             ButtonZoomOut.Name = "ButtonZoomOut";
             ButtonZoomOut.Size = new System.Drawing.Size(75, 23);
             ButtonZoomOut.TabIndex = 3;
@@ -111,7 +146,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // 
             // ButtonZoomIn
             // 
-            ButtonZoomIn.Location = new System.Drawing.Point(266, 72);
+            ButtonZoomIn.Location = new System.Drawing.Point(279, 72);
             ButtonZoomIn.Name = "ButtonZoomIn";
             ButtonZoomIn.Size = new System.Drawing.Size(75, 23);
             ButtonZoomIn.TabIndex = 2;
@@ -121,7 +156,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // 
             // ButtonConvertMask
             // 
-            ButtonConvertMask.Location = new System.Drawing.Point(257, 22);
+            ButtonConvertMask.Location = new System.Drawing.Point(270, 22);
             ButtonConvertMask.Name = "ButtonConvertMask";
             ButtonConvertMask.Size = new System.Drawing.Size(84, 23);
             ButtonConvertMask.TabIndex = 1;
@@ -206,16 +241,6 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             SaveImageToolStripMenuItem.Text = "Save Image";
             SaveImageToolStripMenuItem.Click += SaveImageToolStripMenuItem_Click;
             // 
-            // ButtonResetImage
-            // 
-            ButtonResetImage.Location = new System.Drawing.Point(195, 22);
-            ButtonResetImage.Name = "ButtonResetImage";
-            ButtonResetImage.Size = new System.Drawing.Size(56, 23);
-            ButtonResetImage.TabIndex = 4;
-            ButtonResetImage.Text = "Reset";
-            ButtonResetImage.UseVisualStyleBackColor = true;
-            ButtonResetImage.Click += ButtonResetImage_Click;
-            // 
             // ParticleGrayForm
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -231,6 +256,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             ((System.ComponentModel.ISupportInitialize)splitContainerParticleGray).EndInit();
             splitContainerParticleGray.ResumeLayout(false);
             groupBoxEdit.ResumeLayout(false);
+            groupBoxEdit.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)pictureBoxParticleGray).EndInit();
             contextMenuStripParticleGray.ResumeLayout(false);
             ResumeLayout(false);
@@ -254,5 +280,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private System.Windows.Forms.Button ButtonZoomOut;
         private System.Windows.Forms.Button ButtonZoomIn;
         private System.Windows.Forms.Button ButtonResetImage;
+        private System.Windows.Forms.CheckBox checkBoxCorrection;
+        private System.Windows.Forms.Button ButtonApplyCorrection;
     }
 }

@@ -34,8 +34,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private int zoomLevel = 0; // 0 = original, max +2, min -2
         private const int MaxZoom = 2;
         private const int MinZoom = 0;
-        private Bitmap loadedImageOriginal;
-
+        private Bitmap loadedImageOriginal;        
+        private List<Point> correctionPoints = new List<Point>(); // Yellow correction mask
+        private bool correctionMode = false;
 
         public ParticleGrayForm()
         {
@@ -58,9 +59,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                         pictureBoxParticleGray.Image = Image.FromFile(openFileDialog.FileName);
                         pictureBoxParticleGray.SizeMode = PictureBoxSizeMode.CenterImage;
 
-                        // Bild für spätere Bearbeitung speichern
+                        // Save image for later editing
                         originalImage = new Bitmap(pictureBoxParticleGray.Image);
-                        loadedImageOriginal = new Bitmap(originalImage); // Originalzustand sichern
+                        loadedImageOriginal = new Bitmap(originalImage); // Secure original condition
                     }
                     catch (Exception ex)
                     {
@@ -81,9 +82,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                     pictureBoxParticleGray.Image = Clipboard.GetImage();
                     pictureBoxParticleGray.SizeMode = PictureBoxSizeMode.CenterImage; // Optional: Adjust image size
 
-                    // Bild für spätere Bearbeitung speichern
+                    // Save image for later editing
                     originalImage = new Bitmap(pictureBoxParticleGray.Image);
-                    loadedImageOriginal = new Bitmap(originalImage); // Originalzustand sichern
+                    loadedImageOriginal = new Bitmap(originalImage); // Secure original condition
                 }
                 catch (Exception ex)
                 {
@@ -414,8 +415,17 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             if (e.Button == MouseButtons.Left)
             {
                 isDrawing = true;
-                maskPoints.Clear();
-                maskPoints.Add(e.Location);
+
+                if (checkBoxCorrection.Checked)
+                {
+                    correctionPoints.Clear();
+                    correctionPoints.Add(e.Location);
+                }
+                else
+                {
+                    maskPoints.Clear();
+                    maskPoints.Add(e.Location);
+                }
             }
         }
         #endregion
@@ -425,18 +435,23 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         {
             if (isDrawing)
             {
-                maskPoints.Add(e.Location);
-                pictureBoxParticleGray.Invalidate(); // Triggert Neuzeichnung
+                if (checkBoxCorrection.Checked)
+                    correctionPoints.Add(e.Location);
+                else
+                    maskPoints.Add(e.Location);
+
+                pictureBoxParticleGray.Invalidate();
             }
         }
         #endregion
 
-        #region [ pictureBoxParticleGray_MouseUp ]
+        #region [ pictureBoxParticleGray_MouseUp ]        
         private void pictureBoxParticleGray_MouseUp(object sender, MouseEventArgs e)
         {
             if (e.Button == MouseButtons.Left)
             {
                 isDrawing = false;
+                pictureBoxParticleGray.Invalidate();
             }
         }
         #endregion
@@ -444,6 +459,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         #region [ pictureBoxParticleGray_Paint ]
         private void pictureBoxParticleGray_Paint(object sender, PaintEventArgs e)
         {
+            // Rote Maske
             if (maskPoints.Count > 1)
             {
                 using (Pen pen = new Pen(Color.Red, 2))
@@ -454,6 +470,20 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 using (Brush brush = new SolidBrush(Color.FromArgb(80, Color.Red)))
                 {
                     e.Graphics.FillPolygon(brush, maskPoints.ToArray());
+                }
+            }
+
+            // Gelbe Korrekturmaske
+            if (correctionPoints.Count > 1)
+            {
+                using (Pen pen = new Pen(Color.Yellow, 2))
+                {
+                    e.Graphics.DrawLines(pen, correctionPoints.ToArray());
+                }
+
+                using (Brush brush = new SolidBrush(Color.FromArgb(80, Color.Yellow)))
+                {
+                    e.Graphics.FillPolygon(brush, correctionPoints.ToArray());
                 }
             }
         }
@@ -468,16 +498,16 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 return;
             }
 
-            // Maske in Bildkoordinaten transformieren
+            // Transform mask into image coordinates
             List<Point> translatedPoints = maskPoints.Select(p => TranslateToImageCoordinates(p)).ToList();
 
-            // Neues bearbeitetes Bild erstellen
+            // Create a new edited image
             Bitmap updatedImage = new Bitmap(originalImage);
             using (GraphicsPath path = new GraphicsPath())
             {
                 path.AddPolygon(translatedPoints.ToArray());
 
-                // Maske pixelweise in Graustufen umwandeln
+                // Convert mask pixel by pixel to grayscale
                 for (int y = 0; y < updatedImage.Height; y++)
                 {
                     for (int x = 0; x < updatedImage.Width; x++)
@@ -493,19 +523,19 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 }
             }
 
-            // Vorheriges Bild korrekt freigeben
+            // Release previous image correctly
             originalImage.Dispose();
             originalImage = updatedImage;
 
-            // Die Bildanzeige aktualisieren
-            pictureBoxParticleGray.Image = new Bitmap(originalImage); // zwingt ein Neuladen
+            // Refresh the image display
+            pictureBoxParticleGray.Image = new Bitmap(originalImage);
             pictureBoxParticleGray.Invalidate();
 
-            // Zoom zurücksetzen und anwenden
+            // Reset and apply zoom
             zoomLevel = 0;
             ApplyZoom();
 
-            // Maske löschen
+            // Delete mask
             maskPoints.Clear();
         }
         #endregion
@@ -529,7 +559,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             int offsetX = (pbWidth - imgWidth) / 2;
             int offsetY = (pbHeight - imgHeight) / 2;
 
-            // Mausposition auf Bildkoordinaten zurückrechnen (inkl. Zoom)
+            // Calculate mouse position back to image coordinates (including zoom)
             float imageX = (p.X - offsetX) / scale;
             float imageY = (p.Y - offsetY) / scale;
 
@@ -543,8 +573,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             if (originalImage == null)
                 return;
 
-            // Berechne Skalierungsfaktor
-            float scale = 1f + zoomLevel * 0.5f; // z. B. 1.5f bei ZoomLevel 1
+            // Calculate scaling factor
+            float scale = 1f + zoomLevel * 0.5f; // z. B. 1.5f at ZoomLevel 1
 
             int newWidth = (int)(originalImage.Width * scale);
             int newHeight = (int)(originalImage.Height * scale);
@@ -572,7 +602,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             }
             else
             {
-                MessageBox.Show("Maximaler Zoom erreicht.");
+                MessageBox.Show("Maximum zoom reached.");
             }
         }
         #endregion
@@ -587,7 +617,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             }
             else
             {
-                MessageBox.Show("Bereits in Originalgröße.");
+                MessageBox.Show("Already in original size.");
             }
         }
         #endregion
@@ -597,25 +627,110 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         {
             if (loadedImageOriginal == null)
             {
-                MessageBox.Show("Kein Originalbild vorhanden.");
+                MessageBox.Show("No original image available.");
                 return;
             }
 
-            // Altes Bild freigeben
+            // Share old image
             originalImage?.Dispose();
 
-            // Original wiederherstellen
+            // Restore original
             originalImage = new Bitmap(loadedImageOriginal);
 
-            // Zoom zurücksetzen
+            // Reset zoom
             zoomLevel = 0;
             ApplyZoom();
 
-            // Maske löschen
+            // Delete mask
             maskPoints.Clear();
 
-            // Neu zeichnen
+            // Redraw
             pictureBoxParticleGray.Invalidate();
+        }
+        #endregion
+
+        #region [ CheckBoxCorrection_CheckedChanged ]
+        private void checkBoxCorrection_CheckedChanged(object sender, EventArgs e)
+        {
+            correctionMode = checkBoxCorrection.Checked;
+        }
+        #endregion
+
+        #region [ ButtonApplyCorrection_Click ]
+        private void ButtonApplyCorrection_Click(object sender, EventArgs e)
+        {
+            if (maskPoints.Count < 3 || correctionPoints.Count < 3)
+            {
+                MessageBox.Show("Mask or correction not valid.");
+                return;
+            }
+
+            // Convert mask and correction into image coordinates
+            List<Point> maskPoly = maskPoints.Select(p => TranslateToImageCoordinates(p)).ToList();
+            List<Point> correctionPoly = correctionPoints.Select(p => TranslateToImageCoordinates(p)).ToList();
+
+            // Create mask regions
+            using (GraphicsPath maskPath = new GraphicsPath())
+            using (GraphicsPath correctionPath = new GraphicsPath())
+            {
+                maskPath.AddPolygon(maskPoly.ToArray());
+                correctionPath.AddPolygon(correctionPoly.ToArray());
+
+                Region maskRegion = new Region(maskPath);
+                maskRegion.Exclude(correctionPath); // Subtract yellow area
+
+                // Extract new mask points from the region via bitmap
+                List<Point> newMask = new List<Point>();
+                using (Bitmap tempBmp = new Bitmap(originalImage.Width, originalImage.Height))
+                using (Graphics g = Graphics.FromImage(tempBmp))
+                {
+                    g.Clear(Color.Black);
+                    g.FillRegion(Brushes.White, maskRegion);
+
+                    for (int y = 0; y < tempBmp.Height; y++)
+                    {
+                        for (int x = 0; x < tempBmp.Width; x++)
+                        {
+                            if (tempBmp.GetPixel(x, y).R > 0)
+                            {
+                                newMask.Add(new Point(x, y));
+                            }
+                        }
+                    }
+                }
+
+                // Update maskPoints
+                maskPoints = newMask.Select(p => TranslateFromImageCoordinates(p)).ToList();
+            }
+
+            // Reset correction mask
+            correctionPoints.Clear();
+
+            // Initiate redrawing
+            pictureBoxParticleGray.Invalidate();
+        }
+        #endregion
+
+        #region [ Point TranslateFromImageCoordinates ]
+        private Point TranslateFromImageCoordinates(Point p)
+        {
+            if (pictureBoxParticleGray.Image == null)
+                return p;
+
+            float scale = 1f + zoomLevel * 0.5f;
+
+            int imgWidth = pictureBoxParticleGray.Image.Width;
+            int imgHeight = pictureBoxParticleGray.Image.Height;
+            int pbWidth = pictureBoxParticleGray.Width;
+            int pbHeight = pictureBoxParticleGray.Height;
+
+            int offsetX = (pbWidth - imgWidth) / 2;
+            int offsetY = (pbHeight - imgHeight) / 2;
+
+            float screenX = p.X * scale + offsetX;
+            float screenY = p.Y * scale + offsetY;
+
+            return new Point((int)screenX, (int)screenY);
         }
         #endregion
     }
