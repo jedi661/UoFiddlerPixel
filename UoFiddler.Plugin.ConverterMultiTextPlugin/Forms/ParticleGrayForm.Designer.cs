@@ -107,9 +107,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // 
             ButtonApplyCorrection.Location = new System.Drawing.Point(6, 72);
             ButtonApplyCorrection.Name = "ButtonApplyCorrection";
-            ButtonApplyCorrection.Size = new System.Drawing.Size(87, 23);
+            ButtonApplyCorrection.Size = new System.Drawing.Size(103, 23);
             ButtonApplyCorrection.TabIndex = 6;
-            ButtonApplyCorrection.Text = "Correction";
+            ButtonApplyCorrection.Text = "Correction Mask";
             ButtonApplyCorrection.UseVisualStyleBackColor = true;
             ButtonApplyCorrection.Click += ButtonApplyCorrection_Click;
             // 
