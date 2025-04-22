@@ -733,5 +733,46 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             return new Point((int)screenX, (int)screenY);
         }
         #endregion
+
+        #region [ ButtonRestoreColorFromMask_Click ]
+        private void ButtonRestoreColorFromMask_Click(object sender, EventArgs e)
+        {
+            if (loadedImageOriginal == null || originalImage == null || maskPoints.Count < 3)
+            {
+                MessageBox.Show("No valid image or mask found.");
+                return;
+            }
+
+            List<Point> translatedPoints = maskPoints.Select(p => TranslateToImageCoordinates(p)).ToList();
+
+            Bitmap updatedImage = new Bitmap(originalImage);
+            GraphicsPath maskPath = new GraphicsPath();
+            maskPath.AddPolygon(translatedPoints.ToArray());
+
+            for (int y = 0; y < updatedImage.Height; y++)
+            {
+                for (int x = 0; x < updatedImage.Width; x++)
+                {
+                    if (maskPath.IsVisible(x, y))
+                    {
+                        Color originalColor = loadedImageOriginal.GetPixel(x, y);
+                        updatedImage.SetPixel(x, y, originalColor);
+                    }
+                }
+            }
+
+            originalImage.Dispose();
+            originalImage = updatedImage;
+
+            // Update image correctly
+            ApplyZoom();
+
+            // Delete mask (optional)
+            maskPoints.Clear();
+
+            // Redraw
+            pictureBoxParticleGray.Invalidate();
+        }
+        #endregion
     }
 }

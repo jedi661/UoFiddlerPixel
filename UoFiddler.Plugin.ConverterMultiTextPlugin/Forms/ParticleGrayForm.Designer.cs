@@ -44,6 +44,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ParticleGrayForm));
             splitContainerParticleGray = new System.Windows.Forms.SplitContainer();
             groupBoxEdit = new System.Windows.Forms.GroupBox();
+            ButtonRestoreColorFromMask = new System.Windows.Forms.Button();
             ButtonApplyCorrection = new System.Windows.Forms.Button();
             checkBoxCorrection = new System.Windows.Forms.CheckBox();
             ButtonResetImage = new System.Windows.Forms.Button();
@@ -89,6 +90,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // 
             // groupBoxEdit
             // 
+            groupBoxEdit.Controls.Add(ButtonRestoreColorFromMask);
             groupBoxEdit.Controls.Add(ButtonApplyCorrection);
             groupBoxEdit.Controls.Add(checkBoxCorrection);
             groupBoxEdit.Controls.Add(ButtonResetImage);
@@ -102,6 +104,16 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             groupBoxEdit.TabIndex = 0;
             groupBoxEdit.TabStop = false;
             groupBoxEdit.Text = "Edit";
+            // 
+            // ButtonRestoreColorFromMask
+            // 
+            ButtonRestoreColorFromMask.Location = new System.Drawing.Point(259, 49);
+            ButtonRestoreColorFromMask.Name = "ButtonRestoreColorFromMask";
+            ButtonRestoreColorFromMask.Size = new System.Drawing.Size(95, 23);
+            ButtonRestoreColorFromMask.TabIndex = 7;
+            ButtonRestoreColorFromMask.Text = "Restore Color";
+            ButtonRestoreColorFromMask.UseVisualStyleBackColor = true;
+            ButtonRestoreColorFromMask.Click += ButtonRestoreColorFromMask_Click;
             // 
             // ButtonApplyCorrection
             // 
@@ -126,7 +138,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // 
             // ButtonResetImage
             // 
-            ButtonResetImage.Location = new System.Drawing.Point(208, 22);
+            ButtonResetImage.Location = new System.Drawing.Point(201, 22);
             ButtonResetImage.Name = "ButtonResetImage";
             ButtonResetImage.Size = new System.Drawing.Size(56, 23);
             ButtonResetImage.TabIndex = 4;
@@ -136,7 +148,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // 
             // ButtonZoomOut
             // 
-            ButtonZoomOut.Location = new System.Drawing.Point(279, 101);
+            ButtonZoomOut.Location = new System.Drawing.Point(279, 110);
             ButtonZoomOut.Name = "ButtonZoomOut";
             ButtonZoomOut.Size = new System.Drawing.Size(75, 23);
             ButtonZoomOut.TabIndex = 3;
@@ -146,7 +158,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // 
             // ButtonZoomIn
             // 
-            ButtonZoomIn.Location = new System.Drawing.Point(279, 72);
+            ButtonZoomIn.Location = new System.Drawing.Point(279, 81);
             ButtonZoomIn.Name = "ButtonZoomIn";
             ButtonZoomIn.Size = new System.Drawing.Size(75, 23);
             ButtonZoomIn.TabIndex = 2;
@@ -156,9 +168,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // 
             // ButtonConvertMask
             // 
-            ButtonConvertMask.Location = new System.Drawing.Point(270, 22);
+            ButtonConvertMask.Location = new System.Drawing.Point(259, 22);
             ButtonConvertMask.Name = "ButtonConvertMask";
-            ButtonConvertMask.Size = new System.Drawing.Size(84, 23);
+            ButtonConvertMask.Size = new System.Drawing.Size(95, 23);
             ButtonConvertMask.TabIndex = 1;
             ButtonConvertMask.Text = "Convert Gray";
             ButtonConvertMask.UseVisualStyleBackColor = true;
@@ -282,5 +294,6 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private System.Windows.Forms.Button ButtonResetImage;
         private System.Windows.Forms.CheckBox checkBoxCorrection;
         private System.Windows.Forms.Button ButtonApplyCorrection;
+        private System.Windows.Forms.Button ButtonRestoreColorFromMask;
     }
 }
