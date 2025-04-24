@@ -44,6 +44,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ParticleGrayForm));
             splitContainerParticleGray = new System.Windows.Forms.SplitContainer();
             groupBoxColor = new System.Windows.Forms.GroupBox();
+            ButtonPixelFind = new System.Windows.Forms.Button();
             buttonColorfind = new System.Windows.Forms.Button();
             labelHexcode = new System.Windows.Forms.Label();
             textBoxColorHex = new System.Windows.Forms.TextBox();
@@ -66,6 +67,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             toolStripSeparatorParticeGray1 = new System.Windows.Forms.ToolStripSeparator();
             CopyToClipboardToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             SaveImageToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            ButtonPixelFindInfo = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)splitContainerParticleGray).BeginInit();
             splitContainerParticleGray.Panel1.SuspendLayout();
             splitContainerParticleGray.Panel2.SuspendLayout();
@@ -97,6 +99,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // 
             // groupBoxColor
             // 
+            groupBoxColor.Controls.Add(ButtonPixelFindInfo);
+            groupBoxColor.Controls.Add(ButtonPixelFind);
             groupBoxColor.Controls.Add(buttonColorfind);
             groupBoxColor.Controls.Add(labelHexcode);
             groupBoxColor.Controls.Add(textBoxColorHex);
@@ -107,6 +111,16 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             groupBoxColor.TabIndex = 1;
             groupBoxColor.TabStop = false;
             groupBoxColor.Text = "Color";
+            // 
+            // ButtonPixelFind
+            // 
+            ButtonPixelFind.Location = new System.Drawing.Point(12, 113);
+            ButtonPixelFind.Name = "ButtonPixelFind";
+            ButtonPixelFind.Size = new System.Drawing.Size(159, 23);
+            ButtonPixelFind.TabIndex = 4;
+            ButtonPixelFind.Text = "GrayPixelAnalyzer Save";
+            ButtonPixelFind.UseVisualStyleBackColor = true;
+            ButtonPixelFind.Click += ButtonPixelFind_Click;
             // 
             // buttonColorfind
             // 
@@ -309,6 +323,16 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             SaveImageToolStripMenuItem.Text = "Save Image";
             SaveImageToolStripMenuItem.Click += SaveImageToolStripMenuItem_Click;
             // 
+            // ButtonPixelFindInfo
+            // 
+            ButtonPixelFindInfo.Location = new System.Drawing.Point(12, 142);
+            ButtonPixelFindInfo.Name = "ButtonPixelFindInfo";
+            ButtonPixelFindInfo.Size = new System.Drawing.Size(159, 23);
+            ButtonPixelFindInfo.TabIndex = 5;
+            ButtonPixelFindInfo.Text = "GrayPixelAnalyzer Info";
+            ButtonPixelFindInfo.UseVisualStyleBackColor = true;
+            ButtonPixelFindInfo.Click += ButtonPixelFindInfo_Click;
+            // 
             // ParticleGrayForm
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -358,5 +382,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private System.Windows.Forms.TextBox textBoxColorHex;
         private System.Windows.Forms.Label labelHexcode;
         private System.Windows.Forms.Button buttonColorfind;
+        private System.Windows.Forms.Button ButtonPixelFind;
+        private System.Windows.Forms.Button ButtonPixelFindInfo;
     }
 }

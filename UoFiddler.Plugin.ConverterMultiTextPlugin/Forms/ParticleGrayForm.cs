@@ -22,6 +22,7 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Drawing.Drawing2D;
+using UoFiddler.Plugin.ConverterMultiTextPlugin.Helpers;
 
 
 namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
@@ -918,6 +919,52 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             }
         }
         #endregion
+        #endregion
+
+        #region [ ButtonPixelFind_Click ]
+        private void ButtonPixelFind_Click(object sender, EventArgs e)
+        {
+            if (pictureBoxParticleGray.Image is not Bitmap bitmap)
+            {
+                MessageBox.Show("No valid image found.");
+                return;
+            }
+
+            using (SaveFileDialog saveFileDialog = new SaveFileDialog())
+            {
+                saveFileDialog.Title = "Save gray pixel data";
+                saveFileDialog.Filter = "Text files (*.txt)|*.txt";
+                saveFileDialog.DefaultExt = "txt";
+                saveFileDialog.FileName = "Graypixel_analysis.txt";
+
+                if (saveFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    try
+                    {
+                        string header = $"Analysis from {DateTime.Now:G}";
+                        GrayPixelAnalyzer.AnalyzeAndSave(new Bitmap(bitmap), saveFileDialog.FileName, header);
+                        MessageBox.Show("Analysis saved successfully.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"Error saving: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
+            }
+        }
+        #endregion
+
+        #region [ ButtonPixelFindInfo_Click ]
+        private void ButtonPixelFindInfo_Click(object sender, EventArgs e)
+        {
+            if (pictureBoxParticleGray.Image is not Bitmap bitmap)
+            {
+                MessageBox.Show("No image found.");
+                return;
+            }
+
+            GrayPixelAnalyzer.ShowInForm(new Bitmap(bitmap), $"Analysis from {DateTime.Now:G}");
+        }
         #endregion
     }
 }
