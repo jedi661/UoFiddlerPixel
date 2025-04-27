@@ -1,5 +1,6 @@
 Version : 4.12.10 #XG1
 - ParticleGray Tool.
+- Added a search function in Amindata based on hex addresses and names.
 
 Version : 4.12.9 #XG1
 - Fixed importing animation frames from gif files.

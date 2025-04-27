@@ -858,6 +858,55 @@ namespace UoFiddler.Controls.UserControls
             }
         }
         #endregion
+
+        #region [ ToolStripTextBoxFindAdress_TextChanged ]
+        private void ToolStripTextBoxFindAdress_TextChanged(object sender, EventArgs e)
+        {
+            string searchText = toolStripTextBoxFindAdress.Text.Trim();
+
+            if (string.IsNullOrEmpty(searchText))
+                return;
+
+            TreeNode foundNode = null;
+
+            // 1. Try: Search as hex address
+            if (searchText.StartsWith("0x", StringComparison.OrdinalIgnoreCase))
+            {
+                if (int.TryParse(searchText.Substring(2), System.Globalization.NumberStyles.HexNumber, null, out int hexId))
+                {
+                    foreach (TreeNode node in treeView1.Nodes)
+                    {
+                        if ((int)node.Tag == hexId)
+                        {
+                            foundNode = node;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            // 2. Try: Search by name
+            if (foundNode == null)
+            {
+                foreach (TreeNode node in treeView1.Nodes)
+                {
+                    if (node.Text.IndexOf(searchText, StringComparison.OrdinalIgnoreCase) >= 0)
+                    {
+                        foundNode = node;
+                        break;
+                    }
+                }
+            }
+
+            // 3. Update selection in TreeView
+            if (foundNode != null)
+            {
+                treeView1.SelectedNode = foundNode;
+                treeView1.SelectedNode.EnsureVisible();
+            }
+        }
+        #endregion
+
     }
     #endregion
 
