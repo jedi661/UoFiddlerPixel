@@ -200,13 +200,13 @@ namespace UoFiddler.Controls.Forms
             // 
             contextMenuStripArtworkGallery.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { loadSecondImageToolStripMenuItem, loadClipboradToolStripMenuItem, loadGifToolStripMenuItem, toolStripSeparatorArtworkGallery });
             contextMenuStripArtworkGallery.Name = "contextMenuStripArtworkGallery";
-            contextMenuStripArtworkGallery.Size = new System.Drawing.Size(181, 98);
+            contextMenuStripArtworkGallery.Size = new System.Drawing.Size(179, 76);
             // 
             // loadSecondImageToolStripMenuItem
             // 
             loadSecondImageToolStripMenuItem.Image = Properties.Resources.Animation;
             loadSecondImageToolStripMenuItem.Name = "loadSecondImageToolStripMenuItem";
-            loadSecondImageToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            loadSecondImageToolStripMenuItem.Size = new System.Drawing.Size(178, 22);
             loadSecondImageToolStripMenuItem.Text = "Load Second Image";
             loadSecondImageToolStripMenuItem.Click += LoadSecondImageToolStripMenuItem_Click;
             // 
@@ -214,7 +214,7 @@ namespace UoFiddler.Controls.Forms
             // 
             loadClipboradToolStripMenuItem.Image = Properties.Resources.Clipbord;
             loadClipboradToolStripMenuItem.Name = "loadClipboradToolStripMenuItem";
-            loadClipboradToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            loadClipboradToolStripMenuItem.Size = new System.Drawing.Size(178, 22);
             loadClipboradToolStripMenuItem.Text = "Load Clipborad";
             loadClipboradToolStripMenuItem.Click += loadClipboradToolStripMenuItem_Click;
             // 
@@ -222,14 +222,14 @@ namespace UoFiddler.Controls.Forms
             // 
             loadGifToolStripMenuItem.Image = Properties.Resources.Animate;
             loadGifToolStripMenuItem.Name = "loadGifToolStripMenuItem";
-            loadGifToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            loadGifToolStripMenuItem.Size = new System.Drawing.Size(178, 22);
             loadGifToolStripMenuItem.Text = "Load Gif";
             loadGifToolStripMenuItem.Click += loadGifToolStripMenuItem_Click;
             // 
             // toolStripSeparatorArtworkGallery
             // 
             toolStripSeparatorArtworkGallery.Name = "toolStripSeparatorArtworkGallery";
-            toolStripSeparatorArtworkGallery.Size = new System.Drawing.Size(177, 6);
+            toolStripSeparatorArtworkGallery.Size = new System.Drawing.Size(175, 6);
             // 
             // ArtworkGallery
             // 
@@ -241,6 +241,8 @@ namespace UoFiddler.Controls.Forms
             Icon = (System.Drawing.Icon)resources.GetObject("$this.Icon");
             Name = "ArtworkGallery";
             Text = "ArtworkGallery";
+            KeyDown += ArtworkGallery_KeyDown;
+            KeyUp += ArtworkGallery_KeyUp;
             splitContainerArtworkGallery.Panel1.ResumeLayout(false);
             splitContainerArtworkGallery.Panel1.PerformLayout();
             splitContainerArtworkGallery.Panel2.ResumeLayout(false);

@@ -35,17 +35,39 @@ namespace UoFiddler.Controls.Forms
         // Indicates if Rhombus Drawing for ArtworkGallery is active
         private bool isDrawingRhombusArtworkGallery = false;
 
+        // --- [ Movement Settings for Second Image ] ---
+        private Point secondImageOffset = Point.Empty; // Offset for moving the overlay
+        private const int moveStep = 1; // Step size in pixels (here 1, can be changed)
+        private Timer moveTimer; // Timer for held keys
+        private Keys currentMoveKey = Keys.None; // Currently pressed movement key
+
+
         public ArtworkGallery()
         {
             InitializeComponent();
             this.Load += ArtworkGallery_Load;
+
+            // Initialize timer for held movement keys
+            moveTimer = new Timer();
+            moveTimer.Interval = 50; // 50 ms repetition
+            moveTimer.Tick += MoveTimer_Tick;
+            this.KeyPreview = true; // For the form to receive keystrokes
+            this.KeyDown += ArtworkGallery_KeyDown;
+            this.KeyUp += ArtworkGallery_KeyUp;
+
+            this.ActiveControl = null; // No control gets the focus
+            this.Focus(); // Focuses on the form itself
+
         }
 
+        #region [ ArtworkGallery_Load ]
         private void ArtworkGallery_Load(object sender, EventArgs e)
         {
             UpdateImageInfoLabel();
         }
+        #endregion
 
+        #region [ InitializeGallery ]
         public void InitializeGallery(int selectedGraphicId)
         {
             itemList = new List<int>(ItemsControl.RefMarker.ItemList);
@@ -64,6 +86,7 @@ namespace UoFiddler.Controls.Forms
 
             LoadArtwork();
         }
+        #endregion
 
         #region [ LoadArtwork ]
         private void LoadArtwork()
@@ -124,8 +147,9 @@ namespace UoFiddler.Controls.Forms
             {
                 g.DrawImage(baseImage, 0, 0);
 
-                int x = (baseImage.Width - overlayImage.Width) / 2;
-                int y = (baseImage.Height - overlayImage.Height) / 2;
+                int x = (baseImage.Width - overlayImage.Width) / 2 + secondImageOffset.X; // Centering the overlay image
+                int y = (baseImage.Height - overlayImage.Height) / 2 + secondImageOffset.Y; // Centering the overlay image
+
 
                 g.DrawImage(overlayImage, x, y);
             }
@@ -261,21 +285,20 @@ namespace UoFiddler.Controls.Forms
         {
             isDrawingRhombusArtworkGallery = !isDrawingRhombusArtworkGallery;
 
-            // Button optisch ändern
+            // Change button visually
             ButtonDrawRhombus.BackColor = isDrawingRhombusArtworkGallery ? Color.LightGreen : SystemColors.Control;
 
-            // Sound abspielen
+            // Play sound
             SoundPlayer player = new SoundPlayer();
             player.SoundLocation = "sound.wav";
             player.Play();
 
-            // Bild neu zeichnen
-            pictureBoxArtworkGallery.Invalidate(); // Löst `Paint` erneut aus
+            // Redraw image
+            pictureBoxArtworkGallery.Invalidate(); // Re-triggers `Paint`
         }
         #endregion
 
-        #region [ DrawRhombusArtworkGallery ]        
-
+        #region [ DrawRhombusArtworkGallery ]
         private void DrawRhombusArtworkGallery(Graphics g)
         {
             if (pictureBoxArtworkGallery.Image == null)
@@ -329,14 +352,14 @@ namespace UoFiddler.Controls.Forms
 
             if (animatedGif != null)
             {
-                // GIF-Frame updaten
+                // GIF frame updates
                 ImageAnimator.UpdateFrames(animatedGif);
 
-                // Berechne Position für Zentrierung
+                // Calculate position for centering
                 int x = (pictureBoxArtworkGallery.Width - animatedGif.Width) / 2;
                 int y = (pictureBoxArtworkGallery.Height - animatedGif.Height) / 2;
 
-                // GIF zeichnen
+                // Draw GIF
                 e.Graphics.DrawImage(animatedGif, x, y);
             }
         }
@@ -515,6 +538,95 @@ namespace UoFiddler.Controls.Forms
 
             pictureBoxArtworkGallery.Invalidate();
             UpdateImageInfoLabel();
+        }
+        #endregion
+
+        #region [ ArtworkGallery_KeyDown ]
+        private void ArtworkGallery_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (!useSecondImage || secondImage == null)
+                return;
+
+            if (currentMoveKey != e.KeyCode)
+            {
+                currentMoveKey = e.KeyCode;
+                MoveSecondImage(e.KeyCode);
+                moveTimer.Start();
+            }
+        }
+        #endregion
+
+        #region [ ArtworkGallery_KeyUp ]
+        private void ArtworkGallery_KeyUp(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == currentMoveKey)
+            {
+                moveTimer.Stop();
+                currentMoveKey = Keys.None;
+            }
+        }
+        #endregion
+
+        #region [ MoveTimer_Tick ]
+        private void MoveTimer_Tick(object sender, EventArgs e)
+        {
+            if (currentMoveKey != Keys.None)
+            {
+                MoveSecondImage(currentMoveKey);
+            }
+        }
+        #endregion
+
+        #region [ MoveSecondImage ]
+        private void MoveSecondImage(Keys key)
+        {
+            switch (key)
+            {
+                case Keys.Left:
+                    secondImageOffset.X -= moveStep;
+                    break;
+                case Keys.Right:
+                    secondImageOffset.X += moveStep;
+                    break;
+                case Keys.Up:
+                    secondImageOffset.Y -= moveStep;
+                    break;
+                case Keys.Down:
+                    secondImageOffset.Y += moveStep;
+                    break;
+                default:
+                    return;
+            }
+
+            LoadArtwork();
+        }
+        #endregion
+
+        #region [ IsInputKey ]
+        protected override bool IsInputKey(Keys keyData)
+        {
+            // These keys are considered "input keys" and should NOT be used for focus navigation
+            if (keyData == Keys.Left || keyData == Keys.Right || keyData == Keys.Up || keyData == Keys.Down)
+                return true;
+
+            return base.IsInputKey(keyData);
+        }
+        #endregion
+
+        #region [ ProcessCmdKey ]
+        protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
+        {
+            if (useSecondImage && secondImage != null)
+            {
+                if (keyData == Keys.Left || keyData == Keys.Right || keyData == Keys.Up || keyData == Keys.Down)
+                {
+                    MoveSecondImage(keyData); // Trigger movement immediately
+                    currentMoveKey = keyData; // Set currently pressed key
+                    moveTimer.Start(); // Activate repeat motion
+                    return true; // IMPORTANT: Mark event as processed -> DO NOT pass on to buttons!
+                }
+            }
+            return base.ProcessCmdKey(ref msg, keyData); // Maintain default behavior for other keys
         }
         #endregion
     }
