@@ -61,7 +61,7 @@ namespace UoFiddler.Controls.UserControls
             copyClipboardToolStripMenuItem = new ToolStripMenuItem();
             DetailTextBox = new RichTextBox();
             splitContainer1 = new SplitContainer();
-            ItemsTileView = new TileView.TileViewControl();
+            ItemsTileView = new UoFiddler.Controls.UserControls.TileView.TileViewControl();
             TileViewContextMenuStrip = new ContextMenuStrip(components);
             showFreeSlotsToolStripMenuItem = new ToolStripMenuItem();
             findNextFreeSlotToolStripMenuItem = new ToolStripMenuItem();
@@ -85,7 +85,10 @@ namespace UoFiddler.Controls.UserControls
             replaceToolStripMenuItem = new ToolStripMenuItem();
             replaceStartingFromToolStripMenuItem = new ToolStripMenuItem();
             ReplaceStartingFromText = new ToolStripTextBox();
+            toolStripSeparator12 = new ToolStripSeparator();
             removeToolStripMenuItem = new ToolStripMenuItem();
+            removeAllToolStripMenuItem = new ToolStripMenuItem();
+            toolStripSeparator13 = new ToolStripSeparator();
             insertAtToolStripMenuItem = new ToolStripMenuItem();
             InsertText = new ToolStripTextBox();
             imageSwapToolStripMenuItem = new ToolStripMenuItem();
@@ -99,7 +102,6 @@ namespace UoFiddler.Controls.UserControls
             gotoMarkToolStripMenuItem = new ToolStripMenuItem();
             toolStripSeparator9 = new ToolStripSeparator();
             saveToolStripMenuItem = new ToolStripMenuItem();
-            removeAllToolStripMenuItem = new ToolStripMenuItem();
             StatusStrip = new StatusStrip();
             NameLabel = new ToolStripStatusLabel();
             GraphicLabel = new ToolStripStatusLabel();
@@ -125,10 +127,9 @@ namespace UoFiddler.Controls.UserControls
             toolStripButtonColorImage = new ToolStripButton();
             toolStripButtondrawRhombus = new ToolStripButton();
             toolStripButton1 = new ToolStripButton();
+            toolStripButtonArtWorkGallery = new ToolStripButton();
             colorDialog = new ColorDialog();
             collapsibleSplitter1 = new CollapsibleSplitter();
-            toolStripSeparator12 = new ToolStripSeparator();
-            toolStripSeparator13 = new ToolStripSeparator();
             ((System.ComponentModel.ISupportInitialize)splitContainer2).BeginInit();
             splitContainer2.Panel1.SuspendLayout();
             splitContainer2.Panel2.SuspendLayout();
@@ -532,6 +533,11 @@ namespace UoFiddler.Controls.UserControls
             ReplaceStartingFromText.Size = new System.Drawing.Size(100, 23);
             ReplaceStartingFromText.KeyDown += ReplaceStartingFromText_KeyDown;
             // 
+            // toolStripSeparator12
+            // 
+            toolStripSeparator12.Name = "toolStripSeparator12";
+            toolStripSeparator12.Size = new System.Drawing.Size(226, 6);
+            // 
             // removeToolStripMenuItem
             // 
             removeToolStripMenuItem.Image = Properties.Resources.Remove;
@@ -540,6 +546,19 @@ namespace UoFiddler.Controls.UserControls
             removeToolStripMenuItem.Text = "Remove";
             removeToolStripMenuItem.ToolTipText = "Remove the image. Single or more Strg";
             removeToolStripMenuItem.Click += OnClickRemove;
+            // 
+            // removeAllToolStripMenuItem
+            // 
+            removeAllToolStripMenuItem.Image = Properties.Resources.Remove;
+            removeAllToolStripMenuItem.Name = "removeAllToolStripMenuItem";
+            removeAllToolStripMenuItem.Size = new System.Drawing.Size(229, 22);
+            removeAllToolStripMenuItem.Text = "Remove All";
+            removeAllToolStripMenuItem.Click += RemoveAllToolStripMenuItem_Click;
+            // 
+            // toolStripSeparator13
+            // 
+            toolStripSeparator13.Name = "toolStripSeparator13";
+            toolStripSeparator13.Size = new System.Drawing.Size(226, 6);
             // 
             // insertAtToolStripMenuItem
             // 
@@ -640,14 +659,6 @@ namespace UoFiddler.Controls.UserControls
             saveToolStripMenuItem.ToolTipText = "Saves the .mul file.";
             saveToolStripMenuItem.Click += OnClickSave;
             // 
-            // removeAllToolStripMenuItem
-            // 
-            removeAllToolStripMenuItem.Image = Properties.Resources.Remove;
-            removeAllToolStripMenuItem.Name = "removeAllToolStripMenuItem";
-            removeAllToolStripMenuItem.Size = new System.Drawing.Size(229, 22);
-            removeAllToolStripMenuItem.Text = "Remove All";
-            removeAllToolStripMenuItem.Click += RemoveAllToolStripMenuItem_Click;
-            // 
             // StatusStrip
             // 
             StatusStrip.Items.AddRange(new ToolStripItem[] { NameLabel, GraphicLabel, toolStripStatusLabelGraficDecimal, toolStripStatusLabelItemHowMuch });
@@ -698,7 +709,7 @@ namespace UoFiddler.Controls.UserControls
             // ToolStrip
             // 
             ToolStrip.GripStyle = ToolStripGripStyle.Hidden;
-            ToolStrip.Items.AddRange(new ToolStripItem[] { toolStripLabel1, searchByIdToolStripTextBox, toolStripLabel2, searchByNameToolStripTextBox, searchByNameToolStripButton, SearchToolStripButton, ReverseSearchToolStripButton, ProgressBar, PreloadItemsToolStripButton, MiscToolStripDropDownButton, toolStripButtonColorImage, toolStripButtondrawRhombus, toolStripButton1 });
+            ToolStrip.Items.AddRange(new ToolStripItem[] { toolStripLabel1, searchByIdToolStripTextBox, toolStripLabel2, searchByNameToolStripTextBox, searchByNameToolStripButton, SearchToolStripButton, ReverseSearchToolStripButton, ProgressBar, PreloadItemsToolStripButton, MiscToolStripDropDownButton, toolStripButtonColorImage, toolStripButtondrawRhombus, toolStripButton1, toolStripButtonArtWorkGallery });
             ToolStrip.Location = new System.Drawing.Point(0, 0);
             ToolStrip.Name = "ToolStrip";
             ToolStrip.RenderMode = ToolStripRenderMode.System;
@@ -854,6 +865,16 @@ namespace UoFiddler.Controls.UserControls
             toolStripButton1.ToolTipText = "Save Items.mul file";
             toolStripButton1.Click += OnClickSave;
             // 
+            // toolStripButtonArtWorkGallery
+            // 
+            toolStripButtonArtWorkGallery.DisplayStyle = ToolStripItemDisplayStyle.Image;
+            toolStripButtonArtWorkGallery.Image = Properties.Resources.artworkgallery;
+            toolStripButtonArtWorkGallery.ImageTransparentColor = System.Drawing.Color.Magenta;
+            toolStripButtonArtWorkGallery.Name = "toolStripButtonArtWorkGallery";
+            toolStripButtonArtWorkGallery.Size = new System.Drawing.Size(23, 25);
+            toolStripButtonArtWorkGallery.Text = "Artwork Gallery";
+            toolStripButtonArtWorkGallery.Click += toolStripButtonArtWorkGallery_Click;
+            // 
             // collapsibleSplitter1
             // 
             collapsibleSplitter1.AnimationDelay = 20;
@@ -870,16 +891,6 @@ namespace UoFiddler.Controls.UserControls
             collapsibleSplitter1.TabStop = false;
             collapsibleSplitter1.UseAnimations = false;
             collapsibleSplitter1.VisualStyle = VisualStyles.DoubleDots;
-            // 
-            // toolStripSeparator12
-            // 
-            toolStripSeparator12.Name = "toolStripSeparator12";
-            toolStripSeparator12.Size = new System.Drawing.Size(226, 6);
-            // 
-            // toolStripSeparator13
-            // 
-            toolStripSeparator13.Name = "toolStripSeparator13";
-            toolStripSeparator13.Size = new System.Drawing.Size(226, 6);
             // 
             // ItemsControl
             // 
@@ -1002,5 +1013,6 @@ namespace UoFiddler.Controls.UserControls
         private ToolStripMenuItem removeAllToolStripMenuItem;
         private ToolStripSeparator toolStripSeparator12;
         private ToolStripSeparator toolStripSeparator13;
+        private ToolStripButton toolStripButtonArtWorkGallery;
     }
 }

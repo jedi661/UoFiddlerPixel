@@ -599,7 +599,7 @@ namespace UoFiddler.Controls.UserControls
         {
             // Check if multiple artworks are selected
             if (ItemsTileView.SelectedIndices.Count > 1)
-            {                
+            {
                 DialogResult result = MessageBox.Show($"Are you sure you want to remove the selected artworks?", "Remove artwork", MessageBoxButtons.YesNo, MessageBoxIcon.Question, MessageBoxDefaultButton.Button2);
                 if (result != DialogResult.Yes)
                 {
@@ -2981,7 +2981,7 @@ namespace UoFiddler.Controls.UserControls
 
         #region [ RemoveAllToolStripMenuItem ]
         private void RemoveAllToolStripMenuItem_Click(object sender, EventArgs e)
-        {            
+        {
             DialogResult result = MessageBox.Show("Are you sure you want to remove all items?", "Remove all elements", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
             if (result != DialogResult.Yes)
             {
@@ -3007,6 +3007,25 @@ namespace UoFiddler.Controls.UserControls
             // Update options
             Options.ChangedUltimaClass["Art"] = true;
             MessageBox.Show("All elements have been removed.", "Removal completed", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+        #endregion
+
+
+        #region [ toolStripButtonArtWorkGallery_Click ]
+        private ArtworkGallery artworkGalleryInstance;
+        private void toolStripButtonArtWorkGallery_Click(object sender, EventArgs e)
+        {
+            if (artworkGalleryInstance == null || artworkGalleryInstance.IsDisposed)
+            {
+                artworkGalleryInstance = new ArtworkGallery();
+                artworkGalleryInstance.Show();
+                artworkGalleryInstance.InitializeGallery(_selectedGraphicId); // NEU HINZUFÜGEN
+            }
+            else
+            {
+                artworkGalleryInstance.Focus();
+                artworkGalleryInstance.InitializeGallery(_selectedGraphicId); // NEU HINZUFÜGEN
+            }
         }
         #endregion
     }

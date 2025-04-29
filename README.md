@@ -9,6 +9,7 @@ version more than the original version. Also, some source codes from older and N
 Version : 4.12.10
 - ParticleGray Tool.
 - Added a search function in Amindata based on hex addresses and names.
+- Added a ArtworkGaller Tool in Artworks Items.
 
 Version : 4.12.9
 - Fixed importing animation frames from gif files.
