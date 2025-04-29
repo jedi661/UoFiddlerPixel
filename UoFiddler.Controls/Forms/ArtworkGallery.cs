@@ -42,10 +42,6 @@ namespace UoFiddler.Controls.Forms
         private Keys currentMoveKey = Keys.None; // Currently pressed movement key
         private bool IsOverlayActive => (useSecondImage && secondImage != null) || animatedGif != null; // Indicates if an overlay is active
 
-
-
-
-
         public ArtworkGallery()
         {
             InitializeComponent();
