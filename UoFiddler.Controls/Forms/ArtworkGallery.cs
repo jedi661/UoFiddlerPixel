@@ -42,6 +42,14 @@ namespace UoFiddler.Controls.Forms
         private Keys currentMoveKey = Keys.None; // Currently pressed movement key
         private bool IsOverlayActive => (useSecondImage && secondImage != null) || animatedGif != null; // Indicates if an overlay is active
 
+        private bool isCuttingTemplateActive = false;        
+        private Point cuttingTemplatePosition = new Point(100, 100); // Initial position
+        private Size cuttingTemplateSize = new Size(44, 133); // Standard size
+
+        private Keys currentCuttingTemplateMoveKey = Keys.None;
+        private Timer cuttingTemplateMoveTimer;
+        private bool isDrawingCuttingTemplateTemporaryDisabled = false;
+
         public ArtworkGallery()
         {
             InitializeComponent();
@@ -57,6 +65,10 @@ namespace UoFiddler.Controls.Forms
 
             this.ActiveControl = null; // No control gets the focus
             this.Focus(); // Focuses on the form itself
+
+            cuttingTemplateMoveTimer = new Timer();
+            cuttingTemplateMoveTimer.Interval = 50;
+            cuttingTemplateMoveTimer.Tick += CuttingTemplateMoveTimer_Tick;
 
         }
 
@@ -342,7 +354,7 @@ namespace UoFiddler.Controls.Forms
 
         #endregion
 
-        #region [ PictureBoxArtworkGallery_Paint ]
+        #region [ PictureBoxArtworkGallery_Paint ]        
         private void PictureBoxArtworkGallery_Paint(object sender, PaintEventArgs e)
         {
             if (isDrawingRhombusArtworkGallery)
@@ -361,6 +373,15 @@ namespace UoFiddler.Controls.Forms
 
                 // Draw GIF
                 e.Graphics.DrawImage(animatedGif, x, y);
+            }
+
+            // Only draw when active AND not temporarily disabled
+            if (isCuttingTemplateActive && !isDrawingCuttingTemplateTemporaryDisabled)
+            {
+                using (Pen pen = new Pen(Color.OrangeRed, 2))
+                {
+                    e.Graphics.DrawRectangle(pen, new Rectangle(cuttingTemplatePosition, cuttingTemplateSize));
+                }
             }
         }
         #endregion
@@ -544,6 +565,19 @@ namespace UoFiddler.Controls.Forms
         #region [ ArtworkGallery_KeyDown ]
         private void ArtworkGallery_KeyDown(object sender, KeyEventArgs e)
         {
+            // CuttingTemplate active → control W/A/S/D
+            if (isCuttingTemplateActive && (e.KeyCode == Keys.W || e.KeyCode == Keys.A || e.KeyCode == Keys.S || e.KeyCode == Keys.D))
+            {
+                if (currentCuttingTemplateMoveKey != e.KeyCode)
+                {
+                    currentCuttingTemplateMoveKey = e.KeyCode;
+                    MoveCuttingTemplate(e.KeyCode);
+                    cuttingTemplateMoveTimer.Start();
+                }
+                return; // <- IMPORTANT: So that further down you don't get blocked!
+            }
+
+            // Overlay-Steuerung nur wenn Overlay aktiv ist
             if (!IsOverlayActive)
                 return;
 
@@ -563,6 +597,12 @@ namespace UoFiddler.Controls.Forms
             {
                 moveTimer.Stop();
                 currentMoveKey = Keys.None;
+            }
+
+            if (e.KeyCode == currentCuttingTemplateMoveKey)
+            {
+                cuttingTemplateMoveTimer.Stop();
+                currentCuttingTemplateMoveKey = Keys.None;
             }
         }
         #endregion
@@ -600,11 +640,11 @@ namespace UoFiddler.Controls.Forms
 
             if (animatedGif != null)
             {
-                pictureBoxArtworkGallery.Invalidate(); // GIF muss neu gezeichnet werden
+                pictureBoxArtworkGallery.Invalidate(); // GIF needs to be redrawn
             }
             else
             {
-                LoadArtwork(); // Für secondImage
+                LoadArtwork(); // For secondImage
             }
         }
         #endregion
@@ -612,12 +652,13 @@ namespace UoFiddler.Controls.Forms
         #region [ IsInputKey ]
         protected override bool IsInputKey(Keys keyData)
         {
-            // These keys are considered "input keys" and should NOT be used for focus navigation
-            if (keyData == Keys.Left || keyData == Keys.Right || keyData == Keys.Up || keyData == Keys.Down)
+            if (keyData == Keys.Left || keyData == Keys.Right || keyData == Keys.Up || keyData == Keys.Down ||
+                keyData == Keys.W || keyData == Keys.A || keyData == Keys.S || keyData == Keys.D)
                 return true;
 
             return base.IsInputKey(keyData);
         }
+
         #endregion
 
         #region [ ProcessCmdKey ]
@@ -742,18 +783,18 @@ namespace UoFiddler.Controls.Forms
                 return;
             }
 
-            secondImageOffset = Point.Empty; // Position zurücksetzen
+            secondImageOffset = Point.Empty; // Reset position
 
             if (animatedGif != null)
             {
-                pictureBoxArtworkGallery.Invalidate(); // GIF muss neu gezeichnet werden
+                pictureBoxArtworkGallery.Invalidate(); // GIF needs to be redrawn
             }
             else
             {
-                LoadArtwork(); // Für statisches Overlay
+                LoadArtwork(); // For static overlay
             }
 
-            UpdateImageInfoLabel(); // Info aktualisieren
+            UpdateImageInfoLabel(); // Update info
         }
         #endregion
 
@@ -782,6 +823,202 @@ namespace UoFiddler.Controls.Forms
 
             secondImage.RotateFlip(RotateFlipType.RotateNoneFlipX); // Flip horizontally
             LoadArtwork();
+        }
+        #endregion
+
+        #region [  ChecboxCuttingTemplate_CheckedChanged ]
+        private void CheckBoxCuttingTemplate_CheckedChanged(object sender, EventArgs e)
+        {
+            isCuttingTemplateActive = checkBoxCuttingTemplate.Checked;
+
+            if (isCuttingTemplateActive)
+            {
+                textBoxWidth.Text = "44";
+                textBoxHeight.Text = "133";
+                UpdateCuttingTemplateSize();
+            }
+
+            // IMPORTANT: Focus on the form for KeyDown to work
+            this.ActiveControl = null;
+            this.Focus();
+
+            pictureBoxArtworkGallery.Invalidate();
+        }
+        #endregion
+
+        #region [ UpdateCuttingTemplateSize ]
+        private void UpdateCuttingTemplateSize()
+        {
+            if (int.TryParse(textBoxWidth.Text, out int w) && int.TryParse(textBoxHeight.Text, out int h))
+            {
+                if (w > 0 && h > 0)
+                    cuttingTemplateSize = new Size(w, h);
+            }
+        }
+        #endregion
+
+        #region [ MoveCuttingTemplate ]
+        private void MoveCuttingTemplate(Keys key)
+        {
+            const int moveStep = 2;
+
+            switch (key)
+            {
+                case Keys.W:
+                    cuttingTemplatePosition.Y -= moveStep;
+                    break;
+                case Keys.S:
+                    cuttingTemplatePosition.Y += moveStep;
+                    break;
+                case Keys.A:
+                    cuttingTemplatePosition.X -= moveStep;
+                    break;
+                case Keys.D:
+                    cuttingTemplatePosition.X += moveStep;
+                    break;
+                default:
+                    return;
+            }
+
+            pictureBoxArtworkGallery.Invalidate();
+        }
+        #endregion
+
+        #region [ CuttingTemplateMoveTimer_Tick ]
+        private void CuttingTemplateMoveTimer_Tick(object sender, EventArgs e)
+        {
+            if (currentCuttingTemplateMoveKey != Keys.None)
+            {
+                MoveCuttingTemplate(currentCuttingTemplateMoveKey);
+            }
+        }
+        #endregion
+
+        #region [ TextBoxCuttingTemplateSizeChanged ]
+        private void TextBoxCuttingTemplateSizeChanged(object sender, EventArgs e)
+        {
+            if (!isCuttingTemplateActive)
+                return;
+
+            UpdateCuttingTemplateSize();
+            pictureBoxArtworkGallery.Invalidate();
+        }
+        #endregion
+
+        #region [ CheckBoxBackgroundColorChanged ]
+        private void CheckBoxBackgroundColorChanged(object sender, EventArgs e)
+        {
+            if (checkBoxBlack.Checked)
+            {
+                pictureBoxArtworkGallery.BackColor = Color.FromArgb(0, 0, 0); // #000000
+            }
+            else if (checkBoxWhite.Checked)
+            {
+                pictureBoxArtworkGallery.BackColor = Color.FromArgb(255, 255, 255); // #ffffff
+            }
+            else
+            {
+                pictureBoxArtworkGallery.BackColor = Color.Transparent;
+            }
+        }
+        #endregion
+
+        #region [ CropCuttingTemplateAreaIncludingBackground ]
+        private Bitmap CropCuttingTemplateAreaIncludingBackground()
+        {
+            // Temporarily disable drawing of the frame
+            isDrawingCuttingTemplateTemporaryDisabled = true;
+            pictureBoxArtworkGallery.Invalidate();
+            pictureBoxArtworkGallery.Update(); // Redraws instantly, without frames
+
+            // Generate screenshot
+            Bitmap fullPictureBox = new Bitmap(pictureBoxArtworkGallery.Width, pictureBoxArtworkGallery.Height);
+            pictureBoxArtworkGallery.DrawToBitmap(fullPictureBox, new Rectangle(0, 0, fullPictureBox.Width, fullPictureBox.Height));
+
+            Application.DoEvents(); // Ensure all events are processed
+
+            // Reactivate the frame
+            isDrawingCuttingTemplateTemporaryDisabled = false;
+            pictureBoxArtworkGallery.Invalidate(); // redraw with frame
+
+            // Cut out
+            Rectangle cropArea = new Rectangle(cuttingTemplatePosition, cuttingTemplateSize);
+            Rectangle boxRect = new Rectangle(0, 0, fullPictureBox.Width, fullPictureBox.Height);
+            cropArea.Intersect(boxRect);
+
+            if (cropArea.Width <= 0 || cropArea.Height <= 0)
+                return null;
+
+            Bitmap result = new Bitmap(cropArea.Width, cropArea.Height);
+            using (Graphics g = Graphics.FromImage(result))
+            {
+                g.DrawImage(fullPictureBox, new Rectangle(0, 0, cropArea.Width, cropArea.Height),
+                            cropArea, GraphicsUnit.Pixel);
+            }
+
+            fullPictureBox.Dispose();
+            return result;
+        }
+        #endregion
+
+        #region [ ButtonCuttingTemplate_Click ]
+        private void ButtonSaveCuttingTemplate_Click(object sender, EventArgs e)
+        {
+            Bitmap cropped = CropCuttingTemplateAreaIncludingBackground();
+            if (cropped == null)
+            {
+                MessageBox.Show("Nothing to crop or outside of bounds.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            using (SaveFileDialog saveDialog = new SaveFileDialog())
+            {
+                saveDialog.Title = "Save cropped image";
+                saveDialog.Filter = "BMP Image (*.bmp)|*.bmp|PNG Image (*.png)|*.png|JPEG Image (*.jpg)|*.jpg|TIFF Image (*.tiff)|*.tiff";
+                saveDialog.DefaultExt = "bmp";
+                saveDialog.FileName = "cropped_image.bmp";
+
+                if (saveDialog.ShowDialog() == DialogResult.OK)
+                {
+                    try
+                    {
+                        System.Drawing.Imaging.ImageFormat format = System.Drawing.Imaging.ImageFormat.Bmp;
+                        string file = saveDialog.FileName.ToLower();
+
+                        if (file.EndsWith(".png"))
+                            format = System.Drawing.Imaging.ImageFormat.Png;
+                        else if (file.EndsWith(".jpg") || file.EndsWith(".jpeg"))
+                            format = System.Drawing.Imaging.ImageFormat.Jpeg;
+                        else if (file.EndsWith(".tiff"))
+                            format = System.Drawing.Imaging.ImageFormat.Tiff;
+
+                        cropped.Save(saveDialog.FileName, format);
+                        MessageBox.Show("Image saved successfully.", "Done", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show("Error saving image:\n" + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
+            }
+
+            cropped.Dispose();
+        }
+        #endregion
+
+        #region [ ButtonCopyCuttingTemplateToClipboard ]
+        private void ButtonCopyCuttingTemplateToClipboard_Click(object sender, EventArgs e)
+        {
+            Bitmap cropped = CropCuttingTemplateAreaIncludingBackground();
+
+            if (cropped == null)
+            {
+                MessageBox.Show("Nothing to crop or outside of bounds.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            Clipboard.SetImage(cropped);
+            MessageBox.Show("Image copied to clipboard.", "Clipboard", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
         #endregion
     }

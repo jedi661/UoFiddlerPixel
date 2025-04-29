@@ -44,6 +44,9 @@ namespace UoFiddler.Controls.Forms
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ArtworkGallery));
             splitContainerArtworkGallery = new System.Windows.Forms.SplitContainer();
             groupBoxCrop = new System.Windows.Forms.GroupBox();
+            checkBoxBlack = new System.Windows.Forms.CheckBox();
+            checkBoxWhite = new System.Windows.Forms.CheckBox();
+            checkBoxCuttingTemplate = new System.Windows.Forms.CheckBox();
             ButtonCrop = new System.Windows.Forms.Button();
             labelWidth = new System.Windows.Forms.Label();
             labelHeight = new System.Windows.Forms.Label();
@@ -67,6 +70,8 @@ namespace UoFiddler.Controls.Forms
             centerOverlayToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             flipVerticalToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             FlipHorizontalToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            ButtonSaveCuttingTemplate = new System.Windows.Forms.Button();
+            ButtonCopyCuttingTemplateToClipboard = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)splitContainerArtworkGallery).BeginInit();
             splitContainerArtworkGallery.Panel1.SuspendLayout();
             splitContainerArtworkGallery.Panel2.SuspendLayout();
@@ -99,21 +104,59 @@ namespace UoFiddler.Controls.Forms
             // 
             // groupBoxCrop
             // 
+            groupBoxCrop.Controls.Add(ButtonCopyCuttingTemplateToClipboard);
+            groupBoxCrop.Controls.Add(ButtonSaveCuttingTemplate);
+            groupBoxCrop.Controls.Add(checkBoxBlack);
+            groupBoxCrop.Controls.Add(checkBoxWhite);
+            groupBoxCrop.Controls.Add(checkBoxCuttingTemplate);
             groupBoxCrop.Controls.Add(ButtonCrop);
             groupBoxCrop.Controls.Add(labelWidth);
             groupBoxCrop.Controls.Add(labelHeight);
             groupBoxCrop.Controls.Add(textBoxHeight);
             groupBoxCrop.Controls.Add(textBoxWidth);
-            groupBoxCrop.Location = new System.Drawing.Point(12, 231);
+            groupBoxCrop.Location = new System.Drawing.Point(8, 231);
             groupBoxCrop.Name = "groupBoxCrop";
-            groupBoxCrop.Size = new System.Drawing.Size(414, 84);
+            groupBoxCrop.Size = new System.Drawing.Size(429, 84);
             groupBoxCrop.TabIndex = 5;
             groupBoxCrop.TabStop = false;
             groupBoxCrop.Text = "Crop Second Image";
             // 
+            // checkBoxBlack
+            // 
+            checkBoxBlack.AutoSize = true;
+            checkBoxBlack.Location = new System.Drawing.Point(290, 21);
+            checkBoxBlack.Name = "checkBoxBlack";
+            checkBoxBlack.Size = new System.Drawing.Size(54, 19);
+            checkBoxBlack.TabIndex = 7;
+            checkBoxBlack.Text = "Black";
+            checkBoxBlack.UseVisualStyleBackColor = true;
+            checkBoxBlack.CheckedChanged += CheckBoxBackgroundColorChanged;
+            // 
+            // checkBoxWhite
+            // 
+            checkBoxWhite.AutoSize = true;
+            checkBoxWhite.Location = new System.Drawing.Point(227, 21);
+            checkBoxWhite.Name = "checkBoxWhite";
+            checkBoxWhite.Size = new System.Drawing.Size(57, 19);
+            checkBoxWhite.TabIndex = 6;
+            checkBoxWhite.Text = "White";
+            checkBoxWhite.UseVisualStyleBackColor = true;
+            checkBoxWhite.CheckedChanged += CheckBoxBackgroundColorChanged;
+            // 
+            // checkBoxCuttingTemplate
+            // 
+            checkBoxCuttingTemplate.AutoSize = true;
+            checkBoxCuttingTemplate.Location = new System.Drawing.Point(227, 46);
+            checkBoxCuttingTemplate.Name = "checkBoxCuttingTemplate";
+            checkBoxCuttingTemplate.Size = new System.Drawing.Size(116, 19);
+            checkBoxCuttingTemplate.TabIndex = 5;
+            checkBoxCuttingTemplate.Text = "Cutting template";
+            checkBoxCuttingTemplate.UseVisualStyleBackColor = true;
+            checkBoxCuttingTemplate.CheckedChanged += CheckBoxCuttingTemplate_CheckedChanged;
+            // 
             // ButtonCrop
             // 
-            ButtonCrop.Location = new System.Drawing.Point(165, 43);
+            ButtonCrop.Location = new System.Drawing.Point(158, 43);
             ButtonCrop.Name = "ButtonCrop";
             ButtonCrop.Size = new System.Drawing.Size(56, 23);
             ButtonCrop.TabIndex = 4;
@@ -145,6 +188,7 @@ namespace UoFiddler.Controls.Forms
             textBoxHeight.Name = "textBoxHeight";
             textBoxHeight.Size = new System.Drawing.Size(63, 23);
             textBoxHeight.TabIndex = 1;
+            textBoxHeight.TextChanged += TextBoxCuttingTemplateSizeChanged;
             // 
             // textBoxWidth
             // 
@@ -152,6 +196,7 @@ namespace UoFiddler.Controls.Forms
             textBoxWidth.Name = "textBoxWidth";
             textBoxWidth.Size = new System.Drawing.Size(63, 23);
             textBoxWidth.TabIndex = 0;
+            textBoxWidth.TextChanged += TextBoxCuttingTemplateSizeChanged;
             // 
             // label1ImageInfo
             // 
@@ -171,9 +216,9 @@ namespace UoFiddler.Controls.Forms
             groupBoxArtworkGallery.Controls.Add(checkBoxSecondArtwork);
             groupBoxArtworkGallery.Controls.Add(ButtonLeft);
             groupBoxArtworkGallery.Controls.Add(ButtonRight);
-            groupBoxArtworkGallery.Location = new System.Drawing.Point(12, 12);
+            groupBoxArtworkGallery.Location = new System.Drawing.Point(8, 12);
             groupBoxArtworkGallery.Name = "groupBoxArtworkGallery";
-            groupBoxArtworkGallery.Size = new System.Drawing.Size(414, 174);
+            groupBoxArtworkGallery.Size = new System.Drawing.Size(429, 174);
             groupBoxArtworkGallery.TabIndex = 2;
             groupBoxArtworkGallery.TabStop = false;
             groupBoxArtworkGallery.Text = "Control";
@@ -322,6 +367,26 @@ namespace UoFiddler.Controls.Forms
             FlipHorizontalToolStripMenuItem.Text = "Flip Horizontal";
             FlipHorizontalToolStripMenuItem.Click += FlipHorizontalToolStripMenuItem_Click;
             // 
+            // ButtonSaveCuttingTemplate
+            // 
+            ButtonSaveCuttingTemplate.Location = new System.Drawing.Point(343, 17);
+            ButtonSaveCuttingTemplate.Name = "ButtonSaveCuttingTemplate";
+            ButtonSaveCuttingTemplate.Size = new System.Drawing.Size(71, 23);
+            ButtonSaveCuttingTemplate.TabIndex = 8;
+            ButtonSaveCuttingTemplate.Text = "Crop";
+            ButtonSaveCuttingTemplate.UseVisualStyleBackColor = true;
+            ButtonSaveCuttingTemplate.Click += ButtonSaveCuttingTemplate_Click;
+            // 
+            // ButtonCopyCuttingTemplateToClipboard
+            // 
+            ButtonCopyCuttingTemplateToClipboard.Location = new System.Drawing.Point(343, 44);
+            ButtonCopyCuttingTemplateToClipboard.Name = "ButtonCopyCuttingTemplateToClipboard";
+            ButtonCopyCuttingTemplateToClipboard.Size = new System.Drawing.Size(71, 23);
+            ButtonCopyCuttingTemplateToClipboard.TabIndex = 9;
+            ButtonCopyCuttingTemplateToClipboard.Text = "Clipboard";
+            ButtonCopyCuttingTemplateToClipboard.UseVisualStyleBackColor = true;
+            ButtonCopyCuttingTemplateToClipboard.Click += ButtonCopyCuttingTemplateToClipboard_Click;
+            // 
             // ArtworkGallery
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -375,5 +440,10 @@ namespace UoFiddler.Controls.Forms
         private System.Windows.Forms.ToolStripMenuItem centerOverlayToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem flipVerticalToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem FlipHorizontalToolStripMenuItem;
+        private System.Windows.Forms.CheckBox checkBoxCuttingTemplate;
+        private System.Windows.Forms.CheckBox checkBoxBlack;
+        private System.Windows.Forms.CheckBox checkBoxWhite;
+        private System.Windows.Forms.Button ButtonCopyCuttingTemplateToClipboard;
+        private System.Windows.Forms.Button ButtonSaveCuttingTemplate;
     }
 }
