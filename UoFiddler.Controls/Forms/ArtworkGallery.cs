@@ -147,7 +147,6 @@ namespace UoFiddler.Controls.Forms
 
             this.Text = $"Artwork: 0x{graphicId:X4}";
         }
-
         #endregion
 
         #region [ Bitmap CombineImages ]
@@ -351,7 +350,6 @@ namespace UoFiddler.Controls.Forms
             g.DrawLine(Pens.Black, pointsUpper[1], pointsLower[1]);
             g.DrawLine(Pens.Black, pointsUpper[3], pointsLower[3]);
         }
-
         #endregion
 
         #region [ PictureBoxArtworkGallery_Paint ]        
@@ -658,7 +656,6 @@ namespace UoFiddler.Controls.Forms
 
             return base.IsInputKey(keyData);
         }
-
         #endregion
 
         #region [ ProcessCmdKey ]
