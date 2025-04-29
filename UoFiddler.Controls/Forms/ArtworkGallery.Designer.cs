@@ -44,6 +44,8 @@ namespace UoFiddler.Controls.Forms
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ArtworkGallery));
             splitContainerArtworkGallery = new System.Windows.Forms.SplitContainer();
             groupBoxCrop = new System.Windows.Forms.GroupBox();
+            ButtonCopyCuttingTemplateToClipboard = new System.Windows.Forms.Button();
+            ButtonSaveCuttingTemplate = new System.Windows.Forms.Button();
             checkBoxBlack = new System.Windows.Forms.CheckBox();
             checkBoxWhite = new System.Windows.Forms.CheckBox();
             checkBoxCuttingTemplate = new System.Windows.Forms.CheckBox();
@@ -54,6 +56,13 @@ namespace UoFiddler.Controls.Forms
             textBoxWidth = new System.Windows.Forms.TextBox();
             label1ImageInfo = new System.Windows.Forms.Label();
             groupBoxArtworkGallery = new System.Windows.Forms.GroupBox();
+            ButtonLoadImages = new System.Windows.Forms.Button();
+            listBoxImages = new System.Windows.Forms.ListBox();
+            contextMenuStripListbox = new System.Windows.Forms.ContextMenuStrip(components);
+            searchToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            toolStripTextBoxSearchTexbox = new System.Windows.Forms.ToolStripTextBox();
+            ButtonBackgroundImage = new System.Windows.Forms.Button();
+            ButtonShowHideIndexedImages = new System.Windows.Forms.Button();
             ButtonClearAll_Click = new System.Windows.Forms.Button();
             ButtonRemoveSecondImage = new System.Windows.Forms.Button();
             ButtonRemoveGif = new System.Windows.Forms.Button();
@@ -70,14 +79,13 @@ namespace UoFiddler.Controls.Forms
             centerOverlayToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             flipVerticalToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             FlipHorizontalToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            ButtonSaveCuttingTemplate = new System.Windows.Forms.Button();
-            ButtonCopyCuttingTemplateToClipboard = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)splitContainerArtworkGallery).BeginInit();
             splitContainerArtworkGallery.Panel1.SuspendLayout();
             splitContainerArtworkGallery.Panel2.SuspendLayout();
             splitContainerArtworkGallery.SuspendLayout();
             groupBoxCrop.SuspendLayout();
             groupBoxArtworkGallery.SuspendLayout();
+            contextMenuStripListbox.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)pictureBoxArtworkGallery).BeginInit();
             contextMenuStripArtworkGallery.SuspendLayout();
             SuspendLayout();
@@ -120,6 +128,26 @@ namespace UoFiddler.Controls.Forms
             groupBoxCrop.TabIndex = 5;
             groupBoxCrop.TabStop = false;
             groupBoxCrop.Text = "Crop Second Image";
+            // 
+            // ButtonCopyCuttingTemplateToClipboard
+            // 
+            ButtonCopyCuttingTemplateToClipboard.Location = new System.Drawing.Point(343, 44);
+            ButtonCopyCuttingTemplateToClipboard.Name = "ButtonCopyCuttingTemplateToClipboard";
+            ButtonCopyCuttingTemplateToClipboard.Size = new System.Drawing.Size(71, 23);
+            ButtonCopyCuttingTemplateToClipboard.TabIndex = 9;
+            ButtonCopyCuttingTemplateToClipboard.Text = "Clipboard";
+            ButtonCopyCuttingTemplateToClipboard.UseVisualStyleBackColor = true;
+            ButtonCopyCuttingTemplateToClipboard.Click += ButtonCopyCuttingTemplateToClipboard_Click;
+            // 
+            // ButtonSaveCuttingTemplate
+            // 
+            ButtonSaveCuttingTemplate.Location = new System.Drawing.Point(343, 17);
+            ButtonSaveCuttingTemplate.Name = "ButtonSaveCuttingTemplate";
+            ButtonSaveCuttingTemplate.Size = new System.Drawing.Size(71, 23);
+            ButtonSaveCuttingTemplate.TabIndex = 8;
+            ButtonSaveCuttingTemplate.Text = "Crop";
+            ButtonSaveCuttingTemplate.UseVisualStyleBackColor = true;
+            ButtonSaveCuttingTemplate.Click += ButtonSaveCuttingTemplate_Click;
             // 
             // checkBoxBlack
             // 
@@ -209,6 +237,10 @@ namespace UoFiddler.Controls.Forms
             // 
             // groupBoxArtworkGallery
             // 
+            groupBoxArtworkGallery.Controls.Add(ButtonLoadImages);
+            groupBoxArtworkGallery.Controls.Add(listBoxImages);
+            groupBoxArtworkGallery.Controls.Add(ButtonBackgroundImage);
+            groupBoxArtworkGallery.Controls.Add(ButtonShowHideIndexedImages);
             groupBoxArtworkGallery.Controls.Add(ButtonClearAll_Click);
             groupBoxArtworkGallery.Controls.Add(ButtonRemoveSecondImage);
             groupBoxArtworkGallery.Controls.Add(ButtonRemoveGif);
@@ -222,6 +254,68 @@ namespace UoFiddler.Controls.Forms
             groupBoxArtworkGallery.TabIndex = 2;
             groupBoxArtworkGallery.TabStop = false;
             groupBoxArtworkGallery.Text = "Control";
+            // 
+            // ButtonLoadImages
+            // 
+            ButtonLoadImages.Location = new System.Drawing.Point(333, 108);
+            ButtonLoadImages.Name = "ButtonLoadImages";
+            ButtonLoadImages.Size = new System.Drawing.Size(75, 23);
+            ButtonLoadImages.TabIndex = 10;
+            ButtonLoadImages.Text = "Directory";
+            ButtonLoadImages.UseVisualStyleBackColor = true;
+            ButtonLoadImages.Click += ButtonLoadImages_Click;
+            // 
+            // listBoxImages
+            // 
+            listBoxImages.ContextMenuStrip = contextMenuStripListbox;
+            listBoxImages.FormattingEnabled = true;
+            listBoxImages.ItemHeight = 15;
+            listBoxImages.Location = new System.Drawing.Point(140, 22);
+            listBoxImages.Name = "listBoxImages";
+            listBoxImages.Size = new System.Drawing.Size(169, 109);
+            listBoxImages.TabIndex = 9;
+            listBoxImages.SelectedIndexChanged += listBoxImages_SelectedIndexChanged;
+            // 
+            // contextMenuStripListbox
+            // 
+            contextMenuStripListbox.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { searchToolStripMenuItem });
+            contextMenuStripListbox.Name = "contextMenuStripListbox";
+            contextMenuStripListbox.Size = new System.Drawing.Size(181, 48);
+            // 
+            // searchToolStripMenuItem
+            // 
+            searchToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { toolStripTextBoxSearchTexbox });
+            searchToolStripMenuItem.Image = Properties.Resources.zoomminus;
+            searchToolStripMenuItem.Name = "searchToolStripMenuItem";
+            searchToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            searchToolStripMenuItem.Text = "Search";
+            // 
+            // toolStripTextBoxSearchTexbox
+            // 
+            toolStripTextBoxSearchTexbox.Name = "toolStripTextBoxSearchTexbox";
+            toolStripTextBoxSearchTexbox.Size = new System.Drawing.Size(100, 23);
+            toolStripTextBoxSearchTexbox.KeyDown += toolStripTextBoxSearchTexbox_KeyDown;
+            toolStripTextBoxSearchTexbox.TextChanged += toolStripTextBoxSearchTexbox_TextChanged;
+            // 
+            // ButtonBackgroundImage
+            // 
+            ButtonBackgroundImage.Location = new System.Drawing.Point(333, 144);
+            ButtonBackgroundImage.Name = "ButtonBackgroundImage";
+            ButtonBackgroundImage.Size = new System.Drawing.Size(75, 23);
+            ButtonBackgroundImage.TabIndex = 8;
+            ButtonBackgroundImage.Text = "Image";
+            ButtonBackgroundImage.UseVisualStyleBackColor = true;
+            ButtonBackgroundImage.Click += ButtonBackgroundImage_Click;
+            // 
+            // ButtonShowHideIndexedImages
+            // 
+            ButtonShowHideIndexedImages.Location = new System.Drawing.Point(6, 109);
+            ButtonShowHideIndexedImages.Name = "ButtonShowHideIndexedImages";
+            ButtonShowHideIndexedImages.Size = new System.Drawing.Size(109, 23);
+            ButtonShowHideIndexedImages.TabIndex = 7;
+            ButtonShowHideIndexedImages.Text = "Hide Index";
+            ButtonShowHideIndexedImages.UseVisualStyleBackColor = true;
+            ButtonShowHideIndexedImages.Click += ButtonShowHideIndexedImages_Click;
             // 
             // ButtonClearAll_Click
             // 
@@ -367,26 +461,6 @@ namespace UoFiddler.Controls.Forms
             FlipHorizontalToolStripMenuItem.Text = "Flip Horizontal";
             FlipHorizontalToolStripMenuItem.Click += FlipHorizontalToolStripMenuItem_Click;
             // 
-            // ButtonSaveCuttingTemplate
-            // 
-            ButtonSaveCuttingTemplate.Location = new System.Drawing.Point(343, 17);
-            ButtonSaveCuttingTemplate.Name = "ButtonSaveCuttingTemplate";
-            ButtonSaveCuttingTemplate.Size = new System.Drawing.Size(71, 23);
-            ButtonSaveCuttingTemplate.TabIndex = 8;
-            ButtonSaveCuttingTemplate.Text = "Crop";
-            ButtonSaveCuttingTemplate.UseVisualStyleBackColor = true;
-            ButtonSaveCuttingTemplate.Click += ButtonSaveCuttingTemplate_Click;
-            // 
-            // ButtonCopyCuttingTemplateToClipboard
-            // 
-            ButtonCopyCuttingTemplateToClipboard.Location = new System.Drawing.Point(343, 44);
-            ButtonCopyCuttingTemplateToClipboard.Name = "ButtonCopyCuttingTemplateToClipboard";
-            ButtonCopyCuttingTemplateToClipboard.Size = new System.Drawing.Size(71, 23);
-            ButtonCopyCuttingTemplateToClipboard.TabIndex = 9;
-            ButtonCopyCuttingTemplateToClipboard.Text = "Clipboard";
-            ButtonCopyCuttingTemplateToClipboard.UseVisualStyleBackColor = true;
-            ButtonCopyCuttingTemplateToClipboard.Click += ButtonCopyCuttingTemplateToClipboard_Click;
-            // 
             // ArtworkGallery
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -408,6 +482,7 @@ namespace UoFiddler.Controls.Forms
             groupBoxCrop.PerformLayout();
             groupBoxArtworkGallery.ResumeLayout(false);
             groupBoxArtworkGallery.PerformLayout();
+            contextMenuStripListbox.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)pictureBoxArtworkGallery).EndInit();
             contextMenuStripArtworkGallery.ResumeLayout(false);
             ResumeLayout(false);
@@ -445,5 +520,12 @@ namespace UoFiddler.Controls.Forms
         private System.Windows.Forms.CheckBox checkBoxWhite;
         private System.Windows.Forms.Button ButtonCopyCuttingTemplateToClipboard;
         private System.Windows.Forms.Button ButtonSaveCuttingTemplate;
+        private System.Windows.Forms.Button ButtonShowHideIndexedImages;
+        private System.Windows.Forms.Button ButtonBackgroundImage;
+        private System.Windows.Forms.Button ButtonLoadImages;
+        private System.Windows.Forms.ListBox listBoxImages;
+        private System.Windows.Forms.ContextMenuStrip contextMenuStripListbox;
+        private System.Windows.Forms.ToolStripMenuItem searchToolStripMenuItem;
+        private System.Windows.Forms.ToolStripTextBox toolStripTextBoxSearchTexbox;
     }
 }

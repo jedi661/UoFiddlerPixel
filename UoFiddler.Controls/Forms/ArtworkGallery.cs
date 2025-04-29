@@ -22,6 +22,7 @@ using System.Windows.Forms;
 using UoFiddler.Controls.UserControls;
 using Ultima;
 using System.Media;
+using System.IO;
 
 
 namespace UoFiddler.Controls.Forms
@@ -42,13 +43,20 @@ namespace UoFiddler.Controls.Forms
         private Keys currentMoveKey = Keys.None; // Currently pressed movement key
         private bool IsOverlayActive => (useSecondImage && secondImage != null) || animatedGif != null; // Indicates if an overlay is active
 
-        private bool isCuttingTemplateActive = false;        
+        private bool isCuttingTemplateActive = false;
         private Point cuttingTemplatePosition = new Point(100, 100); // Initial position
         private Size cuttingTemplateSize = new Size(44, 133); // Standard size
 
         private Keys currentCuttingTemplateMoveKey = Keys.None;
         private Timer cuttingTemplateMoveTimer;
         private bool isDrawingCuttingTemplateTemporaryDisabled = false;
+
+        private bool allowIndexArtwork = true;
+        private Bitmap backgroundImage = null;
+
+        private string lastImageDirectory = null;
+        private Dictionary<string, string> imageFileLookup = new Dictionary<string, string>();
+
 
         public ArtworkGallery()
         {
@@ -107,33 +115,56 @@ namespace UoFiddler.Controls.Forms
                 return;
 
             int graphicId = itemList[currentIndex];
-            Bitmap bitmap = Art.GetStatic(graphicId);
 
-            if (bitmap == null)
+            Bitmap baseBitmap = allowIndexArtwork ? Art.GetStatic(graphicId) : null;
+
+            if (baseBitmap == null && secondImage == null && animatedGif == null)
             {
                 pictureBoxArtworkGallery.Image?.Dispose();
                 pictureBoxArtworkGallery.Image = null;
-                this.Text = $"Artwork: 0x{graphicId:X4} (No Image)";
+
+                this.Text = allowIndexArtwork
+                    ? $"Artwork: 0x{graphicId:X4} (No Image)"
+                    : "Overlay-Modus aktiv (Index Artwork ausgeblendet)";
+
                 return;
             }
 
-            Bitmap finalImage;
+            Bitmap finalImage = null;
 
-            // If no second image is active, load normal image
-            if (!useSecondImage || secondImage == null)
+            // --- Case 1: Second Image is active ---
+            if (secondImage != null && checkBoxSecondArtwork.Checked)
             {
-                finalImage = new Bitmap(bitmap);
+                if (baseBitmap != null)
+                {
+                    Bitmap combined = new Bitmap(baseBitmap);
+                    finalImage = CombineImages(combined, secondImage);
+                    combined.Dispose();
+                }
+                else
+                {
+                    finalImage = new Bitmap(secondImage);
+                }
             }
-            else
+            // --- Case 2: Show only index image ---
+            else if (baseBitmap != null)
             {
-                // If second image active: Load combined image
-                Bitmap baseImage = new Bitmap(bitmap);
-                finalImage = CombineImages(baseImage, secondImage);
-                baseImage.Dispose();
+                finalImage = new Bitmap(baseBitmap);
             }
 
-            // --- HIER: Rhombus draufzeichnen, wenn aktiv ---
-            if (isDrawingRhombusArtworkGallery)
+            // --- Case 3: No index image, but GIF present ---
+            if (finalImage == null && animatedGif != null)
+            {
+                finalImage = new Bitmap(animatedGif.Width, animatedGif.Height);
+                using (Graphics g = Graphics.FromImage(finalImage))
+                {
+                    ImageAnimator.UpdateFrames(animatedGif);
+                    g.DrawImage(animatedGif, 0, 0);
+                }
+            }
+
+            // --- Draw rhombus on finalImage if active ---
+            if (finalImage != null && isDrawingRhombusArtworkGallery)
             {
                 using (Graphics g = Graphics.FromImage(finalImage))
                 {
@@ -145,7 +176,9 @@ namespace UoFiddler.Controls.Forms
             pictureBoxArtworkGallery.Image?.Dispose();
             pictureBoxArtworkGallery.Image = finalImage;
 
-            this.Text = $"Artwork: 0x{graphicId:X4}";
+            this.Text = allowIndexArtwork
+                ? $"Artwork: 0x{graphicId:X4}"
+                : "Overlay-Modus aktiv (Index ausgeblendet)";
         }
         #endregion
 
@@ -1016,6 +1049,223 @@ namespace UoFiddler.Controls.Forms
 
             Clipboard.SetImage(cropped);
             MessageBox.Show("Image copied to clipboard.", "Clipboard", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+        #endregion
+
+        #region [ ButtonShowHideIndexedImages_Click ]
+        private void ButtonShowHideIndexedImages_Click(object sender, EventArgs e)
+        {
+            allowIndexArtwork = !allowIndexArtwork;
+
+            ButtonShowHideIndexedImages.BackColor = allowIndexArtwork
+                ? SystemColors.Control
+                : Color.LightGreen;
+
+            LoadArtwork();
+            UpdateImageInfoLabel();
+        }
+        #endregion
+
+        #region [ ButtonBackgroundImage_Click ]
+        private void ButtonBackgroundImage_Click(object sender, EventArgs e)
+        {
+            if (backgroundImage == null)
+            {
+                using (OpenFileDialog openFileDialog = new OpenFileDialog())
+                {
+                    openFileDialog.Title = "Hintergrundbild auswählen";
+                    openFileDialog.Filter = "Image Files (*.bmp; *.png; *.jpg; *.jpeg; *.tiff)|*.bmp;*.png;*.jpg;*.jpeg;*.tiff";
+                    openFileDialog.DefaultExt = "bmp";
+
+                    if (openFileDialog.ShowDialog() != DialogResult.OK)
+                        return;
+
+                    // Share old image
+                    backgroundImage?.Dispose();
+
+                    backgroundImage = new Bitmap(openFileDialog.FileName);
+                }
+            }
+            else
+            {
+                backgroundImage.Dispose();
+                backgroundImage = null;
+            }
+
+            pictureBoxArtworkGallery.BackgroundImage = backgroundImage;
+            pictureBoxArtworkGallery.BackgroundImageLayout = ImageLayout.Center;
+        }
+        #endregion
+
+        #region [ ButtonLoadImages_Click ]
+        private void ButtonLoadImages_Click(object sender, EventArgs e)
+        {
+            using (FolderBrowserDialog folderDialog = new FolderBrowserDialog())
+            {
+                folderDialog.Description = "Select folder with images";
+
+                if (lastImageDirectory != null)
+                {
+                    folderDialog.SelectedPath = lastImageDirectory;
+                }
+
+                if (folderDialog.ShowDialog() != DialogResult.OK)
+                    return;
+
+                lastImageDirectory = folderDialog.SelectedPath;
+
+                string[] imageFiles = Directory.GetFiles(lastImageDirectory, "*.*")
+                                               .Where(f => f.EndsWith(".bmp", StringComparison.OrdinalIgnoreCase) ||
+                                                           f.EndsWith(".png", StringComparison.OrdinalIgnoreCase) ||
+                                                           f.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase) ||
+                                                           f.EndsWith(".jpeg", StringComparison.OrdinalIgnoreCase) ||
+                                                           f.EndsWith(".tiff", StringComparison.OrdinalIgnoreCase))
+                                               .ToArray();
+
+                imageFileLookup.Clear();
+                listBoxImages.Items.Clear();
+
+                foreach (string file in imageFiles)
+                {
+                    string fileName = Path.GetFileName(file);
+                    imageFileLookup[fileName] = file;
+                    listBoxImages.Items.Add(fileName);
+                }
+
+                if (listBoxImages.Items.Count == 0)
+                {
+                    MessageBox.Show("No supported image files found in the selected folder.", "Notice", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+            }
+        }
+        #endregion
+
+        #region [ listBoxImages_SelectedIndexChanged ]
+        private void listBoxImages_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (listBoxImages.SelectedItem == null)
+                return;
+
+            string selectedFileName = listBoxImages.SelectedItem.ToString();
+
+            if (!imageFileLookup.ContainsKey(selectedFileName))
+                return;
+
+            string fullPath = imageFileLookup[selectedFileName];
+
+            try
+            {
+                using (Bitmap loadedImage = new Bitmap(fullPath))
+                {
+                    // Prepare new transparent overlay
+                    Bitmap preparedOverlay = new Bitmap(loadedImage.Width, loadedImage.Height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+
+                    for (int y = 0; y < loadedImage.Height; y++)
+                    {
+                        for (int x = 0; x < loadedImage.Width; x++)
+                        {
+                            Color pixel = loadedImage.GetPixel(x, y);
+
+                            if ((pixel.R == 0 && pixel.G == 0 && pixel.B == 0) || (pixel.R == 255 && pixel.G == 255 && pixel.B == 255))
+                            {
+                                preparedOverlay.SetPixel(x, y, Color.Transparent);
+                            }
+                            else
+                            {
+                                preparedOverlay.SetPixel(x, y, pixel);
+                            }
+                        }
+                    }
+
+                    // Release and set previous SecondImage
+                    secondImage?.Dispose();
+                    secondImage = preparedOverlay;
+
+                    secondImageOffset = Point.Empty; // Reset position
+
+                    LoadArtwork();
+                    UpdateImageInfoLabel();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error loading image:\n{ex.Message}", "Loading error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+        #endregion
+
+        #region [ toolStripTextBoxSearchTexbox_KeyDown ]
+        private void toolStripTextBoxSearchTexbox_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode != Keys.Enter)
+                return;
+
+            string input = toolStripTextBoxSearchTexbox.Text.Trim();
+
+            if (string.IsNullOrEmpty(input))
+                return;
+
+            // Search by file name (case-insensitive)
+            foreach (var item in listBoxImages.Items)
+            {
+                string fileName = item.ToString();
+
+                if (fileName.IndexOf(input, StringComparison.OrdinalIgnoreCase) >= 0)
+                {
+                    listBoxImages.SelectedItem = item;
+                    listBoxImages.TopIndex = listBoxImages.Items.IndexOf(item); // Scroll to item
+                    return;
+                }
+            }
+
+            // Search for hexadecimal address (e.g. 0x1F4)
+            if (input.StartsWith("0x", StringComparison.OrdinalIgnoreCase))
+            {
+                if (int.TryParse(input.Substring(2), System.Globalization.NumberStyles.HexNumber, null, out int hexValue))
+                {
+                    string hexPattern = $"0x{hexValue:X4}";
+
+                    foreach (var item in listBoxImages.Items)
+                    {
+                        if (item.ToString().IndexOf(hexPattern, StringComparison.OrdinalIgnoreCase) >= 0)
+                        {
+                            listBoxImages.SelectedItem = item;
+                            listBoxImages.TopIndex = listBoxImages.Items.IndexOf(item); // Scroll to item
+                            return;
+                        }
+                    }
+                }
+            }
+
+            // If nothing was found:
+            MessageBox.Show("No matching entry found.", "Search", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+        #endregion
+
+        #region [ toolStripTextBoxSearchTexbox_TextChanged ]
+        private void toolStripTextBoxSearchTexbox_TextChanged(object sender, EventArgs e)
+        {
+            string input = toolStripTextBoxSearchTexbox.Text.Trim();
+
+            if (string.IsNullOrEmpty(input))
+                return;
+
+            string normalizedInput = input.ToLower();
+
+            for (int i = 0; i < listBoxImages.Items.Count; i++)
+            {
+                string itemText = listBoxImages.Items[i].ToString().ToLower();
+
+                if (itemText.Contains(normalizedInput))
+                {
+                    listBoxImages.SelectedIndex = i;
+                    listBoxImages.TopIndex = i;
+
+                    // Optional: Load image directly when typing (like Click)
+                    listBoxImages_SelectedIndexChanged(null, null);
+                    return;
+                }
+            }
         }
         #endregion
     }
