@@ -40,6 +40,8 @@ namespace UoFiddler.Controls.Forms
         private const int moveStep = 1; // Step size in pixels (here 1, can be changed)
         private Timer moveTimer; // Timer for held keys
         private Keys currentMoveKey = Keys.None; // Currently pressed movement key
+        private bool IsOverlayActive => (useSecondImage && secondImage != null) || animatedGif != null; // Indicates if an overlay is active
+
 
 
 
@@ -358,8 +360,8 @@ namespace UoFiddler.Controls.Forms
                 ImageAnimator.UpdateFrames(animatedGif);
 
                 // Calculate position for centering
-                int x = (pictureBoxArtworkGallery.Width - animatedGif.Width) / 2;
-                int y = (pictureBoxArtworkGallery.Height - animatedGif.Height) / 2;
+                int x = (pictureBoxArtworkGallery.Width - animatedGif.Width) / 2 + secondImageOffset.X;
+                int y = (pictureBoxArtworkGallery.Height - animatedGif.Height) / 2 + secondImageOffset.Y;
 
                 // Draw GIF
                 e.Graphics.DrawImage(animatedGif, x, y);
@@ -546,7 +548,7 @@ namespace UoFiddler.Controls.Forms
         #region [ ArtworkGallery_KeyDown ]
         private void ArtworkGallery_KeyDown(object sender, KeyEventArgs e)
         {
-            if (!useSecondImage || secondImage == null)
+            if (!IsOverlayActive)
                 return;
 
             if (currentMoveKey != e.KeyCode)
@@ -600,7 +602,14 @@ namespace UoFiddler.Controls.Forms
                     return;
             }
 
-            LoadArtwork();
+            if (animatedGif != null)
+            {
+                pictureBoxArtworkGallery.Invalidate(); // GIF muss neu gezeichnet werden
+            }
+            else
+            {
+                LoadArtwork(); // Für secondImage
+            }
         }
         #endregion
 
@@ -618,7 +627,7 @@ namespace UoFiddler.Controls.Forms
         #region [ ProcessCmdKey ]
         protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
         {
-            if (useSecondImage && secondImage != null)
+            if (IsOverlayActive)
             {
                 if (keyData == Keys.Left || keyData == Keys.Right || keyData == Keys.Up || keyData == Keys.Down)
                 {
@@ -731,15 +740,24 @@ namespace UoFiddler.Controls.Forms
         #region [ CenterOverlayToolStripMenuItem_Click ]
         private void CenterOverlayToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (secondImage == null)
+            if (secondImage == null && animatedGif == null)
             {
-                MessageBox.Show("No second image loaded.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("No overlay (second image or animated GIF) loaded.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
             secondImageOffset = Point.Empty; // Position zurücksetzen
-            LoadArtwork();
-            UpdateImageInfoLabel(); // Optional: Info aktualisieren
+
+            if (animatedGif != null)
+            {
+                pictureBoxArtworkGallery.Invalidate(); // GIF muss neu gezeichnet werden
+            }
+            else
+            {
+                LoadArtwork(); // Für statisches Overlay
+            }
+
+            UpdateImageInfoLabel(); // Info aktualisieren
         }
         #endregion
 
