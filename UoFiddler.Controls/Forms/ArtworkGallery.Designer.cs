@@ -64,6 +64,9 @@ namespace UoFiddler.Controls.Forms
             loadClipboradToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             loadGifToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             toolStripSeparatorArtworkGallery = new System.Windows.Forms.ToolStripSeparator();
+            centerOverlayToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            flipVerticalToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            FlipHorizontalToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)splitContainerArtworkGallery).BeginInit();
             splitContainerArtworkGallery.Panel1.SuspendLayout();
             splitContainerArtworkGallery.Panel2.SuspendLayout();
@@ -262,9 +265,9 @@ namespace UoFiddler.Controls.Forms
             // 
             // contextMenuStripArtworkGallery
             // 
-            contextMenuStripArtworkGallery.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { loadSecondImageToolStripMenuItem, loadClipboradToolStripMenuItem, loadGifToolStripMenuItem, toolStripSeparatorArtworkGallery });
+            contextMenuStripArtworkGallery.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { loadSecondImageToolStripMenuItem, loadClipboradToolStripMenuItem, loadGifToolStripMenuItem, toolStripSeparatorArtworkGallery, centerOverlayToolStripMenuItem, flipVerticalToolStripMenuItem, FlipHorizontalToolStripMenuItem });
             contextMenuStripArtworkGallery.Name = "contextMenuStripArtworkGallery";
-            contextMenuStripArtworkGallery.Size = new System.Drawing.Size(179, 76);
+            contextMenuStripArtworkGallery.Size = new System.Drawing.Size(179, 142);
             // 
             // loadSecondImageToolStripMenuItem
             // 
@@ -294,6 +297,30 @@ namespace UoFiddler.Controls.Forms
             // 
             toolStripSeparatorArtworkGallery.Name = "toolStripSeparatorArtworkGallery";
             toolStripSeparatorArtworkGallery.Size = new System.Drawing.Size(175, 6);
+            // 
+            // centerOverlayToolStripMenuItem
+            // 
+            centerOverlayToolStripMenuItem.Image = Properties.Resources.Zeichnen;
+            centerOverlayToolStripMenuItem.Name = "centerOverlayToolStripMenuItem";
+            centerOverlayToolStripMenuItem.Size = new System.Drawing.Size(178, 22);
+            centerOverlayToolStripMenuItem.Text = "Center Overlay";
+            centerOverlayToolStripMenuItem.Click += CenterOverlayToolStripMenuItem_Click;
+            // 
+            // flipVerticalToolStripMenuItem
+            // 
+            flipVerticalToolStripMenuItem.Image = Properties.Resources.reset_2_;
+            flipVerticalToolStripMenuItem.Name = "flipVerticalToolStripMenuItem";
+            flipVerticalToolStripMenuItem.Size = new System.Drawing.Size(178, 22);
+            flipVerticalToolStripMenuItem.Text = "Flip Vertical";
+            flipVerticalToolStripMenuItem.Click += FlipVerticalToolStripMenuItem_Click;
+            // 
+            // FlipHorizontalToolStripMenuItem
+            // 
+            FlipHorizontalToolStripMenuItem.Image = Properties.Resources.reset_2_;
+            FlipHorizontalToolStripMenuItem.Name = "FlipHorizontalToolStripMenuItem";
+            FlipHorizontalToolStripMenuItem.Size = new System.Drawing.Size(178, 22);
+            FlipHorizontalToolStripMenuItem.Text = "Flip Horizontal";
+            FlipHorizontalToolStripMenuItem.Click += FlipHorizontalToolStripMenuItem_Click;
             // 
             // ArtworkGallery
             // 
@@ -345,5 +372,8 @@ namespace UoFiddler.Controls.Forms
         private System.Windows.Forms.TextBox textBoxHeight;
         private System.Windows.Forms.TextBox textBoxWidth;
         private System.Windows.Forms.Button ButtonCrop;
+        private System.Windows.Forms.ToolStripMenuItem centerOverlayToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem flipVerticalToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem FlipHorizontalToolStripMenuItem;
     }
 }

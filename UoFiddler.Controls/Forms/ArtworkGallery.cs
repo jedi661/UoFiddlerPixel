@@ -41,7 +41,7 @@ namespace UoFiddler.Controls.Forms
         private Timer moveTimer; // Timer for held keys
         private Keys currentMoveKey = Keys.None; // Currently pressed movement key
 
-       
+
 
 
         public ArtworkGallery()
@@ -728,5 +728,47 @@ namespace UoFiddler.Controls.Forms
         }
         #endregion
 
+        #region [ CenterOverlayToolStripMenuItem_Click ]
+        private void CenterOverlayToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (secondImage == null)
+            {
+                MessageBox.Show("No second image loaded.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            secondImageOffset = Point.Empty; // Position zurücksetzen
+            LoadArtwork();
+            UpdateImageInfoLabel(); // Optional: Info aktualisieren
+        }
+        #endregion
+
+        #region [ FlipVerticalToolStripMenuItem_Click ]
+        private void FlipVerticalToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (secondImage == null)
+            {
+                MessageBox.Show("No second image loaded.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            secondImage.RotateFlip(RotateFlipType.RotateNoneFlipY); // Flip vertically
+            LoadArtwork();
+        }
+        #endregion
+
+        #region [ FlipHorizontalToolStripMenuItem_Click ]
+        private void FlipHorizontalToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (secondImage == null)
+            {
+                MessageBox.Show("No second image loaded.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            secondImage.RotateFlip(RotateFlipType.RotateNoneFlipX); // Flip horizontally
+            LoadArtwork();
+        }
+        #endregion
     }
 }
