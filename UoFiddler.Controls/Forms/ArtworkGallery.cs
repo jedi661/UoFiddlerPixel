@@ -41,6 +41,8 @@ namespace UoFiddler.Controls.Forms
         private Timer moveTimer; // Timer for held keys
         private Keys currentMoveKey = Keys.None; // Currently pressed movement key
 
+       
+
 
         public ArtworkGallery()
         {
@@ -629,5 +631,102 @@ namespace UoFiddler.Controls.Forms
             return base.ProcessCmdKey(ref msg, keyData); // Maintain default behavior for other keys
         }
         #endregion
+
+        #region [ ButtonCrop_Click ]
+        private void ButtonCrop_Click(object sender, EventArgs e)
+        {
+            if (secondImage == null)
+            {
+                MessageBox.Show("No second image loaded.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            if (!int.TryParse(textBoxWidth.Text, out int newWidth) || newWidth <= 0 ||
+                !int.TryParse(textBoxHeight.Text, out int newHeight) || newHeight <= 0)
+            {
+                MessageBox.Show("Please enter valid positive numbers for width and height.", "Invalid Input", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            int origWidth = secondImage.Width;
+            int origHeight = secondImage.Height;
+
+            // Limit: New values ​​must not exceed original size
+            if (newWidth > origWidth || newHeight > origHeight)
+            {
+                MessageBox.Show("Crop size exceeds original image size.", "Invalid Crop", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            // Determine center point
+            int centerX = origWidth / 2;
+            int centerY = origHeight / 2;
+
+            // Calculate crop rectangle (centered)
+            int cropX = centerX - newWidth / 2;
+            int cropY = centerY - newHeight / 2;
+            Rectangle cropArea = new Rectangle(cropX, cropY, newWidth, newHeight);
+
+            // Create a new bitmap with the section
+            Bitmap cropped = new Bitmap(newWidth, newHeight, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+
+            using (Graphics g = Graphics.FromImage(cropped))
+            {
+                g.DrawImage(secondImage, new Rectangle(0, 0, newWidth, newHeight), cropArea, GraphicsUnit.Pixel);
+            }
+
+            // Request storage path from user
+            using (SaveFileDialog saveDialog = new SaveFileDialog())
+            {
+                saveDialog.Title = "Save cropped overlay image";
+                saveDialog.Filter = "BMP Image (*.bmp)|*.bmp|PNG Image (*.png)|*.png|JPEG Image (*.jpg)|*.jpg|TIFF Image (*.tiff)|*.tiff";
+                saveDialog.DefaultExt = "bmp"; // Default is BMP
+                saveDialog.FileName = "cropped_overlay.bmp"; // Suggestion name
+
+                if (saveDialog.ShowDialog() == DialogResult.OK)
+                {
+                    try
+                    {
+                        // Determine file format based on the extension
+                        System.Drawing.Imaging.ImageFormat format = System.Drawing.Imaging.ImageFormat.Bmp;
+
+                        string fileName = saveDialog.FileName.ToLower();
+
+                        if (fileName.EndsWith(".png"))
+                            format = System.Drawing.Imaging.ImageFormat.Png;
+                        else if (fileName.EndsWith(".jpg") || fileName.EndsWith(".jpeg"))
+                            format = System.Drawing.Imaging.ImageFormat.Jpeg;
+                        else if (fileName.EndsWith(".tiff"))
+                            format = System.Drawing.Imaging.ImageFormat.Tiff;
+
+                        cropped.Save(saveDialog.FileName, format);
+
+                        // Success message (optional)
+                        MessageBox.Show("Image successfully saved.", "Saved", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"Error saving image:\n{ex.Message}", "Save Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        return; // If error occurs: no update
+                    }
+                }
+                else
+                {
+                    // Save aborts, nothing updated
+                    return;
+                }
+            }
+
+            // Replace and display secondImage
+            secondImage.Dispose();
+            secondImage = cropped;
+
+            secondImageOffset = Point.Empty; // Reset offset
+
+            LoadArtwork(); // Redraw
+            UpdateImageInfoLabel(); // Update info
+        }
+        #endregion
+
     }
 }

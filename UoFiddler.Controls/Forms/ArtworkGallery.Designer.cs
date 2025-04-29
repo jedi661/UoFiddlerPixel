@@ -43,6 +43,12 @@ namespace UoFiddler.Controls.Forms
             components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ArtworkGallery));
             splitContainerArtworkGallery = new System.Windows.Forms.SplitContainer();
+            groupBoxCrop = new System.Windows.Forms.GroupBox();
+            ButtonCrop = new System.Windows.Forms.Button();
+            labelWidth = new System.Windows.Forms.Label();
+            labelHeight = new System.Windows.Forms.Label();
+            textBoxHeight = new System.Windows.Forms.TextBox();
+            textBoxWidth = new System.Windows.Forms.TextBox();
             label1ImageInfo = new System.Windows.Forms.Label();
             groupBoxArtworkGallery = new System.Windows.Forms.GroupBox();
             ButtonClearAll_Click = new System.Windows.Forms.Button();
@@ -62,6 +68,7 @@ namespace UoFiddler.Controls.Forms
             splitContainerArtworkGallery.Panel1.SuspendLayout();
             splitContainerArtworkGallery.Panel2.SuspendLayout();
             splitContainerArtworkGallery.SuspendLayout();
+            groupBoxCrop.SuspendLayout();
             groupBoxArtworkGallery.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)pictureBoxArtworkGallery).BeginInit();
             contextMenuStripArtworkGallery.SuspendLayout();
@@ -76,6 +83,7 @@ namespace UoFiddler.Controls.Forms
             // 
             // splitContainerArtworkGallery.Panel1
             // 
+            splitContainerArtworkGallery.Panel1.Controls.Add(groupBoxCrop);
             splitContainerArtworkGallery.Panel1.Controls.Add(label1ImageInfo);
             splitContainerArtworkGallery.Panel1.Controls.Add(groupBoxArtworkGallery);
             // 
@@ -85,6 +93,62 @@ namespace UoFiddler.Controls.Forms
             splitContainerArtworkGallery.Size = new System.Drawing.Size(800, 450);
             splitContainerArtworkGallery.SplitterDistance = 444;
             splitContainerArtworkGallery.TabIndex = 0;
+            // 
+            // groupBoxCrop
+            // 
+            groupBoxCrop.Controls.Add(ButtonCrop);
+            groupBoxCrop.Controls.Add(labelWidth);
+            groupBoxCrop.Controls.Add(labelHeight);
+            groupBoxCrop.Controls.Add(textBoxHeight);
+            groupBoxCrop.Controls.Add(textBoxWidth);
+            groupBoxCrop.Location = new System.Drawing.Point(12, 231);
+            groupBoxCrop.Name = "groupBoxCrop";
+            groupBoxCrop.Size = new System.Drawing.Size(414, 84);
+            groupBoxCrop.TabIndex = 5;
+            groupBoxCrop.TabStop = false;
+            groupBoxCrop.Text = "Crop Second Image";
+            // 
+            // ButtonCrop
+            // 
+            ButtonCrop.Location = new System.Drawing.Point(165, 43);
+            ButtonCrop.Name = "ButtonCrop";
+            ButtonCrop.Size = new System.Drawing.Size(56, 23);
+            ButtonCrop.TabIndex = 4;
+            ButtonCrop.Text = "Crop";
+            ButtonCrop.UseVisualStyleBackColor = true;
+            ButtonCrop.Click += ButtonCrop_Click;
+            // 
+            // labelWidth
+            // 
+            labelWidth.AutoSize = true;
+            labelWidth.Location = new System.Drawing.Point(9, 26);
+            labelWidth.Name = "labelWidth";
+            labelWidth.Size = new System.Drawing.Size(39, 15);
+            labelWidth.TabIndex = 3;
+            labelWidth.Text = "Width";
+            // 
+            // labelHeight
+            // 
+            labelHeight.AutoSize = true;
+            labelHeight.Location = new System.Drawing.Point(87, 26);
+            labelHeight.Name = "labelHeight";
+            labelHeight.Size = new System.Drawing.Size(43, 15);
+            labelHeight.TabIndex = 2;
+            labelHeight.Text = "Height";
+            // 
+            // textBoxHeight
+            // 
+            textBoxHeight.Location = new System.Drawing.Point(87, 44);
+            textBoxHeight.Name = "textBoxHeight";
+            textBoxHeight.Size = new System.Drawing.Size(63, 23);
+            textBoxHeight.TabIndex = 1;
+            // 
+            // textBoxWidth
+            // 
+            textBoxWidth.Location = new System.Drawing.Point(9, 44);
+            textBoxWidth.Name = "textBoxWidth";
+            textBoxWidth.Size = new System.Drawing.Size(63, 23);
+            textBoxWidth.TabIndex = 0;
             // 
             // label1ImageInfo
             // 
@@ -248,6 +312,8 @@ namespace UoFiddler.Controls.Forms
             splitContainerArtworkGallery.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)splitContainerArtworkGallery).EndInit();
             splitContainerArtworkGallery.ResumeLayout(false);
+            groupBoxCrop.ResumeLayout(false);
+            groupBoxCrop.PerformLayout();
             groupBoxArtworkGallery.ResumeLayout(false);
             groupBoxArtworkGallery.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)pictureBoxArtworkGallery).EndInit();
@@ -273,5 +339,11 @@ namespace UoFiddler.Controls.Forms
         private System.Windows.Forms.Button ButtonRemoveSecondImage;
         private System.Windows.Forms.Button ButtonRemoveGif;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparatorArtworkGallery;
+        private System.Windows.Forms.GroupBox groupBoxCrop;
+        private System.Windows.Forms.Label labelWidth;
+        private System.Windows.Forms.Label labelHeight;
+        private System.Windows.Forms.TextBox textBoxHeight;
+        private System.Windows.Forms.TextBox textBoxWidth;
+        private System.Windows.Forms.Button ButtonCrop;
     }
 }
