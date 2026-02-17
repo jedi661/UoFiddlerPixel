@@ -95,6 +95,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             btSaveLasCoordinates = new System.Windows.Forms.Button();
             btDeleteEntry = new System.Windows.Forms.Button();
             OpenLastCoordinatesDirectoryButton = new System.Windows.Forms.Button();
+            btnToggleView = new System.Windows.Forms.Button();
+            lblViewMode = new System.Windows.Forms.Label();
+            BtnOpenMapView = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)numericUpDownToX1).BeginInit();
             ((System.ComponentModel.ISupportInitialize)numericUpDownToY1).BeginInit();
             ((System.ComponentModel.ISupportInitialize)numericUpDownY2).BeginInit();
@@ -261,7 +264,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // progressBar1
             // 
             progressBar1.Dock = System.Windows.Forms.DockStyle.Bottom;
-            progressBar1.Location = new System.Drawing.Point(0, 493);
+            progressBar1.Location = new System.Drawing.Point(0, 550);
             progressBar1.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             progressBar1.Name = "progressBar1";
             progressBar1.Size = new System.Drawing.Size(800, 27);
@@ -429,7 +432,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // lbMulControl
             // 
             lbMulControl.AutoSize = true;
-            lbMulControl.Location = new System.Drawing.Point(13, 389);
+            lbMulControl.Location = new System.Drawing.Point(15, 497);
             lbMulControl.Name = "lbMulControl";
             lbMulControl.Size = new System.Drawing.Size(22, 15);
             lbMulControl.TabIndex = 40;
@@ -702,11 +705,43 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             OpenLastCoordinatesDirectoryButton.UseVisualStyleBackColor = true;
             OpenLastCoordinatesDirectoryButton.Click += OpenLastCoordinatesDirectoryButton_Click;
             // 
+            // btnToggleView
+            // 
+            btnToggleView.Location = new System.Drawing.Point(466, 460);
+            btnToggleView.Name = "btnToggleView";
+            btnToggleView.Size = new System.Drawing.Size(95, 23);
+            btnToggleView.TabIndex = 65;
+            btnToggleView.Text = "Toogle View";
+            btnToggleView.UseVisualStyleBackColor = true;
+            btnToggleView.Click += BtnToggleView_Click;
+            // 
+            // lblViewMode
+            // 
+            lblViewMode.AutoSize = true;
+            lblViewMode.Location = new System.Drawing.Point(387, 497);
+            lblViewMode.Name = "lblViewMode";
+            lblViewMode.Size = new System.Drawing.Size(63, 15);
+            lblViewMode.TabIndex = 66;
+            lblViewMode.Text = "ViewMode";
+            // 
+            // BtnOpenMapView
+            // 
+            BtnOpenMapView.Location = new System.Drawing.Point(567, 460);
+            BtnOpenMapView.Name = "BtnOpenMapView";
+            BtnOpenMapView.Size = new System.Drawing.Size(75, 23);
+            BtnOpenMapView.TabIndex = 67;
+            BtnOpenMapView.Text = "MapView";
+            BtnOpenMapView.UseVisualStyleBackColor = true;
+            BtnOpenMapView.Click += BtnOpenMapView_Click;
+            // 
             // MapReplaceNewForm
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            ClientSize = new System.Drawing.Size(800, 520);
+            ClientSize = new System.Drawing.Size(800, 577);
+            Controls.Add(BtnOpenMapView);
+            Controls.Add(lblViewMode);
+            Controls.Add(btnToggleView);
             Controls.Add(OpenLastCoordinatesDirectoryButton);
             Controls.Add(btDeleteEntry);
             Controls.Add(btSaveLasCoordinates);
@@ -826,5 +861,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private System.Windows.Forms.Button btSaveLasCoordinates;
         private System.Windows.Forms.Button btDeleteEntry;
         private System.Windows.Forms.Button OpenLastCoordinatesDirectoryButton;
+        private System.Windows.Forms.Button btnToggleView;
+        private System.Windows.Forms.Label lblViewMode;
+        private System.Windows.Forms.Button BtnOpenMapView;
     }
 }
