@@ -1,21 +1,17 @@
 // =============================================================================
 // MapViewForm.cs
-// Zweck: Eigenständiges Fenster zur Anzeige einer UO-Karte in voller Größe.
-//        Der Benutzer kann per Rechtsklick + Ziehen einen Bereich markieren,
-//        dessen Koordinaten dann zurück in die MapReplaceNewForm übertragen werden.
+// Zweck: Vollständige UO-Kartenansicht mit echten Tiles + Statics-Overlay.
 //
-// Verwendung:
-//   - Wird über den Button "Open Map View" in MapReplaceNewForm geöffnet.
-//   - Die aktive Map-Checkbox bestimmt welche Karte geladen wird.
-//   - Nach dem Markieren und Bestätigen werden X1/Y1/X2/Y2 übertragen.
+// ANSICHTSMODI (Toggle-Button oben):
+//   [MAP ONLY] → Nur map*.mul Gelände-Tiles (blockbasiert, 1 Pixel = 1 Block)
+//   [MAP+STAT] → Gelände + Statics als farbige Punkte darüber
 //
 // Steuerung:
-//   - Linke Maustaste gedrückt halten + ziehen  → Karte verschieben (Pan)
-//   - Rechte Maustaste gedrückt halten + ziehen → Bereich markieren (Selection)
-//   - Mausrad                                   → Zoom In/Out
-//   - Button "Übernehmen"                       → Koordinaten in Hauptform eintragen
-//   - Button "Als From Region"                  → in X1/Y1/X2/Y2 eintragen
-//   - Button "Als To Region"                    → in ToX/ToY eintragen
+//   LMT + Ziehen  → Karte verschieben (Pan)
+//   RMT + Ziehen  → Bereich markieren (snappt auf 8er-Block-Grenzen)
+//   Mausrad       → Zoom
+//   → From Region → X1/Y1/X2/Y2 in Hauptform übertragen
+//   → To Region   → ToX/ToY in Hauptform übertragen
 // =============================================================================
 
 using System;
@@ -29,76 +25,124 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
     public class MapViewForm : Form
     {
         // -----------------------------------------------------------------------
+        // Terrain-Farbpalette (TileID → Geländefarbe)
+        // -----------------------------------------------------------------------
+
+        private static readonly Color[] TerrainColors = BuildTerrainPalette();
+
+        private static Color[] BuildTerrainPalette()
+        {
+            var p = new Color[0x4000];
+            for (int i = 0; i < p.Length; i++)
+                p[i] = Color.FromArgb(60, 55, 50); // Default: dunkler Stein
+
+            p[0x0000] = Color.FromArgb(8, 8, 12);  // Void
+
+            // Wasser
+            for (int i = 0x001; i <= 0x006; i++) p[i] = Color.FromArgb(20, 55, 130);
+            for (int i = 0x007; i <= 0x01F; i++) p[i] = Color.FromArgb(28, 75, 155);
+            for (int i = 0x020; i <= 0x02F; i++) p[i] = Color.FromArgb(38, 95, 175);
+
+            // Sand / Küste
+            for (int i = 0x030; i <= 0x04A; i++) p[i] = Color.FromArgb(195, 175, 120);
+
+            // Gras
+            for (int i = 0x04B; i <= 0x075; i++) p[i] = Color.FromArgb(52, 112, 42);
+            for (int i = 0x076; i <= 0x087; i++) p[i] = Color.FromArgb(42, 95, 32);
+
+            // Erde
+            for (int i = 0x088; i <= 0x0A0; i++) p[i] = Color.FromArgb(115, 82, 48);
+
+            // Stein / Fels
+            for (int i = 0x0A1; i <= 0x0BF; i++) p[i] = Color.FromArgb(98, 92, 88);
+
+            // Dunkler Pflasterstein
+            for (int i = 0x0C0; i <= 0x0E0; i++) p[i] = Color.FromArgb(68, 68, 68);
+
+            // Sumpf
+            for (int i = 0x0E1; i <= 0x0FF; i++) p[i] = Color.FromArgb(38, 68, 38);
+
+            // Wiese hell
+            for (int i = 0x100; i <= 0x13F; i++) p[i] = Color.FromArgb(72, 135, 58);
+
+            // Schnee / Eis
+            for (int i = 0x140; i <= 0x15F; i++) p[i] = Color.FromArgb(208, 222, 238);
+
+            // Lavagestein
+            for (int i = 0x160; i <= 0x17F; i++) p[i] = Color.FromArgb(78, 22, 8);
+
+            // Wüste
+            for (int i = 0x180; i <= 0x1AF; i++) p[i] = Color.FromArgb(198, 162, 78);
+
+            // Stadtpflaster
+            for (int i = 0x1B0; i <= 0x1CF; i++) p[i] = Color.FromArgb(128, 118, 108);
+
+            // Dungeonboden
+            for (int i = 0x200; i <= 0x27F; i++) p[i] = Color.FromArgb(42, 38, 35);
+
+            // Holzboden
+            for (int i = 0x280; i <= 0x2AF; i++) p[i] = Color.FromArgb(112, 72, 38);
+
+            return p;
+        }
+
+        // Statics-Farbe nach Grafik-Kategorie
+        private static Color GetStaticColor(ushort graphic)
+        {
+            if (graphic < 0x0100) return Color.FromArgb(195, 195, 155);
+            if (graphic < 0x0400) return Color.FromArgb(130, 175, 130);
+            if (graphic < 0x0800) return Color.FromArgb(155, 135, 108);
+            if (graphic < 0x1000) return Color.FromArgb(175, 145, 95);
+            if (graphic < 0x1800) return Color.FromArgb(148, 95, 75);
+            if (graphic < 0x2000) return Color.FromArgb(198, 175, 58);
+            if (graphic < 0x3000) return Color.FromArgb(88, 108, 158);
+            return Color.FromArgb(175, 95, 95);
+        }
+
+        // -----------------------------------------------------------------------
         // Felder
         // -----------------------------------------------------------------------
 
-        /// <summary>Die geladene Karte als Bitmap (gesamte Karte oder gecachter Ausschnitt).</summary>
         private Bitmap _mapBitmap;
+        private Bitmap _staticsBitmap;
 
-        /// <summary>Pfad zur map*.mul-Datei die angezeigt werden soll.</summary>
         private readonly string _mapFilePath;
-
-        /// <summary>Breite der Karte in Tiles.</summary>
+        private readonly string _staticsFilePath;
+        private readonly string _staidxFilePath;
         private readonly int _mapWidth;
-
-        /// <summary>Höhe der Karte in Tiles.</summary>
         private readonly int _mapHeight;
 
-        /// <summary>Aktueller Zoom-Faktor (1.0 = 1 Tile = 1 Pixel).</summary>
-        private float _zoom = 1.0f;
-
-        /// <summary>Aktueller Viewport-Offset in Tile-Koordinaten (obere linke Ecke).</summary>
+        private float _zoom = 0.25f;
         private PointF _viewOffset = new PointF(0, 0);
 
-        /// <summary>Startpunkt beim Linksklick-Pan (in Screen-Koordinaten).</summary>
         private Point _panStart;
-
-        /// <summary>Ob gerade gepannt wird.</summary>
         private bool _isPanning = false;
-
-        /// <summary>Ob gerade eine Selektion gezogen wird (Rechtsklick).</summary>
         private bool _isSelecting = false;
-
-        /// <summary>Startpunkt der Selektion in Tile-Koordinaten.</summary>
         private Point _selectionStartTile;
-
-        /// <summary>Endpunkt der Selektion in Tile-Koordinaten.</summary>
         private Point _selectionEndTile;
-
-        /// <summary>Ob eine Selektion existiert die übernommen werden kann.</summary>
         private bool _hasSelection = false;
 
-        /// <summary>Referenz auf die Hauptform zum Zurückschreiben der Koordinaten.</summary>
-        private readonly MapReplaceNewForm _mainForm;
+        /// <summary>false = nur Map, true = Map + Statics</summary>
+        private bool _showStatics = false;
 
-        /// <summary>Callback-Actions zum Schreiben der Koordinaten in die Hauptform.</summary>
         private readonly Action<int, int, int, int> _setFromRegion;
         private readonly Action<int, int> _setToRegion;
 
-        // UI-Controls
+        // UI
         private Panel _mapPanel;
         private Label _lblCoords;
         private Label _lblSelection;
         private Button _btnApplyFrom;
         private Button _btnApplyTo;
-        private Button _btnReload;
+        private Button _btnToggleView;
         private Label _lblZoom;
         private TrackBar _trackBarZoom;
-        private StatusStrip _statusStrip;
-        private ToolStripStatusLabel _statusLabel;
+        private Label _lblLoadStatus;
 
         // -----------------------------------------------------------------------
         // Konstruktor
         // -----------------------------------------------------------------------
 
-        /// <summary>
-        /// Erstellt die MapViewForm.
-        /// </summary>
-        /// <param name="mapFilePath">Vollständiger Pfad zur map*.mul-Datei.</param>
-        /// <param name="mapWidth">Kartenbreite in Tiles.</param>
-        /// <param name="mapHeight">Kartenhöhe in Tiles.</param>
-        /// <param name="setFromRegion">Callback: (x1, y1, x2, y2) → trägt in From Region ein.</param>
-        /// <param name="setToRegion">Callback: (tox, toy) → trägt in To Region ein.</param>
         public MapViewForm(
             string mapFilePath,
             int mapWidth,
@@ -112,131 +156,138 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             _setFromRegion = setFromRegion;
             _setToRegion = setToRegion;
 
-            InitializeFormControls();
-            this.Load += MapViewForm_Load;
+            // Statics-Pfade ableiten
+            string dir = Path.GetDirectoryName(mapFilePath) ?? "";
+            string idStr = Path.GetFileNameWithoutExtension(mapFilePath).Replace("map", "");
+            _staticsFilePath = Path.Combine(dir, $"statics{idStr}.mul");
+            _staidxFilePath = Path.Combine(dir, $"staidx{idStr}.mul");
+
+            BuildUI();
+            this.Load += (s, e) => LoadAllBitmaps();
         }
 
         // -----------------------------------------------------------------------
-        // InitializeFormControls
+        // UI – dunkles, industrielles UO-Karteneditor-Design
         // -----------------------------------------------------------------------
 
-        /// <summary>Erstellt alle UI-Controls programmatisch.</summary>
-        private void InitializeFormControls()
+        private void BuildUI()
         {
-            this.Text = $"Map Viewer - {Path.GetFileName(_mapFilePath)} ({_mapWidth}x{_mapHeight})";
-            this.Size = new Size(1000, 750);
-            this.MinimumSize = new Size(800, 600);
+            this.Text = $"UO Map Viewer  —  {Path.GetFileName(_mapFilePath)}  [{_mapWidth} × {_mapHeight}]";
+            this.Size = new Size(1200, 820);
+            this.MinimumSize = new Size(900, 650);
             this.StartPosition = FormStartPosition.CenterParent;
+            this.BackColor = Color.FromArgb(18, 18, 20);
+            this.ForeColor = Color.FromArgb(200, 200, 195);
+            this.Font = new Font("Consolas", 8.5f);
 
-            // --- Toolbar oben ---
+            // ── Toolbar ─────────────────────────────────────────────────────────
             Panel toolbar = new Panel
             {
                 Dock = DockStyle.Top,
-                Height = 40,
-                BackColor = Color.FromArgb(45, 45, 45)
+                Height = 48,
+                BackColor = Color.FromArgb(26, 26, 30),
+                Padding = new Padding(6, 8, 6, 0)
+            };
+            toolbar.Paint += (s, e) =>
+            {
+                using Pen p = new Pen(Color.FromArgb(65, 125, 85), 1);
+                e.Graphics.DrawLine(p, 0, toolbar.Height - 1, toolbar.Width, toolbar.Height - 1);
             };
 
             _lblZoom = new Label
             {
-                Text = "Zoom: 100%",
-                ForeColor = Color.White,
-                Location = new Point(8, 11),
-                AutoSize = true
+                Text = "ZOOM  6%",
+                ForeColor = Color.FromArgb(115, 195, 125),
+                Location = new Point(8, 14),
+                Size = new Size(80, 18),
+                Font = new Font("Consolas", 7.5f, FontStyle.Bold)
             };
 
             _trackBarZoom = new TrackBar
             {
-                Location = new Point(80, 8),
-                Width = 150,
+                Location = new Point(90, 7),
+                Width = 165,
                 Minimum = 1,
                 Maximum = 20,
-                Value = 4,          // Startzoom: 25% (1/4 Tile pro Pixel)
-                TickFrequency = 2,
-                SmallChange = 1
+                Value = 4,
+                TickFrequency = 4,
+                SmallChange = 1,
+                BackColor = Color.FromArgb(26, 26, 30)
             };
-            _trackBarZoom.ValueChanged += TrackBarZoom_ValueChanged;
+            _trackBarZoom.ValueChanged += (s, e) => { UpdateZoom(); _mapPanel?.Invalidate(); };
 
-            _btnApplyFrom = new Button
-            {
-                Text = "→ From Region (X1/Y1-X2/Y2)",
-                Location = new Point(250, 8),
-                Size = new Size(180, 24),
-                BackColor = Color.SteelBlue,
-                ForeColor = Color.White,
-                FlatStyle = FlatStyle.Flat,
-                Enabled = false
-            };
+            _btnToggleView = MakeBtn("◉  MAP ONLY", Color.FromArgb(45, 95, 55), 275, 132);
+            _btnToggleView.Click += BtnToggleView_Click;
+
+            _btnApplyFrom = MakeBtn("▶  FROM REGION", Color.FromArgb(28, 65, 125), 422, 148);
+            _btnApplyFrom.Enabled = false;
             _btnApplyFrom.Click += BtnApplyFrom_Click;
 
-            _btnApplyTo = new Button
-            {
-                Text = "→ To Region (ToX/ToY)",
-                Location = new Point(440, 8),
-                Size = new Size(155, 24),
-                BackColor = Color.DarkGoldenrod,
-                ForeColor = Color.White,
-                FlatStyle = FlatStyle.Flat,
-                Enabled = false
-            };
+            _btnApplyTo = MakeBtn("▶  TO REGION", Color.FromArgb(105, 72, 18), 580, 132);
+            _btnApplyTo.Enabled = false;
             _btnApplyTo.Click += BtnApplyTo_Click;
 
-            _btnReload = new Button
-            {
-                Text = "⟳ Neu laden",
-                Location = new Point(610, 8),
-                Size = new Size(90, 24),
-                BackColor = Color.DimGray,
-                ForeColor = Color.White,
-                FlatStyle = FlatStyle.Flat
-            };
-            _btnReload.Click += (s, e) => LoadMapBitmap();
+            Button btnReload = MakeBtn("⟳  RELOAD", Color.FromArgb(50, 42, 52), 722, 105);
+            btnReload.Click += (s, e) => LoadAllBitmaps();
 
             Label lblHint = new Label
             {
-                Text = "LMT=Verschieben  |  RMT=Bereich markieren  |  Rad=Zoom",
-                ForeColor = Color.LightGray,
-                Location = new Point(715, 11),
-                AutoSize = true
+                Text = "LMT=PAN   RMT=SELECT   WHEEL=ZOOM",
+                ForeColor = Color.FromArgb(70, 72, 68),
+                Location = new Point(840, 15),
+                AutoSize = true,
+                Font = new Font("Consolas", 7f)
             };
 
-            toolbar.Controls.AddRange(new Control[] {
-                _lblZoom, _trackBarZoom, _btnApplyFrom, _btnApplyTo, _btnReload, lblHint
-            });
+            toolbar.Controls.AddRange(new Control[]
+                { _lblZoom, _trackBarZoom, _btnToggleView, _btnApplyFrom, _btnApplyTo, btnReload, lblHint });
 
-            // --- Info-Panel unten ---
-            Panel infoPanel = new Panel
+            // ── Statusleiste ─────────────────────────────────────────────────────
+            Panel statusBar = new Panel
             {
                 Dock = DockStyle.Bottom,
-                Height = 50,
-                BackColor = Color.FromArgb(30, 30, 30)
+                Height = 52,
+                BackColor = Color.FromArgb(20, 20, 23)
+            };
+            statusBar.Paint += (s, e) =>
+            {
+                using Pen p = new Pen(Color.FromArgb(65, 125, 85), 1);
+                e.Graphics.DrawLine(p, 0, 0, statusBar.Width, 0);
             };
 
             _lblCoords = new Label
             {
-                Text = "Mausposition: -",
-                ForeColor = Color.LightGreen,
-                Location = new Point(8, 8),
-                Size = new Size(300, 18),
-                Font = new Font("Consolas", 9f)
+                Text = "CURSOR  X:—  Y:—",
+                ForeColor = Color.FromArgb(95, 195, 115),
+                Location = new Point(10, 8),
+                Size = new Size(400, 18),
+                Font = new Font("Consolas", 8.5f, FontStyle.Bold)
             };
-
             _lblSelection = new Label
             {
-                Text = "Selektion: keine",
-                ForeColor = Color.Yellow,
-                Location = new Point(8, 26),
-                Size = new Size(700, 18),
-                Font = new Font("Consolas", 9f)
+                Text = "SELECTION  —",
+                ForeColor = Color.FromArgb(215, 185, 75),
+                Location = new Point(10, 28),
+                Size = new Size(780, 18),
+                Font = new Font("Consolas", 8f)
+            };
+            _lblLoadStatus = new Label
+            {
+                Text = "READY",
+                ForeColor = Color.FromArgb(65, 68, 62),
+                Location = new Point(850, 18),
+                Size = new Size(340, 18),
+                Font = new Font("Consolas", 7.5f),
+                TextAlign = ContentAlignment.MiddleRight
             };
 
-            infoPanel.Controls.Add(_lblCoords);
-            infoPanel.Controls.Add(_lblSelection);
+            statusBar.Controls.AddRange(new Control[] { _lblCoords, _lblSelection, _lblLoadStatus });
 
-            // --- Map Panel (Zeichenfläche) ---
+            // ── Map Panel ────────────────────────────────────────────────────────
             _mapPanel = new Panel
             {
                 Dock = DockStyle.Fill,
-                BackColor = Color.Black,
+                BackColor = Color.FromArgb(10, 10, 12),
                 Cursor = Cursors.Cross
             };
             _mapPanel.Paint += MapPanel_Paint;
@@ -245,309 +296,392 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             _mapPanel.MouseUp += MapPanel_MouseUp;
             _mapPanel.MouseWheel += MapPanel_MouseWheel;
 
-            // Controls hinzufügen (Reihenfolge wichtig für Dock)
             this.Controls.Add(_mapPanel);
             this.Controls.Add(toolbar);
-            this.Controls.Add(infoPanel);
+            this.Controls.Add(statusBar);
 
-            // Zoom initial setzen
-            UpdateZoomFromTrackbar();
+            UpdateZoom();
         }
 
-        // -----------------------------------------------------------------------
-        // MapViewForm_Load
-        // -----------------------------------------------------------------------
-
-        private void MapViewForm_Load(object sender, EventArgs e)
+        private Button MakeBtn(string text, Color bg, int x, int w)
         {
-            LoadMapBitmap();
+            var btn = new Button
+            {
+                Text = text,
+                Location = new Point(x, 9),
+                Size = new Size(w, 28),
+                BackColor = bg,
+                ForeColor = Color.FromArgb(218, 218, 208),
+                FlatStyle = FlatStyle.Flat,
+                Font = new Font("Consolas", 7.5f, FontStyle.Bold),
+                Cursor = Cursors.Hand
+            };
+            btn.FlatAppearance.BorderSize = 1;
+            btn.FlatAppearance.BorderColor = Color.FromArgb(
+                Math.Min(255, bg.R + 45),
+                Math.Min(255, bg.G + 45),
+                Math.Min(255, bg.B + 45));
+            return btn;
         }
 
         // -----------------------------------------------------------------------
-        // LoadMapBitmap
+        // Toggle Ansicht
         // -----------------------------------------------------------------------
 
-        /// <summary>
-        /// Lädt die map*.mul und rendert sie als Bitmap.
-        /// Für große Karten wird auf Blockebene gerendert (1 Block = 1 Pixel bei niedrigem Zoom).
-        /// Bei höherem Zoom wird tile-genau gerendert.
-        /// 
-        /// Strategie: Immer vollständige Karte als kleine Übersicht rendern
-        /// (1 Pixel = 1 Block = 8 Tiles), damit die gesamte Karte in den Speicher passt.
-        /// Beim Zoomen wird der sichtbare Ausschnitt tile-genau nachgerendert.
-        /// </summary>
-        private void LoadMapBitmap()
+        private void BtnToggleView_Click(object sender, EventArgs e)
+        {
+            _showStatics = !_showStatics;
+
+            if (_showStatics)
+            {
+                _btnToggleView.Text = "◉  MAP + STATICS";
+                _btnToggleView.BackColor = Color.FromArgb(100, 58, 16);
+                _btnToggleView.Size = new Size(148, 28);
+                _btnToggleView.FlatAppearance.BorderColor = Color.FromArgb(180, 110, 45);
+            }
+            else
+            {
+                _btnToggleView.Text = "◉  MAP ONLY";
+                _btnToggleView.BackColor = Color.FromArgb(45, 95, 55);
+                _btnToggleView.Size = new Size(132, 28);
+                _btnToggleView.FlatAppearance.BorderColor = Color.FromArgb(85, 155, 88);
+            }
+
+            _mapPanel.Invalidate();
+        }
+
+        // -----------------------------------------------------------------------
+        // Karte + Statics laden
+        // -----------------------------------------------------------------------
+
+        private void LoadAllBitmaps()
         {
             if (!File.Exists(_mapFilePath))
             {
-                MessageBox.Show($"Kartendatei nicht gefunden:\n{_mapFilePath}", "Fehler",
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                SetStatus($"FEHLER: {Path.GetFileName(_mapFilePath)} nicht gefunden");
                 return;
             }
 
-            // Cursor auf Warten setzen
             this.Cursor = Cursors.WaitCursor;
-            _statusLabel_Set("Karte wird geladen...");
+            SetStatus("LADE MAP-TILES …");
+            Application.DoEvents();
+
+            int blockW = _mapWidth / 8;
+            int blockH = _mapHeight / 8;
+
+            // ── Map-Bitmap ───────────────────────────────────────────────────────
+            _mapBitmap?.Dispose();
+            _mapBitmap = new Bitmap(blockW, blockH);
 
             try
             {
-                // Übersichtsbild: 1 Pixel pro Block (8×8 Tiles)
-                int blockWidth = _mapWidth / 8;
-                int blockHeight = _mapHeight / 8;
+                using FileStream fs = new FileStream(_mapFilePath, FileMode.Open, FileAccess.Read, FileShare.Read);
+                using BinaryReader br = new BinaryReader(fs);
 
-                _mapBitmap?.Dispose();
-                _mapBitmap = new Bitmap(blockWidth, blockHeight);
-
-                using FileStream fs = new FileStream(_mapFilePath,
-                    FileMode.Open, FileAccess.Read, FileShare.Read);
-                using BinaryReader reader = new BinaryReader(fs);
-
-                // Jeden Block lesen und als einzelnen Pixel darstellen
-                // Wir nehmen den ersten Tile des Blocks als repräsentative Farbe
-                for (int bx = 0; bx < blockWidth; bx++)
+                for (int bx = 0; bx < blockW; bx++)
                 {
-                    for (int by = 0; by < blockHeight; by++)
+                    for (int by = 0; by < blockH; by++)
                     {
-                        // Block-Position: Header (4 Bytes) + Tile-Daten
-                        // Erster Tile im Block = Position nach Header
-                        long blockPos = ((long)bx * blockHeight + by) * 196;
-                        long tilePos = blockPos + 4; // Header überspringen
+                        long pos = ((long)bx * blockH + by) * 196L + 4L;
+                        if (pos + 2 >= fs.Length) { _mapBitmap.SetPixel(bx, by, Color.Black); continue; }
 
-                        if (tilePos + 3 > fs.Length)
-                        {
-                            _mapBitmap.SetPixel(bx, by, Color.Black);
-                            continue;
-                        }
+                        fs.Seek(pos, SeekOrigin.Begin);
+                        ushort tileId = br.ReadUInt16();
+                        br.ReadByte(); // Z
 
-                        fs.Seek(tilePos, SeekOrigin.Begin);
-                        short tileId = reader.ReadInt16();
-                        // Z nicht benötigt für Farbdarstellung auf Block-Ebene
-                        reader.ReadByte();
-
-                        // Einfache Farbe basierend auf TileID
-                        Color c = GetSimpleTileColor(tileId);
+                        Color c = (tileId < TerrainColors.Length)
+                            ? TerrainColors[tileId]
+                            : Color.FromArgb(58, 52, 48);
                         _mapBitmap.SetPixel(bx, by, c);
                     }
 
-                    // Fortschritt alle 100 Blöcke anzeigen
-                    if (bx % 100 == 0)
+                    if (bx % 80 == 0)
                     {
-                        _statusLabel_Set($"Lade... {bx * 100 / blockWidth}%");
+                        SetStatus($"MAP  {bx * 100 / blockW}%");
                         Application.DoEvents();
                     }
                 }
-
-                _statusLabel_Set($"Karte geladen: {_mapWidth}×{_mapHeight} Tiles ({blockWidth}×{blockHeight} Blöcke)");
-                _mapPanel.Invalidate();
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Fehler beim Laden der Karte:\n{ex.Message}", "Fehler",
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-            finally
-            {
+                SetStatus($"MAP-FEHLER: {ex.Message}");
                 this.Cursor = Cursors.Default;
+                return;
             }
+
+            // ── Statics-Bitmap ───────────────────────────────────────────────────
+            _staticsBitmap?.Dispose();
+            _staticsBitmap = null;
+
+            bool hasStatics = File.Exists(_staticsFilePath) && File.Exists(_staidxFilePath);
+
+            if (hasStatics)
+            {
+                SetStatus("LADE STATICS …");
+                Application.DoEvents();
+
+                try
+                {
+                    _staticsBitmap = new Bitmap(blockW, blockH);
+
+                    using FileStream fsIdx = new FileStream(_staidxFilePath, FileMode.Open, FileAccess.Read, FileShare.Read);
+                    using FileStream fsStat = new FileStream(_staticsFilePath, FileMode.Open, FileAccess.Read, FileShare.Read);
+                    using BinaryReader rIdx = new BinaryReader(fsIdx);
+                    using BinaryReader rStat = new BinaryReader(fsStat);
+
+                    for (int bx = 0; bx < blockW; bx++)
+                    {
+                        for (int by = 0; by < blockH; by++)
+                        {
+                            long idxPos = ((long)bx * blockH + by) * 12L;
+                            if (idxPos + 12 > fsIdx.Length) continue;
+
+                            fsIdx.Seek(idxPos, SeekOrigin.Begin);
+                            int lookup = rIdx.ReadInt32();
+                            int length = rIdx.ReadInt32();
+                            rIdx.ReadInt32(); // extra
+
+                            if (lookup < 0 || length <= 0) continue;
+
+                            int count = length / 7;
+                            fsStat.Seek(lookup, SeekOrigin.Begin);
+
+                            int rSum = 0, gSum = 0, bSum = 0, valid = 0;
+
+                            for (int i = 0; i < count; i++)
+                            {
+                                if (fsStat.Position + 7 > fsStat.Length) break;
+                                ushort graphic = rStat.ReadUInt16();
+                                rStat.ReadByte();  // x
+                                rStat.ReadByte();  // y
+                                rStat.ReadSByte(); // z
+                                rStat.ReadInt16(); // hue
+
+                                Color sc = GetStaticColor(graphic);
+                                rSum += sc.R; gSum += sc.G; bSum += sc.B;
+                                valid++;
+                            }
+
+                            if (valid > 0)
+                            {
+                                _staticsBitmap.SetPixel(bx, by, Color.FromArgb(
+                                    Math.Min(255, rSum / valid),
+                                    Math.Min(255, gSum / valid),
+                                    Math.Min(255, bSum / valid)));
+                            }
+                        }
+
+                        if (bx % 80 == 0)
+                        {
+                            SetStatus($"STATICS  {bx * 100 / blockW}%");
+                            Application.DoEvents();
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    SetStatus($"STATICS-WARNUNG: {ex.Message}");
+                    _staticsBitmap?.Dispose();
+                    _staticsBitmap = null;
+                    hasStatics = false;
+                }
+            }
+
+            SetStatus(hasStatics
+                ? $"GELADEN  {_mapWidth}×{_mapHeight}  |  {blockW}×{blockH} Blöcke  |  Statics OK"
+                : $"GELADEN  {_mapWidth}×{_mapHeight}  |  {blockW}×{blockH} Blöcke  |  Statics N/A");
+
+            // Statics-Button deaktivieren wenn keine Statics-Daten
+            if (!hasStatics && _btnToggleView != null)
+                _btnToggleView.Enabled = false;
+
+            this.Cursor = Cursors.Default;
+            _mapPanel.Invalidate();
         }
 
         // -----------------------------------------------------------------------
-        // GetSimpleTileColor
+        // Paint
         // -----------------------------------------------------------------------
 
-        /// <summary>
-        /// Gibt eine einfache Farbe für einen TileID-Wert zurück.
-        /// Basiert auf bekannten UO-Tile-Ranges für schnelles Rendering ohne hues.mul.
-        /// </summary>
-        private Color GetSimpleTileColor(short tileId)
+        private void MapPanel_Paint(object sender, PaintEventArgs e)
         {
-            if (tileId < 0) return Color.DarkBlue;      // Wasser/Void
+            Graphics g = e.Graphics;
+            g.InterpolationMode = InterpolationMode.NearestNeighbor;
+            g.PixelOffsetMode = PixelOffsetMode.Half;
 
-            // Tile-ID Ranges (ungefähre UO-Standard-Ranges)
-            if (tileId == 0x0002 || tileId == 0x0001) return Color.DarkBlue;    // Tiefwasser
-            if (tileId >= 0x0002 && tileId <= 0x0030) return Color.Blue;         // Wasser
-            if (tileId >= 0x0031 && tileId <= 0x004A) return Color.SandyBrown;   // Sand/Strand
-            if (tileId >= 0x004B && tileId <= 0x0080) return Color.ForestGreen;  // Gras
-            if (tileId >= 0x0081 && tileId <= 0x00A0) return Color.SaddleBrown;  // Schmutz/Erde
-            if (tileId >= 0x00A1 && tileId <= 0x00C0) return Color.DarkGray;     // Stein/Fels
-            if (tileId >= 0x00C1 && tileId <= 0x00E0) return Color.Gray;         // Pflaster
-            if (tileId >= 0x00E1 && tileId <= 0x0100) return Color.DarkGreen;    // Sumpf/Moor
-            if (tileId >= 0x0101 && tileId <= 0x0140) return Color.LightGreen;   // Wiese
-            if (tileId >= 0x0141 && tileId <= 0x0160) return Color.White;        // Schnee/Eis
-            if (tileId >= 0x0161 && tileId <= 0x0180) return Color.DimGray;      // Lavagestein
+            if (_mapBitmap == null)
+            {
+                g.Clear(Color.FromArgb(10, 10, 12));
+                using Font f = new Font("Consolas", 11f);
+                g.DrawString("KARTE WIRD GELADEN …", f, new SolidBrush(Color.FromArgb(55, 58, 52)), 22, 22);
+                return;
+            }
 
-            // Fallback: Farbe aus TileID hashen für Vielfalt
-            // Cast auf uint nötig: tileId * 2654435761u ergibt long → explizit auf int casten
-            int hash = (int)(((uint)tileId * 2654435761u) & 0xFFFFFFu);
-            return Color.FromArgb(
-                40 + (hash & 0xFF) % 150,
-                40 + ((hash >> 8) & 0xFF) % 150,
-                40 + ((hash >> 16) & 0xFF) % 150);
+            int panelW = _mapPanel.Width;
+            int panelH = _mapPanel.Height;
+
+            // Sichtbarer Bereich im Bitmap (1px = 1 Block = 8 Tiles)
+            float srcX = _viewOffset.X / 8f;
+            float srcY = _viewOffset.Y / 8f;
+            float srcW = Math.Min((panelW / _zoom) / 8f, _mapBitmap.Width - srcX);
+            float srcH = Math.Min((panelH / _zoom) / 8f, _mapBitmap.Height - srcY);
+            srcX = Math.Max(0, srcX);
+            srcY = Math.Max(0, srcY);
+            if (srcW <= 0 || srcH <= 0) return;
+
+            RectangleF src = new RectangleF(srcX, srcY, srcW, srcH);
+            Rectangle dst = new Rectangle(0, 0, panelW, panelH);
+
+            // 1. Map-Tiles zeichnen
+            g.DrawImage(_mapBitmap, dst, src, GraphicsUnit.Pixel);
+
+            // 2. Statics-Overlay (halbtransparent) zeichnen
+            if (_showStatics && _staticsBitmap != null)
+            {
+                using var ia = new System.Drawing.Imaging.ImageAttributes();
+                float[][] mat =
+                {
+                    new float[] {1,0,0,0,0},
+                    new float[] {0,1,0,0,0},
+                    new float[] {0,0,1,0,0},
+                    new float[] {0,0,0,0.75f,0},
+                    new float[] {0,0,0,0,1}
+                };
+                ia.SetColorMatrix(new System.Drawing.Imaging.ColorMatrix(mat));
+                g.DrawImage(_staticsBitmap, dst, srcX, srcY, srcW, srcH, GraphicsUnit.Pixel, ia);
+            }
+
+            // 3. Gitter bei hohem Zoom
+            if (_zoom >= 2f) DrawGrid(g, panelW, panelH);
+
+            // 4. Selektion
+            if (_hasSelection || _isSelecting) DrawSelection(g);
+
+            // 5. HUD-Overlays
+            DrawHUD(g, panelW, panelH);
+        }
+
+        private void DrawGrid(Graphics g, int panelW, int panelH)
+        {
+            using Pen blockPen = new Pen(Color.FromArgb(28, 95, 255, 95), 0.5f);
+            using Pen tilePen = new Pen(Color.FromArgb(12, 175, 175, 175), 0.5f);
+
+            int startX = (int)_viewOffset.X - ((int)_viewOffset.X % 8);
+            int startY = (int)_viewOffset.Y - ((int)_viewOffset.Y % 8);
+            int endX = startX + (int)(panelW / _zoom) + 16;
+            int endY = startY + (int)(panelH / _zoom) + 16;
+
+            for (int tx = startX; tx <= endX; tx++)
+            {
+                if (_zoom < 4f && tx % 8 != 0) continue;
+                Point ps = TileToScreen(tx, startY);
+                Point pe = TileToScreen(tx, endY);
+                g.DrawLine(tx % 8 == 0 ? blockPen : tilePen, ps, pe);
+            }
+            for (int ty = startY; ty <= endY; ty++)
+            {
+                if (_zoom < 4f && ty % 8 != 0) continue;
+                Point ps = TileToScreen(startX, ty);
+                Point pe = TileToScreen(endX, ty);
+                g.DrawLine(ty % 8 == 0 ? blockPen : tilePen, ps, pe);
+            }
+        }
+
+        private void DrawSelection(Graphics g)
+        {
+            int x1 = Math.Min(_selectionStartTile.X, _selectionEndTile.X);
+            int y1 = Math.Min(_selectionStartTile.Y, _selectionEndTile.Y);
+            int x2 = Math.Max(_selectionStartTile.X, _selectionEndTile.X);
+            int y2 = Math.Max(_selectionStartTile.Y, _selectionEndTile.Y);
+
+            Point pMin = TileToScreen(x1, y1);
+            Point pMax = TileToScreen(x2, y2);
+
+            Rectangle selRect = new Rectangle(
+                pMin.X, pMin.Y, pMax.X - pMin.X, pMax.Y - pMin.Y);
+
+            // Füllung
+            using SolidBrush fill = new SolidBrush(Color.FromArgb(45, 255, 210, 45));
+            g.FillRectangle(fill, selRect);
+
+            // Äußerer Leuchtring
+            using Pen glow = new Pen(Color.FromArgb(55, 255, 225, 75), 4f);
+            g.DrawRectangle(glow, selRect);
+
+            // Haupt-Rahmen gestrichelt
+            using Pen border = new Pen(Color.FromArgb(252, 210, 48), 1.5f);
+            border.DashStyle = DashStyle.Dash;
+            g.DrawRectangle(border, selRect);
+
+            // Ecken-Marker
+            int m = 7;
+            using Pen corner = new Pen(Color.FromArgb(255, 240, 100), 2f);
+            void DrawCorner(int cx, int cy, int dx, int dy)
+            {
+                g.DrawLine(corner, cx, cy, cx + dx * m, cy);
+                g.DrawLine(corner, cx, cy, cx, cy + dy * m);
+            }
+            DrawCorner(pMin.X, pMin.Y, 1, 1);
+            DrawCorner(pMax.X, pMin.Y, -1, 1);
+            DrawCorner(pMin.X, pMax.Y, 1, -1);
+            DrawCorner(pMax.X, pMax.Y, -1, -1);
+
+            // Koordinaten-Label
+            string lbl = $" [{x1},{y1}] → [{x2},{y2}]  {x2 - x1}×{y2 - y1} ";
+            using Font lf = new Font("Consolas", 8f, FontStyle.Bold);
+            SizeF ls = g.MeasureString(lbl, lf);
+            float lx = pMin.X;
+            float ly = pMin.Y - ls.Height - 4;
+            if (ly < 2) ly = pMax.Y + 4;
+
+            using SolidBrush lblBg = new SolidBrush(Color.FromArgb(205, 18, 16, 12));
+            g.FillRectangle(lblBg, lx - 2, ly - 1, ls.Width + 4, ls.Height + 2);
+            g.DrawString(lbl, lf, Brushes.LightYellow, lx, ly);
+        }
+
+        private void DrawHUD(Graphics g, int panelW, int panelH)
+        {
+            // Modus-Badge oben rechts
+            string modeText = _showStatics ? "MAP + STATICS" : "MAP ONLY";
+            Color modeBg = _showStatics
+                ? Color.FromArgb(175, 98, 58, 8)
+                : Color.FromArgb(175, 8, 58, 18);
+            Color modeFg = _showStatics ? Color.FromArgb(230, 165, 55) : Color.FromArgb(75, 200, 95);
+            Color modeBdr = _showStatics ? Color.FromArgb(195, 142, 52) : Color.FromArgb(62, 148, 82);
+
+            using Font mf = new Font("Consolas", 8f, FontStyle.Bold);
+            SizeF ms = g.MeasureString(modeText, mf);
+            float mx = panelW - ms.Width - 18;
+            float my = 8;
+
+            using SolidBrush mbg = new SolidBrush(modeBg);
+            g.FillRectangle(mbg, mx - 5, my - 2, ms.Width + 10, ms.Height + 4);
+            using Pen mbdr = new Pen(modeBdr, 1f);
+            g.DrawRectangle(mbdr, mx - 5, my - 2, ms.Width + 10, ms.Height + 4);
+            using SolidBrush mfg = new SolidBrush(modeFg);
+            g.DrawString(modeText, mf, mfg, mx, my);
+
+            // Zoom-Anzeige unten rechts
+            string zoomText = $"ZOOM {(int)(_zoom * 100)}%";
+            using Font zf = new Font("Consolas", 7.5f);
+            SizeF zs = g.MeasureString(zoomText, zf);
+            g.DrawString(zoomText, zf, new SolidBrush(Color.FromArgb(58, 62, 56)),
+                panelW - zs.Width - 8, panelH - zs.Height - 8);
         }
 
         // -----------------------------------------------------------------------
         // Koordinaten-Konvertierung
         // -----------------------------------------------------------------------
 
-        /// <summary>
-        /// Wandelt eine Screen-Position (Pixel im mapPanel) in Tile-Koordinaten um.
-        /// Berücksichtigt Zoom und ViewOffset.
-        /// Das Bitmap repräsentiert 1 Pixel = 1 Block (8 Tiles).
-        /// </summary>
-        private Point ScreenToTile(Point screenPos)
+        private Point ScreenToTile(Point screen)
         {
-            // 1 Pixel im Bitmap = 8 Tiles
-            // Zoom streckt das Bitmap
-            float pixelsPerBlock = _zoom * 8f; // wie viele Screen-Pixel = 1 Block
-            // Nein: _zoom = Tiles pro Pixel, daher:
-            // Bei zoom=1: 1 Screen-Pixel = 1 Tile
-            // Bitmap-Pixel = Block = 8 Tiles
-
-            // Screen → Tile:
-            // tileX = viewOffset.X + screenPos.X / zoom
-            int tileX = (int)(_viewOffset.X + screenPos.X / _zoom);
-            int tileY = (int)(_viewOffset.Y + screenPos.Y / _zoom);
-
-            tileX = Math.Max(0, Math.Min(_mapWidth - 1, tileX));
-            tileY = Math.Max(0, Math.Min(_mapHeight - 1, tileY));
-
-            return new Point(tileX, tileY);
+            int tx = Math.Max(0, Math.Min(_mapWidth - 1, (int)(_viewOffset.X + screen.X / _zoom)));
+            int ty = Math.Max(0, Math.Min(_mapHeight - 1, (int)(_viewOffset.Y + screen.Y / _zoom)));
+            return new Point(tx, ty);
         }
 
-        /// <summary>
-        /// Wandelt Tile-Koordinaten in Screen-Position um.
-        /// </summary>
-        private Point TileToScreen(int tileX, int tileY)
-        {
-            int sx = (int)((tileX - _viewOffset.X) * _zoom);
-            int sy = (int)((tileY - _viewOffset.Y) * _zoom);
-            return new Point(sx, sy);
-        }
-
-        // -----------------------------------------------------------------------
-        // MapPanel_Paint
-        // -----------------------------------------------------------------------
-
-        private void MapPanel_Paint(object sender, PaintEventArgs e)
-        {
-            if (_mapBitmap == null)
-            {
-                e.Graphics.Clear(Color.Black);
-                e.Graphics.DrawString("Karte wird geladen...", Font, Brushes.White, 10, 10);
-                return;
-            }
-
-            e.Graphics.InterpolationMode = InterpolationMode.NearestNeighbor;
-            e.Graphics.PixelOffsetMode = PixelOffsetMode.Half;
-
-            // Das Bitmap hat 1 Pixel = 1 Block = 8 Tiles
-            // Wir skalieren das Bitmap so, dass _zoom Tiles pro Screen-Pixel gilt:
-            // 1 Bitmap-Pixel = 8 Tiles
-            // Bei zoom=1: 1 Screen-Pixel = 1 Tile → 1 Bitmap-Pixel = 8 Screen-Pixel
-            // displayScale = zoom * 8
-
-            float displayScale = _zoom * 8f;
-
-            // Quelle: der sichtbare Bereich im Bitmap
-            // Ziel: das gesamte Panel
-            int panelW = _mapPanel.Width;
-            int panelH = _mapPanel.Height;
-
-            // Sichtbarer Tile-Bereich
-            float visibleTilesX = panelW / _zoom;
-            float visibleTilesY = panelH / _zoom;
-
-            // Entsprechende Bitmap-Koordinaten (1 Block = 8 Tiles)
-            float srcX = _viewOffset.X / 8f;
-            float srcY = _viewOffset.Y / 8f;
-            float srcW = visibleTilesX / 8f;
-            float srcH = visibleTilesY / 8f;
-
-            // Clamp auf Bitmap-Grenzen
-            srcX = Math.Max(0, srcX);
-            srcY = Math.Max(0, srcY);
-            srcW = Math.Min(srcW, _mapBitmap.Width - srcX);
-            srcH = Math.Min(srcH, _mapBitmap.Height - srcY);
-
-            if (srcW <= 0 || srcH <= 0) return;
-
-            RectangleF srcRect = new RectangleF(srcX, srcY, srcW, srcH);
-            Rectangle dstRect = new Rectangle(0, 0, panelW, panelH);
-
-            e.Graphics.DrawImage(_mapBitmap, dstRect, srcRect, GraphicsUnit.Pixel);
-
-            // --- Selektion zeichnen ---
-            if (_hasSelection || _isSelecting)
-            {
-                Point tileMin = new Point(
-                    Math.Min(_selectionStartTile.X, _selectionEndTile.X),
-                    Math.Min(_selectionStartTile.Y, _selectionEndTile.Y));
-                Point tileMax = new Point(
-                    Math.Max(_selectionStartTile.X, _selectionEndTile.X),
-                    Math.Max(_selectionStartTile.Y, _selectionEndTile.Y));
-
-                Point screenMin = TileToScreen(tileMin.X, tileMin.Y);
-                Point screenMax = TileToScreen(tileMax.X, tileMax.Y);
-
-                Rectangle selRect = new Rectangle(
-                    screenMin.X, screenMin.Y,
-                    screenMax.X - screenMin.X,
-                    screenMax.Y - screenMin.Y);
-
-                // Halbtransparente Füllung
-                using SolidBrush fillBrush = new SolidBrush(Color.FromArgb(60, 255, 255, 0));
-                e.Graphics.FillRectangle(fillBrush, selRect);
-
-                // Rahmen
-                using Pen borderPen = new Pen(Color.Yellow, 2f);
-                borderPen.DashStyle = DashStyle.Dash;
-                e.Graphics.DrawRectangle(borderPen, selRect);
-
-                // Koordinaten-Label an der Selektion
-                string coordText = $"[{tileMin.X},{tileMin.Y}] - [{tileMax.X},{tileMax.Y}]";
-                SizeF textSize = e.Graphics.MeasureString(coordText, Font);
-                float textX = screenMin.X;
-                float textY = screenMin.Y - textSize.Height - 2;
-                if (textY < 0) textY = screenMax.Y + 2;
-
-                e.Graphics.FillRectangle(Brushes.Black,
-                    textX - 1, textY - 1, textSize.Width + 2, textSize.Height + 2);
-                e.Graphics.DrawString(coordText, Font, Brushes.Yellow, textX, textY);
-            }
-
-            // --- Gitterlinien bei hohem Zoom ---
-            if (_zoom >= 4f)
-            {
-                DrawGrid(e.Graphics);
-            }
-        }
-
-        /// <summary>Zeichnet ein Tile-Gitter wenn der Zoom hoch genug ist.</summary>
-        private void DrawGrid(Graphics g)
-        {
-            using Pen gridPen = new Pen(Color.FromArgb(30, 255, 255, 255), 0.5f);
-
-            int startTileX = (int)_viewOffset.X;
-            int startTileY = (int)_viewOffset.Y;
-            int endTileX = startTileX + (int)(_mapPanel.Width / _zoom) + 1;
-            int endTileY = startTileY + (int)(_mapPanel.Height / _zoom) + 1;
-
-            // Vertikale Linien
-            for (int tx = startTileX; tx <= endTileX; tx += 8)
-            {
-                Point s = TileToScreen(tx, startTileY);
-                Point e = TileToScreen(tx, endTileY);
-                g.DrawLine(gridPen, s, e);
-            }
-
-            // Horizontale Linien
-            for (int ty = startTileY; ty <= endTileY; ty += 8)
-            {
-                Point s = TileToScreen(startTileX, ty);
-                Point e = TileToScreen(endTileX, ty);
-                g.DrawLine(gridPen, s, e);
-            }
-        }
+        private Point TileToScreen(int tx, int ty)
+            => new Point((int)((tx - _viewOffset.X) * _zoom), (int)((ty - _viewOffset.Y) * _zoom));
 
         // -----------------------------------------------------------------------
         // Mouse Events
@@ -557,17 +691,14 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         {
             if (e.Button == MouseButtons.Left)
             {
-                // Pan starten
-                _isPanning = true;
-                _panStart = e.Location;
+                _isPanning = true; _panStart = e.Location;
                 _mapPanel.Cursor = Cursors.SizeAll;
             }
             else if (e.Button == MouseButtons.Right)
             {
-                // Selektion starten
                 _isSelecting = true;
                 _hasSelection = false;
-                _selectionStartTile = ScreenToTile(e.Location);
+                _selectionStartTile = SnapToGrid(ScreenToTile(e.Location));
                 _selectionEndTile = _selectionStartTile;
                 _mapPanel.Cursor = Cursors.Cross;
             }
@@ -575,35 +706,22 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 
         private void MapPanel_MouseMove(object sender, MouseEventArgs e)
         {
-            // Tile-Koordinaten unter Maus berechnen und anzeigen
             Point tile = ScreenToTile(e.Location);
-            _lblCoords.Text = $"Mausposition: X={tile.X}, Y={tile.Y}  |  Tile-ID an Position: (Block {tile.X / 8},{tile.Y / 8})";
+            _lblCoords.Text = $"CURSOR  X:{tile.X}  Y:{tile.Y}  |  Block [{tile.X / 8},{tile.Y / 8}]";
 
             if (_isPanning && e.Button == MouseButtons.Left)
             {
-                // Pan: ViewOffset anpassen
                 float dx = (e.X - _panStart.X) / _zoom;
                 float dy = (e.Y - _panStart.Y) / _zoom;
-
-                _viewOffset.X -= dx;
-                _viewOffset.Y -= dy;
-
-                // Grenzen einhalten
-                _viewOffset.X = Math.Max(0, Math.Min(_mapWidth - _mapPanel.Width / _zoom, _viewOffset.X));
-                _viewOffset.Y = Math.Max(0, Math.Min(_mapHeight - _mapPanel.Height / _zoom, _viewOffset.Y));
-
+                _viewOffset.X = Math.Max(0, Math.Min(_mapWidth - _mapPanel.Width / _zoom, _viewOffset.X - dx));
+                _viewOffset.Y = Math.Max(0, Math.Min(_mapHeight - _mapPanel.Height / _zoom, _viewOffset.Y - dy));
                 _panStart = e.Location;
                 _mapPanel.Invalidate();
             }
             else if (_isSelecting && e.Button == MouseButtons.Right)
             {
-                // Selektion aktualisieren
-                _selectionEndTile = ScreenToTile(e.Location);
-
-                // Selektion auf 8er-Grid snappen
-                _selectionEndTile = SnapToGrid(_selectionEndTile);
-
-                UpdateSelectionLabel();
+                _selectionEndTile = SnapToGrid(ScreenToTile(e.Location));
+                UpdateSelLabel();
                 _mapPanel.Invalidate();
             }
         }
@@ -618,36 +736,22 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             else if (e.Button == MouseButtons.Right)
             {
                 _isSelecting = false;
-                _selectionEndTile = ScreenToTile(e.Location);
-                _selectionEndTile = SnapToGrid(_selectionEndTile);
+                _selectionEndTile = SnapToGrid(ScreenToTile(e.Location));
                 _hasSelection = true;
-
-                // Buttons aktivieren
                 _btnApplyFrom.Enabled = true;
                 _btnApplyTo.Enabled = true;
-
-                UpdateSelectionLabel();
+                UpdateSelLabel();
                 _mapPanel.Invalidate();
             }
         }
 
         private void MapPanel_MouseWheel(object sender, MouseEventArgs e)
         {
-            // Zoom um die Mausposition herum
-            Point tileUnderMouse = ScreenToTile(e.Location);
-
-            if (e.Delta > 0)
-                _trackBarZoom.Value = Math.Min(_trackBarZoom.Maximum, _trackBarZoom.Value + 1);
-            else
-                _trackBarZoom.Value = Math.Max(_trackBarZoom.Minimum, _trackBarZoom.Value - 1);
-
-            // ViewOffset so anpassen, dass der Tile unter der Maus an der gleichen
-            // Screen-Position bleibt
-            _viewOffset.X = tileUnderMouse.X - e.X / _zoom;
-            _viewOffset.Y = tileUnderMouse.Y - e.Y / _zoom;
-            _viewOffset.X = Math.Max(0, _viewOffset.X);
-            _viewOffset.Y = Math.Max(0, _viewOffset.Y);
-
+            Point tum = ScreenToTile(e.Location);
+            int v = _trackBarZoom.Value + (e.Delta > 0 ? 1 : -1);
+            _trackBarZoom.Value = Math.Max(_trackBarZoom.Minimum, Math.Min(_trackBarZoom.Maximum, v));
+            _viewOffset.X = Math.Max(0, tum.X - e.X / _zoom);
+            _viewOffset.Y = Math.Max(0, tum.Y - e.Y / _zoom);
             _mapPanel.Invalidate();
         }
 
@@ -655,104 +759,64 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         // Zoom
         // -----------------------------------------------------------------------
 
-        private void TrackBarZoom_ValueChanged(object sender, EventArgs e)
+        private static readonly float[] ZoomLevels =
         {
-            UpdateZoomFromTrackbar();
-            _mapPanel.Invalidate();
-        }
+            0.0625f,0.125f,0.1875f,0.25f,0.375f,0.5f,0.625f,0.75f,
+            0.875f,1.0f,1.25f,1.5f,2.0f,2.5f,3.0f,4.0f,5.0f,6.0f,8.0f,10.0f
+        };
 
-        /// <summary>
-        /// Wandelt den TrackBar-Wert in einen Zoom-Faktor um.
-        /// Werte: 1=0.125x, 4=0.5x, 8=1.0x (1 Pixel = 1 Tile), 16=2.0x, 20=4.0x
-        /// </summary>
-        private void UpdateZoomFromTrackbar()
+        private void UpdateZoom()
         {
-            // Zoom-Kurve: 0.0625 bis 4.0
-            float[] zoomLevels = {
-                0.0625f, 0.125f, 0.1875f, 0.25f, 0.375f, 0.5f, 0.625f, 0.75f,
-                0.875f, 1.0f, 1.25f, 1.5f, 2.0f, 2.5f, 3.0f, 4.0f, 5.0f, 6.0f, 8.0f, 10.0f
-            };
-
-            int idx = Math.Max(0, Math.Min(zoomLevels.Length - 1, _trackBarZoom.Value - 1));
-            _zoom = zoomLevels[idx];
-
-            int percent = (int)(_zoom * 100);
-            _lblZoom.Text = $"Zoom: {percent}%";
-        }
-
-        // -----------------------------------------------------------------------
-        // Snapping
-        // -----------------------------------------------------------------------
-
-        /// <summary>
-        /// Snappt eine Tile-Koordinate auf das nächste 8er-Raster (Block-Grenze).
-        /// Das erleichtert die Auswahl ganzer Blöcke.
-        /// </summary>
-        private Point SnapToGrid(Point tile)
-        {
-            // Auf nächste 8er-Grenze runden
-            return new Point(
-                (int)Math.Round(tile.X / 8.0) * 8,
-                (int)Math.Round(tile.Y / 8.0) * 8);
-        }
-
-        // -----------------------------------------------------------------------
-        // Selektion übernehmen
-        // -----------------------------------------------------------------------
-
-        private void BtnApplyFrom_Click(object sender, EventArgs e)
-        {
-            if (!_hasSelection) return;
-
-            int x1 = Math.Min(_selectionStartTile.X, _selectionEndTile.X);
-            int y1 = Math.Min(_selectionStartTile.Y, _selectionEndTile.Y);
-            int x2 = Math.Max(_selectionStartTile.X, _selectionEndTile.X);
-            int y2 = Math.Max(_selectionStartTile.Y, _selectionEndTile.Y);
-
-            _setFromRegion?.Invoke(x1, y1, x2, y2);
-
-            MessageBox.Show(
-                $"From Region übertragen:\nX1={x1}, Y1={y1}\nX2={x2}, Y2={y2}",
-                "Koordinaten übertragen",
-                MessageBoxButtons.OK, MessageBoxIcon.Information);
-        }
-
-        private void BtnApplyTo_Click(object sender, EventArgs e)
-        {
-            if (!_hasSelection) return;
-
-            int x1 = Math.Min(_selectionStartTile.X, _selectionEndTile.X);
-            int y1 = Math.Min(_selectionStartTile.Y, _selectionEndTile.Y);
-
-            _setToRegion?.Invoke(x1, y1);
-
-            MessageBox.Show(
-                $"To Region übertragen:\nToX={x1}, ToY={y1}",
-                "Koordinaten übertragen",
-                MessageBoxButtons.OK, MessageBoxIcon.Information);
+            int idx = Math.Max(0, Math.Min(ZoomLevels.Length - 1, _trackBarZoom.Value - 1));
+            _zoom = ZoomLevels[idx];
+            if (_lblZoom != null)
+                _lblZoom.Text = $"ZOOM  {(int)(_zoom * 100)}%";
         }
 
         // -----------------------------------------------------------------------
         // Hilfsmethoden
         // -----------------------------------------------------------------------
 
-        private void UpdateSelectionLabel()
+        private static Point SnapToGrid(Point tile)
+            => new Point((int)Math.Round(tile.X / 8.0) * 8, (int)Math.Round(tile.Y / 8.0) * 8);
+
+        private void UpdateSelLabel()
         {
             int x1 = Math.Min(_selectionStartTile.X, _selectionEndTile.X);
             int y1 = Math.Min(_selectionStartTile.Y, _selectionEndTile.Y);
             int x2 = Math.Max(_selectionStartTile.X, _selectionEndTile.X);
             int y2 = Math.Max(_selectionStartTile.Y, _selectionEndTile.Y);
-            int w = x2 - x1;
-            int h = y2 - y1;
-
             _lblSelection.Text =
-                $"Selektion: X1={x1}, Y1={y1} → X2={x2}, Y2={y2}  |  Größe: {w}×{h} Tiles ({w / 8}×{h / 8} Blöcke)";
+                $"SELECTION  X1:{x1}  Y1:{y1}  →  X2:{x2}  Y2:{y2}  |  {x2 - x1}×{y2 - y1} Tiles  ({(x2 - x1) / 8}×{(y2 - y1) / 8} Blöcke)";
         }
 
-        private void _statusLabel_Set(string text)
+        private void BtnApplyFrom_Click(object sender, EventArgs e)
         {
-            // StatusStrip ist optional - wir nutzen das Selection-Label
-            if (_lblSelection != null)
+            if (!_hasSelection) return;
+            int x1 = Math.Min(_selectionStartTile.X, _selectionEndTile.X);
+            int y1 = Math.Min(_selectionStartTile.Y, _selectionEndTile.Y);
+            int x2 = Math.Max(_selectionStartTile.X, _selectionEndTile.X);
+            int y2 = Math.Max(_selectionStartTile.Y, _selectionEndTile.Y);
+            _setFromRegion?.Invoke(x1, y1, x2, y2);
+            MessageBox.Show($"From Region gesetzt:\nX1={x1}  Y1={y1}\nX2={x2}  Y2={y2}",
+                "Koordinaten übertragen", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
+        private void BtnApplyTo_Click(object sender, EventArgs e)
+        {
+            if (!_hasSelection) return;
+            int x1 = Math.Min(_selectionStartTile.X, _selectionEndTile.X);
+            int y1 = Math.Min(_selectionStartTile.Y, _selectionEndTile.Y);
+            _setToRegion?.Invoke(x1, y1);
+            MessageBox.Show($"To Region gesetzt:\nToX={x1}  ToY={y1}",
+                "Koordinaten übertragen", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
+        private void SetStatus(string text)
+        {
+            if (_lblLoadStatus != null) _lblLoadStatus.Text = text;
+            // Fortschritts-% auch in Selection-Label anzeigen
+            if (_lblSelection != null && (text.Contains("%") || text.StartsWith("LADE")))
                 _lblSelection.Text = text;
         }
 
@@ -765,6 +829,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             if (disposing)
             {
                 _mapBitmap?.Dispose();
+                _staticsBitmap?.Dispose();
             }
             base.Dispose(disposing);
         }
