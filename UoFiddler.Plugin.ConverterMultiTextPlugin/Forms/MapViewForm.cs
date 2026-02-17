@@ -377,6 +377,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             if (tileId >= 0x0161 && tileId <= 0x0180) return Color.DimGray;      // Lavagestein
 
             // Fallback: Farbe aus TileID hashen für Vielfalt
+            // Cast auf uint nötig: tileId * 2654435761u ergibt long → explizit auf int casten
             int hash = (int)(((uint)tileId * 2654435761u) & 0xFFFFFFu);
             return Color.FromArgb(
                 40 + (hash & 0xFF) % 150,
