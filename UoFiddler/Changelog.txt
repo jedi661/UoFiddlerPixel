@@ -1,3 +1,34 @@
+Version: 4.12.11 #XG1
+– Compare Maps revised
+- Made `CalculateDiffs()` asynchronous (`Task.Run`) to prevent UI freezing  
+- Fixed null‑check bug in `CalculateDiffs`  
+- `OnMouseMove` now triggers `Invalidate` only when tooltip content actually changes  
+- Corrected bitmap disposal throughout the code  
+- `ZoomMap` now disposes the old bitmap after replacement  
+- Added CSV export for diff list  
+- Added screenshot feature to save current viewport as PNG  
+- Added Next‑Diff / Previous‑Diff navigation  
+- Added diff statistics to the top toolbar  
+- Added manual zoom via text input  
+- Introduced modern dark UI  
+- `OnPaint` now clamps block coordinates to map bounds  
+
+- `CalculateDiffs` now uses `Math.Min` for map dimensions to avoid out‑of‑range errors  
+- Replaced `bool[][][][]` with `HashSet<Point>` for block‑ and tile‑level caching → ~90% less RAM, O(1) tile lookup  
+- Added versioned cancellation token (`_diffVersion`) to discard stale async results  
+- Replaced tooltip string concatenation with `StringBuilder`  
+- Replaced thousands of `DrawRectangle` calls with a single `GraphicsPath` batch draw  
+- Screenshot now uses `InvokePaint` instead of `DrawToBitmap`  
+- `ScrollBar.Maximum` is now clamped directly in `ChangeScrollBar`  
+- `Dispose` override now unregisters all event handlers to prevent memory leaks  
+
+- Added “Diff List…” dialog  
+  - Displays all diff block coordinates (BlockX/Y, WorldX/Y)  
+  - Clicking a row jumps directly to that location  
+  - Includes “Jump” button for selected entry  
+  - “Copy All” copies the full list to clipboard  
+  - Auto‑refreshes when new diff calculation completes
+
 Version : 4.12.10 #XG1
 - ParticleGray Tool.
 - Added a search function in Amindata based on hex addresses and names.
