@@ -567,17 +567,17 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 
         // Tab 1 - Gump ID Rechner
         private System.Windows.Forms.TextBox tbInput;
-        private System.Windows.Forms.TextBox tbDecimalInput;         // NEU
+        private System.Windows.Forms.TextBox tbDecimalInput;
         private System.Windows.Forms.GroupBox groupBoxResults;
         private System.Windows.Forms.GroupBox groupBoxGumpID;
-        private System.Windows.Forms.GroupBox groupBoxDecimalInput;  // NEU
+        private System.Windows.Forms.GroupBox groupBoxDecimalInput;
         private System.Windows.Forms.Button BtWoman;
         private System.Windows.Forms.Button BtMen;
-        private System.Windows.Forms.Button BtCopyResults;           // NEU
-        private System.Windows.Forms.Button BtDecimalInput;          // NEU
+        private System.Windows.Forms.Button BtCopyResults;
+        private System.Windows.Forms.Button BtDecimalInput;
         private System.Windows.Forms.Label lbInput;
-        private System.Windows.Forms.Label lbDecimalInputLabel;      // NEU
-        private System.Windows.Forms.Label lbWomanOffset;            // NEU
+        private System.Windows.Forms.Label lbDecimalInputLabel;
+        private System.Windows.Forms.Label lbWomanOffset;
         private System.Windows.Forms.Label lbiD;
         private System.Windows.Forms.Label lbDecimal;
         private System.Windows.Forms.Label lbHex;
@@ -592,10 +592,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private System.Windows.Forms.GroupBox groupBoxConvert;
         private System.Windows.Forms.TextBox tbOutput;
         private System.Windows.Forms.TextBox tbInput2;
-        private System.Windows.Forms.TextBox tbBaseN;                // NEU
+        private System.Windows.Forms.TextBox tbBaseN;
         private System.Windows.Forms.Label lbOutput;
         private System.Windows.Forms.Label lbimput;
-        private System.Windows.Forms.Label lbBaseNLabel;             // NEU
+        private System.Windows.Forms.Label lbBaseNLabel;
         private System.Windows.Forms.CheckBox checkBoxHexAdress;
         private System.Windows.Forms.CheckBox checkBoxDecimal;
         private System.Windows.Forms.CheckBox checkBoxOctal;
@@ -605,6 +605,6 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private System.Windows.Forms.CheckBox checkBoxCase;
         private System.Windows.Forms.CheckBox checkBoxAsciiCode;
         private System.Windows.Forms.CheckBox checkBoxAsciiToText;
-        private System.Windows.Forms.CheckBox checkBoxAllConversions; // NEU
+        private System.Windows.Forms.CheckBox checkBoxAllConversions;
     }
 }
