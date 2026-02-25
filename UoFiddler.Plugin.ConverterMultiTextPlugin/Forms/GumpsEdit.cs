@@ -16,10 +16,8 @@ using System.Data;
 using System.Drawing;
 using System.Globalization;
 using System.Linq;
-using System.Reflection.Emit;
 using System.Text;
 using System.Threading.Tasks;
-//using System.Windows.Controls;
 using System.Windows.Forms;
 using System.Xml.Linq;
 using Ultima;
@@ -27,21 +25,27 @@ using UoFiddler.Controls.Classes;
 using System.IO;
 using DrawingImage = System.Drawing.Image;
 using System.Drawing.Imaging;
-using static System.Runtime.InteropServices.JavaScript.JSType;
-
 
 namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 {
     public partial class GumpsEdit : Form
     {
+        // -----------------------------------------------------------------------
+        //  Felder
+        // -----------------------------------------------------------------------
         private Dictionary<int, string> idNames;
         private string xmlFilePath;
+
+        // -----------------------------------------------------------------------
+        //  Konstruktor
+        // -----------------------------------------------------------------------
         public GumpsEdit()
         {
             InitializeComponent();
 
-            this.Load += GumpsEdit_Load; // Add the Load event            
+            this.Load += GumpsEdit_Load;
 
+            // XML-Datei für ID-Namen laden oder neu anlegen
             xmlFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "IDGumpNames.xml");
             XDocument doc;
 
@@ -64,354 +68,416 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             this.KeyPreview = true;
         }
 
+        // -----------------------------------------------------------------------
+        //  HILFSMETHODE: Liest die aktuell gewählte Gump-ID aus der ListBox.
+        //  Gibt -1 zurück, wenn nichts ausgewählt ist.
+        // -----------------------------------------------------------------------
+        private int GetSelectedId()
+        {
+            if (listBox.SelectedIndex == -1)
+                return -1;
+
+            string item = listBox.Items[listBox.SelectedIndex].ToString();
+            int start = item.IndexOf("ID: ") + 4;
+            int len = item.IndexOf(" (") - start;
+
+            if (start < 4 || len <= 0)
+                return -1;
+
+            return int.TryParse(item.Substring(start, len), out int id) ? id : -1;
+        }
+
+        // -----------------------------------------------------------------------
+        //  HILFSMETHODE: Setzt ein Bitmap sicher in ein PictureBox-Image-Feld
+        //  und gibt das alte Bitmap zurück, damit es disposed werden kann.
+        // -----------------------------------------------------------------------
+        private void SetPictureBoxImage(PictureBox pb, Bitmap newBmp)
+        {
+            var old = pb.Image;
+            pb.Image = newBmp;
+            if (old != null && old != newBmp)
+                old.Dispose();
+        }
+
+        // -----------------------------------------------------------------------
+        //  HILFSMETHODE: Zeichnet transparente Pixel als #D3D3D3-Hintergrund
+        //  (Gumps nutzen diesen Grauton als Transparenz-Marker) und konvertiert
+        //  das Ergebnis auf 24-bit RGB für die Zwischenablage.
+        // -----------------------------------------------------------------------
+        private Bitmap ConvertGumpForClipboard(Bitmap src)
+        {
+            Bitmap copy = new Bitmap(src);
+
+            for (int y = 0; y < copy.Height; y++)
+                for (int x = 0; x < copy.Width; x++)
+                {
+                    Color px = copy.GetPixel(x, y);
+                    if (px.R == 211 && px.G == 211 && px.B == 211)
+                        copy.SetPixel(x, y, Color.Black);
+                }
+
+            // 24-bit-Konvertierung (Clipboard verträgt kein 32-bit ARGB)
+            Bitmap bmp24 = new Bitmap(copy.Width, copy.Height, PixelFormat.Format24bppRgb);
+            using (Graphics g = Graphics.FromImage(bmp24))
+                g.DrawImage(copy, new Rectangle(0, 0, bmp24.Width, bmp24.Height));
+
+            copy.Dispose();
+            return bmp24;
+        }
+
+        // -----------------------------------------------------------------------
+        //  HILFSMETHODE: Wendet ein ColorMatrix-Array auf ein Bitmap an
+        //  (optional nur auf nicht-schwarze/weiße Pixel, wenn ignoreBlackWhite=true).
+        //  Gibt ein neues Bitmap zurück – das Original bleibt unverändert.
+        // -----------------------------------------------------------------------
+        private Bitmap ApplyColorMatrix(Bitmap source, float[][] matrix, bool ignoreBlackWhite = false)
+        {
+            Bitmap result = new Bitmap(source.Width, source.Height);
+            ColorMatrix cm = new ColorMatrix(matrix);
+            ImageAttributes attr = new ImageAttributes();
+            attr.SetColorMatrix(cm);
+
+            using (Graphics g = Graphics.FromImage(result))
+            {
+                if (ignoreBlackWhite)
+                {
+                    // Jeden Pixel einzeln prüfen (nur farbige Pixel verändern)
+                    for (int y = 0; y < source.Height; y++)
+                        for (int x = 0; x < source.Width; x++)
+                        {
+                            Color px = source.GetPixel(x, y);
+                            if (px.ToArgb() != Color.White.ToArgb() && px.ToArgb() != Color.Black.ToArgb())
+                                g.DrawImage(source, new Rectangle(x, y, 1, 1), x, y, 1, 1, GraphicsUnit.Pixel, attr);
+                            else
+                                result.SetPixel(x, y, px); // Schwarz/Weiß unverändert übernehmen
+                        }
+                }
+                else
+                {
+                    g.DrawImage(source,
+                        new Rectangle(0, 0, source.Width, source.Height),
+                        0, 0, source.Width, source.Height,
+                        GraphicsUnit.Pixel, attr);
+                }
+            }
+
+            attr.Dispose();
+            return result;
+        }
+
+        // -----------------------------------------------------------------------
+        //  HILFSMETHODE: Speichert den aktuellen Zeichen-Zustand (originalImageDraw)
+        //  auf dem Undo-Stack und leert den Redo-Stack.
+        // -----------------------------------------------------------------------
+        private void PushUndo()
+        {
+            if (originalImageDraw == null) return;
+            previousImages.Push((Bitmap)originalImageDraw.Clone());
+            redoImages.Clear();
+        }
+
+        // -----------------------------------------------------------------------
+        //  HILFSMETHODE: XML-Datei mit den ID-Namen speichern.
+        // -----------------------------------------------------------------------
+        private void SaveIdNamesXml()
+        {
+            XDocument doc = new XDocument(
+                new XElement("IDNames",
+                    idNames.Select(kv =>
+                        new XElement("ID",
+                            new XAttribute("value", kv.Key),
+                            new XAttribute("name", kv.Value))
+                    )
+                )
+            );
+            doc.Save(xmlFilePath);
+        }
+
+        // =======================================================================
+        //  LISTBOX – Befüllen
+        // =======================================================================
         #region PopulateListBox
+        /// <summary>
+        /// Füllt die ListBox mit allen gültigen Gump-IDs.
+        /// Wenn showFreeSlots=true, werden auch freie Slots angezeigt.
+        /// </summary>
         private void PopulateListBox(bool showFreeSlots = false)
         {
-            listBox.BeginUpdate(); // Disable ListBox updates
+            listBox.BeginUpdate();
+            listBox.Items.Clear();
 
             for (int i = 0; i < Gumps.GetCount(); i++)
             {
-                string hexValue = i.ToString("X"); // Converts the ID to a hexadecimal string
+                string hex = i.ToString("X");
+
                 if (Gumps.IsValidIndex(i))
                 {
-                    string idName = idNames.ContainsKey(i) ? idNames[i] : "";
-                    listBox.Items.Add($"ID: {i} (0x{hexValue}) - {idName}"); // Adds both the decimal and hexadecimal representations of the ID to the ListBox
+                    string name = idNames.ContainsKey(i) ? idNames[i] : "";
+                    listBox.Items.Add($"ID: {i} (0x{hex}) - {name}");
                 }
                 else if (showFreeSlots)
                 {
-                    listBox.Items.Add($"ID: {i} (0x{hexValue}) - Free space");
+                    listBox.Items.Add($"ID: {i} (0x{hex}) - Free space");
                 }
             }
 
-            listBox.EndUpdate(); // Enable ListBox updates
+            listBox.EndUpdate();
         }
         #endregion
 
+        // =======================================================================
+        //  SUCHE
+        // =======================================================================
         #region Search
+        /// <summary>
+        /// Sucht beim Tippen nach ID (dezimal/hex) oder Name (Partial-Match).
+        /// </summary>
         private void SearchByIdToolStripTextBox_TextChanged(object sender, EventArgs e)
         {
             string searchText = searchByIdToolStripTextBox.Text.Trim();
-            int id;
+            if (string.IsNullOrEmpty(searchText)) return;
 
-            // Try to interpret the search text as an integer
-            if (int.TryParse(searchText, out id) ||
-                (searchText.StartsWith("0x") && int.TryParse(searchText.Substring(2), NumberStyles.HexNumber, null, out id)))
+            // -- Numerische Suche (dezimal oder 0x-Hex) --
+            if (int.TryParse(searchText, out int id) ||
+                (searchText.StartsWith("0x", StringComparison.OrdinalIgnoreCase) &&
+                 int.TryParse(searchText.Substring(2), NumberStyles.HexNumber, null, out id)))
             {
-                // Search the ListBox for the item with the corresponding ID
                 for (int i = 0; i < listBox.Items.Count; i++)
                 {
                     string item = listBox.Items[i].ToString();
-                    if (item.Contains($"ID: {id}"))
+                    if (item.Contains($"ID: {id} "))
                     {
-                        // Select the found item and end the search
                         listBox.SelectedIndex = i;
-                        break;
+                        return;
                     }
                 }
-            }
-            else if (!string.IsNullOrEmpty(searchText) && !searchText.All(char.IsDigit))
-            {
-                // If the search text is not an integer and contains at least one character that is not a digit,
-                // search for the name in idNames
-                var matchingIds = idNames.Where(kv => kv.Value.Equals(searchText)).Select(kv => kv.Key).ToList();
-                if (matchingIds.Count > 0)
-                {
-                    // Search the ListBox for the item with the corresponding name
-                    for (int i = 0; i < listBox.Items.Count; i++)
-                    {
-                        string item = listBox.Items[i].ToString();
-                        if (item.Contains(searchText))
-                        {
-                            // Select the found item and end the search
-                            listBox.SelectedIndex = i;
-                            break;
-                        }
-                    }
-                }
-            }
-
-        }
-        #endregion
-
-        #region Load ListBox
-        private void ListBox_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            // Check if an item in the ListBox is selected
-            if (listBox.SelectedIndex == -1)
-            {
                 return;
             }
 
-            // Get the selected item in the ListBox and convert it to a string
-            string selectedItem = listBox.Items[listBox.SelectedIndex].ToString();
+            // -- Namens-Suche (Partial-Match, Groß-/Kleinschreibung ignorieren) --
+            string lower = searchText.ToLowerInvariant();
+            for (int i = 0; i < listBox.Items.Count; i++)
+            {
+                if (listBox.Items[i].ToString().ToLowerInvariant().Contains(lower))
+                {
+                    listBox.SelectedIndex = i;
+                    return;
+                }
+            }
+        }
+        #endregion
 
-            // Find the starting index and length of the integer value in the string
-            int startIdx = selectedItem.IndexOf("ID: ") + 4;
-            int length = selectedItem.IndexOf(" (") - startIdx;
+        // =======================================================================
+        //  LISTBOX – Auswahl geändert / Formular laden
+        // =======================================================================
+        #region Load ListBox
+        /// <summary>
+        /// Zeigt das Gump-Bild für den gewählten ListBox-Eintrag an
+        /// und aktualisiert ID- und Größen-Label.
+        /// </summary>
+        private void ListBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (listBox.SelectedIndex == -1) return;
 
-            // Extract the integer value from the string
-            string intValueStr = selectedItem.Substring(startIdx, length);
+            int i = GetSelectedId();
+            if (i < 0) return;
 
-            // Convert the integer value to an integer
-            int i = int.Parse(intValueStr);
-
-            // Überprüfen Sie, ob die ID gültig ist
             if (Gumps.IsValidIndex(i))
             {
-                // Get the Gump for the ID
                 Bitmap bmp = Gumps.GetGump(i);
-
-                // Check if the Gump is present
                 if (bmp != null)
                 {
-                    // Set the PictureBox's background image to the Gump
                     pictureBox.BackgroundImage = bmp;
-
-                    // Update the labels with the Gump's ID and size
                     IDLabel.Text = $"ID: 0x{i:X} ({i})";
                     SizeLabel.Text = $"Size: {bmp.Width},{bmp.Height}";
                 }
                 else
                 {
-                    // Set the PictureBox's background image to null if the gump is not present
                     pictureBox.BackgroundImage = null;
                 }
             }
             else
             {
-                // Set the PictureBox's background image to null if the ID is invalid
                 pictureBox.BackgroundImage = null;
             }
 
-            // Update the ListBox
             listBox.Invalidate();
+
+            // Titelzeile mit Unsaved-Marker aktualisieren
+            UpdateFormTitle();
         }
+
+        /// <summary>
+        /// Wird beim ersten Laden des Formulars aufgerufen:
+        /// ListBox befüllen und erstes Element auswählen.
+        /// </summary>
         private void GumpsEdit_Load(object sender, EventArgs e)
         {
-            PopulateListBox(); // Call the method to fill the ListBox
+            PopulateListBox();
 
-            // Select index 0 in the ListBox
             if (listBox.Items.Count > 0)
-            {
                 listBox.SelectedIndex = 0;
-            }
 
-            // Display the corresponding image in the PictureBox
             if (Gumps.IsValidIndex(0))
-            {
                 pictureBox.BackgroundImage = Gumps.GetGump(0);
-            }
         }
         #endregion
 
+        // =======================================================================
+        //  TITELZEILE
+        // =======================================================================
+        #region Form Title
+        /// <summary>
+        /// Zeigt im Fenstertitel ein '*' an, wenn ungespeicherte Änderungen vorliegen.
+        /// </summary>
+        private void UpdateFormTitle()
+        {
+            bool changed = Options.ChangedUltimaClass.ContainsKey("Gumps") &&
+                           Options.ChangedUltimaClass["Gumps"];
+            this.Text = changed ? "Gumps Edit *" : "Gumps Edit";
+        }
+        #endregion
+
+        // =======================================================================
+        //  KOPIEREN (Gump → Zwischenablage)
+        // =======================================================================
         #region Copy clipboard
+        /// <summary>
+        /// Kopiert das aktuell gewählte Gump als 24-bit-Bitmap in die Zwischenablage.
+        /// Transparenz-Pixel (#D3D3D3) werden dabei schwarz gezeichnet.
+        /// </summary>
         private void copyToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (listBox.SelectedIndex != -1)
+            int i = GetSelectedId();
+            if (i < 0) { MessageBox.Show("No image to copy!"); return; }
+
+            if (!Gumps.IsValidIndex(i)) { MessageBox.Show("No image to copy!"); return; }
+
+            Bitmap src = Gumps.GetGump(i);
+            if (src == null) { MessageBox.Show("No image to copy!"); return; }
+
+            using (Bitmap bmp24 = ConvertGumpForClipboard(src))
             {
-                string selectedItem = listBox.Items[listBox.SelectedIndex].ToString();
-                int startIdx = selectedItem.IndexOf("ID: ") + 4; // Starting index of the integer value
-                int length = selectedItem.IndexOf(" (") - startIdx; //Length of the integer value
-                string intValueStr = selectedItem.Substring(startIdx, length); // Extract the integer value
-                int i = int.Parse(intValueStr);
-
-                //int i = int.Parse(listBox.Items[listBox.SelectedIndex].ToString());
-                if (Gumps.IsValidIndex(i))
-                {
-                    Bitmap originalBmp = Gumps.GetGump(i);
-                    if (originalBmp != null)
-                    {
-                        // Make a copy of the original image
-                        Bitmap bmp = new Bitmap(originalBmp);
-
-                        // Color change function built in
-                        for (int y = 0; y < bmp.Height; y++)
-                        {
-                            for (int x = 0; x < bmp.Width; x++)
-                            {
-                                Color pixelColor = bmp.GetPixel(x, y);
-                                if (pixelColor.R == 211 && pixelColor.G == 211 && pixelColor.B == 211) // Check if the color of the pixel is #D3D3D3
-                                {
-                                    bmp.SetPixel(x, y, Color.Black); // Change the color of the pixel to black
-                                }
-                            }
-                        }
-
-                        // Convert the image to a 24-bit color depth
-                        Bitmap bmp24bit = new Bitmap(bmp.Width, bmp.Height, System.Drawing.Imaging.PixelFormat.Format24bppRgb);
-                        using (Graphics g = Graphics.FromImage(bmp24bit))
-                        {
-                            g.DrawImage(bmp, new Rectangle(0, 0, bmp24bit.Width, bmp24bit.Height));
-                        }
-
-                        // Copy the graphic to the clipboard
-                        Clipboard.SetImage(bmp24bit);
-                        MessageBox.Show("The image has been copied to the clipboard!");
-                    }
-                    else
-                    {
-                        MessageBox.Show("No image to copy!");
-                    }
-                }
-                else
-                {
-                    MessageBox.Show("No image to copy!");
-                }
-            }
-            else
-            {
-                MessageBox.Show("No image to copy!");
+                Clipboard.SetImage(bmp24);
+                MessageBox.Show("The image has been copied to the clipboard!");
             }
         }
         #endregion
 
-        #region Import Import clipboard - Import graphics from clipboard.
+        // =======================================================================
+        //  IMPORTIEREN (Zwischenablage → Gump)
+        // =======================================================================
+        #region Import clipboard
+        /// <summary>
+        /// Importiert ein Bild aus der Zwischenablage in den gewählten Gump-Slot.
+        /// Die Farben #D3D3D3, Schwarz und Weiß werden als transparent behandelt.
+        /// </summary>
         private void importToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            // Überprüfen, ob die Zwischenablage ein Bild enthält
-            if (Clipboard.ContainsImage())
+            if (!Clipboard.ContainsImage())
             {
-                // Retrieve the image from the clipboard
-                using (Bitmap bmp = new Bitmap(Clipboard.GetImage()))
-                {
-                    // Check if an item in the ListBox is selected
-                    if (listBox.SelectedIndex != -1)
-                    {
-                        // Get the selected item in the ListBox and convert it to a string
-                        string selectedItem = listBox.Items[listBox.SelectedIndex].ToString();
-
-                        // Find the starting index and length of the integer value in the string
-                        int startIdx = selectedItem.IndexOf('(') + 3; // Starting index of the integer value
-                        int length = selectedItem.IndexOf(')') - startIdx; // Length of the integer value
-
-                        // Extract the integer value from the string
-                        string intValueStr = selectedItem.Substring(startIdx, length);
-
-                        // Convert the integer value to an integer
-                        int index = int.Parse(intValueStr);
-
-                        if (index >= 0 && index < Gumps.GetCount())
-                        {
-                            // Create a new bitmap with the same size as the image from the clipboard
-                            Bitmap newBmp = new Bitmap(bmp.Width, bmp.Height);
-
-                            // Define the colors to ignore
-                            Color[] colorsToIgnore = new Color[]
-                            {
-                        Color.FromArgb(211, 211, 211), // #D3D3D3
-                        Color.FromArgb(0, 0, 0),       // #000000
-                        Color.FromArgb(255, 255, 255)  // #FFFFFF
-                            };
-
-                            // Iterate through each pixel of the image
-                            for (int x = 0; x < bmp.Width; x++)
-                            {
-                                for (int y = 0; y < bmp.Height; y++)
-                                {
-                                    // Get the color of the current pixel
-                                    Color pixelColor = bmp.GetPixel(x, y);
-
-                                    // Check if the color of the current pixel is one of the colors to ignore
-                                    if (colorsToIgnore.Contains(pixelColor))
-                                    {
-                                        // Set the color of the current pixel to transparent
-                                        newBmp.SetPixel(x, y, Color.Transparent);
-                                    }
-                                    else
-                                    {
-                                        // Set the color of the current pixel to the color of the original image
-                                        newBmp.SetPixel(x, y, pixelColor);
-                                    }
-                                }
-                            }
-
-                            // Call the ReplaceGump method with the selected graphic ID and the new bitmap
-                            Gumps.ReplaceGump(index, newBmp);
-                            ControlEvents.FireGumpChangeEvent(this, index);
-
-                            listBox.Invalidate();
-                            ListBox_SelectedIndexChanged(this, EventArgs.Empty);
-
-                            Options.ChangedUltimaClass["Gumps"] = true;
-                        }
-                        else
-                        {
-                            MessageBox.Show("Invalid index.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        }
-                    }
-                    else
-                    {
-                        MessageBox.Show("No image to copy!");
-                    }
-                }
-            }
-            else
-            {
-                MessageBox.Show("No image in the clipboard.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-
-            UpdateTotalIDsLabel();
-            UpdateFreeIDsLabel();
-        }
-
-
-        // Import und Export Strg+V and Strg+X
-        private void GumpControl_KeyDown(object sender, KeyEventArgs e)
-        {
-            // Check if the Ctrl+V key combination has been pressed
-            if (e.Control && e.KeyCode == Keys.V)
-            {
-                // Calling the importToolStripMenuItem_Click method to import the graphic from the clipboard.
-                importToolStripMenuItem_Click(sender, e);
-            }
-            // Checking if the Ctrl+X key combination has been pressed
-            else if (e.Control && e.KeyCode == Keys.X)
-            {
-                // Calling the copyToolStripMenuItem_Click method to import the graphic from the clipboard.
-                copyToolStripMenuItem_Click(sender, e);
-            }
-        }
-        #endregion
-
-        #region Remove       
-        private void OnClickRemove(object sender, EventArgs e)
-        {
-            if (listBox.SelectedIndex != -1)
-            {
-                string selectedItem = listBox.Items[listBox.SelectedIndex].ToString();
-                int startIdx = selectedItem.IndexOf("ID: ") + 4; // Starting index of the integer value
-                int length = selectedItem.IndexOf(" (") - startIdx; // Length of the integer value
-                string intValueStr = selectedItem.Substring(startIdx, length); // Extract the integer value
-
-                int i = int.Parse(intValueStr);
-
-                if (Gumps.IsValidIndex(i))
-                {
-                    // Remove the graphic
-                    Gumps.RemoveGump(i);
-                    ControlEvents.FireGumpChangeEvent(this, i);
-
-                    // Remove the image from the PictureBox
-                    pictureBox.Image = null;
-
-                    listBox.Invalidate();
-                    ListBox_SelectedIndexChanged(this, EventArgs.Empty);
-
-                    Options.ChangedUltimaClass["Gumps"] = true;
-                }
-            }
-            UpdateTotalIDsLabel();
-            UpdateFreeIDsLabel();
-        }
-        #endregion
-
-        #region Replace
-        private void OnClickReplace(object sender, EventArgs e)
-        {
-            if (listBox.SelectedItems.Count != 1)
-            {
+                MessageBox.Show("No image in the clipboard.", "Error",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
+
+            int index = GetSelectedId();
+            if (index < 0) { MessageBox.Show("No item selected!"); return; }
+
+            if (index < 0 || index >= Gumps.GetCount())
+            {
+                MessageBox.Show("Invalid index.", "Error",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            using (Bitmap bmp = new Bitmap(Clipboard.GetImage()))
+            {
+                Bitmap newBmp = new Bitmap(bmp.Width, bmp.Height);
+
+                // Farben, die als transparent gelten
+                Color[] ignoreColors =
+                {
+                    Color.FromArgb(211, 211, 211),  // #D3D3D3
+                    Color.FromArgb(0,   0,   0),    // Schwarz
+                    Color.FromArgb(255, 255, 255)   // Weiß
+                };
+
+                for (int x = 0; x < bmp.Width; x++)
+                    for (int y = 0; y < bmp.Height; y++)
+                    {
+                        Color px = bmp.GetPixel(x, y);
+                        newBmp.SetPixel(x, y, ignoreColors.Contains(px) ? Color.Transparent : px);
+                    }
+
+                Gumps.ReplaceGump(index, newBmp);
+                ControlEvents.FireGumpChangeEvent(this, index);
+
+                listBox.Invalidate();
+                ListBox_SelectedIndexChanged(this, EventArgs.Empty);
+
+                Options.ChangedUltimaClass["Gumps"] = true;
+                UpdateFormTitle();
+            }
+
+            UpdateTotalIDsLabel();
+            UpdateFreeIDsLabel();
+        }
+
+        /// <summary>
+        /// Tastenkürzel: Strg+V importiert aus Zwischenablage,
+        ///               Strg+X kopiert in die Zwischenablage.
+        /// </summary>
+        private void GumpControl_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Control && e.KeyCode == Keys.V)
+                importToolStripMenuItem_Click(sender, e);
+            else if (e.Control && e.KeyCode == Keys.X)
+                copyToolStripMenuItem_Click(sender, e);
+        }
+        #endregion
+
+        // =======================================================================
+        //  ENTFERNEN
+        // =======================================================================
+        #region Remove
+        /// <summary>
+        /// Entfernt das aktuell gewählte Gump aus den Daten.
+        /// </summary>
+        private void OnClickRemove(object sender, EventArgs e)
+        {
+            int i = GetSelectedId();
+            if (i < 0) return;
+
+            if (Gumps.IsValidIndex(i))
+            {
+                Gumps.RemoveGump(i);
+                ControlEvents.FireGumpChangeEvent(this, i);
+
+                pictureBox.Image = null;
+
+                listBox.Invalidate();
+                ListBox_SelectedIndexChanged(this, EventArgs.Empty);
+
+                Options.ChangedUltimaClass["Gumps"] = true;
+                UpdateFormTitle();
+            }
+
+            UpdateTotalIDsLabel();
+            UpdateFreeIDsLabel();
+        }
+        #endregion
+
+        // =======================================================================
+        //  ERSETZEN (Datei → Gump)
+        // =======================================================================
+        #region Replace
+        /// <summary>
+        /// Ersetzt das gewählte Gump durch eine Bild-Datei (TIF/BMP).
+        /// </summary>
+        private void OnClickReplace(object sender, EventArgs e)
+        {
+            if (listBox.SelectedItems.Count != 1) return;
 
             using (OpenFileDialog dialog = new OpenFileDialog())
             {
@@ -419,1132 +485,1237 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 dialog.Title = "Choose image file to replace";
                 dialog.CheckFileExists = true;
                 dialog.Filter = "Image files (*.tif;*.tiff;*.bmp)|*.tif;*.tiff;*.bmp";
-                if (dialog.ShowDialog() != DialogResult.OK)
-                {
-                    return;
-                }
+
+                if (dialog.ShowDialog() != DialogResult.OK) return;
 
                 using (var bmpTemp = new Bitmap(dialog.FileName))
                 {
                     Bitmap bitmap = new Bitmap(bmpTemp);
 
-                    if (dialog.FileName.Contains(".bmp"))
-                    {
+                    if (dialog.FileName.EndsWith(".bmp", StringComparison.OrdinalIgnoreCase))
                         bitmap = Utils.ConvertBmp(bitmap);
-                    }
 
-                    string selectedItem = listBox.Items[listBox.SelectedIndex].ToString();
-                    int startIdx = selectedItem.IndexOf("ID: ") + 4;
-                    int length = selectedItem.IndexOf(" (") - startIdx;
-                    string intValueStr = selectedItem.Substring(startIdx, length);
-                    int i = int.Parse(intValueStr);
+                    int i = GetSelectedId();
+                    if (i < 0) return;
 
                     Gumps.ReplaceGump(i, bitmap);
-
                     ControlEvents.FireGumpChangeEvent(this, i);
 
                     listBox.Invalidate();
                     ListBox_SelectedIndexChanged(this, EventArgs.Empty);
 
                     Options.ChangedUltimaClass["Gumps"] = true;
+                    UpdateFormTitle();
                 }
             }
         }
         #endregion
 
+        // =======================================================================
+        //  FREIE SLOTS ANZEIGEN
+        // =======================================================================
         #region Show Free Slots
+        private bool isShowingFreeSlots = false;
 
-        private bool isShowingFreeSlots = false; // Add state variable
+        /// <summary>
+        /// Schaltet die Anzeige freier Gump-Slots in der ListBox um.
+        /// Aktiver Zustand wird durch grünen Hintergrund des Menüpunktes signalisiert.
+        /// </summary>
         private void showFreeIdsToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            listBox.Items.Clear(); // First delete all existing items in the ListBox
-
-            if (!isShowingFreeSlots)
-            {
-                // When the button is clicked for the first time, show all IDs and color the background green
-                PopulateListBox(true); // Then call the method to fill the ListBox
-                showFreeIdsToolStripMenuItem.BackColor = Color.Green;
-            }
-            else
-            {
-                // When the button is clicked again, show only the valid IDs and reset the background color
-                PopulateListBox();
-                showFreeIdsToolStripMenuItem.BackColor = SystemColors.Control;
-            }
-
-            // Toggle the state
             isShowingFreeSlots = !isShowingFreeSlots;
+            PopulateListBox(isShowingFreeSlots);
+            showFreeIdsToolStripMenuItem.BackColor =
+                isShowingFreeSlots ? Color.Green : SystemColors.Control;
         }
         #endregion
 
-        #region Frind Netzt Free ID
+        // =======================================================================
+        //  NÄCHSTEN FREIEN SLOT FINDEN
+        // =======================================================================
+        #region Find Next Free ID
+        /// <summary>
+        /// Springt in der ListBox zum nächsten freien Gump-Slot nach der aktuellen Auswahl.
+        /// </summary>
         private void OnClickFindFree(object sender, EventArgs e)
         {
-            if (listBox.SelectedIndex != -1)
+            if (listBox.SelectedIndex == -1) return;
+
+            int id = GetSelectedId();
+            if (id < 0) return;
+            id++;
+
+            for (int i = listBox.SelectedIndex + 1; i < listBox.Items.Count; i++, id++)
             {
-                string selectedItem = listBox.Items[listBox.SelectedIndex].ToString();
-                int startIdx = selectedItem.IndexOf("ID: ") + 4;
-                int length = selectedItem.IndexOf(" (") - startIdx;
-                string intValueStr = selectedItem.Substring(startIdx, length);
-                int id = int.Parse(intValueStr);
-                ++id;
+                string item = listBox.Items[i].ToString();
+                int start = item.IndexOf("ID: ") + 4;
+                int len = item.IndexOf(" (") - start;
+                if (start < 4 || len <= 0) continue;
 
-                for (int i = listBox.SelectedIndex + 1; i < listBox.Items.Count; ++i, ++id)
+                if (!int.TryParse(item.Substring(start, len), out int itemId)) continue;
+
+                if (id < itemId || (isShowingFreeSlots && !Gumps.IsValidIndex(itemId)))
                 {
-                    string item = listBox.Items[i].ToString();
-                    startIdx = item.IndexOf("ID: ") + 4;
-                    length = item.IndexOf(" (") - startIdx;
-                    intValueStr = item.Substring(startIdx, length);
-                    int itemId = int.Parse(intValueStr);
-
-                    if (id < itemId || (isShowingFreeSlots && !Gumps.IsValidIndex(itemId)))
-                    {
-                        listBox.SelectedIndex = i;
-                        break;
-                    }
+                    listBox.SelectedIndex = i;
+                    return;
                 }
+            }
 
-                // If no empty ID was found and isShowingFreeSlots is enabled,
-                // a new ID is added to the end of the ListBox
-                if (listBox.SelectedIndex == -1 && isShowingFreeSlots)
-                {
-                    int newId = Gumps.GetCount();
-                    listBox.Items.Add($"ID: {newId} (0x{newId:X})");
-                    listBox.SelectedIndex = listBox.Items.Count - 1;
-                }
+            // Kein freier Slot gefunden – am Ende einen neuen Eintrag anfügen (nur bei aktiver Freiansicht)
+            if (isShowingFreeSlots)
+            {
+                int newId = Gumps.GetCount();
+                listBox.Items.Add($"ID: {newId} (0x{newId:X})");
+                listBox.SelectedIndex = listBox.Items.Count - 1;
             }
         }
         #endregion
 
+        // =======================================================================
+        //  ID-NAMEN VERWALTEN (XML)
+        // =======================================================================
         #region Add Names ID Gumps XML
+        /// <summary>
+        /// Weist einer Gump-ID einen Namen zu und speichert ihn in der XML-Datei.
+        /// Kann auch programmatisch aufgerufen werden.
+        /// </summary>
         public void SetIDName(int id, string name)
         {
-            // Add or update the name to the ID in the dictionary
             idNames[id] = name;
-
-            // Save the changes to the XML file
-            XDocument doc = new XDocument(
-                new XElement("IDNames",
-                    idNames.Select(kv => new XElement("ID", new XAttribute("value", kv.Key), new XAttribute("name", kv.Value)))
-                )
-            );
-            doc.Save(xmlFilePath);
+            SaveIdNamesXml();
         }
+
+        /// <summary>
+        /// Öffnet einen kleinen Dialog zum Bearbeiten des Namens für die gewählte ID.
+        /// </summary>
         private void addIDNamesToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (listBox.SelectedIndex != -1)
+            int id = GetSelectedId();
+            if (id < 0) return;
+
+            using (var form = new Form
             {
-                string selectedItem = listBox.Items[listBox.SelectedIndex].ToString();
-                int startIdx = selectedItem.IndexOf("ID: ") + 4;
-                int length = selectedItem.IndexOf(" (") - startIdx;
-                string intValueStr = selectedItem.Substring(startIdx, length);
-                int id = int.Parse(intValueStr);
+                Text = "Edit ID Name",
+                Width = 320,
+                Height = 140,
+                FormBorderStyle = FormBorderStyle.FixedDialog,
+                StartPosition = FormStartPosition.CenterParent
+            })
+            {
+                var idTextBox = new TextBox { Text = id.ToString(), Location = new Point(10, 10), Width = 280 };
+                var nameTextBox = new TextBox { Text = idNames.ContainsKey(id) ? idNames[id] : "", Location = new Point(10, 40), Width = 230 };
+                var okButton = new Button { Text = "OK", Location = new Point(10, 70), Width = 60 };
+                var delButton = new Button { Text = "Delete", Location = new Point(80, 70), Width = 60 };
 
-                using (var form = new System.Windows.Forms.Form())
+                delButton.Click += (s, ev) => nameTextBox.Text = "";
+
+                okButton.Click += (s, ev) =>
                 {
-                    var idTextBox = new System.Windows.Forms.TextBox { Text = id.ToString(), Location = new Point(10, 10) };
-                    var nameTextBox = new System.Windows.Forms.TextBox { Text = idNames.ContainsKey(id) ? idNames[id] : "", Location = new Point(10, 40) };
-                    var okButton = new System.Windows.Forms.Button { Text = "OK", Location = new Point(10, 70) };
-                    var deleteButton = new System.Windows.Forms.Button { Text = "Delete", Location = new Point(nameTextBox.Location.X + nameTextBox.Width + 4, nameTextBox.Location.Y) };
-
-                    deleteButton.Click += (s, e) =>
+                    if (int.TryParse(idTextBox.Text, out int newId))
                     {
-                        // Empty the text of the nameTextBox
-                        nameTextBox.Text = "";
-                    };
-
-                    okButton.Click += (s, e) =>
-                    {
-                        // Update the name of the ID in idNames and save the changes in the XML file
-                        idNames[int.Parse(idTextBox.Text)] = nameTextBox.Text;
-
-                        XDocument doc = new XDocument(
-                            new XElement("IDNames",
-                                idNames.Select(kv => new XElement("ID", new XAttribute("value", kv.Key), new XAttribute("name", kv.Value)))
-                            )
-                        );
-                        doc.Save(xmlFilePath);
-
-                        form.DialogResult = DialogResult.OK;
-                    };
-
-                    form.Controls.Add(idTextBox);
-                    form.Controls.Add(nameTextBox);
-                    form.Controls.Add(okButton);
-                    form.Controls.Add(deleteButton);
-
-                    if (form.ShowDialog() == DialogResult.OK)
-                    {
-                        // Update the ListBox
-                        listBox.Items.Clear();
-                        PopulateListBox();
+                        idNames[newId] = nameTextBox.Text;
+                        SaveIdNamesXml();
                     }
-                }
+                    form.DialogResult = DialogResult.OK;
+                };
+
+                form.Controls.AddRange(new Control[] { idTextBox, nameTextBox, okButton, delButton });
+                form.AcceptButton = okButton;
+
+                if (form.ShowDialog() == DialogResult.OK)
+                    PopulateListBox(isShowingFreeSlots);
             }
-            // Update the labels
+
             UpdateTotalIDsLabel();
             UpdateFreeIDsLabel();
         }
         #endregion
 
+        // =======================================================================
+        //  SPEICHERN (MUL-Dateien)
+        // =======================================================================
         #region OnClickSave
+        /// <summary>
+        /// Speichert alle Gump-Änderungen in die MUL/UOP-Ausgabedateien.
+        /// Fragt vorher nach Bestätigung.
+        /// </summary>
         private void OnClickSave(object sender, EventArgs e)
         {
-            DialogResult result = MessageBox.Show("Are you sure? Will take a while", "Save", MessageBoxButtons.YesNo,
-                MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2);
-            if (result != DialogResult.Yes)
-            {
-                return;
-            }
+            DialogResult result = MessageBox.Show(
+                "Are you sure? Will take a while", "Save",
+                MessageBoxButtons.YesNo, MessageBoxIcon.Warning,
+                MessageBoxDefaultButton.Button2);
+
+            if (result != DialogResult.Yes) return;
 
             Cursor.Current = Cursors.WaitCursor;
             Gumps.Save(Options.OutputPath);
             Cursor.Current = Cursors.Default;
-            MessageBox.Show($"Saved to {Options.OutputPath}", "Save", MessageBoxButtons.OK, MessageBoxIcon.Information,
-                MessageBoxDefaultButton.Button1);
+
             Options.ChangedUltimaClass["Gumps"] = false;
+            UpdateFormTitle();
+
+            MessageBox.Show($"Saved to {Options.OutputPath}", "Save",
+                MessageBoxButtons.OK, MessageBoxIcon.Information,
+                MessageBoxDefaultButton.Button1);
         }
         #endregion
 
+        // =======================================================================
+        //  LABEL-UPDATES (benannte IDs / freie IDs)
+        // =======================================================================
         #region ID Name Counter
+        /// <summary>
+        /// Aktualisiert das Label mit der Anzahl benannter IDs.
+        /// </summary>
         private void UpdateTotalIDsLabel()
         {
-            // Count the number of occupied IDs
-            int totalIDs = idNames.Count;
-
-            // Update the label
-            IDLabelinortotal.Text = $"Named ID Total: {totalIDs}";
+            IDLabelinortotal.Text = $"Named ID Total: {idNames.Count}";
         }
 
+        /// <summary>
+        /// Aktualisiert das Label mit der Anzahl freier (unbenannter) IDs.
+        /// </summary>
         private void UpdateFreeIDsLabel()
         {
-            // Calculate the number of free IDs
             int freeIDs = Gumps.GetCount() - idNames.Count;
-
-            // Update the label
             LabelFreeIDs.Text = $"Total Free IDs: {freeIDs}";
         }
         #endregion
 
-        #region Paint
-
-        // Add state variable
+        // =======================================================================
+        //  PAINT – Zustandsvariablen
+        // =======================================================================
+        #region Paint State Variables
         private bool isDrawing = false;
+        private bool isEraserActive = false;   // NEU: Radierer-Modus
+        private bool isEyedropper = false;   // NEU: Farbpipette
         private Color drawingColor = Color.Black;
         private Stack<Bitmap> previousImages = new Stack<Bitmap>();
-        private Bitmap originalImage; // Original image
-        private Bitmap originalImageDraw; // Drawing Image
-        private Bitmap currentImage;
-        // Create a list to store the lines
-        List<List<Point>> lines = new List<List<Point>>();
-        // Create a temporary list to save the current line
-        List<Point> currentLine;
-        // Create a second batch for the redo function
-        Stack<Bitmap> redoImages = new Stack<Bitmap>();
-
-
-        private bool removeColor = false; // Removes colors
+        private Stack<Bitmap> redoImages = new Stack<Bitmap>();
+        private Bitmap originalImage;              // Ursprüngliches Bild (unveränderlich)
+        private Bitmap baseImage;                  // NEU: Referenz-Bild für Helligkeit/Kontrast
+        private Bitmap originalImageDraw;          // Aktuelles Arbeitsbild
+        private Bitmap currentImage;               // Temporäres Vorschau-Bild (Trackbars)
+        private List<List<Point>> lines = new List<List<Point>>();
+        private List<Point> currentLine;
+        private bool removeColor = false;
         private bool isSelecting = false;
-        private Rectangle selectionRectangle = new Rectangle(); //selection rectangle
-        private System.Drawing.Image loadedImage; //Extra for inserting rectangle characters 
+        private Rectangle selectionRectangle = new Rectangle();
+        private System.Drawing.Image loadedImage;
+        private bool isSelectingCircle = false;
+        private Rectangle selectionCircle = new Rectangle();
+        private float zoomFactor = 1.0f;   // NEU: Zoom
+        #endregion
 
-        private bool isSelectingCircle = false; // Add state variable
-        private Rectangle selectionCircle = new Rectangle(); // selection circle
-
+        // =======================================================================
+        //  BILD IN PAINT-BOX LADEN
+        // =======================================================================
         #region LoadImage
+        /// <summary>
+        /// Lädt ein Bild in die Paint-PictureBox und initialisiert alle Arbeitskopien.
+        /// Setzt Pinselgröße zurück auf 2.
+        /// </summary>
         private void LoadImageIntopictureBoxDraw(System.Drawing.Image image)
         {
             tbPinselSize.Text = "2";
 
-            // Check if the image is not null
-            if (image != null)
-            {
-                // Save the original image and create a modifiable copy
-                originalImage = new Bitmap(image);
-                originalImageDraw = new Bitmap(originalImage);
-
-                // Assign the resizable copy to the pictureBoxDraw
-                pictureBoxDraw.Image = originalImageDraw;
-            }
-            else
+            if (image == null)
             {
                 MessageBox.Show("The image could not be loaded.");
+                return;
             }
+
+            originalImage?.Dispose();
+            originalImage = new Bitmap(image);
+
+            baseImage?.Dispose();
+            baseImage = new Bitmap(originalImage);  // NEU: separate Referenz
+
+            originalImageDraw?.Dispose();
+            originalImageDraw = new Bitmap(originalImage);
+
+            pictureBoxDraw.Image = originalImageDraw;
+
+            // Undo/Redo leeren beim Neuladen
+            previousImages.Clear();
+            redoImages.Clear();
         }
         #endregion
 
+        // =======================================================================
+        //  MAUS – BEWEGEN (Zeichnen / Rechteck / Kreis / Eyedropper)
+        // =======================================================================
         #region MouseMove
+        /// <summary>
+        /// Verarbeitet Mausbewegungen: Zeichnen/Radieren im Drawing-Modus,
+        /// Aktualisieren der Auswahl-Rechtecke/-Kreise.
+        /// Zeigt außerdem die aktuelle Pixelfarbe in der Statusleiste.
+        /// </summary>
         private void pictureBoxDraw_MouseMove(object sender, MouseEventArgs e)
         {
-            // Only draw when the left mouse button is pressed and the drawing function is activated
-            if (e.Button == MouseButtons.Left && isDrawing)
+            // -- Pixel-Koordinaten auf Bild abbilden --
+            if (originalImageDraw != null)
             {
-                // Make sure the image is not null before drawing on it
-                if (originalImageDraw != null)
+                int offX = (pictureBoxDraw.Width - (int)(originalImageDraw.Width * zoomFactor)) / 2;
+                int offY = (pictureBoxDraw.Height - (int)(originalImageDraw.Height * zoomFactor)) / 2;
+                int imgX = (int)((e.X - offX) / zoomFactor);
+                int imgY = (int)((e.Y - offY) / zoomFactor);
+
+                // Statusleiste mit Mausposition und Pixelfarbe aktualisieren (NEU)
+                if (imgX >= 0 && imgX < originalImageDraw.Width &&
+                    imgY >= 0 && imgY < originalImageDraw.Height)
                 {
-                    // Get the brush size from the TextBox
-                    float pinselSize = float.Parse(tbPinselSize.Text);
+                    Color px = originalImageDraw.GetPixel(imgX, imgY);
+                    IDLabel.Text = $"X:{imgX} Y:{imgY}  #{px.R:X2}{px.G:X2}{px.B:X2}";
+                }
 
-                    // Only draw if the brush size is greater than 0
-                    if (pinselSize > 0)
+                // -- Zeichnen / Radieren --
+                if (e.Button == MouseButtons.Left && isDrawing && currentLine != null)
+                {
+                    if (imgX >= 0 && imgX < originalImageDraw.Width &&
+                        imgY >= 0 && imgY < originalImageDraw.Height)
                     {
+                        float pinselSize;
+                        if (!float.TryParse(tbPinselSize.Text, out pinselSize) || pinselSize <= 0)
+                            pinselSize = 2;
+
+                        Color activeColor = isEraserActive ? Color.Transparent : drawingColor;
+
                         using (Graphics g = Graphics.FromImage(originalImageDraw))
-                        {
-                            // Calculate the offset by centering the image
-                            int offsetX = (pictureBoxDraw.Width - originalImageDraw.Width) / 2;
-                            int offsetY = (pictureBoxDraw.Height - originalImageDraw.Height) / 2;
+                            g.FillEllipse(new SolidBrush(activeColor), imgX, imgY, pinselSize, pinselSize);
 
-                            // Calculate the correct coordinates on the image
-                            int imageX = e.X - offsetX;
-                            int imageY = e.Y - offsetY;
-
-                            // Make sure the coordinates are within the boundaries of the image
-                            if (imageX >= 0 && imageX < originalImageDraw.Width && imageY >= 0 && imageY < originalImageDraw.Height)
-                            {
-                                // Draw on the Graphics object with the specified brush size
-                                g.FillEllipse(new SolidBrush(drawingColor), imageX, imageY, pinselSize, pinselSize);
-
-                                // Add the current point to the current line
-                                currentLine.Add(new Point(imageX, imageY));
-
-                                // Update the pictureBoxDraw control
-                                pictureBoxDraw.Invalidate();
-                            }
-                        }
+                        currentLine.Add(new Point(imgX, imgY));
+                        pictureBoxDraw.Invalidate();
                     }
                 }
             }
+
+            // -- Rechteck-Auswahl aktualisieren --
             if (e.Button == MouseButtons.Left && checkBoxRectangle.Checked)
             {
-                // Update the size of the rectangle selection box
                 selectionRectangle.Width = e.X - selectionRectangle.X;
                 selectionRectangle.Height = e.Y - selectionRectangle.Y;
-
-                // Draw the selection box
                 pictureBoxDraw.Invalidate();
             }
+
+            // -- Kreis-Auswahl aktualisieren --
             if (e.Button == MouseButtons.Left && isSelectingCircle)
             {
-                // Update the size of the Circle selection box
                 selectionCircle.Width = e.X - selectionCircle.X;
                 selectionCircle.Height = e.Y - selectionCircle.Y;
-
-                // Draw the selection box
                 pictureBoxDraw.Invalidate();
             }
         }
         #endregion
 
+        // =======================================================================
+        //  MAUS – DRÜCKEN
+        // =======================================================================
         #region MouseDown
+        /// <summary>
+        /// Initialisiert Auswahl-Rechteck/-Kreis beim Maustaste-Drücken.
+        /// Im Zeichenmodus: aktuellen Zustand auf Undo-Stack schieben.
+        /// Im Eyedropper-Modus: Farbe aufnehmen.
+        /// </summary>
         private void pictureBoxDraw_MouseDown(object sender, MouseEventArgs e)
         {
+            if (e.Button == MouseButtons.Left && isEyedropper && originalImageDraw != null)
+            {
+                // NEU: Farbpipette – Pixelfarbe aufnehmen
+                int offX = (pictureBoxDraw.Width - (int)(originalImageDraw.Width * zoomFactor)) / 2;
+                int offY = (pictureBoxDraw.Height - (int)(originalImageDraw.Height * zoomFactor)) / 2;
+                int imgX = (int)((e.X - offX) / zoomFactor);
+                int imgY = (int)((e.Y - offY) / zoomFactor);
+
+                if (imgX >= 0 && imgX < originalImageDraw.Width &&
+                    imgY >= 0 && imgY < originalImageDraw.Height)
+                {
+                    Color picked = originalImageDraw.GetPixel(imgX, imgY);
+                    drawingColor = picked;
+                    TextBoxColor.Text = $"{picked.R:X2}{picked.G:X2}{picked.B:X2}";
+                }
+                return;
+            }
+
             if (e.Button == MouseButtons.Left && checkBoxRectangle.Checked)
             {
-                // Initialize the selection field
                 selectionRectangle = new Rectangle(e.X, e.Y, 0, 0);
                 isSelecting = true;
             }
+
             if (e.Button == MouseButtons.Left && isSelectingCircle)
             {
-                // Initialize the selection field
                 selectionCircle = new Rectangle(e.X, e.Y, 0, 0);
                 isSelecting = true;
             }
+
             if (e.Button == MouseButtons.Left && isDrawing)
             {
-                // Add the current state of the image to the stack before you start drawing
-                previousImages.Push((Bitmap)originalImageDraw.Clone());
-
-                // Initialize the current line
+                PushUndo();
                 currentLine = new List<Point>();
             }
         }
         #endregion
 
+        // =======================================================================
+        //  MAUS – LOSLASSEN
+        // =======================================================================
         #region MouseUp
+        /// <summary>
+        /// Schließt den aktuellen Strich ab und schiebt den Endzustand auf den Undo-Stack.
+        /// Beendet die Auswahl-Geste bei Rechteck/Kreis.
+        /// </summary>
         private void pictureBoxDraw_MouseUp(object sender, MouseEventArgs e)
         {
-            if (e.Button == MouseButtons.Left && isDrawing)
+            if (e.Button == MouseButtons.Left && isDrawing && currentLine != null)
             {
-                // Draw the entire line on the picture
+                float pinselSize;
+                if (!float.TryParse(tbPinselSize.Text, out pinselSize) || pinselSize <= 0)
+                    pinselSize = 2;
+
+                Color activeColor = isEraserActive ? Color.Transparent : drawingColor;
+
                 using (Graphics g = Graphics.FromImage(originalImageDraw))
-                {
-                    float pinselSize = float.Parse(tbPinselSize.Text);
-                    SolidBrush brush = new SolidBrush(drawingColor);
-
+                using (SolidBrush brush = new SolidBrush(activeColor))
                     foreach (Point p in currentLine)
-                    {
                         g.FillEllipse(brush, p.X, p.Y, pinselSize, pinselSize);
-                    }
 
-                    pictureBoxDraw.Invalidate();
-                }
-
-                // Add the changed state of the image to the stack
                 previousImages.Push((Bitmap)originalImageDraw.Clone());
-
-                // Empty the current line
                 currentLine.Clear();
+                pictureBoxDraw.Invalidate();
             }
+
             if (e.Button == MouseButtons.Left && isSelecting)
-            {
-                // Complete the selection
                 isSelecting = false;
-            }
         }
         #endregion
 
+        // =======================================================================
+        //  MAUS – SCROLL (Zoom)
+        // =======================================================================
+        #region MouseWheel Zoom
+        /// <summary>
+        /// NEU: Vergrößert / verkleinert die Zeichenfläche per Mausrad (Faktor 0.1–5.0).
+        /// </summary>
+        private void pictureBoxDraw_MouseWheel(object sender, MouseEventArgs e)
+        {
+            zoomFactor += e.Delta > 0 ? 0.1f : -0.1f;
+            zoomFactor = Math.Max(0.1f, Math.Min(5.0f, zoomFactor));
+
+            if (originalImageDraw != null)
+            {
+                int zoomedW = (int)(originalImageDraw.Width * zoomFactor);
+                int zoomedH = (int)(originalImageDraw.Height * zoomFactor);
+                pictureBoxDraw.Size = new Size(
+                    Math.Max(zoomedW + 20, panel2.Width),
+                    Math.Max(zoomedH + 20, panel2.Height));
+            }
+
+            pictureBoxDraw.Invalidate();
+        }
+        #endregion
+
+        // =======================================================================
+        //  FARBE – TEXTBOX
+        // =======================================================================
         #region Textbox Color Change
+        /// <summary>
+        /// Aktualisiert die Zeichenfarbe, wenn ein neuer Hex-Farbcode eingegeben wird.
+        /// </summary>
         private void TextBoxColor_TextChanged(object sender, EventArgs e)
         {
-            // Change character color when text is changed in TextBoxColor
             string colorText = TextBoxColor.Text.TrimStart('#');
 
-            // Check that the text is a valid hexadecimal value
-            if (int.TryParse("FF" + colorText, System.Globalization.NumberStyles.HexNumber, null, out int argb))
+            if (colorText.Length == 6 &&
+                int.TryParse("FF" + colorText, NumberStyles.HexNumber, null, out int argb))
             {
                 drawingColor = Color.FromArgb(argb);
             }
-            else
-            {
-                MessageBox.Show("Please enter a valid color code.");
-            }
         }
         #endregion
 
+        // =======================================================================
+        //  UNDO / REDO
+        // =======================================================================
         #region Undo
+        /// <summary>
+        /// Macht den letzten Zeichenschritt rückgängig (bis zu zwei Schritte auf einmal,
+        /// da MouseDown und MouseUp beide einen Zustand pushen).
+        /// </summary>
         private void undoToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            // Perform the "Undo" action twice
             for (int i = 0; i < 2; i++)
             {
-                // Restore the image to its previous state if the stack is not empty
                 if (previousImages.Count > 0)
                 {
-                    // Add the current state to the redo stack
                     redoImages.Push(originalImageDraw);
-
                     originalImageDraw = previousImages.Pop();
                     pictureBoxDraw.Image = originalImageDraw;
                 }
             }
         }
-
         #endregion
 
-        #region Color Renderer
-        private class MyRenderer : ToolStripProfessionalRenderer
+        #region Redo
+        /// <summary>
+        /// Stellt einen rückgängig gemachten Zeichenschritt wieder her.
+        /// </summary>
+        private void redoToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            private GumpsEdit gumpsEdit;
-
-            public MyRenderer(GumpsEdit gumpsEdit)
+            if (redoImages.Count > 0)
             {
-                this.gumpsEdit = gumpsEdit;
-            }
-
-            protected override void OnRenderMenuItemBackground(ToolStripItemRenderEventArgs e)
-            {
-                if (e.Item == gumpsEdit.paintToolStripMenuItem)
-                {
-                    e.Graphics.FillRectangle(Brushes.Green, e.Item.Bounds);
-                }
-                else
-                {
-                    base.OnRenderMenuItemBackground(e);
-                }
+                previousImages.Push(originalImageDraw);
+                originalImageDraw = redoImages.Pop();
+                pictureBoxDraw.Image = originalImageDraw;
             }
         }
         #endregion
 
-        #region Paint
+        // =======================================================================
+        //  MENÜ-RENDERER (grüner Hintergrund wenn Paint aktiv)
+        // =======================================================================
+        #region Color Renderer
+        private class MyRenderer : ToolStripProfessionalRenderer
+        {
+            private GumpsEdit _owner;
+            public MyRenderer(GumpsEdit owner) { _owner = owner; }
+
+            protected override void OnRenderMenuItemBackground(ToolStripItemRenderEventArgs e)
+            {
+                if (e.Item == _owner.paintToolStripMenuItem)
+                    e.Graphics.FillRectangle(Brushes.Green, e.Item.Bounds);
+                else
+                    base.OnRenderMenuItemBackground(e);
+            }
+        }
+        #endregion
+
+        // =======================================================================
+        //  PAINT-MODUS UMSCHALTEN
+        // =======================================================================
+        #region Paint Toggle
+        /// <summary>
+        /// Schaltet den Zeichenmodus ein/aus.
+        /// Beim Einschalten wird das aktuelle Bild in die Zeichenfläche geladen.
+        /// </summary>
         private void paintToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            // Toggle the state
             isDrawing = !isDrawing;
 
-            // Change the background and display a message
             if (isDrawing)
             {
                 contextMenuStripPicturebBox.Renderer = new MyRenderer(this);
-                MessageBox.Show("You can now draw.");
-
-                // Load the image into the pictureBoxDraw
                 LoadImageIntopictureBoxDraw(pictureBoxDraw.Image);
+                MessageBox.Show("Drawing mode enabled. Use mouse wheel to zoom.");
             }
             else
             {
                 contextMenuStripPicturebBox.Renderer = new ToolStripProfessionalRenderer();
-                MessageBox.Show("Drawing is now disabled.");
+                MessageBox.Show("Drawing mode disabled.");
             }
         }
         #endregion
 
-        #region Import Clipbord
+        // =======================================================================
+        //  NEU: RADIERER UMSCHALTEN
+        // =======================================================================
+        #region Eraser Toggle
+        /// <summary>
+        /// NEU: Schaltet den Radierer-Modus um.
+        /// Im Radierer-Modus werden Pixel transparent gezeichnet.
+        /// </summary>
+        private void eraserToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            isEraserActive = !isEraserActive;
+            eraserToolStripMenuItem.Checked = isEraserActive;
+        }
+        #endregion
+
+        // =======================================================================
+        //  NEU: FARBPIPETTE UMSCHALTEN
+        // =======================================================================
+        #region Eyedropper Toggle
+        /// <summary>
+        /// NEU: Schaltet die Farbpipette um.
+        /// Ein Linksklick auf das Bild übernimmt dann die Pixelfarbe als Zeichenfarbe.
+        /// </summary>
+        private void eyedropperToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            isEyedropper = !isEyedropper;
+            eyedropperToolStripMenuItem.Checked = isEyedropper;
+        }
+        #endregion
+
+        // =======================================================================
+        //  BILD AUS ZWISCHENABLAGE IN PAINT-BOX
+        // =======================================================================
+        #region Import Clipboard to PaintBox
+        /// <summary>
+        /// Lädt ein Bild aus der Zwischenablage direkt in die Zeichenfläche
+        /// (ohne es in den Gump-Slot zu schreiben).
+        /// </summary>
         private void importImageToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            // Check if there is an image in the cache
-            if (Clipboard.ContainsImage())
-            {
-                // Get the image from the cache
-                System.Drawing.Image clipboardImage = Clipboard.GetImage();
-
-                // Save the image and create a modifiable copy
-                originalImage = new Bitmap(clipboardImage);
-                originalImageDraw = new Bitmap(originalImage);
-
-                // Load the image into the PictureBoxDraw
-                pictureBoxDraw.Image = originalImageDraw;
-            }
-            else
+            if (!Clipboard.ContainsImage())
             {
                 MessageBox.Show("There is no image in the buffer.");
+                return;
             }
+
+            System.Drawing.Image clipboardImage = Clipboard.GetImage();
+
+            originalImage?.Dispose();
+            originalImage = new Bitmap(clipboardImage);
+
+            baseImage?.Dispose();
+            baseImage = new Bitmap(originalImage);
+
+            originalImageDraw?.Dispose();
+            originalImageDraw = new Bitmap(originalImage);
+
+            pictureBoxDraw.Image = originalImageDraw;
         }
         #endregion
 
+        // =======================================================================
+        //  FARBDIALOG
+        // =======================================================================
         #region Color Dialog
+        /// <summary>
+        /// Öffnet den Windows-Farbdialog und übernimmt die gewählte Farbe
+        /// als Hex-Code in die TextBox.
+        /// </summary>
         private void btColorDialog_Click(object sender, EventArgs e)
         {
-            // Create a new ColorDialog object
-            ColorDialog colorDialog = new ColorDialog();
+            ColorDialog dlg = new ColorDialog { Color = drawingColor };
 
-            // Display the dialog and verify that the user clicked OK
-            if (colorDialog.ShowDialog() == DialogResult.OK)
-            {
-                // Convert the selected color to a hexadecimal value
-                string hexColor = colorDialog.Color.R.ToString("X2") + colorDialog.Color.G.ToString("X2") + colorDialog.Color.B.ToString("X2");
-
-                // Insert the hexadecimal value into the TextBoxColor
-                TextBoxColor.Text = hexColor;
-            }
+            if (dlg.ShowDialog() == DialogResult.OK)
+                TextBoxColor.Text = $"{dlg.Color.R:X2}{dlg.Color.G:X2}{dlg.Color.B:X2}";
         }
         #endregion
 
+        // =======================================================================
+        //  PINSELGRÖSSE – EINGABE-VALIDIERUNG
+        // =======================================================================
+        #region Brush Size
+        /// <summary>
+        /// Erlaubt in der Pinselgröße-TextBox nur Ziffern und Steuertasten.
+        /// </summary>
         private void tbPinselSize_KeyPress(object sender, KeyPressEventArgs e)
         {
-            // Only allow numbers to be entered
             if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar))
-            {
                 e.Handled = true;
-            }
         }
 
-        #region Pinsel Size
+        /// <summary>
+        /// Begrenzt den Pinselgrößen-Wert auf maximal 60.
+        /// </summary>
         private void tbPinselSize_TextChanged(object sender, EventArgs e)
         {
-            // Make sure the value is not greater than 60
             if (int.TryParse(tbPinselSize.Text, out int value))
             {
-                if (value > 60)
-                {
-                    // Change the value in the TextBox to 60
-                    tbPinselSize.Text = "60";
-                }
+                if (value > 60) tbPinselSize.Text = "60";
             }
             else if (tbPinselSize.Text != string.Empty)
             {
-                // If the text is not a valid number and is not empty,
-                // reset it to the default value
                 tbPinselSize.Text = "2";
             }
         }
         #endregion
 
+        // =======================================================================
+        //  TASTENKÜRZEL (Formular)
+        // =======================================================================
         #region GumpsEdit KeyDown
+        /// <summary>
+        /// Strg+Backspace = Undo, Strg+R = Redo (global für das Formular).
+        /// </summary>
         private void GumpsEdit_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.Control && e.KeyCode == Keys.Back)
-            {
                 undoToolStripMenuItem_Click(sender, e);
-            }
-            if (e.Control && e.KeyCode == Keys.R)
-            {
+            else if (e.Control && e.KeyCode == Keys.R)
                 redoToolStripMenuItem_Click(sender, e);
-            }
         }
         #endregion
 
-        #region Copy Image PictureboxDraw Clipbord
+        // =======================================================================
+        //  PAINT-BOX BILD KOPIEREN
+        // =======================================================================
+        #region Copy PictureBoxDraw to Clipboard
+        /// <summary>
+        /// Kopiert das aktuelle Bild der Zeichenfläche in die Zwischenablage.
+        /// </summary>
         private void CopyImagePictureBoxDrawToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (pictureBoxDraw.Image != null)
-            {
                 Clipboard.SetImage(pictureBoxDraw.Image);
-            }
             else
-            {
                 MessageBox.Show("There is no image to copy.");
-            }
         }
         #endregion
 
+        // =======================================================================
+        //  GUMP IN PAINT-BOX SENDEN
+        // =======================================================================
         #region Send Image to Paint Box
+        /// <summary>
+        /// Sendet das gewählte Gump (mit #D3D3D3-zu-Schwarz-Konvertierung)
+        /// in die Zeichenfläche des Paint-Tabs.
+        /// </summary>
         private void sendImageToPaintBoxToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (listBox.SelectedIndex != -1)
+            int i = GetSelectedId();
+            if (i < 0) { MessageBox.Show("No image to copy!"); return; }
+
+            if (!Gumps.IsValidIndex(i)) { MessageBox.Show("No image to copy!"); return; }
+
+            Bitmap src = Gumps.GetGump(i);
+            if (src == null) { MessageBox.Show("No image to copy!"); return; }
+
+            Bitmap bmp24 = ConvertGumpForClipboard(src);
+
+            baseImage?.Dispose();
+            baseImage = new Bitmap(bmp24);
+
+            originalImageDraw?.Dispose();
+            originalImageDraw = bmp24;
+
+            pictureBoxDraw.Image = originalImageDraw;
+
+            previousImages.Clear();
+            redoImages.Clear();
+        }
+        #endregion
+
+        // =======================================================================
+        //  BILD DREHEN
+        // =======================================================================
+        #region Rotate Image
+        /// <summary>
+        /// Dreht das Bild in der Zeichenfläche um 90° gegen den Uhrzeigersinn.
+        /// </summary>
+        private void rotateImageToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (pictureBoxDraw.Image == null) return;
+
+            PushUndo();
+            originalImageDraw.RotateFlip(RotateFlipType.Rotate270FlipNone);
+            pictureBoxDraw.Invalidate();
+        }
+        #endregion
+
+        // =======================================================================
+        //  NEU: BILD HORIZONTAL SPIEGELN
+        // =======================================================================
+        #region Flip Horizontal
+        /// <summary>
+        /// NEU: Spiegelt das Bild in der Zeichenfläche horizontal.
+        /// </summary>
+        private void flipHorizontalToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (originalImageDraw == null) return;
+
+            PushUndo();
+            originalImageDraw.RotateFlip(RotateFlipType.RotateNoneFlipX);
+            pictureBoxDraw.Invalidate();
+        }
+        #endregion
+
+        // =======================================================================
+        //  NEU: BILD VERTIKAL SPIEGELN
+        // =======================================================================
+        #region Flip Vertical
+        /// <summary>
+        /// NEU: Spiegelt das Bild in der Zeichenfläche vertikal.
+        /// </summary>
+        private void flipVerticalToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (originalImageDraw == null) return;
+
+            PushUndo();
+            originalImageDraw.RotateFlip(RotateFlipType.RotateNoneFlipY);
+            pictureBoxDraw.Invalidate();
+        }
+        #endregion
+
+        // =======================================================================
+        //  NEU: BATCH-EXPORT (alle Gumps als PNG)
+        // =======================================================================
+        #region Batch Export
+        /// <summary>
+        /// NEU: Exportiert alle gültigen Gumps als PNG-Dateien in einen gewählten Ordner.
+        /// Dateiname: gump_XXXXX.png
+        /// </summary>
+        private void exportAllToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            using (FolderBrowserDialog fbd = new FolderBrowserDialog
+            { Description = "Select export folder" })
             {
-                string selectedItem = listBox.Items[listBox.SelectedIndex].ToString();
-                int startIdx = selectedItem.IndexOf("ID: ") + 4; // Starting index of the integer value
-                int length = selectedItem.IndexOf(" (") - startIdx; // Length of the integer value
-                string intValueStr = selectedItem.Substring(startIdx, length); // Extract the integer value
-                int i = int.Parse(intValueStr);
+                if (fbd.ShowDialog() != DialogResult.OK) return;
 
-                if (Gumps.IsValidIndex(i))
+                Cursor.Current = Cursors.WaitCursor;
+                int count = 0;
+
+                for (int i = 0; i < Gumps.GetCount(); i++)
                 {
-                    Bitmap originalBmp = Gumps.GetGump(i);
-                    if (originalBmp != null)
-                    {
-                        // Make a copy of the original image
-                        Bitmap bmp = new Bitmap(originalBmp);
+                    if (!Gumps.IsValidIndex(i)) continue;
+                    Bitmap bmp = Gumps.GetGump(i);
+                    if (bmp == null) continue;
 
-                        // Color change function built in
-                        for (int y = 0; y < bmp.Height; y++)
-                        {
-                            for (int x = 0; x < bmp.Width; x++)
-                            {
-                                Color pixelColor = bmp.GetPixel(x, y);
-                                if (pixelColor.R == 211 && pixelColor.G == 211 && pixelColor.B == 211) // Check if the color of the pixel is #D3D3D3
-                                {
-                                    bmp.SetPixel(x, y, Color.Black); // Change the color of the pixel to black
-                                }
-                            }
-                        }
-
-                        // Convert the image to a 24-bit color depth
-                        Bitmap bmp24bit = new Bitmap(bmp.Width, bmp.Height, System.Drawing.Imaging.PixelFormat.Format24bppRgb);
-                        using (Graphics g = Graphics.FromImage(bmp24bit))
-                        {
-                            g.DrawImage(bmp, new Rectangle(0, 0, bmp24bit.Width, bmp24bit.Height));
-                        }
-
-                        // Save the image and create a modifiable copy
-                        originalImageDraw = bmp24bit;
-
-                        // Load the image into the pictureBoxDraw
-                        pictureBoxDraw.Image = originalImageDraw;
-                    }
-                    else
-                    {
-                        MessageBox.Show("No image to copy!");
-                    }
+                    string path = Path.Combine(fbd.SelectedPath, $"gump_{i:D5}.png");
+                    bmp.Save(path, ImageFormat.Png);
+                    count++;
                 }
-                else
-                {
-                    MessageBox.Show("No image to copy!");
-                }
-            }
-            else
-            {
-                MessageBox.Show("No image to copy!");
+
+                Cursor.Current = Cursors.Default;
+                MessageBox.Show($"Exported {count} gumps to:\n{fbd.SelectedPath}",
+                    "Export complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         }
         #endregion
 
-        private void redoToolStripMenuItem_Click(object sender, EventArgs e)
+        // =======================================================================
+        //  NEU: BATCH-IMPORT (Ordner → Gumps)
+        // =======================================================================
+        #region Batch Import
+        /// <summary>
+        /// NEU: Importiert alle BMP/PNG-Dateien aus einem Ordner in aufeinanderfolgende
+        /// Gump-Slots, beginnend bei der aktuell gewählten ID.
+        /// </summary>
+        private void importFolderToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            // Advance the image to the next state if the redo stack is not empty
-            if (redoImages.Count > 0)
+            int startId = GetSelectedId();
+            if (startId < 0) { MessageBox.Show("Please select a start ID first."); return; }
+
+            using (FolderBrowserDialog fbd = new FolderBrowserDialog
+            { Description = "Select folder with images (BMP/PNG)" })
             {
-                // Add the current state to the undo stack
-                previousImages.Push(originalImageDraw);
+                if (fbd.ShowDialog() != DialogResult.OK) return;
 
-                // Advance the image to the next state
-                originalImageDraw = redoImages.Pop();
-                pictureBoxDraw.Image = originalImageDraw;
+                var files = Directory.GetFiles(fbd.SelectedPath, "*.bmp")
+                            .Concat(Directory.GetFiles(fbd.SelectedPath, "*.png"))
+                            .OrderBy(f => f)
+                            .ToList();
+
+                if (files.Count == 0)
+                {
+                    MessageBox.Show("No BMP/PNG files found in that folder.");
+                    return;
+                }
+
+                Cursor.Current = Cursors.WaitCursor;
+                int id = startId;
+
+                foreach (string file in files)
+                {
+                    if (id >= Gumps.GetCount()) break;
+                    using (var tmp = new Bitmap(file))
+                    {
+                        Gumps.ReplaceGump(id, new Bitmap(tmp));
+                        ControlEvents.FireGumpChangeEvent(this, id);
+                    }
+                    id++;
+                }
+
+                Cursor.Current = Cursors.Default;
+
+                Options.ChangedUltimaClass["Gumps"] = true;
+                UpdateFormTitle();
+                PopulateListBox(isShowingFreeSlots);
+
+                MessageBox.Show($"Imported {id - startId} images starting at ID {startId}.",
+                    "Import complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
+
+            UpdateTotalIDsLabel();
+            UpdateFreeIDsLabel();
         }
+        #endregion
 
-        private void rotateImageToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            // Check if an image exists in the pictureBoxDraw
-            if (pictureBoxDraw.Image != null)
-            {
-                // Rotate the image 90 degrees counterclockwise
-                pictureBoxDraw.Image.RotateFlip(RotateFlipType.Rotate270FlipNone);
-
-                // Update the pictureBoxDraw control
-                pictureBoxDraw.Invalidate();
-            }
-        }
-
-        #region trackBarBrightness
-
-        // Add state variable
+        // =======================================================================
+        //  HELLIGKEIT (TrackBar)
+        // =======================================================================
+        #region Brightness
         private bool ignoreColors = false;
 
+        /// <summary>
+        /// Passt die Helligkeit des Bildes per ColorMatrix an.
+        /// Wenn "Ignore color" aktiv ist, werden Schwarz/Weiß nicht verändert.
+        /// Arbeitet immer auf baseImage, um Qualitätsverlust durch Mehrfach-Anwendung zu vermeiden.
+        /// </summary>
         private void trackBarBrightness_Scroll(object sender, EventArgs e)
         {
-            // Update the label with the current value of the TrackBar
+            if (baseImage == null) return;
+
             labelBrightnessValue.Text = trackBarBrightness.Value.ToString();
 
-            // Create a temporary copy of the original image
-            Bitmap tempBmp = new Bitmap(originalImageDraw);
-
-            // Create a ColorMatrix and change the brightness value
-            float brightness = trackBarBrightness.Value * 0.01f; // Scale the value to a range of -0.3 to 0.3
-            float[][] matrixItems = {
-        new float[] {1, 0, 0, 0, 0},
-        new float[] {0, 1, 0, 0, 0},
-        new float[] {0, 0, 1, 0, 0},
-        new float[] {0, 0, 0, 1, 0},
-        new float[] {brightness, brightness, brightness, 1, 1}
-    };
-            ColorMatrix colorMatrix = new ColorMatrix(matrixItems);
-
-            // Create an ImageAttributes object and set the ColorMatrix
-            ImageAttributes imageAttr = new ImageAttributes();
-            imageAttr.SetColorMatrix(colorMatrix);
-
-            // Draw the image with the new ImageAttributes
-            using (Graphics g = Graphics.FromImage(tempBmp))
+            float brightness = trackBarBrightness.Value * 0.01f;
+            float[][] matrix =
             {
-                if (checkBoxBrightness.Checked)
-                {
-                    for (int y = 0; y < originalImageDraw.Height; y++)
-                    {
-                        for (int x = 0; x < originalImageDraw.Width; x++)
-                        {
-                            Color pixelColor = originalImageDraw.GetPixel(x, y);
-                            if (pixelColor.ToArgb() != Color.White.ToArgb() && pixelColor.ToArgb() != Color.Black.ToArgb())
-                            {
-                                g.DrawImage(originalImageDraw,
-                                    new Rectangle(x, y, 1, 1), // Target rectangle
-                                    x, y, 1, 1,
-                                    GraphicsUnit.Pixel,
-                                    imageAttr);
-                            }
-                        }
-                    }
-                }
-                else
-                {
-                    g.DrawImage(originalImageDraw,
-                        new Rectangle(0, 0, originalImageDraw.Width, originalImageDraw.Height), // Target rectangle
-                        0, 0, originalImageDraw.Width, originalImageDraw.Height,
-                        GraphicsUnit.Pixel,
-                        imageAttr);
-                }
-            }
+                new float[] { 1, 0, 0, 0, 0 },
+                new float[] { 0, 1, 0, 0, 0 },
+                new float[] { 0, 0, 1, 0, 0 },
+                new float[] { 0, 0, 0, 1, 0 },
+                new float[] { brightness, brightness, brightness, 1, 1 }
+            };
 
-            // Put the modified image into the PictureBoxDraw
-            if (currentImage != null)
-            {
-                currentImage.Dispose();
-            }
-            currentImage = tempBmp;
+            Bitmap result = ApplyColorMatrix(baseImage, matrix, ignoreColors);
+
+            currentImage?.Dispose();
+            currentImage = result;
             pictureBoxDraw.Image = currentImage;
         }
 
-
-        // Event handler for the CheckBox
+        /// <summary>
+        /// Steuert, ob die Helligkeitsanpassung Schwarz/Weiß-Pixel auslässt.
+        /// </summary>
         private void checkBoxBrightness_CheckedChanged(object sender, EventArgs e)
         {
             ignoreColors = checkBoxBrightness.Checked;
         }
         #endregion
 
-        #region ContrastColors
-        // Add state variable
+        // =======================================================================
+        //  KONTRAST (TrackBar)
+        // =======================================================================
+        #region Contrast
         private bool ignoreContrastColors = false;
 
+        /// <summary>
+        /// Passt den Kontrast des Bildes per ColorMatrix an.
+        /// Wenn "Ignore color" aktiv ist, werden Schwarz/Weiß-Pixel nicht verändert.
+        /// Arbeitet immer auf baseImage.
+        /// </summary>
         private void trackBarContrast_Scroll(object sender, EventArgs e)
         {
-            // Update the label with the current value of the TrackBar
-            labelContrastValue.Text = trackBarContrast.Value.ToString();
+            if (baseImage == null) return;
 
-            // Create a temporary copy of the original image
-            Bitmap tempBmp = new Bitmap(originalImageDraw);
+            labelContrastValue.Text = trackBarContrast.Value.ToString();
 
             if (trackBarContrast.Value == 0)
             {
-                // Reset the image to the original image
-                pictureBoxDraw.Image = new Bitmap(originalImageDraw);
+                pictureBoxDraw.Image = new Bitmap(baseImage);
                 return;
             }
 
-            // Create a ColorMatrix and change the contrast value
-            float contrast = 1 + trackBarContrast.Value * 0.02f; // Scale the value to a range of 1 to 1.6
+            float contrast = 1 + trackBarContrast.Value * 0.02f;
             float translate = 0.5f * (1.0f - contrast);
-            float[][] matrixItems = {
-        new float[] {contrast, 0, 0, 0, 0},
-        new float[] {0, contrast, 0, 0, 0},
-        new float[] {0, 0, contrast, 0, 0},
-        new float[] {0, 0, 0, 1, 0},
-        new float[] {translate, translate, translate, 1, 1}
-    };
-            ColorMatrix colorMatrix = new ColorMatrix(matrixItems);
-
-            // Create an ImageAttributes object and set the ColorMatrix
-            ImageAttributes imageAttr = new ImageAttributes();
-            imageAttr.SetColorMatrix(colorMatrix);
-
-            // Draw the image with the new ImageAttributes
-            using (Graphics g = Graphics.FromImage(tempBmp))
+            float[][] matrix =
             {
-                if (checkBoxContrast.Checked)
-                {
-                    for (int y = 0; y < originalImageDraw.Height; y++)
-                    {
-                        for (int x = 0; x < originalImageDraw.Width; x++)
-                        {
-                            Color pixelColor = originalImageDraw.GetPixel(x, y);
-                            if (pixelColor.ToArgb() != Color.White.ToArgb() && pixelColor.ToArgb() != Color.Black.ToArgb())
-                            {
-                                g.DrawImage(originalImageDraw,
-                                    new Rectangle(x, y, 1, 1), // Target rectangle
-                                    x, y, 1, 1,
-                                    GraphicsUnit.Pixel,
-                                    imageAttr);
-                            }
-                        }
-                    }
-                }
-                else
-                {
-                    g.DrawImage(originalImageDraw,
-                        new Rectangle(0, 0, originalImageDraw.Width, originalImageDraw.Height), // Target rectangle
-                        0, 0, originalImageDraw.Width, originalImageDraw.Height,
-                        GraphicsUnit.Pixel,
-                        imageAttr);
-                }
-            }
+                new float[] { contrast, 0, 0, 0, 0 },
+                new float[] { 0, contrast, 0, 0, 0 },
+                new float[] { 0, 0, contrast, 0, 0 },
+                new float[] { 0, 0, 0, 1, 0 },
+                new float[] { translate, translate, translate, 1, 1 }
+            };
 
-            // Put the modified image into the PictureBoxDraw
-            if (currentImage != null)
-            {
-                currentImage.Dispose();
-            }
-            currentImage = tempBmp;
+            Bitmap result = ApplyColorMatrix(baseImage, matrix, ignoreContrastColors);
+
+            currentImage?.Dispose();
+            currentImage = result;
             pictureBoxDraw.Image = currentImage;
         }
 
-        // Event handler for the CheckBox
+        /// <summary>
+        /// Steuert, ob die Kontrastanpassung Schwarz/Weiß-Pixel auslässt.
+        /// </summary>
         private void checkBoxContrast_CheckedChanged(object sender, EventArgs e)
         {
             ignoreContrastColors = checkBoxContrast.Checked;
         }
         #endregion
 
-        #region Color
-        // Add state variable
+        // =======================================================================
+        //  RGB-KANÄLE (TrackBars)
+        // =======================================================================
+        #region RGB Color Channels
 
+        /// <summary>
+        /// Passt den Rot-Kanal per ColorMatrix an.
+        /// Arbeitet auf baseImage, um akkumulierten Qualitätsverlust zu verhindern.
+        /// </summary>
         private void trackBarColorR_Scroll(object sender, EventArgs e)
         {
+            if (baseImage == null) return;
 
-            // Update the label with the current value of the TrackBar
             labelColorRValue.Text = trackBarColorR.Value.ToString();
 
-            // Create a temporary copy of the original image
-            Bitmap tempBmp = new Bitmap(originalImageDraw);
-
-            // Create a ColorMatrix and change the red value
-            float colorScaleR = trackBarColorR.Value * 0.01f;
-            float[][] matrixItems = {
-        new float[] {1 + colorScaleR, 0, 0, 0, 0}, // Adjust red value
-        new float[] {0, 1, 0, 0, 0},
-        new float[] {0, 0, 1, 0, 0},
-        new float[] {0, 0, 0, 1, 0},
-        new float[] {0, 0, 0, 1, 1}
-    };
-            ColorMatrix colorMatrix = new ColorMatrix(matrixItems);
-
-            // Create an ImageAttributes object and set the ColorMatrix
-            ImageAttributes imageAttr = new ImageAttributes();
-            imageAttr.SetColorMatrix(colorMatrix);
-
-            // Draw the image with the new ImageAttributes
-            using (Graphics g = Graphics.FromImage(tempBmp))
+            float scale = trackBarColorR.Value * 0.01f;
+            float[][] matrix =
             {
-                g.DrawImage(originalImageDraw,
-                    new Rectangle(0, 0, originalImageDraw.Width, originalImageDraw.Height), // Target rectangle
-                    0, 0, originalImageDraw.Width, originalImageDraw.Height,
-                    GraphicsUnit.Pixel,
-                    imageAttr);
-            }
+                new float[] { 1 + scale, 0, 0, 0, 0 },
+                new float[] { 0, 1, 0, 0, 0 },
+                new float[] { 0, 0, 1, 0, 0 },
+                new float[] { 0, 0, 0, 1, 0 },
+                new float[] { 0, 0, 0, 0, 1 }
+            };
 
-            // Put the modified image into the PictureBoxDraw
-            pictureBoxDraw.Image = tempBmp;
+            var old = pictureBoxDraw.Image;
+            pictureBoxDraw.Image = ApplyColorMatrix(baseImage, matrix);
+            if (old != null && old != baseImage && old != originalImageDraw) old.Dispose();
         }
 
+        /// <summary>
+        /// Passt den Grün-Kanal per ColorMatrix an. Arbeitet auf baseImage.
+        /// </summary>
         private void trackBarColorG_Scroll(object sender, EventArgs e)
         {
+            if (baseImage == null) return;
 
-            // Update the label with the current value of the TrackBar
             labelColorGValue.Text = trackBarColorG.Value.ToString();
 
-            // Create a temporary copy of the original image
-            Bitmap tempBmp = new Bitmap(originalImageDraw);
-
-            // Create a ColorMatrix and change the green value
-            float colorScaleG = trackBarColorG.Value * 0.01f;
-            float[][] matrixItems = {
-        new float[] {1, 0, 0, 0, 0},
-        new float[] {0, 1 + colorScaleG, 0, 0, 0}, // Adjust green value
-        new float[] {0, 0, 1, 0, 0},
-        new float[] {0, 0, 0, 1, 0},
-        new float[] {0, 0, 0, 1, 1}
-        };
-            ColorMatrix colorMatrix = new ColorMatrix(matrixItems);
-
-            // Create an ImageAttributes object and set the ColorMatrix
-            ImageAttributes imageAttr = new ImageAttributes();
-            imageAttr.SetColorMatrix(colorMatrix);
-
-            // Draw the image with the new ImageAttributes
-            using (Graphics g = Graphics.FromImage(tempBmp))
+            float scale = trackBarColorG.Value * 0.01f;
+            float[][] matrix =
             {
-                g.DrawImage(originalImageDraw,
-                    new Rectangle(0, 0, originalImageDraw.Width, originalImageDraw.Height), // Target rectangle
-                    0, 0, originalImageDraw.Width, originalImageDraw.Height,
-                    GraphicsUnit.Pixel,
-                    imageAttr);
-            }
+                new float[] { 1, 0, 0, 0, 0 },
+                new float[] { 0, 1 + scale, 0, 0, 0 },
+                new float[] { 0, 0, 1, 0, 0 },
+                new float[] { 0, 0, 0, 1, 0 },
+                new float[] { 0, 0, 0, 0, 1 }
+            };
 
-            // Put the modified image into the PictureBoxDraw
-            pictureBoxDraw.Image = tempBmp;
+            var old = pictureBoxDraw.Image;
+            pictureBoxDraw.Image = ApplyColorMatrix(baseImage, matrix);
+            if (old != null && old != baseImage && old != originalImageDraw) old.Dispose();
         }
 
+        /// <summary>
+        /// Passt den Blau-Kanal per ColorMatrix an. Arbeitet auf baseImage.
+        /// </summary>
         private void trackBarColorB_Scroll(object sender, EventArgs e)
         {
-            // Update the label with the current value of the TrackBar
+            if (baseImage == null) return;
+
             labelColorBValue.Text = trackBarColorB.Value.ToString();
 
-            // Create a temporary copy of the original image
-            Bitmap tempBmp = new Bitmap(originalImageDraw);
-
-            // Create a ColorMatrix and change the blue value
-            float colorScaleB = trackBarColorB.Value * 0.01f;
-            float[][] matrixItems = {
-        new float[] {1, 0, 0, 0, 0},
-        new float[] {0, 1 , 0 , 0 , 0 },
-        new float[] {0, 0, 1 + colorScaleB, 0, 0}, // Adjust blue value
-        new float[] {0, 0, 0, 1, 0},
-        new float[] {0, 0, 0, 0, 1}
-    };
-            ColorMatrix colorMatrix = new ColorMatrix(matrixItems);
-
-            // Create an ImageAttributes object and set the ColorMatrix
-            ImageAttributes imageAttr = new ImageAttributes();
-            imageAttr.SetColorMatrix(colorMatrix);
-
-            // Draw the image with the new ImageAttributes
-            using (Graphics g = Graphics.FromImage(tempBmp))
+            float scale = trackBarColorB.Value * 0.01f;
+            float[][] matrix =
             {
-                g.DrawImage(originalImageDraw,
-                    new Rectangle(0, 0, originalImageDraw.Width, originalImageDraw.Height), // Destination rectangle
-                    0, 0, originalImageDraw.Width, originalImageDraw.Height,
-                    GraphicsUnit.Pixel,
-                    imageAttr);
-            }
+                new float[] { 1, 0, 0, 0, 0 },
+                new float[] { 0, 1, 0, 0, 0 },
+                new float[] { 0, 0, 1 + scale, 0, 0 },
+                new float[] { 0, 0, 0, 1, 0 },
+                new float[] { 0, 0, 0, 0, 1 }
+            };
 
-            // Set the modified image in the PictureBoxDraw
-            pictureBoxDraw.Image = tempBmp;
+            var old = pictureBoxDraw.Image;
+            pictureBoxDraw.Image = ApplyColorMatrix(baseImage, matrix);
+            if (old != null && old != baseImage && old != originalImageDraw) old.Dispose();
         }
-
-        // Event handler for the CheckBox
         #endregion
 
+        // =======================================================================
+        //  RGB-RESET
+        // =======================================================================
         #region Reset RGB
+        /// <summary>
+        /// Setzt alle drei RGB-TrackBars auf 0 zurück und stellt das Originalbild wieder her.
+        /// </summary>
         private void resetButtonRGB_Click(object sender, EventArgs e)
         {
-            // Set the TrackBars values ​​to 0
             trackBarColorR.Value = 0;
             trackBarColorG.Value = 0;
             trackBarColorB.Value = 0;
 
-            // Reset the label texts
             labelColorRValue.Text = "0";
             labelColorGValue.Text = "0";
             labelColorBValue.Text = "0";
 
-            // Trigger the TrackBars scroll events
             trackBarColorR_Scroll(sender, e);
             trackBarColorG_Scroll(sender, e);
             trackBarColorB_Scroll(sender, e);
         }
         #endregion
 
-        #region Remove Color #000000 #ffffff
+        // =======================================================================
+        //  FARBE ENTFERNEN (Schwarz/Weiß → Transparent)
+        // =======================================================================
+        #region Remove Color Black/White
+        /// <summary>
+        /// Wenn aktiv, werden alle schwarzen und weißen Pixel transparent gemacht.
+        /// Nützlich, um Ränder nach einer Bearbeitung zu bereinigen.
+        /// </summary>
         private void checkBoxRemoveColor_CheckedChanged(object sender, EventArgs e)
         {
-            // Update the state
             removeColor = checkBoxRemoveColor.Checked;
+            if (originalImageDraw == null) return;
 
-            // Create a temporary copy of the original image
             Bitmap tempBmp = new Bitmap(originalImageDraw);
 
             if (removeColor)
             {
-                // Loop through every pixel in the image
                 for (int y = 0; y < tempBmp.Height; y++)
-                {
                     for (int x = 0; x < tempBmp.Width; x++)
                     {
-                        // Get the color of the current pixel
-                        Color pixelColor = tempBmp.GetPixel(x, y);
-
-                        // Check whether the color of the pixel is black or white
-                        if (pixelColor.ToArgb() == Color.Black.ToArgb() || pixelColor.ToArgb() == Color.White.ToArgb())
-                        {
-                            // Change the color of the pixel to Transparent
+                        Color px = tempBmp.GetPixel(x, y);
+                        if (px.ToArgb() == Color.Black.ToArgb() ||
+                            px.ToArgb() == Color.White.ToArgb())
                             tempBmp.SetPixel(x, y, Color.Transparent);
-                        }
                     }
-                }
             }
 
-            // Put the modified image into the PictureBoxDraw
-            pictureBoxDraw.Image = tempBmp;
+            SetPictureBoxImage(pictureBoxDraw, tempBmp);
         }
         #endregion
 
-        #region CheckBox Rechteck
+        // =======================================================================
+        //  CHECKBOXEN: RECHTECK / KREIS
+        // =======================================================================
+        #region Selection Shape Checkboxes
+        /// <summary>
+        /// Aktiviert die rechteckige Auswahlgeste (deaktiviert Kreis).
+        /// </summary>
         private void checkBoxRectangle_CheckedChanged(object sender, EventArgs e)
         {
-            // If checkBoxRectangle is enabled, disable checkBoxDrawCircle
             if (checkBoxRectangle.Checked)
-            {
                 checkBoxDrawCircle.Checked = false;
-            }
 
-            // Update the state
             isSelecting = checkBoxRectangle.Checked;
-
         }
 
+        /// <summary>
+        /// Aktiviert die kreisförmige Auswahlgeste (deaktiviert Rechteck).
+        /// </summary>
         private void checkBoxDrawCircle_CheckedChanged(object sender, EventArgs e)
         {
-            // If checkBoxDrawCircle is enabled, disable checkBoxRectangle
             if (checkBoxDrawCircle.Checked)
-            {
                 checkBoxRectangle.Checked = false;
-            }
 
-            // Update the state
             isSelectingCircle = checkBoxDrawCircle.Checked;
         }
         #endregion
 
-        #region PictureBox_Paint
+        // =======================================================================
+        //  PAINT-EVENT: Auswahl-Overlays
+        // =======================================================================
+        #region PictureBox Paint
+        /// <summary>
+        /// Zeichnet die gestrichelten gelben Auswahl-Rahmen (Rechteck oder Kreis)
+        /// über das Bild in der Zeichenfläche.
+        /// </summary>
         private void pictureBoxDraw_Paint(object sender, PaintEventArgs e)
         {
             if (checkBoxRectangle.Checked)
             {
-                // Draw the selection box with a dashed yellow line
-                using (Pen pen = new Pen(Color.Yellow))
-                {
-                    pen.DashStyle = System.Drawing.Drawing2D.DashStyle.Dash;
+                using (Pen pen = new Pen(Color.Yellow) { DashStyle = System.Drawing.Drawing2D.DashStyle.Dash })
                     e.Graphics.DrawRectangle(pen, selectionRectangle);
-                }
             }
+
             if (isSelectingCircle)
             {
-                // Draw the selection circle with a dashed yellow line
-                using (Pen pen = new Pen(Color.Yellow))
-                {
-                    pen.DashStyle = System.Drawing.Drawing2D.DashStyle.Dash;
+                using (Pen pen = new Pen(Color.Yellow) { DashStyle = System.Drawing.Drawing2D.DashStyle.Dash })
                     e.Graphics.DrawEllipse(pen, selectionCircle);
-                }
             }
         }
         #endregion
 
-        #region ContextMenu Texture fill       
-
+        // =======================================================================
+        //  TEXTUR-FILL (Rechteck oder Kreis mit Bild füllen)
+        // =======================================================================
+        #region Texture Fill
+        /// <summary>
+        /// Füllt den markierten Bereich (Rechteck oder Kreis) mit einer geladenen
+        /// Textur-Datei. Schwarze und weiße Pixel der Textur werden übersprungen.
+        /// </summary>
         private void SelectingRectangleCircleToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            OpenFileDialog openFileDialog = new OpenFileDialog();
-            openFileDialog.Filter = "Image files|*.bmp;*.jpg;*.jpeg;*.png";
-            if (openFileDialog.ShowDialog() == DialogResult.OK)
+            using (OpenFileDialog ofd = new OpenFileDialog
+            { Filter = "Image files|*.bmp;*.jpg;*.jpeg;*.png" })
             {
-                // Load the image and save it in loadedImage
-                loadedImage = new Bitmap(System.Drawing.Image.FromFile(openFileDialog.FileName));
+                if (ofd.ShowDialog() != DialogResult.OK) return;
 
-                // Scale the loaded image to the size of the selected rectangle or circle
-                Bitmap scaledImage = isSelectingCircle ? new Bitmap(loadedImage, selectionCircle.Size) : new Bitmap(loadedImage, selectionRectangle.Size);
+                loadedImage = new Bitmap(System.Drawing.Image.FromFile(ofd.FileName));
 
-                // Draw the scaled image on originalImageDraw at the position of the selection box
+                Bitmap scaledImage = isSelectingCircle
+                    ? new Bitmap(loadedImage, selectionCircle.Size)
+                    : new Bitmap(loadedImage, selectionRectangle.Size);
+
+                PushUndo();
+
                 using (Graphics g = Graphics.FromImage(originalImageDraw))
                 {
                     for (int y = 0; y < scaledImage.Height; y++)
-                    {
                         for (int x = 0; x < scaledImage.Width; x++)
                         {
-                            Color pixelColor = scaledImage.GetPixel(x, y);
+                            Color px = scaledImage.GetPixel(x, y);
+                            if (px == Color.FromArgb(255, 0, 0, 0) ||
+                                px == Color.FromArgb(255, 255, 255, 255))
+                                continue;
 
-                            // Check that the color of the pixel is neither black nor white
-                            if (pixelColor != Color.FromArgb(255, 0, 0, 0) && pixelColor != Color.FromArgb(255, 255, 255, 255))
+                            int drawX = isSelectingCircle
+                                ? selectionCircle.X + x
+                                : selectionRectangle.X + x;
+                            int drawY = isSelectingCircle
+                                ? selectionCircle.Y + y
+                                : selectionRectangle.Y + y;
+
+                            // Im Kreis-Modus: nur Pixel innerhalb der Ellipse zeichnen
+                            if (isSelectingCircle)
                             {
-                                // Draw the pixel on originalImageDraw
-                                int drawX = isSelectingCircle ? selectionCircle.X + x : selectionRectangle.X + x;
-                                int drawY = isSelectingCircle ? selectionCircle.Y + y : selectionRectangle.Y + y;
-
-                                // Check if the point is inside the circle when circle selection mode is active
-                                if (!isSelectingCircle || Math.Pow(x - selectionCircle.Width / 2, 2) + Math.Pow(y - selectionCircle.Height / 2, 2) <= Math.Pow(selectionCircle.Width / 2, 2))
-                                {
-                                    // Calculate the position on the image based on the position and size of the image in the PictureBox
-                                    int imageX = drawX - (pictureBoxDraw.Width - originalImageDraw.Width) / 2;
-                                    int imageY = drawY - (pictureBoxDraw.Height - originalImageDraw.Height) / 2;
-
-                                    // Make sure the coordinates are within the boundaries of the image
-                                    if (imageX >= 0 && imageX < originalImageDraw.Width && imageY >= 0 && imageY < originalImageDraw.Height)
-                                    {
-                                        g.FillRectangle(new SolidBrush(pixelColor), imageX, imageY, 1, 1);
-                                    }
-                                }
+                                double dx = x - selectionCircle.Width / 2.0;
+                                double dy = y - selectionCircle.Height / 2.0;
+                                if (dx * dx / Math.Pow(selectionCircle.Width / 2.0, 2) +
+                                    dy * dy / Math.Pow(selectionCircle.Height / 2.0, 2) > 1)
+                                    continue;
                             }
+
+                            int imgX = drawX - (pictureBoxDraw.Width - originalImageDraw.Width) / 2;
+                            int imgY = drawY - (pictureBoxDraw.Height - originalImageDraw.Height) / 2;
+
+                            if (imgX >= 0 && imgX < originalImageDraw.Width &&
+                                imgY >= 0 && imgY < originalImageDraw.Height)
+                                g.FillRectangle(new SolidBrush(px), imgX, imgY, 1, 1);
                         }
-                    }
                 }
 
-                // Update the pictureBoxDraw control with originalImageDraw
                 pictureBoxDraw.Image = originalImageDraw;
                 pictureBoxDraw.Invalidate();
 
-                // Only remove the selection field if no checkbox is active
-                if (!checkBoxRectangle.Checked)
-                {
-                    isSelecting = false;
-                    selectionRectangle = new Rectangle();
-                }
-                if (!checkBoxDrawCircle.Checked)
-                {
-                    isSelectingCircle = false;
-                    selectionCircle = new Rectangle();
-                }
+                if (!checkBoxRectangle.Checked) { isSelecting = false; selectionRectangle = new Rectangle(); }
+                if (!checkBoxDrawCircle.Checked) { isSelectingCircle = false; selectionCircle = new Rectangle(); }
             }
         }
         #endregion
 
-        #region Save Image
+        // =======================================================================
+        //  BILD SPEICHERN (aus Zeichenfläche)
+        // =======================================================================
+        #region Save Image from PaintBox
+        /// <summary>
+        /// Speichert das aktuelle Bild der Zeichenfläche als BMP, TIFF, PNG oder JPG.
+        /// Standard-Format: PNG (verlustfrei).
+        /// </summary>
         private void saveToolStripMenuItemPictureBoxDraw_Click(object sender, EventArgs e)
         {
-            SaveFileDialog saveFileDialog = new SaveFileDialog();
-            saveFileDialog.Filter = "Bitmap Image|*.bmp|TIFF Image|*.tiff|PNG Image|*.png|JPEG Image|*.jpg";
-            saveFileDialog.Title = "Speichern Sie das Bild als...";
-            saveFileDialog.FilterIndex = 1; // Set .bmp as the default format
-
-            if (saveFileDialog.ShowDialog() == DialogResult.OK)
+            if (pictureBoxDraw.Image == null)
             {
-                // Save the image in the PictureBox in the selected format
-                switch (saveFileDialog.FilterIndex)
+                MessageBox.Show("There is no image to save.");
+                return;
+            }
+
+            using (SaveFileDialog sfd = new SaveFileDialog
+            {
+                Filter = "PNG Image|*.png|Bitmap Image|*.bmp|TIFF Image|*.tiff|JPEG Image|*.jpg",
+                Title = "Save image as...",
+                FilterIndex = 1  // PNG als Standard (verlustfrei)
+            })
+            {
+                if (sfd.ShowDialog() != DialogResult.OK) return;
+
+                ImageFormat fmt = sfd.FilterIndex switch
                 {
-                    case 1: // .bmp
-                        pictureBoxDraw.Image.Save(saveFileDialog.FileName, System.Drawing.Imaging.ImageFormat.Bmp);
-                        break;
-                    case 2: // .tiff
-                        pictureBoxDraw.Image.Save(saveFileDialog.FileName, System.Drawing.Imaging.ImageFormat.Tiff);
-                        break;
-                    case 3: // .png
-                        pictureBoxDraw.Image.Save(saveFileDialog.FileName, System.Drawing.Imaging.ImageFormat.Png);
-                        break;
-                    case 4: // .jpg
-                        pictureBoxDraw.Image.Save(saveFileDialog.FileName, System.Drawing.Imaging.ImageFormat.Jpeg);
-                        break;
-                }
+                    1 => ImageFormat.Png,
+                    2 => ImageFormat.Bmp,
+                    3 => ImageFormat.Tiff,
+                    4 => ImageFormat.Jpeg,
+                    _ => ImageFormat.Png
+                };
+
+                pictureBoxDraw.Image.Save(sfd.FileName, fmt);
             }
         }
         #endregion
     }
-    #endregion
 }
