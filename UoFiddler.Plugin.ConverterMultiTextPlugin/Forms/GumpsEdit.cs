@@ -36,6 +36,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private Dictionary<int, string> idNames;
         private string xmlFilePath;
 
+        #region [ Konstruktor + Hilfsmethoden ] 
         // -----------------------------------------------------------------------
         //  Konstruktor
         // -----------------------------------------------------------------------
@@ -67,7 +68,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 
             this.KeyPreview = true;
         }
+        #endregion
 
+        #region [ GetSelectedId ]
         // -----------------------------------------------------------------------
         //  HILFSMETHODE: Liest die aktuell gewählte Gump-ID aus der ListBox.
         //  Gibt -1 zurück, wenn nichts ausgewählt ist.
@@ -86,7 +89,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 
             return int.TryParse(item.Substring(start, len), out int id) ? id : -1;
         }
+        #endregion
 
+        #region [ SetPictureBoxImage ]
         // -----------------------------------------------------------------------
         //  HILFSMETHODE: Setzt ein Bitmap sicher in ein PictureBox-Image-Feld
         //  und gibt das alte Bitmap zurück, damit es disposed werden kann.
@@ -98,7 +103,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             if (old != null && old != newBmp)
                 old.Dispose();
         }
+        #endregion
 
+        #region [ ConvertGumpForClipboard ]
         // -----------------------------------------------------------------------
         //  HILFSMETHODE: Zeichnet transparente Pixel als #D3D3D3-Hintergrund
         //  (Gumps nutzen diesen Grauton als Transparenz-Marker) und konvertiert
@@ -124,7 +131,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             copy.Dispose();
             return bmp24;
         }
+        #endregion
 
+        #region [ ApplyColorMatrix ]
         // -----------------------------------------------------------------------
         //  HILFSMETHODE: Wendet ein ColorMatrix-Array auf ein Bitmap an
         //  (optional nur auf nicht-schwarze/weiße Pixel, wenn ignoreBlackWhite=true).
@@ -164,7 +173,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             attr.Dispose();
             return result;
         }
+        #endregion
 
+        #region [ PushUndo ]
         // -----------------------------------------------------------------------
         //  HILFSMETHODE: Speichert den aktuellen Zeichen-Zustand (originalImageDraw)
         //  auf dem Undo-Stack und leert den Redo-Stack.
@@ -175,7 +186,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             previousImages.Push((Bitmap)originalImageDraw.Clone());
             redoImages.Clear();
         }
+        #endregion
 
+        #region [ SaveIdNamesXml ]
         // -----------------------------------------------------------------------
         //  HILFSMETHODE: XML-Datei mit den ID-Namen speichern.
         // -----------------------------------------------------------------------
@@ -192,11 +205,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             );
             doc.Save(xmlFilePath);
         }
+        #endregion
 
+        #region [ PopulateListBox ]
         // =======================================================================
         //  LISTBOX – Befüllen
-        // =======================================================================
-        #region PopulateListBox
+        // =======================================================================        
         /// <summary>
         /// Füllt die ListBox mit allen gültigen Gump-IDs.
         /// Wenn showFreeSlots=true, werden auch freie Slots angezeigt.
@@ -225,10 +239,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         }
         #endregion
 
+        #region [ Search ]
         // =======================================================================
         //  SUCHE
-        // =======================================================================
-        #region Search
+        // =======================================================================        
         /// <summary>
         /// Sucht beim Tippen nach ID (dezimal/hex) oder Name (Partial-Match).
         /// </summary>
@@ -267,10 +281,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         }
         #endregion
 
+        #region [ ListBox_SelectedIndexChanged ]
         // =======================================================================
         //  LISTBOX – Auswahl geändert / Formular laden
         // =======================================================================
-        #region Load ListBox
         /// <summary>
         /// Zeigt das Gump-Bild für den gewählten ListBox-Eintrag an
         /// und aktualisiert ID- und Größen-Label.
@@ -306,7 +320,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // Titelzeile mit Unsaved-Marker aktualisieren
             UpdateFormTitle();
         }
+        #endregion
 
+        #region [ GumpsEdit_Load ]
         /// <summary>
         /// Wird beim ersten Laden des Formulars aufgerufen:
         /// ListBox befüllen und erstes Element auswählen.
@@ -323,10 +339,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         }
         #endregion
 
+        #region [ UpdateFormTitle ]
         // =======================================================================
         //  TITELZEILE
-        // =======================================================================
-        #region Form Title
+        // =======================================================================       
         /// <summary>
         /// Zeigt im Fenstertitel ein '*' an, wenn ungespeicherte Änderungen vorliegen.
         /// </summary>
@@ -338,10 +354,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         }
         #endregion
 
+        #region [ copyToolStripMenuItem ]
         // =======================================================================
         //  KOPIEREN (Gump → Zwischenablage)
         // =======================================================================
-        #region Copy clipboard
         /// <summary>
         /// Kopiert das aktuell gewählte Gump als 24-bit-Bitmap in die Zwischenablage.
         /// Transparenz-Pixel (#D3D3D3) werden dabei schwarz gezeichnet.
@@ -364,10 +380,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         }
         #endregion
 
+        #region [ importToolStripMenuItem ]
         // =======================================================================
         //  IMPORTIEREN (Zwischenablage → Gump)
-        // =======================================================================
-        #region Import clipboard
+        // =======================================================================        
         /// <summary>
         /// Importiert ein Bild aus der Zwischenablage in den gewählten Gump-Slot.
         /// Die Farben #D3D3D3, Schwarz und Weiß werden als transparent behandelt.
@@ -423,7 +439,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             UpdateTotalIDsLabel();
             UpdateFreeIDsLabel();
         }
+        #endregion
 
+        #region [ GumpControl_KeyDown ]
         /// <summary>
         /// Tastenkürzel: Strg+V importiert aus Zwischenablage,
         ///               Strg+X kopiert in die Zwischenablage.
@@ -437,10 +455,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         }
         #endregion
 
+        #region [ OnClickRemove ]
         // =======================================================================
         //  ENTFERNEN
-        // =======================================================================
-        #region Remove
+        // =======================================================================        
         /// <summary>
         /// Entfernt das aktuell gewählte Gump aus den Daten.
         /// </summary>
@@ -468,10 +486,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         }
         #endregion
 
+        #region [ OnClickReplace ]
         // =======================================================================
         //  ERSETZEN (Datei → Gump)
-        // =======================================================================
-        #region Replace
+        // =======================================================================        
         /// <summary>
         /// Ersetzt das gewählte Gump durch eine Bild-Datei (TIF/BMP).
         /// </summary>
@@ -511,12 +529,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         }
         #endregion
 
+        #region [ showFreeIdsToolStripMenuItem ]
         // =======================================================================
         //  FREIE SLOTS ANZEIGEN
         // =======================================================================
-        #region Show Free Slots
         private bool isShowingFreeSlots = false;
-
         /// <summary>
         /// Schaltet die Anzeige freier Gump-Slots in der ListBox um.
         /// Aktiver Zustand wird durch grünen Hintergrund des Menüpunktes signalisiert.
@@ -530,10 +547,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         }
         #endregion
 
+        #region [ OnClickFindFree ]
         // =======================================================================
         //  NÄCHSTEN FREIEN SLOT FINDEN
         // =======================================================================
-        #region Find Next Free ID
         /// <summary>
         /// Springt in der ListBox zum nächsten freien Gump-Slot nach der aktuellen Auswahl.
         /// </summary>
@@ -571,10 +588,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         }
         #endregion
 
+        #region [ SetIDName ]
         // =======================================================================
         //  ID-NAMEN VERWALTEN (XML)
         // =======================================================================
-        #region Add Names ID Gumps XML
         /// <summary>
         /// Weist einer Gump-ID einen Namen zu und speichert ihn in der XML-Datei.
         /// Kann auch programmatisch aufgerufen werden.
@@ -584,7 +601,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             idNames[id] = name;
             SaveIdNamesXml();
         }
+        #endregion
 
+        #region [ addIDNamesToolStripMenuItem ]
         /// <summary>
         /// Öffnet einen kleinen Dialog zum Bearbeiten des Namens für die gewählte ID.
         /// </summary>
@@ -631,10 +650,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         }
         #endregion
 
+        #region [ OnClickSave ]
         // =======================================================================
         //  SPEICHERN (MUL-Dateien)
-        // =======================================================================
-        #region OnClickSave
+        // =======================================================================        
         /// <summary>
         /// Speichert alle Gump-Änderungen in die MUL/UOP-Ausgabedateien.
         /// Fragt vorher nach Bestätigung.
@@ -661,10 +680,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         }
         #endregion
 
+        #region [ UpdateTotalIDsLabel ]
         // =======================================================================
         //  LABEL-UPDATES (benannte IDs / freie IDs)
         // =======================================================================
-        #region ID Name Counter
+
         /// <summary>
         /// Aktualisiert das Label mit der Anzahl benannter IDs.
         /// </summary>
@@ -683,10 +703,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         }
         #endregion
 
+        #region [ PAINT – Zustandsvariablen ]
         // =======================================================================
         //  PAINT – Zustandsvariablen
-        // =======================================================================
-        #region Paint State Variables
+        // =======================================================================        
         private bool isDrawing = false;
         private bool isEraserActive = false;   // NEU: Radierer-Modus
         private bool isEyedropper = false;   // NEU: Farbpipette
@@ -708,10 +728,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private float zoomFactor = 1.0f;   // NEU: Zoom
         #endregion
 
+        #region [ LoadImageIntopictureBoxDraw ]
         // =======================================================================
         //  BILD IN PAINT-BOX LADEN
         // =======================================================================
-        #region LoadImage
         /// <summary>
         /// Lädt ein Bild in die Paint-PictureBox und initialisiert alle Arbeitskopien.
         /// Setzt Pinselgröße zurück auf 2.
@@ -743,10 +763,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         }
         #endregion
 
+        #region [ pictureBoxDraw_MouseMove ]
         // =======================================================================
         //  MAUS – BEWEGEN (Zeichnen / Rechteck / Kreis / Eyedropper)
-        // =======================================================================
-        #region MouseMove
+        // =======================================================================        
         /// <summary>
         /// Verarbeitet Mausbewegungen: Zeichnen/Radieren im Drawing-Modus,
         /// Aktualisieren der Auswahl-Rechtecke/-Kreise.
@@ -809,10 +829,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         }
         #endregion
 
+        #region [ pictureBoxDraw_MouseDown ]
         // =======================================================================
         //  MAUS – DRÜCKEN
-        // =======================================================================
-        #region MouseDown
+        // =======================================================================        
         /// <summary>
         /// Initialisiert Auswahl-Rechteck/-Kreis beim Maustaste-Drücken.
         /// Im Zeichenmodus: aktuellen Zustand auf Undo-Stack schieben.
@@ -858,10 +878,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         }
         #endregion
 
+        #region [ pictureBoxDraw_MouseUp ]
         // =======================================================================
         //  MAUS – LOSLASSEN
-        // =======================================================================
-        #region MouseUp
+        // =======================================================================        
         /// <summary>
         /// Schließt den aktuellen Strich ab und schiebt den Endzustand auf den Undo-Stack.
         /// Beendet die Auswahl-Geste bei Rechteck/Kreis.
@@ -891,10 +911,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         }
         #endregion
 
+        #region [ pictureBoxDraw_MouseWheel ]
         // =======================================================================
         //  MAUS – SCROLL (Zoom)
-        // =======================================================================
-        #region MouseWheel Zoom
+        // =======================================================================        
         /// <summary>
         /// NEU: Vergrößert / verkleinert die Zeichenfläche per Mausrad (Faktor 0.1–5.0).
         /// </summary>
@@ -916,10 +936,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         }
         #endregion
 
+        #region [ TextBoxColor_TextChanged ]
         // =======================================================================
         //  FARBE – TEXTBOX
         // =======================================================================
-        #region Textbox Color Change
         /// <summary>
         /// Aktualisiert die Zeichenfarbe, wenn ein neuer Hex-Farbcode eingegeben wird.
         /// </summary>
@@ -935,10 +955,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         }
         #endregion
 
+        #region [ undoToolStripMenuItem ]
         // =======================================================================
         //  UNDO / REDO
-        // =======================================================================
-        #region Undo
+        // =======================================================================        
         /// <summary>
         /// Macht den letzten Zeichenschritt rückgängig (bis zu zwei Schritte auf einmal,
         /// da MouseDown und MouseUp beide einen Zustand pushen).
@@ -957,7 +977,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         }
         #endregion
 
-        #region Redo
+        #region [ redoToolStripMenuItem ]
         /// <summary>
         /// Stellt einen rückgängig gemachten Zeichenschritt wieder her.
         /// </summary>
@@ -972,10 +992,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         }
         #endregion
 
+        #region [ MyRenderer ]
         // =======================================================================
         //  MENÜ-RENDERER (grüner Hintergrund wenn Paint aktiv)
-        // =======================================================================
-        #region Color Renderer
+        // =======================================================================       
         private class MyRenderer : ToolStripProfessionalRenderer
         {
             private GumpsEdit _owner;
@@ -991,10 +1011,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         }
         #endregion
 
+        #region [ paintToolStripMenuItem ]
         // =======================================================================
         //  PAINT-MODUS UMSCHALTEN
-        // =======================================================================
-        #region Paint Toggle
+        // =======================================================================        
         /// <summary>
         /// Schaltet den Zeichenmodus ein/aus.
         /// Beim Einschalten wird das aktuelle Bild in die Zeichenfläche geladen.
@@ -1017,10 +1037,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         }
         #endregion
 
+        #region [ eraserToolStripMenuItem ]
         // =======================================================================
         //  NEU: RADIERER UMSCHALTEN
         // =======================================================================
-        #region Eraser Toggle
         /// <summary>
         /// NEU: Schaltet den Radierer-Modus um.
         /// Im Radierer-Modus werden Pixel transparent gezeichnet.
@@ -1032,10 +1052,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         }
         #endregion
 
+        #region [ eyedropperToolStripMenuItem ]
         // =======================================================================
         //  NEU: FARBPIPETTE UMSCHALTEN
-        // =======================================================================
-        #region Eyedropper Toggle
+        // =======================================================================       
         /// <summary>
         /// NEU: Schaltet die Farbpipette um.
         /// Ein Linksklick auf das Bild übernimmt dann die Pixelfarbe als Zeichenfarbe.
@@ -1047,10 +1067,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         }
         #endregion
 
+        #region [ importImageToolStripMenuItem ]
         // =======================================================================
         //  BILD AUS ZWISCHENABLAGE IN PAINT-BOX
-        // =======================================================================
-        #region Import Clipboard to PaintBox
+        // =======================================================================        
         /// <summary>
         /// Lädt ein Bild aus der Zwischenablage direkt in die Zeichenfläche
         /// (ohne es in den Gump-Slot zu schreiben).
@@ -1078,10 +1098,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         }
         #endregion
 
+        #region [ btColorDialog ]
         // =======================================================================
         //  FARBDIALOG
         // =======================================================================
-        #region Color Dialog
         /// <summary>
         /// Öffnet den Windows-Farbdialog und übernimmt die gewählte Farbe
         /// als Hex-Code in die TextBox.
@@ -1095,10 +1115,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         }
         #endregion
 
+        #region [ tbPinselSize_KeyPress ]
         // =======================================================================
         //  PINSELGRÖSSE – EINGABE-VALIDIERUNG
         // =======================================================================
-        #region Brush Size
+
         /// <summary>
         /// Erlaubt in der Pinselgröße-TextBox nur Ziffern und Steuertasten.
         /// </summary>
@@ -1107,7 +1128,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar))
                 e.Handled = true;
         }
+        #endregion
 
+        #region [ tbPinselSize_TextChanged ]
         /// <summary>
         /// Begrenzt den Pinselgrößen-Wert auf maximal 60.
         /// </summary>
@@ -1124,10 +1147,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         }
         #endregion
 
+        #region [ GumpsEdit_KeyDown ]
         // =======================================================================
         //  TASTENKÜRZEL (Formular)
-        // =======================================================================
-        #region GumpsEdit KeyDown
+        // =======================================================================        
         /// <summary>
         /// Strg+Backspace = Undo, Strg+R = Redo (global für das Formular).
         /// </summary>
@@ -1140,10 +1163,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         }
         #endregion
 
+        #region [ CopyImagePictureBoxDrawToolStripMenuItem ]
         // =======================================================================
         //  PAINT-BOX BILD KOPIEREN
         // =======================================================================
-        #region Copy PictureBoxDraw to Clipboard
         /// <summary>
         /// Kopiert das aktuelle Bild der Zeichenfläche in die Zwischenablage.
         /// </summary>
@@ -1156,10 +1179,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         }
         #endregion
 
+        #region [ sendImageToPaintBoxToolStripMenuItem ]
         // =======================================================================
         //  GUMP IN PAINT-BOX SENDEN
-        // =======================================================================
-        #region Send Image to Paint Box
+        // =======================================================================        
         /// <summary>
         /// Sendet das gewählte Gump (mit #D3D3D3-zu-Schwarz-Konvertierung)
         /// in die Zeichenfläche des Paint-Tabs.
@@ -1189,10 +1212,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         }
         #endregion
 
+        #region [ rotateImageToolStripMenuItem ]
         // =======================================================================
         //  BILD DREHEN
         // =======================================================================
-        #region Rotate Image
         /// <summary>
         /// Dreht das Bild in der Zeichenfläche um 90° gegen den Uhrzeigersinn.
         /// </summary>
@@ -1206,10 +1229,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         }
         #endregion
 
+        #region [ flipHorizontalToolStripMenuItem ]
         // =======================================================================
         //  NEU: BILD HORIZONTAL SPIEGELN
         // =======================================================================
-        #region Flip Horizontal
         /// <summary>
         /// NEU: Spiegelt das Bild in der Zeichenfläche horizontal.
         /// </summary>
@@ -1223,10 +1246,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         }
         #endregion
 
+        #region [ flipVerticalToolStripMenuItem ]
         // =======================================================================
         //  NEU: BILD VERTIKAL SPIEGELN
         // =======================================================================
-        #region Flip Vertical
         /// <summary>
         /// NEU: Spiegelt das Bild in der Zeichenfläche vertikal.
         /// </summary>
@@ -1240,10 +1263,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         }
         #endregion
 
+        #region [ exportAllToolStripMenuItem ]
         // =======================================================================
         //  NEU: BATCH-EXPORT (alle Gumps als PNG)
         // =======================================================================
-        #region Batch Export
         /// <summary>
         /// NEU: Exportiert alle gültigen Gumps als PNG-Dateien in einen gewählten Ordner.
         /// Dateiname: gump_XXXXX.png
@@ -1276,10 +1299,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         }
         #endregion
 
+        #region [ importFolderToolStripMenuItem ]
         // =======================================================================
         //  NEU: BATCH-IMPORT (Ordner → Gumps)
         // =======================================================================
-        #region Batch Import
         /// <summary>
         /// NEU: Importiert alle BMP/PNG-Dateien aus einem Ordner in aufeinanderfolgende
         /// Gump-Slots, beginnend bei der aktuell gewählten ID.
@@ -1334,12 +1357,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         }
         #endregion
 
+        #region [ trackBarBrightness_Scroll ]
         // =======================================================================
         //  HELLIGKEIT (TrackBar)
         // =======================================================================
-        #region Brightness
         private bool ignoreColors = false;
-
         /// <summary>
         /// Passt die Helligkeit des Bildes per ColorMatrix an.
         /// Wenn "Ignore color" aktiv ist, werden Schwarz/Weiß nicht verändert.
@@ -1367,7 +1389,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             currentImage = result;
             pictureBoxDraw.Image = currentImage;
         }
+        #endregion
 
+        #region [ checkBoxBrightness_CheckedChanged ]
         /// <summary>
         /// Steuert, ob die Helligkeitsanpassung Schwarz/Weiß-Pixel auslässt.
         /// </summary>
@@ -1377,12 +1401,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         }
         #endregion
 
+        #region [ trackBarContrast_Scroll ]
         // =======================================================================
         //  KONTRAST (TrackBar)
-        // =======================================================================
-        #region Contrast
+        // =======================================================================        
         private bool ignoreContrastColors = false;
-
         /// <summary>
         /// Passt den Kontrast des Bildes per ColorMatrix an.
         /// Wenn "Ignore color" aktiv ist, werden Schwarz/Weiß-Pixel nicht verändert.
@@ -1417,7 +1440,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             currentImage = result;
             pictureBoxDraw.Image = currentImage;
         }
+        #endregion
 
+        #region [ checkBoxContrast_CheckedChanged ]
         /// <summary>
         /// Steuert, ob die Kontrastanpassung Schwarz/Weiß-Pixel auslässt.
         /// </summary>
@@ -1427,11 +1452,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         }
         #endregion
 
+        #region [ trackBarColorR_Scroll, trackBarColorG_Scroll, trackBarColorB_Scroll ]
         // =======================================================================
         //  RGB-KANÄLE (TrackBars)
         // =======================================================================
-        #region RGB Color Channels
-
         /// <summary>
         /// Passt den Rot-Kanal per ColorMatrix an.
         /// Arbeitet auf baseImage, um akkumulierten Qualitätsverlust zu verhindern.
@@ -1506,10 +1530,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         }
         #endregion
 
+        #region [ resetButtonRGB_Click ]
         // =======================================================================
         //  RGB-RESET
         // =======================================================================
-        #region Reset RGB
         /// <summary>
         /// Setzt alle drei RGB-TrackBars auf 0 zurück und stellt das Originalbild wieder her.
         /// </summary>
@@ -1529,10 +1553,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         }
         #endregion
 
+        #region [ checkBoxRemoveColor_CheckedChanged ]
         // =======================================================================
         //  FARBE ENTFERNEN (Schwarz/Weiß → Transparent)
         // =======================================================================
-        #region Remove Color Black/White
         /// <summary>
         /// Wenn aktiv, werden alle schwarzen und weißen Pixel transparent gemacht.
         /// Nützlich, um Ränder nach einer Bearbeitung zu bereinigen.
@@ -1560,10 +1584,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         }
         #endregion
 
+        #region [ checkBoxRectangle_CheckedChanged, checkBoxDrawCircle_CheckedChanged ]
         // =======================================================================
         //  CHECKBOXEN: RECHTECK / KREIS
         // =======================================================================
-        #region Selection Shape Checkboxes
         /// <summary>
         /// Aktiviert die rechteckige Auswahlgeste (deaktiviert Kreis).
         /// </summary>
@@ -1587,10 +1611,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         }
         #endregion
 
+        #region [ pictureBoxDraw_Paint ]
         // =======================================================================
         //  PAINT-EVENT: Auswahl-Overlays
         // =======================================================================
-        #region PictureBox Paint
         /// <summary>
         /// Zeichnet die gestrichelten gelben Auswahl-Rahmen (Rechteck oder Kreis)
         /// über das Bild in der Zeichenfläche.
@@ -1611,10 +1635,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         }
         #endregion
 
+        #region [ SelectingRectangleCircleToolStripMenuItem_Click ]
         // =======================================================================
         //  TEXTUR-FILL (Rechteck oder Kreis mit Bild füllen)
-        // =======================================================================
-        #region Texture Fill
+        // =======================================================================        
         /// <summary>
         /// Füllt den markierten Bereich (Rechteck oder Kreis) mit einer geladenen
         /// Textur-Datei. Schwarze und weiße Pixel der Textur werden übersprungen.
@@ -1679,10 +1703,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         }
         #endregion
 
+        #region [ saveToolStripMenuItemPictureBoxDraw ]
         // =======================================================================
         //  BILD SPEICHERN (aus Zeichenfläche)
         // =======================================================================
-        #region Save Image from PaintBox
         /// <summary>
         /// Speichert das aktuelle Bild der Zeichenfläche als BMP, TIFF, PNG oder JPG.
         /// Standard-Format: PNG (verlustfrei).
