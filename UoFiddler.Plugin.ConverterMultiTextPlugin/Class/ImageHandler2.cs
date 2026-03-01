@@ -18,7 +18,7 @@ using System.Text;
 
 namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 {
-    internal class ImageHandler2
+    internal class ImageHandler2 : ITiloSlicerHandler
     {
         public ImageHandler2(string imagePath = "", int tileWidth = 44, int tileHeight = 44, int offset = 1, string outputDirectory = "out")
         {
