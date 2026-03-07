@@ -5,12 +5,9 @@ using System.Drawing.Imaging;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Runtime.ConstrainedExecution;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-//using System.Windows.Media.Imaging;
-//using System.Windows.Shapes;
 using Ultima;
 using UoFiddler.Controls.Classes;
 using UoFiddler.Plugin.ConverterMultiTextPlugin.Class;
@@ -19,408 +16,248 @@ namespace UoFiddler.Controls.Forms
 {
     public partial class AnimationEditFormButton : Form
     {
+        #region Fields
 
-        int currentIndex = 0; // The index of the current image
-        //SelectablePictureBox[] boxes;
-        CheckBox[] checks;
+        // --- Frame Editor ---
+        private int currentIndex = 0;
+        private CheckBox[] checks;
         private bool pipetteMode = false;
+        private Label line = new Label();
+        private Label vLine = new Label();
 
-        Label line = new Label();
-        Label vLine = new Label();
-
-        //Zoom
-        private int zoomLevel1 = 0;
-        private int zoomLevel2 = 0;
-        private int zoomLevel3 = 0;
-        private int zoomLevel4 = 0;
-        private int zoomLevel5 = 0;
-        private int zoomLevel6 = 0;
-        private int zoomLevel7 = 0;
-        private int zoomLevel8 = 0;
-        private int zoomLevel9 = 0;
-        private int zoomLevel10 = 0;
+        // --- Zoom levels per PictureBox ---
+        private int zoomLevel1 = 0, zoomLevel2 = 0, zoomLevel3 = 0, zoomLevel4 = 0,
+                    zoomLevel5 = 0, zoomLevel6 = 0, zoomLevel7 = 0, zoomLevel8 = 0,
+                    zoomLevel9 = 0, zoomLevel10 = 0;
 
         private SelectablePictureBox[] pictureBoxes;
-
         public static SelectablePictureBox[] boxes = new SelectablePictureBox[10];
 
+        // --- Clipboard Animation ---
         private Dictionary<string, Image> originalImages = new Dictionary<string, Image>();
         private Dictionary<string, Image> images = new Dictionary<string, Image>();
         private int imageCounter = 1;
         private Timer playTimer;
         private int currentImageIndex = 0;
 
+        // --- UO Animation Browser ---
+        private int selectedAnimBody = 0;
+        private int selectedAnimAction = 0;
+        private int selectedAnimDir = 0;
+        private int selectedAnimHue = 0;
+        private int selectedAnimFileIndex = 1;
+        private List<Ultima.AnimationFrame[]> loadedAnimFrames = new List<Ultima.AnimationFrame[]>();
+        private List<Bitmap> loadedCustomBitmaps = new List<Bitmap>();
+        private int animPreviewCurrentFrame = 0;
+        private Timer animBrowserTimer;
+
+        // --- Art Browser ---
+        private int artSearchIndex = 0;
+        private bool artShowStatic = true;
+        private List<int> artSearchResults = new List<int>();
+
+        // FIX: Guard flag to prevent CheckedChanged during initialization
+        private bool _artBrowserInitializing = true;
+
+        #endregion
+
+        #region Constructor
+
         public AnimationEditFormButton()
         {
             InitializeComponent();
 
             Icon = Options.GetFiddlerIcon();
-            this.KeyPreview = true; // Enable the key preview
+            this.KeyPreview = true;
 
-            // Initialize the boxes and checks arrays
+            // --- Setup boxes and checks arrays ---
             boxes = new SelectablePictureBox[]
             {
-            selectablePictureBox1,
-            selectablePictureBox2,
-            selectablePictureBox3,
-            selectablePictureBox4,
-            selectablePictureBox5,
-            selectablePictureBox6,
-            selectablePictureBox7,
-            selectablePictureBox8,
-            selectablePictureBox9,
-            selectablePictureBox10
+                selectablePictureBox1, selectablePictureBox2, selectablePictureBox3,
+                selectablePictureBox4, selectablePictureBox5, selectablePictureBox6,
+                selectablePictureBox7, selectablePictureBox8, selectablePictureBox9,
+                selectablePictureBox10
             };
 
             checks = new CheckBox[]
             {
-            checkBox1,
-            checkBox2,
-            checkBox3,
-            checkBox4,
-            checkBox5,
-            checkBox6,
-            checkBox7,
-            checkBox8,
-            checkBox9,
-            checkBox10
+                checkBox1, checkBox2, checkBox3, checkBox4, checkBox5,
+                checkBox6, checkBox7, checkBox8, checkBox9, checkBox10
             };
 
-            timer.Interval = 1000; // Set the initial interval to 1 second
+            // --- Timer Setup ---
+            timer.Interval = 1000;
             timer.Tick += new EventHandler(timer_Tick);
 
-            // Add the ValueChanged event handler to numericUpDownFrameDelay
             numericUpDownFrameDelay.ValueChanged += new EventHandler(numericUpDownFrameDelay_ValueChanged);
-
-            // Add the click event handler to btColordialog
             btColordialog.Click += (sender, e) => SelectColor();
-
             tboxColorCode.TextChanged += tboxColorCode_TextChanged;
 
-            // Zoom Tags
-            zoomInButton1.Tag = selectablePictureBox1;
-            zoomOutButton1.Tag = selectablePictureBox1;
+            // --- Zoom Tag Setup ---
+            SetupZoomTags();
 
-            zoomInButton2.Tag = selectablePictureBox2;
-            zoomOutButton2.Tag = selectablePictureBox2;
+            // --- Overlay Lines Setup ---
+            SetupOverlayLines();
 
-            zoomInButton3.Tag = selectablePictureBox3;
-            zoomOutButton3.Tag = selectablePictureBox3;
+            // --- Play Timer for Clipboard Anim Tab ---
+            playTimer = new Timer();
+            playTimer.Tick += new EventHandler(PlayTimer_Tick);
 
-            zoomInButton4.Tag = selectablePictureBox4;
-            zoomOutButton4.Tag = selectablePictureBox4;
+            // --- Anim Browser Timer ---
+            animBrowserTimer = new Timer();
+            animBrowserTimer.Tick += new EventHandler(AnimBrowserTimer_Tick);
+            animBrowserTimer.Interval = 150;
 
-            zoomInButton5.Tag = selectablePictureBox5;
-            zoomOutButton5.Tag = selectablePictureBox5;
+            // --- Initialize Anim Browser Tab (bind events only) ---
+            InitAnimBrowserTab();
 
-            zoomInButton6.Tag = selectablePictureBox6;
-            zoomOutButton6.Tag = selectablePictureBox6;
+            // --- Initialize Art Browser Tab (bind events only) ---
+            InitArtBrowserTab();
 
-            zoomInButton7.Tag = selectablePictureBox7;
-            zoomOutButton7.Tag = selectablePictureBox7;
+            // FIX: Allow CheckedChanged to work after full init
+            _artBrowserInitializing = false;
+        }
 
-            zoomInButton8.Tag = selectablePictureBox8;
-            zoomOutButton8.Tag = selectablePictureBox8;
+        #endregion
 
-            zoomInButton9.Tag = selectablePictureBox9;
-            zoomOutButton9.Tag = selectablePictureBox9;
+        #region Setup Helpers
 
-            zoomInButton10.Tag = selectablePictureBox10;
-            zoomOutButton10.Tag = selectablePictureBox10;
+        private void SetupZoomTags()
+        {
+            zoomInButton1.Tag = selectablePictureBox1; zoomOutButton1.Tag = selectablePictureBox1;
+            zoomInButton2.Tag = selectablePictureBox2; zoomOutButton2.Tag = selectablePictureBox2;
+            zoomInButton3.Tag = selectablePictureBox3; zoomOutButton3.Tag = selectablePictureBox3;
+            zoomInButton4.Tag = selectablePictureBox4; zoomOutButton4.Tag = selectablePictureBox4;
+            zoomInButton5.Tag = selectablePictureBox5; zoomOutButton5.Tag = selectablePictureBox5;
+            zoomInButton6.Tag = selectablePictureBox6; zoomOutButton6.Tag = selectablePictureBox6;
+            zoomInButton7.Tag = selectablePictureBox7; zoomOutButton7.Tag = selectablePictureBox7;
+            zoomInButton8.Tag = selectablePictureBox8; zoomOutButton8.Tag = selectablePictureBox8;
+            zoomInButton9.Tag = selectablePictureBox9; zoomOutButton9.Tag = selectablePictureBox9;
+            zoomInButton10.Tag = selectablePictureBox10; zoomOutButton10.Tag = selectablePictureBox10;
+        }
 
+        private void SetupOverlayLines()
+        {
+            line.BackColor = Color.Red;
+            line.Width = AnimationPictureBox.Width;
+            line.Visible = false;
 
-            // Create a new Label control for the line
-            Label line = new Label();
-            Label vLine = new Label();
+            vLine.BackColor = Color.Red;
+            vLine.Height = AnimationPictureBox.Height;
+            vLine.Visible = false;
 
-            // Setzen Sie die Eigenschaften des Labels
-            line.BackColor = Color.Red; // The color of the line
-            line.Width = AnimationPictureBox.Width; // The height of the line
-            line.Visible = false; // The label is initially invisible
-
-            vLine.BackColor = Color.Red; // The color of the line
-            vLine.Height = AnimationPictureBox.Height; // The height of the line
-            vLine.Visible = false; // The label is initially invisible
-
-            // Add the label to the panelAnimationPictureBox
             panelAnimationPictureBox.Controls.Add(line);
             panelAnimationPictureBox.Controls.Add(vLine);
-            panelAnimationPictureBox.BackColor = Color.Transparent; // The panel is transparent
+            panelAnimationPictureBox.BackColor = Color.Transparent;
 
-            // A method to update the position and thickness of the line
-            void UpdateLine()
-            {
-                int y = (int)numericUpDownHighAnimationPictureBox.Value;
-                int thickness = (int)numericUpDownSizeLineAnimationPictureBox.Value;
-
-                line.Top = y; // The position of the line
-                line.Height = thickness; // The thickness of the line
-
-                // Set the color based on the value of the new NumericUpDown controls
-                if (numericUpDownColor.Value == 0)
-                {
-                    line.BackColor = Color.Red; // Red
-                }
-                else if (numericUpDownColor.Value == 1)
-                {
-                    line.BackColor = Color.Blue; // Blue
-                }
-                else if (numericUpDownColor.Value == 2)
-                {
-                    line.BackColor = Color.Green; // Green
-                }
-                else if (numericUpDownColor.Value == 3)
-                {
-                    line.BackColor = Color.Yellow; // Yellow
-                }
-                else if (numericUpDownColor.Value == 4)
-                {
-                    line.BackColor = Color.Black; // Black
-                }
-                else if (numericUpDownColor.Value == 5)
-                {
-                    line.BackColor = Color.White; // White
-                }
-                else if (numericUpDownColor.Value == 6)
-                {
-                    line.BackColor = Color.Orange; // Orange
-                }
-                else if (numericUpDownColor.Value == 7)
-                {
-                    line.BackColor = Color.Pink; // Pink
-                }
-                else if (numericUpDownColor.Value == 8)
-                {
-                    line.BackColor = Color.Turquoise; // Turquoise
-                }
-                else if (numericUpDownColor.Value == 9)
-                {
-                    line.BackColor = Color.Gray; // Gray
-                }
-                else if (numericUpDownColor.Value == 10)
-                {
-                    line.BackColor = Color.Gold; // Gold
-                }
-
-                line.Visible = thickness > 0; // Make sure the line is only visible when its thickness is greater than 0
-                line.BringToFront(); // Make sure the line is in front of the PictureBox
-            }
-
-            // A method to update the position and thickness of the line
-            void UpdateVLine()
-            {
-                int x = (int)numericUpDownWidthAnimationPictureBox.Value;
-                int thickness = (int)numericUpDownSizeLine2AnimationPictureBox.Value;
-
-                vLine.Left = x; // The position of the line
-                vLine.Width = thickness; // The width of the line
-
-                // Set the color based on the value of the new NumericUpDown controls
-                if (numericUpDownColor.Value == 0)
-                {
-                    vLine.BackColor = Color.Red; // Red
-                }
-                else if (numericUpDownColor.Value == 1)
-                {
-                    vLine.BackColor = Color.Blue; // Blue
-                }
-                else if (numericUpDownColor.Value == 2)
-                {
-                    line.BackColor = Color.Green; // Green
-                }
-                else if (numericUpDownColor.Value == 3)
-                {
-                    line.BackColor = Color.Yellow; // Yellow
-                }
-                else if (numericUpDownColor.Value == 4)
-                {
-                    line.BackColor = Color.Yellow; // Black
-                }
-                else if (numericUpDownColor.Value == 5)
-                {
-                    line.BackColor = Color.White; // White
-                }
-                else if (numericUpDownColor.Value == 6)
-                {
-                    line.BackColor = Color.Orange; // Orange
-                }
-                else if (numericUpDownColor.Value == 7)
-                {
-                    line.BackColor = Color.Pink; // Pink
-                }
-                else if (numericUpDownColor.Value == 8)
-                {
-                    line.BackColor = Color.Turquoise; // Turquoise
-                }
-                else if (numericUpDownColor.Value == 9)
-                {
-                    line.BackColor = Color.Gray; // Gray
-                }
-                else if (numericUpDownColor.Value == 10)
-                {
-                    line.BackColor = Color.Gold; // Gold
-                }
-
-                vLine.Visible = thickness > 0; // Make sure the line is only visible when its thickness is greater than 0
-                vLine.BringToFront(); // Make sure the line is in front of the PictureBox
-            }
-
-            // Call UpdateLine when the value of the NumericUpDown controls changes
             numericUpDownHighAnimationPictureBox.ValueChanged += (s, e) => UpdateLine();
             numericUpDownSizeLineAnimationPictureBox.ValueChanged += (s, e) => UpdateLine();
             numericUpDownWidthAnimationPictureBox.ValueChanged += (s, e) => UpdateVLine();
             numericUpDownSizeLine2AnimationPictureBox.ValueChanged += (s, e) => UpdateVLine();
-            numericUpDownColor.ValueChanged += (s, e) => { UpdateLine(); UpdateVLine(); UpdateColor(); };
-
-            void UpdateColor()
-            {
-                int colorValue = (int)numericUpDownColor.Value;
-                if (colorValue == 0)
-                {
-                    line.BackColor = Color.Red;
-                    vLine.BackColor = Color.Red;
-                }
-                else if (colorValue == 1)
-                {
-                    line.BackColor = Color.Blue;
-                    vLine.BackColor = Color.Blue;
-                }
-                else if (colorValue == 2)
-                {
-                    line.BackColor = Color.Green;
-                    vLine.BackColor = Color.Green;
-                }
-                else if (colorValue == 3)
-                {
-                    line.BackColor = Color.Yellow;
-                    vLine.BackColor = Color.Yellow;
-                }
-                else if (colorValue == 4)
-                {
-                    line.BackColor = Color.Black;
-                    vLine.BackColor = Color.Black;
-                }
-                else if (colorValue == 5)
-                {
-                    line.BackColor = Color.White;
-                    vLine.BackColor = Color.White;
-                }
-                else if (colorValue == 6)
-                {
-                    line.BackColor = Color.Orange;
-                    vLine.BackColor = Color.Orange;
-                }
-                else if (colorValue == 7)
-                {
-                    line.BackColor = Color.Pink;
-                    vLine.BackColor = Color.Pink;
-                }
-                else if (colorValue == 8)
-                {
-                    line.BackColor = Color.Turquoise;
-                    vLine.BackColor = Color.Turquoise;
-                }
-                else if (colorValue == 9)
-                {
-                    line.BackColor = Color.Gray;
-                    vLine.BackColor = Color.Gray;
-                }
-                else if (colorValue == 10)
-                {
-                    line.BackColor = Color.Gold;
-                    vLine.BackColor = Color.Gold;
-                }
-
-                // Update the line and vLine directly
-                line.Invalidate();
-                vLine.Invalidate();
-
-                // Initialize your pictureBoxes array with the appropriate instances
-                pictureBoxes = new SelectablePictureBox[10];
-
-                // Add the PictureBox instances to your form and initialize the indexes
-                for (int i = 0; i < pictureBoxes.Length; i++)
-                {
-                    pictureBoxes[i] = new SelectablePictureBox();
-                    Controls.Add(pictureBoxes[i]); // Add the PictureBox to the form.
-                    pictureBoxes[i].SetCurrentIndex(i + 1); // Set the index for each PictureBox
-                }
-
-                // Call the UndoDrawing method on all PictureBox instances
-                SelectablePictureBoxHelper.UndoDrawing(pictureBoxes);
-            }
-
-            // Initialisiere den Timer
-            playTimer = new Timer();
-            playTimer.Tick += new EventHandler(PlayTimer_Tick);
+            numericUpDownColor.ValueChanged += (s, e) => { UpdateLine(); UpdateVLine(); UpdateOverlayColor(); };
         }
-        #region Time_Tick         
+
+        #endregion
+
+        #region Overlay Line Methods
+
+        private void UpdateLine()
+        {
+            int y = (int)numericUpDownHighAnimationPictureBox.Value;
+            int thickness = (int)numericUpDownSizeLineAnimationPictureBox.Value;
+            line.Top = y;
+            line.Height = thickness;
+            line.BackColor = GetOverlayColor();
+            line.Visible = thickness > 0;
+            line.BringToFront();
+        }
+
+        private void UpdateVLine()
+        {
+            int x = (int)numericUpDownWidthAnimationPictureBox.Value;
+            int thickness = (int)numericUpDownSizeLine2AnimationPictureBox.Value;
+            vLine.Left = x;
+            vLine.Width = thickness;
+            vLine.BackColor = GetOverlayColor();
+            vLine.Visible = thickness > 0;
+            vLine.BringToFront();
+        }
+
+        private void UpdateOverlayColor()
+        {
+            Color c = GetOverlayColor();
+            line.BackColor = c;
+            vLine.BackColor = c;
+            line.Invalidate();
+            vLine.Invalidate();
+        }
+
+        private Color GetOverlayColor()
+        {
+            switch ((int)numericUpDownColor.Value)
+            {
+                case 0: return Color.Red;
+                case 1: return Color.Blue;
+                case 2: return Color.Green;
+                case 3: return Color.Yellow;
+                case 4: return Color.Black;
+                case 5: return Color.White;
+                case 6: return Color.Orange;
+                case 7: return Color.Pink;
+                case 8: return Color.Turquoise;
+                case 9: return Color.Gray;
+                case 10: return Color.Gold;
+                default: return Color.Red;
+            }
+        }
+
+        #endregion
+
+        #region Timer_Tick (Frame Animation)
 
         private void timer_Tick(object sender, EventArgs e)
         {
-            // Get the next image index
             currentIndex++;
             if (currentIndex >= boxes.Length)
-                currentIndex = (int)numericUpDownStartDelay.Value - 1; // Subtrahieren Sie 1 vom Wert von numericUpDownStartDelay
+                currentIndex = (int)numericUpDownStartDelay.Value - 1;
 
-            // Deklarieren Sie die Variablen außerhalb des if-Blocks
             Bitmap imageBitmap = null;
             Bitmap flippedImageBitmap = null;
 
-            // Check if the current PictureBox has an image and is active
             if (boxes[currentIndex].Image != null && checks[currentIndex].Checked)
             {
-                // Check if the image exists in the PictureBox
-                if (boxes[currentIndex].Image != null)
+                imageBitmap = new Bitmap(boxes[currentIndex].Image);
+
+                Color[] colorsToMakeTransparent = new Color[]
                 {
-                    // Get the image from the corresponding selectablePictureBox
-                    imageBitmap = new Bitmap(boxes[currentIndex].Image);
+                    Color.FromArgb(0, 0, 0),
+                    Color.FromArgb(255, 255, 255),
+                    Color.FromArgb(211, 211, 211)
+                };
 
-                    // Define the colors you want to make transparent
-                    Color[] colorsToMakeTransparent = new Color[]
-                    {
-                Color.FromArgb(0, 0, 0),      // Black
-                Color.FromArgb(255, 255, 255),// White
-                Color.FromArgb(211, 211, 211) // Light gray (d3d3d3 in RGB)
-                    };
+                foreach (Color color in colorsToMakeTransparent)
+                    imageBitmap = MakeTransparent(imageBitmap, color);
 
-                    // Make every color in the image transparent
-                    foreach (Color color in colorsToMakeTransparent)
-                    {
-                        imageBitmap = MakeTransparent(imageBitmap, color);
-                    }
-
-                    // Create a copy of the image and flip it
-                    flippedImageBitmap = new Bitmap(imageBitmap);
-                    flippedImageBitmap.RotateFlip(RotateFlipType.RotateNoneFlipX);
-                }
+                flippedImageBitmap = new Bitmap(imageBitmap);
+                flippedImageBitmap.RotateFlip(RotateFlipType.RotateNoneFlipX);
             }
 
-            // Check the status of checkBoxShowFrame
             if (checkBoxShowFrame.Checked || imageBitmap == null)
             {
-                // If checkBoxShowFrame is enabled or there is no image, restore the original image without transparency
                 AnimationPictureBox.Image = boxes[currentIndex].Image;
-
-                // Check whether the image exists before creating a bitmap
                 if (boxes[currentIndex].Image != null)
                 {
-                    // Make a copy of the original image and mirror it
                     Bitmap originalFlippedImage = new Bitmap(boxes[currentIndex].Image);
                     originalFlippedImage.RotateFlip(RotateFlipType.RotateNoneFlipX);
-
-                    // Display the original mirrored image in your second PictureBox
                     AnimationPictureBox2.Image = originalFlippedImage;
                 }
                 else
                 {
                     AnimationPictureBox2.Image = null;
                 }
-
             }
             else
             {
-                // If checkBoxShowFrame is disabled, use the transparent image
                 AnimationPictureBox.Image = imageBitmap;
                 AnimationPictureBox2.Image = flippedImageBitmap;
             }
@@ -428,324 +265,278 @@ namespace UoFiddler.Controls.Forms
             frameLabel.Text = (currentIndex + 1).ToString();
         }
 
-
         #endregion
 
-        private void OnLoad(object sender, EventArgs e)
-        {
+        #region Form Events
 
+        private async void OnLoad(object sender, EventArgs e)
+        {
+            await Task.Yield();
+
+            // FIX: Run PopulateAnimBodyList in background too — Animations.IsActionDefined
+            // can cause deep call stacks (stack overflow) when called 2048 times on UI thread
+            await Task.Run(() =>
+            {
+                try
+                {
+                    var bodyItems = new List<int>();
+                    for (int body = 0; body < 2048; body++)
+                    {
+                        try
+                        {
+                            if (Animations.IsActionDefined(body, 0, 0))
+                                bodyItems.Add(body);
+                        }
+                        catch { }
+                    }
+
+                    this.Invoke((Action)(() =>
+                    {
+                        if (listBoxAnimBodies == null || listBoxAnimBodies.IsDisposed) return;
+                        listBoxAnimBodies.BeginUpdate();
+                        listBoxAnimBodies.Items.Clear();
+                        foreach (var b in bodyItems)
+                            listBoxAnimBodies.Items.Add(b);
+                        listBoxAnimBodies.EndUpdate();
+
+                        // Populate directions and file combo (must be on UI thread)
+                        if (listBoxAnimDirections != null)
+                        {
+                            listBoxAnimDirections.Items.Clear();
+                            string[] dirNames = { "East", "NE", "North", "NW", "West", "SW", "South", "SE" };
+                            for (int i = 0; i < 8; i++)
+                                listBoxAnimDirections.Items.Add($"Dir {i}: {dirNames[i]}");
+                            if (listBoxAnimDirections.Items.Count > 0)
+                                listBoxAnimDirections.SelectedIndex = 0;
+                        }
+
+                        if (comboBoxAnimFile != null)
+                        {
+                            comboBoxAnimFile.Items.Clear();
+                            comboBoxAnimFile.Items.AddRange(new object[] {
+                        "anim.mul (1)", "anim2.mul (2)", "anim3.mul (3)",
+                        "anim4.mul (4)", "anim5.mul (5)",
+                        "AnimationFrame1.uop", "AnimationFrame2.uop", "AnimationFrame3.uop"
+                    });
+                            comboBoxAnimFile.SelectedIndex = 0;
+                        }
+                    }));
+                }
+                catch (Exception ex)
+                {
+                    this.Invoke((Action)(() =>
+                    {
+                        if (labelAnimFrameInfo != null)
+                            labelAnimFrameInfo.Text = $"Body load error: {ex.Message}";
+                    }));
+                }
+            });
+
+            // Art list background load (unchanged)
+            await Task.Run(() =>
+            {
+                try
+                {
+                    var results = new List<(int id, string label)>();
+                    bool isStatic = true;
+
+                    for (int i = 0; i < 0x4000; i++)
+                    {
+                        try
+                        {
+                            Bitmap bmp = isStatic ? Art.GetStatic(i) : Art.GetLand(i);
+                            if (bmp != null)
+                                results.Add((i, $"0x{i:X4} ({i})"));
+                        }
+                        catch { }
+                    }
+
+                    this.Invoke((Action)(() =>
+                    {
+                        if (listBoxArtItems == null || listBoxArtItems.IsDisposed) return;
+                        listBoxArtItems.BeginUpdate();
+                        listBoxArtItems.Items.Clear();
+                        artSearchResults.Clear();
+                        foreach (var (id, label) in results)
+                        {
+                            artSearchResults.Add(id);
+                            listBoxArtItems.Items.Add(label);
+                        }
+                        listBoxArtItems.EndUpdate();
+                        if (labelArtInfo != null)
+                            labelArtInfo.Text = $"Loaded: {artSearchResults.Count} items";
+                    }));
+                }
+                catch (Exception ex)
+                {
+                    this.Invoke((Action)(() =>
+                    {
+                        if (labelArtInfo != null)
+                            labelArtInfo.Text = $"Art load error: {ex.Message}";
+                    }));
+                }
+            });
         }
 
         private void AnimationEdit_FormClosing(object sender, FormClosingEventArgs e)
         {
-
+            animBrowserTimer?.Stop();
+            playTimer?.Stop();
+            timer?.Stop();
         }
 
-        #region LoadToolStripMenuItem
-        private void loadToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            // Array of selectablePictureBox and CheckBoxes
-            PictureBox[] boxes = { selectablePictureBox1, selectablePictureBox2, selectablePictureBox3, selectablePictureBox4, selectablePictureBox5, selectablePictureBox6, selectablePictureBox7, selectablePictureBox8, selectablePictureBox9, selectablePictureBox10 };
-            CheckBox[] checks = { checkBox1, checkBox2, checkBox3, checkBox4, checkBox5, checkBox6, checkBox7, checkBox8, checkBox9, checkBox10 };
-
-            // Create an instance of OpenFileDialog
-            OpenFileDialog openFileDialog1 = new OpenFileDialog();
-
-            // Properties of the OpenFileDialog
-            openFileDialog1.Filter = "Image files (*.bmp;*.jpg;*.jpeg;*.gif;*.png)|*.bmp;*.jpg;*.jpeg;*.gif;*.png";
-            openFileDialog1.Title = "Please select an image file.";
-
-            // Displays the dialog and check if the user clicked OK
-            if (openFileDialog1.ShowDialog() == DialogResult.OK)
-            {
-                // Loads the image
-                Image image = Image.FromFile(openFileDialog1.FileName);
-
-                // Clear all PictureBoxes before loading the new image
-                for (int i = 0; i < boxes.Length; i++)
-                {
-                    boxes[i].Image = null;
-                    if (boxes[i] is SelectablePictureBox)
-                    {
-                        ((SelectablePictureBox)boxes[i]).ClearImage();
-                    }
-                }
-
-                // Use a loop to load the image into the PictureBoxes,
-                // if the corresponding checkbox is activated
-                for (int i = 0; i < boxes.Length; i++)
-                {
-                    if (checks[i].Checked)
-                    {
-                        boxes[i].Image = image;
-                        if (boxes[i] is SelectablePictureBox)
-                        {
-                            SelectablePictureBox box = (SelectablePictureBox)boxes[i];
-                            box.OriginalImage = new Bitmap(image); // Save the original image
-                            box.DrawingBitmaps[box.CurrentIndex] = new Bitmap(image.Width, image.Height);
-                        }
-                    }
-                }
-            }
-        }
         #endregion
 
-        #region LoadToolStripMenuItem
+        #region Load Toolbar / Menu
+
+        private void loadToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            LoadImageToCheckedBoxes(false, false);
+        }
+
         private void loadToolStripMenuItem1_Click(object sender, EventArgs e)
         {
-            // Array of selectablePictureBox and CheckBoxes
-            PictureBox[] boxes = { selectablePictureBox1, selectablePictureBox2, selectablePictureBox3, selectablePictureBox4, selectablePictureBox5, selectablePictureBox6, selectablePictureBox7, selectablePictureBox8, selectablePictureBox9, selectablePictureBox10 };
-            CheckBox[] checks = { checkBox1, checkBox2, checkBox3, checkBox4, checkBox5, checkBox6, checkBox7, checkBox8, checkBox9, checkBox10 };
-
-            // Create an instance of OpenFileDialog
-            OpenFileDialog openFileDialog1 = new OpenFileDialog();
-
-            // Properties of the OpenFileDialog
-            openFileDialog1.Filter = "Image files (*.bmp;*.jpg;*.jpeg;*.gif;*.png)|*.bmp;*.jpg;*.jpeg;*.gif;*.png";
-            openFileDialog1.Title = "Please select an image file.";
-
-            // Displays the dialog and check if the user clicked OK
-            if (openFileDialog1.ShowDialog() == DialogResult.OK)
-            {
-                // Loads the image
-                Image image = Image.FromFile(openFileDialog1.FileName);
-
-                // Clear all PictureBoxes before loading the new image
-                for (int i = 0; i < boxes.Length; i++)
-                {
-                    boxes[i].Image = null;
-                    if (boxes[i] is SelectablePictureBox)
-                    {
-                        ((SelectablePictureBox)boxes[i]).ClearImage();
-                    }
-                }
-
-                // Use a loop to load the image into the PictureBoxes,
-                // if the corresponding checkbox is activated
-                for (int i = 0; i < boxes.Length; i++)
-                {
-                    if (checks[i].Checked)
-                    {
-                        boxes[i].Image = image;
-                        if (boxes[i] is SelectablePictureBox)
-                        {
-                            SelectablePictureBox box = (SelectablePictureBox)boxes[i];
-                            box.OriginalImage = new Bitmap(image); // Save the original image
-                            box.DrawingBitmaps[box.CurrentIndex] = new Bitmap(image.Width, image.Height);
-                        }
-                    }
-                }
-            }
+            LoadImageToCheckedBoxes(false, false);
         }
 
         private void loadToolStripMenuItemAllSingle_Click(object sender, EventArgs e)
         {
-            // Array of selectablePictureBox and CheckBoxes
-            PictureBox[] boxes = { selectablePictureBox1, selectablePictureBox2, selectablePictureBox3, selectablePictureBox4, selectablePictureBox5, selectablePictureBox6, selectablePictureBox7, selectablePictureBox8, selectablePictureBox9, selectablePictureBox10 };
-            CheckBox[] checks = { checkBox1, checkBox2, checkBox3, checkBox4, checkBox5, checkBox6, checkBox7, checkBox8, checkBox9, checkBox10 };
-
-            // Create an instance of OpenFileDialog
-            OpenFileDialog openFileDialog1 = new OpenFileDialog();
-
-            // Properties of the OpenFileDialog
-            openFileDialog1.Filter = "Image files (*.bmp;*.jpg;*.jpeg;*.gif;*.png)|*.bmp;*.jpg;*.jpeg;*.gif;*.png";
-            openFileDialog1.Title = "Please select an image file.";
-
-            // Use a loop to load a separate image into each PictureBox
-            for (int i = 0; i < boxes.Length; i++)
-            {
-                // Check if the corresponding checkbox is checked
-                if (checks[i].Checked)
-                {
-                    // Displays the dialog and check if the user clicked OK
-                    if (openFileDialog1.ShowDialog() == DialogResult.OK)
-                    {
-                        // Loads the image
-                        Image image = Image.FromFile(openFileDialog1.FileName);
-
-                        // Clear the PictureBox before loading the new image
-                        if (boxes[i] is SelectablePictureBox)
-                        {
-                            SelectablePictureBox box = (SelectablePictureBox)boxes[i];
-                            box.ClearImage();
-                        }
-
-                        // Load the image into the PictureBox
-                        boxes[i].Image = image;
-
-                        if (boxes[i] is SelectablePictureBox)
-                        {
-                            SelectablePictureBox box = (SelectablePictureBox)boxes[i];
-                            box.OriginalImage = new Bitmap(image); // Save the original image
-                            box.DrawingBitmaps[box.CurrentIndex] = new Bitmap(image.Width, image.Height);
-                        }
-                    }
-                    else
-                    {
-                        // If the user clicked Cancel in the dialog, break the loop
-                        break;
-                    }
-                }
-            }
-
+            LoadSingleImagesPerBox(false);
         }
 
         private void loadToolStripMenuItemAllSingleMirror_Click(object sender, EventArgs e)
         {
-            // Array of selectablePictureBox and CheckBoxes
-            SelectablePictureBox[] boxes = { selectablePictureBox1, selectablePictureBox2, selectablePictureBox3, selectablePictureBox4, selectablePictureBox5, selectablePictureBox6, selectablePictureBox7, selectablePictureBox8, selectablePictureBox9, selectablePictureBox10 };
-            CheckBox[] checks = { checkBox1, checkBox2, checkBox3, checkBox4, checkBox5, checkBox6, checkBox7, checkBox8, checkBox9, checkBox10 };
-
-            // Create an instance of OpenFileDialog
-            OpenFileDialog openFileDialog1 = new OpenFileDialog();
-
-            // Properties of the OpenFileDialog
-            openFileDialog1.Filter = "Image files (*.bmp;*.jpg;*.jpeg;*.gif;*.png)|*.bmp;*.jpg;*.jpeg;*.gif;*.png";
-            openFileDialog1.Title = "Please select an image file.";
-
-            // Use a loop to load a separate image into each PictureBox
-            for (int i = 0; i < boxes.Length; i++)
-            {
-                // Check if the corresponding checkbox is checked
-                if (checks[i].Checked)
-                {
-                    // Displays the dialog and check if the user clicked OK
-                    if (openFileDialog1.ShowDialog() == DialogResult.OK)
-                    {
-                        // Loads the image
-                        Image image = Image.FromFile(openFileDialog1.FileName);
-
-                        // Clear the PictureBox before loading the new image
-                        boxes[i].ClearImage();
-
-                        // Load the image into the PictureBox
-                        boxes[i].Image = image;
-                        boxes[i].OriginalImage = new Bitmap(image); // Save the original image
-                        boxes[i].DrawingBitmaps[boxes[i].CurrentIndex] = new Bitmap(image.Width, image.Height);
-
-                        // Mirror the image right after loading it
-                        boxes[i].MirrorImage();
-                    }
-                    else
-                    {
-                        // If the user clicked Cancel in the dialog, break the loop
-                        break;
-                    }
-                }
-            }
-
+            LoadSingleImagesPerBox(true);
         }
 
-        // Load image mirror all
         private void loadOneImageAllMirrorToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            // Array of selectablePictureBox and CheckBoxes
-            SelectablePictureBox[] boxes = { selectablePictureBox1, selectablePictureBox2, selectablePictureBox3, selectablePictureBox4, selectablePictureBox5, selectablePictureBox6, selectablePictureBox7, selectablePictureBox8, selectablePictureBox9, selectablePictureBox10 };
-            CheckBox[] checks = { checkBox1, checkBox2, checkBox3, checkBox4, checkBox5, checkBox6, checkBox7, checkBox8, checkBox9, checkBox10 };
+            LoadImageToCheckedBoxes(true, true);
+        }
 
-            // Create an instance of OpenFileDialog
-            OpenFileDialog openFileDialog1 = new OpenFileDialog();
+        #endregion
 
-            // Properties of the OpenFileDialog
-            openFileDialog1.Filter = "Image files (*.bmp;*.jpg;*.jpeg;*.gif;*.png)|*.bmp;*.jpg;*.jpeg;*.gif;*.png";
-            openFileDialog1.Title = "Please select an image file.";
+        #region Load Image Helpers
 
-            // Displays the dialog and check if the user clicked OK
-            if (openFileDialog1.ShowDialog() == DialogResult.OK)
+        private void LoadImageToCheckedBoxes(bool mirror, bool mirrorAll)
+        {
+            using (OpenFileDialog dlg = new OpenFileDialog())
             {
-                // Loads the image
-                Image image = Image.FromFile(openFileDialog1.FileName);
+                dlg.Filter = "Image files (*.bmp;*.jpg;*.jpeg;*.gif;*.png)|*.bmp;*.jpg;*.jpeg;*.gif;*.png";
+                dlg.Title = "Please select an image file.";
+                if (dlg.ShowDialog() != DialogResult.OK) return;
 
-                // Clear all PictureBoxes before loading the new image
+                Image image = Image.FromFile(dlg.FileName);
+
                 for (int i = 0; i < boxes.Length; i++)
                 {
                     boxes[i].Image = null;
                     boxes[i].ClearImage();
                 }
 
-                // Use a loop to load the image into the PictureBoxes,
-                // if the corresponding checkbox is activated
                 for (int i = 0; i < boxes.Length; i++)
                 {
                     if (checks[i].Checked)
                     {
                         boxes[i].Image = image;
-                        boxes[i].OriginalImage = new Bitmap(image); // Save the original image
+                        boxes[i].OriginalImage = new Bitmap(image);
                         boxes[i].DrawingBitmaps[boxes[i].CurrentIndex] = new Bitmap(image.Width, image.Height);
-
-                        // Mirror the image right after loading it                        
-                        boxes[i].MirrorAllImages();
+                        if (mirror) boxes[i].MirrorImage();
+                        if (mirrorAll) boxes[i].MirrorAllImages();
                     }
                 }
             }
         }
 
-        #endregion
-        private void pictureBox_KeyDown(object sender, KeyEventArgs e)
+        private void LoadSingleImagesPerBox(bool mirror)
         {
+            using (OpenFileDialog dlg = new OpenFileDialog())
+            {
+                dlg.Filter = "Image files (*.bmp;*.jpg;*.jpeg;*.gif;*.png)|*.bmp;*.jpg;*.jpeg;*.gif;*.png";
+                dlg.Title = "Please select an image file.";
 
+                for (int i = 0; i < boxes.Length; i++)
+                {
+                    if (!checks[i].Checked) continue;
+                    if (dlg.ShowDialog() != DialogResult.OK) break;
+
+                    Image image = Image.FromFile(dlg.FileName);
+                    boxes[i].ClearImage();
+                    boxes[i].Image = image;
+                    boxes[i].OriginalImage = new Bitmap(image);
+                    boxes[i].DrawingBitmaps[boxes[i].CurrentIndex] = new Bitmap(image.Width, image.Height);
+                    if (mirror) boxes[i].MirrorImage();
+                }
+            }
         }
 
-        #region PictureBox_PrevieKeyDown
+        #endregion
+
+        #region KeyDown / PreviewKeyDown
+
+        private void pictureBox_KeyDown(object sender, KeyEventArgs e) { }
+
         private void pictureBox_PreviewKeyDown(object sender, PreviewKeyDownEventArgs e)
         {
             if (e.Control && e.KeyCode == Keys.V)
             {
-                // Cast the sender object into a SelectablePictureBox
                 SelectablePictureBox currentBox = sender as SelectablePictureBox;
-
                 if (Clipboard.ContainsImage())
-                {
                     currentBox.Image = Clipboard.GetImage();
-                }
                 else
-                {
                     MessageBox.Show("The clipboard does not contain an image.");
-                }
             }
         }
+
         #endregion
 
         #region NumericUpDownFrameDelay
+
         private void numericUpDownFrameDelay_ValueChanged(object sender, EventArgs e)
         {
             if (numericUpDownFrameDelay.Value > 0)
             {
                 timer.Interval = 1000 / (int)numericUpDownFrameDelay.Value;
-                delayLabel.Text = $"Processing speed: {timer.Interval} ms"; // Ads in label
-
-                // Restart the timer if it's enabled
-                if (timer.Enabled)
-                {
-                    timer.Stop();
-                    timer.Start();
-                }
+                delayLabel.Text = $"Processing speed: {timer.Interval} ms";
+                if (timer.Enabled) { timer.Stop(); timer.Start(); }
             }
             else
             {
                 MessageBox.Show("Frame delay must be greater than zero.");
             }
         }
+
         #endregion
 
         #region Start Animation
 
-
         private void startAnimationButton_Click(object sender, EventArgs e)
         {
-            // Start or stop the slideshow
+            ToggleFrameAnimation();
+        }
+
+        private void startToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            ToggleFrameAnimation();
+        }
+
+        private void ToggleFrameAnimation()
+        {
             if (timer.Enabled)
             {
                 timer.Stop();
+                startAnimationButton.Text = "Start";
+                startAnimationButton.BackColor = SystemColors.Control;
             }
             else
             {
                 if (numericUpDownFrameDelay.Value > 0)
                 {
                     timer.Interval = 1000 / (int)numericUpDownFrameDelay.Value;
-                    // Setzen Sie currentIndex auf den Wert von numericUpDownStartDelay
                     currentIndex = (int)numericUpDownStartDelay.Value;
                     timer.Start();
+                    startAnimationButton.Text = "Stop";
+                    startAnimationButton.BackColor = Color.OrangeRed;
                 }
                 else
                 {
@@ -753,211 +544,154 @@ namespace UoFiddler.Controls.Forms
                 }
             }
         }
+
         #endregion
 
         #region MakeTransparent
+
         private Bitmap MakeTransparent(Bitmap original, Color color)
         {
             Bitmap newBitmap = new Bitmap(original.Width, original.Height);
             for (int i = 0; i < original.Width; i++)
-            {
                 for (int j = 0; j < original.Height; j++)
                 {
                     Color originalColor = original.GetPixel(i, j);
-                    if (originalColor == color)
-                    {
-                        newBitmap.SetPixel(i, j, Color.Transparent);
-                    }
-                    else
-                    {
-                        newBitmap.SetPixel(i, j, originalColor);
-                    }
+                    newBitmap.SetPixel(i, j, originalColor == color ? Color.Transparent : originalColor);
                 }
-            }
             return newBitmap;
         }
+
+        private Image MakeColorTransparent(Image image, Color color)
+        {
+            Bitmap bitmap = new Bitmap(image);
+            for (int i = 0; i < bitmap.Width; i++)
+                for (int j = 0; j < bitmap.Height; j++)
+                {
+                    Color pixelColor = bitmap.GetPixel(i, j);
+                    if (pixelColor.ToArgb() == color.ToArgb())
+                        bitmap.SetPixel(i, j, Color.Transparent);
+                }
+            return bitmap;
+        }
+
         #endregion
 
-        #region SelectColor
+        #region SelectColor / UpdateColor
 
         private void SelectColor()
         {
-            ColorDialog colorDialog = new ColorDialog();
-
-            if (colorDialog.ShowDialog() == DialogResult.OK)
+            using (ColorDialog colorDialog = new ColorDialog())
             {
-                Color color = colorDialog.Color;
-                tboxColorCode.Text = $"#{color.R:X2}{color.G:X2}{color.B:X2}";
-                foreach (SelectablePictureBox box in boxes)
+                if (colorDialog.ShowDialog() == DialogResult.OK)
                 {
-                    box.SetDrawingColor(color);
+                    Color color = colorDialog.Color;
+                    tboxColorCode.Text = $"#{color.R:X2}{color.G:X2}{color.B:X2}";
+                    foreach (SelectablePictureBox box in boxes)
+                        box.SetDrawingColor(color);
                 }
             }
         }
-        #endregion
 
-        #region UdateColor
         private void UpdateColor()
         {
             string code = tboxColorCode.Text;
-
-            if (code.StartsWith("#"))
-                code = code.Substring(1);
-
-            if (code.Length == 6 && int.TryParse(code, System.Globalization.NumberStyles.HexNumber, null, out int number))
+            if (code.StartsWith("#")) code = code.Substring(1);
+            if (code.Length == 6 && int.TryParse(code, NumberStyles.HexNumber, null, out int number))
             {
                 Color color = Color.FromArgb(number >> 16, (number >> 8) & 255, number & 255);
                 foreach (SelectablePictureBox box in boxes)
-                {
                     box.SetDrawingColor(color);
-                }
             }
         }
+
         #endregion
 
-        #region Draw all
+        #region Draw All
+
         private void btDrawAllSelectableBox_Click(object sender, EventArgs e)
         {
             bool isActive = false;
             foreach (SelectablePictureBox box in boxes)
             {
-                box.ToggleDrawing(); // Toggles the drawing mode for each box
-                if (box.IsDrawing()) // Checks whether drawing mode is active
-                {
-                    isActive = true;
-                }
+                box.ToggleDrawing();
+                if (box.IsDrawing()) isActive = true;
             }
 
             if (isActive)
             {
-                btDrawAllSelectableBox.BackColor = Color.Green; // Sets the background color of the button to green
-                labelDrawAll.Text = "Active"; // Sets the text of the label to "Active"
+                btDrawAllSelectableBox.BackColor = Color.Green;
+                labelDrawAll.Text = "Active";
             }
             else
             {
-                btDrawAllSelectableBox.BackColor = SystemColors.Control; // Sets the background color of the button to the default color
-                labelDrawAll.Text = "Not active"; // Sets the text of the label to "Not active"
+                btDrawAllSelectableBox.BackColor = SystemColors.Control;
+                labelDrawAll.Text = "Not active";
             }
         }
+
         #endregion
 
         #region BrushSize
+
         private void numericUpDownBrushSize_ValueChanged(object sender, EventArgs e)
         {
             int size = (int)numericUpDownBrushSize.Value;
             foreach (SelectablePictureBox box in boxes)
-            {
                 box.SetBrushSize(size);
-            }
         }
+
         #endregion
 
-        #region Combobox Images
+        #region ComboBox Background
+
         private void comboBoxImageBackgrund_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (comboBoxImageBackgrund.SelectedIndex != -1)
-            {
-                string selectedItem = comboBoxImageBackgrund.SelectedItem.ToString();
+            if (comboBoxImageBackgrund.SelectedIndex < 0) return;
+            string selected = comboBoxImageBackgrund.SelectedItem.ToString();
 
-                if (selectedItem == "Green")
-                {
-                    AnimationPictureBox.BackgroundImage = UoFiddler.Plugin.ConverterMultiTextPlugin.Properties.Resources.Green2;
-                    AnimationPictureBox2.BackgroundImage = UoFiddler.Plugin.ConverterMultiTextPlugin.Properties.Resources.Green2;
-                }
-                else if (selectedItem == "Water")
-                {
-                    AnimationPictureBox.BackgroundImage = UoFiddler.Plugin.ConverterMultiTextPlugin.Properties.Resources.water2;
-                    AnimationPictureBox2.BackgroundImage = UoFiddler.Plugin.ConverterMultiTextPlugin.Properties.Resources.water2;
-                }
-                else if (selectedItem == "Sand")
-                {
-                    AnimationPictureBox.BackgroundImage = UoFiddler.Plugin.ConverterMultiTextPlugin.Properties.Resources.Sand;
-                    AnimationPictureBox2.BackgroundImage = UoFiddler.Plugin.ConverterMultiTextPlugin.Properties.Resources.Sand;
-                }
-                else if (selectedItem == "Street")
-                {
-                    AnimationPictureBox.BackgroundImage = UoFiddler.Plugin.ConverterMultiTextPlugin.Properties.Resources.Street;
-                    AnimationPictureBox2.BackgroundImage = UoFiddler.Plugin.ConverterMultiTextPlugin.Properties.Resources.Street;
-                }
-                else if (selectedItem == "Forest")
-                {
-                    AnimationPictureBox.BackgroundImage = UoFiddler.Plugin.ConverterMultiTextPlugin.Properties.Resources.Forest;
-                    AnimationPictureBox2.BackgroundImage = UoFiddler.Plugin.ConverterMultiTextPlugin.Properties.Resources.Forest;
-                }
-                else if (selectedItem == "Dirt")
-                {
-                    AnimationPictureBox.BackgroundImage = UoFiddler.Plugin.ConverterMultiTextPlugin.Properties.Resources.Dirt;
-                    AnimationPictureBox2.BackgroundImage = UoFiddler.Plugin.ConverterMultiTextPlugin.Properties.Resources.Dirt;
-                }
-                else if (selectedItem == "Dungeon")
-                {
-                    AnimationPictureBox.BackgroundImage = UoFiddler.Plugin.ConverterMultiTextPlugin.Properties.Resources.Dungeon;
-                    AnimationPictureBox2.BackgroundImage = UoFiddler.Plugin.ConverterMultiTextPlugin.Properties.Resources.Dungeon;
-                }
-                else if (selectedItem == "Cave")
-                {
-                    AnimationPictureBox.BackgroundImage = UoFiddler.Plugin.ConverterMultiTextPlugin.Properties.Resources.cave;
-                    AnimationPictureBox2.BackgroundImage = UoFiddler.Plugin.ConverterMultiTextPlugin.Properties.Resources.cave;
-                }
-                else if (selectedItem == "Clear")
-                {
-                    AnimationPictureBox.BackgroundImage = null;
-                    AnimationPictureBox2.BackgroundImage = null;
-                }
+            Image bg = null;
+            switch (selected)
+            {
+                case "Green": bg = UoFiddler.Plugin.ConverterMultiTextPlugin.Properties.Resources.Green2; break;
+                case "Water": bg = UoFiddler.Plugin.ConverterMultiTextPlugin.Properties.Resources.water2; break;
+                case "Sand": bg = UoFiddler.Plugin.ConverterMultiTextPlugin.Properties.Resources.Sand; break;
+                case "Street": bg = UoFiddler.Plugin.ConverterMultiTextPlugin.Properties.Resources.Street; break;
+                case "Forest": bg = UoFiddler.Plugin.ConverterMultiTextPlugin.Properties.Resources.Forest; break;
+                case "Dirt": bg = UoFiddler.Plugin.ConverterMultiTextPlugin.Properties.Resources.Dirt; break;
+                case "Dungeon": bg = UoFiddler.Plugin.ConverterMultiTextPlugin.Properties.Resources.Dungeon; break;
+                case "Cave": bg = UoFiddler.Plugin.ConverterMultiTextPlugin.Properties.Resources.cave; break;
+                case "Clear": bg = null; break;
             }
+
+            AnimationPictureBox.BackgroundImage = bg;
+            AnimationPictureBox2.BackgroundImage = bg;
         }
+
         #endregion
 
-        #region NumericUpDownImageShow       
+        #region NumericUpDownImageShow
 
         private void numericUpDownImageShow_ValueChanged(object sender, EventArgs e)
         {
-            // Get the index of the current image from numericUpDownImageShow
             int index = (int)numericUpDownImageShow.Value - 1;
-
-            // Check whether the index is valid
-            if (index >= 0 && index < boxes.Length)
+            if (index >= 0 && index < boxes.Length && boxes[index].Image != null)
             {
-                // Check if the image exists in the PictureBox
-                if (boxes[index].Image != null)
-                {
-                    // Get the image from the corresponding selectablePictureBox
-                    Bitmap imageBitmap = new Bitmap(boxes[index].Image);
+                Bitmap imageBitmap = new Bitmap(boxes[index].Image);
+                Color[] colorsToMakeTransparent = {
+                    Color.FromArgb(0, 0, 0),
+                    Color.FromArgb(255, 255, 255),
+                    Color.FromArgb(211, 211, 211)
+                };
+                foreach (Color color in colorsToMakeTransparent)
+                    imageBitmap = MakeTransparent(imageBitmap, color);
 
-                    // Define the colors you want to make transparent
-                    Color[] colorsToMakeTransparent = new Color[]
-                    {
-                        Color.FromArgb(0, 0, 0),      // Black
-                        Color.FromArgb(255, 255, 255),// White
-                        Color.FromArgb(211, 211, 211) // Light gray (d3d3d3 in RGB)
-                    };
-
-                    // Make every color in the image transparent
-                    foreach (Color color in colorsToMakeTransparent)
-                    {
-                        imageBitmap = MakeTransparent(imageBitmap, color);
-                    }
-
-                    // Set the transparent bitmap as the image for the PictureBox controls
-                    AnimationPictureBox.Image = imageBitmap;
-
-                    // Make a copy of the image and flip it
-                    Bitmap flippedImageBitmap = new Bitmap(imageBitmap);
-                    flippedImageBitmap.RotateFlip(RotateFlipType.RotateNoneFlipX);
-
-                    // Set the mirrored bitmap as the image for the PictureBox controls
-                    AnimationPictureBox2.Image = flippedImageBitmap;
-                }
-                else
-                {
-                    // If there is no image in the PictureBox, set the images in the PictureBox controls to null
-                    AnimationPictureBox.Image = null;
-                    AnimationPictureBox2.Image = null;
-                }
+                AnimationPictureBox.Image = imageBitmap;
+                Bitmap flippedImageBitmap = new Bitmap(imageBitmap);
+                flippedImageBitmap.RotateFlip(RotateFlipType.RotateNoneFlipX);
+                AnimationPictureBox2.Image = flippedImageBitmap;
             }
             else
             {
-                // If the index is invalid (e.g. 0), delete the images from the PictureBox controls
                 AnimationPictureBox.Image = null;
                 AnimationPictureBox2.Image = null;
             }
@@ -965,32 +699,7 @@ namespace UoFiddler.Controls.Forms
 
         #endregion
 
-        #region Start Contextmenu
-        private void startToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            // Start or stop the slideshow
-            if (timer.Enabled)
-            {
-                timer.Stop();
-            }
-            else
-            {
-                if (numericUpDownFrameDelay.Value > 0)
-                {
-                    timer.Interval = 1000 / (int)numericUpDownFrameDelay.Value;
-                    // Set currentIndex to the value of numericUpDownStartDelay
-                    currentIndex = (int)numericUpDownStartDelay.Value;
-                    timer.Start();
-                }
-                else
-                {
-                    MessageBox.Show("Frame delay must be greater than zero.");
-                }
-            }
-        }
-        #endregion
-
-        #region SelevtabePictureBox_MouseClick 
+        #region Pipette
 
         private void selectablePictureBox_MouseClick(object sender, MouseEventArgs e)
         {
@@ -998,336 +707,172 @@ namespace UoFiddler.Controls.Forms
             {
                 if (pipetteMode)
                 {
-                    // Get the color at the position where the user clicked
                     Color color = box.GetPixelColor(e.Location);
-
-                    // Put the hexadecimal value of the color in tboxColorCode
                     tboxColorCode.Text = $"#{color.R:X2}{color.G:X2}{color.B:X2}";
-
-                    // Exit pipette mode
                     pipetteMode = false;
-
-                    // Reset the color of the button to the default color
                     btPipette.BackColor = SystemColors.Control;
                 }
-                else
-                {
-                    // Run your normal MouseClick code here...
-                }
             }
         }
-        #endregion
 
-        #region Pipette
         private void btPipette_Click(object sender, EventArgs e)
         {
-            // Switch to eyedropper mode when the button is clicked
             pipetteMode = !pipetteMode;
-
-            if (pipetteMode)
-            {
-                // Color the button green when pipette mode is active
-                btPipette.BackColor = Color.Green;
-            }
-            else
-            {
-                // Reset the button color to the default color when eyedropper mode is finished
-                btPipette.BackColor = SystemColors.Control;
-            }
+            btPipette.BackColor = pipetteMode ? Color.Green : SystemColors.Control;
         }
-        #endregion
 
-        #region SelebtabePictureBoxMouseMove
         private void selectablePictureBox_MouseMove(object sender, MouseEventArgs e)
         {
             if (sender is SelectablePictureBox box)
             {
-                // Get the color at the position where the mouse is currently
                 Color color = box.GetPixelColor(e.Location);
-
-                // Put the hexadecimal value of the color in panel color code
                 panelFarbcode.BackColor = color;
-
-                // Convert the color to a hexadecimal code and display it in the label
                 lbColorCode.Text = $"#{color.R:X2}{color.G:X2}{color.B:X2}";
             }
         }
+
         #endregion
 
-        #region TextBox Color
+        #region TextBox ColorCode
+
         private void tboxColorCode_TextChanged(object sender, EventArgs e)
         {
             string colorCode = tboxColorCode.Text;
-
-            // If the # is missing, add it
-            if (!colorCode.StartsWith("#"))
-            {
-                colorCode = "#" + colorCode;
-            }
-
-            // Check whether the text in colorCode is a valid hexadecimal color value
+            if (!colorCode.StartsWith("#")) colorCode = "#" + colorCode;
             if (Regex.IsMatch(colorCode, "^#[0-9A-Fa-f]{6}$"))
             {
-                // Convert the hexadecimal color value to a Color object
                 Color color = ColorTranslator.FromHtml(colorCode);
-
-                // Set the background color of panelColorCodeTB to the selected color
                 panelFarbCodeTB.BackColor = color;
             }
         }
+
         #endregion
 
-        #region Zoom        
+        #region Zoom
 
         private void ZoomIn(object sender, EventArgs e)
         {
             if (sender is Button button && button.Tag is SelectablePictureBox pictureBox)
-            {
-                if (pictureBox == selectablePictureBox1)
-                {
-                    ChangeZoomLevel(pictureBox, ref zoomLevel1, true);
-                }
-                else if (pictureBox == selectablePictureBox2)
-                {
-                    ChangeZoomLevel(pictureBox, ref zoomLevel2, true);
-                }
-                else if (pictureBox == selectablePictureBox3)
-                {
-                    ChangeZoomLevel(pictureBox, ref zoomLevel3, true);
-                }
-                else if (pictureBox == selectablePictureBox4)
-                {
-                    ChangeZoomLevel(pictureBox, ref zoomLevel4, true);
-                }
-                else if (pictureBox == selectablePictureBox5)
-                {
-                    ChangeZoomLevel(pictureBox, ref zoomLevel5, true);
-                }
-                else if (pictureBox == selectablePictureBox6)
-                {
-                    ChangeZoomLevel(pictureBox, ref zoomLevel6, true);
-                }
-                else if (pictureBox == selectablePictureBox7)
-                {
-                    ChangeZoomLevel(pictureBox, ref zoomLevel7, true);
-                }
-                else if (pictureBox == selectablePictureBox8)
-                {
-                    ChangeZoomLevel(pictureBox, ref zoomLevel8, true);
-                }
-                else if (pictureBox == selectablePictureBox9)
-                {
-                    ChangeZoomLevel(pictureBox, ref zoomLevel9, true);
-                }
-                else if (pictureBox == selectablePictureBox10)
-                {
-                    ChangeZoomLevel(pictureBox, ref zoomLevel10, true);
-                }
-            }
+                ApplyZoom(pictureBox, true);
         }
 
         private void ZoomOut(object sender, EventArgs e)
         {
             if (sender is Button button && button.Tag is SelectablePictureBox pictureBox)
-            {
-                if (pictureBox == selectablePictureBox1)
-                {
-                    ChangeZoomLevel(pictureBox, ref zoomLevel1, false);
-                }
-                else if (pictureBox == selectablePictureBox2)
-                {
-                    ChangeZoomLevel(pictureBox, ref zoomLevel2, false);
-                }
-                else if (pictureBox == selectablePictureBox3)
-                {
-                    ChangeZoomLevel(pictureBox, ref zoomLevel3, false);
-                }
-                else if (pictureBox == selectablePictureBox4)
-                {
-                    ChangeZoomLevel(pictureBox, ref zoomLevel4, false);
-                }
-                else if (pictureBox == selectablePictureBox5)
-                {
-                    ChangeZoomLevel(pictureBox, ref zoomLevel5, false);
-                }
-                else if (pictureBox == selectablePictureBox6)
-                {
-                    ChangeZoomLevel(pictureBox, ref zoomLevel6, false);
-                }
-                else if (pictureBox == selectablePictureBox7)
-                {
-                    ChangeZoomLevel(pictureBox, ref zoomLevel7, false);
-                }
-                else if (pictureBox == selectablePictureBox8)
-                {
-                    ChangeZoomLevel(pictureBox, ref zoomLevel8, false);
-                }
-                else if (pictureBox == selectablePictureBox9)
-                {
-                    ChangeZoomLevel(pictureBox, ref zoomLevel9, false);
-                }
-                else if (pictureBox == selectablePictureBox10)
-                {
-                    ChangeZoomLevel(pictureBox, ref zoomLevel10, false);
-                }
-            }
+                ApplyZoom(pictureBox, false);
+        }
+
+        private void ApplyZoom(SelectablePictureBox pictureBox, bool zoomIn)
+        {
+            int index = Array.IndexOf(boxes, pictureBox);
+            if (index < 0) return;
+
+            int[] zoomLevels = { zoomLevel1, zoomLevel2, zoomLevel3, zoomLevel4, zoomLevel5,
+                                  zoomLevel6, zoomLevel7, zoomLevel8, zoomLevel9, zoomLevel10 };
+            int zl = zoomLevels[index];
+            ChangeZoomLevel(pictureBox, ref zl, zoomIn);
+            zoomLevels[index] = zl;
+
+            zoomLevel1 = zoomLevels[0]; zoomLevel2 = zoomLevels[1];
+            zoomLevel3 = zoomLevels[2]; zoomLevel4 = zoomLevels[3];
+            zoomLevel5 = zoomLevels[4]; zoomLevel6 = zoomLevels[5];
+            zoomLevel7 = zoomLevels[6]; zoomLevel8 = zoomLevels[7];
+            zoomLevel9 = zoomLevels[8]; zoomLevel10 = zoomLevels[9];
         }
 
         private void ChangeZoomLevel(SelectablePictureBox pictureBox, ref int zoomLevel, bool zoomIn)
         {
-            if (pictureBox.Image != null)
+            if (pictureBox.Image == null) return;
+            if (zoomIn && zoomLevel < 2)
             {
-                if (zoomIn && zoomLevel < 2)
-                {
-                    pictureBox.Image = new Bitmap(pictureBox.Image, new Size(pictureBox.Image.Width * 2, pictureBox.Image.Height * 2));
-                    zoomLevel++;
-                }
-                else if (!zoomIn && zoomLevel > 0)
-                {
-                    pictureBox.Image = new Bitmap(pictureBox.Image, new Size(pictureBox.Image.Width / 2, pictureBox.Image.Height / 2));
-                    zoomLevel--;
-                }
+                pictureBox.Image = new Bitmap(pictureBox.Image, new Size(pictureBox.Image.Width * 2, pictureBox.Image.Height * 2));
+                zoomLevel++;
+            }
+            else if (!zoomIn && zoomLevel > 0)
+            {
+                pictureBox.Image = new Bitmap(pictureBox.Image, new Size(pictureBox.Image.Width / 2, pictureBox.Image.Height / 2));
+                zoomLevel--;
             }
         }
+
         #endregion
 
         #region Background Image Loader
+
         private void imageFadeinToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            // Create an instance of OpenFileDialog
-            OpenFileDialog openFileDialog1 = new OpenFileDialog();
-
-            // Properties of the OpenFileDialog
-            openFileDialog1.Filter = "Image files (*.bmp;*.jpg;*.jpeg;*.gif;*.png)|*.bmp;*.jpg;*.jpeg;*.gif;*.png";
-            openFileDialog1.Title = "Please select an image file.";
-
-            // Display the dialog and verify that the user clicked OK
-            if (openFileDialog1.ShowDialog() == DialogResult.OK)
+            using (OpenFileDialog dlg = new OpenFileDialog())
             {
-                // Load the image
-                Image image = Image.FromFile(openFileDialog1.FileName);
-
-                // Adjust the size of the image to the size of the PictureBox
-                image = new Bitmap(image, new Size(176, 238));
-
-                // Add the image to the AnimationPictureBox as a background image
-                AnimationPictureBox.BackgroundImage = image;
-
-                // Check whether the ShowAnimationPictureBox2 checkbox is checked
-                if (ShowAnimationPictureBox2.Checked)
+                dlg.Filter = "Image files (*.bmp;*.jpg;*.jpeg;*.gif;*.png)|*.bmp;*.jpg;*.jpeg;*.gif;*.png";
+                dlg.Title = "Please select an image file.";
+                if (dlg.ShowDialog() == DialogResult.OK)
                 {
-                    // If the checkbox is checked, also add the image to the AnimationPictureBox2 as a background image
-                    AnimationPictureBox2.BackgroundImage = image;
+                    Image image = new Bitmap(Image.FromFile(dlg.FileName), new Size(176, 238));
+                    AnimationPictureBox.BackgroundImage = image;
+                    if (ShowAnimationPictureBox2.Checked)
+                        AnimationPictureBox2.BackgroundImage = image;
                 }
             }
         }
-        #endregion
 
-        #region ShowAnimationPictureBox2 
         private void ShowAnimationPictureBox2_CheckedChanged(object sender, EventArgs e)
         {
-            // Check whether the checkbox is activated
-            if (ShowAnimationPictureBox2.Checked)
-            {
-                // If the checkbox is checked, set the background image of AnimationPictureBox2 to the same image as AnimationPictureBox
-                AnimationPictureBox2.BackgroundImage = AnimationPictureBox.BackgroundImage;
-            }
-            else
-            {
-                // If the checkbox is unchecked, remove the background image of AnimationPictureBox2
-                AnimationPictureBox2.BackgroundImage = null;
-            }
+            AnimationPictureBox2.BackgroundImage = ShowAnimationPictureBox2.Checked
+                ? AnimationPictureBox.BackgroundImage
+                : null;
         }
+
         #endregion
 
-        #region clipbordAllSingleToolStripMenuItem
+        #region Clipboard Animation Tab
+
         private void clipbordAllSingleToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (Clipboard.ContainsImage())
+            if (!Clipboard.ContainsImage()) { MessageBox.Show("The cache does not contain an image."); return; }
+            if (imageCounter > 30) { MessageBox.Show("Maximum number of images reached."); return; }
+
+            Image image = Clipboard.GetImage();
+            string imageName = "Item" + imageCounter.ToString("00");
+            originalImages[imageName] = (Image)image.Clone();
+
+            if (CheckBoxTransparent.Checked)
             {
-                // Load the image from the cache
-                Image image = Clipboard.GetImage();
-
-                // Generate a unique name for the image
-                string imageName = "Item" + imageCounter.ToString("00");
-
-                // Save a copy of the original image
-                originalImages[imageName] = (Image)image.Clone();
-
-                // If the CheckBoxTransparent is activated, make the colors #000000 and #ffffff transparent
-                if (CheckBoxTransparent.Checked)
-                {
-                    image = MakeColorTransparent(image, Color.FromArgb(0, 0, 0)); // Black
-                    image = MakeColorTransparent(image, Color.FromArgb(255, 255, 255)); // White
-                }
-
-                // Add the image to the dictionary
-                images[imageName] = image;
-
-                // Add the image to the PictureBox and update it immediately
-                PictureBoxAll.Image = image;
-                PictureBoxAll.Refresh();
-
-                // Add an entry to the ListBox
-                ListBoxAll.Items.Add(imageName);
-
-                // Increase the counter for the next image
-                imageCounter++;
-
-                // Make sure not to add more than 30 images
-                if (imageCounter > 30)
-                {
-                    imageCounter = 30;
-                    MessageBox.Show("Maximum number of images reached.");
-                }
+                image = MakeColorTransparent(image, Color.FromArgb(0, 0, 0));
+                image = MakeColorTransparent(image, Color.FromArgb(255, 255, 255));
             }
-            else
-            {
-                MessageBox.Show("The cache does not contain an image.");
-            }
+
+            images[imageName] = image;
+            PictureBoxAll.Image = image;
+            PictureBoxAll.Refresh();
+            ListBoxAll.Items.Add(imageName);
+            imageCounter++;
         }
-        #endregion
 
-        #region listBoxAll_SelectedIndexChanged
         private void listBoxAll_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (ListBoxAll.SelectedItem != null)
+            if (ListBoxAll.SelectedItem == null) return;
+            string selectedItem = ListBoxAll.SelectedItem.ToString();
+            if (images.ContainsKey(selectedItem))
             {
-                string selectedItem = ListBoxAll.SelectedItem.ToString();
-                if (images.ContainsKey(selectedItem))
-                {
-                    PictureBoxAll.Image = images[selectedItem];
-                    PictureBoxAll.Refresh();
-                }
-                else
-                {
-                    MessageBox.Show("The selected image does not exist in the dictionary.");
-                }
-            }
-            else
-            {
-                MessageBox.Show("No image selected.");
+                PictureBoxAll.Image = images[selectedItem];
+                PictureBoxAll.Refresh();
             }
         }
-        #endregion
 
-        #region CheckBoxTransparent
         private void CheckBoxTransparent_CheckedChanged(object sender, EventArgs e)
         {
             foreach (var key in images.Keys.ToList())
             {
                 Image image;
-
                 if (CheckBoxTransparent.Checked)
                 {
-                    image = MakeColorTransparent(originalImages[key], Color.FromArgb(0, 0, 0)); // Black
-                    image = MakeColorTransparent(image, Color.FromArgb(255, 255, 255)); // White
+                    image = MakeColorTransparent(originalImages[key], Color.FromArgb(0, 0, 0));
+                    image = MakeColorTransparent(image, Color.FromArgb(255, 255, 255));
                 }
                 else
                 {
                     image = originalImages[key];
                 }
-
                 images[key] = image;
             }
 
@@ -1341,76 +886,25 @@ namespace UoFiddler.Controls.Forms
                 }
             }
         }
-        #endregion
 
-        #region MakeColorTransparent
-        private Image MakeColorTransparent(Image image, Color color)
-        {
-            Bitmap bitmap = new Bitmap(image);
-            for (int i = 0; i < bitmap.Width; i++)
-            {
-                for (int j = 0; j < bitmap.Height; j++)
-                {
-                    Color pixelColor = bitmap.GetPixel(i, j);
-                    if (pixelColor.ToArgb() == color.ToArgb())
-                    {
-                        bitmap.SetPixel(i, j, Color.Transparent);
-                    }
-                }
-            }
-            return bitmap;
-        }
-        #endregion
-
-        #region deleteToolStripMenuItem
         private void deleteToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (ListBoxAll.SelectedItem != null)
-            {
-                string selectedItem = ListBoxAll.SelectedItem.ToString();
-
-                // Remove the entry from the Dictionary objects
-                if (originalImages.ContainsKey(selectedItem))
-                {
-                    originalImages.Remove(selectedItem);
-                }
-                if (images.ContainsKey(selectedItem))
-                {
-                    images.Remove(selectedItem);
-                }
-
-                // Remove the entry from the ListBox
-                ListBoxAll.Items.Remove(selectedItem);
-
-                // Delete the image in the PictureBox if it is displayed
-                if (PictureBoxAll.Image != null && images.ContainsKey(selectedItem) && PictureBoxAll.Image == images[selectedItem])
-                {
-                    PictureBoxAll.Image = null;
-                }
-            }
-            else
-            {
-                MessageBox.Show("No image selected for deletion.");
-            }
-        }
-        #endregion
-
-        #region deleteAllToolStripMenuItem
-        private void deleteAllToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            // Remove all entries from the Dictionary objects
-            originalImages.Clear();
-            images.Clear();
-
-            // Remove all entries from the ListBox
-            ListBoxAll.Items.Clear();
-
-            // Delete the picture in the PictureBox
+            if (ListBoxAll.SelectedItem == null) { MessageBox.Show("No image selected for deletion."); return; }
+            string selectedItem = ListBoxAll.SelectedItem.ToString();
+            originalImages.Remove(selectedItem);
+            images.Remove(selectedItem);
+            ListBoxAll.Items.Remove(selectedItem);
             PictureBoxAll.Image = null;
         }
-        #endregion
 
-        #region playToolStripMenuItem
+        private void deleteAllToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            originalImages.Clear();
+            images.Clear();
+            ListBoxAll.Items.Clear();
+            PictureBoxAll.Image = null;
+        }
+
         private void playToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (ListBoxAll.Items.Count > 0)
@@ -1425,15 +919,11 @@ namespace UoFiddler.Controls.Forms
                 MessageBox.Show("No images available to play.");
             }
         }
-        #endregion
 
-        #region PlayTimer_Tick 
         private void PlayTimer_Tick(object sender, EventArgs e)
         {
             if (currentImageIndex >= ListBoxAll.Items.Count)
-            {
                 currentImageIndex = 0;
-            }
 
             if (ListBoxAll.Items.Count > 0 && currentImageIndex < ListBoxAll.Items.Count)
             {
@@ -1443,57 +933,782 @@ namespace UoFiddler.Controls.Forms
                     PictureBoxAll.Image = images[selectedItem];
                     PictureBoxAll.Refresh();
                 }
-
                 currentImageIndex++;
             }
             else
             {
                 playTimer.Stop();
-                MessageBox.Show("No images available to play.");
             }
         }
-        #endregion
 
-        #region stopToolStripMenuItem
         private void stopToolStripMenuItem_Click(object sender, EventArgs e)
         {
             playTimer.Stop();
         }
-        #endregion
 
-        #region exchangeToolStripMenuItem
         private void exchangeToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (ListBoxAll.SelectedItem != null && Clipboard.ContainsImage())
             {
                 string selectedItem = ListBoxAll.SelectedItem.ToString();
                 Image newImage = Clipboard.GetImage();
-
-                // Save a copy of the new image
                 originalImages[selectedItem] = (Image)newImage.Clone();
 
-                // If the CheckBoxTransparent is activated, make the colors #000000 and #ffffff transparent
                 if (CheckBoxTransparent.Checked)
                 {
-                    newImage = MakeColorTransparent(newImage, Color.FromArgb(0, 0, 0)); // Black
-                    newImage = MakeColorTransparent(newImage, Color.FromArgb(255, 255, 255)); // White
+                    newImage = MakeColorTransparent(newImage, Color.FromArgb(0, 0, 0));
+                    newImage = MakeColorTransparent(newImage, Color.FromArgb(255, 255, 255));
                 }
 
-                // Replace the picture in the dictionary
                 images[selectedItem] = newImage;
-
-                // Refresh the PictureBox if the selected image is displayed
-                if (PictureBoxAll.Image != null && images.ContainsKey(selectedItem) && PictureBoxAll.Image == images[selectedItem])
-                {
-                    PictureBoxAll.Image = newImage;
-                    PictureBoxAll.Refresh();
-                }
+                PictureBoxAll.Image = newImage;
+                PictureBoxAll.Refresh();
             }
             else
             {
                 MessageBox.Show("No image selected or no image in buffer.");
             }
         }
+
+        #endregion
+
+        // =====================================================================
+        // === UO ANIMATION BROWSER TAB ========================================
+        // =====================================================================
+
+        #region Anim Browser Tab - Init
+
+        private void InitAnimBrowserTab()
+        {
+            if (listBoxAnimBodies == null) return;
+
+            listBoxAnimBodies.SelectedIndexChanged += listBoxAnimBodies_SelectedIndexChanged;
+            listBoxAnimActions.SelectedIndexChanged += listBoxAnimActions_SelectedIndexChanged;
+            listBoxAnimDirections.SelectedIndexChanged += listBoxAnimDirections_SelectedIndexChanged;
+            numericAnimHue.ValueChanged += numericAnimHue_ValueChanged;
+            btAnimPlay.Click += btAnimPlay_Click;
+            btAnimStop.Click += btAnimStop_Click;
+            btAnimCopyFramesToEditor.Click += btAnimCopyFramesToEditor_Click;
+            btAnimLoadFromFile.Click += btAnimLoadFromFile_Click;
+            btAnimExportFrames.Click += btAnimExportFrames_Click;
+            btAnimCopyFrameClipboard.Click += btAnimCopyFrameClipboard_Click;
+            comboBoxAnimFile.SelectedIndexChanged += comboBoxAnimFile_SelectedIndexChanged;
+            numericAnimZoom.ValueChanged += numericAnimZoom_ValueChanged;
+            btAnimSearch.Click += btAnimSearch_Click;
+            tboxAnimBodySearch.KeyDown += tboxAnimBodySearch_KeyDown;
+        }
+        #endregion
+
+        #region Anim Browser Tab - Body Selection
+
+        private void listBoxAnimBodies_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (listBoxAnimBodies.SelectedItem == null) return;
+            selectedAnimBody = (int)listBoxAnimBodies.SelectedItem;
+            PopulateAnimActions();
+        }
+
+        private void PopulateAnimActions()
+        {
+            if (listBoxAnimActions == null) return;
+            listBoxAnimActions.BeginUpdate();
+            listBoxAnimActions.Items.Clear();
+
+            try
+            {
+                string[] actionNames = {
+                    "Walk", "Run", "Stand", "Fight", "Attack 1", "Attack 2", "Attack 3",
+                    "Spell 1", "Spell 2", "Die 1", "Die 2", "Fidget 1", "Fidget 2",
+                    "Eat", "Looting", "Mounted", "Block", "Unknown"
+                };
+                for (int action = 0; action < 35; action++)
+                {
+                    try
+                    {
+                        if (Animations.IsActionDefined(selectedAnimBody, action, 0))
+                        {
+                            string name = action < actionNames.Length ? actionNames[action] : $"Action {action}";
+                            listBoxAnimActions.Items.Add($"{action}: {name}");
+                        }
+                    }
+                    catch { }
+                }
+
+                if (listBoxAnimActions.Items.Count == 0)
+                    for (int a = 0; a < 18; a++)
+                        listBoxAnimActions.Items.Add($"{a}: Action {a}");
+            }
+            catch
+            {
+                for (int a = 0; a < 18; a++)
+                    listBoxAnimActions.Items.Add($"{a}: Action {a}");
+            }
+
+            listBoxAnimActions.EndUpdate();
+            if (listBoxAnimActions.Items.Count > 0)
+                listBoxAnimActions.SelectedIndex = 0;
+        }
+
+        private void listBoxAnimActions_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (listBoxAnimActions.SelectedItem == null) return;
+            string item = listBoxAnimActions.SelectedItem.ToString();
+            selectedAnimAction = int.Parse(item.Split(':')[0]);
+            LoadAnimFrames();
+        }
+
+        private void listBoxAnimDirections_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            selectedAnimDir = listBoxAnimDirections.SelectedIndex;
+            LoadAnimFrames();
+        }
+
+        private void numericAnimHue_ValueChanged(object sender, EventArgs e)
+        {
+            selectedAnimHue = (int)numericAnimHue.Value;
+            LoadAnimFrames();
+        }
+
+        private void comboBoxAnimFile_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            selectedAnimFileIndex = comboBoxAnimFile.SelectedIndex + 1;
+            // Re-use the background loader instead of calling PopulateAnimBodyList directly
+            Task.Run(() =>
+            {
+                try
+                {
+                    var bodyItems = new List<int>();
+                    for (int body = 0; body < 2048; body++)
+                    {
+                        try
+                        {
+                            if (Animations.IsActionDefined(body, 0, 0))
+                                bodyItems.Add(body);
+                        }
+                        catch { }
+                    }
+                    this.Invoke((Action)(() =>
+                    {
+                        if (listBoxAnimBodies == null || listBoxAnimBodies.IsDisposed) return;
+                        listBoxAnimBodies.BeginUpdate();
+                        listBoxAnimBodies.Items.Clear();
+                        foreach (var b in bodyItems)
+                            listBoxAnimBodies.Items.Add(b);
+                        listBoxAnimBodies.EndUpdate();
+                    }));
+                }
+                catch { }
+            });
+        }
+
+        #endregion
+
+        #region Anim Browser Tab - Load & Display Frames
+
+        private void LoadAnimFrames()
+        {
+            if (listBoxAnimFrames == null) return;
+            loadedAnimFrames.Clear();
+            loadedCustomBitmaps.Clear();
+            listBoxAnimFrames.Items.Clear();
+            animBrowserTimer.Stop();
+
+            try
+            {
+                int hue = selectedAnimHue;
+                bool preserveHue = false;
+
+                Ultima.AnimationFrame[] frames = Animations.GetAnimation(
+                    selectedAnimBody, selectedAnimAction, selectedAnimDir,
+                    ref hue, preserveHue, false);
+
+                if (frames == null || frames.Length == 0)
+                {
+                    labelAnimFrameInfo.Text = "No frames found.";
+                    picBoxAnimPreview.Image = null;
+                    return;
+                }
+
+                for (int i = 0; i < frames.Length; i++)
+                    listBoxAnimFrames.Items.Add($"Frame {i + 1} ({frames[i].Bitmap?.Width ?? 0}x{frames[i].Bitmap?.Height ?? 0})");
+
+                labelAnimFrameInfo.Text = $"Body: {selectedAnimBody} | Action: {selectedAnimAction} | Dir: {selectedAnimDir} | Frames: {frames.Length}";
+                loadedAnimFrames.Add(frames);
+
+                if (frames.Length > 0 && frames[0].Bitmap != null)
+                    picBoxAnimPreview.Image = frames[0].Bitmap;
+
+                if (listBoxAnimFrames.Items.Count > 0)
+                    listBoxAnimFrames.SelectedIndex = 0;
+            }
+            catch (Exception ex)
+            {
+                labelAnimFrameInfo.Text = $"Error: {ex.Message}";
+            }
+        }
+
+        private void listBoxAnimFrames_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (listBoxAnimFrames.SelectedIndex < 0) return;
+            int frameIdx = listBoxAnimFrames.SelectedIndex;
+            int zoom = (int)numericAnimZoom.Value;
+
+            if (loadedAnimFrames.Count == 0 && loadedCustomBitmaps.Count > 0)
+            {
+                if (frameIdx >= loadedCustomBitmaps.Count) return;
+                Bitmap bmp = loadedCustomBitmaps[frameIdx];
+                if (zoom > 1) bmp = new Bitmap(bmp, new Size(bmp.Width * zoom, bmp.Height * zoom));
+                picBoxAnimPreview.Image = bmp;
+                labelAnimFrameInfo.Text = $"Custom Frame: {frameIdx + 1}/{loadedCustomBitmaps.Count} | Size: {loadedCustomBitmaps[frameIdx].Width}x{loadedCustomBitmaps[frameIdx].Height}";
+                return;
+            }
+
+            if (loadedAnimFrames.Count == 0) return;
+            Ultima.AnimationFrame[] frames = loadedAnimFrames[0];
+            if (frameIdx < frames.Length && frames[frameIdx].Bitmap != null)
+            {
+                Bitmap bmp = frames[frameIdx].Bitmap;
+                if (zoom > 1) bmp = new Bitmap(bmp, new Size(bmp.Width * zoom, bmp.Height * zoom));
+                picBoxAnimPreview.Image = bmp;
+                labelAnimFrameInfo.Text = $"Body: {selectedAnimBody} | Action: {selectedAnimAction} | Dir: {selectedAnimDir} | Frame: {frameIdx + 1}/{frames.Length} | Size: {frames[frameIdx].Bitmap.Width}x{frames[frameIdx].Bitmap.Height}";
+            }
+        }
+
+        private void numericAnimZoom_ValueChanged(object sender, EventArgs e)
+        {
+            if (listBoxAnimFrames.SelectedIndex >= 0)
+                listBoxAnimFrames_SelectedIndexChanged(sender, e);
+        }
+
+        #endregion
+
+        #region Anim Browser Tab - Play / Stop Preview
+
+        private void btAnimPlay_Click(object sender, EventArgs e)
+        {
+            if (loadedAnimFrames.Count == 0 || loadedAnimFrames[0].Length == 0) return;
+            animPreviewCurrentFrame = 0;
+            animBrowserTimer.Interval = Math.Max(50, (int)numericAnimPreviewSpeed.Value);
+            animBrowserTimer.Start();
+            btAnimPlay.BackColor = Color.Green;
+        }
+
+        private void btAnimStop_Click(object sender, EventArgs e)
+        {
+            animBrowserTimer.Stop();
+            btAnimPlay.BackColor = SystemColors.Control;
+        }
+
+        private void AnimBrowserTimer_Tick(object sender, EventArgs e)
+        {
+            int zoom = (int)numericAnimZoom.Value;
+
+            if (loadedAnimFrames.Count == 0 && loadedCustomBitmaps.Count > 0)
+            {
+                if (animPreviewCurrentFrame >= loadedCustomBitmaps.Count)
+                    animPreviewCurrentFrame = 0;
+                Bitmap bmp = loadedCustomBitmaps[animPreviewCurrentFrame];
+                if (zoom > 1) bmp = new Bitmap(bmp, new Size(bmp.Width * zoom, bmp.Height * zoom));
+                picBoxAnimPreview.Image = bmp;
+                animPreviewCurrentFrame++;
+                return;
+            }
+
+            if (loadedAnimFrames.Count == 0) return;
+            Ultima.AnimationFrame[] frames = loadedAnimFrames[0];
+            if (frames.Length == 0) return;
+
+            if (animPreviewCurrentFrame >= frames.Length)
+                animPreviewCurrentFrame = 0;
+
+            if (frames[animPreviewCurrentFrame].Bitmap != null)
+            {
+                Bitmap bmp = frames[animPreviewCurrentFrame].Bitmap;
+                if (zoom > 1) bmp = new Bitmap(bmp, new Size(bmp.Width * zoom, bmp.Height * zoom));
+                picBoxAnimPreview.Image = bmp;
+            }
+
+            animPreviewCurrentFrame++;
+        }
+
+        #endregion
+
+        #region Anim Browser Tab - Copy / Export
+
+        private void btAnimCopyFramesToEditor_Click(object sender, EventArgs e)
+        {
+            if (loadedAnimFrames.Count == 0 && loadedCustomBitmaps.Count > 0)
+            {
+                int copyCount = Math.Min(loadedCustomBitmaps.Count, boxes.Length);
+                for (int i = 0; i < copyCount; i++)
+                {
+                    if (checks[i].Checked)
+                    {
+                        boxes[i].Image = new Bitmap(loadedCustomBitmaps[i]);
+                        boxes[i].OriginalImage = new Bitmap(loadedCustomBitmaps[i]);
+                        boxes[i].DrawingBitmaps[boxes[i].CurrentIndex] = new Bitmap(loadedCustomBitmaps[i].Width, loadedCustomBitmaps[i].Height);
+                    }
+                }
+                tabControl1.SelectedTab = tabPageFrame;
+                MessageBox.Show($"Copied {copyCount} custom frames to the Frame Editor.", "Done", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            if (loadedAnimFrames.Count == 0) return;
+            Ultima.AnimationFrame[] frames = loadedAnimFrames[0];
+
+            int frameCount = Math.Min(frames.Length, boxes.Length);
+            for (int i = 0; i < frameCount; i++)
+            {
+                if (frames[i].Bitmap != null && checks[i].Checked)
+                {
+                    boxes[i].Image = new Bitmap(frames[i].Bitmap);
+                    boxes[i].OriginalImage = new Bitmap(frames[i].Bitmap);
+                    boxes[i].DrawingBitmaps[boxes[i].CurrentIndex] = new Bitmap(frames[i].Bitmap.Width, frames[i].Bitmap.Height);
+                }
+            }
+
+            tabControl1.SelectedTab = tabPageFrame;
+            MessageBox.Show($"Copied {frameCount} frames to the Frame Editor.", "Done", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
+        private void btAnimCopyFrameClipboard_Click(object sender, EventArgs e)
+        {
+            if (listBoxAnimFrames.SelectedIndex < 0) return;
+            int idx = listBoxAnimFrames.SelectedIndex;
+
+            if (loadedAnimFrames.Count == 0 && loadedCustomBitmaps.Count > 0)
+            {
+                if (idx < loadedCustomBitmaps.Count)
+                {
+                    Clipboard.SetImage(loadedCustomBitmaps[idx]);
+                    MessageBox.Show("Frame copied to clipboard.", "Clipboard", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+                return;
+            }
+
+            if (loadedAnimFrames.Count == 0) return;
+            Ultima.AnimationFrame[] frames = loadedAnimFrames[0];
+            if (idx < frames.Length && frames[idx].Bitmap != null)
+            {
+                Clipboard.SetImage(frames[idx].Bitmap);
+                MessageBox.Show("Frame copied to clipboard.", "Clipboard", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+        }
+
+        private void btAnimExportFrames_Click(object sender, EventArgs e)
+        {
+            using (FolderBrowserDialog fbd = new FolderBrowserDialog())
+            {
+                fbd.Description = "Select export folder for animation frames";
+                if (fbd.ShowDialog() != DialogResult.OK) return;
+
+                int exported = 0;
+
+                if (loadedAnimFrames.Count == 0 && loadedCustomBitmaps.Count > 0)
+                {
+                    for (int i = 0; i < loadedCustomBitmaps.Count; i++)
+                    {
+                        string path = Path.Combine(fbd.SelectedPath, $"Custom_Frame{i:D3}.png");
+                        loadedCustomBitmaps[i].Save(path, ImageFormat.Png);
+                        exported++;
+                    }
+                    MessageBox.Show($"Exported {exported} frames to:\n{fbd.SelectedPath}", "Export Complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
+                }
+
+                if (loadedAnimFrames.Count == 0) { MessageBox.Show("No frames loaded."); return; }
+                Ultima.AnimationFrame[] frames = loadedAnimFrames[0];
+
+                for (int i = 0; i < frames.Length; i++)
+                {
+                    if (frames[i].Bitmap != null)
+                    {
+                        string path = Path.Combine(fbd.SelectedPath, $"Body{selectedAnimBody}_Action{selectedAnimAction}_Dir{selectedAnimDir}_Frame{i:D3}.png");
+                        frames[i].Bitmap.Save(path, ImageFormat.Png);
+                        exported++;
+                    }
+                }
+
+                MessageBox.Show($"Exported {exported} frames to:\n{fbd.SelectedPath}", "Export Complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+        }
+
+        private void btAnimLoadFromFile_Click(object sender, EventArgs e)
+        {
+            using (OpenFileDialog dlg = new OpenFileDialog())
+            {
+                dlg.Filter = "Image files (*.bmp;*.jpg;*.jpeg;*.gif;*.png)|*.bmp;*.jpg;*.jpeg;*.gif;*.png|All files (*.*)|*.*";
+                dlg.Title = "Load animation frame from file";
+                dlg.Multiselect = true;
+                if (dlg.ShowDialog() != DialogResult.OK) return;
+
+                loadedAnimFrames.Clear();
+                listBoxAnimFrames.Items.Clear();
+
+                var customBitmaps = new List<Bitmap>();
+                foreach (string file in dlg.FileNames)
+                {
+                    try { customBitmaps.Add(new Bitmap(file)); }
+                    catch { }
+                }
+
+                if (customBitmaps.Count > 0)
+                {
+                    loadedCustomBitmaps = customBitmaps;
+                    loadedAnimFrames.Clear();
+
+                    listBoxAnimFrames.Items.Clear();
+                    for (int i = 0; i < customBitmaps.Count; i++)
+                        listBoxAnimFrames.Items.Add($"Frame {i + 1} ({customBitmaps[i].Width}x{customBitmaps[i].Height})");
+
+                    picBoxAnimPreview.Image = customBitmaps[0];
+                    labelAnimFrameInfo.Text = $"Custom | Frames: {customBitmaps.Count}";
+
+                    if (listBoxAnimFrames.Items.Count > 0)
+                        listBoxAnimFrames.SelectedIndex = 0;
+                }
+            }
+        }
+
+        private void btAnimSearch_Click(object sender, EventArgs e) => SearchAnimBodies();
+
+        private void tboxAnimBodySearch_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter) SearchAnimBodies();
+        }
+
+        private void SearchAnimBodies()
+        {
+            if (string.IsNullOrWhiteSpace(tboxAnimBodySearch.Text)) return;
+            if (int.TryParse(tboxAnimBodySearch.Text, out int bodyId))
+            {
+                for (int i = 0; i < listBoxAnimBodies.Items.Count; i++)
+                {
+                    if ((int)listBoxAnimBodies.Items[i] == bodyId)
+                    {
+                        listBoxAnimBodies.SelectedIndex = i;
+                        listBoxAnimBodies.TopIndex = i;
+                        return;
+                    }
+                }
+                MessageBox.Show($"Body ID {bodyId} not found.", "Search", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+        }
+
+        #endregion
+
+        // =====================================================================
+        // === ART BROWSER TAB =================================================
+        // =====================================================================
+
+        #region Art Browser Tab - Init
+
+        private void InitArtBrowserTab()
+        {
+            if (listBoxArtItems == null) return;
+            listBoxArtItems.SelectedIndexChanged += listBoxArtItems_SelectedIndexChanged;
+            btArtSearch.Click += btArtSearch_Click;
+            btArtCopyClipboard.Click += btArtCopyClipboard_Click;
+            btArtCopyToFrameEditor.Click += btArtCopyToFrameEditor_Click;
+            btArtExport.Click += btArtExport_Click;
+
+            // FIX: Do NOT bind CheckedChanged here — already bound via Designer would double-fire.
+            // rbArtStatic.CheckedChanged and rbArtLand.CheckedChanged are bound in Designer.
+            // We only need to guard against them firing during init (see _artBrowserInitializing).
+
+            tboxArtSearch.KeyDown += tboxArtSearch_KeyDown;
+            numericArtZoom.ValueChanged += numericArtZoom_ValueChanged;
+            btArtLoadPrevious.Click += btArtLoadPrevious_Click;
+            btArtLoadNext.Click += btArtLoadNext_Click;
+        }
+
+        // FIX: PopulateArtList is now called from OnLoad (async), NOT from rbArtType_CheckedChanged during init.
+        private void PopulateArtList()
+        {
+            if (listBoxArtItems == null) return;
+            listBoxArtItems.BeginUpdate();
+            listBoxArtItems.Items.Clear();
+            artSearchResults.Clear();
+
+            try
+            {
+                bool isStatic = rbArtStatic == null || rbArtStatic.Checked;
+
+                for (int i = 0; i < 0x4000; i++)
+                {
+                    try
+                    {
+                        Bitmap bmp = isStatic ? Art.GetStatic(i) : Art.GetLand(i);
+                        if (bmp != null)
+                        {
+                            artSearchResults.Add(i);
+                            listBoxArtItems.Items.Add($"0x{i:X4} ({i})");
+                        }
+                    }
+                    catch { }
+                }
+            }
+            catch
+            {
+                for (int i = 0; i < 100; i++)
+                {
+                    artSearchResults.Add(i);
+                    listBoxArtItems.Items.Add($"0x{i:X4} ({i})");
+                }
+            }
+
+            listBoxArtItems.EndUpdate();
+            if (labelArtInfo != null)
+                labelArtInfo.Text = $"Loaded: {artSearchResults.Count} items";
+        }
+
+        #endregion
+
+        #region Art Browser Tab - Events
+
+        private void listBoxArtItems_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (listBoxArtItems.SelectedIndex < 0 || listBoxArtItems.SelectedIndex >= artSearchResults.Count) return;
+            int artIdx = artSearchResults[listBoxArtItems.SelectedIndex];
+            DisplayArtImage(artIdx);
+        }
+
+        // FIX: Guard against firing during initialization
+        private void rbArtType_CheckedChanged(object sender, EventArgs e)
+        {
+            if (_artBrowserInitializing) return;
+            PopulateArtList();
+        }
+
+        private void tboxArtSearch_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter) btArtSearch_Click(sender, e);
+        }
+
+        private void numericArtZoom_ValueChanged(object sender, EventArgs e)
+        {
+            if (listBoxArtItems.SelectedIndex >= 0)
+                listBoxArtItems_SelectedIndexChanged(sender, e);
+        }
+
+        private void btArtLoadPrevious_Click(object sender, EventArgs e)
+        {
+            if (listBoxArtItems.SelectedIndex > 0)
+                listBoxArtItems.SelectedIndex--;
+        }
+
+        private void btArtLoadNext_Click(object sender, EventArgs e)
+        {
+            if (listBoxArtItems.SelectedIndex < listBoxArtItems.Items.Count - 1)
+                listBoxArtItems.SelectedIndex++;
+        }
+
+        #endregion
+
+        #region Art Browser Tab - Display
+
+        private void DisplayArtImage(int artIdx)
+        {
+            try
+            {
+                bool isStatic = rbArtStatic == null || rbArtStatic.Checked;
+                Bitmap bmp = isStatic ? Art.GetStatic(artIdx) : Art.GetLand(artIdx);
+
+                if (bmp != null)
+                {
+                    int zoom = numericArtZoom != null ? (int)numericArtZoom.Value : 1;
+                    if (zoom > 1)
+                        bmp = new Bitmap(bmp, new Size(bmp.Width * zoom, bmp.Height * zoom));
+
+                    picBoxArtPreview.Image = bmp;
+                    labelArtInfo.Text = $"ID: 0x{artIdx:X4} ({artIdx}) | Size: {bmp.Width}x{bmp.Height} | Type: {(isStatic ? "Static" : "Land")}";
+                }
+                else
+                {
+                    picBoxArtPreview.Image = null;
+                    labelArtInfo.Text = $"ID: 0x{artIdx:X4} - No image found";
+                }
+            }
+            catch (Exception ex)
+            {
+                labelArtInfo.Text = $"Error loading art: {ex.Message}";
+            }
+        }
+
+        #endregion
+
+        #region Art Browser Tab - Search / Copy / Export
+
+        private void btArtSearch_Click(object sender, EventArgs e)
+        {
+            if (string.IsNullOrWhiteSpace(tboxArtSearch.Text)) return;
+
+            string query = tboxArtSearch.Text.Trim();
+            int searchId = -1;
+
+            if (query.StartsWith("0x", StringComparison.OrdinalIgnoreCase))
+                int.TryParse(query.Substring(2), NumberStyles.HexNumber, null, out searchId);
+            else
+                int.TryParse(query, out searchId);
+
+            if (searchId >= 0)
+            {
+                for (int i = 0; i < artSearchResults.Count; i++)
+                {
+                    if (artSearchResults[i] == searchId)
+                    {
+                        listBoxArtItems.SelectedIndex = i;
+                        listBoxArtItems.TopIndex = i;
+                        return;
+                    }
+                }
+                MessageBox.Show($"Art ID {query} not found.", "Search", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+        }
+
+        private void btArtCopyClipboard_Click(object sender, EventArgs e)
+        {
+            if (picBoxArtPreview.Image == null) return;
+            Clipboard.SetImage(picBoxArtPreview.Image);
+            MessageBox.Show("Art image copied to clipboard.", "Clipboard", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
+        private void btArtCopyToFrameEditor_Click(object sender, EventArgs e)
+        {
+            if (picBoxArtPreview.Image == null) return;
+
+            for (int i = 0; i < boxes.Length; i++)
+            {
+                if (checks[i].Checked)
+                {
+                    Bitmap bmp = new Bitmap(picBoxArtPreview.Image);
+                    boxes[i].Image = bmp;
+                    boxes[i].OriginalImage = new Bitmap(bmp);
+                    boxes[i].DrawingBitmaps[boxes[i].CurrentIndex] = new Bitmap(bmp.Width, bmp.Height);
+
+                    tabControl1.SelectedTab = tabPageFrame;
+                    MessageBox.Show($"Art copied to Frame {i + 1} in Frame Editor.", "Done", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
+                }
+            }
+            MessageBox.Show("Please check at least one frame checkbox.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
+        private void btArtExport_Click(object sender, EventArgs e)
+        {
+            if (picBoxArtPreview.Image == null) return;
+            if (listBoxArtItems.SelectedIndex < 0) return;
+
+            int artIdx = artSearchResults[listBoxArtItems.SelectedIndex];
+
+            using (SaveFileDialog sfd = new SaveFileDialog())
+            {
+                sfd.Filter = "PNG Image (*.png)|*.png|BMP Image (*.bmp)|*.bmp";
+                sfd.FileName = $"Art_0x{artIdx:X4}";
+                if (sfd.ShowDialog() == DialogResult.OK)
+                {
+                    ImageFormat fmt = sfd.FileName.EndsWith(".bmp") ? ImageFormat.Bmp : ImageFormat.Png;
+                    picBoxArtPreview.Image.Save(sfd.FileName, fmt);
+                    MessageBox.Show("Art exported successfully.", "Export", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+            }
+        }
+
+        #endregion
+
+        // =====================================================================
+        // === SAVE / EXPORT ANIMATION =========================================
+        // =====================================================================
+
+        #region Save / Export Animation
+
+        private void btSaveAnimationGif_Click(object sender, EventArgs e)
+        {
+            List<Bitmap> frames = new List<Bitmap>();
+            for (int i = 0; i < boxes.Length; i++)
+            {
+                if (checks[i].Checked && boxes[i].Image != null)
+                    frames.Add(new Bitmap(boxes[i].Image));
+            }
+
+            if (frames.Count == 0) { MessageBox.Show("No frames to save."); return; }
+
+            using (SaveFileDialog sfd = new SaveFileDialog())
+            {
+                sfd.Filter = "PNG Spritesheet (*.png)|*.png|BMP Files (*.bmp)|*.bmp";
+                sfd.Title = "Export animation frames";
+                sfd.FileName = "animation_export";
+                if (sfd.ShowDialog() != DialogResult.OK) return;
+
+                int totalWidth = frames.Sum(f => f.Width);
+                int maxHeight = frames.Max(f => f.Height);
+
+                using (Bitmap spritesheet = new Bitmap(totalWidth, maxHeight))
+                using (Graphics g = Graphics.FromImage(spritesheet))
+                {
+                    g.Clear(Color.Transparent);
+                    int x = 0;
+                    foreach (Bitmap frame in frames)
+                    {
+                        g.DrawImage(frame, x, 0);
+                        x += frame.Width;
+                    }
+
+                    ImageFormat fmt = sfd.FileName.EndsWith(".bmp") ? ImageFormat.Bmp : ImageFormat.Png;
+                    spritesheet.Save(sfd.FileName, fmt);
+                }
+
+                MessageBox.Show($"Saved {frames.Count} frames as spritesheet to:\n{sfd.FileName}", "Export Complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+        }
+
+        private void btSaveAllFramesSeparate_Click(object sender, EventArgs e)
+        {
+            List<(int index, Bitmap bmp)> frames = new List<(int, Bitmap)>();
+            for (int i = 0; i < boxes.Length; i++)
+            {
+                if (checks[i].Checked && boxes[i].Image != null)
+                    frames.Add((i + 1, new Bitmap(boxes[i].Image)));
+            }
+
+            if (frames.Count == 0) { MessageBox.Show("No frames to save."); return; }
+
+            using (FolderBrowserDialog fbd = new FolderBrowserDialog())
+            {
+                fbd.Description = "Select folder to save frames";
+                if (fbd.ShowDialog() != DialogResult.OK) return;
+
+                foreach (var (index, bmp) in frames)
+                {
+                    string path = Path.Combine(fbd.SelectedPath, $"Frame_{index:D2}.png");
+                    bmp.Save(path, ImageFormat.Png);
+                }
+
+                MessageBox.Show($"Saved {frames.Count} frames to:\n{fbd.SelectedPath}", "Done", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+        }
+
+        #endregion
+
+        #region Clear All Frames
+
+        private void btClearAllFrames_Click(object sender, EventArgs e)
+        {
+            if (MessageBox.Show("Clear all frame images?", "Confirm", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
+                return;
+
+            for (int i = 0; i < boxes.Length; i++)
+            {
+                boxes[i].Image = null;
+                boxes[i].ClearImage();
+            }
+
+            AnimationPictureBox.Image = null;
+            AnimationPictureBox2.Image = null;
+            frameLabel.Text = "0";
+        }
+
         #endregion
     }
 }
