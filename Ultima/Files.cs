@@ -32,12 +32,12 @@ namespace Ultima
         /// Gets a list of paths to the Client's data files.
         /// </summary>
         public static string Directory { get; private set; }
-        
+
         /// <summary>
         /// Contains the rootDir (so relative values are possible for <see cref="MulPath"/>
         /// </summary>
         public static string RootDir { get; set; }
-        
+
         private readonly static string[] _uoFiles = {
             "anim.idx",
             "anim.mul",
@@ -49,6 +49,13 @@ namespace Ultima
             "anim4.mul",
             "anim5.idx",
             "anim5.mul",
+            "AnimationFrame1.uop",
+            "AnimationFrame2.uop",
+            "AnimationFrame3.uop",
+            "AnimationFrame4.uop",
+            "AnimationFrame5.uop",
+            "AnimationFrame6.uop",
+            "AnimationSequence.uop",
             "animdata.mul",
             "art.mul",
             "artidx.mul",
@@ -75,6 +82,7 @@ namespace Ultima
             "hues.mul",
             "light.mul",
             "lightidx.mul",
+            "MainMisc.uop",
             "map0.mul",
             "map1.mul",
             "map2.mul",

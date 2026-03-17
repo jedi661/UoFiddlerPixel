@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
@@ -187,15 +188,19 @@ namespace Ultima
 
             GetFileIndex(body, fileType, action, dir, out FileIndex fileIndex, out int index);
 
-            if (cache?[index] != null)
+            if (cache != null && index >= 0 && index < cache.Length && cache[index] != null)
             {
                 return cache[index];
             }
 
-            return cache[index] = new AnimIdx(index, fileIndex);
-        }        
+            if (cache != null && index >= 0 && index < cache.Length)
+            {
+                return cache[index] = new AnimIdx(index, fileIndex);
+            }
 
-        #region IsActionDefined
+            return null;
+        }
+
         public static bool IsActionDefined(int fileType, int body, int action)
         {
             AnimIdx[] cache = GetCache(fileType);
@@ -205,6 +210,11 @@ namespace Ultima
             if (cache != null && index >= 0 && index < cache.Length && cache[index] != null)
             {
                 return cache[index].Frames?.Count > 0;
+            }
+
+            if (cache != null && (index < 0 || index >= cache.Length))
+            {
+                return false;
             }
 
             int animCount = Animations.GetAnimLength(body, fileType);
@@ -217,7 +227,6 @@ namespace Ultima
 
             return valid && length >= 1;
         }
-        #endregion
 
         public static void LoadFromVD(int fileType, int body, BinaryReader bin)
         {
@@ -244,7 +253,7 @@ namespace Ultima
             }
         }
 
-        public static void ExportToVD(int fileType, int body, string file)
+        public static void ExportToVD(int fileType, int body, string file, double scale = 1.0)
         {
             AnimIdx[] cache = GetCache(fileType);
             GetFileIndex(body, fileType, 0, 0, out FileIndex fileIndex, out int index);
@@ -279,7 +288,7 @@ namespace Ultima
                     }
                     else
                     {
-                        anim.ExportToVD(bin, ref indexPos, ref animPos);
+                        anim.ExportToVD(bin, ref indexPos, ref animPos, scale);
                     }
                 }
             }
@@ -358,15 +367,16 @@ namespace Ultima
     public sealed class AnimIdx
     {
         public readonly int PaletteCapacity = 0x100;
+
         private readonly int _idxExtra;
 
         public ushort[] Palette { get; private set; }
         public List<FrameEdit> Frames { get; private set; }
 
-        #region AnimIdx
         public AnimIdx(int index, FileIndex fileIndex)
         {
             Palette = new ushort[PaletteCapacity];
+
             Stream stream = fileIndex.Seek(index, out int length, out int extra, out bool _);
             if ((stream == null) || (length < 1))
             {
@@ -374,6 +384,7 @@ namespace Ultima
             }
 
             _idxExtra = extra;
+
             using (var bin = new BinaryReader(stream))
             {
                 for (int i = 0; i < PaletteCapacity; ++i)
@@ -388,11 +399,6 @@ namespace Ultima
 
                 for (int i = 0; i < frameCount; ++i)
                 {
-                    if (bin.BaseStream.Position + 4 > bin.BaseStream.Length)
-                    {
-                        // We have reached the end of the stream, break the loop.
-                        break;
-                    }
                     lookups[i] = start + bin.ReadInt32();
                 }
 
@@ -404,12 +410,12 @@ namespace Ultima
                     Frames.Add(new FrameEdit(bin));
                 }
             }
+
             stream.Close();
         }
-        #endregion
 
         public AnimIdx(BinaryReader bin, int extra)
-        {            
+        {
             _idxExtra = extra;
 
             Palette = new ushort[PaletteCapacity];
@@ -595,6 +601,7 @@ namespace Ultima
 
                 return;
             }
+
             long start = bin.BaseStream.Position;
             idx.Write((int)start);
 
@@ -624,7 +631,7 @@ namespace Ultima
             idx.Write(_idxExtra);
         }
 
-        public void ExportToVD(BinaryWriter bin, ref long indexpos, ref long animpos)
+        public void ExportToVD(BinaryWriter bin, ref long indexpos, ref long animpos, double scale = 1.0)
         {
             bin.BaseStream.Seek(indexpos, SeekOrigin.Begin);
             if ((Frames == null) || (Frames.Count == 0))
@@ -635,6 +642,7 @@ namespace Ultima
                 indexpos = bin.BaseStream.Position;
                 return;
             }
+
             bin.Write((int)animpos);
             indexpos = bin.BaseStream.Position;
             bin.BaseStream.Seek(animpos, SeekOrigin.Begin);
@@ -648,14 +656,52 @@ namespace Ultima
             bin.Write(Frames.Count);
             long seek = (int)bin.BaseStream.Position;
             long curr = bin.BaseStream.Position + (4 * Frames.Count);
-            foreach (FrameEdit frame in Frames)
+
+            Bitmap[] frameBitmaps = null;
+            if (scale != 1.0)
             {
+                frameBitmaps = GetFrames();
+            }
+
+            for (int i = 0; i < Frames.Count; i++)
+            {
+                FrameEdit frame = Frames[i];
                 bin.BaseStream.Seek(seek, SeekOrigin.Begin);
                 bin.Write((int)(curr - startPosition));
                 seek = bin.BaseStream.Position;
                 bin.BaseStream.Seek(curr, SeekOrigin.Begin);
-                frame.Save(bin);
+
+                if (scale != 1.0 && frameBitmaps != null && frameBitmaps[i] != null)
+                {
+                    Bitmap original = frameBitmaps[i];
+                    int newWidth = (int)Math.Max(1, original.Width * scale);
+                    int newHeight = (int)Math.Max(1, original.Height * scale);
+
+                    using (Bitmap resized = new Bitmap(newWidth, newHeight, PixelFormat.Format16bppArgb1555))
+                    {
+                        using (Graphics g = Graphics.FromImage(resized))
+                        {
+                            g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
+                            g.DrawImage(original, 0, 0, newWidth, newHeight);
+                        }
+
+                        int newCenterX = (int)(frame.Center.X * scale);
+                        int newCenterY = (int)(frame.Center.Y * scale);
+
+                        FrameEdit resizedFrame = new FrameEdit(resized, Palette, newCenterX, newCenterY);
+                        resizedFrame.Save(bin);
+                    }
+                }
+                else
+                {
+                    frame.Save(bin);
+                }
                 curr = bin.BaseStream.Position;
+            }
+
+            if (frameBitmaps != null)
+            {
+                foreach (var bmp in frameBitmaps) bmp?.Dispose();
             }
 
             long length = bin.BaseStream.Position - animpos;

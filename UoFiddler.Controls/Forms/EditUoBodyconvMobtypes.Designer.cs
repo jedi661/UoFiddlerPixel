@@ -62,6 +62,9 @@ namespace UoFiddler.Controls.Forms
             btUOOpenDirectory = new System.Windows.Forms.Button();
             checkBoxSphereID = new System.Windows.Forms.CheckBox();
             btCheckNumbers = new System.Windows.Forms.Button();
+            btConsistencyCheck = new System.Windows.Forms.Button();
+            btFindFreeIDBoth = new System.Windows.Forms.Button();
+            chkBackup = new System.Windows.Forms.CheckBox();
             lbBody = new System.Windows.Forms.Label();
             textBoxBody = new System.Windows.Forms.TextBox();
             panelScript = new System.Windows.Forms.Panel();
@@ -259,6 +262,7 @@ namespace UoFiddler.Controls.Forms
             lbCopyID = new System.Windows.Forms.Label();
             txtOrigCreatureID = new System.Windows.Forms.TextBox();
             btnNewAnimIDXFiles = new System.Windows.Forms.Button();
+            lbStatusStrip = new System.Windows.Forms.Label();
             contextMenuStripRichTextBoxEdit.SuspendLayout();
             panelEdit.SuspendLayout();
             panelScript.SuspendLayout();
@@ -310,10 +314,10 @@ namespace UoFiddler.Controls.Forms
             // richTextBoxEdit
             // 
             richTextBoxEdit.ContextMenuStrip = contextMenuStripRichTextBoxEdit;
-            richTextBoxEdit.Location = new System.Drawing.Point(329, 30);
+            richTextBoxEdit.Location = new System.Drawing.Point(329, 29);
             richTextBoxEdit.Name = "richTextBoxEdit";
             richTextBoxEdit.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.Vertical;
-            richTextBoxEdit.Size = new System.Drawing.Size(834, 860);
+            richTextBoxEdit.Size = new System.Drawing.Size(834, 957);
             richTextBoxEdit.TabIndex = 5;
             richTextBoxEdit.Text = "";
             richTextBoxEdit.KeyDown += richTextBoxEdit_KeyDown;
@@ -407,6 +411,9 @@ namespace UoFiddler.Controls.Forms
             panelEdit.Controls.Add(btUOOpenDirectory);
             panelEdit.Controls.Add(checkBoxSphereID);
             panelEdit.Controls.Add(btCheckNumbers);
+            panelEdit.Controls.Add(btConsistencyCheck);
+            panelEdit.Controls.Add(btFindFreeIDBoth);
+            panelEdit.Controls.Add(chkBackup);
             panelEdit.Controls.Add(lbBody);
             panelEdit.Controls.Add(textBoxBody);
             panelEdit.Controls.Add(btSaveFile);
@@ -419,7 +426,7 @@ namespace UoFiddler.Controls.Forms
             panelEdit.Controls.Add(btmobtypes);
             panelEdit.Location = new System.Drawing.Point(12, 29);
             panelEdit.Name = "panelEdit";
-            panelEdit.Size = new System.Drawing.Size(307, 192);
+            panelEdit.Size = new System.Drawing.Size(307, 292);
             panelEdit.TabIndex = 12;
             // 
             // btInfoMobtypes
@@ -462,6 +469,37 @@ namespace UoFiddler.Controls.Forms
             btCheckNumbers.Text = "Check Numbers Free";
             btCheckNumbers.UseVisualStyleBackColor = true;
             btCheckNumbers.Click += btCheckNumbers_Click;
+            // 
+            // btConsistencyCheck
+            // 
+            btConsistencyCheck.Location = new System.Drawing.Point(8, 154);
+            btConsistencyCheck.Name = "btConsistencyCheck";
+            btConsistencyCheck.Size = new System.Drawing.Size(133, 23);
+            btConsistencyCheck.TabIndex = 19;
+            btConsistencyCheck.Text = "Consistency Check";
+            btConsistencyCheck.UseVisualStyleBackColor = true;
+            btConsistencyCheck.Click += btConsistencyCheck_Click;
+            // 
+            // btFindFreeIDBoth
+            // 
+            btFindFreeIDBoth.Location = new System.Drawing.Point(8, 183);
+            btFindFreeIDBoth.Name = "btFindFreeIDBoth";
+            btFindFreeIDBoth.Size = new System.Drawing.Size(210, 23);
+            btFindFreeIDBoth.TabIndex = 20;
+            btFindFreeIDBoth.Text = "Find Free ID (Both Files)";
+            btFindFreeIDBoth.UseVisualStyleBackColor = true;
+            btFindFreeIDBoth.Click += btFindFreeIDBoth_Click;
+            // 
+            // chkBackup
+            // 
+            chkBackup.AutoSize = true;
+            chkBackup.Location = new System.Drawing.Point(8, 215);
+            chkBackup.Name = "chkBackup";
+            chkBackup.Size = new System.Drawing.Size(140, 19);
+            chkBackup.TabIndex = 21;
+            chkBackup.Text = "Auto-Backup on Save";
+            chkBackup.UseVisualStyleBackColor = true;
+            chkBackup.CheckedChanged += chkBackup_CheckedChanged;
             // 
             // lbBody
             // 
@@ -1408,7 +1446,7 @@ namespace UoFiddler.Controls.Forms
             tabControl1.Controls.Add(tabPageSphere);
             tabControl1.Controls.Add(tabPageAnimationlist);
             tabControl1.Controls.Add(tabPageAminmul);
-            tabControl1.Location = new System.Drawing.Point(12, 227);
+            tabControl1.Location = new System.Drawing.Point(8, 327);
             tabControl1.Name = "tabControl1";
             tabControl1.SelectedIndex = 0;
             tabControl1.Size = new System.Drawing.Size(311, 663);
@@ -2398,20 +2436,32 @@ namespace UoFiddler.Controls.Forms
             btnNewAnimIDXFiles.UseVisualStyleBackColor = true;
             btnNewAnimIDXFiles.Click += btnProcessClick;
             // 
+            // lbStatusStrip
+            // 
+            lbStatusStrip.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
+            lbStatusStrip.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
+            lbStatusStrip.Location = new System.Drawing.Point(0, 993);
+            lbStatusStrip.Name = "lbStatusStrip";
+            lbStatusStrip.Size = new System.Drawing.Size(1175, 22);
+            lbStatusStrip.TabIndex = 99;
+            lbStatusStrip.Text = "  Ready.";
+            // 
             // EditUoBodyconvMobtypes
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            ClientSize = new System.Drawing.Size(1175, 902);
+            ClientSize = new System.Drawing.Size(1175, 1015);
             Controls.Add(tabControl1);
             Controls.Add(panelEdit);
             Controls.Add(lbFileName);
             Controls.Add(lbSearchCount);
             Controls.Add(richTextBoxEdit);
+            Controls.Add(lbStatusStrip);
             FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             Icon = (System.Drawing.Icon)resources.GetObject("$this.Icon");
             Name = "EditUoBodyconvMobtypes";
             Text = "Edit UoBodyconv or Mobtypes and Script Creator";
+            FormClosing += EditUoBodyconvMobtypes_FormClosing;
             contextMenuStripRichTextBoxEdit.ResumeLayout(false);
             panelEdit.ResumeLayout(false);
             panelEdit.PerformLayout();
@@ -2648,6 +2698,10 @@ namespace UoFiddler.Controls.Forms
         private System.Windows.Forms.TextBox txtOutputFilename;
         private System.Windows.Forms.TextBox txtOutputDirectory;
         private System.Windows.Forms.Button btnSetOutputDirectory;
-        private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.Button button1;        
+        private System.Windows.Forms.Button btConsistencyCheck;
+        private System.Windows.Forms.Button btFindFreeIDBoth;
+        private System.Windows.Forms.CheckBox chkBackup;
+        private System.Windows.Forms.Label lbStatusStrip;
     }
 }

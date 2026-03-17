@@ -1,15 +1,4 @@
-﻿// /***************************************************************************
-//  *
-//  * $Author: Nikodemus
-//  * 
-//  * \"THE BEER-WINE-WARE LICENSE\"
-//  * As long as you retain this notice you can do whatever you want with 
-//  * this stuff. If we meet some day, and you think this stuff is worth it,
-//  * you can buy me a beer and Wine in return.
-//  *
-//  ***************************************************************************/
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -26,14 +15,122 @@ namespace UoFiddler.Controls.Forms
 {
     public partial class EditUoBodyconvMobtypes : Form
     {
+        // -------------------------------------------------------------------------
+        // Fields
+        // -------------------------------------------------------------------------
         private int searchStartIndex = 0;
-        private string currentFilePath;  // Saves the path of the last loaded file
+        private string currentFilePath;
+        private int newIdCount = 0;
+
+        // Constants for animation creature types
+        const int cHighDetail = 110;
+        const int cLowDetail = 65;
+        const int cHuman = 175;
+        const int cHighDetailOLd = 1;
+        const int cLowDetailOld = 2;
+        const int cHumanOld = 3;
+
+        // =========================================================================
+        // Constructor
+        // =========================================================================
         public EditUoBodyconvMobtypes()
         {
             InitializeComponent();
+            textBoxPfad.Text = Properties.Settings.Default.LastPath;
 
-            textBoxPfad.Text = Properties.Settings.Default.LastPath; // Save Last Path
+            // Initialize backup checkbox state — stored in a small local file
+            // so no custom Setting entry is required in Properties/Settings.settings
+            chkBackup.Checked = LoadBackupEnabled();
         }
+
+        // ── Backup-flag persistence (avoids needing a custom Setting entry) ──────
+        private static string BackupFlagFile =>
+            Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data", "SavesSettings", "BackupEnabled.flag");
+
+        private static bool LoadBackupEnabled()
+        {
+            try { return File.Exists(BackupFlagFile) && File.ReadAllText(BackupFlagFile).Trim() == "1"; }
+            catch { return false; }
+        }
+
+        private static void SaveBackupEnabled(bool value)
+        {
+            try
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(BackupFlagFile));
+                File.WriteAllText(BackupFlagFile, value ? "1" : "0");
+            }
+            catch { }
+        }
+
+        // =========================================================================
+        // HELPER — plays the click sound safely (no memory leak, no crash)
+        // =========================================================================
+        #region PlayClickSound
+        private void PlayClickSound()
+        {
+            try
+            {
+                string soundFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Sound.wav");
+                if (!File.Exists(soundFile)) return;
+
+                using (SoundPlayer player = new SoundPlayer(soundFile))
+                {
+                    player.Play();
+                }
+            }
+            catch
+            {
+                // Sound is optional — never crash because of a missing .wav
+            }
+        }
+        #endregion
+
+        // =========================================================================
+        // HELPER — creates a backup of a file if the backup checkbox is enabled
+        // Returns true if backup succeeded (or was not needed), false on error.
+        // =========================================================================
+        #region CreateBackup
+        private bool CreateBackup(string filePath)
+        {
+            if (!chkBackup.Checked) return true;
+            if (string.IsNullOrEmpty(filePath) || !File.Exists(filePath)) return true;
+
+            try
+            {
+                string backupDir = Path.Combine(Path.GetDirectoryName(filePath), "Backup");
+                Directory.CreateDirectory(backupDir);
+
+                string timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
+                string backupName = $"{Path.GetFileNameWithoutExtension(filePath)}_{timestamp}{Path.GetExtension(filePath)}.bak";
+                string backupPath = Path.Combine(backupDir, backupName);
+
+                File.Copy(filePath, backupPath, overwrite: true);
+                lbStatusStrip.Text = $"Backup created: {backupName}";
+                return true;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Backup failed:\n{ex.Message}\n\nSave anyway?",
+                    "Backup Error", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning);
+                return false; // caller decides whether to abort
+            }
+        }
+        #endregion
+
+        // =========================================================================
+        // HELPER — sets status bar text
+        // =========================================================================
+        #region SetStatus
+        private void SetStatus(string text)
+        {
+            lbStatusStrip.Text = text;
+        }
+        #endregion
+
+        // =========================================================================
+        // PANEL EDIT — Load / Save files
+        // =========================================================================
 
         #region btLoadBodyconv_Click
         private void btLoadBodyconv_Click(object sender, EventArgs e)
@@ -42,36 +139,35 @@ namespace UoFiddler.Controls.Forms
             if (File.Exists(path))
             {
                 richTextBoxEdit.Text = File.ReadAllText(path);
-                currentFilePath = path;  // Updates the path of the last loaded file
-                lbFileName.Text = Path.GetFileName(path);  // Displays the file name in lbFileName
+                currentFilePath = path;
+                lbFileName.Text = Path.GetFileName(path);
+                SetStatus($"Loaded: {path}");
+                searchStartIndex = 0;
             }
             else
             {
-                MessageBox.Show("The Bodyconv.def file could not be found.");
+                MessageBox.Show($"File not found:\n{path}", "Error",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
-
-            // Create a new SoundPlayer
-            SoundPlayer player = new SoundPlayer();
-
-            // Load the sound file
-            player.SoundLocation = AppDomain.CurrentDomain.BaseDirectory + "\\Sound.wav";
-
-            // Play the sound
-            player.Play();
+            PlayClickSound();
         }
         #endregion
 
         #region btLoadPfad_Click
         private void btLoadPfad_Click(object sender, EventArgs e)
         {
-            FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog();
-            if (folderBrowserDialog.ShowDialog() == DialogResult.OK)
+            using (FolderBrowserDialog dlg = new FolderBrowserDialog())
             {
-                textBoxPfad.Text = folderBrowserDialog.SelectedPath;
-                // Save the selected path in Settings
-                Properties.Settings.Default.LastPath = folderBrowserDialog.SelectedPath;
-                Properties.Settings.Default.Save();
+                dlg.Description = "Select your Ultima Online data directory";
+                if (dlg.ShowDialog() == DialogResult.OK)
+                {
+                    textBoxPfad.Text = dlg.SelectedPath;
+                    Properties.Settings.Default.LastPath = dlg.SelectedPath;
+                    Properties.Settings.Default.Save();
+                    SetStatus($"Path set: {dlg.SelectedPath}");
+                }
             }
+            PlayClickSound();
         }
         #endregion
 
@@ -82,72 +178,45 @@ namespace UoFiddler.Controls.Forms
             if (File.Exists(path))
             {
                 richTextBoxEdit.Text = File.ReadAllText(path);
-                currentFilePath = path;  // Updates the path of the last loaded file
-                lbFileName.Text = Path.GetFileName(path);  // Displays the file name in lbFileName
+                currentFilePath = path;
+                lbFileName.Text = Path.GetFileName(path);
+                SetStatus($"Loaded: {path}");
+                searchStartIndex = 0;
             }
             else
             {
-                MessageBox.Show("The file mobtypes.txt could not be found.");
+                MessageBox.Show($"File not found:\n{path}", "Error",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
-
-            // Create a new SoundPlayer
-            SoundPlayer player = new SoundPlayer();
-
-            // Load the sound file
-            player.SoundLocation = AppDomain.CurrentDomain.BaseDirectory + "\\Sound.wav";
-
-            // Play the sound
-            player.Play();
-        }
-        #endregion
-
-        #region searchToolStripMenuItem
-        private void searchToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            string searchText = toolStripTextBoxSearch.Text;
-            if (!string.IsNullOrEmpty(searchText))
-            {
-                // Counts the number of matches and displays them in lbSearchCount
-                int count = Regex.Matches(richTextBoxEdit.Text, searchText).Count;
-                lbSearchCount.Text = $"Number of matches: {count}";
-
-                int index = richTextBoxEdit.Find(searchText, searchStartIndex, RichTextBoxFinds.None);
-                if (index != -1)
-                {
-                    richTextBoxEdit.Select(index, searchText.Length);
-                    richTextBoxEdit.ScrollToCaret();  // Scrolls to the cursor position
-                    richTextBoxEdit.Focus();  // Sets the focus on the RichTextBox
-                    searchStartIndex = index + searchText.Length;
-                }
-                else
-                {
-                    MessageBox.Show("No further matches found.");
-                    searchStartIndex = 0;
-                }
-            }
+            PlayClickSound();
         }
         #endregion
 
         #region btSaveFile_Click
         private void btSaveFile_Click(object sender, EventArgs e)
         {
-            if (!string.IsNullOrEmpty(currentFilePath))
+            if (string.IsNullOrEmpty(currentFilePath))
             {
-                File.WriteAllText(currentFilePath, richTextBoxEdit.Text);
-            }
-            else
-            {
-                MessageBox.Show("No file was selected to save.");
+                MessageBox.Show("No file loaded to save.", "Save Error",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
             }
 
-            // Create a new SoundPlayer
-            SoundPlayer player = new SoundPlayer();
+            // Create backup before overwriting (if enabled)
+            if (!CreateBackup(currentFilePath)) return;
 
-            // Load the sound file
-            player.SoundLocation = AppDomain.CurrentDomain.BaseDirectory + "\\Sound.wav";
-
-            // Play the sound
-            player.Play();
+            try
+            {
+                File.WriteAllText(currentFilePath, richTextBoxEdit.Text, Encoding.UTF8);
+                SetStatus($"Saved: {currentFilePath}");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Save failed:\n{ex.Message}", "Error",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+            PlayClickSound();
         }
         #endregion
 
@@ -155,49 +224,295 @@ namespace UoFiddler.Controls.Forms
         private void btBackwardText_Click(object sender, EventArgs e)
         {
             if (richTextBoxEdit.CanUndo)
-            {
                 richTextBoxEdit.Undo();
+            else
+                MessageBox.Show("Nothing to undo.", "Info",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+        #endregion
+
+        #region btUOOpenDirectory_Click
+        private void btUOOpenDirectory_Click(object sender, EventArgs e)
+        {
+            string path = textBoxPfad.Text;
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                MessageBox.Show("No directory path set.", "Warning",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+            if (!Directory.Exists(path))
+            {
+                MessageBox.Show("Directory does not exist.", "Error",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+            System.Diagnostics.Process.Start("explorer.exe", path);
+            PlayClickSound();
+        }
+        #endregion
+
+        // =========================================================================
+        // SEARCH
+        // =========================================================================
+
+        #region searchToolStripMenuItem_Click
+        private void searchToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            string searchText = toolStripTextBoxSearch.Text;
+            if (string.IsNullOrEmpty(searchText)) return;
+
+            int count = Regex.Matches(richTextBoxEdit.Text, Regex.Escape(searchText),
+                            RegexOptions.IgnoreCase).Count;
+            lbSearchCount.Text = $"Matches: {count}";
+
+            int index = richTextBoxEdit.Find(searchText, searchStartIndex,
+                            RichTextBoxFinds.None);
+
+            if (index != -1)
+            {
+                richTextBoxEdit.Select(index, searchText.Length);
+                richTextBoxEdit.ScrollToCaret();
+                richTextBoxEdit.Focus();
+                searchStartIndex = index + searchText.Length;
             }
             else
             {
-                MessageBox.Show("No further reversals possible.");
+                if (searchStartIndex > 0)
+                {
+                    searchStartIndex = 0;
+                    MessageBox.Show("End of file reached. Restarting from top.", "Search",
+                        MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+                else
+                {
+                    MessageBox.Show("No matches found.", "Search",
+                        MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
             }
         }
         #endregion
 
-        #region btCheckNumbers_Click
+        #region richTextBoxEdit_KeyDown
+        private void richTextBoxEdit_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.F3)
+            {
+                searchToolStripMenuItem_Click(this, EventArgs.Empty);
+                e.SuppressKeyPress = true;
+            }
+            // Ctrl+S = quick save
+            if (e.Control && e.KeyCode == Keys.S)
+            {
+                btSaveFile_Click(this, EventArgs.Empty);
+                e.SuppressKeyPress = true;
+            }
+            // Ctrl+Z already handled by RichTextBox natively
+        }
+        #endregion
+
+        // =========================================================================
+        // CHECK FREE NUMBERS
+        // =========================================================================
+
+        #region btCheckNumbers_Click — skips comment lines
         private void btCheckNumbers_Click(object sender, EventArgs e)
         {
-            // Extract all numbers from the text
-            var matches = Regex.Matches(richTextBoxEdit.Text, @"\b\d{2,4}\b");
-            var numbers = new HashSet<int>(matches.Cast<Match>().Select(m => int.Parse(m.Value)));
+            // Only read non-comment lines (lines not starting with # or //)
+            var lines = richTextBoxEdit.Text
+                .Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries)
+                .Where(l => !l.TrimStart().StartsWith("#") && !l.TrimStart().StartsWith("//"));
 
-            // Find the first missing number
-            int missingNumber = Enumerable.Range(10, 9990).FirstOrDefault(i => !numbers.Contains(i));
+            string nonCommentText = string.Join("\n", lines);
 
-            // Zeigen Sie die fehlende Zahl in einer MessageBox an
-            MessageBox.Show($"The first free number found is at {missingNumber}");
+            var matches = Regex.Matches(nonCommentText, @"\b\d{2,4}\b");
+            var numbers = new HashSet<int>(
+                matches.Cast<Match>().Select(m => int.Parse(m.Value)));
+
+            int missingNumber = Enumerable.Range(10, 9990)
+                .FirstOrDefault(i => !numbers.Contains(i));
+
+            MessageBox.Show($"First free Body-ID: {missingNumber}  (0x{missingNumber:X})",
+                "Free ID", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
         #endregion
 
-        #region string TextBoxID
-        public string TextBoxID
+        // =========================================================================
+        // CLIPBOARD
+        // =========================================================================
+
+        #region btClipboard_Click
+        private void btClipboard_Click(object sender, EventArgs e)
         {
-            set { textBoxID.Text = value; }
+            if (!string.IsNullOrEmpty(richTextBoxEdit.Text))
+            {
+                Clipboard.SetText(richTextBoxEdit.Text);
+                SetStatus("Copied to clipboard.");
+            }
+            PlayClickSound();
         }
         #endregion
 
-        #region string TextBoxBody
-        public string TextBoxBody
+        // =========================================================================
+        // CONSISTENCY CHECK — Bodyconv.def vs mobtypes.txt
+        // =========================================================================
+
+        #region btConsistencyCheck_Click
+        private void btConsistencyCheck_Click(object sender, EventArgs e)
         {
-            set { textBoxBody.Text = value; }
+            string uoDir = textBoxPfad.Text;
+            string bodyconvPath = Path.Combine(uoDir, "Bodyconv.def");
+            string mobtypesPath = Path.Combine(uoDir, "mobtypes.txt");
+
+            if (!File.Exists(bodyconvPath) || !File.Exists(mobtypesPath))
+            {
+                MessageBox.Show("Both Bodyconv.def and mobtypes.txt must exist in the UO directory.",
+                    "Check failed", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            var bodyconvIDs = ParseBodyIDs(File.ReadAllLines(bodyconvPath));
+            var mobtypeIDs = ParseBodyIDs(File.ReadAllLines(mobtypesPath));
+
+            var onlyInBodyconv = bodyconvIDs.Except(mobtypeIDs).OrderBy(x => x).ToList();
+            var onlyInMobtypes = mobtypeIDs.Except(bodyconvIDs).OrderBy(x => x).ToList();
+
+            var sb = new StringBuilder();
+            sb.AppendLine($"=== Consistency Check ===");
+            sb.AppendLine($"Bodyconv.def entries : {bodyconvIDs.Count}");
+            sb.AppendLine($"mobtypes.txt entries : {mobtypeIDs.Count}");
+            sb.AppendLine();
+
+            if (onlyInBodyconv.Count == 0 && onlyInMobtypes.Count == 0)
+            {
+                sb.AppendLine("No inconsistencies found.");
+            }
+            else
+            {
+                if (onlyInBodyconv.Count > 0)
+                {
+                    sb.AppendLine($"--- In Bodyconv.def but NOT in mobtypes.txt ({onlyInBodyconv.Count}) ---");
+                    foreach (int id in onlyInBodyconv)
+                        sb.AppendLine($"  Body-ID: {id}  (0x{id:X})");
+                    sb.AppendLine();
+                }
+                if (onlyInMobtypes.Count > 0)
+                {
+                    sb.AppendLine($"--- In mobtypes.txt but NOT in Bodyconv.def ({onlyInMobtypes.Count}) ---");
+                    foreach (int id in onlyInMobtypes)
+                        sb.AppendLine($"  Body-ID: {id}  (0x{id:X})");
+                }
+            }
+
+            richTextBoxEdit.Text = sb.ToString();
+            currentFilePath = null;
+            lbFileName.Text = "Consistency Check Result";
+            SetStatus("Consistency check complete.");
+            PlayClickSound();
+        }
+
+        private HashSet<int> ParseBodyIDs(string[] lines)
+        {
+            var ids = new HashSet<int>();
+            foreach (string line in lines)
+            {
+                string trimmed = line.TrimStart();
+                if (trimmed.StartsWith("#") || trimmed.StartsWith("//") || string.IsNullOrWhiteSpace(trimmed))
+                    continue;
+
+                // First token on each line is the Body-ID (decimal or hex)
+                string firstToken = trimmed.Split(new[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries)[0];
+                if (int.TryParse(firstToken, out int decId))
+                    ids.Add(decId);
+                else if (firstToken.StartsWith("0x", StringComparison.OrdinalIgnoreCase)
+                         && int.TryParse(firstToken.Substring(2),
+                             System.Globalization.NumberStyles.HexNumber, null, out int hexId))
+                    ids.Add(hexId);
+            }
+            return ids;
         }
         #endregion
 
-        #region btCreateScript_Click
+        // =========================================================================
+        // FIND FIRST FREE ID ACROSS BOTH FILES
+        // =========================================================================
+
+        #region btFindFreeIDBoth_Click
+        private void btFindFreeIDBoth_Click(object sender, EventArgs e)
+        {
+            string uoDir = textBoxPfad.Text;
+            string bodyconvPath = Path.Combine(uoDir, "Bodyconv.def");
+            string mobtypesPath = Path.Combine(uoDir, "mobtypes.txt");
+
+            var allIDs = new HashSet<int>();
+
+            if (File.Exists(bodyconvPath))
+                foreach (int id in ParseBodyIDs(File.ReadAllLines(bodyconvPath)))
+                    allIDs.Add(id);
+
+            if (File.Exists(mobtypesPath))
+                foreach (int id in ParseBodyIDs(File.ReadAllLines(mobtypesPath)))
+                    allIDs.Add(id);
+
+            if (allIDs.Count == 0)
+            {
+                MessageBox.Show("No IDs found. Make sure the UO path is set correctly.", "Info",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            int freeID = Enumerable.Range(10, 9990).FirstOrDefault(i => !allIDs.Contains(i));
+            MessageBox.Show(
+                $"First free ID (not in Bodyconv.def or mobtypes.txt):\n\n" +
+                $"Decimal: {freeID}\nHex:     0x{freeID:X}",
+                "Free ID", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+        #endregion
+
+        // =========================================================================
+        // SPHERE ID CHECKBOX — safe conversion
+        // =========================================================================
+
+        #region checkBoxSphereID_CheckedChanged
+        private void checkBoxSphereID_CheckedChanged(object sender, EventArgs e)
+        {
+            if (!checkBoxSphereID.Checked) return;
+
+            if (!int.TryParse(textBoxBody.Text, out int decValue))
+            {
+                MessageBox.Show("Body-ID must be a valid integer.", "Conversion Error",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                checkBoxSphereID.Checked = false;
+                return;
+            }
+            tbCHARDEF.Text = decValue.ToString("X3"); // zero-padded 3-digit hex
+        }
+        #endregion
+
+        // =========================================================================
+        // PUBLIC PROPERTY SETTERS (called from external forms)
+        // =========================================================================
+
+        #region TextBoxID / TextBoxBody
+        public string TextBoxID { set { textBoxID.Text = value; } }
+        public string TextBoxBody { set { textBoxBody.Text = value; } }
+        #endregion
+
+        // =========================================================================
+        // RUNUO SCRIPT CREATOR
+        // =========================================================================
+
+        #region btCreateScript_Click — BUG FIX: Damage now reads from correct fields
         private void btCreateScript_Click(object sender, EventArgs e)
         {
             string scriptName = tbScriptName.Text;
+            if (string.IsNullOrWhiteSpace(scriptName))
+            {
+                MessageBox.Show("Please enter a Script Name.", "Missing Input",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
             string bodyValue = textBoxBody.Text;
             string ItemID = tbItemID.Text;
             string ItemID2 = tbItemID2.Text;
@@ -205,408 +520,318 @@ namespace UoFiddler.Controls.Forms
             string BaseSoundID1 = tBBaseSoundID1.Text;
             string BaseSoundID2 = tBBaseSoundID2.Text;
 
+            string StrNR1 = tbStr1.Text;
+            string StrNR2 = tbStr2.Text;
+            string DexNR1 = tbDex1.Text;
+            string DexNR2 = tbDex2.Text;
+            string IntN1 = tbInt1.Text;
+            string IntN2 = tbInt2.Text;
+            string Hitp1 = tbSetHits1.Text;
+            string Hitp2 = tbSetHits2.Text;
 
-            //strength
-            string StrNR1 = tbStr1.Text; // strength
-            string StrNR2 = tbStr2.Text; // strength
-            // Dex
-            string DexNR1 = tbDex1.Text; // Dex
-            string DexNR2 = tbDex2.Text; // Dex
-            // Int
-            string IntN1 = tbInt1.Text; // Int
-            string IntN2 = tbInt2.Text; // Int
-            //Hitpoints
-            string Hitp1 = tbSetHits1.Text; // Hitpoints
-            string Hitp2 = tbSetHits2.Text; // Hitpoints
-            // Damage
-            string SetDam1 = tbSetHits1.Text; // Damage
-            string SetDam2 = tbSetHits2.Text; // Damage
-            // Fame
-            string SetFame = tbFame.Text; // Fame
-            // Karma
-            string SetKarma = tbKarma.Text; // Karma
-            // Armor
-            string SetArmor = tbVirtualArmor.Text; // Armor
-            // Damage Resistance
-            string SetPhysical = tbPhysical.Text; // Damage Resistance Physical
-            string SetFire = tbFire.Text; // Damage Resistance Fire
-            string SetEnergy = tbEnergy.Text; // Damage Resistance Energy
-            // Resistance
-            string SetRPhysical1 = tbRPhysical1.Text; // Resistance Physical
-            string SetRPhysical2 = tbRPhysical2.Text; // Resistance Physical
-            string SetRFire1 = tbRFire1.Text; // Resistance Fire
-            string SetRFire2 = tbRFire2.Text; // Resistance Fire
-            string SetRCold1 = tbRCold1.Text; // Resistance Cold
-            string SetRCold2 = tbRCold2.Text; // Resistance Cold
-            string SetRPoison1 = tbRPoison1.Text; // Resistance Poison
-            string SetRPoison2 = tbRPoison2.Text; // Resistance Poison
-            string SetREnergy1 = tbREnergy1.Text; // Resistance Energy
-            string SetREnergy2 = tbREnergy2.Text; // Resistance Energy
-            // Set Skills
-            string SetEvalInt1 = tbSEvalInt1.Text; // Set Skill EvalInt
-            string SetEvalInt2 = tbSEvalInt2.Text; // Set Skill EvalInt
-            string SetMagery1 = tbSetMagery1.Text; // Set Skill Magery
-            string SetMagery2 = tbSetMagery2.Text; // Set Skill Magery
-            string SMagicResist1 = tbSMagicResist1.Text; // Set Skill Magery Resist
-            string SMagicResist2 = tbSMagicResist2.Text; // Set Skill Magery Resist
-            string STactics1 = tbSTactics1.Text; // Set Skill Tactics
-            string STactics2 = tbSTactics2.Text; // Set Skill Tactics
-            string SWrestling1 = tbSWrestling1.Text; // Set Skill Wrestling
-            string SWrestling2 = tbSWrestling2.Text; // Set Skill Wrestling
-            // Animal
-            string STamable = tbTamable.Text; // Set True or False
-            string SControlSlots = tbSControlSlots.Text; // Set Controll Slots you need from 1 to 6
-            string SMinTameSkill = tbMinTameSkill.Text; // Set Tame Skill you Need
+            // BUG FIX: was reading from tbSetHits — now correctly reads from tbSetDamage
+            string SetDam1 = tbSetDamage1.Text;
+            string SetDam2 = tbSetDamage2.Text;
 
-            string script = $@"
-            using System;
-            using Server;
-            using Server.Items;
-            using Server.Mobiles;
+            string SetFame = tbFame.Text;
+            string SetKarma = tbKarma.Text;
+            string SetArmor = tbVirtualArmor.Text;
 
-            namespace Server.Mobiles
+            string SetPhysical = tbPhysical.Text;
+            string SetFire = tbFire.Text;
+            string SetEnergy = tbEnergy.Text;
+
+            string SetRPhysical1 = tbRPhysical1.Text;
+            string SetRPhysical2 = tbRPhysical2.Text;
+            string SetRFire1 = tbRFire1.Text;
+            string SetRFire2 = tbRFire2.Text;
+            string SetRCold1 = tbRCold1.Text;
+            string SetRCold2 = tbRCold2.Text;
+            string SetRPoison1 = tbRPoison1.Text;
+            string SetRPoison2 = tbRPoison2.Text;
+            string SetREnergy1 = tbREnergy1.Text;
+            string SetREnergy2 = tbREnergy2.Text;
+
+            string SetEvalInt1 = tbSEvalInt1.Text;
+            string SetEvalInt2 = tbSEvalInt2.Text;
+            string SetMagery1 = tbSetMagery1.Text;
+            string SetMagery2 = tbSetMagery2.Text;
+            string SMagicResist1 = tbSMagicResist1.Text;
+            string SMagicResist2 = tbSMagicResist2.Text;
+            string STactics1 = tbSTactics1.Text;
+            string STactics2 = tbSTactics2.Text;
+            string SWrestling1 = tbSWrestling1.Text;
+            string SWrestling2 = tbSWrestling2.Text;
+
+            string STamable = tbTamable.Text;
+            string SControlSlots = tbSControlSlots.Text;
+            string SMinTameSkill = tbMinTameSkill.Text;
+
+            string script = $@"using System;
+using Server;
+using Server.Items;
+using Server.Mobiles;
+
+namespace Server.Mobiles
+{{
+    [CorpseName(""a {scriptName} corpse"")]
+    public class {scriptName} : BaseMount
+    {{
+        [Constructable]
+        public {scriptName}() : this(""a {scriptName}"")
+        {{
+        }}
+
+        [Constructable]
+        public {scriptName}(string name) : base(name, 0x74, 0x3EBB, AIType.AI_Mage, FightMode.Closest, 10, 1, 0.2, 0.4)
+        {{
+            BaseSoundID = {BaseSoundID1};
+
+            SetStr({StrNR1}, {StrNR2});
+            SetDex({DexNR1}, {DexNR2});
+            SetInt({IntN1}, {IntN2});
+
+            SetHits({Hitp1}, {Hitp2});
+            SetDamage({SetDam1}, {SetDam2});
+
+            SetDamageType(ResistanceType.Physical, {SetPhysical});
+            SetDamageType(ResistanceType.Fire,     {SetFire});
+            SetDamageType(ResistanceType.Energy,   {SetEnergy});
+
+            SetResistance(ResistanceType.Physical, {SetRPhysical1}, {SetRPhysical2});
+            SetResistance(ResistanceType.Fire,     {SetRFire1},     {SetRFire2});
+            SetResistance(ResistanceType.Cold,     {SetRCold1},     {SetRCold2});
+            SetResistance(ResistanceType.Poison,   {SetRPoison1},   {SetRPoison2});
+            SetResistance(ResistanceType.Energy,   {SetREnergy1},   {SetREnergy2});
+
+            SetSkill(SkillName.EvalInt,     {SetEvalInt1},   {SetEvalInt2});
+            SetSkill(SkillName.Magery,      {SetMagery1},    {SetMagery2});
+            SetSkill(SkillName.MagicResist, {SMagicResist1}, {SMagicResist2});
+            SetSkill(SkillName.Tactics,     {STactics1},     {STactics2});
+            SetSkill(SkillName.Wrestling,   {SWrestling1},   {SWrestling2});
+
+            Fame          = {SetFame};
+            Karma         = {SetKarma};
+            VirtualArmor  = {SetArmor};
+            Tamable       = {STamable};
+            ControlSlots  = {SControlSlots};
+            MinTameSkill  = {SMinTameSkill};
+
+            switch (Utility.Random(3))
             {{
-            [CorpseName(""a {scriptName} corpse"")]
-            public class {scriptName} : BaseMount
-            {{
-            
-                [Constructable]
-                public {scriptName}() : this(""a {scriptName}"")                
-                {{
-                }}
-            
-            [Constructable]
-            public {scriptName}(string name) : base(name, 0x74, 0x3EBB, AIType.AI_Mage, FightMode.Closest, 10, 1, 0.2, 0.4)
-            {{
-                BaseSoundID = {BaseSoundID1};       // Sound ID 1
-                SetStr({StrNR1}, {StrNR2});         // strength
-                SetDex({DexNR1}, {DexNR2});         // Dex
-                SetInt({IntN1}, {IntN2});           // Int
-
-                SetHits({Hitp1}, {Hitp2});          // Hitpoints
-                SetDamage({SetDam1}, {SetDam2});    // Damage
-
-                // Damage Resistance
-                SetDamageType(ResistanceType.Physical, {SetPhysical});
-                SetDamageType(ResistanceType.Fire, {SetFire});
-                SetDamageType(ResistanceType.Energy, {SetEnergy});
-
-                // Set Resistance
-                SetResistance(ResistanceType.Physical, {SetRPhysical1}, {SetRPhysical2});
-                SetResistance(ResistanceType.Fire, {SetRFire1}, {SetRFire2});
-                SetResistance(ResistanceType.Cold, {SetRCold1}, {SetRCold2});
-                SetResistance(ResistanceType.Poison, {SetRPoison1}, {SetRPoison2});
-                SetResistance(ResistanceType.Energy, {SetREnergy1}, {SetREnergy2});
-
-                // Set Skills
-                SetSkill(SkillName.EvalInt, {SetEvalInt1}, {SetEvalInt2});
-                SetSkill(SkillName.Magery, {SetMagery1}, {SetMagery2});
-                SetSkill(SkillName.MagicResist, {SMagicResist1}, {SMagicResist2});
-                SetSkill(SkillName.Tactics, {STactics1}, {STactics2});
-                SetSkill(SkillName.Wrestling, {SWrestling1}, {SWrestling2});
-
-                Fame = {SetFame}; // Fame
-                Karma = {SetKarma}; // Karma
-
-                VirtualArmor = {SetArmor}; // Armor
-                Tamable = {STamable}; // Tame false or true
-                ControlSlots = {SControlSlots}; // Control slots you need
-                MinTameSkill = {SMinTameSkill};  //Skill required to tame
-
-                switch (Utility.Random(3))
-                {{
-                    case 0:
-                        {{
-                            BodyValue = {bodyValue}; //Animation BodyID
-                            ItemID = {ItemID}; // Item Slot Id 1
-                            break;
-                        }}
-                    case 1:
-                        {{
-                            BodyValue = {bodyValue}; //Animation BodyID
-                            ItemID = {ItemID2}; // Item Slot Id 2
-                            break;
-                        }}
-                    case 2:
-                        {{
-                            BodyValue = {bodyValue}; //Animation BodyID
-                            ItemID = {ItemID3}; // Item Slot Id 3
-                            break;
-                        }}
-                }}
-
-                PackItem(new SulfurousAsh(Utility.RandomMinMax(3, 5)));
+                case 0:
+                    BodyValue = {bodyValue};
+                    ItemID    = {ItemID};
+                    break;
+                case 1:
+                    BodyValue = {bodyValue};
+                    ItemID    = {ItemID2};
+                    break;
+                case 2:
+                    BodyValue = {bodyValue};
+                    ItemID    = {ItemID3};
+                    break;
             }}
 
-            public override void GenerateLoot()
-            {{
-                AddLoot(LootPack.FilthyRich); //Loot Packs
-                AddLoot(LootPack.LowScrolls); //Loot Packs
-                AddLoot(LootPack.Potions); //Loot Packs
-            }}
+            PackItem(new SulfurousAsh(Utility.RandomMinMax(3, 5)));
+        }}
 
-            public override int Meat {{ get {{ return 5; }} }}
-            public override int Hides {{ get {{ return 10; }} }}
-            public override HideType HideType {{ get {{ return HideType.Barbed; }} }}
-            public override FoodType FavoriteFood {{ get {{ return FoodType.Meat; }} }}
+        public override void GenerateLoot()
+        {{
+            AddLoot(LootPack.FilthyRich);
+            AddLoot(LootPack.LowScrolls);
+            AddLoot(LootPack.Potions);
+        }}
 
-            public {scriptName}(Serial serial) : base(serial)
-            {{
-            }}
+        public override int Meat         {{ get {{ return 5; }} }}
+        public override int Hides        {{ get {{ return 10; }} }}
+        public override HideType HideType {{ get {{ return HideType.Barbed; }} }}
+        public override FoodType FavoriteFood {{ get {{ return FoodType.Meat; }} }}
 
-            public override void Serialize(GenericWriter writer)
-            {{
-                base.Serialize(writer);
-                writer.Write((int)0); // version
-            }}
+        public {scriptName}(Serial serial) : base(serial)
+        {{
+        }}
 
-            public override void Deserialize(GenericReader reader)
-            {{
-                base.Deserialize(reader);
-                int version = reader.ReadInt();
-                if (BaseSoundID == {BaseSoundID2}) // Sound ID 2
-                    BaseSoundID = {BaseSoundID1}; //Sound ID 1
-            }}
+        public override void Serialize(GenericWriter writer)
+        {{
+            base.Serialize(writer);
+            writer.Write((int)0);
+        }}
 
-         }}
-    }}";
+        public override void Deserialize(GenericReader reader)
+        {{
+            base.Deserialize(reader);
+            int version = reader.ReadInt();
+            if (BaseSoundID == {BaseSoundID2})
+                BaseSoundID = {BaseSoundID1};
+        }}
+    }}
+}}";
+
             richTextBoxEdit.Text = script;
-
-            // Create a new SoundPlayer
-            SoundPlayer player = new SoundPlayer();
-
-            // Load the sound file
-            player.SoundLocation = AppDomain.CurrentDomain.BaseDirectory + "\\Sound.wav";
-
-            // Play the sound
-            player.Play();
+            currentFilePath = null;
+            lbFileName.Text = $"{scriptName}.cs (unsaved)";
+            SetStatus("RunUO script generated.");
+            PlayClickSound();
         }
         #endregion
 
         #region btSaveScript_Click
         private void btSaveScript_Click(object sender, EventArgs e)
         {
-            SaveFileDialog saveFileDialog = new SaveFileDialog();
-            saveFileDialog.Filter = "C# Files|*.cs";
-            saveFileDialog.Title = "Save a C# File";
-            saveFileDialog.FileName = tbScriptName.Text; // Sets the filename to the contents of tbScriptName
-
-            if (saveFileDialog.ShowDialog() == DialogResult.OK)
+            using (SaveFileDialog dlg = new SaveFileDialog())
             {
-                using (StreamWriter writer = new StreamWriter(saveFileDialog.OpenFile()))
+                dlg.Filter = "C# Files|*.cs";
+                dlg.Title = "Save RunUO Script";
+                dlg.FileName = tbScriptName.Text;
+
+                if (dlg.ShowDialog() == DialogResult.OK)
                 {
-                    writer.Write(richTextBoxEdit.Text); // Writes the contents of richTextBoxEdit to the file
+                    File.WriteAllText(dlg.FileName, richTextBoxEdit.Text, Encoding.UTF8);
+                    currentFilePath = dlg.FileName;
+                    lbFileName.Text = Path.GetFileName(dlg.FileName);
+                    SetStatus($"Script saved: {dlg.FileName}");
                 }
             }
         }
         #endregion
 
-        #region btClipboard
-        private void btClipboard_Click(object sender, EventArgs e)
-        {
-            Clipboard.SetText(richTextBoxEdit.Text);
+        // =========================================================================
+        // SETTINGS SAVE / LOAD — with bounds check
+        // =========================================================================
 
-            // Create a new SoundPlayer
-            SoundPlayer player = new SoundPlayer();
-
-            // Load the sound file
-            player.SoundLocation = AppDomain.CurrentDomain.BaseDirectory + "\\Sound.wav";
-
-            // Play the sound
-            player.Play();
-        }
-        #endregion
-
-        #region btnSaveSettings
+        #region btnSaveSettings_Click
         private void btnSaveSettings_Click(object sender, EventArgs e)
         {
-            // Create a new list to store the values
-            List<string> values = new List<string>();
+            var values = new List<string>
+            {
+                tbScriptName.Text, tbItemID.Text, tbItemID2.Text, tbItemID3.Text,
+                tbStr1.Text, tbStr2.Text, tbDex1.Text, tbDex2.Text,
+                tbInt1.Text, tbInt2.Text, tbSetHits1.Text, tbSetHits2.Text,
+                tBBaseSoundID1.Text, tBBaseSoundID2.Text,
+                tbSetDamage1.Text, tbSetDamage2.Text,           // fixed index 14/15
+                tbPhysical.Text, tbFire.Text, tbEnergy.Text,
+                tbFame.Text, tbKarma.Text, tbVirtualArmor.Text,
+                tbRPhysical1.Text, tbRPhysical2.Text,
+                tbRFire1.Text, tbRFire2.Text,
+                tbRCold1.Text, tbRCold2.Text,
+                tbRPoison1.Text, tbRPoison2.Text,
+                tbREnergy1.Text, tbREnergy2.Text,
+                tbSEvalInt1.Text, tbSEvalInt2.Text,
+                tbSetMagery1.Text, tbSetMagery2.Text,
+                tbSMagicResist1.Text, tbSMagicResist2.Text,
+                tbSTactics1.Text, tbSTactics2.Text,
+                tbSWrestling1.Text, tbSWrestling2.Text,
+                tbSControlSlots.Text, tbTamable.Text, tbMinTameSkill.Text
+            };
 
-            // Add the text box values ​​to the list
-            values.Add(tbScriptName.Text);
-            values.Add(tbItemID.Text);
-            values.Add(tbItemID2.Text);
-            values.Add(tbItemID3.Text);
-            values.Add(tbStr1.Text);
-            values.Add(tbStr2.Text);
-            values.Add(tbDex1.Text);
-            values.Add(tbDex2.Text);
-            values.Add(tbInt1.Text);
-            values.Add(tbInt2.Text);
-            values.Add(tbSetHits1.Text);
-            values.Add(tbSetHits2.Text);
-            values.Add(tBBaseSoundID1.Text);
-            values.Add(tBBaseSoundID2.Text);
-            values.Add(tbSetDamage1.Text);
-            values.Add(tbSetDamage2.Text);
-            values.Add(tbPhysical.Text);
-            values.Add(tbFire.Text);
-            values.Add(tbEnergy.Text);
-            values.Add(tbFame.Text);
-            values.Add(tbKarma.Text);
-            values.Add(tbVirtualArmor.Text);
-            values.Add(tbRPhysical1.Text);
-            values.Add(tbRPhysical2.Text);
-            values.Add(tbRFire1.Text);
-            values.Add(tbRFire2.Text);
-            values.Add(tbRCold1.Text);
-            values.Add(tbRCold2.Text);
-            values.Add(tbRPoison1.Text);
-            values.Add(tbRPoison2.Text);
-            values.Add(tbREnergy1.Text);
-            values.Add(tbREnergy2.Text);
-            values.Add(tbSEvalInt1.Text);
-            values.Add(tbSEvalInt2.Text);
-            values.Add(tbSetMagery1.Text);
-            values.Add(tbSetMagery2.Text);
-            values.Add(tbSMagicResist1.Text);
-            values.Add(tbSMagicResist2.Text);
-            values.Add(tbSTactics1.Text);
-            values.Add(tbSTactics2.Text);
-            values.Add(tbSWrestling1.Text);
-            values.Add(tbSWrestling2.Text);
-            values.Add(tbSControlSlots.Text);
-            values.Add(tbTamable.Text);
-            values.Add(tbMinTameSkill.Text);
+            string dir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data", "SavesSettings");
+            Directory.CreateDirectory(dir);
+            File.WriteAllLines(Path.Combine(dir, "ScriptSettingsAnimationen.txt"), values);
 
-            // Add more text boxes if any...
-
-            // Bestimmen Sie den Pfad zum Speicherort
-            string path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data", "SavesSettings");
-
-            // Create the folder if it doesn't already exist
-            Directory.CreateDirectory(path);
-
-            // Save the list to a file
-            File.WriteAllLines(Path.Combine(path, "ScriptSettingsAnimationen.txt"), values);
-
-            // Create a new SoundPlayer
-            SoundPlayer player = new SoundPlayer();
-
-            // Load the sound file
-            player.SoundLocation = AppDomain.CurrentDomain.BaseDirectory + "\\Sound.wav";
-
-            // Play the sound
-            player.Play();
+            SetStatus("Settings saved.");
+            PlayClickSound();
         }
         #endregion
 
-        #region btnLoadSettings_Click
+        #region btnLoadSettings_Click — BUG FIX: bounds check added
         private void btnLoadSettings_Click(object sender, EventArgs e)
         {
-            // Specify the path to the storage location
-            string path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data", "SavesSettings", "ScriptSettingsAnimationen.txt");
+            string path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory,
+                "Data", "SavesSettings", "ScriptSettingsAnimationen.txt");
 
-            // Check if the file exists
-            if (File.Exists(path))
+            if (!File.Exists(path))
             {
-                // Read the values ​​from the file
-                List<string> values = File.ReadAllLines(path).ToList();
-
-                // Set the values ​​of the text boxes
-                tbScriptName.Text = values[0];
-                tbItemID.Text = values[1];
-                tbItemID2.Text = values[2];
-                tbItemID3.Text = values[3];
-                tbStr1.Text = values[4];
-                tbStr2.Text = values[5];
-                tbDex1.Text = values[6];
-                tbDex2.Text = values[7];
-                tbInt1.Text = values[8];
-                tbInt2.Text = values[9];
-                tbSetHits1.Text = values[10];
-                tbSetHits2.Text = values[11];
-                tBBaseSoundID1.Text = values[12];
-                tBBaseSoundID2.Text = values[13];
-                tbSetDamage1.Text = values[14];
-                tbSetDamage2.Text = values[15];
-                tbPhysical.Text = values[16];
-                tbFire.Text = values[17];
-                tbEnergy.Text = values[18];
-                tbFame.Text = values[19];
-                tbKarma.Text = values[20];
-                tbVirtualArmor.Text = values[21];
-                tbRPhysical1.Text = values[22];
-                tbRPhysical2.Text = values[23];
-                tbRFire1.Text = values[24];
-                tbRFire2.Text = values[25];
-                tbRCold1.Text = values[26];
-                tbRCold2.Text = values[27];
-                tbRPoison1.Text = values[28];
-                tbRPoison2.Text = values[29];
-                tbREnergy1.Text = values[30];
-                tbREnergy2.Text = values[31];
-                tbSEvalInt1.Text = values[32];
-                tbSEvalInt2.Text = values[33];
-                tbSetMagery1.Text = values[34];
-                tbSetMagery2.Text = values[35];
-                tbSMagicResist1.Text = values[36];
-                tbSMagicResist2.Text = values[37];
-                tbSTactics1.Text = values[38];
-                tbSTactics2.Text = values[39];
-                tbSWrestling1.Text = values[40];
-                tbSWrestling2.Text = values[41];
-                tbSControlSlots.Text = values[42];
-                tbTamable.Text = values[43];
-                tbMinTameSkill.Text = values[44];
-
-                // Put additional text boxes if there are any...
-            }
-            else
-            {
-                MessageBox.Show("The settings file could not be found.");
+                MessageBox.Show("Settings file not found.", "Load Settings",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
             }
 
-            // Create a new SoundPlayer
-            SoundPlayer player = new SoundPlayer();
+            List<string> values = File.ReadAllLines(path).ToList();
 
-            // Load the sound file
-            player.SoundLocation = AppDomain.CurrentDomain.BaseDirectory + "\\Sound.wav";
+            // BUG FIX: guard against corrupted / outdated settings files
+            if (values.Count < 45)
+            {
+                MessageBox.Show(
+                    $"Settings file has only {values.Count} entries (expected 45).\n" +
+                    "The file may be outdated. Partial load attempted.",
+                    "Load Settings", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
 
-            // Play the sound
-            player.Play();
+            string V(int i) => i < values.Count ? values[i] : string.Empty;
+
+            tbScriptName.Text = V(0); tbItemID.Text = V(1);
+            tbItemID2.Text = V(2); tbItemID3.Text = V(3);
+            tbStr1.Text = V(4); tbStr2.Text = V(5);
+            tbDex1.Text = V(6); tbDex2.Text = V(7);
+            tbInt1.Text = V(8); tbInt2.Text = V(9);
+            tbSetHits1.Text = V(10); tbSetHits2.Text = V(11);
+            tBBaseSoundID1.Text = V(12); tBBaseSoundID2.Text = V(13);
+            tbSetDamage1.Text = V(14); tbSetDamage2.Text = V(15);
+            tbPhysical.Text = V(16); tbFire.Text = V(17);
+            tbEnergy.Text = V(18); tbFame.Text = V(19);
+            tbKarma.Text = V(20); tbVirtualArmor.Text = V(21);
+            tbRPhysical1.Text = V(22); tbRPhysical2.Text = V(23);
+            tbRFire1.Text = V(24); tbRFire2.Text = V(25);
+            tbRCold1.Text = V(26); tbRCold2.Text = V(27);
+            tbRPoison1.Text = V(28); tbRPoison2.Text = V(29);
+            tbREnergy1.Text = V(30); tbREnergy2.Text = V(31);
+            tbSEvalInt1.Text = V(32); tbSEvalInt2.Text = V(33);
+            tbSetMagery1.Text = V(34); tbSetMagery2.Text = V(35);
+            tbSMagicResist1.Text = V(36); tbSMagicResist2.Text = V(37);
+            tbSTactics1.Text = V(38); tbSTactics2.Text = V(39);
+            tbSWrestling1.Text = V(40); tbSWrestling2.Text = V(41);
+            tbSControlSlots.Text = V(42); tbTamable.Text = V(43);
+            tbMinTameSkill.Text = V(44);
+
+            SetStatus("Settings loaded.");
+            PlayClickSound();
         }
         #endregion
+
+        // =========================================================================
+        // SPHERE SCRIPT CREATOR — BUG FIX: RESENERGY now has proper braces
+        // =========================================================================
 
         #region btCreateSphereScript_Click
         private void btCreateSphereScript_Click(object sender, EventArgs e)
         {
-            string SetCHARDEF = tbCHARDEF.Text; // CHARDEF
-            string SetDEFNAME = tbDEFNAME.Text; // DEFNAME
-            string SetNAME = tbName.Text; // NAME
-            string SetICON = tbICON.Text; // ICON
-            string SetSOUND = tbSOUND.Text; // SOUND
-            string SetCAN = tbCAN.Text; // CAN
-            string SetDAM = tbDAM.Text; // DAM
-            string SetArmor = tbAmor.Text; // armor
-            string SetDESIRES = tbDESIRES.Text; // DESIRES
-            string SetAVERSIONS = tbAVERSIONS.Text; // AVERSIONS
-            string SetFOODTYPE = tbFOODTYPE.Text; // FOODTYPE
-            string SetMAXFOOD = tbMAXFOOD.Text; // MAXFOOD
-            string SetRESOURCES = tbRESOURCES.Text; // RESOURCES
-            string SetCATEGORY = tbCATEGORY.Text; // CATEGORY
-            string SetSUBSECTION = tbSUBSECTION.Text; // SUBSECTION
-            string SetDESCRIPTION = tbDESCRIPTION.Text; // DESCRIPTION
-            string SetNPC = tbNPC.Text; // NPC
-            string SetSFame = tbSFAME.Text; // FAME
-            string SetSKarma = tbSKARMA.Text; // KARMA
-            string SetSTR = tbSTR.Text; // STR
-            string SetDEX = tbDEX.Text; // DEX
-            string SetINT = tbINT.Text; // INT
-            string SetEVALUATINGINTEL = tbEVALUATINGINTEL.Text; // EVALUATINGINTEL
-            string SetMAGERY = tbMAGERY.Text; // MAGERY
-            string SetMAGICRESISTANCE = tbMAGICRESISTANCE.Text; // MAGICRESISTANCE
-            string SetMEDITATION = tbMEDITATION.Text; // MEDITATION
-            string SetPARRYING = tbPARRYING.Text; // PARRYING
-            string SetTACTICS = tbTACTICS.Text; // TACTICS
-            string SetWRESTLING = tbWRESTLING.Text; // WRESTLING
-            string SetRESPHYSICAL = tbRESPHYSICAL.Text; // RESPHYSICAL
-            string SetRESCOLD = tbRESCOLD.Text; // RESCOLD
-            string SetRESENERGY = tbRESENERGY.Text; // RESENERGY
-            string SetRESFIRE = tbRESFIRE.Text; // RESFIRE
-            string SetRESPOISON = tbRESPOISON.Text; // RESPOISON
+            string SetCHARDEF = tbCHARDEF.Text;
+            string SetDEFNAME = tbDEFNAME.Text;
+            string SetNAME = tbName.Text;
+            string SetICON = tbICON.Text;
+            string SetSOUND = tbSOUND.Text;
+            string SetCAN = tbCAN.Text;
+            string SetDAM = tbDAM.Text;
+            string SetArmor = tbAmor.Text;
+            string SetDESIRES = tbDESIRES.Text;
+            string SetAVERSIONS = tbAVERSIONS.Text;
+            string SetFOODTYPE = tbFOODTYPE.Text;
+            string SetMAXFOOD = tbMAXFOOD.Text;
+            string SetRESOURCES = tbRESOURCES.Text;
+            string SetCATEGORY = tbCATEGORY.Text;
+            string SetSUBSECTION = tbSUBSECTION.Text;
+            string SetDESCRIPTION = tbDESCRIPTION.Text;
+            string SetNPC = tbNPC.Text;
+            string SetSFame = tbSFAME.Text;
+            string SetSKarma = tbSKARMA.Text;
+            string SetSTR = tbSTR.Text;
+            string SetDEX = tbDEX.Text;
+            string SetINT = tbINT.Text;
+            string SetEVALUATINGINTEL = tbEVALUATINGINTEL.Text;
+            string SetMAGERY = tbMAGERY.Text;
+            string SetMAGICRESISTANCE = tbMAGICRESISTANCE.Text;
+            string SetMEDITATION = tbMEDITATION.Text;
+            string SetPARRYING = tbPARRYING.Text;
+            string SetTACTICS = tbTACTICS.Text;
+            string SetWRESTLING = tbWRESTLING.Text;
+            string SetRESPHYSICAL = tbRESPHYSICAL.Text;
+            string SetRESCOLD = tbRESCOLD.Text;
+            string SetRESENERGY = tbRESENERGY.Text;
+            string SetRESFIRE = tbRESFIRE.Text;
+            string SetRESPOISON = tbRESPOISON.Text;
 
+            // BUG FIX: RESENERGY was missing {{}} in the original — now consistent with all other fields
             string script = $@"
 [CHARDEF {SetCHARDEF}]
 DEFNAME={SetDEFNAME}
@@ -644,10 +869,10 @@ ON=@Create
     WRESTLING={{{SetWRESTLING}}}
     RESPHYSICAL={{{SetRESPHYSICAL}}}
     RESCOLD={{{SetRESCOLD}}}
-    RESENERGY={SetRESENERGY}
+    RESENERGY={{{SetRESENERGY}}}
     RESFIRE={{{SetRESFIRE}}}
     RESPOISON={{{SetRESPOISON}}}
-    
+
     ITEMNEWBIE=i_spellbook
     ADDSPELL=s_magic_arrow
     ADDSPELL=s_clumsy
@@ -667,213 +892,159 @@ ON=@Create
     ADDSPELL=s_chain_lightning
     ADDSPELL=s_flamestrike
     ADDSPELL=s_mana_vampire
-    
+
 ON=@CreateLoot
     ITEM=loot_gargoyle
     ITEM=i_pierre_depecage_gargoyle
     ITEM=loot_gold_2";
 
             richTextBoxEdit.Text = script;
-
-            // Create a new SoundPlayer
-            SoundPlayer player = new SoundPlayer();
-
-            // Load the sound file
-            player.SoundLocation = AppDomain.CurrentDomain.BaseDirectory + "\\Sound.wav";
-
-            // Play the sound
-            player.Play();
+            currentFilePath = null;
+            lbFileName.Text = $"{SetNAME}.scp (unsaved)";
+            SetStatus("Sphere script generated.");
+            PlayClickSound();
         }
         #endregion
 
         #region btSaveSphereScript_Click
         private void btSaveSphereScript_Click(object sender, EventArgs e)
         {
-            SaveFileDialog saveFileDialog = new SaveFileDialog();
-            saveFileDialog.Filter = "SCP Files|*.scp";
-            saveFileDialog.Title = "Save a SCP File";
-            saveFileDialog.FileName = tbName.Text; // Setzt den Dateinamen auf den Inhalt von tbName
-
-            if (saveFileDialog.ShowDialog() == DialogResult.OK)
+            using (SaveFileDialog dlg = new SaveFileDialog())
             {
-                using (StreamWriter writer = new StreamWriter(saveFileDialog.OpenFile()))
+                dlg.Filter = "SCP Files|*.scp";
+                dlg.Title = "Save Sphere Script";
+                dlg.FileName = tbName.Text;
+
+                if (dlg.ShowDialog() == DialogResult.OK)
                 {
-                    writer.Write(richTextBoxEdit.Text); // Schreibt den Inhalt von richTextBoxEdit in die Datei
+                    File.WriteAllText(dlg.FileName, richTextBoxEdit.Text, Encoding.UTF8);
+                    currentFilePath = dlg.FileName;
+                    lbFileName.Text = Path.GetFileName(dlg.FileName);
+                    SetStatus($"Sphere script saved: {dlg.FileName}");
                 }
             }
         }
         #endregion
 
-        #region checkBoxSphereID_CheckedChanged
-        private void checkBoxSphereID_CheckedChanged(Object sender, EventArgs e)
-        {
-            if (checkBoxSphereID.Checked)
-            {
-                int decValue = int.Parse(textBoxBody.Text);
-                string hexValue = decValue.ToString("X");
-                tbCHARDEF.Text = decValue < 16 ? "0" + hexValue : "0" + hexValue;
-            }
-        }
-        #endregion
+        // =========================================================================
+        // ANIMATIONLIST
+        // =========================================================================
 
-        #region btAnimationlistLoad
+        #region btAnimationlistLoad_Click
         private void btAnimationlistLoad_Click(object sender, EventArgs e)
         {
-            string path = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\UoFiddler\Animationlist.xml";
+            string path = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                @"UoFiddler\Animationlist.xml");
+
             if (File.Exists(path))
             {
                 richTextBoxEdit.Text = File.ReadAllText(path);
+                currentFilePath = path;
+                lbFileName.Text = "Animationlist.xml";
+                SetStatus($"Loaded: {path}");
             }
             else
             {
-                MessageBox.Show("file does not exist: " + path);
+                MessageBox.Show($"File not found:\n{path}", "Error",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
-
-            // Create a new SoundPlayer
-            SoundPlayer player = new SoundPlayer();
-
-            // Load the sound file
-            player.SoundLocation = AppDomain.CurrentDomain.BaseDirectory + "\\Sound.wav";
-
-            // Play the sound
-            player.Play();
+            PlayClickSound();
         }
         #endregion
 
-        #region btSaveAnimationlist
+        #region btSaveAnimationlist_Click
         private void btSaveAnimationlist_Click(object sender, EventArgs e)
         {
-            string path = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\UoFiddler\Animationlist.xml";
-            File.WriteAllText(path, richTextBoxEdit.Text);
+            string path = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                @"UoFiddler\Animationlist.xml");
 
-            // Create a new SoundPlayer
-            SoundPlayer player = new SoundPlayer();
+            if (!CreateBackup(path)) return;
 
-            // Load the sound file
-            player.SoundLocation = AppDomain.CurrentDomain.BaseDirectory + "\\Sound.wav";
-
-            // Play the sound
-            player.Play();
+            File.WriteAllText(path, richTextBoxEdit.Text, Encoding.UTF8);
+            SetStatus($"Animationlist saved: {path}");
+            PlayClickSound();
         }
         #endregion
+
+        // =========================================================================
+        // APP DATA / DIRECTORY BUTTONS
+        // =========================================================================
 
         #region btAppData_Click
         private void btAppData_Click(object sender, EventArgs e)
         {
-            string path = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\UoFiddler";
+            string path = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                "UoFiddler");
+
             if (Directory.Exists(path))
-            {
                 System.Diagnostics.Process.Start("explorer.exe", path);
-            }
             else
-            {
-                MessageBox.Show("Directory does not exist: " + path);
-            }
+                MessageBox.Show($"Directory not found:\n{path}", "Error",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
 
-            // Create a new SoundPlayer
-            SoundPlayer player = new SoundPlayer();
-
-            // Load the sound file
-            player.SoundLocation = AppDomain.CurrentDomain.BaseDirectory + "\\Sound.wav";
-
-            // Play the sound
-            player.Play();
+            PlayClickSound();
         }
         #endregion
 
-        #region btUOOpenDirectory_Clic
-        private void btUOOpenDirectory_Click(object sender, EventArgs e)
-        {
-            string path = textBoxPfad.Text;
+        // =========================================================================
+        // MOBTYPES INFO
+        // =========================================================================
 
-            if (string.IsNullOrWhiteSpace(path))
-            {
-                MessageBox.Show("Please provide a directory.", "warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-            }
-            else if (!Directory.Exists(path))
-            {
-                MessageBox.Show("The specified directory does not exist.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-            else
-            {
-                System.Diagnostics.Process.Start("explorer.exe", path);
-            }
-
-            // Create a new SoundPlayer
-            SoundPlayer player = new SoundPlayer();
-
-            // Load the sound file
-            player.SoundLocation = AppDomain.CurrentDomain.BaseDirectory + "\\Sound.wav";
-
-            // Play the sound
-            player.Play();
-        }
-        #endregion
-
-        #region btInfoMobtypes
+        #region btInfoMobtypes_Click
         private void btInfoMobtypes_Click(object sender, EventArgs e)
         {
-            string infoText = "ENGLISH:\n" +
-                      "mobtypes MONSTER 1000 indicates actions 12, 13, and 14 are for casting spells. mobtypes MONSTER 1008 signifies flying actions 19, 20, 21 are supported, along with casting actions 12 and 13. mobtypes MONSTER 1009 also supports flying actions 19, 20, 21, but only casting action 12. For mobtypes MONSTER A00, the uniqueness lies in the limited actions available, with attack actions 4, 5, and 6 serving as replacements for actions 12, 13, and 14. Lastly, mobtypes MONSTER 1004 includes additional actions 7 and 8, with action 12 being utilized for the monster's summoning animation.\n\n" +
-                      "DEUTSCH:\n" +
-                      "mobtypes MONSTER 1000 zeigt an, dass Aktionen 12, 13 und 14 zum Zaubern verwendet werden. mobtypes MONSTER 1008 deutet darauf hin, dass Flugaktionen 19, 20, 21 unterstützt werden, zusammen mit Zaubereiaktionen 12 und 13. mobtypes MONSTER 1009 unterstützt ebenfalls Flugaktionen 19, 20, 21, aber nur Zaubereiaktion 12. Bei mobtypes MONSTER A00 liegt die Besonderheit in den begrenzten verfügbaren Aktionen, wobei Angriffsaktionen 4, 5 und 6 als Ersatz für Aktionen 12, 13 und 14 dienen. Schließlich beinhalten mobtypes MONSTER 1004 zusätzliche Aktionen 7 und 8, wobei Aktion 12 für die Beschwörungsanimation des Monsters verwendet wird.";
+            string info =
+                "MOBTYPES FLAG REFERENCE\n" +
+                "═══════════════════════════════════════════════════\n\n" +
+                "1000  — Spell casting: actions 12, 13, 14\n" +
+                "1004  — Actions 7 & 8; action 12 = summon animation\n" +
+                "1008  — Flying (actions 19/20/21) + cast actions 12 & 13\n" +
+                "1009  — Flying (actions 19/20/21) + cast action 12 only\n" +
+                "A00   — Limited actions; attack actions 4/5/6 replace 12/13/14\n\n" +
+                "Format:  BodyID  MONSTER|ANIMAL|EQUIPMENT  Flags\n" +
+                "Example: 747  MONSTER  1008";
 
-            MessageBox.Show(infoText, "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            MessageBox.Show(info, "mobtypes.txt Reference",
+                MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
         #endregion
 
-        #region richTextBoxEdit_KeyDown
-        private void richTextBoxEdit_KeyDown(object sender, KeyEventArgs e)
-        {
-            if (e.KeyCode == Keys.F3)
-            {
-                searchToolStripMenuItem_Click(this, EventArgs.Empty);
-                e.SuppressKeyPress = true;  //Prevents the event from being forwarded
-            }
-        }
-        #endregion 
+        // =========================================================================
+        // ANIM.MUL — Create empty file
+        // =========================================================================
 
         #region btnSingleEmptyAnimMul_Click
         private void btnSingleEmptyAnimMul_Click(object sender, EventArgs e)
         {
-            using (FolderBrowserDialog fbd = new FolderBrowserDialog())
+            using (FolderBrowserDialog dlg = new FolderBrowserDialog())
             {
-                fbd.Description = "Select a directory to save the files";
-
-                if (fbd.ShowDialog() == DialogResult.OK)
+                dlg.Description = "Select output directory for empty anim.mul";
+                if (dlg.ShowDialog() == DialogResult.OK)
                 {
-                    string path = fbd.SelectedPath;
-
-                    // Create the file anim.mul
-                    using (FileStream fs = File.Create(Path.Combine(path, "anim.mul")))
-                    {
-                        // No data is written to the anim.mul file because it is supposed to be empty
-                    }
+                    string path = Path.Combine(dlg.SelectedPath, "anim.mul");
+                    File.WriteAllBytes(path, Array.Empty<byte>());
+                    SetStatus($"Created empty anim.mul at: {path}");
                 }
             }
         }
         #endregion
 
-        #region Constants
-        // Constants for the sizes of different creature types
-        const int cHighDetail = 110;
-        const int cLowDetail = 65;
-        const int cHuman = 175;
-
-        const int cHighDetailOLd = 1; // Old Version
-        const int cLowDetailOld = 2; // Old Version
-        const int cHumanOld = 3; // Old Version
-
-        private int newIdCount = 0;
-        #endregion
+        // =========================================================================
+        // ANIM IDX PROCESSOR
+        // =========================================================================
 
         #region btnBrowseClick
         private void btnBrowseClick(object sender, EventArgs e)
         {
-            OpenFileDialog openFileDialog = new OpenFileDialog();
-            if (openFileDialog.ShowDialog() == DialogResult.OK)
+            using (OpenFileDialog dlg = new OpenFileDialog())
             {
-                tbfilename.Text = openFileDialog.FileName;
+                dlg.Filter = "Index Files|*.idx|All Files|*.*";
+                dlg.Title = "Select anim.idx";
+                if (dlg.ShowDialog() == DialogResult.OK)
+                    tbfilename.Text = dlg.FileName;
             }
         }
         #endregion
@@ -881,12 +1052,11 @@ ON=@CreateLoot
         #region btnSetOutputDirectoryClick
         private void btnSetOutputDirectoryClick(object sender, EventArgs e)
         {
-            // Open a FolderBrowserDialog to select the output directory
-            FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog();
-            if (folderBrowserDialog.ShowDialog() == DialogResult.OK)
+            using (FolderBrowserDialog dlg = new FolderBrowserDialog())
             {
-                // Set the text of the output directory textbox to the selected path
-                txtOutputDirectory.Text = folderBrowserDialog.SelectedPath;
+                dlg.Description = "Select output directory";
+                if (dlg.ShowDialog() == DialogResult.OK)
+                    txtOutputDirectory.Text = dlg.SelectedPath;
             }
         }
         #endregion
@@ -894,137 +1064,115 @@ ON=@CreateLoot
         #region btnProcessClick
         private void btnProcessClick(object sender, EventArgs e)
         {
-            // Flush tbProcessAminidx with every new process
             tbProcessAminidx.Clear();
+            newIdCount = 0;
+            lblNewIdCount.Text = "Count: 0";
 
             try
             {
-                // Check if the file exists
                 string filename = tbfilename.Text;
                 if (!File.Exists(filename))
                 {
-                    tbProcessAminidx.AppendText("Could not open anim.idx!\n");
+                    tbProcessAminidx.AppendText("ERROR: Could not open anim.idx\n");
                     return;
                 }
 
-                // Parse the creature ID from the text box
-                int creatureID;
-                if (!int.TryParse(txtOrigCreatureID.Text, System.Globalization.NumberStyles.HexNumber, null, out creatureID))
+                if (!int.TryParse(txtOrigCreatureID.Text,
+                        System.Globalization.NumberStyles.HexNumber, null, out int creatureID))
                 {
-                    tbProcessAminidx.AppendText("Enter a valid Animation ID\n");
+                    tbProcessAminidx.AppendText("ERROR: Enter a valid hex Animation ID (e.g. 4B)\n");
                     return;
                 }
 
-                // Determine the number of copies based on the selected checkboxes
                 int copyCount;
-                if (chkHighDetail.Checked)
+                if (chkHighDetail.Checked) copyCount = cHighDetail;
+                else if (chkLowDetail.Checked) copyCount = cLowDetail;
+                else if (chkHuman.Checked) copyCount = cHuman;
+                else if (!int.TryParse(txtNewCreatureID.Text, out copyCount))
                 {
-                    copyCount = cHighDetail;
+                    tbProcessAminidx.AppendText("ERROR: Enter a valid copy count or select a checkbox\n");
+                    return;
                 }
-                else if (chkLowDetail.Checked)
-                {
-                    copyCount = cLowDetail;
-                }
-                else if (chkHuman.Checked)
-                {
-                    copyCount = cHuman;
-                }
+
+                string outputFilename;
+                if (string.IsNullOrEmpty(txtOutputFilename.Text))
+                    outputFilename = Path.Combine(txtOutputDirectory.Text, "anim.idx");
                 else
-                {
-                    // If no checkbox is selected, parse the number of copies from the text box
-                    if (!int.TryParse(txtNewCreatureID.Text, out copyCount))
-                    {
-                        tbProcessAminidx.AppendText("Enter a valid copy count\n");
-                        return;
-                    }
-                }
+                    outputFilename = Path.Combine(txtOutputDirectory.Text,
+                        "anim" + txtOutputFilename.Text + ".idx");
 
-                // Determine the output filename
-                string outputFilename = txtOutputFilename.Text;
-                if (string.IsNullOrEmpty(outputFilename))
-                {
-                    outputFilename = Path.Combine(txtOutputDirectory.Text, "anim.idx"); // Use "anim.idx" in the output directory if no output file is specified
-                }
-                else
-                {
-                    // Append "amin", the outputFilename, and ".idx" to the output directory
-                    outputFilename = Path.Combine(txtOutputDirectory.Text, "amin" + outputFilename + ".idx");
-                }
+                File.Copy(filename, outputFilename, overwrite: true);
+                tbProcessAminidx.AppendText($"Copied source to: {outputFilename}\n");
 
-                // Copy the original file to the output file
-                File.Copy(filename, outputFilename, true);
-
-                // Execute the copy process
-                // CopyAnimationData(filename, creatureID, copyCount);
-
-                // Execute the copy process on the new file
                 CopyAnimationData(outputFilename, creatureID, copyCount);
             }
             catch (Exception ex)
             {
-                tbProcessAminidx.AppendText($"An error has occurred: {ex.Message}\n");
+                tbProcessAminidx.AppendText($"ERROR: {ex.Message}\n");
             }
         }
 
         private void CopyAnimationData(string filename, int creatureID, int copyCount)
         {
-            tbProcessAminidx.AppendText("Checking if new Animation ID is in use\n");
+            tbProcessAminidx.AppendText("Analyzing source animation...\n");
+
+            DetermineCreatureProperties(creatureID,
+                out int indexOffset, out int readLength, out string creatureType);
+
+            tbProcessAminidx.AppendText($"Type: {creatureType}\n");
+            tbProcessAminidx.AppendText($"Index offset: {indexOffset}  |  Block size: {readLength} bytes\n");
 
             using (FileStream stream = File.Open(filename, FileMode.Open, FileAccess.ReadWrite))
             {
-                // Determine the index offset and length of data to read based on the creature ID
-                int indexOffset, readLength;
-                string creatureType;
-                DetermineCreatureProperties(creatureID, out indexOffset, out readLength, out creatureType);
+                long seekPos = (long)indexOffset * 12;
+                if (seekPos + readLength > stream.Length)
+                {
+                    tbProcessAminidx.AppendText(
+                        $"ERROR: Seek position {seekPos} + {readLength} bytes exceeds file size {stream.Length}.\n" +
+                        "Check the Animation ID.\n");
+                    return;
+                }
 
-                tbProcessAminidx.AppendText($"Creature is a {creatureType}\n");
-
-                // Read the animation index data into a byte array
-                stream.Seek(indexOffset * 12, SeekOrigin.Begin);
+                stream.Seek(seekPos, SeekOrigin.Begin);
                 byte[] buffer = new byte[readLength];
-                stream.Read(buffer, 0, readLength);
-                tbProcessAminidx.AppendText($"Read {readLength} bytes of index-data for cID {creatureID}\n");
+                int bytesRead = stream.Read(buffer, 0, readLength);
+                tbProcessAminidx.AppendText($"Read {bytesRead} bytes from cID {creatureID}\n");
 
-                // Copy the data the specified number of times
                 for (int i = 0; i < copyCount; i++)
                 {
-                    // Find the end of the file
                     stream.Seek(0, SeekOrigin.End);
-
-                    // Write the data directly to the stream
                     stream.Write(buffer, 0, readLength);
-
-                    tbProcessAminidx.AppendText($"Wrote {readLength} bytes of index-data to cID {creatureID}\n");
-
-                    // Increment the counter for each ID created
                     newIdCount++;
                 }
-                // Update the label with the number of IDs created
-                lblNewIdCount.Text = $"Number of IDs created: {newIdCount}";
             }
+
+            lblNewIdCount.Text = $"IDs created: {newIdCount}";
+            tbProcessAminidx.AppendText($"Done. Wrote {copyCount} copies ({readLength} bytes each).\n");
+            SetStatus($"anim.idx written: {newIdCount} new entries.");
         }
         #endregion
 
         #region DetermineCreatureProperties
-        private void DetermineCreatureProperties(int creatureID, out int indexOffset, out int readLength, out string creatureType)
+        private void DetermineCreatureProperties(int creatureID,
+            out int indexOffset, out int readLength, out string creatureType)
         {
             if (creatureID <= 199)
             {
                 indexOffset = creatureID * cHighDetail;
                 readLength = cHighDetail * 12;
-                creatureType = "High Detail Critter";
+                creatureType = "High Detail Critter (ID 0-199)";
             }
-            else if (creatureID > 199 && creatureID <= 399)
+            else if (creatureID <= 399)
             {
                 indexOffset = (creatureID - 200) * cLowDetail + 22000;
                 readLength = cLowDetail * 12;
-                creatureType = "Low Detail Critter";
+                creatureType = "Low Detail Critter (ID 200-399)";
             }
             else
             {
                 indexOffset = (creatureID - 400) * cHuman + 35000;
                 readLength = cHuman * 12;
-                creatureType = "Human or an Accessoire";
+                creatureType = "Human / Accessory (ID 400+)";
             }
         }
         #endregion
@@ -1032,102 +1180,100 @@ ON=@CreateLoot
         #region btnProcessClickOldVersion
         private void btnProcessClickOldVersion(object sender, EventArgs e)
         {
-            // Flush tbProcessAminidx with every new process
             tbProcessAminidx.Clear();
 
             try
             {
-                int readLength = 0;
-                int wroteLength = 0;
                 string filename = tbfilename.Text;
                 if (!File.Exists(filename))
                 {
-                    tbProcessAminidx.AppendText("Could not open anim.idx!\n");
+                    tbProcessAminidx.AppendText("ERROR: Could not open anim.idx\n");
                     return;
                 }
 
-                int creatureID;
-                if (!int.TryParse(txtOrigCreatureID.Text, System.Globalization.NumberStyles.HexNumber, null, out creatureID))
+                if (!int.TryParse(txtOrigCreatureID.Text,
+                        System.Globalization.NumberStyles.HexNumber, null, out int creatureID))
                 {
-                    tbProcessAminidx.AppendText("Enter a valid Animation ID\n");
+                    tbProcessAminidx.AppendText("ERROR: Enter a valid hex Animation ID\n");
                     return;
                 }
 
-                int copyCount;
-                if (!int.TryParse(txtNewCreatureID.Text, out copyCount))
+                if (!int.TryParse(txtNewCreatureID.Text, out int copyCount))
                 {
-                    tbProcessAminidx.AppendText("Enter a valid copy count\n");
+                    tbProcessAminidx.AppendText("ERROR: Enter a valid copy count\n");
                     return;
                 }
 
-                tbProcessAminidx.AppendText("Checking if new Animation ID is in use\n");
+                int indexOffset, readLength;
+                byte cAnimType;
+
+                if (creatureID <= 199)
+                {
+                    indexOffset = creatureID * 110;
+                    readLength = 110 * 12;
+                    cAnimType = cHighDetailOLd;
+                    tbProcessAminidx.AppendText("High Detail Critter\n");
+                }
+                else if (creatureID <= 399)
+                {
+                    indexOffset = (creatureID - 200) * 65 + 22000;
+                    readLength = 65 * 12;
+                    cAnimType = cLowDetailOld;
+                    tbProcessAminidx.AppendText("Low Detail Critter\n");
+                }
+                else
+                {
+                    indexOffset = (creatureID - 400) * 175 + 35000;
+                    readLength = 175 * 12;
+                    cAnimType = cHumanOld;
+                    tbProcessAminidx.AppendText("Human / Accessory\n");
+                }
 
                 using (FileStream stream = File.Open(filename, FileMode.Open, FileAccess.ReadWrite))
                 {
-                    int indexOffset;
-                    byte cAnimType;
-
-                    if (creatureID <= 199)
-                    {
-                        indexOffset = creatureID * 110;
-                        readLength = 110 * 12;
-                        cAnimType = cHighDetailOLd;
-                        tbProcessAminidx.AppendText("Creature is a High Detail Critter\n");
-                    }
-                    else if (creatureID > 199 && creatureID <= 399)
-                    {
-                        indexOffset = (creatureID - 200) * 65 + 22000;
-                        readLength = 65 * 12;
-                        cAnimType = cLowDetailOld;
-                        tbProcessAminidx.AppendText("Creature is a Low Detail Critter\n");
-                    }
-                    else
-                    {
-                        indexOffset = (creatureID - 400) * 175 + 35000;
-                        readLength = 175 * 12;
-                        cAnimType = cHumanOld;
-                        tbProcessAminidx.AppendText("Creature is a Human or an Accessoire\n");
-                    }
-
-                    stream.Seek(indexOffset * 12, SeekOrigin.Begin);
+                    stream.Seek((long)indexOffset * 12, SeekOrigin.Begin);
                     byte[] buffer = new byte[readLength];
                     stream.Read(buffer, 0, readLength);
-                    tbProcessAminidx.AppendText($"Read {readLength} bytes of index-data for cID {creatureID}\n");
+                    tbProcessAminidx.AppendText($"Read {readLength} bytes\n");
 
-                    // Copy the data the number of times specified in copyCount
                     for (int i = 0; i < copyCount; i++)
                     {
-                        // Find the end of the file
                         stream.Seek(0, SeekOrigin.End);
-
-                        // Write the data directly to the stream
                         stream.Write(buffer, 0, readLength);
-
-                        // Update wroteLength to the value of readLength since all data has been written
-                        wroteLength = readLength;
-                        tbProcessAminidx.AppendText($"Wrote {wroteLength} bytes of index-data to cID {creatureID}\n");
-
-                        // Perform different actions based on the creature type
-                        switch (cAnimType)
-                        {
-                            case cHighDetailOLd:
-                                // Perform some action for high detail creatures
-                                break;
-                            case cLowDetailOld:
-                                // Perform some action for low detail creatures
-                                break;
-                            case cHumanOld:
-                                // Perform some action for human creatures
-                                break;
-                        }
                     }
+                    tbProcessAminidx.AppendText($"Wrote {copyCount} copies (Old Version mode).\n");
                 }
             }
             catch (Exception ex)
             {
-                tbProcessAminidx.AppendText($"An error has occurred: {ex.Message}\n");
+                tbProcessAminidx.AppendText($"ERROR: {ex.Message}\n");
             }
         }
-        #endregion      
+        #endregion
+
+        // =========================================================================
+        // BACKUP CHECKBOX — persists setting
+        // =========================================================================
+
+        #region chkBackup_CheckedChanged
+        private void chkBackup_CheckedChanged(object sender, EventArgs e)
+        {
+            SaveBackupEnabled(chkBackup.Checked);
+            SetStatus(chkBackup.Checked
+                ? "Auto-backup ON — files will be backed up before saving."
+                : "Auto-backup OFF.");
+        }
+        #endregion
+
+        // =========================================================================
+        // FORM CLOSING — save settings
+        // =========================================================================
+
+        #region EditUoBodyconvMobtypes_FormClosing
+        private void EditUoBodyconvMobtypes_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            Properties.Settings.Default.Save();
+        }
+        #endregion
     }
 }

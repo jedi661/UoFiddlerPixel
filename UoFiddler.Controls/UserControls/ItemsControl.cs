@@ -2553,37 +2553,41 @@ namespace UoFiddler.Controls.UserControls
         #endregion
         #endregion
 
-        #region [ toolStripButtonColorImag ]
+        #region [ toolStripButtonColorImage ]
         private void toolStripButtonColorImage_Click(object sender, EventArgs e)
         {
-            // Create a new form
+            // Get the selected image from the DetailPictureBox
+            Bitmap selectedImage = DetailPictureBox.Image as Bitmap;
+
+            if (selectedImage == null)
+            {
+                MessageBox.Show("No image selected in DetailPictureBox.", "No Image", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            // Create a snapshot to avoid cross-thread access on the original bitmap
+            Bitmap imageCopy = new Bitmap(selectedImage);
+
             Form colorForm = new Form
             {
                 Text = "Color Values for Selected Image",
                 Width = 1000,
-                Height = 970
+                Height = 970,
+                ShowIcon = false
             };
 
-            // Hide the icon
-            colorForm.ShowIcon = false;
-
-            // Create a new SplitContainer
             SplitContainer splitContainer = new SplitContainer
             {
                 Dock = DockStyle.Fill,
                 Orientation = Orientation.Vertical
             };
-
-            // Add the SplitContainer to the form
             colorForm.Controls.Add(splitContainer);
 
-            // Create a new PictureBox with Scrollbars
             PictureBox pictureBox = new PictureBox
             {
                 SizeMode = PictureBoxSizeMode.AutoSize
             };
 
-            // Create a Panel to host the PictureBox and enable scrolling
             Panel picturePanel = new Panel
             {
                 AutoScroll = true,
@@ -2591,165 +2595,164 @@ namespace UoFiddler.Controls.UserControls
             };
             picturePanel.Controls.Add(pictureBox);
 
-            // Create a new RichTextBox
             RichTextBox colorBox = new RichTextBox
             {
                 Dock = DockStyle.Fill
             };
 
-            // Add the RichTextBox to the SplitContainer
+            splitContainer.Panel1.Controls.Add(picturePanel);
             splitContainer.Panel2.Controls.Add(colorBox);
 
-            // Add the Panel with the PictureBox to the SplitContainer
-            splitContainer.Panel1.Controls.Add(picturePanel);
-
-            // Get the selected image from the DetailPictureBox
-            Bitmap selectedImage = DetailPictureBox.Image as Bitmap;
-
-            // Check if the selectedImage is null
-            if (selectedImage == null)
-            {
-                MessageBox.Show("No image selected in DetailPictureBox.");
-                return;
-            }
-
-            // Calculate the zoomed image size
+            // Calculate the zoomed image
             int zoomFactor = 10;
-            int zoomedWidth = selectedImage.Width * zoomFactor;
-            int zoomedHeight = selectedImage.Height * zoomFactor;
+            int zoomedWidth = imageCopy.Width * zoomFactor;
+            int zoomedHeight = imageCopy.Height * zoomFactor;
 
-            // Create a new bitmap to hold the zoomed image
             Bitmap zoomedImage = new Bitmap(zoomedWidth, zoomedHeight);
-
             using (Graphics g = Graphics.FromImage(zoomedImage))
             {
-                // Draw the original image scaled by a factor of 10
                 g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
                 g.PixelOffsetMode = System.Drawing.Drawing2D.PixelOffsetMode.Half;
-                g.DrawImage(selectedImage, new Rectangle(0, 0, zoomedWidth, zoomedHeight));
+                g.DrawImage(imageCopy, new Rectangle(0, 0, zoomedWidth, zoomedHeight));
             }
-
-            // Set the PictureBox's image to the zoomed image
             pictureBox.Image = zoomedImage;
 
-            // Create a StringBuilder to collect color text
-            StringBuilder colorTextBuilder = new StringBuilder();
+            // Free zoomedImage when form closes
+            colorForm.FormClosed += (s, ev) =>
+            {
+                zoomedImage.Dispose();
+                imageCopy.Dispose();
+            };
 
-            // Array to hold the line indices of the colorBox
-            int[,] lineIndices = new int[selectedImage.Width, selectedImage.Height];
+            // lineIndices[x, y] = line index in colorBox, or -1 if skipped
+            int[,] lineIndices = new int[imageCopy.Width, imageCopy.Height];
 
-            // Populate the RichTextBox with color information excluding black and white
+            // Show the form BEFORE starting the background task so the handle exists
+            colorForm.Show();
+
+            // Variable to store the previously highlighted line index and its pixel coords
+            int previousLineIndex = -1;
+            int previousPixelX = -1;
+            int previousPixelY = -1;
+
+            // Populate colorBox in background
             Task.Run(() =>
             {
                 int currentLineIndex = 0;
-                for (int y = 0; y < selectedImage.Height; y++)
+                for (int y = 0; y < imageCopy.Height; y++)
                 {
-                    for (int x = 0; x < selectedImage.Width; x++)
+                    for (int x = 0; x < imageCopy.Width; x++)
                     {
-                        Color pixelColor = selectedImage.GetPixel(x, y);
+                        Color pixelColor = imageCopy.GetPixel(x, y);
                         string hexColor = ColorTranslator.ToHtml(pixelColor);
 
-                        // Skip the colors #FFFFFF (white) and #000000 (black)
-                        if (hexColor.Equals("#FFFFFF", StringComparison.OrdinalIgnoreCase) || hexColor.Equals("#000000", StringComparison.OrdinalIgnoreCase))
+                        if (hexColor.Equals("#FFFFFF", StringComparison.OrdinalIgnoreCase) ||
+                            hexColor.Equals("#000000", StringComparison.OrdinalIgnoreCase))
                         {
-                            lineIndices[x, y] = -1; // Mark as skipped
+                            lineIndices[x, y] = -1;
                             continue;
                         }
 
-                        // Create the text for the color
                         string colorText = $"Pixel ({x}, {y}): Color [R={pixelColor.R}, G={pixelColor.G}, B={pixelColor.B}], Hex: {hexColor}";
-                        lineIndices[x, y] = currentLineIndex++; // Store the line index for this pixel
+                        lineIndices[x, y] = currentLineIndex++;
 
-                        // Update the RichTextBox on the UI thread
+                        // Capture loop variables for the closure
+                        Color capturedColor = pixelColor;
+                        string capturedText = colorText;
+
+                        // Bug fix: guard against disposed form/control
+                        if (colorBox.IsDisposed || !colorBox.IsHandleCreated)
+                        {
+                            return;
+                        }
+
                         colorBox.Invoke((Action)(() =>
                         {
-                            int start = colorBox.Text.Length;
-                            colorBox.AppendText(colorText);
+                            if (colorBox.IsDisposed)
+                            {
+                                return;
+                            }
 
-                            // Add 5 spaces without color
+                            // Append text
+                            colorBox.AppendText(capturedText);
+
+                            // 5 plain spaces as separator
                             colorBox.AppendText("     ");
 
-                            // Add 5 spaces with the background color
+                            // 5 spaces with pixel background color as color swatch
                             int colorStart = colorBox.Text.Length;
                             colorBox.AppendText("     ");
                             colorBox.Select(colorStart, 5);
-                            colorBox.SelectionBackColor = pixelColor;
+                            colorBox.SelectionBackColor = capturedColor;
 
-                            // Add a new line
                             colorBox.AppendText("\n");
                         }));
                     }
                 }
             });
 
-            // Variable to store the previously highlighted line index
-            int previousLineIndex = -1;
-
             pictureBox.MouseClick += (s, evt) =>
             {
                 int x = evt.X / zoomFactor;
                 int y = evt.Y / zoomFactor;
 
-                if (x >= 0 && x < selectedImage.Width && y >= 0 && y < selectedImage.Height)
+                if (x < 0 || x >= imageCopy.Width || y < 0 || y >= imageCopy.Height)
                 {
-                    int lineIndex = lineIndices[x, y];
+                    return;
+                }
 
-                    // Highlight the line only if it's not skipped
-                    if (lineIndex >= 0 && lineIndex < colorBox.Lines.Length)
+                int lineIndex = lineIndices[x, y];
+
+                if (lineIndex >= 0 && lineIndex < colorBox.Lines.Length)
+                {
+                    // --- Clear previous highlight ---
+                    if (previousLineIndex >= 0 && previousLineIndex < colorBox.Lines.Length)
                     {
-                        // Clear previous highlight
-                        if (previousLineIndex >= 0 && previousLineIndex < colorBox.Lines.Length)
+                        int prevStart = colorBox.GetFirstCharIndexFromLine(previousLineIndex);
+                        string prevLine = colorBox.Lines[previousLineIndex];
+                        int prevLength = prevLine.IndexOf("Hex:") + 10;
+                        colorBox.Select(prevStart, prevLength);
+                        colorBox.SelectionBackColor = colorBox.BackColor;
+
+                        // Bug fix: restore color swatch with the PREVIOUS pixel's color, not the current one
+                        Match prevMatch = Regex.Match(prevLine, @"Hex: (#?[0-9A-Fa-f]{6})");
+                        if (prevMatch.Success && previousPixelX >= 0 && previousPixelY >= 0)
                         {
-                            int prevStart = colorBox.GetFirstCharIndexFromLine(previousLineIndex);
-                            int prevLength = colorBox.Lines[previousLineIndex].IndexOf("Hex:") + 10; // Length up to and including the hex color
-                            colorBox.Select(prevStart, prevLength);
-                            colorBox.SelectionBackColor = colorBox.BackColor;
-
-                            // Restore color background for color square
-                            string prevLineText = colorBox.Lines[previousLineIndex];
-                            Match prevMatch = Regex.Match(prevLineText, @"Hex: (#?[0-9A-Fa-f]{6})");
-                            if (prevMatch.Success)
-                            {
-                                int prevColorStart = prevStart + prevLineText.Length + 5; // Color square position
-                                colorBox.Select(prevColorStart, 5);
-                                Color prevPixelColor = selectedImage.GetPixel(x, y);
-                                colorBox.SelectionBackColor = prevPixelColor;
-                            }
+                            // Position of color swatch: after text + 5 separator spaces
+                            int prevSwatchStart = prevStart + prevLine.Length + 5;
+                            colorBox.Select(prevSwatchStart, 5);
+                            Color prevPixelColor = imageCopy.GetPixel(previousPixelX, previousPixelY);
+                            colorBox.SelectionBackColor = prevPixelColor;
                         }
-
-                        // Select the new line up to the hex color
-                        int start = colorBox.GetFirstCharIndexFromLine(lineIndex);
-                        int length = colorBox.Lines[lineIndex].IndexOf("Hex:") + 10; // Length up to and including the hex color
-                        colorBox.Select(start, length);
-                        colorBox.SelectionBackColor = Color.LightGray;
-
-                        // Scroll to the selected line
-                        colorBox.ScrollToCaret();
-
-                        // Copy the hex color code to clipboard
-                        string lineText = colorBox.Lines[lineIndex];
-                        Match match = Regex.Match(lineText, @"Hex: (#?[0-9A-Fa-f]{6})");
-                        if (match.Success)
-                        {
-                            Clipboard.SetText(match.Groups[1].Value);
-                        }
-
-                        // Update the previous line index
-                        previousLineIndex = lineIndex;
                     }
-                    else
+
+                    // --- Highlight new line ---
+                    int start = colorBox.GetFirstCharIndexFromLine(lineIndex);
+                    int length = colorBox.Lines[lineIndex].IndexOf("Hex:") + 10;
+                    colorBox.Select(start, length);
+                    colorBox.SelectionBackColor = Color.LightGray;
+                    colorBox.ScrollToCaret();
+
+                    // Copy hex color to clipboard
+                    string lineText = colorBox.Lines[lineIndex];
+                    Match match = Regex.Match(lineText, @"Hex: (#?[0-9A-Fa-f]{6})");
+                    if (match.Success)
                     {
-                        // Handle the case where black or white is clicked
-                        Color pixelColor = selectedImage.GetPixel(x, y);
-                        string hexColor = ColorTranslator.ToHtml(pixelColor);
-                        Clipboard.SetText(hexColor); // Copy the color code to the clipboard
-                        MessageBox.Show($"Selected color {hexColor} is not listed in the RichTextBox.");
+                        Clipboard.SetText(match.Groups[1].Value);
                     }
+
+                    previousLineIndex = lineIndex;
+                    previousPixelX = x;
+                    previousPixelY = y;
+                }
+                else
+                {
+                    // Black or white pixel: still copy hex to clipboard, no MessageBox spam
+                    Color pixelColor = imageCopy.GetPixel(x, y);
+                    string hexColor = ColorTranslator.ToHtml(pixelColor);
+                    Clipboard.SetText(hexColor);
                 }
             };
-
-            // View the form
-            colorForm.Show();
         }
         #endregion
 

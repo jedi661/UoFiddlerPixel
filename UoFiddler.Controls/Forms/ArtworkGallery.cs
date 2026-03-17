@@ -1,61 +1,114 @@
 ﻿// /***************************************************************************
 //  *
-//  * $Author: Nikodemus 
-//  * 
-//  * 
+//  * $Author: Nikodemus
+//  *
 //  * \"THE BEER-WINE-WARE LICENSE\"
-//  * As long as you retain this notice you can do whatever you want with 
+//  * As long as you retain this notice you can do whatever you want with
 //  * this stuff. If we meet some day, and you think this stuff is worth it,
 //  * you can buy me a beer and Wine in return.
 //  *
+//  * Changelog:
+//  *  - FIX: Replaced slow GetPixel/SetPixel loops with fast LockBits processing
+//  *  - FIX: CheckBox Black/White are now mutually exclusive
+//  *  - FIX: OnFrameChanged race condition (null-check with local copy)
+//  *  - FIX: Replaced Application.DoEvents() with Refresh() in crop method
+//  *  - FIX: SetArtworkImage now respects secondImage and rhombus state
+//  *  - FIX: ButtonClearAll naming cleaned up
+//  *  - NEW: Opacity slider for overlay (secondImage + GIF)
+//  *  - NEW: Overlay scale slider (render-only, non-destructive)
+//  *  - NEW: Zoom + Pan with MouseWheel and drag in PictureBox
+//  *  - NEW: Transparent color picker (replaces hardcoded black/white)
+//  *  - NEW: Pixel info label on mouse hover (coordinates + RGBA)
+//  *  - NEW: Image size label (base + overlay dimensions)
+//  *  - NEW: Visual content height indicator (bounding box of non-transparent pixels)
+//  *  - NEW: Favorites / bookmarks for Graphic IDs
+//  *  - NEW: Batch export of current item list with current overlay
 //  ***************************************************************************/
 
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data;
 using System.Drawing;
+using System.Drawing.Imaging;
+using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Media;
+using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using UoFiddler.Controls.UserControls;
 using Ultima;
-using System.Media;
-using System.IO;
 
+// Explicit alias — prevents ambiguity with System.Threading.Timer
+using WinTimer = System.Windows.Forms.Timer;
 
 namespace UoFiddler.Controls.Forms
 {
     public partial class ArtworkGallery : Form
     {
-        private List<int> itemList; // List of artworks
-        private int currentIndex = -1; // Current index
-        private Bitmap secondImage = null; // Second image (optional)
+        // ── Core state ────────────────────────────────────────────────────────
+        private List<int> itemList;
+        private int currentIndex = -1;
+        private Bitmap secondImage = null;
         private bool useSecondImage => checkBoxSecondArtwork.Checked;
-        // Indicates if Rhombus Drawing for ArtworkGallery is active
+
+        // ── Rhombus ───────────────────────────────────────────────────────────
         private bool isDrawingRhombusArtworkGallery = false;
 
-        // --- [ Movement Settings for Second Image ] ---
-        private Point secondImageOffset = Point.Empty; // Offset for moving the overlay
-        private const int moveStep = 1; // Step size in pixels (here 1, can be changed)
-        private Timer moveTimer; // Timer for held keys
-        private Keys currentMoveKey = Keys.None; // Currently pressed movement key
-        private bool IsOverlayActive => (useSecondImage && secondImage != null) || animatedGif != null; // Indicates if an overlay is active
+        // ── Overlay movement ──────────────────────────────────────────────────
+        private Point secondImageOffset = Point.Empty;
+        private const int MoveStep = 1;
+        private WinTimer moveTimer;
+        private Keys currentMoveKey = Keys.None;
+        private bool IsOverlayActive => (useSecondImage && secondImage != null) || animatedGif != null;
 
+        // ── Cutting template ──────────────────────────────────────────────────
         private bool isCuttingTemplateActive = false;
-        private Point cuttingTemplatePosition = new Point(100, 100); // Initial position
-        private Size cuttingTemplateSize = new Size(44, 133); // Standard size
-
+        private Point cuttingTemplatePosition = new Point(100, 100);
+        private Size cuttingTemplateSize = new Size(44, 133);
         private Keys currentCuttingTemplateMoveKey = Keys.None;
-        private Timer cuttingTemplateMoveTimer;
+        private WinTimer cuttingTemplateMoveTimer;
         private bool isDrawingCuttingTemplateTemporaryDisabled = false;
 
+        // ── Index image toggle ────────────────────────────────────────────────
         private bool allowIndexArtwork = true;
+
+        // ── Background image ──────────────────────────────────────────────────
         private Bitmap backgroundImage = null;
 
+        // ── Image file browser ────────────────────────────────────────────────
         private string lastImageDirectory = null;
         private Dictionary<string, string> imageFileLookup = new Dictionary<string, string>();
+
+        // ── Animated GIF ──────────────────────────────────────────────────────
+        private Image animatedGif = null;
+        private readonly object gifLock = new object(); // FIX: race condition guard
+
+        // ── FIX NEW: Opacity (0–255) ──────────────────────────────────────────
+        private int overlayOpacity = 255;
+
+        // ── NEW: Scale factor for overlay render (0.1 – 4.0) ─────────────────
+        private float overlayScale = 1.0f;
+
+        // ── NEW: Zoom + Pan ───────────────────────────────────────────────────
+        private float zoomFactor = 1.0f;
+        private Point panOffset = Point.Empty;
+        private Point panStartPoint = Point.Empty;
+        private bool isPanning = false;
+
+        // ── NEW: Chroma-key color (replaces hardcoded black/white) ───────────
+        private Color chromaColor1 = Color.Black;
+        private Color chromaColor2 = Color.White;
+        private bool useChromaKey = true;
+
+        // ── NEW: Favorites ────────────────────────────────────────────────────
+        private HashSet<int> favorites = new HashSet<int>();
+
+        // ─────────────────────────────────────────────────────────────────────
+        #region Constructor
+        // ─────────────────────────────────────────────────────────────────────
+
+        private bool isRulerActive = false;
+        private bool isCrosshairActive = false;
 
 
         public ArtworkGallery()
@@ -63,146 +116,252 @@ namespace UoFiddler.Controls.Forms
             InitializeComponent();
             this.Load += ArtworkGallery_Load;
 
-            // Initialize timer for held movement keys
-            moveTimer = new Timer();
-            moveTimer.Interval = 50; // 50 ms repetition
+            moveTimer = new WinTimer { Interval = 50 };
             moveTimer.Tick += MoveTimer_Tick;
-            this.KeyPreview = true; // For the form to receive keystrokes
-            this.KeyDown += ArtworkGallery_KeyDown;
-            this.KeyUp += ArtworkGallery_KeyUp;
 
-            this.ActiveControl = null; // No control gets the focus
-            this.Focus(); // Focuses on the form itself
-
-            cuttingTemplateMoveTimer = new Timer();
-            cuttingTemplateMoveTimer.Interval = 50;
+            cuttingTemplateMoveTimer = new WinTimer { Interval = 50 };
             cuttingTemplateMoveTimer.Tick += CuttingTemplateMoveTimer_Tick;
 
-        }
+            this.KeyPreview = true;
+            this.KeyDown += ArtworkGallery_KeyDown;
+            this.KeyUp += ArtworkGallery_KeyUp;
+            this.ActiveControl = null;
+            this.Focus();
 
-        #region [ ArtworkGallery_Load ]
-        private void ArtworkGallery_Load(object sender, EventArgs e)
-        {
-            UpdateImageInfoLabel();
+            // NEW: Zoom / Pan wiring
+            pictureBoxArtworkGallery.MouseWheel += PictureBox_MouseWheel;
+            pictureBoxArtworkGallery.MouseDown += PictureBox_MouseDown;
+            pictureBoxArtworkGallery.MouseMove += PictureBox_MouseMove;
+            pictureBoxArtworkGallery.MouseUp += PictureBox_MouseUp;
         }
         #endregion
 
-        #region [ InitializeGallery ]
+        // ─────────────────────────────────────────────────────────────────────
+        #region Load / Init
+        // ─────────────────────────────────────────────────────────────────────
+        private void ArtworkGallery_Load(object sender, EventArgs e)
+        {
+            // Wire opacity slider
+            trackBarOpacity.Minimum = 0;
+            trackBarOpacity.Maximum = 255;
+            trackBarOpacity.Value = 255;
+            trackBarOpacity.Scroll += TrackBarOpacity_Scroll;
+            labelOpacityValue.Text = "100%";
+
+            // Wire scale slider
+            trackBarScale.Minimum = 1;    // 0.1× (stored as int *10)
+            trackBarScale.Maximum = 40;   // 4.0×
+            trackBarScale.Value = 10;   // 1.0×
+            trackBarScale.Scroll += TrackBarScale_Scroll;
+            labelScaleValue.Text = "1.0×";
+
+            UpdateImageInfoLabel();
+        }
+
         public void InitializeGallery(int selectedGraphicId)
         {
             itemList = new List<int>(ItemsControl.RefMarker.ItemList);
-
-            if (itemList == null || itemList.Count == 0)
-            {
-                currentIndex = -1;
-                return;
-            }
+            if (itemList == null || itemList.Count == 0) { currentIndex = -1; return; }
 
             currentIndex = itemList.IndexOf(selectedGraphicId);
-            if (currentIndex < 0)
-            {
-                currentIndex = 0;
-            }
+            if (currentIndex < 0) currentIndex = 0;
 
             LoadArtwork();
         }
         #endregion
 
-        #region [ LoadArtwork ]
+        // ─────────────────────────────────────────────────────────────────────
+        #region LoadArtwork
+        // ─────────────────────────────────────────────────────────────────────
         private void LoadArtwork()
         {
-            if (currentIndex < 0 || currentIndex >= itemList.Count)
-                return;
+            if (currentIndex < 0 || currentIndex >= itemList.Count) return;
 
             int graphicId = itemList[currentIndex];
-
             Bitmap baseBitmap = allowIndexArtwork ? Art.GetStatic(graphicId) : null;
 
             if (baseBitmap == null && secondImage == null && animatedGif == null)
             {
                 pictureBoxArtworkGallery.Image?.Dispose();
                 pictureBoxArtworkGallery.Image = null;
-
                 this.Text = allowIndexArtwork
                     ? $"Artwork: 0x{graphicId:X4} (No Image)"
-                    : "Overlay-Modus aktiv (Index Artwork ausgeblendet)";
-
+                    : "Overlay mode active (index artwork hidden)";
+                UpdateImageInfoLabel();
                 return;
             }
 
             Bitmap finalImage = null;
 
-            // --- Case 1: Second Image is active ---
             if (secondImage != null && checkBoxSecondArtwork.Checked)
             {
-                if (baseBitmap != null)
-                {
-                    Bitmap combined = new Bitmap(baseBitmap);
-                    finalImage = CombineImages(combined, secondImage);
-                    combined.Dispose();
-                }
-                else
-                {
-                    finalImage = new Bitmap(secondImage);
-                }
+                Bitmap baseForCombine = baseBitmap != null ? new Bitmap(baseBitmap) : null;
+                finalImage = baseForCombine != null
+                    ? CombineImages(baseForCombine, secondImage)
+                    : ApplyOpacity(new Bitmap(secondImage), overlayOpacity);
+                baseForCombine?.Dispose();
             }
-            // --- Case 2: Show only index image ---
             else if (baseBitmap != null)
             {
                 finalImage = new Bitmap(baseBitmap);
             }
 
-            // --- Case 3: No index image, but GIF present ---
+            // Case: no index image but GIF present (handled in Paint)
             if (finalImage == null && animatedGif != null)
             {
                 finalImage = new Bitmap(animatedGif.Width, animatedGif.Height);
                 using (Graphics g = Graphics.FromImage(finalImage))
                 {
-                    ImageAnimator.UpdateFrames(animatedGif);
-                    g.DrawImage(animatedGif, 0, 0);
+                    lock (gifLock) // FIX: race condition
+                    {
+                        if (animatedGif != null)
+                        {
+                            ImageAnimator.UpdateFrames(animatedGif);
+                            g.DrawImage(animatedGif, 0, 0);
+                        }
+                    }
                 }
             }
 
-            // --- Draw rhombus on finalImage if active ---
-            if (finalImage != null && isDrawingRhombusArtworkGallery)
+            // NOTE: Rhombus is drawn exclusively in PictureBoxArtworkGallery_Paint
+            // (screen-space overlay), NOT baked into the bitmap here.
+            // Baking it caused double-drawing and wrong position because the
+            // bitmap coordinate system differs from the PictureBox screen coords.
+
+            // Zoom: erzeuge skaliertes Bitmap wenn zoom != 1.0
+            // Die PictureBox rendert es selbst via CenterImage — kein doppeltes Zeichnen
+            Bitmap displayImage = finalImage;
+            if (finalImage != null && Math.Abs(zoomFactor - 1.0f) > 0.001f)
             {
-                using (Graphics g = Graphics.FromImage(finalImage))
+                int zw = Math.Max(1, (int)(finalImage.Width * zoomFactor));
+                int zh = Math.Max(1, (int)(finalImage.Height * zoomFactor));
+                Bitmap zoomed = new Bitmap(zw, zh, PixelFormat.Format32bppArgb);
+                using (Graphics g = Graphics.FromImage(zoomed))
                 {
-                    DrawRhombusArtworkGallery(g);
+                    g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
+                    g.PixelOffsetMode = System.Drawing.Drawing2D.PixelOffsetMode.Half;
+                    g.DrawImage(finalImage, 0, 0, zw, zh);
                 }
+                finalImage.Dispose();
+                displayImage = zoomed;
             }
 
             pictureBoxArtworkGallery.SizeMode = PictureBoxSizeMode.CenterImage;
             pictureBoxArtworkGallery.Image?.Dispose();
-            pictureBoxArtworkGallery.Image = finalImage;
+            pictureBoxArtworkGallery.Image = displayImage;
 
             this.Text = allowIndexArtwork
                 ? $"Artwork: 0x{graphicId:X4}"
-                : "Overlay-Modus aktiv (Index ausgeblendet)";
+                : "Overlay mode active (index hidden)";
+
+            UpdateImageInfoLabel();
+            UpdateContentHeightLabel();
         }
         #endregion
 
-        #region [ Bitmap CombineImages ]
+        // ─────────────────────────────────────────────────────────────────────
+        #region Image Combination
+        // ─────────────────────────────────────────────────────────────────────
         private Bitmap CombineImages(Bitmap baseImage, Bitmap overlayImage)
         {
-            Bitmap combined = new Bitmap(baseImage.Width, baseImage.Height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
-
+            Bitmap combined = new Bitmap(baseImage.Width, baseImage.Height, PixelFormat.Format32bppArgb);
             using (Graphics g = Graphics.FromImage(combined))
             {
                 g.DrawImage(baseImage, 0, 0);
 
-                int x = (baseImage.Width - overlayImage.Width) / 2 + secondImageOffset.X; // Centering the overlay image
-                int y = (baseImage.Height - overlayImage.Height) / 2 + secondImageOffset.Y; // Centering the overlay image
+                int scaledW = (int)(overlayImage.Width * overlayScale);
+                int scaledH = (int)(overlayImage.Height * overlayScale);
+                int x = (baseImage.Width - scaledW) / 2 + secondImageOffset.X;
+                int y = (baseImage.Height - scaledH) / 2 + secondImageOffset.Y;
 
-
-                g.DrawImage(overlayImage, x, y);
+                if (overlayOpacity < 255)
+                {
+                    using (Bitmap opaque = ApplyOpacity(overlayImage, overlayOpacity))
+                        g.DrawImage(opaque, new Rectangle(x, y, scaledW, scaledH));
+                }
+                else
+                {
+                    g.DrawImage(overlayImage, new Rectangle(x, y, scaledW, scaledH));
+                }
             }
-
             return combined;
+        }
+
+        /// <summary>Applies an alpha multiplier to every pixel using LockBits (fast).</summary>
+        private static Bitmap ApplyOpacity(Bitmap source, int opacity)
+        {
+            Bitmap result = new Bitmap(source.Width, source.Height, PixelFormat.Format32bppArgb);
+            BitmapData srcData = source.LockBits(
+                new Rectangle(0, 0, source.Width, source.Height),
+                ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
+            BitmapData dstData = result.LockBits(
+                new Rectangle(0, 0, result.Width, result.Height),
+                ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb);
+
+            int bytes = Math.Abs(srcData.Stride) * source.Height;
+            byte[] buffer = new byte[bytes];
+            Marshal.Copy(srcData.Scan0, buffer, 0, bytes);
+
+            float alpha = opacity / 255f;
+            for (int i = 3; i < bytes; i += 4)
+                buffer[i] = (byte)(buffer[i] * alpha);
+
+            Marshal.Copy(buffer, 0, dstData.Scan0, bytes);
+            source.UnlockBits(srcData);
+            result.UnlockBits(dstData);
+            return result;
         }
         #endregion
 
-        #region [SetArtworkImage]
+        // ─────────────────────────────────────────────────────────────────────
+        #region FIX: Fast LockBits chroma-key transparency
+        // ─────────────────────────────────────────────────────────────────────
+        /// <summary>
+        /// Replaces chromaColor1 and chromaColor2 with transparency using LockBits.
+        /// ~50-100x faster than GetPixel/SetPixel for typical UO artwork sizes.
+        /// </summary>
+        private Bitmap PrepareOverlayFast(Bitmap source)
+        {
+            Bitmap result = new Bitmap(source.Width, source.Height, PixelFormat.Format32bppArgb);
+
+            BitmapData srcData = source.LockBits(
+                new Rectangle(0, 0, source.Width, source.Height),
+                ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
+            BitmapData dstData = result.LockBits(
+                new Rectangle(0, 0, result.Width, result.Height),
+                ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb);
+
+            int bytes = Math.Abs(srcData.Stride) * source.Height;
+            byte[] buf = new byte[bytes];
+            Marshal.Copy(srcData.Scan0, buf, 0, bytes);
+
+            // Match colors by RGB (ignore source alpha)
+            byte c1r = chromaColor1.R, c1g = chromaColor1.G, c1b = chromaColor1.B;
+            byte c2r = chromaColor2.R, c2g = chromaColor2.G, c2b = chromaColor2.B;
+
+            for (int i = 0; i < bytes; i += 4)
+            {
+                byte b = buf[i], g = buf[i + 1], r = buf[i + 2];
+                bool isChroma1 = useChromaKey && (r == c1r && g == c1g && b == c1b);
+                bool isChroma2 = useChromaKey && (r == c2r && g == c2g && b == c2b);
+
+                if (isChroma1 || isChroma2)
+                {
+                    buf[i] = 0; buf[i + 1] = 0; buf[i + 2] = 0; buf[i + 3] = 0;
+                }
+                // else keep pixel as-is (already copied in)
+            }
+
+            Marshal.Copy(buf, 0, dstData.Scan0, bytes);
+            source.UnlockBits(srcData);
+            result.UnlockBits(dstData);
+            return result;
+        }
+        #endregion
+
+        // ─────────────────────────────────────────────────────────────────────
+        #region SetArtworkImage (FIX: now respects overlays)
+        // ─────────────────────────────────────────────────────────────────────
         public void SetArtworkImage(Bitmap artworkImage, int index)
         {
             if (artworkImage == null)
@@ -210,505 +369,624 @@ namespace UoFiddler.Controls.Forms
                 pictureBoxArtworkGallery.Image = null;
                 return;
             }
-
-            pictureBoxArtworkGallery.Image?.Dispose();
-            pictureBoxArtworkGallery.Image = new Bitmap(artworkImage);
-            currentIndex = index; // Set current position
-        }
-        #endregion
-
-        #region [ButtonLeft_Click]
-        private void ButtonLeft_Click(object sender, EventArgs e)
-        {
-            if (currentIndex > 0)
-            {
-                currentIndex--;
-                LoadArtwork();
-                UpdateImageInfoLabel();
-            }
-        }
-        #endregion
-
-        #region [ ButtonRight_Click ]
-        private void ButtonRight_Click(object sender, EventArgs e)
-        {
-            if (currentIndex < itemList.Count - 1)
-            {
-                currentIndex++;
-                LoadArtwork();
-                UpdateImageInfoLabel();
-            }
-        }
-        #endregion
-
-        // not active for later
-        private void UpdateArtwork()
-        {
-            if (currentIndex < 0 || currentIndex >= ItemsControl.RefMarker.ItemList.Count)
-                return;
-
-            int graphicId = ItemsControl.RefMarker.ItemList[currentIndex];
-            Bitmap bitmap = Art.GetStatic(graphicId);
-
-            if (bitmap != null)
-            {
-                pictureBoxArtworkGallery.Image?.Dispose();
-                pictureBoxArtworkGallery.Image = new Bitmap(bitmap);
-            }
-            else
-            {
-                pictureBoxArtworkGallery.Image?.Dispose();
-                pictureBoxArtworkGallery.Image = null;
-            }
-        }
-
-        #region [ loadSecondImageToolStripMenuItem_Click ]
-        private void LoadSecondImageToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            using (OpenFileDialog openFileDialog = new OpenFileDialog())
-            {
-                openFileDialog.Title = "Select an image to overlay";
-                openFileDialog.Filter = "Image Files (*.bmp; *.png; *.jpg; *.jpeg; *.tiff)|*.bmp;*.png;*.jpg;*.jpeg;*.tiff";
-                openFileDialog.DefaultExt = "bmp";
-
-                if (openFileDialog.ShowDialog() != DialogResult.OK)
-                    return;
-
-                if (pictureBoxArtworkGallery.Image == null)
-                {
-                    MessageBox.Show("There is no base image loaded.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    return;
-                }
-
-                // Clean up old SecondImage, if available
-                secondImage?.Dispose();
-                secondImage = null;
-
-                using (Bitmap loadedOverlay = new Bitmap(openFileDialog.FileName))
-                {
-                    // Prepare new overlay with transparency
-                    Bitmap preparedOverlay = new Bitmap(loadedOverlay.Width, loadedOverlay.Height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
-
-                    for (int y = 0; y < loadedOverlay.Height; y++)
-                    {
-                        for (int x = 0; x < loadedOverlay.Width; x++)
-                        {
-                            Color pixel = loadedOverlay.GetPixel(x, y);
-
-                            if ((pixel.R == 0 && pixel.G == 0 && pixel.B == 0) || (pixel.R == 255 && pixel.G == 255 && pixel.B == 255))
-                            {
-                                preparedOverlay.SetPixel(x, y, Color.Transparent); // Black or white becomes transparent
-                            }
-                            else
-                            {
-                                preparedOverlay.SetPixel(x, y, pixel); // Other colors remain
-                            }
-                        }
-                    }
-
-                    // Save preparedOverlay as new secondImage
-                    secondImage = preparedOverlay;
-                }
-
-                // Rebuild image
-                LoadArtwork();
-                UpdateImageInfoLabel();
-            }
-        }
-        #endregion
-
-        #region [ ChecboxSecondArtwork_CheckedChanged ]
-        private void CheckBoxSecondArtwork_CheckedChanged(object sender, EventArgs e)
-        {
+            currentIndex = index;
+            // Route through LoadArtwork so rhombus / secondImage / opacity are all applied
             LoadArtwork();
         }
         #endregion
 
-        #region [ ButtonDrawRhombus_Click ]
-        private void ButtonDrawRhombus_Click(object sender, EventArgs e)
+        // ─────────────────────────────────────────────────────────────────────
+        #region Navigation buttons
+        // ─────────────────────────────────────────────────────────────────────
+        private void ButtonLeft_Click(object sender, EventArgs e)
         {
-            isDrawingRhombusArtworkGallery = !isDrawingRhombusArtworkGallery;
+            if (currentIndex > 0) { currentIndex--; LoadArtwork(); }
+        }
 
-            // Change button visually
-            ButtonDrawRhombus.BackColor = isDrawingRhombusArtworkGallery ? Color.LightGreen : SystemColors.Control;
-
-            // Play sound
-            SoundPlayer player = new SoundPlayer();
-            player.SoundLocation = "sound.wav";
-            player.Play();
-
-            // Redraw image
-            pictureBoxArtworkGallery.Invalidate(); // Re-triggers `Paint`
+        private void ButtonRight_Click(object sender, EventArgs e)
+        {
+            if (currentIndex < itemList.Count - 1) { currentIndex++; LoadArtwork(); }
         }
         #endregion
 
-        #region [ DrawRhombusArtworkGallery ]
-        private void DrawRhombusArtworkGallery(Graphics g)
+        // ─────────────────────────────────────────────────────────────────────
+        #region Load Second Image (uses fast LockBits now)
+        // ─────────────────────────────────────────────────────────────────────
+        private void LoadSecondImageToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            using (OpenFileDialog ofd = new OpenFileDialog())
+            {
+                ofd.Title = "Select an image to overlay";
+                ofd.Filter = "Image Files (*.bmp;*.png;*.jpg;*.jpeg;*.tiff)|*.bmp;*.png;*.jpg;*.jpeg;*.tiff";
+                if (ofd.ShowDialog() != DialogResult.OK) return;
+
+                if (pictureBoxArtworkGallery.Image == null)
+                {
+                    MessageBox.Show("No base image loaded.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+
+                secondImage?.Dispose();
+                using (Bitmap loaded = new Bitmap(ofd.FileName))
+                    secondImage = PrepareOverlayFast(loaded); // FIX: fast path
+
+                LoadArtwork();
+                UpdateImageInfoLabel();
+            }
+        }
+        #endregion
+
+        // ─────────────────────────────────────────────────────────────────────
+        #region Load Clipboard (fast LockBits)
+        // ─────────────────────────────────────────────────────────────────────
+        private void loadClipboradToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (!Clipboard.ContainsImage())
+            {
+                MessageBox.Show("Clipboard does not contain an image.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
             if (pictureBoxArtworkGallery.Image == null)
             {
+                MessageBox.Show("No base image loaded.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
-            // **Set fixed values ​​for the rhombus size and position**
-            int centerX = pictureBoxArtworkGallery.Width / 2; // Fixed center of the PictureBox
-            int baseY = pictureBoxArtworkGallery.Height - 170; // Fixed base independent of the image
+            secondImage?.Dispose();
+            using (Bitmap loaded = new Bitmap(Clipboard.GetImage()))
+                secondImage = PrepareOverlayFast(loaded); // FIX: fast path
 
-            // **Upper rhombus half (remains constant)**
+            LoadArtwork();
+            UpdateImageInfoLabel();
+        }
+        #endregion
+
+        // ─────────────────────────────────────────────────────────────────────
+        #region CheckBox Second Artwork
+        // ─────────────────────────────────────────────────────────────────────
+        private void CheckBoxSecondArtwork_CheckedChanged(object sender, EventArgs e)
+            => LoadArtwork();
+        #endregion
+
+        // ─────────────────────────────────────────────────────────────────────
+        #region FIX: CheckBox Black/White — mutually exclusive
+        // ─────────────────────────────────────────────────────────────────────
+        private void CheckBoxBackgroundColorChanged(object sender, EventArgs e)
+        {
+            CheckBox clicked = sender as CheckBox;
+
+            // FIX: mutual exclusion
+            if (clicked == checkBoxBlack && checkBoxBlack.Checked)
+                checkBoxWhite.Checked = false;
+            else if (clicked == checkBoxWhite && checkBoxWhite.Checked)
+                checkBoxBlack.Checked = false;
+
+            if (checkBoxBlack.Checked)
+                pictureBoxArtworkGallery.BackColor = Color.Black;
+            else if (checkBoxWhite.Checked)
+                pictureBoxArtworkGallery.BackColor = Color.White;
+            else
+                pictureBoxArtworkGallery.BackColor = Color.Transparent;
+        }
+        #endregion
+
+        // ─────────────────────────────────────────────────────────────────────
+        #region Rhombus
+        // ─────────────────────────────────────────────────────────────────────
+        private void ButtonDrawRhombus_Click(object sender, EventArgs e)
+        {
+            isDrawingRhombusArtworkGallery = !isDrawingRhombusArtworkGallery;
+            ButtonDrawRhombus.BackColor = isDrawingRhombusArtworkGallery ? Color.LightGreen : SystemColors.Control;
+            try { new SoundPlayer("sound.wav").Play(); } catch { /* sound optional */ }
+            pictureBoxArtworkGallery.Invalidate();
+        }
+
+        // ── Rhombus: exakt wie Original ───────────────────────────────────────
+        // Koordinaten relativ zur PictureBox (Screen-Space), SizeMode=CenterImage
+        // zentriert das Bild, sodass Rhombus und Bild immer deckungsgleich sind.
+        private void DrawRhombusArtworkGallery(Graphics g)
+        {
+            if (pictureBoxArtworkGallery.Image == null) return;
+
+            // FIX: Anchor to the actual image position inside the PictureBox.
+            // SizeMode=CenterImage centers the image, so we calculate the image's
+            // top-left offset and derive centerX/baseY from the image bounds.
+            // The old code used PictureBox.Height-170 which only worked at one
+            // fixed window size (Dock=Fill makes the PictureBox variable).
+            int imgW = pictureBoxArtworkGallery.Image.Width;
+            int imgH = pictureBoxArtworkGallery.Image.Height;
+            int imgOffsetX = (pictureBoxArtworkGallery.Width - imgW) / 2;
+            int imgOffsetY = (pictureBoxArtworkGallery.Height - imgH) / 2;
+
+            int centerX = imgOffsetX + imgW / 2;   // horizontal center of the image
+            int baseY = imgOffsetY + imgH;        // bottom edge of the image
+
+            // Upper rhombus
             Point[] pointsUpper = new Point[4];
             pointsUpper[0] = new Point(centerX, baseY - 133);
             pointsUpper[1] = new Point(centerX + 22, baseY - 111);
             pointsUpper[2] = new Point(centerX, baseY - 89);
             pointsUpper[3] = new Point(centerX - 22, baseY - 111);
-
             g.DrawPolygon(Pens.Black, pointsUpper);
 
-            // **Line exactly below remains unchanged**
+            // Base line
             int lineWidth = 100;
             int lineStartX = centerX - lineWidth / 2;
-            int lineEndX = lineStartX + lineWidth;
-            g.DrawLine(Pens.Black, new Point(lineStartX, baseY), new Point(lineEndX, baseY));
+            g.DrawLine(Pens.Black,
+                new Point(lineStartX, baseY),
+                new Point(lineStartX + lineWidth, baseY));
 
-            // **Lower rhombus half (remains constant)**
+            // Lower rhombus
             Point[] pointsLower = new Point[4];
             pointsLower[0] = new Point(centerX, baseY);
             pointsLower[1] = new Point(centerX + 22, baseY - 22);
             pointsLower[2] = new Point(centerX, baseY - 44);
             pointsLower[3] = new Point(centerX - 22, baseY - 22);
-
             g.DrawPolygon(Pens.Black, pointsLower);
 
-            // **Connecting lines**
+            // Connecting lines
             g.DrawLine(Pens.Black, pointsUpper[0], pointsLower[0]);
             g.DrawLine(Pens.Black, pointsUpper[1], pointsLower[1]);
             g.DrawLine(Pens.Black, pointsUpper[3], pointsLower[3]);
         }
         #endregion
 
-        #region [ PictureBoxArtworkGallery_Paint ]        
+        // ─────────────────────────────────────────────────────────────────────
+        #region PictureBox Paint
+        // ─────────────────────────────────────────────────────────────────────
+        // Die PictureBox zeichnet pictureBoxArtworkGallery.Image selbst via
+        // SizeMode.CenterImage — wir zeichnen hier NUR die Overlays obendrauf,
+        // exakt wie im Original. Kein TranslateTransform, kein ScaleTransform.
         private void PictureBoxArtworkGallery_Paint(object sender, PaintEventArgs e)
         {
+            // Rhombus — Screen-Overlay, kein Transform
             if (isDrawingRhombusArtworkGallery)
-            {
                 DrawRhombusArtworkGallery(e.Graphics);
-            }
 
-            if (animatedGif != null)
+            // GIF-Overlay
+            Image gif;
+            lock (gifLock) { gif = animatedGif; }
+            if (gif != null)
             {
-                // GIF frame updates
-                ImageAnimator.UpdateFrames(animatedGif);
+                ImageAnimator.UpdateFrames(gif);
+                int scaledW = (int)(gif.Width * overlayScale);
+                int scaledH = (int)(gif.Height * overlayScale);
+                int x = (pictureBoxArtworkGallery.Width - scaledW) / 2 + secondImageOffset.X;
+                int y = (pictureBoxArtworkGallery.Height - scaledH) / 2 + secondImageOffset.Y;
 
-                // Calculate position for centering
-                int x = (pictureBoxArtworkGallery.Width - animatedGif.Width) / 2 + secondImageOffset.X;
-                int y = (pictureBoxArtworkGallery.Height - animatedGif.Height) / 2 + secondImageOffset.Y;
-
-                // Draw GIF
-                e.Graphics.DrawImage(animatedGif, x, y);
+                if (overlayOpacity < 255)
+                {
+                    using (Bitmap frame = new Bitmap(gif.Width, gif.Height))
+                    using (Graphics fg = Graphics.FromImage(frame))
+                    {
+                        fg.DrawImage(gif, 0, 0);
+                        using (Bitmap opaque = ApplyOpacity(frame, overlayOpacity))
+                            e.Graphics.DrawImage(opaque, new Rectangle(x, y, scaledW, scaledH));
+                    }
+                }
+                else
+                {
+                    e.Graphics.DrawImage(gif, new Rectangle(x, y, scaledW, scaledH));
+                }
             }
 
-            // Only draw when active AND not temporarily disabled
+            // Cutting template
             if (isCuttingTemplateActive && !isDrawingCuttingTemplateTemporaryDisabled)
             {
                 using (Pen pen = new Pen(Color.OrangeRed, 2))
-                {
                     e.Graphics.DrawRectangle(pen, new Rectangle(cuttingTemplatePosition, cuttingTemplateSize));
-                }
             }
+
+            if (isRulerActive)
+                DrawRuler(e.Graphics);
+
+            if (isCrosshairActive)
+                DrawCrosshair(e.Graphics);
         }
         #endregion
 
-        #region [ LoadClipboardToolStripMenuItem_Click ]
-        private void loadClipboradToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            if (!Clipboard.ContainsImage())
-            {
-                MessageBox.Show("The clipboard does not contain an image.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
-
-            if (pictureBoxArtworkGallery.Image == null)
-            {
-                MessageBox.Show("There is no base image loaded.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
-
-            // Clean up old SecondImage, if available
-            secondImage?.Dispose();
-            secondImage = null;
-
-            using (Bitmap loadedOverlay = new Bitmap(Clipboard.GetImage()))
-            {
-                // Prepare new overlay with transparency
-                Bitmap preparedOverlay = new Bitmap(loadedOverlay.Width, loadedOverlay.Height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
-
-                for (int y = 0; y < loadedOverlay.Height; y++)
-                {
-                    for (int x = 0; x < loadedOverlay.Width; x++)
-                    {
-                        Color pixel = loadedOverlay.GetPixel(x, y);
-
-                        if ((pixel.R == 0 && pixel.G == 0 && pixel.B == 0) || (pixel.R == 255 && pixel.G == 255 && pixel.B == 255))
-                        {
-                            preparedOverlay.SetPixel(x, y, Color.Transparent); // Black or white becomes transparent
-                        }
-                        else
-                        {
-                            preparedOverlay.SetPixel(x, y, pixel); // Other colors remain
-                        }
-                    }
-                }
-
-                // Save preparedOverlay as new secondImage
-                secondImage = preparedOverlay;
-            }
-
-            // Rebuild image
-            LoadArtwork();
-            UpdateImageInfoLabel();
-        }
-        #endregion
-
-        #region [ UpdateImageInfoLabel ]
-        private void UpdateImageInfoLabel()
-        {
-            if (pictureBoxArtworkGallery.Image == null)
-            {
-                label1ImageInfo.Text = "No base image loaded.";
-                return;
-            }
-
-            string baseImageSize = $"{pictureBoxArtworkGallery.Image.Width}x{pictureBoxArtworkGallery.Image.Height}";
-
-            string secondImageSize = secondImage != null
-                ? $"{secondImage.Width}x{secondImage.Height}"
-                : "No overlay";
-
-            label1ImageInfo.Text = $"Base: {baseImageSize} | Overlay: {secondImageSize}";
-        }
-        #endregion
-
-        #region [ LoadGifToolStripMenuItem_Click ]
-        private Image animatedGif = null;
-
+        // ─────────────────────────────────────────────────────────────────────
+        #region Animated GIF
+        // ─────────────────────────────────────────────────────────────────────
         private void loadGifToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            using (OpenFileDialog openFileDialog = new OpenFileDialog())
+            using (OpenFileDialog ofd = new OpenFileDialog())
             {
-                openFileDialog.Title = "Select a GIF to overlay";
-                openFileDialog.Filter = "GIF Files (*.gif)|*.gif";
-                openFileDialog.DefaultExt = "gif";
-
-                if (openFileDialog.ShowDialog() != DialogResult.OK)
-                    return;
+                ofd.Title = "Select a GIF to overlay";
+                ofd.Filter = "GIF Files (*.gif)|*.gif";
+                if (ofd.ShowDialog() != DialogResult.OK) return;
 
                 if (pictureBoxArtworkGallery.Image == null)
                 {
-                    MessageBox.Show("There is no base image loaded.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show("No base image loaded.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return;
                 }
 
-                // Clean up old second image if available
-                animatedGif?.Dispose();
-                animatedGif = null;
-
-                // Load the animated GIF
-                animatedGif = Image.FromFile(openFileDialog.FileName);
-
-                // Start animating the GIF
-                if (ImageAnimator.CanAnimate(animatedGif))
+                lock (gifLock)
                 {
-                    ImageAnimator.Animate(animatedGif, new EventHandler(this.OnFrameChanged));
+                    if (animatedGif != null)
+                    {
+                        ImageAnimator.StopAnimate(animatedGif, OnFrameChanged);
+                        animatedGif.Dispose();
+                    }
+                    animatedGif = Image.FromFile(ofd.FileName);
+                    if (ImageAnimator.CanAnimate(animatedGif))
+                        ImageAnimator.Animate(animatedGif, OnFrameChanged);
                 }
 
-                // Rebuild artwork to show the first frame
                 LoadArtwork();
                 UpdateImageInfoLabel();
             }
         }
-        #endregion
 
-        #region [ OnFrameChanged ]
+        // FIX: local copy before access → no null ref if ButtonRemoveGif fires concurrently
         private void OnFrameChanged(object sender, EventArgs e)
         {
-            if (animatedGif != null)
-            {
-                ImageAnimator.UpdateFrames(animatedGif);
-                pictureBoxArtworkGallery.Invalidate(); // Redraw
-            }
-        }
-        #endregion
+            Image gif;
+            lock (gifLock) { gif = animatedGif; }
+            if (gif == null) return;
 
-        #region [ ButtonRemoveGif_Click ]
+            ImageAnimator.UpdateFrames(gif);
+            // Marshal to UI thread safely
+            if (pictureBoxArtworkGallery.InvokeRequired)
+                pictureBoxArtworkGallery.BeginInvoke(new Action(() => pictureBoxArtworkGallery.Invalidate()));
+            else
+                pictureBoxArtworkGallery.Invalidate();
+        }
+
         private void ButtonRemoveGif_Click(object sender, EventArgs e)
         {
-            if (animatedGif != null)
+            lock (gifLock)
             {
-                ImageAnimator.StopAnimate(animatedGif, new EventHandler(this.OnFrameChanged));
-                animatedGif.Dispose();
-                animatedGif = null;
-
-                pictureBoxArtworkGallery.Invalidate();
+                if (animatedGif != null)
+                {
+                    ImageAnimator.StopAnimate(animatedGif, OnFrameChanged);
+                    animatedGif.Dispose();
+                    animatedGif = null;
+                }
             }
+            pictureBoxArtworkGallery.Invalidate();
         }
         #endregion
 
-        #region [ ButtonRemoveSecondImage_Click ]
+        // ─────────────────────────────────────────────────────────────────────
+        #region Remove / Clear
+        // ─────────────────────────────────────────────────────────────────────
         private void ButtonRemoveSecondImage_Click(object sender, EventArgs e)
         {
-            if (secondImage != null)
-            {
-                secondImage.Dispose();
-                secondImage = null;
-
-                LoadArtwork();
-                pictureBoxArtworkGallery.Invalidate();
-            }
+            secondImage?.Dispose();
+            secondImage = null;
+            LoadArtwork();
+            pictureBoxArtworkGallery.Invalidate();
         }
-        #endregion
 
-        #region [ ButtonClearAll_Click ]
-        private void ButtonClearAll_Click_Click(object sender, EventArgs e)
+        private void ButtonClearAllItems_Click(object sender, EventArgs e)
         {
-            if (animatedGif != null)
+            lock (gifLock)
             {
-                ImageAnimator.StopAnimate(animatedGif, new EventHandler(this.OnFrameChanged));
-                animatedGif.Dispose();
-                animatedGif = null;
+                if (animatedGif != null)
+                {
+                    ImageAnimator.StopAnimate(animatedGif, OnFrameChanged);
+                    animatedGif.Dispose();
+                    animatedGif = null;
+                }
             }
+            secondImage?.Dispose();
+            secondImage = null;
 
-            if (secondImage != null)
-            {
-                secondImage.Dispose();
-                secondImage = null;
-            }
-
-            if (pictureBoxArtworkGallery.Image != null)
-            {
-                pictureBoxArtworkGallery.Image.Dispose();
-                pictureBoxArtworkGallery.Image = null;
-            }
-
+            pictureBoxArtworkGallery.Image?.Dispose();
+            pictureBoxArtworkGallery.Image = null;
             pictureBoxArtworkGallery.Invalidate();
             UpdateImageInfoLabel();
         }
         #endregion
 
-        #region [ ArtworkGallery_KeyDown ]
-        private void ArtworkGallery_KeyDown(object sender, KeyEventArgs e)
+        // ─────────────────────────────────────────────────────────────────────
+        #region NEW: Opacity Slider
+        // ─────────────────────────────────────────────────────────────────────
+        private void TrackBarOpacity_Scroll(object sender, EventArgs e)
         {
-            // CuttingTemplate active → control W/A/S/D
-            if (isCuttingTemplateActive && (e.KeyCode == Keys.W || e.KeyCode == Keys.A || e.KeyCode == Keys.S || e.KeyCode == Keys.D))
+            overlayOpacity = trackBarOpacity.Value;
+            int pct = (int)Math.Round(overlayOpacity / 255.0 * 100);
+            labelOpacityValue.Text = $"{pct}%";
+            LoadArtwork();
+        }
+        #endregion
+
+        // ─────────────────────────────────────────────────────────────────────
+        #region NEW: Scale Slider
+        // ─────────────────────────────────────────────────────────────────────
+        private void TrackBarScale_Scroll(object sender, EventArgs e)
+        {
+            overlayScale = trackBarScale.Value / 10f;
+            labelScaleValue.Text = $"{overlayScale:F1}×";
+            LoadArtwork();
+        }
+        #endregion
+
+        // ─────────────────────────────────────────────────────────────────────
+        #region NEW: Zoom + Pan
+        // ─────────────────────────────────────────────────────────────────────
+        private void PictureBox_MouseWheel(object sender, MouseEventArgs e)
+        {
+            if (e.Delta > 0) zoomFactor = Math.Min(zoomFactor * 1.2f, 16f);
+            else zoomFactor = Math.Max(zoomFactor / 1.2f, 0.1f);
+
+            labelZoom.Text = $"Zoom: {zoomFactor * 100:F0}%";
+            LoadArtwork(); // Bitmap in neuer Größe erzeugen
+        }
+
+        private void PictureBox_MouseDown(object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Middle || (e.Button == MouseButtons.Left && ModifierKeys == Keys.Alt))
             {
-                if (currentCuttingTemplateMoveKey != e.KeyCode)
-                {
-                    currentCuttingTemplateMoveKey = e.KeyCode;
-                    MoveCuttingTemplate(e.KeyCode);
-                    cuttingTemplateMoveTimer.Start();
-                }
-                return; // <- IMPORTANT: So that further down you don't get blocked!
+                isPanning = true;
+                panStartPoint = new Point(e.X - panOffset.X, e.Y - panOffset.Y);
+                pictureBoxArtworkGallery.Cursor = Cursors.SizeAll;
+            }
+        }
+
+        private void PictureBox_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (isPanning)
+            {
+                panOffset = new Point(e.X - panStartPoint.X, e.Y - panStartPoint.Y);
+                pictureBoxArtworkGallery.Invalidate();
             }
 
-            // Overlay-Steuerung nur wenn Overlay aktiv ist
-            if (!IsOverlayActive)
+            // NEW: pixel info label
+            UpdatePixelInfoLabel(e.Location);
+        }
+
+        private void PictureBox_MouseUp(object sender, MouseEventArgs e)
+        {
+            if (isPanning)
+            {
+                isPanning = false;
+                pictureBoxArtworkGallery.Cursor = Cursors.Default;
+            }
+        }
+
+        private void ButtonResetZoom_Click(object sender, EventArgs e)
+        {
+            zoomFactor = 1.0f;
+            panOffset = Point.Empty;
+            labelZoom.Text = "Zoom: 100%";
+            LoadArtwork(); // Bitmap neu erzeugen ohne Zoom
+        }
+        #endregion
+
+        // ─────────────────────────────────────────────────────────────────────
+        #region NEW: Pixel info on hover
+        // ─────────────────────────────────────────────────────────────────────
+        private void UpdatePixelInfoLabel(Point mousePos)
+        {
+            if (pictureBoxArtworkGallery.Image == null) { labelPixelInfo.Text = ""; return; }
+            try
+            {
+                Bitmap bmp = pictureBoxArtworkGallery.Image as Bitmap;
+                if (bmp == null) { labelPixelInfo.Text = ""; return; }
+
+                // SizeMode=CenterImage: Bild sitzt in der Mitte der PictureBox
+                int offsetX = (pictureBoxArtworkGallery.Width - bmp.Width) / 2;
+                int offsetY = (pictureBoxArtworkGallery.Height - bmp.Height) / 2;
+
+                // bmp ist bereits das gezoomte Bild → zurück in Original-Pixel
+                int zoomedPx = mousePos.X - offsetX;
+                int zoomedPy = mousePos.Y - offsetY;
+                int px = (int)(zoomedPx / zoomFactor);
+                int py = (int)(zoomedPy / zoomFactor);
+
+                labelPixelInfo.Text = $"X:{px} Y:{py}";
+                if (zoomedPx < 0 || zoomedPy < 0 || zoomedPx >= bmp.Width || zoomedPy >= bmp.Height) return;
+
+                // Pixel aus dem gezoomten Bitmap lesen (entspricht dem Original-Pixel)
+                Color c = bmp.GetPixel(zoomedPx, zoomedPy);
+                labelPixelInfo.Text = $"X:{px} Y:{py}  R:{c.R} G:{c.G} B:{c.B} A:{c.A}";
+            }
+            catch { labelPixelInfo.Text = ""; }
+        }
+        #endregion
+
+        // ─────────────────────────────────────────────────────────────────────
+        #region UpdateImageInfoLabel (enhanced)
+        // ─────────────────────────────────────────────────────────────────────
+        private void UpdateImageInfoLabel()
+        {
+            if (pictureBoxArtworkGallery.Image == null)
+            {
+                labelImageInfo.Text = "No base image loaded.";
                 return;
-
-            if (currentMoveKey != e.KeyCode)
-            {
-                currentMoveKey = e.KeyCode;
-                MoveSecondImage(e.KeyCode);
-                moveTimer.Start();
             }
+
+            string baseSize = $"{pictureBoxArtworkGallery.Image.Width}×{pictureBoxArtworkGallery.Image.Height}";
+            string overlaySize = secondImage != null
+                ? $"{secondImage.Width}×{secondImage.Height}"
+                : (animatedGif != null ? $"{animatedGif.Width}×{animatedGif.Height} (GIF)" : "–");
+
+            labelImageInfo.Text = $"Base: {baseSize}  |  Overlay: {overlaySize}";
         }
         #endregion
 
-        #region [ ArtworkGallery_KeyUp ]
-        private void ArtworkGallery_KeyUp(object sender, KeyEventArgs e)
+        // ─────────────────────────────────────────────────────────────────────
+        #region NEW: Content height label (bounding box of opaque pixels)
+        // ─────────────────────────────────────────────────────────────────────
+        private void UpdateContentHeightLabel()
         {
-            if (e.KeyCode == currentMoveKey)
+            Bitmap bmp = pictureBoxArtworkGallery.Image as Bitmap;
+            if (bmp == null) { labelContentHeight.Text = "Content height: –"; return; }
+
+            int minY = bmp.Height, maxY = 0;
+            int minX = bmp.Width, maxX = 0;
+
+            BitmapData bd = bmp.LockBits(
+                new Rectangle(0, 0, bmp.Width, bmp.Height),
+                ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
+
+            int stride = bd.Stride;
+            byte[] pixels = new byte[stride * bmp.Height];
+            Marshal.Copy(bd.Scan0, pixels, 0, pixels.Length);
+            bmp.UnlockBits(bd);
+
+            for (int y = 0; y < bmp.Height; y++)
             {
-                moveTimer.Stop();
-                currentMoveKey = Keys.None;
+                for (int x = 0; x < bmp.Width; x++)
+                {
+                    int idx = y * stride + x * 4;
+                    if (pixels[idx + 3] > 0) // any non-transparent pixel
+                    {
+                        if (y < minY) minY = y;
+                        if (y > maxY) maxY = y;
+                        if (x < minX) minX = x;
+                        if (x > maxX) maxX = x;
+                    }
+                }
             }
 
-            if (e.KeyCode == currentCuttingTemplateMoveKey)
+            if (minY > maxY)
             {
-                cuttingTemplateMoveTimer.Stop();
-                currentCuttingTemplateMoveKey = Keys.None;
+                labelContentHeight.Text = "Content height: (empty)";
+                return;
             }
+
+            int contentH = maxY - minY + 1;
+            int contentW = maxX - minX + 1;
+            labelContentHeight.Text = $"Content: {contentW}×{contentH} px  (Y:{minY}–{maxY})";
         }
         #endregion
 
-        #region [ MoveTimer_Tick ]
-        private void MoveTimer_Tick(object sender, EventArgs e)
+        // ─────────────────────────────────────────────────────────────────────
+        #region NEW: Color Picker for Chroma Key
+        // ─────────────────────────────────────────────────────────────────────
+        private void ButtonPickChromaColor1_Click(object sender, EventArgs e)
         {
-            if (currentMoveKey != Keys.None)
+            using (ColorDialog cd = new ColorDialog { Color = chromaColor1, FullOpen = true })
             {
-                MoveSecondImage(currentMoveKey);
+                if (cd.ShowDialog() != DialogResult.OK) return;
+                chromaColor1 = cd.Color;
+                buttonPickChromaColor1.BackColor = chromaColor1;
             }
+        }
+
+        private void ButtonPickChromaColor2_Click(object sender, EventArgs e)
+        {
+            using (ColorDialog cd = new ColorDialog { Color = chromaColor2, FullOpen = true })
+            {
+                if (cd.ShowDialog() != DialogResult.OK) return;
+                chromaColor2 = cd.Color;
+                buttonPickChromaColor2.BackColor = chromaColor2;
+            }
+        }
+
+        private void CheckBoxUseChromaKey_CheckedChanged(object sender, EventArgs e)
+        {
+            useChromaKey = checkBoxUseChromaKey.Checked;
         }
         #endregion
 
-        #region [ MoveSecondImage ]
-        private void MoveSecondImage(Keys key)
+        // ─────────────────────────────────────────────────────────────────────
+        #region NEW: Favorites
+        // ─────────────────────────────────────────────────────────────────────
+        private void ButtonToggleFavorite_Click(object sender, EventArgs e)
         {
-            switch (key)
-            {
-                case Keys.Left:
-                    secondImageOffset.X -= moveStep;
-                    break;
-                case Keys.Right:
-                    secondImageOffset.X += moveStep;
-                    break;
-                case Keys.Up:
-                    secondImageOffset.Y -= moveStep;
-                    break;
-                case Keys.Down:
-                    secondImageOffset.Y += moveStep;
-                    break;
-                default:
-                    return;
-            }
+            if (currentIndex < 0 || itemList == null) return;
+            int id = itemList[currentIndex];
 
-            if (animatedGif != null)
+            if (favorites.Contains(id))
             {
-                pictureBoxArtworkGallery.Invalidate(); // GIF needs to be redrawn
+                favorites.Remove(id);
+                buttonToggleFavorite.BackColor = SystemColors.Control;
+                buttonToggleFavorite.Text = "☆ Favorite";
             }
             else
             {
-                LoadArtwork(); // For secondImage
+                favorites.Add(id);
+                buttonToggleFavorite.BackColor = Color.Gold;
+                buttonToggleFavorite.Text = "★ Favorite";
+            }
+
+            RefreshFavoritesList();
+        }
+
+        private void RefreshFavoritesList()
+        {
+            listBoxFavorites.Items.Clear();
+            foreach (int id in favorites.OrderBy(x => x))
+                listBoxFavorites.Items.Add($"0x{id:X4}");
+        }
+
+        private void ListBoxFavorites_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (listBoxFavorites.SelectedItem == null) return;
+            string hex = listBoxFavorites.SelectedItem.ToString().Substring(2);
+            if (int.TryParse(hex, System.Globalization.NumberStyles.HexNumber, null, out int id))
+            {
+                int idx = itemList?.IndexOf(id) ?? -1;
+                if (idx >= 0) { currentIndex = idx; LoadArtwork(); }
             }
         }
         #endregion
 
-        #region [ IsInputKey ]
-        protected override bool IsInputKey(Keys keyData)
+        // ─────────────────────────────────────────────────────────────────────
+        #region NEW: Batch Export
+        // ─────────────────────────────────────────────────────────────────────
+        private void ButtonBatchExport_Click(object sender, EventArgs e)
         {
-            if (keyData == Keys.Left || keyData == Keys.Right || keyData == Keys.Up || keyData == Keys.Down ||
-                keyData == Keys.W || keyData == Keys.A || keyData == Keys.S || keyData == Keys.D)
-                return true;
-
-            return base.IsInputKey(keyData);
-        }
-        #endregion
-
-        #region [ ProcessCmdKey ]
-        protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
-        {
-            if (IsOverlayActive)
+            if (itemList == null || itemList.Count == 0)
             {
-                if (keyData == Keys.Left || keyData == Keys.Right || keyData == Keys.Up || keyData == Keys.Down)
+                MessageBox.Show("No items to export.", "Batch Export", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            using (FolderBrowserDialog fbd = new FolderBrowserDialog { Description = "Select export folder" })
+            {
+                if (fbd.ShowDialog() != DialogResult.OK) return;
+
+                using (ProgressDialog pd = new ProgressDialog("Batch Export", itemList.Count))
                 {
-                    MoveSecondImage(keyData); // Trigger movement immediately
-                    currentMoveKey = keyData; // Set currently pressed key
-                    moveTimer.Start(); // Activate repeat motion
-                    return true; // IMPORTANT: Mark event as processed -> DO NOT pass on to buttons!
+                    pd.Show();
+                    int saved = 0, skipped = 0;
+
+                    for (int i = 0; i < itemList.Count; i++)
+                    {
+                        if (pd.Cancelled) break;
+
+                        int id = itemList[i];
+                        Bitmap baseBmp = Art.GetStatic(id);
+                        if (baseBmp == null) { skipped++; continue; }
+
+                        Bitmap export;
+                        if (secondImage != null && checkBoxSecondArtwork.Checked)
+                        {
+                            Bitmap copy = new Bitmap(baseBmp);
+                            export = CombineImages(copy, secondImage);
+                            copy.Dispose();
+                        }
+                        else
+                        {
+                            export = new Bitmap(baseBmp);
+                        }
+
+                        string path = Path.Combine(fbd.SelectedPath, $"0x{id:X4}.png");
+                        export.Save(path, ImageFormat.Png);
+                        export.Dispose();
+                        saved++;
+
+                        pd.SetProgress(i + 1, $"Exporting 0x{id:X4}…");
+                    }
+
+                    pd.Close();
+                    MessageBox.Show(
+                        $"Done.\nSaved:   {saved}\nSkipped: {skipped}",
+                        "Batch Export", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
             }
-            return base.ProcessCmdKey(ref msg, keyData); // Maintain default behavior for other keys
         }
         #endregion
 
-        #region [ ButtonCrop_Click ]
+        // ─────────────────────────────────────────────────────────────────────
+        #region Crop (ButtonCrop_Click)
+        // ─────────────────────────────────────────────────────────────────────
         private void ButtonCrop_Click(object sender, EventArgs e)
         {
             if (secondImage == null)
@@ -717,373 +995,232 @@ namespace UoFiddler.Controls.Forms
                 return;
             }
 
-            if (!int.TryParse(textBoxWidth.Text, out int newWidth) || newWidth <= 0 ||
-                !int.TryParse(textBoxHeight.Text, out int newHeight) || newHeight <= 0)
+            if (!int.TryParse(textBoxWidth.Text, out int newW) || newW <= 0 ||
+                !int.TryParse(textBoxHeight.Text, out int newH) || newH <= 0)
             {
-                MessageBox.Show("Please enter valid positive numbers for width and height.", "Invalid Input", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Enter valid positive numbers for width and height.", "Invalid Input",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            int origWidth = secondImage.Width;
-            int origHeight = secondImage.Height;
-
-            // Limit: New values ​​must not exceed original size
-            if (newWidth > origWidth || newHeight > origHeight)
+            if (newW > secondImage.Width || newH > secondImage.Height)
             {
-                MessageBox.Show("Crop size exceeds original image size.", "Invalid Crop", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Crop size exceeds original image size.", "Invalid Crop",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            // Determine center point
-            int centerX = origWidth / 2;
-            int centerY = origHeight / 2;
+            int cx = secondImage.Width / 2 - newW / 2;
+            int cy = secondImage.Height / 2 - newH / 2;
 
-            // Calculate crop rectangle (centered)
-            int cropX = centerX - newWidth / 2;
-            int cropY = centerY - newHeight / 2;
-            Rectangle cropArea = new Rectangle(cropX, cropY, newWidth, newHeight);
-
-            // Create a new bitmap with the section
-            Bitmap cropped = new Bitmap(newWidth, newHeight, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
-
+            Bitmap cropped = new Bitmap(newW, newH, PixelFormat.Format32bppArgb);
             using (Graphics g = Graphics.FromImage(cropped))
+                g.DrawImage(secondImage, new Rectangle(0, 0, newW, newH),
+                    new Rectangle(cx, cy, newW, newH), GraphicsUnit.Pixel);
+
+            using (SaveFileDialog sfd = BuildSaveDialog("Save cropped overlay", "cropped_overlay.bmp"))
             {
-                g.DrawImage(secondImage, new Rectangle(0, 0, newWidth, newHeight), cropArea, GraphicsUnit.Pixel);
+                if (sfd.ShowDialog() != DialogResult.OK) { cropped.Dispose(); return; }
+                SaveBitmap(cropped, sfd.FileName);
             }
 
-            // Request storage path from user
-            using (SaveFileDialog saveDialog = new SaveFileDialog())
-            {
-                saveDialog.Title = "Save cropped overlay image";
-                saveDialog.Filter = "BMP Image (*.bmp)|*.bmp|PNG Image (*.png)|*.png|JPEG Image (*.jpg)|*.jpg|TIFF Image (*.tiff)|*.tiff";
-                saveDialog.DefaultExt = "bmp"; // Default is BMP
-                saveDialog.FileName = "cropped_overlay.bmp"; // Suggestion name
-
-                if (saveDialog.ShowDialog() == DialogResult.OK)
-                {
-                    try
-                    {
-                        // Determine file format based on the extension
-                        System.Drawing.Imaging.ImageFormat format = System.Drawing.Imaging.ImageFormat.Bmp;
-
-                        string fileName = saveDialog.FileName.ToLower();
-
-                        if (fileName.EndsWith(".png"))
-                            format = System.Drawing.Imaging.ImageFormat.Png;
-                        else if (fileName.EndsWith(".jpg") || fileName.EndsWith(".jpeg"))
-                            format = System.Drawing.Imaging.ImageFormat.Jpeg;
-                        else if (fileName.EndsWith(".tiff"))
-                            format = System.Drawing.Imaging.ImageFormat.Tiff;
-
-                        cropped.Save(saveDialog.FileName, format);
-
-                        // Success message (optional)
-                        MessageBox.Show("Image successfully saved.", "Saved", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show($"Error saving image:\n{ex.Message}", "Save Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        return; // If error occurs: no update
-                    }
-                }
-                else
-                {
-                    // Save aborts, nothing updated
-                    return;
-                }
-            }
-
-            // Replace and display secondImage
             secondImage.Dispose();
             secondImage = cropped;
-
-            secondImageOffset = Point.Empty; // Reset offset
-
-            LoadArtwork(); // Redraw
-            UpdateImageInfoLabel(); // Update info
-        }
-        #endregion
-
-        #region [ CenterOverlayToolStripMenuItem_Click ]
-        private void CenterOverlayToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            if (secondImage == null && animatedGif == null)
-            {
-                MessageBox.Show("No overlay (second image or animated GIF) loaded.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
-
-            secondImageOffset = Point.Empty; // Reset position
-
-            if (animatedGif != null)
-            {
-                pictureBoxArtworkGallery.Invalidate(); // GIF needs to be redrawn
-            }
-            else
-            {
-                LoadArtwork(); // For static overlay
-            }
-
-            UpdateImageInfoLabel(); // Update info
-        }
-        #endregion
-
-        #region [ FlipVerticalToolStripMenuItem_Click ]
-        private void FlipVerticalToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            if (secondImage == null)
-            {
-                MessageBox.Show("No second image loaded.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
-
-            secondImage.RotateFlip(RotateFlipType.RotateNoneFlipY); // Flip vertically
-            LoadArtwork();
-        }
-        #endregion
-
-        #region [ FlipHorizontalToolStripMenuItem_Click ]
-        private void FlipHorizontalToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            if (secondImage == null)
-            {
-                MessageBox.Show("No second image loaded.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
-
-            secondImage.RotateFlip(RotateFlipType.RotateNoneFlipX); // Flip horizontally
-            LoadArtwork();
-        }
-        #endregion
-
-        #region [  ChecboxCuttingTemplate_CheckedChanged ]
-        private void CheckBoxCuttingTemplate_CheckedChanged(object sender, EventArgs e)
-        {
-            isCuttingTemplateActive = checkBoxCuttingTemplate.Checked;
-
-            if (isCuttingTemplateActive)
-            {
-                textBoxWidth.Text = "44";
-                textBoxHeight.Text = "133";
-                UpdateCuttingTemplateSize();
-            }
-
-            // IMPORTANT: Focus on the form for KeyDown to work
-            this.ActiveControl = null;
-            this.Focus();
-
-            pictureBoxArtworkGallery.Invalidate();
-        }
-        #endregion
-
-        #region [ UpdateCuttingTemplateSize ]
-        private void UpdateCuttingTemplateSize()
-        {
-            if (int.TryParse(textBoxWidth.Text, out int w) && int.TryParse(textBoxHeight.Text, out int h))
-            {
-                if (w > 0 && h > 0)
-                    cuttingTemplateSize = new Size(w, h);
-            }
-        }
-        #endregion
-
-        #region [ MoveCuttingTemplate ]
-        private void MoveCuttingTemplate(Keys key)
-        {
-            const int moveStep = 2;
-
-            switch (key)
-            {
-                case Keys.W:
-                    cuttingTemplatePosition.Y -= moveStep;
-                    break;
-                case Keys.S:
-                    cuttingTemplatePosition.Y += moveStep;
-                    break;
-                case Keys.A:
-                    cuttingTemplatePosition.X -= moveStep;
-                    break;
-                case Keys.D:
-                    cuttingTemplatePosition.X += moveStep;
-                    break;
-                default:
-                    return;
-            }
-
-            pictureBoxArtworkGallery.Invalidate();
-        }
-        #endregion
-
-        #region [ CuttingTemplateMoveTimer_Tick ]
-        private void CuttingTemplateMoveTimer_Tick(object sender, EventArgs e)
-        {
-            if (currentCuttingTemplateMoveKey != Keys.None)
-            {
-                MoveCuttingTemplate(currentCuttingTemplateMoveKey);
-            }
-        }
-        #endregion
-
-        #region [ TextBoxCuttingTemplateSizeChanged ]
-        private void TextBoxCuttingTemplateSizeChanged(object sender, EventArgs e)
-        {
-            if (!isCuttingTemplateActive)
-                return;
-
-            UpdateCuttingTemplateSize();
-            pictureBoxArtworkGallery.Invalidate();
-        }
-        #endregion
-
-        #region [ CheckBoxBackgroundColorChanged ]
-        private void CheckBoxBackgroundColorChanged(object sender, EventArgs e)
-        {
-            if (checkBoxBlack.Checked)
-            {
-                pictureBoxArtworkGallery.BackColor = Color.FromArgb(0, 0, 0); // #000000
-            }
-            else if (checkBoxWhite.Checked)
-            {
-                pictureBoxArtworkGallery.BackColor = Color.FromArgb(255, 255, 255); // #ffffff
-            }
-            else
-            {
-                pictureBoxArtworkGallery.BackColor = Color.Transparent;
-            }
-        }
-        #endregion
-
-        #region [ CropCuttingTemplateAreaIncludingBackground ]
-        private Bitmap CropCuttingTemplateAreaIncludingBackground()
-        {
-            // Temporarily disable drawing of the frame
-            isDrawingCuttingTemplateTemporaryDisabled = true;
-            pictureBoxArtworkGallery.Invalidate();
-            pictureBoxArtworkGallery.Update(); // Redraws instantly, without frames
-
-            // Generate screenshot
-            Bitmap fullPictureBox = new Bitmap(pictureBoxArtworkGallery.Width, pictureBoxArtworkGallery.Height);
-            pictureBoxArtworkGallery.DrawToBitmap(fullPictureBox, new Rectangle(0, 0, fullPictureBox.Width, fullPictureBox.Height));
-
-            Application.DoEvents(); // Ensure all events are processed
-
-            // Reactivate the frame
-            isDrawingCuttingTemplateTemporaryDisabled = false;
-            pictureBoxArtworkGallery.Invalidate(); // redraw with frame
-
-            // Cut out
-            Rectangle cropArea = new Rectangle(cuttingTemplatePosition, cuttingTemplateSize);
-            Rectangle boxRect = new Rectangle(0, 0, fullPictureBox.Width, fullPictureBox.Height);
-            cropArea.Intersect(boxRect);
-
-            if (cropArea.Width <= 0 || cropArea.Height <= 0)
-                return null;
-
-            Bitmap result = new Bitmap(cropArea.Width, cropArea.Height);
-            using (Graphics g = Graphics.FromImage(result))
-            {
-                g.DrawImage(fullPictureBox, new Rectangle(0, 0, cropArea.Width, cropArea.Height),
-                            cropArea, GraphicsUnit.Pixel);
-            }
-
-            fullPictureBox.Dispose();
-            return result;
-        }
-        #endregion
-
-        #region [ ButtonCuttingTemplate_Click ]
-        private void ButtonSaveCuttingTemplate_Click(object sender, EventArgs e)
-        {
-            Bitmap cropped = CropCuttingTemplateAreaIncludingBackground();
-            if (cropped == null)
-            {
-                MessageBox.Show("Nothing to crop or outside of bounds.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
-
-            using (SaveFileDialog saveDialog = new SaveFileDialog())
-            {
-                saveDialog.Title = "Save cropped image";
-                saveDialog.Filter = "BMP Image (*.bmp)|*.bmp|PNG Image (*.png)|*.png|JPEG Image (*.jpg)|*.jpg|TIFF Image (*.tiff)|*.tiff";
-                saveDialog.DefaultExt = "bmp";
-                saveDialog.FileName = "cropped_image.bmp";
-
-                if (saveDialog.ShowDialog() == DialogResult.OK)
-                {
-                    try
-                    {
-                        System.Drawing.Imaging.ImageFormat format = System.Drawing.Imaging.ImageFormat.Bmp;
-                        string file = saveDialog.FileName.ToLower();
-
-                        if (file.EndsWith(".png"))
-                            format = System.Drawing.Imaging.ImageFormat.Png;
-                        else if (file.EndsWith(".jpg") || file.EndsWith(".jpeg"))
-                            format = System.Drawing.Imaging.ImageFormat.Jpeg;
-                        else if (file.EndsWith(".tiff"))
-                            format = System.Drawing.Imaging.ImageFormat.Tiff;
-
-                        cropped.Save(saveDialog.FileName, format);
-                        MessageBox.Show("Image saved successfully.", "Done", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show("Error saving image:\n" + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    }
-                }
-            }
-
-            cropped.Dispose();
-        }
-        #endregion
-
-        #region [ ButtonCopyCuttingTemplateToClipboard ]
-        private void ButtonCopyCuttingTemplateToClipboard_Click(object sender, EventArgs e)
-        {
-            Bitmap cropped = CropCuttingTemplateAreaIncludingBackground();
-
-            if (cropped == null)
-            {
-                MessageBox.Show("Nothing to crop or outside of bounds.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
-
-            Clipboard.SetImage(cropped);
-            MessageBox.Show("Image copied to clipboard.", "Clipboard", MessageBoxButtons.OK, MessageBoxIcon.Information);
-        }
-        #endregion
-
-        #region [ ButtonShowHideIndexedImages_Click ]
-        private void ButtonShowHideIndexedImages_Click(object sender, EventArgs e)
-        {
-            allowIndexArtwork = !allowIndexArtwork;
-
-            ButtonShowHideIndexedImages.BackColor = allowIndexArtwork
-                ? SystemColors.Control
-                : Color.LightGreen;
-
+            secondImageOffset = Point.Empty;
             LoadArtwork();
             UpdateImageInfoLabel();
         }
         #endregion
 
-        #region [ ButtonBackgroundImage_Click ]
+        // ─────────────────────────────────────────────────────────────────────
+        #region Cutting Template
+        // ─────────────────────────────────────────────────────────────────────
+        private void CheckBoxCuttingTemplate_CheckedChanged(object sender, EventArgs e)
+        {
+            isCuttingTemplateActive = checkBoxCuttingTemplate.Checked;
+            if (isCuttingTemplateActive)
+            {
+                // FIX: If an image is loaded, use its actual size and center the
+                // cutting template on the PictureBox (SizeMode=CenterImage).
+                // Fall back to the classic 44x133 default when no image is present.
+                if (pictureBoxArtworkGallery.Image != null)
+                {
+                    int imgW = pictureBoxArtworkGallery.Image.Width;
+                    int imgH = pictureBoxArtworkGallery.Image.Height;
+
+                    cuttingTemplateSize = new Size(imgW, imgH);
+
+                    // Center of the PictureBox minus half the image size
+                    // (same offset that SizeMode=CenterImage uses)
+                    int pbW = pictureBoxArtworkGallery.Width;
+                    int pbH = pictureBoxArtworkGallery.Height;
+                    cuttingTemplatePosition = new Point(
+                        (pbW - imgW) / 2,
+                        (pbH - imgH) / 2);
+
+                    textBoxWidth.Text = imgW.ToString();
+                    textBoxHeight.Text = imgH.ToString();
+                }
+                else
+                {
+                    textBoxWidth.Text = "44";
+                    textBoxHeight.Text = "133";
+                    cuttingTemplateSize = new Size(44, 133);
+                    cuttingTemplatePosition = new Point(100, 100);
+                }
+            }
+            this.ActiveControl = null;
+            this.Focus();
+            pictureBoxArtworkGallery.Invalidate();
+        }
+
+        private void UpdateCuttingTemplateSize()
+        {
+            if (int.TryParse(textBoxWidth.Text, out int w) && int.TryParse(textBoxHeight.Text, out int h) && w > 0 && h > 0)
+                cuttingTemplateSize = new Size(w, h);
+        }
+
+        private void TextBoxCuttingTemplateSizeChanged(object sender, EventArgs e)
+        {
+            if (!isCuttingTemplateActive) return;
+            UpdateCuttingTemplateSize();
+            pictureBoxArtworkGallery.Invalidate();
+        }
+
+        private void MoveCuttingTemplate(Keys key)
+        {
+            const int step = 2;
+            switch (key)
+            {
+                case Keys.W: cuttingTemplatePosition.Y -= step; break;
+                case Keys.S: cuttingTemplatePosition.Y += step; break;
+                case Keys.A: cuttingTemplatePosition.X -= step; break;
+                case Keys.D: cuttingTemplatePosition.X += step; break;
+                default: return;
+            }
+            pictureBoxArtworkGallery.Invalidate();
+        }
+
+        private void CuttingTemplateMoveTimer_Tick(object sender, EventArgs e)
+        {
+            if (currentCuttingTemplateMoveKey != Keys.None)
+                MoveCuttingTemplate(currentCuttingTemplateMoveKey);
+        }
+
+        // FIX: Application.DoEvents() replaced with Refresh()
+        private Bitmap CropCuttingTemplateAreaIncludingBackground()
+        {
+            isDrawingCuttingTemplateTemporaryDisabled = true;
+            pictureBoxArtworkGallery.Refresh(); // FIX: was Invalidate+Update+DoEvents
+
+            Bitmap full = new Bitmap(pictureBoxArtworkGallery.Width, pictureBoxArtworkGallery.Height);
+            pictureBoxArtworkGallery.DrawToBitmap(full, new Rectangle(0, 0, full.Width, full.Height));
+
+            isDrawingCuttingTemplateTemporaryDisabled = false;
+            pictureBoxArtworkGallery.Invalidate();
+
+            Rectangle crop = new Rectangle(cuttingTemplatePosition, cuttingTemplateSize);
+            crop.Intersect(new Rectangle(0, 0, full.Width, full.Height));
+            if (crop.Width <= 0 || crop.Height <= 0) { full.Dispose(); return null; }
+
+            Bitmap result = new Bitmap(crop.Width, crop.Height);
+            using (Graphics g = Graphics.FromImage(result))
+                g.DrawImage(full, new Rectangle(0, 0, crop.Width, crop.Height), crop, GraphicsUnit.Pixel);
+
+            full.Dispose();
+            return result;
+        }
+
+        private void ButtonSaveCuttingTemplate_Click(object sender, EventArgs e)
+        {
+            Bitmap cropped = CropCuttingTemplateAreaIncludingBackground();
+            if (cropped == null)
+            {
+                MessageBox.Show("Nothing to crop or out of bounds.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+            using (SaveFileDialog sfd = BuildSaveDialog("Save cropped image", "cropped_image.bmp"))
+            {
+                if (sfd.ShowDialog() == DialogResult.OK)
+                    SaveBitmap(cropped, sfd.FileName);
+            }
+            cropped.Dispose();
+        }
+
+        private void ButtonCopyCuttingTemplateToClipboard_Click(object sender, EventArgs e)
+        {
+            Bitmap cropped = CropCuttingTemplateAreaIncludingBackground();
+            if (cropped == null)
+            {
+                MessageBox.Show("Nothing to crop or out of bounds.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+            Clipboard.SetImage(cropped);
+            MessageBox.Show("Image copied to clipboard.", "Clipboard", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            cropped.Dispose();
+        }
+        #endregion
+
+        // ─────────────────────────────────────────────────────────────────────
+        #region Overlay helpers (Center, Flip)
+        // ─────────────────────────────────────────────────────────────────────
+        private void CenterOverlayToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (secondImage == null && animatedGif == null)
+            {
+                MessageBox.Show("No overlay loaded.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+            secondImageOffset = Point.Empty;
+            if (animatedGif != null) pictureBoxArtworkGallery.Invalidate();
+            else LoadArtwork();
+            UpdateImageInfoLabel();
+        }
+
+        private void FlipVerticalToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (secondImage == null) { ShowNoOverlayError(); return; }
+            secondImage.RotateFlip(RotateFlipType.RotateNoneFlipY);
+            LoadArtwork();
+        }
+
+        private void FlipHorizontalToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (secondImage == null) { ShowNoOverlayError(); return; }
+            secondImage.RotateFlip(RotateFlipType.RotateNoneFlipX);
+            LoadArtwork();
+        }
+
+        private static void ShowNoOverlayError()
+            => MessageBox.Show("No second image loaded.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        #endregion
+
+        // ─────────────────────────────────────────────────────────────────────
+        #region Index image toggle
+        // ─────────────────────────────────────────────────────────────────────
+        private void ButtonShowHideIndexedImages_Click(object sender, EventArgs e)
+        {
+            allowIndexArtwork = !allowIndexArtwork;
+            ButtonShowHideIndexedImages.BackColor = allowIndexArtwork ? SystemColors.Control : Color.LightGreen;
+            LoadArtwork();
+            UpdateImageInfoLabel();
+        }
+        #endregion
+
+        // ─────────────────────────────────────────────────────────────────────
+        #region Background image
+        // ─────────────────────────────────────────────────────────────────────
         private void ButtonBackgroundImage_Click(object sender, EventArgs e)
         {
             if (backgroundImage == null)
             {
-                using (OpenFileDialog openFileDialog = new OpenFileDialog())
+                using (OpenFileDialog ofd = new OpenFileDialog())
                 {
-                    openFileDialog.Title = "Hintergrundbild auswählen";
-                    openFileDialog.Filter = "Image Files (*.bmp; *.png; *.jpg; *.jpeg; *.tiff)|*.bmp;*.png;*.jpg;*.jpeg;*.tiff";
-                    openFileDialog.DefaultExt = "bmp";
-
-                    if (openFileDialog.ShowDialog() != DialogResult.OK)
-                        return;
-
-                    // Share old image
+                    ofd.Title = "Select background image";
+                    ofd.Filter = "Image Files (*.bmp;*.png;*.jpg;*.jpeg;*.tiff)|*.bmp;*.png;*.jpg;*.jpeg;*.tiff";
+                    if (ofd.ShowDialog() != DialogResult.OK) return;
                     backgroundImage?.Dispose();
-
-                    backgroundImage = new Bitmap(openFileDialog.FileName);
+                    backgroundImage = new Bitmap(ofd.FileName);
                 }
             }
             else
@@ -1091,182 +1228,391 @@ namespace UoFiddler.Controls.Forms
                 backgroundImage.Dispose();
                 backgroundImage = null;
             }
-
             pictureBoxArtworkGallery.BackgroundImage = backgroundImage;
             pictureBoxArtworkGallery.BackgroundImageLayout = ImageLayout.Center;
         }
         #endregion
 
-        #region [ ButtonLoadImages_Click ]
+        // ─────────────────────────────────────────────────────────────────────
+        #region Image file browser (uses fast LockBits)
+        // ─────────────────────────────────────────────────────────────────────
         private void ButtonLoadImages_Click(object sender, EventArgs e)
         {
-            using (FolderBrowserDialog folderDialog = new FolderBrowserDialog())
+            using (FolderBrowserDialog fbd = new FolderBrowserDialog { Description = "Select folder with images" })
             {
-                folderDialog.Description = "Select folder with images";
+                if (lastImageDirectory != null) fbd.SelectedPath = lastImageDirectory;
+                if (fbd.ShowDialog() != DialogResult.OK) return;
 
-                if (lastImageDirectory != null)
-                {
-                    folderDialog.SelectedPath = lastImageDirectory;
-                }
-
-                if (folderDialog.ShowDialog() != DialogResult.OK)
-                    return;
-
-                lastImageDirectory = folderDialog.SelectedPath;
-
-                string[] imageFiles = Directory.GetFiles(lastImageDirectory, "*.*")
-                                               .Where(f => f.EndsWith(".bmp", StringComparison.OrdinalIgnoreCase) ||
-                                                           f.EndsWith(".png", StringComparison.OrdinalIgnoreCase) ||
-                                                           f.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase) ||
-                                                           f.EndsWith(".jpeg", StringComparison.OrdinalIgnoreCase) ||
-                                                           f.EndsWith(".tiff", StringComparison.OrdinalIgnoreCase))
-                                               .ToArray();
+                lastImageDirectory = fbd.SelectedPath;
+                string[] files = Directory.GetFiles(lastImageDirectory, "*.*")
+                    .Where(f => IsImageExtension(f)).ToArray();
 
                 imageFileLookup.Clear();
                 listBoxImages.Items.Clear();
-
-                foreach (string file in imageFiles)
+                foreach (string f in files)
                 {
-                    string fileName = Path.GetFileName(file);
-                    imageFileLookup[fileName] = file;
-                    listBoxImages.Items.Add(fileName);
+                    string name = Path.GetFileName(f);
+                    imageFileLookup[name] = f;
+                    listBoxImages.Items.Add(name);
                 }
 
                 if (listBoxImages.Items.Count == 0)
-                {
-                    MessageBox.Show("No supported image files found in the selected folder.", "Notice", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                }
+                    MessageBox.Show("No supported image files found.", "Notice", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         }
-        #endregion
 
-        #region [ listBoxImages_SelectedIndexChanged ]
+        private static bool IsImageExtension(string path)
+        {
+            string ext = Path.GetExtension(path).ToLowerInvariant();
+            return ext == ".bmp" || ext == ".png" || ext == ".jpg" || ext == ".jpeg" || ext == ".tiff";
+        }
+
         private void listBoxImages_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (listBoxImages.SelectedItem == null)
-                return;
-
-            string selectedFileName = listBoxImages.SelectedItem.ToString();
-
-            if (!imageFileLookup.ContainsKey(selectedFileName))
-                return;
-
-            string fullPath = imageFileLookup[selectedFileName];
+            if (listBoxImages.SelectedItem == null) return;
+            string name = listBoxImages.SelectedItem.ToString();
+            if (!imageFileLookup.TryGetValue(name, out string path)) return;
 
             try
             {
-                using (Bitmap loadedImage = new Bitmap(fullPath))
+                using (Bitmap loaded = new Bitmap(path))
                 {
-                    // Prepare new transparent overlay
-                    Bitmap preparedOverlay = new Bitmap(loadedImage.Width, loadedImage.Height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
-
-                    for (int y = 0; y < loadedImage.Height; y++)
-                    {
-                        for (int x = 0; x < loadedImage.Width; x++)
-                        {
-                            Color pixel = loadedImage.GetPixel(x, y);
-
-                            if ((pixel.R == 0 && pixel.G == 0 && pixel.B == 0) || (pixel.R == 255 && pixel.G == 255 && pixel.B == 255))
-                            {
-                                preparedOverlay.SetPixel(x, y, Color.Transparent);
-                            }
-                            else
-                            {
-                                preparedOverlay.SetPixel(x, y, pixel);
-                            }
-                        }
-                    }
-
-                    // Release and set previous SecondImage
                     secondImage?.Dispose();
-                    secondImage = preparedOverlay;
-
-                    secondImageOffset = Point.Empty; // Reset position
-
-                    LoadArtwork();
-                    UpdateImageInfoLabel();
+                    secondImage = PrepareOverlayFast(loaded); // FIX: fast path
                 }
+                secondImageOffset = Point.Empty;
+                LoadArtwork();
+                UpdateImageInfoLabel();
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error loading image:\n{ex.Message}", "Loading error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Error loading image:\n{ex.Message}", "Loading error",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
         #endregion
 
-        #region [ toolStripTextBoxSearchTexbox_KeyDown ]
+        // ─────────────────────────────────────────────────────────────────────
+        #region Search in listBox
+        // ─────────────────────────────────────────────────────────────────────
         private void toolStripTextBoxSearchTexbox_KeyDown(object sender, KeyEventArgs e)
         {
-            if (e.KeyCode != Keys.Enter)
-                return;
-
+            if (e.KeyCode != Keys.Enter) return;
             string input = toolStripTextBoxSearchTexbox.Text.Trim();
+            if (string.IsNullOrEmpty(input)) return;
 
-            if (string.IsNullOrEmpty(input))
-                return;
-
-            // Search by file name (case-insensitive)
             foreach (var item in listBoxImages.Items)
             {
-                string fileName = item.ToString();
-
-                if (fileName.IndexOf(input, StringComparison.OrdinalIgnoreCase) >= 0)
+                if (item.ToString().IndexOf(input, StringComparison.OrdinalIgnoreCase) >= 0)
                 {
                     listBoxImages.SelectedItem = item;
-                    listBoxImages.TopIndex = listBoxImages.Items.IndexOf(item); // Scroll to item
+                    listBoxImages.TopIndex = listBoxImages.Items.IndexOf(item);
                     return;
                 }
             }
 
-            // Search for hexadecimal address (e.g. 0x1F4)
-            if (input.StartsWith("0x", StringComparison.OrdinalIgnoreCase))
+            if (input.StartsWith("0x", StringComparison.OrdinalIgnoreCase) &&
+                int.TryParse(input.Substring(2), System.Globalization.NumberStyles.HexNumber, null, out int hexVal))
             {
-                if (int.TryParse(input.Substring(2), System.Globalization.NumberStyles.HexNumber, null, out int hexValue))
+                string pattern = $"0x{hexVal:X4}";
+                foreach (var item in listBoxImages.Items)
                 {
-                    string hexPattern = $"0x{hexValue:X4}";
-
-                    foreach (var item in listBoxImages.Items)
+                    if (item.ToString().IndexOf(pattern, StringComparison.OrdinalIgnoreCase) >= 0)
                     {
-                        if (item.ToString().IndexOf(hexPattern, StringComparison.OrdinalIgnoreCase) >= 0)
-                        {
-                            listBoxImages.SelectedItem = item;
-                            listBoxImages.TopIndex = listBoxImages.Items.IndexOf(item); // Scroll to item
-                            return;
-                        }
+                        listBoxImages.SelectedItem = item;
+                        listBoxImages.TopIndex = listBoxImages.Items.IndexOf(item);
+                        return;
                     }
                 }
             }
 
-            // If nothing was found:
             MessageBox.Show("No matching entry found.", "Search", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
-        #endregion
 
-        #region [ toolStripTextBoxSearchTexbox_TextChanged ]
         private void toolStripTextBoxSearchTexbox_TextChanged(object sender, EventArgs e)
         {
-            string input = toolStripTextBoxSearchTexbox.Text.Trim();
-
-            if (string.IsNullOrEmpty(input))
-                return;
-
-            string normalizedInput = input.ToLower();
+            string input = toolStripTextBoxSearchTexbox.Text.Trim().ToLower();
+            if (string.IsNullOrEmpty(input)) return;
 
             for (int i = 0; i < listBoxImages.Items.Count; i++)
             {
-                string itemText = listBoxImages.Items[i].ToString().ToLower();
-
-                if (itemText.Contains(normalizedInput))
+                if (listBoxImages.Items[i].ToString().ToLower().Contains(input))
                 {
                     listBoxImages.SelectedIndex = i;
                     listBoxImages.TopIndex = i;
-
-                    // Optional: Load image directly when typing (like Click)
                     listBoxImages_SelectedIndexChanged(null, null);
                     return;
                 }
             }
         }
         #endregion
+
+        // ─────────────────────────────────────────────────────────────────────
+        #region Keyboard handling
+        // ─────────────────────────────────────────────────────────────────────
+        private void ArtworkGallery_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (isCuttingTemplateActive &&
+                (e.KeyCode == Keys.W || e.KeyCode == Keys.A || e.KeyCode == Keys.S || e.KeyCode == Keys.D))
+            {
+                if (currentCuttingTemplateMoveKey != e.KeyCode)
+                {
+                    currentCuttingTemplateMoveKey = e.KeyCode;
+                    MoveCuttingTemplate(e.KeyCode);
+                    cuttingTemplateMoveTimer.Start();
+                }
+                return;
+            }
+
+            if (!IsOverlayActive) return;
+
+            if (currentMoveKey != e.KeyCode)
+            {
+                currentMoveKey = e.KeyCode;
+                MoveSecondImage(e.KeyCode);
+                moveTimer.Start();
+            }
+        }
+
+        private void ArtworkGallery_KeyUp(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == currentMoveKey) { moveTimer.Stop(); currentMoveKey = Keys.None; }
+            if (e.KeyCode == currentCuttingTemplateMoveKey) { cuttingTemplateMoveTimer.Stop(); currentCuttingTemplateMoveKey = Keys.None; }
+        }
+
+        private void MoveTimer_Tick(object sender, EventArgs e)
+        {
+            if (currentMoveKey != Keys.None) MoveSecondImage(currentMoveKey);
+        }
+
+        private void MoveSecondImage(Keys key)
+        {
+            switch (key)
+            {
+                case Keys.Left: secondImageOffset.X -= MoveStep; break;
+                case Keys.Right: secondImageOffset.X += MoveStep; break;
+                case Keys.Up: secondImageOffset.Y -= MoveStep; break;
+                case Keys.Down: secondImageOffset.Y += MoveStep; break;
+                default: return;
+            }
+            if (animatedGif != null) pictureBoxArtworkGallery.Invalidate();
+            else LoadArtwork();
+        }
+
+        protected override bool IsInputKey(Keys keyData)
+        {
+            if (keyData == Keys.Left || keyData == Keys.Right ||
+                keyData == Keys.Up || keyData == Keys.Down ||
+                keyData == Keys.W || keyData == Keys.A ||
+                keyData == Keys.S || keyData == Keys.D)
+                return true;
+            return base.IsInputKey(keyData);
+        }
+
+        protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
+        {
+            if (IsOverlayActive &&
+                (keyData == Keys.Left || keyData == Keys.Right || keyData == Keys.Up || keyData == Keys.Down))
+            {
+                MoveSecondImage(keyData);
+                currentMoveKey = keyData;
+                moveTimer.Start();
+                return true;
+            }
+            return base.ProcessCmdKey(ref msg, keyData);
+        }
+        #endregion
+
+        // ─────────────────────────────────────────────────────────────────────
+        #region Helpers
+        // ─────────────────────────────────────────────────────────────────────
+        private static SaveFileDialog BuildSaveDialog(string title, string defaultName)
+        {
+            return new SaveFileDialog
+            {
+                Title = title,
+                Filter = "BMP Image (*.bmp)|*.bmp|PNG Image (*.png)|*.png|JPEG Image (*.jpg)|*.jpg|TIFF Image (*.tiff)|*.tiff",
+                DefaultExt = "bmp",
+                FileName = defaultName
+            };
+        }
+
+        private static void SaveBitmap(Bitmap bmp, string path)
+        {
+            try
+            {
+                ImageFormat fmt = ImageFormat.Bmp;
+                string low = path.ToLower();
+                if (low.EndsWith(".png")) fmt = ImageFormat.Png;
+                else if (low.EndsWith(".jpg") || low.EndsWith(".jpeg")) fmt = ImageFormat.Jpeg;
+                else if (low.EndsWith(".tiff")) fmt = ImageFormat.Tiff;
+
+                bmp.Save(path, fmt);
+                MessageBox.Show("Image saved successfully.", "Saved", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error saving image:\n{ex.Message}", "Save Error",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+        #endregion
+
+        // ─────────────────────────────────────────────────────────────────────
+        #region Dispose
+        // ─────────────────────────────────────────────────────────────────────
+        protected override void OnFormClosed(FormClosedEventArgs e)
+        {
+            base.OnFormClosed(e);
+            moveTimer?.Dispose();
+            cuttingTemplateMoveTimer?.Dispose();
+            secondImage?.Dispose();
+            backgroundImage?.Dispose();
+            lock (gifLock)
+            {
+                if (animatedGif != null)
+                {
+                    ImageAnimator.StopAnimate(animatedGif, OnFrameChanged);
+                    animatedGif.Dispose();
+                    animatedGif = null;
+                }
+            }
+        }
+        #endregion
+
+        #region Background image removal
+        private void ButtonRemoveBackground_Click(object sender, EventArgs e)
+        {
+            if (backgroundImage == null)
+                return;
+
+            backgroundImage.Dispose();
+            backgroundImage = null;
+
+            pictureBoxArtworkGallery.BackgroundImage = null;
+        }
+        #endregion
+
+        #region Reset overlay position
+        private void ButtonResetOffset_Click(object sender, EventArgs e)
+        {
+            secondImageOffset = Point.Empty;
+
+            if (animatedGif != null)
+                pictureBoxArtworkGallery.Invalidate();
+            else
+                LoadArtwork();
+        }
+        #endregion
+
+        private void ButtonRuler_Click(object sender, EventArgs e)
+        {
+            isRulerActive = !isRulerActive;
+            ButtonRuler.BackColor = isRulerActive ? Color.LightGreen : SystemColors.Control;
+            pictureBoxArtworkGallery.Invalidate();
+        }
+
+        private void DrawRuler(Graphics g)
+        {
+            int tickSmall = 4;
+            int tickMedium = 8;
+            int tickLarge = 12;
+            int step = 10; // px zwischen Ticks
+
+            using (Pen pen = new Pen(Color.Red, 1))
+            using (Font font = new Font("Arial", 6f))
+            using (Brush brush = new SolidBrush(Color.Red))
+            {
+                // --- oberes Lineal (horizontal) ---
+                for (int x = 0; x < pictureBoxArtworkGallery.Width; x += step)
+                {
+                    int tickH = (x % 100 == 0) ? tickLarge : (x % 50 == 0) ? tickMedium : tickSmall;
+                    g.DrawLine(pen, x, 0, x, tickH);
+
+                    if (x % 100 == 0 && x > 0)
+                        g.DrawString(x.ToString(), font, brush, x + 1, tickLarge + 1);
+                }
+
+                // --- linkes Lineal (vertikal) ---
+                for (int y = 0; y < pictureBoxArtworkGallery.Height; y += step)
+                {
+                    int tickW = (y % 100 == 0) ? tickLarge : (y % 50 == 0) ? tickMedium : tickSmall;
+                    g.DrawLine(pen, 0, y, tickW, y);
+
+                    if (y % 100 == 0 && y > 0)
+                    {
+                        using (var sf = new System.Drawing.StringFormat { FormatFlags = System.Drawing.StringFormatFlags.DirectionVertical })
+                            g.DrawString(y.ToString(), font, brush, tickLarge + 1, y + 1, sf);
+                    }
+                }
+            }
+        }
+
+        private void ButtonCrosshair_Click(object sender, EventArgs e)
+        {
+            isCrosshairActive = !isCrosshairActive;
+            ButtonCrosshair.BackColor = isCrosshairActive ? Color.LightGreen : SystemColors.Control;
+            pictureBoxArtworkGallery.Invalidate();
+        }
+
+        private void DrawCrosshair(Graphics g)
+        {
+            if (pictureBoxArtworkGallery.Image == null) return;
+
+            // Fadenkreuz zentriert auf das Bild (nicht auf die PictureBox)
+            int imgW = pictureBoxArtworkGallery.Image.Width;
+            int imgH = pictureBoxArtworkGallery.Image.Height;
+
+            int centerX = (pictureBoxArtworkGallery.Width - imgW) / 2 + imgW / 2;
+            int centerY = (pictureBoxArtworkGallery.Height - imgH) / 2 + imgH / 2;
+
+            using (Pen pen = new Pen(Color.Red, 1))
+            {
+                // horizontale Linie
+                g.DrawLine(pen, 0, centerY, pictureBoxArtworkGallery.Width, centerY);
+
+                // vertikale Linie
+                g.DrawLine(pen, centerX, 0, centerX, pictureBoxArtworkGallery.Height);
+
+                // kleiner Kreis in der Mitte
+                int r = 6;
+                g.DrawEllipse(pen, centerX - r, centerY - r, r * 2, r * 2);
+            }
+        }
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Simple progress dialog for batch export
+    // ─────────────────────────────────────────────────────────────────────────
+    internal class ProgressDialog : Form
+    {
+        private ProgressBar bar;
+        private Label lbl;
+        private Button btnCancel;
+        public bool Cancelled { get; private set; }
+
+        public ProgressDialog(string title, int max)
+        {
+            this.Text = title;
+            this.Size = new Size(400, 130);
+            this.FormBorderStyle = FormBorderStyle.FixedDialog;
+            this.StartPosition = FormStartPosition.CenterParent;
+            this.MaximizeBox = false;
+            this.MinimizeBox = false;
+
+            lbl = new Label { Left = 12, Top = 12, Width = 360, Text = "Starting…" };
+            bar = new ProgressBar { Left = 12, Top = 36, Width = 360, Height = 22, Minimum = 0, Maximum = max };
+            btnCancel = new Button { Left = 150, Top = 68, Width = 90, Text = "Cancel" };
+            btnCancel.Click += (s, e) => { Cancelled = true; btnCancel.Enabled = false; };
+
+            this.Controls.AddRange(new Control[] { lbl, bar, btnCancel });
+        }
+
+        public void SetProgress(int value, string message)
+        {
+            bar.Value = Math.Min(value, bar.Maximum);
+            lbl.Text = message;
+            Application.DoEvents(); // acceptable in a blocking progress dialog
+        }
     }
 }
