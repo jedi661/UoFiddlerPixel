@@ -1,7 +1,7 @@
 ﻿// /***************************************************************************
-//  * MulAnimDiagnostics — Diagnose-Tool für MUL-Animationen
-//  * Zeigt für einen Body GENAU was passiert: BodyTable, BodyConverter,
-//  * IDX-Einträge (alle 3 Felder), ob Daten lesbar sind.
+//  * MulAnimDiagnostics — Diagnostic tool for MUL animations
+//  * Shows EXACTLY what happens to a body: BodyTable, BodyConverter,
+//  * IDX entries (all 3 fields) to check if data is readable.
 //  ***************************************************************************/
 
 using System;
@@ -16,19 +16,18 @@ namespace UoFiddler.Controls.Forms
 {
     public static class MulAnimDiagnostics
     {
-        // ── Ergebnis für einen einzelnen Body ────────────────────────────────
+        // ── Result types ──────────────────────────────────────────────────────
 
         public sealed class BodyDiagResult
         {
             public int OriginalBody;
-            public int BodyTableRemapped;   // -1 = kein Eintrag
-            public int BodyConverterBody;   // -1 = kein Remapping
-            public int BodyConverterFile;   // -1 = kein Remapping
-            public int FinalBody;           // der tatsächlich verwendete Body
-            public int FinalFileType;       // der tatsächlich verwendete FileType
-            public int AnimLength;          // 13/22/35
-            public string AnimType;          // L/H/P
-
+            public int BodyTableRemapped;  // -1 = no entry
+            public int BodyConverterBody;  // -1 = no remapping
+            public int BodyConverterFile;  // -1 = no remapping
+            public int FinalBody;
+            public int FinalFileType;
+            public int AnimLength;
+            public string AnimType;
             public List<ActionDiagResult> Actions = new();
             public string Summary;
         }
@@ -44,20 +43,20 @@ namespace UoFiddler.Controls.Forms
         public sealed class DirDiagResult
         {
             public int Dir;
-            public int EntryIndex;       // body * 110 * 5 + action * 5 + dir
+            public int EntryIndex;
             public int RawOffset;
             public int RawLength;
             public int RawExtra;
-            public int ActualLength;     // resolved
-            public bool IsEmpty;          // offset == -1
-            public bool IsValid;          // hat Daten
-            public bool DataReadable;     // konnte gelesen werden
-            public int FrameCount;       // aus den Rohdaten
-            public string FileUsed;         // welche anim*.mul
+            public int ActualLength;
+            public bool IsEmpty;
+            public bool IsValid;
+            public bool DataReadable;
+            public int FrameCount;
+            public string FileUsed;
             public string Error;
         }
 
-        // ── Action-Namen ──────────────────────────────────────────────────────
+        // ── Action name tables ────────────────────────────────────────────────
 
         private static readonly string[] NamesAnimal = { "Walk", "Run", "Stand", "Eat", "Alert", "Attack1", "Attack2", "GetHit", "Die1", "Fidget1", "Fidget2", "LieDown", "Die2" };
         private static readonly string[] NamesMonster = { "Walk", "Stand", "Die1", "Die2", "Attack1", "Attack2", "Attack3", "AttackBow", "AttackCrossBow", "AttackThrow", "GetHit", "Pillage", "Stomp", "Cast2", "Cast3", "BlockRight", "BlockLeft", "Idle", "Fidget", "Fly", "TakeOff", "GetHitInAir" };
@@ -69,13 +68,31 @@ namespace UoFiddler.Controls.Forms
             return (action >= 0 && action < tbl.Length) ? tbl[action] : $"Action{action}";
         }
 
-        // ── Haupt-Diagnose ────────────────────────────────────────────────────
+        // ── IDX cache — avoids repeatedly opening the same file ─────
+
+        private static readonly Dictionary<string, byte[]> _idxCache = new();
+
+        private static byte[] GetIdxData(string idxPath)
+        {
+            if (_idxCache.TryGetValue(idxPath, out var cached)) return cached;
+            try
+            {
+                var data = File.ReadAllBytes(idxPath);
+                _idxCache[idxPath] = data;
+                return data;
+            }
+            catch { return null; }
+        }
+
+        public static void ClearCache() => _idxCache.Clear();
+
+        // ── Main diagnosis ────────────────────────────────────────────────────
 
         public static BodyDiagResult Diagnose(int originalBody, int loadedFileType)
         {
             var result = new BodyDiagResult { OriginalBody = originalBody };
 
-            // Schritt 1: BodyTable
+            // Step 1: BodyTable
             int btBody = originalBody;
             result.BodyTableRemapped = -1;
             if (BodyTable.Entries != null
@@ -86,27 +103,42 @@ namespace UoFiddler.Controls.Forms
                 result.BodyTableRemapped = btBody;
             }
 
-            // Schritt 2: BodyConverter
+            // Step 2: BodyConverter
             int bcBody = btBody;
             int bcFt = BodyConverter.Convert(ref bcBody);
-            result.BodyConverterBody = (bcFt != loadedFileType || bcBody != btBody) ? bcBody : -1;
+
+            // Only set BodyConverterBody/-File if remapping is actually required.
+            bool wasConverted = (bcBody != btBody || (bcFt >= 1 && bcFt <= 5 && bcFt != loadedFileType));
+            result.BodyConverterBody = wasConverted ? bcBody : -1;
             result.BodyConverterFile = (bcFt >= 1 && bcFt <= 5) ? bcFt : -1;
 
-            // Finaler Body/FileType
             result.FinalBody = bcBody;
             result.FinalFileType = (bcFt >= 1 && bcFt <= 5) ? bcFt : loadedFileType;
 
-            // AnimLength
+            // Animation Length — multiple fallbacks
             result.AnimLength = Animations.GetAnimLength(result.FinalBody, result.FinalFileType);
             if (result.AnimLength <= 0)
                 result.AnimLength = Animations.GetAnimLength(originalBody, loadedFileType);
-            if (result.AnimLength <= 0) result.AnimLength = 22; // Fallback Monster
+            if (result.AnimLength <= 0)
+            {
+                // Last resort: estimating from IDX data
+                result.AnimLength = 22;
+            }
 
             result.AnimType = result.AnimLength == 13 ? "L (Animal)"
                             : result.AnimLength == 22 ? "H (Monster)"
                             : "P (Human/Equipment)";
 
-            // Schritt 3: Alle Actions + alle Dirs prüfen
+            // Step 3: Check all actions + dirs
+            // Load IDX once (cached) instead of per entry
+            string idxName = result.FinalFileType == 1 ? "anim.idx" : $"anim{result.FinalFileType}.idx";
+            string idxPath = Files.GetFilePath(idxName);
+            byte[] idxData = (!string.IsNullOrEmpty(idxPath) && File.Exists(idxPath))
+                             ? GetIdxData(idxPath) : null;
+
+            string mulName = result.FinalFileType == 1 ? "anim.mul" : $"anim{result.FinalFileType}.mul";
+            string mulPath = Files.GetFilePath(mulName);
+
             for (int action = 0; action < result.AnimLength; action++)
             {
                 var adr = new ActionDiagResult
@@ -119,7 +151,7 @@ namespace UoFiddler.Controls.Forms
                 {
                     var ddr = DiagnoseIdxEntry(
                         result.FinalBody, action, dir,
-                        result.FinalFileType);
+                        result.FinalFileType, idxData, mulPath, mulName);
                     adr.Dirs.Add(ddr);
                     if (ddr.IsValid) adr.AnyValid = true;
                 }
@@ -127,77 +159,81 @@ namespace UoFiddler.Controls.Forms
                 result.Actions.Add(adr);
             }
 
-            // Zusammenfassung
             int validActions = 0;
             foreach (var a in result.Actions) if (a.AnyValid) validActions++;
-            result.Summary = $"Body {originalBody} → Final Body {result.FinalBody} in anim{result.FinalFileType}.mul | "
-                           + $"{validActions}/{result.AnimLength} Actions haben Daten";
+            result.Summary =
+                $"Body {originalBody} → Final Body {result.FinalBody} in anim{result.FinalFileType}.mul" +
+                $" | {validActions}/{result.AnimLength} Actions have data";
 
             return result;
         }
 
-        // ── Einzelner IDX-Eintrag ─────────────────────────────────────────────
+        // ── Single IDX entry — uses cached IDX data ──────────────────────
 
-        private static DirDiagResult DiagnoseIdxEntry(int body, int action, int dir, int fileType)
+        private static DirDiagResult DiagnoseIdxEntry(
+            int body, int action, int dir, int fileType,
+            byte[] idxData, string mulPath, string mulName)
         {
-            var r = new DirDiagResult { Dir = dir };
+            var r = new DirDiagResult { Dir = dir, FileUsed = mulName };
             r.EntryIndex = body * 110 * 5 + action * 5 + dir;
 
-            string mulName = fileType == 1 ? "anim.mul" : $"anim{fileType}.mul";
-            string idxName = fileType == 1 ? "anim.idx" : $"anim{fileType}.idx";
-            r.FileUsed = mulName;
-
-            string mulPath = Files.GetFilePath(mulName);
-            string idxPath = Files.GetFilePath(idxName);
-
-            if (string.IsNullOrEmpty(idxPath) || !File.Exists(idxPath))
-            { r.Error = "IDX-Datei nicht gefunden"; return r; }
+            if (idxData == null)
+            { r.Error = "IDX not loaded"; return r; }
 
             if (string.IsNullOrEmpty(mulPath) || !File.Exists(mulPath))
-            { r.Error = "MUL-Datei nicht gefunden"; return r; }
+            { r.Error = "MUL file not found"; return r; }
 
+            long idxPos = (long)r.EntryIndex * 12;
+
+            if (idxPos + 12 > idxData.Length)
+            { r.Error = $"entry {r.EntryIndex} outside ({idxData.Length / 12} entries)"; return r; }
+
+            //Read directly from the byte[] — no FileStream needed
+            r.RawOffset = BitConverter.ToInt32(idxData, (int)idxPos);
+            r.RawLength = BitConverter.ToInt32(idxData, (int)idxPos + 4);
+            r.RawExtra = BitConverter.ToInt32(idxData, (int)idxPos + 8);
+
+            if (r.RawOffset == -1 || r.RawOffset < 0)
+            { r.IsEmpty = true; return r; }
+
+            // extra field as fallback length (UO quirk: length=0 → extra contains true length)
+            r.ActualLength = r.RawLength > 0 ? r.RawLength
+                           : r.RawExtra > 0 ? r.RawExtra
+                           : 0;
+
+            if (r.ActualLength <= 0)
+            { r.IsEmpty = true; return r; }
+
+            r.IsValid = true;
+
+            // Read only the first 520 bytes to check the frame count.
             try
             {
-                long idxPos = (long)r.EntryIndex * 12;
-                using var fs = new FileStream(idxPath,
-                    FileMode.Open, FileAccess.Read, FileShare.Read);
-
-                if (idxPos + 12 > fs.Length)
-                { r.Error = $"Eintrag {r.EntryIndex} außerhalb ({fs.Length / 12} Einträge)"; return r; }
-
-                fs.Seek(idxPos, SeekOrigin.Begin);
-                using var br = new BinaryReader(fs);
-                r.RawOffset = br.ReadInt32();
-                r.RawLength = br.ReadInt32();
-                r.RawExtra = br.ReadInt32();
-
-                if (r.RawOffset == -1 || r.RawOffset < 0)
-                { r.IsEmpty = true; return r; }
-
-                r.ActualLength = r.RawLength > 0 ? r.RawLength
-                               : r.RawExtra > 0 ? r.RawExtra
-                               : 0;
-
-                if (r.ActualLength <= 0)
-                { r.IsEmpty = true; return r; }
-
-                r.IsValid = true;
-
-                // Rohdaten testweise lesen + FrameCount prüfen
                 using var mulFs = new FileStream(mulPath,
                     FileMode.Open, FileAccess.Read, FileShare.Read);
 
                 if (r.RawOffset + r.ActualLength > mulFs.Length)
-                { r.Error = $"Offset+Länge ({r.RawOffset}+{r.ActualLength}) > MUL-Größe ({mulFs.Length})"; return r; }
+                {
+                    r.Error = $"Offset+len ({r.RawOffset}+{r.ActualLength}) > MUL ({mulFs.Length})";
+                    return r;
+                }
 
                 mulFs.Seek(r.RawOffset, SeekOrigin.Begin);
-                int readLen = Math.Min(r.ActualLength, 520); // nur Anfang für FrameCount
+                int readLen = Math.Min(r.ActualLength, 520);
                 var buf = new byte[readLen];
                 int read = mulFs.Read(buf, 0, readLen);
 
+                // FIX: DataReadable = wirklich genug Bytes gelesen
                 r.DataReadable = (read >= 514);
                 if (r.DataReadable)
+                {
                     r.FrameCount = buf[512] | (buf[513] << 8);
+                    // Plausibilitätsprüfung: FrameCount > 0 und sinnvoll
+                    if (r.FrameCount == 0)
+                        r.Error = "FrameCount=0 (leer oder falsches Format)";
+                    else if (r.FrameCount > 2000)
+                        r.Error = $"FrameCount={r.FrameCount} (implausibly high)";
+                }
             }
             catch (Exception ex)
             { r.Error = ex.Message; }
@@ -205,12 +241,77 @@ namespace UoFiddler.Controls.Forms
             return r;
         }
 
-        // ── Vergleichs-Diagnose: Zwei Bodies nebeneinander ───────────────────
+        // ── Single body diagnosis dialog ──────────────────────────────────────
 
-        /// <summary>
-        /// Vergleicht zwei Bodies und zeigt wo sie sich unterscheiden.
-        /// Ideal um "Body X funktioniert, Body Y nicht" zu analysieren.
-        /// </summary>
+        public static void ShowSingleDiagDialog(int body, int fileType, IWin32Window owner = null)
+        {
+            var r = Diagnose(body, fileType);
+            var sb = new StringBuilder();
+
+            sb.AppendLine($"═══════════════════════════════════════════════════");
+            sb.AppendLine($"  DIAGNOSE  Body {body}  (anim{fileType}.mul)");
+            sb.AppendLine($"═══════════════════════════════════════════════════");
+            sb.AppendLine();
+            sb.AppendLine($"  BodyTable Remap : {(r.BodyTableRemapped >= 0 ? r.BodyTableRemapped.ToString() : "–")}");
+            sb.AppendLine($"  BodyConv Remap  : Body {r.OriginalBody} → {r.FinalBody}  in anim{r.FinalFileType}.mul");
+            sb.AppendLine($"  AnimLength      : {r.AnimLength}  ({r.AnimType})");
+            sb.AppendLine($"  {r.Summary}");
+            sb.AppendLine();
+            sb.AppendLine($"  {"#",-4} {"Name",-22} {"D0",6} {"D1",6} {"D2",6} {"D3",6} {"D4",6}  Note");
+            sb.AppendLine($"  {new string('─', 72)}");
+
+            foreach (var a in r.Actions)
+            {
+                string mark = a.AnyValid ? " " : "✗";
+                sb.Append($"  {mark} {a.ActionIndex:D2}  {a.ActionName,-22}");
+                foreach (var d in a.Dirs)
+                {
+                    if (d.IsEmpty) sb.Append($"  {"–",4}");
+                    else if (!d.IsValid) sb.Append($"  {"len0",4}");
+                    else if (d.Error != null && d.FrameCount == 0)
+                        sb.Append($"  {"!fc0",4}");
+                    else if (d.Error != null) sb.Append($"  {"ERR",4}");
+                    else sb.Append($"  {d.FrameCount + "f",4}");
+                }
+
+                // Quick note for empty actions
+                if (!a.AnyValid)
+                {
+                    var d0 = a.Dirs[0];
+                    if (d0.Error != null)
+                        sb.Append($"  ← {d0.Error}");
+                    else
+                        sb.Append($"  ← off={d0.RawOffset} len={d0.RawLength} ext={d0.RawExtra}");
+                }
+                sb.AppendLine();
+            }
+
+            // IDX detail block only if problems exist
+            bool hasProblems = false;
+            foreach (var a in r.Actions)
+            {
+                if (a.AnyValid) continue;
+                if (!hasProblems)
+                {
+                    sb.AppendLine();
+                    sb.AppendLine("  ── IDX-Details (empty actions) ───────────────────────");
+                    hasProblems = true;
+                }
+                sb.AppendLine($"  Action {a.ActionIndex:D2} {a.ActionName}:");
+                foreach (var d in a.Dirs)
+                {
+                    string detail = d.Error != null
+                        ? $"ERROR: {d.Error}"
+                        : $"off={d.RawOffset}  len={d.RawLength}  extra={d.RawExtra}  entry={d.EntryIndex}";
+                    sb.AppendLine($"    Dir{d.Dir}: {detail}");
+                }
+            }
+
+            ShowMonoDialog($"Diagnose Body {body} / anim{fileType}.mul", sb.ToString(), owner);
+        }
+
+        // ── Comparison dialog ─────────────────────────────────────────────────
+
         public static void ShowComparisonDialog(
             int workingBody, int brokenBody, int fileType, IWin32Window owner = null)
         {
@@ -218,43 +319,33 @@ namespace UoFiddler.Controls.Forms
             var broken = Diagnose(brokenBody, fileType);
 
             var sb = new StringBuilder();
-            sb.AppendLine("════════════════════════════════════════════════════════════");
-            sb.AppendLine($"  VERGLEICH: Body {workingBody} (OK) vs Body {brokenBody} (PROBLEM)");
-            sb.AppendLine("════════════════════════════════════════════════════════════");
+            sb.AppendLine("═══════════════════════════════════════════════════════════════");
+            sb.AppendLine($"  COMPARISON:  Body {workingBody} (OK)  vs  Body {brokenBody} (PROBLEM)");
+            sb.AppendLine("═══════════════════════════════════════════════════════════════");
             sb.AppendLine();
 
             void AppendBody(BodyDiagResult r, string label)
             {
-                sb.AppendLine($"── {label}: Body {r.OriginalBody} ──────────────────────────────");
-                sb.AppendLine($"  BodyTable  → {(r.BodyTableRemapped >= 0 ? r.BodyTableRemapped.ToString() : "kein Remapping")}");
-                sb.AppendLine($"  BodyConv   → Body {(r.BodyConverterBody < 0 ? r.OriginalBody.ToString() : r.BodyConverterBody.ToString())}  File anim{r.FinalFileType}.mul");
-                sb.AppendLine($"  FinalBody  = {r.FinalBody}  FileType = {r.FinalFileType}");
-                sb.AppendLine($"  AnimLength = {r.AnimLength}  ({r.AnimType})");
+                sb.AppendLine($"── {label} ──────────────────────────────────────────────");
+                sb.AppendLine($"  BodyTable → {(r.BodyTableRemapped >= 0 ? r.BodyTableRemapped.ToString() : "–")}");
+                sb.AppendLine($"  BodyConv  → Body {r.FinalBody}  File anim{r.FinalFileType}.mul");
+                sb.AppendLine($"  AnimType  : {r.AnimLength} ({r.AnimType})");
                 sb.AppendLine($"  {r.Summary}");
                 sb.AppendLine();
-
-                // Actions mit Problemen hervorheben
                 foreach (var a in r.Actions)
                 {
-                    string status = a.AnyValid ? "✓" : "✗ LEER";
-                    sb.Append($"  [{status}] Action {a.ActionIndex:D2} {a.ActionName,-20}");
-
+                    string status = a.AnyValid ? "✓" : "✗";
+                    sb.Append($"  [{status}] {a.ActionIndex:D2} {a.ActionName,-20}");
                     if (!a.AnyValid)
                     {
-                        // Zeige ersten Dir-Eintrag zur Diagnose
                         var d0 = a.Dirs[0];
-                        if (d0.IsEmpty)
-                            sb.Append($"  offset={d0.RawOffset}  len={d0.RawLength}  extra={d0.RawExtra}");
-                        else if (d0.Error != null)
-                            sb.Append($"  FEHLER: {d0.Error}");
+                        if (d0.Error != null) sb.Append($"  ERR: {d0.Error}");
+                        else sb.Append($"  off={d0.RawOffset} len={d0.RawLength} ext={d0.RawExtra}");
                     }
                     else
                     {
-                        // Zeige welche Dirs Daten haben
-                        var validDirs = new List<string>();
                         foreach (var d in a.Dirs)
-                            if (d.IsValid) validDirs.Add($"Dir{d.Dir}({d.FrameCount}fr)");
-                        sb.Append($"  {string.Join(" ", validDirs)}");
+                            if (d.IsValid) sb.Append($" D{d.Dir}({d.FrameCount}f)");
                     }
                     sb.AppendLine();
                 }
@@ -262,129 +353,141 @@ namespace UoFiddler.Controls.Forms
 
             AppendBody(working, $"OK     Body {workingBody}");
             sb.AppendLine();
-            AppendBody(broken, $"FEHLER Body {brokenBody}");
-
-            // Unterschiede hervorheben
+            AppendBody(broken, $"ERROR Body {brokenBody}");
             sb.AppendLine();
-            sb.AppendLine("── UNTERSCHIEDE ──────────────────────────────────────────");
+            sb.AppendLine("── DIFFERENCES ──────────────────────────────────────────────");
+
+            bool anyDiff = false;
             if (working.FinalFileType != broken.FinalFileType)
-                sb.AppendLine($"  ⚠ FileType unterschiedlich: {working.FinalFileType} vs {broken.FinalFileType}");
-            if (working.FinalBody == working.OriginalBody && broken.FinalBody != broken.OriginalBody)
-                sb.AppendLine($"  ⚠ Body {brokenBody} wird remappt auf {broken.FinalBody} — prüfe BodyConverter/BodyTable");
+            { sb.AppendLine($"  ⚠ FileType: {working.FinalFileType} vs {broken.FinalFileType}"); anyDiff = true; }
+            if (working.FinalBody != working.OriginalBody || broken.FinalBody != broken.OriginalBody)
+            { sb.AppendLine($"  ⚠ Remapping: {working.OriginalBody}→{working.FinalBody}  vs  {broken.OriginalBody}→{broken.FinalBody}"); anyDiff = true; }
             if (working.AnimLength != broken.AnimLength)
-                sb.AppendLine($"  ⚠ AnimLength unterschiedlich: {working.AnimLength} vs {broken.AnimLength}");
+            { sb.AppendLine($"  ⚠ AnimLength: {working.AnimLength} vs {broken.AnimLength}"); anyDiff = true; }
+            if (!anyDiff)
+                sb.AppendLine("  No structural difference — missing actions are simply not in the IDX..");
 
-            ShowMonoDialog($"Diagnose: Body {workingBody} vs {brokenBody}", sb.ToString(), owner);
+            ShowMonoDialog($"Diagnose: {workingBody} vs {brokenBody}", sb.ToString(), owner);
         }
 
-        // ── Einzel-Diagnose Dialog ────────────────────────────────────────────
-
-        public static void ShowSingleDiagDialog(int body, int fileType, IWin32Window owner = null)
-        {
-            var r = Diagnose(body, fileType);
-            var sb = new StringBuilder();
-
-            sb.AppendLine($"═══════════════════════════════════════════");
-            sb.AppendLine($"  DIAGNOSE Body {body}  (geladen: anim{fileType}.mul)");
-            sb.AppendLine($"═══════════════════════════════════════════");
-            sb.AppendLine();
-            sb.AppendLine($"  BodyTable Remap  : {(r.BodyTableRemapped >= 0 ? r.BodyTableRemapped.ToString() : "–")}");
-            sb.AppendLine($"  BodyConv Remap   : Body → {r.FinalBody}  in anim{r.FinalFileType}.mul");
-            sb.AppendLine($"  AnimLength       : {r.AnimLength}  ({r.AnimType})");
-            sb.AppendLine($"  {r.Summary}");
-            sb.AppendLine();
-            sb.AppendLine($"  {"Action",-5} {"Name",-22} {"Dir0",8} {"Dir1",8} {"Dir2",8} {"Dir3",8} {"Dir4",8}");
-            sb.AppendLine($"  {new string('─', 70)}");
-
-            foreach (var a in r.Actions)
-            {
-                string mark = a.AnyValid ? " " : "✗";
-                sb.Append($"  {mark} {a.ActionIndex:D2}   {a.ActionName,-22}");
-                foreach (var d in a.Dirs)
-                {
-                    if (d.IsEmpty) sb.Append($"  {"leer",6}");
-                    else if (!d.IsValid) sb.Append($"  {"len=0",6}");
-                    else if (d.Error != null) sb.Append($"  {"ERR",6}");
-                    else sb.Append($"  {d.FrameCount + "fr",6}");
-                }
-                sb.AppendLine();
-            }
-
-            // IDX-Details für Actions ohne Daten
-            bool hasProblems = false;
-            foreach (var a in r.Actions)
-            {
-                if (a.AnyValid) continue;
-                if (!hasProblems) { sb.AppendLine(); sb.AppendLine("  ── IDX-Details für leere Actions ─────────"); hasProblems = true; }
-                sb.AppendLine($"  Action {a.ActionIndex:D2} ({a.ActionName}):");
-                foreach (var d in a.Dirs)
-                {
-                    string detail;
-                    if (d.Error != null) detail = $"FEHLER: {d.Error}";
-                    else detail = $"offset={d.RawOffset}  len={d.RawLength}  extra={d.RawExtra}  entry={d.EntryIndex}";
-                    sb.AppendLine($"    Dir{d.Dir}: {detail}");
-                }
-            }
-
-            ShowMonoDialog($"Diagnose Body {body} in anim{fileType}.mul", sb.ToString(), owner);
-        }
-
-        // ── Massen-Scan: alle Bodies eines FileType ───────────────────────────
+        // ── Mass scan with progress ───────────────────────────────────────────
 
         public static void ShowMassScanDialog(int fileType, IWin32Window owner = null)
         {
+            // Realistic body count instead of arbitrary fallback
             int count = Animations.GetAnimCount(fileType);
-            if (count <= 0) count = 1000;
+            if (count <= 0)
+            {
+                // Calculating from IDX file size: each entry = 12 bytes, each body = 110*5 = 550 entries
+                string ixp = Files.GetFilePath(fileType == 1 ? "anim.idx" : $"anim{fileType}.idx");
+                if (!string.IsNullOrEmpty(ixp) && File.Exists(ixp))
+                {
+                    long idxSize = new FileInfo(ixp).Length;
+                    count = (int)(idxSize / 12 / 550);
+                }
+                if (count <= 0) count = 2048; // Safe fallback
+            }
+
+            // IDX vorab cachen
+            string idxName = fileType == 1 ? "anim.idx" : $"anim{fileType}.idx";
+            string idxPath = Files.GetFilePath(idxName);
+            if (!string.IsNullOrEmpty(idxPath) && File.Exists(idxPath))
+                GetIdxData(idxPath); // in Cache laden
 
             var sb = new StringBuilder();
-            sb.AppendLine($"MASSEN-SCAN anim{fileType}.mul — {count} Bodies");
-            sb.AppendLine($"Format: Body | FinalBody | FinalFile | ValidActions/Total | Problem");
-            sb.AppendLine(new string('─', 80));
+            sb.AppendLine($"MASSEN-SCAN  anim{fileType}.mul  —  {count} Bodies");
+            sb.AppendLine($"{"Body",6}  {"→Body",6}  {"File",-10}  {"Valid/Total",-12}  Status");
+            sb.AppendLine(new string('─', 56));
 
-            int ok = 0, partial = 0, broken = 0;
+            int ok = 0, partial = 0, broken = 0, empty = 0;
+
+            // Progress form
+            using var progress = new Form
+            {
+                Text = $"Scanning anim{fileType}.mul...",
+                Size = new Size(400, 100),
+                FormBorderStyle = FormBorderStyle.FixedToolWindow,
+                StartPosition = FormStartPosition.CenterScreen,
+                ControlBox = false
+            };
+            var pb = new ProgressBar { Dock = DockStyle.Fill, Maximum = count, Value = 0 };
+            var lbl = new Label { Dock = DockStyle.Bottom, TextAlign = System.Drawing.ContentAlignment.MiddleCenter, Height = 24 };
+            progress.Controls.Add(pb);
+            progress.Controls.Add(lbl);
+            progress.Show(owner as Form);
 
             for (int body = 0; body < count; body++)
             {
-                var r = Diagnose(body, fileType);
-                int totalActions = r.Actions.Count;
-                int validActions = 0;
-                foreach (var a in r.Actions) if (a.AnyValid) validActions++;
+                if (body % 50 == 0)
+                {
+                    pb.Value = Math.Min(body, count);
+                    lbl.Text = $"Body {body} / {count}...";
+                    System.Windows.Forms.Application.DoEvents();
+                }
 
-                if (validActions == 0 && totalActions == 0) continue; // skip unknown
+                var r = Diagnose(body, fileType);
+                int total = r.Actions.Count;
+                int valid = 0;
+                foreach (var a in r.Actions) if (a.AnyValid) valid++;
+
+                if (total == 0) { empty++; continue; }
 
                 string status;
-                if (validActions == totalActions) { status = "OK"; ok++; }
-                else if (validActions > 0) { status = "PARTIAL"; partial++; }
+                if (valid == total) { status = "OK"; ok++; }
+                else if (valid > 0) { status = "PARTIAL"; partial++; }
                 else { status = "BROKEN"; broken++; }
 
-                if (status != "OK") // nur Probleme ausgeben
+                if (status != "OK")
                 {
-                    string remap = r.FinalBody != body ? $"→{r.FinalBody}" : "";
-                    string file = r.FinalFileType != fileType ? $"(anim{r.FinalFileType}!)" : "";
-                    sb.AppendLine(
-                        $"Body {body,5} {remap,6} {file,-10} {validActions}/{totalActions,-3} {status}");
+                    string remap = r.FinalBody != body ? $"→{r.FinalBody}" : "–";
+                    string file = r.FinalFileType != fileType ? $"anim{r.FinalFileType}" : "–";
+                    sb.AppendLine($"{body,6}  {remap,6}  {file,-10}  {valid}/{total,-10}  {status}");
                 }
             }
 
-            sb.AppendLine(new string('─', 80));
-            sb.AppendLine($"OK: {ok}  Partial: {partial}  Broken: {broken}  Total: {ok + partial + broken}");
+            progress.Close();
 
-            ShowMonoDialog($"Massen-Scan anim{fileType}.mul", sb.ToString(), owner);
+            sb.AppendLine(new string('─', 56));
+            sb.AppendLine($"OK: {ok}  Partial: {partial}  Broken: {broken}  Empty: {empty}  Total: {ok + partial + broken + empty}");
+
+            var diagForm = ShowMonoDialog($"Massen-Scan anim{fileType}.mul", sb.ToString(), owner);
+
+            // Export-Button
+            diagForm.Controls.Add(new Button
+            {
+                Text = "💾 Als TXT exportieren",
+                Dock = DockStyle.Bottom,
+                Height = 28,
+                BackColor = Color.FromArgb(0, 100, 60),
+                ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat
+            });
+            ((Button)diagForm.Controls[diagForm.Controls.Count - 1]).Click += (s, e) =>
+            {
+                using var sfd = new SaveFileDialog
+                {
+                    Filter = "Text files (*.txt)|*.txt",
+                    FileName = $"MassScan_anim{fileType}.txt"
+                };
+                if (sfd.ShowDialog() == DialogResult.OK)
+                    File.WriteAllText(sfd.FileName, sb.ToString());
+            };
         }
 
-        // ── UI Helper ────────────────────────────────────────────────────────
+        // ── UI Helper — returns form for post-processing─────────────────
 
-        private static void ShowMonoDialog(string title, string content, IWin32Window owner)
+        private static Form ShowMonoDialog(string title, string content, IWin32Window owner)
         {
             var frm = new Form
             {
                 Text = title,
                 Size = new Size(860, 640),
-                FormBorderStyle = FormBorderStyle.SizableToolWindow,
-                StartPosition = FormStartPosition.CenterScreen,
+                FormBorderStyle = FormBorderStyle.SizableToolWindow,                
+                StartPosition = owner != null ? FormStartPosition.CenterParent : FormStartPosition.CenterScreen,
                 BackColor = Color.FromArgb(28, 28, 32),
                 ForeColor = Color.White
             };
+
             var tb = new TextBox
             {
                 Dock = DockStyle.Fill,
@@ -398,9 +501,10 @@ namespace UoFiddler.Controls.Forms
                 WordWrap = false,
                 Text = content
             };
+
             var btnCopy = new Button
             {
-                Text = "📋 Kopieren",
+                Text = "📋 On clipboard",
                 Dock = DockStyle.Bottom,
                 Height = 28,
                 BackColor = Color.FromArgb(0, 80, 140),
@@ -408,9 +512,14 @@ namespace UoFiddler.Controls.Forms
                 FlatStyle = FlatStyle.Flat
             };
             btnCopy.Click += (s, e) => Clipboard.SetText(content);
+
             frm.Controls.Add(tb);
             frm.Controls.Add(btnCopy);
-            frm.Show(); // nicht-modal damit man gleichzeitig in der App navigieren kann
+            
+            if (owner != null) frm.Show(owner);
+            else frm.Show();
+
+            return frm;
         }
     }
 }

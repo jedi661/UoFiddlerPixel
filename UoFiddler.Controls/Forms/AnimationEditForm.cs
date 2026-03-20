@@ -1443,19 +1443,6 @@ namespace UoFiddler.Controls.Forms
 
         private void AnimationPictureBox_OnPaintFrame(object sender, PaintEventArgs e)
         {
-            /*e.Graphics.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
-            e.Graphics.PixelOffsetMode = System.Drawing.Drawing2D.PixelOffsetMode.Half;
-
-            e.Graphics.Clear(Color.LightGray);
-            e.Graphics.DrawLine(Pens.Black, new Point(_framePoint.X, 0), new Point(_framePoint.X, AnimationPictureBox.Height));
-            e.Graphics.DrawLine(Pens.Black, new Point(0, _framePoint.Y), new Point(AnimationPictureBox.Width, _framePoint.Y));
-
-            if (_drawCrosshair)
-            {
-                e.Graphics.DrawLine(Pens.Black, new Point(_framePoint.X, 0), new Point(_framePoint.X, AnimationPictureBox.Height));
-                e.Graphics.DrawLine(Pens.Black, new Point(0, _framePoint.Y), new Point(AnimationPictureBox.Width, _framePoint.Y));
-            }*/
-
             e.Graphics.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
             e.Graphics.PixelOffsetMode = System.Drawing.Drawing2D.PixelOffsetMode.Half;
 
@@ -2554,194 +2541,6 @@ namespace UoFiddler.Controls.Forms
             }
         }
 
-        /*private void OnClickImportFromVD(object sender, EventArgs e)
-        {
-            if (_fileType == UOP_FILE_TYPE && _uopManager != null)
-            {
-                using (OpenFileDialog dialog = new OpenFileDialog())
-                {
-                    dialog.Multiselect = false;
-                    dialog.Title = "Choose VD file to import to UOP";
-                    dialog.CheckFileExists = true;
-                    dialog.Filter = "VD files (*.vd)|*.vd";
-
-                    if (dialog.ShowDialog() != DialogResult.OK)
-                        return;
-
-                    try
-                    {
-                        // ✅ Choisir le fichier UOP cible
-                        string targetUopPath = null;
-                        using (var fileSelectForm = new UopFileSelectionForm(_uopManager.LoadedUopFiles))
-                        {
-                            if (fileSelectForm.ShowDialog() == DialogResult.OK)
-                            {
-                                targetUopPath = fileSelectForm.SelectedPath;
-                            }
-                            else
-                            {
-                                return;
-                            }
-                        }
-
-                        // ✅ Import du VD
-                        bool success = VdImportHelper.ImportCreaturesVdToUop(dialog.FileName, _uopManager, _currentBody, targetUopPath);
-
-                        if (!success)
-                        {
-                            MessageBox.Show("Failed to import VD file.", "Error",
-                                MessageBoxButtons.OK, MessageBoxIcon.Error);
-                            return;
-                        }
-
-                        // ✅ Sauvegarder en mode HYBRIDE
-                        string destinationPath = Path.Combine(Options.OutputPath, Path.GetFileName(targetUopPath));
-
-                        if (VdImportHelper.SaveModifiedAnimationsToUopHybrid(_uopManager, _currentBody, destinationPath))
-                        {
-                            MessageBox.Show(
-                                $"✅ Animation {_currentBody} importée en mode HYBRIDE !\n\n" +
-                                $"📁 Fichier : {destinationPath}\n\n" +
-                                $"🔹 32 entrées Jenkins créées (actions 0-31)\n" +
-                                $"🔹 1 entrée numérique créée (action 0 - reconnaissance client)",
-                                "Import Complete",
-                                MessageBoxButtons.OK,
-                                MessageBoxIcon.Information);
-
-                            _uopManager.ClearCache();
-                            LoadUopAnimations();
-                            Options.ChangedUltimaClass["Animations"] = false;
-                        }
-                        else
-                        {
-                            MessageBox.Show("❌ Import successful but save failed. Check logs.",
-                                "Save Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                            _uopManager.ClearCache();
-                            LoadUopAnimations();
-                            Options.ChangedUltimaClass["Animations"] = true;
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show($"❌ Error importing VD: {ex.Message}\n\n{ex.StackTrace}",
-                            "Import Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    }
-                }
-
-                return;
-            }
-
-            // LE RESTE DU CODE EXISTANT POUR LES FICHIERS MUL (NE PAS MODIFIER)
-            if (_fileType == 0)
-            {
-                return;
-            }
-
-            using (OpenFileDialog dialog = new OpenFileDialog())
-            {
-                dialog.Multiselect = false;
-                dialog.Title = "Choose palette file";
-                dialog.CheckFileExists = true;
-                dialog.Filter = "vd files (*.vd)|*.vd";
-                if (dialog.ShowDialog() != DialogResult.OK)
-                {
-                    return;
-                }
-
-                int animLength = Animations.GetAnimLength(_currentBody, _fileType);
-                int currentType;
-                switch (animLength)
-                {
-                    case 22:
-                        currentType = 0; // Monster
-                        break;
-                    case 13:
-                        currentType = 1; // Animal
-                        break;
-                    case 35:
-                        currentType = 2; // Human/Equipment
-                        break;
-                    default:
-                        MessageBox.Show($"Unknown animation length: {animLength}", "Import Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        return;
-                }
-
-                using (FileStream fs = new FileStream(dialog.FileName, FileMode.Open, FileAccess.Read, FileShare.Read))
-                {
-                    using (var bin = new BinaryReader(fs))
-                    {
-                        // Lire les deux premiers shorts et accepter les deux formats :
-                        // - Legacy : firstShort == 0x5644 ('VD'), secondShort == animType
-                        // - Moderne : firstShort == 6, secondShort == animType (AnimationEdit.ExportToVD)
-                        short firstShort;
-                        short animType;
-                        try
-                        {
-                            firstShort = bin.ReadInt16();
-                            animType = bin.ReadInt16();
-                        }
-                        catch (EndOfStreamException)
-                        {
-                            MessageBox.Show("Not a valid VD file (too short).", "Import", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                            return;
-                        }
-
-                        // Détecter format
-                        bool recognized = false;
-                        if (firstShort == 0x5644) // 'VD' legacy header
-                        {
-                            recognized = true;
-                        }
-                        else if (firstShort == 6) // modern header used by AnimationEdit.ExportToVD
-                        {
-                            recognized = true;
-                        }
-
-                        if (!recognized)
-                        {
-                            MessageBox.Show("Not an Anim File.", "Import", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                            return;
-                        }
-
-                        // Vérifier la compatibilité du type d'animation (monster/animal/etc.)
-                        if (animType != currentType)
-                        {
-                            MessageBox.Show("Wrong Anim Id ( Type )", "Import", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                            return;
-                        }
-
-                        // Position du reader déjà après les deux shorts — LoadFromVD s'attend à cela
-                        AnimationEdit.LoadFromVD(_fileType, _currentBody, bin);
-                    }
-                }
-
-                bool valid = false;
-                TreeNode node = GetNode(_currentBody);
-                if (node != null)
-                {
-                    for (int j = 0; j < animLength; ++j)
-                    {
-                        if (AnimationEdit.IsActionDefined(_fileType, _currentBody, j))
-                        {
-                            node.Nodes[j].ForeColor = Color.Black;
-                            valid = true;
-                        }
-                        else
-                        {
-                            node.Nodes[j].ForeColor = Color.Red;
-                        }
-                    }
-                    node.ForeColor = valid ? Color.Black : Color.Red;
-                }
-
-                Options.ChangedUltimaClass["Animations"] = true;
-                AfterSelectTreeView(this, null);
-
-                MessageBox.Show("Finished", "Import", MessageBoxButtons.OK, MessageBoxIcon.Information,
-                    MessageBoxDefaultButton.Button1);
-            }
-        }*/
-
         private void OnClickImportFromVD(object sender, EventArgs e)
         {
             if (_fileType == UOP_FILE_TYPE && _uopManager != null)
@@ -2869,11 +2668,9 @@ namespace UoFiddler.Controls.Forms
                                 MessageBoxButtons.OK, MessageBoxIcon.Information);
                             return;
                         }
-
-                        // === STATUS LABEL (aus alter Version) ===
+                        
                         toolStripStatusLabelVDAminInfo.Text = $"File Type: {firstShort}, Animation Type: {animType}";
-
-                        // Format-Erkennung (neu + besser als alt)
+                        
                         bool recognized = (firstShort == 0x5644) || (firstShort == 6);
 
                         if (!recognized)
@@ -2883,8 +2680,7 @@ namespace UoFiddler.Controls.Forms
                                 MessageBoxButtons.OK, MessageBoxIcon.Information);
                             return;
                         }
-
-                        // Typ-Prüfung mit ausführlicher Meldung (aus alter Version)
+                        
                         if (animType != currentType)
                         {
                             toolStripStatusLabelVDAminInfo.Text += $" - Wrong Anim Id (Type). Expected: {currentType}, Got: {animType}";
@@ -2898,13 +2694,12 @@ namespace UoFiddler.Controls.Forms
 
                             return;
                         }
-
-                        // Alles gut → importieren
+                        
                         AnimationEdit.LoadFromVD(_fileType, _currentBody, bin);
                     }
                 }
 
-                // Baum aktualisieren
+                // Update tree
                 bool valid = false;
                 TreeNode node = GetNode(_currentBody);
                 if (node != null)
@@ -2923,8 +2718,7 @@ namespace UoFiddler.Controls.Forms
                     }
                     node.ForeColor = valid ? Color.Black : Color.Red;
                 }
-
-                // === STATUS + ERFOLG (aus alter Version) ===
+                
                 toolStripStatusLabelVDAminInfo.Text += $" - Successfully imported into slot {_currentBody}";
 
                 Options.ChangedUltimaClass["Animations"] = true;
@@ -2958,7 +2752,7 @@ namespace UoFiddler.Controls.Forms
             }
             else
             {
-                return; // Annulé
+                return;
             }
 
             string path = Options.OutputPath;
@@ -3210,7 +3004,7 @@ namespace UoFiddler.Controls.Forms
                     }
                     else
                     {
-                        return; // Annulé
+                        return;
                     }
 
                     var finalMapping = remapperForm.GetRemapping();
@@ -3456,8 +3250,6 @@ namespace UoFiddler.Controls.Forms
                 }
             }
         }
-
-
 
         private Dictionary<int, string> GetCreatureActionNames()
         {
@@ -7393,7 +7185,6 @@ namespace UoFiddler.Controls.Forms
             }
         }
 
-
         private void SaveUopAnimation()
         {
             if (_uopManager == null) return;
@@ -7410,7 +7201,7 @@ namespace UoFiddler.Controls.Forms
                 Directory.CreateDirectory(outputPath);
             }
 
-            // Essayer de trouver le fichier source pour construire le nom de fichier de sortie (valeur par défaut si inconnu)
+            // Attempt to find the source file to construct the output filename (default value if unknown)
             string uopFileName = "AnimationFrame1.uop";
             var fileInfo = _uopManager.GetAnimationData(_currentBody, _currentAction, 0);
             if (fileInfo != null && fileInfo.File != null)
@@ -7435,15 +7226,15 @@ namespace UoFiddler.Controls.Forms
             Cursor.Current = Cursors.WaitCursor;
             try
             {
-                // IMPORTANT : Ne PAS appeler CommitAllChanges ici AVANT la sauvegarde.
-                // La méthode SaveModifiedAnimationsToUopHybrid détecte les IDs modifiées
-                // (param + import-tracking + cache) et écrit les fichiers regroupés.
+                // IMPORTANT: Do NOT call CommitAllChanges here BEFORE saving.
+                // The SaveModifiedAnimationsToUopHybrid method detects modified IDs
+                // (param + import-tracking + cache) and writes the grouped files.
                 bool success = VdImportHelper.SaveModifiedAnimationsToUopHybrid(_uopManager, -1, destinationUopFilePath);
 
                 if (success)
                 {
-                    // Après écriture, on peut commuter l'état interne / recharger si besoin
-                    // CommitAllChanges ici permet d'assurer la cohérence mémoire si nécessaire
+                    // After writing, the internal state can be switched / reloaded if needed.
+                    // CommitAllChanges here ensures memory consistency if necessary.
                     try
                     {
                         _uopManager.CommitAllChanges();
@@ -7456,7 +7247,7 @@ namespace UoFiddler.Controls.Forms
                     Options.ChangedUltimaClass["Animations"] = false;
                     MessageBox.Show($"Animation(s) saved to {destinationUopFilePath}", "Saved", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
-                    // Force reload pour prendre en compte les changements écrits
+                    // Force reload to apply the written changes.
                     try
                     {
                         _uopManager.ClearCache();
@@ -7485,7 +7276,7 @@ namespace UoFiddler.Controls.Forms
             {
                 if (form.ShowDialog() != DialogResult.OK) return;
 
-                // ✅ Ask for resize percentage
+                // Ask for resize percentage
                 double scale = 1.0;
                 string input = ShowInputDialog("Enter resize percentage (e.g. 100 for original size, 50 for half size):", "Resize Export", "100");
                 if (int.TryParse(input, out int percentage) && percentage > 0 && percentage != 100)
@@ -7566,7 +7357,7 @@ namespace UoFiddler.Controls.Forms
 
                     try
                     {
-                        // ✅ Choisir le fichier UOP cible
+                        // Choose the target UOP file
                         string targetUopPath = null;
                         using (var fileSelectForm = new UopFileSelectionForm(_uopManager.LoadedUopFiles))
                         {
@@ -7606,7 +7397,7 @@ namespace UoFiddler.Controls.Forms
 
                         if (successCount > 0)
                         {
-                            // ✅ Sauvegarder en mode HYBRIDE
+                            // Save in HYBRID mode
                             _uopManager.CommitAllChanges();
                             string destinationPath = Path.Combine(Options.OutputPath, Path.GetFileName(targetUopPath));
 
@@ -7650,7 +7441,7 @@ namespace UoFiddler.Controls.Forms
                 return;
             }
 
-            // Fallback pour MUL
+            // Fallback for MUL
             using (var ofd = new OpenFileDialog())
             {
                 ofd.Filter = "JSON files (*.json)|*.json";
@@ -7738,7 +7529,7 @@ namespace UoFiddler.Controls.Forms
             {
                 if (fbd.ShowDialog() != DialogResult.OK) return;
 
-                // ✅ Ask for resize percentage
+                // Ask for resize percentage
                 double scale = 1.0;
                 string input = ShowInputDialog("Enter resize percentage (e.g. 100 for original size, 50 for half size):", "Resize Export", "100");
                 if (int.TryParse(input, out int percentage) && percentage > 0 && percentage != 100)
@@ -7753,7 +7544,7 @@ namespace UoFiddler.Controls.Forms
                     var frames = GetFramesForExport(_currentBody, action, new List<int> { 0, 1, 2, 3, 4 });
                     if (frames.Count > 0)
                     {
-                        // ✅ Apply scaling if requested
+                        // Apply scaling if requested
                         if (scale != 1.0)
                         {
                             foreach (var frame in frames)
@@ -7770,7 +7561,7 @@ namespace UoFiddler.Controls.Forms
                                     g.DrawImage(frame.Image, 0, 0, newWidth, newHeight);
                                 }
 
-                                // Dispose original clone and replace with resized
+                                // Features original clone and replace with resized
                                 frame.Image.Dispose();
                                 frame.Image = resized;
 
@@ -7799,7 +7590,7 @@ namespace UoFiddler.Controls.Forms
 
                     try
                     {
-                        // ✅ Choisir le fichier UOP cible
+                        // Choose the target UOP file
                         string targetUopPath = null;
                         using (var fileSelectForm = new UopFileSelectionForm(_uopManager.LoadedUopFiles))
                         {
@@ -7839,7 +7630,7 @@ namespace UoFiddler.Controls.Forms
 
                         if (successCount > 0)
                         {
-                            // ✅ Sauvegarder en mode HYBRIDE (comme pour le VD)
+                            // Save in HYBRID mode (as for the VD)
                             _uopManager.CommitAllChanges();
                             string destinationPath = Path.Combine(Options.OutputPath, Path.GetFileName(targetUopPath));
 
@@ -7882,7 +7673,7 @@ namespace UoFiddler.Controls.Forms
                 return;
             }
 
-            // Fallback pour les fichiers MUL (comportement d'origine)
+            // Fallback for MUL files (original behavior)
             using (var ofd = new OpenFileDialog())
             {
                 ofd.Filter = "XML files (*.xml)|*.xml";
@@ -8023,7 +7814,7 @@ namespace UoFiddler.Controls.Forms
             int targetBody = (body != -1) ? body : _currentBody;
             int targetAction = (action != -1) ? action : _currentAction;
 
-            // ✅ ÉTAPE 1 : Préparer les données (Groupement par direction pour MUL)
+            // STEP 1: Prepare the data (Grouping by direction for MUL)
             var framesByDir = frames.GroupBy(f => f.Direction).ToList();
 
             foreach (var group in framesByDir)
@@ -8100,7 +7891,7 @@ namespace UoFiddler.Controls.Forms
                         {
                             if (frame.Index < currentCount)
                             {
-                                // CRITICAL FIX: Update Center BEFORE creating FrameEdit (ReplaceFrame uses current Center)
+                                // Update Center BEFORE creating FrameEdit (ReplaceFrame uses current Center)
                                 // If we update after, the RawData offsets (baked with old center) + New Center causes GetFrames to write out of bounds.
                                 anim.Frames[frame.Index].Center = frame.Center;
                                 anim.ReplaceFrame(bmp16, frame.Index);
@@ -8115,7 +7906,7 @@ namespace UoFiddler.Controls.Forms
                                     }
                                     currentCount++;
                                 }
-                                // CRITICAL FIX: Pass Center to AddFrame so FrameEdit bakes offsets correctly.
+                                
                                 anim.AddFrame(bmp16, frame.Center.X, frame.Center.Y);
                             }
                         }
@@ -8123,21 +7914,21 @@ namespace UoFiddler.Controls.Forms
                 }
             }
 
-            // ✅ ÉTAPE 2 : Mettre à jour l'arborescence SANS effacer le cache
+            // STEP 2: Update the directory tree WITHOUT clearing the cache
             if (_fileType == 6) // UOP
             {
                 Options.ChangedUltimaClass["Animations"] = true;
 
-                // ✅ PAS DE LoadUopAnimations() ici ! On met juste à jour les nodes manuellement
+                // NO LoadUopAnimations() here! We're just updating the nodes manually.
                 AnimationListTreeView.BeginUpdate();
                 try
                 {
-                    // ✅ Vérifier si le Body existe déjà dans l'arborescence
+                    // Check if the Body already exists in the directory tree
                     TreeNode bodyNode = GetNode(targetBody);
 
                     if (bodyNode == null)
                     {
-                        // ✅ CRÉER un nouveau nœud Body s'il n'existe pas
+                        // Create a new Body node if it does not already exist
                         string mappingInfo = GetUopMulMapping(targetBody);
                         bodyNode = new TreeNode
                         {
@@ -8150,11 +7941,11 @@ namespace UoFiddler.Controls.Forms
                     }
                     else
                     {
-                        // ✅ Le Body existe, passer en noir (valide)
+                        // The bodysuit exists, switch to black (valid)
                         bodyNode.ForeColor = Color.Black;
                     }
 
-                    // ✅ Vérifier si l'Action existe déjà dans ce Body
+                    // Check if the Action already exists in this Body
                     TreeNode actionNode = null;
                     foreach (TreeNode child in bodyNode.Nodes)
                     {
@@ -8167,7 +7958,7 @@ namespace UoFiddler.Controls.Forms
 
                     if (actionNode == null)
                     {
-                        // ✅ CRÉER un nouveau nœud Action s'il n'existe pas
+                        // CREATE a new Action node if it does not exist
                         actionNode = new TreeNode
                         {
                             Tag = targetAction,
@@ -8179,12 +7970,12 @@ namespace UoFiddler.Controls.Forms
                     }
                     else
                     {
-                        // ✅ L'Action existe, passer en noir (valide)
+                        // The action exists, switch to black (valid)
                         actionNode.ForeColor = Color.Black;
                         actionNode.Text = $"{targetAction:D2}_{GetActionDescription(targetBody, targetAction)} (Modified)";
                     }
 
-                    // ✅ Expand le Body node pour montrer la nouvelle action
+                    // Expand le Body node pour montrer la nouvelle action
                     bodyNode.Expand();
                 }
                 finally
@@ -8852,7 +8643,7 @@ namespace UoFiddler.Controls.Forms
         private void InitializeSequenceTab()
         {
             _sequenceGrid.Columns.Clear();
-            // UOP-Spalten als Standard
+            // UOP columns as standard
             AddUopColumns();
             _sequenceGrid.DataSource = _sequenceBindingSource;
             _sequenceTimer.Interval = 150;
@@ -8865,8 +8656,8 @@ namespace UoFiddler.Controls.Forms
         private bool _gridIsInMulMode = false;
 
         /// <summary>
-        /// Stellt das Grid auf MUL-Spalten um.
-        /// Wird IMMER ausgeführt wenn _fileType MUL ist — kein early-return.
+        /// Switch the grid to MUL columns.
+        /// Always executed if _fileType is MUL — no early return.
         /// </summary>
         private void SetupSequenceGridForMul()
         {
@@ -8888,8 +8679,8 @@ namespace UoFiddler.Controls.Forms
         }
 
         /// <summary>
-        /// Stellt das Grid auf UOP-Spalten um.
-        /// Wird IMMER ausgeführt wenn _fileType UOP ist — kein early-return.
+        /// Switch the grid to UOP columns.
+        /// Always executed if _fileType is UOP — no early return.
         /// </summary>
         private void SetupSequenceGridForUop()
         {
@@ -9098,9 +8889,9 @@ namespace UoFiddler.Controls.Forms
                 items.Add(item);
             }
 
-            // Event abkoppeln während DataSource gesetzt wird —
-            // verhindert NullReferenceException in OnSequenceGridSelectionChanged
-            // wenn das Grid während des Bindens automatisch Rows auswählt
+            // Decouple event while DataSource is being set —
+            // Prevents NullReferenceException in OnSequenceGridSelectionChanged
+            // when the grid automatically selects rows during binding
             _sequenceGrid.SelectionChanged -= OnSequenceGridSelectionChanged;
             try
             {
@@ -9112,7 +8903,7 @@ namespace UoFiddler.Controls.Forms
                 _sequenceGrid.SelectionChanged += OnSequenceGridSelectionChanged;
             }
 
-            // Erste Zeile mit Daten selektieren
+            // Select the first row containing data
             _seqCurrentAction = -1;
             for (int i = 0; i < _sequenceGrid.Rows.Count; i++)
             {
@@ -9226,8 +9017,23 @@ namespace UoFiddler.Controls.Forms
 
         private void UpdateSequencePreviewMul()
         {
+            // Guard: intercept invalid states
             if (_seqCurrentAction < 0 || _fileType == 0 || _currentBody < 0)
-            { _sequencePreviewBox.Image = null; return; }
+            {
+                _sequencePreviewBox.Image = null;
+                return;
+            }
+
+            // If the currently selected row contains no data → cancel immediately
+            if (_gridIsInMulMode && _sequenceGrid.SelectedRows.Count > 0)
+            {
+                var boundItem = _sequenceGrid.SelectedRows[0].DataBoundItem as MulSequenceViewItem;
+                if (boundItem != null && !boundItem.HasData)
+                {
+                    _sequencePreviewBox.Image = null;
+                    return;
+                }
+            }
 
             AnimIdx edit = AnimationEdit.GetAnimation(
                 _fileType, _currentBody, _seqCurrentAction, _seqPreviewDirection);
@@ -9243,12 +9049,25 @@ namespace UoFiddler.Controls.Forms
             }
 
             if (edit == null || edit.Frames?.Count == 0)
-            { _sequencePreviewBox.Image = null; return; }
+            {
+                _sequencePreviewBox.Image = null;
+                return;
+            }
 
-            if (_seqPreviewFrameIndex >= edit.Frames.Count) _seqPreviewFrameIndex = 0;
+            if (_seqPreviewFrameIndex >= edit.Frames.Count)
+                _seqPreviewFrameIndex = 0;
+
             var bitmaps = edit.GetFrames();
-            if (bitmaps != null && _seqPreviewFrameIndex < bitmaps.Length)
+            if (bitmaps == null || bitmaps.Length == 0)
+            {
+                _sequencePreviewBox.Image = null;
+                return;
+            }
+
+            if (_seqPreviewFrameIndex < bitmaps.Length)
                 _sequencePreviewBox.Image = bitmaps[_seqPreviewFrameIndex];
+            else
+                _sequencePreviewBox.Image = null;
         }
 
         // ── OnSequenceGridSelectionChanged ───────────────────────────────────
@@ -9256,12 +9075,12 @@ namespace UoFiddler.Controls.Forms
         private void OnSequenceGridSelectionChanged(object sender, EventArgs e)
         {
             if (_sequenceGrid.SelectedRows.Count == 0) return;
-            if (_fileType == 0) return;  // noch keine Datei geladen
+            if (_fileType == 0) return;
 
             if (_fileType == UOP_FILE_TYPE)
             {
                 var vm = _sequenceGrid.SelectedRows[0].DataBoundItem as SequenceViewModelItem;
-                if (vm == null) return;
+                if (vm == null) return;  // ← leere Zeile angeklickt
                 _currentSeqEntry = vm.Entry;
                 _seqCurrentAction = (int)vm.UopGroupIndex;
                 _seqPreviewFrameIndex = 0;
@@ -9270,7 +9089,7 @@ namespace UoFiddler.Controls.Forms
             else
             {
                 var item = _sequenceGrid.SelectedRows[0].DataBoundItem as MulSequenceViewItem;
-                if (item == null) return;
+                if (item == null) return;  // ← leere Zeile angeklickt
                 _seqCurrentAction = item.ActionIndex;
                 _seqPreviewFrameIndex = 0;
                 UpdateSequencePreviewMul();
@@ -9472,44 +9291,33 @@ namespace UoFiddler.Controls.Forms
 
         #endregion
 
+        #region [ Hex Editor ] - Button handler and logic to open the hex editor with the corresponding data
 
-
-        #region [ Hex Editor ] - Button-Handler und Logik zum Öffnen des Hex Editors mit den entsprechenden Daten
-        // ══════════════════════════════════════════════════════════════════════
-        //  In AnimationEditForm.cs einfügen
-        //  Feld oben in der Klasse (neben den anderen privaten Feldern):
-        // ══════════════════════════════════════════════════════════════════════
-
-        private AnimationHexEditorForm _hexEditor;
-
-        // ══════════════════════════════════════════════════════════════════════
-        //  Button-Handler
-        //  Im Designer: Button Name = btnOpenHexEditor, Text = "Hex Editor"
-        // ══════════════════════════════════════════════════════════════════════
+        private AnimationHexEditorForm _hexEditor;        
 
         private void btnOpenHexEditor_Click(object sender, EventArgs e)
         {
-            // Kein Dateityp ausgewählt
+            // No file type selected
             if (_fileType == 0)
             {
-                MessageBox.Show("Bitte zuerst eine Animationsdatei auswählen.",
+                MessageBox.Show("Please select an animation file first..",
                     "Hex Editor", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
 
-            // Kein Knoten selektiert
+            // No node selected
             if (AnimationListTreeView.SelectedNode == null)
             {
-                MessageBox.Show("Bitte zuerst eine Animation auswählen.",
+                MessageBox.Show("Please select an animation first..",
                     "Hex Editor", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
 
-            // Fenster erzeugen oder wiederverwenden
+            // Create or reuse windows
             if (_hexEditor == null || _hexEditor.IsDisposed)
                 _hexEditor = new AnimationHexEditorForm();
 
-            // Regionen aufbauen und Daten laden
+            // Build regions and load data
             if (_fileType == 6) // UOP
                 OpenHexEditorUop();
             else                // MUL (anim1–anim5)
@@ -9520,7 +9328,7 @@ namespace UoFiddler.Controls.Forms
         }
 
         // ──────────────────────────────────────────────────────────────────────
-        //  UOP  – Rohdaten + Regionen aus dem UopManager holen
+        //  UOP – Retrieve raw data and regions from the UopManager
         // ──────────────────────────────────────────────────────────────────────
 
         private void OpenHexEditorUop()
@@ -9561,7 +9369,7 @@ namespace UoFiddler.Controls.Forms
 
             if (rawData == null || rawData.Length == 0)
             {
-                MessageBox.Show("Keine Rohdaten für diese Animation gefunden.",
+                MessageBox.Show("No raw data found for this animation.",
                     "Hex Editor", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
@@ -9577,19 +9385,19 @@ namespace UoFiddler.Controls.Forms
         }
 
         // ──────────────────────────────────────────────────────────────────────
-        //  MUL  – Rohdaten direkt aus der idx/mul-Datei lesen
+        //  MUL – Read raw data directly from the idx/mul file
         // ──────────────────────────────────────────────────────────────────────       
 
         private void OpenHexEditorMul()
         {
-            // 1. AnimIdx via SDK — exakt wie beim Anzeigen der Frames
+            // 1. AnimIdx via SDK — exactly the same as when displaying frames
             AnimIdx edit = AnimationEdit.GetAnimation(
                 _fileType, _currentBody, _currentAction, _currentDir);
 
             if (edit == null)
             {
                 MessageBox.Show(
-                    $"Keine AnimIdx-Daten für Body {_currentBody}, " +
+                    $"No AnimIdx data for body {_currentBody}, " +
                     $"Action {_currentAction}, Dir {_currentDir}.",
                     "Hex Editor", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
@@ -9599,18 +9407,18 @@ namespace UoFiddler.Controls.Forms
             if (frames == null || frames.Length == 0)
             {
                 MessageBox.Show(
-                    $"AnimIdx für Body {_currentBody} hat keine Frames.",
+                    $"AnimIdx for Body {_currentBody} has no frames.",
                     "Hex Editor", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            // 2. Versuche die Rohdaten aus der MUL-Datei zu lesen.
-            //    Dafür müssen wir den TATSÄCHLICHEN Body-Index ermitteln
-            //    den AnimationEdit intern benutzt.
+            // 2. Try reading the raw data from the MUL file.
+            //    For this, we need to determine the ACTUAL body index.
+            //    The AnimationEdit is used internally.
             //
-            //    Strategie: Alle 5 Dateien × alle möglichen Bodies scannen
-            //    und den nehmen dessen IDX-Eintrag einen gültigen Offset hat
-            //    UND dessen FrameCount mit edit.Frames.Count übereinstimmt.
+            //    Strategy: Scan all 5 files × all possible bodies
+            //    and take the one whose IDX entry has a valid offset
+            //    AND whose FrameCount matches edit.Frames.Count.
 
             byte[] rawData = null;
             long dataOffset = 0;
@@ -9618,7 +9426,7 @@ namespace UoFiddler.Controls.Forms
 
             rawData = TryFindRawDataForAnimIdx(edit, out dataOffset, out mulPath);
 
-            // 3. Falls Rohdaten gefunden: Hex-Editor mit echter MUL-Datei befüllen
+            // 3. If raw data is found: Fill the hex editor with the actual MUL file.
             if (rawData != null && rawData.Length > 0)
             {
                 var regions = BuildMulRegions(rawData, edit);
@@ -9634,18 +9442,18 @@ namespace UoFiddler.Controls.Forms
                 return;
             }
 
-            // 4. Fallback: Daten aus AnimIdx-Frames rekonstruieren
-            //    (für Bodies die nur im RAM-Cache existieren, z.B. importierte)
+            // 4. Fallback: Reconstructing data from AnimIdx frames
+            //    (for bodies that only exist in the RAM cache, e.g. imported ones)
             rawData = SerializeAnimIdxToMulFormat(edit);
             if (rawData == null)
             {
-                MessageBox.Show("Fehler beim Serialisieren der AnimIdx-Daten.",
+                MessageBox.Show("Error serializing AnimIdx data.",
                     "Hex Editor", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
             string pseudoPath = $"(RAM-Cache: Body {_currentBody} / " +
-                                $"anim{_fileType}.mul nicht gefunden)";
+                                $"anim{_fileType}.mul not found)";
             var regions2 = BuildMulRegions(rawData, edit);
             var preview2 = GetCurrentFrameBitmap();
 
@@ -9659,8 +9467,8 @@ namespace UoFiddler.Controls.Forms
         }
 
         // ──────────────────────────────────────────────────────────────────────
-        //  Sucht die Rohdaten für eine AnimIdx in allen anim-Dateien.
-        //  Vergleicht FrameCount aus dem IDX mit edit.Frames.Count.
+        //  Searches for the raw data for an AnimIdx in all anim files.
+        //  Compares FrameCount from the IDX with edit.Frames.Count.
         // ──────────────────────────────────────────────────────────────────────
 
         private byte[] TryFindRawDataForAnimIdx(AnimIdx edit,
@@ -9835,8 +9643,8 @@ namespace UoFiddler.Controls.Forms
         }
 
         // ──────────────────────────────────────────────────────────────────────
-        //  Regionen für UOP aufbauen
-        //  Analysiert den Rohdaten-Block und markiert Header + Frame-Starts
+        //  Building regions for UOP
+        //  Analyzes the raw data block and marks header and frame starts.
         // ──────────────────────────────────────────────────────────────────────
 
         private List<HexRegion> BuildUopRegions(byte[] data)
@@ -9844,7 +9652,7 @@ namespace UoFiddler.Controls.Forms
             var regions = new List<HexRegion>();
             if (data == null || data.Length < 8) return regions;
 
-            // Farben für die 28 Sequenzen (zyklisch)
+            // Colors for the 28 sequences (cyclical)
             System.Drawing.Color[] palette =
             {
         System.Drawing.Color.FromArgb(60, 100, 200, 255),
@@ -9902,7 +9710,7 @@ namespace UoFiddler.Controls.Forms
                                 IsSequenceStart = false
                             });
 
-                            // Einzelne Frame-Daten markieren
+                            // Marking individual frame data
                             br.BaseStream.Seek(tableOffset, System.IO.SeekOrigin.Begin);
                             for (int i = 0; i < frameCount && i < 28; i++)
                             {
@@ -9940,8 +9748,8 @@ namespace UoFiddler.Controls.Forms
         }
 
         // ──────────────────────────────────────────────────────────────────────
-        //  Regionen für MUL aufbauen
-        //  MUL-Format: Palette (512 B) + FrameCount (2 B) + Frames
+        //  Establish regions for MUL
+        //  MUL format: Palette (512 B) + FrameCount (2 B) + Frames
         // ──────────────────────────────────────────────────────────────────────
 
         private List<HexRegion> BuildMulRegions(byte[] data, Ultima.AnimIdx edit)
@@ -9999,19 +9807,19 @@ namespace UoFiddler.Controls.Forms
                         HighlightColor = System.Drawing.Color.FromArgb(50, 100, 255, 100)
                     });
 
-                    // Einzelne Frame-Datenbereiche
+                    // Individual frame data areas
                     if (edit?.Frames != null)
                     {
                         for (int i = 0; i < edit.Frames.Count && i < 28; i++)
                         {
-                            // Frame-Offset aus Lookup-Tabelle lesen
+                            //Read frame offset from lookup table
                             int lookupPos = 514 + i * 4;
                             if (lookupPos + 4 > data.Length) break;
 
                             int fOff = System.BitConverter.ToInt32(data, lookupPos);
                             if (fOff <= 0 || fOff >= data.Length) continue;
 
-                            // Frame-Länge = nächster Offset – aktueller Offset (oder Dateiende)
+                            // Frame length = next offset – current offset (or end of file)
                             int nextOff = data.Length;
                             if (i + 1 < edit.Frames.Count)
                             {
@@ -10051,7 +9859,7 @@ namespace UoFiddler.Controls.Forms
         }
 
         // ──────────────────────────────────────────────────────────────────────
-        //  Helfer: aktuelles Frame-Vorschaubild holen
+        //  Helper: Get the current frame preview image
         // ──────────────────────────────────────────────────────────────────────
 
         private System.Drawing.Bitmap GetCurrentFrameBitmap()
@@ -10082,11 +9890,11 @@ namespace UoFiddler.Controls.Forms
         }
 
         // ──────────────────────────────────────────────────────────────────────
-        //  Aufruf wenn sich Auswahl ändert (Direction / Frame / Action)
-        //  Diese Zeile in OnDirectionChanged, AfterSelectTreeView und
-        //  OnFrameCountBarChanged am Ende einfügen:
+        //  Call when selection changes (Direction / Frame / Action)
+        //  This line in OnDirectionChanged, AfterSelectTreeView and
+        //  Insert OnFrameCountBarChanged at the end:
         //
-        //      NotifyHexEditor();
+        //  NotifyHexEditor();
         // ──────────────────────────────────────────────────────────────────────
 
         private void NotifyHexEditor()
@@ -10118,7 +9926,7 @@ namespace UoFiddler.Controls.Forms
             var edit = AnimationEdit.GetAnimation(_fileType, _currentBody, _currentAction, _currentDir);
             if (edit == null) return new List<HexRegion>();
 
-            // Rohdaten erneut lesen (kurz, da Datei gecacht ist)
+            // Reread raw data (briefly, as the file is cached)
             string mulFileName = _fileType == 1 ? "anim.mul" : $"anim{_fileType}.mul";
             string idxFileName = _fileType == 1 ? "anim.idx" : $"anim{_fileType}.idx";
             string mulPath = Ultima.Files.GetFilePath(mulFileName);
@@ -10151,8 +9959,8 @@ namespace UoFiddler.Controls.Forms
 
         #region [ Diagnosen ] - Button-Handler zum Aufrufen der Diagnose-Dialogs
         /// <summary>
-        /// Zeigt vollständige IDX-Diagnose für den aktuell gewählten Body.
-        /// Gut um zu sehen warum bestimmte Actions rot sind.
+        /// Displays complete IDX diagnostics for the currently selected body.
+        /// Good to see why certain actions are red.
         /// </summary>
         private void btnDiagSingle_Click(object sender, EventArgs e)
         {
@@ -10161,19 +9969,19 @@ namespace UoFiddler.Controls.Forms
         }
 
         /// <summary>
-        /// Vergleicht einen funktionierenden Body mit einem kaputten.
-        /// Zeigt exakt wo der Unterschied liegt (BodyConverter, IDX, etc.)
+        /// Compare a functioning body to a broken one.
+        /// Shows exactly where the difference lies (BodyConverter, IDX, etc.)
         /// </summary>
         private void btnDiagCompare_Click(object sender, EventArgs e)
         {
             if (_fileType == 0 || _fileType == 6) return;
 
-            // Arbeitet mit dem aktuellen Body als "kaputt"
-            // Fragt nach dem funktionierenden Body
+            // Works with the current body as "broken"
+            // Ask about the functioning body
             string input = Microsoft.VisualBasic.Interaction.InputBox(
-                $"Vergleich: Body {_currentBody} (aktuell) mit welchem funktionierenden Body?\n\n" +
-                "Gib die Body-ID des funktionierenden Bodies ein:",
-                "Vergleichs-Diagnose", "0");
+                $"Comparison: Body {_currentBody} (currently) with which functioning body?\n\n" +
+                "Enter the Body ID of the working body:",
+                "comparative diagnosis", "0");
 
             if (string.IsNullOrEmpty(input)) return;
             if (!int.TryParse(input, out int workingBody)) return;
@@ -10182,8 +9990,8 @@ namespace UoFiddler.Controls.Forms
         }
 
         /// <summary>
-        /// Scannt ALLE Bodies der geladenen Datei und listet alle mit Problemen.
-        /// Achtung: kann bei großen Dateien etwas dauern (~1-2 Sekunden).
+        /// Scans ALL bodies of the loaded file and lists all those with problems.
+        /// Please note: this may take some time with large files (~1-2 seconds).
         /// </summary>
         private void btnDiagMassScan_Click(object sender, EventArgs e)
         {
@@ -10191,8 +9999,8 @@ namespace UoFiddler.Controls.Forms
 
             var result = MessageBox.Show(
                 $"Alle Bodies in anim{_fileType}.mul scannen?\n" +
-                "Nur Bodies mit Problemen (PARTIAL/BROKEN) werden ausgegeben.",
-                "Massen-Scan", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                "Only bodies with problems (PARTIAL/BROKEN) are output.",
+                "Bulk scan", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
 
             if (result != DialogResult.Yes) return;
 
