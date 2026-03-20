@@ -186,6 +186,10 @@
             _sequenceGrid = new System.Windows.Forms.DataGridView();
             _sequenceBindingSource = new System.Windows.Forms.BindingSource(components);
             _seqPreviewPanel = new System.Windows.Forms.Panel();
+            btnDiagCompare = new System.Windows.Forms.Button();
+            btnDiagMassScan = new System.Windows.Forms.Button();
+            btnDiagSingle = new System.Windows.Forms.Button();
+            btnOpenHexEditor = new System.Windows.Forms.Button();
             _sequencePreviewBox = new System.Windows.Forms.PictureBox();
             _btnSeqPlay = new System.Windows.Forms.Button();
             _btnSeqStop = new System.Windows.Forms.Button();
@@ -1840,7 +1844,7 @@
             _sequencePage.Name = "_sequencePage";
             _sequencePage.Size = new System.Drawing.Size(969, 704);
             _sequencePage.TabIndex = 2;
-            _sequencePage.Text = "Sequence UOP";
+            _sequencePage.Text = "Sequence Mul or UOP";
             _sequencePage.UseVisualStyleBackColor = true;
             // 
             // _seqTableLayout
@@ -1875,6 +1879,10 @@
             // 
             // _seqPreviewPanel
             // 
+            _seqPreviewPanel.Controls.Add(btnDiagCompare);
+            _seqPreviewPanel.Controls.Add(btnDiagMassScan);
+            _seqPreviewPanel.Controls.Add(btnDiagSingle);
+            _seqPreviewPanel.Controls.Add(btnOpenHexEditor);
             _seqPreviewPanel.Controls.Add(_sequencePreviewBox);
             _seqPreviewPanel.Controls.Add(_btnSeqPlay);
             _seqPreviewPanel.Controls.Add(_btnSeqStop);
@@ -1891,6 +1899,46 @@
             _seqPreviewPanel.Name = "_seqPreviewPanel";
             _seqPreviewPanel.Size = new System.Drawing.Size(285, 698);
             _seqPreviewPanel.TabIndex = 1;
+            // 
+            // btnDiagCompare
+            // 
+            btnDiagCompare.Location = new System.Drawing.Point(132, 613);
+            btnDiagCompare.Name = "btnDiagCompare";
+            btnDiagCompare.Size = new System.Drawing.Size(120, 23);
+            btnDiagCompare.TabIndex = 14;
+            btnDiagCompare.Text = "Diag Compare";
+            btnDiagCompare.UseVisualStyleBackColor = true;
+            btnDiagCompare.Click += btnDiagCompare_Click;
+            // 
+            // btnDiagMassScan
+            // 
+            btnDiagMassScan.Location = new System.Drawing.Point(132, 642);
+            btnDiagMassScan.Name = "btnDiagMassScan";
+            btnDiagMassScan.Size = new System.Drawing.Size(120, 23);
+            btnDiagMassScan.TabIndex = 13;
+            btnDiagMassScan.Text = "Diag Mass Scan";
+            btnDiagMassScan.UseVisualStyleBackColor = true;
+            btnDiagMassScan.Click += btnDiagMassScan_Click;
+            // 
+            // btnDiagSingle
+            // 
+            btnDiagSingle.Location = new System.Drawing.Point(132, 584);
+            btnDiagSingle.Name = "btnDiagSingle";
+            btnDiagSingle.Size = new System.Drawing.Size(120, 23);
+            btnDiagSingle.TabIndex = 12;
+            btnDiagSingle.Text = "Diag Single";
+            btnDiagSingle.UseVisualStyleBackColor = true;
+            btnDiagSingle.Click += btnDiagSingle_Click;
+            // 
+            // btnOpenHexEditor
+            // 
+            btnOpenHexEditor.Location = new System.Drawing.Point(6, 584);
+            btnOpenHexEditor.Name = "btnOpenHexEditor";
+            btnOpenHexEditor.Size = new System.Drawing.Size(120, 23);
+            btnOpenHexEditor.TabIndex = 11;
+            btnOpenHexEditor.Text = "🔬 Hex Editor";
+            btnOpenHexEditor.UseVisualStyleBackColor = true;
+            btnOpenHexEditor.Click += btnOpenHexEditor_Click;
             // 
             // _sequencePreviewBox
             // 
@@ -2057,7 +2105,7 @@
             // 
             SaveToolStripMenuItem.Image = Properties.Resources.Save2;
             SaveToolStripMenuItem.Name = "SaveToolStripMenuItem";
-            SaveToolStripMenuItem.Size = new System.Drawing.Size(239, 26);
+            SaveToolStripMenuItem.Size = new System.Drawing.Size(235, 22);
             SaveToolStripMenuItem.Text = "Save";
             SaveToolStripMenuItem.Click += OnClickSave;
             // 
@@ -2066,7 +2114,7 @@
             ShowOnlyValidToolStripMenuItem.CheckOnClick = true;
             ShowOnlyValidToolStripMenuItem.Image = Properties.Resources.zoom_image_into_tile_2_;
             ShowOnlyValidToolStripMenuItem.Name = "ShowOnlyValidToolStripMenuItem";
-            ShowOnlyValidToolStripMenuItem.Size = new System.Drawing.Size(239, 26);
+            ShowOnlyValidToolStripMenuItem.Size = new System.Drawing.Size(235, 22);
             ShowOnlyValidToolStripMenuItem.Text = "Show Only Valid";
             ShowOnlyValidToolStripMenuItem.Click += OnClickShowOnlyValid;
             // 
@@ -2074,7 +2122,7 @@
             // 
             ExportAllToVDToolStripMenuItem.Image = Properties.Resources.Export;
             ExportAllToVDToolStripMenuItem.Name = "ExportAllToVDToolStripMenuItem";
-            ExportAllToVDToolStripMenuItem.Size = new System.Drawing.Size(239, 26);
+            ExportAllToVDToolStripMenuItem.Size = new System.Drawing.Size(235, 22);
             ExportAllToVDToolStripMenuItem.Text = "Export All Valid To VD";
             ExportAllToVDToolStripMenuItem.Click += OnClickExportAllToVD;
             // 
@@ -2082,7 +2130,7 @@
             // 
             editUoBodyconvAndMobtypesToolStripMenuItem.Image = Properties.Resources.reset_mit_pfeil_einstellung_1_;
             editUoBodyconvAndMobtypesToolStripMenuItem.Name = "editUoBodyconvAndMobtypesToolStripMenuItem";
-            editUoBodyconvAndMobtypesToolStripMenuItem.Size = new System.Drawing.Size(239, 26);
+            editUoBodyconvAndMobtypesToolStripMenuItem.Size = new System.Drawing.Size(235, 22);
             editUoBodyconvAndMobtypesToolStripMenuItem.Text = "Edit Uo Bodyconv + mobtypes";
             editUoBodyconvAndMobtypesToolStripMenuItem.ToolTipText = "Edit Uo Bodyconv and mobtypes";
             editUoBodyconvAndMobtypesToolStripMenuItem.Click += editUoBodyconvAndMobtypesToolStripMenuItem_Click;
@@ -2389,5 +2437,9 @@
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator12;
         private System.Windows.Forms.ToolStripButton ShowCrosshairtoolStripButton;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator13;
+        private System.Windows.Forms.Button btnOpenHexEditor;
+        private System.Windows.Forms.Button btnDiagCompare;
+        private System.Windows.Forms.Button btnDiagMassScan;
+        private System.Windows.Forms.Button btnDiagSingle;
     }
 }

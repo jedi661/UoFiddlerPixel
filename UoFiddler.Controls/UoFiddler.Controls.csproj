@@ -26,9 +26,7 @@
 		<UseVSHostingProcess>false</UseVSHostingProcess>
 	</PropertyGroup>
 	<ItemGroup>
-		<Compile Update="Forms\AnimationEditForm.cs">
-			<SubType>Form</SubType>
-		</Compile>
+		<Compile Update="Forms\AnimationEditForm.cs" />
 		<Compile Update="Forms\AnimationEditForm.Designer.cs">
 			<DependentUpon>AnimationEditForm.cs</DependentUpon>
 		</Compile>

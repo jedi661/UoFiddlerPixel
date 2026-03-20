@@ -875,6 +875,9 @@ namespace UoFiddler.Controls.Forms
 
             AnimationPictureBox.Invalidate();
             SetPaletteBox();
+
+            // Sequence Tab für MUL befüllen
+            PopulateSequenceGrid(_currentBody);
         }
 
         private void DisplayUopAnimation()
@@ -1456,7 +1459,7 @@ namespace UoFiddler.Controls.Forms
             e.Graphics.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
             e.Graphics.PixelOffsetMode = System.Drawing.Drawing2D.PixelOffsetMode.Half;
 
-            e.Graphics.Clear(Color.LightGray);            
+            e.Graphics.Clear(Color.LightGray);
 
             if (_drawCrosshair)
             {
@@ -8835,16 +8838,70 @@ namespace UoFiddler.Controls.Forms
         #endregion
 
 
+        #region [ ShowCrosshairtoolStripButton ] Toggle crosshair display on animation preview
         private void ShowCrosshairtoolStripButton_Click(object sender, EventArgs e)
         {
             _drawCrosshair = !_drawCrosshair;
             AnimationPictureBox.Invalidate();
         }
+        #endregion
+
 
         #region Sequence UOP Tab
+
         private void InitializeSequenceTab()
         {
             _sequenceGrid.Columns.Clear();
+            // UOP-Spalten als Standard
+            AddUopColumns();
+            _sequenceGrid.DataSource = _sequenceBindingSource;
+            _sequenceTimer.Interval = 150;
+            _btnSaveMainMisc.Enabled = false;
+            _gridIsInMulMode = false;
+        }
+
+        // ── Grid-Modus ────────────────────────────────────────────────────────
+
+        private bool _gridIsInMulMode = false;
+
+        /// <summary>
+        /// Stellt das Grid auf MUL-Spalten um.
+        /// Wird IMMER ausgeführt wenn _fileType MUL ist — kein early-return.
+        /// </summary>
+        private void SetupSequenceGridForMul()
+        {
+            _sequenceGrid.DataSource = null;
+            _sequenceGrid.Columns.Clear();
+            _sequenceGrid.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "ActionIndex", HeaderText = "Act", Width = 35, ReadOnly = true });
+            _sequenceGrid.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "ActionName", HeaderText = "Name", Width = 130, ReadOnly = true });
+            _sequenceGrid.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "FramesDir0", HeaderText = "D0", Width = 35, ReadOnly = true });
+            _sequenceGrid.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "FramesDir1", HeaderText = "D1", Width = 35, ReadOnly = true });
+            _sequenceGrid.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "FramesDir2", HeaderText = "D2", Width = 35, ReadOnly = true });
+            _sequenceGrid.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "FramesDir3", HeaderText = "D3", Width = 35, ReadOnly = true });
+            _sequenceGrid.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "FramesDir4", HeaderText = "D4", Width = 35, ReadOnly = true });
+            _sequenceGrid.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "CenterX", HeaderText = "CX", Width = 40, ReadOnly = true });
+            _sequenceGrid.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "CenterY", HeaderText = "CY", Width = 40, ReadOnly = true });
+            _sequenceGrid.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "IdxOffset", HeaderText = "IDX-Off", Width = 80, ReadOnly = true });
+            _sequenceGrid.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "IdxLength", HeaderText = "IDX-Len", Width = 70, ReadOnly = true });
+            _sequenceGrid.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "StatusText", HeaderText = "Status", Width = 90, ReadOnly = true });
+            _gridIsInMulMode = true;
+        }
+
+        /// <summary>
+        /// Stellt das Grid auf UOP-Spalten um.
+        /// Wird IMMER ausgeführt wenn _fileType UOP ist — kein early-return.
+        /// </summary>
+        private void SetupSequenceGridForUop()
+        {
+            _sequenceGrid.DataSource = null;
+            _sequenceGrid.Columns.Clear();
+            AddUopColumns();
+            _sequenceGrid.DataSource = _sequenceBindingSource;
+            _gridIsInMulMode = false;
+        }
+
+        private void AddUopColumns()
+        {
             _sequenceGrid.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "UopGroupIndex", HeaderText = "UOP Group", Width = 60 });
             _sequenceGrid.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "FrameCount", HeaderText = "Frames", Width = 50 });
             _sequenceGrid.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "MulGroupIndex", HeaderText = "MUL", Width = 60 });
@@ -8858,179 +8915,37 @@ namespace UoFiddler.Controls.Forms
             _sequenceGrid.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "MountPeaceModifier", HeaderText = "Mod", Width = 40, ReadOnly = true });
             _sequenceGrid.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "MountWarGroupId", HeaderText = "M.War", Width = 50, ReadOnly = true });
             _sequenceGrid.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "MountWarModifier", HeaderText = "Mod", Width = 40, ReadOnly = true });
-
-            _sequenceGrid.DataSource = _sequenceBindingSource;
-
-            // Set timer interval explicitly (default 100ms would be too fast)
-            _sequenceTimer.Interval = 150;
-
-            _btnSaveMainMisc.Enabled = false;
         }
 
-        /// <summary>
-        /// Looking for a loadable UopAnimIdx for Body + Action.
-        /// First try the preferred direction, then all the others 0–4.
-        /// In case of a cache miss, an attempt is made to reload via GetUopAnimation with forced load.
-        /// Returns zero if no frames exist anywhere.
-        /// </summary>
-        private UopAnimIdx TryFindAnimationForPreview(int body, int action, int preferredDir, out int foundDir)
-        {
-            foundDir = -1;
-            if (_uopManager == null || body < 0 || action < 0) return null;
-
-            // Preferred direction first, then all others
-            int[] dirs = new int[5];
-            dirs[0] = preferredDir;
-            int idx = 1;
-            for (int d = 0; d < 5; d++)
-            {
-                if (d != preferredDir)
-                    dirs[idx++] = d;
-            }
-
-            foreach (int dir in dirs)
-            {
-                // 1. Cache hit — return directly
-                var cached = _uopManager.GetUopAnimation(body, action, dir);
-                if (cached != null && cached.Frames.Count > 0)
-                {
-                    foundDir = dir;
-                    return cached;
-                }
-
-                // 2. Cache miss → check if raw data is available at all
-                var fileInfo = _uopManager.GetAnimationData(body, action, dir);
-                if (fileInfo == null) continue;
-
-                byte[] raw = fileInfo.GetData();
-                if (raw == null || raw.Length == 0) continue;
-
-                // 3. Rohdaten vorhanden → GetUopAnimation erzwingt lazy decode intern
-                //    Call again — after GetData, the internal state is set
-                var afterLoad = _uopManager.GetUopAnimation(body, action, dir);
-                if (afterLoad != null && afterLoad.Frames.Count > 0)
-                {
-                    foundDir = dir;
-                    return afterLoad;
-                }
-
-                // 4. Fallback: Manually parse raw data if GetUopAnimation is still null
-                //    We use the already existing internal logic via the header check
-                try
-                {
-                    using var ms = new System.IO.MemoryStream(raw);
-                    using var reader = new System.IO.BinaryReader(ms);
-
-                    // Read header to check if frames are present
-                    var header = UopAnimationDataManager.ReadUopBinHeader(reader);
-                    if (header == null || header.FrameCount == 0) continue;
-
-                    // Header present and FrameCount > 0 → Animation exists,
-                    // but GetUopAnimation could not load it.
-                    // Last attempt: let the cache be filled explicitly
-                    ms.Position = 0;
-                    var forced = _uopManager.GetUopAnimation(body, action, dir);
-                    if (forced != null && forced.Frames.Count > 0)
-                    {
-                        foundDir = dir;
-                        return forced;
-                    }
-
-                    // If GetUopAnimation is still empty after the header check,
-                    // at least mark the direction as 'has data' for debugging
-                    System.Diagnostics.Debug.WriteLine(
-                        $"[SeqPreview] Body={body} Action={action} Dir={dir}: " +
-                        $"Header.FrameCount={header.FrameCount} but GetUopAnimation=null. " +
-                        $"DecodeUopAnimation is missing as a public method.");
-                }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine(
-                        $"[SeqPreview] Header read failed Body={body} Action={action} Dir={dir}: {ex.Message}");
-                }
-            }
-
-            return null;
-        }
-
-        private void OnSequenceGridSelectionChanged(object sender, EventArgs e)
-        {
-            if (_sequenceGrid.SelectedRows.Count == 0) return;
-
-            var vm = _sequenceGrid.SelectedRows[0].DataBoundItem as SequenceViewModelItem;
-            if (vm == null) return;
-
-            _currentSeqEntry = vm.Entry;
-            _seqCurrentAction = (int)vm.UopGroupIndex;
-            _seqPreviewFrameIndex = 0;
-
-            UpdateSequencePreview();
-        }
-
-        private void OnSequenceTimerTick(object sender, EventArgs e)
-        {
-            if (_uopManager == null || _seqCurrentAction < 0) return;
-
-            var anim = TryFindAnimationForPreview(
-                _currentBody, _seqCurrentAction, _seqPreviewDirection, out _);
-
-            if (anim == null || anim.Frames.Count == 0)
-            {
-                _sequencePreviewBox.Image = null;
-                return;
-            }
-
-            // First increment, then wrap → no more frame-0 skip
-            _seqPreviewFrameIndex++;
-            if (_seqPreviewFrameIndex >= anim.Frames.Count)
-                _seqPreviewFrameIndex = 0;
-
-            _sequencePreviewBox.Image = anim.Frames[_seqPreviewFrameIndex].Image;
-        }
-
-        private void UpdateSequencePreview()
-        {
-            if (_uopManager == null || _seqCurrentAction < 0)
-            {
-                _sequencePreviewBox.Image = null;
-                return;
-            }
-
-            var anim = TryFindAnimationForPreview(
-                _currentBody, _seqCurrentAction, _seqPreviewDirection, out int foundDir);
-
-            if (anim == null || anim.Frames.Count == 0)
-            {
-                _sequencePreviewBox.Image = null;
-                System.Diagnostics.Debug.WriteLine(
-                    $"[SeqPreview] Keine Frames für Body={_currentBody} Action={_seqCurrentAction}");
-                return;
-            }
-
-            // If deviated to another direction, output debug info
-            if (foundDir >= 0 && foundDir != _seqPreviewDirection)
-            {
-                System.Diagnostics.Debug.WriteLine(
-                    $"[SeqPreview] Dir {_seqPreviewDirection} leer → ausgewichen auf Dir {foundDir}");
-            }
-
-            // Secure bounds after direction change
-            if (_seqPreviewFrameIndex >= anim.Frames.Count)
-                _seqPreviewFrameIndex = 0;
-
-            _sequencePreviewBox.Image = anim.Frames[_seqPreviewFrameIndex].Image;
-        }
+        // ── PopulateSequenceGrid — Dispatcher ────────────────────────────────
 
         private void PopulateSequenceGrid(int bodyId)
         {
-            if (_uopManager == null || _uopManager.SequenceEntries == null)
+            if (_fileType == UOP_FILE_TYPE)
             {
-                _sequenceBindingSource.DataSource = null;
-                return;
+                SetupSequenceGridForUop();
+                PopulateSequenceGridUop(bodyId);
             }
+            else if (_fileType >= 1 && _fileType <= 5)
+            {
+                SetupSequenceGridForMul();
+                PopulateSequenceGridMul(bodyId);
+            }
+            else
+            {
+                _sequenceGrid.DataSource = null;
+                _sequenceBindingSource.DataSource = null;
+            }
+        }
+
+        // ── PopulateSequenceGridUop ───────────────────────────────────────────
+
+        private void PopulateSequenceGridUop(int bodyId)
+        {
+            if (_uopManager == null || _uopManager.SequenceEntries == null)
+            { _sequenceBindingSource.DataSource = null; return; }
 
             uint uid = (uint)bodyId;
-
             if (!_uopManager.SequenceEntries.TryGetValue(uid, out var list))
             {
                 _sequenceBindingSource.DataSource = null;
@@ -9057,15 +8972,9 @@ namespace UoFiddler.Controls.Forms
                                Action<ushort?> setMod)
                 {
                     if (overrides != null && overrides.TryGetValue(action, out var ov))
-                    {
-                        setGroupId(ov.GroupId);
-                        setMod(ov.Modifier);
-                    }
+                    { setGroupId(ov.GroupId); setMod(ov.Modifier); }
                     else
-                    {
-                        setGroupId(vm.BaseGroup);
-                        setMod(null);
-                    }
+                    { setGroupId(vm.BaseGroup); setMod(null); }
                 }
 
                 FillState(warOverrides, s => vm.WarGroupId = s, s => vm.WarModifier = s);
@@ -9078,235 +8987,329 @@ namespace UoFiddler.Controls.Forms
 
             _sequenceBindingSource.DataSource = _sequenceViewModelList;
 
-            // Erste Zeile automatisch selektieren → _seqCurrentAction bekommt sofort einen gültigen Wert
             if (_sequenceViewModelList.Count > 0)
             {
                 _seqCurrentAction = (int)_sequenceViewModelList[0].UopGroupIndex;
                 _currentSeqEntry = _sequenceViewModelList[0].Entry;
                 _seqPreviewFrameIndex = 0;
-
                 if (_sequenceGrid.Rows.Count > 0)
                     _sequenceGrid.Rows[0].Selected = true;
             }
 
-            UpdateSequencePreview();
+            UpdateSequencePreviewUop();
         }
 
-        private void OnSaveSequenceClick(object sender, EventArgs e)
+        // ── PopulateSequenceGridMul ───────────────────────────────────────────
+
+        private void PopulateSequenceGridMul(int bodyId)
         {
-            if (_uopManager == null || _sequenceViewModelList == null) return;
+            var items = new System.ComponentModel.BindingList<MulSequenceViewItem>();
 
-            using var dialog = new SaveFileDialog
+            int animLength = Animations.GetAnimLength(bodyId, _fileType);
+            if (animLength <= 0) animLength = 22;
+
+            // Remapping
+            int resolvedBody = bodyId;
+            int resolvedFileType = _fileType;
+
+            int btBody = bodyId;
+            if (Ultima.BodyTable.Entries != null
+                && Ultima.BodyTable.Entries.TryGetValue(bodyId, out Ultima.BodyTableEntry btEntry)
+                && !Ultima.BodyConverter.Contains(bodyId))
+                btBody = btEntry.OldId;
+
+            int bcBody = btBody;
+            int bcFt = Ultima.BodyConverter.Convert(ref bcBody);
+            if (bcFt >= 1 && bcFt <= 5)
+            { resolvedBody = bcBody; resolvedFileType = bcFt; }
+
+            string[] nameTable = animLength == 13
+                ? new[] { "Walk","Run","Stand","Eat","Alert","Attack1","Attack2",
+                  "GetHit","Die1","Fidget1","Fidget2","LieDown","Die2" }
+                : animLength == 22
+                ? new[] { "Walk","Stand","Die1","Die2","Attack1","Attack2","Attack3",
+                  "AttackBow","AttackCrossBow","AttackThrow","GetHit","Pillage",
+                  "Stomp","Cast2","Cast3","BlockRight","BlockLeft","Idle",
+                  "Fidget","Fly","TakeOff","GetHitInAir" }
+                : new[] { "Walk","WalkStaff","Run","RunStaff","Idle","Idle2","Fidget",
+                  "CombatIdle1H","CombatIdle1H2","AttackSlash1H","AttackPierce1H",
+                  "AttackBash1H","AttackBash2H","AttackSlash2H","AttackPierce2H",
+                  "CombatAdv1H","Spell1","Spell2","AttackBow","AttackCrossbow",
+                  "GetHit","DieFwd","DieBack","HorseWalk","HorseRun","HorseIdle",
+                  "HorseAtk1H","HorseAtkBow","HorseAtkXBow","HorseAtk2H",
+                  "BlockShield","PunchJab","BowLesser","Salute","Ingest" };
+
+            string ixName = resolvedFileType == 1 ? "anim.idx" : $"anim{resolvedFileType}.idx";
+            string ixPath = Ultima.Files.GetFilePath(ixName);
+
+            for (int action = 0; action < animLength; action++)
             {
-                InitialDirectory = Options.OutputPath,
-                FileName = "AnimationSequence.uop",
-                Filter = "UOP Files (*.uop)|*.uop",
-                Title = "Save Animation Sequence"
-            };
-
-            if (dialog.ShowDialog() != DialogResult.OK) return;
-
-            try
-            {
-                var newList = _sequenceViewModelList.Select(vm => vm.Entry).ToList();
-                _uopManager.SequenceEntries[(uint)_currentBody] = newList;
-                _uopManager.SaveAnimationSequence(dialog.FileName);
-                MessageBox.Show($"Saved successfully to:\n{dialog.FileName}");
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error saving: {ex.Message}");
-            }
-        }
-
-        private void OnSaveBinClick(object sender, EventArgs e)
-        {
-            if (_uopManager == null || _sequenceViewModelList == null) return;
-
-            using var dialog = new SaveFileDialog
-            {
-                InitialDirectory = Options.OutputPath,
-                FileName = $"Sequence_{_currentBody}.bin",
-                Filter = "Binary Files (*.bin)|*.bin",
-                Title = "Save Sequence Binary Data"
-            };
-
-            if (dialog.ShowDialog() != DialogResult.OK) return;
-
-            try
-            {
-                byte[] data = _uopManager.GetBinaryDataForAnimationId((uint)_currentBody);
-                File.WriteAllBytes(dialog.FileName, data);
-                MessageBox.Show($"Saved .bin successfully to:\n{dialog.FileName}");
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error saving .bin: {ex.Message}");
-            }
-        }
-
-        private void OnCloneSequenceIdClick(object sender, EventArgs e)
-        {
-            if (_uopManager == null) return;
-
-            string sourceIdInput = ShowInputDialog("Enter Source Animation ID (e.g., 1400):", "Clone Sequence ID", "");
-            if (string.IsNullOrEmpty(sourceIdInput)) return;
-
-            if (!uint.TryParse(sourceIdInput, out uint sourceAnimId))
-            {
-                MessageBox.Show("Invalid Source Animation ID. Please enter a positive integer.",
-                    "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
-
-            if (!_uopManager.SequenceEntries.ContainsKey(sourceAnimId))
-            {
-                MessageBox.Show($"Source Animation ID {sourceAnimId} not found. Cannot clone.",
-                    "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
-
-            string newIdInput = ShowInputDialog("Enter New Animation ID (e.g., 3000):", "Clone Sequence ID", "");
-            if (string.IsNullOrEmpty(newIdInput)) return;
-
-            if (!uint.TryParse(newIdInput, out uint newAnimId))
-            {
-                MessageBox.Show("Invalid New Animation ID. Please enter a positive integer.",
-                    "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
-
-            if (_uopManager.SequenceEntries.ContainsKey(newAnimId))
-            {
-                if (MessageBox.Show(
-                        $"New Animation ID {newAnimId} already exists. Do you want to overwrite it?",
-                        "Confirm Overwrite",
-                        MessageBoxButtons.YesNo,
-                        MessageBoxIcon.Warning) != DialogResult.Yes) return;
-            }
-
-            try
-            {
-                _uopManager.CloneAnimationSequenceEntry(sourceAnimId, newAnimId);
-
-                _uopManager.EnsureIdInMainMisc(newAnimId, forceCreatureFlag: true);
-                RefreshMainMiscButtonState();
-
-                LoadUopAnimations();
-
-                MessageBox.Show(
-                    $"Animation ID {sourceAnimId} cloned to {newAnimId} successfully.\n\n" +
-                    $"Note: ID was added to MainMisc table. Remember to click 'Save MainMisc Table'.",
-                    "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error cloning Animation ID: {ex.Message}",
-                    "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
-
-        private void OnAddCurrentToMainMiscClick(object sender, EventArgs e)
-        {
-            if (_uopManager == null || _currentBody == -1) return;
-
-            uint uid = (uint)_currentBody;
-            const uint CREATURE_FLAG = 0x0C000000;
-
-            if (_uopManager.IsIdInMainMisc(uid) && _uopManager.GetMainMiscFlag(uid) == CREATURE_FLAG)
-            {
-                MessageBox.Show(
-                    $"ID {uid} is already present in MainMisc with the correct creature flag (0C000000). No action needed.",
-                    "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                return;
-            }
-
-            _uopManager.EnsureIdInMainMisc(uid, forceCreatureFlag: true);
-            RefreshMainMiscButtonState();
-
-            MessageBox.Show(
-                $"ID {uid} added/updated in MainMisc memory table.\n" +
-                $"Don't forget to click 'Save MainMisc Table' to apply changes.",
-                "ID Added", MessageBoxButtons.OK, MessageBoxIcon.Information);
-        }
-
-        private void OnSyncMainMiscClick(object sender, EventArgs e)
-        {
-            if (_uopManager == null) return;
-            Cursor = Cursors.WaitCursor;
-            try
-            {
-                int missingCount = _uopManager.CheckMissingMainMiscEntries(dryRun: true);
-
-                if (missingCount > 0)
+                var item = new MulSequenceViewItem
                 {
-                    if (MessageBox.Show(
-                            $"Found {missingCount} animations in UOP files that are missing from MainMisc table.\n\n" +
-                            $"Do you want to add them all to the memory table now?",
-                            "Sync with UOP",
-                            MessageBoxButtons.YesNo,
-                            MessageBoxIcon.Question) == DialogResult.Yes)
+                    ActionIndex = action,
+                    ActionName = action < nameTable.Length ? nameTable[action] : $"Action{action}",
+                };
+
+                int totalFrames = 0;
+                bool hasAnyData = false;
+
+                for (int dir = 0; dir < 5; dir++)
+                {
+                    AnimIdx edit = AnimationEdit.GetAnimation(_fileType, bodyId, action, dir);
+                    if (edit?.Frames == null || edit.Frames.Count == 0) continue;
+
+                    hasAnyData = true;
+                    totalFrames += edit.Frames.Count;
+
+                    if (dir == 0) { item.CenterX = edit.Frames[0].Center.X; item.CenterY = edit.Frames[0].Center.Y; item.FramesDir0 = edit.Frames.Count; }
+                    if (dir == 1) item.FramesDir1 = edit.Frames.Count;
+                    if (dir == 2) item.FramesDir2 = edit.Frames.Count;
+                    if (dir == 3) item.FramesDir3 = edit.Frames.Count;
+                    if (dir == 4) item.FramesDir4 = edit.Frames.Count;
+                }
+
+                item.TotalFrames = totalFrames;
+                item.HasData = hasAnyData;
+
+                // IDX-Eintrag lesen (alle 3 Felder: offset, length, extra)
+                if (!string.IsNullOrEmpty(ixPath) && File.Exists(ixPath))
+                {
+                    long pos = (long)(resolvedBody * 110 * 5 + action * 5) * 12;
+                    try
                     {
-                        int added = _uopManager.CheckMissingMainMiscEntries(dryRun: false);
-                        RefreshMainMiscButtonState();
-                        MessageBox.Show($"{added} IDs added to memory table.",
-                            "Sync Complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        using var fs = new FileStream(ixPath, FileMode.Open, FileAccess.Read, FileShare.Read);
+                        if (pos + 12 <= fs.Length)
+                        {
+                            fs.Seek(pos, SeekOrigin.Begin);
+                            using var br = new BinaryReader(fs);
+                            int off = br.ReadInt32();
+                            int len = br.ReadInt32();
+                            int ext = br.ReadInt32();
+                            int act = len > 0 ? len : ext > 0 ? ext : 0;
+                            item.IdxOffset = off;
+                            item.IdxLength = act;
+                            item.InFile = (off >= 0 && act > 0);
+                            item.OnlyInCache = hasAnyData && !item.InFile;
+                        }
                     }
+                    catch { }
                 }
-                else
-                {
-                    MessageBox.Show("No missing entries found. MainMisc is up to date.",
-                        "Sync Complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                }
+
+                items.Add(item);
+            }
+
+            // Event abkoppeln während DataSource gesetzt wird —
+            // verhindert NullReferenceException in OnSequenceGridSelectionChanged
+            // wenn das Grid während des Bindens automatisch Rows auswählt
+            _sequenceGrid.SelectionChanged -= OnSequenceGridSelectionChanged;
+            try
+            {
+                _sequenceBindingSource.DataSource = items;
+                _sequenceGrid.DataSource = _sequenceBindingSource;
             }
             finally
             {
-                Cursor = Cursors.Default;
+                _sequenceGrid.SelectionChanged += OnSequenceGridSelectionChanged;
             }
+
+            // Erste Zeile mit Daten selektieren
+            _seqCurrentAction = -1;
+            for (int i = 0; i < _sequenceGrid.Rows.Count; i++)
+            {
+                var boundItem = _sequenceGrid.Rows[i].DataBoundItem as MulSequenceViewItem;
+                if (boundItem != null && boundItem.HasData)
+                {
+                    _seqCurrentAction = boundItem.ActionIndex;
+                    _sequenceGrid.Rows[i].Selected = true;
+                    break;
+                }
+            }
+
+            UpdateSequencePreviewMul();
         }
 
-        private void RefreshMainMiscButtonState()
+        // ── MulSequenceViewItem ───────────────────────────────────────────────
+
+        public sealed class MulSequenceViewItem
         {
-            if (_btnSaveMainMisc != null && _uopManager != null)
-            {
-                _btnSaveMainMisc.Enabled = _uopManager.MainMiscModified;
-                System.Diagnostics.Debug.WriteLine(
-                    $"[MainMisc] Button status refreshed. Enabled={_btnSaveMainMisc.Enabled}");
-            }
+            public int ActionIndex { get; set; }
+            public string ActionName { get; set; }
+            public int FramesDir0 { get; set; }
+            public int FramesDir1 { get; set; }
+            public int FramesDir2 { get; set; }
+            public int FramesDir3 { get; set; }
+            public int FramesDir4 { get; set; }
+            public int TotalFrames { get; set; }
+            public int CenterX { get; set; }
+            public int CenterY { get; set; }
+            public int IdxOffset { get; set; }
+            public int IdxLength { get; set; }
+            public bool HasData { get; set; }
+            public bool InFile { get; set; }
+            public bool OnlyInCache { get; set; }
+
+            public string StatusText =>
+                !HasData ? "leer" :
+                OnlyInCache ? "nur Cache" :
+                InFile ? "in Datei" : "?";
         }
 
-        private void OnSaveMainMiscClick(object sender, EventArgs e)
+        // ── TryFindAnimationForPreview ────────────────────────────────────────
+
+        private UopAnimIdx TryFindAnimationForPreview(int body, int action,
+            int preferredDir, out int foundDir)
         {
-            if (_uopManager == null) return;
+            foundDir = -1;
+            if (_uopManager == null || body < 0 || action < 0) return null;
 
-            using var dialog = new SaveFileDialog
+            int[] dirs = new int[5];
+            dirs[0] = preferredDir;
+            int idx = 1;
+            for (int d = 0; d < 5; d++)
+                if (d != preferredDir) dirs[idx++] = d;
+
+            foreach (int dir in dirs)
             {
-                InitialDirectory = Options.OutputPath,
-                FileName = "MainMisc.uop",
-                Filter = "UOP Files (*.uop)|*.uop",
-                Title = "Save MainMisc Table"
-            };
+                var cached = _uopManager.GetUopAnimation(body, action, dir);
+                if (cached != null && cached.Frames.Count > 0)
+                { foundDir = dir; return cached; }
 
-            if (dialog.ShowDialog() != DialogResult.OK) return;
+                var fileInfo = _uopManager.GetAnimationData(body, action, dir);
+                if (fileInfo == null) continue;
+                byte[] raw = fileInfo.GetData();
+                if (raw == null || raw.Length == 0) continue;
 
-            try
-            {
-                _uopManager.SaveMainMisc(dialog.FileName);
-                MessageBox.Show(
-                    $"MainMisc.uop saved successfully to:\n{dialog.FileName}\n\n" +
-                    $"You can now replace the original file.\n" +
-                    $"The table now contains {_uopManager.GetMainMiscEntryCount()} entries.",
-                    "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                var afterLoad = _uopManager.GetUopAnimation(body, action, dir);
+                if (afterLoad != null && afterLoad.Frames.Count > 0)
+                { foundDir = dir; return afterLoad; }
+
+                if (raw.Length >= 12)
+                {
+                    try
+                    {
+                        using var ms = new System.IO.MemoryStream(raw);
+                        using var br = new System.IO.BinaryReader(ms);
+                        var header = UopAnimationDataManager.ReadUopBinHeader(br);
+                        if (header != null && header.FrameCount > 0)
+                            System.Diagnostics.Debug.WriteLine(
+                                $"[SeqPreview] Body={body} Act={action} Dir={dir}: " +
+                                $"FrameCount={header.FrameCount} aber GetUopAnimation=null.");
+                    }
+                    catch { }
+                }
             }
-            catch (Exception ex)
+            return null;
+        }
+
+        // ── UpdateSequencePreview ─────────────────────────────────────────────
+
+        private void UpdateSequencePreview()
+        {
+            if (_fileType == UOP_FILE_TYPE) UpdateSequencePreviewUop();
+            else UpdateSequencePreviewMul();
+        }
+
+        private void UpdateSequencePreviewUop()
+        {
+            if (_uopManager == null || _seqCurrentAction < 0)
+            { _sequencePreviewBox.Image = null; return; }
+
+            var anim = TryFindAnimationForPreview(
+                _currentBody, _seqCurrentAction, _seqPreviewDirection, out _);
+
+            if (anim == null || anim.Frames.Count == 0)
+            { _sequencePreviewBox.Image = null; return; }
+
+            if (_seqPreviewFrameIndex >= anim.Frames.Count) _seqPreviewFrameIndex = 0;
+            _sequencePreviewBox.Image = anim.Frames[_seqPreviewFrameIndex].Image;
+        }
+
+        private void UpdateSequencePreviewMul()
+        {
+            if (_seqCurrentAction < 0 || _fileType == 0 || _currentBody < 0)
+            { _sequencePreviewBox.Image = null; return; }
+
+            AnimIdx edit = AnimationEdit.GetAnimation(
+                _fileType, _currentBody, _seqCurrentAction, _seqPreviewDirection);
+
+            if (edit == null || edit.Frames?.Count == 0)
             {
-                MessageBox.Show($"Error saving MainMisc: {ex.Message}",
-                    "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                for (int dir = 0; dir < 5; dir++)
+                {
+                    if (dir == _seqPreviewDirection) continue;
+                    edit = AnimationEdit.GetAnimation(_fileType, _currentBody, _seqCurrentAction, dir);
+                    if (edit?.Frames?.Count > 0) break;
+                }
+            }
+
+            if (edit == null || edit.Frames?.Count == 0)
+            { _sequencePreviewBox.Image = null; return; }
+
+            if (_seqPreviewFrameIndex >= edit.Frames.Count) _seqPreviewFrameIndex = 0;
+            var bitmaps = edit.GetFrames();
+            if (bitmaps != null && _seqPreviewFrameIndex < bitmaps.Length)
+                _sequencePreviewBox.Image = bitmaps[_seqPreviewFrameIndex];
+        }
+
+        // ── OnSequenceGridSelectionChanged ───────────────────────────────────
+
+        private void OnSequenceGridSelectionChanged(object sender, EventArgs e)
+        {
+            if (_sequenceGrid.SelectedRows.Count == 0) return;
+            if (_fileType == 0) return;  // noch keine Datei geladen
+
+            if (_fileType == UOP_FILE_TYPE)
+            {
+                var vm = _sequenceGrid.SelectedRows[0].DataBoundItem as SequenceViewModelItem;
+                if (vm == null) return;
+                _currentSeqEntry = vm.Entry;
+                _seqCurrentAction = (int)vm.UopGroupIndex;
+                _seqPreviewFrameIndex = 0;
+                UpdateSequencePreviewUop();
+            }
+            else
+            {
+                var item = _sequenceGrid.SelectedRows[0].DataBoundItem as MulSequenceViewItem;
+                if (item == null) return;
+                _seqCurrentAction = item.ActionIndex;
+                _seqPreviewFrameIndex = 0;
+                UpdateSequencePreviewMul();
             }
         }
+
+        // ── OnSequenceTimerTick ───────────────────────────────────────────────
+
+        private void OnSequenceTimerTick(object sender, EventArgs e)
+        {
+            if (_fileType == UOP_FILE_TYPE)
+            {
+                if (_uopManager == null || _seqCurrentAction < 0) return;
+                var anim = TryFindAnimationForPreview(
+                    _currentBody, _seqCurrentAction, _seqPreviewDirection, out _);
+                if (anim == null || anim.Frames.Count == 0) { _sequencePreviewBox.Image = null; return; }
+                _seqPreviewFrameIndex++;
+                if (_seqPreviewFrameIndex >= anim.Frames.Count) _seqPreviewFrameIndex = 0;
+                _sequencePreviewBox.Image = anim.Frames[_seqPreviewFrameIndex].Image;
+            }
+            else
+            {
+                if (_seqCurrentAction < 0) return;
+                AnimIdx edit = AnimationEdit.GetAnimation(
+                    _fileType, _currentBody, _seqCurrentAction, _seqPreviewDirection);
+                if (edit == null || edit.Frames?.Count == 0) return;
+                var bitmaps = edit.GetFrames();
+                if (bitmaps == null) return;
+                _seqPreviewFrameIndex++;
+                if (_seqPreviewFrameIndex >= bitmaps.Length) _seqPreviewFrameIndex = 0;
+                _sequencePreviewBox.Image = bitmaps[_seqPreviewFrameIndex];
+            }
+        }
+
+        // ── OnSequenceGridCellValueChanged ───────────────────────────────────
 
         private void OnSequenceGridCellValueChanged(object sender, DataGridViewCellEventArgs e)
         {
+            if (_fileType != UOP_FILE_TYPE) return;
             if (e.RowIndex < 0 || e.ColumnIndex < 0 || _uopManager == null || _currentBody == -1) return;
 
             var grid = (DataGridView)sender;
@@ -9316,75 +9319,152 @@ namespace UoFiddler.Controls.Forms
             if (grid.IsCurrentCellDirty)
                 grid.CommitEdit(DataGridViewDataErrorContexts.Commit);
 
-            bool isFrameCountChange =
-                grid.Columns[e.ColumnIndex].DataPropertyName == "FrameCount";
-
+            bool isFrameCountChange = grid.Columns[e.ColumnIndex].DataPropertyName == "FrameCount";
             try
             {
                 _uopManager.UpdateSequenceEntry(
-                    (uint)_currentBody,
-                    vm.UopGroupIndex,
-                    vm.FrameCount,
-                    vm.MulGroupIndex,
-                    vm.Speed,
-                    vm.Entry.ExtraData,
-                    autoPopulate: isFrameCountChange);
-
-                if (isFrameCountChange)
-                    grid.InvalidateRow(e.RowIndex);
-
-                UpdateSequencePreview();
+                    (uint)_currentBody, vm.UopGroupIndex,
+                    vm.FrameCount, vm.MulGroupIndex, vm.Speed,
+                    vm.Entry.ExtraData, autoPopulate: isFrameCountChange);
+                if (isFrameCountChange) grid.InvalidateRow(e.RowIndex);
+                UpdateSequencePreviewUop();
             }
             catch (Exception ex)
+            { MessageBox.Show($"Error updating sequence entry: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error); }
+        }
+
+        // ── Save / Clone / MainMisc ───────────────────────────────────────────
+
+        private void OnSaveSequenceClick(object sender, EventArgs e)
+        {
+            if (_uopManager == null || _sequenceViewModelList == null) return;
+            using var dialog = new SaveFileDialog
+            { InitialDirectory = Options.OutputPath, FileName = "AnimationSequence.uop", Filter = "UOP Files (*.uop)|*.uop", Title = "Save Animation Sequence" };
+            if (dialog.ShowDialog() != DialogResult.OK) return;
+            try
             {
-                MessageBox.Show($"Error updating sequence entry: {ex.Message}",
-                    "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                _uopManager.SequenceEntries[(uint)_currentBody] = _sequenceViewModelList.Select(vm => vm.Entry).ToList();
+                _uopManager.SaveAnimationSequence(dialog.FileName);
+                MessageBox.Show($"Saved successfully to:\n{dialog.FileName}");
+            }
+            catch (Exception ex) { MessageBox.Show($"Error saving: {ex.Message}"); }
+        }
+
+        private void OnSaveBinClick(object sender, EventArgs e)
+        {
+            if (_uopManager == null || _sequenceViewModelList == null) return;
+            using var dialog = new SaveFileDialog
+            { InitialDirectory = Options.OutputPath, FileName = $"Sequence_{_currentBody}.bin", Filter = "Binary Files (*.bin)|*.bin", Title = "Save Sequence Binary Data" };
+            if (dialog.ShowDialog() != DialogResult.OK) return;
+            try
+            {
+                File.WriteAllBytes(dialog.FileName, _uopManager.GetBinaryDataForAnimationId((uint)_currentBody));
+                MessageBox.Show($"Saved .bin successfully to:\n{dialog.FileName}");
+            }
+            catch (Exception ex) { MessageBox.Show($"Error saving .bin: {ex.Message}"); }
+        }
+
+        private void OnCloneSequenceIdClick(object sender, EventArgs e)
+        {
+            if (_uopManager == null) return;
+            string srcInput = ShowInputDialog("Enter Source Animation ID:", "Clone Sequence ID", "");
+            if (!uint.TryParse(srcInput, out uint srcId)) { MessageBox.Show("Invalid Source ID.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error); return; }
+            if (!_uopManager.SequenceEntries.ContainsKey(srcId)) { MessageBox.Show($"Source ID {srcId} not found.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error); return; }
+            string newInput = ShowInputDialog("Enter New Animation ID:", "Clone Sequence ID", "");
+            if (!uint.TryParse(newInput, out uint newId)) { MessageBox.Show("Invalid New ID.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error); return; }
+            if (_uopManager.SequenceEntries.ContainsKey(newId))
+                if (MessageBox.Show($"ID {newId} exists. Overwrite?", "Confirm", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) != DialogResult.Yes) return;
+            try
+            {
+                _uopManager.CloneAnimationSequenceEntry(srcId, newId);
+                _uopManager.EnsureIdInMainMisc(newId, forceCreatureFlag: true);
+                RefreshMainMiscButtonState();
+                LoadUopAnimations();
+                MessageBox.Show($"Cloned {srcId} → {newId}.\nRemember to save MainMisc Table.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            catch (Exception ex) { MessageBox.Show($"Error cloning: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error); }
+        }
+
+        private void OnAddCurrentToMainMiscClick(object sender, EventArgs e)
+        {
+            if (_uopManager == null || _currentBody == -1) return;
+            uint uid = (uint)_currentBody;
+            const uint CREATURE_FLAG = 0x0C000000;
+            if (_uopManager.IsIdInMainMisc(uid) && _uopManager.GetMainMiscFlag(uid) == CREATURE_FLAG)
+            { MessageBox.Show($"ID {uid} already present.", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information); return; }
+            _uopManager.EnsureIdInMainMisc(uid, forceCreatureFlag: true);
+            RefreshMainMiscButtonState();
+            MessageBox.Show($"ID {uid} added to MainMisc.\nDon't forget to save.", "ID Added", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
+        private void OnSyncMainMiscClick(object sender, EventArgs e)
+        {
+            if (_uopManager == null) return;
+            Cursor = Cursors.WaitCursor;
+            try
+            {
+                int missing = _uopManager.CheckMissingMainMiscEntries(dryRun: true);
+                if (missing > 0)
+                {
+                    if (MessageBox.Show($"Found {missing} missing entries.\nAdd now?", "Sync", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+                    {
+                        int added = _uopManager.CheckMissingMainMiscEntries(dryRun: false);
+                        RefreshMainMiscButtonState();
+                        MessageBox.Show($"{added} IDs added.", "Sync Complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                }
+                else
+                    MessageBox.Show("MainMisc is up to date.", "Sync Complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            finally { Cursor = Cursors.Default; }
+        }
+
+        private void RefreshMainMiscButtonState()
+        {
+            if (_btnSaveMainMisc != null && _uopManager != null)
+            {
+                _btnSaveMainMisc.Enabled = _uopManager.MainMiscModified;
+                System.Diagnostics.Debug.WriteLine($"[MainMisc] Enabled={_btnSaveMainMisc.Enabled}");
             }
         }
+
+        private void OnSaveMainMiscClick(object sender, EventArgs e)
+        {
+            if (_uopManager == null) return;
+            using var dialog = new SaveFileDialog
+            { InitialDirectory = Options.OutputPath, FileName = "MainMisc.uop", Filter = "UOP Files (*.uop)|*.uop", Title = "Save MainMisc Table" };
+            if (dialog.ShowDialog() != DialogResult.OK) return;
+            try
+            {
+                _uopManager.SaveMainMisc(dialog.FileName);
+                MessageBox.Show($"MainMisc.uop saved to:\n{dialog.FileName}\n\nEntries: {_uopManager.GetMainMiscEntryCount()}", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            catch (Exception ex) { MessageBox.Show($"Error saving MainMisc: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error); }
+        }
+
+        // ── ShowInputDialog ───────────────────────────────────────────────────
 
         private string ShowInputDialog(string text, string caption, string defaultValue)
         {
-            using var prompt = new Form
-            {
-                Width = 500,
-                Height = 150,
-                FormBorderStyle = FormBorderStyle.FixedDialog,
-                Text = caption,
-                StartPosition = FormStartPosition.CenterScreen
-            };
-
-            var textLabel = new Label { Left = 50, Top = 20, Width = 400, Text = text };
-            var textBox = new TextBox { Left = 50, Top = 50, Width = 400, Text = defaultValue };
-            var confirmation = new Button
-            {
-                Text = "Ok",
-                Left = 350,
-                Width = 100,
-                Top = 70,
-                DialogResult = DialogResult.OK
-            };
-            confirmation.Click += (s, args) => prompt.Close();
-
-            prompt.Controls.AddRange(new Control[] { textLabel, textBox, confirmation });
-            prompt.AcceptButton = confirmation;
-
-            return prompt.ShowDialog() == DialogResult.OK ? textBox.Text : "";
+            using var prompt = new Form { Width = 500, Height = 150, FormBorderStyle = FormBorderStyle.FixedDialog, Text = caption, StartPosition = FormStartPosition.CenterScreen };
+            var lbl = new Label { Left = 50, Top = 20, Width = 400, Text = text };
+            var tb = new TextBox { Left = 50, Top = 50, Width = 400, Text = defaultValue };
+            var btn = new Button { Text = "Ok", Left = 350, Width = 100, Top = 70, DialogResult = DialogResult.OK };
+            btn.Click += (s, a) => prompt.Close();
+            prompt.Controls.AddRange(new Control[] { lbl, tb, btn });
+            prompt.AcceptButton = btn;
+            return prompt.ShowDialog() == DialogResult.OK ? tb.Text : "";
         }
 
-        private void BtnSeqPlay_Click(object sender, EventArgs e)
-        {
-            _sequenceTimer.Start();
-        }
+        // ── Buttons ───────────────────────────────────────────────────────────
 
-        private void BtnSeqStop_Click(object sender, EventArgs e)
-        {
-            _sequenceTimer.Stop();
-        }
+        private void BtnSeqPlay_Click(object sender, EventArgs e) => _sequenceTimer.Start();
+        private void BtnSeqStop_Click(object sender, EventArgs e) => _sequenceTimer.Stop();
 
         private void SeqDirTrackBar_ValueChanged(object sender, EventArgs e)
         {
-            var trackBar = (TrackBar)sender;
-            _seqPreviewDirection = trackBar.Value;
+            var tb = (TrackBar)sender;
+            _seqPreviewDirection = tb.Value;
             _seqDirLabel.Text = $"Direction: {_seqPreviewDirection}";
             _seqPreviewFrameIndex = 0;
             UpdateSequencePreview();
@@ -9392,5 +9472,734 @@ namespace UoFiddler.Controls.Forms
 
         #endregion
 
+
+
+        #region [ Hex Editor ] - Button-Handler und Logik zum Öffnen des Hex Editors mit den entsprechenden Daten
+        // ══════════════════════════════════════════════════════════════════════
+        //  In AnimationEditForm.cs einfügen
+        //  Feld oben in der Klasse (neben den anderen privaten Feldern):
+        // ══════════════════════════════════════════════════════════════════════
+
+        private AnimationHexEditorForm _hexEditor;
+
+        // ══════════════════════════════════════════════════════════════════════
+        //  Button-Handler
+        //  Im Designer: Button Name = btnOpenHexEditor, Text = "Hex Editor"
+        // ══════════════════════════════════════════════════════════════════════
+
+        private void btnOpenHexEditor_Click(object sender, EventArgs e)
+        {
+            // Kein Dateityp ausgewählt
+            if (_fileType == 0)
+            {
+                MessageBox.Show("Bitte zuerst eine Animationsdatei auswählen.",
+                    "Hex Editor", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            // Kein Knoten selektiert
+            if (AnimationListTreeView.SelectedNode == null)
+            {
+                MessageBox.Show("Bitte zuerst eine Animation auswählen.",
+                    "Hex Editor", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            // Fenster erzeugen oder wiederverwenden
+            if (_hexEditor == null || _hexEditor.IsDisposed)
+                _hexEditor = new AnimationHexEditorForm();
+
+            // Regionen aufbauen und Daten laden
+            if (_fileType == 6) // UOP
+                OpenHexEditorUop();
+            else                // MUL (anim1–anim5)
+                OpenHexEditorMul();
+
+            _hexEditor.Show();
+            _hexEditor.BringToFront();
+        }
+
+        // ──────────────────────────────────────────────────────────────────────
+        //  UOP  – Rohdaten + Regionen aus dem UopManager holen
+        // ──────────────────────────────────────────────────────────────────────
+
+        private void OpenHexEditorUop()
+        {
+            if (_uopManager == null) return;
+
+            // Get raw data - try current direction first, then all others
+            var fileInfo = _uopManager.GetAnimationData(_currentBody, _currentAction, _currentDir);
+            byte[] rawData = null;
+            long fileOffset = 0;          // ← use 0 since DataOffset doesn't exist
+            string filePath = "(UOP – memory)";
+
+            if (fileInfo != null)
+            {
+                rawData = fileInfo.GetData();
+                // fileInfo.DataOffset does NOT exist → use 0 as placeholder
+                fileOffset = 0;
+                filePath = fileInfo.File?.FilePath ?? filePath;
+            }
+
+            // Fallback: try all directions
+            if (rawData == null || rawData.Length == 0)
+            {
+                for (int dir = 0; dir < 5; dir++)
+                {
+                    var fi = _uopManager.GetAnimationData(_currentBody, _currentAction, dir);
+                    if (fi == null) continue;
+                    byte[] d = fi.GetData();
+                    if (d != null && d.Length > 0)
+                    {
+                        rawData = d;
+                        fileOffset = 0;   // ← same here
+                        filePath = fi.File?.FilePath ?? filePath;
+                        break;
+                    }
+                }
+            }
+
+            if (rawData == null || rawData.Length == 0)
+            {
+                MessageBox.Show("Keine Rohdaten für diese Animation gefunden.",
+                    "Hex Editor", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            var regions = BuildUopRegions(rawData);
+            var preview = GetCurrentFrameBitmap();
+
+            _hexEditor.LoadUopAnimation(rawData, fileOffset, filePath,
+                _currentBody, _currentAction, _currentDir, _currentAction, regions);
+
+            if (preview != null)
+                _hexEditor.SetPreviewImage(preview, regions.Count > 0 ? regions[0] : null);
+        }
+
+        // ──────────────────────────────────────────────────────────────────────
+        //  MUL  – Rohdaten direkt aus der idx/mul-Datei lesen
+        // ──────────────────────────────────────────────────────────────────────       
+
+        private void OpenHexEditorMul()
+        {
+            // 1. AnimIdx via SDK — exakt wie beim Anzeigen der Frames
+            AnimIdx edit = AnimationEdit.GetAnimation(
+                _fileType, _currentBody, _currentAction, _currentDir);
+
+            if (edit == null)
+            {
+                MessageBox.Show(
+                    $"Keine AnimIdx-Daten für Body {_currentBody}, " +
+                    $"Action {_currentAction}, Dir {_currentDir}.",
+                    "Hex Editor", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            Bitmap[] frames = edit.GetFrames();
+            if (frames == null || frames.Length == 0)
+            {
+                MessageBox.Show(
+                    $"AnimIdx für Body {_currentBody} hat keine Frames.",
+                    "Hex Editor", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            // 2. Versuche die Rohdaten aus der MUL-Datei zu lesen.
+            //    Dafür müssen wir den TATSÄCHLICHEN Body-Index ermitteln
+            //    den AnimationEdit intern benutzt.
+            //
+            //    Strategie: Alle 5 Dateien × alle möglichen Bodies scannen
+            //    und den nehmen dessen IDX-Eintrag einen gültigen Offset hat
+            //    UND dessen FrameCount mit edit.Frames.Count übereinstimmt.
+
+            byte[] rawData = null;
+            long dataOffset = 0;
+            string mulPath = null;
+
+            rawData = TryFindRawDataForAnimIdx(edit, out dataOffset, out mulPath);
+
+            // 3. Falls Rohdaten gefunden: Hex-Editor mit echter MUL-Datei befüllen
+            if (rawData != null && rawData.Length > 0)
+            {
+                var regions = BuildMulRegions(rawData, edit);
+                var preview = GetCurrentFrameBitmap();
+
+                _hexEditor.LoadMulAnimation(rawData, dataOffset, mulPath,
+                    _currentBody, _currentAction, _currentDir,
+                    FramesTrackBar.Value, regions);
+
+                if (preview != null)
+                    _hexEditor.SetPreviewImage(preview,
+                        regions.Count > 0 ? regions[0] : null);
+                return;
+            }
+
+            // 4. Fallback: Daten aus AnimIdx-Frames rekonstruieren
+            //    (für Bodies die nur im RAM-Cache existieren, z.B. importierte)
+            rawData = SerializeAnimIdxToMulFormat(edit);
+            if (rawData == null)
+            {
+                MessageBox.Show("Fehler beim Serialisieren der AnimIdx-Daten.",
+                    "Hex Editor", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            string pseudoPath = $"(RAM-Cache: Body {_currentBody} / " +
+                                $"anim{_fileType}.mul nicht gefunden)";
+            var regions2 = BuildMulRegions(rawData, edit);
+            var preview2 = GetCurrentFrameBitmap();
+
+            _hexEditor.LoadMulAnimation(rawData, 0, pseudoPath,
+                _currentBody, _currentAction, _currentDir,
+                FramesTrackBar.Value, regions2);
+
+            if (preview2 != null)
+                _hexEditor.SetPreviewImage(preview2,
+                    regions2.Count > 0 ? regions2[0] : null);
+        }
+
+        // ──────────────────────────────────────────────────────────────────────
+        //  Sucht die Rohdaten für eine AnimIdx in allen anim-Dateien.
+        //  Vergleicht FrameCount aus dem IDX mit edit.Frames.Count.
+        // ──────────────────────────────────────────────────────────────────────
+
+        private byte[] TryFindRawDataForAnimIdx(AnimIdx edit,
+            out long foundOffset, out string foundMulPath)
+        {
+            foundOffset = 0;
+            foundMulPath = null;
+
+            int expectedFrames = edit.Frames?.Count ?? 0;
+
+            // Kandidaten: BodyConverter + BodyTable + alle Dateien
+            int btBody = _currentBody;
+            if (Ultima.BodyTable.Entries != null
+                && Ultima.BodyTable.Entries.TryGetValue(_currentBody,
+                    out Ultima.BodyTableEntry btEntry)
+                && !Ultima.BodyConverter.Contains(_currentBody))
+                btBody = btEntry.OldId;
+
+            int bcBody = btBody;
+            int bcFt = Ultima.BodyConverter.Convert(ref bcBody);
+
+            // Alle Kombinationen die sinnvoll sind
+            var candidates = new List<(int body, int ft)>();
+            for (int ft = 1; ft <= 5; ft++) candidates.Add((_currentBody, ft));
+            if (btBody != _currentBody)
+                for (int ft = 1; ft <= 5; ft++) candidates.Add((btBody, ft));
+            if (bcFt >= 1 && bcFt <= 5) candidates.Add((bcBody, bcFt));
+
+            var seen = new System.Collections.Generic.HashSet<(int, int)>();
+            foreach (var (body, ft) in candidates)
+            {
+                if (!seen.Add((body, ft))) continue;
+
+                string mn = ft == 1 ? "anim.mul" : $"anim{ft}.mul";
+                string ix = ft == 1 ? "anim.idx" : $"anim{ft}.idx";
+                string mp = Ultima.Files.GetFilePath(mn);
+                string ip = Ultima.Files.GetFilePath(ix);
+
+                if (string.IsNullOrEmpty(mp) || !System.IO.File.Exists(mp)) continue;
+                if (string.IsNullOrEmpty(ip) || !System.IO.File.Exists(ip)) continue;
+
+                int ei = body * 110 * 5 + _currentAction * 5 + _currentDir;
+                long pos = (long)ei * 12;
+
+                try
+                {
+                    using var idxFs = new System.IO.FileStream(ip,
+                        System.IO.FileMode.Open, System.IO.FileAccess.Read,
+                        System.IO.FileShare.Read);
+                    if (pos + 12 > idxFs.Length) continue;
+
+                    idxFs.Seek(pos, System.IO.SeekOrigin.Begin);
+                    using var br = new System.IO.BinaryReader(idxFs);
+                    int rawOff = br.ReadInt32();
+                    int rawLen = br.ReadInt32();
+                    int rawExt = br.ReadInt32();
+
+                    if (rawOff < 0) continue;  // -1 = leer
+
+                    int actualLen = rawLen > 0 ? rawLen
+                                  : rawExt > 0 ? rawExt
+                                  : 0;
+                    if (actualLen <= 0) continue;
+
+                    // Rohdaten lesen
+                    using var mulFs = new System.IO.FileStream(mp,
+                        System.IO.FileMode.Open, System.IO.FileAccess.Read,
+                        System.IO.FileShare.Read);
+                    if (rawOff + actualLen > mulFs.Length) continue;
+
+                    mulFs.Seek(rawOff, System.IO.SeekOrigin.Begin);
+                    var buf = new byte[actualLen];
+                    int read = mulFs.Read(buf, 0, buf.Length);
+                    if (read < 514) continue;
+
+                    // FrameCount aus den Rohdaten prüfen
+                    int fc = buf[512] | (buf[513] << 8);
+
+                    // Akzeptiere wenn FrameCount stimmt ODER wenn es die einzige
+                    // gültige Option ist (expectedFrames kann 0 sein bei neuen Frames)
+                    if (fc == expectedFrames || (expectedFrames == 0 && fc > 0)
+                        || fc > 0)
+                    {
+                        if (read < buf.Length) System.Array.Resize(ref buf, read);
+                        foundOffset = rawOff;
+                        foundMulPath = mp;
+                        return buf;
+                    }
+                }
+                catch { /* weiter */ }
+            }
+
+            return null;
+        }
+
+        // ──────────────────────────────────────────────────────────────────────
+        //  Serialisiert AnimIdx-Frames ins MUL-Format (Fallback für RAM-Cache)
+        //  Format: Palette(512) + FrameCount(2) + Lookup(N*4) + FrameData
+        // ──────────────────────────────────────────────────────────────────────
+
+        private byte[] SerializeAnimIdxToMulFormat(AnimIdx edit)
+        {
+            try
+            {
+                if (edit?.Frames == null) return null;
+
+                using var ms = new System.IO.MemoryStream();
+                using var bw = new System.IO.BinaryWriter(ms);
+
+                // Palette (256 × uint16 = 512 Bytes)
+                for (int i = 0; i < 256; i++)
+                    bw.Write(i < edit.Palette.Length ? edit.Palette[i] : (ushort)0x8000);
+
+                // FrameCount
+                ushort fc = (ushort)edit.Frames.Count;
+                bw.Write(fc);
+
+                // Lookup-Tabelle: Platzhalter, werden später gefüllt
+                long lookupStart = ms.Position;
+                for (int i = 0; i < fc; i++) bw.Write((int)0);
+
+                // Frame-Daten schreiben und Offsets merken
+                var offsets = new int[fc];
+                var bitmaps = edit.GetFrames();
+
+                for (int i = 0; i < fc; i++)
+                {
+                    offsets[i] = (int)ms.Position;
+
+                    var frame = edit.Frames[i];
+                    var bmp = (bitmaps != null && i < bitmaps.Length) ? bitmaps[i] : null;
+
+                    // Frame-Header: CX (int16), CY (int16), Width (uint16), Height (uint16)
+                    bw.Write((short)(frame?.Center.X ?? 0));
+                    bw.Write((short)(frame?.Center.Y ?? 0));
+
+                    if (bmp != null)
+                    {
+                        bw.Write((ushort)bmp.Width);
+                        bw.Write((ushort)bmp.Height);
+
+                        // Pixel-Daten (vereinfacht: RLE würde zu komplex)
+                        // Wir schreiben einfach die Pixelwerte als uint16
+                        for (int y = 0; y < bmp.Height; y++)
+                            for (int x = 0; x < bmp.Width; x++)
+                            {
+                                var c = bmp.GetPixel(x, y);
+                                ushort v = c.A == 0 ? (ushort)0
+                                    : (ushort)(0x8000
+                                        | ((c.R >> 3) << 10)
+                                        | ((c.G >> 3) << 5)
+                                        | (c.B >> 3));
+                                bw.Write(v);
+                            }
+                    }
+                    else
+                    {
+                        bw.Write((ushort)0);
+                        bw.Write((ushort)0);
+                    }
+                }
+
+                // Lookup-Tabelle mit echten Offsets füllen
+                long endPos = ms.Position;
+                ms.Seek(lookupStart, System.IO.SeekOrigin.Begin);
+                for (int i = 0; i < fc; i++) bw.Write(offsets[i]);
+                ms.Seek(endPos, System.IO.SeekOrigin.Begin);
+
+                return ms.ToArray();
+            }
+            catch { return null; }
+        }
+
+        // ──────────────────────────────────────────────────────────────────────
+        //  Regionen für UOP aufbauen
+        //  Analysiert den Rohdaten-Block und markiert Header + Frame-Starts
+        // ──────────────────────────────────────────────────────────────────────
+
+        private List<HexRegion> BuildUopRegions(byte[] data)
+        {
+            var regions = new List<HexRegion>();
+            if (data == null || data.Length < 8) return regions;
+
+            // Farben für die 28 Sequenzen (zyklisch)
+            System.Drawing.Color[] palette =
+            {
+        System.Drawing.Color.FromArgb(60, 100, 200, 255),
+        System.Drawing.Color.FromArgb(60, 255, 140,  0),
+        System.Drawing.Color.FromArgb(60,   0, 200, 80),
+        System.Drawing.Color.FromArgb(60, 200,  50, 50),
+        System.Drawing.Color.FromArgb(60, 180,  60, 220),
+        System.Drawing.Color.FromArgb(60,  60, 200, 200),
+        System.Drawing.Color.FromArgb(60, 220, 220,  50),
+    };
+
+            try
+            {
+                using var ms = new System.IO.MemoryStream(data);
+                using var br = new System.IO.BinaryReader(ms);
+
+                // UOP-Header (24 Bytes fest laut UopAnimationDataManager)
+                int headerLen = 24;
+                if (data.Length >= headerLen)
+                {
+                    regions.Add(new HexRegion
+                    {
+                        Offset = 0,
+                        Length = headerLen,
+                        Label = "UOP Header",
+                        Tooltip = $"Body:{_currentBody}  Action:{_currentAction}",
+                        HighlightColor = System.Drawing.Color.FromArgb(80, 255, 215, 0),
+                        IsSequenceStart = true,
+                        SequenceIndex = 0,
+                        DirectionIndex = _currentDir
+                    });
+                }
+
+                // Frame-Tabelle: ab Offset 24, je Frame 12 Bytes (Offset + Länge + Extra)
+                // FrameCount steht in Bytes 8–11 (int32)
+                if (data.Length >= 12)
+                {
+                    br.BaseStream.Seek(8, System.IO.SeekOrigin.Begin);
+                    int frameCount = br.ReadInt32();
+
+                    if (frameCount > 0 && frameCount < 10000)
+                    {
+                        long tableOffset = headerLen;
+                        long tableLen = frameCount * 12;
+
+                        if (tableOffset + tableLen <= data.Length)
+                        {
+                            regions.Add(new HexRegion
+                            {
+                                Offset = tableOffset,
+                                Length = tableLen,
+                                Label = $"Frame-Tabelle ({frameCount} Frames)",
+                                Tooltip = "Offset/Länge je Frame (12 B pro Eintrag)",
+                                HighlightColor = System.Drawing.Color.FromArgb(50, 100, 255, 100),
+                                IsSequenceStart = false
+                            });
+
+                            // Einzelne Frame-Daten markieren
+                            br.BaseStream.Seek(tableOffset, System.IO.SeekOrigin.Begin);
+                            for (int i = 0; i < frameCount && i < 28; i++)
+                            {
+                                int fOff = br.ReadInt32();
+                                int fLen = br.ReadInt32();
+                                br.ReadInt32(); // extra
+
+                                if (fOff < 0 || fLen <= 0) continue;
+                                if (fOff + fLen > data.Length) continue;
+
+                                var color = palette[i % palette.Length];
+                                var preview = GetFramePreviewBitmap(i);
+
+                                regions.Add(new HexRegion
+                                {
+                                    Offset = fOff,
+                                    Length = fLen,
+                                    Label = $"Frame {i}  Dir {_currentDir}",
+                                    Tooltip = $"Länge: {fLen} Bytes  Offset: 0x{fOff:X}",
+                                    HighlightColor = color,
+                                    IsSequenceStart = (i == 0),
+                                    SequenceIndex = _currentAction,
+                                    DirectionIndex = _currentDir,
+                                    FrameIndex = i,
+                                    PreviewImage = preview
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+            catch { /* best-effort – partial regions sind ok */ }
+
+            return regions;
+        }
+
+        // ──────────────────────────────────────────────────────────────────────
+        //  Regionen für MUL aufbauen
+        //  MUL-Format: Palette (512 B) + FrameCount (2 B) + Frames
+        // ──────────────────────────────────────────────────────────────────────
+
+        private List<HexRegion> BuildMulRegions(byte[] data, Ultima.AnimIdx edit)
+        {
+            var regions = new List<HexRegion>();
+            if (data == null || data.Length < 514) return regions;
+
+            System.Drawing.Color[] palette =
+            {
+        System.Drawing.Color.FromArgb(60, 100, 200, 255),
+        System.Drawing.Color.FromArgb(60, 255, 140,  0),
+        System.Drawing.Color.FromArgb(60,   0, 200, 80),
+        System.Drawing.Color.FromArgb(60, 200,  50, 50),
+        System.Drawing.Color.FromArgb(60, 180,  60, 220),
+        System.Drawing.Color.FromArgb(60,  60, 200, 200),
+        System.Drawing.Color.FromArgb(60, 220, 220,  50),
+    };
+
+            // Palette: 256 × 2 Bytes = 512 Bytes
+            regions.Add(new HexRegion
+            {
+                Offset = 0,
+                Length = 512,
+                Label = "Palette (256 × uint16)",
+                Tooltip = "16bpp ARGB1555 Farbpalette",
+                HighlightColor = System.Drawing.Color.FromArgb(80, 255, 215, 0),
+                IsSequenceStart = true,
+                SequenceIndex = 0,
+                DirectionIndex = _currentDir
+            });
+
+            // FrameCount: 2 Bytes bei Offset 512
+            if (data.Length >= 514)
+            {
+                ushort frameCount = (ushort)(data[512] | (data[513] << 8));
+                regions.Add(new HexRegion
+                {
+                    Offset = 512,
+                    Length = 2,
+                    Label = $"FrameCount = {frameCount}",
+                    Tooltip = "Anzahl Frames in dieser Richtung",
+                    HighlightColor = System.Drawing.Color.FromArgb(80, 200, 100, 255)
+                });
+
+                // Frame-Lookup-Tabelle: frameCount × 4 Bytes (Offset je Frame)
+                long lookupLen = frameCount * 4L;
+                if (514 + lookupLen <= data.Length)
+                {
+                    regions.Add(new HexRegion
+                    {
+                        Offset = 514,
+                        Length = lookupLen,
+                        Label = $"Frame-Lookup ({frameCount} × 4 B)",
+                        Tooltip = "Byte-Offsets der einzelnen Frames",
+                        HighlightColor = System.Drawing.Color.FromArgb(50, 100, 255, 100)
+                    });
+
+                    // Einzelne Frame-Datenbereiche
+                    if (edit?.Frames != null)
+                    {
+                        for (int i = 0; i < edit.Frames.Count && i < 28; i++)
+                        {
+                            // Frame-Offset aus Lookup-Tabelle lesen
+                            int lookupPos = 514 + i * 4;
+                            if (lookupPos + 4 > data.Length) break;
+
+                            int fOff = System.BitConverter.ToInt32(data, lookupPos);
+                            if (fOff <= 0 || fOff >= data.Length) continue;
+
+                            // Frame-Länge = nächster Offset – aktueller Offset (oder Dateiende)
+                            int nextOff = data.Length;
+                            if (i + 1 < edit.Frames.Count)
+                            {
+                                int nextLookup = 514 + (i + 1) * 4;
+                                if (nextLookup + 4 <= data.Length)
+                                {
+                                    int n = System.BitConverter.ToInt32(data, nextLookup);
+                                    if (n > fOff && n <= data.Length) nextOff = n;
+                                }
+                            }
+
+                            long fLen = nextOff - fOff;
+                            if (fLen <= 0) continue;
+
+                            var color = palette[i % palette.Length];
+                            var preview = GetFramePreviewBitmap(i);
+
+                            regions.Add(new HexRegion
+                            {
+                                Offset = fOff,
+                                Length = fLen,
+                                Label = $"Frame {i}  Dir {_currentDir}",
+                                Tooltip = $"CenterX:{edit.Frames[i].Center.X}  CenterY:{edit.Frames[i].Center.Y}  Länge:{fLen} B",
+                                HighlightColor = color,
+                                IsSequenceStart = (i == 0),
+                                SequenceIndex = _currentAction,
+                                DirectionIndex = _currentDir,
+                                FrameIndex = i,
+                                PreviewImage = preview
+                            });
+                        }
+                    }
+                }
+            }
+
+            return regions;
+        }
+
+        // ──────────────────────────────────────────────────────────────────────
+        //  Helfer: aktuelles Frame-Vorschaubild holen
+        // ──────────────────────────────────────────────────────────────────────
+
+        private System.Drawing.Bitmap GetCurrentFrameBitmap()
+        {
+            return GetFramePreviewBitmap(FramesTrackBar.Value);
+        }
+
+        private System.Drawing.Bitmap GetFramePreviewBitmap(int frameIndex)
+        {
+            try
+            {
+                if (_fileType == 6 && _uopManager != null)
+                {
+                    var uopAnim = _uopManager.GetUopAnimation(_currentBody, _currentAction, _currentDir);
+                    if (uopAnim != null && frameIndex >= 0 && frameIndex < uopAnim.Frames.Count)
+                        return new System.Drawing.Bitmap(uopAnim.Frames[frameIndex].Image);
+                }
+                else if (_fileType != 0)
+                {
+                    var edit = AnimationEdit.GetAnimation(_fileType, _currentBody, _currentAction, _currentDir);
+                    var bits = edit?.GetFrames();
+                    if (bits != null && frameIndex >= 0 && frameIndex < bits.Length && bits[frameIndex] != null)
+                        return new System.Drawing.Bitmap(bits[frameIndex]);
+                }
+            }
+            catch { /* Vorschau optional */ }
+            return null;
+        }
+
+        // ──────────────────────────────────────────────────────────────────────
+        //  Aufruf wenn sich Auswahl ändert (Direction / Frame / Action)
+        //  Diese Zeile in OnDirectionChanged, AfterSelectTreeView und
+        //  OnFrameCountBarChanged am Ende einfügen:
+        //
+        //      NotifyHexEditor();
+        // ──────────────────────────────────────────────────────────────────────
+
+        private void NotifyHexEditor()
+        {
+            if (_hexEditor == null || _hexEditor.IsDisposed || !_hexEditor.Visible)
+                return;
+
+            var regions = _fileType == 6
+                ? BuildUopRegions(GetCurrentUopRawData())
+                : BuildMulRegionsForCurrentSelection();
+
+            _hexEditor.UpdateSelection(
+                _currentDir,
+                FramesTrackBar.Value,
+                _currentAction,
+                regions,
+                GetCurrentFrameBitmap());
+        }
+
+        private byte[] GetCurrentUopRawData()
+        {
+            if (_uopManager == null) return null;
+            var fi = _uopManager.GetAnimationData(_currentBody, _currentAction, _currentDir);
+            return fi?.GetData();
+        }
+
+        private List<HexRegion> BuildMulRegionsForCurrentSelection()
+        {
+            var edit = AnimationEdit.GetAnimation(_fileType, _currentBody, _currentAction, _currentDir);
+            if (edit == null) return new List<HexRegion>();
+
+            // Rohdaten erneut lesen (kurz, da Datei gecacht ist)
+            string mulFileName = _fileType == 1 ? "anim.mul" : $"anim{_fileType}.mul";
+            string idxFileName = _fileType == 1 ? "anim.idx" : $"anim{_fileType}.idx";
+            string mulPath = Ultima.Files.GetFilePath(mulFileName);
+            string idxPath = Ultima.Files.GetFilePath(idxFileName);
+
+            if (string.IsNullOrEmpty(mulPath)) return new List<HexRegion>();
+
+            try
+            {
+                int entryIndex = _currentBody * 110 * 5 + _currentAction * 5 + _currentDir;
+                using var idxFs = new System.IO.FileStream(idxPath,
+                    System.IO.FileMode.Open, System.IO.FileAccess.Read, System.IO.FileShare.Read);
+                using var idxBr = new System.IO.BinaryReader(idxFs);
+                idxFs.Seek((long)entryIndex * 12, System.IO.SeekOrigin.Begin);
+                int offset = idxBr.ReadInt32();
+                int length = idxBr.ReadInt32();
+                if (offset < 0 || length <= 0) return new List<HexRegion>();
+
+                byte[] raw = new byte[length];
+                using var mulFs = new System.IO.FileStream(mulPath,
+                    System.IO.FileMode.Open, System.IO.FileAccess.Read, System.IO.FileShare.Read);
+                mulFs.Seek(offset, System.IO.SeekOrigin.Begin);
+                mulFs.Read(raw, 0, raw.Length);
+
+                return BuildMulRegions(raw, edit);
+            }
+            catch { return new List<HexRegion>(); }
+        }
+        #endregion
+
+        #region [ Diagnosen ] - Button-Handler zum Aufrufen der Diagnose-Dialogs
+        /// <summary>
+        /// Zeigt vollständige IDX-Diagnose für den aktuell gewählten Body.
+        /// Gut um zu sehen warum bestimmte Actions rot sind.
+        /// </summary>
+        private void btnDiagSingle_Click(object sender, EventArgs e)
+        {
+            if (_fileType == 0 || _fileType == 6) return;
+            MulAnimDiagnostics.ShowSingleDiagDialog(_currentBody, _fileType, this);
+        }
+
+        /// <summary>
+        /// Vergleicht einen funktionierenden Body mit einem kaputten.
+        /// Zeigt exakt wo der Unterschied liegt (BodyConverter, IDX, etc.)
+        /// </summary>
+        private void btnDiagCompare_Click(object sender, EventArgs e)
+        {
+            if (_fileType == 0 || _fileType == 6) return;
+
+            // Arbeitet mit dem aktuellen Body als "kaputt"
+            // Fragt nach dem funktionierenden Body
+            string input = Microsoft.VisualBasic.Interaction.InputBox(
+                $"Vergleich: Body {_currentBody} (aktuell) mit welchem funktionierenden Body?\n\n" +
+                "Gib die Body-ID des funktionierenden Bodies ein:",
+                "Vergleichs-Diagnose", "0");
+
+            if (string.IsNullOrEmpty(input)) return;
+            if (!int.TryParse(input, out int workingBody)) return;
+
+            MulAnimDiagnostics.ShowComparisonDialog(workingBody, _currentBody, _fileType, this);
+        }
+
+        /// <summary>
+        /// Scannt ALLE Bodies der geladenen Datei und listet alle mit Problemen.
+        /// Achtung: kann bei großen Dateien etwas dauern (~1-2 Sekunden).
+        /// </summary>
+        private void btnDiagMassScan_Click(object sender, EventArgs e)
+        {
+            if (_fileType == 0 || _fileType == 6) return;
+
+            var result = MessageBox.Show(
+                $"Alle Bodies in anim{_fileType}.mul scannen?\n" +
+                "Nur Bodies mit Problemen (PARTIAL/BROKEN) werden ausgegeben.",
+                "Massen-Scan", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+
+            if (result != DialogResult.Yes) return;
+
+            Cursor = Cursors.WaitCursor;
+            try { MulAnimDiagnostics.ShowMassScanDialog(_fileType, this); }
+            finally { Cursor = Cursors.Default; }
+        }
+        #endregion
     }
 }
