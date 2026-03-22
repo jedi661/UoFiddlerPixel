@@ -112,16 +112,18 @@ namespace UoFiddler.Controls.Forms
             // 
             btnSearch.ForeColor = Color.White;
             btnSearch.Name = "btnSearch";
-            btnSearch.Size = new Size(50, 22);
-            btnSearch.Text = "Suchen";
+            btnSearch.Size = new Size(46, 22);
+            btnSearch.Text = "Search";
+            btnSearch.ToolTipText = "Search";
             btnSearch.Click += btnSearch_Click;
             // 
             // btnFindNext
             // 
             btnFindNext.ForeColor = Color.White;
             btnFindNext.Name = "btnFindNext";
-            btnFindNext.Size = new Size(45, 22);
-            btnFindNext.Text = "Weiter";
+            btnFindNext.Size = new Size(36, 22);
+            btnFindNext.Text = "Next";
+            btnFindNext.ToolTipText = "Next";
             btnFindNext.Click += btnFindNext_Click;
             // 
             // btnCopyOffset
@@ -250,7 +252,7 @@ namespace UoFiddler.Controls.Forms
             lblPreviewInfo.Name = "lblPreviewInfo";
             lblPreviewInfo.Size = new Size(1019, 38);
             lblPreviewInfo.TabIndex = 0;
-            lblPreviewInfo.Text = "Keine Animation geladen.";
+            lblPreviewInfo.Text = "No animation loaded.";
             // 
             // listRegions
             // 
@@ -299,7 +301,7 @@ namespace UoFiddler.Controls.Forms
             lblRegionsHeader.Name = "lblRegionsHeader";
             lblRegionsHeader.Size = new Size(245, 20);
             lblRegionsHeader.TabIndex = 1;
-            lblRegionsHeader.Text = "  Erkannte Regionen / Sequenzen:";
+            lblRegionsHeader.Text = "Detected regions / sequences:";
             // 
             // picPreview
             // 
@@ -326,8 +328,8 @@ namespace UoFiddler.Controls.Forms
             // 
             lblStatus.ForeColor = Color.FromArgb(170, 170, 170);
             lblStatus.Name = "lblStatus";
-            lblStatus.Size = new Size(40, 17);
-            lblStatus.Text = "Bereit.";
+            lblStatus.Size = new Size(42, 17);
+            lblStatus.Text = "Ready.";
             // 
             // AnimationHexEditorForm
             // 

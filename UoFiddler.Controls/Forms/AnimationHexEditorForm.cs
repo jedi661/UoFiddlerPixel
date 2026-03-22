@@ -148,6 +148,18 @@ namespace UoFiddler.Controls.Forms
         // ══════════════════════════════════════════════════════════════════════
         //  Constructor
         // ══════════════════════════════════════════════════════════════════════
+
+        // ═══════════════════════════════════════════════════════════
+        //  Frame Compare State
+        // ═══════════════════════════════════════════════════════════
+        private int _compareFrameA = -1;
+
+        // ────────────────────────────────────────────────────────────
+        // ── Pin events — fired when user presses Ctrl+1 (Pin A) or Ctrl+2 (Pin B)
+        // -───────────────────────────────────────────────────────────
+        public event Action<HexCompareBuffer> OnPinAsA;
+        public event Action<HexCompareBuffer> OnPinAsB;
+
         public AnimationHexEditorForm()
         {
             InitializeComponent();
@@ -161,14 +173,14 @@ namespace UoFiddler.Controls.Forms
             };
             blinkTimer.Start();
 
-            // ── NearestNeighbor für picPreview ────────────────────────────────
-            // Verhindert verschwommene Darstellung bei Pixel-Art / Sprites.
-            // PictureBox.SizeMode = Zoom + eigenes Paint = scharfe Pixel.
-            picPreview.SizeMode = PictureBoxSizeMode.Normal; // wir zeichnen selbst
+            // ── NearestNeighbor for picPreview ────────────────────────────────
+            // Prevents blurry rendering in pixel art / sprites.
+            // PictureBox.SizeMode = Zoom + custom paint = sharp pixels.
+            picPreview.SizeMode = PictureBoxSizeMode.Normal;
             picPreview.Paint += PicPreview_Paint;
         }
 
-        // ── Eigenes Paint für picPreview mit NearestNeighbor ─────────────────
+        // ── Custom Paint for picPreview with NearestNeighbor ─────────────────
 
         private void PicPreview_Paint(object sender, PaintEventArgs e)
         {
@@ -185,7 +197,7 @@ namespace UoFiddler.Controls.Forms
             e.Graphics.PixelOffsetMode =
                 System.Drawing.Drawing2D.PixelOffsetMode.Half;
 
-            // Bild proportional in die PictureBox einpassen (wie Zoom-Modus)
+            // Fit image proportionally into PictureBox (like zoom mode)
             int imgW = pb.Image.Width;
             int imgH = pb.Image.Height;
             int boxW = pb.ClientSize.Width;
@@ -259,7 +271,7 @@ namespace UoFiddler.Controls.Forms
         public void SetPreviewImage(Bitmap bmp, HexRegion region)
         {
             picPreview.Image = bmp;
-            picPreview.Invalidate(); // NearestNeighbor Paint neu auslösen
+            picPreview.Invalidate(); // NearestNeighbor Retrigger Paint
             lblPreviewInfo.Text =
                 $"Body:{_bodyId}  Action:{_actionId}  Dir:{_directionId}" +
                 (_isUop ? $"  Seq:{_sequenceId}" : $"  Frame:{_frameId}") +
@@ -335,36 +347,64 @@ namespace UoFiddler.Controls.Forms
         }
 
         // ── Diff side-by-side ─────────────────────────────────────────────────
+
         private void DrawDiffMode(Graphics g, Rectangle clip)
         {
-            int halfW = hexPanel.Width / 2 - 4;
+            if (_diffData == null) return;
+
+            // Each side will have exactly the same width.
+            int sideW = (hexPanel.Width - 6) / 2;
             int hx = OffsetColWidth;
             int ax = hx + BytesPerRow * HexCellWidth + GutterWidth;
-            int pbx = halfW + 8;
 
-            for (int row = 0; row < _visibleRows + 1; row++)
+            // Both sides together from the same _scrollOffset —
+            // No separate scroll for Side B, both scroll synchronously
+
+            for (int row = 0; row <= _visibleRows; row++)
             {
                 long bi = _scrollOffset + row * BytesPerRow;
                 int y = HeaderHeight + row * RowHeight;
                 if (y + RowHeight < clip.Top || y > clip.Bottom) continue;
 
+                // ── Side A (links) ────────────────────────────────────────────────
                 if (bi < _data.Length)
+                {
+                    // Clip to the left half so that rows don't extend into the right side.
+                    var stateA = g.Save();
+                    g.SetClip(new Rectangle(0, 0, sideW, hexPanel.Height));
                     DrawRow(g, row, bi, y, hx, ax, _data, _diffData);
+                    g.Restore(stateA);
+                }
 
-                g.TranslateTransform(pbx, 0);
+                // ── Side B (rechts) ───────────────────────────────────────────────
                 if (bi < _diffData.Length)
+                {
+                    int offsetX = sideW + 6;
+                    var stateB = g.Save();
+                    g.TranslateTransform(offsetX, 0);
+                    g.SetClip(new Rectangle(0, 0, sideW, hexPanel.Height));
                     DrawRow(g, row, bi, y, hx, ax, _diffData, _data);
-                g.TranslateTransform(-pbx, 0);
+                    g.Restore(stateB);
+                }
             }
 
+            // ── dividing line ────────────────────────────────────────────────────────
             using (var dp = new Pen(Color.FromArgb(80, 80, 100), 2f))
-                g.DrawLine(dp, halfW + 4, 0, halfW + 4, hexPanel.Height);
+                g.DrawLine(dp, sideW + 3, 0, sideW + 3, hexPanel.Height);
 
+            // ── labels ────────────────────────────────────────────────────────────
             using var lb = new SolidBrush(Color.FromArgb(140, 190, 255));
             string nA = _sourceFile != null ? Path.GetFileName(_sourceFile) : "Buffer A";
             string nB = _diffLabel != "" ? _diffLabel : "Buffer B";
-            g.DrawString($"A: {nA}", _labelFont, lb, new PointF(hx, 5));
-            g.DrawString($"B: {nB}", _labelFont, lb, new PointF(pbx + hx, 5));
+
+            // Show length difference
+            string lenInfo = _data.Length != _diffData.Length
+                ? $"  ⚠ A={_data.Length:N0} B={_diffData.Length:N0} bytes"
+                : $"  both {_data.Length:N0} bytes";
+
+            g.DrawString($"A: {nA}{lenInfo}", _labelFont, lb, new PointF(hx, 5));
+            g.DrawString($"B: {nB}", _labelFont, lb,
+                new PointF(sideW + 6 + hx, 5));
 
             DrawHeader(g);
         }
@@ -670,7 +710,7 @@ namespace UoFiddler.Controls.Forms
             bool shift = (e.Modifiers & Keys.Shift) != 0;
             bool ctrl = (e.Modifiers & Keys.Control) != 0;
 
-            // write mode nibble input
+            // ── Write mode nibble input ───────────────────────────────────────
             if (_writeMode && !ctrl && !shift)
             {
                 int nib = KeyToNibble(e.KeyCode);
@@ -683,13 +723,96 @@ namespace UoFiddler.Controls.Forms
                         _nibbleMode = false;
                         _cursor = Math.Min(_cursor + 1, _data.Length - 1);
                         EnsureCursorVisible();
-                        hexPanel.Invalidate(); UpdateStatus();
+                        hexPanel.Invalidate();
+                        UpdateStatus();
                     }
-                    e.Handled = true; return;
+                    e.Handled = true;
+                    return;
                 }
                 _nibbleMode = false;
             }
 
+            // ── Ctrl + Arrow keys: Field-aware navigation ─────────────────────
+            if (ctrl && (e.KeyCode == Keys.Right || e.KeyCode == Keys.Left ||
+                         e.KeyCode == Keys.Down || e.KeyCode == Keys.Up))
+            {
+                long oldPos = _cursor;
+
+                switch (e.KeyCode)
+                {
+                    case Keys.Right:
+                        {
+                            var field = ParseFieldAtCursor(_cursor);
+                            if (field != null)
+                                _cursor = Math.Min(field.Offset + field.Size, _data.Length - 1);
+                            else
+                                _cursor = Math.Min(_cursor + 1, _data.Length - 1);
+                            break;
+                        }
+                    case Keys.Left:
+                        {
+                            long probe = Math.Max(_cursor - 1, 0);
+                            var field = ParseFieldAtCursor(probe);
+                            if (field != null)
+                                _cursor = field.Offset;
+                            else
+                                _cursor = probe;
+                            break;
+                        }
+                    case Keys.Down:
+                        {
+                            long pos = _cursor;
+                            for (int i = 0; i < 4; i++)
+                            {
+                                var field = ParseFieldAtCursor(pos);
+                                if (field != null)
+                                    pos = Math.Min(field.Offset + field.Size, _data.Length - 1);
+                                else
+                                    pos = Math.Min(pos + 1, _data.Length - 1);
+                                if (pos >= _data.Length - 1) break;
+                            }
+                            _cursor = pos;
+                            break;
+                        }
+                    case Keys.Up:
+                        {
+                            long pos = _cursor;
+                            for (int i = 0; i < 4; i++)
+                            {
+                                long probe = Math.Max(pos - 1, 0);
+                                var field = ParseFieldAtCursor(probe);
+                                if (field != null)
+                                    pos = field.Offset;
+                                else
+                                    pos = probe;
+                                if (pos <= 0) break;
+                            }
+                            _cursor = pos;
+                            break;
+                        }
+                }
+
+                if (shift)
+                {
+                    if (_selAnchor < 0) _selAnchor = oldPos;
+                    _selStart = _selAnchor;
+                    _selEnd = _cursor;
+                }
+                else
+                {
+                    _selAnchor = -1;
+                    _selStart = _cursor;
+                    _selEnd = _cursor;
+                }
+
+                EnsureCursorVisible();
+                hexPanel.Invalidate();
+                UpdateStatus();
+                e.Handled = true;
+                return;
+            }
+
+            // ── Normal navigation & commands ──────────────────────────────────
             long old = _cursor;
 
             switch (e.KeyCode)
@@ -700,8 +823,10 @@ namespace UoFiddler.Controls.Forms
                 case Keys.Up: _cursor = Math.Max(_cursor - BytesPerRow, 0); break;
                 case Keys.Home: _cursor = ctrl ? 0 : (_cursor / BytesPerRow) * BytesPerRow; break;
                 case Keys.End:
-                    _cursor = ctrl ? _data.Length - 1 :
-                                      Math.Min((_cursor / BytesPerRow + 1) * BytesPerRow - 1, _data.Length - 1); break;
+                    _cursor = ctrl
+                        ? _data.Length - 1
+                        : Math.Min((_cursor / BytesPerRow + 1) * BytesPerRow - 1, _data.Length - 1);
+                    break;
                 case Keys.PageDown: _cursor = Math.Min(_cursor + _visibleRows * BytesPerRow, _data.Length - 1); break;
                 case Keys.PageUp: _cursor = Math.Max(_cursor - _visibleRows * BytesPerRow, 0); break;
 
@@ -714,6 +839,15 @@ namespace UoFiddler.Controls.Forms
                 case Keys.B when ctrl && shift: ShowBookmarks(); e.Handled = true; return;
                 case Keys.T when ctrl: ShowStatistics(); e.Handled = true; return;
                 case Keys.E when ctrl: ExportSelection(); e.Handled = true; return;
+                case Keys.K when ctrl && shift:
+                    _compareFrameA = -1;
+                    lblStatus.Text = "Frame A selection cleared.";
+                    e.Handled = true;
+                    return;
+                case Keys.K when ctrl: ShowFrameCompare(); e.Handled = true; return;
+                case Keys.R when ctrl: ShowRleView(); e.Handled = true; return;
+                case Keys.N when ctrl: JumpToNextFrame(); e.Handled = true; return;
+                case Keys.Oemcomma when ctrl: JumpToPrevFrame(); e.Handled = true; return;
                 case Keys.Z when ctrl && !shift: Undo(); e.Handled = true; return;
                 case Keys.Z when ctrl && shift: Redo(); e.Handled = true; return;
                 case Keys.Y when ctrl: Redo(); e.Handled = true; return;
@@ -723,6 +857,8 @@ namespace UoFiddler.Controls.Forms
                 case Keys.S when ctrl: ShowStructureTree(); e.Handled = true; return;
                 case Keys.F1: ShowCommandOverview(); e.Handled = true; return;
                 case Keys.F3: FindNext(_lastSearchHit + 1); e.Handled = true; return;
+                case Keys.D1 when ctrl: PinAsA(); e.Handled = true; return;
+                case Keys.D2 when ctrl: PinAsB(); e.Handled = true; return;
 
                 default: return;
             }
@@ -730,10 +866,15 @@ namespace UoFiddler.Controls.Forms
             if (shift)
             {
                 if (_selAnchor < 0) _selAnchor = old;
-                _selStart = _selAnchor; _selEnd = _cursor;
+                _selStart = _selAnchor;
+                _selEnd = _cursor;
             }
             else
-            { _selAnchor = -1; _selStart = _cursor; _selEnd = _cursor; }
+            {
+                _selAnchor = -1;
+                _selStart = _cursor;
+                _selEnd = _cursor;
+            }
 
             EnsureCursorVisible();
             hexPanel.Invalidate();
@@ -794,6 +935,101 @@ namespace UoFiddler.Controls.Forms
             if (cr < tr) _scrollOffset = cr * BytesPerRow;
             else if (cr > br) _scrollOffset = (cr - _visibleRows + 1) * BytesPerRow;
             ClampScroll(); SyncScrollBar();
+        }
+
+        // ══════════════════════════════════════════════════════════════════════
+        //  FRAME NAVIGATION & COMPARE & RLE
+        // ══════════════════════════════════════════════════════════════════════
+
+        private void JumpToNextFrame()
+        {
+            if (_data == null) return;
+            long[] headers = GetAllFrameHeaderOffsets();
+            if (headers.Length == 0) return;
+            long next = headers.FirstOrDefault(h => h > _cursor);
+            if (next == 0) next = headers[0];
+            _cursor = next;
+            _selStart = next; _selEnd = next; _selAnchor = next;
+            EnsureCursorVisible();
+            hexPanel.Invalidate();
+            UpdateStatus();
+            lblStatus.Text += $"  │  Frame header at 0x{(_dataOffset + next):X8}";
+        }
+
+        private void JumpToPrevFrame()
+        {
+            if (_data == null) return;
+            long[] headers = GetAllFrameHeaderOffsets();
+            if (headers.Length == 0) return;
+
+            // Last header located BEFORE the cursor
+            long prev = headers.LastOrDefault(h => h < _cursor);
+            if (prev == 0 && headers[headers.Length - 1] < _cursor)
+                prev = headers[headers.Length - 1];
+            else if (prev == 0)
+                prev = headers[headers.Length - 1]; // wrap around
+
+            _cursor = prev;
+            _selStart = prev; _selEnd = prev; _selAnchor = prev;
+            EnsureCursorVisible();
+            hexPanel.Invalidate();
+            UpdateStatus();
+            lblStatus.Text += $"  │  Frame header at 0x{(_dataOffset + prev):X8}";
+        }       
+
+        private long[] GetAllFrameHeaderOffsets()
+        {
+            if (_data == null) return Array.Empty<long>();
+            var result = new List<long>();
+
+            if (_isUop)
+            {
+                if (_data.Length < 12) return Array.Empty<long>();
+                int fc = (int)ReadUInt32(_data, 8);
+                fc = Math.Min(fc, 256);
+                for (int i = 0; i < fc; i++)
+                {
+                    long lp = 24 + i * 12;
+                    if (lp + 4 > _data.Length) break;
+                    int fOff = (int)ReadUInt32(_data, lp);
+                    if (fOff > 0 && fOff < _data.Length)
+                        result.Add(fOff);
+                }
+            }
+            else
+            {
+                if (_data.Length < 514) return Array.Empty<long>();
+
+                ushort fc = (ushort)(_data[512] | (_data[513] << 8));
+                fc = Math.Min(fc, (ushort)256);
+                
+                long minValid = 514 + fc * 4;
+                long lastOff = -1;
+
+                for (int i = 0; i < fc; i++)
+                {
+                    long lp = 514 + i * 4;
+                    if (lp + 4 > _data.Length) break;
+
+                    int relOff = _data[lp + 2] | (_data[lp + 3] << 8);
+                    long absOff = 512 + relOff;
+                    
+                    if (absOff < minValid) break;
+                    
+                    if (absOff <= lastOff) break;
+                    
+                    if (absOff + 8 > _data.Length) break;
+                    
+                    ushort w = (ushort)(_data[absOff + 4] | (_data[absOff + 5] << 8));
+                    ushort h = (ushort)(_data[absOff + 6] | (_data[absOff + 7] << 8));
+                    if (w > 2048 || h > 2048) break;
+
+                    result.Add(absOff);
+                    lastOff = absOff;
+                }
+            }
+
+            return result.ToArray();
         }
 
         // ══════════════════════════════════════════════════════════════════════
@@ -907,7 +1143,22 @@ namespace UoFiddler.Controls.Forms
             Cm(m, "🎨  Palette Preview  Ctrl+P", (s, e) => ShowPalettePreview());
             Cm(m, "🌳  Structure Tree  Ctrl+S", (s, e) => ShowStructureTree());
             m.Items.Add(new ToolStripSeparator());
+            Cm(m, "⚖  Compare two frames  Ctrl+K", (s, e) => ShowFrameCompare());
+            Cm(m, "📺  RLE Decoder View  Ctrl+R", (s, e) => ShowRleView());
+            Cm(m, "⏭  Jump to next frame  Ctrl+N", (s, e) => JumpToNextFrame());
+            Cm(m, "⏮  Jump to prev frame  Ctrl+,", (s, e) => JumpToPrevFrame());
+            m.Items.Add(new ToolStripSeparator());
+            Cm(m, "📌  Pin as A  Ctrl+1", (s, e) => PinAsA());
+            Cm(m, "📌  Pin as B  Ctrl+2", (s, e) => PinAsB());
             Cm(m, "❓  Command Overview  F1", (s, e) => ShowCommandOverview());
+            m.Items.Add(new ToolStripSeparator());
+            var debugItem = new ToolStripMenuItem("🛠 Debug: Copy RLE information (clipboard)");
+            debugItem.Click += (s, e) => CopyRleDebugInfoToClipboard();
+            debugItem.ShortcutKeys = Keys.Control | Keys.Shift | Keys.D;
+            debugItem.ShowShortcutKeys = true;
+            m.Items.Add(debugItem);
+
+            m.Show(hexPanel, loc);
 
             m.Show(hexPanel, loc);
         }
@@ -1073,6 +1324,7 @@ namespace UoFiddler.Controls.Forms
             if (offset < 0 || offset >= _data.Length) return;
             byte old = _data[offset];
             if (old == newValue) return;
+
             _data[offset] = newValue;
             _modifiedBytes.Add(offset);
             _undoStack.Push(new UndoEntry
@@ -1083,6 +1335,52 @@ namespace UoFiddler.Controls.Forms
                 Description = $"Write 0x{newValue:X2} @ 0x{(_dataOffset + offset):X8}"
             });
             _redoStack.Clear();
+
+            // ── Backpropagation: Reinterpret field and fire callback ─
+            PropagateByteChangeToModel(offset);
+        }
+
+        /// <summary>
+        /// Notifies the AnimationEditForm that a byte has changed.
+        /// Called as an event or delegate.
+        /// </summary>
+        public event Action<long, byte> OnByteWritten;
+
+        private void PropagateByteChangeToModel(long offset)
+        {
+            OnByteWritten?.Invoke(_dataOffset + offset, _data[offset]);
+        }
+
+        private void PinAsA()
+        {
+            var buf = BuildCompareBuffer();
+            if (buf == null) { lblStatus.Text = "Pin A: no data to pin."; return; }
+            OnPinAsA?.Invoke(buf);
+            lblStatus.Text = $"Pinned as A: {buf.Label}  —  open Compare to view.";
+        }
+
+        private void PinAsB()
+        {
+            var buf = BuildCompareBuffer();
+            if (buf == null) { lblStatus.Text = "Pin B: no data to pin."; return; }
+            OnPinAsB?.Invoke(buf);
+            lblStatus.Text = $"Pinned as B: {buf.Label}  —  open Compare to view.";
+        }
+
+        private HexCompareBuffer BuildCompareBuffer()
+        {
+            if (_data == null) return null;
+            return new HexCompareBuffer
+            {
+                Data = (byte[])_data.Clone(),
+                FileOffset = _dataOffset,
+                FilePath = _sourceFile,
+                BodyId = _bodyId,
+                ActionId = _actionId,
+                DirectionId = _directionId,
+                IsUop = _isUop,
+                Preview = picPreview.Image as System.Drawing.Bitmap
+            };
         }
 
         private void Undo()
@@ -1108,6 +1406,1045 @@ namespace UoFiddler.Controls.Forms
             hexPanel.Invalidate(); UpdateStatus();
             lblStatus.Text = $"Redo: {u.Description}";
         }
+
+        private void ShowFrameCompare()
+        {
+            if (_data == null)
+            {
+                lblStatus.Text = "Frame Compare: no data loaded.";
+                return;
+            }
+
+            long[] headers = GetAllFrameHeaderOffsets();
+
+            // Determine the current frame index
+            int currentFrame = 0;
+            for (int i = headers.Length - 1; i >= 0; i--)
+                if (headers[i] <= _cursor) { currentFrame = i; break; }
+
+            // Erster Druck: Frame A setzen
+            if (_compareFrameA < 0)
+            {
+                if (headers.Length == 0)
+                {
+                    lblStatus.Text = "Frame Compare: no frame headers found in this data.";
+                    return;
+                }
+
+                _compareFrameA = currentFrame;
+                lblStatus.Text =
+                    $"Frame A marked: Frame {_compareFrameA}" +
+                    $" @ 0x{(_dataOffset + headers[_compareFrameA]):X8}" +
+                    $"  —  navigate to Frame B and press Ctrl+K again." +
+                    $"  Ctrl+Shift+K to cancel.";
+                hexPanel.Invalidate();
+                return;
+            }
+
+            // Second print: compare
+            if (headers.Length < 2)
+            {
+                lblStatus.Text = "Frame Compare: only one frame available, cannot compare.";
+                _compareFrameA = -1;
+                return;
+            }
+
+            int idxA = _compareFrameA;
+            int idxB = currentFrame;
+            _compareFrameA = -1;
+
+            // Same frame → take the next one
+            if (idxA == idxB)
+                idxB = (idxA + 1) % headers.Length;
+
+            long offA = headers[idxA];
+            long offB = headers[idxB];
+            int lenA = GetFrameLength(idxA, headers);
+            int lenB = GetFrameLength(idxB, headers);
+
+            var compareForm = new Form
+            {
+                Text = $"Frame Compare  —  Frame {idxA} vs Frame {idxB}",
+                Size = new Size(1100, 600),
+                FormBorderStyle = FormBorderStyle.SizableToolWindow,
+                StartPosition = FormStartPosition.CenterParent,
+                BackColor = Color.FromArgb(28, 28, 32),
+                ForeColor = Color.White
+            };
+
+            var split = new SplitContainer
+            {
+                Dock = DockStyle.Fill,
+                Orientation = Orientation.Vertical,
+                BackColor = Color.FromArgb(28, 28, 32),
+                Panel1MinSize = 200,
+                Panel2MinSize = 200
+            };
+
+            FillFrameComparePanel(split.Panel1, idxA, offA, lenA,
+                $"Frame {idxA}  @ 0x{(_dataOffset + offA):X8}  ({lenA} B)  ← A");
+            FillFrameComparePanel(split.Panel2, idxB, offB, lenB,
+                $"Frame {idxB}  @ 0x{(_dataOffset + offB):X8}  ({lenB} B)  ← B");
+
+            compareForm.Controls.Add(split);
+            compareForm.ShowDialog(this);
+        }
+
+        private int GetFrameLength(int frameIndex, long[] headers)
+        {
+            if (_isUop)
+            {
+                long lp = 24 + frameIndex * 12;
+                if (lp + 8 > _data.Length) return 0;
+                return (int)ReadUInt32(_data, lp + 4); // DataLength aus Frame-Table
+            }
+            else
+            {
+                if (frameIndex + 1 < headers.Length)
+                    return (int)(headers[frameIndex + 1] - headers[frameIndex]);
+                return (int)(_data.Length - headers[frameIndex]);
+            }
+        }
+
+        /// <summary>
+        /// Populates the specified panel with a labeled hex dump and header information for a frame segment.
+        /// </summary>
+        /// <param name="panel">The panel to populate with the frame comparison content.</param>
+        /// <param name="frameIdx">The index of the frame to display.</param>
+        /// <param name="offset">The byte offset of the frame data within the source.</param>
+        /// <param name="length">The length, in bytes, of the frame data to display.</param>
+        /// <param name="title">The title to display above the frame data.</param>
+        private void FillFrameComparePanel(SplitterPanel panel, int frameIdx,
+            long offset, int length, string title)
+        {
+            var lbl = new Label
+            {
+                Text = title,
+                Dock = DockStyle.Top,
+                Height = 22,
+                ForeColor = Color.FromArgb(140, 190, 255),
+                Font = new Font("Consolas", 8.5f),
+                BackColor = Color.FromArgb(38, 38, 50),
+                TextAlign = ContentAlignment.MiddleLeft,
+                Padding = new Padding(6, 0, 0, 0)
+            };
+
+            var txt = new RichTextBox
+            {
+                Dock = DockStyle.Fill,
+                ReadOnly = true,
+                BackColor = Color.FromArgb(28, 28, 38),
+                ForeColor = Color.FromArgb(200, 220, 255),
+                Font = new Font("Consolas", 8.5f),
+                BorderStyle = BorderStyle.None,
+                ScrollBars = RichTextBoxScrollBars.Both,
+                WordWrap = false
+            };
+
+            // Build a hex dump of the frame
+            var sb = new StringBuilder();
+
+            // Decoding header fields
+            if (offset + 8 <= _data.Length)
+            {
+                short cx = (short)(_data[offset] | (_data[offset + 1] << 8));
+                short cy = (short)(_data[offset + 2] | (_data[offset + 3] << 8));
+                ushort w = (ushort)(_data[offset + 4] | (_data[offset + 5] << 8));
+                ushort h = (ushort)(_data[offset + 6] | (_data[offset + 7] << 8));
+                sb.AppendLine($"CenterX : {cx,6}  (0x{(ushort)cx:X4})");
+                sb.AppendLine($"CenterY : {cy,6}  (0x{(ushort)cy:X4})");
+                sb.AppendLine($"Width   : {w,6}  (0x{w:X4})");
+                sb.AppendLine($"Height  : {h,6}  (0x{h:X4})");
+                sb.AppendLine($"PixelData: {Math.Max(0, length - 8)} bytes");
+                sb.AppendLine(new string('─', 42));
+            }
+
+            // Hex dump (first 256 bytes of the frame)
+            int dumpLen = Math.Min(length, 256);
+            for (int row = 0; row < (dumpLen + 15) / 16; row++)
+            {
+                sb.Append($"0x{(_dataOffset + offset + row * 16):X8}  ");
+                for (int col = 0; col < 16; col++)
+                {
+                    long bi = offset + row * 16 + col;
+                    if (bi - offset < dumpLen && bi < _data.Length)
+                        sb.Append($"{_data[bi]:X2} ");
+                    else
+                        sb.Append("   ");
+                    if (col == 7) sb.Append(' ');
+                }
+                sb.Append("  ");
+                for (int col = 0; col < 16; col++)
+                {
+                    long bi = offset + row * 16 + col;
+                    if (bi - offset < dumpLen && bi < _data.Length)
+                    {
+                        byte b = _data[bi];
+                        sb.Append(b >= 32 && b < 127 ? (char)b : '.');
+                    }
+                }
+                sb.AppendLine();
+            }
+            if (length > 256)
+                sb.AppendLine($"  … {length - 256} more bytes");
+
+            txt.Text = sb.ToString();
+
+            panel.Controls.Add(txt);
+            panel.Controls.Add(lbl);
+        }
+
+        #region [ ShowRLEView: RLE Decoder View for the current frame ]
+
+        // ────────────────────────────────────────────────────────────────────
+        // Entry point — koordiniert nur, tut selbst nichts
+        // ────────────────────────────────────────────────────────────────────
+        private void ShowRleView()
+        {
+            if (_data == null) { lblStatus.Text = "RLE View: no data loaded."; return; }
+
+            long[] headers = GetAllFrameHeaderOffsets();
+            if (headers.Length == 0)
+            { lblStatus.Text = "RLE View: no frame headers found."; return; }
+
+            int frameIdx = RleResolveFrameIndex(headers);
+            long frameOff = headers[frameIdx];
+            int frameLen = GetFrameLength(frameIdx, headers);
+
+            if (frameOff + 8 > _data.Length)
+            { lblStatus.Text = "RLE View: frame data too short."; return; }
+
+            var pal = RleBuildPalette();
+            var decoded = RleDecodeFrame(frameOff, frameLen, pal);
+            var diagTxt = RleBuildDiagnostic(headers, frameIdx, frameOff, decoded);
+
+            RleShowWindow(frameIdx, frameOff, decoded, diagTxt);
+        }
+
+        // ────────────────────────────────────────────────────────────────────
+        // Step 1 — welcher Frame-Index?
+        // ────────────────────────────────────────────────────────────────────
+        private int RleResolveFrameIndex(long[] headers)
+        {
+            if (_frameId >= 0 && _frameId < headers.Length)
+                return _frameId;
+            int fallback = 0;
+            for (int i = headers.Length - 1; i >= 0; i--)
+                if (headers[i] <= _cursor) { fallback = i; break; }
+            return fallback;
+        }
+
+        // ────────────────────────────────────────────────────────────────────
+        // Step 2 — Palette aus _data[0..511] lesen
+        // UO MUL ARGB1555: Bits 14-10 = R, 9-5 = G, 4-0 = B
+        // Bestätigt durch Debug-Log: 0x0400 -> R=8, G=0, B=0
+        // ────────────────────────────────────────────────────────────────────
+        private Color[] RleBuildPalette()
+        {
+            var pal = new Color[256];
+            for (int i = 0; i < 256; i++)
+            {
+                long p = i * 2;
+                if (p + 1 >= _data.Length) break;
+                ushort v = (ushort)(_data[p] | (_data[p + 1] << 8));
+                int r = ((v >> 10) & 0x1F) * 255 / 31;
+                int g = ((v >> 5) & 0x1F) * 255 / 31;
+                int b = (v & 0x1F) * 255 / 31;
+                pal[i] = (i == 0 || (r == 0 && g == 0 && b == 0))
+                    ? Color.Transparent
+                    : Color.FromArgb(255, r, g, b);
+            }
+            return pal;
+        }
+
+        // ────────────────────────────────────────────────────────────────────
+        // Step 3 — RLE-Stream dekodieren -> pixBuf + Run-Text
+        // UO MUL uint32 Run-Header (LE):
+        //   Bits  0-11 : runLength
+        //   Bits 12-21 : yRel  (signed 10-bit, relativ zu CenterY+Height)
+        //   Bits 22-31 : xRel  (signed 10-bit, relativ zu CenterX)
+        // Ende-Marker: 0x7FFF7FFF
+        // ────────────────────────────────────────────────────────────────────
+        private struct RleDecoded
+        {
+            public short Cx, Cy;
+            public ushort W, H;
+            public int Pw, Ph;
+            public uint[] PixBuf;
+            public string RunText;
+            public int TotalRuns, TotalPixels;
+        }
+
+        private RleDecoded RleDecodeFrame(long frameOff, int frameLen, Color[] pal)
+        {
+            short cx = (short)(_data[frameOff + 0] | (_data[frameOff + 1] << 8));
+            short cy = (short)(_data[frameOff + 2] | (_data[frameOff + 3] << 8));
+            ushort w = (ushort)(_data[frameOff + 4] | (_data[frameOff + 5] << 8));
+            ushort h = (ushort)(_data[frameOff + 6] | (_data[frameOff + 7] << 8));
+
+            int pw = Math.Min((int)w, 512);
+            int ph = Math.Min((int)h, 512);
+            var pixBuf = new uint[Math.Max(1, ph) * Math.Max(1, pw)];
+
+            var sb = new StringBuilder();
+            long pos = frameOff + 8;
+            long end = frameOff + frameLen;
+            int totalRuns = 0;
+            int totalPixels = 0;
+
+            sb.AppendLine($"Frame  CX={cx}  CY={cy}  W={w}  H={h}");
+            sb.AppendLine($"Pixel data: {Math.Max(0, frameLen - 8)} bytes");
+            sb.AppendLine(new string('─', 72));
+
+            while (pos + 3 < end && pos + 3 < _data.Length)
+            {
+                uint hdr = (uint)(_data[pos]
+                         | (_data[pos + 1] << 8)
+                         | (_data[pos + 2] << 16)
+                         | (_data[pos + 3] << 24));
+                pos += 4;
+
+                if (hdr == 0x7FFF7FFF) break;
+
+                int runLen = (int)(hdr & 0x0FFF);
+
+                int xRel = (int)((hdr >> 22) & 0x03FF);
+                if ((xRel & 0x0200) != 0) xRel |= unchecked((int)0xFFFFFE00);
+
+                int yRel = (int)((hdr >> 12) & 0x03FF);
+                if ((yRel & 0x0200) != 0) yRel |= unchecked((int)0xFFFFFE00);
+
+                int xAbs = xRel + cx;
+                int yAbs = yRel + cy + h;
+
+                sb.Append($"  Run {totalRuns,4}: y={yAbs,4} x={xAbs,4} len={runLen,4}  idx=");
+
+                for (int k = 0; k < runLen; k++)
+                {
+                    if (pos >= end || pos >= _data.Length) break;
+                    byte palIdx = _data[pos++];
+
+                    if (k < 8) sb.Append($"{palIdx:D3} ");
+                    else if (k == 8) sb.Append("...");
+
+                    if (yAbs >= 0 && yAbs < ph && xAbs + k >= 0 && xAbs + k < pw)
+                    {
+                        var col = pal[palIdx];
+                        if (col.A > 0)
+                            pixBuf[yAbs * pw + xAbs + k] =
+                                (uint)((col.A << 24) | (col.R << 16) | (col.G << 8) | col.B);
+                    }
+                    totalPixels++;
+                }
+
+                sb.AppendLine();
+                totalRuns++;
+                if (totalRuns > 2000) { sb.AppendLine("  … truncated at 2000 runs"); break; }
+            }
+
+            sb.AppendLine(new string('─', 72));
+            sb.AppendLine($"Total: {totalRuns} runs  {totalPixels} pixels");
+            if (w > 0 && h > 0)
+            {
+                double cov = (double)totalPixels / (w * h) * 100.0;
+                sb.AppendLine($"Coverage: {cov:F1}%  " +
+                    (cov > 50 ? "OK" : cov > 10 ? "sparse" : "possible decode error"));
+            }
+
+            return new RleDecoded
+            {
+                Cx = cx,
+                Cy = cy,
+                W = w,
+                H = h,
+                Pw = pw,
+                Ph = ph,
+                PixBuf = pixBuf,
+                RunText = sb.ToString(),
+                TotalRuns = totalRuns,
+                TotalPixels = totalPixels
+            };
+        }
+
+        // ────────────────────────────────────────────────────────────────────
+        // Step 4 — Diagnose-Text aufbauen
+        // Enthält Palette-Probe: wenn die Farben hier nicht zum Body passen,
+        // ist _data der falsche Block.
+        // ────────────────────────────────────────────────────────────────────
+        private string RleBuildDiagnostic(long[] headers, int frameIdx,
+            long frameOff, RleDecoded d)
+        {
+            var sb = new StringBuilder();
+            sb.AppendLine("Body:" + _bodyId + "  Action:" + _actionId
+                        + "  Dir:" + _directionId + "  _frameId=" + _frameId
+                        + "  (= FramesTrackBar.Value)");
+            sb.AppendLine("_data.Length=" + _data.Length.ToString("N0")
+                        + "  _dataOffset=0x" + _dataOffset.ToString("X8"));
+
+            // Palette-Probe: erste 8 Farben zeigen ob der richtige Block geladen ist
+            sb.Append("Palette[1..8]: ");
+            for (int i = 1; i <= 8 && i * 2 + 1 < _data.Length; i++)
+            {
+                ushort v = (ushort)(_data[i * 2] | (_data[i * 2 + 1] << 8));
+                int r = ((v >> 10) & 0x1F) * 255 / 31;
+                int g = ((v >> 5) & 0x1F) * 255 / 31;
+                int bv = (v & 0x1F) * 255 / 31;
+                sb.Append("[" + i + "]R=" + r + " G=" + g + " B=" + bv + "  ");
+            }
+            sb.AppendLine();
+
+            // Frame-Headers Liste
+            sb.AppendLine("Headers (" + headers.Length + "):");
+            for (int i = 0; i < headers.Length; i++)
+            {
+                long off = headers[i];
+                short hCx = (short)(_data[off + 0] | (_data[off + 1] << 8));
+                short hCy = (short)(_data[off + 2] | (_data[off + 3] << 8));
+                ushort hW = (ushort)(_data[off + 4] | (_data[off + 5] << 8));
+                ushort hH = (ushort)(_data[off + 6] | (_data[off + 7] << 8));
+                string mark = (i == frameIdx) ? " <<< DECODING" : "";
+                sb.AppendLine("  [" + i + "] 0x" + off.ToString("X6")
+                            + "  CX=" + hCx + " CY=" + hCy
+                            + " W=" + hW + " H=" + hH + mark);
+            }
+
+            sb.AppendLine("frameIdx=" + frameIdx
+                        + "  frameOff=0x" + frameOff.ToString("X6")
+                        + "  abs=0x" + (_dataOffset + frameOff).ToString("X8"));
+            sb.AppendLine("Decoded: CX=" + d.Cx + " CY=" + d.Cy
+                        + " W=" + d.W + " H=" + d.H
+                        + "  Runs=" + d.TotalRuns + "  Pixels=" + d.TotalPixels);
+            return sb.ToString();
+        }
+
+        // ────────────────────────────────────────────────────────────────────
+        // Step 5 — Fenster anzeigen (dein altes Design + Toggle-Button)
+        // ────────────────────────────────────────────────────────────────────
+        private void RleShowWindow(int frameIdx, long frameOff,
+            RleDecoded d, string diagText)
+        {
+            int pw = d.Pw, ph = d.Ph;
+            var pixBuf = d.PixBuf;
+
+            var frm = new Form
+            {
+                Text = $"RLE Decoder — Frame {frameIdx}  ({d.W}×{d.H})" +
+                       $"  @ 0x{(_dataOffset + frameOff):X8}",
+                Size = new Size(1020, 820),
+                FormBorderStyle = FormBorderStyle.SizableToolWindow,
+                StartPosition = FormStartPosition.CenterParent,
+                BackColor = Color.FromArgb(28, 28, 32),
+                ForeColor = Color.White,
+                MinimumSize = new Size(600, 500)
+            };
+
+            // ── Toggle-Button ─────────────────────────────────────────────────
+            var btnToggle = new Button
+            {
+                Text = "Diagnose einblenden",
+                Dock = DockStyle.Top,
+                Height = 28,
+                FlatStyle = FlatStyle.Flat,
+                BackColor = Color.FromArgb(0, 90, 150),
+                ForeColor = Color.White,
+                Font = new Font("Segoe UI", 8.5f)
+            };
+            btnToggle.FlatAppearance.BorderColor = Color.FromArgb(0, 130, 200);
+
+            // ── Diagnose-Panel (anfangs versteckt) ────────────────────────────
+            var diagPanel = new TextBox
+            {
+                Dock = DockStyle.Top,
+                Multiline = true,
+                ReadOnly = true,
+                BackColor = Color.FromArgb(20, 40, 20),
+                ForeColor = Color.FromArgb(100, 255, 120),
+                Font = new Font("Consolas", 8.5f),
+                BorderStyle = BorderStyle.FixedSingle,
+                ScrollBars = ScrollBars.Vertical,
+                WordWrap = false,
+                Text = diagText,
+                Height = Math.Min((diagText.Split('\n').Length + 1) * 16, 280),
+                Visible = false
+            };
+
+            bool diagVisible = false;
+            btnToggle.Click += (s, e) =>
+            {
+                diagVisible = !diagVisible;
+                diagPanel.Visible = diagVisible;
+                btnToggle.Text = diagVisible ? "Diagnose ausblenden" : "Diagnose einblenden";
+                btnToggle.BackColor = diagVisible
+                    ? Color.FromArgb(0, 120, 60)
+                    : Color.FromArgb(0, 90, 150);
+            };
+
+            // ── Split: links Vorschau, rechts Run-Text ────────────────────────
+            var split = new SplitContainer
+            {
+                Dock = DockStyle.Fill,
+                SplitterDistance = 350,
+                SplitterWidth = 6
+            };
+
+            // ── Vorschau (links) ──────────────────────────────────────────────
+            var previewPanel = new HexPanel
+            {
+                Dock = DockStyle.Fill,
+                BackColor = Color.FromArgb(28, 28, 38)
+            };
+
+            previewPanel.Paint += (s, e) =>
+            {
+                var g2 = e.Graphics;
+                g2.Clear(Color.FromArgb(28, 28, 38));
+                if (pw <= 0 || ph <= 0) return;
+
+                int panW = previewPanel.ClientSize.Width - 16;
+                int panH = previewPanel.ClientSize.Height - 40;
+                float scale = Math.Max(1f, Math.Min((float)panW / pw, (float)panH / ph));
+                int drawW = (int)(pw * scale);
+                int drawH = (int)(ph * scale);
+                int drawX = (previewPanel.ClientSize.Width - drawW) / 2;
+                int drawY = 28 + (panH - drawH) / 2;
+
+                using var tb1 = new SolidBrush(Color.FromArgb(50, 50, 60));
+                using var tb2 = new SolidBrush(Color.FromArgb(70, 70, 80));
+                int cs = Math.Max(4, (int)scale);
+                for (int py = 0; py < drawH; py += cs)
+                    for (int px2 = 0; px2 < drawW; px2 += cs)
+                        g2.FillRectangle(((px2 / cs + py / cs) % 2 == 0) ? tb1 : tb2,
+                            drawX + px2, drawY + py,
+                            Math.Min(cs, drawW - px2), Math.Min(cs, drawH - py));
+
+                g2.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
+                g2.PixelOffsetMode = System.Drawing.Drawing2D.PixelOffsetMode.Half;
+
+                for (int py = 0; py < ph; py++)
+                    for (int px2 = 0; px2 < pw; px2++)
+                    {
+                        uint val = pixBuf[py * pw + px2];
+                        if (val == 0) continue;
+                        int ra = (int)((val >> 24) & 0xFF);
+                        int rr = (int)((val >> 16) & 0xFF);
+                        int rg = (int)((val >> 8) & 0xFF);
+                        int rb = (int)(val & 0xFF);
+                        if (ra == 0) continue;
+                        using var pb = new SolidBrush(Color.FromArgb(ra, rr, rg, rb));
+                        g2.FillRectangle(pb,
+                            drawX + (int)(px2 * scale),
+                            drawY + (int)(py * scale),
+                            Math.Max(1, (int)scale),
+                            Math.Max(1, (int)scale));
+                    }
+
+                using var ib = new SolidBrush(Color.FromArgb(140, 190, 255));
+                g2.DrawString(
+                    $"Frame {frameIdx}  {d.W}×{d.H}  CX={d.Cx} CY={d.Cy}  (scale {scale:F1}×)",
+                    new Font("Consolas", 8f), ib, new PointF(4, 4));
+            };
+
+            previewPanel.Resize += (s, e) => previewPanel.Invalidate();
+
+            // ── Run-Text (rechts) ─────────────────────────────────────────────
+            var txtBox = new TextBox
+            {
+                Dock = DockStyle.Fill,
+                Multiline = true,
+                ReadOnly = true,
+                BackColor = Color.FromArgb(28, 28, 38),
+                ForeColor = Color.FromArgb(200, 220, 255),
+                Font = new Font("Consolas", 8.5f),
+                BorderStyle = BorderStyle.None,
+                ScrollBars = ScrollBars.Both,
+                WordWrap = false,
+                Text = d.RunText
+            };
+
+            split.Panel1.Controls.Add(previewPanel);
+            split.Panel2.Controls.Add(txtBox);
+
+            // Dock-Reihenfolge: Fill zuerst, dann Top (umgekehrte Add-Reihenfolge)
+            frm.Controls.Add(split);
+            frm.Controls.Add(diagPanel);
+            frm.Controls.Add(btnToggle);
+
+            frm.ShowDialog(this);
+        }
+
+        #endregion
+
+
+        #region [ CopyRleDebugInfoToClipboard() : Copy detailed RLE debug information to clipboard ]
+        // ══════════════════════════════════════════════════════════════════════
+        //  RLE Debug Info
+        // ═════════════════════════════════════════════════════════════════════
+        private void CopyRleDebugInfoToClipboard()
+        {
+            if (_data == null || _data.Length == 0)
+            {
+                lblStatus.Text = "No data — nothing to copy.";
+                return;
+            }
+
+            _cursor = 0;
+            _selStart = _selEnd = _selAnchor = -1;
+            ScrollToOffset(0);
+            hexPanel.Invalidate();
+
+            var sb = new StringBuilder();
+            sb.AppendLine("=== RLE Debug Info ===");
+            sb.AppendLine($"Time:          {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
+            sb.AppendLine($"File:          {_sourceFile ?? "(memory)"}");
+            sb.AppendLine($"Format:        {(_isUop ? "UOP" : "MUL")}");
+            sb.AppendLine($"Body:          {_bodyId}   Action: {_actionId}   Dir: {_directionId}" +
+                          (_isUop ? $"   Seq: {_sequenceId}" : $"   Frame: {_frameId}"));
+            sb.AppendLine($"Block size:    {_data.Length:N0} bytes  (0x{_data.Length:X})");
+            sb.AppendLine($"DataOffset:    0x{_dataOffset:X8}  (absolute file pos of block start)");
+            sb.AppendLine($"IsUop:         {_isUop}");
+            sb.AppendLine();
+
+            // ── Erste 128 Bytes Hex + ASCII ───────────────────────────────────────
+            sb.AppendLine("First 128 bytes (Hex + ASCII):");
+            int dumpLen = Math.Min(128, _data.Length);
+            for (int i = 0; i < dumpLen; i += 16)
+            {
+                sb.Append($"  {i,4:X4}  ");
+                for (int j = 0; j < 16; j++)
+                {
+                    if (i + j < dumpLen) sb.Append($"{_data[i + j]:X2} ");
+                    else sb.Append("   ");
+                    if (j == 7) sb.Append(" ");
+                }
+                sb.Append("  ");
+                for (int j = 0; j < 16 && i + j < dumpLen; j++)
+                {
+                    byte b = _data[i + j];
+                    sb.Append(b >= 32 && b < 127 ? (char)b : '.');
+                }
+                sb.AppendLine();
+            }
+            sb.AppendLine();
+
+            // ── MUL spezifisch ────────────────────────────────────────────────────
+            if (!_isUop && _data.Length >= 514)
+            {
+                ushort fc = (ushort)(_data[512] | (_data[513] << 8));
+                long dataStart = 514 + (long)fc * 4;
+
+                sb.AppendLine($"MUL — FrameCount @ 0x200-0x201 = {fc}");
+                sb.AppendLine($"Lookup table   : offset 0x202..0x{(514 + fc * 4 - 1):X}  ({fc} × 4 bytes)");
+                sb.AppendLine($"Data area start: 0x{dataStart:X} ({dataStart})");
+                sb.AppendLine($"Block end      : 0x{_data.Length:X} ({_data.Length})");
+                sb.AppendLine($"Remaining data : {_data.Length - dataStart} bytes");
+                sb.AppendLine();
+
+                // Palette erste 16 Einträge
+                sb.AppendLine("Palette[0..15]:");
+                for (int i = 0; i < Math.Min(16, 256); i++)
+                {
+                    long p = i * 2;
+                    ushort v = (ushort)(_data[p] | (_data[p + 1] << 8));
+                    int r5 = (v >> 10) & 0x1F;
+                    int g5 = (v >> 5) & 0x1F;
+                    int b5 = v & 0x1F;
+                    sb.AppendLine($"  [{i:D3}]  0x{v:X4}  " +
+                                  $"R={r5 * 255 / 31,3} G={g5 * 255 / 31,3} B={b5 * 255 / 31,3}  " +
+                                  $"{((v & 0x8000) != 0 ? "opaque" : "transparent")}");
+                }
+                sb.AppendLine();
+
+                // Lookup-Rohdaten
+                sb.AppendLine($"Lookup table raw bytes (514..{514 + fc * 4 - 1}):");
+                for (int i = 0; i < Math.Min((int)fc, 32); i++)
+                {
+                    long lp = 514 + i * 4;
+                    if (lp + 4 > _data.Length) break;
+                    byte b0 = _data[lp], b1 = _data[lp + 1],
+                         b2 = _data[lp + 2], b3 = _data[lp + 3];
+                    sb.AppendLine($"  [{i:D2}] @ 0x{lp:X4}  raw: {b0:X2} {b1:X2} {b2:X2} {b3:X2}");
+                }
+                sb.AppendLine();
+
+                // Lookup-Tabelle — alle Interpretationen
+                sb.AppendLine("Frame Lookup — alle Interpretationen + Header-Check:");
+                sb.AppendLine("  Idx  raw            A=b2|b3<<8  B=b0|b1<<8  C=uint32LE    absA   absB   absC   hdrA                        hdrB");
+                sb.AppendLine(new string('─', 160));
+
+                for (int i = 0; i < Math.Min((int)fc, 32); i++)
+                {
+                    long lp = 514 + i * 4;
+                    if (lp + 4 > _data.Length) break;
+                    byte b0 = _data[lp], b1 = _data[lp + 1],
+                         b2 = _data[lp + 2], b3 = _data[lp + 3];
+
+                    int relA = b2 | (b3 << 8);
+                    int relB = b0 | (b1 << 8);
+                    int relC = b0 | (b1 << 8) | (b2 << 16) | (b3 << 24);
+
+                    long absA = 512 + relA;
+                    long absB = 512 + relB;
+                    long absC = 512 + relC;
+
+                    string HdrStr(long abs)
+                    {
+                        if (abs < 0 || abs + 8 > _data.Length) return "✗ OOB";
+                        short cx = (short)(_data[abs] | (_data[abs + 1] << 8));
+                        short cy = (short)(_data[abs + 2] | (_data[abs + 3] << 8));
+                        ushort w = (ushort)(_data[abs + 4] | (_data[abs + 5] << 8));
+                        ushort h = (ushort)(_data[abs + 6] | (_data[abs + 7] << 8));
+                        bool ok = w > 0 && w <= 512 && h > 0 && h <= 512;
+                        return $"CX={cx,5} CY={cy,5} W={w,4} H={h,4}{(ok ? " ✓" : " ?")}";
+                    }
+
+                    sb.AppendLine($"  [{i:D2}]  {b0:X2}{b1:X2}{b2:X2}{b3:X2}" +
+                                  $"  A={relA,6}  B={relB,6}  C={relC,10}" +
+                                  $"  {absA,6}  {absB,6}  {absC,10}" +
+                                  $"  A:[{HdrStr(absA)}]" +
+                                  $"  B:[{HdrStr(absB)}]");
+                }
+                if (fc > 32) sb.AppendLine($"  … {fc - 32} more entries");
+                sb.AppendLine();
+
+                // 16 Bytes an dataStart dumpen
+                sb.AppendLine($"16 bytes at dataStart (0x{dataStart:X}):");
+                if (dataStart + 16 <= _data.Length)
+                {
+                    sb.Append("  ");
+                    for (int i = 0; i < 16; i++)
+                        sb.Append($"{_data[dataStart + i]:X2} ");
+                    sb.AppendLine();
+                }
+                sb.AppendLine();
+            }
+            else if (_isUop && _data.Length >= 12)
+            {
+                uint fc = ReadUInt32(_data, 8);
+                sb.AppendLine($"UOP — FrameCount @ 0x08: {fc}");
+                sb.AppendLine($"Frame table: offset 0x18, {fc} × 12 bytes");
+                sb.AppendLine();
+                for (int i = 0; i < Math.Min((int)fc, 32); i++)
+                {
+                    long lp = 24 + i * 12;
+                    if (lp + 12 > _data.Length) break;
+                    int fOff = (int)ReadUInt32(_data, lp);
+                    int fLen = (int)ReadUInt32(_data, lp + 4);
+                    int fExt = (int)ReadUInt32(_data, lp + 8);
+                    bool ok = fOff > 0 && fOff < _data.Length;
+                    string hdr = "";
+                    if (ok && fOff + 8 <= _data.Length)
+                    {
+                        short cx = (short)(_data[fOff] | (_data[fOff + 1] << 8));
+                        short cy = (short)(_data[fOff + 2] | (_data[fOff + 3] << 8));
+                        ushort w = (ushort)(_data[fOff + 4] | (_data[fOff + 5] << 8));
+                        ushort h = (ushort)(_data[fOff + 6] | (_data[fOff + 7] << 8));
+                        hdr = $"  CX={cx,5} CY={cy,5} W={w,4} H={h,4}";
+                    }
+                    sb.AppendLine($"  Frame[{i,2}]  off=0x{fOff:X6}  len={fLen,6}  ext=0x{fExt:X8}" +
+                                  $"  {(ok ? "✓" : "✗ OOB")}{hdr}");
+                }
+                if (fc > 32) sb.AppendLine($"  … {fc - 32} more entries");
+                sb.AppendLine();
+            }
+
+            // ── Live Field Analysis ───────────────────────────────────────────────
+            sb.AppendLine("Live field analysis (first 12 fields from offset 0):");
+            long scanPos = 0;
+            for (int fi = 0; fi < 12 && scanPos < _data.Length; fi++)
+            {
+                var field = ParseFieldAtCursor(scanPos);
+                if (field == null) break;
+                sb.AppendLine($"  0x{scanPos:X6}  {field.TypeName,-16} {field.Name,-32} = {field.Value}");
+                long next = field.Offset + field.Size;
+                if (next <= scanPos) break;
+                scanPos = next;
+            }
+            sb.AppendLine();
+
+            // ── GetAllFrameHeaderOffsets Ergebnis ─────────────────────────────────
+            var headers = GetAllFrameHeaderOffsets();
+            sb.AppendLine($"GetAllFrameHeaderOffsets() → {headers.Length} headers found:");
+            for (int i = 0; i < Math.Min(headers.Length, 20); i++)
+            {
+                long h = headers[i];
+                string hdr = "";
+                if (h + 8 <= _data.Length)
+                {
+                    short cx = (short)(_data[h] | (_data[h + 1] << 8));
+                    short cy = (short)(_data[h + 2] | (_data[h + 3] << 8));
+                    ushort w = (ushort)(_data[h + 4] | (_data[h + 5] << 8));
+                    ushort hh = (ushort)(_data[h + 6] | (_data[h + 7] << 8));
+                    hdr = $"  CX={cx,5} CY={cy,5} W={w,4} H={hh,4}" +
+                          (w > 0 && w <= 512 && hh > 0 && hh <= 512 ? "  ✓" : "  ?");
+                }
+                sb.AppendLine($"  [{i:D2}]  abs=0x{h:X6} ({h,6}){hdr}");
+            }
+            sb.AppendLine();
+
+            // ── ShowRleView Frame-Auswahl Diagnose ────────────────────────────────────
+            sb.AppendLine("=== ShowRleView Frame-Auswahl Diagnose ===");
+            sb.AppendLine($"  _frameId  = {_frameId}   (von AnimationEditForm übergeben)");
+            {
+                bool frameIdOk = _frameId >= 0 && _frameId < headers.Length;
+                int cursorFrame2 = 0;
+                for (int i2 = headers.Length - 1; i2 >= 0; i2--)
+                    if (headers[i2] <= _cursor) { cursorFrame2 = i2; break; }
+                sb.AppendLine($"  cursor → frame = {cursorFrame2}");
+                sb.AppendLine($"  _frameId gültig? {(frameIdOk ? "JA" : "NEIN")}  Range: 0..{headers.Length - 1}");
+                sb.AppendLine($"  ShowRleView zeigt: Frame {(frameIdOk ? _frameId : cursorFrame2)}");
+                if (frameIdOk)
+                {
+                    long fo2 = headers[_frameId];
+                    if (fo2 + 8 <= _data.Length)
+                    {
+                        short fcx2 = (short)(_data[fo2] | (_data[fo2 + 1] << 8));
+                        short fcy2 = (short)(_data[fo2 + 2] | (_data[fo2 + 3] << 8));
+                        ushort fw2 = (ushort)(_data[fo2 + 4] | (_data[fo2 + 5] << 8));
+                        ushort fh2 = (ushort)(_data[fo2 + 6] | (_data[fo2 + 7] << 8));
+                        sb.AppendLine($"  Frame[{_frameId}] Header: CX={fcx2} CY={fcy2} W={fw2} H={fh2}");
+                    }
+                }
+            }
+            sb.AppendLine();
+
+
+            // ═══════════════════════════════════════════════════════════════════════
+            // ── NEU: Frame Pixel-Dump — RLE-Bit-Layout Analyse ───────────────────
+            // ═══════════════════════════════════════════════════════════════════════
+            sb.AppendLine("=== Frame Pixel-Dump (RLE Bit-Layout Analyse) ===");
+            sb.AppendLine("Zeigt die ersten 16 RLE-Words nach dem 8-Byte-Header jedes Frames.");
+            sb.AppendLine("Ziel: korrektes Bit-Layout bestimmen (count-Bits, xOffset-Bits, transparent-Flag).");
+            sb.AppendLine();
+
+            // Alle 4 möglichen Bit-Layouts die in UO-Animationen vorkommen:
+            // Layout A: bit15=transp, bits14-12=count(3bit), bits11-0=xOffset(12bit)  [classic UO]
+            // Layout B: bit15=transp, bits14-12=count(3bit), bits10-0=xOffset(11bit)  [variant]
+            // Layout C: bit15=transp, bits14-11=count(4bit), bits10-0=xOffset(11bit)  [animX.mul]
+            // Layout D: bit15=transp, bits11-8=count(4bit),  bits7-0=xOffset(8bit)    [compact]
+
+            sb.AppendLine("Layout-Legende:");
+            sb.AppendLine("  A: T | count(3) | xOff(12)   B: T | count(3) | xOff(11)");
+            sb.AppendLine("  C: T | count(4) | xOff(11)   D: T | count(4) | xOff(8)");
+            sb.AppendLine();
+
+            int framesToDump = Math.Min(headers.Length, 5); // erste 5 Frames
+            for (int fi = 0; fi < framesToDump; fi++)
+            {
+                long frameOff = headers[fi];
+                if (frameOff + 8 >= _data.Length) continue;
+
+                short fcx = (short)(_data[frameOff] | (_data[frameOff + 1] << 8));
+                short fcy = (short)(_data[frameOff + 2] | (_data[frameOff + 3] << 8));
+                ushort fw = (ushort)(_data[frameOff + 4] | (_data[frameOff + 5] << 8));
+                ushort fh = (ushort)(_data[frameOff + 6] | (_data[frameOff + 7] << 8));
+
+                sb.AppendLine($"── Frame {fi}  @ 0x{(frameOff):X6}  " +
+                              $"CX={fcx} CY={fcy} W={fw} H={fh}  " +
+                              $"(abs 0x{(_dataOffset + frameOff):X8})");
+                sb.AppendLine($"   {"Word":>6}  {"Raw":>6}  " +
+                              $"{"A:T|cnt3|x12":>14}  " +
+                              $"{"B:T|cnt3|x11":>14}  " +
+                              $"{"C:T|cnt4|x11":>14}  " +
+                              $"{"D:T|cnt4|x8":>13}  " +
+                              $"Bytes(hex)");
+                sb.AppendLine("   " + new string('─', 100));
+
+                long pos = frameOff + 8;
+                long end = Math.Min(pos + 32, _data.Length - 1); // 16 Words = 32 Bytes
+                int wordIdx = 0;
+
+                while (pos + 1 <= end && wordIdx < 16)
+                {
+                    ushort word = (ushort)(_data[pos] | (_data[pos + 1] << 8));
+                    byte lo = _data[pos];
+                    byte hi = _data[pos + 1];
+
+                    // Layout A: T=bit15, count=bits14-12 (3bit), xOff=bits11-0 (12bit)
+                    bool tA = (word & 0x8000) != 0;
+                    int cA = (word >> 12) & 0x07;
+                    int xA = word & 0x0FFF;
+
+                    // Layout B: T=bit15, count=bits14-12 (3bit), xOff=bits10-0 (11bit)
+                    bool tB = (word & 0x8000) != 0;
+                    int cB = (word >> 11) & 0x07;
+                    int xB = word & 0x07FF;
+
+                    // Layout C: T=bit15, count=bits14-11 (4bit), xOff=bits10-0 (11bit)
+                    bool tC = (word & 0x8000) != 0;
+                    int cC = (word >> 11) & 0x0F;
+                    int xC = word & 0x07FF;
+
+                    // Layout D: T=bit15, count=bits11-8 (4bit), xOff=bits7-0 (8bit)
+                    bool tD = (word & 0x8000) != 0;
+                    int cD = (word >> 8) & 0x0F;
+                    int xD = word & 0x00FF;
+
+                    // Plausibilität: xOff muss < Bildbreite, count muss > 0 (ausser EOL)
+                    bool plausA = word == 0 || (xA < fw && cA <= fw);
+                    bool plausB = word == 0 || (xB < fw && cB <= fw);
+                    bool plausC = word == 0 || (xC < fw && cC <= fw);
+                    bool plausD = word == 0 || (xD < fw && cD <= fw);
+
+                    string FmtLayout(bool t, int cnt, int x, bool plaus) =>
+                        $"{(t ? "T" : ".")}{cnt,2}|x={x,4}{(plaus ? " ✓" : " ✗")}";
+
+                    sb.AppendLine($"   {wordIdx,5}  0x{word:X4}  " +
+                                  $"{FmtLayout(tA, cA, xA, plausA),14}  " +
+                                  $"{FmtLayout(tB, cB, xB, plausB),14}  " +
+                                  $"{FmtLayout(tC, cC, xC, plausC),14}  " +
+                                  $"{FmtLayout(tD, cD, xD, plausD),13}  " +
+                                  $"{lo:X2} {hi:X2}");
+
+                    pos += 2;
+                    wordIdx++;
+                }
+
+                // Auswertung: welches Layout hat die meisten plausiblen Words?
+                pos = frameOff + 8;
+                end = Math.Min(pos + 32, _data.Length - 1);
+                int okA = 0, okB = 0, okC = 0, okD = 0, total = 0;
+                while (pos + 1 <= end)
+                {
+                    ushort word = (ushort)(_data[pos] | (_data[pos + 1] << 8));
+                    if (word == 0) { pos += 2; total++; okA++; okB++; okC++; okD++; continue; }
+                    if ((word & 0x8000) == 0) // opaque run
+                    {
+                        if (((word >> 12) & 0x07) > 0 && (word & 0x0FFF) < fw) okA++;
+                        if (((word >> 11) & 0x07) > 0 && (word & 0x07FF) < fw) okB++;
+                        if (((word >> 11) & 0x0F) > 0 && (word & 0x07FF) < fw) okC++;
+                        if (((word >> 8) & 0x0F) > 0 && (word & 0x00FF) < fw) okD++;
+                    }
+                    else // transparent run
+                    {
+                        if ((word & 0x0FFF) < fw) okA++;
+                        if ((word & 0x07FF) < fw) okB++;
+                        if ((word & 0x07FF) < fw) okC++;
+                        if ((word & 0x00FF) < fw) okD++;
+                    }
+                    pos += 2;
+                    total++;
+                }
+
+                sb.AppendLine();
+                sb.AppendLine($"   Plausibilität (xOff < W={fw}, count > 0) über {total} Words:");
+                sb.AppendLine($"   Layout A (T|cnt3|x12): {okA}/{total}  " +
+                              $"B (T|cnt3|x11): {okB}/{total}  " +
+                              $"C (T|cnt4|x11): {okC}/{total}  " +
+                              $"D (T|cnt4|x8):  {okD}/{total}");
+
+                int best = Math.Max(okA, Math.Max(okB, Math.Max(okC, okD)));
+                string bestName = okA == best ? "A" :
+                                  okB == best ? "B" :
+                                  okC == best ? "C" : "D";
+                sb.AppendLine($"   → Wahrscheinlichstes Layout: {bestName}");
+                sb.AppendLine();
+            }
+
+            // ── Rohbytes der ersten 64 Bytes nach Frame-0-Header ─────────────────
+            if (headers.Length > 0)
+            {
+                long f0 = headers[0];
+                long pixStart = f0 + 8;
+                int rawCount = (int)Math.Min(64, _data.Length - pixStart);
+                sb.AppendLine($"Raw pixel bytes Frame 0 (0x{pixStart:X6}, erste {rawCount} Bytes):");
+                sb.Append("  ");
+                for (int i = 0; i < rawCount; i++)
+                {
+                    sb.Append($"{_data[pixStart + i]:X2} ");
+                    if ((i + 1) % 16 == 0) sb.Append("\n  ");
+                }
+                sb.AppendLine();
+                sb.AppendLine();
+            }
+            // ═══════════════════════════════════════════════════════════════════════
+
+            sb.AppendLine("=== End ===");
+
+            string text = sb.ToString();
+
+            bool copied = false;
+            try { Clipboard.SetText(text); copied = true; }
+            catch { /* ignore */ }
+
+            var frm = new Form
+            {
+                Text = $"RLE Debug Info — {(_isUop ? "UOP" : "MUL")}  " +
+                                  $"Body:{_bodyId} Action:{_actionId} Dir:{_directionId}",
+                Size = new Size(1100, 720),
+                FormBorderStyle = FormBorderStyle.SizableToolWindow,
+                StartPosition = FormStartPosition.CenterParent,
+                BackColor = Color.FromArgb(28, 28, 32),
+                ForeColor = Color.White,
+                MinimumSize = new Size(600, 400)
+            };
+
+            var toolbar = new Panel
+            {
+                Dock = DockStyle.Top,
+                Height = 32,
+                BackColor = Color.FromArgb(38, 38, 50)
+            };
+
+            var btnCopy = new Button
+            {
+                Text = copied ? "📋  Copied to clipboard ✓" : "📋  Copy to clipboard",
+                Location = new Point(8, 4),
+                Width = 210,
+                Height = 24,
+                BackColor = copied ? Color.FromArgb(0, 100, 60) : Color.FromArgb(0, 80, 140),
+                ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat
+            };
+            btnCopy.FlatAppearance.BorderColor = Color.FromArgb(80, 80, 80);
+            btnCopy.Click += (s, e) =>
+            {
+                try
+                {
+                    Clipboard.SetText(text);
+                    btnCopy.Text = "📋  Copied ✓";
+                    btnCopy.BackColor = Color.FromArgb(0, 100, 60);
+                }
+                catch { btnCopy.Text = "✗  Copy failed"; }
+            };
+
+            var lblInfo = new Label
+            {
+                Text = $"{_data.Length:N0} bytes  |  {(_isUop ? "UOP" : "MUL")}  |  " +
+                            $"Body {_bodyId}  Action {_actionId}  Dir {_directionId}  |  " +
+                            $"{headers.Length} frames found",
+                Location = new Point(228, 8),
+                AutoSize = true,
+                ForeColor = Color.FromArgb(140, 190, 255),
+                Font = new Font("Consolas", 8.5f)
+            };
+
+            toolbar.Controls.Add(btnCopy);
+            toolbar.Controls.Add(lblInfo);
+
+            var txtBox = new TextBox
+            {
+                Dock = DockStyle.Fill,
+                Multiline = true,
+                ReadOnly = true,
+                BackColor = Color.FromArgb(28, 28, 38),
+                ForeColor = Color.FromArgb(200, 220, 255),
+                Font = new Font("Consolas", 8.5f),
+                BorderStyle = BorderStyle.None,
+                ScrollBars = ScrollBars.Both,
+                WordWrap = false,
+                Text = text
+            };
+
+            frm.Controls.Add(txtBox);
+            frm.Controls.Add(toolbar);
+
+            lblStatus.Text = copied
+                ? $"Debug info copied — {headers.Length} frames found."
+                : "Debug info ready — copy failed, use button in window.";
+
+            frm.ShowDialog(this);
+        }
+        #endregion
 
         // ══════════════════════════════════════════════════════════════════════
         //  DIFF MODE
@@ -1569,7 +2906,8 @@ namespace UoFiddler.Controls.Forms
             var pn = new TreeNode("Palette  [0x000–0x1FF]  512 bytes") { ForeColor = Color.FromArgb(255, 180, 60) };
             for (int i = 0; i < 16; i++)
             {
-                long p = i * 2; ushort v = (ushort)(data[p] | (data[p + 1] << 8));
+                long p = i * 2;
+                ushort v = (ushort)(data[p] | (data[p + 1] << 8));
                 pn.Nodes.Add(new TreeNode($"[{i:D3}]  0x{v:X4}")
                 {
                     ForeColor = Color.FromArgb(180, 200, 180),
@@ -1577,41 +2915,52 @@ namespace UoFiddler.Controls.Forms
                     {
                         Offset = p,
                         Length = 2,
-                        Description = $"Palette entry {i}\nRaw  : 0x{v:X4}\nR5   : {(v >> 10) & 0x1F}\nG5   : {(v >> 5) & 0x1F}\nB5   : {v & 0x1F}\nAlpha: {((v & 0x8000) != 0 ? "opaque" : "transparent")}"
+                        Description = $"Palette entry {i}\nRaw  : 0x{v:X4}\n" +
+                                      $"R5   : {(v >> 10) & 0x1F}\nG5   : {(v >> 5) & 0x1F}\n" +
+                                      $"B5   : {v & 0x1F}\n" +
+                                      $"Alpha: {((v & 0x8000) != 0 ? "opaque" : "transparent")}"
                     }
                 });
             }
             pn.Nodes.Add(new TreeNode("… 240 more entries"));
             root.Nodes.Add(pn);
 
-            int fc = data.Length >= 514 ? data[512] | (data[513] << 8) : 0; fc = Math.Min(fc, 256);
+            int fc = data.Length >= 514 ? data[512] | (data[513] << 8) : 0;
+            fc = Math.Min(fc, 256);
             SF(root, data, 512, 2, "Frame Count", $"Frames in this direction. Value: {fc}");
 
             if (fc > 0)
             {
-                var tn = new TreeNode($"Frame Lookup  ({fc} offsets @ 0x202)") { ForeColor = Color.FromArgb(100, 200, 255) };
+                var tn = new TreeNode($"Frame Lookup  ({fc} offsets @ 0x202)")
+                { ForeColor = Color.FromArgb(100, 200, 255) };
                 for (int i = 0; i < Math.Min(fc, 32); i++)
                 {
                     long lp = 514 + i * 4;
                     if (lp + 4 > data.Length) break;
-                    int off = data[lp] | (data[lp + 1] << 8) | (data[lp + 2] << 16) | (data[lp + 3] << 24);
-                    tn.Nodes.Add(new TreeNode($"[{i}] → 0x{off:X}")
+                    int relOff = data[lp + 2] | (data[lp + 3] << 8);
+                    long absOff = 512 + relOff;   // ✓
+                    tn.Nodes.Add(new TreeNode($"[{i}]  rel=0x{relOff:X}  abs=0x{absOff:X}")
                     {
                         ForeColor = Color.FromArgb(180, 200, 180),
                         Tag = new StructField
                         {
                             Offset = lp,
                             Length = 4,
-                            Description = $"Frame {i} offset : 0x{(_dataOffset + off):X8}  ({off})"
+                            Description = $"Frame {i} lookup entry\n" +
+                                          $"Raw bytes  : {data[lp]:X2} {data[lp + 1]:X2} {data[lp + 2]:X2} {data[lp + 3]:X2}\n" +
+                                          $"Rel offset : {relOff}  (0x{relOff:X4})\n" +
+                                          $"Abs offset : 0x{(_dataOffset + absOff):X8}  ({absOff})"
                         }
                     });
                 }
+                if (fc > 32) tn.Nodes.Add(new TreeNode($"… {fc - 32} more"));
                 root.Nodes.Add(tn);
             }
             tree.Nodes.Add(root);
         }
 
         // helper: add struct field node
+
         private void SF(TreeNode parent, byte[] data, long offset, int len, string name, string desc)
         {
             string vs = "";
@@ -1628,7 +2977,10 @@ namespace UoFiddler.Controls.Forms
                 {
                     Offset = offset,
                     Length = len,
-                    Description = $"{name}\n────────────────────────\nFile offset : 0x{(_dataOffset + offset):X8}\nSize        : {len} byte(s)\nValue       : {vs.Trim()}\n\n{desc}"
+                    Description = $"{name}\n────────────────────────\n" +
+                                  $"File offset : 0x{(_dataOffset + offset):X8}\n" +
+                                  $"Size        : {len} byte(s)\n" +
+                                  $"Value       : {vs.Trim()}\n\n{desc}"
                 }
             });
         }
@@ -1640,7 +2992,7 @@ namespace UoFiddler.Controls.Forms
         public void ShowCommandOverview()
         {
             const string txt =
-@"════════════════════════════════════════════════════════
+        @"════════════════════════════════════════════════════════
   ANIMATION HEX EDITOR  —  Keyboard & Mouse Reference
 ════════════════════════════════════════════════════════
 
@@ -1654,6 +3006,25 @@ namespace UoFiddler.Controls.Forms
   Page Up / Page Down    Scroll one visible page
   Mouse wheel            Scroll 3 rows
   Mouse click            Set cursor
+
+  FIELD-AWARE NAVIGATION
+  ──────────────────────────────────────────────────────
+  Ctrl+→                 Jump to start of next field
+                         (e.g. CenterX → CenterY → Width)
+  Ctrl+←                 Jump to start of current field,
+                         next press: jump to previous field
+  Ctrl+↓                 4 fields forward
+                         (e.g. skip entire frame header)
+  Ctrl+↑                 4 fields backward
+  Ctrl+Shift+→           Next field + extend selection
+  Ctrl+Shift+←           Previous field + extend selection
+                         → select exactly one field & copy
+
+  FRAME NAVIGATION
+  ──────────────────────────────────────────────────────
+  Ctrl+N                 Jump to next frame header
+  Ctrl+,                 Jump to previous frame header
+                         (works from any position in the data)
 
   SELECTION
   ──────────────────────────────────────────────────────
@@ -1691,6 +3062,25 @@ namespace UoFiddler.Controls.Forms
   Ctrl+T                 Block statistics
                            (entropy, zero %, top bytes)
   Ctrl+E                 Export selection to .bin file
+  Ctrl+K                 Frame compare — step 1: set Frame A
+                           Navigate to a frame, press Ctrl+K
+                           Status shows: Frame A set @ 0x...
+                           Then navigate to Frame B and press
+                           Ctrl+K again → split view opens.
+  Ctrl+Shift+K           Clear Frame A selection
+  Ctrl+R                 RLE decoder view for current frame
+                           Decodes pixel runs as:
+                           [xOffset × count px  col=0xXXXX]
+                           Shows full line-by-line breakdown.
+  Ctrl+1                 Pin current animation as Compare A
+  Ctrl+2                 Pin current animation as Compare B
+                           Navigate to another animation,
+                           pin it as B → Compare window opens
+                           with both side by side.
+                           Red  = byte differs (side A)
+                           Green = byte differs (side B)
+                           Sync scroll toggle keeps both
+                           panels in lockstep.
 
   VISUAL / ANALYSIS
   ──────────────────────────────────────────────────────
@@ -1707,6 +3097,29 @@ namespace UoFiddler.Controls.Forms
                            Parses UOP/MUL header fields.
                            Click field → jump + select.
 
+  LIVE FIELD ANALYSIS
+  ──────────────────────────────────────────────────────
+  Status bar             Shows on every cursor move:
+                           [FieldType] FieldName = Value
+                           e.g. [int16-LE] Frame[2].CenterX = -22
+  Hover tooltip          After 600ms: full field details
+                           Name / Type / Offset / Size / Value
+  MUL fields:
+    Offset   0–511       Palette[n]  (256 × ARGB1555)
+    Offset 512–513       FrameCount  (uint16)
+    Offset 514+          FrameLookup[n]  (uint32 per entry)
+    From lookup target   Frame[n].CenterX / CenterY (int16)
+                         Frame[n].Width / Height (uint16)
+                         Frame[n].PixelData (RLE-stream)
+  UOP fields:
+    Offset   0–23        Header (Magic / BodyId / FrameCount /
+                         ActionIdx / Direction / Flags)
+    Offset  24+          Frame table (Offset / Length / Extra
+                         12 bytes per entry)
+    From data offset     Frame[n].CenterX / CenterY (int16)
+                         Frame[n].Width / Height (uint16)
+                         Frame[n].PixelData (RLE-stream)
+
   SCREENSHOT
   ──────────────────────────────────────────────────────
   Toolbar 'Screenshot':
@@ -1717,6 +3130,10 @@ namespace UoFiddler.Controls.Forms
   CONTEXT MENU  (right-click anywhere)
   ──────────────────────────────────────────────────────
   All tools above + region-specific actions.
+  Right-click also shows:
+    • Select / copy region by name
+    • Compare two frames  (Ctrl+K)
+    • RLE decoder view    (Ctrl+R)
 
   COLOR CODING
   ──────────────────────────────────────────────────────
@@ -1731,8 +3148,9 @@ namespace UoFiddler.Controls.Forms
 
 ════════════════════════════════════════════════════════";
 
-            ShowMonoDialog("Command Overview  (F1)", txt, 690, 700);
+            ShowMonoDialog("Command Overview  (F1)", txt, 690, 960);
         }
+
 
         // ══════════════════════════════════════════════════════════════════════
         //  Internal Helpers
@@ -1797,18 +3215,41 @@ namespace UoFiddler.Controls.Forms
         private void UpdateStatus()
         {
             if (_data == null) { lblStatus.Text = "No data loaded."; return; }
+
             long lo = _selStart >= 0 ? Math.Min(_selStart, _selEnd) : _cursor;
             long hi = _selStart >= 0 ? Math.Max(_selStart, _selEnd) : _cursor;
             long len = _selStart >= 0 && _selEnd >= _selStart ? hi - lo + 1 : 0;
+
             HexRegion r = GetRegionAt(_cursor);
             string reg = r != null ? $"  │  {r.Label}" : "";
-            string bv = _cursor >= 0 && _cursor < _data.Length ? $"  │  0x{_data[_cursor]:X2} ({_data[_cursor]})" : "";
+            string bv = _cursor >= 0 && _cursor < _data.Length
+                         ? $"  │  0x{_data[_cursor]:X2} ({_data[_cursor]})" : "";
             string sel = len > 1
-                ? $"  │  Sel: 0x{(_dataOffset + lo):X8}–0x{(_dataOffset + hi):X8}  ({len:N0} B)"
-                : $"  │  0x{(_dataOffset + _cursor):X8}";
+                         ? $"  │  Sel: 0x{(_dataOffset + lo):X8}–0x{(_dataOffset + hi):X8}  ({len:N0} B)"
+                         : $"  │  0x{(_dataOffset + _cursor):X8}";
             string mod = _modifiedBytes.Count > 0 ? $"  │  {_modifiedBytes.Count} mod" : "";
             string diff = _diffMode ? $"  │  DIFF" : "";
-            lblStatus.Text = $"{Path.GetFileName(_sourceFile ?? "?")}  │  {_data.Length:N0} B{sel}{bv}{reg}{mod}{diff}";
+
+            // ── Live Field Analysis ──────────────────────────────────────────
+            var field = ParseFieldAtCursor(_cursor);
+            string fieldInfo = field != null
+                ? $"  │  [{field.TypeName}] {field.Name} = {field.Value}"
+                : "";
+
+            lblStatus.Text =
+                $"{Path.GetFileName(_sourceFile ?? "?")}  │  {_data.Length:N0} B" +
+                $"{sel}{bv}{reg}{fieldInfo}{mod}{diff}";
+
+            // ── Tooltip with details (overwrites old tooltip)─────────────
+            if (field != null && !string.IsNullOrEmpty(field.Description))
+            {
+                _pendingTooltip = $"{field.Name}\n" +
+                                  $"Type:   {field.TypeName}\n" +
+                                  $"Offset: 0x{(_dataOffset + field.Offset):X8}\n" +
+                                  $"Size:   {field.Size} byte(s)\n" +
+                                  $"Value:  {field.Value}" +
+                                  (field.Description.Length > 0 ? $"\n\n{field.Description}" : "");
+            }
         }
 
         private void TooltipTimer_Tick(object sender, EventArgs e)
@@ -1911,6 +3352,238 @@ namespace UoFiddler.Controls.Forms
             if (e.CloseReason == CloseReason.UserClosing) { e.Cancel = true; Hide(); }
             base.OnFormClosing(e);
         }
+
+        private ParsedField ParseFieldAtCursor(long cursor)
+        {
+            if (_data == null || cursor < 0 || cursor >= _data.Length)
+                return null;
+
+            // ── UOP ──────────────────────────────────────────────────────────
+            if (_isUop)
+                return ParseFieldUop(cursor);
+
+            // ── MUL ──────────────────────────────────────────────────────────
+            return ParseFieldMul(cursor);
+        }
+
+        private ParsedField ParseFieldUop(long pos)
+        {
+            if (pos < 4)
+                return MakeField("Magic / FileType", "uint32-LE", 0, 4, pos);
+            if (pos < 8)
+                return MakeField("BodyId", "uint32-LE", 4, 4, pos);
+            if (pos < 12)
+                return MakeField("FrameCount", "uint32-LE", 8, 4, pos);
+            if (pos < 16)
+                return MakeField("Action Index", "uint32-LE", 12, 4, pos);
+            if (pos < 20)
+                return MakeField("Direction", "uint32-LE", 16, 4, pos);
+            if (pos < 24)
+                return MakeField("Flags", "uint32-LE", 20, 4, pos);
+
+            // Frame-Table (ab Offset 24, je 12 Bytes)
+            int fc = _data.Length >= 12
+                ? (int)ReadUInt32(_data, 8) : 0;
+            long tableEnd = 24 + fc * 12L;
+
+            if (pos >= 24 && pos < tableEnd)
+            {
+                long entry = (pos - 24) / 12;
+                long entryStart = 24 + entry * 12;
+                long within = pos - entryStart;
+
+                if (within < 4) return MakeField($"Frame[{entry}].DataOffset", "int32-LE", entryStart, 4, pos);
+                if (within < 8) return MakeField($"Frame[{entry}].DataLength", "int32-LE", entryStart + 4, 4, pos);
+                return MakeField($"Frame[{entry}].Extra", "int32-LE", entryStart + 8, 4, pos);
+            }
+
+            // Frame data: search to which frame this offset belongs
+            for (int i = 0; i < Math.Min(fc, 256); i++)
+            {
+                long lp = 24 + i * 12;
+                if (lp + 8 > _data.Length) break;
+                int fOff = (int)ReadUInt32(_data, lp);
+                int fLen = (int)ReadUInt32(_data, lp + 4);
+                if (fOff <= 0 || fLen <= 0) continue;
+                if (pos < fOff || pos >= fOff + fLen) continue;
+
+                long within = pos - fOff;
+                if (within < 2) return MakeField($"Frame[{i}].CenterX", "int16-LE", fOff, 2, pos);
+                if (within < 4) return MakeField($"Frame[{i}].CenterY", "int16-LE", fOff + 2, 2, pos);
+                if (within < 6) return MakeField($"Frame[{i}].Width", "uint16-LE", fOff + 4, 2, pos);
+                if (within < 8) return MakeField($"Frame[{i}].Height", "uint16-LE", fOff + 6, 2, pos);
+                return MakeField($"Frame[{i}].PixelData", "RLE-stream", fOff + 8,
+                                         fLen - 8, pos, $"Run-Length-Encoded pixel data ({fLen - 8} Bytes)");
+            }
+
+            return MakeField("Unknown", "byte", pos, 1, pos);
+        }
+
+        private ParsedField ParseFieldMul(long pos)
+        {
+            if (pos < 512)
+            {
+                long entry = pos / 2;
+                long entryOff = entry * 2;
+                ushort v = (ushort)(_data[entryOff] | (_data[entryOff + 1] << 8));
+                int r5 = (v >> 10) & 0x1F, g5 = (v >> 5) & 0x1F, b5 = v & 0x1F;
+                bool alpha = (v & 0x8000) != 0;
+                string extra = $"R={r5 * 255 / 31}  G={g5 * 255 / 31}  B={b5 * 255 / 31}" +
+                               $"  Alpha={(alpha ? "opaque" : "transparent")}";
+                return MakeField($"Palette[{entry}]", "ARGB1555", entryOff, 2, pos, extra);
+            }
+
+            if (pos < 514)
+            {
+                ushort fc = (ushort)(_data[512] | (_data[513] << 8));
+                return MakeField("FrameCount", "uint16-LE", 512, 2, pos,
+                                 $"Number of frames in this direction: {fc}");
+            }
+
+            ushort frameCount = _data.Length >= 514
+                ? (ushort)(_data[512] | (_data[513] << 8)) : (ushort)0;
+            long dataStart = 514 + frameCount * 4L;
+            long lookupEnd = dataStart;
+
+            // ── Lookup-Tabelle ────────────────────────────────────────────────────
+            if (pos >= 514 && pos < lookupEnd)
+            {
+                long fi = (pos - 514) / 4;
+                long fp = 514 + fi * 4;
+                int relOff = _data.Length >= fp + 4
+                    ? (_data[fp + 2] | (_data[fp + 3] << 8)) : 0;
+                long absOff = 512 + relOff;   // ✓
+                return MakeField($"FrameLookup[{fi}]", "uint16-in-uint32", fp, 4, pos,
+                                 $"Relative offset to frame {fi}: {relOff}" +
+                                 $"  →  absolute 0x{(_dataOffset + absOff):X8}");
+            }
+
+            // ── Frame-Daten ───────────────────────────────────────────────────────
+            for (int i = 0; i < frameCount && i < 256; i++)
+            {
+                long lp = 514 + i * 4;
+                if (lp + 4 > _data.Length) break;
+
+                int relOff = _data[lp + 2] | (_data[lp + 3] << 8);
+                long fOff = 512 + relOff;   // ✓
+                if (fOff < 0 || fOff >= _data.Length) continue;
+
+                long nextFOff = _data.Length;
+                if (i + 1 < frameCount)
+                {
+                    long nlp = 514 + (i + 1) * 4;
+                    if (nlp + 4 <= _data.Length)
+                    {
+                        int nRel = _data[nlp + 2] | (_data[nlp + 3] << 8);
+                        long nAbs = 512 + nRel;   // ✓
+                        if (nAbs > fOff && nAbs <= _data.Length)
+                            nextFOff = nAbs;
+                    }
+                }
+
+                if (pos < fOff || pos >= nextFOff) continue;
+
+                long within = pos - fOff;
+                if (within < 2) return MakeField($"Frame[{i}].CenterX", "int16-LE", fOff, 2, pos);
+                if (within < 4) return MakeField($"Frame[{i}].CenterY", "int16-LE", fOff + 2, 2, pos);
+                if (within < 6) return MakeField($"Frame[{i}].Width", "uint16-LE", fOff + 4, 2, pos);
+                if (within < 8) return MakeField($"Frame[{i}].Height", "uint16-LE", fOff + 6, 2, pos);
+                return MakeField($"Frame[{i}].PixelData", "RLE-stream", fOff + 8,
+                                 nextFOff - fOff - 8, pos,
+                                 $"Compressed pixel data for frame {i}");
+            }
+            return MakeField("Unknown", "byte", pos, 1, pos);
+        }
+
+        private ParsedField MakeField(string name, string type, long offset, long size,
+                               long cursor, string desc = null)
+        {
+            if (_data == null || offset < 0 || offset >= _data.Length)
+                return new ParsedField
+                {
+                    Name = name,
+                    TypeName = type,
+                    Offset = offset,
+                    Size = (int)Math.Min(size, 8),
+                    Value = "?",
+                    Description = desc ?? ""
+                };
+
+            string val = FormatFieldValue(type, offset, size);
+            return new ParsedField
+            {
+                Name = name,
+                TypeName = type,
+                Offset = offset,
+                Size = (int)Math.Min(size, int.MaxValue),
+                Value = val,
+                Description = desc ?? ""
+            };
+        }
+
+        private string FormatFieldValue(string type, long offset, long size)
+        {
+            if (_data == null || offset < 0) return "?";
+            try
+            {
+                switch (type)
+                {
+                    case "uint8":
+                        return $"{_data[offset]}  (0x{_data[offset]:X2})";
+                    case "int16-LE":
+                        {
+                            if (offset + 2 > _data.Length) return "?";
+                            short v = (short)(_data[offset] | (_data[offset + 1] << 8));
+                            return $"{v}  (0x{(ushort)v:X4})";
+                        }
+                    case "uint16-LE":
+                        {
+                            if (offset + 2 > _data.Length) return "?";
+                            ushort v = (ushort)(_data[offset] | (_data[offset + 1] << 8));
+                            return $"{v}  (0x{v:X4})";
+                        }
+                    case "int32-LE":
+                    case "uint32-LE":
+                        {
+                            if (offset + 4 > _data.Length) return "?";
+                            uint v = ReadUInt32(_data, offset);
+                            return type == "int32-LE"
+                                ? $"{(int)v}  (0x{v:X8})"
+                                : $"{v}  (0x{v:X8})";
+                        }
+                    case "ARGB1555":
+                        {
+                            if (offset + 2 > _data.Length) return "?";
+                            ushort v = (ushort)(_data[offset] | (_data[offset + 1] << 8));
+                            int r5 = (v >> 10) & 0x1F, g5 = (v >> 5) & 0x1F, b5 = v & 0x1F;
+                            return $"0x{v:X4}  R={r5 * 255 / 31} G={g5 * 255 / 31} B={b5 * 255 / 31}";
+                        }
+                    default:
+                        return $"{size} bytes";
+                }
+            }
+            catch { return "?"; }
+        }
+
+        private static uint ReadUInt32(byte[] data, long offset)
+        {
+            return (uint)(data[offset] | (data[offset + 1] << 8) |
+                          (data[offset + 2] << 16) | (data[offset + 3] << 24));
+        }
+
+        // ══════════════════════════════════════════════════════════════════════
+        //  DYNAMISCHE ANALYSE
+        // ══════════════════════════════════════════════════════════════════════
+
+        private sealed class ParsedField
+        {
+            public string Name;
+            public string TypeName;
+            public long Offset;
+            public int Size;
+            public string Value;
+            public string Description;
+        }
     }
 
     // ══════════════════════════════════════════════════════════════════════════
@@ -1926,6 +3599,212 @@ namespace UoFiddler.Controls.Forms
                 (int)(color.R + (target.R - color.R) * t),
                 (int)(color.G + (target.G - color.G) * t),
                 (int)(color.B + (target.B - color.B) * t));
+        }
+    }
+
+    // ==========================================================================
+    //  RleDecoderWindow - standalone RLE decoder display window
+    //  Diagnose panel toggle, proper BGR->RGB palette, clean layout
+    // ==========================================================================
+    internal static class RleDecoderWindow
+    {
+        public static void Show(Form owner,
+            int frameIdx, short cx, short cy, ushort w, ushort h,
+            long absoluteAddr,
+            int pw, int ph, uint[] pixBuf,
+            string runText, string diagText)
+        {
+            var frm = new Form
+            {
+                Text = string.Format("RLE Decoder - Frame {0}  ({1}x{2})  @ 0x{3:X8}",
+                    frameIdx, w, h, absoluteAddr),
+                Size = new Size(1100, 700),
+                FormBorderStyle = FormBorderStyle.SizableToolWindow,
+                StartPosition = FormStartPosition.CenterParent,
+                BackColor = Color.FromArgb(28, 28, 32),
+                ForeColor = Color.White,
+                MinimumSize = new Size(640, 420)
+            };
+
+            // ── Toolbar ────────────────────────────────────────────────────────
+            var toolbar = new Panel
+            {
+                Dock = DockStyle.Top,
+                Height = 32,
+                BackColor = Color.FromArgb(38, 38, 50),
+            };
+
+            var btnDiag = new Button
+            {
+                Text = "Diagnose einblenden",
+                FlatStyle = FlatStyle.Flat,
+                BackColor = Color.FromArgb(0, 90, 150),
+                ForeColor = Color.White,
+                Height = 24,
+                Width = 180,
+                Left = 4,
+                Top = 4,
+                Font = new Font("Segoe UI", 8.5f)
+            };
+            btnDiag.FlatAppearance.BorderColor = Color.FromArgb(0, 130, 200);
+
+            var lblInfo = new Label
+            {
+                Text = string.Format("Frame:{0}  {1}x{2}  CX={3} CY={4}  @ 0x{5:X8}",
+                    frameIdx, w, h, cx, cy, absoluteAddr),
+                ForeColor = Color.FromArgb(140, 190, 255),
+                Font = new Font("Consolas", 8.5f),
+                AutoSize = true,
+                Left = 192,
+                Top = 8
+            };
+
+            toolbar.Controls.Add(btnDiag);
+            toolbar.Controls.Add(lblInfo);
+
+            // ── Diagnose-Panel (hidden by default) ─────────────────────────────
+            int diagLineCount = 0;
+            foreach (char c in diagText)
+                if (c == '\n') diagLineCount++;
+            diagLineCount += 2;
+
+            var diagBox = new TextBox
+            {
+                Dock = DockStyle.Top,
+                Multiline = true,
+                ReadOnly = true,
+                BackColor = Color.FromArgb(15, 35, 15),
+                ForeColor = Color.FromArgb(80, 220, 100),
+                Font = new Font("Consolas", 8.5f),
+                BorderStyle = BorderStyle.FixedSingle,
+                ScrollBars = ScrollBars.Vertical,
+                WordWrap = false,
+                Text = diagText,
+                Height = Math.Min(diagLineCount * 16 + 8, 300),
+                Visible = false
+            };
+
+            bool diagVisible = false;
+            btnDiag.Click += (s, e) =>
+            {
+                diagVisible = !diagVisible;
+                diagBox.Visible = diagVisible;
+                btnDiag.Text = diagVisible ? "Diagnose ausblenden" : "Diagnose einblenden";
+                btnDiag.BackColor = diagVisible
+                    ? Color.FromArgb(0, 130, 60)
+                    : Color.FromArgb(0, 90, 150);
+            };
+
+            // ── Main split: left=preview, right=run text ───────────────────────
+            var split = new SplitContainer
+            {
+                Dock = DockStyle.Fill,
+                SplitterDistance = 420,
+                SplitterWidth = 5,
+                BackColor = Color.FromArgb(50, 50, 60)
+            };
+
+            // ── Preview panel (left) ───────────────────────────────────────────
+            var previewPanel = new Panel
+            {
+                Dock = DockStyle.Fill,
+                BackColor = Color.FromArgb(28, 28, 38)
+            };
+
+            // Build bitmap once from pixBuf
+            System.Drawing.Bitmap frameBmp = null;
+            if (pw > 0 && ph > 0)
+            {
+                frameBmp = new System.Drawing.Bitmap(pw, ph,
+                    System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+                for (int py2 = 0; py2 < ph; py2++)
+                {
+                    for (int px2 = 0; px2 < pw; px2++)
+                    {
+                        uint val = pixBuf[py2 * pw + px2];
+                        if (val == 0) continue;
+                        int a2 = (int)((val >> 24) & 0xFF);
+                        int r2 = (int)((val >> 16) & 0xFF);
+                        int g2 = (int)((val >> 8) & 0xFF);
+                        int b2 = (int)(val & 0xFF);
+                        frameBmp.SetPixel(px2, py2, Color.FromArgb(a2, r2, g2, b2));
+                    }
+                }
+            }
+
+            previewPanel.Paint += (s, e) =>
+            {
+                var g2 = e.Graphics;
+                g2.Clear(Color.FromArgb(28, 28, 38));
+                if (frameBmp == null) return;
+
+                int panW = previewPanel.ClientSize.Width - 8;
+                int panH = previewPanel.ClientSize.Height - 32;
+                if (panW <= 0 || panH <= 0) return;
+
+                float scale = Math.Max(1f, Math.Min((float)panW / pw, (float)panH / ph));
+                int drawW = (int)(pw * scale);
+                int drawH = (int)(ph * scale);
+                int drawX = (previewPanel.ClientSize.Width - drawW) / 2;
+                int drawY = 24 + (panH - drawH) / 2;
+
+                // Checkerboard background for transparency
+                int cs = Math.Max(6, (int)(scale * 0.8f));
+                using (var tb1 = new SolidBrush(Color.FromArgb(55, 55, 65)))
+                using (var tb2 = new SolidBrush(Color.FromArgb(75, 75, 85)))
+                {
+                    for (int py2 = 0; py2 < drawH; py2 += cs)
+                        for (int px2 = 0; px2 < drawW; px2 += cs)
+                            g2.FillRectangle(
+                                ((px2 / cs + py2 / cs) % 2 == 0) ? tb1 : tb2,
+                                drawX + px2, drawY + py2,
+                                Math.Min(cs, drawW - px2),
+                                Math.Min(cs, drawH - py2));
+                }
+
+                g2.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
+                g2.PixelOffsetMode = System.Drawing.Drawing2D.PixelOffsetMode.Half;
+                g2.DrawImage(frameBmp,
+                    new Rectangle(drawX, drawY, drawW, drawH),
+                    new Rectangle(0, 0, pw, ph),
+                    GraphicsUnit.Pixel);
+
+                using (var ib = new SolidBrush(Color.FromArgb(140, 190, 255)))
+                {
+                    g2.DrawString(
+                        string.Format("Frame {0}  {1}x{2}  CX={3} CY={4}  (scale {5:F1}x)",
+                            frameIdx, w, h, cx, cy, scale),
+                        new Font("Consolas", 8f), ib, new PointF(4, 4));
+                }
+            };
+
+            previewPanel.Resize += (s, e) => previewPanel.Invalidate();
+            frm.FormClosed += (s, e) => { frameBmp?.Dispose(); };
+
+            // ── Run text (right) ───────────────────────────────────────────────
+            var txtBox = new TextBox
+            {
+                Dock = DockStyle.Fill,
+                Multiline = true,
+                ReadOnly = true,
+                BackColor = Color.FromArgb(28, 28, 38),
+                ForeColor = Color.FromArgb(200, 220, 255),
+                Font = new Font("Consolas", 8.5f),
+                BorderStyle = BorderStyle.None,
+                ScrollBars = ScrollBars.Both,
+                WordWrap = false,
+                Text = runText
+            };
+
+            split.Panel1.Controls.Add(previewPanel);
+            split.Panel2.Controls.Add(txtBox);
+
+            // Add in reverse dock order: Fill first, then Top panels
+            frm.Controls.Add(split);
+            frm.Controls.Add(diagBox);
+            frm.Controls.Add(toolbar);
+
+            frm.ShowDialog(owner);
         }
     }
 }

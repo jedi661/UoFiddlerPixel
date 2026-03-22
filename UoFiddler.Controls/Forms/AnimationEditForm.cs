@@ -87,7 +87,9 @@ namespace UoFiddler.Controls.Forms
         private bool isAnimationVisible = false; // Second animation
         private AnimIdx additionalAnimation = null; // Second animation
 
-        private static bool _drawCrosshair = true; // Standard = sichtbar
+        private static bool _drawCrosshair = true; // Default = visible
+
+        private HexCompareForm _hexCompare; // Form for hex comparison of frames between two animations
 
         #region [ Offsets Human ]
         private static readonly int[][][] Offsets = new int[][][]
@@ -781,6 +783,7 @@ namespace UoFiddler.Controls.Forms
                 _previousAction = _currentAction;
 
                 DisplayUopAnimation();
+                NotifyHexEditor();
                 return; // ← SORTIR ICI pour les animations UOP
             }
 
@@ -878,6 +881,7 @@ namespace UoFiddler.Controls.Forms
 
             // Sequence Tab für MUL befüllen
             PopulateSequenceGrid(_currentBody);
+            NotifyHexEditor();
         }
 
         private void DisplayUopAnimation()
@@ -1376,6 +1380,7 @@ namespace UoFiddler.Controls.Forms
 
             // AfterSelectTreeView LAST — loads main animation, but does not overwrite isAnimationVisible
             AfterSelectTreeView(null, null);
+            NotifyHexEditor();
         }
         #endregion
 
@@ -1751,6 +1756,7 @@ namespace UoFiddler.Controls.Forms
             }
 
             AnimationPictureBox.Invalidate();
+            NotifyHexEditor();
         }
         //End of Soulblighter Modification
 
@@ -2668,9 +2674,9 @@ namespace UoFiddler.Controls.Forms
                                 MessageBoxButtons.OK, MessageBoxIcon.Information);
                             return;
                         }
-                        
+
                         toolStripStatusLabelVDAminInfo.Text = $"File Type: {firstShort}, Animation Type: {animType}";
-                        
+
                         bool recognized = (firstShort == 0x5644) || (firstShort == 6);
 
                         if (!recognized)
@@ -2680,7 +2686,7 @@ namespace UoFiddler.Controls.Forms
                                 MessageBoxButtons.OK, MessageBoxIcon.Information);
                             return;
                         }
-                        
+
                         if (animType != currentType)
                         {
                             toolStripStatusLabelVDAminInfo.Text += $" - Wrong Anim Id (Type). Expected: {currentType}, Got: {animType}";
@@ -2694,7 +2700,7 @@ namespace UoFiddler.Controls.Forms
 
                             return;
                         }
-                        
+
                         AnimationEdit.LoadFromVD(_fileType, _currentBody, bin);
                     }
                 }
@@ -2718,7 +2724,7 @@ namespace UoFiddler.Controls.Forms
                     }
                     node.ForeColor = valid ? Color.Black : Color.Red;
                 }
-                
+
                 toolStripStatusLabelVDAminInfo.Text += $" - Successfully imported into slot {_currentBody}";
 
                 Options.ChangedUltimaClass["Animations"] = true;
@@ -7906,7 +7912,7 @@ namespace UoFiddler.Controls.Forms
                                     }
                                     currentCount++;
                                 }
-                                
+
                                 anim.AddFrame(bmp16, frame.Center.X, frame.Center.Y);
                             }
                         }
@@ -9293,38 +9299,64 @@ namespace UoFiddler.Controls.Forms
 
         #region [ Hex Editor ] - Button handler and logic to open the hex editor with the corresponding data
 
-        private AnimationHexEditorForm _hexEditor;        
+        private AnimationHexEditorForm _hexEditor;       
 
         private void btnOpenHexEditor_Click(object sender, EventArgs e)
         {
-            // No file type selected
             if (_fileType == 0)
             {
-                MessageBox.Show("Please select an animation file first..",
+                MessageBox.Show("Please select an animation file first.",
                     "Hex Editor", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
 
-            // No node selected
             if (AnimationListTreeView.SelectedNode == null)
             {
-                MessageBox.Show("Please select an animation first..",
+                MessageBox.Show("Please select an animation first.",
                     "Hex Editor", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
 
-            // Create or reuse windows
             if (_hexEditor == null || _hexEditor.IsDisposed)
+            {
                 _hexEditor = new AnimationHexEditorForm();
 
-            // Build regions and load data
-            if (_fileType == 6) // UOP
+                _hexEditor.OnByteWritten += (absoluteOffset, newByte) =>
+                {
+                    AnimationPictureBox.Invalidate();
+                };
+
+                // ── Wire up "Pin as A / Pin as B" from HexEditor to HexCompareForm
+                _hexEditor.OnPinAsA += buf =>
+                {
+                    EnsureHexCompare();
+                    _hexCompare.LoadBufferA(buf);
+                    _hexCompare.Show();
+                    _hexCompare.BringToFront();
+                };
+
+                _hexEditor.OnPinAsB += buf =>
+                {
+                    EnsureHexCompare();
+                    _hexCompare.LoadBufferB(buf);
+                    _hexCompare.Show();
+                    _hexCompare.BringToFront();
+                };
+            }
+
+            if (_fileType == 6)
                 OpenHexEditorUop();
-            else                // MUL (anim1–anim5)
+            else
                 OpenHexEditorMul();
 
             _hexEditor.Show();
             _hexEditor.BringToFront();
+        }
+
+        private void EnsureHexCompare()
+        {
+            if (_hexCompare == null || _hexCompare.IsDisposed)
+                _hexCompare = new HexCompareForm();
         }
 
         // ──────────────────────────────────────────────────────────────────────
@@ -9390,6 +9422,8 @@ namespace UoFiddler.Controls.Forms
 
         private void OpenHexEditorMul()
         {
+            //DebugBodyIdxEntry(_currentBody); // ← temporär, nach Debug wieder raus
+
             // 1. AnimIdx via SDK — exactly the same as when displaying frames
             AnimIdx edit = AnimationEdit.GetAnimation(
                 _fileType, _currentBody, _currentAction, _currentDir);
@@ -9412,19 +9446,11 @@ namespace UoFiddler.Controls.Forms
                 return;
             }
 
-            // 2. Try reading the raw data from the MUL file.
-            //    For this, we need to determine the ACTUAL body index.
-            //    The AnimationEdit is used internally.
-            //
-            //    Strategy: Scan all 5 files × all possible bodies
-            //    and take the one whose IDX entry has a valid offset
-            //    AND whose FrameCount matches edit.Frames.Count.
-
             byte[] rawData = null;
             long dataOffset = 0;
             string mulPath = null;
 
-            rawData = TryFindRawDataForAnimIdx(edit, out dataOffset, out mulPath);
+            rawData = TryFindRawDataForAnimIdx(edit, out dataOffset, out mulPath, out int mappedBody);
 
             // 3. If raw data is found: Fill the hex editor with the actual MUL file.
             if (rawData != null && rawData.Length > 0)
@@ -9433,7 +9459,7 @@ namespace UoFiddler.Controls.Forms
                 var preview = GetCurrentFrameBitmap();
 
                 _hexEditor.LoadMulAnimation(rawData, dataOffset, mulPath,
-                    _currentBody, _currentAction, _currentDir,
+                    mappedBody, _currentAction, _currentDir,
                     FramesTrackBar.Value, regions);
 
                 if (preview != null)
@@ -9443,7 +9469,7 @@ namespace UoFiddler.Controls.Forms
             }
 
             // 4. Fallback: Reconstructing data from AnimIdx frames
-            //    (for bodies that only exist in the RAM cache, e.g. imported ones)
+            // (for bodies that only exist in the RAM cache, e.g., imported ones)
             rawData = SerializeAnimIdxToMulFormat(edit);
             if (rawData == null)
             {
@@ -9458,7 +9484,7 @@ namespace UoFiddler.Controls.Forms
             var preview2 = GetCurrentFrameBitmap();
 
             _hexEditor.LoadMulAnimation(rawData, 0, pseudoPath,
-                _currentBody, _currentAction, _currentDir,
+                mappedBody, _currentAction, _currentDir,
                 FramesTrackBar.Value, regions2);
 
             if (preview2 != null)
@@ -9466,106 +9492,392 @@ namespace UoFiddler.Controls.Forms
                     regions2.Count > 0 ? regions2[0] : null);
         }
 
+        /*
+         * This method is for debugging purposes only. It reads the corresponding IDX entry for the given body and logs all relevant information about it, including:
+         * - Calculated IDX entry position
+         * - Whether the entry is within the bounds of the IDX file
+         * - The raw offset, length, and extra fields from the IDX entry
+         * - Whether the offset appears valid (not negative or 0xFFFFFFFF)
+         * - Information from body.def and bodyconv.def related to this body
+         * - Reflection data from the AnimIdx instance returned by the SDK
+         */
+        private void DebugBodyIdxEntry(int body)
+        {
+            var sb = new System.Text.StringBuilder();
+            sb.AppendLine($"=== DEBUG Body {body} FileType {_fileType} Action {_currentAction} Dir {_currentDir} ===");
+            
+            string mulName = _fileType == 1 ? "anim.mul" : $"anim{_fileType}.mul";
+            string idxName = _fileType == 1 ? "anim.idx" : $"anim{_fileType}.idx";
+            string mulPath = Ultima.Files.GetFilePath(mulName);
+            string idxPath = Ultima.Files.GetFilePath(idxName);
+
+            long idxEntry = (long)(body * 110 * 5 + _currentAction * 5 + _currentDir) * 12;
+            sb.AppendLine($"IDX Entry-Pos : {idxEntry} (0x{idxEntry:X})");
+
+            try
+            {
+                using var idxFs = new System.IO.FileStream(idxPath,
+                    System.IO.FileMode.Open, System.IO.FileAccess.Read, System.IO.FileShare.Read);
+                sb.AppendLine($"IDX File size : {idxFs.Length} bytes");
+                sb.AppendLine($"IDX Entry in bounds: {idxEntry + 12 <= idxFs.Length}");
+                if (idxEntry + 12 <= idxFs.Length)
+                {
+                    idxFs.Seek(idxEntry, System.IO.SeekOrigin.Begin);
+                    using var br = new System.IO.BinaryReader(idxFs);
+                    int rawOff = br.ReadInt32();
+                    int rawLen = br.ReadInt32();
+                    int rawExt = br.ReadInt32();
+                    sb.AppendLine($"IDX Offset    : 0x{rawOff:X8} ({rawOff})");
+                    sb.AppendLine($"IDX Length    : {rawLen} (0x{rawLen:X})");
+                    sb.AppendLine($"IDX Extra     : {rawExt} (0x{rawExt:X})");
+                    sb.AppendLine($"Offset valid  : {rawOff >= 0 && rawOff != unchecked((int)0xFFFFFFFF)}");
+                }
+            }
+            catch (Exception ex) { sb.AppendLine($"IDX read error: {ex.Message}"); }
+           
+            sb.AppendLine();
+            sb.AppendLine("--- SDK AnimIdx ---");
+            AnimIdx editForReflection = null;
+            try
+            {
+                editForReflection = AnimationEdit.GetAnimation(_fileType, body, _currentAction, _currentDir);
+                if (editForReflection == null)
+                {
+                    sb.AppendLine("SDK: edit == null");
+                }
+                else
+                {
+                    var frames = editForReflection.GetFrames();
+                    sb.AppendLine($"SDK: edit != null");
+                    sb.AppendLine($"SDK: Frames.Count = {editForReflection.Frames?.Count}");
+                    sb.AppendLine($"SDK: GetFrames() = {frames?.Length} bitmaps");
+                    if (frames != null && frames.Length > 0 && frames[0] != null)
+                        sb.AppendLine($"SDK: Frame[0] size = {frames[0].Width}x{frames[0].Height}");
+                }
+            }
+            catch (Exception ex) { sb.AppendLine($"SDK error: {ex.Message}"); }
+
+            // ── body.def check ───────────────────────────────────────────────────
+            sb.AppendLine();
+            sb.AppendLine("--- body.def (BodyTable) ---");
+            if (Ultima.BodyTable.Entries != null
+                && Ultima.BodyTable.Entries.TryGetValue(body, out var btEntry))
+                sb.AppendLine($"body.def: Body {body} → OldId {btEntry.OldId}");
+            else
+                sb.AppendLine($"body.def: Body {body} not listed");
+
+            // ── BodyConverter check ──────────────────────────────────────────────
+            sb.AppendLine();
+            sb.AppendLine("--- BodyConverter (bodyconv.def) ---");
+            int bcBody = body;
+            int bcFileType = Ultima.BodyConverter.Convert(ref bcBody);
+            sb.AppendLine($"BodyConverter.Convert: Body {body} → resolvedBody {bcBody}  fileType {bcFileType}");
+            sb.AppendLine($"BodyConverter.Contains({body}): {Ultima.BodyConverter.Contains(body)}");
+
+            // ── AnimIdx Reflection ───────────────────────────────────────────────
+            sb.AppendLine();
+            sb.AppendLine("--- AnimIdx Reflection ---");
+            if (editForReflection != null)
+            {
+                try
+                {
+                    var type = editForReflection.GetType();
+                    sb.AppendLine($"Type: {type.FullName}");
+                    sb.AppendLine("Fields:");
+                    foreach (var f in type.GetFields(
+                        System.Reflection.BindingFlags.Instance |
+                        System.Reflection.BindingFlags.NonPublic |
+                        System.Reflection.BindingFlags.Public))
+                    {
+                        try { sb.AppendLine($"  [{f.FieldType.Name}] {f.Name} = {f.GetValue(editForReflection)}"); }
+                        catch { sb.AppendLine($"  {f.Name} = [error]"); }
+                    }
+                    sb.AppendLine("Properties:");
+                    foreach (var p in type.GetProperties(
+                        System.Reflection.BindingFlags.Instance |
+                        System.Reflection.BindingFlags.NonPublic |
+                        System.Reflection.BindingFlags.Public))
+                    {
+                        try { sb.AppendLine($"  [{p.PropertyType.Name}] {p.Name} = {p.GetValue(editForReflection)}"); }
+                        catch { sb.AppendLine($"  {p.Name} = [error]"); }
+                    }
+                    // After the Properties block, but before writing to the file:
+                    sb.AppendLine();
+                    sb.AppendLine("--- FrameEdit Reflection (Frame[0]) ---");
+                    try
+                    {
+                        var edit2 = AnimationEdit.GetAnimation(_fileType, body, _currentAction, _currentDir);
+                        if (edit2?.Frames != null && edit2.Frames.Count > 0)
+                        {
+                            var frame0 = edit2.Frames[0];
+                            var ftype = frame0.GetType();
+                            sb.AppendLine($"FrameEdit Type: {ftype.FullName}");
+                            sb.AppendLine("Fields:");
+                            foreach (var f in ftype.GetFields(
+                                System.Reflection.BindingFlags.Instance |
+                                System.Reflection.BindingFlags.NonPublic |
+                                System.Reflection.BindingFlags.Public))
+                            {
+                                try { sb.AppendLine($"  [{f.FieldType.Name}] {f.Name} = {f.GetValue(frame0)}"); }
+                                catch { sb.AppendLine($"  {f.Name} = [error]"); }
+                            }
+                            sb.AppendLine("Properties:");
+                            foreach (var p in ftype.GetProperties(
+                                System.Reflection.BindingFlags.Instance |
+                                System.Reflection.BindingFlags.NonPublic |
+                                System.Reflection.BindingFlags.Public))
+                            {
+                                try { sb.AppendLine($"  [{p.PropertyType.Name}] {p.Name} = {p.GetValue(frame0)}"); }
+                                catch { sb.AppendLine($"  {p.Name} = [error]"); }
+                            }
+                        }
+                    }
+                    catch (Exception ex) { sb.AppendLine($"FrameEdit reflection error: {ex.Message}"); }
+                }
+                catch (Exception ex) { sb.AppendLine($"Reflection error: {ex.Message}"); }
+            }
+            else
+            {
+                sb.AppendLine("(edit == null, no reflection possible)");
+            }
+
+            // ── Write to file + MessageBox ──────────────────────────────────
+            string dumpPath = System.IO.Path.Combine(
+                System.IO.Path.GetTempPath(),
+                $"AnimIdxDump_Body{body}_FT{_fileType}_A{_currentAction}_D{_currentDir}.txt");
+            System.IO.File.WriteAllText(dumpPath, sb.ToString());
+
+            MessageBox.Show(
+                $"Dump gespeichert:\n{dumpPath}\n\n" +
+                sb.ToString().Substring(0, Math.Min(1000, sb.Length)),
+                $"Debug Body {body}",
+                MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
         // ──────────────────────────────────────────────────────────────────────
         //  Searches for the raw data for an AnimIdx in all anim files.
         //  Compares FrameCount from the IDX with edit.Frames.Count.
         // ──────────────────────────────────────────────────────────────────────
 
-        private byte[] TryFindRawDataForAnimIdx(AnimIdx edit,
+        private byte[] TryFindRawDataForAnimIdx(AnimIdx edit, out long foundOffset, out string foundMulPath, out int foundMappedBody)
+        {
+            foundOffset = 0;
+            foundMulPath = null;
+            foundMappedBody = _currentBody;
+
+            string mulName = _fileType == 1 ? "anim.mul" : $"anim{_fileType}.mul";
+            string idxName = _fileType == 1 ? "anim.idx" : $"anim{_fileType}.idx";
+            string mulPathFb = Ultima.Files.GetFilePath(mulName);
+            string idxPathFb = Ultima.Files.GetFilePath(idxName);
+
+            bool mulExists = !string.IsNullOrEmpty(mulPathFb) && System.IO.File.Exists(mulPathFb);
+            bool idxExists = !string.IsNullOrEmpty(idxPathFb) && System.IO.File.Exists(idxPathFb);
+            if (!mulExists || !idxExists) return null;
+
+            // ── Retrieve fingerprint from SDK-FrameEdit ─────────────────────────────
+            // Nur W + H + frameCount — kein CX/CY da SDK-Center != MUL-Header CX/CY
+            int refW = -1, refH = -1;
+            int refCount = edit?.Frames?.Count ?? -1;
+            if (edit?.Frames != null && edit.Frames.Count > 0)
+            {
+                var f0 = edit.Frames[0];
+                var ftype = f0.GetType();
+                var fW = ftype.GetField("Width",
+                    System.Reflection.BindingFlags.Instance |
+                    System.Reflection.BindingFlags.Public);
+                var fH = ftype.GetField("Height",
+                    System.Reflection.BindingFlags.Instance |
+                    System.Reflection.BindingFlags.Public);
+                if (fW != null) refW = (int)fW.GetValue(f0);
+                if (fH != null) refH = (int)fH.GetValue(f0);
+            }
+
+            // ── Step 1: _currentBody directly + verify ────────────────────
+            var candidate = ReadRawFromIdx(_currentBody, _fileType, idxPathFb, mulPathFb,
+                out long off1, out string path1);
+            if (candidate != null && VerifyBlockEx(candidate, refW, refH, refCount))
+            {
+                foundOffset = off1; foundMulPath = path1;
+                foundMappedBody = _currentBody;
+                return candidate;
+            }
+
+            // ── Step 2: bodyconv.def ───────────────────────────────────────────
+            string bodyconvPath = Ultima.Files.GetFilePath("bodyconv.def");
+            if (!string.IsNullOrEmpty(bodyconvPath) && System.IO.File.Exists(bodyconvPath))
+            {
+                int targetCol = _fileType - 1;
+                if (targetCol >= 1 && targetCol <= 4)
+                {
+                    try
+                    {
+                        foreach (string rawLine in System.IO.File.ReadLines(bodyconvPath))
+                        {
+                            int ci = rawLine.IndexOf('#');
+                            string clean = (ci >= 0 ? rawLine.Substring(0, ci) : rawLine).Trim();
+                            if (clean.Length == 0) continue;
+                            string[] parts = clean.Split(
+                                new[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries);
+                            if (parts.Length < 2) continue;
+                            if (!int.TryParse(parts[0], out int lineBody)) continue;
+                            if (lineBody != _currentBody) continue;
+                            if (targetCol >= parts.Length) break;
+                            if (!int.TryParse(parts[targetCol], out int mappedBody)) break;
+                            if (mappedBody < 0) break;
+                            var r = ReadRawFromIdx(mappedBody, _fileType, idxPathFb, mulPathFb,
+                                out long off2, out string path2);
+                            if (r != null && VerifyBlockEx(r, refW, refH, refCount))
+                            {
+                                foundOffset = off2; foundMulPath = path2;
+                                foundMappedBody = mappedBody;
+                                return r;
+                            }
+                            break;
+                        }
+                    }
+                    catch { }
+                }
+            }
+
+            // ── Step 3: body.def ───────────────────────────────────────────────
+            if (Ultima.BodyTable.Entries != null
+                && Ultima.BodyTable.Entries.TryGetValue(_currentBody, out Ultima.BodyTableEntry btEntry))
+            {
+                var r = ReadRawFromIdx(btEntry.OldId, _fileType, idxPathFb, mulPathFb,
+                    out long off3, out string path3);
+                if (r != null && VerifyBlockEx(r, refW, refH, refCount))
+                {
+                    foundOffset = off3; foundMulPath = path3;
+                    foundMappedBody = btEntry.OldId;
+                    return r;
+                }
+            }
+
+            // ── Step 4: Scan the entire IDX ──────────────────────────────────
+            // Only if all other steps have failed.
+            // Read only 600 bytes per entry — Frame[0] can be at an offset >530.
+            if (refW > 0 && refH > 0)
+            {
+                try
+                {
+                    using var idxFs = new System.IO.FileStream(idxPathFb,
+                        System.IO.FileMode.Open, System.IO.FileAccess.Read,
+                        System.IO.FileShare.Read);
+                    using var mulFs = new System.IO.FileStream(mulPathFb,
+                        System.IO.FileMode.Open, System.IO.FileAccess.Read,
+                        System.IO.FileShare.Read);
+                    using var idxBr = new System.IO.BinaryReader(idxFs);
+
+                    long entryCount = idxFs.Length / 12;
+                    for (long e = 0; e < entryCount; e++)
+                    {
+                        idxFs.Seek(e * 12, System.IO.SeekOrigin.Begin);
+                        int rawOff = idxBr.ReadInt32();
+                        int rawLen = idxBr.ReadInt32();
+                        idxBr.ReadInt32();
+
+                        if (rawOff < 0 || rawOff == unchecked((int)0xFFFFFFFF)) continue;
+                        if (rawLen < 520) continue;
+                        if ((long)rawOff + rawLen > mulFs.Length) continue;
+
+                        mulFs.Seek(rawOff, System.IO.SeekOrigin.Begin);
+                        var hdr = new byte[600];
+                        int hdrRead = mulFs.Read(hdr, 0, 600);
+                        if (hdrRead < 520) continue;
+
+                        ushort fc = (ushort)(hdr[512] | (hdr[513] << 8));
+                        if (refCount > 0 && fc != refCount) continue;
+                        if (fc == 0 || fc > 256) continue;
+
+                        int relOff = hdr[514 + 2] | (hdr[514 + 3] << 8);
+                        int absOff = 512 + relOff;
+                        if (absOff + 8 > hdrRead) continue;
+
+                        ushort w = (ushort)(hdr[absOff + 4] | (hdr[absOff + 5] << 8));
+                        ushort h = (ushort)(hdr[absOff + 6] | (hdr[absOff + 7] << 8));
+                        if (w != refW || h != refH) continue;
+
+                        // Match — Load entire block
+                        mulFs.Seek(rawOff, System.IO.SeekOrigin.Begin);
+                        var buf = new byte[rawLen];
+                        int read = mulFs.Read(buf, 0, buf.Length);
+                        if (read < 514) continue;
+                        if (read < buf.Length) System.Array.Resize(ref buf, read);
+
+                        foundOffset = rawOff;
+                        foundMulPath = mulPathFb;
+                        foundMappedBody = (int)(e / (110 * 5));
+                        return buf;
+                    }
+                }
+                catch { }
+            }
+            return null;
+        }
+
+        private bool VerifyBlockEx(byte[] data, int refW, int refH, int refCount)
+        {
+            if (data == null || data.Length < 520) return false;
+            if (refW <= 0 || refH <= 0) return true;
+
+            ushort fc = (ushort)(data[512] | (data[513] << 8));
+            if (refCount > 0 && fc != refCount) return false;
+            if (fc == 0 || fc > 256) return false;
+
+            int relOff = data[514 + 2] | (data[514 + 3] << 8);
+            int absOff = 512 + relOff;
+            if (absOff + 8 > data.Length) return false;
+
+            ushort w = (ushort)(data[absOff + 4] | (data[absOff + 5] << 8));
+            ushort h = (ushort)(data[absOff + 6] | (data[absOff + 7] << 8));
+            return w == refW && h == refH;
+        }
+
+        private byte[] ReadRawFromIdx(int body, int ft, string idxPath, string mulPath,
             out long foundOffset, out string foundMulPath)
         {
             foundOffset = 0;
             foundMulPath = null;
 
-            int expectedFrames = edit.Frames?.Count ?? 0;
-
-            // Kandidaten: BodyConverter + BodyTable + alle Dateien
-            int btBody = _currentBody;
-            if (Ultima.BodyTable.Entries != null
-                && Ultima.BodyTable.Entries.TryGetValue(_currentBody,
-                    out Ultima.BodyTableEntry btEntry)
-                && !Ultima.BodyConverter.Contains(_currentBody))
-                btBody = btEntry.OldId;
-
-            int bcBody = btBody;
-            int bcFt = Ultima.BodyConverter.Convert(ref bcBody);
-
-            // Alle Kombinationen die sinnvoll sind
-            var candidates = new List<(int body, int ft)>();
-            for (int ft = 1; ft <= 5; ft++) candidates.Add((_currentBody, ft));
-            if (btBody != _currentBody)
-                for (int ft = 1; ft <= 5; ft++) candidates.Add((btBody, ft));
-            if (bcFt >= 1 && bcFt <= 5) candidates.Add((bcBody, bcFt));
-
-            var seen = new System.Collections.Generic.HashSet<(int, int)>();
-            foreach (var (body, ft) in candidates)
+            long idxEntry = (long)(body * 110 * 5 + _currentAction * 5 + _currentDir) * 12;
+            try
             {
-                if (!seen.Add((body, ft))) continue;
+                using var idxFs = new System.IO.FileStream(idxPath,
+                    System.IO.FileMode.Open, System.IO.FileAccess.Read,
+                    System.IO.FileShare.Read);
+                if (idxEntry + 12 > idxFs.Length) return null;
 
-                string mn = ft == 1 ? "anim.mul" : $"anim{ft}.mul";
-                string ix = ft == 1 ? "anim.idx" : $"anim{ft}.idx";
-                string mp = Ultima.Files.GetFilePath(mn);
-                string ip = Ultima.Files.GetFilePath(ix);
+                idxFs.Seek(idxEntry, System.IO.SeekOrigin.Begin);
+                using var br = new System.IO.BinaryReader(idxFs);
+                int rawOff = br.ReadInt32();
+                int rawLen = br.ReadInt32();
+                int rawExt = br.ReadInt32();
 
-                if (string.IsNullOrEmpty(mp) || !System.IO.File.Exists(mp)) continue;
-                if (string.IsNullOrEmpty(ip) || !System.IO.File.Exists(ip)) continue;
+                if (rawOff < 0 || rawOff == unchecked((int)0xFFFFFFFF)) return null;
 
-                int ei = body * 110 * 5 + _currentAction * 5 + _currentDir;
-                long pos = (long)ei * 12;
+                int actualLen = rawLen > 0 ? rawLen : rawExt > 0 ? rawExt : 0;
+                if (actualLen <= 0) return null;
 
-                try
-                {
-                    using var idxFs = new System.IO.FileStream(ip,
-                        System.IO.FileMode.Open, System.IO.FileAccess.Read,
-                        System.IO.FileShare.Read);
-                    if (pos + 12 > idxFs.Length) continue;
+                using var mulFs = new System.IO.FileStream(mulPath,
+                    System.IO.FileMode.Open, System.IO.FileAccess.Read,
+                    System.IO.FileShare.Read);
+                if (rawOff + actualLen > mulFs.Length) return null;
 
-                    idxFs.Seek(pos, System.IO.SeekOrigin.Begin);
-                    using var br = new System.IO.BinaryReader(idxFs);
-                    int rawOff = br.ReadInt32();
-                    int rawLen = br.ReadInt32();
-                    int rawExt = br.ReadInt32();
+                mulFs.Seek(rawOff, System.IO.SeekOrigin.Begin);
+                var buf = new byte[actualLen];
+                int read = mulFs.Read(buf, 0, buf.Length);
+                if (read < 514) return null;
 
-                    if (rawOff < 0) continue;  // -1 = leer
-
-                    int actualLen = rawLen > 0 ? rawLen
-                                  : rawExt > 0 ? rawExt
-                                  : 0;
-                    if (actualLen <= 0) continue;
-
-                    // Rohdaten lesen
-                    using var mulFs = new System.IO.FileStream(mp,
-                        System.IO.FileMode.Open, System.IO.FileAccess.Read,
-                        System.IO.FileShare.Read);
-                    if (rawOff + actualLen > mulFs.Length) continue;
-
-                    mulFs.Seek(rawOff, System.IO.SeekOrigin.Begin);
-                    var buf = new byte[actualLen];
-                    int read = mulFs.Read(buf, 0, buf.Length);
-                    if (read < 514) continue;
-
-                    // FrameCount aus den Rohdaten prüfen
-                    int fc = buf[512] | (buf[513] << 8);
-
-                    // Akzeptiere wenn FrameCount stimmt ODER wenn es die einzige
-                    // gültige Option ist (expectedFrames kann 0 sein bei neuen Frames)
-                    if (fc == expectedFrames || (expectedFrames == 0 && fc > 0)
-                        || fc > 0)
-                    {
-                        if (read < buf.Length) System.Array.Resize(ref buf, read);
-                        foundOffset = rawOff;
-                        foundMulPath = mp;
-                        return buf;
-                    }
-                }
-                catch { /* weiter */ }
+                if (read < buf.Length) System.Array.Resize(ref buf, read);
+                foundOffset = rawOff;
+                foundMulPath = mulPath;
+                return buf;
             }
-
-            return null;
+            catch { return null; }
         }
 
+
         // ──────────────────────────────────────────────────────────────────────
-        //  Serialisiert AnimIdx-Frames ins MUL-Format (Fallback für RAM-Cache)
+        //  Serializes AnimIdx frames to MUL format (fallback for RAM cache)
         //  Format: Palette(512) + FrameCount(2) + Lookup(N*4) + FrameData
         // ──────────────────────────────────────────────────────────────────────
 
@@ -9586,11 +9898,11 @@ namespace UoFiddler.Controls.Forms
                 ushort fc = (ushort)edit.Frames.Count;
                 bw.Write(fc);
 
-                // Lookup-Tabelle: Platzhalter, werden später gefüllt
+                // Lookup table: Placeholder, will be filled later
                 long lookupStart = ms.Position;
                 for (int i = 0; i < fc; i++) bw.Write((int)0);
 
-                // Frame-Daten schreiben und Offsets merken
+                // Write frame data and store offsets
                 var offsets = new int[fc];
                 var bitmaps = edit.GetFrames();
 
@@ -9610,8 +9922,8 @@ namespace UoFiddler.Controls.Forms
                         bw.Write((ushort)bmp.Width);
                         bw.Write((ushort)bmp.Height);
 
-                        // Pixel-Daten (vereinfacht: RLE würde zu komplex)
-                        // Wir schreiben einfach die Pixelwerte als uint16
+                        // Pixel data (simplified: RLE would be too complex)
+                        // We simply write the pixel values ​​as uint16
                         for (int y = 0; y < bmp.Height; y++)
                             for (int x = 0; x < bmp.Width; x++)
                             {
@@ -9631,7 +9943,7 @@ namespace UoFiddler.Controls.Forms
                     }
                 }
 
-                // Lookup-Tabelle mit echten Offsets füllen
+                // Fill lookup table with real offsets
                 long endPos = ms.Position;
                 ms.Seek(lookupStart, System.IO.SeekOrigin.Begin);
                 for (int i = 0; i < fc; i++) bw.Write(offsets[i]);
@@ -9686,7 +9998,7 @@ namespace UoFiddler.Controls.Forms
                     });
                 }
 
-                // Frame-Tabelle: ab Offset 24, je Frame 12 Bytes (Offset + Länge + Extra)
+                // Frame table: from offset 24, 12 bytes per frame (offset + length + extra)
                 // FrameCount steht in Bytes 8–11 (int32)
                 if (data.Length >= 12)
                 {
@@ -9774,7 +10086,7 @@ namespace UoFiddler.Controls.Forms
                 Offset = 0,
                 Length = 512,
                 Label = "Palette (256 × uint16)",
-                Tooltip = "16bpp ARGB1555 Farbpalette",
+                Tooltip = "16bpp ARGB1555 color palette",
                 HighlightColor = System.Drawing.Color.FromArgb(80, 255, 215, 0),
                 IsSequenceStart = true,
                 SequenceIndex = 0,
@@ -9790,7 +10102,7 @@ namespace UoFiddler.Controls.Forms
                     Offset = 512,
                     Length = 2,
                     Label = $"FrameCount = {frameCount}",
-                    Tooltip = "Anzahl Frames in dieser Richtung",
+                    Tooltip = "Number of frames in this direction",
                     HighlightColor = System.Drawing.Color.FromArgb(80, 200, 100, 255)
                 });
 
@@ -9803,7 +10115,7 @@ namespace UoFiddler.Controls.Forms
                         Offset = 514,
                         Length = lookupLen,
                         Label = $"Frame-Lookup ({frameCount} × 4 B)",
-                        Tooltip = "Byte-Offsets der einzelnen Frames",
+                        Tooltip = "Byte offsets of the individual frames",
                         HighlightColor = System.Drawing.Color.FromArgb(50, 100, 255, 100)
                     });
 
@@ -9902,16 +10214,13 @@ namespace UoFiddler.Controls.Forms
             if (_hexEditor == null || _hexEditor.IsDisposed || !_hexEditor.Visible)
                 return;
 
-            var regions = _fileType == 6
-                ? BuildUopRegions(GetCurrentUopRawData())
-                : BuildMulRegionsForCurrentSelection();
-
-            _hexEditor.UpdateSelection(
-                _currentDir,
-                FramesTrackBar.Value,
-                _currentAction,
-                regions,
-                GetCurrentFrameBitmap());
+            // Immer vollständig neu laden damit _data, _bodyId und _dataOffset
+            // zum aktuell gewählten Body passen.
+            // UpdateSelection() würde _data nie tauschen → falscher Body im RLE Decoder.
+            if (_fileType == 6)
+                OpenHexEditorUop();
+            else
+                OpenHexEditorMul();
         }
 
         private byte[] GetCurrentUopRawData()
