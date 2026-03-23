@@ -10508,67 +10508,18 @@ namespace UoFiddler.Controls.Forms
                 willBeOob = idxRangeEnd > idxFileLen;
             }
 
-            // ── Fallback: scan all anim*.idx files if still OOB ─────────────────
+            // ── Fallback: scan all anim*.idx files + MUL verification with frame size + visible size ─────
             // Bodies like 290 or 631 exist in a different anim file but have no
             // entry in bodyconv.def / body.def and Translate() returns them unchanged.
-            // Scan every file and redirect as soon as we find a valid slot.
-
-            /*string animScanNote = null;
-            if (willBeOob)
-            {
-                for (int ft = 1; ft <= 5; ft++)
-                {
-                    if (ft == physicalFileType) continue; // already tried
-                    string scanIdxName = ft == 1 ? "anim.idx" : $"anim{ft}.idx";
-                    string scanIdxPath = Ultima.Files.GetFilePath(scanIdxName);
-                    if (string.IsNullOrEmpty(scanIdxPath) || !System.IO.File.Exists(scanIdxPath))
-                        continue;
-                    try
-                    {
-                        long scanIdxLen = new System.IO.FileInfo(scanIdxPath).Length;
-                        long scanRangeStart = GetIdxOffset(body, 0, 0, ft); // ft = der gescannte FileType
-                        long scanRangeEnd = scanRangeStart + (long)(animLength * 5 * 12);
-                        if (scanRangeEnd > scanIdxLen) continue; // OOB there too
-                                                                 // Range fits — verify Act0 Dir0 is not empty/invalid
-                        using var scanFs = new System.IO.FileStream(scanIdxPath,
-                            System.IO.FileMode.Open, System.IO.FileAccess.Read,
-                            System.IO.FileShare.Read);
-                        using var scanBr = new System.IO.BinaryReader(scanFs);
-                        scanFs.Seek(scanRangeStart, System.IO.SeekOrigin.Begin);
-                        int chkOff = scanBr.ReadInt32();
-                        int chkLen = scanBr.ReadInt32();
-                        if (chkOff <= 0 || chkOff == unchecked((int)0xFFFFFFFF) || chkLen <= 0)
-                            continue; // slot exists but is empty
-                                      // ✓ Valid entry found — redirect to this file
-                        physicalBody = body;
-                        physicalFileType = ft;
-                        mulName = ft == 1 ? "anim.mul" : $"anim{ft}.mul";
-                        idxName = ft == 1 ? "anim.idx" : $"anim{ft}.idx";
-                        mulPath = Ultima.Files.GetFilePath(mulName);
-                        idxPath = scanIdxPath;
-                        idxFileLen = scanIdxLen;
-                        idxRangeEnd = scanRangeEnd;
-                        willBeOob = false;
-                        animScanNote = $"anim-scan: body {body} found in {idxName} (FT{ft})";
-                        break;
-                    }
-                    catch { }
-                }
-                if (willBeOob)
-                    animScanNote = $"anim-scan: no valid file found for body {body}";
-            }*/
 
             string animScanNote = null;
             bool needsRedirect = willBeOob;
 
-            // Zusätzliche Prüfung: ist der erste Slot (Act 0 Dir 0) wirklich leer?
-            // Das ist der Fall bei Body 419 (und vielen anderen), obwohl der Bereich in der Datei liegt.
             if (!needsRedirect)
             {
                 try
                 {
-                    using var testFs = new System.IO.FileStream(idxPath,
-                        System.IO.FileMode.Open, System.IO.FileAccess.Read, System.IO.FileShare.Read);
+                    using var testFs = new System.IO.FileStream(idxPath, System.IO.FileMode.Open, System.IO.FileAccess.Read, System.IO.FileShare.Read);
                     using var testBr = new System.IO.BinaryReader(testFs);
                     long testPos = GetIdxOffset(physicalBody, 0, 0, physicalFileType);
                     if (testPos + 12 <= testFs.Length)
@@ -10577,7 +10528,7 @@ namespace UoFiddler.Controls.Forms
                         int testOff = testBr.ReadInt32();
                         int testLen = testBr.ReadInt32();
                         if (testOff <= 0 || testOff == unchecked((int)0xFFFFFFFF) || testLen <= 0)
-                            needsRedirect = true;   // ← leer → falsche Datei!
+                            needsRedirect = true;
                     }
                 }
                 catch { }
@@ -10587,11 +10538,11 @@ namespace UoFiddler.Controls.Forms
             {
                 for (int ft = 1; ft <= 5; ft++)
                 {
-                    if (ft == physicalFileType) continue; // already tried
+                    if (ft == physicalFileType) continue;
                     string scanIdxName = ft == 1 ? "anim.idx" : $"anim{ft}.idx";
                     string scanIdxPath = Ultima.Files.GetFilePath(scanIdxName);
-                    if (string.IsNullOrEmpty(scanIdxPath) || !System.IO.File.Exists(scanIdxPath))
-                        continue;
+                    if (string.IsNullOrEmpty(scanIdxPath) || !System.IO.File.Exists(scanIdxPath)) continue;
+
                     try
                     {
                         long scanIdxLen = new System.IO.FileInfo(scanIdxPath).Length;
@@ -10599,31 +10550,89 @@ namespace UoFiddler.Controls.Forms
                         long scanRangeEnd = scanRangeStart + (long)(animLength * 5 * 12);
                         if (scanRangeEnd > scanIdxLen) continue;
 
-                        using var scanFs = new System.IO.FileStream(scanIdxPath,
-                            System.IO.FileMode.Open, System.IO.FileAccess.Read,
-                            System.IO.FileShare.Read);
+                        using var scanFs = new System.IO.FileStream(scanIdxPath, System.IO.FileMode.Open, System.IO.FileAccess.Read, System.IO.FileShare.Read);
                         using var scanBr = new System.IO.BinaryReader(scanFs);
                         scanFs.Seek(scanRangeStart, System.IO.SeekOrigin.Begin);
                         int chkOff = scanBr.ReadInt32();
                         int chkLen = scanBr.ReadInt32();
-                        if (chkOff <= 0 || chkOff == unchecked((int)0xFFFFFFFF) || chkLen <= 0)
-                            continue;
+                        if (chkOff <= 0 || chkOff == unchecked((int)0xFFFFFFFF) || chkLen <= 0) continue;
+
+                        // === MUL-VERIFY + visible size ===
+                        string scanMulName = ft == 1 ? "anim.mul" : $"anim{ft}.mul";
+                        string scanMulPath = Ultima.Files.GetFilePath(scanMulName);
+                        bool verified = false;
+                        int verifiedFc = 0;
+                        int headerW = 0, headerH = 0;
+                        int visibleW = 0, visibleH = 0;
+                        uint miniHash = 0;
+
+                        if (!string.IsNullOrEmpty(scanMulPath) && System.IO.File.Exists(scanMulPath))
+                        {
+                            using var mulVerify = new System.IO.FileStream(scanMulPath, System.IO.FileMode.Open, System.IO.FileAccess.Read, System.IO.FileShare.Read);
+                            if (chkOff + 518 <= mulVerify.Length)
+                            {
+                                mulVerify.Seek(chkOff + 512, System.IO.SeekOrigin.Begin);
+                                int fc = mulVerify.ReadByte() | (mulVerify.ReadByte() << 8);
+                                if (fc >= 1 && fc <= 256)
+                                {
+                                    mulVerify.Seek(chkOff + 514, System.IO.SeekOrigin.Begin);
+                                    mulVerify.ReadByte(); mulVerify.ReadByte();
+                                    int relOff = mulVerify.ReadByte() | (mulVerify.ReadByte() << 8);
+                                    int absOff = 512 + relOff;
+
+                                    if (chkOff + absOff + 8 <= mulVerify.Length)
+                                    {
+                                        mulVerify.Seek(chkOff + absOff, System.IO.SeekOrigin.Begin);
+                                        short cx = (short)(mulVerify.ReadByte() | (mulVerify.ReadByte() << 8));
+                                        short cy = (short)(mulVerify.ReadByte() | (mulVerify.ReadByte() << 8));
+                                        int w = mulVerify.ReadByte() | (mulVerify.ReadByte() << 8);
+                                        int h = mulVerify.ReadByte() | (mulVerify.ReadByte() << 8);
+
+                                        headerW = w;
+                                        headerH = h;
+
+                                        // Approximate visible size (remove padding – fits perfectly)
+                                        visibleW = Math.Max(1, w - 4);
+                                        visibleH = Math.Max(1, h - 10);
+
+                                        // Mini-Hash der ersten 64 Bytes
+                                        if (chkOff + absOff + 64 <= mulVerify.Length)
+                                        {
+                                            mulVerify.Seek(chkOff + absOff, System.IO.SeekOrigin.Begin);
+                                            byte[] buf = new byte[64];
+                                            mulVerify.Read(buf, 0, 64);
+                                            for (int i = 0; i < 64; i++)
+                                                miniHash = (miniHash * 31) + buf[i];
+                                        }
+
+                                        verified = true;
+                                        verifiedFc = fc;
+                                    }
+                                }
+                            }
+                        }
+
+                        if (!verified) continue;
 
                         physicalBody = body;
                         physicalFileType = ft;
-                        mulName = ft == 1 ? "anim.mul" : $"anim{ft}.mul";
-                        idxName = ft == 1 ? "anim.idx" : $"anim{ft}.idx";
-                        mulPath = Ultima.Files.GetFilePath(mulName);
+                        mulName = scanMulName;
+                        idxName = scanIdxName;
+                        mulPath = scanMulPath;
                         idxPath = scanIdxPath;
                         idxFileLen = scanIdxLen;
                         idxRangeEnd = scanRangeEnd;
                         willBeOob = false;
-                        animScanNote = $"anim-scan: body {body} found in {idxName} (FT{ft})";
+
+                        animScanNote = $"anim-scan: body {body} found in {idxName} (FT{ft}) " +
+                                       $"→ Verified fc={verifiedFc} ({headerW}×{headerH} visible ~{visibleW}×{visibleH}) " +
+                                       $"Hash=0x{miniHash:X8} in {mulName}";
                         break;
                     }
                     catch { }
                 }
-                if (willBeOob)   // nur wenn immer noch OOB
+
+                if (willBeOob)
                     animScanNote = $"anim-scan: no valid file found for body {body}";
             }
 
@@ -10777,13 +10786,13 @@ namespace UoFiddler.Controls.Forms
                         // ── Extended debug ────────────────────────────────────────
                         if (diagInfoEnabled)
                         {
-                            // ── Extended debug (dein kompletter Original-Block) ─────
+                            // ── Extended debug (your complete original block) ─────
                             extDbgSb.AppendLine($"--- Act={action:D2} ({actName}) Dir={dir} ---");
                             extDbgSb.AppendLine($" IDX position : byte {idxPos} (= {physicalBody}*110*5*12 + {action}*5*12 + {dir}*12)");
                             extDbgSb.AppendLine($" IDX raw : off=0x{rawOff:X8} ({rawOff}) len=0x{rawLen:X8} ({rawLen}) ext=0x{rawExt:X8}");
                             extDbgSb.AppendLine($" off==-1 : {rawOff == -1} off==0xFFFFFFFF : {rawOff == unchecked((int)0xFFFFFFFF)} len<=0 : {rawLen <= 0}");
 
-                            // Surrounding bodies — einmal pro Action bei Dir=0
+                            // Surrounding bodies — once per action with you=0
                             if (dir == 0)
                             {
                                 extDbgSb.AppendLine($" Surrounding IDX entries (physBody±2, Act={action} Dir=0):");
