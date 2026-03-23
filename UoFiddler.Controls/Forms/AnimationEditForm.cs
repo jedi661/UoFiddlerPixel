@@ -9299,7 +9299,7 @@ namespace UoFiddler.Controls.Forms
 
         #region [ Hex Editor ] - Button handler and logic to open the hex editor with the corresponding data
 
-        private AnimationHexEditorForm _hexEditor;       
+        private AnimationHexEditorForm _hexEditor;
 
         private void btnOpenHexEditor_Click(object sender, EventArgs e)
         {
@@ -9505,7 +9505,7 @@ namespace UoFiddler.Controls.Forms
         {
             var sb = new System.Text.StringBuilder();
             sb.AppendLine($"=== DEBUG Body {body} FileType {_fileType} Action {_currentAction} Dir {_currentDir} ===");
-            
+
             string mulName = _fileType == 1 ? "anim.mul" : $"anim{_fileType}.mul";
             string idxName = _fileType == 1 ? "anim.idx" : $"anim{_fileType}.idx";
             string mulPath = Ultima.Files.GetFilePath(mulName);
@@ -9534,7 +9534,7 @@ namespace UoFiddler.Controls.Forms
                 }
             }
             catch (Exception ex) { sb.AppendLine($"IDX read error: {ex.Message}"); }
-           
+
             sb.AppendLine();
             sb.AppendLine("--- SDK AnimIdx ---");
             AnimIdx editForReflection = null;
@@ -9556,6 +9556,8 @@ namespace UoFiddler.Controls.Forms
                 }
             }
             catch (Exception ex) { sb.AppendLine($"SDK error: {ex.Message}"); }
+
+
 
             // ── body.def check ───────────────────────────────────────────────────
             sb.AppendLine();
@@ -10261,6 +10263,8 @@ namespace UoFiddler.Controls.Forms
                 mulFs.Read(raw, 0, raw.Length);
 
                 return BuildMulRegions(raw, edit);
+
+
             }
             catch { return new List<HexRegion>(); }
         }
@@ -10317,6 +10321,1159 @@ namespace UoFiddler.Controls.Forms
             try { MulAnimDiagnostics.ShowMassScanDialog(_fileType, this); }
             finally { Cursor = Cursors.Default; }
         }
+        #endregion
+
+        #region [  Action Map Diagnosen Mul ]
+
+        #region [ Diagnosen Mul ]
+
+        private void BtnAnimMap_Click(object sender, EventArgs e)
+        {
+            if (_fileType == 0 || _fileType == 6) return;
+            ShowBodyAnimationMap(_currentBody, _fileType);
+        }
+
+        /// <summary>
+        /// Full animation map for a body:
+        /// Body → Action → Dir → Block info → frameCount → Frame dimensions
+        /// Shows what is valid / empty / corrupt and which action name belongs to it.
+        /// Resolves physical body index via bodyconv.def for FileType 2-5.
+        /// Includes full diagnostics when OOB is detected.
+        /// </summary>
+
+        #region [ ShowBodyAnimationMap ]
+
+        /// <summary>
+        /// Full animation map for a body:
+        /// Body → Action → Dir → Block info → frameCount → Frame dimensions
+        /// Shows what is valid / empty / corrupt and which action name belongs to it.
+        /// Resolves physical body index via bodyconv.def for FileType 2-5.
+        /// Falls back to Translate(), body.def and a full anim*.idx scan when OOB.
+        /// Includes extended debug output per entry when checkBoxDiagInfo is checked.
+        /// </summary>
+        private void ShowBodyAnimationMap(int body, int fileType)
+        {
+            string mulName = fileType == 1 ? "anim.mul" : $"anim{fileType}.mul";
+            string idxName = fileType == 1 ? "anim.idx" : $"anim{fileType}.idx";
+            string mulPath = Ultima.Files.GetFilePath(mulName);
+            string idxPath = Ultima.Files.GetFilePath(idxName);
+            if (string.IsNullOrEmpty(idxPath) || !System.IO.File.Exists(idxPath))
+            {
+                MessageBox.Show($"{idxName} not found.", "Action Map");
+                return;
+            }
+
+            // ── Diag-Info flag ───────────────────────────────────────────────────
+            bool diagInfoEnabled = checkBoxDiagInfo != null && checkBoxDiagInfo.Checked;
+
+            // ── Action names by type ─────────────────────────────────────────────
+            int animLength = Animations.GetAnimLength(body, fileType);
+            string typLabel;
+            string[] actionNames;
+
+            if (animLength == 22)
+            {
+                typLabel = "H (Monster)";
+                actionNames = new[] {
+                    "Walk","Stand","Die1","Die2","Attack1","Attack2","Attack3",
+                    "AttackBow","AttackCrossBow","AttackThrow","GetHit","Pillage",
+                    "Stomp","Cast2","Cast3","BlockRight","BlockLeft","Idle",
+                    "Fidget","Fly","TakeOff","GetHitInAir"
+                };
+            }
+            else if (animLength == 13)
+            {
+                typLabel = "L (Animal)";
+                actionNames = new[] {
+                    "Walk","Run","Idle","Eat","Alert","Attack1","Attack2",
+                    "GetHit","Die1","Fidget1","Fidget2","LieDown","Die2"
+                };
+            }
+            else
+            {
+                typLabel = "P (Human/Equipment)";
+                actionNames = new[] {
+                    "Walk_01","WalkStaff_01","Run_01","RunStaff_01","Idle_01",
+                    "Idle_01b","Fidget_Yawn","CombatIdle1H","CombatIdle1Hb",
+                    "AttackSlash1H","AttackPierce1H","AttackBash1H","AttackBash2H",
+                    "AttackSlash2H","AttackPierce2H","CombatAdvance1H","Spell1",
+                    "Spell2","AttackBow","AttackCrossbow","GetHit_Fr_Hi",
+                    "Die_Hard_Fwd","Die_Hard_Back","Horse_Walk","Horse_Run",
+                    "Horse_Idle","Horse_Attack1H","Horse_AttackBow",
+                    "Horse_AttackCrossbow","Horse_Attack2H","Block_Shield",
+                    "Punch_Jab","Bow_Lesser","Salute_Armed","Ingest_Eat"
+                };
+            }
+
+            // ── Resolve physical body index via bodyconv.def ─────────────────────
+            int physicalBody = body;
+            int physicalFileType = fileType;
+            string bodyconvPath = Ultima.Files.GetFilePath("bodyconv.def");
+            if (!string.IsNullOrEmpty(bodyconvPath) && File.Exists(bodyconvPath))
+            {
+                try
+                {
+                    foreach (string rawLine in File.ReadLines(bodyconvPath))
+                    {
+                        int ci = rawLine.IndexOf('#');
+                        string clean = (ci >= 0 ? rawLine.Substring(0, ci) : rawLine).Trim();
+                        if (clean.Length == 0) continue;
+                        string[] parts = clean.Split(new[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries);
+                        if (parts.Length < 2) continue;
+                        if (!int.TryParse(parts[0], out int lineBody)) continue;
+                        if (lineBody != body) continue;
+
+                        for (int targetCol = 1; targetCol <= 4; targetCol++)
+                        {
+                            if (parts.Length <= targetCol) continue;
+                            if (int.TryParse(parts[targetCol], out int mapped) && mapped >= 0)
+                            {
+                                physicalBody = mapped;
+                                physicalFileType = targetCol + 1;
+                                break;
+                            }
+                        }
+                        break;
+                    }
+                }
+                catch { }
+            }
+
+            // ── IDX file size check ──────────────────────────────────────────────
+            long idxFileLen = 0;
+            try { idxFileLen = new System.IO.FileInfo(idxPath).Length; } catch { }
+            (long idxRangeStart, long idxRangeEnd) = GetIdxBodyRange(physicalBody, animLength, physicalFileType);
+            bool willBeOob = idxRangeEnd > idxFileLen;
+
+            // ── Try Animations.Translate for OOB cases ───────────────────────────
+            int translatedBody = body;
+            int translatedFileType = fileType;
+            bool translateAvailable = false;
+            bool translateHelps = false;
+            try
+            {
+                Ultima.Animations.Translate(ref translatedBody, ref translatedFileType);
+                translateAvailable = true;
+                if (translatedBody != body || translatedFileType != fileType)
+                {
+                    long idxStartTr = (long)(translatedBody * 110 * 5) * 12;
+                    long idxEndTr = idxStartTr + (long)(animLength * 5 * 12);
+                    string trIdxPath = translatedFileType == 1
+                        ? Ultima.Files.GetFilePath("anim.idx")
+                        : Ultima.Files.GetFilePath($"anim{translatedFileType}.idx");
+                    long trIdxLen = 0;
+                    if (!string.IsNullOrEmpty(trIdxPath) && System.IO.File.Exists(trIdxPath))
+                        try { trIdxLen = new System.IO.FileInfo(trIdxPath).Length; } catch { }
+                    else
+                        trIdxLen = idxFileLen;
+                    translateHelps = idxEndTr <= trIdxLen;
+                }
+            }
+            catch { }
+
+            // ── Try body.def (BodyTable) for OOB cases ───────────────────────────
+            int bodyDefOldId = -1;
+            bool bodyDefHelps = false;
+            Ultima.BodyTableEntry btEntry = null;
+            if (willBeOob && Ultima.BodyTable.Entries != null &&
+                Ultima.BodyTable.Entries.TryGetValue(body, out btEntry))
+            {
+                bodyDefOldId = btEntry.OldId;
+                long idxStartBd = (long)(bodyDefOldId * 110 * 5) * 12;
+                long idxEndBd = idxStartBd + (long)(animLength * 5 * 12);
+                bodyDefHelps = idxEndBd <= idxFileLen;
+                if (bodyDefHelps) physicalBody = bodyDefOldId;
+            }
+
+            // ── If Translate gives a different file, switch to that ──────────────
+            if (willBeOob && translateAvailable && translateHelps
+                && translatedFileType != fileType)
+            {
+                physicalBody = translatedBody;
+                physicalFileType = translatedFileType;
+                mulName = physicalFileType == 1 ? "anim.mul" : $"anim{physicalFileType}.mul";
+                idxName = physicalFileType == 1 ? "anim.idx" : $"anim{physicalFileType}.idx";
+                mulPath = Ultima.Files.GetFilePath(mulName);
+                idxPath = Ultima.Files.GetFilePath(idxName);
+                idxFileLen = 0;
+                try { idxFileLen = new System.IO.FileInfo(idxPath).Length; } catch { }
+                idxRangeEnd = (long)(physicalBody * 110 * 5) * 12 + (long)(animLength * 5 * 12);
+                willBeOob = idxRangeEnd > idxFileLen;
+            }
+            else if (willBeOob && translateAvailable && translateHelps
+                     && translatedFileType == fileType)
+            {
+                physicalBody = translatedBody;
+                idxRangeEnd = (long)(physicalBody * 110 * 5) * 12 + (long)(animLength * 5 * 12);
+                willBeOob = idxRangeEnd > idxFileLen;
+            }
+
+            // ── Fallback: scan all anim*.idx files if still OOB ─────────────────
+            // Bodies like 290 or 631 exist in a different anim file but have no
+            // entry in bodyconv.def / body.def and Translate() returns them unchanged.
+            // Scan every file and redirect as soon as we find a valid slot.
+
+            /*string animScanNote = null;
+            if (willBeOob)
+            {
+                for (int ft = 1; ft <= 5; ft++)
+                {
+                    if (ft == physicalFileType) continue; // already tried
+                    string scanIdxName = ft == 1 ? "anim.idx" : $"anim{ft}.idx";
+                    string scanIdxPath = Ultima.Files.GetFilePath(scanIdxName);
+                    if (string.IsNullOrEmpty(scanIdxPath) || !System.IO.File.Exists(scanIdxPath))
+                        continue;
+                    try
+                    {
+                        long scanIdxLen = new System.IO.FileInfo(scanIdxPath).Length;
+                        long scanRangeStart = GetIdxOffset(body, 0, 0, ft); // ft = der gescannte FileType
+                        long scanRangeEnd = scanRangeStart + (long)(animLength * 5 * 12);
+                        if (scanRangeEnd > scanIdxLen) continue; // OOB there too
+                                                                 // Range fits — verify Act0 Dir0 is not empty/invalid
+                        using var scanFs = new System.IO.FileStream(scanIdxPath,
+                            System.IO.FileMode.Open, System.IO.FileAccess.Read,
+                            System.IO.FileShare.Read);
+                        using var scanBr = new System.IO.BinaryReader(scanFs);
+                        scanFs.Seek(scanRangeStart, System.IO.SeekOrigin.Begin);
+                        int chkOff = scanBr.ReadInt32();
+                        int chkLen = scanBr.ReadInt32();
+                        if (chkOff <= 0 || chkOff == unchecked((int)0xFFFFFFFF) || chkLen <= 0)
+                            continue; // slot exists but is empty
+                                      // ✓ Valid entry found — redirect to this file
+                        physicalBody = body;
+                        physicalFileType = ft;
+                        mulName = ft == 1 ? "anim.mul" : $"anim{ft}.mul";
+                        idxName = ft == 1 ? "anim.idx" : $"anim{ft}.idx";
+                        mulPath = Ultima.Files.GetFilePath(mulName);
+                        idxPath = scanIdxPath;
+                        idxFileLen = scanIdxLen;
+                        idxRangeEnd = scanRangeEnd;
+                        willBeOob = false;
+                        animScanNote = $"anim-scan: body {body} found in {idxName} (FT{ft})";
+                        break;
+                    }
+                    catch { }
+                }
+                if (willBeOob)
+                    animScanNote = $"anim-scan: no valid file found for body {body}";
+            }*/
+
+            string animScanNote = null;
+            bool needsRedirect = willBeOob;
+
+            // Zusätzliche Prüfung: ist der erste Slot (Act 0 Dir 0) wirklich leer?
+            // Das ist der Fall bei Body 419 (und vielen anderen), obwohl der Bereich in der Datei liegt.
+            if (!needsRedirect)
+            {
+                try
+                {
+                    using var testFs = new System.IO.FileStream(idxPath,
+                        System.IO.FileMode.Open, System.IO.FileAccess.Read, System.IO.FileShare.Read);
+                    using var testBr = new System.IO.BinaryReader(testFs);
+                    long testPos = GetIdxOffset(physicalBody, 0, 0, physicalFileType);
+                    if (testPos + 12 <= testFs.Length)
+                    {
+                        testFs.Seek(testPos, System.IO.SeekOrigin.Begin);
+                        int testOff = testBr.ReadInt32();
+                        int testLen = testBr.ReadInt32();
+                        if (testOff <= 0 || testOff == unchecked((int)0xFFFFFFFF) || testLen <= 0)
+                            needsRedirect = true;   // ← leer → falsche Datei!
+                    }
+                }
+                catch { }
+            }
+
+            if (needsRedirect)
+            {
+                for (int ft = 1; ft <= 5; ft++)
+                {
+                    if (ft == physicalFileType) continue; // already tried
+                    string scanIdxName = ft == 1 ? "anim.idx" : $"anim{ft}.idx";
+                    string scanIdxPath = Ultima.Files.GetFilePath(scanIdxName);
+                    if (string.IsNullOrEmpty(scanIdxPath) || !System.IO.File.Exists(scanIdxPath))
+                        continue;
+                    try
+                    {
+                        long scanIdxLen = new System.IO.FileInfo(scanIdxPath).Length;
+                        long scanRangeStart = GetIdxOffset(body, 0, 0, ft);
+                        long scanRangeEnd = scanRangeStart + (long)(animLength * 5 * 12);
+                        if (scanRangeEnd > scanIdxLen) continue;
+
+                        using var scanFs = new System.IO.FileStream(scanIdxPath,
+                            System.IO.FileMode.Open, System.IO.FileAccess.Read,
+                            System.IO.FileShare.Read);
+                        using var scanBr = new System.IO.BinaryReader(scanFs);
+                        scanFs.Seek(scanRangeStart, System.IO.SeekOrigin.Begin);
+                        int chkOff = scanBr.ReadInt32();
+                        int chkLen = scanBr.ReadInt32();
+                        if (chkOff <= 0 || chkOff == unchecked((int)0xFFFFFFFF) || chkLen <= 0)
+                            continue;
+
+                        physicalBody = body;
+                        physicalFileType = ft;
+                        mulName = ft == 1 ? "anim.mul" : $"anim{ft}.mul";
+                        idxName = ft == 1 ? "anim.idx" : $"anim{ft}.idx";
+                        mulPath = Ultima.Files.GetFilePath(mulName);
+                        idxPath = scanIdxPath;
+                        idxFileLen = scanIdxLen;
+                        idxRangeEnd = scanRangeEnd;
+                        willBeOob = false;
+                        animScanNote = $"anim-scan: body {body} found in {idxName} (FT{ft})";
+                        break;
+                    }
+                    catch { }
+                }
+                if (willBeOob)   // nur wenn immer noch OOB
+                    animScanNote = $"anim-scan: no valid file found for body {body}";
+            }
+
+            // ── Write diagnostics file ───────────────────────────────────────────
+            string diagPath = null;
+            if (diagInfoEnabled)
+            {
+                var diagSb = new System.Text.StringBuilder();
+                diagSb.AppendLine($"=== DIAGNOSTICS: Body {body} FileType {fileType} ===");
+                diagSb.AppendLine();
+                diagSb.AppendLine($"IDX file : {idxName}");
+                diagSb.AppendLine($"IDX file size : {idxFileLen} bytes ({idxFileLen / 12} entries)");
+                diagSb.AppendLine($"Physical body : {physicalBody}");
+                diagSb.AppendLine($"IDX range needed : [{idxRangeStart}..{idxRangeEnd}] " +
+                                  $"({idxRangeEnd - idxRangeStart} bytes)");
+                diagSb.AppendLine($"IDX range fits : {(!willBeOob ? "YES ✓" : "NO — OOB ✗")}");
+                if (animScanNote != null)
+                    diagSb.AppendLine($"Anim-scan result : {animScanNote}");
+                diagSb.AppendLine();
+                diagSb.AppendLine($"bodyconv.def lookup for body {body}:");
+                string bcDiagPath = Ultima.Files.GetFilePath("bodyconv.def");
+                if (!string.IsNullOrEmpty(bcDiagPath) && System.IO.File.Exists(bcDiagPath))
+                {
+                    bool found = false;
+                    try
+                    {
+                        foreach (string rawLine in System.IO.File.ReadLines(bcDiagPath))
+                        {
+                            int ci = rawLine.IndexOf('#');
+                            string clean = (ci >= 0 ? rawLine.Substring(0, ci) : rawLine).Trim();
+                            if (clean.Length == 0) continue;
+                            string[] parts = clean.Split(new[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries);
+                            if (parts.Length < 2) continue;
+                            if (!int.TryParse(parts[0], out int lb) || lb != body) continue;
+                            diagSb.AppendLine($" Line : {string.Join(" ", parts)}");
+                            diagSb.AppendLine($" Cols : [0]=body [1]=anim2 [2]=anim3 [3]=anim4 [4]=anim5");
+                            found = true;
+                            break;
+                        }
+                    }
+                    catch { }
+                    if (!found) diagSb.AppendLine(" Not found in bodyconv.def");
+                }
+                else diagSb.AppendLine(" bodyconv.def not found");
+                diagSb.AppendLine();
+                diagSb.AppendLine($"body.def (BodyTable) lookup for body {body}:");
+                if (bodyDefOldId >= 0 && btEntry != null)
+                    diagSb.AppendLine($" Found : {body} → OldId={bodyDefOldId} fits={bodyDefHelps}");
+                else
+                    diagSb.AppendLine(" Not found in body.def");
+                diagSb.AppendLine();
+                diagSb.AppendLine($"Animations.Translate({body}, {fileType}):");
+                if (translateAvailable)
+                    diagSb.AppendLine($" Result: body={translatedBody} fileType={translatedFileType}" +
+                                      $" helps={translateHelps}");
+                else
+                    diagSb.AppendLine(" Not available");
+
+                diagPath = System.IO.Path.Combine(
+                    System.IO.Path.GetTempPath(),
+                    $"ActionMap_Diag_Body{body}_FT{fileType}.txt");
+                System.IO.File.WriteAllText(diagPath, diagSb.ToString());
+            }
+
+            // ── Build report ─────────────────────────────────────────────────────
+            var sb = new System.Text.StringBuilder();
+            sb.AppendLine($"=== Action Map: Body {body} [{typLabel}] FileType {fileType} ===");
+            sb.AppendLine($"File: {idxName} / {mulName}");
+            sb.AppendLine($"Physical body index in IDX: {physicalBody}" +
+                          (physicalBody != body
+                              ? $" (mapped from {body} via " +
+                                (bodyDefHelps ? "body.def" : "bodyconv.def") + ")"
+                              : ""));
+            if (physicalFileType != fileType)
+                sb.AppendLine($"Redirected to FileType {physicalFileType} ({idxName} / {mulName})");
+            if (animScanNote != null)
+                sb.AppendLine($"ℹ {animScanNote}");
+            sb.AppendLine($"AnimLength: {animLength} → {animLength * 5} IDX entries" +
+                          $" ({animLength * 5 * 12} bytes in IDX)");
+            if (diagInfoEnabled)
+                sb.AppendLine("[DiagInfo: ENABLED — extended debug output per entry active]");
+            if (willBeOob)
+            {
+                sb.AppendLine();
+                sb.AppendLine($"⚠ WARNING: IDX range [{idxRangeStart}..{idxRangeEnd}] exceeds" +
+                              $" IDX file size {idxFileLen} — all entries will be OOB");
+                sb.AppendLine($" bodyconv.def : {(physicalBody != body ? $"{body}→{physicalBody}" : "no mapping")}");
+                sb.AppendLine($" body.def : {(bodyDefOldId >= 0 ? $"{body}→{bodyDefOldId} (fits={bodyDefHelps})" : "no entry")}");
+                sb.AppendLine($" Translate() : {(translateAvailable ? $"{body}→{translatedBody} ft={translatedFileType} (helps={translateHelps})" : "n/a")}");
+                sb.AppendLine($" anim-scan : {animScanNote ?? "not run"}");
+                sb.AppendLine(diagInfoEnabled && diagPath != null
+                    ? $" Diagnostics : {diagPath}"
+                    : $" Diagnostics : (enable checkBoxDiagInfo to save diagnostics file)");
+            }
+
+            sb.AppendLine();
+            sb.AppendLine($"{"Act",-4} {"Name",-24} {"Dir0",10} {"Dir1",10} {"Dir2",10}" +
+                          $" {"Dir3",10} {"Dir4",10} {"Status",-8}");
+            sb.AppendLine(new string('─', 90));
+            int totalOk = 0, totalEmpty = 0, totalCorrupt = 0;
+
+            // ── Extended debug StringBuilder (diagInfoEnabled only) ──────────────
+            var extDbgSb = diagInfoEnabled ? new System.Text.StringBuilder() : null;
+            if (diagInfoEnabled)
+            {
+                extDbgSb.AppendLine($"=== EXTENDED DEBUG: Body {body} FileType {fileType} ===");
+                extDbgSb.AppendLine($"Physical body: {physicalBody} | File: {idxName}");
+                if (animScanNote != null)
+                    extDbgSb.AppendLine($"Anim-scan: {animScanNote}");
+                extDbgSb.AppendLine();
+            }
+
+            try
+            {
+                using var idxFs = new System.IO.FileStream(idxPath, System.IO.FileMode.Open, System.IO.FileAccess.Read, System.IO.FileShare.Read);
+                using var mulFs = (!string.IsNullOrEmpty(mulPath) && System.IO.File.Exists(mulPath))
+                    ? new System.IO.FileStream(mulPath, System.IO.FileMode.Open, System.IO.FileAccess.Read, System.IO.FileShare.Read)
+                    : null;
+                using var br = new System.IO.BinaryReader(idxFs);
+
+                for (int action = 0; action < animLength; action++)
+                {
+                    string actName = action < actionNames.Length ? actionNames[action] : $"Action{action:D2}";
+                    var dirInfos = new string[5];
+                    var dirDetails = new System.Text.StringBuilder();
+                    bool anyValid = false, anyCorrupt = false, anyEmpty = false;
+
+                    for (int dir = 0; dir < 5; dir++)
+                    {
+                        //long idxPos = (long)(physicalBody * 110 * 5 + action * 5 + dir) * 12;
+                        long idxPos = GetIdxOffset(physicalBody, action, dir, physicalFileType);
+
+                        if (idxPos + 12 > idxFs.Length)
+                        {
+                            dirInfos[dir] = "OOB";
+                            anyCorrupt = true;
+                            if (diagInfoEnabled)
+                            {
+                                extDbgSb.AppendLine($"--- Act={action:D2} ({actName}) Dir={dir} ---");
+                                extDbgSb.AppendLine($" IDX position : byte {idxPos} → OOB (file size={idxFs.Length})");
+                                extDbgSb.AppendLine();
+                            }
+                            continue;
+                        }
+
+                        idxFs.Seek(idxPos, System.IO.SeekOrigin.Begin);
+                        int rawOff = br.ReadInt32();
+                        int rawLen = br.ReadInt32();
+                        int rawExt = br.ReadInt32();
+
+                        // ── Extended debug ────────────────────────────────────────
+                        if (diagInfoEnabled)
+                        {
+                            // ── Extended debug (dein kompletter Original-Block) ─────
+                            extDbgSb.AppendLine($"--- Act={action:D2} ({actName}) Dir={dir} ---");
+                            extDbgSb.AppendLine($" IDX position : byte {idxPos} (= {physicalBody}*110*5*12 + {action}*5*12 + {dir}*12)");
+                            extDbgSb.AppendLine($" IDX raw : off=0x{rawOff:X8} ({rawOff}) len=0x{rawLen:X8} ({rawLen}) ext=0x{rawExt:X8}");
+                            extDbgSb.AppendLine($" off==-1 : {rawOff == -1} off==0xFFFFFFFF : {rawOff == unchecked((int)0xFFFFFFFF)} len<=0 : {rawLen <= 0}");
+
+                            // Surrounding bodies — einmal pro Action bei Dir=0
+                            if (dir == 0)
+                            {
+                                extDbgSb.AppendLine($" Surrounding IDX entries (physBody±2, Act={action} Dir=0):");
+                                for (int scanBody = Math.Max(0, physicalBody - 2); scanBody <= physicalBody + 2; scanBody++)
+                                {
+                                    long scanPos = GetIdxOffset(scanBody, action, 0, physicalFileType);
+                                    if (scanPos + 12 > idxFs.Length)
+                                    {
+                                        extDbgSb.AppendLine($" Body {scanBody,4}: OOB");
+                                        continue;
+                                    }
+                                    idxFs.Seek(scanPos, System.IO.SeekOrigin.Begin);
+                                    int sOff = br.ReadInt32();
+                                    int sLen = br.ReadInt32();
+                                    br.ReadInt32();
+                                    string valid = (sOff > 0 && sOff != unchecked((int)0xFFFFFFFF) && sLen > 0) ? "VALID" : "empty/invalid";
+                                    extDbgSb.AppendLine($" Body {scanBody,4}: off=0x{sOff:X8} len={sLen,8} [{valid}]");
+                                }
+                            }
+
+                            // All anim*.idx cross-scan — einmal bei Act=0 Dir=0
+                            if (action == 0 && dir == 0)
+                            {
+                                extDbgSb.AppendLine($" Scanning all anim*.idx for body {body} Act=0 Dir=0:");
+                                for (int ft = 1; ft <= 5; ft++)
+                                {
+                                    string scanIdxName2 = ft == 1 ? "anim.idx" : $"anim{ft}.idx";
+                                    string scanIdxPath2 = Ultima.Files.GetFilePath(scanIdxName2);
+                                    if (string.IsNullOrEmpty(scanIdxPath2) || !System.IO.File.Exists(scanIdxPath2))
+                                    {
+                                        extDbgSb.AppendLine($" FT{ft}: {scanIdxName2} not found");
+                                        continue;
+                                    }
+                                    try
+                                    {
+                                        using var scanFs2 = new System.IO.FileStream(scanIdxPath2, System.IO.FileMode.Open, System.IO.FileAccess.Read, System.IO.FileShare.Read);
+                                        using var scanBr2 = new System.IO.BinaryReader(scanFs2);
+                                        long scanFileLen2 = scanFs2.Length;
+                                        long scanPos2 = GetIdxOffset(body, 0, 0, ft);
+                                        if (scanPos2 + 12 <= scanFileLen2)
+                                        {
+                                            scanFs2.Seek(scanPos2, System.IO.SeekOrigin.Begin);
+                                            int sOff = scanBr2.ReadInt32();
+                                            int sLen = scanBr2.ReadInt32();
+                                            string valid = (sOff > 0 && sOff != unchecked((int)0xFFFFFFFF) && sLen > 0) ? "VALID ✓" : "empty";
+                                            extDbgSb.AppendLine($" FT{ft}: {scanIdxName2,-16} body={body} off=0x{sOff:X8} len={sLen,8} [{valid}]");
+                                        }
+                                        else
+                                        {
+                                            extDbgSb.AppendLine($" FT{ft}: {scanIdxName2,-16} body={body} → OOB (file={scanFileLen2})");
+                                        }
+                                    }
+                                    catch (Exception ex2)
+                                    {
+                                        extDbgSb.AppendLine($" FT{ft}: error — {ex2.Message}");
+                                    }
+                                }
+
+                                extDbgSb.AppendLine($" UOP check for body {body}:");
+                                if (_uopManager != null)
+                                {
+                                    int uopFoundAct = -1, uopFoundDir = -1;
+                                    for (int a = 0; a < animLength && uopFoundAct < 0; a++)
+                                        for (int d = 0; d < 5 && uopFoundAct < 0; d++)
+                                            if (_uopManager.GetAnimationData(body, a, d) != null)
+                                            { uopFoundAct = a; uopFoundDir = d; }
+                                    extDbgSb.AppendLine(uopFoundAct >= 0 ? $" Found in UOP at Act={uopFoundAct} Dir={uopFoundDir} ✓" : " Not found in UOP");
+                                }
+                                else
+                                {
+                                    extDbgSb.AppendLine(" UOP manager not available");
+                                }
+                            }
+                            extDbgSb.AppendLine();
+                        }
+                        // ── End extended debug ────────────────────────────────────
+
+                        if (rawOff < 0 || rawOff == unchecked((int)0xFFFFFFFF) || rawLen <= 0)
+                        {
+                            dirInfos[dir] = "empty";
+                            anyEmpty = true;
+                            continue;
+                        }
+
+                        if (mulFs == null || rawOff + 514 > mulFs.Length)
+                        {
+                            dirInfos[dir] = $"@{rawOff:X}";
+                            anyValid = true;
+                            continue;
+                        }
+
+                        mulFs.Seek(rawOff + 512, System.IO.SeekOrigin.Begin);
+                        int fc = mulFs.ReadByte() | (mulFs.ReadByte() << 8);
+                        if (fc == 0 || fc > 256)
+                        {
+                            dirInfos[dir] = $"!fc={fc}";
+                            anyCorrupt = true;
+                            continue;
+                        }
+
+                        if (rawOff + 518 <= mulFs.Length)
+                        {
+                            mulFs.Seek(rawOff + 514, System.IO.SeekOrigin.Begin);
+                            mulFs.ReadByte(); mulFs.ReadByte();
+                            int relOff = mulFs.ReadByte() | (mulFs.ReadByte() << 8);
+                            int absOff = 512 + relOff;
+                            if (rawOff + absOff + 8 <= mulFs.Length)
+                            {
+                                mulFs.Seek(rawOff + absOff, System.IO.SeekOrigin.Begin);
+                                short cx = (short)(mulFs.ReadByte() | (mulFs.ReadByte() << 8));
+                                short cy = (short)(mulFs.ReadByte() | (mulFs.ReadByte() << 8));
+                                int w = mulFs.ReadByte() | (mulFs.ReadByte() << 8);
+                                int h = mulFs.ReadByte() | (mulFs.ReadByte() << 8);
+                                dirInfos[dir] = $"fc={fc}";
+                                dirDetails.AppendLine($" Dir{dir}: offset=0x{rawOff:X8} len={rawLen,7} frames={fc,3} F0: {w,4}×{h,-4} CX={cx,4} CY={cy,4}");
+                                anyValid = true;
+                                continue;
+                            }
+                        }
+
+                        dirInfos[dir] = $"fc={fc}";
+                        anyValid = true;
+                    }
+
+                    if (anyValid) totalOk++;
+                    if (anyEmpty && !anyValid) totalEmpty++;
+                    if (anyCorrupt) totalCorrupt++;
+
+                    string status = anyCorrupt ? "CORRUPT" : !anyValid ? "MISSING" : anyEmpty ? "PARTIAL" : "OK";
+                    sb.Append($"{action:D2} {actName,-24}");
+                    foreach (var d in dirInfos) sb.Append($" {d,10}");
+                    sb.AppendLine($" {status,-8}");
+                    if (dirDetails.Length > 0) sb.Append(dirDetails);
+                }
+            }
+            catch (Exception ex)
+            {
+                sb.AppendLine($"\nError reading files: {ex.Message}");
+            }
+
+            sb.AppendLine();
+            sb.AppendLine(new string('─', 90));
+            sb.AppendLine($"Summary: OK={totalOk} PARTIAL/MISSING={totalEmpty} CORRUPT={totalCorrupt}");
+            string fullText = sb.ToString();
+
+            // ── Save main report ─────────────────────────────────────────────────
+            string dumpPath = null;
+            if (diagInfoEnabled)
+            {
+                dumpPath = System.IO.Path.Combine(System.IO.Path.GetTempPath(), $"ActionMap_Body{body}_FT{fileType}.txt");
+                System.IO.File.WriteAllText(dumpPath, fullText);
+            }
+
+            // ── Save extended debug file (only when diagInfoEnabled) ─────────────
+            string extDbgPath = null;
+            if (diagInfoEnabled && extDbgSb != null)
+            {
+                extDbgPath = System.IO.Path.Combine(System.IO.Path.GetTempPath(), $"ActionMap_ExtDebug_Body{body}_FT{fileType}.txt");
+                System.IO.File.WriteAllText(extDbgPath, extDbgSb.ToString());
+            }
+
+            // ── Build dialog ─────────────────────────────────────────────────────
+            var dlg = new Form
+            {
+                Text = $"Action Map — Body {body} [{typLabel}] FileType {fileType}" + (diagInfoEnabled ? " [DiagInfo ON]" : ""),
+                Size = new System.Drawing.Size(960, 660),
+                MinimumSize = new System.Drawing.Size(700, 400),
+                StartPosition = FormStartPosition.CenterParent,
+                Icon = this.Icon
+            };
+
+            var toolbar = new Panel
+            {
+                Dock = DockStyle.Top,
+                Height = 34,
+                BackColor = System.Drawing.Color.FromArgb(38, 38, 50)
+            };
+
+            var btnCopyText = new Button
+            {
+                Text = "Copy text",
+                FlatStyle = FlatStyle.Flat,
+                BackColor = System.Drawing.Color.FromArgb(0, 90, 150),
+                ForeColor = System.Drawing.Color.White,
+                Width = 90,
+                Height = 26,
+                Left = 6,
+                Top = 4,
+                Font = new System.Drawing.Font("Segoe UI", 8.5f)
+            };
+            btnCopyText.FlatAppearance.BorderColor = System.Drawing.Color.FromArgb(0, 130, 200);
+
+            var btnCopyScreen = new Button
+            {
+                Text = "Copy screenshot",
+                FlatStyle = FlatStyle.Flat,
+                BackColor = System.Drawing.Color.FromArgb(60, 60, 80),
+                ForeColor = System.Drawing.Color.White,
+                Width = 120,
+                Height = 26,
+                Left = 102,
+                Top = 4,
+                Font = new System.Drawing.Font("Segoe UI", 8.5f)
+            };
+            btnCopyScreen.FlatAppearance.BorderColor = System.Drawing.Color.FromArgb(90, 90, 110);
+
+            var btnDiag = new Button
+            {
+                Text = "Open diagnostics",
+                FlatStyle = FlatStyle.Flat,
+                BackColor = System.Drawing.Color.FromArgb(80, 50, 20),
+                ForeColor = System.Drawing.Color.White,
+                Width = 120,
+                Height = 26,
+                Left = 228,
+                Top = 4,
+                Font = new System.Drawing.Font("Segoe UI", 8.5f)
+            };
+            btnDiag.FlatAppearance.BorderColor = System.Drawing.Color.FromArgb(180, 120, 40);
+            btnDiag.Click += (s, ev) =>
+            {
+                try { System.Diagnostics.Process.Start("notepad.exe", diagPath); }
+                catch { }
+            };
+
+            // ── "Open ExtDebug" button — nur sichtbar wenn diagInfoEnabled ────────
+            var btnExtDbg = new Button
+            {
+                Text = "Open ExtDebug",
+                FlatStyle = FlatStyle.Flat,
+                BackColor = System.Drawing.Color.FromArgb(30, 70, 30),
+                ForeColor = System.Drawing.Color.White,
+                Width = 120,
+                Height = 26,
+                Left = 354,
+                Top = 4,
+                Font = new System.Drawing.Font("Segoe UI", 8.5f),
+                Visible = diagInfoEnabled && extDbgPath != null
+            };
+            btnExtDbg.FlatAppearance.BorderColor = System.Drawing.Color.FromArgb(60, 160, 60);
+            btnExtDbg.Click += (s, ev) =>
+            {
+                if (extDbgPath != null)
+                    try { System.Diagnostics.Process.Start("notepad.exe", extDbgPath); }
+                    catch { }
+            };
+
+            var lblInfo = new Label
+            {
+                Text = $"Body {body}  ·  {typLabel}  ·  FileType {fileType}" +
+                       $"  ·  {animLength} actions × 5 dirs" +
+                       (physicalBody != body ? $"  ·  phys={physicalBody}" : "") +
+                       (physicalFileType != fileType ? $"  ·  FT{physicalFileType}" : "") +
+                       (animScanNote != null && !willBeOob ? $"  ·  scan→FT{physicalFileType}" : "") +
+                       (diagInfoEnabled ? "  ·  DiagInfo ON" : ""),
+                ForeColor = diagInfoEnabled
+                    ? System.Drawing.Color.FromArgb(100, 220, 130)
+                    : System.Drawing.Color.FromArgb(140, 140, 160),
+                Font = new System.Drawing.Font("Segoe UI", 8.5f),
+                AutoSize = true,
+                Left = diagInfoEnabled ? 480 : 358,
+                Top = 9
+            };
+
+            toolbar.Controls.Add(btnCopyText);
+            toolbar.Controls.Add(btnCopyScreen);
+            toolbar.Controls.Add(btnDiag);
+            toolbar.Controls.Add(btnExtDbg);
+            toolbar.Controls.Add(lblInfo);
+
+            var txt = new RichTextBox
+            {
+                Dock = DockStyle.Fill,
+                ReadOnly = true,
+                ScrollBars = RichTextBoxScrollBars.Both,
+                WordWrap = false,
+                Font = new System.Drawing.Font("Consolas", 9f),
+                BackColor = System.Drawing.Color.FromArgb(28, 28, 32),
+                ForeColor = System.Drawing.Color.FromArgb(220, 220, 220)
+            };
+
+            foreach (var line in fullText.Split('\n'))
+            {
+                int start = txt.TextLength;
+                txt.AppendText(line + "\n");
+
+                System.Drawing.Color col;
+                if (line.Contains("  OK"))
+                    col = System.Drawing.Color.FromArgb(100, 220, 130);
+                else if (line.Contains("CORRUPT"))
+                    col = System.Drawing.Color.FromArgb(255, 100, 100);
+                else if (line.Contains("MISSING") || line.Contains("PARTIAL"))
+                    col = System.Drawing.Color.FromArgb(255, 200, 80);
+                else if (line.TrimStart().StartsWith("Dir"))
+                    col = System.Drawing.Color.FromArgb(140, 180, 255);
+                else if (line.StartsWith("==="))
+                    col = System.Drawing.Color.FromArgb(200, 180, 255);
+                else if (line.StartsWith("Summary"))
+                    col = System.Drawing.Color.FromArgb(200, 200, 100);
+                else if (line.Contains("⚠") || line.Contains("WARNING"))
+                    col = System.Drawing.Color.FromArgb(255, 140, 40);
+                else if (line.Contains("ℹ") || line.Contains("anim-scan") || line.Contains("Redirected"))
+                    col = System.Drawing.Color.FromArgb(100, 210, 255);
+                else if (line.Contains("mapped from"))
+                    col = System.Drawing.Color.FromArgb(255, 180, 80);
+                else if (line.Contains("DiagInfo"))
+                    col = System.Drawing.Color.FromArgb(100, 220, 130);
+                else if (line.TrimStart().StartsWith("body") ||
+                         line.TrimStart().StartsWith("Translate") ||
+                         line.TrimStart().StartsWith("Diagnostics"))
+                    col = System.Drawing.Color.FromArgb(160, 200, 255);
+                else
+                    col = System.Drawing.Color.FromArgb(220, 220, 220);
+
+                txt.Select(start, line.Length);
+                txt.SelectionColor = col;
+            }
+            txt.SelectionStart = 0;
+            txt.SelectionLength = 0;
+
+            var statusBar = new Label
+            {
+                Dock = DockStyle.Bottom,
+                Height = 22,
+                Text = $"  Saved: {dumpPath}" +
+                       (diagInfoEnabled && extDbgPath != null
+                           ? $"  |  ExtDebug: {extDbgPath}" : "") +
+                       $"  |  OK={totalOk}" +
+                       $"  MISSING/PARTIAL={totalEmpty}  CORRUPT={totalCorrupt}" +
+                       (physicalBody != body ? $"  |  mapped: {body}→{physicalBody}" : "") +
+                       (physicalFileType != fileType ? $"  |  FT{fileType}→FT{physicalFileType}" : "") +
+                       (willBeOob ? "  |  ⚠ OOB — check diagnostics" : ""),
+                Font = new System.Drawing.Font("Segoe UI", 8f),
+                ForeColor = System.Drawing.Color.FromArgb(140, 140, 160),
+                BackColor = System.Drawing.Color.FromArgb(38, 38, 50)
+            };
+
+            btnCopyText.Click += (s, ev) =>
+            {
+                Clipboard.SetText(fullText);
+                btnCopyText.Text = "Copied!";
+                var t = new System.Windows.Forms.Timer { Interval = 1500 };
+                t.Tick += (_, __) => { btnCopyText.Text = "Copy text"; t.Stop(); t.Dispose(); };
+                t.Start();
+            };
+
+            btnCopyScreen.Click += (s, ev) =>
+            {
+                var bmp = new System.Drawing.Bitmap(dlg.Width, dlg.Height);
+                dlg.DrawToBitmap(bmp, new System.Drawing.Rectangle(0, 0, bmp.Width, bmp.Height));
+                Clipboard.SetImage(bmp);
+                btnCopyScreen.Text = "Copied!";
+                var t = new System.Windows.Forms.Timer { Interval = 1500 };
+                t.Tick += (_, __) => { btnCopyScreen.Text = "Copy screenshot"; t.Stop(); t.Dispose(); };
+                t.Start();
+            };
+
+            dlg.Controls.Add(txt);
+            dlg.Controls.Add(toolbar);
+            dlg.Controls.Add(statusBar);
+            dlg.ShowDialog(this);
+        }
+
+        /// <summary>
+        /// Returns the correct byte offset in anim.idx / anim2.idx etc. for a given
+        /// physical body + action + dir combination.
+        /// UO anim.idx layout (FileType 1):
+        ///   Bodies   0–199 → Human/Equipment  (35 actions × 5 dirs)
+        ///   Bodies 200–399 → Animal           (13 actions × 5 dirs)
+        ///   Bodies 400+    → Monster          (22 actions × 5 dirs)
+        /// For anim2–anim5 the stride is always 22 (Monster-only files).
+        /// </summary>
+        private static long GetIdxOffset(int body, int action, int dir, int fileType)
+        {
+            long baseOffset;
+            if (fileType == 1)
+            {
+                if (body < 200)
+                    baseOffset = (long)body * 35 * 5 * 12;
+                else if (body < 400)
+                    baseOffset = (long)(200 * 35 * 5 + (body - 200) * 13 * 5) * 12;
+                else
+                    baseOffset = (long)(200 * 35 * 5 + 200 * 13 * 5 + (body - 400) * 22 * 5) * 12;
+            }
+            else // anim2–anim5: Monster only
+            {
+                baseOffset = (long)body * 22 * 5 * 12;
+            }
+            return baseOffset + ((long)action * 5 + dir) * 12;
+        }
+
+        /// <summary>
+        /// Returns the byte range [start, end) in anim.idx for all actions of a body.
+        /// </summary>
+        private static (long start, long end) GetIdxBodyRange(int body, int animLength, int fileType)
+        {
+            long start = GetIdxOffset(body, 0, 0, fileType);
+            long end = start + (long)animLength * 5 * 12;
+            return (start, end);
+        }
+        #endregion
+        #endregion
+
+
+
+        #endregion
+
+        #region [ Diagnosen UOP ]
+        private void BtnAnimMapUop_Click(object sender, EventArgs e)
+        {
+            if (_fileType != 6 || _uopManager == null)
+            {
+                MessageBox.Show("Please load a UOP animation file first.", "Action Map UOP");
+                return;
+            }
+            ShowBodyAnimationMapUop(_currentBody);
+        }
+
+        /// <summary>
+        /// Full animation map for a UOP body:
+        /// Body → Action → Dir → UOP block info → frameCount → Frame dimensions
+        /// Shows what is valid / empty / missing and which action name belongs to it.
+        /// </summary>
+
+        private void ShowBodyAnimationMapUop(int body)
+        {
+            if (_uopManager == null)
+            {
+                MessageBox.Show("UOP manager not initialized.", "Action Map UOP");
+                return;
+            }
+
+            // ── Action names ─────────────────────────────────────────────────────────
+            int animLength = 26;
+            string typLabel = "UOP Creature";
+            string[] actionNames = new[] {
+        "Walk","Run","Idle","Eat","Alert","Attack1","Attack2","GetHit",
+        "Die1","Idle2","Fidget","LieDown","Die2","Attack3","AttackBow",
+        "AttackCrossBow","AttackThrow","Pillage","Stomp","Cast2","Cast3",
+        "BlockRight","BlockLeft","Fly","TakeOff","GetHitInAir"
+    };
+
+            // ── Detect actual action count ───────────────────────────────────────────
+            int detectedLength = 0;
+            for (int a = 0; a < 35; a++)
+            {
+                bool hasAny = false;
+                for (int d = 0; d < 5; d++)
+                {
+                    if (_uopManager.GetAnimationData(body, a, d) != null)
+                    { hasAny = true; break; }
+                }
+                if (hasAny) detectedLength = a + 1;
+            }
+            if (detectedLength > 0) animLength = detectedLength;
+
+            var sb = new System.Text.StringBuilder();
+            sb.AppendLine($"=== Action Map UOP: Body {body}  [{typLabel}] ===");
+            sb.AppendLine($"UOP Manager: {_uopManager.GetType().Name}");
+            sb.AppendLine($"Detected actions: {animLength}  (scanned 0–{animLength - 1})");
+            sb.AppendLine();
+            sb.AppendLine($"{"Act",-4} {"Name",-24} {"Dir0",12} {"Dir1",12} {"Dir2",12} {"Dir3",12} {"Dir4",12}  {"Status",-8}");
+            sb.AppendLine(new string('─', 100));
+
+            int totalOk = 0, totalEmpty = 0, totalCorrupt = 0;
+
+            for (int action = 0; action < animLength; action++)
+            {
+                string actName = action < actionNames.Length
+                    ? actionNames[action] : $"Action{action:D2}";
+
+                var dirInfos = new string[5];
+                var dirDetails = new System.Text.StringBuilder();
+                bool anyValid = false, anyEmpty = false, anyCorrupt = false;
+
+                for (int dir = 0; dir < 5; dir++)
+                {
+                    // ── Step 1: get UOP entry ────────────────────────────────────────
+                    var fileInfo = _uopManager.GetAnimationData(body, action, dir);
+                    if (fileInfo == null)
+                    {
+                        dirInfos[dir] = "missing";
+                        anyEmpty = true;
+                        continue;
+                    }
+
+                    // ── Step 2: load raw data ────────────────────────────────────────
+                    byte[] raw = null;
+                    try { raw = fileInfo.GetData(); }
+                    catch { }
+
+                    if (raw == null || raw.Length < 30)
+                    {
+                        dirInfos[dir] = raw == null ? "no data" : "too short";
+                        anyCorrupt = true;
+                        continue;
+                    }
+
+                    // ── Step 3: verify Magic "AMOU" ──────────────────────────────────
+                    if (raw[0] != 0x41 || raw[1] != 0x4D || raw[2] != 0x4F || raw[3] != 0x55)
+                    {
+                        dirInfos[dir] = "!magic";
+                        anyCorrupt = true;
+                        continue;
+                    }
+
+                    // ── Step 4: read frameCount @ Byte 28 (uint16 LE) ───────────────
+                    int fc = raw[28] | (raw[29] << 8);
+
+                    if (fc <= 0 || fc > 256)
+                    {
+                        dirInfos[dir] = $"!fc={fc}";
+                        anyCorrupt = true;
+                        continue;
+                    }
+
+                    // ── Step 5: read Frame[0] dimensions from UOP header ─────────────
+                    // [16..17] CX  [18..19] CY  [20..21] W  [22..23] H
+                    int cx = (short)(raw[16] | (raw[17] << 8));
+                    int cy = (short)(raw[18] | (raw[19] << 8));
+                    int w = raw[20] | (raw[21] << 8);
+                    int h = raw[22] | (raw[23] << 8);
+                    bool gotFrame = (w > 0 && w < 2048 && h > 0 && h < 2048);
+
+                    string filePath = fileInfo.File?.FilePath ?? "(memory)";
+                    string fileShort = System.IO.Path.GetFileName(filePath) ?? "(memory)";
+
+                    dirInfos[dir] = $"fc={fc}";
+                    dirDetails.AppendLine(
+                        $"         Dir{dir}: file={fileShort,-28}  size={raw.Length,7}B" +
+                        $"  frames={fc,3}" +
+                        (gotFrame ? $"  F0: {w,4}×{h,-4}  CX={cx,4}  CY={cy,4}" : "  F0: n/a"));
+                    anyValid = true;
+                }
+
+                if (anyValid) totalOk++;
+                if (anyEmpty && !anyValid) totalEmpty++;
+                if (anyCorrupt) totalCorrupt++;
+
+                string status = anyCorrupt ? "CORRUPT"
+                              : !anyValid ? "MISSING"
+                              : anyEmpty ? "PARTIAL"
+                              : "OK";
+
+                sb.Append($"{action:D2}   {actName,-24}");
+                foreach (var d in dirInfos) sb.Append($" {d,12}");
+                sb.AppendLine($"  {status,-8}");
+
+                if (dirDetails.Length > 0)
+                    sb.Append(dirDetails);
+            }
+
+            sb.AppendLine();
+            sb.AppendLine(new string('─', 100));
+            sb.AppendLine($"Summary:  OK={totalOk}  PARTIAL/MISSING={totalEmpty}  CORRUPT={totalCorrupt}");
+
+            string fullText = sb.ToString();
+
+            // ── Save to temp file ────────────────────────────────────────────────────
+            string dumpPath = System.IO.Path.Combine(
+                System.IO.Path.GetTempPath(),
+                $"ActionMapUOP_Body{body}.txt");
+            System.IO.File.WriteAllText(dumpPath, fullText);
+
+            // ── Build dialog ─────────────────────────────────────────────────────────
+            var dlg = new Form
+            {
+                Text = $"Action Map UOP — Body {body}  [{typLabel}]",
+                Size = new System.Drawing.Size(1060, 660),
+                MinimumSize = new System.Drawing.Size(700, 400),
+                StartPosition = FormStartPosition.CenterParent,
+                Icon = this.Icon
+            };
+
+            var toolbar = new Panel
+            {
+                Dock = DockStyle.Top,
+                Height = 34,
+                BackColor = System.Drawing.Color.FromArgb(38, 38, 50)
+            };
+
+            var btnCopyText = new Button
+            {
+                Text = "Copy text",
+                FlatStyle = FlatStyle.Flat,
+                BackColor = System.Drawing.Color.FromArgb(0, 90, 150),
+                ForeColor = System.Drawing.Color.White,
+                Width = 90,
+                Height = 26,
+                Left = 6,
+                Top = 4,
+                Font = new System.Drawing.Font("Segoe UI", 8.5f)
+            };
+            btnCopyText.FlatAppearance.BorderColor = System.Drawing.Color.FromArgb(0, 130, 200);
+
+            var btnCopyScreen = new Button
+            {
+                Text = "Copy screenshot",
+                FlatStyle = FlatStyle.Flat,
+                BackColor = System.Drawing.Color.FromArgb(60, 60, 80),
+                ForeColor = System.Drawing.Color.White,
+                Width = 120,
+                Height = 26,
+                Left = 102,
+                Top = 4,
+                Font = new System.Drawing.Font("Segoe UI", 8.5f)
+            };
+            btnCopyScreen.FlatAppearance.BorderColor = System.Drawing.Color.FromArgb(90, 90, 110);
+
+            var lblInfo = new Label
+            {
+                Text = $"Body {body}  ·  {typLabel}  ·  {animLength} actions × 5 dirs  ·  UOP",
+                ForeColor = System.Drawing.Color.FromArgb(140, 140, 160),
+                Font = new System.Drawing.Font("Segoe UI", 8.5f),
+                AutoSize = true,
+                Left = 230,
+                Top = 9
+            };
+
+            toolbar.Controls.Add(btnCopyText);
+            toolbar.Controls.Add(btnCopyScreen);
+            toolbar.Controls.Add(lblInfo);
+
+            var txt = new RichTextBox
+            {
+                Dock = DockStyle.Fill,
+                ReadOnly = true,
+                ScrollBars = RichTextBoxScrollBars.Both,
+                WordWrap = false,
+                Font = new System.Drawing.Font("Consolas", 9f),
+                BackColor = System.Drawing.Color.FromArgb(28, 28, 32),
+                ForeColor = System.Drawing.Color.FromArgb(220, 220, 220)
+            };
+
+            foreach (var line in fullText.Split('\n'))
+            {
+                int start = txt.TextLength;
+                txt.AppendText(line + "\n");
+
+                System.Drawing.Color col;
+                if (line.Contains("  OK")) col = System.Drawing.Color.FromArgb(100, 220, 130);
+                else if (line.Contains("CORRUPT")) col = System.Drawing.Color.FromArgb(255, 100, 100);
+                else if (line.Contains("MISSING") || line.Contains("PARTIAL")) col = System.Drawing.Color.FromArgb(255, 200, 80);
+                else if (line.TrimStart().StartsWith("Dir")) col = System.Drawing.Color.FromArgb(140, 180, 255);
+                else if (line.StartsWith("===")) col = System.Drawing.Color.FromArgb(200, 180, 255);
+                else if (line.StartsWith("Summary")) col = System.Drawing.Color.FromArgb(200, 200, 100);
+                else col = System.Drawing.Color.FromArgb(220, 220, 220);
+
+                txt.Select(start, line.Length);
+                txt.SelectionColor = col;
+            }
+            txt.SelectionStart = 0;
+            txt.SelectionLength = 0;
+
+            var statusBar = new Label
+            {
+                Dock = DockStyle.Bottom,
+                Height = 22,
+                Text = $"  Saved: {dumpPath}  |  OK={totalOk}  MISSING/PARTIAL={totalEmpty}  CORRUPT={totalCorrupt}",
+                Font = new System.Drawing.Font("Segoe UI", 8f),
+                ForeColor = System.Drawing.Color.FromArgb(140, 140, 160),
+                BackColor = System.Drawing.Color.FromArgb(38, 38, 50)
+            };
+
+            btnCopyText.Click += (s, ev) =>
+            {
+                Clipboard.SetText(fullText);
+                btnCopyText.Text = "Copied!";
+                var t = new System.Windows.Forms.Timer { Interval = 1500 };
+                t.Tick += (_, __) => { btnCopyText.Text = "Copy text"; t.Stop(); t.Dispose(); };
+                t.Start();
+            };
+
+            btnCopyScreen.Click += (s, ev) =>
+            {
+                var bmp = new System.Drawing.Bitmap(dlg.Width, dlg.Height);
+                dlg.DrawToBitmap(bmp, new System.Drawing.Rectangle(0, 0, bmp.Width, bmp.Height));
+                Clipboard.SetImage(bmp);
+                btnCopyScreen.Text = "Copied!";
+                var t = new System.Windows.Forms.Timer { Interval = 1500 };
+                t.Tick += (_, __) => { btnCopyScreen.Text = "Copy screenshot"; t.Stop(); t.Dispose(); };
+                t.Start();
+            };
+
+            dlg.Controls.Add(txt);
+            dlg.Controls.Add(toolbar);
+            dlg.Controls.Add(statusBar);
+            dlg.ShowDialog(this);
+        }
+
         #endregion
     }
 }

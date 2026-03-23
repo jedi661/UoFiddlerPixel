@@ -186,6 +186,9 @@
             _sequenceGrid = new System.Windows.Forms.DataGridView();
             _sequenceBindingSource = new System.Windows.Forms.BindingSource(components);
             _seqPreviewPanel = new System.Windows.Forms.Panel();
+            checkBoxDiagInfo = new System.Windows.Forms.CheckBox();
+            BtnAnimMapUop = new System.Windows.Forms.Button();
+            BtnAnimMap = new System.Windows.Forms.Button();
             btnDiagCompare = new System.Windows.Forms.Button();
             btnDiagMassScan = new System.Windows.Forms.Button();
             btnDiagSingle = new System.Windows.Forms.Button();
@@ -1879,6 +1882,9 @@
             // 
             // _seqPreviewPanel
             // 
+            _seqPreviewPanel.Controls.Add(checkBoxDiagInfo);
+            _seqPreviewPanel.Controls.Add(BtnAnimMapUop);
+            _seqPreviewPanel.Controls.Add(BtnAnimMap);
             _seqPreviewPanel.Controls.Add(btnDiagCompare);
             _seqPreviewPanel.Controls.Add(btnDiagMassScan);
             _seqPreviewPanel.Controls.Add(btnDiagSingle);
@@ -1899,6 +1905,36 @@
             _seqPreviewPanel.Name = "_seqPreviewPanel";
             _seqPreviewPanel.Size = new System.Drawing.Size(285, 698);
             _seqPreviewPanel.TabIndex = 1;
+            // 
+            // checkBoxDiagInfo
+            // 
+            checkBoxDiagInfo.AutoSize = true;
+            checkBoxDiagInfo.Location = new System.Drawing.Point(6, 671);
+            checkBoxDiagInfo.Name = "checkBoxDiagInfo";
+            checkBoxDiagInfo.Size = new System.Drawing.Size(100, 19);
+            checkBoxDiagInfo.TabIndex = 17;
+            checkBoxDiagInfo.Text = "Temp Diag Txt";
+            checkBoxDiagInfo.UseVisualStyleBackColor = true;
+            // 
+            // BtnAnimMapUop
+            // 
+            BtnAnimMapUop.Location = new System.Drawing.Point(6, 642);
+            BtnAnimMapUop.Name = "BtnAnimMapUop";
+            BtnAnimMapUop.Size = new System.Drawing.Size(120, 23);
+            BtnAnimMapUop.TabIndex = 16;
+            BtnAnimMapUop.Text = "Action Map UOP";
+            BtnAnimMapUop.UseVisualStyleBackColor = true;
+            BtnAnimMapUop.Click += BtnAnimMapUop_Click;
+            // 
+            // BtnAnimMap
+            // 
+            BtnAnimMap.Location = new System.Drawing.Point(6, 613);
+            BtnAnimMap.Name = "BtnAnimMap";
+            BtnAnimMap.Size = new System.Drawing.Size(120, 23);
+            BtnAnimMap.TabIndex = 15;
+            BtnAnimMap.Text = "Action Map Mul";
+            BtnAnimMap.UseVisualStyleBackColor = true;
+            BtnAnimMap.Click += BtnAnimMap_Click;
             // 
             // btnDiagCompare
             // 
@@ -2441,5 +2477,8 @@
         private System.Windows.Forms.Button btnDiagCompare;
         private System.Windows.Forms.Button btnDiagMassScan;
         private System.Windows.Forms.Button btnDiagSingle;
+        private System.Windows.Forms.Button BtnAnimMap;
+        private System.Windows.Forms.Button BtnAnimMapUop;
+        private System.Windows.Forms.CheckBox checkBoxDiagInfo;
     }
 }
