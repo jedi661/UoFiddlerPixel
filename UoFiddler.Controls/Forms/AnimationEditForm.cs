@@ -214,6 +214,7 @@ namespace UoFiddler.Controls.Forms
             Icon = Options.GetFiddlerIcon();
 
             FramesListView.MultiSelect = true;
+            FramesListView.ItemSelectionChanged += FramesListView_ItemSelectionChanged;
 
             _fileType = 0;
             _currentDir = 0;
@@ -1080,6 +1081,51 @@ namespace UoFiddler.Controls.Forms
             e.Graphics.DrawRectangle(new Pen(penColor1), e.Bounds.X, e.Bounds.Y, e.Bounds.Width, e.Bounds.Height);
             e.Graphics.DrawImage(bmp, e.Bounds.X, e.Bounds.Y, bmp.Width, bmp.Height);
             e.DrawText(TextFormatFlags.Bottom | TextFormatFlags.HorizontalCenter);
+        }
+
+        private void FramesListView_ItemSelectionChanged(object sender, ListViewItemSelectionChangedEventArgs e)
+        {
+            if (!e.IsSelected)
+                return;
+
+            int frameIndex = (int)e.Item.Tag;
+
+            if (_fileType == 6)
+            {
+                // UOP animation
+                var uopAnim = _uopManager?.GetUopAnimation(_currentBody, _currentAction, _currentDir);
+                if (uopAnim != null && frameIndex >= 0 && frameIndex < uopAnim.Frames.Count)
+                {
+                    var frame = uopAnim.Frames[frameIndex];
+                    toolStripStatusLabelFrameSize.Text = $"Frame {frameIndex}: {frame.Image.Width} x {frame.Image.Height} px";
+                }
+                else
+                {
+                    toolStripStatusLabelFrameSize.Text = string.Empty;
+                }
+            }
+            else if (_fileType != 0)
+            {
+                // MUL animation
+                AnimIdx edit = AnimationEdit.GetAnimation(_fileType, _currentBody, _currentAction, _currentDir);
+                if (edit != null)
+                {
+                    Bitmap[] currentBits = edit.GetFrames();
+                    if (currentBits != null && frameIndex >= 0 && frameIndex < currentBits.Length && currentBits[frameIndex] != null)
+                    {
+                        Bitmap bmp = currentBits[frameIndex];
+                        toolStripStatusLabelFrameSize.Text = $"Frame {frameIndex}: {bmp.Width} x {bmp.Height} px";
+                    }
+                    else
+                    {
+                        toolStripStatusLabelFrameSize.Text = string.Empty;
+                    }
+                }
+            }
+            else
+            {
+                toolStripStatusLabelFrameSize.Text = string.Empty;
+            }
         }
 
         private void OnAnimChanged(object sender, EventArgs e)

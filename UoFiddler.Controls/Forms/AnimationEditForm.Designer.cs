@@ -215,6 +215,7 @@
             editUoBodyconvAndMobtypesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             toolStripStatusLabelVDAminInfo = new System.Windows.Forms.ToolStripStatusLabel();
             toolStripStatusDisplayLabelAnimation = new System.Windows.Forms.ToolStripStatusLabel();
+            toolStripStatusLabelFrameSize = new System.Windows.Forms.ToolStripStatusLabel();
             AnimationTimer = new System.Windows.Forms.Timer(components);
             _sequenceTimer = new System.Windows.Forms.Timer(components);
             ((System.ComponentModel.ISupportInitialize)MainSplitContainer).BeginInit();
@@ -2120,7 +2121,7 @@
             // StatusStrip
             // 
             StatusStrip.ImageScalingSize = new System.Drawing.Size(20, 20);
-            StatusStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { MiscToolStripButton, toolStripStatusLabelVDAminInfo, toolStripStatusDisplayLabelAnimation });
+            StatusStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { MiscToolStripButton, toolStripStatusLabelVDAminInfo, toolStripStatusDisplayLabelAnimation, toolStripStatusLabelFrameSize });
             StatusStrip.Location = new System.Drawing.Point(0, 768);
             StatusStrip.Name = "StatusStrip";
             StatusStrip.Padding = new System.Windows.Forms.Padding(1, 0, 16, 0);
@@ -2182,6 +2183,12 @@
             toolStripStatusDisplayLabelAnimation.Name = "toolStripStatusDisplayLabelAnimation";
             toolStripStatusDisplayLabelAnimation.Size = new System.Drawing.Size(99, 17);
             toolStripStatusDisplayLabelAnimation.Text = "Animation Count";
+            // 
+            // toolStripStatusLabelFrameSize
+            // 
+            toolStripStatusLabelFrameSize.Name = "toolStripStatusLabelFrameSize";
+            toolStripStatusLabelFrameSize.Size = new System.Drawing.Size(63, 17);
+            toolStripStatusLabelFrameSize.Text = "Frame Size";
             // 
             // AnimationTimer
             // 
@@ -2480,5 +2487,6 @@
         private System.Windows.Forms.Button BtnAnimMap;
         private System.Windows.Forms.Button BtnAnimMapUop;
         private System.Windows.Forms.CheckBox checkBoxDiagInfo;
+        private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabelFrameSize;
     }
 }
