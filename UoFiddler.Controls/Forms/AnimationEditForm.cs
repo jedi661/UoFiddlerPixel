@@ -36,8 +36,8 @@ namespace UoFiddler.Controls.Forms
         private int _currentAction;
         private int _currentBody;
         private int _currentDir;
-        private Point _framePoint; // Gemini: point for the first animation (original one)
-        private Point _additionalFramePoint; // Gemini: separate point for the second animation to allow independent positioning
+        private Point _framePoint; //  point for the first animation (original one)
+        private Point _additionalFramePoint; // separate point for the second animation to allow independent positioning
         private bool _showOnlyValid;
         private static bool _drawEmpty;
         private static bool _drawFull;
