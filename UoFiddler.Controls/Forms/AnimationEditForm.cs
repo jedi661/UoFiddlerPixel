@@ -91,6 +91,11 @@ namespace UoFiddler.Controls.Forms
 
         private HexCompareForm _hexCompare; // Form for hex comparison of frames between two animations
 
+        // Background preview
+        private Bitmap _backgroundImage = null;
+        private string _backgroundMode = "None";
+
+
         #region [ Offsets Human ]
         private static readonly int[][][] Offsets = new int[][][]
         {
@@ -1498,6 +1503,16 @@ namespace UoFiddler.Controls.Forms
             e.Graphics.PixelOffsetMode = System.Drawing.Drawing2D.PixelOffsetMode.Half;
 
             e.Graphics.Clear(Color.LightGray);
+
+            // Hintergrundbild kacheln (tiling)
+            if (_backgroundImage != null)
+            {
+                using (var tb = new System.Drawing.TextureBrush(_backgroundImage,
+                                    System.Drawing.Drawing2D.WrapMode.Tile))
+                {
+                    e.Graphics.FillRectangle(tb, e.ClipRectangle);
+                }
+            }
 
             if (_drawCrosshair)
             {
@@ -11530,5 +11545,36 @@ namespace UoFiddler.Controls.Forms
         }
 
         #endregion
+
+        private void comboBoxBackground_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            _backgroundImage?.Dispose();
+            _backgroundImage = null;
+
+            _backgroundMode = comboBoxBackground.SelectedItem?.ToString() ?? "None";
+
+            switch (_backgroundMode)
+            {
+                case "Grass":
+                    _backgroundImage = new Bitmap(
+                        UoFiddler.Controls.Properties.Resources.Grass);
+                    break;
+                case "Water":
+                    _backgroundImage = new Bitmap(
+                        UoFiddler.Controls.Properties.Resources.Water);
+                    break;
+                    // "None" → _backgroundImage bleibt null
+            }
+
+            AnimationPictureBox.Invalidate();
+        }
+
+        protected override void OnFormClosed(FormClosedEventArgs e)
+        {
+            _backgroundImage?.Dispose();
+            base.OnFormClosed(e);
+        }
+
+
     }
 }

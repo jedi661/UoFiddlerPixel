@@ -168,6 +168,7 @@
             CheckBoxAction = new System.Windows.Forms.CheckBox();
             CheckBoxAllAction = new System.Windows.Forms.CheckBox();
             ReferencialPointGroupBox = new System.Windows.Forms.GroupBox();
+            comboBoxBackground = new System.Windows.Forms.ComboBox();
             ToolStripLockButton = new System.Windows.Forms.CheckBox();
             RefYLabel = new System.Windows.Forms.Label();
             RefXLabel = new System.Windows.Forms.Label();
@@ -218,6 +219,7 @@
             toolStripStatusLabelFrameSize = new System.Windows.Forms.ToolStripStatusLabel();
             AnimationTimer = new System.Windows.Forms.Timer(components);
             _sequenceTimer = new System.Windows.Forms.Timer(components);
+            labelBackground = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)MainSplitContainer).BeginInit();
             MainSplitContainer.Panel1.SuspendLayout();
             MainSplitContainer.Panel2.SuspendLayout();
@@ -287,7 +289,7 @@
             // 
             MainSplitContainer.Panel2.Controls.Add(tableLayoutPanel1);
             MainSplitContainer.Panel2.Controls.Add(StatusStrip);
-            MainSplitContainer.Size = new System.Drawing.Size(1247, 790);
+            MainSplitContainer.Size = new System.Drawing.Size(1247, 839);
             MainSplitContainer.SplitterDistance = 257;
             MainSplitContainer.SplitterWidth = 5;
             MainSplitContainer.TabIndex = 0;
@@ -301,7 +303,7 @@
             AnimationListTreeView.Location = new System.Drawing.Point(0, 25);
             AnimationListTreeView.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             AnimationListTreeView.Name = "AnimationListTreeView";
-            AnimationListTreeView.Size = new System.Drawing.Size(257, 765);
+            AnimationListTreeView.Size = new System.Drawing.Size(257, 814);
             AnimationListTreeView.TabIndex = 0;
             AnimationListTreeView.AfterSelect += AfterSelectTreeView;
             // 
@@ -527,7 +529,7 @@
             tableLayoutPanel1.RowCount = 2;
             tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
             tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 30F));
-            tableLayoutPanel1.Size = new System.Drawing.Size(985, 768);
+            tableLayoutPanel1.Size = new System.Drawing.Size(985, 817);
             tableLayoutPanel1.TabIndex = 11;
             // 
             // AnimationTabControl
@@ -540,7 +542,7 @@
             AnimationTabControl.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             AnimationTabControl.Name = "AnimationTabControl";
             AnimationTabControl.SelectedIndex = 0;
-            AnimationTabControl.Size = new System.Drawing.Size(977, 732);
+            AnimationTabControl.Size = new System.Drawing.Size(977, 781);
             AnimationTabControl.TabIndex = 7;
             AnimationTabControl.TabStop = false;
             // 
@@ -1122,7 +1124,7 @@
             AnimationEditPage.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             AnimationEditPage.Name = "AnimationEditPage";
             AnimationEditPage.Padding = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            AnimationEditPage.Size = new System.Drawing.Size(969, 704);
+            AnimationEditPage.Size = new System.Drawing.Size(969, 753);
             AnimationEditPage.TabIndex = 1;
             AnimationEditPage.Text = "Preview/Edit";
             AnimationEditPage.UseVisualStyleBackColor = true;
@@ -1143,7 +1145,7 @@
             AnimationTableLayoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
             AnimationTableLayoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 29F));
             AnimationTableLayoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 23F));
-            AnimationTableLayoutPanel.Size = new System.Drawing.Size(961, 698);
+            AnimationTableLayoutPanel.Size = new System.Drawing.Size(961, 747);
             AnimationTableLayoutPanel.TabIndex = 21;
             // 
             // AnimationEditToolStrip
@@ -1153,7 +1155,7 @@
             AnimationEditToolStrip.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
             AnimationEditToolStrip.ImageScalingSize = new System.Drawing.Size(20, 20);
             AnimationEditToolStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { toolStripSeparator7, DrawFullRectangleToolStripButton, toolStripSeparator5, DrawEmptyRectangleToolStripButton, toolStripSeparator12, ShowCrosshairtoolStripButton, toolStripSeparator13, rawDimensionsToolStripLabel, toolStripSeparator6, DrawBoundingBoxToolStripButton, DrawCroppingBoxToolStripButton, DrawReferencialPointToolStripButton, toolStripSeparator10, ZoomLabel, ZoomNumericUpDown });
-            AnimationEditToolStrip.Location = new System.Drawing.Point(0, 671);
+            AnimationEditToolStrip.Location = new System.Drawing.Point(0, 720);
             AnimationEditToolStrip.Name = "AnimationEditToolStrip";
             AnimationEditToolStrip.RenderMode = System.Windows.Forms.ToolStripRenderMode.System;
             AnimationEditToolStrip.Size = new System.Drawing.Size(961, 27);
@@ -1293,7 +1295,7 @@
             AnimationPictureBox.Location = new System.Drawing.Point(4, 3);
             AnimationPictureBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             AnimationPictureBox.Name = "AnimationPictureBox";
-            AnimationPictureBox.Size = new System.Drawing.Size(755, 663);
+            AnimationPictureBox.Size = new System.Drawing.Size(755, 712);
             AnimationPictureBox.TabIndex = 1;
             AnimationPictureBox.TabStop = false;
             AnimationPictureBox.SizeChanged += AnimationPictureBox_OnSizeChanged;
@@ -1313,14 +1315,14 @@
             EditSidePanel.Location = new System.Drawing.Point(767, 3);
             EditSidePanel.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             EditSidePanel.Name = "EditSidePanel";
-            EditSidePanel.Size = new System.Drawing.Size(190, 663);
+            EditSidePanel.Size = new System.Drawing.Size(190, 712);
             EditSidePanel.TabIndex = 0;
             // 
             // FramesGroupBox
             // 
             FramesGroupBox.Controls.Add(FramesTrackBar);
             FramesGroupBox.Dock = System.Windows.Forms.DockStyle.Top;
-            FramesGroupBox.Location = new System.Drawing.Point(0, 610);
+            FramesGroupBox.Location = new System.Drawing.Point(0, 659);
             FramesGroupBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             FramesGroupBox.Name = "FramesGroupBox";
             FramesGroupBox.Padding = new System.Windows.Forms.Padding(4, 3, 4, 3);
@@ -1343,6 +1345,8 @@
             // 
             // SecondAnimationGroupBox
             // 
+            SecondAnimationGroupBox.Controls.Add(labelBackground);
+            SecondAnimationGroupBox.Controls.Add(comboBoxBackground);
             SecondAnimationGroupBox.Controls.Add(BtnOnMapUop);
             SecondAnimationGroupBox.Controls.Add(btn_ScreenShot);
             SecondAnimationGroupBox.Controls.Add(btnLeft);
@@ -1360,7 +1364,7 @@
             SecondAnimationGroupBox.Dock = System.Windows.Forms.DockStyle.Top;
             SecondAnimationGroupBox.Location = new System.Drawing.Point(0, 406);
             SecondAnimationGroupBox.Name = "SecondAnimationGroupBox";
-            SecondAnimationGroupBox.Size = new System.Drawing.Size(190, 204);
+            SecondAnimationGroupBox.Size = new System.Drawing.Size(190, 253);
             SecondAnimationGroupBox.TabIndex = 24;
             SecondAnimationGroupBox.TabStop = false;
             SecondAnimationGroupBox.Text = "Second Animation";
@@ -1680,6 +1684,16 @@
             ReferencialPointGroupBox.TabIndex = 20;
             ReferencialPointGroupBox.TabStop = false;
             ReferencialPointGroupBox.Text = "Referencial Point";
+            // 
+            // comboBoxBackground
+            // 
+            comboBoxBackground.FormattingEnabled = true;
+            comboBoxBackground.Items.AddRange(new object[] { "None", "Grass", "Water" });
+            comboBoxBackground.Location = new System.Drawing.Point(4, 215);
+            comboBoxBackground.Name = "comboBoxBackground";
+            comboBoxBackground.Size = new System.Drawing.Size(69, 23);
+            comboBoxBackground.TabIndex = 22;
+            comboBoxBackground.SelectedIndexChanged += comboBoxBackground_SelectedIndexChanged;
             // 
             // ToolStripLockButton
             // 
@@ -2092,7 +2106,7 @@
             panel1.Controls.Add(ProgressBar);
             panel1.Controls.Add(DirectionTrackBar);
             panel1.Dock = System.Windows.Forms.DockStyle.Fill;
-            panel1.Location = new System.Drawing.Point(3, 741);
+            panel1.Location = new System.Drawing.Point(3, 790);
             panel1.Name = "panel1";
             panel1.Size = new System.Drawing.Size(979, 24);
             panel1.TabIndex = 10;
@@ -2122,7 +2136,7 @@
             // 
             StatusStrip.ImageScalingSize = new System.Drawing.Size(20, 20);
             StatusStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { MiscToolStripButton, toolStripStatusLabelVDAminInfo, toolStripStatusDisplayLabelAnimation, toolStripStatusLabelFrameSize });
-            StatusStrip.Location = new System.Drawing.Point(0, 768);
+            StatusStrip.Location = new System.Drawing.Point(0, 817);
             StatusStrip.Name = "StatusStrip";
             StatusStrip.Padding = new System.Windows.Forms.Padding(1, 0, 16, 0);
             StatusStrip.Size = new System.Drawing.Size(985, 22);
@@ -2198,11 +2212,20 @@
             // 
             _sequenceTimer.Tick += OnSequenceTimerTick;
             // 
+            // labelBackground
+            // 
+            labelBackground.AutoSize = true;
+            labelBackground.Location = new System.Drawing.Point(3, 196);
+            labelBackground.Name = "labelBackground";
+            labelBackground.Size = new System.Drawing.Size(71, 15);
+            labelBackground.TabIndex = 37;
+            labelBackground.Text = "Background";
+            // 
             // AnimationEditForm
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            ClientSize = new System.Drawing.Size(1247, 790);
+            ClientSize = new System.Drawing.Size(1247, 839);
             Controls.Add(MainSplitContainer);
             DoubleBuffered = true;
             Icon = (System.Drawing.Icon)resources.GetObject("$this.Icon");
@@ -2488,5 +2511,7 @@
         private System.Windows.Forms.Button BtnAnimMapUop;
         private System.Windows.Forms.CheckBox checkBoxDiagInfo;
         private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabelFrameSize;
+        private System.Windows.Forms.ComboBox comboBoxBackground;
+        private System.Windows.Forms.Label labelBackground;
     }
 }
