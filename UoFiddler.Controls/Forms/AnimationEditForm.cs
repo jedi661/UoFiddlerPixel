@@ -8074,6 +8074,7 @@ namespace UoFiddler.Controls.Forms
             }
         }
 
+        #region [ GenerateMulPalette ] This method generates a 256-color palette for MUL animations by extracting unique colors from the provided list of Bitmap frames. It ensures that the palette includes all necessary colors while respecting the 256-color limit of MUL files. The method handles edge cases such as empty frames and optimizes performance by breaking early if the limit is reached.
         private ushort[] GenerateMulPalette(List<Bitmap> images)
         {
             HashSet<ushort> uniqueColors = new HashSet<ushort>();
@@ -8117,7 +8118,9 @@ namespace UoFiddler.Controls.Forms
             }
             return palette;
         }
+        #endregion
 
+        #region [ ConvertToUltima16Bpp ] // This method safely converts any Bitmap to the 16bpp format used by Ultima, handling edge cases and ensuring compatibility with Indexed and 32bpp sources.
         private Bitmap ConvertToUltima16Bpp(Bitmap source)
         {
             if (source == null || source.Width == 0 || source.Height == 0)
@@ -8145,6 +8148,7 @@ namespace UoFiddler.Controls.Forms
                 return bmp;
             }
         }
+        #endregion
 
         #region [ Edit Ultima Online Bodyconv.def and mobtypes.txt ]
         private EditUoBodyconvMobtypes editUoBodyconvMobtypesForm;
