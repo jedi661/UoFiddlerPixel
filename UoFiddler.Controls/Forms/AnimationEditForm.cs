@@ -8695,7 +8695,6 @@ namespace UoFiddler.Controls.Forms
         }
         #endregion
 
-
         #region [ ShowCrosshairtoolStripButton ] Toggle crosshair display on animation preview
         private void ShowCrosshairtoolStripButton_Click(object sender, EventArgs e)
         {
@@ -8703,7 +8702,6 @@ namespace UoFiddler.Controls.Forms
             AnimationPictureBox.Invalidate();
         }
         #endregion
-
 
         #region Sequence UOP Tab
 
@@ -11546,6 +11544,7 @@ namespace UoFiddler.Controls.Forms
 
         #endregion
 
+        #region [ comboBoxBackground: Background image selection ]
         private void comboBoxBackground_SelectedIndexChanged(object sender, EventArgs e)
         {
             _backgroundImage?.Dispose();
@@ -11568,13 +11567,15 @@ namespace UoFiddler.Controls.Forms
 
             AnimationPictureBox.Invalidate();
         }
+        #endregion
 
+        #region [ OnFormClosed: Dispose background image ]
         protected override void OnFormClosed(FormClosedEventArgs e)
         {
             _backgroundImage?.Dispose();
             base.OnFormClosed(e);
         }
-
+        #endregion
 
     }
 }

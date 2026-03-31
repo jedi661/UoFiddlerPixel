@@ -141,6 +141,8 @@
             FramesGroupBox = new System.Windows.Forms.GroupBox();
             FramesTrackBar = new System.Windows.Forms.TrackBar();
             SecondAnimationGroupBox = new System.Windows.Forms.GroupBox();
+            labelBackground = new System.Windows.Forms.Label();
+            comboBoxBackground = new System.Windows.Forms.ComboBox();
             BtnOnMapUop = new System.Windows.Forms.Button();
             btn_ScreenShot = new System.Windows.Forms.Button();
             btnLeft = new System.Windows.Forms.Button();
@@ -168,7 +170,6 @@
             CheckBoxAction = new System.Windows.Forms.CheckBox();
             CheckBoxAllAction = new System.Windows.Forms.CheckBox();
             ReferencialPointGroupBox = new System.Windows.Forms.GroupBox();
-            comboBoxBackground = new System.Windows.Forms.ComboBox();
             ToolStripLockButton = new System.Windows.Forms.CheckBox();
             RefYLabel = new System.Windows.Forms.Label();
             RefXLabel = new System.Windows.Forms.Label();
@@ -219,7 +220,6 @@
             toolStripStatusLabelFrameSize = new System.Windows.Forms.ToolStripStatusLabel();
             AnimationTimer = new System.Windows.Forms.Timer(components);
             _sequenceTimer = new System.Windows.Forms.Timer(components);
-            labelBackground = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)MainSplitContainer).BeginInit();
             MainSplitContainer.Panel1.SuspendLayout();
             MainSplitContainer.Panel2.SuspendLayout();
@@ -553,7 +553,7 @@
             FramePage.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             FramePage.Name = "FramePage";
             FramePage.Padding = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            FramePage.Size = new System.Drawing.Size(969, 704);
+            FramePage.Size = new System.Drawing.Size(969, 753);
             FramePage.TabIndex = 0;
             FramePage.Text = "Frame";
             FramePage.UseVisualStyleBackColor = true;
@@ -573,7 +573,7 @@
             tableLayoutPanel2.RowCount = 2;
             tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 28F));
             tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            tableLayoutPanel2.Size = new System.Drawing.Size(961, 698);
+            tableLayoutPanel2.Size = new System.Drawing.Size(961, 747);
             tableLayoutPanel2.TabIndex = 27;
             // 
             // PalettePictureBox
@@ -665,7 +665,7 @@
             FramesListView.MultiSelect = false;
             FramesListView.Name = "FramesListView";
             FramesListView.OwnerDraw = true;
-            FramesListView.Size = new System.Drawing.Size(793, 664);
+            FramesListView.Size = new System.Drawing.Size(793, 713);
             FramesListView.TabIndex = 0;
             FramesListView.TileSize = new System.Drawing.Size(81, 110);
             FramesListView.UseCompatibleStateImageBehavior = false;
@@ -814,7 +814,7 @@
             panel2.Dock = System.Windows.Forms.DockStyle.Fill;
             panel2.Location = new System.Drawing.Point(804, 31);
             panel2.Name = "panel2";
-            panel2.Size = new System.Drawing.Size(154, 664);
+            panel2.Size = new System.Drawing.Size(154, 713);
             panel2.TabIndex = 26;
             // 
             // groupBox3
@@ -1369,6 +1369,25 @@
             SecondAnimationGroupBox.TabStop = false;
             SecondAnimationGroupBox.Text = "Second Animation";
             // 
+            // labelBackground
+            // 
+            labelBackground.AutoSize = true;
+            labelBackground.Location = new System.Drawing.Point(3, 196);
+            labelBackground.Name = "labelBackground";
+            labelBackground.Size = new System.Drawing.Size(71, 15);
+            labelBackground.TabIndex = 37;
+            labelBackground.Text = "Background";
+            // 
+            // comboBoxBackground
+            // 
+            comboBoxBackground.FormattingEnabled = true;
+            comboBoxBackground.Items.AddRange(new object[] { "None", "Grass", "Water" });
+            comboBoxBackground.Location = new System.Drawing.Point(4, 215);
+            comboBoxBackground.Name = "comboBoxBackground";
+            comboBoxBackground.Size = new System.Drawing.Size(69, 23);
+            comboBoxBackground.TabIndex = 22;
+            comboBoxBackground.SelectedIndexChanged += comboBoxBackground_SelectedIndexChanged;
+            // 
             // BtnOnMapUop
             // 
             BtnOnMapUop.Location = new System.Drawing.Point(111, 163);
@@ -1685,16 +1704,6 @@
             ReferencialPointGroupBox.TabStop = false;
             ReferencialPointGroupBox.Text = "Referencial Point";
             // 
-            // comboBoxBackground
-            // 
-            comboBoxBackground.FormattingEnabled = true;
-            comboBoxBackground.Items.AddRange(new object[] { "None", "Grass", "Water" });
-            comboBoxBackground.Location = new System.Drawing.Point(4, 215);
-            comboBoxBackground.Name = "comboBoxBackground";
-            comboBoxBackground.Size = new System.Drawing.Size(69, 23);
-            comboBoxBackground.TabIndex = 22;
-            comboBoxBackground.SelectedIndexChanged += comboBoxBackground_SelectedIndexChanged;
-            // 
             // ToolStripLockButton
             // 
             ToolStripLockButton.Appearance = System.Windows.Forms.Appearance.Button;
@@ -1860,7 +1869,7 @@
             _sequencePage.Controls.Add(_seqTableLayout);
             _sequencePage.Location = new System.Drawing.Point(4, 24);
             _sequencePage.Name = "_sequencePage";
-            _sequencePage.Size = new System.Drawing.Size(969, 704);
+            _sequencePage.Size = new System.Drawing.Size(969, 753);
             _sequencePage.TabIndex = 2;
             _sequencePage.Text = "Sequence Mul or UOP";
             _sequencePage.UseVisualStyleBackColor = true;
@@ -1877,7 +1886,7 @@
             _seqTableLayout.Name = "_seqTableLayout";
             _seqTableLayout.RowCount = 1;
             _seqTableLayout.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            _seqTableLayout.Size = new System.Drawing.Size(969, 704);
+            _seqTableLayout.Size = new System.Drawing.Size(969, 753);
             _seqTableLayout.TabIndex = 0;
             // 
             // _sequenceGrid
@@ -1890,7 +1899,7 @@
             _sequenceGrid.Name = "_sequenceGrid";
             _sequenceGrid.RowHeadersVisible = false;
             _sequenceGrid.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            _sequenceGrid.Size = new System.Drawing.Size(672, 698);
+            _sequenceGrid.Size = new System.Drawing.Size(672, 747);
             _sequenceGrid.TabIndex = 0;
             _sequenceGrid.CellValueChanged += OnSequenceGridCellValueChanged;
             _sequenceGrid.SelectionChanged += OnSequenceGridSelectionChanged;
@@ -1918,7 +1927,7 @@
             _seqPreviewPanel.Dock = System.Windows.Forms.DockStyle.Fill;
             _seqPreviewPanel.Location = new System.Drawing.Point(681, 3);
             _seqPreviewPanel.Name = "_seqPreviewPanel";
-            _seqPreviewPanel.Size = new System.Drawing.Size(285, 698);
+            _seqPreviewPanel.Size = new System.Drawing.Size(285, 747);
             _seqPreviewPanel.TabIndex = 1;
             // 
             // checkBoxDiagInfo
@@ -2211,15 +2220,6 @@
             // _sequenceTimer
             // 
             _sequenceTimer.Tick += OnSequenceTimerTick;
-            // 
-            // labelBackground
-            // 
-            labelBackground.AutoSize = true;
-            labelBackground.Location = new System.Drawing.Point(3, 196);
-            labelBackground.Name = "labelBackground";
-            labelBackground.Size = new System.Drawing.Size(71, 15);
-            labelBackground.TabIndex = 37;
-            labelBackground.Text = "Background";
             // 
             // AnimationEditForm
             // 
