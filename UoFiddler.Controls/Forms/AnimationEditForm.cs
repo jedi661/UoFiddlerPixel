@@ -8065,7 +8065,7 @@ namespace UoFiddler.Controls.Forms
                 }
             }
 
-            // ✅ ÉTAPE 3 : Rafraîchir l'affichage si c'est l'animation actuellement sélectionnée
+            // Refresh the display if this is the currently selected animation
             if (targetBody == _currentBody && targetAction == _currentAction)
             {
                 DisplayUopAnimation();
