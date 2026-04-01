@@ -1,4 +1,4 @@
-/***************************************************************************
+﻿/***************************************************************************
  *
  * $Author: Turley
  * 
@@ -547,7 +547,7 @@ namespace UoFiddler.Controls.UserControls
                         _displayType = 1;
                         LoadListView();
                     }
-
+                    
                     // Here, call the DoAnimation() method to initialize _animationList
                     DoAnimation();
                 }
@@ -1632,11 +1632,11 @@ namespace UoFiddler.Controls.UserControls
 
         private void xMLEditorToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            string outputPath = Options.OutputPath; // Holen wir uns den Output Path aus den Optionen
+            string outputPath = Options.OutputPath; // Let's get the output path from the options.
 
             if (_editorXmlInstance == null || _editorXmlInstance.IsDisposed)
             {
-                // �bergabe des outputPath an den Konstruktor
+                // Passing the outputPath to the constructor
                 _editorXmlInstance = new EditorXML(outputPath);
                 _editorXmlInstance.Show();
             }
@@ -1664,7 +1664,7 @@ namespace UoFiddler.Controls.UserControls
                 PaintEventAttached = false;
             }
 
-            MainPictureBox.Invalidate(); // Sofortiges Neuzeichnen der PictureBox
+            MainPictureBox.Invalidate(); // Instant redrawing of the PictureBox
         }
         #endregion
 
@@ -1672,23 +1672,23 @@ namespace UoFiddler.Controls.UserControls
         private void DrawFrameBounds(object sender, PaintEventArgs e)
         {
             if (_animationList == null || _animationList.Length == 0 || listView1.SelectedItems.Count == 0)
-                return; // Falls keine Frames vorhanden oder kein Frame ausgew�hlt ist
+                return; // If no frames are available or no frame is selected
 
-            // Index des aktuell gew�hlten Frames ermitteln
+            // Determine the index of the currently selected frame
             if (!(listView1.SelectedItems[0].Tag is int index) || index < 0 || index >= _animationList.Length)
                 return;
 
             Bitmap currentFrame = _animationList[index];
 
-            // Berechnung der Position innerhalb der PictureBox
+            // Calculating the position within the PictureBox
             int frameWidth = currentFrame.Width;
             int frameHeight = currentFrame.Height;
 
-            // Die tats�chliche Position des Frames ermitteln (z.B. wenn es nicht links oben ist)
+            // Determine the actual position of the frame (e.g., if it is not in the top left corner).
             int x = (MainPictureBox.ClientSize.Width - frameWidth) / 2;
             int y = (MainPictureBox.ClientSize.Height - frameHeight) / 2;
 
-            using (Pen pen = new Pen(Color.Red, 2)) // Roter Rahmen mit 2 Pixel Breite
+            using (Pen pen = new Pen(Color.Red, 2)) // Red border with a width of 2 pixels
             {
                 e.Graphics.DrawRectangle(pen, x, y, frameWidth - 1, frameHeight - 1);
             }
@@ -1696,20 +1696,219 @@ namespace UoFiddler.Controls.UserControls
         #endregion
 
         #region [ ListView1_SelectedIndexChanged ]
-        // Diese Methode stellt sicher, dass der Rahmen aktualisiert wird, wenn das Frame wechselt
+        // This method ensures that the frame is updated when the frame changes.
         private void listView1_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (PaintEventAttached)
             {
-                MainPictureBox.Invalidate(); // Neuzeichnen der PictureBox erzwingen
+                MainPictureBox.Invalidate(); // Force redraw PictureBox
             }
         }
         #endregion
 
+        #region [ OnClickSaveMissingEntries ]
 
+        private void OnClickSaveMissingEntries(object sender, EventArgs e)
+        {
+            // ── 1. Scan with hourglass ──────────────────────────────────────────
+            Cursor.Current = Cursors.WaitCursor;
+            List<AnimationListMissingForm.MissingEntry> missing;
+
+            try
+            {
+                missing = ScanAllMulFiles();
+            }
+            finally
+            {
+                Cursor.Current = Cursors.Default;
+            }
+
+            if (missing.Count == 0)
+            {
+                MessageBox.Show(
+                    "All animations from the .mul files are already included.\n" +
+                    "present in the animationlist.xml.",
+                    "No difference",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
+                return;
+            }
+
+            // ── 2. Load existing XML ──────────────────────────────────────
+            string sourcePath = Path.Combine(Options.AppDataPath, "Animationlist.xml");
+            XmlDocument dom = LoadXmlDocument(sourcePath);
+            if (dom == null) return;
+
+            XmlElement root = dom["Graphics"];
+            if (root == null)
+            {
+                MessageBox.Show("Invalid XML format.", "Error",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            // ── 3. Select mode ──────────────────────────────────────────────
+            DialogResult mode = MessageBox.Show(
+                $"{missing.Count} missing animations found.\n\n" +
+                "How would you like to proceed??\n\n" +
+                "[Ja]    → Go through step by step\n" +
+                "           (Watch animation, Name + Typ determine yourself)\n\n" +
+                "[Nein]  → Take over all at once\n" +
+                "           (Auto-Name, suggested Typ, save immediately)",
+                "Vorgehen wählen",
+                MessageBoxButtons.YesNoCancel,
+                MessageBoxIcon.Question);
+
+            if (mode == DialogResult.Cancel)
+                return;
+
+            if (mode == DialogResult.Yes)
+            {
+                // ── Open step-by-step form ─────────────────────
+                var form = new AnimationListMissingForm(missing, dom, root, sourcePath);
+                form.ShowDialog(this);
+            }
+            else
+            {
+                // ── Write all at once ────────────────────────────────
+                int mobCount = 0, equipCount = 0;
+                foreach (var entry in missing)
+                {
+                    string autoName = Animations.GetFileName(entry.GraphicId)
+                                      ?? $"anim_{entry.GraphicId}";
+                    string name = $"{autoName} ({entry.GraphicId})";
+                    string tag = entry.SuggestedType == 3 ? "Equip" : "Mob";
+
+                    XmlElement elem = dom.CreateElement(tag);
+                    elem.SetAttribute("name", name);
+                    elem.SetAttribute("body", entry.GraphicId.ToString());
+                    elem.SetAttribute("type", entry.SuggestedType.ToString());
+                    root.AppendChild(elem);
+
+                    if (tag == "Equip") equipCount++; else mobCount++;
+                }
+
+                using (SaveFileDialog dlg = new SaveFileDialog())
+                {
+                    dlg.Title = "Animationlist.xml save";
+                    dlg.Filter = "XML files (*.xml)|*.xml|All files (*.*)|*.*";
+                    dlg.FileName = "Animationlist.xml";
+                    dlg.InitialDirectory = Options.OutputPath ?? Options.AppDataPath;
+
+                    if (dlg.ShowDialog() == DialogResult.OK)
+                    {
+                        dom.Save(dlg.FileName);
+                        MessageBox.Show(
+                            $"Saved: {mobCount}x <Mob>  +  {equipCount}x <Equip>\n\n{dlg.FileName}",
+                            "Saved", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                }
+            }
+        }
+        #endregion
+
+        #region [ ScanAllMulFiles ]
+        /// <summary>
+        /// Scans all body IDs 0–0xFFFF against the .mul files.
+        /// Returns only IDs that are NOT in the XML.
+        /// SuggestedType is determined by checking all 4 types.
+        /// </summary>
+        private List<AnimationListMissingForm.MissingEntry> ScanAllMulFiles()
+        {
+            HashSet<int> inXml = LoadXmlBodyIds();
+            var result = new List<AnimationListMissingForm.MissingEntry>();
+
+            for (int graphic = 0; graphic < 0x10000; graphic++)
+            {
+                if (inXml.Contains(graphic)) continue;
+
+                // At least Action 0 must be present.
+                if (!Animations.IsActionDefined(graphic, 0, 0)) continue;
+
+                // Determine the best type: which type has the most defined actions?
+                int bestType = 0;
+                int bestCount = 0;
+
+                for (int type = 0; type <= 3; type++)
+                {
+                    int defined = 0;
+                    int total = GetActionNames[type].GetLength(0);
+                    for (int action = 0; action < total; action++)
+                    {
+                        if (Animations.IsActionDefined(graphic, action, 0))
+                            defined++;
+                    }
+                    if (defined > bestCount)
+                    {
+                        bestCount = defined;
+                        bestType = type;
+                    }
+                }
+
+                result.Add(new AnimationListMissingForm.MissingEntry
+                {
+                    GraphicId = graphic,
+                    SuggestedType = bestType
+                });
+            }
+
+            return result;
+        }
+        #endregion
+
+        #region [ LoadXmlBodyIds ] // Loads all body IDs from the existing XML into a HashSet for quick lookup.
+        private HashSet<int> LoadXmlBodyIds()
+        {
+            var ids = new HashSet<int>();
+            string filePath = Path.Combine(Options.AppDataPath, "Animationlist.xml");
+            if (!File.Exists(filePath)) return ids;
+
+            try
+            {
+                XmlDocument dom = new XmlDocument();
+                dom.Load(filePath);
+                XmlElement root = dom["Graphics"];
+                if (root == null) return ids;
+
+                foreach (XmlElement el in root.SelectNodes("Mob"))
+                    if (int.TryParse(el.GetAttribute("body"), out int b)) ids.Add(b);
+
+                foreach (XmlElement el in root.SelectNodes("Equip"))
+                    if (int.TryParse(el.GetAttribute("body"), out int b)) ids.Add(b);
+            }
+            catch { }
+
+            return ids;
+        }
+        #endregion
+
+        #region [ LoadXmlDocument ] // Loads the XML or creates a new one with a standard structure if it does not exist or is invalid.
+        private XmlDocument LoadXmlDocument(string filePath)
+        {
+            XmlDocument dom = new XmlDocument();
+            if (File.Exists(filePath))
+            {
+                try { dom.Load(filePath); return dom; }
+                catch (XmlException ex)
+                {
+                    MessageBox.Show($"Loading error:\n{ex.Message}", "Error",
+                        MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return null;
+                }
+            }
+            dom.AppendChild(dom.CreateXmlDeclaration("1.0", "utf-8", null));
+            XmlElement root = dom.CreateElement("Graphics");
+            root.AppendChild(dom.CreateComment("Entries in Mob tab"));
+            root.AppendChild(dom.CreateComment("Name=Displayed name"));
+            root.AppendChild(dom.CreateComment("body=Graphic"));
+            root.AppendChild(dom.CreateComment("type=0:Monster, 1:Sea, 2:Animal, 3:Human/Equipment"));
+            dom.AppendChild(root);
+            return dom;
+        }
+        #endregion
     }
 
-    #region [ class AlphaSorter ]
+    #region [ class AlphaSorter ] // The TreeView is sorted alphabetically, but Mob and Equipment always remain at the top.
     public class AlphaSorter : IComparer
     {
         public int Compare(object x, object y)
@@ -1762,6 +1961,16 @@ namespace UoFiddler.Controls.UserControls
 
             return 1;
         }
+    }
+    #endregion
+
+    #region [ MissingXmlEntry – Hilfsklasse ]
+    public class MissingXmlEntry
+    {
+        public int GraphicId { get; set; }
+        public int Type { get; set; }
+        public string Name { get; set; }
+        public string XmlTag { get; set; }  // "Mob" oder "Equip"
     }
     #endregion
 }
