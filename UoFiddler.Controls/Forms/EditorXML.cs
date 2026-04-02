@@ -2,9 +2,9 @@
 //  *
 //  * $Author: Nikodemus
 //  * Advanced:
-//  * 
-//  * \"THE BEER-WINE-WARE LICENSE\"
-//  * As long as you retain this notice you can do whatever you want with 
+//  *
+//  * "THE BEER-WINE-WARE LICENSE"
+//  * As long as you retain this notice you can do whatever you want with
 //  * this stuff. If we meet some day, and you think this stuff is worth it,
 //  * you can buy me a beer and Wine in return.
 //  *
@@ -15,1089 +15,1163 @@ using System.IO;
 using System.Windows.Forms;
 using System.Drawing.Printing;
 using System.Drawing;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Collections.Generic;
 using System.Linq;
+using System.Xml;
+using System.Xml.Linq;
 
 namespace UoFiddler.Controls.Forms
 {
     public partial class EditorXML : Form
     {
-        private readonly string outputPath;
-        private int _lastIndex = -1;
+        // ── fields ────────────────────────────────────────────────────────────
+        private readonly string _outputPath;
+        private string _currentFilePath;
+        private bool _isDarkMode = false;
+        private bool _isManualChange = true;
+
+        // Search
+        private int _lastSearchIndex = -1;
         private string _searchText = string.Empty;
         private int _foundCount = 0;
-        private bool _isDarkMode = false;
-        private Timer autoSaveTimer;
-        private string currentFilePath;
         private bool _caseSensitive = false;
         private bool _useRegex = false;
-        private Stack<string> undoStack = new Stack<string>();
-        private Stack<string> redoStack = new Stack<string>();
-        private bool isManualChange = true;
 
+        // Undo/Redo – based only on snapshots, not per keystroke
+        private readonly Stack<string> _undoStack = new Stack<string>();
+        private readonly Stack<string> _redoStack = new Stack<string>();
+        private string _lastSavedSnapshot = string.Empty;
+        private System.Threading.Timer _undoDebounceTimer;
+        private const int UndoDebounceMs = 800; // Snapshot nach 800 ms Pause
+
+        // bookmark
+        private readonly HashSet<int> _bookmarks = new HashSet<int>();
+
+        // AutoSave
+        private Timer _autoSaveTimer;
+
+        // ── constructor ───────────────────────────────────────────────────────
         public EditorXML(string outputPath)
         {
             InitializeComponent();
-            this.outputPath = outputPath;
-            this.KeyPreview = true;  // Add KeyDown event for F5, F7, F8 functionality
-            InitializeAutoSave();
+            _outputPath = outputPath;
+            KeyPreview = true;
 
-            // Save initial state if text exists
-            if (!string.IsNullOrEmpty(richTextBoxXmlContent.Text))
-            {
-                SaveCurrentState();
-            }
+            InitializeAutoSave();
+            InitializeLineNumbers();
+            ApplyLightTheme(); // Default: light theme
         }
 
-        #region [ AutoSaveTimer ]
+        // ════════════════════════════════════════════════════════════════════
+        #region AutoSave
+        // ════════════════════════════════════════════════════════════════════
+
         private void InitializeAutoSave()
         {
-            autoSaveTimer = new Timer
-            {
-                Interval = 1800000 // 30 Min
-            };
-            autoSaveTimer.Tick += AutoSaveTimer_Tick;
-            autoSaveTimer.Tag = DateTime.Now;
+            _autoSaveTimer = new Timer { Interval = 1_800_000 }; // 30 Min
+            _autoSaveTimer.Tag = DateTime.Now;
+            _autoSaveTimer.Tick += AutoSaveTimer_Tick;
         }
 
         private void AutoSaveTimer_Tick(object sender, EventArgs e)
         {
-            autoSaveTimer.Tag = DateTime.Now;
-
-            if (!string.IsNullOrEmpty(currentFilePath))
+            _autoSaveTimer.Tag = DateTime.Now;
+            if (!string.IsNullOrEmpty(_currentFilePath))
             {
-                File.WriteAllText(currentFilePath, richTextBoxXmlContent.Text);
-                UpdateStatus("Auto-saved at " + DateTime.Now.ToString("HH:mm:ss"));
-                MessageBox.Show("Auto-save completed!", "Auto-Save", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            }
-            else
-            {
-                MessageBox.Show("No file loaded to auto-save.", "Auto-Save Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                File.WriteAllText(_currentFilePath, richTextBoxXmlContent.Text);
+                SetStatus("Auto-saved at " + DateTime.Now.ToString("HH:mm:ss"));
             }
         }
-        #endregion
 
-        #region [ checkBoxAutoSave_CheckedChanged ]
         private void checkBoxAutoSave_CheckedChanged(object sender, EventArgs e)
         {
             if (checkBoxAutoSave.Checked)
-            {
-                autoSaveTimer.Start();
-                MessageBox.Show("Auto-save has been enabled.", "Auto-Save", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            }
+                _autoSaveTimer.Start();
             else
-            {
-                autoSaveTimer.Stop();
-                MessageBox.Show("Auto-save has been disabled.", "Auto-Save", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            }
+                _autoSaveTimer.Stop();
+
+            SetStatus(checkBoxAutoSave.Checked ? "Auto-save enabled." : "Auto-save disabled.");
         }
-        #endregion
 
-        #region [ KeyDown Handler for Function Keys ]
-        private void EditorXML_KeyDown(object sender, KeyEventArgs e)
-        {
-            if (e.KeyCode == Keys.F3)
-            {
-                e.Handled = true;
-                e.SuppressKeyPress = true;
-                findToolStripMenuItem_Click(sender, EventArgs.Empty);
-            }
-            else if (e.KeyCode == Keys.F5)
-            {
-                e.Handled = true;
-                e.SuppressKeyPress = true;
-                resetToolStripMenuItem_Click(sender, EventArgs.Empty);
-            }
-            else if (e.KeyCode == Keys.F6)
-            {
-                e.Handled = true;
-                e.SuppressKeyPress = true;
-                designToolStripMenuItem_Click(sender, EventArgs.Empty);
-            }
-            else if (e.KeyCode == Keys.F7)
-            {
-                e.Handled = true;
-                e.SuppressKeyPress = true;
-                printToolStripMenuItem_Click(sender, EventArgs.Empty);
-            }
-            else if (e.KeyCode == Keys.F8)
-            {
-                e.Handled = true;
-                e.SuppressKeyPress = true;
-                saveToolStripMenuItem_Click(sender, EventArgs.Empty);
-            }
-            if (e.KeyCode == Keys.F10)
-            {
-                e.Handled = true;
-                e.SuppressKeyPress = true;
-                ShowAutoSaveInformation();
-            }
-            if (e.Control && e.KeyCode == Keys.Z)
-            {
-                e.SuppressKeyPress = true; // Suppress the standard sound
-                undoToolStripMenuItem_Click(sender, e);
-            }
-            else if (e.Control && e.KeyCode == Keys.Y)
-            {
-                e.SuppressKeyPress = true;
-                redoToolStripMenuItem_Click(sender, e);
-            }
-        }
-        #endregion
-
-        #region [ resetToolStripMenuItem_Click ]
-        private void resetToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            ResetState();
-            _searchText = string.Empty;
-            toolStripTextBoxFind.Text = string.Empty;
-            UpdateStatus("Reset complete. Ready for new search.");
-        }
-        #endregion
-
-        #region [ loadToolStripMenuItem_Click ]
-        private void loadToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            string initialDirectory = checkBoxOutputPath.Checked ? outputPath : Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\UoFiddler";
-            OpenFileDialog openFileDialog = new OpenFileDialog
-            {
-                Filter = "XML Files|*.xml",
-                Title = "Select an XML File",
-                InitialDirectory = initialDirectory
-            };
-
-            if (openFileDialog.ShowDialog() == DialogResult.OK)
-            {
-                try
-                {
-                    currentFilePath = openFileDialog.FileName;
-                    string xmlContent = File.ReadAllText(openFileDialog.FileName);
-
-                    if (checkBoxXMLFormatted.Checked)
-                    {
-                        richTextBoxXmlContent.Rtf = ConvertXmlToRtf(xmlContent);
-                    }
-                    else
-                    {
-                        richTextBoxXmlContent.Text = xmlContent; // Show original content without conversion
-                    }
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"Error loading file: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
-            }
-        }
-        #endregion
-
-        #region [ saveToolStripMenuItem_Click ]
-        private void saveToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            string initialDirectory = checkBoxOutputPath.Checked ? outputPath : Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\UoFiddler";
-            SaveFileDialog saveFileDialog = new SaveFileDialog
-            {
-                Filter = "XML Files|*.xml",
-                Title = "Save XML File",
-                InitialDirectory = initialDirectory
-            };
-
-            if (saveFileDialog.ShowDialog() == DialogResult.OK)
-            {
-                try
-                {
-                    File.WriteAllText(saveFileDialog.FileName, richTextBoxXmlContent.Text);
-                    currentFilePath = saveFileDialog.FileName;
-                    MessageBox.Show("File saved successfully.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"Error saving file: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
-            }
-        }
-        #endregion
-
-        #region [ ShowSaveInformation ]
         private void ShowAutoSaveInformation()
         {
-            if (string.IsNullOrEmpty(currentFilePath))
+            if (string.IsNullOrEmpty(_currentFilePath))
             {
-                MessageBox.Show("No file is currently loaded.", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show("No file loaded.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
 
-            FileInfo fileInfo = new FileInfo(currentFilePath);
-            DateTime timerStart = (DateTime)autoSaveTimer.Tag;
-            TimeSpan timeElapsed = DateTime.Now - timerStart;
-            int timeRemainingInSeconds = autoSaveTimer.Interval / 1000 - (int)timeElapsed.TotalSeconds;
-
-            if (timeRemainingInSeconds < 0) timeRemainingInSeconds = 0;
-            int minutesRemaining = timeRemainingInSeconds / 60;
-            int secondsRemaining = timeRemainingInSeconds % 60;
+            var fi = new FileInfo(_currentFilePath);
+            var elapsed = DateTime.Now - (DateTime)_autoSaveTimer.Tag;
+            int remaining = Math.Max(0, _autoSaveTimer.Interval / 1000 - (int)elapsed.TotalSeconds);
 
             MessageBox.Show(
                 $"Auto-Save Information:\n\n" +
-                $"- Directory: {fileInfo.DirectoryName}\n" +
-                $"- File Name: {fileInfo.Name}\n" +
-                $"- File Size: {fileInfo.Length / 1024} KB\n" +
-                $"- Last Modified: {fileInfo.LastWriteTime}\n" +
-                $"- Time Remaining: {minutesRemaining} minutes and {secondsRemaining} seconds\n",
-                "Auto-Save Status",
-                MessageBoxButtons.OK,
-                MessageBoxIcon.Information
-            );
+                $"Directory  : {fi.DirectoryName}\n" +
+                $"Filename   : {fi.Name}\n" +
+                $"Size       : {fi.Length / 1024} KB\n" +
+                $"Changed    : {fi.LastWriteTime}\n" +
+                $"Remaining  : {remaining / 60} Min {remaining % 60} Sek",
+                "Auto-Save Status", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
+
         #endregion
 
-        #region [ printToolStripMenuItem_Click ]
-        private void printToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            PrintDocument printDocument = new PrintDocument();
-            printDocument.PrintPage += printDocument_PrintPage;
+        // ════════════════════════════════════════════════════════════════════
+        #region Undo / Redo  (Debounced Snapshots)
+        // ════════════════════════════════════════════════════════════════════
 
-            PrintDialog printDialog = new PrintDialog
+        /// <summary>Called after UndoDebounceM's pause to save a snapshot.</summary>
+        private void ScheduleUndoSnapshot()
+        {
+            _undoDebounceTimer?.Dispose();
+            _undoDebounceTimer = new System.Threading.Timer(_ =>
             {
-                Document = printDocument
+                Invoke((Action)TakeUndoSnapshot);
+            }, null, UndoDebounceMs, System.Threading.Timeout.Infinite);
+        }
+
+        private void TakeUndoSnapshot()
+        {
+            string current = richTextBoxXmlContent.Text;
+            if (current == _lastSavedSnapshot) return;
+
+            _undoStack.Push(_lastSavedSnapshot);
+            _redoStack.Clear();
+            _lastSavedSnapshot = current;
+            UpdateUndoRedoMenu();
+        }
+
+        private void undoToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (_undoStack.Count == 0) return;
+
+            _undoDebounceTimer?.Dispose(); // cancel the running timer
+            _isManualChange = false;
+            _redoStack.Push(_lastSavedSnapshot);
+            _lastSavedSnapshot = _undoStack.Pop();
+            richTextBoxXmlContent.Text = _lastSavedSnapshot;
+            _isManualChange = true;
+            UpdateUndoRedoMenu();
+        }
+
+        private void redoToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (_redoStack.Count == 0) return;
+
+            _undoDebounceTimer?.Dispose();
+            _isManualChange = false;
+            _undoStack.Push(_lastSavedSnapshot);
+            _lastSavedSnapshot = _redoStack.Pop();
+            richTextBoxXmlContent.Text = _lastSavedSnapshot;
+            _isManualChange = true;
+            UpdateUndoRedoMenu();
+        }
+
+        private void UpdateUndoRedoMenu()
+        {
+            undoToolStripMenuItem.Enabled = _undoStack.Count > 0;
+            redoToolStripMenuItem.Enabled = _redoStack.Count > 0;
+        }
+
+        #endregion
+
+        // ════════════════════════════════════════════════════════════════════
+        #region Line numbers
+        // ════════════════════════════════════════════════════════════════════
+
+        private void InitializeLineNumbers()
+        {
+            richTextBoxXmlContent.SelectionChanged += (s, e) => UpdateLineHighlight();
+            richTextBoxXmlContent.VScroll += (s, e) => lineNumberPanel.Invalidate();
+        }
+
+        private void lineNumberPanel_Paint(object sender, PaintEventArgs e)
+        {
+            e.Graphics.Clear(_isDarkMode ? Color.FromArgb(40, 40, 40) : Color.FromArgb(240, 240, 240));
+
+            int firstChar = richTextBoxXmlContent.GetCharIndexFromPosition(new Point(0, 0));
+            int lastChar = richTextBoxXmlContent.GetCharIndexFromPosition(
+                new Point(0, richTextBoxXmlContent.ClientSize.Height - 1));
+
+            int firstLine = richTextBoxXmlContent.GetLineFromCharIndex(firstChar);
+            int lastLine = richTextBoxXmlContent.GetLineFromCharIndex(lastChar);
+
+            using var font = new Font("Consolas", 9f);
+            using var brush = new SolidBrush(_isDarkMode ? Color.FromArgb(130, 130, 130) : Color.FromArgb(100, 100, 100));
+            using var highlightBrush = new SolidBrush(_isDarkMode ? Color.FromArgb(60, 100, 140) : Color.FromArgb(200, 220, 255));
+
+            int currentLine = richTextBoxXmlContent.GetLineFromCharIndex(richTextBoxXmlContent.SelectionStart);
+
+            for (int i = firstLine; i <= lastLine && i < richTextBoxXmlContent.Lines.Length; i++)
+            {
+                int charIdx = richTextBoxXmlContent.GetFirstCharIndexFromLine(i);
+                Point pos = richTextBoxXmlContent.GetPositionFromCharIndex(charIdx);
+
+                if (i == currentLine)
+                    e.Graphics.FillRectangle(highlightBrush, 0, pos.Y, lineNumberPanel.Width, font.Height + 2);
+
+                // Bookmark-Markierung
+                if (_bookmarks.Contains(i + 1))
+                {
+                    using var bmBrush = new SolidBrush(Color.FromArgb(255, 180, 0));
+                    e.Graphics.FillEllipse(bmBrush, 2, pos.Y + 2, 8, 8);
+                }
+
+                string lineNum = (i + 1).ToString();
+                var size = e.Graphics.MeasureString(lineNum, font);
+                e.Graphics.DrawString(lineNum, font, brush,
+                    lineNumberPanel.Width - size.Width - 3, pos.Y);
+            }
+        }
+
+        private void UpdateLineHighlight()
+        {
+            lineNumberPanel.Invalidate();
+            int line = richTextBoxXmlContent.GetLineFromCharIndex(richTextBoxXmlContent.SelectionStart) + 1;
+            toolStripStatusLabelLine.Text = $"Line: {line}";
+        }
+
+        #endregion
+
+        // ════════════════════════════════════════════════════════════════════
+        #region Select line, edit, insert, jump
+        // ════════════════════════════════════════════════════════════════════
+
+        /// <summary>Select the entire current line (double-click on the line number).</summary>
+        private void lineNumberPanel_MouseClick(object sender, MouseEventArgs e)
+        {
+            Point pt = new Point(0, e.Y);
+            int charIdx = richTextBoxXmlContent.GetCharIndexFromPosition(pt);
+            int lineIdx = richTextBoxXmlContent.GetLineFromCharIndex(charIdx);
+
+            if (e.Button == MouseButtons.Left)
+                SelectLine(lineIdx);
+            else if (e.Button == MouseButtons.Right)
+                ShowLineContextMenu(lineIdx, e.Location);
+        }
+
+        private void SelectLine(int lineIndex)
+        {
+            if (lineIndex < 0 || lineIndex >= richTextBoxXmlContent.Lines.Length) return;
+
+            int start = richTextBoxXmlContent.GetFirstCharIndexFromLine(lineIndex);
+            int length = richTextBoxXmlContent.Lines[lineIndex].Length;
+            richTextBoxXmlContent.Select(start, length);
+            richTextBoxXmlContent.Focus();
+        }
+
+        private void ShowLineContextMenu(int lineIndex, Point panelPos)
+        {
+            var menu = new ContextMenuStrip();
+
+            menu.Items.Add("Select line", null, (s, e) => SelectLine(lineIndex));
+            menu.Items.Add("Edit line...", null, (s, e) => EditLineDialog(lineIndex));
+            menu.Items.Add("Insert line before", null, (s, e) => InsertLineAt(lineIndex, before: true));
+            menu.Items.Add("Insert line after that", null, (s, e) => InsertLineAt(lineIndex, before: false));
+            menu.Items.Add(new ToolStripSeparator());
+
+            bool hasBookmark = _bookmarks.Contains(lineIndex + 1);
+            menu.Items.Add(hasBookmark ? "Remove bookmarks" : "Bookmark", null, (s, e) =>
+            {
+                if (hasBookmark) _bookmarks.Remove(lineIndex + 1);
+                else _bookmarks.Add(lineIndex + 1);
+                lineNumberPanel.Invalidate();
+            });
+
+            menu.Items.Add(new ToolStripSeparator());
+            menu.Items.Add("Delete line", null, (s, e) => DeleteLine(lineIndex));
+
+            menu.Show(lineNumberPanel, panelPos);
+        }
+
+        private void EditLineDialog(int lineIndex)
+        {
+            if (lineIndex < 0 || lineIndex >= richTextBoxXmlContent.Lines.Length) return;
+
+            string originalLine = richTextBoxXmlContent.Lines[lineIndex];
+
+            using var form = new Form
+            {
+                Text = $"Line {lineIndex + 1} edit",
+                Width = 650,
+                Height = 140,
+                FormBorderStyle = FormBorderStyle.FixedDialog,
+                MaximizeBox = false,
+                MinimizeBox = false,
+                StartPosition = FormStartPosition.CenterParent
             };
 
-            if (printDialog.ShowDialog() == DialogResult.OK)
+            var tb = new TextBox
             {
-                try
+                Text = originalLine,
+                Dock = DockStyle.Top,
+                Font = new Font("Consolas", 10f),
+                Margin = new Padding(8)
+            };
+
+            var panel = new FlowLayoutPanel
+            {
+                Dock = DockStyle.Bottom,
+                FlowDirection = FlowDirection.RightToLeft,
+                Height = 40
+            };
+
+            var btnOk = new Button { Text = "take over", Width = 110, Height = 28, DialogResult = DialogResult.OK };
+            var btnCancel = new Button { Text = "Cancel", Width = 90, Height = 28, DialogResult = DialogResult.Cancel };
+
+            panel.Controls.Add(btnOk);
+            panel.Controls.Add(btnCancel);
+            form.Controls.Add(tb);
+            form.Controls.Add(panel);
+            form.AcceptButton = btnOk;
+            form.CancelButton = btnCancel;
+            tb.SelectAll();
+            tb.Focus();
+
+            if (form.ShowDialog() != DialogResult.OK) return;
+
+            var lines = richTextBoxXmlContent.Lines.ToList();
+            lines[lineIndex] = tb.Text;
+            SetTextPreserveUndo(string.Join("\n", lines));
+        }
+
+        private void InsertLineAt(int lineIndex, bool before)
+        {
+            using var form = new Form
+            {
+                Text = before ? "Insert new line (before)" : "Insert new line (afterwards)",
+                Width = 650,
+                Height = 140,
+                FormBorderStyle = FormBorderStyle.FixedDialog,
+                MaximizeBox = false,
+                MinimizeBox = false,
+                StartPosition = FormStartPosition.CenterParent
+            };
+
+            var tb = new TextBox
+            {
+                Dock = DockStyle.Top,
+                Font = new Font("Consolas", 10f),
+                PlaceholderText = "Enter XML line...."
+            };
+
+            var panel = new FlowLayoutPanel
+            {
+                Dock = DockStyle.Bottom,
+                FlowDirection = FlowDirection.RightToLeft,
+                Height = 40
+            };
+
+            var btnOk = new Button { Text = "Insert", Width = 90, Height = 28, DialogResult = DialogResult.OK };
+            var btnCancel = new Button { Text = "Cancel", Width = 90, Height = 28, DialogResult = DialogResult.Cancel };
+
+            panel.Controls.Add(btnOk);
+            panel.Controls.Add(btnCancel);
+            form.Controls.Add(tb);
+            form.Controls.Add(panel);
+            form.AcceptButton = btnOk;
+            form.CancelButton = btnCancel;
+            tb.Focus();
+
+            if (form.ShowDialog() != DialogResult.OK || string.IsNullOrEmpty(tb.Text)) return;
+
+            var lines = richTextBoxXmlContent.Lines.ToList();
+            int insertAt = before ? lineIndex : lineIndex + 1;
+            lines.Insert(insertAt, tb.Text);
+            SetTextPreserveUndo(string.Join("\n", lines));
+        }
+
+        private void DeleteLine(int lineIndex)
+        {
+            if (lineIndex < 0 || lineIndex >= richTextBoxXmlContent.Lines.Length) return;
+            if (MessageBox.Show($"Line {lineIndex + 1} delete?", "Confirm",
+                MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes) return;
+
+            var lines = richTextBoxXmlContent.Lines.ToList();
+            lines.RemoveAt(lineIndex);
+            SetTextPreserveUndo(string.Join("\n", lines));
+        }
+
+        private void SetTextPreserveUndo(string newText)
+        {
+            TakeUndoSnapshot(); // Immediate snapshot before the change
+            _isManualChange = false;
+            richTextBoxXmlContent.Text = newText;
+            _lastSavedSnapshot = newText;
+            _isManualChange = true;
+        }
+
+        #endregion
+
+        // ════════════════════════════════════════════════════════════════════
+        #region Go to row
+        // ════════════════════════════════════════════════════════════════════
+
+        private void goToLineToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            using var form = new Form
+            {
+                Text = "Go to row",
+                Width = 300,
+                Height = 110,
+                FormBorderStyle = FormBorderStyle.FixedDialog,
+                MaximizeBox = false,
+                MinimizeBox = false,
+                StartPosition = FormStartPosition.CenterParent
+            };
+
+            var lbl = new Label { Text = $"Line (1–{richTextBoxXmlContent.Lines.Length}):", Top = 15, Left = 10, Width = 180 };
+            var tb = new TextBox { Top = 12, Left = 195, Width = 80 };
+            var btnOk = new Button { Text = "OK", Top = 45, Left = 100, Width = 80, DialogResult = DialogResult.OK };
+            form.Controls.AddRange(new Control[] { lbl, tb, btnOk });
+            form.AcceptButton = btnOk;
+            tb.Focus();
+
+            if (form.ShowDialog() != DialogResult.OK) return;
+            if (!int.TryParse(tb.Text, out int lineNum)) return;
+
+            lineNum = Math.Max(1, Math.Min(lineNum, richTextBoxXmlContent.Lines.Length));
+            int charIdx = richTextBoxXmlContent.GetFirstCharIndexFromLine(lineNum - 1);
+            richTextBoxXmlContent.SelectionStart = charIdx;
+            richTextBoxXmlContent.SelectionLength = 0;
+            richTextBoxXmlContent.ScrollToCaret();
+            richTextBoxXmlContent.Focus();
+        }
+
+        #endregion
+
+        // ════════════════════════════════════════════════════════════════════
+        #region Bookmarks
+        // ════════════════════════════════════════════════════════════════════
+
+        private void toggleBookmarkToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            int line = richTextBoxXmlContent.GetLineFromCharIndex(richTextBoxXmlContent.SelectionStart) + 1;
+            if (_bookmarks.Contains(line)) _bookmarks.Remove(line);
+            else _bookmarks.Add(line);
+            lineNumberPanel.Invalidate();
+            SetStatus(_bookmarks.Contains(line) ? $"Bookmarked: line {line}" : $"Bookmark removed: line {line}");
+        }
+
+        private void nextBookmarkToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (_bookmarks.Count == 0) { SetStatus("No bookmarks set."); return; }
+            int current = richTextBoxXmlContent.GetLineFromCharIndex(richTextBoxXmlContent.SelectionStart) + 1;
+            int next = _bookmarks.Where(b => b > current).DefaultIfEmpty(_bookmarks.Min()).Min();
+            int charIdx = richTextBoxXmlContent.GetFirstCharIndexFromLine(next - 1);
+            richTextBoxXmlContent.SelectionStart = charIdx;
+            richTextBoxXmlContent.ScrollToCaret();
+        }
+
+        private void prevBookmarkToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (_bookmarks.Count == 0) { SetStatus("No bookmarks set."); return; }
+            int current = richTextBoxXmlContent.GetLineFromCharIndex(richTextBoxXmlContent.SelectionStart) + 1;
+            int prev = _bookmarks.Where(b => b < current).DefaultIfEmpty(_bookmarks.Max()).Max();
+            int charIdx = richTextBoxXmlContent.GetFirstCharIndexFromLine(prev - 1);
+            richTextBoxXmlContent.SelectionStart = charIdx;
+            richTextBoxXmlContent.ScrollToCaret();
+        }
+
+        private void clearBookmarksToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            _bookmarks.Clear();
+            lineNumberPanel.Invalidate();
+            SetStatus("All bookmarks deleted.");
+        }
+
+        #endregion
+
+        // ════════════════════════════════════════════════════════════════════
+        #region XML Validierung
+        // ════════════════════════════════════════════════════════════════════
+
+        private void validateXmlToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (string.IsNullOrWhiteSpace(richTextBoxXmlContent.Text))
+            {
+                MessageBox.Show("No content to validate.", "XML validation", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            try
+            {
+                XDocument.Parse(richTextBoxXmlContent.Text);
+                SetStatus("XML is valid.");
+                MessageBox.Show("XML is well-formed and valid.", "XML validation", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            catch (XmlException ex)
+            {
+                string msg = $"XML error in line {ex.LineNumber}, Line {ex.LinePosition}:\n{ex.Message}";
+                SetStatus($"XML error: Line {ex.LineNumber}");
+                MessageBox.Show(msg, "XML validation failed", MessageBoxButtons.OK, MessageBoxIcon.Error);
+
+                // Direkt zur Fehlerzeile springen
+                if (ex.LineNumber > 0 && ex.LineNumber <= richTextBoxXmlContent.Lines.Length)
                 {
-                    printDocument.Print();
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"Error printing document: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    int charIdx = richTextBoxXmlContent.GetFirstCharIndexFromLine(ex.LineNumber - 1);
+                    richTextBoxXmlContent.SelectionStart = charIdx;
+                    richTextBoxXmlContent.ScrollToCaret();
                 }
             }
         }
 
-        private void printDocument_PrintPage(object sender, PrintPageEventArgs e)
-        {
-            e.Graphics.DrawString(richTextBoxXmlContent.Text, new Font("Arial", 12), Brushes.Black, new RectangleF(0, 0, e.PageBounds.Width, e.PageBounds.Height));
-        }
         #endregion
 
-        #region [ findToolStripMenuItem_Click ]
+        // ════════════════════════════════════════════════════════════════════
+        #region XML Pretty Print / Minify
+        // ════════════════════════════════════════════════════════════════════
+
+        private void prettyPrintToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                var xdoc = XDocument.Parse(richTextBoxXmlContent.Text);
+                var sb = new StringBuilder();
+                using var writer = new StringWriter(sb);
+                xdoc.Save(writer);
+                SetTextPreserveUndo(sb.ToString());
+                SetStatus("XML formatted (Pretty Print).");
+            }
+            catch (XmlException ex)
+            {
+                MessageBox.Show($"Formatting failed:\n{ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void minifyXmlToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                var xdoc = XDocument.Parse(richTextBoxXmlContent.Text);
+                var sb = new StringBuilder();
+                var settings = new XmlWriterSettings { Indent = false, NewLineHandling = NewLineHandling.None };
+                using var writer = XmlWriter.Create(sb, settings);
+                xdoc.WriteTo(writer);
+                SetTextPreserveUndo(sb.ToString());
+                SetStatus("XML minimized (Minify).");
+            }
+            catch (XmlException ex)
+            {
+                MessageBox.Show($"Minify failed:\n{ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        #endregion
+
+        // ════════════════════════════════════════════════════════════════════
+        #region Syntax-Highlighting
+        // ════════════════════════════════════════════════════════════════════
+
+        private bool _highlightingInProgress = false;
+
+        private void ApplySyntaxHighlighting()
+        {
+            if (_highlightingInProgress) return;
+            _highlightingInProgress = true;
+            _isManualChange = false;
+
+            int savedSelStart = richTextBoxXmlContent.SelectionStart;
+            int savedSelLen = richTextBoxXmlContent.SelectionLength;
+
+            richTextBoxXmlContent.SuspendLayout();
+            richTextBoxXmlContent.SelectAll();
+            richTextBoxXmlContent.SelectionColor = _isDarkMode ? Color.FromArgb(220, 220, 220) : Color.Black;
+
+            string text = richTextBoxXmlContent.Text;
+
+            // Farben je nach Theme
+            Color colorTag = _isDarkMode ? Color.FromArgb(86, 156, 214) : Color.FromArgb(0, 0, 200);
+            Color colorAttrName = _isDarkMode ? Color.FromArgb(156, 220, 254) : Color.FromArgb(120, 0, 0);
+            Color colorAttrValue = _isDarkMode ? Color.FromArgb(206, 145, 120) : Color.FromArgb(0, 128, 0);
+            Color colorComment = _isDarkMode ? Color.FromArgb(106, 153, 85) : Color.FromArgb(0, 128, 0);
+            Color colorDecl = _isDarkMode ? Color.FromArgb(200, 200, 100) : Color.FromArgb(128, 128, 0);
+
+            HighlightMatches(text, @"<!--[\s\S]*?-->", colorComment);
+            HighlightMatches(text, @"<\?[\s\S]*?\?>", colorDecl);
+            HighlightMatches(text, @"</?[\w:.]+", colorTag);
+            HighlightMatches(text, @"\b[\w:]+(?=\s*=)", colorAttrName);
+            HighlightMatches(text, @"""[^""]*""", colorAttrValue);
+            HighlightMatches(text, @"[<>/]", colorTag);
+
+            richTextBoxXmlContent.SelectionStart = savedSelStart;
+            richTextBoxXmlContent.SelectionLength = savedSelLen;
+            richTextBoxXmlContent.ResumeLayout();
+
+            _isManualChange = true;
+            _highlightingInProgress = false;
+        }
+
+        private void HighlightMatches(string text, string pattern, Color color)
+        {
+            foreach (Match m in Regex.Matches(text, pattern, RegexOptions.Singleline))
+            {
+                richTextBoxXmlContent.Select(m.Index, m.Length);
+                richTextBoxXmlContent.SelectionColor = color;
+            }
+        }
+
+        private void checkBoxSyntaxHighlight_CheckedChanged(object sender, EventArgs e)
+        {
+            if (checkBoxSyntaxHighlight.Checked)
+                ApplySyntaxHighlighting();
+            else
+                ResetTextColor();
+        }
+
+        private void ResetTextColor()
+        {
+            _isManualChange = false;
+            richTextBoxXmlContent.SelectAll();
+            richTextBoxXmlContent.SelectionColor = _isDarkMode ? Color.FromArgb(220, 220, 220) : Color.Black;
+            richTextBoxXmlContent.SelectionStart = 0;
+            richTextBoxXmlContent.SelectionLength = 0;
+            _isManualChange = true;
+        }
+
+        #endregion
+
+        // ════════════════════════════════════════════════════════════════════
+        #region Theme (Hell / Dunkel)
+        // ════════════════════════════════════════════════════════════════════
+
+        private void ApplyLightTheme()
+        {
+            _isDarkMode = false;
+            BackColor = SystemColors.Control;
+            richTextBoxXmlContent.BackColor = Color.White;
+            richTextBoxXmlContent.ForeColor = Color.Black;
+            lineNumberPanel.BackColor = Color.FromArgb(240, 240, 240);
+            menuStripXMLEdit.BackColor = SystemColors.Control;
+            menuStripXMLEdit.ForeColor = SystemColors.ControlText;
+            statusStripXMLEditor.BackColor = SystemColors.Control;
+            contextMenuStripXMLEdit.BackColor = SystemColors.Control;
+            contextMenuStripXMLEdit.ForeColor = SystemColors.ControlText;
+            darkModeToolStripMenuItem.Text = "Dark Mode";
+            if (checkBoxSyntaxHighlight?.Checked == true) ApplySyntaxHighlighting();
+            lineNumberPanel.Invalidate();
+        }
+
+        private void ApplyDarkTheme()
+        {
+            _isDarkMode = true;
+            BackColor = Color.FromArgb(41, 44, 51);
+            richTextBoxXmlContent.BackColor = Color.FromArgb(30, 30, 30);
+            richTextBoxXmlContent.ForeColor = Color.FromArgb(220, 220, 220);
+            lineNumberPanel.BackColor = Color.FromArgb(40, 40, 40);
+            menuStripXMLEdit.BackColor = Color.FromArgb(45, 45, 48);
+            menuStripXMLEdit.ForeColor = Color.FromArgb(220, 220, 220);
+            statusStripXMLEditor.BackColor = Color.FromArgb(45, 45, 48);
+            contextMenuStripXMLEdit.BackColor = Color.FromArgb(30, 30, 30);
+            contextMenuStripXMLEdit.ForeColor = Color.White;
+            darkModeToolStripMenuItem.Text = "Light Mode";
+            if (checkBoxSyntaxHighlight?.Checked == true) ApplySyntaxHighlighting();
+            lineNumberPanel.Invalidate();
+        }
+
+        private void designToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (_isDarkMode) ApplyLightTheme();
+            else ApplyDarkTheme();
+        }
+
+        #endregion
+
+        // ════════════════════════════════════════════════════════════════════
+        #region TextChanged & Statistik
+        // ════════════════════════════════════════════════════════════════════
+
+        private void richTextBoxXmlContent_TextChanged(object sender, EventArgs e)
+        {
+            if (!_isManualChange) return;
+            ScheduleUndoSnapshot();
+            UpdateTextStatistics();
+            if (checkBoxSyntaxHighlight.Checked)
+                ApplySyntaxHighlighting();
+        }
+
+        private void UpdateTextStatistics()
+        {
+            int words = richTextBoxXmlContent.Text
+                .Split(new[] { ' ', '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries).Length;
+            int chars = richTextBoxXmlContent.Text.Length;
+            int lines = richTextBoxXmlContent.Lines.Length;
+            int tags = Regex.Matches(richTextBoxXmlContent.Text, @"<[^>]+>").Count;
+            toolStripStatusLabelTextStatistics.Text =
+                $"Words: {words}  Sign: {chars}  lines: {lines}  XML-Tags: {tags}";
+        }
+
+        #endregion
+
+        // ════════════════════════════════════════════════════════════════════
+        #region Load / save / print file
+        // ════════════════════════════════════════════════════════════════════
+
+        private void loadToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            string initDir = checkBoxOutputPath.Checked
+                ? _outputPath
+                : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "UoFiddler");
+
+            using var dlg = new OpenFileDialog { Filter = "XML files|*.xml", Title = "XML-files open", InitialDirectory = initDir };
+            if (dlg.ShowDialog() != DialogResult.OK) return;
+
+            try
+            {
+                _currentFilePath = dlg.FileName;
+                string content = File.ReadAllText(dlg.FileName);
+                _lastSavedSnapshot = content;
+                _undoStack.Clear();
+                _redoStack.Clear();
+
+                _isManualChange = false;
+                if (checkBoxXMLFormatted.Checked)
+                    richTextBoxXmlContent.Rtf = ConvertXmlToRtf(content);
+                else
+                    richTextBoxXmlContent.Text = content;
+                _isManualChange = true;
+
+                UpdateUndoRedoMenu();
+                SetStatus($"Geladen: {Path.GetFileName(dlg.FileName)}");
+                UpdateTextStatistics();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error loading:\n{ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void saveToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (!string.IsNullOrEmpty(_currentFilePath))
+            {
+                SaveToPath(_currentFilePath);
+                return;
+            }
+            saveAsToolStripMenuItem_Click(sender, e);
+        }
+
+        private void saveAsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            string initDir = checkBoxOutputPath.Checked
+                ? _outputPath
+                : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "UoFiddler");
+
+            using var dlg = new SaveFileDialog { Filter = "XML files|*.xml", Title = "Save XML file", InitialDirectory = initDir };
+            if (dlg.ShowDialog() != DialogResult.OK) return;
+            _currentFilePath = dlg.FileName;
+            SaveToPath(_currentFilePath);
+        }
+
+        private void SaveToPath(string path)
+        {
+            try
+            {
+                File.WriteAllText(path, richTextBoxXmlContent.Text);
+                SetStatus($"Saved: {Path.GetFileName(path)}");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error saving:\n{ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void printToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var doc = new PrintDocument();
+            doc.PrintPage += (s, ev) =>
+                ev.Graphics.DrawString(richTextBoxXmlContent.Text,
+                    new Font("Consolas", 9), Brushes.Black,
+                    new RectangleF(0, 0, ev.PageBounds.Width, ev.PageBounds.Height));
+
+            using var dlg = new PrintDialog { Document = doc };
+            if (dlg.ShowDialog() == DialogResult.OK) doc.Print();
+        }
+
+        #endregion
+
+        // ════════════════════════════════════════════════════════════════════
+        #region Find & Replace
+        // ════════════════════════════════════════════════════════════════════
+
         private void findToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (string.IsNullOrEmpty(toolStripTextBoxFind.Text))
-                return;
+            string query = toolStripTextBoxFind.Text.Trim();
+            if (string.IsNullOrEmpty(query)) return;
 
-            if (_searchText != toolStripTextBoxFind.Text.Trim())
+            if (_searchText != query)
             {
-                ResetState();
-                _searchText = toolStripTextBoxFind.Text.Trim();
+                ResetSearch();
+                _searchText = query;
                 CountOccurrences();
             }
 
-            int searchStartIndex = _lastIndex + 1;
-            StringComparison comparison = _caseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase;
+            int start = _lastSearchIndex + 1;
+            StringComparison cmp = _caseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase;
 
             if (_useRegex)
             {
                 try
                 {
-                    Regex regex = new Regex(_searchText, _caseSensitive ? RegexOptions.None : RegexOptions.IgnoreCase);
-                    Match match = regex.Match(richTextBoxXmlContent.Text, searchStartIndex);
-                    if (match.Success)
-                    {
-                        _lastIndex = match.Index;
-                        HighlightWord(_lastIndex, match.Length);
-                        UpdateStatus($"Regex match found at position: {_lastIndex + 1}");
-                    }
-                    else
-                    {
-                        MessageBox.Show("End of document reached. Start over?", "End of Search", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
-                        ResetState();
-                    }
+                    var rx = new Regex(_searchText, _caseSensitive ? RegexOptions.None : RegexOptions.IgnoreCase);
+                    var m = rx.Match(richTextBoxXmlContent.Text, start);
+                    if (m.Success) { _lastSearchIndex = m.Index; HighlightFound(_lastSearchIndex, m.Length); }
+                    else { WrapAround(); }
                 }
                 catch (ArgumentException ex)
                 {
-                    MessageBox.Show($"Invalid regex: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show($"Invalid regex:\n{ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
             else
             {
-                _lastIndex = richTextBoxXmlContent.Text.IndexOf(_searchText, searchStartIndex, comparison);
-                if (_lastIndex != -1)
-                {
-                    HighlightWord(_lastIndex, _searchText.Length);
-                    UpdateStatus($"Word '{_searchText}' found at position: {_lastIndex + 1}");
-                }
+                _lastSearchIndex = richTextBoxXmlContent.Text.IndexOf(_searchText, start, cmp);
+                if (_lastSearchIndex != -1)
+                    HighlightFound(_lastSearchIndex, _searchText.Length);
                 else
-                {
-                    MessageBox.Show("End of document reached. Start over?", "End of Search", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
-                    ResetState();
-                }
+                    WrapAround();
             }
         }
 
-        private void HighlightWord(int index, int length)
+        private void WrapAround()
+        {
+            if (MessageBox.Show("End of document. Start over.?",
+                "Search", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+            {
+                _lastSearchIndex = -1;
+                findToolStripMenuItem_Click(null, EventArgs.Empty);
+            }
+            else ResetSearch();
+        }
+
+        private void HighlightFound(int index, int length)
         {
             richTextBoxXmlContent.Select(index, length);
             richTextBoxXmlContent.SelectionBackColor = Color.Yellow;
             richTextBoxXmlContent.ScrollToCaret();
+            SetStatus($"'{_searchText}' found in position {index + 1}");
+            toolStripStatusWord.Text = $"In total: {_foundCount}";
         }
 
-        private void UpdateStatus(string message)
+        private void ResetSearch()
         {
-            toolStripStatusLabelInfo.Text = message;
-            toolStripStatusWord.Text = $"Total {_searchText}: {_foundCount}";
+            ResetHighlighting();
+            _lastSearchIndex = -1;
+            _foundCount = 0;
+            _searchText = string.Empty;
+            toolStripStatusWord.Text = string.Empty;
         }
-        #endregion
 
-        #region [ ResetHighlighting ]
         private void ResetHighlighting()
         {
+            _isManualChange = false;
             richTextBoxXmlContent.SelectAll();
-            richTextBoxXmlContent.SelectionBackColor = Color.White;
+            richTextBoxXmlContent.SelectionBackColor = _isDarkMode ? Color.FromArgb(30, 30, 30) : Color.White;
             richTextBoxXmlContent.SelectionLength = 0;
+            _isManualChange = true;
         }
-        #endregion
 
-        #region [ CountOccurrences ]
         private void CountOccurrences()
         {
             ResetHighlighting();
-            int startIndex = 0;
-            _foundCount = 0;
-            while (startIndex < richTextBoxXmlContent.Text.Length && (startIndex = richTextBoxXmlContent.Text.IndexOf(_searchText, startIndex, StringComparison.OrdinalIgnoreCase)) != -1)
-            {
-                startIndex += _searchText.Length;
-                _foundCount++;
-            }
-            UpdateStatus($"Total occurrences of '{_searchText}': {_foundCount}");
+            int idx = 0; _foundCount = 0;
+            while ((idx = richTextBoxXmlContent.Text.IndexOf(_searchText, idx, StringComparison.OrdinalIgnoreCase)) != -1)
+            { idx += _searchText.Length; _foundCount++; }
+            SetStatus($"'{_searchText}': {_foundCount} Hit");
         }
-        #endregion
 
-        #region [ toolStripTextBoxFind_TextChanged ]
         private void toolStripTextBoxFind_TextChanged(object sender, EventArgs e)
         {
-            ResetState();
-            _searchText = toolStripTextBoxFind.Text.Trim();
-            CountOccurrences();
-        }
-
-        private void ResetState()
-        {
-            ResetHighlighting();
-            _foundCount = 0;
-            toolStripStatusWord.Text = "Total: 0";
-            _lastIndex = -1;
-        }
-        #endregion
-
-        #region [ richTextBoxXmlContent_TextChanged ]
-        private void richTextBoxXmlContent_TextChanged(object sender, EventArgs e)
-        {
-            // Prevent Undo/Redo from triggering the event
-            if (isManualChange)
+            ResetSearch();
+            if (!string.IsNullOrWhiteSpace(toolStripTextBoxFind.Text))
             {
-                SaveCurrentState();
-            }
-            UpdateTextStatistics();
-        }
-        #endregion
-
-        #region [ SaveInitialState ]
-        private void SaveInitialState()
-        {
-            if (isManualChange && undoStack.Count == 0)
-            {
-                undoStack.Push(richTextBoxXmlContent.Text);
+                _searchText = toolStripTextBoxFind.Text.Trim();
+                CountOccurrences();
             }
         }
+
+        private void resetToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            ResetSearch();
+            toolStripTextBoxFind.Text = string.Empty;
+            SetStatus("Search reset.");
+        }
+
+        private void searchAndReplaceToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            using var frm = new SearchReplaceDialog(richTextBoxXmlContent);
+            frm.ShowDialog(this);
+        }
+
         #endregion
 
-        #region [ UpdateTextStatistics ]
-        private void UpdateTextStatistics()
-        {
-            int wordCount = richTextBoxXmlContent.Text.Split(new char[] { ' ', '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries).Length;
-            int characterCount = richTextBoxXmlContent.Text.Length;
-            int lineCount = richTextBoxXmlContent.Lines.Length;
-            int xmlTagCount = Regex.Matches(richTextBoxXmlContent.Text, @"<[^>]+>").Count;
+        // ════════════════════════════════════════════════════════════════════
+        #region Add a row (UO-specific)
+        // ════════════════════════════════════════════════════════════════════
 
-            toolStripStatusLabelTextStatistics.Text = $"Words: {wordCount}, Characters: {characterCount}, Lines: {lineCount}, XML Tags: {xmlTagCount}";
-        }
-        #endregion
-
-        #region [ designToolStripMenuItem ]
-        private void ToggleDarkMode()
-        {
-            if (_isDarkMode)
-            {
-                // Light Mode
-                this.BackColor = SystemColors.Control;
-                richTextBoxXmlContent.BackColor = Color.White;
-                richTextBoxXmlContent.ForeColor = Color.Black;
-                contextMenuStripXMLEdit.BackColor = SystemColors.Control;
-                contextMenuStripXMLEdit.ForeColor = SystemColors.ControlText;
-            }
-            else
-            {
-                // Dark Mode
-                this.BackColor = Color.FromArgb(41, 44, 51);
-                richTextBoxXmlContent.BackColor = Color.FromArgb(30, 30, 30);
-                richTextBoxXmlContent.ForeColor = Color.FromArgb(230, 230, 230);
-                contextMenuStripXMLEdit.BackColor = Color.FromArgb(30, 30, 30);
-                contextMenuStripXMLEdit.ForeColor = Color.White;
-            }
-            _isDarkMode = !_isDarkMode;
-        }
-
-        private void designToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            ToggleDarkMode();
-        }
-        #endregion
-
-        #region [ SaveCurrentState ]
-        private void SaveCurrentState()
-        {
-            if (isManualChange)
-            {
-                undoStack.Push(richTextBoxXmlContent.Text);
-                redoStack.Clear(); // Empty redo stack when a new change is made
-                UpdateMenuState();
-            }
-        }
-        #endregion
-
-        #region [ undoToolStripMenuItem_Click ]
-        private void undoToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            if (undoStack.Count > 0)
-            {
-                isManualChange = false;
-                redoStack.Push(richTextBoxXmlContent.Text);
-                richTextBoxXmlContent.Text = undoStack.Pop();
-                UpdateMenuState();
-                isManualChange = true;
-            }
-        }
-        #endregion
-
-        #region [ redoToolStripMenuItem_Click ]
-        private void redoToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            if (redoStack.Count > 0)
-            {
-                isManualChange = false;
-                undoStack.Push(richTextBoxXmlContent.Text);
-                richTextBoxXmlContent.Text = redoStack.Pop();
-                UpdateMenuState();
-                isManualChange = true;
-            }
-        }
-        #endregion
-
-        #region [ UpdateMenuState ]
-        private void UpdateMenuState()
-        {
-            undoToolStripMenuItem.Enabled = undoStack.Count > 0;
-            redoToolStripMenuItem.Enabled = redoStack.Count > 0;
-        }
-        #endregion
-
-        #region [ ConvertXmlToRtf ]
-        private string ConvertXmlToRtf(string xmlContent)
-        {
-            var rtfBuilder = new System.Text.StringBuilder();
-            rtfBuilder.Append(@"{\rtf1\ansi\deff0{\fonttbl{\f0 Courier New;}}");
-            rtfBuilder.Append(@"{\colortbl ;\red0\green0\blue0;\red0\green0\blue255;\red255\green0\blue0;\red0\green128\blue0;\red128\green128\blue128;}");
-            rtfBuilder.Append(@"\viewkind4\uc1\pard\f0\fs20 ");
-
-            // Process XML declaration once
-            Match xmlDeclarationMatch = Regex.Match(xmlContent, @"<\?xml[^>]+>");
-            if (xmlDeclarationMatch.Success)
-            {
-                rtfBuilder.Append(@"\cf5 "); // Comment color
-                rtfBuilder.Append(EscapeRtf(xmlDeclarationMatch.Value));
-                rtfBuilder.Append(@"\par\cf1 ");
-                xmlContent = xmlContent.Replace(xmlDeclarationMatch.Value, ""); // Remove declaration from main content
-            }
-
-            // Main content of the XML
-            foreach (Match match in Regex.Matches(xmlContent, @"<[^>]+>|<!--.*?-->|[^<]+"))
-            {
-                string fragment = match.Value;
-
-                if (fragment.StartsWith("<"))
-                {
-                    if (fragment.StartsWith("<!--")) // Comments
-                    {
-                        rtfBuilder.Append(@"\cf5 "); // Comment color
-                        rtfBuilder.Append(EscapeRtf(fragment));
-                        rtfBuilder.Append(@"\cf1 ");
-                    }
-                    else if (fragment.StartsWith("</")) // Closing tags
-                    {
-                        rtfBuilder.Append(@"\cf2 "); // Tag color
-                        rtfBuilder.Append(EscapeRtf(fragment));
-                        rtfBuilder.Append(@"\cf1 ");
-                    }
-                    else // Opening tags
-                    {
-                        Match tagNameMatch = Regex.Match(fragment, @"<\s*[^!?/\s>]+");
-                        if (tagNameMatch.Success)
-                        {
-                            rtfBuilder.Append(@"\cf2 "); // Tag color
-                            rtfBuilder.Append(EscapeRtf(tagNameMatch.Value));
-                        }
-
-                        // Process attributes within the tag
-                        foreach (Match attrMatch in Regex.Matches(fragment, @"\b\w+\s*=\s*""[^""]*"""))
-                        {
-                            rtfBuilder.Append(@" "); // Spaces between attributes
-                            rtfBuilder.Append(@"\cf3 "); // Attribute color
-                            rtfBuilder.Append(EscapeRtf(attrMatch.Value));
-                        }
-
-                        // Closing characters of the tag
-                        if (fragment.EndsWith("/>") || fragment.EndsWith(">"))
-                        {
-                            rtfBuilder.Append(@"\cf2 ");
-                            rtfBuilder.Append(EscapeRtf(fragment.EndsWith("/>") ? " />" : ">"));
-                            rtfBuilder.Append(@"\cf1 ");
-                        }
-                    }
-                }
-                else // Text outside tags
-                {
-                    rtfBuilder.Append(EscapeRtf(fragment));
-                }
-            }
-
-            rtfBuilder.Append(@"}");
-            return rtfBuilder.ToString();
-        }
-
-        private string EscapeRtf(string text)
-        {
-            return text.Replace(@"\", @"\\")
-                       .Replace("{", @"\{")
-                       .Replace("}", @"\}")
-                       .Replace("\t", @"\tab ")
-                       .Replace("\n", @"\par ");
-        }
-        #endregion
-
-        #region [ copyClipboardToolStripMenuItem_Click ]
-        private void copyClipboardToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                // Überprüfen, ob es Text in der RichTextBox gibt
-                if (!string.IsNullOrEmpty(richTextBoxXmlContent.Text))
-                {
-                    // Kopieren des Inhalts in den Zwischenspeicher
-                    Clipboard.SetText(richTextBoxXmlContent.Text);
-                    MessageBox.Show("Text copied to clipboard.", "Copy to Clipboard", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                }
-                else
-                {
-                    MessageBox.Show("There is no text to copy.", "Copy to Clipboard", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error copying text to clipboard: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
-        #endregion
-
-        #region [ addNewLineToolStripMenuItem_Click ]        
         private void addNewLineToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            Form addForm = new Form
+            using var form = new Form
             {
-                Text = "Add New Line",
-                Width = 400,
-                Height = 280, // increased height to accommodate the info label
-                FormBorderStyle = FormBorderStyle.FixedDialog, // Fixed border style
-                MaximizeBox = false, // Disable maximize button
-                MinimizeBox = false  // Disable minimize button
+                Text = "Add new mob / equipment",
+                Width = 420,
+                Height = 230,
+                FormBorderStyle = FormBorderStyle.FixedDialog,
+                MaximizeBox = false,
+                MinimizeBox = false,
+                StartPosition = FormStartPosition.CenterParent
             };
 
-            Label labelName = new Label { Text = "Mob Name:", Top = 20, Left = 10, Width = 100 };
-            TextBox textBoxMobName = new TextBox { Top = 20, Left = 120, Width = 250 };
+            int y = 15;
+            Control Lbl(string t, int top) => new Label { Text = t, Top = top, Left = 10, Width = 110 };
+            Control Tb(int top) { var tb = new TextBox { Top = top, Left = 125, Width = 270 }; return tb; }
 
-            Label labelBody = new Label { Text = "Body ID:", Top = 60, Left = 10, Width = 100 };
-            TextBox textBoxBody = new TextBox { Top = 60, Left = 120, Width = 250 };
+            var tbName = (TextBox)Tb(y); form.Controls.Add(Lbl("Mob Name:", y)); form.Controls.Add(tbName); y += 35;
+            var tbBody = (TextBox)Tb(y); form.Controls.Add(Lbl("Body ID:", y)); form.Controls.Add(tbBody); y += 35;
 
-            Label labelType = new Label { Text = "Type:", Top = 100, Left = 10, Width = 100 };
-            ComboBox comboBoxType = new ComboBox
+            var cbType = new ComboBox { Top = y, Left = 125, Width = 270, DropDownStyle = ComboBoxStyle.DropDownList };
+            cbType.Items.AddRange(new object[] { "Monster (0)", "Sea (1)", "Animal (2)", "Human/Equip (3)" });
+            cbType.SelectedIndex = 0;
+            form.Controls.Add(Lbl("Typ:", y)); form.Controls.Add(cbType); y += 35;
+
+            var lblInfo = new Label { Text = "0=Monster  1=Sea  2=Animal  3=Human/Equip", Top = y, Left = 10, Width = 380, ForeColor = Color.Gray };
+            form.Controls.Add(lblInfo); y += 25;
+
+            var btnAdd = new Button { Text = "Add", Top = y, Left = 155, Width = 100, Height = 28 };
+            form.Controls.Add(btnAdd);
+
+            btnAdd.Click += (s, _) =>
             {
-                Top = 100,
-                Left = 120,
-                Width = 250,
-                DropDownStyle = ComboBoxStyle.DropDownList
-            };
-            comboBoxType.Items.AddRange(new object[] { "Monster", "Sea", "Animal", "Human/Equipment" });
-            comboBoxType.SelectedIndex = 0;
-
-            Label labelInfo = new Label
-            {
-                Text = "0 = Monster, 1 = Sea, 2 = Animal, 3 = Human - Equipment",
-                Top = 140,
-                Left = 10,
-                Width = 320
-            };
-
-            Button buttonAdd = new Button { Text = "Add", Top = 180, Left = 150, Width = 100 };
-            buttonAdd.Click += (formSender, formE) =>
-            {
-                if (int.TryParse(textBoxBody.Text, out int bodyId))
+                if (!int.TryParse(tbBody.Text, out int bodyId))
                 {
-                    int type = comboBoxType.SelectedIndex;
-                    string tagName = type == 3 ? "Equip" : "Mob";
-
-                    if (IsBodyIdTaken(bodyId, tagName))
-                    {
-                        MessageBox.Show($"The Body ID is already taken in {tagName}. Please choose a different ID.", "Duplicate Body ID", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                        return;
-                    }
-
-                    string mobName = $"{textBoxMobName.Text} ({bodyId})";
-                    string newMobLine = $"  <{tagName} name=\"{mobName}\" body=\"{bodyId}\" type=\"{type}\" />"; // Add leading spaces
-                    AddLineToXml(newMobLine, bodyId, tagName);
-                    addForm.Close();
+                    MessageBox.Show("Invalid Body ID.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
                 }
-                else
+                int type = cbType.SelectedIndex;
+                string tag = type == 3 ? "Equip" : "Mob";
+
+                if (IsBodyIdTaken(bodyId, tag))
                 {
-                    MessageBox.Show("Please enter a valid Body ID.", "Invalid Input", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    MessageBox.Show($"Body ID {bodyId} is in <{tag}> already taken.", "Duplikat",
+                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
                 }
+
+                string newLine = $"  <{tag} name=\"{tbName.Text} ({bodyId})\" body=\"{bodyId}\" type=\"{type}\" />";
+                AddLineToXml(newLine, bodyId, tag);
+                form.Close();
             };
 
-            addForm.Controls.Add(labelName);
-            addForm.Controls.Add(textBoxMobName);
-            addForm.Controls.Add(labelBody);
-            addForm.Controls.Add(textBoxBody);
-            addForm.Controls.Add(labelType);
-            addForm.Controls.Add(comboBoxType);
-            addForm.Controls.Add(labelInfo);
-            addForm.Controls.Add(buttonAdd);
-            addForm.ShowDialog();
+            form.ShowDialog();
         }
 
         private void AddLineToXml(string newLine, int bodyId, string tagName)
         {
             var lines = richTextBoxXmlContent.Lines.ToList();
-            bool lineAdded = false;
-
+            bool added = false;
             for (int i = 0; i < lines.Count; i++)
             {
-                string line = lines[i];
-                int currentBodyId;
-                string currentTag;
-
-                if (TryGetBodyIdAndTagFromLine(line, out currentBodyId, out currentTag) && currentTag == tagName && currentBodyId > bodyId)
+                if (TryGetBodyIdAndTagFromLine(lines[i], out int cur, out string curTag) &&
+                    curTag == tagName && cur > bodyId)
                 {
                     lines.Insert(i, newLine);
-                    lineAdded = true;
+                    added = true;
                     break;
                 }
             }
-
-            if (!lineAdded)
-            {
-                lines.Add(newLine); // Add at the end if no appropriate place is found
-            }
-
-            richTextBoxXmlContent.Lines = lines.ToArray();
+            if (!added) lines.Add(newLine);
+            SetTextPreserveUndo(string.Join("\n", lines));
         }
 
         private bool TryGetBodyIdAndTagFromLine(string line, out int bodyId, out string tagName)
         {
-            var match = Regex.Match(line, @"<(?<tag>\w+) name=""[^""]*"" body=""(?<body>\d+)""");
-            if (match.Success)
+            var m = Regex.Match(line, @"<(?<tag>\w+) name=""[^""]*"" body=""(?<body>\d+)""");
+            if (m.Success)
             {
-                bodyId = int.Parse(match.Groups["body"].Value);
-                tagName = match.Groups["tag"].Value;
+                bodyId = int.Parse(m.Groups["body"].Value);
+                tagName = m.Groups["tag"].Value;
                 return true;
             }
-
-            bodyId = 0;
-            tagName = null;
-            return false;
+            bodyId = 0; tagName = null; return false;
         }
 
-        private bool IsBodyIdTaken(int bodyId, string tagName)
-        {
-            return richTextBoxXmlContent.Text.Contains($"<{tagName} name=\"") && richTextBoxXmlContent.Text.Contains($"body=\"{bodyId}\"");
-        }
+        private bool IsBodyIdTaken(int bodyId, string tagName) =>
+            richTextBoxXmlContent.Text.Contains($"<{tagName} ") &&
+            richTextBoxXmlContent.Text.Contains($"body=\"{bodyId}\"");
+
         #endregion
 
-        #region [ keyDownToolStripMenuItem_Click ]
-        private void keyDownToolStripMenuItem_Click(object sender, EventArgs e)
+        // ════════════════════════════════════════════════════════════════════
+        #region Clipboard / Drag-Drop
+        // ════════════════════════════════════════════════════════════════════
+
+        private void copyClipboardToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            Form infoForm = new Form
+            if (string.IsNullOrEmpty(richTextBoxXmlContent.Text))
             {
-                Text = "Key Bindings",
-                Width = 400,
-                Height = 400,
-                FormBorderStyle = FormBorderStyle.FixedDialog,
-                MaximizeBox = false,
-                MinimizeBox = false
-            };
-
-            Label labelInfo = new Label
-            {
-                Text = GetEnglishKeyBindings(),
-                Top = 20,
-                Left = 20,
-                Width = 360,
-                Height = 300
-            };
-
-            Button buttonSwitchLanguage = new Button
-            {
-                Text = "Switch to German",
-                Top = 330,
-                Left = 150,
-                Width = 100
-            };
-
-            buttonSwitchLanguage.Click += (btnSender, btnE) =>
-            {
-                if (labelInfo.Text == GetEnglishKeyBindings())
-                {
-                    labelInfo.Text = GetGermanKeyBindings();
-                    buttonSwitchLanguage.Text = "Wechseln zu Englisch";
-                }
-                else
-                {
-                    labelInfo.Text = GetEnglishKeyBindings();
-                    buttonSwitchLanguage.Text = "Switch to German";
-                }
-            };
-
-            infoForm.Controls.Add(labelInfo);
-            infoForm.Controls.Add(buttonSwitchLanguage);
-            infoForm.ShowDialog();
+                MessageBox.Show("No text available.", "Clipboard", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+            Clipboard.SetText(richTextBoxXmlContent.Text);
+            SetStatus("Text copied to clipboard.");
         }
 
-        private string GetEnglishKeyBindings()
-        {
-            return
-            "F3: Search\n" +
-            "F5: Reset\n" +
-            "F6: Toggle Design\n" +
-            "F7: Print\n" +
-            "F8: Save\n" +
-            "F10: Show AutoSave Information\n" +
-            "Ctrl + Z: Undo\n" +
-            "Ctrl + Y: Redo";
-        }
-
-        private string GetGermanKeyBindings()
-        {
-            return
-            "F3: Suchen\n" +
-            "F5: Zurücksetzen\n" +
-            "F6: Design wechseln\n" +
-            "F7: Drucken\n" +
-            "F8: Speichern\n" +
-            "F10: Autosave-Informationen anzeigen\n" +
-            "Strg + Z: Rückgängig\n" +
-            "Strg + Y: Wiederherstellen";
-        }
-        #endregion
-
-        #region [ searchAndReplaceToolStripMenuItem_Click ]
-        private void searchAndReplaceToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            // Stack for storing previous states
-            Stack<string> undoStack = new Stack<string>();
-
-            // Create shape
-            Form searchReplaceForm = new Form
-            {
-                Text = "Search and Replace",
-                Width = 500,
-                Height = 450,
-                FormBorderStyle = FormBorderStyle.FixedDialog,
-                MaximizeBox = false,
-                MinimizeBox = false
-            };
-
-            // search text label
-            Label labelSearch = new Label
-            {
-                Text = "Search:",
-                Top = 20,
-                Left = 10,
-                Width = 100
-            };
-            TextBox textBoxSearch = new TextBox
-            {
-                Top = 20,
-                Left = 120,
-                Width = 300
-            };
-
-            // label for replacement text
-            Label labelReplace = new Label
-            {
-                Text = "Replace with:",
-                Top = 60,
-                Left = 10,
-                Width = 100
-            };
-            TextBox textBoxReplace = new TextBox
-            {
-                Top = 60,
-                Left = 120,
-                Width = 300
-            };
-
-            // checkbox for case sensitivity
-            CheckBox checkBoxCaseSensitive = new CheckBox
-            {
-                Text = "Case Sensitive",
-                Top = 100,
-                Left = 120,
-                Width = 150
-            };
-
-            // checkbox for step-by-step replacement
-            CheckBox checkBoxStepByStep = new CheckBox
-            {
-                Text = "Step by Step Replace",
-                Top = 130,
-                Left = 120,
-                Width = 200
-            };
-
-            // Label for number of results found
-            Label labelMatches = new Label
-            {
-                Text = "Matches Found: 0",
-                Top = 170,
-                Left = 10,
-                Width = 200
-            };
-
-            // Label for number of replaced results
-            Label labelReplaced = new Label
-            {
-                Text = "Replaced: 0",
-                Top = 200,
-                Left = 10,
-                Width = 200
-            };
-
-            // Buttons
-            Button buttonFindMatches = new Button
-            {
-                Text = "Find Matches",
-                Top = 240,
-                Left = 50,
-                Width = 150
-            };
-            Button buttonExecuteReplace = new Button
-            {
-                Text = "Replace",
-                Top = 240,
-                Left = 250,
-                Width = 150
-            };
-            Button buttonUndo = new Button
-            {
-                Text = "Undo",
-                Top = 300,
-                Left = 170,
-                Width = 150,
-                Enabled = false // Disabled if no state is available
-            };
-
-            // "Find Matches" button - event handler
-            buttonFindMatches.Click += (formSender, formE) =>
-            {
-                string searchText = textBoxSearch.Text;
-                if (string.IsNullOrEmpty(searchText))
-                {
-                    MessageBox.Show("Please enter a search term.", "Invalid Input", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    return;
-                }
-
-                StringComparison comparison = checkBoxCaseSensitive.Checked
-                    ? StringComparison.Ordinal
-                    : StringComparison.OrdinalIgnoreCase;
-
-                int matches = 0;
-                int startIndex = 0;
-                string content = richTextBoxXmlContent.Text;
-
-                while ((startIndex = content.IndexOf(searchText, startIndex, comparison)) != -1)
-                {
-                    matches++;
-                    startIndex += searchText.Length;
-                }
-
-                labelMatches.Text = $"Matches Found: {matches}";
-            };
-
-            // "Replace"-Button-Logik
-            buttonExecuteReplace.Click += (formSender, formE) =>
-            {
-                string searchText = textBoxSearch.Text;
-                string replaceText = textBoxReplace.Text;
-                if (string.IsNullOrEmpty(searchText))
-                {
-                    MessageBox.Show("Please enter a search term.", "Invalid Input", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    return;
-                }
-
-                StringComparison comparison = checkBoxCaseSensitive.Checked
-                    ? StringComparison.Ordinal
-                    : StringComparison.OrdinalIgnoreCase;
-
-                int matches = 0;
-                int replacements = 0;
-                string content = richTextBoxXmlContent.Text;
-
-                // Save the current state for "Undo"
-                undoStack.Push(content);
-                buttonUndo.Enabled = true; // Activate "Undo" button
-
-                // Step-by-step replacement
-                if (checkBoxStepByStep.Checked)
-                {
-                    int startIndex = 0;
-                    while ((startIndex = content.IndexOf(searchText, startIndex, comparison)) != -1)
-                    {
-                        matches++;
-                        richTextBoxXmlContent.Select(startIndex, searchText.Length);
-                        richTextBoxXmlContent.ScrollToCaret();
-
-                        DialogResult result = MessageBox.Show(
-                            $"Match found at position {startIndex + 1}.\nReplace this occurrence?",
-                            "Replace Confirmation",
-                            MessageBoxButtons.YesNoCancel,
-                            MessageBoxIcon.Question);
-
-                        if (result == DialogResult.Yes)
-                        {
-                            content = content.Remove(startIndex, searchText.Length)
-                                             .Insert(startIndex, replaceText);
-                            replacements++;
-                            startIndex += replaceText.Length;
-                        }
-                        else if (result == DialogResult.No)
-                        {
-                            startIndex += searchText.Length;
-                        }
-                        else if (result == DialogResult.Cancel)
-                        {
-                            break;
-                        }
-                    }
-
-                    // Asks whether all remaining deposits should be replaced
-                    if (matches > replacements)
-                    {
-                        DialogResult replaceAll = MessageBox.Show(
-                            $"There are {matches - replacements} matches left.\nReplace all remaining occurrences?",
-                            "Replace All Confirmation",
-                            MessageBoxButtons.YesNo,
-                            MessageBoxIcon.Question);
-
-                        if (replaceAll == DialogResult.Yes)
-                        {
-                            content = content.Replace(searchText, replaceText);
-                            replacements = matches;
-                        }
-                    }
-                }
-                else // Automatic replacement of all occurrences
-                {
-                    matches = Regex.Matches(content, Regex.Escape(searchText),
-                        checkBoxCaseSensitive.Checked ? RegexOptions.None : RegexOptions.IgnoreCase).Count;
-
-                    content = checkBoxCaseSensitive.Checked
-                        ? content.Replace(searchText, replaceText)
-                        : Regex.Replace(content, Regex.Escape(searchText), replaceText, RegexOptions.IgnoreCase);
-
-                    replacements = matches;
-                }
-
-                richTextBoxXmlContent.Text = content;
-                labelMatches.Text = $"Matches Found: {matches}";
-                labelReplaced.Text = $"Replaced: {replacements}";
-
-                MessageBox.Show($"Replaced {replacements} occurrences of '{searchText}' with '{replaceText}'.",
-                    "Replace Complete",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Information);
-            };
-
-            // "Undo"-Button-Logik
-            buttonUndo.Click += (formSender, formE) =>
-            {
-                if (undoStack.Count > 0)
-                {
-                    richTextBoxXmlContent.Text = undoStack.Pop();
-                    buttonUndo.Enabled = undoStack.Count > 0; // Disable button if no other states exist
-                }
-            };
-
-            // Add the controls to the form
-            searchReplaceForm.Controls.Add(labelSearch);
-            searchReplaceForm.Controls.Add(textBoxSearch);
-            searchReplaceForm.Controls.Add(labelReplace);
-            searchReplaceForm.Controls.Add(textBoxReplace);
-            searchReplaceForm.Controls.Add(checkBoxCaseSensitive);
-            searchReplaceForm.Controls.Add(checkBoxStepByStep);
-            searchReplaceForm.Controls.Add(labelMatches);
-            searchReplaceForm.Controls.Add(labelReplaced);
-            searchReplaceForm.Controls.Add(buttonFindMatches);
-            searchReplaceForm.Controls.Add(buttonExecuteReplace);
-            searchReplaceForm.Controls.Add(buttonUndo);
-
-            searchReplaceForm.ShowDialog();
-        }
-        #endregion
-
-        // Event to check if the dragged item is a valid .xml file
         private void EditorXML_DragEnter(object sender, DragEventArgs e)
         {
             if (e.Data.GetDataPresent(DataFormats.FileDrop))
             {
-                string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
-                if (files.Length == 1 && Path.GetExtension(files[0]).Equals(".xml", StringComparison.OrdinalIgnoreCase))
-                {
-                    e.Effect = DragDropEffects.Copy; // Allow drop
-                }
-                else
-                {
-                    e.Effect = DragDropEffects.None; // Invalid file type
-                }
+                var files = (string[])e.Data.GetData(DataFormats.FileDrop);
+                e.Effect = (files.Length == 1 &&
+                    Path.GetExtension(files[0]).Equals(".xml", StringComparison.OrdinalIgnoreCase))
+                    ? DragDropEffects.Copy : DragDropEffects.None;
             }
         }
 
-        // Event to handle the drop action
         private void EditorXML_DragDrop(object sender, DragEventArgs e)
         {
             try
             {
-                string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
-                string filePath = files[0];
-
-                // Load the XML file content into the RichTextBox
-                string xmlContent = File.ReadAllText(filePath);
-                richTextBoxXmlContent.Text = xmlContent;
-
-                // Optional: Update the status bar or show a message
-                UpdateStatus($"Loaded file: {Path.GetFileName(filePath)}");
+                string path = ((string[])e.Data.GetData(DataFormats.FileDrop))[0];
+                _currentFilePath = path;
+                _isManualChange = false;
+                richTextBoxXmlContent.Text = File.ReadAllText(path);
+                _lastSavedSnapshot = richTextBoxXmlContent.Text;
+                _isManualChange = true;
+                SetStatus($"Geladen: {Path.GetFileName(path)}");
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error loading file: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Error: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
+
+        #endregion
+
+        // ════════════════════════════════════════════════════════════════════
+        #region Keyboard shortcuts
+        // ════════════════════════════════════════════════════════════════════
+
+        private void EditorXML_KeyDown(object sender, KeyEventArgs e)
+        {
+            switch (e.KeyCode)
+            {
+                case Keys.F3: e.Handled = e.SuppressKeyPress = true; findToolStripMenuItem_Click(sender, EventArgs.Empty); break;
+                case Keys.F5: e.Handled = e.SuppressKeyPress = true; resetToolStripMenuItem_Click(sender, EventArgs.Empty); break;
+                case Keys.F6: e.Handled = e.SuppressKeyPress = true; designToolStripMenuItem_Click(sender, EventArgs.Empty); break;
+                case Keys.F7: e.Handled = e.SuppressKeyPress = true; printToolStripMenuItem_Click(sender, EventArgs.Empty); break;
+                case Keys.F8: e.Handled = e.SuppressKeyPress = true; saveToolStripMenuItem_Click(sender, EventArgs.Empty); break;
+                case Keys.F10: e.Handled = e.SuppressKeyPress = true; ShowAutoSaveInformation(); break;
+            }
+
+            if (e.Control)
+            {
+                switch (e.KeyCode)
+                {
+                    case Keys.Z: e.SuppressKeyPress = true; undoToolStripMenuItem_Click(sender, e); break;
+                    case Keys.Y: e.SuppressKeyPress = true; redoToolStripMenuItem_Click(sender, e); break;
+                    case Keys.S: e.SuppressKeyPress = true; saveToolStripMenuItem_Click(sender, EventArgs.Empty); break;
+                    case Keys.G: e.SuppressKeyPress = true; goToLineToolStripMenuItem_Click(sender, EventArgs.Empty); break;
+                    case Keys.B: e.SuppressKeyPress = true; toggleBookmarkToolStripMenuItem_Click(sender, EventArgs.Empty); break;
+                }
+            }
+
+            if (e.KeyCode == Keys.F2 && !e.Control && !e.Shift)
+            {
+                e.Handled = e.SuppressKeyPress = true;
+                nextBookmarkToolStripMenuItem_Click(sender, EventArgs.Empty);
+            }
+        }
+
+        #endregion
+
+        // ════════════════════════════════════════════════════════════════════
+        #region Hilfe / Key-Bindings
+        // ════════════════════════════════════════════════════════════════════
+
+        private void keyDownToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            MessageBox.Show(
+                "Tastatur-Shortcuts:\n\n" +
+                "F3          Search\n" +
+                "F5          Reset search\n" +
+                "F6          Switch theme (light/dark)\n" +
+                "F7          Print\n" +
+                "F8          Speichern (Ctrl+S)\n" +
+                "F10         Auto-Save Info\n" +
+                "F2          Next bookmark\n" +
+                "Ctrl+Z      Undo\n" +
+                "Ctrl+Y      Restore\n" +
+                "Ctrl+G      Go to row\n" +
+                "Ctrl+B      Add/remove bookmarks\n" +
+                "\n" +
+                "Right-click on line number:\n" +
+                "  Select/edit line\n" +
+                "  Insert line before/after\n" +
+                "  Delete line/bookmark",
+                "Keyboard shortcuts", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
+        #endregion
+
+        // ════════════════════════════════════════════════════════════════════
+        #region RTF Syntax Converter (for checkBoxXMLFormatted)
+        // ════════════════════════════════════════════════════════════════════
+
+        private string ConvertXmlToRtf(string xmlContent)
+        {
+            var sb = new StringBuilder();
+            sb.Append(@"{\rtf1\ansi\deff0{\fonttbl{\f0 Courier New;}}");
+            sb.Append(@"{\colortbl ;\red0\green0\blue0;\red0\green0\blue200;\red180\green0\blue0;\red0\green128\blue0;\red128\green128\blue0;}");
+            sb.Append(@"\viewkind4\uc1\pard\f0\fs20 ");
+
+            var declMatch = Regex.Match(xmlContent, @"<\?xml[^>]+>");
+            if (declMatch.Success)
+            {
+                sb.Append(@"\cf5 ").Append(EscapeRtf(declMatch.Value)).Append(@"\par\cf1 ");
+                xmlContent = xmlContent.Replace(declMatch.Value, "");
+            }
+
+            foreach (Match m in Regex.Matches(xmlContent, @"<[^>]+>|<!--.*?-->|[^<]+", RegexOptions.Singleline))
+            {
+                string f = m.Value;
+                if (f.StartsWith("<!--"))
+                    sb.Append(@"\cf4 ").Append(EscapeRtf(f)).Append(@"\cf1 ");
+                else if (f.StartsWith("</"))
+                    sb.Append(@"\cf2 ").Append(EscapeRtf(f)).Append(@"\cf1 ");
+                else if (f.StartsWith("<"))
+                {
+                    var tagName = Regex.Match(f, @"<\s*[^!?/\s>]+");
+                    if (tagName.Success) sb.Append(@"\cf2 ").Append(EscapeRtf(tagName.Value));
+                    foreach (Match attr in Regex.Matches(f, @"\b\w+\s*=\s*""[^""]*"""))
+                        sb.Append(@" \cf3 ").Append(EscapeRtf(attr.Value));
+                    sb.Append(@"\cf2 ").Append(f.EndsWith("/>") ? " />" : ">").Append(@"\cf1 ");
+                }
+                else
+                    sb.Append(EscapeRtf(f));
+            }
+
+            sb.Append(@"}");
+            return sb.ToString();
+        }
+
+        private static string EscapeRtf(string t) =>
+            t.Replace(@"\", @"\\").Replace("{", @"\{").Replace("}", @"\}")
+             .Replace("\t", @"\tab ").Replace("\n", @"\par ");
+
+        #endregion
+
+        // ════════════════════════════════════════════════════════════════════
+        #region Auxiliary methods
+        // ════════════════════════════════════════════════════════════════════
+
+        private void SetStatus(string message)
+        {
+            toolStripStatusLabelInfo.Text = message;
+        }
+
+        #endregion
     }
 }
