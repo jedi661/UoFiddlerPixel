@@ -45,6 +45,9 @@ namespace UoFiddler.Controls.Forms
             pictureBox256x256 = new System.Windows.Forms.PictureBox();
             comboBoxRubberStamp = new System.Windows.Forms.ComboBox();
             panelPixturebox = new System.Windows.Forms.Panel();
+            checkBox3 = new System.Windows.Forms.CheckBox();
+            checkBox2 = new System.Windows.Forms.CheckBox();
+            checkBox1 = new System.Windows.Forms.CheckBox();
             btnGenerateColorCodes = new System.Windows.Forms.Button();
             richTextBox1 = new System.Windows.Forms.RichTextBox();
             btLoadTilesIntoTiles = new System.Windows.Forms.Button();
@@ -59,6 +62,8 @@ namespace UoFiddler.Controls.Forms
             lb64x64 = new System.Windows.Forms.Label();
             btClipboard = new System.Windows.Forms.Button();
             panelMenu = new System.Windows.Forms.Panel();
+            btClearAll = new System.Windows.Forms.Button();
+            checkBoxAll = new System.Windows.Forms.CheckBox();
             btDirSaveOrder = new System.Windows.Forms.Button();
             btViewLoadBackground = new System.Windows.Forms.Button();
             lb2to1Load = new System.Windows.Forms.Label();
@@ -151,6 +156,9 @@ namespace UoFiddler.Controls.Forms
             // panelPixturebox
             // 
             panelPixturebox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            panelPixturebox.Controls.Add(checkBox3);
+            panelPixturebox.Controls.Add(checkBox2);
+            panelPixturebox.Controls.Add(checkBox1);
             panelPixturebox.Controls.Add(btnGenerateColorCodes);
             panelPixturebox.Controls.Add(richTextBox1);
             panelPixturebox.Controls.Add(btLoadTilesIntoTiles);
@@ -167,9 +175,39 @@ namespace UoFiddler.Controls.Forms
             panelPixturebox.Size = new System.Drawing.Size(552, 385);
             panelPixturebox.TabIndex = 6;
             // 
+            // checkBox3
+            // 
+            checkBox3.AutoSize = true;
+            checkBox3.Location = new System.Drawing.Point(520, 94);
+            checkBox3.Name = "checkBox3";
+            checkBox3.Size = new System.Drawing.Size(32, 19);
+            checkBox3.TabIndex = 17;
+            checkBox3.Text = "3";
+            checkBox3.UseVisualStyleBackColor = true;
+            // 
+            // checkBox2
+            // 
+            checkBox2.AutoSize = true;
+            checkBox2.Location = new System.Drawing.Point(520, 69);
+            checkBox2.Name = "checkBox2";
+            checkBox2.Size = new System.Drawing.Size(32, 19);
+            checkBox2.TabIndex = 16;
+            checkBox2.Text = "2";
+            checkBox2.UseVisualStyleBackColor = true;
+            // 
+            // checkBox1
+            // 
+            checkBox1.AutoSize = true;
+            checkBox1.Location = new System.Drawing.Point(520, 44);
+            checkBox1.Name = "checkBox1";
+            checkBox1.Size = new System.Drawing.Size(32, 19);
+            checkBox1.TabIndex = 15;
+            checkBox1.Text = "1";
+            checkBox1.UseVisualStyleBackColor = true;
+            // 
             // btnGenerateColorCodes
             // 
-            btnGenerateColorCodes.Location = new System.Drawing.Point(278, 321);
+            btnGenerateColorCodes.Location = new System.Drawing.Point(226, 321);
             btnGenerateColorCodes.Name = "btnGenerateColorCodes";
             btnGenerateColorCodes.Size = new System.Drawing.Size(75, 23);
             btnGenerateColorCodes.TabIndex = 14;
@@ -179,16 +217,16 @@ namespace UoFiddler.Controls.Forms
             // 
             // richTextBox1
             // 
-            richTextBox1.Location = new System.Drawing.Point(359, 306);
+            richTextBox1.Location = new System.Drawing.Point(307, 306);
             richTextBox1.Name = "richTextBox1";
-            richTextBox1.Size = new System.Drawing.Size(155, 68);
+            richTextBox1.Size = new System.Drawing.Size(207, 68);
             richTextBox1.TabIndex = 13;
             richTextBox1.Text = "";
             richTextBox1.MouseUp += richTextBox1_MouseUp;
             // 
             // btLoadTilesIntoTiles
             // 
-            btLoadTilesIntoTiles.Location = new System.Drawing.Point(221, 350);
+            btLoadTilesIntoTiles.Location = new System.Drawing.Point(169, 350);
             btLoadTilesIntoTiles.Name = "btLoadTilesIntoTiles";
             btLoadTilesIntoTiles.Size = new System.Drawing.Size(132, 23);
             btLoadTilesIntoTiles.TabIndex = 11;
@@ -297,6 +335,8 @@ namespace UoFiddler.Controls.Forms
             // panelMenu
             // 
             panelMenu.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            panelMenu.Controls.Add(btClearAll);
+            panelMenu.Controls.Add(checkBoxAll);
             panelMenu.Controls.Add(btClipboard);
             panelMenu.Controls.Add(btDirSaveOrder);
             panelMenu.Controls.Add(btViewLoadBackground);
@@ -332,6 +372,26 @@ namespace UoFiddler.Controls.Forms
             panelMenu.Name = "panelMenu";
             panelMenu.Size = new System.Drawing.Size(218, 452);
             panelMenu.TabIndex = 7;
+            // 
+            // btClearAll
+            // 
+            btClearAll.Location = new System.Drawing.Point(10, 190);
+            btClearAll.Name = "btClearAll";
+            btClearAll.Size = new System.Drawing.Size(75, 23);
+            btClearAll.TabIndex = 35;
+            btClearAll.Text = "Clear All";
+            btClearAll.UseVisualStyleBackColor = true;
+            btClearAll.Click += btClearAll_Click;
+            // 
+            // checkBoxAll
+            // 
+            checkBoxAll.AutoSize = true;
+            checkBoxAll.Location = new System.Drawing.Point(120, 190);
+            checkBoxAll.Name = "checkBoxAll";
+            checkBoxAll.Size = new System.Drawing.Size(40, 19);
+            checkBoxAll.TabIndex = 34;
+            checkBoxAll.Text = "All";
+            checkBoxAll.UseVisualStyleBackColor = true;
             // 
             // btDirSaveOrder
             // 
@@ -786,5 +846,10 @@ namespace UoFiddler.Controls.Forms
         private System.Windows.Forms.Button btLoadTilesIntoTiles;
         private System.Windows.Forms.Button btnGenerateColorCodes;
         private System.Windows.Forms.RichTextBox richTextBox1;
+        private System.Windows.Forms.CheckBox checkBoxAll;
+        private System.Windows.Forms.CheckBox checkBox3;
+        private System.Windows.Forms.CheckBox checkBox2;
+        private System.Windows.Forms.CheckBox checkBox1;
+        private System.Windows.Forms.Button btClearAll;
     }
 }
