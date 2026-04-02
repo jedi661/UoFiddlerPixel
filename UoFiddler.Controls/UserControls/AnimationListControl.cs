@@ -1153,34 +1153,6 @@ namespace UoFiddler.Controls.UserControls
         #endregion
 
         #region [ ExtractImage ]
-        /*private void ExtractImage(ImageFormat imageFormat)
-        {
-            string what = "Mob";
-            if (_displayType == 1)
-            {
-                what = "Equipment";
-            }
-
-            string fileExtension = Utils.GetFileExtensionFor(imageFormat);
-            string fileName = Path.Combine(Options.OutputPath, $"{what} {_currentSelect}.{fileExtension}");
-
-            Bitmap sourceBitmap = Animate ? _animationList[0] : _mainPicture;
-            using (Bitmap newBitmap = new Bitmap(sourceBitmap.Width, sourceBitmap.Height))
-            {
-                using (Graphics newGraph = Graphics.FromImage(newBitmap))
-                {
-                    newGraph.FillRectangle(Brushes.White, 0, 0, newBitmap.Width, newBitmap.Height);
-                    newGraph.DrawImage(sourceBitmap, new Point(0, 0));
-                    newGraph.Save();
-                }
-
-                newBitmap.Save(fileName, imageFormat);
-            }
-
-            MessageBox.Show($"{what} saved to {fileName}", "Saved", MessageBoxButtons.OK, MessageBoxIcon.Information,
-                MessageBoxDefaultButton.Button1);
-        }*/
-
         private void ExtractImage(ImageFormat imageFormat)
         {
             string what = _displayType == 1 ? "Equipment" : "Mob";
