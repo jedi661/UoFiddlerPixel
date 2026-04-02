@@ -1,31 +1,36 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
+using System.Diagnostics;
 using System.Drawing;
+using System.Drawing.Drawing2D;
+using System.Drawing.Imaging;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Media;
-using System.Threading.Tasks;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using UoFiddler.Controls.UserControls;
-using System.Diagnostics;
-using System.Text.RegularExpressions;
 
 namespace UoFiddler.Controls.Forms
 {
     public partial class TextureWindowForm : Form
     {
-        // Add these variables to your class
+        // ── State ──────────────────────────────────────────────────────────
         private int _currentId;
-        private TexturesControl _texturesControl;
+        private readonly TexturesControl _texturesControl;
 
-        private int _landTile = 0x3; // start tile
-
+        private int _landTile = 0x3;
         private int _currentTile = 0;
-        private int _maxTile = 0x3FFF; // maximum number of tiles
+        private const int MaxTileIndex = 0x3FFF;
 
+        private Image _originalImage;
+        private string _currentTransformation = "left";
+
+        // Background color outside the diamond: false = black, true = white
+        private bool _tileBackgroundWhite = false;
+
+        private bool _showIsoGrid = true;   // Grid turned on by default
+        private float _currentContrast = 1.0f;   // 1.0 = neutral
+
+        // ── Constructor ────────────────────────────────────────────────────
         public TextureWindowForm(TexturesControl texturesControl)
         {
             InitializeComponent();
@@ -33,445 +38,518 @@ namespace UoFiddler.Controls.Forms
             ShowTexture(_texturesControl.GetSelectedTextureId());
         }
 
-        #region ShowTexture
+        #region [ GetDiamondRowBounds ] 
+        // ═══════════════════════════════════════════════════════════════════
+        //  PIXEL-PRECISE DIAMOND MASK (from reference graphic)
+        //  For each of the 44 lines: StartX and EndX (inclusive).
+        // ═══════════════════════════════════════════════════════════════════
+
+        /// <summary>
+        /// For row y, this gives the first and last X-position within
+        /// the UO tile diamond back (both inclusive).
+        /// Exactly matches the pixel layout of the reference graphic (44×44).
+        /// </summary>
+        private static void GetDiamondRowBounds(int y, out int startX, out int endX)
+        {
+            // The rhombus is symmetrical about y=21/22.
+            // Upper half (y=0..21): startX decreases, endX increases.
+            // Lower half (y=22..43): reversed.
+            //
+            // Formula from pixel analysis:
+            //   Für y = 0..21:  startX = 21 - y,  endX = 22 + y
+            //   Für y = 22..43: distFromBottom = 43 - y
+            //                   startX = 21 - distFromBottom
+            //                   endX   = 22 + distFromBottom
+
+            if (y <= 21)
+            {
+                startX = 21 - y;
+                endX = 22 + y;
+            }
+            else
+            {
+                int d = 43 - y;
+                startX = 21 - d;
+                endX = 22 + d;
+            }
+        }
+        #endregion
+
+        // ═══════════════════════════════════════════════════════════════════
+        //  MAKE TILE – Pixel-precise diamond conversion
+        // ═══════════════════════════════════════════════════════════════════
+
+        #region [ BtMakeTile_Click ]
+        /// <summary>
+        /// Converts the source texture into a pixel-perfect 44×44 UO land tile.
+        ///
+        /// Methode:
+        ///   The width of the rhombus is calculated for each row of the 44×44 rhombus.
+        ///   The source texture is sampled proportionally to this width. –
+        ///   No rotation, direct pixel mapping.
+        ///   Outside the diamond: the chosen background color (black or white).
+        /// </summary>
+        private void BtMakeTile_Click(object sender, EventArgs e)
+        {
+            if (_originalImage == null)
+            {
+                MessageBox.Show("No source image loaded.", "Make Tile", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            // Apply contrast if changed
+            Bitmap sourceForTile = _currentContrast == 1.0f
+                ? new Bitmap(_originalImage)
+                : ApplyContrast(_originalImage, _currentContrast);
+
+            Color bgColor = _tileBackgroundWhite ? Color.White : Color.Black;
+            Bitmap tile = new Bitmap(44, 44, PixelFormat.Format32bppArgb);
+
+            using (Graphics g = Graphics.FromImage(tile))
+                g.Clear(bgColor);
+
+            int srcW = sourceForTile.Width;
+            int srcH = sourceForTile.Height;
+
+            for (int tileY = 0; tileY < 44; tileY++)
+            {
+                GetDiamondRowBounds(tileY, out int startX, out int endX);
+                int rowWidth = endX - startX + 1;
+
+                float srcY_f = (tileY / 43.0f) * (srcH - 1);
+
+                for (int tileX = startX; tileX <= endX; tileX++)
+                {
+                    float posInRow = (float)(tileX - startX) / Math.Max(rowWidth - 1, 1);
+                    float srcX_f = posInRow * (srcW - 1);
+
+                    Color pixel = checkBoxAntiAliasing.Checked
+                        ? BilinearSample(sourceForTile, srcX_f, srcY_f)
+                        : sourceForTile.GetPixel((int)Math.Round(srcX_f), (int)Math.Round(srcY_f));
+
+                    tile.SetPixel(tileX, tileY, pixel);
+                }
+            }
+
+            sourceForTile.Dispose();
+
+            pictureBoxTexture.Image = tile;
+            pictureBoxTexture.SizeMode = PictureBoxSizeMode.CenterImage;   // mittig + Originalgröße
+
+            lbTextureSize.Text = "Image size: 44 x 44 px (UO Tile)";
+        }
+        #endregion        
+
+        #region [ BilinearSample ]
+        /// <summary>
+        /// Bilinear interpolation for softer colors without blurring of edges.
+        /// </summary>
+        private static Color BilinearSample(Bitmap bmp, float fx, float fy)
+        {
+            int x0 = (int)fx;
+            int y0 = (int)fy;
+            int x1 = Math.Min(x0 + 1, bmp.Width - 1);
+            int y1 = Math.Min(y0 + 1, bmp.Height - 1);
+            x0 = Math.Max(x0, 0);
+            y0 = Math.Max(y0, 0);
+
+            float tx = fx - x0;
+            float ty = fy - y0;
+
+            Color c00 = bmp.GetPixel(x0, y0);
+            Color c10 = bmp.GetPixel(x1, y0);
+            Color c01 = bmp.GetPixel(x0, y1);
+            Color c11 = bmp.GetPixel(x1, y1);
+
+            int r = (int)(c00.R * (1 - tx) * (1 - ty) + c10.R * tx * (1 - ty)
+                        + c01.R * (1 - tx) * ty + c11.R * tx * ty);
+            int g = (int)(c00.G * (1 - tx) * (1 - ty) + c10.G * tx * (1 - ty)
+                        + c01.G * (1 - tx) * ty + c11.G * tx * ty);
+            int b = (int)(c00.B * (1 - tx) * (1 - ty) + c10.B * tx * (1 - ty)
+                        + c01.B * (1 - tx) * ty + c11.B * tx * ty);
+
+            return Color.FromArgb(
+                Math.Max(0, Math.Min(255, r)),
+                Math.Max(0, Math.Min(255, g)),
+                Math.Max(0, Math.Min(255, b)));
+        }
+        #endregion
+
+        // ═══════════════════════════════════════════════════════════════════
+        //  TEXTURE DISPLAY
+        // ═══════════════════════════════════════════════════════════════════
+
+        #region [ ShowTexture ]
         public void ShowTexture(int id)
         {
             _currentId = id;
-            pictureBoxTexture.Image = _texturesControl.GetTexture(id);
+            Image newTexture = _texturesControl.GetTexture(id);
+            pictureBoxTexture.Image = newTexture;
 
-            if (pictureBoxTexture.Image != null)
-            {
-                // Store the current image
-                _originalImage = (Image)pictureBoxTexture.Image.Clone();
+            if (newTexture == null)
+                return;
 
-                Size size = pictureBoxTexture.Image.Size;
-                lbTextureSize.Text = $"Image size: {size.Width} x {size.Height}";
+            ReplaceOriginalImage((Image)newTexture.Clone());
 
-                // Convert the ID to a hexadecimal address
-                string hexAddress = "0x" + id.ToString("X4");
+            Size size = newTexture.Size;
+            lbTextureSize.Text = $"Image size: {size.Width} x {size.Height} px";
 
-                // Update the text of the label lbIDNr
-                lbIDNr.Text = $"ID: {id}, Hex-Adresse: {hexAddress}";
-            }
+            string hexAddress = "0x" + id.ToString("X4");
+            lbIDNr.Text = $"ID: {id}  |  Hex: {hexAddress}";
         }
         #endregion
 
-        #region btBackward
-        private void btBackward_Click(object sender, EventArgs e)
+        // ═══════════════════════════════════════════════════════════════════
+        //  NAVIGATION
+        // ═══════════════════════════════════════════════════════════════════
+
+        #region [ BtBackward_Click ]
+        private void BtBackward_Click(object sender, EventArgs e)
         {
-            if (_currentId > 0)
-            {
-                _currentId--;
-                ShowTexture(_currentId);
-            }
-
-            // Always store the current image
-            if (pictureBoxTexture.Image != null)
-            {
-                _originalImage = (Image)pictureBoxTexture.Image.Clone();
-            }
+            if (_currentId <= 0) return;
+            _currentId--;
+            ShowTexture(_currentId);
         }
         #endregion
 
-        #region btForward
-        private void btForward_Click(object sender, EventArgs e)
+        #region [ BtForward_Click ]
+        private void BtForward_Click(object sender, EventArgs e)
         {
-            if (_currentId < _texturesControl.GetIdxLength() - 1)
-            {
-                _currentId++;
-                ShowTexture(_currentId);
-            }
-
-            // Always store the current image
-            if (pictureBoxTexture.Image != null)
-            {
-                _originalImage = (Image)pictureBoxTexture.Image.Clone();
-            }
+            if (_currentId >= _texturesControl.GetIdxLength() - 1) return;
+            _currentId++;
+            ShowTexture(_currentId);
         }
         #endregion
 
-        #region clipboardToolStripMenuItem
-        private void clipboardToolStripMenuItem_Click(object sender, EventArgs e)
+        // ═══════════════════════════════════════════════════════════════════
+        //  HINTERGRUNDFARBE AUSSERHALB DER RAUTE
+        // ═══════════════════════════════════════════════════════════════════
+
+        #region [ RadioButtonTileBgBlack_CheckedChanged ]
+        private void RadioButtonTileBgBlack_CheckedChanged(object sender, EventArgs e)
         {
-            if (pictureBoxTexture.Image != null)
-            {
-                Clipboard.SetImage(pictureBoxTexture.Image);
-            }
+            if (radioButtonTileBgBlack.Checked)
+                _tileBackgroundWhite = false;
         }
         #endregion
 
-        #region btMakeTile
-        // Store the original image
-        private Image _originalImage;
-        // Add this variable to save the current transform state
-        private string _currentTransformation;
-
-        private void btMakeTile_Click(object sender, EventArgs e)
+        #region [ RadioButtonTileBgWhite_CheckedChanged ]
+        private void RadioButtonTileBgWhite_CheckedChanged(object sender, EventArgs e)
         {
-            if (_originalImage != null)
-            {
-                // Check the current transformation state and apply the appropriate transformation
-                float angle = _currentTransformation == "right" ? 45 : -45;
-
-                // Rotate the original image by the determined angle
-                Image rotatedImage = RotateImageByAngle(_originalImage, angle);
-
-                // Calculate the size for the rotated image to have 22 pixel sides after cropping
-                int size = (int)(31 * Math.Sqrt(2));
-
-                // Crop the rotated image to create a diamond
-                Bitmap diamondImage = CropToDiamond(rotatedImage);
-
-                // Resize the diamond image to the calculated size plus 2 pixels
-                Bitmap resizedImage = new Bitmap(diamondImage, new Size(size + 2, size + 2));
-
-                // Create a new Bitmap with size 44x44 and black background
-                Bitmap newBackground = new Bitmap(44, 44);
-                using (Graphics graphics = Graphics.FromImage(newBackground))
-                {
-                    graphics.Clear(Color.Black);
-
-                    // Calculate the coordinates to center the resized image within the 44x44 frame
-                    int x = (newBackground.Width - resizedImage.Width) / 2 - 1; // Shift 1 pixel to the left
-                    int y = (newBackground.Height - resizedImage.Height) / 2 - 1; // Shift 1 pixel up
-
-                    // Draw the resized image onto the new background graphic
-                    graphics.DrawImage(resizedImage, x, y);
-                }
-
-                // Display the new image in the PictureBox
-                pictureBoxTexture.Image = newBackground;
-
-                // Free the previous images (optional to free up memory)
-                rotatedImage.Dispose();
-                diamondImage.Dispose();
-                resizedImage.Dispose();
-            }
+            if (radioButtonTileBgWhite.Checked)
+                _tileBackgroundWhite = true;
         }
         #endregion
 
-        #region CropToDiamond
-        private Bitmap CropToDiamond(Image image)
+        // ═══════════════════════════════════════════════════════════════════
+        //  ROTATION DIRECTION CHECKBOXES
+        // ═══════════════════════════════════════════════════════════════════
+
+        #region checkBoxLeft_CheckedChanged
+        private void CheckBoxLeft_CheckedChanged(object sender, EventArgs e)
         {
-            // Create a new Bitmap with the same size as the image
-            Bitmap diamondImage = new Bitmap(image.Width, image.Height);
-
-            using (Graphics graphics = Graphics.FromImage(diamondImage))
-            {
-                // Create a new GraphicsPath
-                using (System.Drawing.Drawing2D.GraphicsPath path = new System.Drawing.Drawing2D.GraphicsPath())
-                {
-                    // Add a diamond shape to the path
-                    path.AddPolygon(new Point[] {
-                new Point(image.Width / 2, 0),
-                new Point(image.Width, image.Height / 2),
-                new Point(image.Width / 2, image.Height),
-                new Point(0, image.Height / 2)
-            });
-
-                    // Set the GraphicsPath as the clipping region
-                    graphics.SetClip(path);
-
-                    // Draw the image onto the new Bitmap
-                    graphics.DrawImage(image, 0, 0);
-                }
-            }
-
-            return diamondImage;
+            if (!checkBoxLeft.Checked) return;
+            checkBoxRight.Checked = false;
+            _currentTransformation = "left";
         }
         #endregion
 
-        #region RotateImageByAngle
-        private Image RotateImageByAngle(Image image, float angle)
+        #region [ CheckBoxRight_CheckedChanged ]
+        private void CheckBoxRight_CheckedChanged(object sender, EventArgs e)
         {
-            // Calculate the size of the new Bitmap
-            int bitmapSize = (int)Math.Ceiling(Math.Sqrt(image.Width * image.Width + image.Height * image.Height));
-
-            // Create a new Bitmap with the calculated size
-            Bitmap rotatedImage = new Bitmap(bitmapSize, bitmapSize);
-
-            // Create a Graphics instance to draw the image
-            using (Graphics graphics = Graphics.FromImage(rotatedImage))
-            {
-                // Set the InterpolationMode based on the state of the checkbox
-                graphics.InterpolationMode = checkBoxAntiAliasing.Checked ? System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic : System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
-
-                // Set the rotation
-                graphics.TranslateTransform(rotatedImage.Width / 2, rotatedImage.Height / 2);
-                graphics.RotateTransform(angle);
-                graphics.TranslateTransform(-rotatedImage.Width / 2, -rotatedImage.Height / 2);
-
-                // Draw the image centered within the Bitmap
-                graphics.DrawImage(image, (bitmapSize - image.Width) / 2, (bitmapSize - image.Height) / 2);
-            }
-
-            return rotatedImage;
+            if (!checkBoxRight.Checked) return;
+            checkBoxLeft.Checked = false;
+            _currentTransformation = "right";
         }
         #endregion
 
-        #region checkBoxLeft        
-        private void checkBoxLeft_CheckedChanged(object sender, EventArgs e)
+        // ═══════════════════════════════════════════════════════════════════
+        //  CLIPBOARD
+        // ═══════════════════════════════════════════════════════════════════
+
+        #region [ ClipboardToolStripMenuItem_Click ]
+        private void ClipboardToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (checkBoxLeft.Checked)
+            if (pictureBoxTexture.Image == null)
             {
-                checkBoxRight.Checked = false;
-                _currentTransformation = "left";
+                MessageBox.Show("No image to copy..", "Clipboard",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
             }
+            Clipboard.SetImage(pictureBoxTexture.Image);
         }
         #endregion
 
-        #region checkBoxRight
-        private void checkBoxRight_CheckedChanged(object sender, EventArgs e)
+        #region [ ImportToolStripMenuItem_Click ]
+        private void ImportToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (checkBoxRight.Checked)
+            if (!Clipboard.ContainsImage())
             {
-                checkBoxLeft.Checked = false;
-                _currentTransformation = "right";
+                MessageBox.Show("The clipboard contains no image.", "Import",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
             }
+
+            Image clipImage = Clipboard.GetImage();
+            pictureBoxTexture.Image = clipImage;
+            ReplaceOriginalImage((Image)clipImage.Clone());
+            lbTextureSize.Text = $"Size: {clipImage.Width} x {clipImage.Height} px";
         }
         #endregion
 
-        #region importToolStripMenuItem
-        private void importToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            if (Clipboard.ContainsImage())
-            {
-                // Get the image from the clipboard
-                Image clipboardImage = Clipboard.GetImage();
+        // ═══════════════════════════════════════════════════════════════════
+        //  SAVE / LOAD
+        // ═══════════════════════════════════════════════════════════════════
 
-                // Display the clipboard image in the PictureBox
-                pictureBoxTexture.Image = clipboardImage;
-
-                // Store the clipboard image as the original image
-                _originalImage = (Image)clipboardImage.Clone();
-
-                // Display the size of the image in the label
-                lbTextureSize.Text = $"Size:  {clipboardImage.Width} x {clipboardImage.Height} Pixel.";
-            }
-            else
-            {
-                MessageBox.Show("The clipboard does not contain an image.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
-        #endregion
-
-        #region saveToolStripMenuItem
+        #region [ saveToolStripMenuItem_Click ]
         private void saveToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (pictureBoxTexture.Image != null)
+            if (pictureBoxTexture.Image == null)
             {
-                SaveFileDialog saveFileDialog = new SaveFileDialog();
-                saveFileDialog.Filter = "Bitmap Image|*.bmp|PNG Image|*.png|TIFF Image|*.tiff|JPEG Image|*.jpg";
-                saveFileDialog.Title = "Save the image as...";
-                saveFileDialog.ShowDialog();
+                MessageBox.Show("No image to save.", "Save",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
 
-                // If the file name is not an empty string open it for saving.
-                if (saveFileDialog.FileName != "")
+            using (SaveFileDialog dlg = new SaveFileDialog())
+            {
+                dlg.Filter = "Bitmap Image|*.bmp|PNG Image|*.png|TIFF Image|*.tiff|JPEG Image|*.jpg";
+                dlg.Title = "Save image as…";
+                if (dlg.ShowDialog() != DialogResult.OK || string.IsNullOrEmpty(dlg.FileName))
+                    return;
+
+                ImageFormat fmt = dlg.FilterIndex switch
                 {
-                    // Saves the Image via a FileStream created by the OpenFile method.
-                    System.IO.FileStream fs = (System.IO.FileStream)saveFileDialog.OpenFile();
+                    1 => ImageFormat.Bmp,
+                    2 => ImageFormat.Png,
+                    3 => ImageFormat.Tiff,
+                    4 => ImageFormat.Jpeg,
+                    _ => ImageFormat.Bmp
+                };
 
-                    // Save the image based on the format selected in the save file dialog
-                    switch (saveFileDialog.FilterIndex)
-                    {
-                        case 1:
-                            pictureBoxTexture.Image.Save(fs, System.Drawing.Imaging.ImageFormat.Bmp);
-                            break;
-
-                        case 2:
-                            pictureBoxTexture.Image.Save(fs, System.Drawing.Imaging.ImageFormat.Png);
-                            break;
-
-                        case 3:
-                            pictureBoxTexture.Image.Save(fs, System.Drawing.Imaging.ImageFormat.Tiff);
-                            break;
-
-                        case 4:
-                            pictureBoxTexture.Image.Save(fs, System.Drawing.Imaging.ImageFormat.Jpeg);
-                            break;
-                    }
-
-                    fs.Close();
-                }
+                using (FileStream fs = (FileStream)dlg.OpenFile())
+                    pictureBoxTexture.Image.Save(fs, fmt);
             }
         }
         #endregion
 
-        #region toolStripButtonSave
+        #region [ toolStripButtonSave_Click ]
         private void toolStripButtonSave_Click(object sender, EventArgs e)
         {
-            // Check if there is an image in the PictureBox
-            if (pictureBoxTexture.Image != null)
+            if (pictureBoxTexture.Image == null)
             {
-                string programDirectory = AppDomain.CurrentDomain.BaseDirectory;
-                string directory = Path.Combine(programDirectory, "tempGrafic");
-
-                // Generate file name with "TextureTile", date and time
-                string dateTime = DateTime.Now.ToString("yyyyMMdd_HHmmss");
-                string filename = Path.Combine(directory, $"TextureTile_{dateTime}.bmp");
-
-                // Make sure the directory exists
-                Directory.CreateDirectory(directory);
-
-                // Save the image as a BMP file
-                pictureBoxTexture.Image.Save(filename, System.Drawing.Imaging.ImageFormat.Bmp);
-
-                // Play the sound
-                string soundFilePath = Path.Combine(programDirectory, "Sound.wav");
-                System.Media.SoundPlayer player = new System.Media.SoundPlayer(soundFilePath);
-                player.Play();
+                MessageBox.Show("No image to save.", "Quick Save",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
             }
-            else
-            {
-                MessageBox.Show("There is no image to save.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
 
-        private void buttonOpenTempGrafic_Click(object sender, EventArgs e)
-        {
-            // Get the path to the program directory
-            string programDirectory = Application.StartupPath;
+            string programDir = AppDomain.CurrentDomain.BaseDirectory;
+            string outputDir = Path.Combine(programDir, "tempGrafic");
+            Directory.CreateDirectory(outputDir);
 
-            // Define the path to the temporary directory in the program directory
-            string directory = Path.Combine(programDirectory, "tempGrafic");
+            string timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
+            string filePath = Path.Combine(outputDir, $"TextureTile_{timestamp}.bmp");
 
-            // Check if the directory exists
-            if (Directory.Exists(directory))
+            pictureBoxTexture.Image.Save(filePath, ImageFormat.Bmp);
+
+            string soundPath = Path.Combine(programDir, "Sound.wav");
+            if (File.Exists(soundPath))
             {
-                // Open the directory in the file explorer
-                Process.Start("explorer.exe", directory);
-            }
-            else
-            {
-                // Display a message to the user indicating that the directory does not exist
-                MessageBox.Show("The directory tempGraphic does not exist.");
+                using (System.Media.SoundPlayer player = new System.Media.SoundPlayer(soundPath))
+                    player.Play();
             }
         }
         #endregion
 
-        #region private Bitmap GetImage()
+        #region [ toolStripButtonImageLoad_Click ] – Loads an image from the file system, displays it in the picture box, and updates the original image reference and size label for further processing.
+        private void toolStripButtonImageLoad_Click(object sender, EventArgs e)
+        {
+            using (OpenFileDialog dlg = new OpenFileDialog())
+            {
+                dlg.Filter = "Images|*.bmp;*.png;*.jpeg;*.jpg;*.tiff;*.tif";
+                dlg.Title = "Load image…";
+                if (dlg.ShowDialog() != DialogResult.OK) return;
+
+                Image loaded = Image.FromFile(dlg.FileName);
+                pictureBoxTexture.Image = loaded;
+                ReplaceOriginalImage((Image)loaded.Clone());
+                lbTextureSize.Text = $"Size: {loaded.Width} x {loaded.Height} px";
+            }
+        }
+        #endregion
+
+        #region [ ButtonOpenTempGrafic_Click ] – Opens the "tempGrafic" folder in the file explorer, where quick-saved images are stored, and shows a message if the folder doesn't exist yet.
+        private void ButtonOpenTempGrafic_Click(object sender, EventArgs e)
+        {
+            string directory = Path.Combine(Application.StartupPath, "tempGrafic");
+            if (Directory.Exists(directory))
+                Process.Start("explorer.exe", directory);
+            else
+                MessageBox.Show("The folder 'tempGrafic' doesn't exist yet.\nFirst save a tile.", "Open folder",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+        #endregion
+
+        // ═══════════════════════════════════════════════════════════════════
+        //  PREVIEW PANEL – tiled floor rendering
+        // ═══════════════════════════════════════════════════════════════════
+
+        #region [ GetImage ] – Renders a tiled floor preview using the current land tile, filling the canvas with repeated tiles and optionally overlaying an isometric grid for better visualization.
         private Bitmap GetImage()
         {
-            // Create a new Bitmap object
-            Bitmap bitmap = new Bitmap(pictureBoxPreview.Width, pictureBoxPreview.Height);
-
-            using (Graphics g = Graphics.FromImage(bitmap))
+            Bitmap canvas = new Bitmap(pictureBoxPreview.Width, pictureBoxPreview.Height);
+            using (Graphics g = Graphics.FromImage(canvas))
             {
-                // Draw the background onto the bitmap
-                Bitmap background = Ultima.Art.GetLand(_landTile);
+                Bitmap tile = Ultima.Art.GetLand(_landTile);
+                if (tile == null) return canvas;
 
-                if (background != null)
+                int row = 0;
+                for (int y = -22; y <= canvas.Height; y += 22)
                 {
-                    // Draw the grid pattern
-                    int i = 0;
-                    for (int y = -22; y <= bitmap.Height; y += 22)
-                    {
-                        int x = i % 2 == 0 ? 0 : -22;
-                        for (; x <= bitmap.Width; x += 44)
-                        {
-                            g.DrawImage(background, x, y);
-                        }
-                        ++i;
-                    }
+                    int startX = (row % 2 == 0) ? 0 : -22;
+                    for (int x = startX; x <= canvas.Width; x += 44)
+                        g.DrawImage(tile, x, y);
+                    row++;
                 }
-            }
 
-            return bitmap;
+                if (_showIsoGrid)
+                    DrawIsoGrid(g, canvas.Width, canvas.Height);
+            }
+            return canvas;
         }
         #endregion
 
-        #region Bitmap GetImageFromImport
-
+        #region [ GetImageFromImport ]
         private Bitmap GetImageFromImport(Image importedImage)
         {
-            // Cut the imported image into a diamond shape
+            if (importedImage == null) return null;
+
             Bitmap diamondImage = CropToDiamond(importedImage);
+            Bitmap scaledImage = new Bitmap(diamondImage, new Size(44, 44));
+            diamondImage.Dispose();
 
-            // Scale the diamond image to the desired size
-            Bitmap scaledImage = new Bitmap(diamondImage, new Size(44, 44)); // Resize as needed
-
-            // Create a new Bitmap object
-            Bitmap bitmap = new Bitmap(pictureBoxPreview.Width, pictureBoxPreview.Height);
-
-            using (Graphics g = Graphics.FromImage(bitmap))
+            Bitmap canvas = new Bitmap(pictureBoxPreview.Width, pictureBoxPreview.Height);
+            using (Graphics g = Graphics.FromImage(canvas))
             {
-                // Use the scaled diamond image as a background
-                Bitmap background = scaledImage;
+                g.Clear(Color.Transparent);
 
-                if (background != null)
+                int row = 0;
+                for (int y = -22; y <= canvas.Height; y += 22)
                 {
-                    // Draw the grid pattern
-                    int i = 0;
-                    for (int y = -22; y <= bitmap.Height; y += 22)
-                    {
-                        int x = i % 2 == 0 ? 0 : -22;
-                        for (; x <= bitmap.Width; x += 44)
-                        {
-                            g.DrawImage(background, x, y);
-                        }
-                        ++i;
-                    }
+                    int startX = (row % 2 == 0) ? 0 : -22;
+                    for (int x = startX; x <= canvas.Width; x += 44)
+                        g.DrawImage(scaledImage, x, y);
+                    row++;
                 }
+
+                if (_showIsoGrid)
+                    DrawIsoGrid(g, canvas.Width, canvas.Height);
             }
 
-            // Remove the black paint
-            for (int x = 0; x < bitmap.Width; x++)
-            {
-                for (int y = 0; y < bitmap.Height; y++)
-                {
-                    Color pixelColor = bitmap.GetPixel(x, y);
-                    if (pixelColor.R == 0 && pixelColor.G == 0 && pixelColor.B == 0)
-                    {
-                        bitmap.SetPixel(x, y, Color.Transparent);
-                    }
-                }
-            }
+            scaledImage.Dispose();
 
-            return bitmap;
+            // Make black pixels transparent (as before)
+            for (int x = 0; x < canvas.Width; x++)
+                for (int y = 0; y < canvas.Height; y++)
+                {
+                    Color c = canvas.GetPixel(x, y);
+                    if (c.R == 0 && c.G == 0 && c.B == 0)
+                        canvas.SetPixel(x, y, Color.Transparent);
+                }
+
+            return canvas;
         }
         #endregion
 
-        #region IgPreviewClicked
-        private bool isButtonChecked = false;
+        #region [ CropToDiamond ] – Crops the input image to a diamond shape by defining a polygonal clipping path that matches the UO tile's diamond layout, ensuring that only the pixels within the diamond are retained in the resulting bitmap.
+        private Bitmap CropToDiamond(Image image)
+        {
+            Bitmap diamond = new Bitmap(image.Width, image.Height);
+            using (Graphics g = Graphics.FromImage(diamond))
+            using (GraphicsPath path = new GraphicsPath())
+            {
+                path.AddPolygon(new[]
+                {
+                    new Point(image.Width / 2, 0),
+                    new Point(image.Width, image.Height / 2),
+                    new Point(image.Width / 2, image.Height),
+                    new Point(0, image.Height / 2)
+                });
+
+                g.SetClip(path);
+                g.DrawImage(image, 0, 0);
+            }
+            return diamond;
+        }
+        #endregion
+
+        #region [ BuildTileFromImage]
+        /// <summary>
+        /// Creates a pixel-perfect 44×44 UO tile from any source image.        
+        /// </summary>
+        private Bitmap BuildTileFromImage(Image source, Color bgColor)
+        {
+            Bitmap src = new Bitmap(source);
+            Bitmap tile = new Bitmap(44, 44, PixelFormat.Format32bppArgb);
+
+            using (Graphics g = Graphics.FromImage(tile))
+                g.Clear(bgColor);
+
+            int srcW = src.Width;
+            int srcH = src.Height;
+
+            for (int tileY = 0; tileY < 44; tileY++)
+            {
+                GetDiamondRowBounds(tileY, out int startX, out int endX);
+                int rowWidth = endX - startX + 1;
+
+                float srcY_f = (tileY / 43.0f) * (srcH - 1);
+
+                for (int tileX = startX; tileX <= endX; tileX++)
+                {
+                    float posInRow = (float)(tileX - startX) / Math.Max(rowWidth - 1, 1);
+                    float srcX_f = posInRow * (srcW - 1);
+
+                    Color pixel = checkBoxAntiAliasing.Checked
+                        ? BilinearSample(src, srcX_f, srcY_f)
+                        : src.GetPixel((int)Math.Round(srcX_f), (int)Math.Round(srcY_f));
+
+                    tile.SetPixel(tileX, tileY, pixel);
+                }
+            }
+
+            src.Dispose();
+            return tile;
+        }
+        #endregion
+
+        #region [ IgPreviewClicked_Click ] – Updates the preview with the current land tile to enable navigation through the tiles.
         private void IgPreviewClicked_Click(object sender, EventArgs e)
         {
-            // Switching the state
-            isButtonChecked = !isButtonChecked;
-
-            // Get the image based on _landTile
             Bitmap image = GetImage();
-
-            // Display the image in pictureBoxPreview
-            if (image != null)
-            {
-                pictureBoxPreview.Image = image;
-            }
+            if (image != null) pictureBoxPreview.Image = image;
         }
         #endregion
 
-        #region previousButton
+        #region [ previousButton_Click ]  / NextButton_Click – Navigating through the tiles
         private void previousButton_Click(object sender, EventArgs e)
         {
-            if (_currentTile > 0)
-            {
-                _currentTile--;
-                ShowTile();
-            }
+            if (_currentTile <= 0) return;
+            _currentTile--;
+            ShowTile();
         }
         #endregion
 
-        #region NextButton
+        #region [ NextButton_Click ] – Navigates to the next tile in the sequence, ensuring it does not exceed the maximum tile index, and updates the preview accordingly.
         private void NextButton_Click(object sender, EventArgs e)
         {
-            if (_currentTile < _maxTile)
-            {
-                _currentTile++;
-                ShowTile();
-            }
+            if (_currentTile >= MaxTileIndex) return;
+            _currentTile++;
+            ShowTile();
         }
         #endregion
 
-        #region ShowTile
+        #region [ ShowTile ] – Loads the tile with the current ID and displays it in the preview to enable navigation through the tiles.
         private void ShowTile()
         {
             _landTile = _currentTile;
@@ -479,362 +557,43 @@ namespace UoFiddler.Controls.Forms
         }
         #endregion
 
-        #region importToPrewiewToolStripMenuItem
+        #region [ importToPrewiewToolStripMenuItem_Click ] – Imports an image from the clipboard, applies the diamond cropping and scaling, and sets it as the preview background.
         private void importToPrewiewToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (Clipboard.ContainsImage())
+            if (!Clipboard.ContainsImage())
             {
-                // Get the image from the clipboard
-                Image clipboardImage = Clipboard.GetImage();
-
-                // Use the GetImageFromImport method to display the image in a grid pattern
-                Bitmap image = GetImageFromImport(clipboardImage);
-
-                // Display the image in pictureBoxPreview
-                if (image != null)
-                {
-                    pictureBoxPreview.Image = image;
-                }
-            }
-            else
-            {
-                MessageBox.Show("The clipboard does not contain an image.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
-        #endregion
-
-        #region btColorHex
-        private void btColorHex_Click(object sender, EventArgs e)
-        {
-            if (pictureBoxTexture.Image != null)
-            {
-                Bitmap bmp = new Bitmap(pictureBoxTexture.Image);
-                Dictionary<string, Color> colors = new Dictionary<string, Color>();
-
-                for (int x = 0; x < bmp.Width; x++)
-                {
-                    for (int y = 0; y < bmp.Height; y++)
-                    {
-                        Color clr = bmp.GetPixel(x, y);
-                        string hex = clr.R.ToString("X2") + clr.G.ToString("X2") + clr.B.ToString("X2");
-                        if (!colors.ContainsKey(hex))
-                        {
-                            colors.Add(hex, clr);
-                        }
-                    }
-                }
-
-                rtBoxInfo.Clear();
-                foreach (KeyValuePair<string, Color> entry in colors)
-                {
-                    rtBoxInfo.SelectionStart = rtBoxInfo.TextLength;
-                    rtBoxInfo.SelectionLength = 0;
-
-                    rtBoxInfo.SelectionBackColor = entry.Value;
-                    rtBoxInfo.AppendText("    "); // four spaces for a wider "cube"
-
-                    rtBoxInfo.SelectionBackColor = rtBoxInfo.BackColor;
-                    rtBoxInfo.AppendText("  " + entry.Key + Environment.NewLine); // Two spaces spacing
-                }
-            }
-            else
-            {
-                MessageBox.Show("There is no image to analyze.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-            // Paste this code into the initialization of your form
-            rtBoxInfo.MouseClick += (s, e) =>
-            {
-                if (rtBoxInfo.SelectedText.Length > 0)
-                {
-                    tBoxInfoColor.Text = rtBoxInfo.SelectedText.Trim();
-
-                    // Copy the selected text to the clipboard
-                    Clipboard.SetText(rtBoxInfo.SelectedText.Trim());
-                }
-            };
-        }
-        #endregion
-
-        #region btReplaceColor
-        private void btReplaceColor_Click(object sender, EventArgs e)
-        {
-            if (pictureBoxTexture.Image != null)
-            {
-                // Parse the color codes from the text boxes
-                string oldColorCode = tBoxInfoColor.Text.StartsWith("#") ? tBoxInfoColor.Text : "#" + tBoxInfoColor.Text;
-                string newColorCode = tbColorSet.Text.StartsWith("#") ? tbColorSet.Text : "#" + tbColorSet.Text;
-
-                // Check if the color codes are valid
-                if (!IsHexColor(oldColorCode) || !IsHexColor(newColorCode))
-                {
-                    MessageBox.Show("Invalid color code. Please enter a valid hexadecimal color value.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    return;
-                }
-
-                Color oldColor = ColorTranslator.FromHtml(oldColorCode);
-                Color newColor = ColorTranslator.FromHtml(newColorCode);
-
-                Bitmap bmp = new Bitmap(pictureBoxTexture.Image);
-
-                for (int x = 0; x < bmp.Width; x++)
-                {
-                    for (int y = 0; y < bmp.Height; y++)
-                    {
-                        Color clr = bmp.GetPixel(x, y);
-                        if (clr == oldColor)
-                        {
-                            bmp.SetPixel(x, y, newColor);
-                        }
-                    }
-                }
-
-                // Create a new bitmap with the changed image
-                Bitmap newBmp = new Bitmap(bmp);
-
-                // Assign the new bitmap to the PictureBox
-                pictureBoxTexture.Image = newBmp;
-            }
-            else
-            {
-                MessageBox.Show("There is no image to edit.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
-        #endregion
-
-        #region IsHexColor
-        // Method for checking whether a string represents a valid hexadecimal color value
-        private bool IsHexColor(string colorCode)
-        {
-            return Regex.IsMatch(colorCode, "^#(?:[0-9a-fA-F]{3}){1,2}$");
-        }
-        #endregion
-
-        #region btColorDialog
-        private void btColorDialog_Click(object sender, EventArgs e)
-        {
-            // Create a new ColorDialog object
-            ColorDialog colorDialog = new ColorDialog();
-
-            // Display the dialog and verify that the user clicked "OK."
-            if (colorDialog.ShowDialog() == DialogResult.OK)
-            {
-                // Convert the selected color to a hexadecimal code
-                string hex = "#" + colorDialog.Color.R.ToString("X2") + colorDialog.Color.G.ToString("X2") + colorDialog.Color.B.ToString("X2");
-
-                // Set the text of the tbColorSet TextBox to hexadecimal code
-                tbColorSet.Text = hex;
-            }
-        }
-        #endregion
-
-        #region btCopyColorCode
-        private void btCopyColorCode_Click(object sender, EventArgs e)
-        {
-            // Extract the text from the rtBoxInfo
-            string text = rtBoxInfo.Text;
-
-            // Check if the text is null
-            if (text == null)
-            {
-                MessageBox.Show("No text available to copy!");
+                MessageBox.Show("The clipboard contains no image.", "Import to Preview",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            // Remove spaces at the beginning of each color code and add a '#'
-            string[] lines = text.Split('\n');
-            for (int i = 0; i < lines.Length; i++)
-            {
-                lines[i] = lines[i].TrimStart();
-                if (lines[i].Length > 0 && !lines[i].StartsWith("#"))
-                {
-                    lines[i] = "#" + lines[i];
-                }
-            }
-
-            // Paste the modified text into the clipboard
-            Clipboard.SetText(string.Join("\n", lines));
-
-            // Display a message that the color codes have been copied to the clipboard
-            MessageBox.Show("The color codes have been copied to the clipboard!");
+            Image clipImage = Clipboard.GetImage();
+            Bitmap tiled = GetImageFromImport(clipImage);
+            if (tiled != null) pictureBoxPreview.Image = tiled;
         }
         #endregion
 
-        #region trackBarContrast
-        private void trackBarContrast_ValueChanged(object sender, EventArgs e)
+        // ═══════════════════════════════════════════════════════════════════
+        //  PREVIEW HINTERGRUND CYCLE
+        // ═══════════════════════════════════════════════════════════════════
+
+        #region [ BtBackground_Click ] – Cycles the preview background color between standard, black, and white to help visualize different tile designs.
+        private int _backgroundCycle = 0;
+
+        private void BtBackground_Click(object sender, EventArgs e)
         {
-            // Update the label to reflect the current value
-            labelContrastValue.Text = trackBarColor.Value.ToString();
-
-            // Make sure there is an image
-            if (pictureBoxTexture.Image != null)
+            _backgroundCycle = (_backgroundCycle + 1) % 3;
+            switch (_backgroundCycle)
             {
-                // Save the original image when the value of the TrackBar is 0
-                if (trackBarColor.Value == 0)
-                {
-                    _originalImage = (Image)pictureBoxTexture.Image.Clone();
-                }
-                else
-                {
-                    // Convert the image to a bitmap
-                    Bitmap bmp = new Bitmap(_originalImage);
-
-                    // Create a ColorMatrix and set the contrast
-                    float contrast = (float)Math.Pow((100.0 + trackBarColor.Value) / 100.0, 2);
-
-                    System.Drawing.Imaging.ColorMatrix colorMatrix = new System.Drawing.Imaging.ColorMatrix(new float[][]
-                    {
-                new float[] {contrast, 0, 0, 0, 0},
-                new float[] {0, contrast, 0, 0, 0},
-                new float[] {0, 0, contrast, 0, 0},
-                new float[] {0, 0, 0, 1, 0},
-                new float[] {0, 0, 0, 0, 1}
-                    });
-
-                    // Create an ImageAttributes object and set the ColorMatrix
-                    System.Drawing.Imaging.ImageAttributes attributes = new System.Drawing.Imaging.ImageAttributes();
-                    attributes.SetColorMatrix(colorMatrix);
-
-                    // Draw the image with the new ImageAttributes
-                    using (Graphics g = Graphics.FromImage(bmp))
-                    {
-                        g.DrawImage(_originalImage, new Rectangle(0, 0, bmp.Width, bmp.Height),
-                            0, 0, _originalImage.Width, _originalImage.Height, GraphicsUnit.Pixel, attributes);
-                    }
-
-                    // Put the new image in the PictureBox
-                    pictureBoxTexture.Image = bmp;
-                }
-            }
-        }
-        #endregion
-
-        #region BtCreateTexture
-        private void BtCreateTexture_Click(object sender, EventArgs e)
-        {
-            if (pictureBoxTexture.Image != null)
-            {
-                Bitmap bmp = new Bitmap(pictureBoxTexture.Image);
-
-                // Check which CheckBox is selected
-                if (checkBox64x64.Checked)
-                {
-                    // Scale the image to 64x64
-                    Bitmap newBmp = new Bitmap(bmp, new Size(64, 64));
-                    pictureBoxTexture.Image = newBmp;
-                }
-                else if (checkBox128x128.Checked)
-                {
-                    // Scale the image to 128x128
-                    Bitmap newBmp = new Bitmap(bmp, new Size(128, 128));
-                    pictureBoxTexture.Image = newBmp;
-                }
-                else
-                {
-                    MessageBox.Show("Please choose a size.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
-            }
-            else
-            {
-                MessageBox.Show("There is no image to edit.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
-        #endregion
-
-        #region checkBox64x64_CheckedChanged
-        private void checkBox64x64_CheckedChanged(object sender, EventArgs e)
-        {
-            if (checkBox64x64.Checked)
-            {
-                checkBox128x128.Checked = false;
-            }
-        }
-        #endregion
-
-        #region checkBox128x128_CheckedChanged
-        private void checkBox128x128_CheckedChanged(object sender, EventArgs e)
-        {
-            if (checkBox128x128.Checked)
-            {
-                checkBox64x64.Checked = false;
-            }
-        }
-        #endregion
-
-        #region toolStripButtonImageLoad
-        private void toolStripButtonImageLoad_Click(object sender, EventArgs e)
-        {
-            OpenFileDialog openFileDialog = new OpenFileDialog();
-            openFileDialog.Filter = "Images|*.bmp;*.png;*.jpeg;*.jpg;*.tiff;*.tif";
-
-            if (openFileDialog.ShowDialog() == DialogResult.OK)
-            {
-                pictureBoxTexture.Image = Image.FromFile(openFileDialog.FileName);
-            }
-        }
-        #endregion
-
-        #region btImageLeft
-        private void btImageLeft_Click(object sender, EventArgs e)
-        {
-            if (pictureBoxTexture.Image != null)
-            {
-                pictureBoxTexture.Image.RotateFlip(RotateFlipType.Rotate270FlipNone);
-                pictureBoxTexture.Refresh();
-            }
-            else
-            {
-                MessageBox.Show("There is no image to rotate.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
-        #endregion
-
-        #region btImageRight
-        private void btImageRight_Click(object sender, EventArgs e)
-        {
-            if (pictureBoxTexture.Image != null)
-            {
-                pictureBoxTexture.Image.RotateFlip(RotateFlipType.Rotate90FlipNone);
-                pictureBoxTexture.Refresh();
-            }
-            else
-            {
-                MessageBox.Show("There is no image to rotate.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
-        #endregion
-
-        #region mirrorToolStripMenuItem
-        private void mirrorToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            if (pictureBoxTexture.Image != null)
-            {
-                pictureBoxTexture.Image.RotateFlip(RotateFlipType.RotateNoneFlipX);
-                pictureBoxTexture.Refresh();
-            }
-            else
-            {
-                MessageBox.Show("There is no image to mirror.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
-        #endregion
-
-        #region btBackground
-        private int _clickCount = 0;
-        private void btBackground_Click(object sender, EventArgs e)
-        {
-            _clickCount++;
-
-            switch (_clickCount % 3)
-            {
-                case 0: // Default color
+                case 0:
                     pictureBoxPreview.BackColor = SystemColors.Control;
-                    btBackground.Text = "Standard"; // Insert the original name of the button here
+                    btBackground.Text = "Standard";
                     break;
-                case 1: // Black
+                case 1:
                     pictureBoxPreview.BackColor = Color.Black;
                     btBackground.Text = "Black";
                     break;
-                case 2: // White
+                case 2:
                     pictureBoxPreview.BackColor = Color.White;
                     btBackground.Text = "White";
                     break;
@@ -842,36 +601,381 @@ namespace UoFiddler.Controls.Forms
         }
         #endregion
 
-        #region triangleToolStripMenuItem
+        // ═══════════════════════════════════════════════════════════════════
+        //  ROTATE / MIRROR
+        // ═══════════════════════════════════════════════════════════════════
+
+        #region btImageLeft_Click / btImageRight_Click / mirrorToolStripMenuItem_Click
+        private void btImageLeft_Click(object sender, EventArgs e)
+        {
+            if (pictureBoxTexture.Image == null)
+            {
+                MessageBox.Show("Kein Bild zum Drehen.", "Rotate",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+            pictureBoxTexture.Image.RotateFlip(RotateFlipType.Rotate270FlipNone);
+            pictureBoxTexture.Refresh();
+        }
+        #endregion
+
+        #region [ btImageRight_Click ] – Rotates the image 90 degrees to the right using the RotateFlip method with Rotate90FlipNone.
+        private void BtImageRight_Click(object sender, EventArgs e)
+        {
+            if (pictureBoxTexture.Image == null)
+            {
+                MessageBox.Show("Kein Bild zum Drehen.", "Rotate",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+            pictureBoxTexture.Image.RotateFlip(RotateFlipType.Rotate90FlipNone);
+            pictureBoxTexture.Refresh();
+        }
+        #endregion
+
+        #region [ mirrorToolStripMenuItem_Click ] – Flip the image horizontally using the RotateFlip method with RotateNoneFlipX.
+        private void mirrorToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (pictureBoxTexture.Image == null)
+            {
+                MessageBox.Show("No image to mirror.", "Mirror",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+            pictureBoxTexture.Image.RotateFlip(RotateFlipType.RotateNoneFlipX);
+            pictureBoxTexture.Refresh();
+        }
+        #endregion
+
+        // ═══════════════════════════════════════════════════════════════════
+        //  TRIANGLE MASK
+        // ═══════════════════════════════════════════════════════════════════
+
+        #region [ triangleToolStripMenuItem_Click ] – Applies a triangle mask to the image, filling the lower half with black to create a simple geometric effect.
         private void triangleToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (pictureBoxTexture.Image != null)
+            if (pictureBoxTexture.Image == null)
             {
-                // Create a new Bitmap object based on the current image in the PictureBox
-                Bitmap bmp = new Bitmap(pictureBoxTexture.Image);
+                MessageBox.Show("No image available for editing.", "Triangle Mask",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
 
-                // Create a Graphics object for the bitmap
+            Bitmap bmp = new Bitmap(pictureBoxTexture.Image);
+            using (Graphics g = Graphics.FromImage(bmp))
+            using (SolidBrush brush = new SolidBrush(Color.Black))
+            {
+                Rectangle lowerHalf = new Rectangle(0, bmp.Height / 2, bmp.Width, bmp.Height / 2);
+                g.FillRectangle(brush, lowerHalf);
+            }
+
+            pictureBoxTexture.Image = bmp;
+        }
+        #endregion
+
+        // ═══════════════════════════════════════════════════════════════════
+        //  CONTRAST TRACKBAR
+        // ═══════════════════════════════════════════════════════════════════
+
+        #region [ trackBarContrast_ValueChanged ] – Adjusts the contrast of the displayed image based on the trackbar value, with real-time preview.
+        private void trackBarContrast_ValueChanged(object sender, EventArgs e)
+        {
+            _currentContrast = (float)Math.Pow((100.0 + trackBarColor.Value) / 100.0, 2);
+            labelContrastValue.Text = $"Contrast: {trackBarColor.Value}";
+
+            if (_originalImage == null) return;
+
+            if (trackBarColor.Value == 0)
+            {
+                pictureBoxTexture.Image = (Image)_originalImage.Clone();
+                return;
+            }
+
+            // Apply contrast to the displayed image (as before)
+            Bitmap bmp = new Bitmap(_originalImage);
+            ColorMatrix cm = new ColorMatrix(new[]
+            {
+                new[] { _currentContrast, 0f, 0f, 0f, 0f },
+                new[] { 0f, _currentContrast, 0f, 0f, 0f },
+                new[] { 0f, 0f, _currentContrast, 0f, 0f },
+                new[] { 0f, 0f, 0f, 1f, 0f },
+                new[] { 0f, 0f, 0f, 0f, 1f }
+            });
+
+            using (ImageAttributes ia = new ImageAttributes())
+            {
+                ia.SetColorMatrix(cm);
                 using (Graphics g = Graphics.FromImage(bmp))
                 {
-                    // Define the color and brush
-                    Color color = ColorTranslator.FromHtml("#000000");
-                    using (SolidBrush brush = new SolidBrush(color))
-                    {
-                        // Define the rectangle for the bottom half of the image
-                        Rectangle rect = new Rectangle(0, bmp.Height / 2, bmp.Width, bmp.Height / 2);
-
-                        // Fill the rectangle with black
-                        g.FillRectangle(brush, rect);
-                    }
+                    g.DrawImage(_originalImage, new Rectangle(0, 0, bmp.Width, bmp.Height),
+                        0, 0, _originalImage.Width, _originalImage.Height, GraphicsUnit.Pixel, ia);
                 }
-
-                // Put the new image in the PictureBox
-                pictureBoxTexture.Image = bmp;
             }
+            pictureBoxTexture.Image = bmp;
+        }
+        #endregion
+
+        // ═══════════════════════════════════════════════════════════════════
+        //  CREATE TEXTURE (64×64 / 128×128)
+        // ═══════════════════════════════════════════════════════════════════
+
+        #region [ BtCreateTexture_Click ] – Scales the current texture to 64×64 or 128×128 pixels, based on the selected checkboxes.
+        private void BtCreateTexture_Click(object sender, EventArgs e)
+        {
+            if (pictureBoxTexture.Image == null)
+            {
+                MessageBox.Show("No image to scale.", "Create Texture",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            Size targetSize;
+            if (checkBox64x64.Checked) targetSize = new Size(64, 64);
+            else if (checkBox128x128.Checked) targetSize = new Size(128, 128);
             else
             {
-                MessageBox.Show("There is no image to edit.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Please select a target size (64×64 or 128×128).",
+                    "Create Texture", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
             }
+
+            Bitmap resized = new Bitmap(pictureBoxTexture.Image, targetSize);
+            pictureBoxTexture.Image = resized;
+            lbTextureSize.Text = $"Image size: {targetSize.Width} x {targetSize.Height} px";
+        }
+        #endregion
+
+        #region checkBox64x64_CheckedChanged / checkBox128x128_CheckedChanged
+        private void checkBox64x64_CheckedChanged(object sender, EventArgs e)
+        {
+            if (checkBox64x64.Checked) checkBox128x128.Checked = false;
+        }
+
+        private void checkBox128x128_CheckedChanged(object sender, EventArgs e)
+        {
+            if (checkBox128x128.Checked) checkBox64x64.Checked = false;
+        }
+        #endregion
+
+        // ═══════════════════════════════════════════════════════════════════
+        //  COLOR ANALYSIS
+        // ═══════════════════════════════════════════════════════════════════
+
+        #region [ BtColorHex_Click ] – Analyzes the colors in the image, lists them with hex codes, and allows the codes to be copied.
+        private void BtColorHex_Click(object sender, EventArgs e)
+        {
+            if (pictureBoxTexture.Image == null)
+            {
+                MessageBox.Show("No image to analyze.", "Color Analysis",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            Bitmap bmp = new Bitmap(pictureBoxTexture.Image);
+            var colors = new Dictionary<string, Color>();
+
+            for (int x = 0; x < bmp.Width; x++)
+                for (int y = 0; y < bmp.Height; y++)
+                {
+                    Color c = bmp.GetPixel(x, y);
+                    string hex = c.R.ToString("X2") + c.G.ToString("X2") + c.B.ToString("X2");
+                    colors.TryAdd(hex, c);
+                }
+
+            rtBoxInfo.Clear();
+            foreach (var entry in colors)
+            {
+                rtBoxInfo.SelectionStart = rtBoxInfo.TextLength;
+                rtBoxInfo.SelectionLength = 0;
+                rtBoxInfo.SelectionBackColor = entry.Value;
+                rtBoxInfo.AppendText("    ");
+                rtBoxInfo.SelectionBackColor = rtBoxInfo.BackColor;
+                rtBoxInfo.AppendText("  #" + entry.Key + Environment.NewLine);
+            }
+
+            rtBoxInfo.MouseClick += (s, ev) =>
+            {
+                string selected = rtBoxInfo.SelectedText.Trim();
+                if (selected.Length == 0) return;
+                tBoxInfoColor.Text = selected.TrimStart('#');
+                Clipboard.SetText(selected);
+            };
+        }
+        #endregion
+
+        // ═══════════════════════════════════════════════════════════════════
+        //  COLOR REPLACEMENT
+        // ═══════════════════════════════════════════════════════════════════
+
+        #region [ BtReplaceColor_Click ] – Replaces all pixels of a specific color with a new color, based on the hex codes in the text fields.
+        private void BtReplaceColor_Click(object sender, EventArgs e)
+        {
+            if (pictureBoxTexture.Image == null)
+            {
+                MessageBox.Show("No image available for editing.", "Replace Color",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            string oldCode = NormalizeHex(tBoxInfoColor.Text);
+            string newCode = NormalizeHex(tbColorSet.Text);
+
+            if (!IsHexColor(oldCode) || !IsHexColor(newCode))
+            {
+                MessageBox.Show("Invalid hex color code.\nPlease enter a 3- or 6-digit hex value., z.B. FF8800 oder #FF8800.",
+                    "Replace Color", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            Color oldColor = ColorTranslator.FromHtml(oldCode);
+            Color newColor = ColorTranslator.FromHtml(newCode);
+
+            Bitmap bmp = new Bitmap(pictureBoxTexture.Image);
+            for (int x = 0; x < bmp.Width; x++)
+                for (int y = 0; y < bmp.Height; y++)
+                {
+                    if (bmp.GetPixel(x, y) == oldColor)
+                        bmp.SetPixel(x, y, newColor);
+                }
+
+            pictureBoxTexture.Image = bmp;
+        }
+        #endregion        
+        private static bool IsHexColor(string colorCode)
+            => Regex.IsMatch(colorCode, @"^#(?:[0-9a-fA-F]{3}){1,2}$"); // Validates that the input string is a valid hex color code, allowing for both 3-digit and 6-digit formats, with an optional leading '#'.
+
+        #region [ NormalizeHex ] – Removes unnecessary spaces and adds missing '#' to ensure consistent formatting of hex color codes.
+        private static string NormalizeHex(string raw)
+        {
+            raw = raw?.Trim() ?? string.Empty;
+            return raw.StartsWith("#") ? raw : "#" + raw;
+        }
+        #endregion
+
+        #region [ BtColorDialog_Click ] – Open a color picker dialog and set the selected color as the new color code in the text field.
+        private void BtColorDialog_Click(object sender, EventArgs e)
+        {
+            using (ColorDialog dlg = new ColorDialog())
+            {
+                if (dlg.ShowDialog() != DialogResult.OK) return;
+                tbColorSet.Text = $"#{dlg.Color.R:X2}{dlg.Color.G:X2}{dlg.Color.B:X2}";
+            }
+        }
+        #endregion
+
+        #region [ BtCopyColorCode_Click ] – Copies the hex color values ​​from the info text field to the clipboard.
+        private void BtCopyColorCode_Click(object sender, EventArgs e)
+        {
+            string text = rtBoxInfo.Text;
+            if (string.IsNullOrWhiteSpace(text))
+            {
+                MessageBox.Show("No color codes to copy..\nFirst run 'Analyze'.",
+                    "Copy Colors", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            string[] lines = text.Split('\n');
+            for (int i = 0; i < lines.Length; i++)
+            {
+                string line = lines[i].Trim();
+                if (line.Length > 0 && !line.StartsWith("#"))
+                    lines[i] = "#" + line;
+                else
+                    lines[i] = line;
+            }
+
+            string result = string.Join(Environment.NewLine, lines).Trim();
+            Clipboard.SetText(result);
+            MessageBox.Show($"{lines.Length} Color code(s) copied to clipboard.",
+                "Copy Colors", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+        #endregion
+
+        // ═══════════════════════════════════════════════════════════════════
+        //  PRIVATE HELPERS
+        // ═══════════════════════════════════════════════════════════════════
+
+        #region ReplaceOriginalImage
+        private void ReplaceOriginalImage(Image newImage)
+        {
+            _originalImage?.Dispose();
+            _originalImage = newImage;
+        }
+        #endregion
+
+        #region Form Dispose override
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _originalImage?.Dispose();
+                components?.Dispose();
+            }
+            base.Dispose(disposing);
+        }
+        #endregion
+
+        #region [ BtToggleGrid_Click ] – Toggle visibility of the isometric grid overlay in the preview
+        private void BtToggleGrid_Click(object sender, EventArgs e)
+        {
+            _showIsoGrid = !_showIsoGrid;
+            btToggleGrid.Text = _showIsoGrid ? "Hide grid" : "Show grid";
+
+            // Update preview immediately
+            if (pictureBoxPreview.Image != null)
+            {
+                // Simply regenerate the current preview
+                if (pictureBoxPreview.Tag is Image imported)   // if currently imported
+                    pictureBoxPreview.Image = GetImageFromImport(imported);
+                else
+                    pictureBoxPreview.Image = GetImage();
+            }
+        }
+        #endregion
+
+        #region [ DrawIsoGrid ] – thin diamond grid as a guideline
+        private void DrawIsoGrid(Graphics g, int width, int height)
+        {
+            using Pen pen = new Pen(Color.FromArgb(120, 255, 255, 255), 1f); // semi-transparent white
+
+            for (int y = -22; y <= height; y += 22)
+            {
+                int startX = (y / 22 % 2 == 0) ? 0 : -22;
+                for (int x = startX; x <= width; x += 44)
+                {
+                    // Raute zeichnen
+                    g.DrawLine(pen, x + 22, y, x + 44, y + 22); // right edge
+                    g.DrawLine(pen, x + 22, y, x, y + 22); // left edge
+                    g.DrawLine(pen, x, y + 22, x + 22, y + 44); // lower left
+                    g.DrawLine(pen, x + 44, y + 22, x + 22, y + 44); // lower right
+                }
+            }
+        }
+        #endregion
+
+        #region [ ApplyContrast ] – applies contrast adjustment to an image using a ColorMatrix
+        private Bitmap ApplyContrast(Image image, float contrastFactor)
+        {
+            Bitmap bmp = new Bitmap(image);
+            ColorMatrix cm = new ColorMatrix(new[]
+            {
+                new[] { contrastFactor, 0f, 0f, 0f, 0f },
+                new[] { 0f, contrastFactor, 0f, 0f, 0f },
+                new[] { 0f, 0f, contrastFactor, 0f, 0f },
+                new[] { 0f, 0f, 0f, 1f, 0f },
+                new[] { 0f, 0f, 0f, 0f, 1f }
+            });
+
+            using (ImageAttributes ia = new ImageAttributes())
+            {
+                ia.SetColorMatrix(cm);
+                using (Graphics g = Graphics.FromImage(bmp))
+                {
+                    g.DrawImage(image, new Rectangle(0, 0, bmp.Width, bmp.Height),
+                        0, 0, image.Width, image.Height, GraphicsUnit.Pixel, ia);
+                }
+            }
+            return bmp;
         }
         #endregion
     }
