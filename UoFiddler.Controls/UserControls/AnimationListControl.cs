@@ -1441,84 +1441,6 @@ namespace UoFiddler.Controls.UserControls
         #endregion
 
         #region [ ExportAnimatedGif ]
-        /*private void ExportAnimatedGif(bool looping)
-        {
-            // Check if the frames are loaded
-            if (_frames == null || _frames.Length == 0)
-            {
-                MessageBox.Show("Frames not loaded.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
-
-            string baseFileName = $"{(_displayType == 1 ? "Equipment" : "Mob")} {_currentSelect}.gif";
-            string outputFile = Path.Combine(Options.OutputPath, baseFileName);
-            int fileIndex = 1;
-
-            // Check whether the path exists and is writable
-            if (!Directory.Exists(Options.OutputPath))
-            {
-                MessageBox.Show($"OutputPath {Options.OutputPath} does not exist.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
-
-            // Increment the filename if the file already exists
-            while (File.Exists(outputFile))
-            {
-                outputFile = Path.Combine(Options.OutputPath, $"{(_displayType == 1 ? "Equipment" : "Mob")} {_currentSelect} ({fileIndex}).gif");
-                fileIndex++;
-            }
-
-            try
-            {
-                var maxFrameSize = new Size(0, 0);
-
-                foreach (var frame in _frames)
-                {
-                    if (frame?.Bitmap != null)
-                    {
-                        maxFrameSize.Width = Math.Max(maxFrameSize.Width, frame.Bitmap.Width);
-                        maxFrameSize.Height = Math.Max(maxFrameSize.Height, frame.Bitmap.Height);
-                    }
-                }
-
-                using (var gif = AnimatedGif.AnimatedGif.Create(outputFile, delay: 150))
-                {
-                    foreach (var frame in _frames)
-                    {
-                        if (frame?.Bitmap == null)
-                        {
-                            continue;
-                        }
-
-                        using (Bitmap target = new Bitmap(maxFrameSize.Width, maxFrameSize.Height))
-                        {
-                            using (Graphics g = Graphics.FromImage(target))
-                            {
-                                g.DrawImage(frame.Bitmap, 0, 0);
-                            }
-                            gif.AddFrame(target, delay: -1, quality: GifQuality.Bit8);
-                        }
-                    }
-                }
-
-                if (!looping)
-                {
-                    using (var stream = new FileStream(outputFile, FileMode.Open, FileAccess.Write))
-                    {
-                        stream.Seek(28, SeekOrigin.Begin);
-                        stream.WriteByte(0);
-                    }
-                }
-
-                MessageBox.Show($"InGame Anim saved in {outputFile}", "Saved", MessageBoxButtons.OK,
-                    MessageBoxIcon.Information, MessageBoxDefaultButton.Button1);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error creating GIF: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }*/
-
         private void ExportAnimatedGif(bool looping)
         {
             if (_frames == null || _frames.Length == 0)
@@ -1751,11 +1673,11 @@ namespace UoFiddler.Controls.UserControls
             DialogResult mode = MessageBox.Show(
                 $"{missing.Count} missing animations found.\n\n" +
                 "How would you like to proceed??\n\n" +
-                "[Ja]    → Go through step by step\n" +
+                "[Yes]    → Go through step by step\n" +
                 "           (Watch animation, Name + Typ determine yourself)\n\n" +
-                "[Nein]  → Take over all at once\n" +
+                "[No]  → Take over all at once\n" +
                 "           (Auto-Name, suggested Typ, save immediately)",
-                "Vorgehen wählen",
+                "Choose approach",
                 MessageBoxButtons.YesNoCancel,
                 MessageBoxIcon.Question);
 
