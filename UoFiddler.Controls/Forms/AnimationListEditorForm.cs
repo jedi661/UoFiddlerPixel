@@ -14,7 +14,7 @@ namespace UoFiddler.Controls.Forms
 {
     public partial class AnimationListEditorForm : Form
     {
-        // ── Farben / Design ─────────────────────────────────────────────────
+        // ── Colors / Design ─────────────────────────────────────────────────
         private static readonly Color BgDark = Color.FromArgb(22, 26, 34);
         private static readonly Color BgPanel = Color.FromArgb(30, 36, 46);
         private static readonly Color BgCard = Color.FromArgb(38, 46, 60);
@@ -25,7 +25,7 @@ namespace UoFiddler.Controls.Forms
         private static readonly Color TextLight = Color.FromArgb(220, 228, 240);
         private static readonly Color TextDim = Color.FromArgb(130, 145, 165);
 
-        // ── Zustand ─────────────────────────────────────────────────────────
+        // ── Condition ─────────────────────────────────────────────────────────
         private string _fileName;
         private bool _modified = false;
         private int _browseId = 0;
@@ -35,7 +35,7 @@ namespace UoFiddler.Controls.Forms
         private int _previewAction = 0;
         private Timer _animTimer;
 
-        // ── Action-Namen ─────────────────────────────────────────────────────
+        // ── Action names ─────────────────────────────────────────────────────
         private static readonly string[][] ActionNames =
         {
             new[] { "Walk","Idle","Die1","Die2","Attack1","Attack2","Attack3",
