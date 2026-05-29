@@ -428,7 +428,14 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             tox >>= 3;
             toy >>= 3;
 
-            // Endblock-Koordinaten im Ziel
+            // Exklusive End-Block-Koordinaten im Ziel.
+            // x2/y2 ist die rechte/untere Begrenzungslinie der Auswahl (Bounding-Box),
+            // nicht ein zu kopierender Block. Die Auswahl umfasst genau (x2 - x1)/8
+            // bzw. (y2 - y1)/8 Blöcke. Würde hier inklusiv (<=) verglichen, würde der
+            // Block direkt unter der Bounding-Box-Kante mitkopiert – dieser liegt oft
+            // außerhalb des Quellbereichs, dessen Land-Tiles dann von
+            // Art.GetLegalItemId() auf 0 (schwarzes, unbegehbares Void-Tile) gesetzt
+            // werden. Deshalb wird unten exklusiv (x < tox2) verglichen.
             int tox2 = x2 - x1 + tox;
             int toy2 = y2 - y1 + toy;
 
@@ -493,7 +500,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                     for (int y = 0; y < blockY; ++y)
                     {
                         // Liegt dieser Block im Zielbereich?
-                        bool inTargetRegion = (tox <= x && x <= tox2 && toy <= y && y <= toy2);
+                        // Exklusive obere Grenze: nur Blöcke INNERHALB der Bounding-Box,
+                        // nicht der Block unter der Begrenzungslinie.
+                        bool inTargetRegion = (tox <= x && x < tox2 && toy <= y && y < toy2);
 
                         if (inTargetRegion)
                         {
@@ -530,8 +539,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                                 z = mMapReader.ReadSByte();
                             }
 
-                            // Ungültige Tile-IDs korrigieren
-                            tileId = Art.GetLegalItemId(tileId);
+                            // Land-Tile-IDs sind 14-Bit (0..0x3FFF). NICHT die
+                            // Item/Static-Legalisierung (Art.GetLegalItemId) verwenden:
+                            // diese vergleicht gegen den Item-Maximalwert und würde
+                            // gültige Land-Tiles fälschlich auf 0 (schwarzes Void-Tile)
+                            // setzen. Stattdessen auf den gültigen Land-Bereich maskieren.
+                            tileId &= 0x3FFF;
 
                             // Z-Werte auf sbyte-Bereich begrenzen
                             if (z < -128) z = -128;
@@ -614,7 +627,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 {
                     for (int y = 0; y < blockY; ++y)
                     {
-                        bool inTargetRegion = (tox <= x && x <= tox2 && toy <= y && y <= toy2);
+                        // Exklusive obere Grenze – siehe MAP-Schleife oben.
+                        bool inTargetRegion = (tox <= x && x < tox2 && toy <= y && y < toy2);
 
                         int lookup, length, extra;
 
