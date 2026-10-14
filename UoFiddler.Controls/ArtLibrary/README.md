@@ -14,8 +14,8 @@ Einzige Berührungspunkte sind später der Button im `ItemsControl` und das Lese
 |---|---|
 | `Core/` | Dateiformat: Header, Indexeintrag, Codec, `ArtLibraryFile` |
 | `Metadata/` | (Schritt 4) Namen, Beschreibung, Kategorien, Tags |
-| `Helpers/` | (Schritt 2/3) ID-Parser dezimal/hex, Zwischenablage, Transfer Original ⇄ Bibliothek |
-| `Forms/` | (Schritt 2) Fenster, jeweils `.cs` + `.Designer.cs` + `.resx` |
+| `Helpers/` | `ArtIdParser` (dezimal/hex), `ArtLibrarySettings` (zuletzt geöffnete Bibliotheken); (Schritt 3) Zwischenablage, Transfer |
+| `Forms/` | `ArtLibraryForm` (Hauptfenster), `ArtLibraryNewForm` (Dialog „Neue Bibliothek“), jeweils `.cs` + `.Designer.cs` + `.resx` |
 
 ## Dateien einer Bibliothek
 
@@ -85,3 +85,13 @@ Pixel sind ARGB1555. Gespeichert werden nur deckende Pixel (Alpha-Bit `0x8000`),
 * **Komprimieren:** `Compact()` schreibt die `.mul` ohne überschriebene/gelöschte Daten neu. IDs bleiben gleich.
 * **Kopieren innerhalb der Bibliothek** (`Copy`) teilt sich die Daten – es wird nichts doppelt gespeichert.
 * Mehrere Bibliotheken können gleichzeitig geöffnet sein (jede Instanz ist unabhängig).
+
+## Fenster (Schritt 2)
+
+* Geöffnet über den Button **Art-Bibliothek** in der Toolbar des Items-Tabs (`ItemsControl`), eigenständiges Fenster.
+* Toolbar: zuletzt geöffnete Bibliotheken (ComboBox), Neu, Öffnen, Neu laden, ID-Sprung (dezimal/hex, Enter),
+  Umschalter **Nur belegte** (aus = alle IDs von 0 bis Ende durchscrollen).
+* Kachelansicht wie im Items-Tab, rechts Vorschau + Details, unten Statusleiste.
+* Rechtsklick: Nächste freie ID, ID kopieren (Hex/Dezimal), Entfernen (auch Taste Entf), Hintergrundfarbe.
+* Tasten: `Entf` entfernt die Auswahl, `Strg+G` springt ins ID-Feld.
+* Einstellungen (zuletzt geöffnete Bibliotheken, Anzeigemodus) liegen in `%AppData%\UoFiddler\ArtLibrarySettings.json`.

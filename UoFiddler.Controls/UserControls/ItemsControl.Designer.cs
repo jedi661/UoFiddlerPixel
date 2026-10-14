@@ -128,6 +128,7 @@ namespace UoFiddler.Controls.UserControls
             toolStripButtondrawRhombus = new ToolStripButton();
             toolStripButton1 = new ToolStripButton();
             toolStripButtonArtWorkGallery = new ToolStripButton();
+            toolStripButtonArtLibrary = new ToolStripButton();
             colorDialog = new ColorDialog();
             collapsibleSplitter1 = new CollapsibleSplitter();
             ((System.ComponentModel.ISupportInitialize)splitContainer2).BeginInit();
@@ -709,7 +710,7 @@ namespace UoFiddler.Controls.UserControls
             // ToolStrip
             // 
             ToolStrip.GripStyle = ToolStripGripStyle.Hidden;
-            ToolStrip.Items.AddRange(new ToolStripItem[] { toolStripLabel1, searchByIdToolStripTextBox, toolStripLabel2, searchByNameToolStripTextBox, searchByNameToolStripButton, SearchToolStripButton, ReverseSearchToolStripButton, ProgressBar, PreloadItemsToolStripButton, MiscToolStripDropDownButton, toolStripButtonColorImage, toolStripButtondrawRhombus, toolStripButton1, toolStripButtonArtWorkGallery });
+            ToolStrip.Items.AddRange(new ToolStripItem[] { toolStripLabel1, searchByIdToolStripTextBox, toolStripLabel2, searchByNameToolStripTextBox, searchByNameToolStripButton, SearchToolStripButton, ReverseSearchToolStripButton, ProgressBar, PreloadItemsToolStripButton, MiscToolStripDropDownButton, toolStripButtonColorImage, toolStripButtondrawRhombus, toolStripButton1, toolStripButtonArtWorkGallery, toolStripButtonArtLibrary });
             ToolStrip.Location = new System.Drawing.Point(0, 0);
             ToolStrip.Name = "ToolStrip";
             ToolStrip.RenderMode = ToolStripRenderMode.System;
@@ -875,6 +876,17 @@ namespace UoFiddler.Controls.UserControls
             toolStripButtonArtWorkGallery.Text = "Artwork Gallery";
             toolStripButtonArtWorkGallery.Click += toolStripButtonArtWorkGallery_Click;
             // 
+            // toolStripButtonArtLibrary
+            // 
+            toolStripButtonArtLibrary.DisplayStyle = ToolStripItemDisplayStyle.Image;
+            toolStripButtonArtLibrary.Image = Properties.Resources.Image;
+            toolStripButtonArtLibrary.ImageTransparentColor = System.Drawing.Color.Magenta;
+            toolStripButtonArtLibrary.Name = "toolStripButtonArtLibrary";
+            toolStripButtonArtLibrary.Size = new System.Drawing.Size(23, 25);
+            toolStripButtonArtLibrary.Text = "Art-Bibliothek";
+            toolStripButtonArtLibrary.ToolTipText = "Art-Bibliothek (benutzerdefinierte Art-MUL) öffnen";
+            toolStripButtonArtLibrary.Click += ToolStripButtonArtLibrary_Click;
+            // 
             // collapsibleSplitter1
             // 
             collapsibleSplitter1.AnimationDelay = 20;
@@ -1014,5 +1026,6 @@ namespace UoFiddler.Controls.UserControls
         private ToolStripSeparator toolStripSeparator12;
         private ToolStripSeparator toolStripSeparator13;
         private ToolStripButton toolStripButtonArtWorkGallery;
+        private ToolStripButton toolStripButtonArtLibrary;
     }
 }
