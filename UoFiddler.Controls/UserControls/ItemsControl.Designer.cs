@@ -126,10 +126,11 @@ namespace UoFiddler.Controls.UserControls
             asPngToolStripMenuItem = new ToolStripMenuItem();
             toolStripButtonColorImage = new ToolStripButton();
             toolStripButtondrawRhombus = new ToolStripButton();
-            toolStripButton1 = new ToolStripButton();
+            toolStripButtonSave = new ToolStripButton();
             toolStripButtonArtWorkGallery = new ToolStripButton();
             colorDialog = new ColorDialog();
             collapsibleSplitter1 = new CollapsibleSplitter();
+            toolStripButtonArtLibrary = new ToolStripButton();
             ((System.ComponentModel.ISupportInitialize)splitContainer2).BeginInit();
             splitContainer2.Panel1.SuspendLayout();
             splitContainer2.Panel2.SuspendLayout();
@@ -709,7 +710,7 @@ namespace UoFiddler.Controls.UserControls
             // ToolStrip
             // 
             ToolStrip.GripStyle = ToolStripGripStyle.Hidden;
-            ToolStrip.Items.AddRange(new ToolStripItem[] { toolStripLabel1, searchByIdToolStripTextBox, toolStripLabel2, searchByNameToolStripTextBox, searchByNameToolStripButton, SearchToolStripButton, ReverseSearchToolStripButton, ProgressBar, PreloadItemsToolStripButton, MiscToolStripDropDownButton, toolStripButtonColorImage, toolStripButtondrawRhombus, toolStripButton1, toolStripButtonArtWorkGallery });
+            ToolStrip.Items.AddRange(new ToolStripItem[] { toolStripLabel1, searchByIdToolStripTextBox, toolStripLabel2, searchByNameToolStripTextBox, searchByNameToolStripButton, SearchToolStripButton, ReverseSearchToolStripButton, ProgressBar, PreloadItemsToolStripButton, MiscToolStripDropDownButton, toolStripButtonColorImage, toolStripButtondrawRhombus, toolStripButtonSave, toolStripButtonArtWorkGallery, toolStripButtonArtLibrary });
             ToolStrip.Location = new System.Drawing.Point(0, 0);
             ToolStrip.Name = "ToolStrip";
             ToolStrip.RenderMode = ToolStripRenderMode.System;
@@ -854,16 +855,16 @@ namespace UoFiddler.Controls.UserControls
             toolStripButtondrawRhombus.Text = "Draws a diamond shape on the image.";
             toolStripButtondrawRhombus.Click += toolStripButtondrawRhombus_Click;
             // 
-            // toolStripButton1
+            // toolStripButtonSave
             // 
-            toolStripButton1.DisplayStyle = ToolStripItemDisplayStyle.Image;
-            toolStripButton1.Image = Properties.Resources.Save2;
-            toolStripButton1.ImageTransparentColor = System.Drawing.Color.Magenta;
-            toolStripButton1.Name = "toolStripButton1";
-            toolStripButton1.Size = new System.Drawing.Size(23, 25);
-            toolStripButton1.Text = "toolStripButtonSave";
-            toolStripButton1.ToolTipText = "Save Items.mul file";
-            toolStripButton1.Click += OnClickSave;
+            toolStripButtonSave.DisplayStyle = ToolStripItemDisplayStyle.Image;
+            toolStripButtonSave.Image = Properties.Resources.Save2;
+            toolStripButtonSave.ImageTransparentColor = System.Drawing.Color.Magenta;
+            toolStripButtonSave.Name = "toolStripButtonSave";
+            toolStripButtonSave.Size = new System.Drawing.Size(23, 25);
+            toolStripButtonSave.Text = "toolStripButtonSave";
+            toolStripButtonSave.ToolTipText = "Save Items.mul file";
+            toolStripButtonSave.Click += OnClickSave;
             // 
             // toolStripButtonArtWorkGallery
             // 
@@ -891,6 +892,16 @@ namespace UoFiddler.Controls.UserControls
             collapsibleSplitter1.TabStop = false;
             collapsibleSplitter1.UseAnimations = false;
             collapsibleSplitter1.VisualStyle = VisualStyles.DoubleDots;
+            // 
+            // toolStripButtonArtLibrary
+            // 
+            toolStripButtonArtLibrary.DisplayStyle = ToolStripItemDisplayStyle.Image;
+            toolStripButtonArtLibrary.Image = Properties.Resources.Add;
+            toolStripButtonArtLibrary.ImageTransparentColor = System.Drawing.Color.Magenta;
+            toolStripButtonArtLibrary.Name = "toolStripButtonArtLibrary";
+            toolStripButtonArtLibrary.Size = new System.Drawing.Size(23, 25);
+            toolStripButtonArtLibrary.Text = "ArtLibaryForm";
+            toolStripButtonArtLibrary.Click += ToolStripButtonArtLibrary_Click;
             // 
             // ItemsControl
             // 
@@ -983,7 +994,7 @@ namespace UoFiddler.Controls.UserControls
         private ToolStripLabel toolStripLabel2;
         private ToolStripTextBox searchByNameToolStripTextBox;
         private ToolStripButton searchByNameToolStripButton;
-        private ToolStripButton toolStripButton1;
+        private ToolStripButton toolStripButtonSave;
         private ToolStripMenuItem SelectIDToHexToolStripMenuItem;
         private ToolStripMenuItem imageSwapToolStripMenuItem;
         private ToolStripButton ReverseSearchToolStripButton;
@@ -1014,5 +1025,6 @@ namespace UoFiddler.Controls.UserControls
         private ToolStripSeparator toolStripSeparator12;
         private ToolStripSeparator toolStripSeparator13;
         private ToolStripButton toolStripButtonArtWorkGallery;
+        private ToolStripButton toolStripButtonArtLibrary;
     }
 }

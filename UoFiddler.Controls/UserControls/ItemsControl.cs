@@ -22,6 +22,7 @@ using System.Text;
 using System.Windows.Forms;
 using Ultima;
 using System.Media;
+using UoFiddler.Controls.ArtLibrary.Forms;
 using UoFiddler.Controls.Classes;
 using UoFiddler.Controls.Forms;
 using UoFiddler.Controls.Helpers;
@@ -3028,6 +3029,28 @@ namespace UoFiddler.Controls.UserControls
             {
                 artworkGalleryInstance.Focus();
                 artworkGalleryInstance.InitializeGallery(_selectedGraphicId); // NEU HINZUFÜGEN
+            }
+        }
+        #endregion
+
+        #region [ ToolStripButtonArtLibrary_Click ]
+        private ArtLibraryForm _artLibraryForm;
+        private void ToolStripButtonArtLibrary_Click(object sender, EventArgs e)
+        {
+            // the art library is an independent window next to the items tab (single instance)
+            if (_artLibraryForm == null || _artLibraryForm.IsDisposed)
+            {
+                _artLibraryForm = new ArtLibraryForm();
+                _artLibraryForm.Show();
+            }
+            else
+            {
+                if (_artLibraryForm.WindowState == FormWindowState.Minimized)
+                {
+                    _artLibraryForm.WindowState = FormWindowState.Normal;
+                }
+
+                _artLibraryForm.Activate();
             }
         }
         #endregion
