@@ -253,41 +253,27 @@ namespace UoFiddler.Controls.ArtLibrary.Core
 
             int width = bitmap.Width;
             int height = bitmap.Height;
-            var rect = new Rectangle(0, 0, width, height);
+            var pixels = new ushort[width * height];
 
-            Bitmap source = bitmap.PixelFormat == PixelFormat.Format16bppArgb1555
-                ? bitmap
-                : bitmap.Clone(rect, PixelFormat.Format16bppArgb1555);
-
+            // LockBits converts any source format to ARGB1555 (alpha below 50% becomes transparent)
+            BitmapData bd = bitmap.LockBits(new Rectangle(0, 0, width, height), ImageLockMode.ReadOnly, PixelFormat.Format16bppArgb1555);
             try
             {
-                var pixels = new ushort[width * height];
-                BitmapData bd = source.LockBits(rect, ImageLockMode.ReadOnly, PixelFormat.Format16bppArgb1555);
-                try
+                fixed (ushort* target = pixels)
                 {
-                    fixed (ushort* target = pixels)
+                    for (int y = 0; y < height; ++y)
                     {
-                        for (int y = 0; y < height; ++y)
-                        {
-                            var line = (ushort*)((byte*)bd.Scan0 + ((long)y * bd.Stride));
-                            Buffer.MemoryCopy(line, target + (y * width), width * 2L, width * 2L);
-                        }
+                        var line = (ushort*)((byte*)bd.Scan0 + ((long)y * bd.Stride));
+                        Buffer.MemoryCopy(line, target + (y * width), width * 2L, width * 2L);
                     }
                 }
-                finally
-                {
-                    source.UnlockBits(bd);
-                }
-
-                return pixels;
             }
             finally
             {
-                if (!ReferenceEquals(source, bitmap))
-                {
-                    source.Dispose();
-                }
+                bitmap.UnlockBits(bd);
             }
+
+            return pixels;
         }
 
         /// <summary>

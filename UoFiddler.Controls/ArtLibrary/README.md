@@ -13,9 +13,9 @@ Einzige Berührungspunkte sind später der Button im `ItemsControl` und das Lese
 | Ordner | Inhalt |
 |---|---|
 | `Core/` | Dateiformat: Header, Indexeintrag, Codec, `ArtLibraryFile` |
-| `Metadata/` | (Schritt 4) Namen, Beschreibung, Kategorien, Tags |
-| `Helpers/` | `ArtIdParser` (dezimal/hex), `ArtLibrarySettings` (zuletzt geöffnete Bibliotheken); (Schritt 3) Zwischenablage, Transfer |
-| `Forms/` | `ArtLibraryForm` (Hauptfenster), `ArtLibraryNewForm` (Dialog „Neue Bibliothek“), jeweils `.cs` + `.Designer.cs` + `.resx` |
+| `Metadata/` | `ArtLibraryMetadata` (JSON), `ArtLibraryCategory`, `ArtLibraryItemInfo` – Namen, Beschreibung, Kategorien, Tags |
+| `Helpers/` | `ArtIdParser` (dezimal/hex, Bereiche), `ArtLibrarySettings`, `ArtLibraryClipboard`, `ArtLibraryTransfer` (Original ⇄ Bibliothek), `ArtLibraryImageConverter` (Transparenz) |
+| `Forms/` | `ArtLibraryForm` (Hauptfenster), `ArtLibraryNewForm`, `ArtLibraryTargetIdForm`, `ArtLibraryCategoryForm`, `ArtLibraryGrowForm` – jeweils `.cs` + `.Designer.cs` + `.resx` |
 
 ## Dateien einer Bibliothek
 
@@ -86,12 +86,51 @@ Pixel sind ARGB1555. Gespeichert werden nur deckende Pixel (Alpha-Bit `0x8000`),
 * **Kopieren innerhalb der Bibliothek** (`Copy`) teilt sich die Daten – es wird nichts doppelt gespeichert.
 * Mehrere Bibliotheken können gleichzeitig geöffnet sein (jede Instanz ist unabhängig).
 
-## Fenster (Schritt 2)
+## Fenster
 
-* Geöffnet über den Button **Art-Bibliothek** in der Toolbar des Items-Tabs (`ItemsControl`), eigenständiges Fenster.
-* Toolbar: zuletzt geöffnete Bibliotheken (ComboBox), Neu, Öffnen, Neu laden, ID-Sprung (dezimal/hex, Enter),
-  Umschalter **Nur belegte** (aus = alle IDs von 0 bis Ende durchscrollen).
-* Kachelansicht wie im Items-Tab, rechts Vorschau + Details, unten Statusleiste.
-* Rechtsklick: Nächste freie ID, ID kopieren (Hex/Dezimal), Entfernen (auch Taste Entf), Hintergrundfarbe.
-* Tasten: `Entf` entfernt die Auswahl, `Strg+G` springt ins ID-Feld.
-* Einstellungen (zuletzt geöffnete Bibliotheken, Anzeigemodus) liegen in `%AppData%\UoFiddler\ArtLibrarySettings.json`.
+Geöffnet über den Button **Art-Bibliothek** in der Toolbar des Items-Tabs (`ItemsControl`), eigenständiges Fenster.
+
+**Obere Toolbar:** zuletzt geöffnete Bibliotheken, Neu, Öffnen, Neu laden, Menü **Bibliothek**
+(Eigenschaften, Kategorien und Tags verwalten, Erweitern, Komprimieren, Ordner öffnen), ID-Sprung dezimal/hex,
+**Nur belegte** (aus = alle IDs von 0 bis Ende), Kopieren, Einfügen, Menü **Original art.mul**.
+
+**Filterleiste:** Suche (Name, Beschreibung, Tag, Kategorie, ID dezimal/hex), Kategorie (inkl. Unterkategorien),
+Tag, **Nur Favoriten**, Filter zurücksetzen.
+
+**Rechts:** Vorschau (Bilder per Drag & Drop aus dem Explorer hineinziehen), darunter Name, Kategorie, Tags,
+Beschreibung, Favorit, Infos. „Übernehmen“ (oder Enter im Namen) speichert; Änderungen werden außerdem beim
+Auswahlwechsel und alle 3 Sekunden automatisch gesichert.
+
+**Rechtsklick:** Einfügen / Einfügen auf die kopierten IDs / Kopieren, Bilder oder Ordner importieren,
+in Ordner exportieren (BMP/PNG/TIFF, Auswahl oder alle), Original art.mul (ins Original kopieren/verschieben,
+Auswahl aus dem Items-Tab holen, IDs/Bereiche holen), kopieren/verschieben nach ID, zwei Grafiken tauschen,
+Kategorie zuweisen, Tag hinzufügen/entfernen, Favorit, nächste freie ID, ID kopieren, Entfernen, Hintergrundfarbe.
+
+**Tasten:** `Strg+C` kopieren, `Strg+V` einfügen, `Entf` entfernen, `Strg+G` ID-Feld, `Strg+F` Suche.
+
+### Austausch mit dem Original
+
+* **Zwischenablage:** Kopieren legt alle markierten Grafiken verlustfrei (eigenes Format, mehrere auf einmal)
+  **und** das erste Bild als normales Bild (schwarzer Hintergrund) ab. Der Items-Tab fügt das normale Bild mit
+  seinem bisherigen „Import from clipboard“ ein; umgekehrt fügt die Bibliothek jedes kopierte Bild ein.
+  Schwarz und Weiß (+ #D3D3D3) werden dabei – wie im Items-Tab – transparent.
+* **Ins Original kopieren/verschieben:** schreibt über `Art.ReplaceStatic` in die geladene art.mul (im Speicher)
+  und meldet es per `ControlEvents.FireItemChangeEvent` – der Items-Tab aktualisiert sich selbst.
+  **Gespeichert wird wie gewohnt im Items-Tab.**
+* **Aus dem Original holen:** Auswahl des Items-Tabs oder ID-Liste/Bereiche (z. B. `0x1000-0x10FF, 1234`).
+  Name aus tiledata.mul und Original-ID werden in den Metadaten gemerkt.
+* **Ordner:** Export als `Item 0x04D2.bmp` (wie der Items-Tab). Import liest die ID aus dem Dateinamen
+  (`Item 0x04D2`, `Art_Hex_Adress_4D2`, `0x4D2`, `4D2h`, `1234`) oder legt fortlaufend ab einer Ziel-ID ab.
+
+### Metadaten (`Name.artlib.json`)
+
+```json
+{
+  "Version": 1,
+  "Categories": [ { "Id": 1, "Name": "Möbel" }, { "Id": 2, "Name": "Tische", "ParentId": 1 } ],
+  "Tags": [ "holz", "tisch" ],
+  "Items": { "1234": { "Name": "Eichentisch", "Description": "", "CategoryId": 2, "Tags": [ "holz" ], "SourceId": 2874, "Added": "..." } }
+}
+```
+
+* Einstellungen (zuletzt geöffnete Bibliotheken, Anzeigemodus): `%AppData%\UoFiddler\ArtLibrarySettings.json`.

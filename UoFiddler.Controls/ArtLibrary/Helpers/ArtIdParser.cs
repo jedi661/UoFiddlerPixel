@@ -10,7 +10,9 @@
 //  ***************************************************************************/
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 
 namespace UoFiddler.Controls.ArtLibrary.Helpers
 {
@@ -79,6 +81,71 @@ namespace UoFiddler.Controls.ArtLibrary.Helpers
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// Parses a list of ids and ranges, e.g. "0x100-0x1FF, 1234, 5000-5010".
+        /// Ranges are inclusive. Returns false when a part cannot be parsed or more than
+        /// <paramref name="maxCount"/> ids would result.
+        /// </summary>
+        public static bool TryParseList(string text, out List<int> ids, int maxCount = 1_000_000)
+        {
+            ids = new List<int>();
+            if (string.IsNullOrWhiteSpace(text))
+            {
+                return false;
+            }
+
+            foreach (string rawPart in text.Split(new[] { ',', ';', '\n' }, StringSplitOptions.RemoveEmptyEntries))
+            {
+                string part = rawPart.Trim();
+                if (part.Length == 0)
+                {
+                    continue;
+                }
+
+                // "-" separates a range; it is never part of an id because ids are not negative
+                int dash = part.IndexOf('-', 1);
+                if (dash > 0)
+                {
+                    if (!TryParse(part.Substring(0, dash), out int from) || !TryParse(part.Substring(dash + 1), out int to))
+                    {
+                        return false;
+                    }
+
+                    if (to < from)
+                    {
+                        (from, to) = (to, from);
+                    }
+
+                    if ((long)ids.Count + (to - from + 1) > maxCount)
+                    {
+                        return false;
+                    }
+
+                    for (int id = from; id <= to; ++id)
+                    {
+                        ids.Add(id);
+                    }
+                }
+                else
+                {
+                    if (!TryParse(part, out int id))
+                    {
+                        return false;
+                    }
+
+                    ids.Add(id);
+                }
+
+                if (ids.Count > maxCount)
+                {
+                    return false;
+                }
+            }
+
+            ids = ids.Distinct().ToList();
+            return ids.Count > 0;
         }
 
         /// <summary>Hex notation with at least 4 digits, e.g. 0x04D2.</summary>
