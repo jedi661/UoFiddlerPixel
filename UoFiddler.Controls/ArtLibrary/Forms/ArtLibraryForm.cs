@@ -39,6 +39,7 @@ namespace UoFiddler.Controls.ArtLibrary.Forms
 
         private readonly ArtLibrarySettings _settings;
         private readonly ArtImportOptions _importOptions = ArtImportOptions.Default;
+        private DateTime? _lastSaved;
 
         private ArtLibraryFile _library;
         private ArtLibraryMetadata _metadata;
@@ -77,7 +78,15 @@ namespace UoFiddler.Controls.ArtLibrary.Forms
 
             _settings = ArtLibrarySettings.Load();
             _showOnlyOccupied = _settings.ShowOnlyOccupied;
-            toolStripButtonOnlyOccupied.Checked = _showOnlyOccupied;
+            toolStripButtonShowFreeSlots.Checked = !_showOnlyOccupied;
+            showFreeSlotsToolStripMenuItem.Checked = !_showOnlyOccupied;
+            toolStripButtonAutoSave.Checked = _settings.AutoSave;
+
+            _importOptions.BlackTransparent = _settings.ImportBlackTransparent;
+            _importOptions.WhiteTransparent = _settings.ImportWhiteTransparent;
+            _importOptions.LightGrayTransparent = _settings.ImportWhiteTransparent;
+            blackTransparentToolStripMenuItem.Checked = _importOptions.BlackTransparent;
+            whiteTransparentToolStripMenuItem.Checked = _importOptions.WhiteTransparent;
 
             ApplyTileViewOptions();
             FillLibraryCombo();
@@ -136,6 +145,12 @@ namespace UoFiddler.Controls.ArtLibrary.Forms
 
         private void OpenLibrary(string path, bool silent = false)
         {
+            if (!ConfirmUnsavedChanges())
+            {
+                FillLibraryCombo();
+                return;
+            }
+
             ArtLibraryFile library;
             try
             {
@@ -167,8 +182,10 @@ namespace UoFiddler.Controls.ArtLibrary.Forms
             CloseLibrary();
 
             _library = library;
+            _library.AutoSave = _settings.AutoSave;
             _library.EntryChanged += OnLibraryEntryChanged;
             _metadata = LoadMetadata(_library);
+            _lastSaved = null;
 
             _settings.AddRecent(_library.IdxPath);
             _settings.LastLibrary = _library.IdxPath;
@@ -217,10 +234,17 @@ namespace UoFiddler.Controls.ArtLibrary.Forms
             }
         }
 
+        /// <summary>
+        /// Closes the library. Unsaved changes are only kept when auto save is on - with auto save off the
+        /// caller must ask first (<see cref="ConfirmUnsavedChanges"/>).
+        /// </summary>
         private void CloseLibrary()
         {
             ApplyDetailIfDirty();
-            SaveMetadata();
+            if (_settings.AutoSave)
+            {
+                SaveMetadata();
+            }
 
             if (_library != null)
             {
@@ -246,6 +270,7 @@ namespace UoFiddler.Controls.ArtLibrary.Forms
             try
             {
                 _metadata.Save();
+                _lastSaved = DateTime.Now;
             }
             catch (Exception ex)
             {
@@ -255,6 +280,11 @@ namespace UoFiddler.Controls.ArtLibrary.Forms
 
         private void CreateLibrary()
         {
+            if (!ConfirmUnsavedChanges())
+            {
+                return;
+            }
+
             using (var dialog = new ArtLibraryNewForm())
             {
                 dialog.LibraryDirectory = Directory.Exists(_settings.LastDirectory)
@@ -335,6 +365,149 @@ namespace UoFiddler.Controls.ArtLibrary.Forms
                 string basePath = ArtLibraryFile.GetBasePath(Path);
                 return $"{System.IO.Path.GetFileName(basePath)}  ({System.IO.Path.GetDirectoryName(basePath)})";
             }
+        }
+
+        #endregion
+
+        #region [ Save ]
+
+        /// <summary>True when something has not been written to the files yet.</summary>
+        private bool HasUnsavedChanges =>
+            _library != null
+            && (_library.HasUnsavedChanges || _detailDirty || (!_settings.AutoSave && _metadata != null && _metadata.IsDirty));
+
+        /// <summary>
+        /// Writes everything (graphics, index, names/categories/tags) to disk.
+        /// </summary>
+        private bool SaveAll(bool showMessage)
+        {
+            if (_library == null)
+            {
+                return true;
+            }
+
+            try
+            {
+                Cursor.Current = Cursors.WaitCursor;
+                ApplyDetailIfDirty();
+                _library.Save();
+                _metadata?.Save();
+                _lastSaved = DateTime.Now;
+                UpdateSaveStatus();
+
+                if (showMessage)
+                {
+                    ShowStatusMessage($"Bibliothek \"{_library.Name}\" gespeichert ({_lastSaved:HH:mm:ss})");
+                }
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(this, $"Speichern fehlgeschlagen:\n{ex.Message}", "Speichern", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return false;
+            }
+            finally
+            {
+                Cursor.Current = Cursors.Default;
+            }
+        }
+
+        /// <summary>
+        /// Asks what to do with unsaved changes. Returns false when the user cancels.
+        /// </summary>
+        private bool ConfirmUnsavedChanges()
+        {
+            if (!HasUnsavedChanges)
+            {
+                return true;
+            }
+
+            if (_settings.AutoSave)
+            {
+                return SaveAll(false);
+            }
+
+            DialogResult answer = MessageBox.Show(this,
+                $"Die Bibliothek \"{_library.Name}\" hat ungespeicherte Änderungen.\n\nJetzt speichern?",
+                "Art-Bibliothek", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
+
+            if (answer == DialogResult.Cancel)
+            {
+                return false;
+            }
+
+            if (answer == DialogResult.Yes)
+            {
+                return SaveAll(false);
+            }
+
+            // discard: forget pending detail edits, the file instance is closed without writing
+            _detailDirty = false;
+            return true;
+        }
+
+        /// <summary>Called after every change: with auto save the change is already on disk.</summary>
+        private void MarkChanged()
+        {
+            if (_settings.AutoSave)
+            {
+                _lastSaved = DateTime.Now;
+            }
+
+            UpdateSaveStatus();
+        }
+
+        /// <summary>Save state in the status bar and the window title.</summary>
+        private void UpdateSaveStatus()
+        {
+            if (_library == null)
+            {
+                toolStripStatusLabelSave.Text = string.Empty;
+                Text = "Art-Bibliothek";
+                return;
+            }
+
+            bool unsaved = HasUnsavedChanges;
+            if (unsaved)
+            {
+                int count = _library.UnsavedCount;
+                toolStripStatusLabelSave.Text = count > 0
+                    ? $"● Nicht gespeichert ({count:N0} Änderungen)"
+                    : "● Nicht gespeichert";
+                toolStripStatusLabelSave.ForeColor = Color.DarkOrange;
+            }
+            else
+            {
+                string mode = _settings.AutoSave ? "Automatisch gespeichert" : "Gespeichert";
+                toolStripStatusLabelSave.Text = _lastSaved == null ? $"✓ {mode}" : $"✓ {mode} {_lastSaved:HH:mm:ss}";
+                toolStripStatusLabelSave.ForeColor = Color.DarkGreen;
+            }
+
+            Text = $"Art-Bibliothek - {_library.Name}{(unsaved ? " *" : string.Empty)}";
+        }
+
+        private void SetAutoSave(bool value)
+        {
+            _settings.AutoSave = value;
+            _settings.Save();
+            toolStripButtonAutoSave.Checked = value;
+
+            if (_library != null)
+            {
+                _library.AutoSave = value; // switching on writes pending changes
+                if (value)
+                {
+                    ApplyDetailIfDirty();
+                    SaveMetadata();
+                    _lastSaved = DateTime.Now;
+                }
+            }
+
+            UpdateSaveStatus();
+            ShowStatusMessage(value
+                ? "Auto-Speichern an: jede Änderung wird sofort gespeichert"
+                : "Auto-Speichern aus: Änderungen erst mit \"Speichern\" (Strg+S) sichern");
         }
 
         #endregion
@@ -612,7 +785,8 @@ namespace UoFiddler.Controls.ArtLibrary.Forms
             int keepId = _selectedId;
 
             _showOnlyOccupied = value;
-            toolStripButtonOnlyOccupied.Checked = value;
+            toolStripButtonShowFreeSlots.Checked = !value;
+            showFreeSlotsToolStripMenuItem.Checked = !value;
             _settings.ShowOnlyOccupied = value;
 
             ReloadList();
@@ -697,7 +871,13 @@ namespace UoFiddler.Controls.ArtLibrary.Forms
                 return;
             }
 
-            if (!ReferenceEquals(sender, _library) || _batchDepth > 0)
+            if (!ReferenceEquals(sender, _library))
+            {
+                return;
+            }
+
+            MarkChanged();
+            if (_batchDepth > 0)
             {
                 return;
             }
@@ -778,7 +958,8 @@ namespace UoFiddler.Controls.ArtLibrary.Forms
             toolStripTextBoxId.Enabled = open;
             toolStripButtonGoTo.Enabled = open;
             toolStripButtonReload.Enabled = open;
-            toolStripButtonOnlyOccupied.Enabled = open;
+            toolStripButtonShowFreeSlots.Enabled = open;
+            toolStripButtonSave.Enabled = open;
             toolStripDropDownButtonOriginal.Enabled = open;
             toolStripButtonCopy.Enabled = open;
             toolStripButtonPaste.Enabled = open;
@@ -790,7 +971,7 @@ namespace UoFiddler.Controls.ArtLibrary.Forms
             toolStripFilter.Enabled = open;
             tableLayoutPanelInfo.Enabled = open;
             LibraryTileView.Enabled = open;
-            Text = open ? $"Art-Bibliothek - {_library.Name}" : "Art-Bibliothek";
+            UpdateSaveStatus();
         }
 
         private void FillDetailCategoryCombo()
@@ -932,6 +1113,8 @@ namespace UoFiddler.Controls.ArtLibrary.Forms
                 FillFilterCombos();
             }
 
+            UpdateSaveStatus();
+
             if (IsListMode && IsFilterActive)
             {
                 UpdateViewMembership(_selectedId);
@@ -1010,8 +1193,10 @@ namespace UoFiddler.Controls.ArtLibrary.Forms
             Bitmap bitmap = _library.GetBitmap(id);
             if (bitmap == null)
             {
-                // free slot: show the id in small gray text so the user can orientate while scrolling
-                e.Graphics.DrawString(ArtIdParser.ToHex(id), _freeSlotFont, Brushes.LightGray, itemPoint);
+                // free slot like the items tab ("Show Free Slots"): red square, plus the hex id for orientation
+                var red = new Rectangle(rect.X + 5, rect.Y + 5, rect.Width - 10, rect.Height - 10);
+                e.Graphics.FillRectangle(Brushes.Red, red);
+                e.Graphics.DrawString(ArtIdParser.ToHex(id).Substring(2), _freeSlotFont, Brushes.White, red.X + 1, red.Y + 1);
             }
             else if (Options.ArtItemClip)
             {
@@ -1395,9 +1580,7 @@ namespace UoFiddler.Controls.ArtLibrary.Forms
                 }
 
                 ArtImportOptions options = dialog.ImportOptions;
-                _importOptions.BlackTransparent = options.BlackTransparent;
-                _importOptions.WhiteTransparent = options.WhiteTransparent;
-                _importOptions.LightGrayTransparent = options.LightGrayTransparent;
+                StoreImportOptions(options.BlackTransparent, options.WhiteTransparent);
 
                 List<int> sourceIds = files.Select(ArtLibraryTransfer.ParseIdFromFileName).ToList();
                 int[] targets = ArtLibraryTransfer.AssignTargetIds(sourceIds, dialog.TargetId, dialog.KeepIds, dialog.Overwrite,
@@ -2074,6 +2257,7 @@ namespace UoFiddler.Controls.ArtLibrary.Forms
 
         private void AfterMetadataChangedForSelection()
         {
+            UpdateSaveStatus();
             if (IsFilterActive)
             {
                 int keepId = _selectedId;
@@ -2129,9 +2313,14 @@ namespace UoFiddler.Controls.ArtLibrary.Forms
                 }
             }
 
-            SaveMetadata();
+            if (_settings.AutoSave)
+            {
+                SaveMetadata();
+            }
+
             FillFilterCombos();
             FillDetailCategoryCombo();
+            UpdateSaveStatus();
             int keepId = _selectedId;
             ReloadList();
             RestoreSelection(keepId);
@@ -2236,7 +2425,15 @@ namespace UoFiddler.Controls.ArtLibrary.Forms
                 return;
             }
 
+            if (HasUnsavedChanges && !_settings.AutoSave &&
+                MessageBox.Show(this, "Ungespeicherte Änderungen verwerfen und die Bibliothek neu laden?", "Neu laden",
+                    MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
+            {
+                return;
+            }
+
             // the files are opened exclusively for writing, so the current instance must be closed first
+            _detailDirty = false;
             int keepId = _selectedId;
             string path = _library.IdxPath;
             CloseLibrary();
@@ -2275,9 +2472,62 @@ namespace UoFiddler.Controls.ArtLibrary.Forms
             GoToIdFromTextBox();
         }
 
-        private void ToolStripButtonOnlyOccupied_Click(object sender, EventArgs e)
+        private void ToolStripButtonShowFreeSlots_Click(object sender, EventArgs e)
         {
-            SetShowOnlyOccupied(toolStripButtonOnlyOccupied.Checked);
+            SetShowOnlyOccupied(!toolStripButtonShowFreeSlots.Checked);
+        }
+
+        private void ShowFreeSlotsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            SetShowOnlyOccupied(!_showOnlyOccupied);
+        }
+
+        private void ToolStripButtonSave_Click(object sender, EventArgs e)
+        {
+            SaveAll(true);
+        }
+
+        private void ToolStripButtonAutoSave_Click(object sender, EventArgs e)
+        {
+            SetAutoSave(toolStripButtonAutoSave.Checked);
+        }
+
+        private void ToolStripButtonHelp_Click(object sender, EventArgs e)
+        {
+            ShowHelp();
+        }
+
+        private void ShowHelp()
+        {
+            using (var help = new ArtLibraryHelpForm())
+            {
+                help.ShowDialog(this);
+            }
+        }
+
+        private void BlackTransparentToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            blackTransparentToolStripMenuItem.Checked = !blackTransparentToolStripMenuItem.Checked;
+            StoreImportOptions(blackTransparentToolStripMenuItem.Checked, whiteTransparentToolStripMenuItem.Checked);
+        }
+
+        private void WhiteTransparentToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            whiteTransparentToolStripMenuItem.Checked = !whiteTransparentToolStripMenuItem.Checked;
+            StoreImportOptions(blackTransparentToolStripMenuItem.Checked, whiteTransparentToolStripMenuItem.Checked);
+        }
+
+        /// <summary>Transparency for clipboard / file import (like the items tab: black and white are background).</summary>
+        private void StoreImportOptions(bool black, bool white)
+        {
+            _importOptions.BlackTransparent = black;
+            _importOptions.WhiteTransparent = white;
+            _importOptions.LightGrayTransparent = white;
+            blackTransparentToolStripMenuItem.Checked = black;
+            whiteTransparentToolStripMenuItem.Checked = white;
+            _settings.ImportBlackTransparent = black;
+            _settings.ImportWhiteTransparent = white;
+            _settings.Save();
         }
 
         private void ToolStripButtonCopy_Click(object sender, EventArgs e)
@@ -2640,17 +2890,27 @@ namespace UoFiddler.Controls.ArtLibrary.Forms
 
         private void DetailField_Changed(object sender, EventArgs e)
         {
-            if (!_updatingDetail)
+            if (!_updatingDetail && !_detailDirty)
             {
                 _detailDirty = true;
+                UpdateSaveStatus();
             }
         }
 
         private void ButtonSaveInfo_Click(object sender, EventArgs e)
         {
             ApplyDetail();
-            SaveMetadata();
-            ShowStatusMessage($"Angaben zu {ArtIdParser.ToDisplay(_selectedId)} gespeichert");
+            if (_settings.AutoSave)
+            {
+                SaveMetadata();
+                ShowStatusMessage($"Angaben zu {ArtIdParser.ToDisplay(_selectedId)} gespeichert");
+            }
+            else
+            {
+                ShowStatusMessage($"Angaben zu {ArtIdParser.ToDisplay(_selectedId)} übernommen - mit \"Speichern\" sichern");
+            }
+
+            UpdateSaveStatus();
         }
 
         private void TextBoxName_KeyDown(object sender, KeyEventArgs e)
@@ -2739,7 +2999,38 @@ namespace UoFiddler.Controls.ArtLibrary.Forms
 
         private void TimerSaveMetadata_Tick(object sender, EventArgs e)
         {
-            SaveMetadata();
+            if (_library != null && _settings.AutoSave && _metadata != null && _metadata.IsDirty)
+            {
+                SaveMetadata();
+                UpdateSaveStatus();
+            }
+        }
+
+        private void ArtLibraryForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            if (!ConfirmUnsavedChanges())
+            {
+                e.Cancel = true;
+            }
+        }
+
+        private void ArtLibraryForm_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Control && e.KeyCode == Keys.S)
+            {
+                SaveAll(true);
+            }
+            else if (e.KeyCode == Keys.F1)
+            {
+                ShowHelp();
+            }
+            else
+            {
+                return;
+            }
+
+            e.Handled = true;
+            e.SuppressKeyPress = true;
         }
 
         private void ArtLibraryForm_Shown(object sender, EventArgs e)
@@ -2754,8 +3045,11 @@ namespace UoFiddler.Controls.ArtLibrary.Forms
         private void ArtLibraryForm_FormClosed(object sender, FormClosedEventArgs e)
         {
             timerSaveMetadata.Stop();
-            ApplyDetailIfDirty();
-            SaveMetadata();
+            if (_settings != null && _settings.AutoSave)
+            {
+                ApplyDetailIfDirty();
+                SaveMetadata();
+            }
 
             if (_settings != null)
             {

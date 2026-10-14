@@ -37,6 +37,15 @@ namespace UoFiddler.Controls.ArtLibrary.Helpers
 
         public bool ShowOnlyOccupied { get; set; } = true;
 
+        /// <summary>Write every change immediately (on) or only when "Speichern" is clicked (off).</summary>
+        public bool AutoSave { get; set; } = true;
+
+        /// <summary>Pure black becomes transparent when importing (clipboard, files) - like the items tab.</summary>
+        public bool ImportBlackTransparent { get; set; } = true;
+
+        /// <summary>Pure white (and #D3D3D3) becomes transparent when importing - like the items tab.</summary>
+        public bool ImportWhiteTransparent { get; set; } = true;
+
         public static string SettingsPath
         {
             get

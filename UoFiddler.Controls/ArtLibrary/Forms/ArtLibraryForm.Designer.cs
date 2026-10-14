@@ -45,6 +45,8 @@ namespace UoFiddler.Controls.ArtLibrary.Forms
             toolStripButtonNew = new System.Windows.Forms.ToolStripButton();
             toolStripButtonOpen = new System.Windows.Forms.ToolStripButton();
             toolStripButtonReload = new System.Windows.Forms.ToolStripButton();
+            toolStripButtonSave = new System.Windows.Forms.ToolStripButton();
+            toolStripButtonAutoSave = new System.Windows.Forms.ToolStripButton();
             libraryPropertiesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             manageCategoriesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             growToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -58,7 +60,7 @@ namespace UoFiddler.Controls.ArtLibrary.Forms
             toolStripTextBoxId = new System.Windows.Forms.ToolStripTextBox();
             toolStripButtonGoTo = new System.Windows.Forms.ToolStripButton();
             toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
-            toolStripButtonOnlyOccupied = new System.Windows.Forms.ToolStripButton();
+            toolStripButtonShowFreeSlots = new System.Windows.Forms.ToolStripButton();
             toolStripSeparator6 = new System.Windows.Forms.ToolStripSeparator();
             toolStripButtonCopy = new System.Windows.Forms.ToolStripButton();
             toolStripButtonPaste = new System.Windows.Forms.ToolStripButton();
@@ -68,6 +70,11 @@ namespace UoFiddler.Controls.ArtLibrary.Forms
             originalCopyToToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             originalMoveToToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             toolStripDropDownButtonOriginal = new System.Windows.Forms.ToolStripDropDownButton();
+            blackTransparentToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            whiteTransparentToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            toolStripDropDownButtonOptions = new System.Windows.Forms.ToolStripDropDownButton();
+            toolStripButtonHelp = new System.Windows.Forms.ToolStripButton();
+            toolStripSeparator9 = new System.Windows.Forms.ToolStripSeparator();
             toolStripMain = new System.Windows.Forms.ToolStrip();
             toolStripLabelSearch = new System.Windows.Forms.ToolStripLabel();
             toolStripTextBoxSearch = new System.Windows.Forms.ToolStripTextBox();
@@ -111,6 +118,7 @@ namespace UoFiddler.Controls.ArtLibrary.Forms
             removeTagToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             favoriteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
+            showFreeSlotsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             findNextFreeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             copyIdHexToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             copyIdDecToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -137,6 +145,7 @@ namespace UoFiddler.Controls.ArtLibrary.Forms
             splitContainerMain = new System.Windows.Forms.SplitContainer();
             toolStripStatusLabelLibrary = new System.Windows.Forms.ToolStripStatusLabel();
             toolStripStatusLabelCount = new System.Windows.Forms.ToolStripStatusLabel();
+            toolStripStatusLabelSave = new System.Windows.Forms.ToolStripStatusLabel();
             toolStripStatusLabelView = new System.Windows.Forms.ToolStripStatusLabel();
             toolStripStatusLabelSelected = new System.Windows.Forms.ToolStripStatusLabel();
             statusStripMain = new System.Windows.Forms.StatusStrip();
@@ -200,8 +209,30 @@ namespace UoFiddler.Controls.ArtLibrary.Forms
             toolStripButtonReload.ImageTransparentColor = System.Drawing.Color.Magenta;
             toolStripButtonReload.Name = "toolStripButtonReload";
             toolStripButtonReload.Size = new System.Drawing.Size(23, 25);
-            toolStripButtonReload.Text = "Neu laden";
+            toolStripButtonReload.Text = "Neu laden (verwirft ungespeicherte Änderungen)";
             toolStripButtonReload.Click += ToolStripButtonReload_Click;
+            // 
+            // toolStripButtonSave
+            // 
+            toolStripButtonSave.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            toolStripButtonSave.Image = Properties.Resources.Save2;
+            toolStripButtonSave.ImageTransparentColor = System.Drawing.Color.Magenta;
+            toolStripButtonSave.Name = "toolStripButtonSave";
+            toolStripButtonSave.Size = new System.Drawing.Size(23, 25);
+            toolStripButtonSave.Text = "Speichern (Strg+S)";
+            toolStripButtonSave.Click += ToolStripButtonSave_Click;
+            // 
+            // toolStripButtonAutoSave
+            // 
+            toolStripButtonAutoSave.Checked = true;
+            toolStripButtonAutoSave.CheckState = System.Windows.Forms.CheckState.Checked;
+            toolStripButtonAutoSave.CheckOnClick = true;
+            toolStripButtonAutoSave.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            toolStripButtonAutoSave.Name = "toolStripButtonAutoSave";
+            toolStripButtonAutoSave.Size = new System.Drawing.Size(80, 25);
+            toolStripButtonAutoSave.Text = "Auto-Speichern";
+            toolStripButtonAutoSave.ToolTipText = "An: jede Änderung wird sofort gespeichert  -  Aus: erst beim Klick auf Speichern";
+            toolStripButtonAutoSave.Click += ToolStripButtonAutoSave_Click;
             // 
             // libraryPropertiesToolStripMenuItem
             // 
@@ -297,17 +328,15 @@ namespace UoFiddler.Controls.ArtLibrary.Forms
             toolStripSeparator2.Name = "toolStripSeparator2";
             toolStripSeparator2.Size = new System.Drawing.Size(6, 28);
             // 
-            // toolStripButtonOnlyOccupied
+            // toolStripButtonShowFreeSlots
             // 
-            toolStripButtonOnlyOccupied.Checked = true;
-            toolStripButtonOnlyOccupied.CheckState = System.Windows.Forms.CheckState.Checked;
-            toolStripButtonOnlyOccupied.CheckOnClick = true;
-            toolStripButtonOnlyOccupied.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            toolStripButtonOnlyOccupied.Name = "toolStripButtonOnlyOccupied";
-            toolStripButtonOnlyOccupied.Size = new System.Drawing.Size(80, 25);
-            toolStripButtonOnlyOccupied.Text = "Nur belegte";
-            toolStripButtonOnlyOccupied.ToolTipText = "An: nur belegte IDs zeigen  -  Aus: alle IDs von 0 bis Ende zeigen";
-            toolStripButtonOnlyOccupied.Click += ToolStripButtonOnlyOccupied_Click;
+            toolStripButtonShowFreeSlots.CheckOnClick = true;
+            toolStripButtonShowFreeSlots.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            toolStripButtonShowFreeSlots.Name = "toolStripButtonShowFreeSlots";
+            toolStripButtonShowFreeSlots.Size = new System.Drawing.Size(80, 25);
+            toolStripButtonShowFreeSlots.Text = "Freie Slots";
+            toolStripButtonShowFreeSlots.ToolTipText = "An: alle IDs von 0 bis Ende zeigen, freie als rotes Feld  -  Aus: nur belegte IDs";
+            toolStripButtonShowFreeSlots.Click += ToolStripButtonShowFreeSlots_Click;
             // 
             // toolStripSeparator6
             // 
@@ -378,10 +407,51 @@ namespace UoFiddler.Controls.ArtLibrary.Forms
             toolStripDropDownButtonOriginal.Text = "Original art.mul";
             toolStripDropDownButtonOriginal.ToolTipText = "Austausch mit der originalen art.mul (Items-Tab)";
             // 
+            // blackTransparentToolStripMenuItem
+            // 
+            blackTransparentToolStripMenuItem.Name = "blackTransparentToolStripMenuItem";
+            blackTransparentToolStripMenuItem.Size = new System.Drawing.Size(260, 22);
+            blackTransparentToolStripMenuItem.Text = "Import: Schwarz als transparent";
+            blackTransparentToolStripMenuItem.Checked = true;
+            blackTransparentToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
+            blackTransparentToolStripMenuItem.Click += BlackTransparentToolStripMenuItem_Click;
+            // 
+            // whiteTransparentToolStripMenuItem
+            // 
+            whiteTransparentToolStripMenuItem.Name = "whiteTransparentToolStripMenuItem";
+            whiteTransparentToolStripMenuItem.Size = new System.Drawing.Size(260, 22);
+            whiteTransparentToolStripMenuItem.Text = "Import: Weiß (und #D3D3D3) als transparent";
+            whiteTransparentToolStripMenuItem.Checked = true;
+            whiteTransparentToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
+            whiteTransparentToolStripMenuItem.Click += WhiteTransparentToolStripMenuItem_Click;
+            // 
+            // toolStripDropDownButtonOptions
+            // 
+            toolStripDropDownButtonOptions.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            toolStripDropDownButtonOptions.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { blackTransparentToolStripMenuItem, whiteTransparentToolStripMenuItem });
+            toolStripDropDownButtonOptions.Name = "toolStripDropDownButtonOptions";
+            toolStripDropDownButtonOptions.Size = new System.Drawing.Size(70, 25);
+            toolStripDropDownButtonOptions.Text = "Optionen";
+            // 
+            // toolStripButtonHelp
+            // 
+            toolStripButtonHelp.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            toolStripButtonHelp.Image = Properties.Resources.Help;
+            toolStripButtonHelp.ImageTransparentColor = System.Drawing.Color.Magenta;
+            toolStripButtonHelp.Name = "toolStripButtonHelp";
+            toolStripButtonHelp.Size = new System.Drawing.Size(23, 25);
+            toolStripButtonHelp.Text = "Hilfe (F1)";
+            toolStripButtonHelp.Click += ToolStripButtonHelp_Click;
+            // 
+            // toolStripSeparator9
+            // 
+            toolStripSeparator9.Name = "toolStripSeparator9";
+            toolStripSeparator9.Size = new System.Drawing.Size(6, 28);
+            // 
             // toolStripMain
             // 
             toolStripMain.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
-            toolStripMain.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { toolStripLabelLibrary, toolStripComboBoxLibrary, toolStripButtonNew, toolStripButtonOpen, toolStripButtonReload, toolStripDropDownButtonLibrary, toolStripSeparator1, toolStripLabelId, toolStripTextBoxId, toolStripButtonGoTo, toolStripSeparator2, toolStripButtonOnlyOccupied, toolStripSeparator6, toolStripButtonCopy, toolStripButtonPaste, toolStripDropDownButtonOriginal });
+            toolStripMain.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { toolStripLabelLibrary, toolStripComboBoxLibrary, toolStripButtonNew, toolStripButtonOpen, toolStripButtonReload, toolStripButtonSave, toolStripButtonAutoSave, toolStripDropDownButtonLibrary, toolStripSeparator1, toolStripLabelId, toolStripTextBoxId, toolStripButtonGoTo, toolStripSeparator2, toolStripButtonShowFreeSlots, toolStripSeparator6, toolStripButtonCopy, toolStripButtonPaste, toolStripDropDownButtonOriginal, toolStripSeparator9, toolStripDropDownButtonOptions, toolStripButtonHelp });
             toolStripMain.Location = new System.Drawing.Point(0, 0);
             toolStripMain.Name = "toolStripMain";
             toolStripMain.RenderMode = System.Windows.Forms.ToolStripRenderMode.System;
@@ -684,6 +754,13 @@ namespace UoFiddler.Controls.ArtLibrary.Forms
             toolStripSeparator3.Name = "toolStripSeparator3";
             toolStripSeparator3.Size = new System.Drawing.Size(257, 6);
             // 
+            // showFreeSlotsToolStripMenuItem
+            // 
+            showFreeSlotsToolStripMenuItem.Name = "showFreeSlotsToolStripMenuItem";
+            showFreeSlotsToolStripMenuItem.Size = new System.Drawing.Size(260, 22);
+            showFreeSlotsToolStripMenuItem.Text = "Freie Slots anzeigen";
+            showFreeSlotsToolStripMenuItem.Click += ShowFreeSlotsToolStripMenuItem_Click;
+            // 
             // findNextFreeToolStripMenuItem
             // 
             findNextFreeToolStripMenuItem.Image = Properties.Resources.jump;
@@ -736,7 +813,7 @@ namespace UoFiddler.Controls.ArtLibrary.Forms
             // 
             // contextMenuStripTileView
             // 
-            contextMenuStripTileView.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { pasteToolStripMenuItem, pasteKeepIdsToolStripMenuItem, copyToolStripMenuItem, toolStripSeparatorA, importFilesToolStripMenuItem, importFolderToolStripMenuItem, exportToolStripMenuItem, toolStripSeparatorB, originalToolStripMenuItem, toolStripSeparatorC, copyToIdToolStripMenuItem, moveToIdToolStripMenuItem, swapToolStripMenuItem, toolStripSeparatorD, assignCategoryToolStripMenuItem, addTagToolStripMenuItem, removeTagToolStripMenuItem, favoriteToolStripMenuItem, toolStripSeparator3, findNextFreeToolStripMenuItem, copyIdHexToolStripMenuItem, copyIdDecToolStripMenuItem, toolStripSeparator4, removeToolStripMenuItem, toolStripSeparator5, backgroundColorToolStripMenuItem });
+            contextMenuStripTileView.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { pasteToolStripMenuItem, pasteKeepIdsToolStripMenuItem, copyToolStripMenuItem, toolStripSeparatorA, importFilesToolStripMenuItem, importFolderToolStripMenuItem, exportToolStripMenuItem, toolStripSeparatorB, originalToolStripMenuItem, toolStripSeparatorC, copyToIdToolStripMenuItem, moveToIdToolStripMenuItem, swapToolStripMenuItem, toolStripSeparatorD, assignCategoryToolStripMenuItem, addTagToolStripMenuItem, removeTagToolStripMenuItem, favoriteToolStripMenuItem, toolStripSeparator3, showFreeSlotsToolStripMenuItem, findNextFreeToolStripMenuItem, copyIdHexToolStripMenuItem, copyIdDecToolStripMenuItem, toolStripSeparator4, removeToolStripMenuItem, toolStripSeparator5, backgroundColorToolStripMenuItem });
             contextMenuStripTileView.Name = "contextMenuStripTileView";
             contextMenuStripTileView.Size = new System.Drawing.Size(261, 500);
             contextMenuStripTileView.Opening += ContextMenuStripTileView_Opening;
@@ -961,6 +1038,13 @@ namespace UoFiddler.Controls.ArtLibrary.Forms
             toolStripStatusLabelCount.Size = new System.Drawing.Size(120, 17);
             toolStripStatusLabelCount.Text = "";
             // 
+            // toolStripStatusLabelSave
+            // 
+            toolStripStatusLabelSave.BorderSides = System.Windows.Forms.ToolStripStatusLabelBorderSides.Right;
+            toolStripStatusLabelSave.Name = "toolStripStatusLabelSave";
+            toolStripStatusLabelSave.Size = new System.Drawing.Size(120, 17);
+            toolStripStatusLabelSave.Text = "";
+            // 
             // toolStripStatusLabelView
             // 
             toolStripStatusLabelView.BorderSides = System.Windows.Forms.ToolStripStatusLabelBorderSides.Right;
@@ -978,7 +1062,7 @@ namespace UoFiddler.Controls.ArtLibrary.Forms
             // 
             // statusStripMain
             // 
-            statusStripMain.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { toolStripStatusLabelLibrary, toolStripStatusLabelCount, toolStripStatusLabelView, toolStripStatusLabelSelected });
+            statusStripMain.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { toolStripStatusLabelLibrary, toolStripStatusLabelCount, toolStripStatusLabelSave, toolStripStatusLabelView, toolStripStatusLabelSelected });
             statusStripMain.Location = new System.Drawing.Point(0, 639);
             statusStripMain.Name = "statusStripMain";
             statusStripMain.Size = new System.Drawing.Size(1184, 22);
@@ -999,12 +1083,14 @@ namespace UoFiddler.Controls.ArtLibrary.Forms
             Controls.Add(statusStripMain);
             Controls.Add(toolStripFilter);
             Controls.Add(toolStripMain);
-            KeyPreview = false;
+            KeyPreview = true;
             MinimumSize = new System.Drawing.Size(800, 450);
             Name = "ArtLibraryForm";
             StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             Text = "Art-Bibliothek";
+            FormClosing += ArtLibraryForm_FormClosing;
             FormClosed += ArtLibraryForm_FormClosed;
+            KeyDown += ArtLibraryForm_KeyDown;
             Shown += ArtLibraryForm_Shown;
             toolStripMain.ResumeLayout(false);
             toolStripMain.PerformLayout();
@@ -1035,6 +1121,8 @@ namespace UoFiddler.Controls.ArtLibrary.Forms
         private System.Windows.Forms.ToolStripButton toolStripButtonNew;
         private System.Windows.Forms.ToolStripButton toolStripButtonOpen;
         private System.Windows.Forms.ToolStripButton toolStripButtonReload;
+        private System.Windows.Forms.ToolStripButton toolStripButtonSave;
+        private System.Windows.Forms.ToolStripButton toolStripButtonAutoSave;
         private System.Windows.Forms.ToolStripMenuItem libraryPropertiesToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem manageCategoriesToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem growToolStripMenuItem;
@@ -1048,7 +1136,7 @@ namespace UoFiddler.Controls.ArtLibrary.Forms
         private System.Windows.Forms.ToolStripTextBox toolStripTextBoxId;
         private System.Windows.Forms.ToolStripButton toolStripButtonGoTo;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
-        private System.Windows.Forms.ToolStripButton toolStripButtonOnlyOccupied;
+        private System.Windows.Forms.ToolStripButton toolStripButtonShowFreeSlots;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator6;
         private System.Windows.Forms.ToolStripButton toolStripButtonCopy;
         private System.Windows.Forms.ToolStripButton toolStripButtonPaste;
@@ -1058,6 +1146,11 @@ namespace UoFiddler.Controls.ArtLibrary.Forms
         private System.Windows.Forms.ToolStripMenuItem originalCopyToToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem originalMoveToToolStripMenuItem;
         private System.Windows.Forms.ToolStripDropDownButton toolStripDropDownButtonOriginal;
+        private System.Windows.Forms.ToolStripMenuItem blackTransparentToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem whiteTransparentToolStripMenuItem;
+        private System.Windows.Forms.ToolStripDropDownButton toolStripDropDownButtonOptions;
+        private System.Windows.Forms.ToolStripButton toolStripButtonHelp;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator9;
         private System.Windows.Forms.ToolStrip toolStripMain;
         private System.Windows.Forms.ToolStripLabel toolStripLabelSearch;
         private System.Windows.Forms.ToolStripTextBox toolStripTextBoxSearch;
@@ -1101,6 +1194,7 @@ namespace UoFiddler.Controls.ArtLibrary.Forms
         private System.Windows.Forms.ToolStripMenuItem removeTagToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem favoriteToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
+        private System.Windows.Forms.ToolStripMenuItem showFreeSlotsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem findNextFreeToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem copyIdHexToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem copyIdDecToolStripMenuItem;
@@ -1127,6 +1221,7 @@ namespace UoFiddler.Controls.ArtLibrary.Forms
         private System.Windows.Forms.SplitContainer splitContainerMain;
         private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabelLibrary;
         private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabelCount;
+        private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabelSave;
         private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabelView;
         private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabelSelected;
         private System.Windows.Forms.StatusStrip statusStripMain;

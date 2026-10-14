@@ -49,6 +49,10 @@ namespace UoFiddler.Controls.ArtLibrary.Core
         private FileStream _idxStream;
         private FileStream _mulStream;
         private int _occupiedCount;
+        private bool _autoSave = true;
+
+        // ids whose index entry changed in memory but is not written yet (only when AutoSave is off)
+        private readonly HashSet<int> _pendingIds = new HashSet<int>();
         private bool _disposed;
 
         /// <summary>
@@ -109,6 +113,57 @@ namespace UoFiddler.Controls.ArtLibrary.Core
         }
 
         public bool IsDisposed => _disposed;
+
+        /// <summary>
+        /// On (default): every change is written to the index file immediately.
+        /// Off: changes are kept in memory until <see cref="Save"/>; closing without saving discards them.
+        /// Switching it on writes all pending changes.
+        /// </summary>
+        public bool AutoSave
+        {
+            get
+            {
+                lock (_sync)
+                {
+                    return _autoSave;
+                }
+            }
+            set
+            {
+                lock (_sync)
+                {
+                    _autoSave = value;
+                    if (value && !_disposed)
+                    {
+                        WritePendingEntries();
+                    }
+                }
+            }
+        }
+
+        /// <summary>True when changes are waiting for <see cref="Save"/> (AutoSave off).</summary>
+        public bool HasUnsavedChanges
+        {
+            get
+            {
+                lock (_sync)
+                {
+                    return _pendingIds.Count > 0;
+                }
+            }
+        }
+
+        /// <summary>Number of ids with unsaved changes.</summary>
+        public int UnsavedCount
+        {
+            get
+            {
+                lock (_sync)
+                {
+                    return _pendingIds.Count;
+                }
+            }
+        }
 
         #endregion
 
@@ -697,11 +752,56 @@ namespace UoFiddler.Controls.ArtLibrary.Core
 
             _cache.Remove(id);
 
+            if (_autoSave)
+            {
+                WriteEntry(id);
+                _idxStream.Flush();
+            }
+            else
+            {
+                _pendingIds.Add(id);
+            }
+        }
+
+        private void WriteEntry(int id)
+        {
             var buffer = new byte[ArtLibraryEntry.Size];
-            entry.Write(buffer);
+            _entries[id].Write(buffer);
             _idxStream.Seek(ArtLibraryHeader.Size + ((long)id * ArtLibraryEntry.Size), SeekOrigin.Begin);
             _idxStream.Write(buffer, 0, buffer.Length);
+        }
+
+        private void WritePendingEntries()
+        {
+            if (_pendingIds.Count == 0)
+            {
+                return;
+            }
+
+            foreach (int id in _pendingIds)
+            {
+                if (id < _entries.Length)
+                {
+                    WriteEntry(id);
+                }
+            }
+
+            _pendingIds.Clear();
             _idxStream.Flush();
+        }
+
+        /// <summary>
+        /// Writes all pending changes and flushes both files to disk.
+        /// </summary>
+        public void Save()
+        {
+            lock (_sync)
+            {
+                ThrowIfDisposed();
+                WritePendingEntries();
+                _idxStream.Flush(true);
+                _mulStream.Flush(true);
+            }
         }
 
         #endregion
@@ -822,6 +922,7 @@ namespace UoFiddler.Controls.ArtLibrary.Core
                 _idxStream = new FileStream(IdxPath, FileMode.Open, FileAccess.ReadWrite, FileShare.Read);
                 _mulStream = new FileStream(MulPath, FileMode.Open, FileAccess.ReadWrite, FileShare.Read);
                 _entries = newEntries;
+                _pendingIds.Clear(); // the new index file was written from memory, so everything is saved
                 _cache.Clear();
 
                 saved = oldLength - _mulStream.Length;

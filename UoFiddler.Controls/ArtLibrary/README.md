@@ -90,9 +90,14 @@ Pixel sind ARGB1555. Gespeichert werden nur deckende Pixel (Alpha-Bit `0x8000`),
 
 Geöffnet über den Button **Art-Bibliothek** in der Toolbar des Items-Tabs (`ItemsControl`), eigenständiges Fenster.
 
-**Obere Toolbar:** zuletzt geöffnete Bibliotheken, Neu, Öffnen, Neu laden, Menü **Bibliothek**
-(Eigenschaften, Kategorien und Tags verwalten, Erweitern, Komprimieren, Ordner öffnen), ID-Sprung dezimal/hex,
-**Nur belegte** (aus = alle IDs von 0 bis Ende), Kopieren, Einfügen, Menü **Original art.mul**.
+**Obere Toolbar:** zuletzt geöffnete Bibliotheken, Neu, Öffnen, Neu laden, **Speichern**, **Auto-Speichern**,
+Menü **Bibliothek** (Eigenschaften, Kategorien und Tags verwalten, Erweitern, Komprimieren, Ordner öffnen),
+ID-Sprung dezimal/hex, **Freie Slots** (alle IDs von 0 bis Ende, freie als rotes Feld mit Hex-ID – wie im Items-Tab),
+Kopieren, Einfügen, Menü **Original art.mul**, Menü **Optionen** (Schwarz/Weiß beim Import transparent), **Hilfe** (F1).
+
+**Speichern:** Auto-Speichern an = jede Änderung sofort in den Dateien. Aus = Änderungen bleiben im Speicher bis
+**Speichern** (Strg+S); Statusleiste zeigt „● Nicht gespeichert“ bzw. „✓ Gespeichert hh:mm:ss“, Fenstertitel `*`,
+Rückfrage beim Schließen/Wechseln. „Neu laden“ verwirft ungespeicherte Änderungen.
 
 **Filterleiste:** Suche (Name, Beschreibung, Tag, Kategorie, ID dezimal/hex), Kategorie (inkl. Unterkategorien),
 Tag, **Nur Favoriten**, Filter zurücksetzen.
@@ -106,7 +111,7 @@ in Ordner exportieren (BMP/PNG/TIFF, Auswahl oder alle), Original art.mul (ins O
 Auswahl aus dem Items-Tab holen, IDs/Bereiche holen), kopieren/verschieben nach ID, zwei Grafiken tauschen,
 Kategorie zuweisen, Tag hinzufügen/entfernen, Favorit, nächste freie ID, ID kopieren, Entfernen, Hintergrundfarbe.
 
-**Tasten:** `Strg+C` kopieren, `Strg+V` einfügen, `Entf` entfernen, `Strg+G` ID-Feld, `Strg+F` Suche.
+**Tasten:** `Strg+C` kopieren, `Strg+V` einfügen, `Entf` entfernen, `Strg+S` speichern, `Strg+G` ID-Feld, `Strg+F` Suche, `F1` Hilfe.
 
 ### Austausch mit dem Original
 
@@ -133,4 +138,4 @@ Kategorie zuweisen, Tag hinzufügen/entfernen, Favorit, nächste freie ID, ID ko
 }
 ```
 
-* Einstellungen (zuletzt geöffnete Bibliotheken, Anzeigemodus): `%AppData%\UoFiddler\ArtLibrarySettings.json`.
+* Einstellungen (zuletzt geöffnete Bibliotheken, Anzeigemodus, Auto-Speichern, Transparenz): `%AppData%\UoFiddler\ArtLibrarySettings.json`.
