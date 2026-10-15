@@ -102,6 +102,15 @@ namespace UoFiddler.Controls.ArtLibrary.Metadata
             IsDirty = true;
         }
 
+        /// <summary>
+        /// Marks the metadata as saved. Used when it is stored as part of another file
+        /// (e.g. the terrain library keeps its categories and tags in an ArtLibraryMetadata).
+        /// </summary>
+        public void AcceptChanges()
+        {
+            IsDirty = false;
+        }
+
         #endregion
 
         #region [ Items ]

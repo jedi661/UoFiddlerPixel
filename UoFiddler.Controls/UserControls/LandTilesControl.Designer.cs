@@ -103,6 +103,7 @@ namespace UoFiddler.Controls.UserControls
             LandTilesToolStrip.SuspendLayout();
             panel1.SuspendLayout();
             StatusStrip.SuspendLayout();
+            toolStripButtonTerrainLibrary = new System.Windows.Forms.ToolStripButton();
             SuspendLayout();
             // 
             // LandTilesContextMenuStrip
@@ -348,7 +349,7 @@ namespace UoFiddler.Controls.UserControls
             // LandTilesToolStrip
             // 
             LandTilesToolStrip.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
-            LandTilesToolStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { IndexToolStripLabel, searchByIdToolStripTextBox, NameToolStripLabel, searchByNameToolStripTextBox, searchByNameToolStripButton, SearchButton, toolStripSeparator1, MiscToolStripDropDownButton, SaveButton, toolStripSeparator4 });
+            LandTilesToolStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { IndexToolStripLabel, searchByIdToolStripTextBox, NameToolStripLabel, searchByNameToolStripTextBox, searchByNameToolStripButton, SearchButton, toolStripSeparator1, MiscToolStripDropDownButton, SaveButton, toolStripSeparator4, toolStripButtonTerrainLibrary });
             LandTilesToolStrip.Location = new System.Drawing.Point(0, 0);
             LandTilesToolStrip.Name = "LandTilesToolStrip";
             LandTilesToolStrip.RenderMode = System.Windows.Forms.ToolStripRenderMode.System;
@@ -541,6 +542,17 @@ namespace UoFiddler.Controls.UserControls
             FlagsLabel.Text = "Flags:";
             FlagsLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
+            // toolStripButtonTerrainLibrary
+            // 
+            toolStripButtonTerrainLibrary.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            toolStripButtonTerrainLibrary.Image = Properties.Resources.Grass;
+            toolStripButtonTerrainLibrary.ImageTransparentColor = System.Drawing.Color.Magenta;
+            toolStripButtonTerrainLibrary.Name = "toolStripButtonTerrainLibrary";
+            toolStripButtonTerrainLibrary.Size = new System.Drawing.Size(23, 22);
+            toolStripButtonTerrainLibrary.Text = "Terrain-Bibliothek (LandTiles)";
+            toolStripButtonTerrainLibrary.ToolTipText = "LandTile-Bibliothek (Terrain-Bibliothek) öffnen";
+            toolStripButtonTerrainLibrary.Click += ToolStripButtonTerrainLibrary_Click;
+            // 
             // LandTilesControl
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -586,6 +598,7 @@ namespace UoFiddler.Controls.UserControls
         private System.Windows.Forms.ToolStripMenuItem selectInRadarColorTabToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem selectInTileDataTabToolStripMenuItem;
         private System.Windows.Forms.ToolStrip LandTilesToolStrip;
+        private System.Windows.Forms.ToolStripButton toolStripButtonTerrainLibrary;
         private System.Windows.Forms.ToolStripDropDownButton MiscToolStripDropDownButton;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;

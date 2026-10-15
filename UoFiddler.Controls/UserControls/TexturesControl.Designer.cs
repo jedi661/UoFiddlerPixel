@@ -95,6 +95,7 @@ namespace UoFiddler.Controls.UserControls
             toolStrip.SuspendLayout();
             panel1.SuspendLayout();
             statusStrip.SuspendLayout();
+            toolStripButtonTerrainLibrary = new System.Windows.Forms.ToolStripButton();
             SuspendLayout();
             // 
             // contextMenuStrip
@@ -304,7 +305,7 @@ namespace UoFiddler.Controls.UserControls
             // toolStrip
             // 
             toolStrip.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
-            toolStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { toolStripSeparator3, toolStripSeparator4, SaveButton, toolStripSeparator1, IndexToolStripLabel, searchByIdToolStripTextBox, SearchButton, toolStripSeparator8, MiscToolStripDropDownButton, PlaySoundtoolStripButton1, toolStripButtonTextureWindows, toolStripButtonPictureFusion, toolStripColor });
+            toolStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { toolStripSeparator3, toolStripSeparator4, SaveButton, toolStripSeparator1, IndexToolStripLabel, searchByIdToolStripTextBox, SearchButton, toolStripSeparator8, MiscToolStripDropDownButton, PlaySoundtoolStripButton1, toolStripButtonTextureWindows, toolStripButtonPictureFusion, toolStripColor, toolStripButtonTerrainLibrary });
             toolStrip.Location = new System.Drawing.Point(0, 0);
             toolStrip.Name = "toolStrip";
             toolStrip.RenderMode = System.Windows.Forms.ToolStripRenderMode.System;
@@ -512,6 +513,17 @@ namespace UoFiddler.Controls.UserControls
             GraphicLabel.Size = new System.Drawing.Size(51, 17);
             GraphicLabel.Text = "Graphic:";
             // 
+            // toolStripButtonTerrainLibrary
+            // 
+            toolStripButtonTerrainLibrary.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            toolStripButtonTerrainLibrary.Image = Properties.Resources.Water;
+            toolStripButtonTerrainLibrary.ImageTransparentColor = System.Drawing.Color.Magenta;
+            toolStripButtonTerrainLibrary.Name = "toolStripButtonTerrainLibrary";
+            toolStripButtonTerrainLibrary.Size = new System.Drawing.Size(23, 22);
+            toolStripButtonTerrainLibrary.Text = "Terrain-Bibliothek (Texturen)";
+            toolStripButtonTerrainLibrary.ToolTipText = "Textur-Bibliothek (Terrain-Bibliothek) öffnen";
+            toolStripButtonTerrainLibrary.Click += ToolStripButtonTerrainLibrary_Click;
+            // 
             // TexturesControl
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -587,5 +599,6 @@ namespace UoFiddler.Controls.UserControls
         private System.Windows.Forms.ToolStripButton toolStripButtonPictureFusion;
         private System.Windows.Forms.ToolStripMenuItem colorsTexturesToolStripMenuItem;
         private System.Windows.Forms.ToolStripButton toolStripColor;
+        private System.Windows.Forms.ToolStripButton toolStripButtonTerrainLibrary;
     }
 }
