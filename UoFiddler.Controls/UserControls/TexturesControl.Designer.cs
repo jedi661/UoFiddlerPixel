@@ -87,7 +87,8 @@ namespace UoFiddler.Controls.UserControls
             toolStripButtonTextureWindows = new System.Windows.Forms.ToolStripButton();
             toolStripButtonPictureFusion = new System.Windows.Forms.ToolStripButton();
             toolStripColor = new System.Windows.Forms.ToolStripButton();
-            TextureTileView = new TileView.TileViewControl();
+            toolStripButtonTerrainLibrary = new System.Windows.Forms.ToolStripButton();
+            TextureTileView = new UoFiddler.Controls.UserControls.TileView.TileViewControl();
             panel1 = new System.Windows.Forms.Panel();
             statusStrip = new System.Windows.Forms.StatusStrip();
             GraphicLabel = new System.Windows.Forms.ToolStripStatusLabel();
@@ -304,7 +305,7 @@ namespace UoFiddler.Controls.UserControls
             // toolStrip
             // 
             toolStrip.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
-            toolStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { toolStripSeparator3, toolStripSeparator4, SaveButton, toolStripSeparator1, IndexToolStripLabel, searchByIdToolStripTextBox, SearchButton, toolStripSeparator8, MiscToolStripDropDownButton, PlaySoundtoolStripButton1, toolStripButtonTextureWindows, toolStripButtonPictureFusion, toolStripColor });
+            toolStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { toolStripSeparator3, toolStripSeparator4, SaveButton, toolStripSeparator1, IndexToolStripLabel, searchByIdToolStripTextBox, SearchButton, toolStripSeparator8, MiscToolStripDropDownButton, PlaySoundtoolStripButton1, toolStripButtonTextureWindows, toolStripButtonPictureFusion, toolStripColor, toolStripButtonTerrainLibrary });
             toolStrip.Location = new System.Drawing.Point(0, 0);
             toolStrip.Name = "toolStrip";
             toolStrip.RenderMode = System.Windows.Forms.ToolStripRenderMode.System;
@@ -461,6 +462,17 @@ namespace UoFiddler.Controls.UserControls
             toolStripColor.Text = "Texture Painter and Color and Pattern ";
             toolStripColor.Click += toolStripColor_Click;
             // 
+            // toolStripButtonTerrainLibrary
+            // 
+            toolStripButtonTerrainLibrary.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            toolStripButtonTerrainLibrary.Image = Properties.Resources.Add;
+            toolStripButtonTerrainLibrary.ImageTransparentColor = System.Drawing.Color.Magenta;
+            toolStripButtonTerrainLibrary.Name = "toolStripButtonTerrainLibrary";
+            toolStripButtonTerrainLibrary.Size = new System.Drawing.Size(23, 22);
+            toolStripButtonTerrainLibrary.Text = "Terrain-Bibliothek (Texturen)";
+            toolStripButtonTerrainLibrary.ToolTipText = "Textur-Bibliothek (Terrain-Bibliothek) öffnen";
+            toolStripButtonTerrainLibrary.Click += ToolStripButtonTerrainLibrary_Click;
+            // 
             // TextureTileView
             // 
             TextureTileView.AutoScroll = true;
@@ -587,5 +599,6 @@ namespace UoFiddler.Controls.UserControls
         private System.Windows.Forms.ToolStripButton toolStripButtonPictureFusion;
         private System.Windows.Forms.ToolStripMenuItem colorsTexturesToolStripMenuItem;
         private System.Windows.Forms.ToolStripButton toolStripColor;
+        private System.Windows.Forms.ToolStripButton toolStripButtonTerrainLibrary;
     }
 }

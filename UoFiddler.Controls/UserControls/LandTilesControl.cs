@@ -1660,5 +1660,13 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
         #endregion
+
+        #region [ ToolStripButtonTerrainLibrary_Click ]
+        private void ToolStripButtonTerrainLibrary_Click(object sender, EventArgs e)
+        {
+            // opens the terrain library window (land tiles / textures share one library)
+            UoFiddler.Controls.TerrainLibrary.Forms.TerrainWindows.ShowLandTiles(this, SelectedGraphicId);
+        }
+        #endregion
     }
 }

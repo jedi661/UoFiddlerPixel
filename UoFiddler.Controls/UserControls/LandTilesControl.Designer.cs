@@ -74,9 +74,9 @@ namespace UoFiddler.Controls.UserControls
             markToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             gotoMarkToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             backgroundToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            colorsImagesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             toolStripSeparator9 = new System.Windows.Forms.ToolStripSeparator();
             saveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            colorsImagesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             LandTilesToolStrip = new System.Windows.Forms.ToolStrip();
             IndexToolStripLabel = new System.Windows.Forms.ToolStripLabel();
             searchByIdToolStripTextBox = new System.Windows.Forms.ToolStripTextBox();
@@ -93,6 +93,7 @@ namespace UoFiddler.Controls.UserControls
             asPngToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             SaveButton = new System.Windows.Forms.ToolStripButton();
             toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
+            toolStripButtonTerrainLibrary = new System.Windows.Forms.ToolStripButton();
             LandTilesTileView = new TileViewControl();
             panel1 = new System.Windows.Forms.Panel();
             StatusStrip = new System.Windows.Forms.StatusStrip();
@@ -109,7 +110,7 @@ namespace UoFiddler.Controls.UserControls
             // 
             LandTilesContextMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { showFreeSlotsToolStripMenuItem, toolStripSeparator6, exportImageToolStripMenuItem, toolStripSeparator3, selectInTileDataTabToolStripMenuItem, selectInRadarColorTabToolStripMenuItem, toolStripSeparator2, findNextFreeSlotToolStripMenuItem, removeToolStripMenuItem, replaceToolStripMenuItem, replaceStartingFromToolStripMenuItem, insertAtToolStripMenuItem, toolStripSeparator7, copyToolStripMenuItem, importToolStripMenuItem, importToTempToolStripMenuItem, toolStripSeparator8, rotateBy90DegreesToolStripMenuItem, zoomImageToolStripMenuItem, toolStripSeparator5, markToolStripMenuItem, gotoMarkToolStripMenuItem, backgroundToolStripMenuItem, colorsImagesToolStripMenuItem, toolStripSeparator9, saveToolStripMenuItem });
             LandTilesContextMenuStrip.Name = "contextMenuStrip1";
-            LandTilesContextMenuStrip.Size = new System.Drawing.Size(201, 486);
+            LandTilesContextMenuStrip.Size = new System.Drawing.Size(201, 464);
             // 
             // showFreeSlotsToolStripMenuItem
             // 
@@ -324,6 +325,14 @@ namespace UoFiddler.Controls.UserControls
             backgroundToolStripMenuItem.Text = "Background";
             backgroundToolStripMenuItem.Click += BackgroundToolStripMenuItem_Click;
             // 
+            // colorsImagesToolStripMenuItem
+            // 
+            colorsImagesToolStripMenuItem.Image = Properties.Resources.colordialog_background;
+            colorsImagesToolStripMenuItem.Name = "colorsImagesToolStripMenuItem";
+            colorsImagesToolStripMenuItem.Size = new System.Drawing.Size(200, 22);
+            colorsImagesToolStripMenuItem.Text = "Colors Images";
+            colorsImagesToolStripMenuItem.Click += ColorsImagesToolStripMenuItem_Click;
+            // 
             // toolStripSeparator9
             // 
             toolStripSeparator9.Name = "toolStripSeparator9";
@@ -337,18 +346,10 @@ namespace UoFiddler.Controls.UserControls
             saveToolStripMenuItem.Text = "Save";
             saveToolStripMenuItem.Click += OnClickSave;
             // 
-            // colorsImagesToolStripMenuItem
-            // 
-            colorsImagesToolStripMenuItem.Image = Properties.Resources.colordialog_background;
-            colorsImagesToolStripMenuItem.Name = "colorsImagesToolStripMenuItem";
-            colorsImagesToolStripMenuItem.Size = new System.Drawing.Size(200, 22);
-            colorsImagesToolStripMenuItem.Text = "Colors Images";
-            colorsImagesToolStripMenuItem.Click += ColorsImagesToolStripMenuItem_Click;
-            // 
             // LandTilesToolStrip
             // 
             LandTilesToolStrip.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
-            LandTilesToolStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { IndexToolStripLabel, searchByIdToolStripTextBox, NameToolStripLabel, searchByNameToolStripTextBox, searchByNameToolStripButton, SearchButton, toolStripSeparator1, MiscToolStripDropDownButton, SaveButton, toolStripSeparator4 });
+            LandTilesToolStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { IndexToolStripLabel, searchByIdToolStripTextBox, NameToolStripLabel, searchByNameToolStripTextBox, searchByNameToolStripButton, SearchButton, toolStripSeparator1, MiscToolStripDropDownButton, SaveButton, toolStripSeparator4, toolStripButtonTerrainLibrary });
             LandTilesToolStrip.Location = new System.Drawing.Point(0, 0);
             LandTilesToolStrip.Name = "LandTilesToolStrip";
             LandTilesToolStrip.RenderMode = System.Windows.Forms.ToolStripRenderMode.System;
@@ -468,6 +469,17 @@ namespace UoFiddler.Controls.UserControls
             toolStripSeparator4.Name = "toolStripSeparator4";
             toolStripSeparator4.Size = new System.Drawing.Size(6, 25);
             // 
+            // toolStripButtonTerrainLibrary
+            // 
+            toolStripButtonTerrainLibrary.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            toolStripButtonTerrainLibrary.Image = Properties.Resources.Add;
+            toolStripButtonTerrainLibrary.ImageTransparentColor = System.Drawing.Color.Magenta;
+            toolStripButtonTerrainLibrary.Name = "toolStripButtonTerrainLibrary";
+            toolStripButtonTerrainLibrary.Size = new System.Drawing.Size(23, 22);
+            toolStripButtonTerrainLibrary.Text = "Terrain-Bibliothek (LandTiles)";
+            toolStripButtonTerrainLibrary.ToolTipText = "LandTile-Bibliothek (Terrain-Bibliothek) öffnen";
+            toolStripButtonTerrainLibrary.Click += ToolStripButtonTerrainLibrary_Click;
+            // 
             // LandTilesTileView
             // 
             LandTilesTileView.AutoScroll = true;
@@ -586,6 +598,7 @@ namespace UoFiddler.Controls.UserControls
         private System.Windows.Forms.ToolStripMenuItem selectInRadarColorTabToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem selectInTileDataTabToolStripMenuItem;
         private System.Windows.Forms.ToolStrip LandTilesToolStrip;
+        private System.Windows.Forms.ToolStripButton toolStripButtonTerrainLibrary;
         private System.Windows.Forms.ToolStripDropDownButton MiscToolStripDropDownButton;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
