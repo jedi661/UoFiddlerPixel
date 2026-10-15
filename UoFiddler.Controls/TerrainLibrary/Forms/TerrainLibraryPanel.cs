@@ -102,6 +102,18 @@ namespace UoFiddler.Controls.TerrainLibrary.Forms
                 return;
             }
 
+            List<string> missing = FindMissingControls();
+            if (missing.Count > 0)
+            {
+                // the designer file does not create all controls (e.g. changed by the Visual Studio designer)
+                MessageBox.Show(FindForm(),
+                    "TerrainLibraryPanel.Designer.cs ist unvollständig - diese Steuerelemente werden nicht erzeugt:\n\n" +
+                    string.Join(", ", missing) +
+                    "\n\nBitte TerrainLibrary\\Forms\\TerrainLibraryPanel.Designer.cs aus der ZIP wiederherstellen.",
+                    "Terrain-Bibliothek", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
             _initialized = true;
             pictureBoxPreview.AllowDrop = true;
             TerrainFlags.Fill(checkedListBoxFlags);
@@ -275,9 +287,47 @@ namespace UoFiddler.Controls.TerrainLibrary.Forms
             labelPartner.Text = $"Partner ({_layer.Other().SingleName()}):";
             ctxRemove.Text = $"{_layer.SingleName()} entfernen";
             editLandFromTextureMenu.Text = ctxLandFromTexture.Text = "LandTile aus Textur des Slots erzeugen";
-            LibraryTileView.TileSize = _layer == TerrainLayer.LandTile
+            SetTileSize(_layer == TerrainLayer.LandTile
                 ? new Size(Math.Max(Options.ArtItemSizeWidth, 46), Math.Max(Options.ArtItemSizeHeight, 46))
-                : new Size(68, 68);
+                : new Size(68, 68));
+        }
+
+        /// <summary>
+        /// Sets the tile size of the grid. A failure here must not stop the window from opening, so it is
+        /// reported in the status bar and the designer size (48x48) is kept.
+        /// </summary>
+        private void SetTileSize(Size size)
+        {
+            if (LibraryTileView == null || LibraryTileView.TileSize == size)
+            {
+                return;
+            }
+
+            try
+            {
+                LibraryTileView.TileSize = size;
+            }
+            catch (Exception ex)
+            {
+                Options.Logger?.Warning(ex, "TerrainLibrary: could not set tile size {Size}", size);
+                statusLabelSelected.Text = $"Kachelgröße {size.Width}x{size.Height} konnte nicht gesetzt werden: {ex.Message}";
+            }
+        }
+
+        /// <summary>Names of designer controls that are null (diagnosis for a damaged designer file).</summary>
+        private List<string> FindMissingControls()
+        {
+            var missing = new List<string>();
+            foreach (System.Reflection.FieldInfo field in GetType().GetFields(System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic))
+            {
+                bool isUiField = typeof(Control).IsAssignableFrom(field.FieldType) || typeof(ToolStripItem).IsAssignableFrom(field.FieldType);
+                if (isUiField && field.GetValue(this) == null)
+                {
+                    missing.Add(field.Name);
+                }
+            }
+
+            return missing;
         }
 
         private void ApplyOptionChecks()
