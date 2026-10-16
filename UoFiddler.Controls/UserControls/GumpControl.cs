@@ -213,15 +213,19 @@ namespace UoFiddler.Controls.UserControls
                 return;
             }
 
+            // list items are "id - name" strings (other windows, e.g. the gump library, change gumps too)
+            string name = idNames.TryGetValue(index.ToString(), out string idName) ? idName : "";
+            string entry = $"{index} - {name}";
+
             if (Gumps.IsValidIndex(index))
             {
                 bool done = false;
                 for (int i = 0; i < listBox.Items.Count; ++i)
                 {
-                    int j = int.Parse(listBox.Items[i].ToString());
+                    int j = GetItemId(listBox.Items[i]);
                     if (j > index)
                     {
-                        listBox.Items.Insert(i, index);
+                        listBox.Items.Insert(i, entry);
                         listBox.SelectedIndex = i;
                         done = true;
                         break;
@@ -236,23 +240,38 @@ namespace UoFiddler.Controls.UserControls
 
                 if (!done)
                 {
-                    listBox.Items.Add(index);
+                    listBox.Items.Add(entry);
+                }
+
+                listBox.Invalidate();
+                if (listBox.SelectedIndex >= 0 && GetItemId(listBox.SelectedItem) == index)
+                {
+                    ListBox_SelectedIndexChanged(this, EventArgs.Empty);
                 }
             }
             else
             {
-                for (int i = 0; i < listBox.Items.Count; ++i)
+                if (!_showFreeSlots)
                 {
-                    int j = int.Parse(listBox.Items[i].ToString());
-                    if (j == index)
+                    for (int i = 0; i < listBox.Items.Count; ++i)
                     {
-                        listBox.Items.RemoveAt(i);
-                        break;
+                        int j = GetItemId(listBox.Items[i]);
+                        if (j == index)
+                        {
+                            listBox.Items.RemoveAt(i);
+                            break;
+                        }
                     }
                 }
 
                 listBox.Invalidate();
             }
+        }
+
+        private static int GetItemId(object item)
+        {
+            string text = item?.ToString() ?? string.Empty;
+            return int.TryParse(text.Split('-')[0].Trim(), out int id) ? id : -1;
         }
         #endregion
 
@@ -936,6 +955,39 @@ namespace UoFiddler.Controls.UserControls
             }
 
             _refMarker.Search(gumpId.ToString());
+        }
+        #endregion
+
+        #region [ GetSelectedGumpId ]
+        /// <summary>Gump id selected in the Gumps tab or -1 (used by the gump library).</summary>
+        public static int GetSelectedGumpId()
+        {
+            if (_refMarker == null || _refMarker.listBox.SelectedIndex < 0)
+            {
+                return -1;
+            }
+
+            return GetItemId(_refMarker.listBox.SelectedItem);
+        }
+        #endregion
+
+        #region [ Gump library ]
+        private void ToolStripButtonGumpLibrary_Click(object sender, EventArgs e)
+        {
+            // the gump library is an independent window next to the gumps tab (single instance)
+            UoFiddler.Controls.GumpLibrary.Forms.GumpLibraryForm.ShowLibrary();
+        }
+
+        private void AddToGumpLibraryToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            int id = listBox.SelectedIndex >= 0 ? GetItemId(listBox.SelectedItem) : -1;
+            if (id < 0 || !Gumps.IsValidIndex(id))
+            {
+                MessageBox.Show("No gump selected.", "Gump Library", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            UoFiddler.Controls.GumpLibrary.Forms.GumpLibraryForm.AddOriginalGumps(new[] { id });
         }
         #endregion
 
