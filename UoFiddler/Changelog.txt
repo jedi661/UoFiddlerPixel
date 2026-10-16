@@ -1,9 +1,9 @@
-Version: 4.12.12 #XG1
+Version : 4.12.12 #XG1
 - Added Bibliothek Arts
 - Added Bibliothek Landtiles and Textures
 - Added Bibliothek Gumps
 
-Version: 4.12.11 #XG1
+Version : 4.12.11 #XG1
 – Compare Maps revised
 - Made `CalculateDiffs()` asynchronous (`Task.Run`) to prevent UI freezing  
 - Fixed null‑check bug in `CalculateDiffs`  
