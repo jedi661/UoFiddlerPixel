@@ -135,9 +135,7 @@
 		<Compile Update="Forms\HuePopUpItemForm.Designer.cs">
 			<DependentUpon>HuePopUpItemForm.cs</DependentUpon>
 		</Compile>
-		<Compile Update="UserControls\GumpControl.cs">
-			<SubType>UserControl</SubType>
-		</Compile>
+		<Compile Update="UserControls\GumpControl.cs" />
 		<Compile Update="UserControls\GumpControl.Designer.cs">
 			<DependentUpon>GumpControl.cs</DependentUpon>
 		</Compile>

@@ -89,6 +89,8 @@ namespace UoFiddler.Controls.UserControls
             toolStripSeparator6 = new System.Windows.Forms.ToolStripSeparator();
             saveToolStripButton = new System.Windows.Forms.ToolStripButton();
             toolStripButtonSoundMessage = new System.Windows.Forms.ToolStripButton();
+            toolStripButtonGumpLibrary = new System.Windows.Forms.ToolStripButton();
+            addToGumpLibraryToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             pictureBox = new System.Windows.Forms.PictureBox();
             bottomMenuToolStrip = new System.Windows.Forms.ToolStrip();
             IDLabel = new System.Windows.Forms.ToolStripLabel();
@@ -152,7 +154,7 @@ namespace UoFiddler.Controls.UserControls
             // 
             // contextMenuStrip
             // 
-            contextMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { extractImageToolStripMenuItem, toolStripSeparator2, AddShowAllFreeSlotsButton, findNextFreeSlotToolStripMenuItem, toolStripSeparator11, jumpToMaleFemale, markToolStripMenuItem, listingToolStripMenuItem, toolStripSeparator10, mirrorToolStripMenuItem, toolStripSeparator8, replaceGumpToolStripMenuItem, removeToolStripMenuItem, insertToolStripMenuItem, toolStripMenuItem1, toolStripSeparator1, saveToolStripMenuItem, toolStripSeparator4, copyToolStripMenuItem, importToolStripMenuItem, toolStripSeparator7, addIDNamesToolStripMenuItem });
+            contextMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { extractImageToolStripMenuItem, toolStripSeparator2, AddShowAllFreeSlotsButton, findNextFreeSlotToolStripMenuItem, toolStripSeparator11, jumpToMaleFemale, markToolStripMenuItem, listingToolStripMenuItem, toolStripSeparator10, mirrorToolStripMenuItem, toolStripSeparator8, replaceGumpToolStripMenuItem, removeToolStripMenuItem, insertToolStripMenuItem, toolStripMenuItem1, toolStripSeparator1, saveToolStripMenuItem, toolStripSeparator4, copyToolStripMenuItem, importToolStripMenuItem, toolStripSeparator7, addIDNamesToolStripMenuItem, addToGumpLibraryToolStripMenuItem });
             contextMenuStrip.Name = "contextMenuStrip1";
             contextMenuStrip.Size = new System.Drawing.Size(190, 398);
             // 
@@ -352,6 +354,14 @@ namespace UoFiddler.Controls.UserControls
             addIDNamesToolStripMenuItem.Text = "Add ID Names";
             addIDNamesToolStripMenuItem.Click += AddIDNamesToolStripMenuItem_Click;
             // 
+            // addToGumpLibraryToolStripMenuItem
+            // 
+            addToGumpLibraryToolStripMenuItem.Image = Properties.Resources.Image;
+            addToGumpLibraryToolStripMenuItem.Name = "addToGumpLibraryToolStripMenuItem";
+            addToGumpLibraryToolStripMenuItem.Size = new System.Drawing.Size(189, 22);
+            addToGumpLibraryToolStripMenuItem.Text = "Add to Gump Library";
+            addToGumpLibraryToolStripMenuItem.Click += AddToGumpLibraryToolStripMenuItem_Click;
+            // 
             // listingToolStripMenuItem
             // 
             listingToolStripMenuItem.Image = Properties.Resources.Add2;
@@ -364,7 +374,7 @@ namespace UoFiddler.Controls.UserControls
             // topMenuToolStrip
             // 
             topMenuToolStrip.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
-            topMenuToolStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { IndexToolStripLabel, searchByIdToolStripTextBox, toolStripButtonSearch, toolStripSeparator5, toolStripDropDownButton1, toolStripSeparator6, saveToolStripButton, toolStripButtonSoundMessage });
+            topMenuToolStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { IndexToolStripLabel, searchByIdToolStripTextBox, toolStripButtonSearch, toolStripSeparator5, toolStripDropDownButton1, toolStripSeparator6, saveToolStripButton, toolStripButtonSoundMessage, toolStripButtonGumpLibrary });
             topMenuToolStrip.Location = new System.Drawing.Point(0, 0);
             topMenuToolStrip.Name = "topMenuToolStrip";
             topMenuToolStrip.RenderMode = System.Windows.Forms.ToolStripRenderMode.System;
@@ -510,6 +520,17 @@ namespace UoFiddler.Controls.UserControls
             toolStripButtonSoundMessage.Size = new System.Drawing.Size(23, 22);
             toolStripButtonSoundMessage.Text = "toolStripButton1";
             toolStripButtonSoundMessage.Click += ToolStripButtonSoundMessage_Click;
+            // 
+            // toolStripButtonGumpLibrary
+            // 
+            toolStripButtonGumpLibrary.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            toolStripButtonGumpLibrary.Image = Properties.Resources.Image;
+            toolStripButtonGumpLibrary.ImageTransparentColor = System.Drawing.Color.Magenta;
+            toolStripButtonGumpLibrary.Name = "toolStripButtonGumpLibrary";
+            toolStripButtonGumpLibrary.Size = new System.Drawing.Size(23, 22);
+            toolStripButtonGumpLibrary.Text = "Gump-Bibliothek";
+            toolStripButtonGumpLibrary.ToolTipText = "Gump-Bibliothek \u00f6ffnen (Kategorien, Tags, Beschreibungen, Vorschaubilder)";
+            toolStripButtonGumpLibrary.Click += ToolStripButtonGumpLibrary_Click;
             // 
             // pictureBox
             // 
@@ -660,6 +681,8 @@ namespace UoFiddler.Controls.UserControls
         private System.Windows.Forms.ToolStripMenuItem addIDNamesToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator7;
         private System.Windows.Forms.ToolStripButton toolStripButtonSoundMessage;
+        private System.Windows.Forms.ToolStripButton toolStripButtonGumpLibrary;
+        private System.Windows.Forms.ToolStripMenuItem addToGumpLibraryToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem markToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator8;
         private System.Windows.Forms.ToolStripMenuItem customSoundToolStripMenuItem;
