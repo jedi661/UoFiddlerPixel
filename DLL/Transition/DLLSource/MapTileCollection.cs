@@ -22,7 +22,12 @@ namespace Transition
 		{
 			get
 			{
-				int num = checked((int)Math.Round((double)unchecked(VBMath.Rnd() * (float)checked(this.List.Count - 1))));
+				// uniform choice (the old rounding gave the first and last tile only half the chance)
+				if (this.List.Count == 0)
+				{
+					return null;
+				}
+				int num = Math.Min(this.List.Count - 1, (int)unchecked(VBMath.Rnd() * (float)this.List.Count));
 				return (MapTile)this.List[num];
 			}
 		}

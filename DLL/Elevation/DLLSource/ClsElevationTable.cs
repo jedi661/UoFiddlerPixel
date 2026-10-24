@@ -33,6 +33,17 @@ namespace Elevation
             return (ClsElevation)this.i_AltitudeTable[Index];
         }
 
+		// Data/<folder>/<file> next to the application; the folder is created when missing.
+		internal static string DataFile(string folder, string file)
+		{
+			string dir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data", folder);
+			if (!Directory.Exists(dir))
+			{
+				Directory.CreateDirectory(dir);
+			}
+			return Path.Combine(dir, file);
+		}
+
 		public ClsElevationTable()
 		{
 			this.i_AltitudeTable = new Hashtable();
@@ -87,7 +98,7 @@ namespace Elevation
 		{
 			IEnumerator enumerator = null;
 			IEnumerator enumerator1 = null;
-			string str = string.Format("{0}Data/System/Altitude.xml", AppDomain.CurrentDomain.BaseDirectory);
+			string str = DataFile("System", "Altitude.xml");
 			XmlDocument xmlDocument = new XmlDocument();
 			try
 			{
@@ -136,7 +147,7 @@ namespace Elevation
 		public void Save()
 		{
 			IEnumerator enumerator = null;
-			string str = string.Format("{0}Data\\System\\Altitude.xml", AppDomain.CurrentDomain.BaseDirectory);
+			string str = DataFile("System", "Altitude.xml");
 			XmlTextWriter xmlTextWriter = new XmlTextWriter(str, Encoding.UTF8)
 			{
 				Indentation = 2,
@@ -167,7 +178,7 @@ namespace Elevation
 		public void SaveACO()
 		{
 			byte num = Convert.ToByte(this.i_AltitudeTable.Count);
-			string str = string.Format("{0}/Data/Photoshop/Altitude.ACO", Directory.GetCurrentDirectory());
+			string str = DataFile("Photoshop", "Altitude.ACO");
 			FileStream fileStream = new FileStream(str, FileMode.Create);
 			BinaryWriter binaryWriter = new BinaryWriter(fileStream);
 			binaryWriter.Write((byte)0);
@@ -209,7 +220,7 @@ namespace Elevation
 
 		public void SaveACT()
 		{
-			string str = string.Format("{0}/Data/Photoshop/Altitude.ACT", Directory.GetCurrentDirectory());
+			string str = DataFile("Photoshop", "Altitude.ACT");
 			FileStream fileStream = new FileStream(str, FileMode.Create);
 			BinaryWriter binaryWriter = new BinaryWriter(fileStream);
 			byte num = 0;

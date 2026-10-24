@@ -74,24 +74,43 @@ namespace Logger
             textLog.Text = string.Concat(textLog.Text, "\r\n");
         }
 
+        // Thread safe: can be called from worker threads. Uses AppendText instead of rebuilding the whole text
+        // (which became very slow for long logs). Calls after the window was closed are ignored.
         public void LogMessage(string Message)
         {
-            TextBox textLog = this.TextLog;
-            textLog.Text = string.Concat(textLog.Text, Message, "\r\n");
-            this.Refresh();
+            this.AppendLog(string.Concat(Message, "\r\n"));
         }
 
         public void LogTimeStamp()
         {
-            TextBox textLog = this.TextLog;
-            textLog.Text = string.Concat(textLog.Text, string.Format("  Task:{0:dd/MMM/yyyy hh:mm:ss}", this.m_Task_Start));
-            textLog = this.TextLog;
-            textLog.Text = string.Concat(textLog.Text, " === > ");
-            textLog = this.TextLog;
-            textLog.Text = string.Concat(textLog.Text, string.Format("{0:hh:mm:ss}", this.m_Task_End));
-            textLog = this.TextLog;
-            textLog.Text = string.Concat(textLog.Text, string.Format("  Total:{0} seconds\r\n", DateAndTime.DateDiff(DateInterval.Second, this.m_Task_Start, this.m_Task_End, FirstDayOfWeek.Sunday, FirstWeekOfYear.Jan1)));
-            this.Refresh();
+            // EndTask() was never called by the callers, so the end time was always 00:00:00.
+            DateTime end = this.m_Task_End > this.m_Task_Start ? this.m_Task_End : DateTime.UtcNow;
+            this.m_Task_End = DateTime.MinValue;
+            this.AppendLog(string.Format("  Task:{0:dd/MMM/yyyy HH:mm:ss} === > {1:HH:mm:ss}  Total:{2:0.0} seconds\r\n", this.m_Task_Start.ToLocalTime(), end.ToLocalTime(), (end - this.m_Task_Start).TotalSeconds));
+        }
+
+        private void AppendLog(string text)
+        {
+            if (this.IsDisposed || this.TextLog == null || this.TextLog.IsDisposed)
+            {
+                return;
+            }
+
+            if (this.InvokeRequired)
+            {
+                try
+                {
+                    this.BeginInvoke(new Action<string>(this.AppendLog), text);
+                }
+                catch (InvalidOperationException)
+                {
+                    // window handle not created yet or already destroyed
+                }
+
+                return;
+            }
+
+            this.TextLog.AppendText(text);
         }
 
         private void MenuItem2_Click(object sender, EventArgs e)

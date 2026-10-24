@@ -108,8 +108,15 @@ namespace Transition
                 while (enumerator.MoveNext())
                 {
                     RandomStatic randomStatic = (RandomStatic)enumerator.Current;
-                    StaticCell item = new StaticCell(randomStatic.TileID, checked((byte)(unchecked(X + randomStatic.X) % 8)), checked((byte)(unchecked(Y + randomStatic.Y) % 8)), (short)(Z + randomStatic.Z));
-                    StaticMap[(int)((short)(X + randomStatic.X >> 3)), (int)((short)(Y + randomStatic.Y >> 3))].Add(item, null, null, null);
+                    int x = X + randomStatic.X;
+                    int y = Y + randomStatic.Y;
+                    // statics that would land outside of the map are skipped (used to throw and abort the map build)
+                    if (x < 0 || y < 0 || (x >> 3) >= StaticMap.GetLength(0) || (y >> 3) >= StaticMap.GetLength(1))
+                    {
+                        continue;
+                    }
+                    StaticCell item = new StaticCell(randomStatic.TileID, (byte)(x % 8), (byte)(y % 8), Z + randomStatic.Z);
+                    StaticMap[x >> 3, y >> 3].Add(item, null, null, null);
                 }
             }
             finally

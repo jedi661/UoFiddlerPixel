@@ -28,6 +28,17 @@ namespace Terrain
             return (ClsTerrain)this.i_TerrainTable[iKey];
 		}
 
+		// Data/<folder>/<file> next to the application; the folder is created when missing.
+		internal static string DataFile(string folder, string file)
+		{
+			string dir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data", folder);
+			if (!Directory.Exists(dir))
+			{
+				Directory.CreateDirectory(dir);
+			}
+			return Path.Combine(dir, file);
+		}
+
 		public ClsTerrainTable()
 		{
 			this.i_TerrainTable = new Hashtable();
@@ -94,7 +105,7 @@ namespace Terrain
                 num = checked((byte)(num + 1));
 			}
             while (num <= 254);
-            palette.Entries[255] = this.TerrianGroup(255).Colour;
+            palette.Entries[255] = this.TerrianGroup(255) == null ? Color.Black : this.TerrianGroup(255).Colour;
             return palette;
 		}
 
@@ -102,7 +113,7 @@ namespace Terrain
 		{
 			IEnumerator enumerator = null;
 			IEnumerator enumerator1 = null;
-			string str = string.Format("{0}\\Data\\System\\Terrain.xml", AppDomain.CurrentDomain.BaseDirectory);
+			string str = DataFile("System", "Terrain.xml");
 			XmlDocument xmlDocument = new XmlDocument();
 			try
 			{
@@ -152,7 +163,8 @@ namespace Terrain
 		public void Save()
 		{
 			IEnumerator enumerator = null;
-			string str = string.Format("{0}/Data/System/Terrain.xml", Directory.GetCurrentDirectory());
+			// same file that Load() reads (was Directory.GetCurrentDirectory(), which can be another folder)
+			string str = DataFile("System", "Terrain.xml");
 			XmlTextWriter xmlTextWriter = new XmlTextWriter(str, Encoding.UTF8)
 			{
 				Indentation = 2,
@@ -183,7 +195,7 @@ namespace Terrain
 		public void SaveACO()
 		{
 			byte num = Convert.ToByte(this.i_TerrainTable.Count);
-			string str = string.Format("{0}/Data/Photoshop/Terrain.ACO", Directory.GetCurrentDirectory());
+			string str = DataFile("Photoshop", "Terrain.ACO");
 			FileStream fileStream = new FileStream(str, FileMode.Create);
 			BinaryWriter binaryWriter = new BinaryWriter(fileStream);
 			binaryWriter.Write((byte)0);
@@ -225,7 +237,7 @@ namespace Terrain
 
 		public void SaveACT()
 		{
-			string str = string.Format("{0}/Data/Photoshop/Terrain.ACT", Directory.GetCurrentDirectory());
+			string str = DataFile("Photoshop", "Terrain.ACT");
 			FileStream fileStream = new FileStream(str, FileMode.Create);
 			BinaryWriter binaryWriter = new BinaryWriter(fileStream);
 			byte num = 0;

@@ -11,6 +11,11 @@ namespace Transition
 	public class TransitionTable
 	{
 		private Hashtable i_Transitions;
+
+		// When false, load errors are only collected in LoadErrors (no message box per file).
+		public bool ShowMessages = true;
+
+		public System.Collections.Generic.List<string> LoadErrors = new System.Collections.Generic.List<string>();
 		public Hashtable GetTransitionTable
 		{
 			get
@@ -86,7 +91,11 @@ namespace Transition
 					{
 						XmlElement xmlInfo = (XmlElement)enumerator.Current;
 						Transition transition = new Transition(xmlInfo);
-						this.i_Transitions.Add(transition.HashKey, transition);
+						// duplicate keys used to throw and skip the rest of the file; first definition wins now
+						if (!this.i_Transitions.ContainsKey(transition.HashKey))
+						{
+							this.i_Transitions.Add(transition.HashKey, transition);
+						}
 					}
 				}
 				finally
@@ -100,7 +109,11 @@ namespace Transition
 			catch (Exception expr_74)
 			{
 				ProjectData.SetProjectError(expr_74);
-				Interaction.MsgBox(string.Format("XMLFile:{0}", iFilename), MsgBoxStyle.OkOnly, null);
+				this.LoadErrors.Add(string.Format("{0}: {1}", iFilename, expr_74.Message));
+				if (this.ShowMessages)
+				{
+					Interaction.MsgBox(string.Format("XMLFile:{0}", iFilename), MsgBoxStyle.OkOnly, null);
+				}
 				ProjectData.ClearProjectError();
 			}
 		}

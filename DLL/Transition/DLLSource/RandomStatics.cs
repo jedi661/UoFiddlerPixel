@@ -73,9 +73,9 @@ namespace Transition
 						this.InnerList.Add(randomStaticCollection);
 						if (randomStaticCollection.Freq > 0)
 						{
-							byte arg_AC_0 = 1;
-							byte b = checked((byte)randomStaticCollection.Freq);
-							for (byte b2 = arg_AC_0; b2 <= b; b2 += 1)
+							// int loop: a byte loop never ends when Freq is 255
+							int b = Math.Min(255, randomStaticCollection.Freq);
+							for (int b2 = 1; b2 <= b; b2++)
 							{
 								this.m_Random.Add(randomStaticCollection, null, null, null);
 							}
@@ -154,10 +154,11 @@ namespace Transition
             {
                 if (this.m_Random.Count != 0)
                 {
-                    VBMath.Randomize();
-                    if ((int)Math.Round((double)Conversion.Int(unchecked(100f * VBMath.Rnd()))) <= this.m_Freq)
+                    // No VBMath.Randomize() here: re-seeding from the clock on every call gave the same
+                    // "random" value for many tiles in a row (clumped statics) and was slow.
+                    if ((int)Conversion.Int(unchecked(100f * VBMath.Rnd())) < this.m_Freq)
                     {
-                        int index = (int)Math.Round((double)unchecked((float)Conversion.Int(checked(this.m_Random.Count - 1)) * VBMath.Rnd())) + 1;
+                        int index = Math.Min(this.m_Random.Count, (int)unchecked(this.m_Random.Count * VBMath.Rnd()) + 1);
                         ((RandomStaticCollection)this.m_Random[index]).RandomStatic(X, Y, Z, StaticMap);
                     }
                 }

@@ -685,18 +685,18 @@
      </MapTiles> 
      <StaticTiles /> 
    </TransInfo>
- <TransInfo Description="Common - Tree" HashKey="8D8D8D8D8D8D8D8D"> 
+ <TransInfo Description="Common - Tree" HashKey="8D8D8D8D8D8D8D8D8D"> 
      <MapTiles> 
        <MapTile TileID="11881" AltIDMod="0" /> 
      </MapTiles> 
      <StaticTiles /> 
    </TransInfo>
- <TransInfo Description="Common - Cave Wall" HashKey="8E8E8E8E8E8E8E8E"> 
+ <TransInfo Description="Common - Cave Wall" HashKey="8E8E8E8E8E8E8E8E8E"> 
      <MapTiles> 
        <MapTile TileID="12130" AltIDMod="0" /> 
      </MapTiles> 
      <StaticTiles />
- <TransInfo Description="Common - Sink Hole" HashKey="8F8F8F8F8F8F8F8F"> 
+ <TransInfo Description="Common - Sink Hole" HashKey="8F8F8F8F8F8F8F8F8F"> 
      <MapTiles> 
        <MapTile TileID="12541" AltIDMod="0" /> 
      </MapTiles> 

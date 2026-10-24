@@ -1,67 +1,54 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Xml;
-using Microsoft.VisualBasic.CompilerServices;
 
 namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Class
 {
+    /// <summary>One entry of Data/System/MapInfo.xml.</summary>
     internal class MapInfo
     {
-        private string m_Name; // Holds the name of the map
-        private byte m_Num; // Holds the number of the map
-        private int m_XSize; // Holds the size of the map in the X direction
-        private int m_YSize; // Holds the size of the map in the Y direction
+        public string MapName { get; }
 
-        // Public properties to access the private member variables
-        public string MapName // Property to get the name of the map
+        /// <summary>Map file number (map#.mul).</summary>
+        public byte MapNumber { get; }
+
+        public int XSize { get; }
+        public int YSize { get; }
+
+        /// <summary>X where the dungeon area starts, 0 = none.</summary>
+        public int DungeonX { get; }
+
+        /// <summary>Separator line in the list (XSize = 0).</summary>
+        public bool IsSeparator => XSize == 0 || YSize == 0;
+
+        /// <summary>"Custom size ..." entry (XSize = -1).</summary>
+        public bool IsCustom => XSize < 0 || YSize < 0;
+
+        public MapInfo(string name, byte number, int xSize, int ySize, int dungeonX)
         {
-            get
+            MapName = name;
+            MapNumber = number;
+            XSize = xSize;
+            YSize = ySize;
+            DungeonX = dungeonX;
+        }
+
+        public MapInfo(XmlElement xml)
+        {
+            MapName = xml.GetAttribute("Name");
+            byte.TryParse(xml.GetAttribute("Num"), out byte number);
+            int.TryParse(xml.GetAttribute("XSize"), out int x);
+            int.TryParse(xml.GetAttribute("YSize"), out int y);
+            MapNumber = number;
+            XSize = x;
+            YSize = y;
+            if (!int.TryParse(xml.GetAttribute("DungeonX"), out int dungeonX))
             {
-                return this.m_Name;
+                // old MapInfo.xml without DungeonX: Felucca/Trammel sized maps have the dungeon area at 5120
+                dungeonX = x >= 6144 ? 5120 : 0;
             }
+
+            DungeonX = dungeonX;
         }
 
-        public byte MapNumber // Property to get the number of the map
-        {
-            get
-            {
-                return this.m_Num;
-            }
-        }
-
-        public int XSize // Property to get the size of the map in the X direction
-        {
-            get
-            {
-                return this.m_XSize;
-            }
-        }
-
-        public int YSize // Property to get the size of the map in the Y direction
-        {
-            get
-            {
-                return this.m_YSize;
-            }
-        }
-
-        // Constructor that takes an XmlElement and initializes the member variables
-        public MapInfo(XmlElement iXml)
-        {
-            this.m_Name = iXml.GetAttribute("Name"); // Get the name attribute
-            this.m_Num = ByteType.FromString(iXml.GetAttribute("Num")); // Get the number attribute
-            this.m_XSize = IntegerType.FromString(iXml.GetAttribute("XSize")); // Get the X size attribute
-            this.m_YSize = IntegerType.FromString(iXml.GetAttribute("YSize")); // Get the Y size attribute
-        }
-
-        // Override of the ToString method to return the name of the map
-        public override string ToString()
-        {
-            return string.Format("{0}", this.m_Name);
-        }
-
+        public override string ToString() => MapName;
     }
 }

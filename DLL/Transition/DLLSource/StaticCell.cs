@@ -22,7 +22,7 @@ namespace Transition
             this.m_TileID = iTileID;
             this.m_X = iX;
             this.m_Y = iY;
-            this.m_Z = Convert.ToSByte(iZ);
+            this.m_Z = ClampZ(iZ);
         }
 
         // Overloaded constructor that additionally initializes the cell's hue
@@ -32,8 +32,27 @@ namespace Transition
             this.m_TileID = iTileID;
             this.m_X = iX;
             this.m_Y = iY;
-            this.m_Z = Convert.ToSByte(iZ);
+            this.m_Z = ClampZ(iZ);
             this.m_Hue = iHue;
+        }
+
+        // Clamp the height to the range a static can store (-128..127) instead of throwing.
+        private static sbyte ClampZ(int iZ)
+        {
+            if (iZ < sbyte.MinValue)
+            {
+                return sbyte.MinValue;
+            }
+            if (iZ > sbyte.MaxValue)
+            {
+                return sbyte.MaxValue;
+            }
+            return (sbyte)iZ;
+        }
+
+        public int TileID
+        {
+            get { return this.m_TileID; }
         }
 
         // Method of writing the cell information to a file
@@ -42,11 +61,13 @@ namespace Transition
             try
             {
                 // Writing the cell information to the file
-                i_StaticFile.Write(this.m_TileID);
+                // UO static record = 7 bytes: ushort TileID, byte X, byte Y, sbyte Z, ushort Hue.
+                // (Writing the int fields directly produced 11 bytes per static and broke statics*.mul.)
+                i_StaticFile.Write((ushort)this.m_TileID);
                 i_StaticFile.Write(this.m_X);
                 i_StaticFile.Write(this.m_Y);
                 i_StaticFile.Write(this.m_Z);
-                i_StaticFile.Write(this.m_Hue);
+                i_StaticFile.Write((ushort)this.m_Hue);
             }
             catch (Exception expr_45)
             {
