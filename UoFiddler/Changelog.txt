@@ -1,8 +1,10 @@
+Version : 4.12.13 #XG1
+- Map maker revised
+
 Version : 4.12.12 #XG1
 - Added Bibliothek Arts
 - Added Bibliothek Landtiles and Textures
 - Added Bibliothek Gumps
-- Map maker revised
 
 Version : 4.12.11 #XG1
 – Compare Maps revised
