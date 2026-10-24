@@ -10,6 +10,7 @@ Version: 4.12.12
 - Added Bibliothek Arts
 - Added Bibliothek Landtiles and Textures
 - Added Bibliothek Gumps
+- Map maker revised
 
 Version: 4.12.11 
 – Compare Maps revised
