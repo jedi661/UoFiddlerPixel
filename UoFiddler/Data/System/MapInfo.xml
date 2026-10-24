@@ -1,16 +1,26 @@
-<?xml version="1.0" encoding="utf-8" ?> 
-<Maps>	
-	<Map Name="Felucca (896x512) | (7168x4096)" Num="0" XSize="7168" YSize="4096" />
-	<Map Name="Felucca (768x512) | (6144x4096)" Num="0" XSize="6144" YSize="4096" />
-	<Map Name="--------------------------------------------------------" Num="0" XSize="0000" YSize="0000" />
-	<Map Name="Trammel (896x512) | (7168x4096)" Num="1" XSize="7168" YSize="4096" />
-	<Map Name="Trammel (768x512) | (6144x4096)" Num="0" XSize="6144" YSize="4096" />			
-	<Map Name="--------------------------------------------------------" Num="0" XSize="0000" YSize="0000" />
-	<Map Name="Ilshenar (288x200) | (2034x1600)" Num="2" XSize="2304" YSize="1600" />
-	<Map Name="--------------------------------------------------------" Num="0" XSize="0000" YSize="0000" />
-	<Map Name="Malas (320x256) | (2560x2048)" Num="3" XSize="2560" YSize="2048" />
-	<Map Name="--------------------------------------------------------" Num="0" XSize="0000" YSize="0000" />
-	<Map Name="Tokuno (181x181) | (1448x1448)" Num="4" XSize="1448" YSize="1448" />	
-	<Map Name="--------------------------------------------------------" Num="0" XSize="0000" YSize="0000" />
-	<Map Name="Ter Mur (160x512) | (1280x4096)" Num= "5" XSize="1280" YSize="4096" />
+<?xml version="1.0" encoding="utf-8" ?>
+<!--
+  Map sizes for the Map Maker.
+  Num   = map file number (map#.mul / statics#.mul / staidx#.mul)
+  XSize / YSize = size in tiles, must be multiples of 8.
+  DungeonX (optional) = x where the dungeon area starts (0 = no dungeon area).
+  Entries with XSize="0" are separators in the list.
+-->
+<Maps>
+	<Map Name="Felucca (896x512) | (7168x4096)" Num="0" XSize="7168" YSize="4096" DungeonX="5120" />
+	<Map Name="Felucca (768x512) | (6144x4096)" Num="0" XSize="6144" YSize="4096" DungeonX="5120" />
+	<Map Name="--------------------------------------------------------" Num="0" XSize="0" YSize="0" />
+	<Map Name="Trammel (896x512) | (7168x4096)" Num="1" XSize="7168" YSize="4096" DungeonX="5120" />
+	<Map Name="Trammel (768x512) | (6144x4096)" Num="1" XSize="6144" YSize="4096" DungeonX="5120" />
+	<Map Name="--------------------------------------------------------" Num="0" XSize="0" YSize="0" />
+	<Map Name="Ilshenar (288x200) | (2304x1600)" Num="2" XSize="2304" YSize="1600" DungeonX="0" />
+	<Map Name="--------------------------------------------------------" Num="0" XSize="0" YSize="0" />
+	<Map Name="Malas (320x256) | (2560x2048)" Num="3" XSize="2560" YSize="2048" DungeonX="0" />
+	<Map Name="--------------------------------------------------------" Num="0" XSize="0" YSize="0" />
+	<Map Name="Tokuno (181x181) | (1448x1448)" Num="4" XSize="1448" YSize="1448" DungeonX="0" />
+	<Map Name="--------------------------------------------------------" Num="0" XSize="0" YSize="0" />
+	<Map Name="Ter Mur (160x512) | (1280x4096)" Num="5" XSize="1280" YSize="4096" DungeonX="0" />
+	<Map Name="--------------------------------------------------------" Num="0" XSize="0" YSize="0" />
+	<Map Name="Small test map (128x128) | (1024x1024)" Num="6" XSize="1024" YSize="1024" DungeonX="0" />
+	<Map Name="Custom size ..." Num="0" XSize="-1" YSize="-1" DungeonX="0" />
 </Maps>

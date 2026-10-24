@@ -1,233 +1,126 @@
 ﻿// /***************************************************************************
 //  *
-//  * $Author: Turley
-//  * 
+//  * $Author: Nikodemus
+//  *
 //  * "THE BEER-WARE LICENSE"
-//  * As long as you retain this notice you can do whatever you want with 
+//  * As long as you retain this notice you can do whatever you want with
 //  * this stuff. If we meet some day, and you think this stuff is worth it,
 //  * you can buy me a beer in return.
 //  *
 //  ***************************************************************************/
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.VisualBasic;
+using System.IO;
 using System.Xml;
-using Microsoft.VisualBasic.CompilerServices;
+using UoFiddler.Plugin.ConverterMultiTextPlugin.MapMakerKit;
 
 namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Class
 {
+    /// <summary>
+    /// Altitude adjustments for "rough edge" tiles (Data/System/RoughEdge/Corner|Left|Top.xml).
+    /// </summary>
     internal class RoughEdge
     {
-        private Hashtable m_CornerEdge;
+        private readonly HashSet<short> _cornerEdge = new HashSet<short>();
+        private readonly HashSet<short> _leftEdge = new HashSet<short>();
+        private readonly HashSet<short> _topEdge = new HashSet<short>();
+        private readonly Random _random;
 
-        private Hashtable m_LeftEdge;
-
-        private Hashtable m_TopEdge;
+        /// <summary>Problems while loading (missing files ...). Empty when everything was fine.</summary>
+        public List<string> Errors { get; } = new List<string>();
 
         public RoughEdge()
+            : this(new Random())
         {
-            string str;
-            short num;
-            IEnumerator enumerator = null;
-            IEnumerator enumerator1 = null;
-            IEnumerator enumerator2 = null;
-            this.m_CornerEdge = new Hashtable();
-            this.m_LeftEdge = new Hashtable();
-            this.m_TopEdge = new Hashtable();
-            XmlDocument xmlDocument = new XmlDocument();
+        }
+
+        public RoughEdge(Random random)
+        {
+            _random = random ?? new Random();
+            Load("Corner.xml", "//Terrains/Corner", _cornerEdge);
+            Load("Left.xml", "//Terrains/Left", _leftEdge);
+            Load("Top.xml", "//Terrains/Top", _topEdge);
+        }
+
+        private void Load(string file, string xpath, HashSet<short> target)
+        {
+            string path = Path.Combine(MapDataPaths.RoughEdgeDir, file);
             try
             {
-                str = string.Format("{0}Data\\System\\RoughEdge\\Corner.xml", AppDomain.CurrentDomain.BaseDirectory);
-                xmlDocument.Load(str);
-                try
+                XmlDocument xml = new XmlDocument();
+                xml.Load(path);
+                foreach (XmlElement element in xml.SelectNodes(xpath))
                 {
-                    enumerator2 = xmlDocument.SelectNodes("//Terrains/Corner").GetEnumerator();
-                    while (enumerator2.MoveNext())
-                    {
-                        XmlElement current = (XmlElement)enumerator2.Current;
-                        num = XmlConvert.ToInt16(current.GetAttribute("TileID"));
-                        this.m_CornerEdge.Add(num, num);
-                    }
-                }
-                finally
-                {
-                    if (enumerator2 is IDisposable)
-                    {
-                        ((IDisposable)enumerator2).Dispose();
-                    }
+                    // HashSet: duplicate entries no longer throw
+                    target.Add(XmlConvert.ToInt16(element.GetAttribute("TileID")));
                 }
             }
-            catch (Exception exception)
+            catch (Exception ex)
             {
-                ProjectData.SetProjectError(exception);
-                Interaction.MsgBox(exception.Message, MsgBoxStyle.OkOnly, null);
-                ProjectData.ClearProjectError();
-            }
-            try
-            {
-                str = string.Format("{0}Data\\System\\RoughEdge\\Left.xml", AppDomain.CurrentDomain.BaseDirectory);
-                xmlDocument.Load(str);
-                try
-                {
-                    enumerator1 = xmlDocument.SelectNodes("//Terrains/Left").GetEnumerator();
-                    while (enumerator1.MoveNext())
-                    {
-                        XmlElement xmlElement = (XmlElement)enumerator1.Current;
-                        num = XmlConvert.ToInt16(xmlElement.GetAttribute("TileID"));
-                        this.m_LeftEdge.Add(num, num);
-                    }
-                }
-                finally
-                {
-                    if (enumerator1 is IDisposable)
-                    {
-                        ((IDisposable)enumerator1).Dispose();
-                    }
-                }
-            }
-            catch (Exception exception1)
-            {
-                ProjectData.SetProjectError(exception1);
-                Interaction.MsgBox(exception1.Message, MsgBoxStyle.OkOnly, null);
-                ProjectData.ClearProjectError();
-            }
-            try
-            {
-                str = string.Format("{0}Data\\System\\RoughEdge\\Top.xml", AppDomain.CurrentDomain.BaseDirectory);
-                xmlDocument.Load(str);
-                try
-                {
-                    enumerator = xmlDocument.SelectNodes("//Terrains/Top").GetEnumerator();
-                    while (enumerator.MoveNext())
-                    {
-                        XmlElement current1 = (XmlElement)enumerator.Current;
-                        num = XmlConvert.ToInt16(current1.GetAttribute("TileID"));
-                        this.m_TopEdge.Add(num, num);
-                    }
-                }
-                finally
-                {
-                    if (enumerator is IDisposable)
-                    {
-                        ((IDisposable)enumerator).Dispose();
-                    }
-                }
-            }
-            catch (Exception exception2)
-            {
-                ProjectData.SetProjectError(exception2);
-                Interaction.MsgBox(exception2.Message, MsgBoxStyle.OkOnly, null);
-                ProjectData.ClearProjectError();
+                Errors.Add(string.Format("RoughEdge {0}: {1}", path, ex.Message));
             }
         }
 
-        public short CheckCorner(short TileID)
+        public short CheckCorner(short tileId)
         {
-            //short num;
-            //num = (this.m_CornerEdge[TileID] != null ? -5 : 0);
-            //return num;
-
-            return this.m_CornerEdge[(object)TileID] == null ? (short)0 : (short)-5;
+            return _cornerEdge.Contains(tileId) ? (short)-5 : (short)0;
         }
 
-        public short CheckLeft(short TileID)
+        public short CheckLeft(short tileId)
         {
-            short num = 0;
-            if (this.m_LeftEdge[TileID] != null)
-            {
-                VBMath.Randomize();
-                float single = VBMath.Rnd() * 15f;
-                if (single == 0f)
-                {
-                    num = -4;
-                }
-                else if (single >= 1f && single <= 3f)
-                {
-                    num = -3;
-                }
-                else if (single >= 4f && single <= 8f)
-                {
-                    num = -2;
-                }
-                else if (single == 9f)
-                {
-                    num = -1;
-                }
-                else if (single == 10f)
-                {
-                    num = 0;
-                }
-                else if (single >= 11f && single <= 13f)
-                {
-                    num = 1;
-                }
-                else if (single == 14f)
-                {
-                    num = 2;
-                }
-                else if (single == 15f)
-                {
-                    num = 3;
-                }
-            }
-            else
-            {
-                num = 0;
-            }
-            return num;
+            return _leftEdge.Contains(tileId) ? RandomEdge() : (short)0;
         }
 
-        public short CheckTop(short TileID)
+        public short CheckTop(short tileId)
         {
-            short num = 0;
-            if (this.m_TopEdge[TileID] != null)
-            {
-                VBMath.Randomize();
-                float single = VBMath.Rnd() * 15f;
-                if (single == 0f)
-                {
-                    num = -4;
-                }
-                else if (single >= 1f && single <= 3f)
-                {
-                    num = -3;
-                }
-                else if (single >= 4f && single <= 8f)
-                {
-                    num = -2;
-                }
-                else if (single == 9f)
-                {
-                    num = -1;
-                }
-                else if (single == 10f)
-                {
-                    num = 0;
-                }
-                else if (single >= 11f && single <= 13f)
-                {
-                    num = 1;
-                }
-                else if (single == 14f)
-                {
-                    num = 2;
-                }
-                else if (single == 15f)
-                {
-                    num = 3;
-                }
-            }
-            else
-            {
-                num = 0;
-            }
-            return num;
+            return _topEdge.Contains(tileId) ? RandomEdge() : (short)0;
         }
 
+        /// <summary>
+        /// Same distribution the original tool intended (0 => -4, 1-3 => -3, 4-8 => -2, 9 => -1, 10 => 0,
+        /// 11-13 => +1, 14 => +2, 15 => +3). The old port compared a float with whole numbers,
+        /// so most random values matched no branch at all.
+        /// </summary>
+        private short RandomEdge()
+        {
+            int value;
+            lock (_random)
+            {
+                value = _random.Next(16);
+            }
+
+            if (value == 0)
+            {
+                return -4;
+            }
+
+            if (value <= 3)
+            {
+                return -3;
+            }
+
+            if (value <= 8)
+            {
+                return -2;
+            }
+
+            if (value == 9)
+            {
+                return -1;
+            }
+
+            if (value == 10)
+            {
+                return 0;
+            }
+
+            if (value <= 13)
+            {
+                return 1;
+            }
+
+            return value == 14 ? (short)2 : (short)3;
+        }
     }
 }
