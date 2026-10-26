@@ -37,6 +37,21 @@ namespace Ultima
         private readonly string _indexPath;
         private readonly string _staticsPath;
 
+        /// <summary>Full path of the map file (mul or uop) or null</summary>
+        public string MapPath => _mapPath;
+
+        /// <summary>Full path of staidx or null</summary>
+        public string IndexPath => _indexPath;
+
+        /// <summary>Full path of statics or null</summary>
+        public string StaticsPath => _staticsPath;
+
+        // blocks replaced in memory (key = x * BlockHeight + y)
+        private readonly Dictionary<long, StaticTile[]> _staticOverrides = new Dictionary<long, StaticTile[]>();
+        private readonly HashSet<long> _modifiedLandBlocks = new HashSet<long>();
+
+        private long BlockKey(int x, int y) => ((long)x * BlockHeight) + y;
+
         public void CloseStreams()
         {
             _map?.Close();
@@ -163,6 +178,11 @@ namespace Ultima
 
             HuedTile[][][] tiles = _staticTiles[x][y] ?? (_staticTiles[x][y] = ReadStaticBlock(x, y));
 
+            if (_staticOverrides.Count > 0 && _staticOverrides.ContainsKey(BlockKey(x, y)))
+            {
+                return tiles; // replaced in memory, ignore diff patches
+            }
+
             if (Map.UseDiff && patch && Patch.StaticBlocksCount > 0 && Patch.StaticBlocks[x]?[y] != null)
             {
                 tiles = Patch.StaticBlocks[x][y];
@@ -210,6 +230,11 @@ namespace Ultima
 
             Tile[] tiles = _landTiles[x][y] ?? (_landTiles[x][y] = ReadLandBlock(x, y));
 
+            if (_modifiedLandBlocks.Count > 0 && _modifiedLandBlocks.Contains(BlockKey(x, y)))
+            {
+                return tiles; // changed in memory, ignore diff patches
+            }
+
             if (Map.UseDiff && patch && Patch.LandBlocksCount > 0 && Patch.LandBlocks[x]?[y] != null)
             {
                 tiles = Patch.LandBlocks[x][y];
@@ -230,8 +255,10 @@ namespace Ultima
         private void InitStatics()
         {
             _staticIndex = new Entry3D[BlockHeight * BlockWidth];
-            if (_indexPath == null)
+            if (_indexPath == null || _staticsPath == null)
             {
+                // staidx or statics missing: map without statics
+                StaticIndexInit = true;
                 return;
             }
 
@@ -507,6 +534,183 @@ namespace Ultima
 
             return tiles;
         }
+
+        #region In-memory editing (used by the region editor)
+
+        /// <summary>
+        /// Reads a land block from the file without putting it into the cache (cached/changed blocks are returned as they are).
+        /// </summary>
+        public Tile[] ReadLandBlockUncached(int x, int y)
+        {
+            if (x < 0 || y < 0 || x >= BlockWidth || y >= BlockHeight)
+            {
+                return InvalidLandBlock;
+            }
+
+            return _landTiles[x]?[y] ?? ReadLandBlock(x, y);
+        }
+
+        /// <summary>
+        /// Replaces a land block in memory and marks it as modified (written by <see cref="Map.SaveLand"/>).
+        /// </summary>
+        public void SetModifiedLandBlock(int x, int y, Tile[] tiles)
+        {
+            if (x < 0 || y < 0 || x >= BlockWidth || y >= BlockHeight || tiles == null || tiles.Length < 64)
+            {
+                return;
+            }
+
+            SetLandBlock(x, y, tiles);
+            _modifiedLandBlocks.Add(BlockKey(x, y));
+        }
+
+        /// <summary>
+        /// Drops an in-memory land change, the block is read from the file again.
+        /// </summary>
+        public void RevertLandBlock(int x, int y)
+        {
+            if (x < 0 || y < 0 || x >= BlockWidth || y >= BlockHeight)
+            {
+                return;
+            }
+
+            _modifiedLandBlocks.Remove(BlockKey(x, y));
+            if (_landTiles[x] != null)
+            {
+                _landTiles[x][y] = null;
+            }
+        }
+
+        public bool IsLandBlockModified(int x, int y)
+        {
+            return _modifiedLandBlocks.Count > 0 && _modifiedLandBlocks.Contains(BlockKey(x, y));
+        }
+
+        public bool HasModifiedLand => _modifiedLandBlocks.Count > 0;
+
+        public bool HasStaticOverrides => _staticOverrides.Count > 0;
+
+        /// <summary>
+        /// Returns all statics of a block (file/patch + pending) as <see cref="StaticTile"/> list with block-relative X/Y.
+        /// </summary>
+        public List<StaticTile> GetStaticBlockTiles(int x, int y, bool patch = true)
+        {
+            var list = new List<StaticTile>();
+            if (x < 0 || y < 0 || x >= BlockWidth || y >= BlockHeight)
+            {
+                return list;
+            }
+
+            if (_staticOverrides.TryGetValue(BlockKey(x, y), out StaticTile[] replaced))
+            {
+                list.AddRange(replaced);
+                return list;
+            }
+
+            HuedTile[][][] block = GetStaticBlock(x, y, patch);
+            for (int bx = 0; bx < 8; ++bx)
+            {
+                for (int by = 0; by < 8; ++by)
+                {
+                    foreach (HuedTile t in block[bx][by])
+                    {
+                        list.Add(new StaticTile { Id = t.Id, X = (byte)bx, Y = (byte)by, Z = t.Z, Hue = (short)t.Hue });
+                    }
+                }
+            }
+
+            StaticTile[] pending = GetPendingStatics(x, y);
+            if (pending != null)
+            {
+                list.AddRange(pending);
+            }
+
+            return list;
+        }
+
+        /// <summary>
+        /// Replaces all statics of a block in memory. Pending statics of the block are merged into the replacement
+        /// by the caller (see <see cref="GetStaticBlockTiles"/>) and dropped here. <see cref="Map.DefragStatics"/> writes the replacement.
+        /// </summary>
+        public void SetStaticBlockOverride(int x, int y, StaticTile[] tiles)
+        {
+            if (x < 0 || y < 0 || x >= BlockWidth || y >= BlockHeight)
+            {
+                return;
+            }
+
+            tiles ??= Array.Empty<StaticTile>();
+            _staticOverrides[BlockKey(x, y)] = tiles;
+
+            var lists = new List<HuedTile>[8][];
+            for (int i = 0; i < 8; ++i)
+            {
+                lists[i] = new List<HuedTile>[8];
+            }
+
+            foreach (StaticTile t in tiles)
+            {
+                int bx = t.X & 0x7;
+                int by = t.Y & 0x7;
+                (lists[bx][by] ??= new List<HuedTile>()).Add(new HuedTile(t.Id, t.Hue, t.Z));
+            }
+
+            var block = new HuedTile[8][][];
+            for (int bx = 0; bx < 8; ++bx)
+            {
+                block[bx] = new HuedTile[8][];
+                for (int by = 0; by < 8; ++by)
+                {
+                    block[bx][by] = lists[bx][by]?.ToArray() ?? Array.Empty<HuedTile>();
+                }
+            }
+
+            if (_staticTiles[x] == null)
+            {
+                _staticTiles[x] = new HuedTile[BlockHeight][][][];
+            }
+
+            _staticTiles[x][y] = block;
+
+            if (_staticTilesToAdd?[y] != null)
+            {
+                _staticTilesToAdd[y][x] = null;
+            }
+
+            if (_removedStaticBlock?[x] != null)
+            {
+                _removedStaticBlock[x][y] = false;
+            }
+        }
+
+        public bool HasStaticBlockOverride(int x, int y)
+        {
+            return _staticOverrides.Count > 0 && _staticOverrides.ContainsKey(BlockKey(x, y));
+        }
+
+        public StaticTile[] GetStaticBlockOverride(int x, int y)
+        {
+            return _staticOverrides.TryGetValue(BlockKey(x, y), out StaticTile[] tiles) ? tiles : null;
+        }
+
+        /// <summary>
+        /// Drops an in-memory static replacement, the block is read from the file again.
+        /// </summary>
+        public void RevertStaticBlock(int x, int y)
+        {
+            if (x < 0 || y < 0 || x >= BlockWidth || y >= BlockHeight)
+            {
+                return;
+            }
+
+            _staticOverrides.Remove(BlockKey(x, y));
+            if (_staticTiles[x] != null)
+            {
+                _staticTiles[x][y] = null;
+            }
+        }
+
+        #endregion
 
         public void RemoveStaticBlock(int blockX, int blockY)
         {
@@ -805,4 +1009,4 @@ namespace Ultima
             return 0;
         }
     }
-}
+}

@@ -38,14 +38,14 @@ namespace UoFiddler.Controls.Forms
             numericUpDown2.Value = y;
 
             comboBox1.Items.AddRange(Options.MapNames);
-            
-            if (map < Options.MapNames.Length)
+
+            if (map >= 0 && map < Options.MapNames.Length)
             {
                 comboBox1.SelectedIndex = map;
             }
-            else
+            else if (comboBox1.Items.Count > 0)
             {
-                // Handle the error or set a default value
+                comboBox1.SelectedIndex = 0;
             }
 
             pictureBox1.BackColor = _lastColor;
@@ -80,12 +80,25 @@ namespace UoFiddler.Controls.Forms
 
         private void LoadMapOverlays()
         {
-            // Load the XML document
-            XmlDocument doc = new XmlDocument();
-            doc.Load(Path.Combine(Options.AppDataPath, "MapOverlays.xml"));
-
             // Clear the ListBox
             listBoxMapOverlaysList.Items.Clear();
+
+            // write the markers of this session first, so the list is complete
+            MapControl.SaveMapOverlays();
+
+            string fileName = Path.Combine(Options.AppDataPath, "MapOverlays.xml");
+            if (!File.Exists(fileName))
+            {
+                return;
+            }
+
+            // Load the XML document
+            XmlDocument doc = new XmlDocument();
+            doc.Load(fileName);
+            if (doc.DocumentElement == null)
+            {
+                return;
+            }
 
             // Add each marker to the ListBox
             foreach (XmlElement markerElement in doc.DocumentElement.SelectNodes("Marker"))
@@ -98,11 +111,27 @@ namespace UoFiddler.Controls.Forms
         private void deleteMapOverlaysList_Click(object sender, EventArgs e)
         {
             // Get the selected item
-            string selectedText = (string)listBoxMapOverlaysList.SelectedItem;
+            if (listBoxMapOverlaysList.SelectedItem is not string selectedText)
+            {
+                return;
+            }
+
+            // make sure the file contains all markers of this session
+            MapControl.SaveMapOverlays();
+
+            string fileName = Path.Combine(Options.AppDataPath, "MapOverlays.xml");
+            if (!File.Exists(fileName))
+            {
+                return;
+            }
 
             // Load the XML document
             XmlDocument doc = new XmlDocument();
-            doc.Load(Path.Combine(Options.AppDataPath, "MapOverlays.xml"));
+            doc.Load(fileName);
+            if (doc.DocumentElement == null)
+            {
+                return;
+            }
 
             // Find the marker with the selected text and remove it
             XmlElement markerToRemove = null;
@@ -128,7 +157,7 @@ namespace UoFiddler.Controls.Forms
                 LoadMapOverlays();
 
                 // Call LoadMapOverlays on the MapControl instance
-                _mapControl.LoadMapOverlays();
+                _mapControl?.LoadMapOverlays();
             }
         }
     }

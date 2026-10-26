@@ -6,6 +6,12 @@ UOFiddler based on Ultima SDK it's a tool to view and alter almost every UO 2D c
 This is an extended version of UoFiddler that has more maps and more tools, as well as Map Edit, and will be expanded over time to support the Ultima standard 
 version more than the original version. Also, some source codes from older and New projects that are no longer supported have been integrated.
 
+Version 4.12.14
+- New map management system with support for an unlimited number of maps, automatic detection, and flexible configuration.
+- New client-style Region Viewer (GDI+) for analyzing, validating, documenting, and fixing map and static errors.
+- Selected areas can be directly captured, viewed, and used for map replacements; coordinates are automatically copied to the clipboard.
+- Numerous bug fixes, along with significantly faster, more stable, and more reliable map loading and management.
+
 Version: 4.12.13
 - Map maker revised
 

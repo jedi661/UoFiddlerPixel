@@ -2,38 +2,50 @@
  *
  * $Author: Turley
  * Advanced Nikodemus
- * 
+ *
  * "THE BEER-WINE-WARE LICENSE"
- * As long as you retain this notice you can do whatever you want with 
+ * As long as you retain this notice you can do whatever you want with
  * this stuff. If we meet some day, and you think this stuff is worth it,
  * you can buy me a beer and Wine in return.
  *
  ***************************************************************************/
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.IO;
+using System.Linq;
 using System.Windows.Forms;
 using System.Xml;
 using Ultima;
 using UoFiddler.Controls.Classes;
 using UoFiddler.Controls.Forms;
 using UoFiddler.Controls.Helpers;
+using UoFiddler.Controls.MapViewer;
 
 namespace UoFiddler.Controls.UserControls
 {
     public partial class MapControl : UserControl
     {
-        // starting point of the rectangle
-        private Point rectStartPoint;
-        private Point rectEndPoint;
-        // the rectrangle that is drawn
-        private Rectangle rect = Rectangle.Empty;
-        // Declaration of the isDrawingRectangle variable
-        private bool isDrawingRectangle = false;
+        #region [ Region (marked area) ]
+        // marked area in map coordinates (inclusive, Width/Height >= 1)
+        private Rectangle _region = Rectangle.Empty;
+        private int _regionMapId = -1;
+        private bool _hasRegion;
+        // true while the "Mark" button is active
+        private bool _isDrawingRectangle;
+        // true while the mouse is dragged in mark mode
+        private bool _regionDragging;
+        private Point _regionAnchor;
+
+        /// <summary>
+        /// Maximum size of a region that is opened in the region viewer
+        /// </summary>
+        public const int MaxViewerRegionSize = 512;
+        #endregion
 
         #region [ MapControl ]
         public MapControl()
@@ -51,19 +63,15 @@ namespace UoFiddler.Controls.UserControls
             panel1.Visible = false;
 
             pictureBox.MouseWheel += OnMouseWheel;
-
-            //maps
-            Options.MapNames = new string[] { "Map.Felucca", "Map.Trammel", "Map.Ilshenar", "Map.Malas", "Map.Tokuno", "Map.TerMur", "Map.Forell", "Map.Dragon", "Map.IntermediateWorld" }; // Namen festlegen für neue Karten.
-
-
         }
         #endregion
 
         private static MapControl _refMarker;
         public static double Zoom = 1;
 
-        private Bitmap _map;
-        private int _currentMapId;
+        // reused render buffer (no new bitmaps on every paint)
+        private Bitmap _mapBuffer;
+        private MapDefinition _currentDef;
         private bool _syncWithClient;
         private int _clientX;
         private int _clientY;
@@ -74,21 +82,26 @@ namespace UoFiddler.Controls.UserControls
         private Point _movingPoint;
         private bool _renderingZoom;
 
+        // marker groups by map id
+        private readonly Dictionary<int, TreeNode> _markerGroups = new Dictionary<int, TreeNode>();
+
         private int HScrollBar => hScrollBar.Value;
         private int VScrollBar => vScrollBar.Value;
         public Map CurrentMap { get; private set; }
 
-        private static bool _loaded;
+        /// <summary>
+        /// Definition (id, name, files) of the shown map
+        /// </summary>
+        public MapDefinition CurrentDefinition => _currentDef;
 
-        //OnResizeMap
-        private bool isResizing = false;
-        private int targetZoomLevel = 0;
-        private const int ZoomTimerInterval = 10;
+        private int _currentMapId => _currentDef?.Id ?? 0;
+
+        private static bool _loaded;
 
         #region [ class RectangleDrawnEventArgs ]
         // Delegate definition = coordinates
         public delegate void RectangleDrawnEventHandler(object sender, RectangleDrawnEventArgs e);
-       
+
         // Event definition = coordinates
         public event RectangleDrawnEventHandler RectangleDrawn;
 
@@ -131,21 +144,22 @@ namespace UoFiddler.Controls.UserControls
             }
 
             Cursor.Current = Cursors.WaitCursor;
-            LoadMapOverlays();
+
+            MapRegistryStore.EnsureLoaded();
+
+            if (!_loaded)
+            {
+                // markers are only read once, a reload must not drop markers that were added in this session
+                LoadMapOverlays();
+            }
+
             Options.LoadedUltimaClass["Map"] = true;
             Options.LoadedUltimaClass["RadarColor"] = true;
 
-            CurrentMap = Map.Felucca;
-            feluccaToolStripMenuItem.Checked = true;
-            trammelToolStripMenuItem.Checked = false;
-            ilshenarToolStripMenuItem.Checked = false;
-            malasToolStripMenuItem.Checked = false;
-            tokunoToolStripMenuItem.Checked = false;
-            forellToolStripMenuItem.Checked = false; //new Map Forell
-            dragonToolStripMenuItem.Checked = false; //Dragonlance
-            intermediateWorldToolStripMenuItem.Checked = false; //Intermediate world
-            PreloadMap.Visible = true;
-            ChangeMapNames();
+            RebuildMapLists();
+            SetCurrentMap(MapRegistry.GetById(0) ?? MapRegistry.Definitions.First(), false);
+            PreloadMap.Visible = Files.CacheData && !CurrentMap.IsCached(showStaticsToolStripMenuItem1.Checked);
+
             ZoomLabel.Text = $"Zoom: {Zoom}";
             SetScrollBarValues();
             Refresh();
@@ -158,6 +172,7 @@ namespace UoFiddler.Controls.UserControls
                 ControlEvents.MapNameChangeEvent += OnMapNameChangeEvent;
                 ControlEvents.MapSizeChangeEvent += OnMapSizeChangeEvent;
                 ControlEvents.FilePathChangeEvent += OnFilePathChangeEvent;
+                MapRegistry.Changed += OnMapRegistryChanged;
             }
             _loaded = true;
         }
@@ -173,6 +188,8 @@ namespace UoFiddler.Controls.UserControls
         #region [ OnMapNameChangeEvent ]
         private void OnMapNameChangeEvent()
         {
+            // names were changed in the options dialog
+            MapRegistryStore.SyncNamesFromOptions();
             ChangeMapNames();
         }
         #endregion
@@ -191,17 +208,49 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
+        #region [ OnMapRegistryChanged ]
+        private void OnMapRegistryChanged(object sender, EventArgs e)
+        {
+            if (IsDisposed)
+            {
+                return;
+            }
+
+            MapRegistryStore.SyncNamesToOptions();
+            RebuildMapLists();
+
+            // the shown map was removed or hidden -> back to the first map
+            MapDefinition def = _currentDef == null ? null : MapRegistry.GetById(_currentDef.Id);
+            if (def == null || !def.Visible)
+            {
+                def = MapRegistry.Definitions.FirstOrDefault(d => d.Visible) ?? MapRegistry.Definitions.First();
+            }
+
+            SetCurrentMap(def, true);
+        }
+        #endregion
+
         #region [ RefreshMap ]
         public void RefreshMap()
         {
             pictureBox.Invalidate();
         }
+
+        /// <summary>
+        /// Drops the render cache of the current map and redraws (after map/statics were changed in memory).
+        /// </summary>
+        public void RefreshMapAfterEdit()
+        {
+            CurrentMap?.ResetCache();
+            PreloadMap.Visible = Files.CacheData && CurrentMap != null && !CurrentMap.IsCached(showStaticsToolStripMenuItem1.Checked);
+            pictureBox.Invalidate();
+        }
         #endregion
 
-        #region [ ChangeMapNames ]
+        #region [ ChangeMapNames / RebuildMapLists ]
         /// <summary>
         /// Changes the Names of maps
-        /// </summary>        
+        /// </summary>
         private void ChangeMapNames()
         {
             if (!_loaded)
@@ -209,18 +258,79 @@ namespace UoFiddler.Controls.UserControls
                 return;
             }
 
-            // Create lists of ToolStripMenuItems and nodes that correspond to the cards
-            ToolStripMenuItem[] mapMenuItems = { feluccaToolStripMenuItem, trammelToolStripMenuItem, ilshenarToolStripMenuItem, malasToolStripMenuItem, tokunoToolStripMenuItem, terMurToolStripMenuItem, forellToolStripMenuItem, dragonToolStripMenuItem, intermediateWorldToolStripMenuItem };
-            TreeNode[] mapNodes = { OverlayObjectTree.Nodes[0], OverlayObjectTree.Nodes[1], OverlayObjectTree.Nodes[2], OverlayObjectTree.Nodes[3], OverlayObjectTree.Nodes[4], OverlayObjectTree.Nodes[5], OverlayObjectTree.Nodes[6] };
+            RebuildMapLists();
+        }
 
-            // Update the texts of the ToolStripMenuItems and nodes
-            for (int i = 0; i < Options.MapNames.Length; i++)
+        /// <summary>
+        /// Builds the map entries of the context menu, the "Maps" toolbar menu and the marker groups
+        /// from <see cref="MapRegistry"/>.
+        /// </summary>
+        private void RebuildMapLists()
+        {
+            // context menu: map entries between toolStripSeparator2 and toolStripSeparator1
+            int start = contextMenuStrip1.Items.IndexOf(toolStripSeparator2) + 1;
+            while (contextMenuStrip1.Items.Count > start && contextMenuStrip1.Items[start] != toolStripSeparator1)
             {
-                mapMenuItems[i].Text = Options.MapNames[i];
-                mapNodes[i].Text = Options.MapNames[i];
+                ToolStripItem old = contextMenuStrip1.Items[start];
+                contextMenuStrip1.Items.RemoveAt(start);
+                old.Dispose();
             }
 
-            OverlayObjectTree.Invalidate();
+            foreach (ToolStripItem item in toolStripDropDownButtonMaps.DropDownItems.Cast<ToolStripItem>().ToList())
+            {
+                toolStripDropDownButtonMaps.DropDownItems.Remove(item);
+                item.Dispose();
+            }
+
+            int insertAt = start;
+            foreach (MapDefinition def in MapRegistry.Definitions.Where(d => d.Visible))
+            {
+                contextMenuStrip1.Items.Insert(insertAt++, CreateMapMenuItem(def));
+                toolStripDropDownButtonMaps.DropDownItems.Add(CreateMapMenuItem(def));
+            }
+
+            toolStripDropDownButtonMaps.DropDownItems.Add(new ToolStripSeparator());
+            var manage = new ToolStripMenuItem("Manage Maps...", null, OnClickManageMaps)
+            {
+                ToolTipText = "Add, edit, hide or remove maps (also maps from other directories)"
+            };
+            toolStripDropDownButtonMaps.DropDownItems.Add(manage);
+
+            UpdateMarkerGroups();
+            UpdateCheckedMap();
+        }
+
+        private ToolStripMenuItem CreateMapMenuItem(MapDefinition def)
+        {
+            bool exists = def.FilesExist();
+            var item = new ToolStripMenuItem(exists ? def.Name : $"{def.Name} (missing)")
+            {
+                Tag = def.Id,
+                ForeColor = exists ? SystemColors.ControlText : SystemColors.GrayText,
+                ToolTipText = !exists
+                    ? $"map{def.FileIndex}.mul / map{def.FileIndex}LegacyMUL.uop was not found.\nAdd your own map files with \"Manage Maps...\"."
+                    : def.UsesCustomPath
+                        ? $"ID {def.Id}, map{def.FileIndex} ({def.Width}x{def.Height})\n{def.CustomPath}"
+                        : $"ID {def.Id}, map{def.FileIndex} ({def.Width}x{def.Height})"
+            };
+            item.Click += OnClickChangeMap;
+            return item;
+        }
+
+        private void UpdateCheckedMap()
+        {
+            IEnumerable<ToolStripMenuItem> items = contextMenuStrip1.Items.OfType<ToolStripMenuItem>()
+                .Concat(toolStripDropDownButtonMaps.DropDownItems.OfType<ToolStripMenuItem>());
+
+            foreach (ToolStripMenuItem item in items)
+            {
+                if (item.Tag is int id)
+                {
+                    item.Checked = _currentDef != null && id == _currentDef.Id;
+                }
+            }
+
+            toolStripDropDownButtonMaps.Text = _currentDef == null ? "Maps" : $"Map: {_currentDef.Name}";
         }
         #endregion
 
@@ -238,16 +348,48 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
-        #region [ ZoomMap ]
-        private void ZoomMap(ref Bitmap bmp0)
+        #region [ Map buffer ]
+        private void DisposeMapBuffer()
         {
-            Bitmap bmp1 = new Bitmap((int)(_map.Width * Zoom), (int)(_map.Height * Zoom));
-            Graphics graph = Graphics.FromImage(bmp1);
-            graph.InterpolationMode = InterpolationMode.NearestNeighbor;
-            graph.PixelOffsetMode = PixelOffsetMode.Half;
-            graph.DrawImage(bmp0, new Rectangle(0, 0, bmp1.Width, bmp1.Height));
-            graph.Dispose();
-            bmp0 = bmp1;
+            _mapBuffer?.Dispose();
+            _mapBuffer = null;
+        }
+
+        private Bitmap GetMapBuffer(int width, int height)
+        {
+            if (_mapBuffer == null || _mapBuffer.Width < width || _mapBuffer.Height < height)
+            {
+                DisposeMapBuffer();
+                _mapBuffer = new Bitmap(width, height, PixelFormat.Format16bppRgb555);
+            }
+
+            return _mapBuffer;
+        }
+        #endregion
+
+        #region [ Coordinates ]
+        /// <summary>
+        /// Converts a position of the picture box into map coordinates (same rounding as the drawn map).
+        /// </summary>
+        private Point ScreenToMap(Point p)
+        {
+            int x = (int)(p.X / Zoom) + Round(hScrollBar.Value);
+            int y = (int)(p.Y / Zoom) + Round(vScrollBar.Value);
+            if (CurrentMap != null)
+            {
+                x = Math.Max(0, Math.Min(CurrentMap.Width - 1, x));
+                y = Math.Max(0, Math.Min(CurrentMap.Height - 1, y));
+            }
+
+            return new Point(x, y);
+        }
+
+        /// <summary>
+        /// Converts map coordinates into a position of the picture box.
+        /// </summary>
+        private PointF MapToScreen(int x, int y)
+        {
+            return new PointF((float)((x - Round(hScrollBar.Value)) * Zoom), (float)((y - Round(vScrollBar.Value)) * Zoom));
         }
         #endregion
 
@@ -269,7 +411,7 @@ namespace UoFiddler.Controls.UserControls
         #region [ ChangeScrollBar ]
         private void ChangeScrollBar()
         {
-            if (PreloadWorker.IsBusy)
+            if (PreloadWorker.IsBusy || CurrentMap == null)
             {
                 return;
             }
@@ -327,194 +469,128 @@ namespace UoFiddler.Controls.UserControls
         #region [ ChangeMap ]
         private void ChangeMap()
         {
-            PreloadMap.Visible = !CurrentMap.IsCached(showStaticsToolStripMenuItem1.Checked);
+            PreloadMap.Visible = Files.CacheData && !CurrentMap.IsCached(showStaticsToolStripMenuItem1.Checked);
             SetScrollBarValues();
             pictureBox.Invalidate();
         }
-        #endregion
 
-        #region [ ResetCheckedMap ]
-        private void ResetCheckedMap()
+        private void OnClickChangeMap(object sender, EventArgs e)
         {
-            feluccaToolStripMenuItem.Checked = false;
-            trammelToolStripMenuItem.Checked = false;
-            malasToolStripMenuItem.Checked = false;
-            ilshenarToolStripMenuItem.Checked = false;
-            tokunoToolStripMenuItem.Checked = false;
-            terMurToolStripMenuItem.Checked = false;
-            forellToolStripMenuItem.Checked = false;
-            dragonToolStripMenuItem.Checked = false;
-            intermediateWorldToolStripMenuItem.Checked = false;
-        }
-        #endregion
-
-        #region [ ChangeMapFelucca ]
-        private void ChangeMapFelucca(object sender, EventArgs e)
-        {
-            if (feluccaToolStripMenuItem.Checked)
+            if (sender is not ToolStripMenuItem { Tag: int id })
             {
                 return;
             }
 
-            ResetCheckedMap();
-            feluccaToolStripMenuItem.Checked = true;
-            CurrentMap = Map.Felucca;
-            _currentMapId = 0;
-            ChangeMap();
-        }
-        #endregion
-
-        #region [ ChangeMapTrammel ]
-        private void ChangeMapTrammel(object sender, EventArgs e)
-        {
-            if (trammelToolStripMenuItem.Checked)
+            if (_currentDef != null && _currentDef.Id == id)
             {
                 return;
             }
 
-            ResetCheckedMap();
-            trammelToolStripMenuItem.Checked = true;
-            CurrentMap = Map.Trammel;
-            _currentMapId = 1;
-            ChangeMap();
-        }
-        #endregion
-
-        #region [ ChangeMapIlshenar ]
-        private void ChangeMapIlshenar(object sender, EventArgs e)
-        {
-            if (ilshenarToolStripMenuItem.Checked)
+            MapDefinition def = MapRegistry.GetById(id);
+            if (def == null)
             {
                 return;
             }
 
-            ResetCheckedMap();
-            ilshenarToolStripMenuItem.Checked = true;
-            CurrentMap = Map.Ilshenar;
-            _currentMapId = 2;
-            ChangeMap();
-        }
-        #endregion
-
-        #region [ ChangeMapMalas ]
-        private void ChangeMapMalas(object sender, EventArgs e)
-        {
-            if (malasToolStripMenuItem.Checked)
+            // map files missing (e.g. Forell/Dragon/Intermediate World are not part of the standard client)
+            if (!def.FilesExist() && !AskForMissingMap(def))
             {
                 return;
             }
 
-            ResetCheckedMap();
-            malasToolStripMenuItem.Checked = true;
-            CurrentMap = Map.Malas;
-            _currentMapId = 3;
-            ChangeMap();
+            SetCurrentMap(def, true);
         }
-        #endregion
 
-        #region [ ChangeMapTokuno ]
-        private void ChangeMapTokuno(object sender, EventArgs e)
+        /// <summary>
+        /// Tells the user that the files of a map are missing and offers the map manager.
+        /// Returns true if the (empty) map should be shown anyway.
+        /// </summary>
+        private bool AskForMissingMap(MapDefinition def)
         {
-            if (tokunoToolStripMenuItem.Checked)
+            string where = def.UsesCustomPath ? def.CustomPath : (string.IsNullOrEmpty(Files.RootDir) ? "the client directory" : Files.RootDir);
+            string text =
+                $"The files of the map \"{def.Name}\" were not found:\n" +
+                $"map{def.FileIndex}.mul or map{def.FileIndex}LegacyMUL.uop (and staidx{def.FileIndex}.mul / statics{def.FileIndex}.mul)\n" +
+                $"in {where}\n\n" +
+                (def.IsBuiltIn && def.Id >= 6
+                    ? "This map is not part of the standard Ultima Online client. You can add your own map files (also from another directory) or hide this entry.\n\n"
+                    : "You can add the map files from another directory or hide this entry.\n\n") +
+                "Yes = open \"Manage Maps\"\nNo = show the map anyway (empty)\nCancel = do nothing";
+
+            DialogResult result = MessageBox.Show(text, "Map not found", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Information);
+            if (result == DialogResult.Yes)
+            {
+                OnClickManageMaps(this, EventArgs.Empty);
+                return false;
+            }
+
+            return result == DialogResult.No;
+        }
+
+        /// <summary>
+        /// Shows the given map
+        /// </summary>
+        public void SetCurrentMap(MapDefinition def, bool resetView)
+        {
+            if (def == null)
             {
                 return;
             }
 
-            ResetCheckedMap();
-            tokunoToolStripMenuItem.Checked = true;
-            CurrentMap = Map.Tokuno;
-            _currentMapId = 4;
-            ChangeMap();
-        }
-        #endregion
+            _currentDef = def;
+            CurrentMap = def.GetMap();
+            UpdateCheckedMap();
 
-        #region [ ChangeMapTerMur ]
-        private void ChangeMapTerMur(object sender, EventArgs e)
-        {
-            if (terMurToolStripMenuItem.Checked)
+            MessageLabel.ForeColor = Color.Red;
+            MessageLabel.Text = def.FilesExist() ? string.Empty : $"map{def.FileIndex} not found!";
+
+            if (resetView)
             {
-                return;
+                ChangeMap();
+            }
+        }
+
+        /// <summary>
+        /// Switches to the map with the given id (client or marker map id). Returns false if the map is unknown.
+        /// </summary>
+        private bool SwitchMap(int mapId)
+        {
+            MapDefinition def = MapRegistry.GetById(mapId);
+            if (def == null)
+            {
+                return false;
             }
 
-            ResetCheckedMap();
-            terMurToolStripMenuItem.Checked = true;
-            CurrentMap = Map.TerMur;
-            _currentMapId = 5;
-            ChangeMap();
-        }
-        #endregion
-
-        #region [ ChangeMapForell ]
-        private void ChangeMapForell(object sender, EventArgs e) //New Map
-        {
-            if (forellToolStripMenuItem.Checked)
-            {
-                return;
-            }
-            ResetCheckedMap();
-            forellToolStripMenuItem.Checked = true;
-            CurrentMap = Map.Forell;
-            _currentMapId = 6;
-            ChangeMap();
-        }
-        #endregion
-
-        #region [ ChangeMapDragon ]
-        private void ChangeMapDragon(object sender, EventArgs e) //New Map Dragon
-        {
-            if (dragonToolStripMenuItem.Checked)
-            {
-                return;
-            }
-            ResetCheckedMap();
-            dragonToolStripMenuItem.Checked = true;
-            CurrentMap = Map.Dragon;
-            _currentMapId = 7;
-            ChangeMap();
-        }
-        #endregion
-
-        #region [ Intermediate World ]
-        private void ChangeIntermediateWorld(object sender, EventArgs e) //New Map Intermediate world
-        {
-            if (intermediateWorldToolStripMenuItem.Checked)
-            {
-                return;
-            }
-            ResetCheckedMap();
-            intermediateWorldToolStripMenuItem.Checked = true;
-            CurrentMap = Map.IntermediateWorld;
-            _currentMapId = 8;
-            ChangeMap();
+            SetCurrentMap(def, false);
+            return true;
         }
         #endregion
 
         #region [ OnMouseDown ]
         private void OnMouseDown(object sender, MouseEventArgs e)
         {
-            // Check that we are in drawing mode
-            if (isDrawingRectangle)
+            if (PreloadWorker.IsBusy || e.Button != MouseButtons.Left)
             {
-                // Save the starting point                              
-                rectStartPoint = new Point((int)((e.X / Zoom) + hScrollBar.Value), (int)((e.Y / Zoom) + vScrollBar.Value));
-                rect.Location = e.Location; // Set rect.Location to the position of the mouse click relative to the Picture
+                return;
+            }
 
+            // Check that we are in drawing mode
+            if (_isDrawingRectangle)
+            {
+                // Save the starting point
+                _regionAnchor = ScreenToMap(e.Location);
+                _regionDragging = true;
+                _region = new Rectangle(_regionAnchor, new Size(1, 1));
+                _regionMapId = _currentMapId;
+                pictureBox.Invalidate();
             }
             else
             {
                 // Moving the map
-                if (PreloadWorker.IsBusy)
-                {
-                    return;
-                }
-
-                if (e.Button == MouseButtons.Left)
-                {
-                    _moving = true;
-                    _movingPoint.X = e.X;
-                    _movingPoint.Y = e.Y;
-                    Cursor = Cursors.Hand;
-                }
+                _moving = true;
+                _movingPoint.X = e.X;
+                _movingPoint.Y = e.Y;
+                Cursor = Cursors.Hand;
             }
         }
         #endregion
@@ -528,68 +604,92 @@ namespace UoFiddler.Controls.UserControls
             }
 
             _moving = false;
-            Cursor = Cursors.Default;
+            Cursor = _isDrawingRectangle ? Cursors.Cross : Cursors.Default;
 
-            // Check that we are in drawing mode
-            if (isDrawingRectangle)
+            if (!_regionDragging)
             {
-                // Finish drawing the rectangle and display a MessageBox with the coordinates
-                rectEndPoint = new Point((int)((e.X / Zoom) + hScrollBar.Value), (int)((e.Y / Zoom) + vScrollBar.Value));
-                isDrawingRectangle = false;
-
-                // Trigger the RectangleDrawn event = coordinates
-                RectangleDrawn?.Invoke(this, new RectangleDrawnEventArgs { StartPoint = rectStartPoint, EndPoint = rectEndPoint });
-
-                MessageBox.Show($"Upper left corner: {rectStartPoint}\nBottom right corner: {rectEndPoint}", "Coordinates of the rectangle", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
             }
+
+            // Finish drawing the rectangle
+            _regionDragging = false;
+            UpdateRegion(ScreenToMap(e.Location));
+            _hasRegion = true;
+
+            SetMarkMode(false);
+            UpdateRegionButtons();
+            pictureBox.Invalidate();
+
+            Point start = _region.Location;
+            Point end = new Point(_region.Right - 1, _region.Bottom - 1);
+
+            // Trigger the RectangleDrawn event = coordinates (start = upper left, end = lower right)
+            RectangleDrawn?.Invoke(this, new RectangleDrawnEventArgs { StartPoint = start, EndPoint = end });
+
+            MessageBox.Show($"Upper left corner: {start}\nBottom right corner: {end}\nSize: {_region.Width} x {_region.Height}",
+                "Coordinates of the rectangle", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
         #endregion
 
         #region [ OnMouseMove ]
         private void OnMouseMove(object sender, MouseEventArgs e)
         {
-            // Check that we are in drawing mode and the left mouse button is pressed
-            if (isDrawingRectangle && e.Button == MouseButtons.Left)
+            if (CurrentMap == null)
             {
-                // Update the endpoint
-                //rectEndPoint = new Point((int)(e.X / Zoom) + Round(hScrollBar.Value), (int)(e.Y / Zoom) + Round(vScrollBar.Value));
-                rectEndPoint = new Point((int)((e.X / Zoom) + hScrollBar.Value), (int)((e.Y / Zoom) + vScrollBar.Value));
+                return;
+            }
 
-                // Update the size and position of the rectangle
-                int x = Math.Min(rectStartPoint.X, rectEndPoint.X) - hScrollBar.Value;
-                int y = Math.Min(rectStartPoint.Y, rectEndPoint.Y) - vScrollBar.Value;
-                int width = Math.Abs(rectStartPoint.X - rectEndPoint.X);
-                int height = Math.Abs(rectStartPoint.Y - rectEndPoint.Y);
-                rect = new Rectangle(x, y, width, height);
+            Point mapPoint = ScreenToMap(e.Location);
+            CoordsLabel.Text = $"Coords: {mapPoint.X},{mapPoint.Y}";
+
+            // Check that we are in drawing mode and the left mouse button is pressed
+            if (_regionDragging && e.Button == MouseButtons.Left)
+            {
+                UpdateRegion(mapPoint);
+                MessageLabel.ForeColor = Color.DarkBlue;
+                MessageLabel.Text = $"Region: {_region.Width} x {_region.Height}";
 
                 // Redraw PictureBox
                 pictureBox.Invalidate();
+                return;
             }
-            else
+
+            // Moving the map
+            if (!_moving)
             {
-                // Moving the map
-
-                int xDelta = Math.Min(CurrentMap.Width, (int)(e.X / Zoom) + Round(hScrollBar.Value));
-                int yDelta = Math.Min(CurrentMap.Height, (int)(e.Y / Zoom) + Round(vScrollBar.Value));
-
-                CoordsLabel.Text = $"Coords: {xDelta},{yDelta}";
-
-                if (!_moving)
-                {
-                    return;
-                }
-
-                int deltaX = (int)(-1 * (e.X - _movingPoint.X) / Zoom);
-                int deltaY = (int)(-1 * (e.Y - _movingPoint.Y) / Zoom);
-
-                _movingPoint.X = e.X;
-                _movingPoint.Y = e.Y;
-
-                hScrollBar.Value = Math.Max(0, Math.Min(hScrollBar.Maximum, hScrollBar.Value + deltaX));
-                vScrollBar.Value = Math.Max(0, Math.Min(vScrollBar.Maximum, vScrollBar.Value + deltaY));
-
-                pictureBox.Invalidate();
+                return;
             }
+
+            int deltaX = (int)(-1 * (e.X - _movingPoint.X) / Zoom);
+            int deltaY = (int)(-1 * (e.Y - _movingPoint.Y) / Zoom);
+
+            _movingPoint.X = e.X;
+            _movingPoint.Y = e.Y;
+
+            hScrollBar.Value = Math.Max(0, Math.Min(hScrollBar.Maximum, hScrollBar.Value + deltaX));
+            vScrollBar.Value = Math.Max(0, Math.Min(vScrollBar.Maximum, vScrollBar.Value + deltaY));
+
+            pictureBox.Invalidate();
+        }
+
+        private void OnMouseLeaveMap(object sender, EventArgs e)
+        {
+            if (!_regionDragging && !_moving)
+            {
+                return;
+            }
+
+            _moving = false;
+            Cursor = _isDrawingRectangle ? Cursors.Cross : Cursors.Default;
+        }
+
+        private void UpdateRegion(Point current)
+        {
+            int x1 = Math.Min(_regionAnchor.X, current.X);
+            int y1 = Math.Min(_regionAnchor.Y, current.Y);
+            int x2 = Math.Max(_regionAnchor.X, current.X);
+            int y2 = Math.Max(_regionAnchor.Y, current.Y);
+            _region = new Rectangle(x1, y1, (x2 - x1) + 1, (y2 - y1) + 1);
         }
         #endregion
 
@@ -618,37 +718,31 @@ namespace UoFiddler.Controls.UserControls
                 return;
             }
 
-            if (_currentMapId != mapClient)
+            if (_currentMapId != mapClient && !SwitchMap(mapClient))
             {
-                ResetCheckedMap();
-                SwitchMap(mapClient);
-                _currentMapId = mapClient;
+                MessageLabel.Text = $"Client map {mapClient} is not in the map list";
+                return;
             }
+
             _clientX = x;
             _clientY = y;
             _clientZ = z;
             _clientMap = mapClient;
             SetScrollBarValues();
-            hScrollBar.Value = (int)Math.Max(0, x - (pictureBox.Right / Zoom / 2));
-            vScrollBar.Value = (int)Math.Max(0, y - (pictureBox.Bottom / Zoom / 2));
-            pictureBox.Invalidate();
-            ClientLocLabel.Text = $"ClientLoc: {x},{y},{z},{Options.MapNames[mapClient]}";
+            CenterOn(x, y);
+            ClientLocLabel.Text = $"ClientLoc: {x},{y},{z},{MapRegistry.GetName(mapClient)}";
         }
         #endregion
 
-        #region [ SwitchMap ]  
-        private void SwitchMap(int mapId)
+        #region [ CenterOn ]
+        /// <summary>
+        /// Scrolls the map so that the given position is in the center
+        /// </summary>
+        public void CenterOn(int x, int y)
         {
-            // Create lists of ToolStripMenuItems and cards that correspond to the cards
-            ToolStripMenuItem[] mapMenuItems = { feluccaToolStripMenuItem, trammelToolStripMenuItem, ilshenarToolStripMenuItem, malasToolStripMenuItem, tokunoToolStripMenuItem, terMurToolStripMenuItem, forellToolStripMenuItem, dragonToolStripMenuItem, intermediateWorldToolStripMenuItem };
-            Map[] maps = { Map.Felucca, Map.Trammel, Map.Ilshenar, Map.Malas, Map.Tokuno, Map.TerMur, Map.Forell, Map.Dragon, Map.IntermediateWorld };
-
-            // Make sure the mapId is in the valid range
-            if (mapId >= 0 && mapId < mapMenuItems.Length)
-            {
-                mapMenuItems[mapId].Checked = true;
-                CurrentMap = maps[mapId];
-            }
+            hScrollBar.Value = Math.Max(0, Math.Min(hScrollBar.Maximum, (int)(x - (pictureBox.ClientSize.Width / Zoom / 2))));
+            vScrollBar.Value = Math.Max(0, Math.Min(vScrollBar.Maximum, (int)(y - (pictureBox.ClientSize.Height / Zoom / 2))));
+            pictureBox.Invalidate();
         }
         #endregion
 
@@ -679,7 +773,7 @@ namespace UoFiddler.Controls.UserControls
                     _clientY = y;
                     _clientZ = z;
                     _clientMap = mapClient;
-                    mapName = Options.MapNames[mapClient];
+                    mapName = MapRegistry.GetName(mapClient);
                 }
             }
 
@@ -698,11 +792,7 @@ namespace UoFiddler.Controls.UserControls
         #region [ OnOpenContext ]
         private void OnOpenContext(object sender, CancelEventArgs e)  // Save for GetMapInfo
         {
-            _currentPoint = pictureBox.PointToClient(MousePosition);
-            _currentPoint.X = (int)(_currentPoint.X / Zoom);
-            _currentPoint.Y = (int)(_currentPoint.Y / Zoom);
-            _currentPoint.X += Round(hScrollBar.Value);
-            _currentPoint.Y += Round(vScrollBar.Value);
+            _currentPoint = ScreenToMap(pictureBox.PointToClient(MousePosition));
         }
         #endregion
 
@@ -806,11 +896,38 @@ namespace UoFiddler.Controls.UserControls
                 return;
             }
 
-            _map = CurrentMap.GetImage(hScrollBar.Value >> 3, vScrollBar.Value >> 3,
-                (int)((e.ClipRectangle.Width / Zoom) + 8) >> 3, (int)((e.ClipRectangle.Height / Zoom) + 8) >> 3,
-                showStaticsToolStripMenuItem1.Checked);
-            ZoomMap(ref _map);
-            e.Graphics.DrawImageUnscaledAndClipped(_map, e.ClipRectangle);
+            if (CurrentMap == null)
+            {
+                return;
+            }
+
+            // always render the whole visible area starting at the rounded scroll position
+            // (the clip rectangle can be only a part of the picture box)
+            Size client = pictureBox.ClientSize;
+            int blockWidth = ((int)(client.Width / Zoom) >> 3) + 2;
+            int blockHeight = ((int)(client.Height / Zoom) >> 3) + 2;
+
+            Bitmap buffer = GetMapBuffer(blockWidth << 3, blockHeight << 3);
+            try
+            {
+                CurrentMap.GetImage(hScrollBar.Value >> 3, vScrollBar.Value >> 3, blockWidth, blockHeight, buffer,
+                    showStaticsToolStripMenuItem1.Checked);
+            }
+            catch (Exception ex)
+            {
+                // broken or missing map files must not crash the application
+                e.Graphics.Clear(Color.Black);
+                e.Graphics.DrawString($"The map \"{_currentDef?.Name}\" can not be read:\n{ex.Message}\n\nCheck the files with \"Maps > Manage Maps...\".",
+                    SystemFonts.DefaultFont, Brushes.White, 20, 20);
+                return;
+            }
+
+            e.Graphics.InterpolationMode = InterpolationMode.NearestNeighbor;
+            e.Graphics.PixelOffsetMode = PixelOffsetMode.Half;
+            e.Graphics.DrawImage(buffer,
+                new Rectangle(0, 0, (int)((blockWidth << 3) * Zoom), (int)((blockHeight << 3) * Zoom)),
+                0, 0, blockWidth << 3, blockHeight << 3, GraphicsUnit.Pixel);
+            e.Graphics.PixelOffsetMode = PixelOffsetMode.Default;
 
             if (showCenterCrossToolStripMenuItem1.Checked)
             {
@@ -828,9 +945,9 @@ namespace UoFiddler.Controls.UserControls
             if (showClientCrossToolStripMenuItem.Checked && Client.Running)
             {
                 if (_clientX > hScrollBar.Value &&
-                    _clientX < hScrollBar.Value + (e.ClipRectangle.Width / Zoom) &&
+                    _clientX < hScrollBar.Value + (client.Width / Zoom) &&
                     _clientY > vScrollBar.Value &&
-                    _clientY < vScrollBar.Value + (e.ClipRectangle.Height / Zoom) &&
+                    _clientY < vScrollBar.Value + (client.Height / Zoom) &&
                     _clientMap == _currentMapId)
                 {
                     using (Brush brush = new SolidBrush(Color.FromArgb(180, Color.Yellow)))
@@ -847,32 +964,47 @@ namespace UoFiddler.Controls.UserControls
                 }
             }
 
-            if (OverlayObjectTree.Nodes.Count <= 0 || !showMarkersToolStripMenuItem.Checked)
+            if (showMarkersToolStripMenuItem.Checked && _markerGroups.TryGetValue(_currentMapId, out TreeNode group))
             {
-                return;
-            }
-
-            if (_currentMapId < OverlayObjectTree.Nodes.Count)
-            {
-                foreach (TreeNode obj in OverlayObjectTree.Nodes[_currentMapId].Nodes)
+                var bounds = new Rectangle(Point.Empty, client);
+                foreach (TreeNode obj in group.Nodes)
                 {
                     OverlayObject o = (OverlayObject)obj.Tag;
-                    if (o.IsVisible(e.ClipRectangle, _currentMapId, HScrollBar, VScrollBar, Zoom))
+                    if (o.IsVisible(bounds, _currentMapId, Round(HScrollBar), Round(VScrollBar), Zoom))
                     {
                         o.Draw(e.Graphics, Round(HScrollBar), Round(VScrollBar), Zoom, CurrentMap.Width);
                     }
                 }
             }
 
-            // Check if we should draw a rectangle
-            if (isDrawingRectangle)
+            // marked region (stays visible until it is cleared)
+            if ((_hasRegion || _regionDragging) && _regionMapId == _currentMapId)
             {
-                using (Pen pen = new Pen(Color.Red, 2))
-                {
-                    e.Graphics.ScaleTransform((float)Zoom, (float)Zoom);
-                    e.Graphics.DrawRectangle(pen, rect);
-                }
+                DrawRegion(e.Graphics);
             }
+        }
+
+        private void DrawRegion(Graphics g)
+        {
+            PointF p1 = MapToScreen(_region.Left, _region.Top);
+            PointF p2 = MapToScreen(_region.Right, _region.Bottom);
+            var rect = RectangleF.FromLTRB(p1.X, p1.Y, Math.Max(p2.X, p1.X + 1), Math.Max(p2.Y, p1.Y + 1));
+
+            using (var fill = new SolidBrush(Color.FromArgb(40, Color.Red)))
+            using (var pen = new Pen(Color.Red, 2) { DashStyle = _regionDragging ? DashStyle.Dash : DashStyle.Solid })
+            {
+                g.FillRectangle(fill, rect);
+                g.DrawRectangle(pen, rect.X, rect.Y, rect.Width, rect.Height);
+            }
+
+            string text = $"{_region.Width} x {_region.Height}";
+            SizeF size = g.MeasureString(text, Control.DefaultFont);
+            using (var back = new SolidBrush(Color.FromArgb(160, Color.Black)))
+            {
+                g.FillRectangle(back, rect.X, rect.Y - size.Height - 1, size.Width, size.Height);
+            }
+
+            g.DrawString(text, Control.DefaultFont, Brushes.White, rect.X, rect.Y - size.Height - 1);
         }
         #endregion
 
@@ -893,13 +1025,12 @@ namespace UoFiddler.Controls.UserControls
                     args = line.Split(',');
                 }
 
-                if (args.Length == 2 && int.TryParse(args[0], out int x) && int.TryParse(args[1], out int y))
+                if (args.Length == 2 && int.TryParse(args[0].Trim(), out int x) && int.TryParse(args[1].Trim(), out int y))
                 {
-                    if (x >= 0 && y >= 0 && x <= CurrentMap.Width && x <= CurrentMap.Height)
+                    if (x >= 0 && y >= 0 && x < CurrentMap.Width && y < CurrentMap.Height)
                     {
                         contextMenuStrip1.Close();
-                        hScrollBar.Value = (int)Math.Max(0, x - (pictureBox.Right / Zoom / 2));
-                        vScrollBar.Value = (int)Math.Max(0, y - (pictureBox.Bottom / Zoom / 2));
+                        CenterOn(x, y);
                     }
                 }
             }
@@ -938,7 +1069,7 @@ namespace UoFiddler.Controls.UserControls
         {
             string format = "{0} " + Options.MapArgs;
             int z = CurrentMap.Tiles.GetLandTile(x, y).Z;
-            Client.SendText(string.Format(format, Options.MapCmd, x, y, z, _currentMapId, Options.MapNames[_currentMapId]));
+            Client.SendText(string.Format(format, Options.MapCmd, x, y, z, _currentMapId, _currentDef?.Name ?? string.Empty));
         }
         #endregion
 
@@ -977,43 +1108,49 @@ namespace UoFiddler.Controls.UserControls
             Cursor.Current = Cursors.WaitCursor;
 
             string fileExtension = Utils.GetFileExtensionFor(imageFormat);
+            string name = MakeValidFileName(_currentDef?.Name ?? $"Map{_currentMapId}");
+            string fileName = Path.Combine(Options.OutputPath, $"{name}.{fileExtension}");
 
-            // Verify that Options.MapNames has enough elements before attempting to access it.
-            if (_currentMapId < Options.MapNames.Length)
+            try
             {
-                string fileName = Path.Combine(Options.OutputPath, $"{Options.MapNames[_currentMapId]}.{fileExtension}");
-
-                try
+                using (Bitmap extract = CurrentMap.GetImage(0, 0, CurrentMap.Width >> 3, CurrentMap.Height >> 3, showStaticsToolStripMenuItem1.Checked))
                 {
-                    Bitmap extract = CurrentMap.GetImage(0, 0, CurrentMap.Width >> 3, CurrentMap.Height >> 3, showStaticsToolStripMenuItem1.Checked);
-
-                    if (showMarkersToolStripMenuItem.Checked)
+                    if (showMarkersToolStripMenuItem.Checked && _markerGroups.TryGetValue(_currentMapId, out TreeNode group))
                     {
-                        Graphics g = Graphics.FromImage(extract);
-                        // Check that OverlayObjectTree.Nodes has enough nodes before attempting to access it.
-                        if (_currentMapId < OverlayObjectTree.Nodes.Count)
+                        using (Graphics g = Graphics.FromImage(extract))
                         {
-                            foreach (TreeNode obj in OverlayObjectTree.Nodes[_currentMapId].Nodes)
+                            foreach (TreeNode obj in group.Nodes)
                             {
                                 OverlayObject o = (OverlayObject)obj.Tag;
                                 if (o.Visible)
                                 {
-                                    o.Draw(g, Round(HScrollBar), Round(VScrollBar), Zoom, CurrentMap.Width);
+                                    // whole map: no scroll offset and no zoom
+                                    o.Draw(g, 0, 0, 1, CurrentMap.Width);
                                 }
                             }
                         }
-                        g.Save();
                     }
+
                     extract.Save(fileName, imageFormat);
                 }
-                finally
-                {
-                    Cursor.Current = Cursors.Default;
-                }
-
-                MessageBox.Show($"Map saved to {fileName}", "Saved", MessageBoxButtons.OK, MessageBoxIcon.Information,
-                    MessageBoxDefaultButton.Button1);
             }
+            finally
+            {
+                Cursor.Current = Cursors.Default;
+            }
+
+            MessageBox.Show($"Map saved to {fileName}", "Saved", MessageBoxButtons.OK, MessageBoxIcon.Information,
+                MessageBoxDefaultButton.Button1);
+        }
+
+        private static string MakeValidFileName(string name)
+        {
+            foreach (char c in Path.GetInvalidFileNameChars())
+            {
+                name = name.Replace(c, '_');
+            }
+
+            return name;
         }
         #endregion
 
@@ -1043,20 +1180,76 @@ namespace UoFiddler.Controls.UserControls
         #region [ AddOverlay ]
         public static void AddOverlay(int x, int y, int mapId, Color color, string text)
         {
-            // If the node for the map doesn't already exist, create it
-            while (_refMarker.OverlayObjectTree.Nodes.Count <= mapId)
+            if (_refMarker == null || mapId < 0)
             {
-                TreeNode newNode = new TreeNode(Options.MapNames[_refMarker.OverlayObjectTree.Nodes.Count])
-                {
-                    Tag = _refMarker.OverlayObjectTree.Nodes.Count
-                };
-                _refMarker.OverlayObjectTree.Nodes.Add(newNode);
+                return;
             }
 
+            TreeNode group = _refMarker.GetOrCreateMarkerGroup(mapId);
             OverlayCursor o = new OverlayCursor(new Point(x, y), mapId, text, color);
             TreeNode node = new TreeNode(text) { Tag = o };
-            _refMarker.OverlayObjectTree.Nodes[mapId].Nodes.Add(node);
+            group.Nodes.Add(node);
             _refMarker.pictureBox.Invalidate();
+        }
+        #endregion
+
+        #region [ Marker groups ]
+        private TreeNode GetOrCreateMarkerGroup(int mapId)
+        {
+            if (_markerGroups.TryGetValue(mapId, out TreeNode group))
+            {
+                return group;
+            }
+
+            group = new TreeNode(MapRegistry.GetName(mapId)) { Tag = mapId };
+            _markerGroups[mapId] = group;
+
+            // keep the groups ordered by map id
+            int index = 0;
+            while (index < OverlayObjectTree.Nodes.Count && OverlayObjectTree.Nodes[index].Tag is int other && other < mapId)
+            {
+                index++;
+            }
+
+            OverlayObjectTree.Nodes.Insert(index, group);
+            return group;
+        }
+
+        private void UpdateMarkerGroups()
+        {
+            OverlayObjectTree.BeginUpdate();
+            try
+            {
+                foreach (MapDefinition def in MapRegistry.Definitions)
+                {
+                    GetOrCreateMarkerGroup(def.Id).Text = def.Name;
+                }
+
+                // groups of removed maps are kept as long as they have markers
+                foreach (KeyValuePair<int, TreeNode> pair in _markerGroups.ToList())
+                {
+                    if (MapRegistry.GetById(pair.Key) != null)
+                    {
+                        continue;
+                    }
+
+                    if (pair.Value.Nodes.Count == 0)
+                    {
+                        pair.Value.Remove();
+                        _markerGroups.Remove(pair.Key);
+                    }
+                    else
+                    {
+                        pair.Value.Text = $"Map {pair.Key} (not in map list)";
+                    }
+                }
+            }
+            finally
+            {
+                OverlayObjectTree.EndUpdate();
+            }
+
+            OverlayObjectTree.Invalidate();
         }
         #endregion
 
@@ -1066,7 +1259,16 @@ namespace UoFiddler.Controls.UserControls
             OverlayObjectTree.BeginUpdate();
             try
             {
+                foreach (TreeNode group in _markerGroups.Values)
+                {
+                    foreach (TreeNode node in group.Nodes)
+                    {
+                        (node.Tag as IDisposable)?.Dispose();
+                    }
+                }
+
                 OverlayObjectTree.Nodes.Clear();
+                _markerGroups.Clear();
 
                 AddOverlayGroups();
 
@@ -1087,45 +1289,50 @@ namespace UoFiddler.Controls.UserControls
 
                 foreach (XmlElement element in markers)
                 {
-                    int x = int.Parse(element.GetAttribute("x"));
-                    int y = int.Parse(element.GetAttribute("y"));
-                    int m = int.Parse(element.GetAttribute("map"));
-                    int c = int.Parse(element.GetAttribute("color"));
+                    if (!int.TryParse(element.GetAttribute("x"), out int x) ||
+                        !int.TryParse(element.GetAttribute("y"), out int y) ||
+                        !int.TryParse(element.GetAttribute("map"), out int m) ||
+                        !int.TryParse(element.GetAttribute("color"), out int c) ||
+                        m < 0)
+                    {
+                        continue;
+                    }
+
                     string text = element.GetAttribute("text");
 
-                    if (m < OverlayObjectTree.Nodes.Count)
-                    {
-                        OverlayCursor o = new OverlayCursor(new Point(x, y), m, text, Color.FromArgb(c));
-                        TreeNode node = new TreeNode(text) { Tag = o };
-                        OverlayObjectTree.Nodes[m].Nodes.Add(node);
-                    }
+                    // markers of unknown maps are kept (and saved again)
+                    OverlayCursor o = new OverlayCursor(new Point(x, y), m, text, Color.FromArgb(c));
+                    TreeNode node = new TreeNode(text) { Tag = o };
+                    GetOrCreateMarkerGroup(m).Nodes.Add(node);
                 }
             }
             finally
             {
                 OverlayObjectTree.EndUpdate();
             }
+
+            if (_loaded)
+            {
+                UpdateMarkerGroups();
+                pictureBox.Invalidate();
+            }
         }
         #endregion
 
-        #region [ AddOverlayGroups ] 
+        #region [ AddOverlayGroups ]
         private void AddOverlayGroups()
         {
-            for (int i = 0; i < Options.MapNames.Length; i++)
+            foreach (MapDefinition def in MapRegistry.Definitions)
             {
-                TreeNode node = new TreeNode(Options.MapNames[i])
-                {
-                    Tag = i
-                };
-                OverlayObjectTree.Nodes.Add(node);
+                GetOrCreateMarkerGroup(def.Id);
             }
         }
-        #endregion  
+        #endregion
 
         #region [ SaveMapOverlays ]
         public static void SaveMapOverlays()
         {
-            if (!_loaded)
+            if (!_loaded || _refMarker == null)
             {
                 return;
             }
@@ -1137,31 +1344,22 @@ namespace UoFiddler.Controls.UserControls
             XmlDeclaration decl = dom.CreateXmlDeclaration("1.0", "utf-8", null);
             dom.AppendChild(decl);
             XmlElement sr = dom.CreateElement("Overlays");
-            bool entries = false;
 
-            // Increase the upper limit of the loop to include the new card
-            for (int i = 0; i < _refMarker.OverlayObjectTree.Nodes.Count; ++i)
+            foreach (TreeNode group in _refMarker.OverlayObjectTree.Nodes)
             {
-                // Check that _refMarker.OverlayObjectTree.Nodes has enough nodes before attempting to access it.
-                if (i < _refMarker.OverlayObjectTree.Nodes.Count)
+                foreach (TreeNode obj in group.Nodes)
                 {
-                    foreach (TreeNode obj in _refMarker.OverlayObjectTree.Nodes[i].Nodes)
-                    {
-                        OverlayObject o = (OverlayObject)obj.Tag;
-                        XmlElement elem = dom.CreateElement("Marker");
-                        o.Save(elem);
-                        sr.AppendChild(elem);
-                        entries = true;
-                    }
+                    OverlayObject o = (OverlayObject)obj.Tag;
+                    XmlElement elem = dom.CreateElement("Marker");
+                    o.Save(elem);
+                    sr.AppendChild(elem);
                 }
             }
 
             dom.AppendChild(sr);
 
-            if (entries)
-            {
-                dom.Save(fileName);
-            }
+            // also save an empty list, otherwise removed markers come back after a restart
+            dom.Save(fileName);
         }
         #endregion
 
@@ -1174,7 +1372,7 @@ namespace UoFiddler.Controls.UserControls
             }
 
             ProgressBar.Minimum = 0;
-            ProgressBar.Maximum = (CurrentMap.Width >> 3) * (CurrentMap.Height >> 3);
+            ProgressBar.Maximum = CurrentMap.Width >> 3;
             ProgressBar.Step = 1;
             ProgressBar.Value = 0;
             ProgressBar.Visible = true;
@@ -1185,17 +1383,19 @@ namespace UoFiddler.Controls.UserControls
         #region [ PreLoadDoWork ]
         private void PreLoadDoWork(object sender, DoWorkEventArgs e)
         {
-            //Ultima.Map workmap = (Ultima.Map)((object[])e.Argument)[0]; // TODO: unused variable?
+            Map workMap = (Map)((object[])e.Argument)[0];
             bool statics = (bool)((object[])e.Argument)[1];
-            int width = CurrentMap.Width >> 3;
-            int height = CurrentMap.Height >> 3;
+            int width = workMap.Width >> 3;
+            int height = workMap.Height >> 3;
             for (int x = 0; x < width; ++x)
             {
                 for (int y = 0; y < height; ++y)
                 {
-                    CurrentMap.PreloadRenderedBlock(x, y, statics);
-                    PreloadWorker.ReportProgress(1);
+                    workMap.PreloadRenderedBlock(x, y, statics);
                 }
+
+                // one report per column (one per block floods the UI thread)
+                PreloadWorker.ReportProgress(x);
             }
         }
         #endregion
@@ -1212,6 +1412,7 @@ namespace UoFiddler.Controls.UserControls
         {
             ProgressBar.Visible = false;
             PreloadMap.Visible = false;
+            ChangeScrollBar();
             pictureBox.Invalidate();
         }
         #endregion
@@ -1232,16 +1433,14 @@ namespace UoFiddler.Controls.UserControls
             }
 
             OverlayObject o = (OverlayObject)OverlayObjectTree.SelectedNode.Tag;
-            if (_currentMapId != o.DefMap)
+            if (_currentMapId != o.DefMap && !SwitchMap(o.DefMap))
             {
-                ResetCheckedMap();
-                SwitchMap(o.DefMap);
-                _currentMapId = o.DefMap;
+                MessageLabel.Text = $"Map {o.DefMap} is not in the map list";
+                return;
             }
+
             SetScrollBarValues();
-            hScrollBar.Value = (int)Math.Max(0, o.Loc.X - (pictureBox.Right / Zoom / 2));
-            vScrollBar.Value = (int)Math.Max(0, o.Loc.Y - (pictureBox.Bottom / Zoom / 2));
-            pictureBox.Invalidate();
+            CenterOn(o.Loc.X, o.Loc.Y);
         }
         #endregion
 
@@ -1253,6 +1452,7 @@ namespace UoFiddler.Controls.UserControls
                 return;
             }
 
+            (OverlayObjectTree.SelectedNode.Tag as IDisposable)?.Dispose();
             OverlayObjectTree.SelectedNode.Remove();
             pictureBox.Invalidate();
         }
@@ -1278,7 +1478,7 @@ namespace UoFiddler.Controls.UserControls
         #region [ OnChangeView ]
         private void OnChangeView(object sender, EventArgs e)
         {
-            PreloadMap.Visible = !CurrentMap.IsCached(showStaticsToolStripMenuItem1.Checked);
+            PreloadMap.Visible = Files.CacheData && !CurrentMap.IsCached(showStaticsToolStripMenuItem1.Checked);
             pictureBox.Invalidate();
         }
         #endregion
@@ -1308,74 +1508,14 @@ namespace UoFiddler.Controls.UserControls
         #region [ OnResizeMap ]
         private void OnResizeMap(object sender, EventArgs e)
         {
-            if (PreloadWorker.IsBusy)
+            // the zoom chosen by the user is kept, only the scroll range is updated
+            if (PreloadWorker.IsBusy || !_loaded)
             {
                 return;
             }
 
-            if (!_loaded)
-            {
-                return;
-            }
-
-            // Make sure that the method is not called by multiple events at the same time
-            if (isResizing)
-            {
-                return;
-            }
-
-            isResizing = true;
-
-            // Calculate the target zoom level based on the size of the PictureBox
-            var targetWidth = pictureBox.Width;
-            var targetZoom = 1;
-
-            while (targetWidth > CurrentMap.Width)
-            {
-                targetZoom++;
-                targetWidth >>= 1;
-            }
-
-            targetZoomLevel = targetZoom;
-
-            // Start a timer to gradually zoom
-            Timer zoomTimer = new Timer();
-            zoomTimer.Interval = ZoomTimerInterval;
-            zoomTimer.Tick += PerformZoomStep;
-            zoomTimer.Start();
-        }
-        #endregion
-
-        #region [ PerformZoomStep ]
-        private void PerformZoomStep(object sender, EventArgs e)
-        {
-            // Zoom gradually until the desired zoom level is reached
-            if (Zoom < targetZoomLevel)
-            {
-                Zoom++;
-            }
-            else if (Zoom > targetZoomLevel)
-            {
-                Zoom--;
-            }
-            else
-            {
-                // When the desired zoom level is reached, stop the timer
-                Timer zoomTimer = (Timer)sender;
-                try
-                {
-                    zoomTimer.Stop();
-                    isResizing = false;
-
-                    // Update the ScrollBars and the PictureBox
-                    ChangeScrollBar();
-                    pictureBox.Invalidate();
-                }
-                finally
-                {
-                    zoomTimer.Dispose();
-                }
-            }
+            ChangeScrollBar();
+            pictureBox.Invalidate();
         }
         #endregion
 
@@ -1383,8 +1523,7 @@ namespace UoFiddler.Controls.UserControls
         private void OnClickRewriteMap(object sender, EventArgs e)
         {
             Cursor.Current = Cursors.WaitCursor;
-            Map.RewriteMap(Options.OutputPath,
-                _currentMapId, CurrentMap.Width, CurrentMap.Height);
+            Map.RewriteMap(Options.OutputPath, CurrentMap);
             Cursor.Current = Cursors.Default;
             MessageBox.Show($"Map saved to {Options.OutputPath}", "Saved", MessageBoxButtons.OK,
                 MessageBoxIcon.Information, MessageBoxDefaultButton.Button1);
@@ -1415,7 +1554,7 @@ namespace UoFiddler.Controls.UserControls
 
         #region [ OnClickCopy ]
 
-        private MapReplaceForm _showForm;        
+        private MapReplaceForm _showForm;
         private void OnClickCopy(object sender, EventArgs e)
         {
             if (_showForm?.IsDisposed == false)
@@ -1433,7 +1572,7 @@ namespace UoFiddler.Controls.UserControls
 
         #region [ OnClickInsertDiffData ]
 
-        private MapDiffInsertForm _showFormMapDiff;        
+        private MapDiffInsertForm _showFormMapDiff;
         private void OnClickInsertDiffData(object sender, EventArgs e)
         {
             if (_showFormMapDiff?.IsDisposed == false)
@@ -1452,21 +1591,22 @@ namespace UoFiddler.Controls.UserControls
         #region [ OnClickStaticImport ]
         private void OnClickStaticImport(object sender, EventArgs e)
         {
-            OpenFileDialog dialog = new OpenFileDialog
+            string path;
+            using (OpenFileDialog dialog = new OpenFileDialog
             {
                 Title = "Select WSC Static file to import",
                 Multiselect = false,
                 CheckFileExists = true
-            };
-
-            if (dialog.ShowDialog() != DialogResult.OK)
+            })
             {
-                dialog.Dispose();
-                return;
+                if (dialog.ShowDialog() != DialogResult.OK)
+                {
+                    return;
+                }
+
+                path = dialog.FileName;
             }
 
-            string path = dialog.FileName;
-            dialog.Dispose();
             StaticImport(path);
         }
         #endregion
@@ -1474,9 +1614,6 @@ namespace UoFiddler.Controls.UserControls
         #region [ StaticImport ]
         private void StaticImport(string filename)
         {
-            StreamReader ip = new StreamReader(filename);
-
-            string line;
             StaticTile newTile = new StaticTile
             {
                 Id = 0xFFFF,
@@ -1485,82 +1622,76 @@ namespace UoFiddler.Controls.UserControls
 
             int blockY = 0;
             int blockX = 0;
-            while ((line = ip.ReadLine()) != null)
-            {
-                if ((line = line.Trim()).Length == 0 || line.StartsWith("#") || line.StartsWith("//"))
-                {
-                    continue;
-                }
 
-                try
+            using (StreamReader ip = new StreamReader(filename))
+            {
+                string line;
+                while ((line = ip.ReadLine()) != null)
                 {
-                    if (line.StartsWith("SECTION WORLDITEM"))
+                    if ((line = line.Trim()).Length == 0 || line.StartsWith("#") || line.StartsWith("//"))
                     {
-                        if (newTile.Id != 0xFFFF)
+                        continue;
+                    }
+
+                    try
+                    {
+                        if (line.StartsWith("SECTION WORLDITEM"))
                         {
-                            CurrentMap.Tiles.AddPendingStatic(blockX, blockY, newTile);
-                            blockX = blockY = 0;
+                            if (newTile.Id != 0xFFFF)
+                            {
+                                CurrentMap.Tiles.AddPendingStatic(blockX, blockY, newTile);
+                                blockX = blockY = 0;
+                            }
+                            newTile = new StaticTile
+                            {
+                                Id = 0xFFFF,
+                                Hue = 0
+                            };
                         }
-                        newTile = new StaticTile
+                        else if (line.StartsWith("ID"))
                         {
-                            Id = 0xFFFF,
-                            Hue = 0
-                        };
+                            line = line.Remove(0, 2).Trim();
+                            newTile.Id = Art.GetLegalItemId(Convert.ToUInt16(line));
+                        }
+                        else if (line.StartsWith("X"))
+                        {
+                            line = line.Remove(0, 1).Trim();
+                            int x = Convert.ToInt32(line);
+                            blockX = x >> 3;
+                            x &= 0x7;
+                            newTile.X = (byte)x;
+                        }
+                        else if (line.StartsWith("Y"))
+                        {
+                            line = line.Remove(0, 1).Trim();
+                            int y = Convert.ToInt32(line);
+                            blockY = y >> 3;
+                            y &= 0x7;
+                            newTile.Y = (byte)y;
+                        }
+                        else if (line.StartsWith("Z"))
+                        {
+                            line = line.Remove(0, 1).Trim();
+                            newTile.Z = Convert.ToSByte(line);
+                        }
+                        else if (line.StartsWith("COLOR"))
+                        {
+                            line = line.Remove(0, 5).Trim();
+                            newTile.Hue = Convert.ToInt16(line);
+                        }
                     }
-                    else if (line.StartsWith("ID"))
+                    catch
                     {
-                        line = line.Remove(0, 2);
-                        line = line.TrimStart(' ');
-                        line = line.TrimEnd(' ');
-                        newTile.Id = Art.GetLegalItemId(Convert.ToUInt16(line));
+                        // TODO: add logging?
+                        // ignored
                     }
-                    else if (line.StartsWith("X"))
-                    {
-                        line = line.Remove(0, 1);
-                        line = line.TrimStart(' ');
-                        line = line.TrimEnd(' ');
-                        int x = Convert.ToInt32(line);
-                        blockX = x >> 3;
-                        x &= 0x7;
-                        newTile.X = (byte)x;
-                    }
-                    else if (line.StartsWith("Y"))
-                    {
-                        line = line.Remove(0, 1);
-                        line = line.TrimStart(' ');
-                        line = line.TrimEnd(' ');
-                        int y = Convert.ToInt32(line);
-                        blockY = y >> 3;
-                        y &= 0x7;
-                        newTile.Y = (byte)y;
-                    }
-                    else if (line.StartsWith("Z"))
-                    {
-                        line = line.Remove(0, 1);
-                        line = line.TrimStart(' ');
-                        line = line.TrimEnd(' ');
-                        newTile.Z = Convert.ToSByte(line);
-                    }
-                    else if (line.StartsWith("COLOR"))
-                    {
-                        line = line.Remove(0, 5);
-                        line = line.TrimStart(' ');
-                        line = line.TrimEnd(' ');
-                        newTile.Hue = Convert.ToInt16(line);
-                    }
-                }
-                catch
-                {
-                    // TODO: add logging?
-                    // ignored
                 }
             }
+
             if (newTile.Id != 0xFFFF)
             {
                 CurrentMap.Tiles.AddPendingStatic(blockX, blockY, newTile);
             }
-
-            ip.Close();
 
             MessageBox.Show("Done", "Freeze Static", MessageBoxButtons.OK, MessageBoxIcon.Information,
                 MessageBoxDefaultButton.Button1);
@@ -1570,7 +1701,7 @@ namespace UoFiddler.Controls.UserControls
         #endregion
 
         #region [ OnClickMeltStatics ]
-        private MapMeltStaticsForm _showMeltStaticsForm;        
+        private MapMeltStaticsForm _showMeltStaticsForm;
         private void OnClickMeltStatics(object sender, EventArgs e)
         {
             if (_showMeltStaticsForm?.IsDisposed == false)
@@ -1587,7 +1718,7 @@ namespace UoFiddler.Controls.UserControls
         #endregion
 
         #region [ OnClickClearStatics ]
-        private MapClearStaticsForm _showClearStaticsForm;        
+        private MapClearStaticsForm _showClearStaticsForm;
         private void OnClickClearStatics(object sender, EventArgs e)
         {
             if (_showClearStaticsForm?.IsDisposed == false)
@@ -1604,7 +1735,7 @@ namespace UoFiddler.Controls.UserControls
         #endregion
 
         #region [ OnClickReplaceTiles ]
-        private MapReplaceTilesForm _showMapReplaceTilesForm;        
+        private MapReplaceTilesForm _showMapReplaceTilesForm;
         private void OnClickReplaceTiles(object sender, EventArgs e)
         {
             if (_showMapReplaceTilesForm?.IsDisposed == false)
@@ -1623,24 +1754,118 @@ namespace UoFiddler.Controls.UserControls
         #region [ toolStripButtonMarkRegion ]
         private void toolStripButtonMarkRegion_Click(object sender, EventArgs e)
         {
-            // Switch drawing mode
-            isDrawingRectangle = !isDrawingRectangle;
+            // Switch drawing mode (the button is a toggle button)
+            SetMarkMode(toolStripButtonMarkRegion.Checked);
+        }
+
+        private void SetMarkMode(bool active)
+        {
+            _isDrawingRectangle = active;
+            toolStripButtonMarkRegion.Checked = active;
+            pictureBox.Cursor = active ? Cursors.Cross : Cursors.Default;
+
+            if (active)
+            {
+                MessageLabel.ForeColor = Color.DarkBlue;
+                MessageLabel.Text = "Drag a rectangle on the map";
+            }
+            else if (!_regionDragging)
+            {
+                MessageLabel.ForeColor = Color.Red;
+                MessageLabel.Text = string.Empty;
+            }
+        }
+
+        private void UpdateRegionButtons()
+        {
+            toolStripButtonViewRegion.Enabled = _hasRegion;
+            toolStripButtonClearRegion.Enabled = _hasRegion;
+            toolStripButtonViewRegion.ToolTipText = _hasRegion
+                ? $"Open region {_region.X},{_region.Y} - {_region.Right - 1},{_region.Bottom - 1} ({_region.Width} x {_region.Height}) in the region viewer"
+                : "Mark a region first";
+        }
+
+        private void OnClickClearRegion(object sender, EventArgs e)
+        {
+            _hasRegion = false;
+            _regionDragging = false;
+            _region = Rectangle.Empty;
+            UpdateRegionButtons();
+            pictureBox.Invalidate();
+        }
+
+        /// <summary>
+        /// The marked region (map coordinates) or Rectangle.Empty
+        /// </summary>
+        public Rectangle MarkedRegion => _hasRegion ? _region : Rectangle.Empty;
+        #endregion
+
+        #region [ Region viewer ]
+        private void OnClickViewRegion(object sender, EventArgs e)
+        {
+            if (!_hasRegion)
+            {
+                MessageBox.Show("Please mark a region first.", "Region Viewer", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            MapDefinition def = MapRegistry.GetById(_regionMapId) ?? _currentDef;
+            OpenRegionViewer(def, _region);
+        }
+
+        private void OnClickViewAreaHere(object sender, EventArgs e)
+        {
+            const int size = 64;
+            var area = new Rectangle(_currentPoint.X - (size / 2), _currentPoint.Y - (size / 2), size, size);
+            OpenRegionViewer(_currentDef, area);
+        }
+
+        private void OpenRegionViewer(MapDefinition def, Rectangle area)
+        {
+            if (def == null)
+            {
+                return;
+            }
+
+            Map map = def.GetMap();
+            area.Intersect(new Rectangle(0, 0, map.Width, map.Height));
+            if (area.Width <= 0 || area.Height <= 0)
+            {
+                return;
+            }
+
+            if (area.Width > MaxViewerRegionSize || area.Height > MaxViewerRegionSize)
+            {
+                DialogResult result = MessageBox.Show(
+                    $"The region is {area.Width} x {area.Height} tiles. Only {MaxViewerRegionSize} x {MaxViewerRegionSize} tiles (from the upper left corner) are opened.\n\nContinue?",
+                    "Region Viewer", MessageBoxButtons.OKCancel, MessageBoxIcon.Question);
+                if (result != DialogResult.OK)
+                {
+                    return;
+                }
+
+                area.Width = Math.Min(area.Width, MaxViewerRegionSize);
+                area.Height = Math.Min(area.Height, MaxViewerRegionSize);
+            }
+
+            var form = new MapRegionViewerForm(def, area, this);
+            form.Show();
         }
         #endregion
 
-        #region [ // pictureBox_MouseClick ]
-        private void pictureBox_MouseClick(object sender, MouseEventArgs e)
-        {
-            
-            /*if (rect.Contains(e.Location))
-            {
-                // Berechnen Sie die Koordinaten der oberen linken und unteren rechten Ecke
-                Point topLeft = new Point(rectStartPoint.X, rectStartPoint.Y);
-                Point bottomRight = new Point(rectEndPoint.X, rectEndPoint.Y);
+        #region [ Manage maps ]
+        private MapManagerForm _mapManagerForm;
 
-                // Zeigen Sie eine MessageBox mit den Koordinaten an
-                MessageBox.Show($"Obere linke Ecke: {topLeft}\nUntere rechte Ecke: {bottomRight}", "Koordinaten des Rechtecks", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            }*/
+        private void OnClickManageMaps(object sender, EventArgs e)
+        {
+            if (_mapManagerForm?.IsDisposed == false)
+            {
+                _mapManagerForm.Activate();
+                return;
+            }
+
+            _mapManagerForm = new MapManagerForm();
+            _mapManagerForm.Show();
         }
         #endregion
 
@@ -1681,7 +1906,8 @@ namespace UoFiddler.Controls.UserControls
         private readonly Color _col;
         private readonly Pen _pen;
         private readonly Brush _brush;
-        private static Brush _background;
+        // one background brush per marker (a shared static brush was replaced/disposed by other markers)
+        private readonly Brush _background;
 
         public OverlayCursor(Point location, int m, string t, Color c)
         {
@@ -1709,9 +1935,9 @@ namespace UoFiddler.Controls.UserControls
                 return false;
             }
 
-            return Loc.X > hScrollBar &&
+            return Loc.X >= hScrollBar &&
                 Loc.X < hScrollBar + (bounds.Width / zoom) &&
-                Loc.Y > vScrollBar &&
+                Loc.Y >= vScrollBar &&
                 Loc.Y < vScrollBar + (bounds.Height / zoom);
         }
         #endregion

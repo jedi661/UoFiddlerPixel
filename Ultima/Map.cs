@@ -57,45 +57,52 @@ namespace Ultima
         }
 
         /// <summary>
-        /// Sets cache-vars to null
+        /// Returns the built-in map for the given id (0-8) or null.
+        /// Felucca and Trammel can be replaced at runtime, so always resolve them here.
+        /// </summary>
+        public static Map GetBuiltIn(int id)
+        {
+            return id switch
+            {
+                0 => Felucca,
+                1 => Trammel,
+                2 => Ilshenar,
+                3 => Malas,
+                4 => Tokuno,
+                5 => TerMur,
+                6 => Forell,
+                7 => Dragon,
+                8 => IntermediateWorld,
+                _ => null
+            };
+        }
+
+        /// <summary>
+        /// Number of built-in maps (ids 0..BuiltInCount-1)
+        /// </summary>
+        public const int BuiltInCount = 9;
+
+        /// <summary>
+        /// Sets cache-vars to null (all built-in maps and all maps registered in <see cref="MapRegistry"/>)
         /// </summary>
         public static void Reload()
         {
-            Felucca.Tiles.CloseStreams();
-            Trammel.Tiles.CloseStreams();
-            Ilshenar.Tiles.CloseStreams();
-            Malas.Tiles.CloseStreams();
-            Tokuno.Tiles.CloseStreams();
-            TerMur.Tiles.CloseStreams();
-            Forell.Tiles.CloseStreams(); // New Map
-            Dragon.Tiles.CloseStreams(); // Map Dragonlance
-            IntermediateWorld.Tiles.CloseStreams(); // Intermediate world
+            for (int i = 0; i < BuiltInCount; i++)
+            {
+                GetBuiltIn(i)?.ResetAll();
+            }
 
-            Felucca.Tiles.StaticIndexInit = false;
-            Trammel.Tiles.StaticIndexInit = false;
-            Ilshenar.Tiles.StaticIndexInit = false;
-            Malas.Tiles.StaticIndexInit = false;
-            Tokuno.Tiles.StaticIndexInit = false;
-            TerMur.Tiles.StaticIndexInit = false;
-            Forell.Tiles.StaticIndexInit = false; //New Map
-            Dragon.Tiles.StaticIndexInit = false; //Dragonlance
-            IntermediateWorld.Tiles.StaticIndexInit = false; //Intermediate world
+            MapRegistry.ResetCustomMaps();
+        }
 
-            Felucca._cache = Trammel._cache = Ilshenar._cache = Malas._cache = Tokuno._cache = TerMur._cache = null;
-            Felucca._tiles = Trammel._tiles = Ilshenar._tiles = Malas._tiles = Tokuno._tiles = TerMur._tiles = null;
-            Felucca._cacheNoStatics =
-                Trammel._cacheNoStatics =
-                Ilshenar._cacheNoStatics = Malas._cacheNoStatics = Tokuno._cacheNoStatics = TerMur._cacheNoStatics = null;
-            Felucca._cacheNoPatch =
-                Trammel._cacheNoPatch =
-                Ilshenar._cacheNoPatch = Malas._cacheNoPatch = Tokuno._cacheNoPatch = TerMur._cacheNoPatch = null;
-            Felucca._cacheNoStaticsNoPatch =
-                Trammel._cacheNoStaticsNoPatch =
-                Ilshenar._cacheNoStaticsNoPatch =
-                Malas._cacheNoStaticsNoPatch = Tokuno._cacheNoStaticsNoPatch = TerMur._cacheNoStaticsNoPatch = null;
-            Forell._cache = null; // New Map
-            Dragon._cache = null; // Dragonlance
-            IntermediateWorld._cache = null; // Intermediate world
+        /// <summary>
+        /// Closes all streams and drops tiles and render caches of this map.
+        /// </summary>
+        public void ResetAll()
+        {
+            _tiles?.CloseStreams();
+            _tiles = null;
+            ResetCache();
         }
 
         public void ResetCache()
@@ -124,6 +131,16 @@ namespace Ultima
         public int Height { get; }
 
         public int FileIndex { get; }
+
+        /// <summary>
+        /// Map id used for diff/patch files
+        /// </summary>
+        public int MapId => _mapId;
+
+        /// <summary>
+        /// Custom directory of the map files or null if the client directory is used
+        /// </summary>
+        public string CustomPath => _path;
 
         /// <summary>
         /// Returns Bitmap with Statics
@@ -553,12 +570,13 @@ namespace Ultima
             }
 
             bmp.UnlockBits(bd);
-            _tiles.CloseStreams();
+            Tiles.CloseStreams();
         }
 
         public static void DefragStatics(string path, Map map, int width, int height, bool remove)
         {
-            string indexPath = Files.GetFilePath("staidx{0}.mul", map.FileIndex);
+            // use the files of the map itself (supports maps from a custom directory)
+            string indexPath = map.Tiles.IndexPath ?? Files.GetFilePath("staidx{0}.mul", map.FileIndex);
             BinaryReader indexReader;
             if (indexPath != null)
             {
@@ -570,7 +588,7 @@ namespace Ultima
                 return;
             }
 
-            string staticsPath = Files.GetFilePath("statics{0}.mul", map.FileIndex);
+            string staticsPath = map.Tiles.StaticsPath ?? Files.GetFilePath("statics{0}.mul", map.FileIndex);
 
             FileStream staticsStream;
             BinaryReader staticsReader;
@@ -602,6 +620,13 @@ namespace Ultima
                     {
                         for (int y = 0; y < blocky; ++y)
                         {
+                            if (map.Tiles.HasStaticBlockOverride(x, y))
+                            {
+                                // block was replaced in memory (e.g. by the region editor)
+                                WriteStaticBlock(binidx, binmul, map.Tiles.GetStaticBlockOverride(x, y));
+                                continue;
+                            }
+
                             try
                             {
                                 indexReader.BaseStream.Seek(((x * blocky) + y) * 12, SeekOrigin.Begin);
@@ -827,9 +852,99 @@ namespace Ultima
             staticsReader.Close();
         }
 
+        private static void WriteStaticBlock(BinaryWriter binidx, BinaryWriter binmul, StaticTile[] tiles)
+        {
+            int start = (int)binmul.BaseStream.Position;
+            int count = 0;
+            if (tiles != null)
+            {
+                foreach (StaticTile tile in tiles)
+                {
+                    if (tile.Id > Art.GetMaxItemId())
+                    {
+                        continue;
+                    }
+
+                    binmul.Write(tile.Id);
+                    binmul.Write(tile.X);
+                    binmul.Write(tile.Y);
+                    binmul.Write(tile.Z);
+                    binmul.Write(tile.Hue < 0 ? (short)0 : tile.Hue);
+                    count++;
+                }
+            }
+
+            if (count == 0)
+            {
+                binidx.Write(-1); // lookup
+                binidx.Write(-1); // length
+                binidx.Write(-1); // extra
+                return;
+            }
+
+            binidx.Write(start); // lookup
+            binidx.Write(count * 7); // length
+            binidx.Write(0); // extra
+        }
+
+        /// <summary>
+        /// Rewrites the map file of the given map (uses its own file path, also for custom maps)
+        /// </summary>
+        public static void RewriteMap(string path, Map map)
+        {
+            RewriteMap(path, map.FileIndex, map.Width, map.Height, map.Tiles.MapPath);
+        }
+
         public static void RewriteMap(string path, int map, int width, int height)
         {
-            string mapPath = Files.GetFilePath("map{0}.mul", map);
+            RewriteMap(path, map, width, height, null);
+        }
+
+        /// <summary>
+        /// Writes map{FileIndex}.mul into <paramref name="path"/> including all land blocks changed in memory
+        /// (<see cref="TileMatrix.SetModifiedLandBlock"/>). Unchanged blocks are copied from the source file.
+        /// </summary>
+        /// <returns>full name of the written file</returns>
+        public string SaveLand(string path)
+        {
+            TileMatrix matrix = Tiles;
+            string mul = Path.Combine(path, $"map{FileIndex}.mul");
+
+            using (var fs = new FileStream(mul, FileMode.Create, FileAccess.Write, FileShare.None))
+            using (var bin = new BinaryWriter(new BufferedStream(fs, 1 << 20)))
+            {
+                for (int x = 0; x < matrix.BlockWidth; ++x)
+                {
+                    for (int y = 0; y < matrix.BlockHeight; ++y)
+                    {
+                        Tile[] tiles = matrix.IsLandBlockModified(x, y)
+                            ? matrix.GetLandBlock(x, y, false)
+                            : matrix.ReadLandBlockUncached(x, y);
+
+                        bin.Write(0); // header
+                        for (int i = 0; i < 64; ++i)
+                        {
+                            Tile t = i < tiles.Length ? tiles[i] : default;
+                            bin.Write(t.Id);
+                            bin.Write(t.Z);
+                        }
+                    }
+                }
+            }
+
+            matrix.CloseStreams();
+            return mul;
+        }
+
+        private static void RewriteMap(string path, int map, int width, int height, string sourceFile)
+        {
+            string mapPath = sourceFile ?? Files.GetFilePath("map{0}.mul", map);
+            if (mapPath != null && mapPath.EndsWith(".uop", System.StringComparison.OrdinalIgnoreCase))
+            {
+                // the rewrite works on the plain mul layout only
+                mapPath = Files.GetFilePath("map{0}.mul", map);
+            }
+
             BinaryReader mapReader;
             if (mapPath != null)
             {

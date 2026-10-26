@@ -55,16 +55,27 @@ namespace UoFiddler.Controls.Forms
             _workingMap = currentMap;
             _mapControl = mapControl; // Now mapControl is defined
             _mapControl.RectangleDrawn += MapControl_RectangleDrawn;
+            FormClosed += (_, _) => _mapControl.RectangleDrawn -= MapControl_RectangleDrawn;
         }
 
         #region MapControl_RectangleDrawn
         private void MapControl_RectangleDrawn(object sender, RectangleDrawnEventArgs e)
         {
-            // Update the NumericUpDown values
-            numericUpDownX1.Value = e.StartPoint.X;
-            numericUpDownY1.Value = e.StartPoint.Y;
-            numericUpDownX2.Value = e.EndPoint.X;
-            numericUpDownY2.Value = e.EndPoint.Y;
+            if (IsDisposed)
+            {
+                return;
+            }
+
+            // Update the NumericUpDown values (clamped, a region at the map border must not throw)
+            numericUpDownX1.Value = Clamp(numericUpDownX1, e.StartPoint.X);
+            numericUpDownY1.Value = Clamp(numericUpDownY1, e.StartPoint.Y);
+            numericUpDownX2.Value = Clamp(numericUpDownX2, e.EndPoint.X);
+            numericUpDownY2.Value = Clamp(numericUpDownY2, e.EndPoint.Y);
+        }
+
+        private static decimal Clamp(NumericUpDown control, int value)
+        {
+            return Math.Max(control.Minimum, Math.Min(control.Maximum, value));
         }
         #endregion
 

@@ -206,12 +206,11 @@ namespace UoFiddler.Classes
             comment = dom.CreateComment("Defines the map names");
             sr.AppendChild(comment);
             elem = dom.CreateElement("MapNames");
-            elem.SetAttribute("map0", Options.MapNames[0]);
-            elem.SetAttribute("map1", Options.MapNames[1]);
-            elem.SetAttribute("map2", Options.MapNames[2]);
-            elem.SetAttribute("map3", Options.MapNames[3]);
-            elem.SetAttribute("map4", Options.MapNames[4]);
-            elem.SetAttribute("map5", Options.MapNames[5]);
+            // all map names (also new maps), the full map list is stored in MapDefinitions.xml
+            for (int i = 0; i < Options.MapNames.Length; i++)
+            {
+                elem.SetAttribute($"map{i}", Options.MapNames[i] ?? string.Empty);
+            }
             sr.AppendChild(elem);
 
             comment = dom.CreateComment("Extern Tools settings");
@@ -420,12 +419,25 @@ namespace UoFiddler.Classes
             elem = (XmlElement)xOptions.SelectSingleNode("MapNames");
             if (elem != null)
             {
-                Options.MapNames[0] = elem.GetAttribute("map0");
-                Options.MapNames[1] = elem.GetAttribute("map1");
-                Options.MapNames[2] = elem.GetAttribute("map2");
-                Options.MapNames[3] = elem.GetAttribute("map3");
-                Options.MapNames[4] = elem.GetAttribute("map4");
-                Options.MapNames[5] = elem.GetAttribute("map5");
+                // read map0, map1, ... as long as they exist (older files only have map0-map5)
+                var names = new List<string>(Options.MapNames);
+                for (int i = 0; elem.HasAttribute($"map{i}"); i++)
+                {
+                    string name = elem.GetAttribute($"map{i}");
+                    if (i < names.Count)
+                    {
+                        if (!string.IsNullOrWhiteSpace(name))
+                        {
+                            names[i] = name;
+                        }
+                    }
+                    else
+                    {
+                        names.Add(string.IsNullOrWhiteSpace(name) ? $"Map {i}" : name);
+                    }
+                }
+
+                Options.MapNames = names.ToArray();
             }
 
             ExternTools = new List<ExternTool>();

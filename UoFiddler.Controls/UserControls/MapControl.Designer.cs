@@ -26,11 +26,11 @@ namespace UoFiddler.Controls.UserControls
         {
             if (disposing && (components != null))
             {
-               components.Dispose();
+                components.Dispose();
             }
             if (disposing)
             {
-
+                DisposeMapBuffer();
             }
             base.Dispose(disposing);
         }
@@ -60,15 +60,6 @@ namespace UoFiddler.Controls.UserControls
             sendClientToPosToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             mapCordinateToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
-            feluccaToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            trammelToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            ilshenarToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            malasToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            tokunoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            terMurToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            forellToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            dragonToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            intermediateWorldToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             extractMapToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             asBmpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -114,6 +105,11 @@ namespace UoFiddler.Controls.UserControls
             toolStripSeparator7 = new System.Windows.Forms.ToolStripSeparator();
             replaceTilesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             toolStripButtonMarkRegion = new System.Windows.Forms.ToolStripButton();
+            toolStripButtonViewRegion = new System.Windows.Forms.ToolStripButton();
+            toolStripButtonClearRegion = new System.Windows.Forms.ToolStripButton();
+            toolStripSeparatorRegion = new System.Windows.Forms.ToolStripSeparator();
+            toolStripDropDownButtonMaps = new System.Windows.Forms.ToolStripDropDownButton();
+            viewAreaHereToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             toolTip1 = new System.Windows.Forms.ToolTip(components);
             collapsibleSplitter2 = new CollapsibleSplitter();
             collapsibleSplitter1 = new CollapsibleSplitter();
@@ -171,15 +167,15 @@ namespace UoFiddler.Controls.UserControls
             pictureBox.TabIndex = 1;
             pictureBox.TabStop = false;
             pictureBox.Paint += OnPaint;
-            pictureBox.MouseClick += pictureBox_MouseClick;
             pictureBox.MouseDown += OnMouseDown;
             pictureBox.MouseMove += OnMouseMove;
             pictureBox.MouseUp += OnMouseUp;
             pictureBox.Resize += OnResizeMap;
+            pictureBox.MouseLeave += OnMouseLeaveMap;
             // 
             // contextMenuStrip1
             // 
-            contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { zoomToolStripMenuItem, zoomToolStripMenuItem1, getMapInfoToolStripMenuItem, insertMarkerToolStripMenuItem, toolStripSeparator4, gotoToolStripMenuItem, sendClientToPosToolStripMenuItem, mapCordinateToolStripMenuItem, toolStripSeparator2, feluccaToolStripMenuItem, trammelToolStripMenuItem, ilshenarToolStripMenuItem, malasToolStripMenuItem, tokunoToolStripMenuItem, terMurToolStripMenuItem, forellToolStripMenuItem, dragonToolStripMenuItem, intermediateWorldToolStripMenuItem, toolStripSeparator1, extractMapToolStripMenuItem });
+            contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { zoomToolStripMenuItem, zoomToolStripMenuItem1, getMapInfoToolStripMenuItem, insertMarkerToolStripMenuItem, toolStripSeparator4, gotoToolStripMenuItem, sendClientToPosToolStripMenuItem, mapCordinateToolStripMenuItem, viewAreaHereToolStripMenuItem, toolStripSeparator2, toolStripSeparator1, extractMapToolStripMenuItem });
             contextMenuStrip1.Name = "contextMenuStrip1";
             contextMenuStrip1.Size = new System.Drawing.Size(209, 396);
             contextMenuStrip1.Closed += OnContextClosed;
@@ -254,72 +250,6 @@ namespace UoFiddler.Controls.UserControls
             // 
             toolStripSeparator2.Name = "toolStripSeparator2";
             toolStripSeparator2.Size = new System.Drawing.Size(205, 6);
-            // 
-            // feluccaToolStripMenuItem
-            // 
-            feluccaToolStripMenuItem.Name = "feluccaToolStripMenuItem";
-            feluccaToolStripMenuItem.Size = new System.Drawing.Size(208, 22);
-            feluccaToolStripMenuItem.Text = "Felucca";
-            feluccaToolStripMenuItem.Click += ChangeMapFelucca;
-            // 
-            // trammelToolStripMenuItem
-            // 
-            trammelToolStripMenuItem.Name = "trammelToolStripMenuItem";
-            trammelToolStripMenuItem.Size = new System.Drawing.Size(208, 22);
-            trammelToolStripMenuItem.Text = "Trammel";
-            trammelToolStripMenuItem.Click += ChangeMapTrammel;
-            // 
-            // ilshenarToolStripMenuItem
-            // 
-            ilshenarToolStripMenuItem.Name = "ilshenarToolStripMenuItem";
-            ilshenarToolStripMenuItem.Size = new System.Drawing.Size(208, 22);
-            ilshenarToolStripMenuItem.Text = "Ilshenar";
-            ilshenarToolStripMenuItem.Click += ChangeMapIlshenar;
-            // 
-            // malasToolStripMenuItem
-            // 
-            malasToolStripMenuItem.Name = "malasToolStripMenuItem";
-            malasToolStripMenuItem.Size = new System.Drawing.Size(208, 22);
-            malasToolStripMenuItem.Text = "Malas";
-            malasToolStripMenuItem.Click += ChangeMapMalas;
-            // 
-            // tokunoToolStripMenuItem
-            // 
-            tokunoToolStripMenuItem.Name = "tokunoToolStripMenuItem";
-            tokunoToolStripMenuItem.Size = new System.Drawing.Size(208, 22);
-            tokunoToolStripMenuItem.Text = "Tokuno";
-            tokunoToolStripMenuItem.Click += ChangeMapTokuno;
-            // 
-            // terMurToolStripMenuItem
-            // 
-            terMurToolStripMenuItem.Name = "terMurToolStripMenuItem";
-            terMurToolStripMenuItem.Size = new System.Drawing.Size(208, 22);
-            terMurToolStripMenuItem.Text = "TerMur";
-            terMurToolStripMenuItem.Click += ChangeMapTerMur;
-            // 
-            // forellToolStripMenuItem
-            // 
-            forellToolStripMenuItem.Name = "forellToolStripMenuItem";
-            forellToolStripMenuItem.Size = new System.Drawing.Size(208, 22);
-            forellToolStripMenuItem.Tag = "6";
-            forellToolStripMenuItem.Text = "Forell";
-            forellToolStripMenuItem.Click += ChangeMapForell;
-            // 
-            // dragonToolStripMenuItem
-            // 
-            dragonToolStripMenuItem.Name = "dragonToolStripMenuItem";
-            dragonToolStripMenuItem.Size = new System.Drawing.Size(208, 22);
-            dragonToolStripMenuItem.Tag = "7";
-            dragonToolStripMenuItem.Text = "Dragon";
-            dragonToolStripMenuItem.Click += ChangeMapDragon;
-            // 
-            // intermediateWorldToolStripMenuItem
-            // 
-            intermediateWorldToolStripMenuItem.Name = "intermediateWorldToolStripMenuItem";
-            intermediateWorldToolStripMenuItem.Size = new System.Drawing.Size(208, 22);
-            intermediateWorldToolStripMenuItem.Tag = "8";
-            intermediateWorldToolStripMenuItem.Text = "Intermediate World";
-            intermediateWorldToolStripMenuItem.Click += ChangeIntermediateWorld;
             // 
             // toolStripSeparator1
             // 
@@ -446,7 +376,7 @@ namespace UoFiddler.Controls.UserControls
             // toolStrip1
             // 
             toolStrip1.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
-            toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { toolStripDropDownButton1, toolStripDropDownButton2, ProgressBar, PreloadMap, toolStripDropDownButton3, toolStripButtonMarkRegion });
+            toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { toolStripDropDownButtonMaps, toolStripDropDownButton1, toolStripDropDownButton2, ProgressBar, PreloadMap, toolStripDropDownButton3, toolStripSeparatorRegion, toolStripButtonMarkRegion, toolStripButtonViewRegion, toolStripButtonClearRegion });
             toolStrip1.Location = new System.Drawing.Point(0, 0);
             toolStrip1.Name = "toolStrip1";
             toolStrip1.RenderMode = System.Windows.Forms.ToolStripRenderMode.System;
@@ -666,6 +596,7 @@ namespace UoFiddler.Controls.UserControls
             // 
             // toolStripButtonMarkRegion
             // 
+            toolStripButtonMarkRegion.CheckOnClick = true;
             toolStripButtonMarkRegion.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
             toolStripButtonMarkRegion.Image = Properties.Resources.mapcordinate;
             toolStripButtonMarkRegion.ImageTransparentColor = System.Drawing.Color.Magenta;
@@ -674,6 +605,52 @@ namespace UoFiddler.Controls.UserControls
             toolStripButtonMarkRegion.Text = "Mark";
             toolStripButtonMarkRegion.ToolTipText = "Marks the area with coordinates";
             toolStripButtonMarkRegion.Click += toolStripButtonMarkRegion_Click;
+            // 
+            // toolStripSeparatorRegion
+            // 
+            toolStripSeparatorRegion.Name = "toolStripSeparatorRegion";
+            toolStripSeparatorRegion.Size = new System.Drawing.Size(6, 28);
+            // 
+            // toolStripButtonViewRegion
+            // 
+            toolStripButtonViewRegion.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.ImageAndText;
+            toolStripButtonViewRegion.Enabled = false;
+            toolStripButtonViewRegion.Image = Properties.Resources.Map;
+            toolStripButtonViewRegion.ImageTransparentColor = System.Drawing.Color.Magenta;
+            toolStripButtonViewRegion.Name = "toolStripButtonViewRegion";
+            toolStripButtonViewRegion.Size = new System.Drawing.Size(92, 25);
+            toolStripButtonViewRegion.Text = "View Region";
+            toolStripButtonViewRegion.ToolTipText = "Opens the marked region in the isometric region viewer (client view, error check)";
+            toolStripButtonViewRegion.Click += OnClickViewRegion;
+            // 
+            // toolStripButtonClearRegion
+            // 
+            toolStripButtonClearRegion.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            toolStripButtonClearRegion.Enabled = false;
+            toolStripButtonClearRegion.Name = "toolStripButtonClearRegion";
+            toolStripButtonClearRegion.Size = new System.Drawing.Size(38, 25);
+            toolStripButtonClearRegion.Text = "Clear";
+            toolStripButtonClearRegion.ToolTipText = "Removes the marked region";
+            toolStripButtonClearRegion.Click += OnClickClearRegion;
+            // 
+            // toolStripDropDownButtonMaps
+            // 
+            toolStripDropDownButtonMaps.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            toolStripDropDownButtonMaps.ImageTransparentColor = System.Drawing.Color.Magenta;
+            toolStripDropDownButtonMaps.Name = "toolStripDropDownButtonMaps";
+            toolStripDropDownButtonMaps.Size = new System.Drawing.Size(48, 25);
+            toolStripDropDownButtonMaps.Text = "Maps";
+            toolStripDropDownButtonMaps.ToolTipText = "Select the map / manage the map list";
+            toolStripDropDownButtonMaps.DropDownClosed += OnDropDownClosed;
+            // 
+            // viewAreaHereToolStripMenuItem
+            // 
+            viewAreaHereToolStripMenuItem.Image = Properties.Resources.Map;
+            viewAreaHereToolStripMenuItem.Name = "viewAreaHereToolStripMenuItem";
+            viewAreaHereToolStripMenuItem.Size = new System.Drawing.Size(208, 22);
+            viewAreaHereToolStripMenuItem.Text = "View Area Here (Client View)";
+            viewAreaHereToolStripMenuItem.ToolTipText = "Opens a 64x64 area around this position in the region viewer";
+            viewAreaHereToolStripMenuItem.Click += OnClickViewAreaHere;
             // 
             // collapsibleSplitter2
             // 
@@ -766,17 +743,14 @@ namespace UoFiddler.Controls.UserControls
         private System.Windows.Forms.ToolStripMenuItem defragAndRemoveDuplicatesStToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem defragStaticsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem extractMapToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem feluccaToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem getMapInfoToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem gotoClientLocToolStripMenuItem1;
         private System.Windows.Forms.ToolStripMenuItem gotoToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem gotoToolStripMenuItem1;
         private System.Windows.Forms.HScrollBar hScrollBar;
-        private System.Windows.Forms.ToolStripMenuItem ilshenarToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem importStaticsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem insertDiffDataToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem insertMarkerToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem malasToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem meltStaticsToolStripMenuItem;
         private System.Windows.Forms.TreeView OverlayObjectTree;
         private System.Windows.Forms.Panel panel1;
@@ -797,10 +771,8 @@ namespace UoFiddler.Controls.UserControls
         private System.Windows.Forms.ToolStripMenuItem showStaticsToolStripMenuItem1;
         private System.Windows.Forms.StatusStrip statusStrip;
         private System.Windows.Forms.ToolStripMenuItem switchVisibleToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem terMurToolStripMenuItem;
         private System.Windows.Forms.ToolStripTextBox TextBoxGoto;
         private System.Windows.Forms.Timer timer1;
-        private System.Windows.Forms.ToolStripMenuItem tokunoToolStripMenuItem;
         private System.Windows.Forms.ToolStrip toolStrip1;
         private System.Windows.Forms.ToolStripDropDownButton toolStripDropDownButton1;
         private System.Windows.Forms.ToolStripDropDownButton toolStripDropDownButton2;
@@ -814,16 +786,17 @@ namespace UoFiddler.Controls.UserControls
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator6;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator7;
         private System.Windows.Forms.ToolTip toolTip1;
-        private System.Windows.Forms.ToolStripMenuItem trammelToolStripMenuItem;
         private System.Windows.Forms.VScrollBar vScrollBar;
         private System.Windows.Forms.ToolStripStatusLabel ZoomLabel;
         private System.Windows.Forms.ToolStripMenuItem zoomToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem zoomToolStripMenuItem1;
         private System.Windows.Forms.ToolStripButton toolStripButtonMarkRegion;
-        private System.Windows.Forms.ToolStripMenuItem forellToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem dragonToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem intermediateWorldToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem mapCordinateToolStripMenuItem;
         private System.Windows.Forms.ToolStripStatusLabel MessageLabel;
+        private System.Windows.Forms.ToolStripButton toolStripButtonViewRegion;
+        private System.Windows.Forms.ToolStripButton toolStripButtonClearRegion;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparatorRegion;
+        private System.Windows.Forms.ToolStripDropDownButton toolStripDropDownButtonMaps;
+        private System.Windows.Forms.ToolStripMenuItem viewAreaHereToolStripMenuItem;
     }
 }
