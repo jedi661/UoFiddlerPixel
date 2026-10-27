@@ -29,8 +29,33 @@ und in `Map` `SaveLand` / `DefragStatics` (schreibt ersetzte Blöcke mit).
    Alternativ Rechtsklick auf die Karte -> "View Area Here" (64 x 64 um die Maus).
 3. Der Bereich wird beim Öffnen geprüft, Fehler stehen im Reiter "Errors / Protocol" und sind in der Ansicht markiert.
 4. Reparieren: "Fix all (safe)" oder Einträge abhaken -> "Fix checked". Einzelne Statics löschen/verschieben im Reiter "Tile".
-5. "Save" schreibt `map{n}.mul` (nur wenn Land geändert wurde) und `staidx{n}.mul`/`statics{n}.mul` in den Output-Ordner,
-   dazu ein Protokoll `RegionProtocol_*.xml`. Die Client-Dateien werden nicht verändert.
+5. "Save" fragt nach dem Ziel (Output-Ordner, Ordner der geladenen Karte oder anderer Ordner) und ob ein Backup gemacht wird.
+   Geschrieben werden `map{n}.mul` (nur wenn Land geändert wurde), `staidx{n}.mul`/`statics{n}.mul` und auf Wunsch das Protokoll `RegionProtocol_*.xml`.
+   "Backups..." stellt alte Dateien wieder her.
+
+## Bauen (Reiter "Build") und Multis
+
+| Datei | Aufgabe |
+|---|---|
+| `Build/MultiTemplate.cs` | Gebäudemodell für alle Formate (ID, X, Y, Z, Hue, Flag, Stockwerk) |
+| `Build/MultiFormats.cs` | Import: TXT (dezimal/hex automatisch), UOA binär (mit Hue), UOA-Text/WSC/CSV über das SDK. Export: TXT hex/dezimal, UOA binär, UOA-Text, WSC, CSV, UOX3, XML |
+| `Build/MultiLibrary.cs` | Eigene Bibliothek (`.uml` + Index `.umx`), nur angehängt, für sehr viele Einträge |
+| `Build/MultiBrowserForm.cs` | Fenster "Multis / Building library": Client-Multis aus multi.mul und Bibliothek, Suche, Vorschau, Import, Export, in multi.mul speichern |
+| `Build/BuildPlacement.cs` | Platzierung: Anker, Basis-Z, Grundfläche, Hindernisse, Prüfung, Boden ebnen, Bereich als Gebäude |
+| `Build/MultiPreview.cs` | Vorschaubild / halbtransparentes Gebäude beim Platzieren |
+| `MapRegionViewerForm.Build.cs` | Logik des Reiters "Build" |
+| `MapSaveService.cs`, `MapSaveDialog.cs`, `MapBackupForm.cs` | Speichern (Ziel wählen, Backup), Backups wiederherstellen |
+| `Build/AreaExportForm.cs` | "Export Area": Statics eines Bereichs prüfen/abwählen und als Datei, in die Bibliothek, in multi.mul oder als ServUO-Script übernehmen |
+| `Build/ServUOExport.cs` | ServUO-Addon-Script (mit Hue), Decoration-.cfg (absolute Positionen), Text für das Multi-Script-Fenster |
+
+Die Bibliothek liegt standardmäßig in `<Output-Ordner>\UoFiddler_BuildingLibrary\BuildingLibrary.uml` (mit README.txt).
+Eine Bibliothek älterer Versionen in AppData wird weiter benutzt. "Move library..." verschiebt sie, "Library file..." öffnet/erstellt eine andere.
+
+Bedienung beim Platzieren: Maus bewegt das Gebäude, Klick fixiert die Position (nochmal Klick = wieder folgen),
+Pfeiltasten X/Y, Bild hoch/runter Z (Shift = 5), Enter setzt das Gebäude, Esc bricht ab. Strg+Z macht den letzten Schritt rückgängig.
+
+Speichern: Output-Ordner, Ordner der geladenen Karte (ersetzt die Originale) oder ein anderer Ordner.
+Vorher wird in eine temporäre Datei geschrieben; ersetzte Dateien landen als Backup in `<Ziel>\UoFiddlerBackups\`.
 
 ## Erweiterung 3D (Ansatz für später)
 

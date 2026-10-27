@@ -1009,4 +1009,4 @@ namespace Ultima
             return 0;
         }
     }
-}
+}

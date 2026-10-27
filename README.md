@@ -6,6 +6,14 @@ UOFiddler based on Ultima SDK it's a tool to view and alter almost every UO 2D c
 This is an extended version of UoFiddler that has more maps and more tools, as well as Map Edit, and will be expanded over time to support the Ultima standard 
 version more than the original version. Also, some source codes from older and New projects that are no longer supported have been integrated.
 
+Version 4.12.15
+- Region-Viewer: View the selected area in the client view (iso, textures, hills, statics with hue), zoom, show heights/grid, look inside buildings.
+- Error Check & Log: Invalid IDs, duplicate/hidden statics, steep land; automatically repair, notes, export as CSV/XML.
+- Build:** Place multis from multi.mul, custom library or files (TXT dec./hex, UOA, WSC, CSV), remove obstacles, level the ground, Undo (Ctrl+Z).
+- Export Area: Check the selected map area and take it over as a file, into the library, into multi.mul or as a ServUO-Addon/Decoration.
+- Building Library: For a very large number of entries, standard in the output folder (UoFiddler_BuildingLibrary), movable.
+- Save with Backup: Target selectable (Output, Original or other folder), automatic backups and restore; Multi-Script now sets the Hue.
+
 Version 4.12.14
 - New map management system with support for an unlimited number of maps, automatic detection, and flexible configuration.
 - New client-style Region Viewer (GDI+) for analyzing, validating, documenting, and fixing map and static errors.

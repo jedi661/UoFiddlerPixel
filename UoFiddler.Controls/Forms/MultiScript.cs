@@ -40,33 +40,77 @@ namespace UoFiddler.Controls.Forms
             }
 
             // Create a list of Component objects based on the information entered
+            // one line per part: "ItemID(hex) X Y Z [Hue]", empty lines are skipped
             List<Component> components = new List<Component>();
-            string[] lines = tbIndexImage.Text.Split(new[] { Environment.NewLine }, StringSplitOptions.None);
+            string[] lines = tbIndexImage.Text.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.RemoveEmptyEntries);
+            int lineNumber = 0;
             foreach (string line in lines)
             {
-                string[] parts = line.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-                if (parts.Length < 5)
+                lineNumber++;
+                string[] parts = line.Split(new[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries);
+                if (parts.Length == 0)
                 {
-                    MessageBox.Show("Ungültiges Format in tbIndexImage.");
+                    continue;
+                }
+
+                if (parts.Length < 4 ||
+                    !int.TryParse(parts[1], out int x) || !int.TryParse(parts[2], out int y) || !int.TryParse(parts[3], out int z))
+                {
+                    MessageBox.Show($"Invalid format in line {lineNumber}: \"{line.Trim()}\"\nExpected: ItemID(hex) X Y Z [Hue]");
                     return;
+                }
+
+                int hue = 0;
+                if (parts.Length > 4 && !int.TryParse(parts[4], out hue))
+                {
+                    hue = 0;
                 }
 
                 Component component = new Component
                 {
-                    ItemId = Convert.ToInt32(parts[0], 16), // Convert hexadecimal to decimal
-                    X = int.Parse(parts[1]),
-                    Y = int.Parse(parts[2]),
-                    Z = int.Parse(parts[3]),
-                    Hue = int.Parse(parts[4])
+                    ItemId = Convert.ToInt32(parts[0], 16), // hexadecimal, with or without "0x"
+                    X = x,
+                    Y = y,
+                    Z = z,
+                    Hue = hue
                 };
                 components.Add(component);
             }
 
-            // Create the script based on the information entered
-            string script = GenerateScript(tbNameScript.Text, components);
+            if (components.Count == 0)
+            {
+                MessageBox.Show("No parts found.");
+                return;
+            }
+
+            // Create the script based on the information entered (class names can not contain spaces etc.)
+            string script = GenerateScript(MakeClassName(tbNameScript.Text), components);
 
             // Display the created script in the tbscriptFinish text box
             tbscriptFinish.Text = script;
+        }
+        #endregion
+
+        #region MakeClassName
+        private static string MakeClassName(string name)
+        {
+            var sb = new StringBuilder();
+            bool upper = true;
+            foreach (char c in name ?? string.Empty)
+            {
+                if (char.IsLetterOrDigit(c) || c == '_')
+                {
+                    sb.Append(upper ? char.ToUpperInvariant(c) : c);
+                    upper = false;
+                }
+                else
+                {
+                    upper = true;
+                }
+            }
+
+            string result = sb.ToString();
+            return result.Length == 0 || char.IsDigit(result[0]) ? "Addon" + result : result;
         }
         #endregion
 
@@ -98,8 +142,14 @@ namespace UoFiddler.Controls.Forms
             sb.AppendLine("[Constructable]");
             sb.AppendLine("public " + className + "()");
             sb.AppendLine("{");
-            sb.AppendLine("for (int i = 0; i < m_AddOnSimpleComponents.Length / 5; i++)");
-            sb.AppendLine("AddComponent(new AddonComponent(m_AddOnSimpleComponents[i, 0]), m_AddOnSimpleComponents[i, 1], m_AddOnSimpleComponents[i, 2], m_AddOnSimpleComponents[i, 3]);");
+            sb.AppendLine("for (int i = 0; i < m_AddOnSimpleComponents.GetLength(0); i++)");
+            sb.AppendLine("{");
+            sb.AppendLine("AddonComponent component = new AddonComponent(m_AddOnSimpleComponents[i, 0]);");
+            // the hue is the 5th column of the table, without this line it was ignored
+            sb.AppendLine("if (m_AddOnSimpleComponents[i, 4] != 0)");
+            sb.AppendLine("component.Hue = m_AddOnSimpleComponents[i, 4];");
+            sb.AppendLine("AddComponent(component, m_AddOnSimpleComponents[i, 1], m_AddOnSimpleComponents[i, 2], m_AddOnSimpleComponents[i, 3]);");
+            sb.AppendLine("}");
             sb.AppendLine("}");
             sb.AppendLine("public " + className + "( Serial serial ) : base( serial ) { }");
             sb.AppendLine("public override void Serialize( GenericWriter writer )");
@@ -152,7 +202,7 @@ namespace UoFiddler.Controls.Forms
 
         #region tbIndexImage_TextChanged
         private bool updatingText = false;
-                
+
         private void tbIndexImage_TextChanged(object sender, EventArgs e)
         {
             if (updatingText) return;

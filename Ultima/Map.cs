@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
@@ -93,6 +94,66 @@ namespace Ultima
             }
 
             MapRegistry.ResetCustomMaps();
+        }
+
+        /// <summary>
+        /// All map instances that are known (built-in maps and maps of <see cref="MapRegistry"/>)
+        /// </summary>
+        public static IEnumerable<Map> AllMaps()
+        {
+            var seen = new HashSet<Map>();
+            for (int i = 0; i < BuiltInCount; i++)
+            {
+                Map map = GetBuiltIn(i);
+                if (map != null && seen.Add(map))
+                {
+                    yield return map;
+                }
+            }
+
+            foreach (Map map in MapRegistry.LoadedCustomMaps())
+            {
+                if (seen.Add(map))
+                {
+                    yield return map;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Closes the open file streams of all maps (needed before map files are replaced on disk).
+        /// The caches are kept.
+        /// </summary>
+        public static void CloseAllStreams()
+        {
+            foreach (Map map in AllMaps())
+            {
+                map._tiles?.CloseStreams();
+            }
+        }
+
+        /// <summary>
+        /// True if this map has opened (or will open) the given file
+        /// </summary>
+        public bool UsesFile(string fullPath)
+        {
+            if (string.IsNullOrEmpty(fullPath))
+            {
+                return false;
+            }
+
+            TileMatrix tiles = Tiles;
+            return SamePath(tiles.MapPath, fullPath) || SamePath(tiles.IndexPath, fullPath) || SamePath(tiles.StaticsPath, fullPath);
+        }
+
+        private static bool SamePath(string a, string b)
+        {
+            if (string.IsNullOrEmpty(a) || string.IsNullOrEmpty(b))
+            {
+                return false;
+            }
+
+            return string.Equals(Path.GetFullPath(a), Path.GetFullPath(b), System.StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>
@@ -338,6 +399,8 @@ namespace Ultima
         private unsafe ushort[] RenderBlock(int x, int y, bool drawStatics, bool diff)
         {
             var data = new ushort[64];
+            int colorCount = RadarCol.Colors.Length;
+            int heightCount = TileData.HeightTable.Length;
 
             Tile[] tiles = _tiles.GetLandBlock(x, y, diff);
 
@@ -380,7 +443,7 @@ namespace Ultima
                                                 while (pStatics < pStaticsEnd)
                                                 {
                                                     z = pStatics->Z;
-                                                    top = z + pHeight[pStatics->Id];
+                                                    top = z + (pStatics->Id < heightCount ? pHeight[pStatics->Id] : 0);
 
                                                     if (top > highTop || (z > highZ && top >= highTop))
                                                     {
@@ -407,7 +470,7 @@ namespace Ultima
                                                 }
 
                                                 z = penS.Z;
-                                                top = z + pHeight[penS.Id];
+                                                top = z + (penS.Id < heightCount ? pHeight[penS.Id] : 0);
 
                                                 if (top <= highTop && (z <= highZ || top < highTop))
                                                 {
@@ -431,28 +494,18 @@ namespace Ultima
                                             highStatic = false;
                                         }
 
-                                        if (highHue == 0)
+                                        // ids without an entry in radarcol.mul (e.g. new items of a placed building) are drawn black
+                                        // instead of reading outside of the color table
+                                        int colorIndex = highStatic ? highId + 0x4000 : highId;
+                                        ushort color = colorIndex < colorCount ? pColors[colorIndex] : (ushort)0;
+
+                                        if (highHue == 0 || !highStatic)
                                         {
-                                            try
-                                            {
-                                                if (highStatic)
-                                                {
-                                                    *pvData++ = pColors[highId + 0x4000];
-                                                }
-                                                else
-                                                {
-                                                    *pvData++ = pColors[highId];
-                                                }
-                                            }
-                                            catch
-                                            {
-                                                // TODO: ignored?
-                                                // ignored
-                                            }
+                                            *pvData++ = color;
                                         }
                                         else
                                         {
-                                            *pvData++ = Hues.GetHue(highHue - 1).Colors[(pColors[highId + 0x4000] >> 10) & 0x1F];
+                                            *pvData++ = Hues.GetHue(highHue - 1).Colors[(color >> 10) & 0x1F];
                                         }
 
                                         ++pTiles;
@@ -465,7 +518,8 @@ namespace Ultima
 
                                 while (pTiles < pEnd)
                                 {
-                                    *pvData++ = pColors[(pTiles++)->Id];
+                                    int id = (pTiles++)->Id;
+                                    *pvData++ = id < colorCount ? pColors[id] : (ushort)0;
                                 }
                             }
                         }
@@ -506,71 +560,76 @@ namespace Ultima
             int blockStride = stride << 3;
 
             var pStart = (byte*)bd.Scan0;
-
-            for (int oy = 0, by = y; oy < height; ++oy, ++by, pStart += blockStride)
+            try
             {
-                var pRow0 = (int*)(pStart + (0 * stride));
-                var pRow1 = (int*)(pStart + (1 * stride));
-                var pRow2 = (int*)(pStart + (2 * stride));
-                var pRow3 = (int*)(pStart + (3 * stride));
-                var pRow4 = (int*)(pStart + (4 * stride));
-                var pRow5 = (int*)(pStart + (5 * stride));
-                var pRow6 = (int*)(pStart + (6 * stride));
-                var pRow7 = (int*)(pStart + (7 * stride));
-
-                for (int ox = 0, bx = x; ox < width; ++ox, ++bx)
+                for (int oy = 0, by = y; oy < height; ++oy, ++by, pStart += blockStride)
                 {
-                    ushort[] data = GetRenderedBlock(bx, by, statics);
+                    var pRow0 = (int*)(pStart + (0 * stride));
+                    var pRow1 = (int*)(pStart + (1 * stride));
+                    var pRow2 = (int*)(pStart + (2 * stride));
+                    var pRow3 = (int*)(pStart + (3 * stride));
+                    var pRow4 = (int*)(pStart + (4 * stride));
+                    var pRow5 = (int*)(pStart + (5 * stride));
+                    var pRow6 = (int*)(pStart + (6 * stride));
+                    var pRow7 = (int*)(pStart + (7 * stride));
 
-                    fixed (ushort* pData = data)
+                    for (int ox = 0, bx = x; ox < width; ++ox, ++bx)
                     {
-                        var pvData = (int*)pData;
+                        ushort[] data = GetRenderedBlock(bx, by, statics);
 
-                        *pRow0++ = *pvData++;
-                        *pRow0++ = *pvData++;
-                        *pRow0++ = *pvData++;
-                        *pRow0++ = *pvData++;
+                        fixed (ushort* pData = data)
+                        {
+                            var pvData = (int*)pData;
 
-                        *pRow1++ = *pvData++;
-                        *pRow1++ = *pvData++;
-                        *pRow1++ = *pvData++;
-                        *pRow1++ = *pvData++;
+                            *pRow0++ = *pvData++;
+                            *pRow0++ = *pvData++;
+                            *pRow0++ = *pvData++;
+                            *pRow0++ = *pvData++;
 
-                        *pRow2++ = *pvData++;
-                        *pRow2++ = *pvData++;
-                        *pRow2++ = *pvData++;
-                        *pRow2++ = *pvData++;
+                            *pRow1++ = *pvData++;
+                            *pRow1++ = *pvData++;
+                            *pRow1++ = *pvData++;
+                            *pRow1++ = *pvData++;
 
-                        *pRow3++ = *pvData++;
-                        *pRow3++ = *pvData++;
-                        *pRow3++ = *pvData++;
-                        *pRow3++ = *pvData++;
+                            *pRow2++ = *pvData++;
+                            *pRow2++ = *pvData++;
+                            *pRow2++ = *pvData++;
+                            *pRow2++ = *pvData++;
 
-                        *pRow4++ = *pvData++;
-                        *pRow4++ = *pvData++;
-                        *pRow4++ = *pvData++;
-                        *pRow4++ = *pvData++;
+                            *pRow3++ = *pvData++;
+                            *pRow3++ = *pvData++;
+                            *pRow3++ = *pvData++;
+                            *pRow3++ = *pvData++;
 
-                        *pRow5++ = *pvData++;
-                        *pRow5++ = *pvData++;
-                        *pRow5++ = *pvData++;
-                        *pRow5++ = *pvData++;
+                            *pRow4++ = *pvData++;
+                            *pRow4++ = *pvData++;
+                            *pRow4++ = *pvData++;
+                            *pRow4++ = *pvData++;
 
-                        *pRow6++ = *pvData++;
-                        *pRow6++ = *pvData++;
-                        *pRow6++ = *pvData++;
-                        *pRow6++ = *pvData++;
+                            *pRow5++ = *pvData++;
+                            *pRow5++ = *pvData++;
+                            *pRow5++ = *pvData++;
+                            *pRow5++ = *pvData++;
 
-                        *pRow7++ = *pvData++;
-                        *pRow7++ = *pvData++;
-                        *pRow7++ = *pvData++;
-                        *pRow7++ = *pvData;
+                            *pRow6++ = *pvData++;
+                            *pRow6++ = *pvData++;
+                            *pRow6++ = *pvData++;
+                            *pRow6++ = *pvData++;
+
+                            *pRow7++ = *pvData++;
+                            *pRow7++ = *pvData++;
+                            *pRow7++ = *pvData++;
+                            *pRow7++ = *pvData;
+                        }
                     }
                 }
             }
-
-            bmp.UnlockBits(bd);
-            Tiles.CloseStreams();
+            finally
+            {
+                // always unlock, otherwise the bitmap stays locked after an error and every later call fails
+                bmp.UnlockBits(bd);
+                Tiles.CloseStreams();
+            }
         }
 
         public static void DefragStatics(string path, Map map, int width, int height, bool remove)
@@ -1066,4 +1125,4 @@ namespace Ultima
             }
         }
     }
-}
+}

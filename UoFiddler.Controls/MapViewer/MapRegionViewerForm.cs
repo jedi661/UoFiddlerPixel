@@ -76,11 +76,13 @@ namespace UoFiddler.Controls.MapViewer
             isoView.Renderer = _renderer;
             isoView.Issues = _issues;
             comboBoxIssueFilter.SelectedIndex = 0;
+            InitBuild();
             UpdateStatus();
         }
 
         private void DisposeResources()
         {
+            DisposeBuild();
             _renderer?.Dispose();
             pictureBoxPreview?.Image?.Dispose();
         }
@@ -220,10 +222,15 @@ namespace UoFiddler.Controls.MapViewer
             statusLabelChanges.Text = _session.HasUnsavedChanges ? $"{_session.ChangeCount} unsaved change(s)" : string.Empty;
             toolStripButtonSave.Enabled = _session.HasUnsavedChanges;
             toolStripButtonUndo.Enabled = _session.CanUndo;
+            toolStripButtonUndoLast.Enabled = _session.CanUndo;
+            toolStripButtonUndoLast.ToolTipText = _session.CanUndo
+                ? $"Undo: {_session.LastOperationName} (Ctrl+Z)"
+                : "Nothing to undo";
         }
 
         private void OnHoverChanged(object sender, EventArgs e)
         {
+            OnBuildHoverChanged();
             RegionCell cell = isoView.HoverCell;
             statusLabelCell.Text = cell == null
                 ? string.Empty
@@ -236,6 +243,11 @@ namespace UoFiddler.Controls.MapViewer
 
         private void OnCellClicked(object sender, IsoCellEventArgs e)
         {
+            if (OnBuildCellClicked())
+            {
+                return;
+            }
+
             ShowCell(e.Cell, e.Drawable);
         }
 
@@ -533,6 +545,7 @@ namespace UoFiddler.Controls.MapViewer
             }
 
             statusLabelCell.Text = logText;
+            UpdatePlacement();
             UpdateStatus();
         }
 
@@ -781,15 +794,18 @@ namespace UoFiddler.Controls.MapViewer
             Cursor.Current = Cursors.WaitCursor;
             try
             {
-                // duplicates of one position: remove from the end so z/hue matching stays stable
-                foreach (RegionIssue issue in issues)
+                // one undo step for all repairs
+                using (_session.Batch($"Fix {issues.Count} error(s)"))
                 {
-                    if (_session.Fix(issue, _data))
+                    foreach (RegionIssue issue in issues)
                     {
-                        issue.Note = string.IsNullOrEmpty(issue.Note)
-                            ? $"auto fixed {DateTime.Now:yyyy-MM-dd HH:mm}"
-                            : $"{issue.Note}; auto fixed {DateTime.Now:yyyy-MM-dd HH:mm}";
-                        done++;
+                        if (_session.Fix(issue, _data))
+                        {
+                            issue.Note = string.IsNullOrEmpty(issue.Note)
+                                ? $"auto fixed {DateTime.Now:yyyy-MM-dd HH:mm}"
+                                : $"{issue.Note}; auto fixed {DateTime.Now:yyyy-MM-dd HH:mm}";
+                            done++;
+                        }
                     }
                 }
             }
@@ -976,6 +992,15 @@ namespace UoFiddler.Controls.MapViewer
 
         #region Save / undo / close
 
+        private void OnClickUndoLast(object sender, EventArgs e)
+        {
+            string name = _session.UndoLast();
+            if (name != null)
+            {
+                AfterEdit($"Undone: {name}");
+            }
+        }
+
         private void OnClickUndo(object sender, EventArgs e)
         {
             if (!_session.CanUndo)
@@ -983,7 +1008,7 @@ namespace UoFiddler.Controls.MapViewer
                 return;
             }
 
-            if (MessageBox.Show("Undo all changes made in this window?", "Region Viewer", MessageBoxButtons.OKCancel, MessageBoxIcon.Question) != DialogResult.OK)
+            if (MessageBox.Show($"Undo all {_session.OperationCount} change(s) made in this window?", "Region Viewer", MessageBoxButtons.OKCancel, MessageBoxIcon.Question) != DialogResult.OK)
             {
                 return;
             }
@@ -997,44 +1022,96 @@ namespace UoFiddler.Controls.MapViewer
             SaveChanges();
         }
 
+        /// <summary>
+        /// Asks for the target directory and the backup, then writes the files. Returns false if canceled or failed.
+        /// </summary>
         private bool SaveChanges()
         {
-            string directory = Options.OutputPath;
-            if (string.IsNullOrEmpty(directory) || !Directory.Exists(directory))
+            using (var dialog = new MapSaveDialog(_data.Map, _definition.Name, _session.ChangeCount))
             {
-                MessageBox.Show("The output directory does not exist. Please set it in the options.", "Region Viewer", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return false;
+                DialogResult result = dialog.ShowDialog(this);
+                if (result == DialogResult.Abort)
+                {
+                    // a backup was restored in the dialog
+                    _session.MarkSaved(false);
+                    AfterEdit("Backup restored");
+                    return false;
+                }
+
+                if (result != DialogResult.OK)
+                {
+                    return false;
+                }
+
+                string directory = dialog.TargetDirectory;
+                bool replacesLoaded = MapSaveService.IsSameDirectory(directory, MapSaveService.GetSourceDirectory(_data.Map));
+
+                List<string> files;
+                MapBackupInfo backup;
+                Cursor.Current = Cursors.WaitCursor;
+                try
+                {
+                    files = MapSaveService.Save(_data.Map, _definition.Name, directory, dialog.CreateBackup, out backup);
+                    if (dialog.SaveProtocol)
+                    {
+                        string protocol = Path.Combine(directory, DefaultProtocolName("xml"));
+                        RegionIssue.SaveXml(protocol, _definition.Id, _definition.Name, _data.Area, _issues);
+                        files.Add(protocol);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Saving failed:\n{ex.Message}\n\nThe changes are still in memory.", "Region Viewer", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return false;
+                }
+                finally
+                {
+                    Cursor.Current = Cursors.Default;
+                }
+
+                // the original files were replaced and read again: the old undo steps do not fit anymore
+                _session.MarkSaved(!replacesLoaded);
+                if (replacesLoaded)
+                {
+                    ReloadRegion();
+                    RunCheck(false);
+                }
+
+                UpdateStatus();
+                MessageBox.Show("Saved:\n" + string.Join("\n", files.Select(Path.GetFileName)) + $"\n\nin {directory}" +
+                                (backup != null ? $"\n\nBackup: {backup.Directory}" : string.Empty),
+                    "Region Viewer", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return true;
+            }
+        }
+
+        private void OnClickBackups(object sender, EventArgs e)
+        {
+            using (var form = new MapBackupForm(_definition.Name, new[] { Options.OutputPath, MapSaveService.GetSourceDirectory(_data.Map) }))
+            {
+                form.ShowDialog(this);
+                if (form.Restored)
+                {
+                    _session.MarkSaved(false);
+                    AfterEdit("Backup restored");
+                }
+            }
+        }
+
+        protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
+        {
+            if (keyData == (Keys.Control | Keys.Z) && !(ActiveControl is TextBoxBase))
+            {
+                OnClickUndoLast(this, EventArgs.Empty);
+                return true;
             }
 
-            if (MessageBox.Show(
-                    $"Write the changed files of \"{_definition.Name}\" (map{_definition.FileIndex}) into\n{directory}?\n\n" +
-                    "The original client files are not changed. A protocol of this region is saved next to them.",
-                    "Region Viewer", MessageBoxButtons.OKCancel, MessageBoxIcon.Question) != DialogResult.OK)
+            if (HandleBuildKey(keyData))
             {
-                return false;
+                return true;
             }
 
-            List<string> files;
-            Cursor.Current = Cursors.WaitCursor;
-            try
-            {
-                files = _session.Save(directory);
-                RegionIssue.SaveXml(Path.Combine(directory, DefaultProtocolName("xml")), _definition.Id, _definition.Name, _data.Area, _issues);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Saving failed:\n{ex.Message}", "Region Viewer", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return false;
-            }
-            finally
-            {
-                Cursor.Current = Cursors.Default;
-            }
-
-            UpdateStatus();
-            MessageBox.Show("Saved:\n" + string.Join("\n", files.Select(Path.GetFileName)) + $"\n\nin {directory}",
-                "Region Viewer", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            return true;
+            return base.ProcessCmdKey(ref msg, keyData);
         }
 
         private void OnFormClosing(object sender, FormClosingEventArgs e)
@@ -1045,7 +1122,7 @@ namespace UoFiddler.Controls.MapViewer
             }
 
             DialogResult result = MessageBox.Show(
-                "There are unsaved changes.\n\nYes = save into the output directory\nNo = undo the changes\nCancel = keep the window open",
+                $"There are {_session.ChangeCount} unsaved change(s).\n\nYes = save (choose the directory and the backup)\nNo = undo the changes\nCancel = keep the window open",
                 "Region Viewer", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Warning);
 
             switch (result)

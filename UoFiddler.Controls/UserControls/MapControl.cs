@@ -915,9 +915,15 @@ namespace UoFiddler.Controls.UserControls
             }
             catch (Exception ex)
             {
-                // broken or missing map files must not crash the application
+                // broken or missing map files must not crash the application.
+                // The buffer is created again on the next paint (a failed paint must not block the following ones).
+                DisposeMapBuffer();
+                CurrentMap.ResetCache();
+
+                string where = ex.StackTrace?.Split('\n').FirstOrDefault()?.Trim() ?? string.Empty;
                 e.Graphics.Clear(Color.Black);
-                e.Graphics.DrawString($"The map \"{_currentDef?.Name}\" can not be read:\n{ex.Message}\n\nCheck the files with \"Maps > Manage Maps...\".",
+                e.Graphics.DrawString($"The map \"{_currentDef?.Name}\" can not be read:\n{ex.GetType().Name}: {ex.Message}\n{where}\n\n" +
+                                      "Scroll or zoom to try again. If it stays, check the files with \"Maps > Manage Maps...\".",
                     SystemFonts.DefaultFont, Brushes.White, 20, 20);
                 return;
             }
@@ -1780,6 +1786,7 @@ namespace UoFiddler.Controls.UserControls
         {
             toolStripButtonViewRegion.Enabled = _hasRegion;
             toolStripButtonClearRegion.Enabled = _hasRegion;
+            toolStripButtonExportRegion.Enabled = _hasRegion;
             toolStripButtonViewRegion.ToolTipText = _hasRegion
                 ? $"Open region {_region.X},{_region.Y} - {_region.Right - 1},{_region.Bottom - 1} ({_region.Width} x {_region.Height}) in the region viewer"
                 : "Mark a region first";
@@ -1811,6 +1818,31 @@ namespace UoFiddler.Controls.UserControls
 
             MapDefinition def = MapRegistry.GetById(_regionMapId) ?? _currentDef;
             OpenRegionViewer(def, _region);
+        }
+
+        private void OnClickExportRegion(object sender, EventArgs e)
+        {
+            if (!_hasRegion)
+            {
+                MessageBox.Show("Please mark a region first.", "Export Area", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            MapDefinition def = MapRegistry.GetById(_regionMapId) ?? _currentDef;
+            if (def == null)
+            {
+                return;
+            }
+
+            if ((long)_region.Width * _region.Height > 1024L * 1024L &&
+                MessageBox.Show($"The region is {_region.Width} x {_region.Height} tiles, reading the statics can take a while. Continue?",
+                    "Export Area", MessageBoxButtons.OKCancel, MessageBoxIcon.Question) != DialogResult.OK)
+            {
+                return;
+            }
+
+            var form = new MapViewer.Build.AreaExportForm(def, _region, null);
+            form.Show(this);
         }
 
         private void OnClickViewAreaHere(object sender, EventArgs e)

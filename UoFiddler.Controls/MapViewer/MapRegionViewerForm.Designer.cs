@@ -128,6 +128,62 @@ namespace UoFiddler.Controls.MapViewer
             statusLabelRender = new System.Windows.Forms.ToolStripStatusLabel();
             statusLabelChanges = new System.Windows.Forms.ToolStripStatusLabel();
             toolTip = new System.Windows.Forms.ToolTip(components);
+            tabPageBuild = new System.Windows.Forms.TabPage();
+            panelBuildScroll = new System.Windows.Forms.Panel();
+            tableLayoutBuild = new System.Windows.Forms.TableLayoutPanel();
+            groupBoxMulti = new System.Windows.Forms.GroupBox();
+            tableLayoutMulti = new System.Windows.Forms.TableLayoutPanel();
+            labelTemplate = new System.Windows.Forms.Label();
+            flowPanelMulti = new System.Windows.Forms.FlowLayoutPanel();
+            buttonOpenBrowser = new System.Windows.Forms.Button();
+            buttonImportTemplate = new System.Windows.Forms.Button();
+            buttonNormalizeZ = new System.Windows.Forms.Button();
+            buttonClearTemplate = new System.Windows.Forms.Button();
+            groupBoxPlace = new System.Windows.Forms.GroupBox();
+            tableLayoutPlace = new System.Windows.Forms.TableLayoutPanel();
+            labelAnchor = new System.Windows.Forms.Label();
+            comboBoxAnchor = new System.Windows.Forms.ComboBox();
+            labelHeightMode = new System.Windows.Forms.Label();
+            comboBoxHeightMode = new System.Windows.Forms.ComboBox();
+            labelZValue = new System.Windows.Forms.Label();
+            numericZValue = new System.Windows.Forms.NumericUpDown();
+            checkBoxInvisible = new System.Windows.Forms.CheckBox();
+            checkBoxFlatten = new System.Windows.Forms.CheckBox();
+            labelObstacles = new System.Windows.Forms.Label();
+            comboBoxObstacles = new System.Windows.Forms.ComboBox();
+            labelPlacement = new System.Windows.Forms.Label();
+            listBoxChecks = new System.Windows.Forms.ListBox();
+            listViewObstacles = new System.Windows.Forms.ListView();
+            columnObsX = new System.Windows.Forms.ColumnHeader();
+            columnObsY = new System.Windows.Forms.ColumnHeader();
+            columnObsZ = new System.Windows.Forms.ColumnHeader();
+            columnObsId = new System.Windows.Forms.ColumnHeader();
+            columnObsName = new System.Windows.Forms.ColumnHeader();
+            flowPanelPlace = new System.Windows.Forms.FlowLayoutPanel();
+            buttonPlaceMode = new System.Windows.Forms.Button();
+            buttonPlaceNow = new System.Windows.Forms.Button();
+            buttonCancelPlace = new System.Windows.Forms.Button();
+            labelKeys = new System.Windows.Forms.Label();
+            groupBoxArea = new System.Windows.Forms.GroupBox();
+            tableLayoutArea = new System.Windows.Forms.TableLayoutPanel();
+            buttonSelectArea = new System.Windows.Forms.Button();
+            labelArea = new System.Windows.Forms.Label();
+            labelAreaZ = new System.Windows.Forms.Label();
+            flowPanelAreaZ = new System.Windows.Forms.FlowLayoutPanel();
+            numericAreaMinZ = new System.Windows.Forms.NumericUpDown();
+            labelAreaTo = new System.Windows.Forms.Label();
+            numericAreaMaxZ = new System.Windows.Forms.NumericUpDown();
+            labelAreaFilter = new System.Windows.Forms.Label();
+            comboBoxAreaFilter = new System.Windows.Forms.ComboBox();
+            flowPanelArea = new System.Windows.Forms.FlowLayoutPanel();
+            buttonAreaRemove = new System.Windows.Forms.Button();
+            buttonAreaFlatten = new System.Windows.Forms.Button();
+            numericFlattenZ = new System.Windows.Forms.NumericUpDown();
+            buttonAreaExport = new System.Windows.Forms.Button();
+            buttonAreaLibrary = new System.Windows.Forms.Button();
+            buttonAreaMulti = new System.Windows.Forms.Button();
+            toolStripButtonUndoLast = new System.Windows.Forms.ToolStripButton();
+            toolStripButtonBackups = new System.Windows.Forms.ToolStripButton();
             toolStripMain.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)splitContainerMain).BeginInit();
             splitContainerMain.Panel1.SuspendLayout();
@@ -153,13 +209,30 @@ namespace UoFiddler.Controls.MapViewer
             groupBoxCache.SuspendLayout();
             tableLayoutCache.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)numericCacheMb).BeginInit();
+            tabPageBuild.SuspendLayout();
+            panelBuildScroll.SuspendLayout();
+            tableLayoutBuild.SuspendLayout();
+            groupBoxMulti.SuspendLayout();
+            tableLayoutMulti.SuspendLayout();
+            flowPanelMulti.SuspendLayout();
+            groupBoxPlace.SuspendLayout();
+            tableLayoutPlace.SuspendLayout();
+            flowPanelPlace.SuspendLayout();
+            groupBoxArea.SuspendLayout();
+            tableLayoutArea.SuspendLayout();
+            flowPanelAreaZ.SuspendLayout();
+            flowPanelArea.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)numericZValue).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)numericAreaMinZ).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)numericAreaMaxZ).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)numericFlattenZ).BeginInit();
             statusStrip.SuspendLayout();
             SuspendLayout();
             //
             // toolStripMain
             //
             toolStripMain.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
-            toolStripMain.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { toolStripButtonZoomIn, toolStripButtonZoomOut, toolStripButtonFit, toolStripLabelZoom, toolStripSeparator1, toolStripButtonLand, toolStripButtonStatics, toolStripButtonStretch, toolStripButtonHeight, toolStripButtonGrid, toolStripButtonIssueOverlay, toolStripSeparator2, toolStripButtonCheck, toolStripButtonFixAll, toolStripButtonUndo, toolStripButtonSave, toolStripSeparator3, toolStripButtonReload, toolStripButtonShowOnMap });
+            toolStripMain.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { toolStripButtonZoomIn, toolStripButtonZoomOut, toolStripButtonFit, toolStripLabelZoom, toolStripSeparator1, toolStripButtonLand, toolStripButtonStatics, toolStripButtonStretch, toolStripButtonHeight, toolStripButtonGrid, toolStripButtonIssueOverlay, toolStripSeparator2, toolStripButtonCheck, toolStripButtonFixAll, toolStripButtonUndoLast, toolStripButtonUndo, toolStripButtonSave, toolStripButtonBackups, toolStripSeparator3, toolStripButtonReload, toolStripButtonShowOnMap });
             toolStripMain.Location = new System.Drawing.Point(0, 0);
             toolStripMain.Name = "toolStripMain";
             toolStripMain.Padding = new System.Windows.Forms.Padding(4, 2, 4, 2);
@@ -412,6 +485,7 @@ namespace UoFiddler.Controls.MapViewer
             //
             tabControlSide.Controls.Add(tabPageTile);
             tabControlSide.Controls.Add(tabPageIssues);
+            tabControlSide.Controls.Add(tabPageBuild);
             tabControlSide.Controls.Add(tabPageView);
             tabControlSide.Dock = System.Windows.Forms.DockStyle.Fill;
             tabControlSide.Location = new System.Drawing.Point(0, 0);
@@ -1057,6 +1131,527 @@ namespace UoFiddler.Controls.MapViewer
             labelCacheInfo.ForeColor = System.Drawing.SystemColors.GrayText;
             labelCacheInfo.Name = "labelCacheInfo";
             labelCacheInfo.Text = "-";
+            // 
+            // tabPageBuild
+            // 
+            tabPageBuild.Controls.Add(panelBuildScroll);
+            tabPageBuild.Name = "tabPageBuild";
+            tabPageBuild.Padding = new System.Windows.Forms.Padding(4);
+            tabPageBuild.Text = "Build";
+            tabPageBuild.UseVisualStyleBackColor = true;
+            // 
+            // panelBuildScroll
+            // 
+            panelBuildScroll.AutoScroll = true;
+            panelBuildScroll.Controls.Add(tableLayoutBuild);
+            panelBuildScroll.Dock = System.Windows.Forms.DockStyle.Fill;
+            panelBuildScroll.Name = "panelBuildScroll";
+            // 
+            // tableLayoutBuild
+            // 
+            tableLayoutBuild.AutoSize = true;
+            tableLayoutBuild.ColumnCount = 1;
+            tableLayoutBuild.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            tableLayoutBuild.Controls.Add(groupBoxMulti, 0, 0);
+            tableLayoutBuild.Controls.Add(groupBoxPlace, 0, 1);
+            tableLayoutBuild.Controls.Add(groupBoxArea, 0, 2);
+            tableLayoutBuild.Dock = System.Windows.Forms.DockStyle.Top;
+            tableLayoutBuild.Name = "tableLayoutBuild";
+            tableLayoutBuild.RowCount = 3;
+            tableLayoutBuild.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.AutoSize));
+            tableLayoutBuild.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.AutoSize));
+            tableLayoutBuild.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.AutoSize));
+            // 
+            // groupBoxMulti
+            // 
+            groupBoxMulti.AutoSize = true;
+            groupBoxMulti.Controls.Add(tableLayoutMulti);
+            groupBoxMulti.Dock = System.Windows.Forms.DockStyle.Fill;
+            groupBoxMulti.Name = "groupBoxMulti";
+            groupBoxMulti.TabStop = false;
+            groupBoxMulti.Text = "Building";
+            // 
+            // tableLayoutMulti
+            // 
+            tableLayoutMulti.AutoSize = true;
+            tableLayoutMulti.ColumnCount = 1;
+            tableLayoutMulti.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            tableLayoutMulti.Controls.Add(labelTemplate, 0, 0);
+            tableLayoutMulti.Controls.Add(flowPanelMulti, 0, 1);
+            tableLayoutMulti.Dock = System.Windows.Forms.DockStyle.Fill;
+            tableLayoutMulti.Name = "tableLayoutMulti";
+            tableLayoutMulti.RowCount = 2;
+            tableLayoutMulti.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.AutoSize));
+            tableLayoutMulti.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.AutoSize));
+            // 
+            // labelTemplate
+            // 
+            labelTemplate.AutoSize = true;
+            labelTemplate.MaximumSize = new System.Drawing.Size(400, 0);
+            labelTemplate.Name = "labelTemplate";
+            labelTemplate.Text = "No building selected. Open the multi window or import a file.";
+            // 
+            // flowPanelMulti
+            // 
+            flowPanelMulti.AutoSize = true;
+            flowPanelMulti.Controls.Add(buttonOpenBrowser);
+            flowPanelMulti.Controls.Add(buttonImportTemplate);
+            flowPanelMulti.Controls.Add(buttonNormalizeZ);
+            flowPanelMulti.Controls.Add(buttonClearTemplate);
+            flowPanelMulti.Dock = System.Windows.Forms.DockStyle.Fill;
+            flowPanelMulti.Name = "flowPanelMulti";
+            // 
+            // buttonOpenBrowser
+            // 
+            buttonOpenBrowser.AutoSize = true;
+            buttonOpenBrowser.Name = "buttonOpenBrowser";
+            buttonOpenBrowser.Text = "Multis / library...";
+            buttonOpenBrowser.UseVisualStyleBackColor = true;
+            buttonOpenBrowser.Click += OnClickOpenBrowser;
+            toolTip.SetToolTip(buttonOpenBrowser, "Client multis (multi.mul) and the own building library");
+            // 
+            // buttonImportTemplate
+            // 
+            buttonImportTemplate.AutoSize = true;
+            buttonImportTemplate.Name = "buttonImportTemplate";
+            buttonImportTemplate.Text = "Import file...";
+            buttonImportTemplate.UseVisualStyleBackColor = true;
+            buttonImportTemplate.Click += OnClickImportTemplate;
+            toolTip.SetToolTip(buttonImportTemplate, "TXT (decimal/hex), UOA, WSC, CSV");
+            // 
+            // buttonNormalizeZ
+            // 
+            buttonNormalizeZ.AutoSize = true;
+            buttonNormalizeZ.Name = "buttonNormalizeZ";
+            buttonNormalizeZ.Text = "Normalize Z";
+            buttonNormalizeZ.UseVisualStyleBackColor = true;
+            buttonNormalizeZ.Click += OnClickNormalizeZ;
+            buttonNormalizeZ.Enabled = false;
+            toolTip.SetToolTip(buttonNormalizeZ, "Moves the building so that the lowest part is at z 0");
+            // 
+            // buttonClearTemplate
+            // 
+            buttonClearTemplate.AutoSize = true;
+            buttonClearTemplate.Name = "buttonClearTemplate";
+            buttonClearTemplate.Text = "Clear";
+            buttonClearTemplate.UseVisualStyleBackColor = true;
+            buttonClearTemplate.Click += OnClickClearTemplate;
+            buttonClearTemplate.Enabled = false;
+            // 
+            // groupBoxPlace
+            // 
+            groupBoxPlace.AutoSize = true;
+            groupBoxPlace.Controls.Add(tableLayoutPlace);
+            groupBoxPlace.Dock = System.Windows.Forms.DockStyle.Fill;
+            groupBoxPlace.Name = "groupBoxPlace";
+            groupBoxPlace.TabStop = false;
+            groupBoxPlace.Text = "Place";
+            // 
+            // tableLayoutPlace
+            // 
+            tableLayoutPlace.AutoSize = true;
+            tableLayoutPlace.ColumnCount = 2;
+            tableLayoutPlace.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.AutoSize));
+            tableLayoutPlace.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            tableLayoutPlace.Controls.Add(labelAnchor, 0, 0);
+            tableLayoutPlace.Controls.Add(comboBoxAnchor, 1, 0);
+            tableLayoutPlace.Controls.Add(labelHeightMode, 0, 1);
+            tableLayoutPlace.Controls.Add(comboBoxHeightMode, 1, 1);
+            tableLayoutPlace.Controls.Add(labelZValue, 0, 2);
+            tableLayoutPlace.Controls.Add(numericZValue, 1, 2);
+            tableLayoutPlace.Controls.Add(checkBoxInvisible, 0, 3);
+            tableLayoutPlace.SetColumnSpan(checkBoxInvisible, 2);
+            tableLayoutPlace.Controls.Add(checkBoxFlatten, 0, 4);
+            tableLayoutPlace.SetColumnSpan(checkBoxFlatten, 2);
+            tableLayoutPlace.Controls.Add(labelObstacles, 0, 5);
+            tableLayoutPlace.Controls.Add(comboBoxObstacles, 1, 5);
+            tableLayoutPlace.Controls.Add(labelPlacement, 0, 6);
+            tableLayoutPlace.SetColumnSpan(labelPlacement, 2);
+            tableLayoutPlace.Controls.Add(listBoxChecks, 0, 7);
+            tableLayoutPlace.SetColumnSpan(listBoxChecks, 2);
+            tableLayoutPlace.Controls.Add(listViewObstacles, 0, 8);
+            tableLayoutPlace.SetColumnSpan(listViewObstacles, 2);
+            tableLayoutPlace.Controls.Add(flowPanelPlace, 0, 9);
+            tableLayoutPlace.SetColumnSpan(flowPanelPlace, 2);
+            tableLayoutPlace.Controls.Add(labelKeys, 0, 10);
+            tableLayoutPlace.SetColumnSpan(labelKeys, 2);
+            tableLayoutPlace.Dock = System.Windows.Forms.DockStyle.Fill;
+            tableLayoutPlace.Name = "tableLayoutPlace";
+            tableLayoutPlace.RowCount = 11;
+            tableLayoutPlace.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.AutoSize));
+            tableLayoutPlace.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.AutoSize));
+            tableLayoutPlace.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.AutoSize));
+            tableLayoutPlace.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.AutoSize));
+            tableLayoutPlace.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.AutoSize));
+            tableLayoutPlace.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.AutoSize));
+            tableLayoutPlace.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.AutoSize));
+            tableLayoutPlace.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.AutoSize));
+            tableLayoutPlace.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.AutoSize));
+            tableLayoutPlace.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.AutoSize));
+            tableLayoutPlace.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.AutoSize));
+            // 
+            // labelAnchor
+            // 
+            labelAnchor.Anchor = System.Windows.Forms.AnchorStyles.Left;
+            labelAnchor.AutoSize = true;
+            labelAnchor.Name = "labelAnchor";
+            labelAnchor.Text = "Anchor:";
+            // 
+            // comboBoxAnchor
+            // 
+            comboBoxAnchor.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            comboBoxAnchor.Items.AddRange(new object[] { "Center", "Upper left corner", "Origin of the template" });
+            comboBoxAnchor.Name = "comboBoxAnchor";
+            comboBoxAnchor.Size = new System.Drawing.Size(170, 23);
+            comboBoxAnchor.SelectedIndexChanged += OnPlacementOptionChanged;
+            // 
+            // labelHeightMode
+            // 
+            labelHeightMode.Anchor = System.Windows.Forms.AnchorStyles.Left;
+            labelHeightMode.AutoSize = true;
+            labelHeightMode.Name = "labelHeightMode";
+            labelHeightMode.Text = "Height:";
+            // 
+            // comboBoxHeightMode
+            // 
+            comboBoxHeightMode.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            comboBoxHeightMode.Items.AddRange(new object[] { "Ground at anchor + offset", "Lowest ground + offset", "Highest ground + offset", "Average ground + offset", "Fixed z" });
+            comboBoxHeightMode.Name = "comboBoxHeightMode";
+            comboBoxHeightMode.Size = new System.Drawing.Size(170, 23);
+            comboBoxHeightMode.SelectedIndexChanged += OnPlacementOptionChanged;
+            // 
+            // labelZValue
+            // 
+            labelZValue.Anchor = System.Windows.Forms.AnchorStyles.Left;
+            labelZValue.AutoSize = true;
+            labelZValue.Name = "labelZValue";
+            labelZValue.Text = "Z offset / fixed z:";
+            // 
+            // numericZValue
+            // 
+            numericZValue.Maximum = new decimal(new int[] { 127, 0, 0, 0 });
+            numericZValue.Minimum = new decimal(new int[] { 128, 0, 0, -2147483648 });
+            numericZValue.Name = "numericZValue";
+            numericZValue.Size = new System.Drawing.Size(60, 23);
+            numericZValue.Value = new decimal(new int[] { 0, 0, 0, 0 });
+            numericZValue.ValueChanged += OnPlacementOptionChanged;
+            // 
+            // checkBoxInvisible
+            // 
+            checkBoxInvisible.AutoSize = true;
+            checkBoxInvisible.Name = "checkBoxInvisible";
+            checkBoxInvisible.Text = "Include invisible parts (flag 0)";
+            checkBoxInvisible.UseVisualStyleBackColor = true;
+            checkBoxInvisible.CheckedChanged += OnPlacementOptionChanged;
+            // 
+            // checkBoxFlatten
+            // 
+            checkBoxFlatten.AutoSize = true;
+            checkBoxFlatten.Name = "checkBoxFlatten";
+            checkBoxFlatten.Text = "Flatten the ground below the building to the base z";
+            checkBoxFlatten.UseVisualStyleBackColor = true;
+            checkBoxFlatten.CheckedChanged += OnPlacementOptionChanged;
+            // 
+            // labelObstacles
+            // 
+            labelObstacles.Anchor = System.Windows.Forms.AnchorStyles.Left;
+            labelObstacles.AutoSize = true;
+            labelObstacles.Name = "labelObstacles";
+            labelObstacles.Text = "Remove in the way:";
+            // 
+            // comboBoxObstacles
+            // 
+            comboBoxObstacles.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            comboBoxObstacles.Items.AddRange(new object[] { "All statics", "Only trees, plants, rocks", "Nothing (choose in the list)" });
+            comboBoxObstacles.Name = "comboBoxObstacles";
+            comboBoxObstacles.Size = new System.Drawing.Size(170, 23);
+            comboBoxObstacles.SelectedIndexChanged += OnObstacleFilterChanged;
+            // 
+            // labelPlacement
+            // 
+            labelPlacement.AutoSize = true;
+            labelPlacement.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            labelPlacement.Name = "labelPlacement";
+            labelPlacement.Text = "-";
+            // 
+            // listBoxChecks
+            // 
+            listBoxChecks.Dock = System.Windows.Forms.DockStyle.Fill;
+            listBoxChecks.HorizontalScrollbar = true;
+            listBoxChecks.IntegralHeight = false;
+            listBoxChecks.Name = "listBoxChecks";
+            listBoxChecks.Size = new System.Drawing.Size(380, 64);
+            // 
+            // listViewObstacles
+            // 
+            listViewObstacles.CheckBoxes = true;
+            listViewObstacles.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] { columnObsX, columnObsY, columnObsZ, columnObsId, columnObsName });
+            listViewObstacles.Dock = System.Windows.Forms.DockStyle.Fill;
+            listViewObstacles.FullRowSelect = true;
+            listViewObstacles.GridLines = true;
+            listViewObstacles.Name = "listViewObstacles";
+            listViewObstacles.Size = new System.Drawing.Size(380, 140);
+            listViewObstacles.UseCompatibleStateImageBehavior = false;
+            listViewObstacles.View = System.Windows.Forms.View.Details;
+            toolTip.SetToolTip(listViewObstacles, "Statics in the way. Checked entries are removed when the building is placed.");
+            // 
+            // columnObsX
+            // 
+            columnObsX.Text = "X";
+            columnObsX.Width = 45;
+            // 
+            // columnObsY
+            // 
+            columnObsY.Text = "Y";
+            columnObsY.Width = 45;
+            // 
+            // columnObsZ
+            // 
+            columnObsZ.Text = "Z";
+            columnObsZ.Width = 35;
+            // 
+            // columnObsId
+            // 
+            columnObsId.Text = "ID";
+            columnObsId.Width = 55;
+            // 
+            // columnObsName
+            // 
+            columnObsName.Text = "Name";
+            columnObsName.Width = 170;
+            // 
+            // flowPanelPlace
+            // 
+            flowPanelPlace.AutoSize = true;
+            flowPanelPlace.Controls.Add(buttonPlaceMode);
+            flowPanelPlace.Controls.Add(buttonPlaceNow);
+            flowPanelPlace.Controls.Add(buttonCancelPlace);
+            flowPanelPlace.Dock = System.Windows.Forms.DockStyle.Fill;
+            flowPanelPlace.Name = "flowPanelPlace";
+            // 
+            // buttonPlaceMode
+            // 
+            buttonPlaceMode.AutoSize = true;
+            buttonPlaceMode.Name = "buttonPlaceMode";
+            buttonPlaceMode.Text = "Start placing";
+            buttonPlaceMode.UseVisualStyleBackColor = true;
+            buttonPlaceMode.Click += OnClickPlaceMode;
+            buttonPlaceMode.Enabled = false;
+            toolTip.SetToolTip(buttonPlaceMode, "The building follows the mouse, a click fixes the position");
+            // 
+            // buttonPlaceNow
+            // 
+            buttonPlaceNow.AutoSize = true;
+            buttonPlaceNow.Name = "buttonPlaceNow";
+            buttonPlaceNow.Text = "Place (Enter)";
+            buttonPlaceNow.UseVisualStyleBackColor = true;
+            buttonPlaceNow.Click += OnClickPlaceNow;
+            buttonPlaceNow.Enabled = false;
+            toolTip.SetToolTip(buttonPlaceNow, "Writes the building into the map (in memory, undo with \"Undo\")");
+            // 
+            // buttonCancelPlace
+            // 
+            buttonCancelPlace.AutoSize = true;
+            buttonCancelPlace.Name = "buttonCancelPlace";
+            buttonCancelPlace.Text = "Cancel (Esc)";
+            buttonCancelPlace.UseVisualStyleBackColor = true;
+            buttonCancelPlace.Click += OnClickCancelPlace;
+            buttonCancelPlace.Enabled = false;
+            // 
+            // labelKeys
+            // 
+            labelKeys.AutoSize = true;
+            labelKeys.ForeColor = System.Drawing.SystemColors.GrayText;
+            labelKeys.MaximumSize = new System.Drawing.Size(400, 0);
+            labelKeys.Name = "labelKeys";
+            labelKeys.Text = "Mouse: move, click: fix the position (click again to follow the mouse). Arrows: X / Y. Page up / down: Z (Shift = 5). Enter: place, Esc: cancel.";
+            // 
+            // groupBoxArea
+            // 
+            groupBoxArea.AutoSize = true;
+            groupBoxArea.Controls.Add(tableLayoutArea);
+            groupBoxArea.Dock = System.Windows.Forms.DockStyle.Fill;
+            groupBoxArea.Name = "groupBoxArea";
+            groupBoxArea.TabStop = false;
+            groupBoxArea.Text = "Area of the map";
+            // 
+            // tableLayoutArea
+            // 
+            tableLayoutArea.AutoSize = true;
+            tableLayoutArea.ColumnCount = 2;
+            tableLayoutArea.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.AutoSize));
+            tableLayoutArea.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            tableLayoutArea.Controls.Add(buttonSelectArea, 0, 0);
+            tableLayoutArea.Controls.Add(labelArea, 1, 0);
+            tableLayoutArea.Controls.Add(labelAreaZ, 0, 1);
+            tableLayoutArea.Controls.Add(flowPanelAreaZ, 1, 1);
+            tableLayoutArea.Controls.Add(labelAreaFilter, 0, 2);
+            tableLayoutArea.Controls.Add(comboBoxAreaFilter, 1, 2);
+            tableLayoutArea.Controls.Add(flowPanelArea, 0, 3);
+            tableLayoutArea.SetColumnSpan(flowPanelArea, 2);
+            tableLayoutArea.Dock = System.Windows.Forms.DockStyle.Fill;
+            tableLayoutArea.Name = "tableLayoutArea";
+            tableLayoutArea.RowCount = 4;
+            tableLayoutArea.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.AutoSize));
+            tableLayoutArea.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.AutoSize));
+            tableLayoutArea.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.AutoSize));
+            tableLayoutArea.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.AutoSize));
+            // 
+            // buttonSelectArea
+            // 
+            buttonSelectArea.AutoSize = true;
+            buttonSelectArea.Name = "buttonSelectArea";
+            buttonSelectArea.Text = "Select area";
+            buttonSelectArea.UseVisualStyleBackColor = true;
+            buttonSelectArea.Click += OnClickSelectArea;
+            toolTip.SetToolTip(buttonSelectArea, "Drag a rectangle in the view");
+            // 
+            // labelArea
+            // 
+            labelArea.Anchor = System.Windows.Forms.AnchorStyles.Left;
+            labelArea.AutoSize = true;
+            labelArea.Name = "labelArea";
+            labelArea.Text = "no area selected";
+            // 
+            // labelAreaZ
+            // 
+            labelAreaZ.Anchor = System.Windows.Forms.AnchorStyles.Left;
+            labelAreaZ.AutoSize = true;
+            labelAreaZ.Name = "labelAreaZ";
+            labelAreaZ.Text = "Statics z:";
+            // 
+            // flowPanelAreaZ
+            // 
+            flowPanelAreaZ.AutoSize = true;
+            flowPanelAreaZ.Controls.Add(numericAreaMinZ);
+            flowPanelAreaZ.Controls.Add(labelAreaTo);
+            flowPanelAreaZ.Controls.Add(numericAreaMaxZ);
+            flowPanelAreaZ.Dock = System.Windows.Forms.DockStyle.Fill;
+            flowPanelAreaZ.Name = "flowPanelAreaZ";
+            // 
+            // numericAreaMinZ
+            // 
+            numericAreaMinZ.Maximum = new decimal(new int[] { 127, 0, 0, 0 });
+            numericAreaMinZ.Minimum = new decimal(new int[] { 128, 0, 0, -2147483648 });
+            numericAreaMinZ.Name = "numericAreaMinZ";
+            numericAreaMinZ.Size = new System.Drawing.Size(60, 23);
+            numericAreaMinZ.Value = new decimal(new int[] { 128, 0, 0, -2147483648 });
+            // 
+            // labelAreaTo
+            // 
+            labelAreaTo.Anchor = System.Windows.Forms.AnchorStyles.Left;
+            labelAreaTo.AutoSize = true;
+            labelAreaTo.Name = "labelAreaTo";
+            labelAreaTo.Text = "to";
+            // 
+            // numericAreaMaxZ
+            // 
+            numericAreaMaxZ.Maximum = new decimal(new int[] { 127, 0, 0, 0 });
+            numericAreaMaxZ.Minimum = new decimal(new int[] { 128, 0, 0, -2147483648 });
+            numericAreaMaxZ.Name = "numericAreaMaxZ";
+            numericAreaMaxZ.Size = new System.Drawing.Size(60, 23);
+            numericAreaMaxZ.Value = new decimal(new int[] { 127, 0, 0, 0 });
+            // 
+            // labelAreaFilter
+            // 
+            labelAreaFilter.Anchor = System.Windows.Forms.AnchorStyles.Left;
+            labelAreaFilter.AutoSize = true;
+            labelAreaFilter.Name = "labelAreaFilter";
+            labelAreaFilter.Text = "Statics:";
+            // 
+            // comboBoxAreaFilter
+            // 
+            comboBoxAreaFilter.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            comboBoxAreaFilter.Items.AddRange(new object[] { "All statics", "Only trees, plants, rocks" });
+            comboBoxAreaFilter.Name = "comboBoxAreaFilter";
+            comboBoxAreaFilter.Size = new System.Drawing.Size(170, 23);
+            comboBoxAreaFilter.SelectedIndexChanged += OnAreaFilterChanged;
+            // 
+            // flowPanelArea
+            // 
+            flowPanelArea.AutoSize = true;
+            flowPanelArea.Controls.Add(buttonAreaRemove);
+            flowPanelArea.Controls.Add(buttonAreaFlatten);
+            flowPanelArea.Controls.Add(numericFlattenZ);
+            flowPanelArea.Controls.Add(buttonAreaExport);
+            flowPanelArea.Controls.Add(buttonAreaLibrary);
+            flowPanelArea.Controls.Add(buttonAreaMulti);
+            flowPanelArea.Dock = System.Windows.Forms.DockStyle.Fill;
+            flowPanelArea.Name = "flowPanelArea";
+            // 
+            // buttonAreaRemove
+            // 
+            buttonAreaRemove.AutoSize = true;
+            buttonAreaRemove.Name = "buttonAreaRemove";
+            buttonAreaRemove.Text = "Remove statics";
+            buttonAreaRemove.UseVisualStyleBackColor = true;
+            buttonAreaRemove.Click += OnClickAreaRemove;
+            buttonAreaRemove.Enabled = false;
+            toolTip.SetToolTip(buttonAreaRemove, "Removes the statics of the area (z range and filter)");
+            // 
+            // buttonAreaFlatten
+            // 
+            buttonAreaFlatten.AutoSize = true;
+            buttonAreaFlatten.Name = "buttonAreaFlatten";
+            buttonAreaFlatten.Text = "Flatten land to z:";
+            buttonAreaFlatten.UseVisualStyleBackColor = true;
+            buttonAreaFlatten.Click += OnClickAreaFlatten;
+            buttonAreaFlatten.Enabled = false;
+            // 
+            // numericFlattenZ
+            // 
+            numericFlattenZ.Maximum = new decimal(new int[] { 127, 0, 0, 0 });
+            numericFlattenZ.Minimum = new decimal(new int[] { 128, 0, 0, -2147483648 });
+            numericFlattenZ.Name = "numericFlattenZ";
+            numericFlattenZ.Size = new System.Drawing.Size(60, 23);
+            numericFlattenZ.Value = new decimal(new int[] { 0, 0, 0, 0 });
+            // 
+            // buttonAreaExport
+            // 
+            buttonAreaExport.AutoSize = true;
+            buttonAreaExport.Name = "buttonAreaExport";
+            buttonAreaExport.Text = "Export / script...";
+            buttonAreaExport.UseVisualStyleBackColor = true;
+            buttonAreaExport.Click += OnClickAreaExport;
+            buttonAreaExport.Enabled = false;
+            toolTip.SetToolTip(buttonAreaExport, "Preview, choose the items, then file (TXT, UOA, ...), library, multi.mul or ServUO script");
+            // 
+            // buttonAreaLibrary
+            // 
+            buttonAreaLibrary.AutoSize = true;
+            buttonAreaLibrary.Name = "buttonAreaLibrary";
+            buttonAreaLibrary.Text = "To library...";
+            buttonAreaLibrary.UseVisualStyleBackColor = true;
+            buttonAreaLibrary.Click += OnClickAreaLibrary;
+            buttonAreaLibrary.Enabled = false;
+            toolTip.SetToolTip(buttonAreaLibrary, "Stores the statics of the area in the building library");
+            // 
+            // buttonAreaMulti
+            // 
+            buttonAreaMulti.AutoSize = true;
+            buttonAreaMulti.Name = "buttonAreaMulti";
+            buttonAreaMulti.Text = "To multi.mul...";
+            buttonAreaMulti.UseVisualStyleBackColor = true;
+            buttonAreaMulti.Click += OnClickAreaMulti;
+            buttonAreaMulti.Enabled = false;
+            toolTip.SetToolTip(buttonAreaMulti, "Stores the statics of the area as entry of multi.mul");
+            // 
+            // toolStripButtonUndoLast
+            // 
+            toolStripButtonUndoLast.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            toolStripButtonUndoLast.Enabled = false;
+            toolStripButtonUndoLast.Name = "toolStripButtonUndoLast";
+            toolStripButtonUndoLast.Text = "Undo";
+            toolStripButtonUndoLast.ToolTipText = "Undo the last change (Ctrl+Z)";
+            toolStripButtonUndoLast.Click += OnClickUndoLast;
+            // 
+            // toolStripButtonBackups
+            // 
+            toolStripButtonBackups.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            toolStripButtonBackups.Name = "toolStripButtonBackups";
+            toolStripButtonBackups.Text = "Backups...";
+            toolStripButtonBackups.ToolTipText = "Restore map files from a backup";
+            toolStripButtonBackups.Click += OnClickBackups;
             //
             // statusStrip
             //
@@ -1140,6 +1735,36 @@ namespace UoFiddler.Controls.MapViewer
             tableLayoutCache.ResumeLayout(false);
             tableLayoutCache.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)numericCacheMb).EndInit();
+            tabPageBuild.ResumeLayout(false);
+            tabPageBuild.PerformLayout();
+            panelBuildScroll.ResumeLayout(false);
+            panelBuildScroll.PerformLayout();
+            tableLayoutBuild.ResumeLayout(false);
+            tableLayoutBuild.PerformLayout();
+            groupBoxMulti.ResumeLayout(false);
+            groupBoxMulti.PerformLayout();
+            tableLayoutMulti.ResumeLayout(false);
+            tableLayoutMulti.PerformLayout();
+            flowPanelMulti.ResumeLayout(false);
+            flowPanelMulti.PerformLayout();
+            groupBoxPlace.ResumeLayout(false);
+            groupBoxPlace.PerformLayout();
+            tableLayoutPlace.ResumeLayout(false);
+            tableLayoutPlace.PerformLayout();
+            flowPanelPlace.ResumeLayout(false);
+            flowPanelPlace.PerformLayout();
+            groupBoxArea.ResumeLayout(false);
+            groupBoxArea.PerformLayout();
+            tableLayoutArea.ResumeLayout(false);
+            tableLayoutArea.PerformLayout();
+            flowPanelAreaZ.ResumeLayout(false);
+            flowPanelAreaZ.PerformLayout();
+            flowPanelArea.ResumeLayout(false);
+            flowPanelArea.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)numericZValue).EndInit();
+            ((System.ComponentModel.ISupportInitialize)numericAreaMinZ).EndInit();
+            ((System.ComponentModel.ISupportInitialize)numericAreaMaxZ).EndInit();
+            ((System.ComponentModel.ISupportInitialize)numericFlattenZ).EndInit();
             statusStrip.ResumeLayout(false);
             statusStrip.PerformLayout();
             ResumeLayout(false);
@@ -1246,5 +1871,61 @@ namespace UoFiddler.Controls.MapViewer
         private System.Windows.Forms.ToolStripStatusLabel statusLabelRender;
         private System.Windows.Forms.ToolStripStatusLabel statusLabelChanges;
         private System.Windows.Forms.ToolTip toolTip;
+        private System.Windows.Forms.TabPage tabPageBuild;
+        private System.Windows.Forms.Panel panelBuildScroll;
+        private System.Windows.Forms.TableLayoutPanel tableLayoutBuild;
+        private System.Windows.Forms.GroupBox groupBoxMulti;
+        private System.Windows.Forms.TableLayoutPanel tableLayoutMulti;
+        private System.Windows.Forms.Label labelTemplate;
+        private System.Windows.Forms.FlowLayoutPanel flowPanelMulti;
+        private System.Windows.Forms.Button buttonOpenBrowser;
+        private System.Windows.Forms.Button buttonImportTemplate;
+        private System.Windows.Forms.Button buttonNormalizeZ;
+        private System.Windows.Forms.Button buttonClearTemplate;
+        private System.Windows.Forms.GroupBox groupBoxPlace;
+        private System.Windows.Forms.TableLayoutPanel tableLayoutPlace;
+        private System.Windows.Forms.Label labelAnchor;
+        private System.Windows.Forms.ComboBox comboBoxAnchor;
+        private System.Windows.Forms.Label labelHeightMode;
+        private System.Windows.Forms.ComboBox comboBoxHeightMode;
+        private System.Windows.Forms.Label labelZValue;
+        private System.Windows.Forms.NumericUpDown numericZValue;
+        private System.Windows.Forms.CheckBox checkBoxInvisible;
+        private System.Windows.Forms.CheckBox checkBoxFlatten;
+        private System.Windows.Forms.Label labelObstacles;
+        private System.Windows.Forms.ComboBox comboBoxObstacles;
+        private System.Windows.Forms.Label labelPlacement;
+        private System.Windows.Forms.ListBox listBoxChecks;
+        private System.Windows.Forms.ListView listViewObstacles;
+        private System.Windows.Forms.ColumnHeader columnObsX;
+        private System.Windows.Forms.ColumnHeader columnObsY;
+        private System.Windows.Forms.ColumnHeader columnObsZ;
+        private System.Windows.Forms.ColumnHeader columnObsId;
+        private System.Windows.Forms.ColumnHeader columnObsName;
+        private System.Windows.Forms.FlowLayoutPanel flowPanelPlace;
+        private System.Windows.Forms.Button buttonPlaceMode;
+        private System.Windows.Forms.Button buttonPlaceNow;
+        private System.Windows.Forms.Button buttonCancelPlace;
+        private System.Windows.Forms.Label labelKeys;
+        private System.Windows.Forms.GroupBox groupBoxArea;
+        private System.Windows.Forms.TableLayoutPanel tableLayoutArea;
+        private System.Windows.Forms.Button buttonSelectArea;
+        private System.Windows.Forms.Label labelArea;
+        private System.Windows.Forms.Label labelAreaZ;
+        private System.Windows.Forms.FlowLayoutPanel flowPanelAreaZ;
+        private System.Windows.Forms.NumericUpDown numericAreaMinZ;
+        private System.Windows.Forms.Label labelAreaTo;
+        private System.Windows.Forms.NumericUpDown numericAreaMaxZ;
+        private System.Windows.Forms.Label labelAreaFilter;
+        private System.Windows.Forms.ComboBox comboBoxAreaFilter;
+        private System.Windows.Forms.FlowLayoutPanel flowPanelArea;
+        private System.Windows.Forms.Button buttonAreaRemove;
+        private System.Windows.Forms.Button buttonAreaFlatten;
+        private System.Windows.Forms.NumericUpDown numericFlattenZ;
+        private System.Windows.Forms.Button buttonAreaExport;
+        private System.Windows.Forms.Button buttonAreaLibrary;
+        private System.Windows.Forms.Button buttonAreaMulti;
+        private System.Windows.Forms.ToolStripButton toolStripButtonUndoLast;
+        private System.Windows.Forms.ToolStripButton toolStripButtonBackups;
     }
 }

@@ -53,6 +53,9 @@ namespace Ultima
             set => _height = value;
         }
 
+        /// <summary>Map instance if it was already created (null for built-in maps)</summary>
+        internal Map LoadedMap => IsBuiltIn ? null : _map;
+
         public bool UsesCustomPath => !string.IsNullOrWhiteSpace(CustomPath);
 
         /// <summary>

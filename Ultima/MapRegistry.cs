@@ -179,6 +179,21 @@ namespace Ultima
             }
         }
 
+        /// <summary>
+        /// Map instances of user maps that were already created
+        /// </summary>
+        public static IEnumerable<Map> LoadedCustomMaps()
+        {
+            foreach (MapDefinition def in _definitions.Where(d => !d.IsBuiltIn).ToList())
+            {
+                Map map = def.LoadedMap;
+                if (map != null)
+                {
+                    yield return map;
+                }
+            }
+        }
+
         public static void OnChanged()
         {
             Changed?.Invoke(null, EventArgs.Empty);

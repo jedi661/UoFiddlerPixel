@@ -36,6 +36,8 @@ namespace UoFiddler.Controls.MapViewer
         private readonly Timer _renderTimer;
         private readonly List<(int lod, int cx, int cy)> _missing = new List<(int, int, int)>();
         private RegionCell _hoverCell;
+        private bool _selecting;
+        private Point _selectStart;
 
         public IsoViewControl()
         {
@@ -93,6 +95,46 @@ namespace UoFiddler.Controls.MapViewer
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public RegionIssue HighlightedIssue { get; set; }
 
+        /// <summary>Building shown at the mouse while placing (drawn half transparent)</summary>
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public Bitmap GhostImage { get; set; }
+
+        /// <summary>Canvas position of the upper left corner of <see cref="GhostImage"/></summary>
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public PointF GhostLocation { get; set; }
+
+        /// <summary>Map cells covered by the building that is placed</summary>
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public ICollection<Point> FootprintCells { get; set; }
+
+        /// <summary>true = the placement has errors (footprint is drawn red)</summary>
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public bool FootprintInvalid { get; set; }
+
+        /// <summary>Map cells with statics that are in the way</summary>
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public ICollection<Point> ObstacleCells { get; set; }
+
+        /// <summary>While true the arrow keys are not used for panning (the form moves the building)</summary>
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public bool PlacementMode { get; set; }
+
+        /// <summary>While true a left drag selects an area of map cells instead of panning</summary>
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public bool AreaSelectMode { get; set; }
+
+        /// <summary>Selected map area (inclusive cells as rectangle) or null</summary>
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public Rectangle? SelectedArea { get; set; }
+
         /// <summary>Cell under the mouse (or null)</summary>
         [Browsable(false)]
         public RegionCell HoverCell => _hoverCell;
@@ -105,6 +147,7 @@ namespace UoFiddler.Controls.MapViewer
         public event EventHandler HoverChanged;
         public event EventHandler ZoomChanged;
         public event EventHandler RenderProgress;
+        public event EventHandler AreaSelected;
 
         #endregion
 
@@ -316,6 +359,32 @@ namespace UoFiddler.Controls.MapViewer
             g.SmoothingMode = SmoothingMode.AntiAlias;
             RegionData data = _renderer.Data;
 
+            DrawCells(g, data, ObstacleCells, Color.FromArgb(90, Color.Red), Color.Red, 2000);
+
+            if (GhostImage != null)
+            {
+                PointF p = CanvasToScreen(GhostLocation);
+                var dest = new RectangleF(p.X, p.Y, (float)(GhostImage.Width * _zoom), (float)(GhostImage.Height * _zoom));
+                using (var attributes = new System.Drawing.Imaging.ImageAttributes())
+                {
+                    var matrix = new System.Drawing.Imaging.ColorMatrix { Matrix33 = 0.7f };
+                    attributes.SetColorMatrix(matrix);
+                    g.InterpolationMode = _zoom >= 1 ? InterpolationMode.NearestNeighbor : InterpolationMode.Bilinear;
+                    g.DrawImage(GhostImage, Rectangle.Round(dest), 0, 0, GhostImage.Width, GhostImage.Height, GraphicsUnit.Pixel, attributes);
+                }
+            }
+
+            if (FootprintCells != null && FootprintCells.Count > 0)
+            {
+                Color c = FootprintInvalid ? Color.Red : Color.Lime;
+                DrawCells(g, data, FootprintCells, Color.FromArgb(30, c), Color.FromArgb(150, c), 3000);
+            }
+
+            if (SelectedArea.HasValue)
+            {
+                DrawArea(g, data, SelectedArea.Value);
+            }
+
             if (ShowGrid && _zoom >= 0.375)
             {
                 var view = new RectangleF(ScreenToCanvasF(Point.Empty), new SizeF((float)(ClientSize.Width / _zoom), (float)(ClientSize.Height / _zoom)));
@@ -403,6 +472,72 @@ namespace UoFiddler.Controls.MapViewer
             g.SmoothingMode = SmoothingMode.Default;
         }
 
+        /// <summary>Diamonds of map cells (land height of the region, z 0 outside of it)</summary>
+        private void DrawCells(Graphics g, RegionData data, ICollection<Point> cells, Color fill, Color outline, int maxOutlines)
+        {
+            if (cells == null || cells.Count == 0)
+            {
+                return;
+            }
+
+            bool outlines = cells.Count <= maxOutlines && _zoom >= 0.25;
+            using (var brush = new SolidBrush(fill))
+            using (var pen = new Pen(outline, 1))
+            {
+                foreach (Point cell in cells)
+                {
+                    PointF[] poly = ToScreen(CellCorners(data, cell.X, cell.Y));
+                    if (poly[1].X < 0 || poly[3].X > ClientSize.Width || poly[2].Y < 0 || poly[0].Y > ClientSize.Height)
+                    {
+                        continue;
+                    }
+
+                    g.FillPolygon(brush, poly);
+                    if (outlines)
+                    {
+                        g.DrawPolygon(pen, poly);
+                    }
+                }
+            }
+        }
+
+        private Point[] CellCorners(RegionData data, int x, int y)
+        {
+            RegionCell cell = data.GetCell(x, y);
+            if (cell != null)
+            {
+                return data.GetLandCorners(cell, _renderer.IsStretched(cell));
+            }
+
+            int cx = data.CanvasX(x, y), cy = data.CanvasY(x, y, 0);
+            return new[]
+            {
+                new Point(cx, cy),
+                new Point(cx + RegionData.TileHalf, cy + RegionData.TileHalf),
+                new Point(cx, cy + RegionData.TileSize),
+                new Point(cx - RegionData.TileHalf, cy + RegionData.TileHalf)
+            };
+        }
+
+        private void DrawArea(Graphics g, RegionData data, Rectangle area)
+        {
+            PointF top = CanvasToScreen(CellCorners(data, area.Left, area.Top)[0]);
+            PointF right = CanvasToScreen(CellCorners(data, area.Right - 1, area.Top)[1]);
+            PointF bottom = CanvasToScreen(CellCorners(data, area.Right - 1, area.Bottom - 1)[2]);
+            PointF left = CanvasToScreen(CellCorners(data, area.Left, area.Bottom - 1)[3]);
+            PointF[] poly = { top, right, bottom, left };
+
+            using (var fill = new SolidBrush(Color.FromArgb(35, Color.DeepSkyBlue)))
+            using (var pen = new Pen(Color.DeepSkyBlue, 2) { DashStyle = _selecting ? DashStyle.Dash : DashStyle.Solid })
+            {
+                g.FillPolygon(fill, poly);
+                g.DrawPolygon(pen, poly);
+            }
+
+            string text = $"{area.Width} x {area.Height}";
+            g.DrawString(text, Font, Brushes.White, top.X + 4, top.Y - 16);
+        }
+
         private PointF[] ToScreen(Point[] canvas)
         {
             var result = new PointF[canvas.Length];
@@ -423,6 +558,20 @@ namespace UoFiddler.Controls.MapViewer
             base.OnMouseDown(e);
             Focus();
 
+            if (AreaSelectMode && e.Button == MouseButtons.Left && _renderer != null)
+            {
+                RegionCell start = CellAt(e.Location);
+                if (start != null)
+                {
+                    _selecting = true;
+                    _selectStart = new Point(start.X, start.Y);
+                    SelectedArea = new Rectangle(_selectStart, new Size(1, 1));
+                    Invalidate();
+                }
+
+                return;
+            }
+
             if (e.Button == MouseButtons.Left || e.Button == MouseButtons.Middle)
             {
                 _dragging = true;
@@ -435,6 +584,21 @@ namespace UoFiddler.Controls.MapViewer
         protected override void OnMouseMove(MouseEventArgs e)
         {
             base.OnMouseMove(e);
+
+            if (_selecting)
+            {
+                RegionCell cell = CellAt(e.Location);
+                if (cell != null)
+                {
+                    int x1 = Math.Min(_selectStart.X, cell.X), y1 = Math.Min(_selectStart.Y, cell.Y);
+                    int x2 = Math.Max(_selectStart.X, cell.X), y2 = Math.Max(_selectStart.Y, cell.Y);
+                    SelectedArea = Rectangle.FromLTRB(x1, y1, x2 + 1, y2 + 1);
+                    Invalidate();
+                }
+
+                UpdateHover(e.Location);
+                return;
+            }
 
             if (_dragging)
             {
@@ -460,6 +624,14 @@ namespace UoFiddler.Controls.MapViewer
         protected override void OnMouseUp(MouseEventArgs e)
         {
             base.OnMouseUp(e);
+
+            if (_selecting)
+            {
+                _selecting = false;
+                Invalidate();
+                AreaSelected?.Invoke(this, EventArgs.Empty);
+                return;
+            }
 
             bool click = _dragging && !_dragMoved;
             _dragging = false;
@@ -502,6 +674,12 @@ namespace UoFiddler.Controls.MapViewer
             }
         }
 
+        /// <summary>Land cell at a screen position (statics are ignored)</summary>
+        public RegionCell CellAt(Point location)
+        {
+            return _renderer?.LandAt(ScreenToCanvas(location));
+        }
+
         private void UpdateHover(Point location)
         {
             if (_renderer == null)
@@ -510,10 +688,19 @@ namespace UoFiddler.Controls.MapViewer
             }
 
             Point canvas = ScreenToCanvas(location);
-            int hit = _renderer.HitTest(canvas);
-            RegionCell cell = hit >= 0
-                ? _renderer.Data.GetCell(_renderer.Data.Drawables[hit].X, _renderer.Data.Drawables[hit].Y)
-                : _renderer.LandAt(canvas);
+            RegionCell cell;
+            if (PlacementMode || AreaSelectMode)
+            {
+                // placing/selecting works on the ground, big statics must not catch the mouse
+                cell = _renderer.LandAt(canvas);
+            }
+            else
+            {
+                int hit = _renderer.HitTest(canvas);
+                cell = hit >= 0
+                    ? _renderer.Data.GetCell(_renderer.Data.Drawables[hit].X, _renderer.Data.Drawables[hit].Y)
+                    : _renderer.LandAt(canvas);
+            }
 
             if (cell != _hoverCell)
             {
@@ -540,6 +727,11 @@ namespace UoFiddler.Controls.MapViewer
         protected override void OnKeyDown(KeyEventArgs e)
         {
             base.OnKeyDown(e);
+            if (PlacementMode || e.Handled)
+            {
+                return;
+            }
+
             float step = (float)(100 / _zoom);
             switch (e.KeyCode)
             {

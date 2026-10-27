@@ -107,6 +107,7 @@ namespace UoFiddler.Controls.UserControls
             toolStripButtonMarkRegion = new System.Windows.Forms.ToolStripButton();
             toolStripButtonViewRegion = new System.Windows.Forms.ToolStripButton();
             toolStripButtonClearRegion = new System.Windows.Forms.ToolStripButton();
+            toolStripButtonExportRegion = new System.Windows.Forms.ToolStripButton();
             toolStripSeparatorRegion = new System.Windows.Forms.ToolStripSeparator();
             toolStripDropDownButtonMaps = new System.Windows.Forms.ToolStripDropDownButton();
             viewAreaHereToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -376,7 +377,7 @@ namespace UoFiddler.Controls.UserControls
             // toolStrip1
             // 
             toolStrip1.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
-            toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { toolStripDropDownButtonMaps, toolStripDropDownButton1, toolStripDropDownButton2, ProgressBar, PreloadMap, toolStripDropDownButton3, toolStripSeparatorRegion, toolStripButtonMarkRegion, toolStripButtonViewRegion, toolStripButtonClearRegion });
+            toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { toolStripDropDownButtonMaps, toolStripDropDownButton1, toolStripDropDownButton2, ProgressBar, PreloadMap, toolStripDropDownButton3, toolStripSeparatorRegion, toolStripButtonMarkRegion, toolStripButtonViewRegion, toolStripButtonExportRegion, toolStripButtonClearRegion });
             toolStrip1.Location = new System.Drawing.Point(0, 0);
             toolStrip1.Name = "toolStrip1";
             toolStrip1.RenderMode = System.Windows.Forms.ToolStripRenderMode.System;
@@ -633,6 +634,16 @@ namespace UoFiddler.Controls.UserControls
             toolStripButtonClearRegion.ToolTipText = "Removes the marked region";
             toolStripButtonClearRegion.Click += OnClickClearRegion;
             // 
+            // toolStripButtonExportRegion
+            // 
+            toolStripButtonExportRegion.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            toolStripButtonExportRegion.Enabled = false;
+            toolStripButtonExportRegion.Name = "toolStripButtonExportRegion";
+            toolStripButtonExportRegion.Size = new System.Drawing.Size(80, 25);
+            toolStripButtonExportRegion.Text = "Export Area...";
+            toolStripButtonExportRegion.ToolTipText = "Takes the statics of the marked region as building: file (TXT, UOA, ...), library, multi.mul or ServUO script";
+            toolStripButtonExportRegion.Click += OnClickExportRegion;
+            // 
             // toolStripDropDownButtonMaps
             // 
             toolStripDropDownButtonMaps.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
@@ -795,6 +806,7 @@ namespace UoFiddler.Controls.UserControls
         private System.Windows.Forms.ToolStripStatusLabel MessageLabel;
         private System.Windows.Forms.ToolStripButton toolStripButtonViewRegion;
         private System.Windows.Forms.ToolStripButton toolStripButtonClearRegion;
+        private System.Windows.Forms.ToolStripButton toolStripButtonExportRegion;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparatorRegion;
         private System.Windows.Forms.ToolStripDropDownButton toolStripDropDownButtonMaps;
         private System.Windows.Forms.ToolStripMenuItem viewAreaHereToolStripMenuItem;
