@@ -15,6 +15,7 @@ using System.Linq;
 using System.Windows.Forms;
 using Ultima;
 using UoFiddler.Controls.Classes;
+using UoFiddler.Controls.MapViewer.Help;
 using UoFiddler.Controls.UserControls;
 
 namespace UoFiddler.Controls.MapViewer
@@ -38,6 +39,9 @@ namespace UoFiddler.Controls.MapViewer
         private bool _updatingIssues;
         private bool _closeConfirmed;
 
+        /// <summary>false if the session belongs to another window (map editor), which asks for saving</summary>
+        private readonly bool _ownsSession = true;
+
         /// <summary>
         /// Only for the designer
         /// </summary>
@@ -47,6 +51,14 @@ namespace UoFiddler.Controls.MapViewer
         }
 
         public MapRegionViewerForm(MapDefinition definition, Rectangle area, MapControl mapControl)
+            : this(definition, area, mapControl, null)
+        {
+        }
+
+        /// <summary>
+        /// Opens a region with the edit session of another window (shared undo steps, that window asks for saving on close)
+        /// </summary>
+        public MapRegionViewerForm(MapDefinition definition, Rectangle area, MapControl mapControl, RegionEditSession sharedSession)
         {
             InitializeComponent();
             Icon = Options.GetFiddlerIcon();
@@ -63,7 +75,15 @@ namespace UoFiddler.Controls.MapViewer
                 {
                     MemoryBudget = (long)numericCacheMb.Value * 1024 * 1024
                 };
-                _session = new RegionEditSession(_data.Map);
+                if (sharedSession != null && sharedSession.Map == _data.Map)
+                {
+                    _session = sharedSession;
+                    _ownsSession = false;
+                }
+                else
+                {
+                    _session = new RegionEditSession(_data.Map);
+                }
             }
             finally
             {
@@ -71,7 +91,8 @@ namespace UoFiddler.Controls.MapViewer
             }
 
             Rectangle a = _data.Area;
-            Text = $"Region Viewer - {definition.Name}  {a.X},{a.Y} - {a.Right - 1},{a.Bottom - 1}  ({a.Width} x {a.Height})";
+            Text = $"Region Viewer - {definition.Name}  {a.X},{a.Y} - {a.Right - 1},{a.Bottom - 1}  ({a.Width} x {a.Height})" +
+                   (_ownsSession ? string.Empty : "  [Map Editor session]");
 
             isoView.Renderer = _renderer;
             isoView.Issues = _issues;
@@ -98,6 +119,28 @@ namespace UoFiddler.Controls.MapViewer
             RunCheck(false);
             isoView.Focus();
         }
+
+        #region Help
+
+        private string HelpKey()
+        {
+            TabPage tab = tabControlSide.SelectedTab;
+            return tab == tabPageTile ? MapHelpContent.ViewerTile
+                : tab == tabPageIssues ? MapHelpContent.ViewerErrors
+                : tab == tabPageBuild ? MapHelpContent.ViewerBuild
+                : tab == tabPageView ? MapHelpContent.ViewerSettings
+                : MapHelpContent.RegionViewer;
+        }
+
+        private void OnClickHelp(object sender, EventArgs e) => MapHelpForm.ShowTopic(this, HelpKey());
+
+        protected override void OnHelpRequested(HelpEventArgs hevent)
+        {
+            MapHelpForm.ShowTopic(this, HelpKey());
+            hevent.Handled = true;
+        }
+
+        #endregion
 
         #region Toolbar: view
 
@@ -226,6 +269,8 @@ namespace UoFiddler.Controls.MapViewer
             toolStripButtonUndoLast.ToolTipText = _session.CanUndo
                 ? $"Undo: {_session.LastOperationName} (Ctrl+Z)"
                 : "Nothing to undo";
+            toolStripButtonRedo.Enabled = _session.CanRedo;
+            toolStripButtonRedo.ToolTipText = _session.CanRedo ? $"Redo: {_session.NextRedoName} (Ctrl+Y)" : "Nothing to redo";
         }
 
         private void OnHoverChanged(object sender, EventArgs e)
@@ -1001,6 +1046,15 @@ namespace UoFiddler.Controls.MapViewer
             }
         }
 
+        private void OnClickRedo(object sender, EventArgs e)
+        {
+            string name = _session.Redo();
+            if (name != null)
+            {
+                AfterEdit($"Redone: {name}");
+            }
+        }
+
         private void OnClickUndo(object sender, EventArgs e)
         {
             if (!_session.CanUndo)
@@ -1044,14 +1098,18 @@ namespace UoFiddler.Controls.MapViewer
                 }
 
                 string directory = dialog.TargetDirectory;
-                bool replacesLoaded = MapSaveService.IsSameDirectory(directory, MapSaveService.GetSourceDirectory(_data.Map));
+                MapSaveOptions options = dialog.SaveOptions;
+                TileMatrix tiles = _data.Map.Tiles;
+                bool allWritten = (options.IncludeLand || !tiles.HasModifiedLand) && (options.IncludeStatics || !tiles.HasStaticOverrides);
+                bool replacesLoaded = MapSaveService.IsSameDirectory(directory, MapSaveService.GetSourceDirectory(_data.Map)) &&
+                                      options.OutputIndex == _data.Map.FileIndex;
 
                 List<string> files;
                 MapBackupInfo backup;
                 Cursor.Current = Cursors.WaitCursor;
                 try
                 {
-                    files = MapSaveService.Save(_data.Map, _definition.Name, directory, dialog.CreateBackup, out backup);
+                    files = MapSaveService.Save(_data.Map, _definition.Name, directory, dialog.CreateBackup, options, out backup);
                     if (dialog.SaveProtocol)
                     {
                         string protocol = Path.Combine(directory, DefaultProtocolName("xml"));
@@ -1070,7 +1128,10 @@ namespace UoFiddler.Controls.MapViewer
                 }
 
                 // the original files were replaced and read again: the old undo steps do not fit anymore
-                _session.MarkSaved(!replacesLoaded);
+                if (allWritten || replacesLoaded)
+                {
+                    _session.MarkSaved(!replacesLoaded);
+                }
                 if (replacesLoaded)
                 {
                     ReloadRegion();
@@ -1106,6 +1167,12 @@ namespace UoFiddler.Controls.MapViewer
                 return true;
             }
 
+            if ((keyData == (Keys.Control | Keys.Y) || keyData == (Keys.Control | Keys.Shift | Keys.Z)) && !(ActiveControl is TextBoxBase))
+            {
+                OnClickRedo(this, EventArgs.Empty);
+                return true;
+            }
+
             if (HandleBuildKey(keyData))
             {
                 return true;
@@ -1116,7 +1183,7 @@ namespace UoFiddler.Controls.MapViewer
 
         private void OnFormClosing(object sender, FormClosingEventArgs e)
         {
-            if (_session == null || _closeConfirmed || !_session.HasUnsavedChanges)
+            if (_session == null || _closeConfirmed || !_session.HasUnsavedChanges || !_ownsSession)
             {
                 return;
             }

@@ -57,6 +57,52 @@ Pfeiltasten X/Y, Bild hoch/runter Z (Shift = 5), Enter setzt das Gebäude, Esc b
 Speichern: Output-Ordner, Ordner der geladenen Karte (ersetzt die Originale) oder ein anderer Ordner.
 Vorher wird in eine temporäre Datei geschrieben; ersetzte Dateien landen als Backup in `<Ziel>\UoFiddlerBackups\`.
 
+## Map Editor (Ordner `Editor/`) – Bereiche kopieren und einfügen
+
+| Datei | Aufgabe |
+|---|---|
+| `Editor/MapClip.cs` | Kopierter Bereich: Land (ID + Höhe je Zelle) und Statics (relativ), Drehen 90° / Spiegeln X/Y |
+| `Editor/ClipPaster.cs` | Berechnet und setzt das Einfügen: Höhe (behalten / an Rand anpassen + Offset), Randübergang (Blend), Statics folgen dem Boden, vorhandene Statics entfernen (alle/Pflanzen/keine), Höhensprünge am Rand melden. Ein Undo-Schritt. |
+| `Editor/ClipPreview.cs` | Halbtransparentes Vorschaubild des Clips (Land flach + Statics) |
+| `Editor/MapOverviewControl.cs` | Draufsicht einer ganzen Karte (Radarfarben): Bereich markieren, klicken, zoomen, verschieben |
+| `Editor/ExternalMapDialog.cs` | Karte aus beliebigem Ordner öffnen (nur für diese Sitzung, `MapRegistry.AddTemporary`) |
+| `Editor/MapEditorForm.cs` | Fenster "Map Editor" (Kartenreiter -> "Map Editor...") |
+
+Ablauf:
+1. **1. Source**: Karte wählen (oder "External..."), Bereich mit der linken Maus markieren oder "Use mark of the map tab", Land/Statics wählen, "Copy area to the clip".
+2. **2. Clip**: Statics nach ID an-/abwählen, z-Bereich, abgewählte löschen, Static hinzufügen, Drehen/Spiegeln, Statics exportieren (TXT/UOA/WSC/...).
+3. **3. Target**: Zielkarte wählen (auch extern), auf die Übersicht klicken = Arbeitsbereich laden. "Position clip": Clip folgt der Maus,
+   Klick fixiert (dann wird das echte Ergebnis gezeigt), Pfeile verschieben, Bild hoch/runter = z, Enter = einfügen, Esc = abbrechen.
+   Rot markierte Randzellen = Höhensprung > 10 (dann "Edge blend" erhöhen).
+4. "Save..." schreibt die Zielkarte: Ordner frei wählbar, Dateinummer frei wählbar (z. B. map20.mul), nur Land / nur Statics / beides, Backup.
+5. "Edit in Region Viewer..." öffnet den Arbeitsbereich im Region-Viewer mit denselben Undo-Schritten (Fehlerprüfung, Statics bearbeiten, Bauen).
+
+### Reiter "4. Tools" – Pinsel und Übergänge
+
+| Datei | Aufgabe |
+|---|---|
+| `Editor/Tools/MapTools.cs` | Werkzeuge (`MapTool`), Pinsel 1–32 rund/eckig (`MapBrush`), `ToolContext`. Neues Werkzeug = Klasse ableiten + in `MapTool.All` eintragen |
+| `Editor/LandPaletteControl.cs` | Palette aller Land-Tiles (Textur oder Land-Art), Suche (0x16, 16-19, Name), Mehrfachauswahl, Drag & Drop |
+| `Editor/Transitions/TransitionModel.cs` | Geländegruppen und Übergänge (Positionen wie UO-Caeri 1-1 … 3-4, Varianten) |
+| `Editor/Transitions/TransitionLibrary.cs` | Speichern in `<Output>\UoFiddler_Transitions\Transitions.xml` |
+| `Editor/Transitions/TransitionEngine.cs` | Setzt Kanten/Ecken/Innenecken automatisch (auf die B-Zellen neben A) |
+| `Editor/Transitions/TransitionEditorForm.cs` | Fenster "Transitions": Felder per Drag & Drop belegen, 2. Reihe, Geländegruppen |
+| `Editor/MapEditorForm.Tools.cs` | Logik des Reiters |
+| `Editor/Tools/BrushPreset.cs` | Pinsel: Texturen oder kopiertes Muster (Land, Höhen, Statics), Speichern in `UoFiddler_Brushes\Brushes.xml` |
+| `Editor/MapEditorForm.Brush.cs` | Bereich "Brush": Pinsel festlegen, "Copy to brush", Vorschau unter der Maus |
+| `Editor/Tools/BrushPattern.cs` | Muster: Zellen mit festen Tiles, Varianten oder leer, Höhe, Statics; Drehen/Spiegeln/Größe |
+| `Editor/BrushEditorForm.cs` | Pinsel-Editor: Liste mit Kategorien und Suche, Muster-Raster, Neu/Kopie/Umbenennen/Löschen |
+| `Editor/ImagePatternDialog.cs` | Bild als Muster importieren (Farbe -> Tile, Vorschlag nach Radarfarbe) |
+| `Editor/Tools/Shapes.cs`, `Editor/MapEditorForm.Shapes.cs` | Linien, Kurven (Catmull-Rom), Rechteck, Ellipse, Dreieck – gezeichnet mit dem gewählten Werkzeug |
+| `Editor/Tools/MapGenerator.cs`, `Editor/GeneratorForm.cs` | Generator: Grundstücke mit Böden, Straße, Wege, See mit Ufer, unebener Boden, Bäume/Pflanzen |
+| `Help/MapHelpContent.cs`, `Help/MapHelpForm.cs` | Hilfe (F1) |
+
+Werkzeuge: Textur malen, Gelände + Übergänge, Textur ersetzen, Boden heben/senken, ebnen (z der ersten Zelle),
+Höhe setzen, glätten, Statics löschen (alle/Pflanzen), Pipette (Alt+Klick), in den Pinsel kopieren. Strg+Y = Redo. T = Werkzeug an/aus, [ ] = Pinselgröße,
+rechte/mittlere Maustaste = Ansicht verschieben. Ein Mausstrich = ein Undo-Schritt.
+
+Beim Drehen/Spiegeln werden nur Positionen geändert; richtungsabhängige Grafiken (Wände, Türen, Treppen) bleiben gleich (Tauschtabellen folgen).
+
 ## Erweiterung 3D (Ansatz für später)
 
 `RegionData` ist vom Renderer unabhängig:

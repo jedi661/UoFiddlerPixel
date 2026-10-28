@@ -31,6 +31,7 @@ namespace UoFiddler.Controls.MapViewer
         {
             components = new System.ComponentModel.Container();
             toolStripMain = new System.Windows.Forms.ToolStrip();
+            toolStripButtonHelp = new System.Windows.Forms.ToolStripButton();
             toolStripButtonZoomIn = new System.Windows.Forms.ToolStripButton();
             toolStripButtonZoomOut = new System.Windows.Forms.ToolStripButton();
             toolStripButtonFit = new System.Windows.Forms.ToolStripButton();
@@ -183,6 +184,7 @@ namespace UoFiddler.Controls.MapViewer
             buttonAreaLibrary = new System.Windows.Forms.Button();
             buttonAreaMulti = new System.Windows.Forms.Button();
             toolStripButtonUndoLast = new System.Windows.Forms.ToolStripButton();
+            toolStripButtonRedo = new System.Windows.Forms.ToolStripButton();
             toolStripButtonBackups = new System.Windows.Forms.ToolStripButton();
             toolStripMain.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)splitContainerMain).BeginInit();
@@ -232,13 +234,23 @@ namespace UoFiddler.Controls.MapViewer
             // toolStripMain
             //
             toolStripMain.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
-            toolStripMain.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { toolStripButtonZoomIn, toolStripButtonZoomOut, toolStripButtonFit, toolStripLabelZoom, toolStripSeparator1, toolStripButtonLand, toolStripButtonStatics, toolStripButtonStretch, toolStripButtonHeight, toolStripButtonGrid, toolStripButtonIssueOverlay, toolStripSeparator2, toolStripButtonCheck, toolStripButtonFixAll, toolStripButtonUndoLast, toolStripButtonUndo, toolStripButtonSave, toolStripButtonBackups, toolStripSeparator3, toolStripButtonReload, toolStripButtonShowOnMap });
+            toolStripMain.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { toolStripButtonZoomIn, toolStripButtonZoomOut, toolStripButtonFit, toolStripLabelZoom, toolStripSeparator1, toolStripButtonLand, toolStripButtonStatics, toolStripButtonStretch, toolStripButtonHeight, toolStripButtonGrid, toolStripButtonIssueOverlay, toolStripSeparator2, toolStripButtonCheck, toolStripButtonFixAll, toolStripButtonUndoLast, toolStripButtonRedo, toolStripButtonUndo, toolStripButtonSave, toolStripButtonBackups, toolStripSeparator3, toolStripButtonReload, toolStripButtonShowOnMap, toolStripButtonHelp });
             toolStripMain.Location = new System.Drawing.Point(0, 0);
             toolStripMain.Name = "toolStripMain";
             toolStripMain.Padding = new System.Windows.Forms.Padding(4, 2, 4, 2);
             toolStripMain.RenderMode = System.Windows.Forms.ToolStripRenderMode.System;
             toolStripMain.Size = new System.Drawing.Size(1264, 29);
             toolStripMain.TabIndex = 0;
+            //
+            // toolStripButtonHelp
+            //
+            toolStripButtonHelp.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            toolStripButtonHelp.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            toolStripButtonHelp.Name = "toolStripButtonHelp";
+            toolStripButtonHelp.Size = new System.Drawing.Size(60, 22);
+            toolStripButtonHelp.Text = "Help (F1)";
+            toolStripButtonHelp.ToolTipText = "Explanation of all functions";
+            toolStripButtonHelp.Click += OnClickHelp;
             //
             // toolStripButtonZoomIn
             //
@@ -1635,6 +1647,16 @@ namespace UoFiddler.Controls.MapViewer
             buttonAreaMulti.Click += OnClickAreaMulti;
             buttonAreaMulti.Enabled = false;
             toolTip.SetToolTip(buttonAreaMulti, "Stores the statics of the area as entry of multi.mul");
+            //
+            // toolStripButtonRedo
+            //
+            toolStripButtonRedo.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            toolStripButtonRedo.Enabled = false;
+            toolStripButtonRedo.Name = "toolStripButtonRedo";
+            toolStripButtonRedo.Size = new System.Drawing.Size(38, 22);
+            toolStripButtonRedo.Text = "Redo";
+            toolStripButtonRedo.ToolTipText = "Redo (Ctrl+Y)";
+            toolStripButtonRedo.Click += OnClickRedo;
             // 
             // toolStripButtonUndoLast
             // 
@@ -1774,6 +1796,7 @@ namespace UoFiddler.Controls.MapViewer
         #endregion
 
         private System.Windows.Forms.ToolStrip toolStripMain;
+        private System.Windows.Forms.ToolStripButton toolStripButtonHelp;
         private System.Windows.Forms.ToolStripButton toolStripButtonZoomIn;
         private System.Windows.Forms.ToolStripButton toolStripButtonZoomOut;
         private System.Windows.Forms.ToolStripButton toolStripButtonFit;
@@ -1926,6 +1949,7 @@ namespace UoFiddler.Controls.MapViewer
         private System.Windows.Forms.Button buttonAreaLibrary;
         private System.Windows.Forms.Button buttonAreaMulti;
         private System.Windows.Forms.ToolStripButton toolStripButtonUndoLast;
+        private System.Windows.Forms.ToolStripButton toolStripButtonRedo;
         private System.Windows.Forms.ToolStripButton toolStripButtonBackups;
     }
 }

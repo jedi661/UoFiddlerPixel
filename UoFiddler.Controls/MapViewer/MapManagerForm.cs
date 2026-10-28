@@ -29,6 +29,11 @@ namespace UoFiddler.Controls.MapViewer
         public MapManagerForm()
         {
             InitializeComponent();
+            HelpRequested += (s, e) =>
+            {
+                Help.MapHelpForm.ShowTopic(this, Help.MapHelpContent.ManageMaps);
+                e.Handled = true;
+            };
             Icon = Options.GetFiddlerIcon();
 
             MapRegistryStore.EnsureLoaded();

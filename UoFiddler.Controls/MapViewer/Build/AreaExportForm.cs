@@ -38,12 +38,22 @@ namespace UoFiddler.Controls.MapViewer.Build
         public AreaExportForm()
         {
             InitializeComponent();
+            HelpRequested += (s, e) =>
+            {
+                Help.MapHelpForm.ShowTopic(this, Help.MapHelpContent.ExportArea);
+                e.Handled = true;
+            };
         }
 
         /// <param name="session">edit session of a region viewer (includes changes in memory) or null</param>
         public AreaExportForm(MapDefinition definition, Rectangle area, RegionEditSession session)
         {
             InitializeComponent();
+            HelpRequested += (s, e) =>
+            {
+                Help.MapHelpForm.ShowTopic(this, Help.MapHelpContent.ExportArea);
+                e.Handled = true;
+            };
             Icon = Options.GetFiddlerIcon();
 
             _definition = definition;

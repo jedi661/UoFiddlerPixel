@@ -48,12 +48,22 @@ namespace UoFiddler.Controls.MapViewer.Build
         public MultiBrowserForm()
         {
             InitializeComponent();
+            HelpRequested += (s, e) =>
+            {
+                Help.MapHelpForm.ShowTopic(this, Help.MapHelpContent.Multis);
+                e.Handled = true;
+            };
         }
 
         /// <param name="placeAction">called with a copy of the template when "Place on map" is clicked (null = no placing)</param>
         public MultiBrowserForm(Action<MultiTemplate> placeAction)
         {
             InitializeComponent();
+            HelpRequested += (s, e) =>
+            {
+                Help.MapHelpForm.ShowTopic(this, Help.MapHelpContent.Multis);
+                e.Handled = true;
+            };
             Icon = Options.GetFiddlerIcon();
             _placeAction = placeAction;
             buttonPlace.Enabled = placeAction != null;

@@ -60,10 +60,16 @@ namespace UoFiddler.Controls.MapViewer
             public readonly Dictionary<long, LandBackup> Land = new Dictionary<long, LandBackup>();
             public readonly Dictionary<long, StaticBackup> Statics = new Dictionary<long, StaticBackup>();
             public bool IsEmpty => Land.Count == 0 && Statics.Count == 0;
+
+            /// <summary>the operation was counted in <see cref="ChangeCount"/> (once, also for batches with several parts)</summary>
+            public bool Counted;
         }
 
         private readonly Map _map;
         private readonly List<Operation> _operations = new List<Operation>();
+
+        /// <summary>undone steps: state after the step (redo) and the step itself (to undo it again)</summary>
+        private readonly List<(Operation Redo, Operation Undo)> _redo = new List<(Operation, Operation)>();
         private Operation _current;
         private int _batchDepth;
 
@@ -86,6 +92,33 @@ namespace UoFiddler.Controls.MapViewer
         public string LastOperationName => _operations.Count > 0 ? _operations[_operations.Count - 1].Name : null;
 
         private static long Key(int bx, int by) => ((long)bx << 32) | (uint)by;
+
+        private int _changedX1 = int.MaxValue, _changedY1 = int.MaxValue, _changedX2 = int.MinValue, _changedY2 = int.MinValue;
+
+        private void MarkChanged(int bx, int by)
+        {
+            _changedX1 = Math.Min(_changedX1, bx);
+            _changedY1 = Math.Min(_changedY1, by);
+            _changedX2 = Math.Max(_changedX2, bx);
+            _changedY2 = Math.Max(_changedY2, by);
+        }
+
+        /// <summary>
+        /// Area (map tiles, whole 8x8 blocks) changed since the last call, or null if nothing changed.
+        /// For redrawing only the changed part of overview pictures.
+        /// </summary>
+        public System.Drawing.Rectangle? TakeChangedArea()
+        {
+            if (_changedX1 > _changedX2)
+            {
+                return null;
+            }
+
+            var area = System.Drawing.Rectangle.FromLTRB(_changedX1 << 3, _changedY1 << 3, (_changedX2 + 1) << 3, (_changedY2 + 1) << 3);
+            _changedX1 = _changedY1 = int.MaxValue;
+            _changedX2 = _changedY2 = int.MinValue;
+            return area;
+        }
 
         #region Operations
 
@@ -128,9 +161,27 @@ namespace UoFiddler.Controls.MapViewer
             if (_current != null && !_current.IsEmpty)
             {
                 _operations.Add(_current);
+                _redo.Clear();
             }
 
             _current = null;
+        }
+
+        /// <summary>Counts the running operation as one unsaved change</summary>
+        private void CountChange()
+        {
+            Operation op = _current ?? (_operations.Count > 0 ? _operations[_operations.Count - 1] : null);
+            if (op == null)
+            {
+                ChangeCount++;
+                return;
+            }
+
+            if (!op.Counted)
+            {
+                op.Counted = true;
+                ChangeCount++;
+            }
         }
 
         private Operation Current(string name)
@@ -143,6 +194,7 @@ namespace UoFiddler.Controls.MapViewer
             // single change outside of a batch = own operation
             var op = new Operation { Name = name };
             _operations.Add(op);
+            _redo.Clear();
             return op;
         }
 
@@ -188,7 +240,7 @@ namespace UoFiddler.Controls.MapViewer
 
                 if (count > 0)
                 {
-                    ChangeCount++;
+                    CountChange();
                 }
 
                 return count;
@@ -211,6 +263,7 @@ namespace UoFiddler.Controls.MapViewer
 
         private void BackupLand(Operation op, int bx, int by)
         {
+            MarkChanged(bx, by);
             long key = Key(bx, by);
             if (op.Land.ContainsKey(key))
             {
@@ -267,7 +320,7 @@ namespace UoFiddler.Controls.MapViewer
 
                 if (removed > 0)
                 {
-                    ChangeCount++;
+                    CountChange();
                 }
 
                 return removed;
@@ -343,7 +396,7 @@ namespace UoFiddler.Controls.MapViewer
 
             if (changed > 0)
             {
-                ChangeCount++;
+                CountChange();
             }
 
             return changed > 0;
@@ -382,7 +435,7 @@ namespace UoFiddler.Controls.MapViewer
 
                 if (added > 0)
                 {
-                    ChangeCount++;
+                    CountChange();
                 }
 
                 return added;
@@ -414,6 +467,7 @@ namespace UoFiddler.Controls.MapViewer
 
         private void BackupStatics(Operation op, int bx, int by)
         {
+            MarkChanged(bx, by);
             long key = Key(bx, by);
             if (op.Statics.ContainsKey(key))
             {
@@ -549,7 +603,10 @@ namespace UoFiddler.Controls.MapViewer
         /// <summary>
         /// Undoes the last operation. Returns its name or null.
         /// </summary>
-        public string UndoLast()
+        public string UndoLast() => UndoLast(true);
+
+        /// <param name="allowRedo">false: the step is dropped (e.g. a preview), it can not be done again</param>
+        public string UndoLast(bool allowRedo)
         {
             if (_operations.Count == 0)
             {
@@ -558,10 +615,60 @@ namespace UoFiddler.Controls.MapViewer
 
             Operation op = _operations[_operations.Count - 1];
             _operations.RemoveAt(_operations.Count - 1);
+            if (allowRedo)
+            {
+                _redo.Add((Capture(op), op));
+            }
+
             Restore(op);
-            ChangeCount = Math.Max(0, ChangeCount - 1);
+            if (op.Counted)
+            {
+                ChangeCount = Math.Max(0, ChangeCount - 1);
+            }
             _map.ResetCache();
             return op.Name;
+        }
+
+        public bool CanRedo => _redo.Count > 0;
+
+        public string NextRedoName => _redo.Count > 0 ? _redo[_redo.Count - 1].Undo.Name : null;
+
+        /// <summary>Does the last undone step again. Returns its name or null.</summary>
+        public string Redo()
+        {
+            if (_redo.Count == 0)
+            {
+                return null;
+            }
+
+            (Operation redo, Operation undo) = _redo[_redo.Count - 1];
+            _redo.RemoveAt(_redo.Count - 1);
+            Restore(redo);
+            _operations.Add(undo);
+            if (undo.Counted)
+            {
+                ChangeCount++;
+            }
+
+            _map.ResetCache();
+            return undo.Name;
+        }
+
+        /// <summary>Current state of all blocks of an operation (to go back to it with <see cref="Restore"/>)</summary>
+        private Operation Capture(Operation op)
+        {
+            var state = new Operation { Name = op.Name };
+            foreach (long key in op.Land.Keys)
+            {
+                BackupLand(state, (int)(key >> 32), (int)(key & 0xFFFFFFFF));
+            }
+
+            foreach (long key in op.Statics.Keys)
+            {
+                BackupStatics(state, (int)(key >> 32), (int)(key & 0xFFFFFFFF));
+            }
+
+            return state;
         }
 
         /// <summary>
@@ -569,6 +676,7 @@ namespace UoFiddler.Controls.MapViewer
         /// </summary>
         public void UndoAll()
         {
+            _redo.Clear();
             for (int i = _operations.Count - 1; i >= 0; i--)
             {
                 Restore(_operations[i]);
@@ -582,6 +690,10 @@ namespace UoFiddler.Controls.MapViewer
         private void Restore(Operation op)
         {
             TileMatrix tiles = _map.Tiles;
+            foreach (long key in op.Land.Keys.Concat(op.Statics.Keys))
+            {
+                MarkChanged((int)(key >> 32), (int)(key & 0xFFFFFFFF));
+            }
 
             foreach (KeyValuePair<long, LandBackup> pair in op.Land)
             {
@@ -627,6 +739,7 @@ namespace UoFiddler.Controls.MapViewer
             if (!keepUndo)
             {
                 _operations.Clear();
+                _redo.Clear();
             }
         }
 

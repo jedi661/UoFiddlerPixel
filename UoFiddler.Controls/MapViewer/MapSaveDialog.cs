@@ -24,26 +24,40 @@ namespace UoFiddler.Controls.MapViewer
         private readonly Map _map;
         private readonly string _mapName;
         private readonly string _sourceDirectory;
-        private readonly List<string> _files;
+        private List<string> _files;
+        private bool _ready;
 
         /// <summary>Only for the designer</summary>
         public MapSaveDialog()
         {
             InitializeComponent();
+            HelpRequested += (s, e) =>
+            {
+                Help.MapHelpForm.ShowTopic(this, Help.MapHelpContent.Save);
+                e.Handled = true;
+            };
         }
 
         public MapSaveDialog(Map map, string mapName, int changeCount)
         {
             InitializeComponent();
+            HelpRequested += (s, e) =>
+            {
+                Help.MapHelpForm.ShowTopic(this, Help.MapHelpContent.Save);
+                e.Handled = true;
+            };
             Icon = Options.GetFiddlerIcon();
 
             _map = map;
             _mapName = mapName;
             _sourceDirectory = MapSaveService.GetSourceDirectory(map);
             _files = MapSaveService.GetFilesToWrite(map);
+            numericIndex.Value = Math.Max(numericIndex.Minimum, Math.Min(numericIndex.Maximum, map.FileIndex));
 
-            labelInfo.Text = $"{changeCount} unsaved change(s) of \"{mapName}\" (map{map.FileIndex}).\n" +
-                             $"Files to write: {(_files.Count == 0 ? "none" : string.Join(", ", _files))}";
+            TileMatrix tiles = map.Tiles;
+            string changed = tiles.HasModifiedLand && tiles.HasStaticOverrides ? "land and statics"
+                : tiles.HasModifiedLand ? "land" : tiles.HasStaticOverrides ? "statics" : "nothing";
+            labelInfo.Text = $"{changeCount} unsaved change(s) of \"{mapName}\" (map{map.FileIndex}), changed: {changed}.";
 
             labelOutputPath.Text = string.IsNullOrEmpty(Options.OutputPath) ? "(not set in the options)" : Options.OutputPath;
             labelOriginalPath.Text = _sourceDirectory ?? "(unknown)";
@@ -54,8 +68,18 @@ namespace UoFiddler.Controls.MapViewer
                 radioOther.Checked = true;
             }
 
+            _ready = true;
             UpdateState();
         }
+
+        /// <summary>What is written (land/statics, file number, complete set)</summary>
+        public MapSaveOptions SaveOptions => new MapSaveOptions
+        {
+            IncludeLand = checkBoxLand.Checked,
+            IncludeStatics = checkBoxStatics.Checked,
+            CompleteSet = checkBoxCompleteSet.Checked,
+            OutputIndex = (int)numericIndex.Value
+        };
 
         public string TargetDirectory
         {
@@ -81,21 +105,36 @@ namespace UoFiddler.Controls.MapViewer
 
         private void UpdateState()
         {
-            if (_map == null)
+            if (_map == null || !_ready)
             {
                 return;
             }
 
+            MapSaveOptions options = SaveOptions;
+            _files = MapSaveService.GetFilesToWrite(_map, options);
+            labelFileNames.Text = _files.Count == 0 ? "Nothing to write." : "Files: " + string.Join(", ", _files);
+
             textBoxOther.Enabled = buttonBrowse.Enabled = radioOther.Checked;
 
             string target = TargetDirectory;
-            bool replacesLoaded = target != null && MapSaveService.IsSameDirectory(target, _sourceDirectory);
+            bool replacesLoaded = target != null && MapSaveService.IsSameDirectory(target, _sourceDirectory) && options.OutputIndex == _map.FileIndex;
 
             var warnings = new List<string>();
+            TileMatrix tiles = _map.Tiles;
+            if ((!options.IncludeLand && tiles.HasModifiedLand) || (!options.IncludeStatics && tiles.HasStaticOverrides))
+            {
+                warnings.Add("Not all changes are written (land or statics is unchecked); the rest stays unsaved in memory.");
+            }
+
+            if (target != null && MapSaveService.IsSameDirectory(target, _sourceDirectory) && options.OutputIndex != _map.FileIndex)
+            {
+                warnings.Add($"Files with number {options.OutputIndex} in the map directory are replaced (backup recommended).");
+            }
+
             if (replacesLoaded)
             {
                 warnings.Add("The original files are replaced. Close the client and the server before saving.");
-                if (_map.Tiles.MapPath?.EndsWith(".uop", StringComparison.OrdinalIgnoreCase) == true && _files.Contains($"map{_map.FileIndex}.mul"))
+                if (_map.Tiles.MapPath?.EndsWith(".uop", StringComparison.OrdinalIgnoreCase) == true && _files.Contains($"map{options.OutputIndex}.mul"))
                 {
                     warnings.Add($"The loaded map is a UOP file: map{_map.FileIndex}.mul is written next to it and is used instead (pack it with the UOP packer for the client).");
                 }
@@ -138,7 +177,18 @@ namespace UoFiddler.Controls.MapViewer
                 return;
             }
 
-            if (MapSaveService.IsSameDirectory(target, _sourceDirectory) &&
+            MapSaveOptions options = SaveOptions;
+            TileMatrix tiles = _map.Tiles;
+            bool replacesLoaded = MapSaveService.IsSameDirectory(target, _sourceDirectory) && options.OutputIndex == _map.FileIndex;
+            if (replacesLoaded && ((!options.IncludeLand && tiles.HasModifiedLand) || (!options.IncludeStatics && tiles.HasStaticOverrides)))
+            {
+                MessageBox.Show("When the loaded map files are replaced, the map is read again.\n" +
+                                "Please save land and statics together here, otherwise the unsaved part is lost.", Text,
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            if (replacesLoaded &&
                 MessageBox.Show("The original map files will be replaced.\nAre the client and the server closed?", Text,
                     MessageBoxButtons.YesNo, MessageBoxIcon.Warning) != DialogResult.Yes)
             {

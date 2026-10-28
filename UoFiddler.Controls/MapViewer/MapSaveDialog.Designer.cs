@@ -40,6 +40,14 @@ namespace UoFiddler.Controls.MapViewer
             textBoxOther = new System.Windows.Forms.TextBox();
             buttonBrowse = new System.Windows.Forms.Button();
             labelWarning = new System.Windows.Forms.Label();
+            groupBoxFiles = new System.Windows.Forms.GroupBox();
+            tableLayoutFiles = new System.Windows.Forms.TableLayoutPanel();
+            checkBoxLand = new System.Windows.Forms.CheckBox();
+            checkBoxStatics = new System.Windows.Forms.CheckBox();
+            checkBoxCompleteSet = new System.Windows.Forms.CheckBox();
+            labelIndex = new System.Windows.Forms.Label();
+            numericIndex = new System.Windows.Forms.NumericUpDown();
+            labelFileNames = new System.Windows.Forms.Label();
             checkBoxBackup = new System.Windows.Forms.CheckBox();
             labelBackup = new System.Windows.Forms.Label();
             checkBoxProtocol = new System.Windows.Forms.CheckBox();
@@ -51,6 +59,9 @@ namespace UoFiddler.Controls.MapViewer
             tableLayoutTarget.SuspendLayout();
             panelOther.SuspendLayout();
             panelButtons.SuspendLayout();
+            groupBoxFiles.SuspendLayout();
+            tableLayoutFiles.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)numericIndex).BeginInit();
             SuspendLayout();
             //
             // labelInfo
@@ -175,6 +186,90 @@ namespace UoFiddler.Controls.MapViewer
             buttonBrowse.UseVisualStyleBackColor = true;
             buttonBrowse.Click += OnClickBrowse;
             //
+            // groupBoxFiles
+            //
+            groupBoxFiles.AutoSize = true;
+            groupBoxFiles.Controls.Add(tableLayoutFiles);
+            groupBoxFiles.Dock = System.Windows.Forms.DockStyle.Top;
+            groupBoxFiles.Name = "groupBoxFiles";
+            groupBoxFiles.Padding = new System.Windows.Forms.Padding(8);
+            groupBoxFiles.TabStop = false;
+            groupBoxFiles.Text = "Files";
+            //
+            // tableLayoutFiles
+            //
+            tableLayoutFiles.AutoSize = true;
+            tableLayoutFiles.ColumnCount = 2;
+            tableLayoutFiles.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.AutoSize));
+            tableLayoutFiles.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            tableLayoutFiles.Controls.Add(checkBoxLand, 0, 0);
+            tableLayoutFiles.SetColumnSpan(checkBoxLand, 2);
+            tableLayoutFiles.Controls.Add(checkBoxStatics, 0, 1);
+            tableLayoutFiles.SetColumnSpan(checkBoxStatics, 2);
+            tableLayoutFiles.Controls.Add(checkBoxCompleteSet, 0, 2);
+            tableLayoutFiles.SetColumnSpan(checkBoxCompleteSet, 2);
+            tableLayoutFiles.Controls.Add(labelIndex, 0, 3);
+            tableLayoutFiles.Controls.Add(numericIndex, 1, 3);
+            tableLayoutFiles.Controls.Add(labelFileNames, 0, 4);
+            tableLayoutFiles.SetColumnSpan(labelFileNames, 2);
+            tableLayoutFiles.Dock = System.Windows.Forms.DockStyle.Fill;
+            tableLayoutFiles.Name = "tableLayoutFiles";
+            tableLayoutFiles.RowCount = 5;
+            tableLayoutFiles.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.AutoSize));
+            tableLayoutFiles.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.AutoSize));
+            tableLayoutFiles.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.AutoSize));
+            tableLayoutFiles.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.AutoSize));
+            tableLayoutFiles.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.AutoSize));
+            //
+            // checkBoxLand
+            //
+            checkBoxLand.AutoSize = true;
+            checkBoxLand.Checked = true;
+            checkBoxLand.CheckState = System.Windows.Forms.CheckState.Checked;
+            checkBoxLand.Name = "checkBoxLand";
+            checkBoxLand.Text = "Land (map.mul)";
+            checkBoxLand.UseVisualStyleBackColor = true;
+            checkBoxLand.CheckedChanged += OnTargetChanged;
+            //
+            // checkBoxStatics
+            //
+            checkBoxStatics.AutoSize = true;
+            checkBoxStatics.Checked = true;
+            checkBoxStatics.CheckState = System.Windows.Forms.CheckState.Checked;
+            checkBoxStatics.Name = "checkBoxStatics";
+            checkBoxStatics.Text = "Statics (staidx.mul + statics.mul)";
+            checkBoxStatics.UseVisualStyleBackColor = true;
+            checkBoxStatics.CheckedChanged += OnTargetChanged;
+            //
+            // checkBoxCompleteSet
+            //
+            checkBoxCompleteSet.AutoSize = true;
+            checkBoxCompleteSet.Name = "checkBoxCompleteSet";
+            checkBoxCompleteSet.Text = "Complete set: also write files that were not changed (for a manual exchange)";
+            checkBoxCompleteSet.UseVisualStyleBackColor = true;
+            checkBoxCompleteSet.CheckedChanged += OnTargetChanged;
+            //
+            // labelIndex
+            //
+            labelIndex.Anchor = System.Windows.Forms.AnchorStyles.Left;
+            labelIndex.AutoSize = true;
+            labelIndex.Name = "labelIndex";
+            labelIndex.Text = "File number (mapN):";
+            //
+            // numericIndex
+            //
+            numericIndex.Maximum = new decimal(new int[] { 255, 0, 0, 0 });
+            numericIndex.Name = "numericIndex";
+            numericIndex.Size = new System.Drawing.Size(60, 23);
+            numericIndex.ValueChanged += OnTargetChanged;
+            //
+            // labelFileNames
+            //
+            labelFileNames.AutoSize = true;
+            labelFileNames.ForeColor = System.Drawing.SystemColors.GrayText;
+            labelFileNames.Name = "labelFileNames";
+            labelFileNames.Text = "-";
+            //
             // labelWarning
             //
             labelWarning.Dock = System.Windows.Forms.DockStyle.Top;
@@ -266,11 +361,12 @@ namespace UoFiddler.Controls.MapViewer
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             CancelButton = buttonCancel;
-            ClientSize = new System.Drawing.Size(604, 429);
+            ClientSize = new System.Drawing.Size(640, 600);
             Controls.Add(checkBoxProtocol);
             Controls.Add(labelBackup);
             Controls.Add(checkBoxBackup);
             Controls.Add(labelWarning);
+            Controls.Add(groupBoxFiles);
             Controls.Add(groupBoxTarget);
             Controls.Add(labelInfo);
             Controls.Add(panelButtons);
@@ -290,6 +386,11 @@ namespace UoFiddler.Controls.MapViewer
             panelOther.PerformLayout();
             panelButtons.ResumeLayout(false);
             panelButtons.PerformLayout();
+            tableLayoutFiles.ResumeLayout(false);
+            tableLayoutFiles.PerformLayout();
+            groupBoxFiles.ResumeLayout(false);
+            groupBoxFiles.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)numericIndex).EndInit();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -308,6 +409,14 @@ namespace UoFiddler.Controls.MapViewer
         private System.Windows.Forms.TextBox textBoxOther;
         private System.Windows.Forms.Button buttonBrowse;
         private System.Windows.Forms.Label labelWarning;
+        private System.Windows.Forms.GroupBox groupBoxFiles;
+        private System.Windows.Forms.TableLayoutPanel tableLayoutFiles;
+        private System.Windows.Forms.CheckBox checkBoxLand;
+        private System.Windows.Forms.CheckBox checkBoxStatics;
+        private System.Windows.Forms.CheckBox checkBoxCompleteSet;
+        private System.Windows.Forms.Label labelIndex;
+        private System.Windows.Forms.NumericUpDown numericIndex;
+        private System.Windows.Forms.Label labelFileNames;
         private System.Windows.Forms.CheckBox checkBoxBackup;
         private System.Windows.Forms.Label labelBackup;
         private System.Windows.Forms.CheckBox checkBoxProtocol;

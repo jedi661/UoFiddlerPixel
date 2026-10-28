@@ -26,7 +26,7 @@ namespace UoFiddler.Controls.UserControls
         {
             if (disposing && (components != null))
             {
-                components.Dispose();
+               components.Dispose();
             }
             if (disposing)
             {
@@ -108,6 +108,7 @@ namespace UoFiddler.Controls.UserControls
             toolStripButtonViewRegion = new System.Windows.Forms.ToolStripButton();
             toolStripButtonClearRegion = new System.Windows.Forms.ToolStripButton();
             toolStripButtonExportRegion = new System.Windows.Forms.ToolStripButton();
+            toolStripButtonMapEditor = new System.Windows.Forms.ToolStripButton();
             toolStripSeparatorRegion = new System.Windows.Forms.ToolStripSeparator();
             toolStripDropDownButtonMaps = new System.Windows.Forms.ToolStripDropDownButton();
             viewAreaHereToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -377,7 +378,7 @@ namespace UoFiddler.Controls.UserControls
             // toolStrip1
             // 
             toolStrip1.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
-            toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { toolStripDropDownButtonMaps, toolStripDropDownButton1, toolStripDropDownButton2, ProgressBar, PreloadMap, toolStripDropDownButton3, toolStripSeparatorRegion, toolStripButtonMarkRegion, toolStripButtonViewRegion, toolStripButtonExportRegion, toolStripButtonClearRegion });
+            toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { toolStripDropDownButtonMaps, toolStripDropDownButton1, toolStripDropDownButton2, ProgressBar, PreloadMap, toolStripDropDownButton3, toolStripSeparatorRegion, toolStripButtonMarkRegion, toolStripButtonViewRegion, toolStripButtonExportRegion, toolStripButtonMapEditor, toolStripButtonClearRegion });
             toolStrip1.Location = new System.Drawing.Point(0, 0);
             toolStrip1.Name = "toolStrip1";
             toolStrip1.RenderMode = System.Windows.Forms.ToolStripRenderMode.System;
@@ -643,6 +644,15 @@ namespace UoFiddler.Controls.UserControls
             toolStripButtonExportRegion.Text = "Export Area...";
             toolStripButtonExportRegion.ToolTipText = "Takes the statics of the marked region as building: file (TXT, UOA, ...), library, multi.mul or ServUO script";
             toolStripButtonExportRegion.Click += OnClickExportRegion;
+            //
+            // toolStripButtonMapEditor
+            //
+            toolStripButtonMapEditor.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            toolStripButtonMapEditor.Name = "toolStripButtonMapEditor";
+            toolStripButtonMapEditor.Size = new System.Drawing.Size(80, 25);
+            toolStripButtonMapEditor.Text = "Map Editor...";
+            toolStripButtonMapEditor.ToolTipText = "Copy an area (land/statics) of this or an external map and paste it on any map";
+            toolStripButtonMapEditor.Click += OnClickMapEditor;
             // 
             // toolStripDropDownButtonMaps
             // 
@@ -807,6 +817,7 @@ namespace UoFiddler.Controls.UserControls
         private System.Windows.Forms.ToolStripButton toolStripButtonViewRegion;
         private System.Windows.Forms.ToolStripButton toolStripButtonClearRegion;
         private System.Windows.Forms.ToolStripButton toolStripButtonExportRegion;
+        private System.Windows.Forms.ToolStripButton toolStripButtonMapEditor;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparatorRegion;
         private System.Windows.Forms.ToolStripDropDownButton toolStripDropDownButtonMaps;
         private System.Windows.Forms.ToolStripMenuItem viewAreaHereToolStripMenuItem;

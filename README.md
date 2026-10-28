@@ -6,6 +6,15 @@ UOFiddler based on Ultima SDK it's a tool to view and alter almost every UO 2D c
 This is an extended version of UoFiddler that has more maps and more tools, as well as Map Edit, and will be expanded over time to support the Ultima standard 
 version more than the original version. Also, some source codes from older and New projects that are no longer supported have been integrated.
 
+Version 4.12.16
+- **Map Editor** (map tab → "Map Editor..."): copy areas (land/statics) of any map – also external ones – edit them (rotate, mirror, filter statics) and paste them on any map with height adaption at the border, live preview and saving to your own folder/file number.
+- **Tools**: brushes 1–64 (square/round), paint texture, replace, raise/lower, flatten, smooth, erase statics, eyedropper – every stroke is one step with **undo/redo** (Ctrl+Z / Ctrl+Y).
+- **Brush editor**: define patterns as a grid (which tile goes where, variants, heights, statics), show numbers, move cells, categories and search, copy from the map or import from a picture.
+- **Transitions** define edges, corners and inner corners between terrain groups and set them automatically.
+- **Lines, curves and shapes** (rectangle, circle, triangle), filled or as outline, drawn with any tool.
+- **Generator**: settlement with plots, floors, road and paths, lake with shore, rough ground, trees and plants.
+- Fast map overview, help with F1 in every window.
+
 Version 4.12.15
 - Region-Viewer: View the selected area in the client view (iso, textures, hills, statics with hue), zoom, show heights/grid, look inside buildings.
 - Error Check & Log: Invalid IDs, duplicate/hidden statics, steep land; automatically repair, notes, export as CSV/XML.

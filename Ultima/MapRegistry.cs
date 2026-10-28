@@ -173,7 +173,7 @@ namespace Ultima
         /// </summary>
         public static void ResetCustomMaps()
         {
-            foreach (MapDefinition def in _definitions.Where(d => !d.IsBuiltIn))
+            foreach (MapDefinition def in _definitions.Where(d => !d.IsBuiltIn).Concat(_temporary))
             {
                 def.ResetFiles();
             }
@@ -184,7 +184,7 @@ namespace Ultima
         /// </summary>
         public static IEnumerable<Map> LoadedCustomMaps()
         {
-            foreach (MapDefinition def in _definitions.Where(d => !d.IsBuiltIn).ToList())
+            foreach (MapDefinition def in _definitions.Where(d => !d.IsBuiltIn).Concat(_temporary).ToList())
             {
                 Map map = def.LoadedMap;
                 if (map != null)
@@ -193,6 +193,81 @@ namespace Ultima
                 }
             }
         }
+
+        #region Temporary (external) maps
+
+        private static readonly List<MapDefinition> _temporary = new List<MapDefinition>();
+        private static int _nextTemporaryId = -1000;
+
+        /// <summary>
+        /// External maps opened in the map editor. They are not saved and not shown in the map list,
+        /// but their files are closed/reloaded like the other maps when files are replaced.
+        /// </summary>
+        public static IReadOnlyList<MapDefinition> TemporaryDefinitions => _temporary;
+
+        /// <summary>
+        /// Opens a map of another directory for this session only (negative id)
+        /// </summary>
+        public static MapDefinition AddTemporary(string directory, int fileIndex, int width, int height, string name)
+        {
+            MapDefinition existing = _temporary.FirstOrDefault(d => d.FileIndex == fileIndex &&
+                string.Equals(System.IO.Path.GetFullPath(d.CustomPath ?? string.Empty).TrimEnd('\\', '/'),
+                    System.IO.Path.GetFullPath(directory).TrimEnd('\\', '/'), StringComparison.OrdinalIgnoreCase));
+            if (existing != null)
+            {
+                if (existing.Width != width || existing.Height != height)
+                {
+                    existing.Width = width;
+                    existing.Height = height;
+                    existing.Reset();
+                }
+
+                return existing;
+            }
+
+            var def = new MapDefinition
+            {
+                Id = _nextTemporaryId--,
+                Name = name,
+                FileIndex = fileIndex,
+                Width = width,
+                Height = height,
+                CustomPath = directory,
+                Visible = false,
+                IsBuiltIn = false
+            };
+            _temporary.Add(def);
+            return def;
+        }
+
+        public static void RemoveTemporary(MapDefinition def)
+        {
+            if (def != null && _temporary.Remove(def))
+            {
+                def.Reset();
+            }
+        }
+
+        /// <summary>
+        /// Makes a temporary map a normal (saved) entry of the map list
+        /// </summary>
+        public static MapDefinition MakePermanent(MapDefinition def)
+        {
+            if (def == null || !_temporary.Contains(def))
+            {
+                return def;
+            }
+
+            _temporary.Remove(def);
+            def.Id = NextFreeId();
+            def.Visible = true;
+            Add(def);
+            return def;
+        }
+
+        public static bool IsTemporary(MapDefinition def) => def != null && _temporary.Contains(def);
+
+        #endregion
 
         public static void OnChanged()
         {

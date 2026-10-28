@@ -38,6 +38,8 @@ namespace UoFiddler.Controls.MapViewer
         private RegionCell _hoverCell;
         private bool _selecting;
         private Point _selectStart;
+        private bool _stroking;
+        private RegionCell _lastStrokeCell;
 
         public IsoViewControl()
         {
@@ -142,6 +144,33 @@ namespace UoFiddler.Controls.MapViewer
         /// <summary>Number of chunks that still have to be rendered</summary>
         [Browsable(false)]
         public int PendingChunks => _missing.Count;
+
+        /// <summary>
+        /// Paint tools: the left mouse button sends <see cref="StrokeCell"/> events (drag = more cells),
+        /// moving the view with the right or middle mouse button.
+        /// </summary>
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public bool ToolMode { get; set; }
+
+        /// <summary>Cells of the brush under the mouse (outline)</summary>
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public ICollection<Point> BrushCells { get; set; }
+
+        /// <summary>Texts drawn in the middle of cells (e.g. the numbers of the brush pattern)</summary>
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public IDictionary<Point, string> CellLabels { get; set; }
+
+        /// <summary>Left mouse button pressed in <see cref="ToolMode"/></summary>
+        public event EventHandler<IsoCellEventArgs> StrokeStarted;
+
+        /// <summary>The mouse reached another cell while painting (also sent for the first cell)</summary>
+        public event EventHandler<IsoCellEventArgs> StrokeCell;
+
+        /// <summary>Left mouse button released in <see cref="ToolMode"/></summary>
+        public event EventHandler StrokeEnded;
 
         public event EventHandler<IsoCellEventArgs> CellClicked;
         public event EventHandler HoverChanged;
@@ -380,6 +409,33 @@ namespace UoFiddler.Controls.MapViewer
                 DrawCells(g, data, FootprintCells, Color.FromArgb(30, c), Color.FromArgb(150, c), 3000);
             }
 
+            if (BrushCells != null && BrushCells.Count > 0)
+            {
+                DrawCells(g, data, BrushCells, Color.FromArgb(45, Color.Cyan), Color.FromArgb(180, Color.Cyan), 1200);
+            }
+
+            if (CellLabels != null && CellLabels.Count > 0 && _zoom >= 0.375)
+            {
+                using (var font = new Font("Segoe UI", (float)Math.Max(7, Math.Min(14, 9 * _zoom)), FontStyle.Bold))
+                using (var back = new SolidBrush(Color.FromArgb(160, 0, 0, 0)))
+                {
+                    foreach (KeyValuePair<Point, string> label in CellLabels)
+                    {
+                        Point[] corners = CellCorners(data, label.Key.X, label.Key.Y);
+                        PointF top = CanvasToScreen(corners[0]), bottom = CanvasToScreen(corners[2]);
+                        var center = new PointF((top.X + bottom.X) / 2, (top.Y + bottom.Y) / 2);
+                        if (center.X < -20 || center.Y < -20 || center.X > ClientSize.Width + 20 || center.Y > ClientSize.Height + 20)
+                        {
+                            continue;
+                        }
+
+                        SizeF size = g.MeasureString(label.Value, font);
+                        g.FillRectangle(back, center.X - (size.Width / 2), center.Y - (size.Height / 2), size.Width, size.Height);
+                        g.DrawString(label.Value, font, Brushes.White, center.X - (size.Width / 2), center.Y - (size.Height / 2));
+                    }
+                }
+            }
+
             if (SelectedArea.HasValue)
             {
                 DrawArea(g, data, SelectedArea.Value);
@@ -572,7 +628,22 @@ namespace UoFiddler.Controls.MapViewer
                 return;
             }
 
-            if (e.Button == MouseButtons.Left || e.Button == MouseButtons.Middle)
+            if (ToolMode && e.Button == MouseButtons.Left && _renderer != null)
+            {
+                RegionCell cell = CellAt(e.Location);
+                _stroking = true;
+                _lastStrokeCell = cell;
+                StrokeStarted?.Invoke(this, new IsoCellEventArgs(cell, -1));
+                if (cell != null)
+                {
+                    StrokeCell?.Invoke(this, new IsoCellEventArgs(cell, -1));
+                }
+
+                return;
+            }
+
+            bool panButton = e.Button == MouseButtons.Left || e.Button == MouseButtons.Middle || (ToolMode && e.Button == MouseButtons.Right);
+            if (panButton)
             {
                 _dragging = true;
                 _dragMoved = false;
@@ -594,6 +665,19 @@ namespace UoFiddler.Controls.MapViewer
                     int x2 = Math.Max(_selectStart.X, cell.X), y2 = Math.Max(_selectStart.Y, cell.Y);
                     SelectedArea = Rectangle.FromLTRB(x1, y1, x2 + 1, y2 + 1);
                     Invalidate();
+                }
+
+                UpdateHover(e.Location);
+                return;
+            }
+
+            if (_stroking)
+            {
+                RegionCell cell = CellAt(e.Location);
+                if (cell != null && cell != _lastStrokeCell)
+                {
+                    _lastStrokeCell = cell;
+                    StrokeCell?.Invoke(this, new IsoCellEventArgs(cell, -1));
                 }
 
                 UpdateHover(e.Location);
@@ -633,11 +717,19 @@ namespace UoFiddler.Controls.MapViewer
                 return;
             }
 
+            if (_stroking)
+            {
+                _stroking = false;
+                _lastStrokeCell = null;
+                StrokeEnded?.Invoke(this, EventArgs.Empty);
+                return;
+            }
+
             bool click = _dragging && !_dragMoved;
             _dragging = false;
             Cursor = Cursors.Default;
 
-            if (click && e.Button == MouseButtons.Left && _renderer != null)
+            if (click && e.Button == MouseButtons.Left && _renderer != null && !ToolMode)
             {
                 Point canvas = ScreenToCanvas(e.Location);
                 int hit = _renderer.HitTest(canvas);
@@ -647,6 +739,18 @@ namespace UoFiddler.Controls.MapViewer
                 SelectedCell = cell == null ? (Point?)null : new Point(cell.X, cell.Y);
                 Invalidate();
                 CellClicked?.Invoke(this, new IsoCellEventArgs(cell, hit));
+            }
+        }
+
+        protected override void OnMouseCaptureChanged(EventArgs e)
+        {
+            base.OnMouseCaptureChanged(e);
+            if (_stroking && !Capture)
+            {
+                // e.g. a message box opened while painting
+                _stroking = false;
+                _lastStrokeCell = null;
+                StrokeEnded?.Invoke(this, EventArgs.Empty);
             }
         }
 

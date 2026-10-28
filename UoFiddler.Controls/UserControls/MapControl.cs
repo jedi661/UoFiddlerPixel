@@ -1820,6 +1820,21 @@ namespace UoFiddler.Controls.UserControls
             OpenRegionViewer(def, _region);
         }
 
+        private MapViewer.Editor.MapEditorForm _mapEditor;
+
+        private void OnClickMapEditor(object sender, EventArgs e)
+        {
+            if (_mapEditor != null && !_mapEditor.IsDisposed)
+            {
+                _mapEditor.Activate();
+                return;
+            }
+
+            MapDefinition def = _hasRegion ? MapRegistry.GetById(_regionMapId) ?? _currentDef : _currentDef;
+            _mapEditor = new MapViewer.Editor.MapEditorForm(this, def, _hasRegion ? _region : Rectangle.Empty);
+            _mapEditor.Show();
+        }
+
         private void OnClickExportRegion(object sender, EventArgs e)
         {
             if (!_hasRegion)

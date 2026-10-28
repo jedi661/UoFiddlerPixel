@@ -365,7 +365,7 @@ namespace UoFiddler.Controls.UserControls
             var tiles = (_workingTiles != null && _componentToggleForm != null && _componentToggleForm.Visible)
                 ? _workingTiles
                 : ((MultiComponentList)TreeViewMulti.SelectedNode.Tag).SortedTiles.ToList();
-
+            
             Bitmap mMainPictureMulti = RenderMultiImage(tiles, h); // Render the multi image based on the selected tiles and height
 
             if (mMainPictureMulti == null)
@@ -1896,7 +1896,7 @@ namespace UoFiddler.Controls.UserControls
                 Point anchor = MultiPictureBox.PointToScreen(new Point(MultiPictureBox.Width + 4, 0));
                 _componentToggleForm.Location = anchor;
             }
-
+            
             _componentToggleForm.ResizeEnd += (s, e) => SaveComponentToggleLayout();
             splitContainer.SplitterMoved += (s, e) => SaveComponentToggleLayout();
 
@@ -2173,7 +2173,7 @@ namespace UoFiddler.Controls.UserControls
         private void SearchTextBox_TextChanged(object sender, EventArgs e)
         {
             PopulateComponentToggleList(searchTextBox.Text);
-        }
+        }        
 
         private void ComponentToggleListBox_ItemCheck(object sender, ItemCheckEventArgs e)
         {
@@ -2377,7 +2377,7 @@ namespace UoFiddler.Controls.UserControls
             PopulateComponentToggleList();
             targetIdTextBox.Text = _sourceMultiId.ToString(); // Default target ID = current multi (overwrite); can be changed.
 
-
+           
 
             _componentToggleForm.Show(FindForm());
             _componentToggleForm.BringToFront();
@@ -2531,7 +2531,7 @@ namespace UoFiddler.Controls.UserControls
         }
 
         private static int CompareDrawOrder(MultiComponentList.MultiTileEntry a, int aIndex, MultiComponentList.MultiTileEntry b, int bIndex)
-        {
+        {            
             ItemData da = TileData.ItemTable[a.ItemId];
             ItemData db = TileData.ItemTable[b.ItemId];
 

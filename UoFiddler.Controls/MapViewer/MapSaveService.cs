@@ -37,6 +37,24 @@ namespace UoFiddler.Controls.MapViewer
     }
 
     /// <summary>
+    /// What <see cref="MapSaveService"/> writes
+    /// </summary>
+    public sealed class MapSaveOptions
+    {
+        /// <summary>write map{n}.mul</summary>
+        public bool IncludeLand { get; set; } = true;
+
+        /// <summary>write staidx{n}.mul / statics{n}.mul</summary>
+        public bool IncludeStatics { get; set; } = true;
+
+        /// <summary>file number of the written files (null = same as the map, e.g. save map0 as map5.mul)</summary>
+        public int? OutputIndex { get; set; }
+
+        /// <summary>write the files also if they were not changed (complete set for a manual exchange)</summary>
+        public bool CompleteSet { get; set; }
+    }
+
+    /// <summary>
     /// Writes the map files of an edit session into a directory. Files are written into a temp folder
     /// first, existing files are copied into a backup folder and then replaced. If the original files of a
     /// loaded map were replaced, the maps using them are reloaded.
@@ -57,17 +75,25 @@ namespace UoFiddler.Controls.MapViewer
         /// <summary>Names of the files that would be written</summary>
         public static List<string> GetFilesToWrite(Map map)
         {
+            return GetFilesToWrite(map, new MapSaveOptions());
+        }
+
+        /// <summary>Names of the files that would be written with the given options</summary>
+        public static List<string> GetFilesToWrite(Map map, MapSaveOptions options)
+        {
             var files = new List<string>();
             TileMatrix tiles = map.Tiles;
-            if (tiles.HasModifiedLand)
+            int index = options.OutputIndex ?? map.FileIndex;
+
+            if (options.IncludeLand && (tiles.HasModifiedLand || options.CompleteSet))
             {
-                files.Add($"map{map.FileIndex}.mul");
+                files.Add($"map{index}.mul");
             }
 
-            if (tiles.HasStaticOverrides)
+            if (options.IncludeStatics && (tiles.HasStaticOverrides || options.CompleteSet))
             {
-                files.Add($"staidx{map.FileIndex}.mul");
-                files.Add($"statics{map.FileIndex}.mul");
+                files.Add($"staidx{index}.mul");
+                files.Add($"statics{index}.mul");
             }
 
             return files;
@@ -88,29 +114,43 @@ namespace UoFiddler.Controls.MapViewer
         /// </summary>
         public static List<string> Save(Map map, string mapName, string targetDirectory, bool createBackup, out MapBackupInfo backup)
         {
+            return Save(map, mapName, targetDirectory, createBackup, new MapSaveOptions(), out backup);
+        }
+
+        /// <summary>
+        /// Saves with options (land / statics only, other file number, complete set).
+        /// </summary>
+        public static List<string> Save(Map map, string mapName, string targetDirectory, bool createBackup, MapSaveOptions options, out MapBackupInfo backup)
+        {
             backup = null;
             Directory.CreateDirectory(targetDirectory);
 
-            List<string> names = GetFilesToWrite(map);
+            List<string> names = GetFilesToWrite(map, options);
             if (names.Count == 0)
             {
                 return new List<string>();
             }
+
+            int index = options.OutputIndex ?? map.FileIndex;
+            bool writeLand = names.Contains($"map{index}.mul");
+            bool writeStatics = names.Contains($"statics{index}.mul");
 
             string temp = Path.Combine(targetDirectory, ".uofiddler_tmp_" + Guid.NewGuid().ToString("N"));
             Directory.CreateDirectory(temp);
             try
             {
                 // 1. write into the temp folder (the sources are still read here)
-                TileMatrix tiles = map.Tiles;
-                if (tiles.HasModifiedLand)
+                if (writeLand)
                 {
                     map.SaveLand(temp);
+                    RenameInTemp(temp, $"map{map.FileIndex}.mul", $"map{index}.mul");
                 }
 
-                if (tiles.HasStaticOverrides)
+                if (writeStatics)
                 {
                     Map.DefragStatics(temp, map, map.Width, map.Height, false);
+                    RenameInTemp(temp, $"staidx{map.FileIndex}.mul", $"staidx{index}.mul");
+                    RenameInTemp(temp, $"statics{map.FileIndex}.mul", $"statics{index}.mul");
                 }
 
                 // 2. release all file handles before files are replaced
@@ -122,7 +162,7 @@ namespace UoFiddler.Controls.MapViewer
                 List<string> existing = targets.Where(File.Exists).ToList();
                 if (createBackup && existing.Count > 0)
                 {
-                    backup = CreateBackup(targetDirectory, mapName, map.FileIndex, existing, "before save");
+                    backup = CreateBackup(targetDirectory, mapName, index, existing, "before save");
                 }
 
                 // 4. replace
@@ -148,6 +188,14 @@ namespace UoFiddler.Controls.MapViewer
                 {
                     // ignored
                 }
+            }
+        }
+
+        private static void RenameInTemp(string temp, string from, string to)
+        {
+            if (!string.Equals(from, to, StringComparison.OrdinalIgnoreCase))
+            {
+                File.Move(Path.Combine(temp, from), Path.Combine(temp, to), true);
             }
         }
 

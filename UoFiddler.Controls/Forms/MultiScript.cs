@@ -202,7 +202,7 @@ namespace UoFiddler.Controls.Forms
 
         #region tbIndexImage_TextChanged
         private bool updatingText = false;
-
+                
         private void tbIndexImage_TextChanged(object sender, EventArgs e)
         {
             if (updatingText) return;

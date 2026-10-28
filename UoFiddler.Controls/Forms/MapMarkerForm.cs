@@ -38,7 +38,7 @@ namespace UoFiddler.Controls.Forms
             numericUpDown2.Value = y;
 
             comboBox1.Items.AddRange(Options.MapNames);
-
+            
             if (map >= 0 && map < Options.MapNames.Length)
             {
                 comboBox1.SelectedIndex = map;

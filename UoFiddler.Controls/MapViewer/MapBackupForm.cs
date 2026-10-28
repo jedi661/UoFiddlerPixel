@@ -26,11 +26,21 @@ namespace UoFiddler.Controls.MapViewer
         public MapBackupForm()
         {
             InitializeComponent();
+            HelpRequested += (s, e) =>
+            {
+                Help.MapHelpForm.ShowTopic(this, Help.MapHelpContent.Save);
+                e.Handled = true;
+            };
         }
 
         public MapBackupForm(string mapName, IEnumerable<string> directories)
         {
             InitializeComponent();
+            HelpRequested += (s, e) =>
+            {
+                Help.MapHelpForm.ShowTopic(this, Help.MapHelpContent.Save);
+                e.Handled = true;
+            };
             Icon = Options.GetFiddlerIcon();
             Text = $"Map backups - {mapName}";
 
