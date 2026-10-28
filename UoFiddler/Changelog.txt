@@ -1,4 +1,4 @@
-Version 4.12.16
+Version 4.12.16 #XG1
 - Map Editor (map tab → "Map Editor..."): copy areas (land/statics) of any map – also external ones – edit them (rotate, mirror, filter statics) and paste them on any map with height adaption at the border, live preview and saving to your own folder/file number.
 - Tools: brushes 1–64 (square/round), paint texture, replace, raise/lower, flatten, smooth, erase statics, eyedropper – every stroke is one step with **undo/redo** (Ctrl+Z / Ctrl+Y).
 - Brush editor: define patterns as a grid (which tile goes where, variants, heights, statics), show numbers, move cells, categories and search, copy from the map or import from a picture.
