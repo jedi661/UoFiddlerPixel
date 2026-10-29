@@ -1,3 +1,12 @@
+Version 4.12.17 #XG1
+
+- MultiMap images (MultiMap tab → "Create image..."): create an image of any map – built-in, from the map list or external map files (also only an area) – or of any image file. Styles: **ink map** (drawn like a treasure map: coast lines with waves, mountains, trees, houses, dotted roads, sand/swamp/hills), radar colors, grayscale, black/white (dithered like MultiMap.rle) and sketch; options for parchment look, frame, coordinate grid, symbol size, density and random pattern.
+- Image list: generated, saved or added images appear under "Load.." (stored inside the app or linked from any folder); open image files, paste from the clipboard, manage (rename/remove/open folder).
+- Editor ("Edit..."): pen, eraser, line, arrow, rectangle, ellipse, text labels (font, color, light border, rotation), map symbols (mountain, tree, house, ankh, skull, compass, ...), fill, color picker, select/crop/cut, rotate/flip/resize, grayscale/black-white/invert/sepia, undo/redo.
+- Mouse wheel zoom at the mouse position in the MultiMap tab, the generator and the editor; drag to move.
+- Print (fit to one page or as poster over several pages, print preview), **copy** to the clipboard, **save** inside the app or in any folder as PNG, JPEG, BMP, GIF, TIFF or ICO; export now also as GIF.
+- "Generate.." → MultiMap / Facet **from the current image** (automatically converted to 2560 x 2048 black/white).
+
 Version 4.12.16 #XG1
 - Map Editor (map tab → "Map Editor..."): copy areas (land/statics) of any map – also external ones – edit them (rotate, mirror, filter statics) and paste them on any map with height adaption at the border, live preview and saving to your own folder/file number.
 - Tools: brushes 1–64 (square/round), paint texture, replace, raise/lower, flatten, smooth, erase statics, eyedropper – every stroke is one step with **undo/redo** (Ctrl+Z / Ctrl+Y).
