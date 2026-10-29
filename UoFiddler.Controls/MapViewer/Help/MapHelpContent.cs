@@ -60,6 +60,7 @@ namespace UoFiddler.Controls.MapViewer.Help
         public const string Keys = "keys";
         public const string Files = "files";
         public const string Problems = "problems";
+        public const string MultiMapImages = "multimap.images";
 
         public static List<HelpTopic> Topics { get; } = new List<HelpTopic>
         {
@@ -471,7 +472,53 @@ Eine Geländegruppe sind die normalen Tiles eines Geländes, z. B. Sand = 0x16-0
 - Höhensprünge nach dem Einfügen: ""Edge blend"" erhöhen oder mit ""Smooth"" nacharbeiten.
 - Übergang setzt nichts: Geländegruppen A und B prüfen (enthalten sie die Tiles der Karte?) und leere Felder füllen.
 - Speichern in den Ordner der geladenen Karte geht nicht, solange Client oder Server die Dateien geöffnet haben.
-- Etwas ist schiefgegangen: ""Backups..."" stellt die vorherigen Dateien wieder her.")
+- Etwas ist schiefgegangen: ""Backups..."" stellt die vorherigen Dateien wieder her."),
+
+            new HelpTopic(MultiMapImages, "MultiMap-Bilder", @"
+# MultiMap-Bilder erstellen, bearbeiten, drucken
+Im Reiter MultiMap kann man aus jeder Karte (eingebaut, aus der Kartenliste oder externe Kartendateien)
+oder aus einer beliebigen Bilddatei ein Kartenbild erzeugen, es bearbeiten und speichern.
+
+## Load..
+- MultiMap / Facet00-05: die Bilder des Clients.
+- Darunter: alle eigenen Bilder der Liste (erzeugte, gespeicherte und hinzugefügte Bilder).
+- ""Open image file..."": ein Bild nur ansehen (PNG, JPG, BMP, GIF, TIFF, ICO, EMF, WMF).
+- ""Add image file to list..."": ein Bild dauerhaft in die Liste aufnehmen (verknüpfen oder in die App kopieren).
+- ""From clipboard"": ein Bild aus der Zwischenablage anzeigen.
+- ""Manage list..."": Einträge umbenennen, entfernen, Ordner öffnen.
+
+## Create image...
+- Quelle: Karte, ""External map files..."" (Ordner mit mapX.mul / staidxX.mul / staticsX.mul), Bilddatei
+  oder das gerade angezeigte Bild.
+- Bereich: nur einen Ausschnitt der Karte in Tiles (X, Y, Breite, Höhe).
+- Stil ""Ink map"": gezeichnete Karte wie eine Schatzkarte - Küstenlinien mit Wellen, Berge, Bäume, Häuser,
+  gepunktete Wege, Sand (Punkte), Sumpf (Striche), Hänge (Schraffur).
+- Weitere Stile: Radar-Farben, Graustufen, Schwarz/Weiß (gerastert wie MultiMap.rle), Skizze (nur Umrisse).
+- Optionen: Statics, Pergament-Look, Rahmen, Gitter mit Koordinaten, Symbolgröße, Dichte, Zufallsmuster (Seed).
+- ""2560 x 2048 (MultiMap)"" erzeugt genau die Größe, die ""Generate.. > MultiMap from current image"" braucht.
+
+## Bearbeiten (Edit...)
+- Werkzeuge: Hand (H), Auswahl (M), Stift (P), Radierer (E), Linie (L), Pfeil (A), Rechteck (R), Ellipse (O),
+  Text (T), Symbol (S), Füllen (F), Farbpipette (I).
+- Linke Maustaste = Zeichenfarbe, rechte Maustaste = Papierfarbe. Shift = 45°-Linien, Quadrat, Kreis.
+- Mausrad = Zoom an der Mausposition, mittlere Maustaste oder Leertaste + Ziehen = verschieben.
+- Text: Schrift, Farbe, heller Rand (gut lesbar auf der Karte) und Drehung; danach mit Klick platzieren.
+- Symbole: Berg, Baum, Nadelbaum, Busch, Haus, Fels, Gras, Ankh, Totenkopf, Stern, Schatz (X), Kompass,
+  Turm, Höhle, Markierung.
+- Strg+Z / Strg+Y rückgängig / wiederholen, Strg+C kopieren (Auswahl oder ganzes Bild), Strg+V einfügen
+  und mit Klick platzieren, Strg+Umschalt+V als neues Bild einfügen.
+- Bild: drehen, spiegeln, Größe ändern, zuschneiden, Graustufen, Schwarz/Weiß, invertieren, Sepia.
+
+## Speichern
+- ""Inside the app"": das Bild kommt in die Liste ""Load.."" (Ordner AppData\UoFiddler\MultiMapImages).
+- ""In a folder of my choice"": beliebiger Ordner und Format (PNG, JPEG, BMP, GIF, TIFF, ICO),
+  auf Wunsch zusätzlich in der Liste.
+- Save (Strg+S) überschreibt danach dieselbe Datei.
+
+## Drucken und Zwischenablage
+- ""Print..."": Drucker wählen; auf eine Seite eingepasst oder als Poster über mehrere Seiten (2 x 2, 3 x 3 ...).
+- ""Print preview..."": Vorschau mit Druckknopf.
+- ""Copy"": Bild in die Zwischenablage.")
         };
 
         /// <summary>Finds a topic by key (also in the sub topics)</summary>
