@@ -34,6 +34,8 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
         /// <summary>
         /// The panel takes ownership of the bitmap and disposes the previous one.
         /// </summary>
+        [System.ComponentModel.Browsable(false)]
+        [System.ComponentModel.DesignerSerializationVisibility(System.ComponentModel.DesignerSerializationVisibility.Hidden)]
         public Bitmap Image
         {
             get => _image;
@@ -65,6 +67,8 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
         public event EventHandler ZoomChanged;
 
         /// <summary>Tiled background behind the image (null = checkerboard).</summary>
+        [System.ComponentModel.Browsable(false)]
+        [System.ComponentModel.DesignerSerializationVisibility(System.ComponentModel.DesignerSerializationVisibility.Hidden)]
         public Image BackgroundTile
         {
             get => _backgroundTile;
@@ -78,9 +82,12 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
         private Image _backgroundTile;
 
         /// <summary>Called after the image is painted: graphics, area of the image on the control, zoom.</summary>
+        [System.ComponentModel.Browsable(false)]
+        [System.ComponentModel.DesignerSerializationVisibility(System.ComponentModel.DesignerSerializationVisibility.Hidden)]
         public Action<Graphics, Rectangle, float> Overlay { get; set; }
 
         /// <summary>Area of the image on the control.</summary>
+        [System.ComponentModel.Browsable(false)]
         public Rectangle ImageArea
         {
             get

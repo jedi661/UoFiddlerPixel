@@ -256,6 +256,19 @@ namespace UoFiddler.Plugin.Enhanced.EcUltima
 
         public bool IsOpen(string fileName) => _packages.ContainsKey(fileName);
 
+        /// <summary>
+        /// Closes the package (unsaved changes are lost) and opens it again from the disk.
+        /// </summary>
+        public EcUopPackage ReloadPackage(string fileName)
+        {
+            if (_packages.TryGetValue(fileName, out EcUopPackage old))
+            {
+                _packages.Remove(fileName);
+                old.Dispose();
+            }
+            return GetPackage(fileName);
+        }
+
         public IEnumerable<EcUopPackage> OpenPackages => _packages.Values;
 
         /// <summary>

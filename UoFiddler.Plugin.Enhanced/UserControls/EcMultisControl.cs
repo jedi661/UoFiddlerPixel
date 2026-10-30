@@ -32,30 +32,10 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
     /// highlighting of parts, image and part exports. The structure is the same as in multi.mul, only the images
     /// come from the Enhanced Client (or the legacy art).
     /// </summary>
-    public sealed class EcMultisControl : UserControl, IEcEditor
+    public sealed partial class EcMultisControl : UserControl, IEcEditor
     {
         public const string FileName = "MultiCollection.uop";
 
-        // grid columns
-        private const int ColShow = 0, ColItem = 1, ColName = 2, ColX = 3, ColY = 4, ColZ = 5, ColFlags = 6, ColClilocs = 7;
-
-        private readonly TreeView _tree;
-        private readonly ToolStripTextBox _searchBox;
-        private readonly ToolStripButton _saveButton;
-        private readonly DataGridView _parts;
-        private readonly EcPreviewPanel _preview;
-        private readonly TrackBar _heightBar;
-        private readonly Label _heightLabel;
-        private readonly NumericUpDown _minZBox;
-        private readonly ComboBox _floorBox;
-        private readonly ComboBox _artBox;
-        private readonly CheckBox _hiddenBox;
-        private readonly CheckBox _gridBox;
-        private readonly PictureBox _partImage;
-        private readonly Label _partInfo;
-        private readonly ToolStripStatusLabel _statusLabel;
-        private readonly ToolStripStatusLabel _hoverLabel;
-        private readonly ToolStripMenuItem _transparencyItem;
 
         private EcClient _client;
         private EcUopPackage _package;
@@ -104,218 +84,294 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             public List<Placed> Placed = new List<Placed>();
         }
 
+        /// <summary>Highest id shown with "Free slots" (like the multi limit of the UOP packer), at least the last id + 1.</summary>
+        private const int FreeSlotLimit = 0x2200;
+
+        private bool _showFreeSlots;
+        private Bitmap _customBackground;
+
         public EcMultisControl()
         {
-            Dock = DockStyle.Fill;
+            InitializeComponent();
 
-            // ---------------------------------------------------------------- tool strip (like the Multis tab)
-            var toolStrip = new ToolStrip { GripStyle = ToolStripGripStyle.Hidden };
-            _searchBox = new ToolStripTextBox { Width = 120, ToolTipText = "Id (decimal or 0x hex) or part of the name – Enter = next hit" };
-            _searchBox.KeyDown += (s, e) => { if (e.KeyCode == Keys.Enter) { e.SuppressKeyPress = true; Search(); } };
-            _saveButton = new ToolStripButton("Save", null, (s, e) => Save(false)) { Enabled = false };
-
-            var misc = new ToolStripDropDownButton("Misc");
-            var exportAllImages = new ToolStripMenuItem("Export all images");
-            exportAllImages.DropDownItems.Add("As Bmp", null, (s, e) => ExportAllImages(ImageFormat.Bmp));
-            exportAllImages.DropDownItems.Add("As Tiff", null, (s, e) => ExportAllImages(ImageFormat.Tiff));
-            exportAllImages.DropDownItems.Add("As Jpg", null, (s, e) => ExportAllImages(ImageFormat.Jpeg));
-            exportAllImages.DropDownItems.Add("As Png", null, (s, e) => ExportAllImages(ImageFormat.Png));
-            misc.DropDownItems.Add(exportAllImages);
-            var exportAllParts = new ToolStripMenuItem("Export all parts");
-            foreach (PartFormat f in Enum.GetValues(typeof(PartFormat)))
+            // runtime only (not in the designer)
+            comboBoxArt.SelectedIndex = 0;
+            previewPanel.Overlay = DrawOverlay;
+            Disposed += (s, e) =>
             {
-                PartFormat format = f;
-                exportAllParts.DropDownItems.Add($"To {FormatTitle(format)}", null, (s, e) => ExportAllParts(format));
-            }
-            misc.DropDownItems.Add(exportAllParts);
-            misc.DropDownItems.Add(new ToolStripSeparator());
-            misc.DropDownItems.Add("Change background color...", null, (s, e) => ChangeBackgroundColor());
-            _transparencyItem = new ToolStripMenuItem("Use transparency for PNG") { CheckOnClick = true, Checked = true };
-            misc.DropDownItems.Add(_transparencyItem);
-
-            var exportButton = new ToolStripDropDownButton("Export");
-            foreach (PartFormat f in Enum.GetValues(typeof(PartFormat)))
-            {
-                PartFormat format = f;
-                exportButton.DropDownItems.Add($"To {FormatTitle(format)}...", null, (s, e) => ExportParts(format));
-            }
-            var importButton = new ToolStripButton("Import...", null, (s, e) => ImportParts()) { ToolTipText = "Replace the parts of the multi with a text / UOA / CSV / WSC file" };
-
-            toolStrip.Items.Add(new ToolStripLabel("Index:"));
-            toolStrip.Items.Add(_searchBox);
-            toolStrip.Items.Add(new ToolStripButton("Search", null, (s, e) => Search()));
-            toolStrip.Items.Add(misc);
-            toolStrip.Items.Add(new ToolStripSeparator());
-            toolStrip.Items.Add(new ToolStripButton("New / copy...", null, (s, e) => AddMulti()));
-            toolStrip.Items.Add(new ToolStripButton("Remove", null, (s, e) => DeleteMulti()));
-            toolStrip.Items.Add(importButton);
-            toolStrip.Items.Add(exportButton);
-            toolStrip.Items.Add(new ToolStripSeparator());
-            toolStrip.Items.Add(_saveButton);
-            toolStrip.Items.Add(new ToolStripButton("Save as...", null, (s, e) => Save(true)));
-
-            // ---------------------------------------------------------------- multi list
-            _tree = new TreeView { Dock = DockStyle.Fill, HideSelection = false, ShowLines = false, ShowRootLines = false, ShowNodeToolTips = true, FullRowSelect = true };
-            _tree.AfterSelect += (s, e) => ShowSelected();
-
-            // ---------------------------------------------------------------- graphic
-            _heightBar = new TrackBar { Dock = DockStyle.Fill, TickStyle = TickStyle.BottomRight, Minimum = 0, Maximum = 0, AutoSize = false, Height = 32 };
-            _heightBar.ValueChanged += (s, e) => { if (!_settingHeight) { UpdateHeightLabel(); Redraw(); } };
-            _heightLabel = new Label { AutoSize = true, Margin = new Padding(3, 8, 6, 0), Text = "Max z: 0" };
-            _minZBox = new NumericUpDown { Minimum = -128, Maximum = 512, Width = 55, Margin = new Padding(0, 5, 6, 0) };
-            _minZBox.ValueChanged += (s, e) => { if (!_settingHeight) { Redraw(); } };
-            _floorBox = new ComboBox { DropDownStyle = ComboBoxStyle.DropDownList, Width = 120, Margin = new Padding(0, 5, 6, 0) };
-            _floorBox.SelectedIndexChanged += (s, e) => SelectFloor();
-            _artBox = new ComboBox { DropDownStyle = ComboBoxStyle.DropDownList, Width = 140, Margin = new Padding(0, 5, 6, 0) };
-            _artBox.Items.AddRange(new object[] { "Enhanced (EC art)", "Legacy (classic art)" });
-            _artBox.SelectedIndex = 0;
-            _artBox.SelectedIndexChanged += (s, e) => Redraw();
-            _hiddenBox = new CheckBox { Text = "Parts with flags ≠ 0", AutoSize = true, Checked = true, Margin = new Padding(0, 7, 6, 0) };
-            _hiddenBox.CheckedChanged += (s, e) => Redraw();
-            _gridBox = new CheckBox { Text = "Grid", AutoSize = true, Margin = new Padding(0, 7, 6, 0) };
-            _gridBox.CheckedChanged += (s, e) => Redraw();
-
-            var tip = new ToolTip();
-            tip.SetToolTip(_heightBar, "Highest z that is drawn (like the height slider of the Multis tab)");
-            tip.SetToolTip(_minZBox, "Lowest z that is drawn");
-            tip.SetToolTip(_floorBox, "Show one floor: from its z up to the next floor");
-            tip.SetToolTip(_hiddenBox, "Parts with flags other than 0 are not shown in the game (the UOP packer writes them with classic flags 0). " +
-                                       "The Multis tab draws them too.");
-
-            var heightRow = new TableLayoutPanel { Dock = DockStyle.Top, Height = 34, ColumnCount = 2 };
-            heightRow.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
-            heightRow.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
-            heightRow.Controls.Add(_heightLabel, 0, 0);
-            heightRow.Controls.Add(_heightBar, 1, 0);
-
-            var optionsRow = new FlowLayoutPanel { Dock = DockStyle.Top, Height = 30, WrapContents = false };
-            optionsRow.Controls.Add(new Label { Text = "Min z:", AutoSize = true, Margin = new Padding(3, 8, 2, 0) });
-            optionsRow.Controls.Add(_minZBox);
-            optionsRow.Controls.Add(new Label { Text = "Floor:", AutoSize = true, Margin = new Padding(3, 8, 2, 0) });
-            optionsRow.Controls.Add(_floorBox);
-            optionsRow.Controls.Add(new Label { Text = "Art:", AutoSize = true, Margin = new Padding(3, 8, 2, 0) });
-            optionsRow.Controls.Add(_artBox);
-            optionsRow.Controls.Add(_hiddenBox);
-            optionsRow.Controls.Add(_gridBox);
-            optionsRow.Controls.Add(new Label { Text = "Ctrl + wheel = zoom, click = select part", AutoSize = true, ForeColor = SystemColors.GrayText, Margin = new Padding(6, 8, 0, 0) });
-
-            _preview = new EcPreviewPanel { Dock = DockStyle.Fill, BackColor = Color.White };
-            _preview.Overlay = DrawOverlay;
-            _preview.MouseMove += (s, e) => HoverAt(e.Location);
-            _preview.MouseLeave += (s, e) => { _hoverPart = -1; _hoverLabel.Text = string.Empty; _preview.Invalidate(); };
-            _preview.MouseClick += (s, e) => ClickAt(e.Location, e.Button);
-            _preview.ContextMenuStrip = CreatePreviewMenu();
-
-            var graphicPanel = new Panel { Dock = DockStyle.Fill };
-            graphicPanel.Controls.Add(_preview);
-            graphicPanel.Controls.Add(optionsRow);
-            graphicPanel.Controls.Add(heightRow);
-
-            // ---------------------------------------------------------------- component list
-            _parts = new DataGridView
-            {
-                Dock = DockStyle.Fill,
-                AllowUserToAddRows = true,
-                AllowUserToDeleteRows = true,
-                AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
-                SelectionMode = DataGridViewSelectionMode.FullRowSelect,
-                RowHeadersWidth = 24
+                ClearSprites();
+                _customBackground?.Dispose();
             };
-            _parts.Columns.Add(new DataGridViewCheckBoxColumn { Name = "Show", HeaderText = "Show", FillWeight = 30, ToolTipText = "Only for the view, not saved" });
-            foreach (string c in new[] { "Item", "Name", "X", "Y", "Z", "Flags", "Clilocs" })
-            {
-                _parts.Columns.Add(c, c);
-            }
-            _parts.Columns[ColName].ReadOnly = true;
-            _parts.Columns[ColName].FillWeight = 160;
-            _parts.Columns[ColName].DefaultCellStyle.ForeColor = SystemColors.GrayText;
-            _parts.CellEndEdit += (s, e) => { if (e.ColumnIndex != ColShow) { PartsChanged(); } };
-            _parts.UserDeletedRow += (s, e) => PartsChanged();
-            _parts.CurrentCellDirtyStateChanged += (s, e) =>
-            {
-                if (_parts.CurrentCell?.ColumnIndex == ColShow)
-                {
-                    _parts.CommitEdit(DataGridViewDataErrorContexts.Commit);
-                }
-            };
-            _parts.CellValueChanged += (s, e) =>
-            {
-                if (!_filling && e.ColumnIndex == ColShow && e.RowIndex >= 0 && e.RowIndex < (_current?.Parts.Count ?? 0))
-                {
-                    bool show = _parts.Rows[e.RowIndex].Cells[ColShow].Value as bool? ?? true;
-                    if (show)
-                    {
-                        _hiddenParts.Remove(e.RowIndex);
-                    }
-                    else
-                    {
-                        _hiddenParts.Add(e.RowIndex);
-                    }
-                    Redraw();
-                }
-            };
-            _parts.SelectionChanged += (s, e) => PartSelectionChanged();
-            _parts.CellMouseEnter += (s, e) => { if (e.RowIndex >= 0) { ShowPartImage(e.RowIndex); } };
-            _parts.MouseLeave += (s, e) => ShowPartImage(_parts.CurrentRow?.Index ?? -1);
-
-            var partsMenu = new ContextMenuStrip();
-            partsMenu.Items.Add("Show all", null, (s, e) => SetAllVisible(true));
-            partsMenu.Items.Add("Hide selected", null, (s, e) => SetSelectedVisible(false));
-            partsMenu.Items.Add("Show only selected", null, (s, e) => { SetAllVisible(false); SetSelectedVisible(true); });
-            partsMenu.Items.Add(new ToolStripSeparator());
-            partsMenu.Items.Add("Select all with this item", null, (s, e) => SelectSameItem());
-            partsMenu.Items.Add("Select all at this z", null, (s, e) => SelectSameZ());
-            _parts.ContextMenuStrip = partsMenu;
-
-            _partImage = new PictureBox { Dock = DockStyle.Fill, SizeMode = PictureBoxSizeMode.CenterImage, BackColor = Color.White };
-            _partInfo = new Label { Dock = DockStyle.Top, Height = 48, Padding = new Padding(4), Font = EcDialogs.MonoFont(8.5f) };
-            var partPanel = new Panel { Dock = DockStyle.Right, Width = 200, BorderStyle = BorderStyle.FixedSingle };
-            partPanel.Controls.Add(_partImage);
-            partPanel.Controls.Add(_partInfo);
-
-            var componentPanel = new Panel { Dock = DockStyle.Fill };
-            componentPanel.Controls.Add(_parts);
-            componentPanel.Controls.Add(partPanel);
-
-            var rightSplit = new SplitContainer { Dock = DockStyle.Fill, Orientation = Orientation.Horizontal };
-            rightSplit.Panel1.Controls.Add(graphicPanel);
-            rightSplit.Panel2.Controls.Add(componentPanel);
-            rightSplit.HandleCreated += (s, e) => { try { rightSplit.SplitterDistance = Math.Max(250, rightSplit.Height * 2 / 3); } catch (InvalidOperationException) { } };
-
-            var split = new SplitContainer { Dock = DockStyle.Fill };
-            split.Panel1.Controls.Add(_tree);
-            split.Panel2.Controls.Add(rightSplit);
-            split.HandleCreated += (s, e) => { try { split.SplitterDistance = 300; } catch (InvalidOperationException) { } };
-
-            var status = new StatusStrip();
-            _statusLabel = new ToolStripStatusLabel("Choose the Enhanced Client folder on top.") { Spring = true, TextAlign = ContentAlignment.MiddleLeft };
-            _hoverLabel = new ToolStripStatusLabel(string.Empty);
-            status.Items.Add(_statusLabel);
-            status.Items.Add(_hoverLabel);
-
-            Controls.Add(split);
-            Controls.Add(toolStrip);
-            Controls.Add(status);
         }
 
-        private ContextMenuStrip CreatePreviewMenu()
+        // ==================================================================== event handlers (designer)
+
+        private void OnSearchKeyDown(object sender, KeyEventArgs e)
         {
-            var menu = new ContextMenuStrip();
-            var extract = new ToolStripMenuItem("Extract image..");
-            extract.DropDownItems.Add("As Bmp", null, (s, e) => ExtractImage(ImageFormat.Bmp));
-            extract.DropDownItems.Add("As Tiff", null, (s, e) => ExtractImage(ImageFormat.Tiff));
-            extract.DropDownItems.Add("As Jpg", null, (s, e) => ExtractImage(ImageFormat.Jpeg));
-            extract.DropDownItems.Add("As Png", null, (s, e) => ExtractImage(ImageFormat.Png));
-            menu.Items.Add(extract);
-            menu.Items.Add("Copy", null, (s, e) => CopyImage());
-            var background = new ToolStripMenuItem("Background image");
-            background.DropDownItems.Add("Background off", null, (s, e) => _preview.BackgroundTile = null);
-            background.DropDownItems.Add("Grass", null, (s, e) => _preview.BackgroundTile = UoFiddler.Controls.Properties.Resources.Grass);
-            background.DropDownItems.Add("Water", null, (s, e) => _preview.BackgroundTile = UoFiddler.Controls.Properties.Resources.Water);
-            menu.Items.Add(background);
-            menu.Items.Add(new ToolStripSeparator());
-            menu.Items.Add("Show all parts", null, (s, e) => SetAllVisible(true));
-            return menu;
+            if (e.KeyCode == Keys.Enter)
+            {
+                e.SuppressKeyPress = true;
+                Search();
+            }
+        }
+
+        private void OnClickSearch(object sender, EventArgs e) => Search();
+
+        private void OnAfterSelectMulti(object sender, TreeViewEventArgs e) => ShowSelected();
+
+        /// <summary>Right click selects the node first, so the context menu works on it.</summary>
+        private void OnNodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
+        {
+            if (e.Button == MouseButtons.Right)
+            {
+                treeViewMulti.SelectedNode = e.Node;
+            }
+        }
+
+        private void OnTreeMenuOpening(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            bool open = _package != null;
+            bool multi = SelectedEntry != null;
+            bool free = SelectedId >= 0 && !multi;
+            newToolStripMenuItem.Enabled = open;
+            newToolStripMenuItem.Text = free ? $"New multi in slot {SelectedId}..." : "New / copy...";
+            importToolStripMenuItem.Enabled = open && SelectedId >= 0;
+            exportToolStripMenuItem.Enabled = multi;
+            removeToolStripMenuItem.Enabled = multi;
+            reloadToolStripMenuItem.Enabled = _client != null;
+            saveToolStripMenuItem.Enabled = open && _package.IsDirty;
+            saveAsToolStripMenuItem.Enabled = open;
+        }
+
+        private void OnFreeSlotsChanged(object sender, EventArgs e) => SetFreeSlots(toolStripButtonFreeSlots.Checked);
+
+        private void OnFreeSlotsMenuChanged(object sender, EventArgs e) => SetFreeSlots(showFreeSlotsToolStripMenuItem.Checked);
+
+        private void OnClickNew(object sender, EventArgs e) => AddMulti();
+
+        private void OnClickImport(object sender, EventArgs e) => ImportParts();
+
+        private void OnClickRemove(object sender, EventArgs e) => DeleteMulti();
+
+        private void OnClickReload(object sender, EventArgs e) => ReloadFile();
+
+        private void OnClickSave(object sender, EventArgs e) => Save(false);
+
+        private void OnClickSaveAs(object sender, EventArgs e) => Save(true);
+
+        private void OnClickExportParts(object sender, EventArgs e) => ExportParts(FormatOf(sender));
+
+        private void OnClickExportAllParts(object sender, EventArgs e) => ExportAllParts(FormatOf(sender));
+
+        private void OnClickExportAllImages(object sender, EventArgs e) => ExportAllImages(ImageFormatOf(sender));
+
+        private void OnClickExtractImage(object sender, EventArgs e) => ExtractImage(ImageFormatOf(sender));
+
+        private void OnClickCopyImage(object sender, EventArgs e) => CopyImage();
+
+        private void OnClickBackgroundColor(object sender, EventArgs e) => ChangeBackgroundColor();
+
+        private void OnClickBackgroundOff(object sender, EventArgs e) => previewPanel.BackgroundTile = null;
+
+        private void OnClickBackgroundGrass(object sender, EventArgs e) => previewPanel.BackgroundTile = UoFiddler.Controls.Properties.Resources.Grass;
+
+        private void OnClickBackgroundWater(object sender, EventArgs e) => previewPanel.BackgroundTile = UoFiddler.Controls.Properties.Resources.Water;
+
+        private void OnClickBackgroundFile(object sender, EventArgs e) => LoadBackgroundImage();
+
+        private void OnClickShowAll(object sender, EventArgs e) => SetAllVisible(true);
+
+        private void OnClickHideSelected(object sender, EventArgs e) => SetSelectedVisible(false);
+
+        private void OnClickShowOnlySelected(object sender, EventArgs e)
+        {
+            SetAllVisible(false);
+            SetSelectedVisible(true);
+        }
+
+        private void OnClickSelectSameItem(object sender, EventArgs e) => SelectSameItem();
+
+        private void OnClickSelectSameZ(object sender, EventArgs e) => SelectSameZ();
+
+        private void OnHeightChanged(object sender, EventArgs e)
+        {
+            if (!_settingHeight)
+            {
+                UpdateHeightLabel();
+                Redraw();
+            }
+        }
+
+        private void OnMinZChanged(object sender, EventArgs e)
+        {
+            if (!_settingHeight)
+            {
+                Redraw();
+            }
+        }
+
+        private void OnFloorChanged(object sender, EventArgs e) => SelectFloor();
+
+        private void OnViewOptionChanged(object sender, EventArgs e) => Redraw();
+
+        private void OnPreviewMouseMove(object sender, MouseEventArgs e) => HoverAt(e.Location);
+
+        private void OnPreviewMouseLeave(object sender, EventArgs e)
+        {
+            _hoverPart = -1;
+            toolStripStatusLabelHover.Text = string.Empty;
+            previewPanel.Invalidate();
+        }
+
+        private void OnPreviewMouseClick(object sender, MouseEventArgs e) => ClickAt(e.Location, e.Button);
+
+        private void OnPartsCellEndEdit(object sender, DataGridViewCellEventArgs e)
+        {
+            if (e.ColumnIndex != columnShow.Index)
+            {
+                PartsChanged();
+            }
+        }
+
+        private void OnPartsUserDeletedRow(object sender, DataGridViewRowEventArgs e) => PartsChanged();
+
+        private void OnPartsDirtyStateChanged(object sender, EventArgs e)
+        {
+            if (dataGridViewParts.CurrentCell?.ColumnIndex == columnShow.Index)
+            {
+                dataGridViewParts.CommitEdit(DataGridViewDataErrorContexts.Commit);
+            }
+        }
+
+        private void OnPartsCellValueChanged(object sender, DataGridViewCellEventArgs e)
+        {
+            if (_filling || e.ColumnIndex != columnShow.Index || e.RowIndex < 0 || e.RowIndex >= (_current?.Parts.Count ?? 0))
+            {
+                return;
+            }
+            bool show = dataGridViewParts.Rows[e.RowIndex].Cells[columnShow.Index].Value as bool? ?? true;
+            if (show)
+            {
+                _hiddenParts.Remove(e.RowIndex);
+            }
+            else
+            {
+                _hiddenParts.Add(e.RowIndex);
+            }
+            Redraw();
+        }
+
+        private void OnPartsSelectionChanged(object sender, EventArgs e) => PartSelectionChanged();
+
+        private void OnPartsCellMouseEnter(object sender, DataGridViewCellEventArgs e)
+        {
+            if (e.RowIndex >= 0)
+            {
+                ShowPartImage(e.RowIndex);
+            }
+        }
+
+        private void OnPartsMouseLeave(object sender, EventArgs e) => ShowPartImage(dataGridViewParts.CurrentRow?.Index ?? -1);
+
+        private void OnPackageChanged(object sender, EventArgs e) => toolStripButtonSave.Enabled = _package?.IsDirty ?? false;
+
+        private static PartFormat FormatOf(object sender) =>
+            Enum.TryParse((sender as ToolStripItem)?.Tag as string, true, out PartFormat format) ? format : PartFormat.Text;
+
+        private static ImageFormat ImageFormatOf(object sender) => ((sender as ToolStripItem)?.Tag as string) switch
+        {
+            "Bmp" => ImageFormat.Bmp,
+            "Tiff" => ImageFormat.Tiff,
+            "Jpg" => ImageFormat.Jpeg,
+            _ => ImageFormat.Png
+        };
+
+        // ==================================================================== free slots, reload, background
+
+        /// <summary>Id of the selected node (multi or free slot), or -1.</summary>
+        private int SelectedId =>
+            treeViewMulti.SelectedNode != null && int.TryParse(treeViewMulti.SelectedNode.Name, NumberStyles.Integer, CultureInfo.InvariantCulture, out int id) ? id : -1;
+
+        private EcUopEntry SelectedEntry => treeViewMulti.SelectedNode?.Tag as EcUopEntry;
+
+        private void SetFreeSlots(bool show)
+        {
+            if (_showFreeSlots == show)
+            {
+                return;
+            }
+            _showFreeSlots = show;
+            toolStripButtonFreeSlots.Checked = show;
+            showFreeSlotsToolStripMenuItem.Checked = show;
+            if (_package != null)
+            {
+                FillList();
+            }
+        }
+
+        private void ReloadFile()
+        {
+            if (_client == null)
+            {
+                return;
+            }
+            if (_package != null && _package.IsDirty && !EcDialogs.Confirm(this, $"{FileName} has unsaved changes. Read it again and lose them?"))
+            {
+                return;
+            }
+            int selected = SelectedId;
+            if (_package != null)
+            {
+                _package.Changed -= OnPackageChanged;
+            }
+            _package = _client.ReloadPackage(FileName);
+            _current = null;
+            _currentEntry = null;
+            if (_package == null)
+            {
+                treeViewMulti.Nodes.Clear();
+                toolStripStatusLabel.Text = $"{FileName} was not found.";
+                return;
+            }
+            _package.Changed += OnPackageChanged;
+            toolStripButtonSave.Enabled = false;
+            ClearSprites();
+            LoadMultiNames();
+            FillList();
+            SelectId(selected);
+            toolStripStatusLabel.Text = $"{FileName} read again.";
+        }
+
+        private void SelectId(int id)
+        {
+            TreeNode[] found = treeViewMulti.Nodes.Find(id.ToString(CultureInfo.InvariantCulture), false);
+            if (found.Length > 0)
+            {
+                treeViewMulti.SelectedNode = found[0];
+                found[0].EnsureVisible();
+            }
+        }
+
+        private void LoadBackgroundImage()
+        {
+            using (var dialog = new OpenFileDialog { Filter = "Images|*.png;*.bmp;*.jpg;*.jpeg;*.gif;*.tif;*.tiff;*.dds;*.tga|All files (*.*)|*.*" })
+            {
+                if (dialog.ShowDialog(this) != DialogResult.OK)
+                {
+                    return;
+                }
+                try
+                {
+                    Bitmap image = EcImageHelper.LoadImageFile(dialog.FileName);
+                    previewPanel.BackgroundTile = image;
+                    _customBackground?.Dispose();
+                    _customBackground = image;
+                }
+                catch (Exception ex)
+                {
+                    EcDialogs.ShowError(this, "The image could not be read.", ex);
+                }
+            }
         }
 
         // ==================================================================== loading
@@ -326,14 +382,14 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             _loaded = false;
             _package = null;
             _multis.Clear();
-            _tree.Nodes.Clear();
-            _parts.Rows.Clear();
-            _preview.Image = null;
+            treeViewMulti.Nodes.Clear();
+            dataGridViewParts.Rows.Clear();
+            previewPanel.Image = null;
             _render = null;
             _current = null;
             _currentEntry = null;
             ClearSprites();
-            _saveButton.Enabled = false;
+            toolStripButtonSave.Enabled = false;
             if (Visible && client != null)
             {
                 OnActivated();
@@ -350,10 +406,10 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             _package = _client.GetPackage(FileName);
             if (_package == null)
             {
-                _statusLabel.Text = $"{FileName} was not found.";
+                toolStripStatusLabel.Text = $"{FileName} was not found.";
                 return;
             }
-            _package.Changed += (s, e) => _saveButton.Enabled = _package.IsDirty;
+            _package.Changed += OnPackageChanged;
             try
             {
                 Cursor.Current = Cursors.WaitCursor;
@@ -361,7 +417,7 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             }
             catch (Exception ex)
             {
-                _statusLabel.Text = $"tileart.uop: {ex.Message}";
+                toolStripStatusLabel.Text = $"tileart.uop: {ex.Message}";
             }
             finally
             {
@@ -419,12 +475,16 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             }
             _multis.Sort((a, b) => a.Id.CompareTo(b.Id));
 
-            int selected = _current?.Id ?? -1;
-            _tree.BeginUpdate();
-            _tree.Nodes.Clear();
+            int selected = SelectedId >= 0 ? SelectedId : _current?.Id ?? -1;
+            var entries = _multis.ToDictionary(m => m.Id, m => m.Entry);
+            int last = _multis.Count == 0 ? 0 : _multis[_multis.Count - 1].Id;
+            IEnumerable<int> ids = _showFreeSlots ? Enumerable.Range(0, Math.Max(FreeSlotLimit, last + 1)) : _multis.Select(m => m.Id);
+            var nodes = new List<TreeNode>();
             TreeNode select = null;
-            foreach (var (id, entry) in _multis)
+            int free = 0;
+            foreach (int id in ids)
             {
+                entries.TryGetValue(id, out EcUopEntry entry);
                 _multiNames.TryGetValue(id, out var name);
                 var node = new TreeNode($"{id,5} (0x{id:X}) {name.Name}".TrimEnd())
                 {
@@ -432,60 +492,86 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
                     Name = id.ToString(CultureInfo.InvariantCulture),
                     ToolTipText = string.IsNullOrEmpty(name.Tip) ? name.Name : $"{name.Name}\r\n{name.Tip}"
                 };
-                _tree.Nodes.Add(node);
+                if (entry == null)
+                {
+                    // free slot
+                    node.ForeColor = Color.Gray;
+                    node.Text = $"{id,5} (0x{id:X}) – free";
+                    node.ToolTipText = "Free slot: New or Import in the context menu";
+                    free++;
+                }
+                nodes.Add(node);
                 if (id == selected)
                 {
                     select = node;
                 }
             }
-            _tree.EndUpdate();
+            treeViewMulti.BeginUpdate();
+            treeViewMulti.Nodes.Clear();
+            treeViewMulti.Nodes.AddRange(nodes.ToArray());
+            treeViewMulti.EndUpdate();
             if (select != null)
             {
-                _tree.SelectedNode = select;
+                treeViewMulti.SelectedNode = select;
             }
-            else if (_tree.Nodes.Count > 0 && _tree.SelectedNode == null)
+            else if (treeViewMulti.Nodes.Count > 0 && treeViewMulti.SelectedNode == null)
             {
-                _tree.SelectedNode = _tree.Nodes[0];
+                treeViewMulti.SelectedNode = treeViewMulti.Nodes[0];
             }
-            _statusLabel.Text = $"{_multis.Count} multis" + (_multiNames.Count == 0 ? " (Multilist.xml not found – no names)" : string.Empty);
+            toolStripStatusLabel.Text = $"{_multis.Count} multis" + (_showFreeSlots ? $", {free} free slots" : string.Empty) +
+                                        (_multiNames.Count == 0 ? " (Multilist.xml not found – no names)" : string.Empty);
         }
 
         private void Search()
         {
-            string text = _searchBox.Text.Trim();
-            if (text.Length == 0 || _tree.Nodes.Count == 0)
+            string text = toolStripTextBoxSearch.Text.Trim();
+            if (text.Length == 0 || treeViewMulti.Nodes.Count == 0)
             {
                 return;
             }
             if (EcDialogs.TryParseNumber(text, out long id))
             {
-                TreeNode[] found = _tree.Nodes.Find(id.ToString(CultureInfo.InvariantCulture), false);
+                TreeNode[] found = treeViewMulti.Nodes.Find(id.ToString(CultureInfo.InvariantCulture), false);
                 if (found.Length > 0)
                 {
-                    _tree.SelectedNode = found[0];
+                    treeViewMulti.SelectedNode = found[0];
                     found[0].EnsureVisible();
                     return;
                 }
             }
             // name search, starting after the selected node
-            int start = _tree.SelectedNode?.Index ?? -1;
-            for (int i = 1; i <= _tree.Nodes.Count; i++)
+            int start = treeViewMulti.SelectedNode?.Index ?? -1;
+            for (int i = 1; i <= treeViewMulti.Nodes.Count; i++)
             {
-                TreeNode node = _tree.Nodes[(start + i) % _tree.Nodes.Count];
+                TreeNode node = treeViewMulti.Nodes[(start + i) % treeViewMulti.Nodes.Count];
                 if (node.Text.IndexOf(text, StringComparison.OrdinalIgnoreCase) >= 0)
                 {
-                    _tree.SelectedNode = node;
+                    treeViewMulti.SelectedNode = node;
                     node.EnsureVisible();
                     return;
                 }
             }
-            _statusLabel.Text = $"\"{text}\" not found.";
+            toolStripStatusLabel.Text = $"\"{text}\" not found.";
         }
 
         private void ShowSelected()
         {
-            if (_tree.SelectedNode?.Tag is not EcUopEntry entry)
+            if (treeViewMulti.SelectedNode?.Tag is not EcUopEntry entry)
             {
+                if (SelectedId >= 0)
+                {
+                    // free slot
+                    _current = null;
+                    _currentEntry = null;
+                    _render = null;
+                    _hiddenParts.Clear();
+                    _highlighted.Clear();
+                    _filling = true;
+                    dataGridViewParts.Rows.Clear();
+                    _filling = false;
+                    previewPanel.Image = null;
+                    toolStripStatusLabel.Text = $"Slot {SelectedId} (0x{SelectedId:X}) is free – New or Import in the context menu.";
+                }
                 return;
             }
             try
@@ -501,7 +587,7 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             }
             catch (Exception ex)
             {
-                _statusLabel.Text = ex.Message;
+                toolStripStatusLabel.Text = ex.Message;
             }
         }
 
@@ -510,15 +596,15 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             _settingHeight = true;
             var b = _current.Bounds();
             int minZ = Math.Min(0, b.MinZ), maxZ = Math.Max(0, b.MaxZ);
-            _heightBar.Minimum = minZ;
-            _heightBar.Maximum = maxZ;
-            _heightBar.Value = maxZ;
-            _heightBar.TickFrequency = Math.Max(1, (maxZ - minZ) / 40);
-            _minZBox.Value = Math.Max(_minZBox.Minimum, minZ);
+            trackBarHeight.Minimum = minZ;
+            trackBarHeight.Maximum = maxZ;
+            trackBarHeight.Value = maxZ;
+            trackBarHeight.TickFrequency = Math.Max(1, (maxZ - minZ) / 40);
+            numericUpDownMinZ.Value = Math.Max(numericUpDownMinZ.Minimum, minZ);
 
             // floors: heights of background / surface parts that cover a good part of the multi
-            _floorBox.Items.Clear();
-            _floorBox.Items.Add("All");
+            comboBoxFloor.Items.Clear();
+            comboBoxFloor.Items.Add("All");
             var floorZ = _current.Parts
                 .Where(p => SpriteFor(p.ItemId, false).Background)
                 .GroupBy(p => (int)p.Z)
@@ -528,9 +614,9 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
                 .ToList();
             foreach (int z in floorZ)
             {
-                _floorBox.Items.Add(new FloorItem(z));
+                comboBoxFloor.Items.Add(new FloorItem(z));
             }
-            _floorBox.SelectedIndex = 0;
+            comboBoxFloor.SelectedIndex = 0;
             _settingHeight = false;
             UpdateHeightLabel();
         }
@@ -549,16 +635,16 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
                 return;
             }
             _settingHeight = true;
-            if (_floorBox.SelectedItem is FloorItem floor)
+            if (comboBoxFloor.SelectedItem is FloorItem floor)
             {
-                FloorItem next = _floorBox.Items.OfType<FloorItem>().FirstOrDefault(f => f.Z > floor.Z);
-                _minZBox.Value = Math.Max(_minZBox.Minimum, floor.Z);
-                _heightBar.Value = Math.Min(_heightBar.Maximum, next != null ? next.Z - 1 : _heightBar.Maximum);
+                FloorItem next = comboBoxFloor.Items.OfType<FloorItem>().FirstOrDefault(f => f.Z > floor.Z);
+                numericUpDownMinZ.Value = Math.Max(numericUpDownMinZ.Minimum, floor.Z);
+                trackBarHeight.Value = Math.Min(trackBarHeight.Maximum, next != null ? next.Z - 1 : trackBarHeight.Maximum);
             }
             else
             {
-                _minZBox.Value = Math.Max(_minZBox.Minimum, _heightBar.Minimum);
-                _heightBar.Value = _heightBar.Maximum;
+                numericUpDownMinZ.Value = Math.Max(numericUpDownMinZ.Minimum, trackBarHeight.Minimum);
+                trackBarHeight.Value = trackBarHeight.Maximum;
             }
             _settingHeight = false;
             UpdateHeightLabel();
@@ -567,17 +653,17 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
 
         private void UpdateHeightLabel()
         {
-            _heightLabel.Text = $"Max z: {_heightBar.Value,3}";
+            labelMaxZ.Text = $"Max z: {trackBarHeight.Value,3}";
         }
 
         private void FillParts()
         {
             _filling = true;
-            _parts.Rows.Clear();
+            dataGridViewParts.Rows.Clear();
             for (int i = 0; i < _current.Parts.Count; i++)
             {
                 EcMultiPart p = _current.Parts[i];
-                _parts.Rows.Add(!_hiddenParts.Contains(i), $"0x{p.ItemId:X4}", ItemName(p.ItemId), p.X, p.Y, p.Z, p.Flags, string.Join(" ", p.Clilocs));
+                dataGridViewParts.Rows.Add(!_hiddenParts.Contains(i), $"0x{p.ItemId:X4}", ItemName(p.ItemId), p.X, p.Y, p.Z, p.Flags, string.Join(" ", p.Clilocs));
             }
             _filling = false;
         }
@@ -604,21 +690,21 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             try
             {
                 var parts = new List<EcMultiPart>();
-                foreach (DataGridViewRow row in _parts.Rows)
+                foreach (DataGridViewRow row in dataGridViewParts.Rows)
                 {
-                    if (row.IsNewRow || row.Cells[ColItem].Value == null)
+                    if (row.IsNewRow || row.Cells[columnItem.Index].Value == null)
                     {
                         continue;
                     }
                     var p = new EcMultiPart
                     {
-                        ItemId = (ushort)Num(row.Cells[ColItem].Value),
-                        X = (short)Num(row.Cells[ColX].Value),
-                        Y = (short)Num(row.Cells[ColY].Value),
-                        Z = (short)Num(row.Cells[ColZ].Value),
-                        Flags = (ushort)Num(row.Cells[ColFlags].Value)
+                        ItemId = (ushort)Num(row.Cells[columnItem.Index].Value),
+                        X = (short)Num(row.Cells[columnX.Index].Value),
+                        Y = (short)Num(row.Cells[columnY.Index].Value),
+                        Z = (short)Num(row.Cells[columnZ.Index].Value),
+                        Flags = (ushort)Num(row.Cells[columnFlags.Index].Value)
                     };
-                    foreach (string c in (row.Cells[ColClilocs].Value?.ToString() ?? string.Empty).Split(new[] { ' ', ',' }, StringSplitOptions.RemoveEmptyEntries))
+                    foreach (string c in (row.Cells[columnClilocs.Index].Value?.ToString() ?? string.Empty).Split(new[] { ' ', ',' }, StringSplitOptions.RemoveEmptyEntries))
                     {
                         p.Clilocs.Add((uint)Num(c));
                     }
@@ -627,16 +713,16 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
                 _current.Parts.Clear();
                 _current.Parts.AddRange(parts);
                 _package.SetData(_currentEntry, _current.Write());
-                _saveButton.Enabled = true;
+                toolStripButtonSave.Enabled = true;
 
                 // refresh the name and show check of new rows
                 _filling = true;
-                for (int i = 0; i < parts.Count && i < _parts.Rows.Count; i++)
+                for (int i = 0; i < parts.Count && i < dataGridViewParts.Rows.Count; i++)
                 {
-                    _parts.Rows[i].Cells[ColName].Value = ItemName(parts[i].ItemId);
-                    if (_parts.Rows[i].Cells[ColShow].Value == null)
+                    dataGridViewParts.Rows[i].Cells[columnName.Index].Value = ItemName(parts[i].ItemId);
+                    if (dataGridViewParts.Rows[i].Cells[columnShow.Index].Value == null)
                     {
-                        _parts.Rows[i].Cells[ColShow].Value = true;
+                        dataGridViewParts.Rows[i].Cells[columnShow.Index].Value = true;
                     }
                 }
                 _filling = false;
@@ -663,7 +749,7 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
         // EC images are 1.5 times the classic size: a tile is 66 pixels wide, one z step 6 pixels
         private const float EcScale = 1.5f;
 
-        private bool LegacyMode => _artBox.SelectedIndex == 1;
+        private bool LegacyMode => comboBoxArt.SelectedIndex == 1;
 
         private Sprite SpriteFor(uint id, bool legacy)
         {
@@ -694,17 +780,20 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
                     // EC world art "build/worldart/<id>.dds": the item is the area (x start, y start)-(x end, y end) of the
                     // padded DDS; the offset places it on the tile. Floors etc. have no area (they are drawn from terrain
                     // like textures in the client) – for them the legacy art is used, scaled to EC size.
+                    // Several items can share one image (atlas): the sails and the mast of a boat all point to
+                    // "00016093_mast.tga" and only use different areas of it. So the image tileart points to is used,
+                    // not "worldart/<item id>".
                     TileArtImageOffset o = tile.EcImageOffset;
-                    if (o.XEnd > o.XStart && o.YEnd > o.YStart)
+                    int artId = WorldArtId(tile, id);
+                    if (o.XEnd > o.XStart && o.YEnd > o.YStart && artId >= 0)
                     {
-                        Bitmap full = Decode(_client.GetArtData(EcClient.ArtSources[0], (int)id));
-                        Bitmap cut = Cut(full, o);
+                        Bitmap cut = Cut(WorldArt(artId), o);
                         if (cut != null)
                         {
                             sprite.Image = cut;
                             sprite.OffsetX = o.XOffset;
                             sprite.OffsetY = o.YOffset - cut.Height;
-                            sprite.Source = "World art (EC)";
+                            sprite.Source = artId == id ? "World art (EC)" : $"World art (EC) {artId:D8}, area {o.XStart},{o.YStart}-{o.XEnd},{o.YEnd}";
                             return sprite;
                         }
                     }
@@ -713,6 +802,10 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
                 // legacy (classic) art "build/tileartlegacy/<id>.dds": the classic image is the area of the classic offset
                 Bitmap legacyFull = Decode(_client.GetArtData(EcClient.ArtSources[1], (int)id));
                 Bitmap image = tile != null ? Cut(legacyFull, tile.CcImageOffset) : legacyFull;
+                if (image != legacyFull)
+                {
+                    legacyFull?.Dispose();
+                }
                 if (image == null && legacyFull == null)
                 {
                     // last try: any image tileart points to
@@ -752,7 +845,53 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
 
         private static Bitmap Decode(byte[] data) => data == null ? null : EcImageHelper.TryDecode(data, out _);
 
-        /// <summary>Cuts the used area out of a padded image (disposes the full image if a part is returned).</summary>
+        private readonly Dictionary<int, Bitmap> _worldArt = new Dictionary<int, Bitmap>();
+
+        /// <summary>Decoded world art image (cached, shared by all items that use it – don't dispose).</summary>
+        private Bitmap WorldArt(int artId)
+        {
+            if (!_worldArt.TryGetValue(artId, out Bitmap image))
+            {
+                image = Decode(_client.GetArtData(EcClient.ArtSources[0], artId));
+                _worldArt[artId] = image;
+            }
+            return image;
+        }
+
+        /// <summary>
+        /// World art id of the item image: the slot 0 image of tileart with the item id if there is one, else the
+        /// first slot 0 image that is not a helper texture (ids from 1000000 on: noise, ripple, ground textures, ...).
+        /// </summary>
+        private int WorldArtId(TileArtEntry tile, uint itemId)
+        {
+            var ids = new List<int>();
+            if (_client.HasStringDictionary)
+            {
+                foreach (TileArtTexture texture in tile.Textures.Where(t => t.Slot == 0))
+                {
+                    foreach (TileArtTextureImage image in texture.Images)
+                    {
+                        if (EcClient.TryParseTexturePath(_client.StringDictionary.Get(image.NameIndex), out EcArtSource source, out int artId)
+                            && source == EcClient.ArtSources[0])
+                        {
+                            ids.Add(artId);
+                        }
+                    }
+                }
+            }
+            if (ids.Contains((int)itemId))
+            {
+                return (int)itemId;
+            }
+            if (ids.Count == 0)
+            {
+                return (int)itemId;
+            }
+            List<int> items = ids.Where(i => i < 1000000).ToList();
+            return items.Count > 0 ? items[0] : -1;
+        }
+
+        /// <summary>Cuts the used area out of a padded image or atlas (the full image is kept; may return it unchanged).</summary>
         private static Bitmap Cut(Bitmap full, TileArtImageOffset o)
         {
             if (full == null)
@@ -772,18 +911,25 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             {
                 return full;
             }
-            Bitmap cut = full.Clone(rect, PixelFormat.Format32bppArgb);
-            full.Dispose();
-            return cut;
+            return full.Clone(rect, PixelFormat.Format32bppArgb);
         }
 
         private void ClearSprites()
         {
+            var shared = new HashSet<Bitmap>(_worldArt.Values.Where(b => b != null));
             foreach (Sprite s in _sprites.Values)
             {
-                s.Image?.Dispose();
+                if (s.Image != null && !shared.Contains(s.Image))
+                {
+                    s.Image.Dispose();
+                }
             }
             _sprites.Clear();
+            foreach (Bitmap b in shared)
+            {
+                b.Dispose();
+            }
+            _worldArt.Clear();
         }
 
         // ==================================================================== drawing
@@ -903,15 +1049,15 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
         {
             if (_current == null)
             {
-                _preview.Image = null;
+                previewPanel.Image = null;
                 _render = null;
                 return;
             }
             try
             {
                 Cursor.Current = Cursors.WaitCursor;
-                _render = Render(_current, (int)_minZBox.Value, _heightBar.Value, LegacyMode, _hiddenBox.Checked, _hiddenParts, _gridBox.Checked);
-                _preview.Image = _render.Image;
+                _render = Render(_current, (int)numericUpDownMinZ.Value, trackBarHeight.Value, LegacyMode, checkBoxFlaggedParts.Checked, _hiddenParts, checkBoxGrid.Checked);
+                previewPanel.Image = _render.Image;
             }
             finally
             {
@@ -921,7 +1067,7 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             var b = _current.Bounds();
             int surface = _current.Parts.Select(p => (p.X, p.Y)).Distinct().Count();
             int missing = _render.Placed.Count(p => p.Sprite.Image == null);
-            _statusLabel.Text = $"Multi {_current.Id}: Size: {b.MaxX - b.MinX + 1},{b.MaxY - b.MinY + 1} MaxHeight: {b.MaxZ} " +
+            toolStripStatusLabel.Text = $"Multi {_current.Id}: Size: {b.MaxX - b.MinX + 1},{b.MaxY - b.MinY + 1} MaxHeight: {b.MaxZ} " +
                                 $"MultiRegion: {b.MinX},{b.MinY},{b.MaxX},{b.MaxY} Surface: {surface}  –  {_current.Parts.Count} parts, {_render.Placed.Count} drawn" +
                                 (missing > 0 ? $", {missing} without image (red)" : string.Empty);
         }
@@ -984,16 +1130,16 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
 
         private void HoverAt(Point location)
         {
-            Placed placed = PartAt(_preview.ClientToImage(location));
+            Placed placed = PartAt(previewPanel.ClientToImage(location));
             int index = placed?.Index ?? -1;
             if (index == _hoverPart)
             {
                 return;
             }
             _hoverPart = index;
-            _hoverLabel.Text = placed == null ? string.Empty
+            toolStripStatusLabelHover.Text = placed == null ? string.Empty
                 : $"0x{placed.Part.ItemId:X4} {placed.Sprite.Name}  x {placed.Part.X} y {placed.Part.Y} z {placed.Part.Z} flags {placed.Part.Flags}";
-            _preview.Invalidate();
+            previewPanel.Invalidate();
         }
 
         private void ClickAt(Point location, MouseButtons button)
@@ -1002,48 +1148,48 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             {
                 return;
             }
-            Placed placed = PartAt(_preview.ClientToImage(location));
-            if (placed == null || placed.Index >= _parts.Rows.Count)
+            Placed placed = PartAt(previewPanel.ClientToImage(location));
+            if (placed == null || placed.Index >= dataGridViewParts.Rows.Count)
             {
                 return;
             }
             bool add = (ModifierKeys & Keys.Control) != 0;
             if (!add)
             {
-                _parts.ClearSelection();
+                dataGridViewParts.ClearSelection();
             }
-            DataGridViewRow row = _parts.Rows[placed.Index];
+            DataGridViewRow row = dataGridViewParts.Rows[placed.Index];
             row.Selected = !add || !row.Selected;
-            _parts.CurrentCell = row.Cells[ColItem];
-            _parts.FirstDisplayedScrollingRowIndex = Math.Max(0, placed.Index - 3);
+            dataGridViewParts.CurrentCell = row.Cells[columnItem.Index];
+            dataGridViewParts.FirstDisplayedScrollingRowIndex = Math.Max(0, placed.Index - 3);
         }
 
         private void PartSelectionChanged()
         {
             _highlighted.Clear();
-            foreach (DataGridViewRow row in _parts.SelectedRows)
+            foreach (DataGridViewRow row in dataGridViewParts.SelectedRows)
             {
                 if (!row.IsNewRow)
                 {
                     _highlighted.Add(row.Index);
                 }
             }
-            _preview.Invalidate();
-            ShowPartImage(_parts.CurrentRow?.Index ?? -1);
+            previewPanel.Invalidate();
+            ShowPartImage(dataGridViewParts.CurrentRow?.Index ?? -1);
         }
 
         private void ShowPartImage(int index)
         {
             if (_current == null || index < 0 || index >= _current.Parts.Count)
             {
-                _partImage.Image = null;
-                _partInfo.Text = string.Empty;
+                pictureBoxPart.Image = null;
+                labelPartInfo.Text = string.Empty;
                 return;
             }
             EcMultiPart p = _current.Parts[index];
             Sprite sprite = SpriteFor(p.ItemId, LegacyMode);
-            _partImage.Image = sprite.Image;
-            _partInfo.Text = $"0x{p.ItemId:X4} {sprite.Name}\r\nx {p.X} y {p.Y} z {p.Z} flags {p.Flags}\r\n{sprite.Source ?? "no image"}";
+            pictureBoxPart.Image = sprite.Image;
+            labelPartInfo.Text = $"0x{p.ItemId:X4} {sprite.Name}\r\nx {p.X} y {p.Y} z {p.Z} flags {p.Flags}\r\n{sprite.Source ?? "no image"}";
         }
 
         private void SetAllVisible(bool visible)
@@ -1065,7 +1211,7 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
 
         private void SetSelectedVisible(bool visible)
         {
-            foreach (DataGridViewRow row in _parts.SelectedRows)
+            foreach (DataGridViewRow row in dataGridViewParts.SelectedRows)
             {
                 if (row.IsNewRow)
                 {
@@ -1086,11 +1232,11 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
         private void UpdateShowColumn()
         {
             _filling = true;
-            for (int i = 0; i < _parts.Rows.Count; i++)
+            for (int i = 0; i < dataGridViewParts.Rows.Count; i++)
             {
-                if (!_parts.Rows[i].IsNewRow)
+                if (!dataGridViewParts.Rows[i].IsNewRow)
                 {
-                    _parts.Rows[i].Cells[ColShow].Value = !_hiddenParts.Contains(i);
+                    dataGridViewParts.Rows[i].Cells[columnShow.Index].Value = !_hiddenParts.Contains(i);
                 }
             }
             _filling = false;
@@ -1099,32 +1245,32 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
 
         private void SelectSameItem()
         {
-            if (_current == null || _parts.CurrentRow == null || _parts.CurrentRow.Index >= _current.Parts.Count)
+            if (_current == null || dataGridViewParts.CurrentRow == null || dataGridViewParts.CurrentRow.Index >= _current.Parts.Count)
             {
                 return;
             }
-            ushort item = _current.Parts[_parts.CurrentRow.Index].ItemId;
+            ushort item = _current.Parts[dataGridViewParts.CurrentRow.Index].ItemId;
             SelectWhere(p => p.ItemId == item);
         }
 
         private void SelectSameZ()
         {
-            if (_current == null || _parts.CurrentRow == null || _parts.CurrentRow.Index >= _current.Parts.Count)
+            if (_current == null || dataGridViewParts.CurrentRow == null || dataGridViewParts.CurrentRow.Index >= _current.Parts.Count)
             {
                 return;
             }
-            short z = _current.Parts[_parts.CurrentRow.Index].Z;
+            short z = _current.Parts[dataGridViewParts.CurrentRow.Index].Z;
             SelectWhere(p => p.Z == z);
         }
 
         private void SelectWhere(Func<EcMultiPart, bool> predicate)
         {
-            _parts.ClearSelection();
-            for (int i = 0; i < _current.Parts.Count && i < _parts.Rows.Count; i++)
+            dataGridViewParts.ClearSelection();
+            for (int i = 0; i < _current.Parts.Count && i < dataGridViewParts.Rows.Count; i++)
             {
                 if (predicate(_current.Parts[i]))
                 {
-                    _parts.Rows[i].Selected = true;
+                    dataGridViewParts.Rows[i].Selected = true;
                 }
             }
         }
@@ -1153,7 +1299,7 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
 
         private void SaveImage(Bitmap image, string fileName, ImageFormat format)
         {
-            bool transparent = format.Equals(ImageFormat.Png) && _transparencyItem.Checked;
+            bool transparent = format.Equals(ImageFormat.Png) && useTransparencyForPngToolStripMenuItem.Checked;
             using (var output = new Bitmap(image.Width, image.Height, PixelFormat.Format32bppArgb))
             {
                 using (Graphics g = Graphics.FromImage(output))
@@ -1171,7 +1317,7 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             {
                 return;
             }
-            string suffix = _heightBar.Value < _heightBar.Maximum || _minZBox.Value > _heightBar.Minimum ? $"_Z{_minZBox.Value:000}-{_heightBar.Value:000}" : string.Empty;
+            string suffix = trackBarHeight.Value < trackBarHeight.Maximum || numericUpDownMinZ.Value > trackBarHeight.Minimum ? $"_Z{numericUpDownMinZ.Value:000}-{trackBarHeight.Value:000}" : string.Empty;
             using (var dialog = new SaveFileDialog
             {
                 InitialDirectory = OutputFolder(),
@@ -1182,7 +1328,7 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
                 if (dialog.ShowDialog(this) == DialogResult.OK)
                 {
                     SaveImage(_render.Image, dialog.FileName, format);
-                    _statusLabel.Text = $"Multi saved to {dialog.FileName}";
+                    toolStripStatusLabel.Text = $"Multi saved to {dialog.FileName}";
                 }
             }
         }
@@ -1202,7 +1348,7 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
                 }
                 Clipboard.SetImage(copy);
             }
-            _statusLabel.Text = "Image copied to the clipboard.";
+            toolStripStatusLabel.Text = "Image copied to the clipboard.";
         }
 
         private void ChangeBackgroundColor()
@@ -1212,8 +1358,8 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
                 if (dialog.ShowDialog(this) == DialogResult.OK)
                 {
                     _backgroundColor = dialog.Color;
-                    _preview.BackColor = dialog.Color;
-                    _preview.Invalidate();
+                    previewPanel.BackColor = dialog.Color;
+                    previewPanel.Invalidate();
                 }
             }
         }
@@ -1239,7 +1385,7 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
                         try
                         {
                             EcMulti multi = EcMulti.Read(_package.ReadData(entry));
-                            RenderResult r = Render(multi, short.MinValue, short.MaxValue, LegacyMode, _hiddenBox.Checked, null, false);
+                            RenderResult r = Render(multi, short.MinValue, short.MaxValue, LegacyMode, checkBoxFlaggedParts.Checked, null, false);
                             if (r.Image != null)
                             {
                                 SaveImage(r.Image, Path.Combine(dialog.SelectedPath, $"Multi 0x{id:X4}.{Extension(format)}"), format);
@@ -1253,7 +1399,7 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
                         }
                         if (done % 10 == 0)
                         {
-                            _statusLabel.Text = $"Exporting images... {done}";
+                            toolStripStatusLabel.Text = $"Exporting images... {done}";
                             Application.DoEvents();
                         }
                     }
@@ -1262,7 +1408,7 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
                 {
                     Cursor.Current = Cursors.Default;
                 }
-                _statusLabel.Text = $"{done} images saved to {dialog.SelectedPath}";
+                toolStripStatusLabel.Text = $"{done} images saved to {dialog.SelectedPath}";
             }
         }
 
@@ -1390,7 +1536,7 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
                 if (dialog.ShowDialog(this) == DialogResult.OK)
                 {
                     File.WriteAllText(dialog.FileName, FormatParts(_current, format), new UTF8Encoding(false));
-                    _statusLabel.Text = $"Multi saved to {dialog.FileName}";
+                    toolStripStatusLabel.Text = $"Multi saved to {dialog.FileName}";
                 }
             }
         }
@@ -1421,7 +1567,7 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
                         // skip broken entries
                     }
                 }
-                _statusLabel.Text = $"{done} multis saved to {dialog.SelectedPath}";
+                toolStripStatusLabel.Text = $"{done} multis saved to {dialog.SelectedPath}";
             }
         }
 
@@ -1430,7 +1576,9 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
         /// </summary>
         private void ImportParts()
         {
-            if (_current == null)
+            // into the selected multi, or into the selected free slot (a new multi)
+            int targetId = _current?.Id ?? SelectedId;
+            if (_package == null || targetId < 0)
             {
                 return;
             }
@@ -1507,15 +1655,27 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
                         }
                     }
 
-                    _current.Parts.Clear();
-                    _current.Parts.AddRange(parts);
-                    _package.SetData(_currentEntry, _current.Write());
-                    _saveButton.Enabled = true;
-                    _hiddenParts.Clear();
-                    SetupHeights();
-                    FillParts();
-                    Redraw();
-                    _statusLabel.Text = $"{parts.Count} parts imported (not saved yet).";
+                    if (_current == null || _currentEntry == null)
+                    {
+                        var multi = new EcMulti { Id = targetId };
+                        multi.Parts.AddRange(parts);
+                        _package.AddOrReplace(string.Format(CultureInfo.InvariantCulture, EcMulti.NamePattern, targetId), multi.Write(), EcUopCompression.Zlib);
+                        toolStripButtonSave.Enabled = true;
+                        FillList();
+                        SelectId(targetId);
+                    }
+                    else
+                    {
+                        _current.Parts.Clear();
+                        _current.Parts.AddRange(parts);
+                        _package.SetData(_currentEntry, _current.Write());
+                        toolStripButtonSave.Enabled = true;
+                        _hiddenParts.Clear();
+                        SetupHeights();
+                        FillParts();
+                        Redraw();
+                    }
+                    toolStripStatusLabel.Text = $"{parts.Count} parts imported into multi {targetId} (not saved yet).";
                 }
                 catch (FormatException ex)
                 {
@@ -1532,8 +1692,9 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             {
                 return;
             }
-            int next = _multis.Count == 0 ? 0 : _multis.Max(m => m.Id) + 1;
-            string text = EcDialogs.Prompt(this, "New multi", "Id (the selected multi is copied, nothing selected = empty):", next.ToString(CultureInfo.InvariantCulture));
+            // on a free slot: that id, else the next id after the last multi
+            int next = SelectedEntry == null && SelectedId >= 0 ? SelectedId : (_multis.Count == 0 ? 0 : _multis.Max(m => m.Id) + 1);
+            string text = EcDialogs.Prompt(this, "New multi", "Id (the selected multi is copied, free slot = empty multi):", next.ToString(CultureInfo.InvariantCulture));
             if (text == null || !EcDialogs.TryParseNumber(text, out long id) || id < 0)
             {
                 return;
@@ -1549,11 +1710,10 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
                 multi.Parts.AddRange(_current.Parts.Select(p => p.Clone()));
             }
             _package.AddOrReplace(name, multi.Write(), EcUopCompression.Zlib);
-            _saveButton.Enabled = true;
+            toolStripButtonSave.Enabled = true;
             _current = multi;
             FillList();
-            _searchBox.Text = id.ToString(CultureInfo.InvariantCulture);
-            Search();
+            SelectId((int)id);
         }
 
         private void DeleteMulti()
@@ -1565,10 +1725,10 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             _package.Remove(_currentEntry);
             _current = null;
             _currentEntry = null;
-            _parts.Rows.Clear();
-            _preview.Image = null;
+            dataGridViewParts.Rows.Clear();
+            previewPanel.Image = null;
             _render = null;
-            _saveButton.Enabled = true;
+            toolStripButtonSave.Enabled = true;
             FillList();
         }
 
@@ -1576,18 +1736,9 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
         {
             if (_package != null && EcPackageSaver.Save(this, new[] { _package }, saveAs))
             {
-                _saveButton.Enabled = false;
-                _statusLabel.Text = "Saved.";
+                toolStripButtonSave.Enabled = false;
+                toolStripStatusLabel.Text = "Saved.";
             }
-        }
-
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                ClearSprites();
-            }
-            base.Dispose(disposing);
         }
     }
 }
