@@ -27,7 +27,7 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
     /// <summary>
     /// Gumps of the Enhanced Client: interface gumps (Interface.uop, TGA) and legacy gumps (gumpartLegacyMUL.uop, classic RLE).
     /// </summary>
-    public sealed class EcGumpsControl : UserControl, IEcEditor
+    public sealed partial class EcGumpsControl : UserControl, IEcEditor
     {
         private sealed class Source
         {
@@ -44,15 +44,6 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             new Source { Title = "Legacy gumps (gumpartLegacyMUL.uop)", File = "gumpartLegacyMUL.uop", Pattern = "build/gumpartlegacymul/{0:D8}.tga", Legacy = true },
         };
 
-        private readonly ToolStripComboBox _sourceBox;
-        private readonly ToolStripTextBox _searchBox;
-        private readonly ToolStripComboBox _sizeBox;
-        private readonly ToolStripButton _saveButton;
-        private readonly EcThumbnailGrid _grid;
-        private readonly EcPreviewPanel _preview;
-        private readonly Label _info;
-        private readonly ToolStripStatusLabel _statusLabel;
-
         private EcClient _client;
         private bool _loaded;
         private Source _source;
@@ -61,61 +52,15 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
 
         public EcGumpsControl()
         {
+            InitializeComponent();
             Dock = DockStyle.Fill;
 
-            var toolStrip = new ToolStrip { GripStyle = ToolStripGripStyle.Hidden };
-            _sourceBox = new ToolStripComboBox { DropDownStyle = ComboBoxStyle.DropDownList, Width = 240 };
-            _sourceBox.Items.AddRange(_sources.Cast<object>().ToArray());
-            _sourceBox.SelectedIndexChanged += (s, e) => { if (_loaded) { LoadSource(); } };
-            _searchBox = new ToolStripTextBox { Width = 90, ToolTipText = "Gump id – Enter" };
-            _searchBox.KeyDown += (s, e) => { if (e.KeyCode == Keys.Enter) { e.SuppressKeyPress = true; Search(); } };
-            _sizeBox = new ToolStripComboBox { DropDownStyle = ComboBoxStyle.DropDownList, Width = 60 };
-            _sizeBox.Items.AddRange(new object[] { "64", "96", "128", "192" });
-            _sizeBox.SelectedIndex = 2;
-            _sizeBox.SelectedIndexChanged += (s, e) => _grid.CellSize = int.Parse((string)_sizeBox.SelectedItem, CultureInfo.InvariantCulture);
-            _saveButton = new ToolStripButton("Save", null, (s, e) => Save(false)) { Enabled = false };
-
-            toolStrip.Items.Add(_sourceBox);
-            toolStrip.Items.Add(new ToolStripLabel("Id:"));
-            toolStrip.Items.Add(_searchBox);
-            toolStrip.Items.Add(new ToolStripButton("Search", null, (s, e) => Search()));
-            toolStrip.Items.Add(new ToolStripLabel("Size:"));
-            toolStrip.Items.Add(_sizeBox);
-            toolStrip.Items.Add(new ToolStripSeparator());
-            toolStrip.Items.Add(new ToolStripButton("Replace...", null, (s, e) => Replace()));
-            toolStrip.Items.Add(new ToolStripButton("Insert...", null, (s, e) => Insert()));
-            toolStrip.Items.Add(new ToolStripButton("Remove", null, (s, e) => RemoveSelected()));
-            var exportButton = new ToolStripDropDownButton("Export");
-            exportButton.DropDownItems.Add("Selected as PNG...", null, (s, e) => ExportSelected());
-            exportButton.DropDownItems.Add("All as PNG to folder...", null, (s, e) => ExportAll());
-            toolStrip.Items.Add(exportButton);
-            toolStrip.Items.Add(new ToolStripSeparator());
-            toolStrip.Items.Add(_saveButton);
-            toolStrip.Items.Add(new ToolStripButton("Save as...", null, (s, e) => Save(true)));
-
-            _grid = new EcThumbnailGrid { Dock = DockStyle.Fill, CellSize = 128 };
-            _grid.ImageRequested += index => index < _items.Count ? Decode(_items[index].Entry, out _) : null;
-            _grid.LabelRequested += index => index < _items.Count ? _items[index].Id + (_items[index].Entry.IsModified ? "*" : string.Empty) : string.Empty;
-            _grid.SelectionChanged += (s, e) => ShowSelected();
-
-            _preview = new EcPreviewPanel { Dock = DockStyle.Fill };
-            _info = new Label { Dock = DockStyle.Top, Height = 50, Padding = new Padding(4), Font = EcDialogs.MonoFont(8.5f) };
-            var right = new Panel { Dock = DockStyle.Fill };
-            right.Controls.Add(_preview);
-            right.Controls.Add(_info);
-
-            var split = new SplitContainer { Dock = DockStyle.Fill, FixedPanel = FixedPanel.Panel2 };
-            split.Panel1.Controls.Add(_grid);
-            split.Panel2.Controls.Add(right);
-            split.HandleCreated += (s, e) => { try { split.SplitterDistance = Math.Max(300, split.Width - 420); } catch (InvalidOperationException) { } };
-
-            var status = new StatusStrip();
-            _statusLabel = new ToolStripStatusLabel("Choose the Enhanced Client folder on top.") { Spring = true, TextAlign = ContentAlignment.MiddleLeft };
-            status.Items.Add(_statusLabel);
-
-            Controls.Add(split);
-            Controls.Add(toolStrip);
-            Controls.Add(status);
+            // runtime only: source list, size and the image callbacks of the grid
+            toolStripComboBoxSource.Items.AddRange(_sources.Cast<object>().ToArray());
+            toolStripComboBoxSize.SelectedIndex = 2;
+            thumbnailGrid.ImageRequested += index => index < _items.Count ? Decode(_items[index].Entry, out _) : null;
+            thumbnailGrid.LabelRequested += index => index < _items.Count ? _items[index].Id + (_items[index].Entry.IsModified ? "*" : string.Empty) : string.Empty;
+            thumbnailGrid.SelectionChanged += OnGridSelectionChanged;
         }
 
         public void SetClient(EcClient client)
@@ -124,9 +69,9 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             _loaded = false;
             _package = null;
             _items = new List<(int, EcUopEntry)>();
-            _grid.ItemCount = 0;
-            _preview.Image = null;
-            _saveButton.Enabled = false;
+            thumbnailGrid.ItemCount = 0;
+            previewPanel.Image = null;
+            toolStripButtonSave.Enabled = false;
             if (Visible && client != null)
             {
                 OnActivated();
@@ -139,9 +84,9 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             {
                 return;
             }
-            if (_sourceBox.SelectedIndex < 0)
+            if (toolStripComboBoxSource.SelectedIndex < 0)
             {
-                _sourceBox.SelectedIndex = 0;
+                toolStripComboBoxSource.SelectedIndex = 0;
             }
             _loaded = true;
             LoadSource();
@@ -149,7 +94,7 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
 
         private void LoadSource()
         {
-            _source = _sourceBox.SelectedItem as Source;
+            _source = toolStripComboBoxSource.SelectedItem as Source;
             if (_source == null)
             {
                 return;
@@ -161,8 +106,8 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
                 if (_package == null)
                 {
                     _items = new List<(int, EcUopEntry)>();
-                    _grid.ItemCount = 0;
-                    _statusLabel.Text = $"{_source.File} was not found.";
+                    thumbnailGrid.ItemCount = 0;
+                    toolStripStatusLabel.Text = $"{_source.File} was not found.";
                     return;
                 }
                 _package.Changed -= PackageChanged;
@@ -178,7 +123,7 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
 
         private void PackageChanged(object sender, EventArgs e)
         {
-            _saveButton.Enabled = _sources.Any(s => _client.IsOpen(s.File) && (_client.GetPackage(s.File)?.IsDirty ?? false));
+            toolStripButtonSave.Enabled = _sources.Any(s => _client.IsOpen(s.File) && (_client.GetPackage(s.File)?.IsDirty ?? false));
         }
 
         private string Prefix => _source.Pattern.Substring(0, _source.Pattern.LastIndexOf('/') + 1);
@@ -192,8 +137,8 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
                 .Where(x => x.Id >= 0)
                 .OrderBy(x => x.Id)
                 .ToList();
-            _grid.ItemCount = _items.Count;
-            _statusLabel.Text = $"{_source.File}: {_items.Count} gumps.";
+            thumbnailGrid.ItemCount = _items.Count;
+            toolStripStatusLabel.Text = $"{_source.File}: {_items.Count} gumps.";
         }
 
         private Bitmap Decode(EcUopEntry entry, out string info)
@@ -209,39 +154,39 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             return EcImageHelper.TryDecode(data, out info, entry.Name);
         }
 
-        private (int Id, EcUopEntry Entry)? Selected => _grid.SelectedIndex >= 0 && _grid.SelectedIndex < _items.Count ? _items[_grid.SelectedIndex] : ((int, EcUopEntry)?)null;
+        private (int Id, EcUopEntry Entry)? Selected => thumbnailGrid.SelectedIndex >= 0 && thumbnailGrid.SelectedIndex < _items.Count ? _items[thumbnailGrid.SelectedIndex] : ((int, EcUopEntry)?)null;
 
         private void ShowSelected()
         {
             var sel = Selected;
             if (sel == null)
             {
-                _preview.Image = null;
-                _info.Text = string.Empty;
+                previewPanel.Image = null;
+                labelInfo.Text = string.Empty;
                 return;
             }
             try
             {
-                _preview.Image = Decode(sel.Value.Entry, out string info);
-                _info.Text = $"Gump {sel.Value.Id} (0x{sel.Value.Id:X})\r\n{sel.Value.Entry.Name}\r\n{info ?? "empty"}";
+                previewPanel.Image = Decode(sel.Value.Entry, out string info);
+                labelInfo.Text = $"Gump {sel.Value.Id} (0x{sel.Value.Id:X})\r\n{sel.Value.Entry.Name}\r\n{info ?? "empty"}";
             }
             catch (Exception ex)
             {
-                _preview.Image = null;
-                _info.Text = ex.Message;
+                previewPanel.Image = null;
+                labelInfo.Text = ex.Message;
             }
         }
 
         private void Search()
         {
-            if (!EcDialogs.TryParseNumber(_searchBox.Text, out long id))
+            if (!EcDialogs.TryParseNumber(toolStripTextBoxSearch.Text, out long id))
             {
                 return;
             }
             int index = _items.FindIndex(i => i.Id >= id);
             if (index >= 0)
             {
-                _grid.SelectedIndex = index;
+                thumbnailGrid.SelectedIndex = index;
             }
         }
 
@@ -277,7 +222,7 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             try
             {
                 _package.SetData(sel.Value.Entry, Encode(file));
-                _grid.InvalidateItem(_grid.SelectedIndex);
+                thumbnailGrid.InvalidateItem(thumbnailGrid.SelectedIndex);
                 ShowSelected();
             }
             catch (Exception ex)
@@ -312,7 +257,7 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             {
                 _package.AddOrReplace(name, Encode(file), _package.PreferredCompression);
                 BuildItems();
-                _searchBox.Text = id.ToString(CultureInfo.InvariantCulture);
+                toolStripTextBoxSearch.Text = id.ToString(CultureInfo.InvariantCulture);
                 Search();
             }
             catch (Exception ex)
@@ -328,10 +273,10 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             {
                 return;
             }
-            int index = _grid.SelectedIndex;
+            int index = thumbnailGrid.SelectedIndex;
             _package.Remove(sel.Value.Entry);
             BuildItems();
-            _grid.SelectedIndex = Math.Min(index, _items.Count - 1);
+            thumbnailGrid.SelectedIndex = Math.Min(index, _items.Count - 1);
         }
 
         private void ExportSelected()
@@ -377,7 +322,7 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
                         }
                         if (done % 200 == 0)
                         {
-                            _statusLabel.Text = $"Exporting {done}...";
+                            toolStripStatusLabel.Text = $"Exporting {done}...";
                             Application.DoEvents();
                         }
                     }
@@ -386,7 +331,7 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
                 {
                     Cursor = Cursors.Default;
                 }
-                _statusLabel.Text = $"{done} gumps exported.";
+                toolStripStatusLabel.Text = $"{done} gumps exported.";
             }
         }
 
@@ -395,11 +340,52 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             var packages = _sources.Where(s => _client != null && _client.IsOpen(s.File)).Select(s => _client.GetPackage(s.File));
             if (EcPackageSaver.Save(this, packages, saveAs))
             {
-                _saveButton.Enabled = false;
-                _grid.ClearCache();
-                _grid.Invalidate();
-                _statusLabel.Text = "Saved.";
+                toolStripButtonSave.Enabled = false;
+                thumbnailGrid.ClearCache();
+                thumbnailGrid.Invalidate();
+                toolStripStatusLabel.Text = "Saved.";
             }
         }
+
+        // ==================================================================== event handlers (designer)
+
+        private void OnSourceChanged(object sender, EventArgs e)
+        {
+            if (_loaded)
+            {
+                LoadSource();
+            }
+        }
+
+        private void OnSearchKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                e.SuppressKeyPress = true;
+                Search();
+            }
+        }
+
+        private void OnClickSearch(object sender, EventArgs e) => Search();
+
+        private void OnSizeChanged(object sender, EventArgs e) =>
+            thumbnailGrid.CellSize = int.Parse((string)toolStripComboBoxSize.SelectedItem, CultureInfo.InvariantCulture);
+
+        private void OnClickReplace(object sender, EventArgs e) => Replace();
+
+        private void OnClickInsert(object sender, EventArgs e) => Insert();
+
+        private void OnClickRemove(object sender, EventArgs e) => RemoveSelected();
+
+        private void OnClickExportSelected(object sender, EventArgs e) => ExportSelected();
+
+        private void OnClickExportAll(object sender, EventArgs e) => ExportAll();
+
+        private void OnClickSave(object sender, EventArgs e) => Save(false);
+
+        private void OnClickSaveAs(object sender, EventArgs e) => Save(true);
+
+        private void OnGridSelectionChanged(object sender, EventArgs e) => ShowSelected();
+
     }
 }

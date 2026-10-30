@@ -45,6 +45,8 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             Controls.Add(_scrollBar);
         }
 
+        [System.ComponentModel.Browsable(false)]
+        [System.ComponentModel.DesignerSerializationVisibility(System.ComponentModel.DesignerSerializationVisibility.Hidden)]
         public int ItemCount
         {
             get => _itemCount;
@@ -58,6 +60,7 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             }
         }
 
+        [System.ComponentModel.DefaultValue(96)]
         public int CellSize
         {
             get => _cellSize;
@@ -70,6 +73,8 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             }
         }
 
+        [System.ComponentModel.Browsable(false)]
+        [System.ComponentModel.DesignerSerializationVisibility(System.ComponentModel.DesignerSerializationVisibility.Hidden)]
         public int SelectedIndex
         {
             get => _selectedIndex;

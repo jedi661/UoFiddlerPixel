@@ -27,7 +27,7 @@ namespace UoFiddler.Plugin.Enhanced
 
         public override string Author { get; } = "Nikodemus (UoFiddlerPixel)";
 
-        public override string Version { get; } = "0.9.1";
+        public override string Version { get; } = "0.11.0";
 
         public override IPluginHost Host { get; set; }
 

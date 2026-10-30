@@ -26,21 +26,9 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
     /// <summary>
     /// Editor for tileart.uop (the tile data of the Enhanced Client).
     /// </summary>
-    public sealed class EcTileArtControl : UserControl, IEcEditor
+    public sealed partial class EcTileArtControl : UserControl, IEcEditor
     {
         private static readonly TileArtFlags[] _flagValues = Enum.GetValues(typeof(TileArtFlags)).Cast<TileArtFlags>().Where(f => f != TileArtFlags.None).ToArray();
-
-        private readonly ToolStripTextBox _filterBox;
-        private readonly ToolStripComboBox _rangeBox;
-        private readonly ToolStripButton _saveButton;
-        private readonly ListView _list;
-        private readonly PropertyGrid _propertyGrid;
-        private readonly CheckedListBox _flagList;
-        private readonly CheckedListBox _flag2List;
-        private readonly ListView _textureList;
-        private readonly EcPreviewPanel _texturePreview;
-        private readonly Label _textureInfo;
-        private readonly ToolStripStatusLabel _statusLabel;
 
         private EcClient _client;
         private TileArtFile _tileArt;
@@ -56,115 +44,16 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
 
         public EcTileArtControl()
         {
+            InitializeComponent();
             Dock = DockStyle.Fill;
 
-            // ---------------- tool bar
-            var toolStrip = new ToolStrip { GripStyle = ToolStripGripStyle.Hidden };
-            _filterBox = new ToolStripTextBox { Width = 160, ToolTipText = "Id (decimal / 0x hex) or part of the name – Enter" };
-            _filterBox.KeyDown += (s, e) => { if (e.KeyCode == Keys.Enter) { e.SuppressKeyPress = true; ApplyFilter(); } };
-            _rangeBox = new ToolStripComboBox { DropDownStyle = ComboBoxStyle.DropDownList, Width = 150 };
-            _rangeBox.Items.AddRange(new object[] { "All entries", "0x0000 - 0x3FFF", "0x4000 - 0xFFFF", ">= 0x10000", "EC only (>= 10000000)", "Modified", "Id differs from file" });
-            _rangeBox.SelectedIndex = 0;
-            _rangeBox.SelectedIndexChanged += (s, e) => ApplyFilter();
-            _saveButton = new ToolStripButton("Save", null, (s, e) => Save(false)) { Enabled = false, ToolTipText = "Save tileart.uop (and string_dictionary.uop if names were added)" };
-
-            toolStrip.Items.Add(new ToolStripLabel("Search:"));
-            toolStrip.Items.Add(_filterBox);
-            toolStrip.Items.Add(new ToolStripButton("Apply", null, (s, e) => ApplyFilter()));
-            toolStrip.Items.Add(_rangeBox);
-            toolStrip.Items.Add(new ToolStripSeparator());
-            toolStrip.Items.Add(new ToolStripButton("Duplicate...", null, (s, e) => DuplicateSelected()) { ToolTipText = "Create a new entry as copy of the selected one" });
-            toolStrip.Items.Add(new ToolStripButton("Remove", null, (s, e) => RemoveSelected()));
-            var moreButton = new ToolStripDropDownButton("Entry");
-            moreButton.DropDownItems.Add("Export entry (.bin)...", null, (s, e) => ExportEntry());
-            moreButton.DropDownItems.Add("Import entry (.bin) into selected...", null, (s, e) => ImportEntry());
-            moreButton.DropDownItems.Add(new ToolStripSeparator());
-            moreButton.DropDownItems.Add("Export list (csv)...", null, (s, e) => ExportCsv());
-            toolStrip.Items.Add(moreButton);
-            toolStrip.Items.Add(new ToolStripSeparator());
-            toolStrip.Items.Add(_saveButton);
-            toolStrip.Items.Add(new ToolStripButton("Save as...", null, (s, e) => Save(true)) { ToolTipText = "Write tileart.uop (and string_dictionary.uop) into another folder" });
-
-            // ---------------- list
-            _list = new ListView { Dock = DockStyle.Fill, View = View.Details, FullRowSelect = true, HideSelection = false, VirtualMode = true, MultiSelect = false };
-            _list.Columns.Add("Id", 70, HorizontalAlignment.Right);
-            _list.Columns.Add("Hex", 70);
-            _list.Columns.Add("Name", 200);
-            _list.Columns.Add("Flags", 220);
-            _list.RetrieveVirtualItem += RetrieveItem;
-            _list.SelectedIndexChanged += (s, e) => ShowSelected();
-
-            // ---------------- details
-            _propertyGrid = new PropertyGrid { Dock = DockStyle.Fill, ToolbarVisible = false, PropertySort = PropertySort.Categorized };
-            _propertyGrid.PropertyValueChanged += (s, e) => { RefreshFlags(); _list.Invalidate(); };
-
-            _flagList = new CheckedListBox { Dock = DockStyle.Fill, CheckOnClick = true, IntegralHeight = false, MultiColumn = true, ColumnWidth = 130 };
+            // runtime only: flag names from the enum
+            toolStripComboBoxRange.SelectedIndex = 0;
             foreach (TileArtFlags flag in _flagValues)
             {
-                _flagList.Items.Add(flag.ToString());
+                checkedListBoxFlags.Items.Add(flag.ToString());
+                checkedListBoxFlags2.Items.Add(flag.ToString());
             }
-            _flagList.ItemCheck += FlagChecked;
-
-            _flag2List = new CheckedListBox { Dock = DockStyle.Fill, CheckOnClick = true, IntegralHeight = false, MultiColumn = true, ColumnWidth = 130 };
-            foreach (TileArtFlags flag in _flagValues)
-            {
-                _flag2List.Items.Add(flag.ToString());
-            }
-            _flag2List.ItemCheck += Flag2Checked;
-
-            _textureList = new ListView { Dock = DockStyle.Top, Height = 150, View = View.Details, FullRowSelect = true, HideSelection = false, MultiSelect = false };
-            _textureList.Columns.Add("Slot", 40);
-            _textureList.Columns.Add("Image (string dictionary)", 300);
-            _textureList.Columns.Add("Index", 70);
-            _textureList.SelectedIndexChanged += (s, e) => ShowTexture();
-            _textureList.DoubleClick += (s, e) => ChangeTexture();
-
-            var textureStrip = new ToolStrip { GripStyle = ToolStripGripStyle.Hidden, Dock = DockStyle.Top };
-            textureStrip.Items.Add(new ToolStripButton("Change image...", null, (s, e) => ChangeTexture()) { ToolTipText = "Point the reference to another image path, e.g. Data\\WorldArt\\00012345_name.tga" });
-            textureStrip.Items.Add(new ToolStripButton("Show in Art tab", null, (s, e) => ShowTextureInArt()));
-
-            _texturePreview = new EcPreviewPanel { Dock = DockStyle.Fill };
-            _textureInfo = new Label { Dock = DockStyle.Top, Height = 44, Padding = new Padding(4), Font = EcDialogs.MonoFont(8.5f) };
-
-            var texturePage = new TabPage("Textures");
-            texturePage.Controls.Add(_texturePreview);
-            texturePage.Controls.Add(_textureInfo);
-            texturePage.Controls.Add(_textureList);
-            texturePage.Controls.Add(textureStrip);
-
-            var flagPage = new TabPage("Flags (EC)");
-            flagPage.Controls.Add(_flagList);
-            var flag2Page = new TabPage("Flags 2 (classic)");
-            flag2Page.Controls.Add(_flag2List);
-            flag2Page.Controls.Add(new Label
-            {
-                Dock = DockStyle.Top,
-                Height = 32,
-                Text = "Second flag field: same bits as the flags of the classic tiledata.mul (in 2/3 of the entries both fields are equal)."
-            });
-
-            var detailTabs = new TabControl { Dock = DockStyle.Fill };
-            detailTabs.TabPages.Add(texturePage);
-            detailTabs.TabPages.Add(flagPage);
-            detailTabs.TabPages.Add(flag2Page);
-
-            var detailSplit = new SplitContainer { Dock = DockStyle.Fill, Orientation = Orientation.Horizontal };
-            detailSplit.Panel1.Controls.Add(_propertyGrid);
-            detailSplit.Panel2.Controls.Add(detailTabs);
-            detailSplit.HandleCreated += (s, e) => { try { detailSplit.SplitterDistance = Math.Max(150, detailSplit.Height / 2); } catch (InvalidOperationException) { } };
-
-            var split = new SplitContainer { Dock = DockStyle.Fill };
-            split.Panel1.Controls.Add(_list);
-            split.Panel2.Controls.Add(detailSplit);
-            split.HandleCreated += (s, e) => { try { split.SplitterDistance = Math.Max(250, split.Width / 2 - 100); } catch (InvalidOperationException) { } };
-
-            var status = new StatusStrip();
-            _statusLabel = new ToolStripStatusLabel("Choose the Enhanced Client folder on top.") { Spring = true, TextAlign = ContentAlignment.MiddleLeft };
-            status.Items.Add(_statusLabel);
-
-            Controls.Add(split);
-            Controls.Add(toolStrip);
-            Controls.Add(status);
         }
 
         public void SetClient(EcClient client)
@@ -173,13 +62,13 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             _tileArt = null;
             _strings = null;
             _view = new List<TileArtRecord>();
-            _list.VirtualListSize = 0;
-            _propertyGrid.SelectedObject = null;
-            _textureList.Items.Clear();
-            _texturePreview.Image = null;
+            listViewTiles.VirtualListSize = 0;
+            propertyGrid.SelectedObject = null;
+            listViewTextures.Items.Clear();
+            previewPanelTexture.Image = null;
             _loaded = false;
-            _saveButton.Enabled = false;
-            _statusLabel.Text = client == null ? "Choose the Enhanced Client folder on top." : "Ready.";
+            toolStripButtonSave.Enabled = false;
+            toolStripStatusLabel.Text = client == null ? "Choose the Enhanced Client folder on top." : "Ready.";
             if (Visible && client != null)
             {
                 OnActivated();
@@ -197,19 +86,19 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             Cursor = Cursors.WaitCursor;
             try
             {
-                _statusLabel.Text = "Loading tileart.uop...";
+                toolStripStatusLabel.Text = "Loading tileart.uop...";
                 Application.DoEvents();
 
                 _strings = _client.HasStringDictionary ? _client.StringDictionary : null;
                 _tileArt = _client.GetTileArt();
                 if (_tileArt == null)
                 {
-                    _statusLabel.Text = $"tileart.uop was not found in {_client.Folder}.";
+                    toolStripStatusLabel.Text = $"tileart.uop was not found in {_client.Folder}.";
                     return;
                 }
 
                 ApplyFilter();
-                _statusLabel.Text = $"tileart.uop: {_tileArt.Count} entries" +
+                toolStripStatusLabel.Text = $"tileart.uop: {_tileArt.Count} entries" +
                                     (_tileArt.FailedEntries > 0 ? $", {_tileArt.FailedEntries} could not be read" : string.Empty) +
                                     (_strings == null ? " – string_dictionary.uop not found, names are not shown" : $", {_strings.Count} strings");
             }
@@ -234,7 +123,7 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
 
             TileArtRecord selected = SelectedRecord;
             IEnumerable<TileArtRecord> records = _tileArt.Records;
-            switch (_rangeBox.SelectedIndex)
+            switch (toolStripComboBoxRange.SelectedIndex)
             {
                 case 1: records = records.Where(r => r.Id < 0x4000); break;
                 case 2: records = records.Where(r => r.Id >= 0x4000 && r.Id < 0x10000); break;
@@ -244,7 +133,7 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
                 case 6: records = records.Where(r => r.IdMismatch || !r.NameKnown); break;
             }
 
-            string filter = _filterBox.Text.Trim();
+            string filter = toolStripTextBoxFilter.Text.Trim();
             int jumpTo = -1;
             if (filter.Length > 0)
             {
@@ -264,8 +153,8 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
                 _view = records.ToList();
             }
 
-            _list.VirtualListSize = _view.Count;
-            _list.Invalidate();
+            listViewTiles.VirtualListSize = _view.Count;
+            listViewTiles.Invalidate();
 
             int index = jumpTo >= 0 ? jumpTo : selected != null ? _view.IndexOf(selected) : -1;
             Select(index >= 0 ? index : (_view.Count > 0 ? 0 : -1));
@@ -273,11 +162,11 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
 
         private void Select(int index)
         {
-            _list.SelectedIndices.Clear();
+            listViewTiles.SelectedIndices.Clear();
             if (index >= 0 && index < _view.Count)
             {
-                _list.SelectedIndices.Add(index);
-                _list.EnsureVisible(index);
+                listViewTiles.SelectedIndices.Add(index);
+                listViewTiles.EnsureVisible(index);
             }
             else
             {
@@ -309,23 +198,23 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             e.Item = item;
         }
 
-        private TileArtRecord SelectedRecord => _list.SelectedIndices.Count == 1 && _list.SelectedIndices[0] < _view.Count ? _view[_list.SelectedIndices[0]] : null;
+        private TileArtRecord SelectedRecord => listViewTiles.SelectedIndices.Count == 1 && listViewTiles.SelectedIndices[0] < _view.Count ? _view[listViewTiles.SelectedIndices[0]] : null;
 
         private void ShowSelected()
         {
             TileArtRecord record = SelectedRecord;
-            _textureList.Items.Clear();
-            _texturePreview.Image = null;
-            _textureInfo.Text = string.Empty;
+            listViewTextures.Items.Clear();
+            previewPanelTexture.Image = null;
+            labelTextureInfo.Text = string.Empty;
 
             if (record == null)
             {
-                _propertyGrid.SelectedObject = null;
+                propertyGrid.SelectedObject = null;
                 RefreshFlags();
                 return;
             }
 
-            _propertyGrid.SelectedObject = new TileArtEntryView(record, _tileArt, _strings, EntryChanged);
+            propertyGrid.SelectedObject = new TileArtEntryView(record, _tileArt, _strings, EntryChanged);
             RefreshFlags();
 
             foreach (TileArtTexture texture in record.Entry.Textures)
@@ -336,30 +225,30 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
                     var item = new ListViewItem(texture.Slot.ToString()) { Tag = image };
                     item.SubItems.Add(path);
                     item.SubItems.Add(image.NameIndex.ToString());
-                    _textureList.Items.Add(item);
+                    listViewTextures.Items.Add(item);
                 }
             }
 
             if (!record.Entry.TexturesComplete)
             {
-                _textureInfo.Text = "The texture data of this entry has an unknown layout;\r\nonly the references shown can be changed.";
+                labelTextureInfo.Text = "The texture data of this entry has an unknown layout;\r\nonly the references shown can be changed.";
             }
 
-            if (_textureList.Items.Count > 0)
+            if (listViewTextures.Items.Count > 0)
             {
-                _textureList.Items[0].Selected = true;
+                listViewTextures.Items[0].Selected = true;
             }
 
             if (record.IdMismatch)
             {
-                _statusLabel.Text = $"Note: entry {record.Id} stores id {record.Entry.TileId} inside its data.";
+                toolStripStatusLabel.Text = $"Note: entry {record.Id} stores id {record.Entry.TileId} inside its data.";
             }
         }
 
         private void EntryChanged()
         {
-            _saveButton.Enabled = true;
-            _list.Invalidate();
+            toolStripButtonSave.Enabled = true;
+            listViewTiles.Invalidate();
         }
 
         private void RefreshFlags()
@@ -368,11 +257,11 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             _updatingFlags = true;
             for (int i = 0; i < _flagValues.Length; i++)
             {
-                _flagList.SetItemChecked(i, record != null && (record.Entry.Flags & _flagValues[i]) != 0);
-                _flag2List.SetItemChecked(i, record != null && (record.Entry.Flags2 & (ulong)_flagValues[i]) != 0);
+                checkedListBoxFlags.SetItemChecked(i, record != null && (record.Entry.Flags & _flagValues[i]) != 0);
+                checkedListBoxFlags2.SetItemChecked(i, record != null && (record.Entry.Flags2 & (ulong)_flagValues[i]) != 0);
             }
-            _flagList.Enabled = record != null;
-            _flag2List.Enabled = record != null;
+            checkedListBoxFlags.Enabled = record != null;
+            checkedListBoxFlags2.Enabled = record != null;
             _updatingFlags = false;
         }
 
@@ -387,7 +276,7 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             TileArtFlags flag = _flagValues[e.Index];
             record.Entry.Flags = e.NewValue == CheckState.Checked ? record.Entry.Flags | flag : record.Entry.Flags & ~flag;
             _tileArt.MarkModified(record);
-            _propertyGrid.Refresh();
+            propertyGrid.Refresh();
             EntryChanged();
         }
 
@@ -402,18 +291,18 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             ulong flag = (ulong)_flagValues[e.Index];
             record.Entry.Flags2 = e.NewValue == CheckState.Checked ? record.Entry.Flags2 | flag : record.Entry.Flags2 & ~flag;
             _tileArt.MarkModified(record);
-            _propertyGrid.Refresh();
+            propertyGrid.Refresh();
             EntryChanged();
         }
 
         // ------------------------------------------------------------------ textures
 
-        private TileArtTextureImage SelectedTextureImage => _textureList.SelectedItems.Count == 1 ? _textureList.SelectedItems[0].Tag as TileArtTextureImage : null;
+        private TileArtTextureImage SelectedTextureImage => listViewTextures.SelectedItems.Count == 1 ? listViewTextures.SelectedItems[0].Tag as TileArtTextureImage : null;
 
         private void ShowTexture()
         {
             TileArtTextureImage image = SelectedTextureImage;
-            _texturePreview.Image = null;
+            previewPanelTexture.Image = null;
             if (image == null || _client == null)
             {
                 return;
@@ -422,19 +311,19 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             string path = _strings?.Get(image.NameIndex);
             if (!EcClient.TryParseTexturePath(path, out EcArtSource source, out int id))
             {
-                _textureInfo.Text = path == null ? "Unknown reference." : "No image path.";
+                labelTextureInfo.Text = path == null ? "Unknown reference." : "No image path.";
                 return;
             }
 
             byte[] data = FindTextureData(source, id, out string file);
             if (data == null)
             {
-                _textureInfo.Text = $"{source.GetName(id)}\r\nnot found in {string.Join(" / ", source.FileNames)}";
+                labelTextureInfo.Text = $"{source.GetName(id)}\r\nnot found in {string.Join(" / ", source.FileNames)}";
                 return;
             }
 
-            _texturePreview.Image = EcImageHelper.TryDecode(data, out string info);
-            _textureInfo.Text = $"{file}: {source.GetName(id)}\r\n{info}";
+            previewPanelTexture.Image = EcImageHelper.TryDecode(data, out string info);
+            labelTextureInfo.Text = $"{file}: {source.GetName(id)}\r\n{info}";
         }
 
         private byte[] FindTextureData(EcArtSource source, int id, out string file)
@@ -488,11 +377,11 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             _tileArt.MarkModified(record);
             EntryChanged();
 
-            int selectedRow = _textureList.SelectedIndices[0];
+            int selectedRow = listViewTextures.SelectedIndices[0];
             ShowSelected();
-            if (selectedRow < _textureList.Items.Count)
+            if (selectedRow < listViewTextures.Items.Count)
             {
-                _textureList.Items[selectedRow].Selected = true;
+                listViewTextures.Items[selectedRow].Selected = true;
             }
         }
 
@@ -529,11 +418,11 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             }
 
             TileArtRecord copy = _tileArt.Duplicate(record, (uint)id);
-            _saveButton.Enabled = true;
-            _filterBox.Text = string.Empty;
+            toolStripButtonSave.Enabled = true;
+            toolStripTextBoxFilter.Text = string.Empty;
             ApplyFilter();
             Select(_view.IndexOf(copy));
-            _statusLabel.Text = $"Entry {id} created as copy of {record.Id}. Change name and textures, then save.";
+            toolStripStatusLabel.Text = $"Entry {id} created as copy of {record.Id}. Change name and textures, then save.";
         }
 
         private void RemoveSelected()
@@ -544,9 +433,9 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
                 return;
             }
 
-            int index = _list.SelectedIndices[0];
+            int index = listViewTiles.SelectedIndices[0];
             _tileArt.Remove(record);
-            _saveButton.Enabled = true;
+            toolStripButtonSave.Enabled = true;
             ApplyFilter();
             Select(Math.Min(index, _view.Count - 1));
         }
@@ -661,9 +550,9 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
                     _strings.Package.Save(Path.Combine(folder, Path.GetFileName(_strings.Package.FilePath)));
                 }
 
-                _saveButton.Enabled = false;
-                _list.Invalidate();
-                _statusLabel.Text = $"Saved to {folder}.";
+                toolStripButtonSave.Enabled = false;
+                listViewTiles.Invalidate();
+                toolStripStatusLabel.Text = $"Saved to {folder}.";
             }
             catch (Exception ex)
             {
@@ -674,5 +563,71 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
                 Cursor = Cursors.Default;
             }
         }
+
+        // ==================================================================== event handlers (designer)
+
+        private void OnFilterKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                e.SuppressKeyPress = true;
+                ApplyFilter();
+            }
+        }
+
+        private void OnClickApply(object sender, EventArgs e) => ApplyFilter();
+
+        private void OnRangeChanged(object sender, EventArgs e) => ApplyFilter();
+
+        private void OnClickDuplicate(object sender, EventArgs e) => DuplicateSelected();
+
+        private void OnClickRemove(object sender, EventArgs e) => RemoveSelected();
+
+        private void OnClickExportEntry(object sender, EventArgs e) => ExportEntry();
+
+        private void OnClickImportEntry(object sender, EventArgs e) => ImportEntry();
+
+        private void OnClickExportCsv(object sender, EventArgs e) => ExportCsv();
+
+        private void OnClickSave(object sender, EventArgs e) => Save(false);
+
+        private void OnClickSaveAs(object sender, EventArgs e) => Save(true);
+
+        private void OnListSelectedIndexChanged(object sender, EventArgs e) => ShowSelected();
+
+        private void OnPropertyValueChanged(object s, PropertyValueChangedEventArgs e)
+        {
+            RefreshFlags();
+            listViewTiles.Invalidate();
+        }
+
+        private void OnTextureSelectedIndexChanged(object sender, EventArgs e) => ShowTexture();
+
+        private void OnClickChangeTexture(object sender, EventArgs e) => ChangeTexture();
+
+        private void OnClickShowInArt(object sender, EventArgs e) => ShowTextureInArt();
+
+        private TileArtRecord FirstSelectedRecord =>
+            listViewTiles.SelectedIndices.Count > 0 && listViewTiles.SelectedIndices[0] < _view.Count ? _view[listViewTiles.SelectedIndices[0]] : null;
+
+        private void OnClickCopyId(object sender, EventArgs e)
+        {
+            TileArtRecord record = FirstSelectedRecord;
+            if (record != null)
+            {
+                Clipboard.SetText($"0x{record.Id:X4}");
+            }
+        }
+
+        private void OnClickCopyName(object sender, EventArgs e)
+        {
+            TileArtRecord record = FirstSelectedRecord;
+            string name = record != null && _strings != null ? _strings.Get(record.Entry.NameIndex) : null;
+            if (!string.IsNullOrEmpty(name))
+            {
+                Clipboard.SetText(name);
+            }
+        }
+
     }
 }

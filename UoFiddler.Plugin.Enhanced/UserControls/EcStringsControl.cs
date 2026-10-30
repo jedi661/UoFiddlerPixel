@@ -23,13 +23,8 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
     /// <summary>
     /// Viewer / editor for string_dictionary.uop.
     /// </summary>
-    public sealed class EcStringsControl : UserControl, IEcEditor
+    public sealed partial class EcStringsControl : UserControl, IEcEditor
     {
-        private readonly ToolStripTextBox _filterBox;
-        private readonly ToolStripButton _saveButton;
-        private readonly ListView _list;
-        private readonly ToolStripStatusLabel _statusLabel;
-
         private EcClient _client;
         private EcStringDictionary _strings;
         private List<int> _view = new List<int>();
@@ -37,42 +32,8 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
 
         public EcStringsControl()
         {
+            InitializeComponent();
             Dock = DockStyle.Fill;
-
-            var toolStrip = new ToolStrip { GripStyle = ToolStripGripStyle.Hidden };
-            _filterBox = new ToolStripTextBox { Width = 220, ToolTipText = "Part of the text, or #index – Enter" };
-            _filterBox.KeyDown += (s, e) => { if (e.KeyCode == Keys.Enter) { e.SuppressKeyPress = true; ApplyFilter(); } };
-            _saveButton = new ToolStripButton("Save", null, (s, e) => Save(false)) { Enabled = false };
-
-            toolStrip.Items.Add(new ToolStripLabel("Search:"));
-            toolStrip.Items.Add(_filterBox);
-            toolStrip.Items.Add(new ToolStripButton("Apply", null, (s, e) => ApplyFilter()));
-            toolStrip.Items.Add(new ToolStripSeparator());
-            toolStrip.Items.Add(new ToolStripButton("Add...", null, (s, e) => AddString()));
-            toolStrip.Items.Add(new ToolStripButton("Edit...", null, (s, e) => EditSelected()) { ToolTipText = "Change the text (every tileart entry using it changes too)" });
-            toolStrip.Items.Add(new ToolStripButton("Export (txt)...", null, (s, e) => Export()));
-            toolStrip.Items.Add(new ToolStripSeparator());
-            toolStrip.Items.Add(_saveButton);
-            toolStrip.Items.Add(new ToolStripButton("Save as...", null, (s, e) => Save(true)));
-
-            _list = new ListView { Dock = DockStyle.Fill, View = View.Details, FullRowSelect = true, HideSelection = false, VirtualMode = true, MultiSelect = false };
-            _list.Columns.Add("Index", 80, HorizontalAlignment.Right);
-            _list.Columns.Add("Text", 700);
-            _list.RetrieveVirtualItem += RetrieveItem;
-            _list.DoubleClick += (s, e) => EditSelected();
-
-            var menu = new ContextMenuStrip();
-            menu.Items.Add("Copy text", null, (s, e) => { int i = SelectedIndex; if (i > 0) { Clipboard.SetText(_strings.Get((uint)i)); } });
-            menu.Items.Add("Copy index", null, (s, e) => { int i = SelectedIndex; if (i > 0) { Clipboard.SetText(i.ToString()); } });
-            _list.ContextMenuStrip = menu;
-
-            var status = new StatusStrip();
-            _statusLabel = new ToolStripStatusLabel("Choose the Enhanced Client folder on top.") { Spring = true, TextAlign = ContentAlignment.MiddleLeft };
-            status.Items.Add(_statusLabel);
-
-            Controls.Add(_list);
-            Controls.Add(toolStrip);
-            Controls.Add(status);
         }
 
         public void SetClient(EcClient client)
@@ -80,9 +41,9 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             _client = client;
             _strings = null;
             _view = new List<int>();
-            _list.VirtualListSize = 0;
+            listViewStrings.VirtualListSize = 0;
             _loaded = false;
-            _saveButton.Enabled = false;
+            toolStripButtonSave.Enabled = false;
             if (Visible && client != null)
             {
                 OnActivated();
@@ -99,8 +60,8 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             if (_loaded)
             {
                 // names may have been added by the TileArt editor
-                _saveButton.Enabled = _strings?.IsModified == true || (_strings?.Package.IsDirty ?? false);
-                if (_strings != null && _view.Count != _strings.Count && _filterBox.Text.Length == 0)
+                toolStripButtonSave.Enabled = _strings?.IsModified == true || (_strings?.Package.IsDirty ?? false);
+                if (_strings != null && _view.Count != _strings.Count && toolStripTextBoxFilter.Text.Length == 0)
                 {
                     ApplyFilter();
                 }
@@ -112,7 +73,7 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             {
                 if (!_client.HasStringDictionary)
                 {
-                    _statusLabel.Text = $"string_dictionary.uop was not found in {_client.Folder}.";
+                    toolStripStatusLabel.Text = $"string_dictionary.uop was not found in {_client.Folder}.";
                     return;
                 }
                 _strings = _client.StringDictionary;
@@ -131,7 +92,7 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
                 return;
             }
 
-            string filter = _filterBox.Text.Trim();
+            string filter = toolStripTextBoxFilter.Text.Trim();
             IEnumerable<int> indices = Enumerable.Range(1, _strings.Count);
             if (filter.StartsWith("#") && int.TryParse(filter.Substring(1), out int number))
             {
@@ -143,10 +104,10 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             }
 
             _view = indices.ToList();
-            _list.VirtualListSize = _view.Count;
-            _list.Invalidate();
-            _saveButton.Enabled = _strings.IsModified || _strings.Package.IsDirty;
-            _statusLabel.Text = $"string_dictionary.uop: {_strings.Count} strings" + (filter.Length > 0 ? $", {_view.Count} found" : string.Empty);
+            listViewStrings.VirtualListSize = _view.Count;
+            listViewStrings.Invalidate();
+            toolStripButtonSave.Enabled = _strings.IsModified || _strings.Package.IsDirty;
+            toolStripStatusLabel.Text = $"string_dictionary.uop: {_strings.Count} strings" + (filter.Length > 0 ? $", {_view.Count} found" : string.Empty);
         }
 
         private void RetrieveItem(object sender, RetrieveVirtualItemEventArgs e)
@@ -163,7 +124,7 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             e.Item = item;
         }
 
-        private int SelectedIndex => _list.SelectedIndices.Count == 1 && _list.SelectedIndices[0] < _view.Count ? _view[_list.SelectedIndices[0]] : -1;
+        private int SelectedIndex => listViewStrings.SelectedIndices.Count == 1 && listViewStrings.SelectedIndices[0] < _view.Count ? _view[listViewStrings.SelectedIndices[0]] : -1;
 
         private void AddString()
         {
@@ -180,9 +141,9 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
 
             uint existing = _strings.Find(text);
             uint index = _strings.GetOrAdd(text);
-            _filterBox.Text = "#" + index;
+            toolStripTextBoxFilter.Text = "#" + index;
             ApplyFilter();
-            _statusLabel.Text = existing != 0 ? $"The text already exists as #{index}." : $"Added as #{index}. Save to keep it.";
+            toolStripStatusLabel.Text = existing != 0 ? $"The text already exists as #{index}." : $"Added as #{index}. Save to keep it.";
         }
 
         private void EditSelected()
@@ -200,8 +161,8 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             }
 
             _strings.Set((uint)index, text);
-            _list.Invalidate();
-            _saveButton.Enabled = true;
+            listViewStrings.Invalidate();
+            toolStripButtonSave.Enabled = true;
         }
 
         private void Export()
@@ -248,13 +209,55 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             {
                 _strings.Apply();
                 _strings.Package.Save(target);
-                _saveButton.Enabled = false;
-                _statusLabel.Text = $"Saved {target}.";
+                toolStripButtonSave.Enabled = false;
+                toolStripStatusLabel.Text = $"Saved {target}.";
             }
             catch (Exception ex)
             {
                 EcDialogs.ShowError(this, "Saving failed (is the file opened by the client?).", ex);
             }
         }
+
+        // ==================================================================== event handlers (designer)
+
+        private void OnFilterKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                e.SuppressKeyPress = true;
+                ApplyFilter();
+            }
+        }
+
+        private void OnClickApply(object sender, EventArgs e) => ApplyFilter();
+
+        private void OnClickAdd(object sender, EventArgs e) => AddString();
+
+        private void OnClickEdit(object sender, EventArgs e) => EditSelected();
+
+        private void OnClickExport(object sender, EventArgs e) => Export();
+
+        private void OnClickSave(object sender, EventArgs e) => Save(false);
+
+        private void OnClickSaveAs(object sender, EventArgs e) => Save(true);
+
+        private void OnClickCopyText(object sender, EventArgs e)
+        {
+            int i = SelectedIndex;
+            if (i > 0)
+            {
+                Clipboard.SetText(_strings.Get((uint)i));
+            }
+        }
+
+        private void OnClickCopyIndex(object sender, EventArgs e)
+        {
+            int i = SelectedIndex;
+            if (i > 0)
+            {
+                Clipboard.SetText(i.ToString());
+            }
+        }
+
     }
 }

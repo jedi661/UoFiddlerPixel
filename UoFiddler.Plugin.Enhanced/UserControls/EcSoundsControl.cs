@@ -26,7 +26,7 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
     /// <summary>
     /// Sounds and music of the Enhanced Client (Audio.uop with audio_sounds.csv / audio_music.csv).
     /// </summary>
-    public sealed class EcSoundsControl : UserControl, IEcEditor
+    public sealed partial class EcSoundsControl : UserControl, IEcEditor
     {
         public const string FileName = "Audio.uop";
 
@@ -36,11 +36,6 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             public EcUopEntry Unlisted;
         }
 
-        private readonly ToolStripComboBox _kindBox;
-        private readonly ToolStripTextBox _searchBox;
-        private readonly ToolStripButton _saveButton;
-        private readonly ListView _list;
-        private readonly ToolStripStatusLabel _statusLabel;
         private readonly SoundPlayer _player = new SoundPlayer();
 
         private EcClient _client;
@@ -50,49 +45,10 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
 
         public EcSoundsControl()
         {
+            InitializeComponent();
             Dock = DockStyle.Fill;
-
-            var toolStrip = new ToolStrip { GripStyle = ToolStripGripStyle.Hidden };
-            _kindBox = new ToolStripComboBox { DropDownStyle = ComboBoxStyle.DropDownList, Width = 140 };
-            _kindBox.Items.AddRange(new object[] { "Sounds", "Music", "Files in no list" });
-            _kindBox.SelectedIndex = 0;
-            _kindBox.SelectedIndexChanged += (s, e) => ApplyFilter();
-            _searchBox = new ToolStripTextBox { Width = 160, ToolTipText = "Id or part of the path – Enter" };
-            _searchBox.KeyDown += (s, e) => { if (e.KeyCode == Keys.Enter) { e.SuppressKeyPress = true; ApplyFilter(); } };
-            _saveButton = new ToolStripButton("Save", null, (s, e) => Save(false)) { Enabled = false };
-
-            toolStrip.Items.Add(_kindBox);
-            toolStrip.Items.Add(new ToolStripLabel("Search:"));
-            toolStrip.Items.Add(_searchBox);
-            toolStrip.Items.Add(new ToolStripButton("Apply", null, (s, e) => ApplyFilter()));
-            toolStrip.Items.Add(new ToolStripSeparator());
-            toolStrip.Items.Add(new ToolStripButton("Play", null, (s, e) => Play()) { ToolTipText = "wav: here, mp3/ogg: with the Windows player" });
-            toolStrip.Items.Add(new ToolStripButton("Stop", null, (s, e) => _player.Stop()));
-            toolStrip.Items.Add(new ToolStripSeparator());
-            toolStrip.Items.Add(new ToolStripButton("Export...", null, (s, e) => Export()));
-            toolStrip.Items.Add(new ToolStripButton("Replace...", null, (s, e) => Replace()));
-            toolStrip.Items.Add(new ToolStripButton("Add...", null, (s, e) => Add()));
-            toolStrip.Items.Add(new ToolStripButton("Change path...", null, (s, e) => ChangePath()));
-            toolStrip.Items.Add(new ToolStripButton("Remove", null, (s, e) => Remove()));
-            toolStrip.Items.Add(new ToolStripSeparator());
-            toolStrip.Items.Add(_saveButton);
-            toolStrip.Items.Add(new ToolStripButton("Save as...", null, (s, e) => Save(true)));
-
-            _list = new ListView { Dock = DockStyle.Fill, View = View.Details, FullRowSelect = true, HideSelection = false, VirtualMode = true, MultiSelect = false };
-            _list.Columns.Add("Id", 70, HorizontalAlignment.Right);
-            _list.Columns.Add("File", 420);
-            _list.Columns.Add("Size", 80, HorizontalAlignment.Right);
-            _list.Columns.Add("More", 80);
-            _list.RetrieveVirtualItem += RetrieveItem;
-            _list.DoubleClick += (s, e) => Play();
-
-            var status = new StatusStrip();
-            _statusLabel = new ToolStripStatusLabel("Choose the Enhanced Client folder on top.") { Spring = true, TextAlign = ContentAlignment.MiddleLeft };
-            status.Items.Add(_statusLabel);
-
-            Controls.Add(_list);
-            Controls.Add(toolStrip);
-            Controls.Add(status);
+            toolStripComboBoxKind.SelectedIndex = 0;
+            Disposed += OnControlDisposed;
         }
 
         public void SetClient(EcClient client)
@@ -102,8 +58,8 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             _loaded = false;
             _sounds = null;
             _view = new List<Row>();
-            _list.VirtualListSize = 0;
-            _saveButton.Enabled = false;
+            listViewSounds.VirtualListSize = 0;
+            toolStripButtonSave.Enabled = false;
             if (Visible && client != null)
             {
                 OnActivated();
@@ -121,16 +77,16 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             EcUopPackage package = _client.GetPackage(FileName);
             if (package == null)
             {
-                _statusLabel.Text = $"{FileName} was not found.";
+                toolStripStatusLabel.Text = $"{FileName} was not found.";
                 return;
             }
             Cursor = Cursors.WaitCursor;
             try
             {
                 _sounds = new EcSounds(package);
-                package.Changed += (s, e) => _saveButton.Enabled = package.IsDirty;
+                package.Changed += (s, e) => toolStripButtonSave.Enabled = package.IsDirty;
                 ApplyFilter();
-                _statusLabel.Text = $"{_sounds.Sounds.Count(s => !s.IsMusic)} sounds, {_sounds.Sounds.Count(s => s.IsMusic)} music titles, {_sounds.Unlisted.Count} files in no list.";
+                toolStripStatusLabel.Text = $"{_sounds.Sounds.Count(s => !s.IsMusic)} sounds, {_sounds.Sounds.Count(s => s.IsMusic)} music titles, {_sounds.Unlisted.Count} files in no list.";
             }
             catch (Exception ex)
             {
@@ -148,8 +104,8 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             {
                 return;
             }
-            string filter = _searchBox.Text.Trim();
-            IEnumerable<Row> rows = _kindBox.SelectedIndex switch
+            string filter = toolStripTextBoxSearch.Text.Trim();
+            IEnumerable<Row> rows = toolStripComboBoxKind.SelectedIndex switch
             {
                 1 => _sounds.Sounds.Where(s => s.IsMusic).OrderBy(s => s.Id).Select(s => new Row { Sound = s }),
                 2 => _sounds.Unlisted.OrderBy(e => e.Name ?? "~").Select(e => new Row { Unlisted = e }),
@@ -163,8 +119,8 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
                                        (r.Unlisted != null && r.Unlisted.DisplayName.IndexOf(filter, StringComparison.OrdinalIgnoreCase) >= 0));
             }
             _view = rows.ToList();
-            _list.VirtualListSize = _view.Count;
-            _list.Invalidate();
+            listViewSounds.VirtualListSize = _view.Count;
+            listViewSounds.Invalidate();
         }
 
         private void RetrieveItem(object sender, RetrieveVirtualItemEventArgs e)
@@ -201,7 +157,7 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             e.Item = item;
         }
 
-        private Row Selected => _list.SelectedIndices.Count == 1 && _list.SelectedIndices[0] < _view.Count ? _view[_list.SelectedIndices[0]] : null;
+        private Row Selected => listViewSounds.SelectedIndices.Count == 1 && listViewSounds.SelectedIndices[0] < _view.Count ? _view[listViewSounds.SelectedIndices[0]] : null;
 
         private byte[] SelectedData(out string name)
         {
@@ -296,8 +252,8 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             {
                 _sounds.Package.SetData(row.Unlisted, data);
             }
-            _saveButton.Enabled = true;
-            _list.Invalidate();
+            toolStripButtonSave.Enabled = true;
+            listViewSounds.Invalidate();
         }
 
         private void Add()
@@ -311,7 +267,7 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             {
                 return;
             }
-            bool music = _kindBox.SelectedIndex == 1;
+            bool music = toolStripComboBoxKind.SelectedIndex == 1;
             List<EcSound> list = _sounds.Sounds.Where(s => s.IsMusic == music).ToList();
             int next = list.Count == 0 ? 0 : list.Max(s => s.Id) + 1;
             string[] values = EcDialogs.Prompt(this, music ? "Add music" : "Add sound", new[] { "Id:", "Path (below data/audio/):" },
@@ -321,7 +277,7 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
                 return;
             }
             _sounds.Add(id, music, values[1].Trim().Replace('\\', '/'), File.ReadAllBytes(file));
-            _saveButton.Enabled = true;
+            toolStripButtonSave.Enabled = true;
             ApplyFilter();
         }
 
@@ -338,8 +294,8 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
                 return;
             }
             _sounds.ChangePath(row.Sound, path.Trim().Replace('\\', '/'));
-            _saveButton.Enabled = true;
-            _list.Invalidate();
+            toolStripButtonSave.Enabled = true;
+            listViewSounds.Invalidate();
         }
 
         private void Remove()
@@ -358,7 +314,7 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
                 _sounds.Package.Remove(row.Unlisted);
                 _sounds.Unlisted.Remove(row.Unlisted);
             }
-            _saveButton.Enabled = true;
+            toolStripButtonSave.Enabled = true;
             ApplyFilter();
         }
 
@@ -371,18 +327,48 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             _sounds.Apply();
             if (EcPackageSaver.Save(this, new[] { _sounds.Package }, saveAs))
             {
-                _saveButton.Enabled = false;
-                _statusLabel.Text = "Saved.";
+                toolStripButtonSave.Enabled = false;
+                toolStripStatusLabel.Text = "Saved.";
             }
         }
 
-        protected override void Dispose(bool disposing)
+        private void OnControlDisposed(object sender, EventArgs e)
         {
-            if (disposing)
-            {
-                _player.Dispose();
-            }
-            base.Dispose(disposing);
+            _player.Dispose();
         }
+
+        // ==================================================================== event handlers (designer)
+
+        private void OnKindChanged(object sender, EventArgs e) => ApplyFilter();
+
+        private void OnSearchKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                e.SuppressKeyPress = true;
+                ApplyFilter();
+            }
+        }
+
+        private void OnClickApply(object sender, EventArgs e) => ApplyFilter();
+
+        private void OnClickPlay(object sender, EventArgs e) => Play();
+
+        private void OnClickStop(object sender, EventArgs e) => _player.Stop();
+
+        private void OnClickExport(object sender, EventArgs e) => Export();
+
+        private void OnClickReplace(object sender, EventArgs e) => Replace();
+
+        private void OnClickAdd(object sender, EventArgs e) => Add();
+
+        private void OnClickChangePath(object sender, EventArgs e) => ChangePath();
+
+        private void OnClickRemove(object sender, EventArgs e) => Remove();
+
+        private void OnClickSave(object sender, EventArgs e) => Save(false);
+
+        private void OnClickSaveAs(object sender, EventArgs e) => Save(true);
+
     }
 }

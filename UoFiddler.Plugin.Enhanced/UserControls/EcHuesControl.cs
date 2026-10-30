@@ -26,17 +26,10 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
     /// <summary>
     /// Editor for Hues.uop: the color ramps (256 x 2 BMP per hue) and the names.
     /// </summary>
-    public sealed class EcHuesControl : UserControl, IEcEditor
+    public sealed partial class EcHuesControl : UserControl, IEcEditor
     {
         public const string FileName = "Hues.uop";
 
-        private readonly ToolStripTextBox _searchBox;
-        private readonly ToolStripButton _saveButton;
-        private readonly ListView _list;
-        private readonly PictureBox _ramp;
-        private readonly TextBox _nameBox;
-        private readonly Label _info;
-        private readonly ToolStripStatusLabel _statusLabel;
         private readonly ImageList _images = new ImageList { ImageSize = new Size(128, 14), ColorDepth = ColorDepth.Depth32Bit };
 
         private EcClient _client;
@@ -47,61 +40,9 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
 
         public EcHuesControl()
         {
+            InitializeComponent();
             Dock = DockStyle.Fill;
-
-            var toolStrip = new ToolStrip { GripStyle = ToolStripGripStyle.Hidden };
-            _searchBox = new ToolStripTextBox { Width = 150, ToolTipText = "Number or part of the name – Enter" };
-            _searchBox.KeyDown += (s, e) => { if (e.KeyCode == Keys.Enter) { e.SuppressKeyPress = true; ApplyFilter(); } };
-            _saveButton = new ToolStripButton("Save", null, (s, e) => Save(false)) { Enabled = false };
-
-            toolStrip.Items.Add(new ToolStripLabel("Search:"));
-            toolStrip.Items.Add(_searchBox);
-            toolStrip.Items.Add(new ToolStripButton("Apply", null, (s, e) => ApplyFilter()));
-            toolStrip.Items.Add(new ToolStripSeparator());
-            toolStrip.Items.Add(new ToolStripButton("Import ramp...", null, (s, e) => ImportRamp()) { ToolTipText = "Replace the color ramp with an image (best 256 x 2)" });
-            toolStrip.Items.Add(new ToolStripButton("Export ramp...", null, (s, e) => ExportRamp()));
-            toolStrip.Items.Add(new ToolStripButton("Add copy...", null, (s, e) => AddCopy()) { ToolTipText = "New hue as copy of the selected one" });
-            toolStrip.Items.Add(new ToolStripButton("Delete", null, (s, e) => DeleteHue()));
-            toolStrip.Items.Add(new ToolStripSeparator());
-            toolStrip.Items.Add(_saveButton);
-            toolStrip.Items.Add(new ToolStripButton("Save as...", null, (s, e) => Save(true)));
-
-            _list = new ListView { Dock = DockStyle.Fill, View = View.Details, FullRowSelect = true, HideSelection = false, VirtualMode = true, MultiSelect = false, OwnerDraw = true };
-            _list.Columns.Add("Hue", 60, HorizontalAlignment.Right);
-            _list.Columns.Add("Ramp", 140);
-            _list.Columns.Add("Name", 300);
-            _list.RetrieveVirtualItem += RetrieveItem;
-            _list.DrawColumnHeader += (s, e) => e.DrawDefault = true;
-            _list.DrawSubItem += DrawSubItem;
-            _list.SelectedIndexChanged += (s, e) => ShowSelected();
-
-            _ramp = new PictureBox { Dock = DockStyle.Top, Height = 60, SizeMode = PictureBoxSizeMode.StretchImage, BorderStyle = BorderStyle.FixedSingle };
-            _info = new Label { Dock = DockStyle.Top, Height = 36, Padding = new Padding(4), Font = EcDialogs.MonoFont(8.5f) };
-            _nameBox = new TextBox { Width = 220 };
-            var nameButton = new Button { Text = "Set name", AutoSize = true };
-            nameButton.Click += (s, e) => SetName();
-            var namePanel = new FlowLayoutPanel { Dock = DockStyle.Top, Height = 34 };
-            namePanel.Controls.Add(new Label { Text = "Name:", AutoSize = true, Margin = new Padding(3, 8, 0, 0) });
-            namePanel.Controls.Add(_nameBox);
-            namePanel.Controls.Add(nameButton);
-
-            var details = new Panel { Dock = DockStyle.Fill, Padding = new Padding(6) };
-            details.Controls.Add(namePanel);
-            details.Controls.Add(_ramp);
-            details.Controls.Add(_info);
-
-            var split = new SplitContainer { Dock = DockStyle.Fill };
-            split.Panel1.Controls.Add(_list);
-            split.Panel2.Controls.Add(details);
-            split.HandleCreated += (s, e) => { try { split.SplitterDistance = 560; } catch (InvalidOperationException) { } };
-
-            var status = new StatusStrip();
-            _statusLabel = new ToolStripStatusLabel("Choose the Enhanced Client folder on top.") { Spring = true, TextAlign = ContentAlignment.MiddleLeft };
-            status.Items.Add(_statusLabel);
-
-            Controls.Add(split);
-            Controls.Add(toolStrip);
-            Controls.Add(status);
+            Disposed += OnControlDisposed;
         }
 
         public void SetClient(EcClient client)
@@ -111,8 +52,8 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             _hues = null;
             ClearCache();
             _view = new List<EcHue>();
-            _list.VirtualListSize = 0;
-            _saveButton.Enabled = false;
+            listViewHues.VirtualListSize = 0;
+            toolStripButtonSave.Enabled = false;
             if (Visible && client != null)
             {
                 OnActivated();
@@ -130,16 +71,16 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             EcUopPackage package = _client.GetPackage(FileName);
             if (package == null)
             {
-                _statusLabel.Text = $"{FileName} was not found.";
+                toolStripStatusLabel.Text = $"{FileName} was not found.";
                 return;
             }
             Cursor = Cursors.WaitCursor;
             try
             {
                 _hues = new EcHues(package);
-                package.Changed += (s, e) => _saveButton.Enabled = package.IsDirty;
+                package.Changed += (s, e) => toolStripButtonSave.Enabled = package.IsDirty;
                 ApplyFilter();
-                _statusLabel.Text = $"{_hues.Count} hues.";
+                toolStripStatusLabel.Text = $"{_hues.Count} hues.";
             }
             catch (Exception ex)
             {
@@ -166,7 +107,7 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             {
                 return;
             }
-            string filter = _searchBox.Text.Trim();
+            string filter = toolStripTextBoxSearch.Text.Trim();
             int jump = -1;
             List<EcHue> all = _hues.Hues.ToList();
             if (filter.Length > 0 && int.TryParse(filter, out int number))
@@ -182,13 +123,13 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             {
                 _view = all;
             }
-            _list.VirtualListSize = _view.Count;
-            _list.Invalidate();
+            listViewHues.VirtualListSize = _view.Count;
+            listViewHues.Invalidate();
             if (jump >= 0)
             {
-                _list.SelectedIndices.Clear();
-                _list.SelectedIndices.Add(jump);
-                _list.EnsureVisible(jump);
+                listViewHues.SelectedIndices.Clear();
+                listViewHues.SelectedIndices.Add(jump);
+                listViewHues.EnsureVisible(jump);
             }
         }
 
@@ -238,19 +179,19 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             e.Graphics.DrawImage(ramp, new Rectangle(e.Bounds.X + 2, e.Bounds.Y + 2, e.Bounds.Width - 4, e.Bounds.Height - 4), new Rectangle(0, 0, ramp.Width, 1), GraphicsUnit.Pixel);
         }
 
-        private EcHue Selected => _list.SelectedIndices.Count == 1 && _list.SelectedIndices[0] < _view.Count ? _view[_list.SelectedIndices[0]] : null;
+        private EcHue Selected => listViewHues.SelectedIndices.Count == 1 && listViewHues.SelectedIndices[0] < _view.Count ? _view[listViewHues.SelectedIndices[0]] : null;
 
         private void ShowSelected()
         {
             EcHue hue = Selected;
             if (hue == null)
             {
-                _ramp.Image = null;
+                pictureBoxRamp.Image = null;
                 return;
             }
-            _ramp.Image = Ramp(hue);
-            _nameBox.Text = hue.Name ?? string.Empty;
-            _info.Text = $"Hue {hue.Number}  {hue.Entry.Name}\r\n{_ramp.Image.Width} x {_ramp.Image.Height}" + (hue.Entry.IsModified ? "  (changed)" : string.Empty);
+            pictureBoxRamp.Image = Ramp(hue);
+            textBoxName.Text = hue.Name ?? string.Empty;
+            labelInfo.Text = $"Hue {hue.Number}  {hue.Entry.Name}\r\n{pictureBoxRamp.Image.Width} x {pictureBoxRamp.Image.Height}" + (hue.Entry.IsModified ? "  (changed)" : string.Empty);
         }
 
         private void SetName()
@@ -260,9 +201,9 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             {
                 return;
             }
-            _hues.SetName(hue, _nameBox.Text);
-            _saveButton.Enabled = true;
-            _list.Invalidate();
+            _hues.SetName(hue, textBoxName.Text);
+            toolStripButtonSave.Enabled = true;
+            listViewHues.Invalidate();
         }
 
         private void RefreshHue(EcHue hue)
@@ -272,8 +213,8 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
                 b.Dispose();
                 _rampCache.Remove(hue.Number);
             }
-            _saveButton.Enabled = true;
-            _list.Invalidate();
+            toolStripButtonSave.Enabled = true;
+            listViewHues.Invalidate();
             ShowSelected();
         }
 
@@ -345,11 +286,11 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             int index = _view.IndexOf(added);
             if (index >= 0)
             {
-                _list.SelectedIndices.Clear();
-                _list.SelectedIndices.Add(index);
-                _list.EnsureVisible(index);
+                listViewHues.SelectedIndices.Clear();
+                listViewHues.SelectedIndices.Add(index);
+                listViewHues.EnsureVisible(index);
             }
-            _saveButton.Enabled = true;
+            toolStripButtonSave.Enabled = true;
         }
 
         private void DeleteHue()
@@ -361,7 +302,7 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             }
             _hues.Remove(hue);
             ApplyFilter();
-            _saveButton.Enabled = true;
+            toolStripButtonSave.Enabled = true;
         }
 
         private void Save(bool saveAs)
@@ -373,19 +314,47 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             _hues.Apply();
             if (EcPackageSaver.Save(this, new[] { _hues.Package }, saveAs))
             {
-                _saveButton.Enabled = false;
-                _statusLabel.Text = "Saved.";
+                toolStripButtonSave.Enabled = false;
+                toolStripStatusLabel.Text = "Saved.";
             }
         }
 
-        protected override void Dispose(bool disposing)
+        private void OnControlDisposed(object sender, EventArgs e)
         {
-            if (disposing)
-            {
-                ClearCache();
-                _images.Dispose();
-            }
-            base.Dispose(disposing);
+            ClearCache();
+            _images.Dispose();
         }
+
+        // ==================================================================== event handlers (designer)
+
+        private void OnSearchKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                e.SuppressKeyPress = true;
+                ApplyFilter();
+            }
+        }
+
+        private void OnClickApply(object sender, EventArgs e) => ApplyFilter();
+
+        private void OnClickImportRamp(object sender, EventArgs e) => ImportRamp();
+
+        private void OnClickExportRamp(object sender, EventArgs e) => ExportRamp();
+
+        private void OnClickAddCopy(object sender, EventArgs e) => AddCopy();
+
+        private void OnClickDelete(object sender, EventArgs e) => DeleteHue();
+
+        private void OnClickSave(object sender, EventArgs e) => Save(false);
+
+        private void OnClickSaveAs(object sender, EventArgs e) => Save(true);
+
+        private void OnDrawColumnHeader(object sender, DrawListViewColumnHeaderEventArgs e) => e.DrawDefault = true;
+
+        private void OnListSelectedIndexChanged(object sender, EventArgs e) => ShowSelected();
+
+        private void OnClickSetName(object sender, EventArgs e) => SetName();
+
     }
 }

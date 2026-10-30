@@ -24,18 +24,9 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
     /// <summary>
     /// Generic browser for every UOP file of the client folder: list entries, show images / hex, export, replace, add, remove, save.
     /// </summary>
-    public sealed class EcUopBrowserControl : UserControl, IEcEditor
+    public sealed partial class EcUopBrowserControl : UserControl, IEcEditor
     {
-        private readonly ListBox _fileList;
-        private readonly ListView _entryList;
-        private readonly ToolStripTextBox _filterBox;
-        private readonly ToolStripComboBox _folderBox;
         private bool _updatingFolders;
-        private readonly EcPreviewPanel _preview;
-        private readonly TextBox _hexBox;
-        private readonly Label _infoLabel;
-        private readonly ToolStripStatusLabel _statusLabel;
-        private readonly ToolStripButton _saveButton;
 
         private EcClient _client;
         private EcUopPackage _package;
@@ -45,88 +36,8 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
 
         public EcUopBrowserControl()
         {
+            InitializeComponent();
             Dock = DockStyle.Fill;
-
-            _fileList = new ListBox { Dock = DockStyle.Fill, IntegralHeight = false };
-            _fileList.SelectedIndexChanged += (s, e) => OpenSelectedFile();
-
-            var toolStrip = new ToolStrip { GripStyle = ToolStripGripStyle.Hidden };
-            _filterBox = new ToolStripTextBox { Width = 160, ToolTipText = "Filter by name or hash – Enter" };
-            _filterBox.KeyDown += (s, e) => { if (e.KeyCode == Keys.Enter) { e.SuppressKeyPress = true; ApplyFilter(); } };
-            _saveButton = new ToolStripButton("Save file", null, (s, e) => Save(false)) { Enabled = false };
-
-            _folderBox = new ToolStripComboBox { DropDownStyle = ComboBoxStyle.DropDownList, Width = 260, ToolTipText = "Show only one folder", MaxDropDownItems = 30 };
-            _folderBox.SelectedIndexChanged += (s, e) => { if (!_updatingFolders) { ApplyFilter(); } };
-
-            toolStrip.Items.Add(new ToolStripLabel("Folder:"));
-            toolStrip.Items.Add(_folderBox);
-            toolStrip.Items.Add(new ToolStripLabel("Filter:"));
-            toolStrip.Items.Add(_filterBox);
-            toolStrip.Items.Add(new ToolStripButton("Apply", null, (s, e) => ApplyFilter()));
-            toolStrip.Items.Add(new ToolStripButton("Open", null, (s, e) => OpenExternally()) { ToolTipText = "Open the selected entry with the Windows program for its type (play mp3/wav, edit xml/lua, ...)" });
-            toolStrip.Items.Add(new ToolStripSeparator());
-            toolStrip.Items.Add(new ToolStripButton("Resolve names...", null, (s, e) => ResolveNames()) { ToolTipText = "Find the file names of the entries with a name pattern like build/worldart/{0:D8}.dds" });
-            toolStrip.Items.Add(new ToolStripSeparator());
-            var exportButton = new ToolStripDropDownButton("Export");
-            exportButton.DropDownItems.Add("Selected entries...", null, (s, e) => ExportSelected());
-            exportButton.DropDownItems.Add("All entries...", null, (s, e) => Export(_view));
-            exportButton.DropDownItems.Add("Entry list (csv)...", null, (s, e) => ExportList());
-            toolStrip.Items.Add(exportButton);
-            toolStrip.Items.Add(new ToolStripButton("Replace...", null, (s, e) => ReplaceSelected()) { ToolTipText = "Replace the data of the selected entry with a file" });
-            toolStrip.Items.Add(new ToolStripButton("Add...", null, (s, e) => AddEntry()) { ToolTipText = "Add a file under a packed name" });
-            toolStrip.Items.Add(new ToolStripButton("Remove", null, (s, e) => RemoveSelected()));
-            toolStrip.Items.Add(new ToolStripSeparator());
-            toolStrip.Items.Add(_saveButton);
-            toolStrip.Items.Add(new ToolStripButton("Save as...", null, (s, e) => Save(true)));
-
-            _entryList = new ListView
-            {
-                Dock = DockStyle.Fill,
-                View = View.Details,
-                FullRowSelect = true,
-                HideSelection = false,
-                VirtualMode = true
-            };
-            _entryList.Columns.Add("#", 60);
-            _entryList.Columns.Add("Name / hash", 280);
-            _entryList.Columns.Add("Stored", 70);
-            _entryList.Columns.Add("Size", 80, HorizontalAlignment.Right);
-            _entryList.Columns.Add("Packed", 80, HorizontalAlignment.Right);
-            _entryList.RetrieveVirtualItem += RetrieveItem;
-            _entryList.SelectedIndexChanged += (s, e) => ShowSelected();
-
-            _preview = new EcPreviewPanel { Dock = DockStyle.Fill };
-            _hexBox = new TextBox { Dock = DockStyle.Fill, Multiline = true, ReadOnly = true, ScrollBars = ScrollBars.Both, WordWrap = false, Font = EcDialogs.MonoFont(8.5f), Visible = false };
-            _infoLabel = new Label { Dock = DockStyle.Top, Height = 64, Padding = new Padding(4), Font = EcDialogs.MonoFont(8.5f) };
-
-            var previewPanel = new Panel { Dock = DockStyle.Fill };
-            previewPanel.Controls.Add(_preview);
-            previewPanel.Controls.Add(_hexBox);
-            previewPanel.Controls.Add(_infoLabel);
-
-            var listAndPreview = new SplitContainer { Dock = DockStyle.Fill, FixedPanel = FixedPanel.Panel2 };
-            listAndPreview.Panel1.Controls.Add(_entryList);
-            listAndPreview.Panel2.Controls.Add(previewPanel);
-            listAndPreview.HandleCreated += (s, e) => { try { listAndPreview.SplitterDistance = Math.Max(200, listAndPreview.Width - 380); } catch (InvalidOperationException) { } };
-
-            var right = new Panel { Dock = DockStyle.Fill };
-            right.Controls.Add(listAndPreview);
-            right.Controls.Add(toolStrip);
-
-            var fileGroup = new GroupBox { Text = "UOP files", Dock = DockStyle.Fill };
-            fileGroup.Controls.Add(_fileList);
-
-            var split = new SplitContainer { Dock = DockStyle.Fill, FixedPanel = FixedPanel.Panel1 };
-            split.Panel1.Controls.Add(fileGroup);
-            split.Panel2.Controls.Add(right);
-            split.HandleCreated += (s, e) => { try { split.SplitterDistance = 220; } catch (InvalidOperationException) { } };
-
-            var status = new StatusStrip();
-            _statusLabel = new ToolStripStatusLabel("Choose the Enhanced Client folder on top.") { Spring = true, TextAlign = ContentAlignment.MiddleLeft };
-            status.Items.Add(_statusLabel);
-
-            Controls.Add(split);
-            Controls.Add(status);
         }
 
         public void SetClient(EcClient client)
@@ -134,9 +45,9 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             _client = client;
             _package = null;
             _view = new List<EcUopEntry>();
-            _entryList.VirtualListSize = 0;
-            _fileList.Items.Clear();
-            _preview.Image = null;
+            listViewEntries.VirtualListSize = 0;
+            listBoxFiles.Items.Clear();
+            previewPanel.Image = null;
             _loaded = false;
             if (Visible && client != null)
             {
@@ -152,18 +63,18 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             }
             _loaded = true;
 
-            _fileList.BeginUpdate();
+            listBoxFiles.BeginUpdate();
             foreach (string file in _client.GetUopFiles())
             {
-                _fileList.Items.Add($"{Path.GetFileName(file)}  ({EcImageHelper.FormatSize(new FileInfo(file).Length)})");
+                listBoxFiles.Items.Add($"{Path.GetFileName(file)}  ({EcImageHelper.FormatSize(new FileInfo(file).Length)})");
             }
-            _fileList.EndUpdate();
-            _statusLabel.Text = $"{_fileList.Items.Count} UOP files in {_client.Folder}";
+            listBoxFiles.EndUpdate();
+            toolStripStatusLabel.Text = $"{listBoxFiles.Items.Count} UOP files in {_client.Folder}";
         }
 
         private void OpenSelectedFile()
         {
-            if (_fileList.SelectedItem is not string text)
+            if (listBoxFiles.SelectedItem is not string text)
             {
                 return;
             }
@@ -182,14 +93,14 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
                 _package.Changed += PackageChanged;
                 UpdateFolders();
                 ApplyFilter();
-                _saveButton.Enabled = _package.IsDirty;
+                toolStripButtonSave.Enabled = _package.IsDirty;
             }
             catch (Exception ex)
             {
                 _package = null;
                 _view = new List<EcUopEntry>();
-                _entryList.VirtualListSize = 0;
-                _statusLabel.Text = $"{fileName}: {ex.Message}";
+                listViewEntries.VirtualListSize = 0;
+                toolStripStatusLabel.Text = $"{fileName}: {ex.Message}";
             }
             finally
             {
@@ -201,7 +112,7 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
         {
             if (sender == _package)
             {
-                _saveButton.Enabled = _package.IsDirty;
+                toolStripButtonSave.Enabled = _package.IsDirty;
             }
         }
 
@@ -212,7 +123,7 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
         /// </summary>
         private void UpdateFolders()
         {
-            string selected = _folderBox.SelectedItem as string;
+            string selected = toolStripComboBoxFolder.SelectedItem as string;
             var folders = new SortedSet<string>(StringComparer.OrdinalIgnoreCase);
             foreach (EcUopEntry entry in _package.Entries.Where(e => e.Name != null))
             {
@@ -226,18 +137,18 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             }
 
             _updatingFolders = true;
-            _folderBox.Items.Clear();
-            _folderBox.Items.Add("(all)");
+            toolStripComboBoxFolder.Items.Clear();
+            toolStripComboBoxFolder.Items.Add("(all)");
             if (_package.Entries.Any(e => e.Name == null))
             {
-                _folderBox.Items.Add(UnnamedFolder);
+                toolStripComboBoxFolder.Items.Add(UnnamedFolder);
             }
             foreach (string f in folders.Take(3000))
             {
-                _folderBox.Items.Add(f);
+                toolStripComboBoxFolder.Items.Add(f);
             }
-            int index = selected != null ? _folderBox.Items.IndexOf(selected) : -1;
-            _folderBox.SelectedIndex = index >= 0 ? index : 0;
+            int index = selected != null ? toolStripComboBoxFolder.Items.IndexOf(selected) : -1;
+            toolStripComboBoxFolder.SelectedIndex = index >= 0 ? index : 0;
             _updatingFolders = false;
         }
 
@@ -296,10 +207,10 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
                 return;
             }
 
-            string filter = _filterBox.Text.Trim();
+            string filter = toolStripTextBoxFilter.Text.Trim();
             IEnumerable<EcUopEntry> entries = _package.Entries;
 
-            string folder = _folderBox.SelectedIndex > 0 ? _folderBox.SelectedItem as string : null;
+            string folder = toolStripComboBoxFolder.SelectedIndex > 0 ? toolStripComboBoxFolder.SelectedItem as string : null;
             if (folder == UnnamedFolder)
             {
                 entries = entries.Where(e => e.Name == null);
@@ -315,11 +226,11 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             }
 
             _view = entries.OrderBy(e => e.Name == null).ThenBy(e => e.Name, StringComparer.OrdinalIgnoreCase).ToList();
-            _entryList.VirtualListSize = _view.Count;
-            _entryList.Invalidate();
+            listViewEntries.VirtualListSize = _view.Count;
+            listViewEntries.Invalidate();
 
             int named = _package.Entries.Count(e => e.Name != null);
-            _statusLabel.Text = $"{_packageFileName}: {_package.Count} entries, {named} with known name, version {_package.Version}, block size {_package.BlockCapacity}" +
+            toolStripStatusLabel.Text = $"{_packageFileName}: {_package.Count} entries, {named} with known name, version {_package.Version}, block size {_package.BlockCapacity}" +
                                 (filter.Length > 0 ? $" – {_view.Count} shown" : string.Empty);
         }
 
@@ -348,7 +259,7 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
         private List<EcUopEntry> SelectedEntries()
         {
             var list = new List<EcUopEntry>();
-            foreach (int index in _entryList.SelectedIndices)
+            foreach (int index in listViewEntries.SelectedIndices)
             {
                 if (index >= 0 && index < _view.Count)
                 {
@@ -363,8 +274,8 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             List<EcUopEntry> selected = SelectedEntries();
             if (selected.Count != 1)
             {
-                _preview.Image = null;
-                _infoLabel.Text = selected.Count > 1 ? $"{selected.Count} entries selected" : string.Empty;
+                previewPanel.Image = null;
+                labelInfo.Text = selected.Count > 1 ? $"{selected.Count} entries selected" : string.Empty;
                 return;
             }
 
@@ -373,24 +284,24 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             {
                 byte[] data = _package.ReadData(entry);
                 Bitmap bitmap = EcImageHelper.TryDecode(data, out string info, entry.Name);
-                _preview.Image = bitmap;
-                _preview.Visible = bitmap != null;
-                _hexBox.Visible = bitmap == null;
+                previewPanel.Image = bitmap;
+                previewPanel.Visible = bitmap != null;
+                textBoxHex.Visible = bitmap == null;
                 if (bitmap == null)
                 {
-                    _hexBox.Text = EcImageHelper.IsText(data)
+                    textBoxHex.Text = EcImageHelper.IsText(data)
                         ? Encoding.Latin1.GetString(data, 0, Math.Min(data.Length, 200_000)).Replace("\r\n", "\n").Replace("\n", "\r\n")
                         : HexDump(data, 4096);
                 }
-                _infoLabel.Text = $"{entry.DisplayName}\r\nHash 0x{entry.Hash:X16}  block {entry.Block} slot {entry.Slot}\r\n{EcImageHelper.FormatSize(data.Length)}  {info ?? EcImageHelper.DescribeData(data)}";
+                labelInfo.Text = $"{entry.DisplayName}\r\nHash 0x{entry.Hash:X16}  block {entry.Block} slot {entry.Slot}\r\n{EcImageHelper.FormatSize(data.Length)}  {info ?? EcImageHelper.DescribeData(data)}";
             }
             catch (Exception ex)
             {
-                _preview.Image = null;
-                _hexBox.Visible = true;
-                _preview.Visible = false;
-                _hexBox.Text = ex.Message;
-                _infoLabel.Text = entry.DisplayName;
+                previewPanel.Image = null;
+                textBoxHex.Visible = true;
+                previewPanel.Visible = false;
+                textBoxHex.Text = ex.Message;
+                labelInfo.Text = entry.DisplayName;
             }
         }
 
@@ -493,7 +404,7 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
 
                         if ((done + failed) % 500 == 0)
                         {
-                            _statusLabel.Text = $"Exporting... {done + failed} / {entries.Count}";
+                            toolStripStatusLabel.Text = $"Exporting... {done + failed} / {entries.Count}";
                             Application.DoEvents();
                         }
                     }
@@ -502,7 +413,7 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
                 {
                     Cursor = Cursors.Default;
                 }
-                _statusLabel.Text = $"Exported {done} entries to {dialog.SelectedPath}" + (failed > 0 ? $" ({failed} failed – unknown compression)." : ".");
+                toolStripStatusLabel.Text = $"Exported {done} entries to {dialog.SelectedPath}" + (failed > 0 ? $" ({failed} failed – unknown compression)." : ".");
             }
         }
 
@@ -548,7 +459,7 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
                 try
                 {
                     _package.SetData(selected[0], File.ReadAllBytes(dialog.FileName));
-                    _entryList.Invalidate();
+                    listViewEntries.Invalidate();
                     ShowSelected();
                 }
                 catch (Exception ex)
@@ -588,7 +499,7 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
 
                 bool zlib = values[1].Trim().StartsWith("y", StringComparison.OrdinalIgnoreCase) || values[1].Trim().StartsWith("j", StringComparison.OrdinalIgnoreCase);
                 _package.AddOrReplace(name, File.ReadAllBytes(dialog.FileName), zlib ? EcUopCompression.Zlib : EcUopCompression.None);
-                _filterBox.Text = string.Empty;
+                toolStripTextBoxFilter.Text = string.Empty;
                 UpdateFolders();
                 ApplyFilter();
             }
@@ -606,7 +517,7 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             {
                 _package.Remove(entry);
             }
-            _entryList.SelectedIndices.Clear();
+            listViewEntries.SelectedIndices.Clear();
             ApplyFilter();
         }
 
@@ -651,7 +562,7 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             {
                 _package.Save(target);
                 ApplyFilter();
-                _statusLabel.Text = $"Saved {target}";
+                toolStripStatusLabel.Text = $"Saved {target}";
             }
             catch (Exception ex)
             {
@@ -662,5 +573,72 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
                 Cursor = Cursors.Default;
             }
         }
+
+        // ==================================================================== event handlers (designer)
+
+        private void OnFileSelectedIndexChanged(object sender, EventArgs e) => OpenSelectedFile();
+
+        private void OnFolderChanged(object sender, EventArgs e)
+        {
+            if (!_updatingFolders)
+            {
+                ApplyFilter();
+            }
+        }
+
+        private void OnFilterKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                e.SuppressKeyPress = true;
+                ApplyFilter();
+            }
+        }
+
+        private void OnClickApply(object sender, EventArgs e) => ApplyFilter();
+
+        private void OnClickOpen(object sender, EventArgs e) => OpenExternally();
+
+        private void OnClickResolveNames(object sender, EventArgs e) => ResolveNames();
+
+        private void OnClickExportSelected(object sender, EventArgs e) => ExportSelected();
+
+        private void OnClickExportAll(object sender, EventArgs e) => Export(_view);
+
+        private void OnClickExportList(object sender, EventArgs e) => ExportList();
+
+        private void OnClickReplace(object sender, EventArgs e) => ReplaceSelected();
+
+        private void OnClickAdd(object sender, EventArgs e) => AddEntry();
+
+        private void OnClickRemove(object sender, EventArgs e) => RemoveSelected();
+
+        private void OnClickSave(object sender, EventArgs e) => Save(false);
+
+        private void OnClickSaveAs(object sender, EventArgs e) => Save(true);
+
+        private void OnEntrySelectedIndexChanged(object sender, EventArgs e) => ShowSelected();
+
+        private EcUopEntry FirstSelectedEntry =>
+            listViewEntries.SelectedIndices.Count > 0 && listViewEntries.SelectedIndices[0] < _view.Count ? _view[listViewEntries.SelectedIndices[0]] : null;
+
+        private void OnClickCopyName(object sender, EventArgs e)
+        {
+            EcUopEntry entry = FirstSelectedEntry;
+            if (entry?.Name != null)
+            {
+                Clipboard.SetText(entry.Name);
+            }
+        }
+
+        private void OnClickCopyHash(object sender, EventArgs e)
+        {
+            EcUopEntry entry = FirstSelectedEntry;
+            if (entry != null)
+            {
+                Clipboard.SetText($"0x{entry.Hash:X16}");
+            }
+        }
+
     }
 }

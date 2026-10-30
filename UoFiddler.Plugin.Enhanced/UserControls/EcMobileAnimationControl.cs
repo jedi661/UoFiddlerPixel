@@ -27,7 +27,7 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
     /// <summary>
     /// Viewer / editor for the mobile animations of the Enhanced Client (AnimationFrame1-6.uop, Paperdoll.uop, "AMOU" format).
     /// </summary>
-    public sealed class EcMobileAnimationControl : UserControl, IEcEditor
+    public sealed partial class EcMobileAnimationControl : UserControl, IEcEditor
     {
         private static readonly string[] _files =
         {
@@ -45,20 +45,6 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             public int Body;
             public int Action;
         }
-
-        private readonly ToolStripTextBox _searchBox;
-        private readonly ToolStripButton _saveButton;
-        private readonly ListView _bodyList;
-        private readonly ListView _actionList;
-        private readonly ListView _frameList;
-        private readonly NumericUpDown _directionBox;
-        private readonly NumericUpDown _perDirectionBox;
-        private readonly NumericUpDown _speedBox;
-        private readonly Button _playButton;
-        private readonly EcPreviewPanel _preview;
-        private readonly Label _info;
-        private readonly Timer _timer;
-        private readonly ToolStripStatusLabel _statusLabel;
 
         private EcClient _client;
         private bool _loaded;
@@ -79,176 +65,20 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
         private static readonly int[] _storedView = { 4, 5, 6, 7, 0 };
         private int _view = 4;
         private readonly Button[] _viewButtons = new Button[8];
-        private readonly CheckBox _turnBox;
-        private readonly CheckBox _groundBox;
 
         public EcMobileAnimationControl()
         {
+            InitializeComponent();
             Dock = DockStyle.Fill;
 
-            var toolStrip = new ToolStrip { GripStyle = ToolStripGripStyle.Hidden };
-            _searchBox = new ToolStripTextBox { Width = 90, ToolTipText = "Body id – Enter" };
-            _searchBox.KeyDown += (s, e) => { if (e.KeyCode == Keys.Enter) { e.SuppressKeyPress = true; ApplyFilter(); } };
-            _saveButton = new ToolStripButton("Save", null, (s, e) => Save(false)) { Enabled = false };
-
-            toolStrip.Items.Add(new ToolStripLabel("Body:"));
-            toolStrip.Items.Add(_searchBox);
-            toolStrip.Items.Add(new ToolStripButton("Search", null, (s, e) => ApplyFilter()));
-            toolStrip.Items.Add(new ToolStripSeparator());
-
-            var exportButton = new ToolStripDropDownButton("Export");
-            exportButton.DropDownItems.Add("Frames of this action as PNG...", null, (s, e) => ExportPng());
-            exportButton.DropDownItems.Add("Selected frame as PNG...", null, (s, e) => ExportSelectedFramePng());
-            exportButton.DropDownItems.Add("Action as .bin (AMOU)...", null, (s, e) => ExportBin());
-            toolStrip.Items.Add(exportButton);
-
-            var importButton = new ToolStripDropDownButton("Import");
-            importButton.DropDownItems.Add("Replace selected frame with PNG...", null, (s, e) => ImportFramePng());
-            importButton.DropDownItems.Add("Replace frames from PNG folder (exported names)...", null, (s, e) => ImportPngFolder());
-            importButton.DropDownItems.Add(new ToolStripSeparator());
-            importButton.DropDownItems.Add("Replace action with .bin (AMOU)...", null, (s, e) => ImportBin());
-            importButton.DropDownItems.Add("Add .bin as new body / action...", null, (s, e) => AddBin());
-            toolStrip.Items.Add(importButton);
-            toolStrip.Items.Add(new ToolStripSeparator());
-            toolStrip.Items.Add(_saveButton);
-            toolStrip.Items.Add(new ToolStripButton("Save as...", null, (s, e) => Save(true)));
-
-            _bodyList = new ListView { Dock = DockStyle.Fill, View = View.Details, FullRowSelect = true, HideSelection = false, MultiSelect = false, VirtualMode = true };
-            _bodyList.Columns.Add("Body", 60, HorizontalAlignment.Right);
-            _bodyList.Columns.Add("Hex", 55);
-            _bodyList.Columns.Add("Actions", 55, HorizontalAlignment.Right);
-            _bodyList.Columns.Add("File", 120);
-            _bodyList.RetrieveVirtualItem += RetrieveBody;
-            _bodyList.SelectedIndexChanged += (s, e) => ShowBody();
-
-            _actionList = new ListView { Dock = DockStyle.Fill, View = View.Details, FullRowSelect = true, HideSelection = false, MultiSelect = false };
-            _actionList.Columns.Add("Action", 55, HorizontalAlignment.Right);
-            _actionList.Columns.Add("Size", 70, HorizontalAlignment.Right);
-            _actionList.SelectedIndexChanged += (s, e) => ShowAction();
-
-            _frameList = new ListView { Dock = DockStyle.Fill, View = View.Details, FullRowSelect = true, HideSelection = false, MultiSelect = false };
-            _frameList.Columns.Add("#", 40, HorizontalAlignment.Right);
-            _frameList.Columns.Add("Dir", 35, HorizontalAlignment.Right);
-            _frameList.Columns.Add("Size", 70);
-            _frameList.Columns.Add("Position", 90);
-            _frameList.SelectedIndexChanged += (s, e) => { if (!_timer.Enabled && _frameList.SelectedItems.Count == 1) { ShowFrame((EcAnimationFrame)_frameList.SelectedItems[0].Tag); } };
-
-            _directionBox = new NumericUpDown { Minimum = 0, Maximum = 4, Width = 45 };
-            _directionBox.ValueChanged += (s, e) =>
+            // runtime only: the compass buttons by view and their tool tips
+            Button[] buttons = { buttonViewUp, buttonViewUpRight, buttonViewRight, buttonViewDownRight, buttonViewDown, buttonViewDownLeft, buttonViewLeft, buttonViewUpLeft };
+            for (int view = 0; view < buttons.Length; view++)
             {
-                if (!_updating)
-                {
-                    _view = _storedView[(int)_directionBox.Value];
-                    UpdateViewButtons();
-                    FillDirection();
-                }
-            };
-            _perDirectionBox = new NumericUpDown { Minimum = 1, Maximum = 200, Width = 50 };
-            _perDirectionBox.ValueChanged += (s, e) => { if (!_updating) { FillDirection(); } };
-            _speedBox = new NumericUpDown { Minimum = 20, Maximum = 2000, Value = 120, Increment = 10, Width = 60 };
-            _speedBox.ValueChanged += (s, e) => _timer.Interval = (int)_speedBox.Value;
-            _playButton = new Button { Text = "Play", Width = 60 };
-            _playButton.Click += (s, e) => TogglePlay();
-
-            // compass: 3 x 3 buttons around the turn buttons
-            var compass = new TableLayoutPanel { ColumnCount = 3, RowCount = 3, Width = 96, Height = 96, Margin = new Padding(3, 0, 6, 0) };
-            for (int i = 0; i < 3; i++)
-            {
-                compass.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 32));
-                compass.RowStyles.Add(new RowStyle(SizeType.Absolute, 32));
+                _viewButtons[view] = buttons[view];
+                toolTip.SetToolTip(buttons[view], $"View {_viewArrows[view]} – stored direction {_viewStored[view]}{(_viewMirrored[view] ? " mirrored" : string.Empty)}");
             }
-            int[,] cells = { { 7, 0, 1 }, { 6, -1, 2 }, { 5, 4, 3 } };
-            var tip = new ToolTip();
-            for (int row = 0; row < 3; row++)
-            {
-                for (int col = 0; col < 3; col++)
-                {
-                    int view = cells[row, col];
-                    if (view < 0)
-                    {
-                        var turn = new Button { Text = "⟳", Dock = DockStyle.Fill, Margin = new Padding(1), Font = new Font(Font.FontFamily, 11f) };
-                        turn.MouseUp += (s, e) => SetView(_view + (e.Button == MouseButtons.Right ? 7 : 1));
-                        tip.SetToolTip(turn, "Turn right (right click: turn left). Keys: Left / Right in the preview");
-                        compass.Controls.Add(turn, col, row);
-                        continue;
-                    }
-                    var button = new Button { Text = _viewArrows[view], Dock = DockStyle.Fill, Margin = new Padding(1), Font = new Font(Font.FontFamily, 11f) };
-                    button.Click += (s, e) => SetView(view);
-                    tip.SetToolTip(button, $"View {_viewArrows[view]} – stored direction {_viewStored[view]}{(_viewMirrored[view] ? " mirrored" : string.Empty)}");
-                    _viewButtons[view] = button;
-                    compass.Controls.Add(button, col, row);
-                }
-            }
-
-            _turnBox = new CheckBox { Text = "Turn around while playing", AutoSize = true, Margin = new Padding(3, 4, 0, 0) };
-            _groundBox = new CheckBox { Text = "Ground tile", AutoSize = true, Checked = true, Margin = new Padding(3, 4, 0, 0) };
-            _groundBox.CheckedChanged += (s, e) => ShowFrame(CurrentFrame);
-
-            var controlsPanel = new FlowLayoutPanel { Dock = DockStyle.Top, Height = 104, Padding = new Padding(2), FlowDirection = FlowDirection.LeftToRight };
-            var options = new FlowLayoutPanel { FlowDirection = FlowDirection.TopDown, AutoSize = true, WrapContents = false, Margin = new Padding(0) };
-            var line = new FlowLayoutPanel { AutoSize = true, WrapContents = false, Margin = new Padding(0) };
-            options.Controls.Add(line);
-            options.Controls.Add(_turnBox);
-            options.Controls.Add(_groundBox);
-            controlsPanel.Controls.Add(compass);
-            controlsPanel.Controls.Add(options);
-            FlowLayoutPanel controls = line;
-            controls.Controls.Add(new Label { Text = "Stored dir:", AutoSize = true, Margin = new Padding(3, 8, 0, 0) });
-            controls.Controls.Add(_directionBox);
-            controls.Controls.Add(new Label { Text = "Frames/dir:", AutoSize = true, Margin = new Padding(6, 8, 0, 0) });
-            controls.Controls.Add(_perDirectionBox);
-            controls.Controls.Add(new Label { Text = "ms:", AutoSize = true, Margin = new Padding(6, 8, 0, 0) });
-            controls.Controls.Add(_speedBox);
-            controls.Controls.Add(_playButton);
-
-            _preview = new EcPreviewPanel { Dock = DockStyle.Fill, Zoom = 2f, TabStop = true };
-            _preview.MouseDown += (s, e) => _preview.Focus();
-            _preview.PreviewKeyDown += (s, e) => { if (e.KeyCode == Keys.Left || e.KeyCode == Keys.Right) { e.IsInputKey = true; } };
-            _preview.KeyDown += (s, e) =>
-            {
-                if (e.KeyCode == Keys.Right)
-                {
-                    SetView(_view + 1);
-                    e.Handled = true;
-                }
-                else if (e.KeyCode == Keys.Left)
-                {
-                    SetView(_view + 7);
-                    e.Handled = true;
-                }
-            };
-            _info = new Label { Dock = DockStyle.Top, Height = 36, Padding = new Padding(4), Font = EcDialogs.MonoFont(8.5f) };
-
-            var previewPanel = new Panel { Dock = DockStyle.Fill };
-            previewPanel.Controls.Add(_preview);
-            previewPanel.Controls.Add(_info);
-            previewPanel.Controls.Add(controlsPanel);
-
-            var frameSplit = new SplitContainer { Dock = DockStyle.Fill };
-            frameSplit.Panel1.Controls.Add(_frameList);
-            frameSplit.Panel2.Controls.Add(previewPanel);
-            frameSplit.HandleCreated += (s, e) => { try { frameSplit.SplitterDistance = 250; } catch (InvalidOperationException) { } };
-
-            var listSplit = new SplitContainer { Dock = DockStyle.Fill };
-            listSplit.Panel1.Controls.Add(_bodyList);
-            listSplit.Panel2.Controls.Add(_actionList);
-            listSplit.HandleCreated += (s, e) => { try { listSplit.SplitterDistance = 300; } catch (InvalidOperationException) { } };
-
-            var mainSplit = new SplitContainer { Dock = DockStyle.Fill };
-            mainSplit.Panel1.Controls.Add(listSplit);
-            mainSplit.Panel2.Controls.Add(frameSplit);
-            mainSplit.HandleCreated += (s, e) => { try { mainSplit.SplitterDistance = 440; } catch (InvalidOperationException) { } };
-
-            var status = new StatusStrip();
-            _statusLabel = new ToolStripStatusLabel("Choose the Enhanced Client folder on top.") { Spring = true, TextAlign = ContentAlignment.MiddleLeft };
-            status.Items.Add(_statusLabel);
-
-            _timer = new Timer { Interval = 120 };
-            _timer.Tick += (s, e) => NextFrame();
-
-            Controls.Add(mainSplit);
-            Controls.Add(toolStrip);
-            Controls.Add(status);
+            Disposed += OnControlDisposed;
         }
 
         public void SetClient(EcClient client)
@@ -258,13 +88,13 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             _loaded = false;
             _bodies = new List<(int, List<ActionEntry>)>();
             _bodyView = _bodies;
-            _bodyList.VirtualListSize = 0;
-            _actionList.Items.Clear();
-            _frameList.Items.Clear();
-            _preview.Image = null;
+            listViewBodies.VirtualListSize = 0;
+            listViewActions.Items.Clear();
+            listViewFrames.Items.Clear();
+            previewPanel.Image = null;
             _animation = null;
             _current = null;
-            _saveButton.Enabled = false;
+            toolStripButtonSave.Enabled = false;
             if (Visible && client != null)
             {
                 OnActivated();
@@ -285,7 +115,7 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
                 var map = new SortedDictionary<int, List<ActionEntry>>();
                 foreach (string file in _files)
                 {
-                    _statusLabel.Text = $"Reading {file}...";
+                    toolStripStatusLabel.Text = $"Reading {file}...";
                     Application.DoEvents();
 
                     EcUopPackage package = _client.GetPackage(file);
@@ -319,7 +149,7 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
 
                 _bodies = map.Select(kv => (kv.Key, kv.Value.OrderBy(a => a.Action).ToList())).ToList();
                 ApplyFilter();
-                _statusLabel.Text = $"{_bodies.Count} bodies with {_bodies.Sum(b => b.Actions.Count)} actions (paperdoll entries are shown as 1000000 + id).";
+                toolStripStatusLabel.Text = $"{_bodies.Count} bodies with {_bodies.Sum(b => b.Actions.Count)} actions (paperdoll entries are shown as 1000000 + id).";
             }
             catch (Exception ex)
             {
@@ -333,24 +163,24 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
 
         private void PackageChanged(object sender, EventArgs e)
         {
-            _saveButton.Enabled = _files.Select(f => _client?.IsOpen(f) == true ? _client.GetPackage(f) : null).Any(p => p != null && p.IsDirty);
+            toolStripButtonSave.Enabled = _files.Select(f => _client?.IsOpen(f) == true ? _client.GetPackage(f) : null).Any(p => p != null && p.IsDirty);
         }
 
         private void ApplyFilter()
         {
-            string text = _searchBox.Text.Trim();
+            string text = toolStripTextBoxSearch.Text.Trim();
             _bodyView = _bodies;
-            _bodyList.VirtualListSize = _bodyView.Count;
-            _bodyList.Invalidate();
+            listViewBodies.VirtualListSize = _bodyView.Count;
+            listViewBodies.Invalidate();
 
             if (text.Length > 0 && EcDialogs.TryParseNumber(text, out long id))
             {
                 int index = _bodyView.FindIndex(b => b.Body >= id);
                 if (index >= 0)
                 {
-                    _bodyList.SelectedIndices.Clear();
-                    _bodyList.SelectedIndices.Add(index);
-                    _bodyList.EnsureVisible(index);
+                    listViewBodies.SelectedIndices.Clear();
+                    listViewBodies.SelectedIndices.Add(index);
+                    listViewBodies.EnsureVisible(index);
                 }
             }
         }
@@ -373,31 +203,31 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
         private void ShowBody()
         {
             StopPlay();
-            _actionList.BeginUpdate();
-            _actionList.Items.Clear();
-            if (_bodyList.SelectedIndices.Count == 1 && _bodyList.SelectedIndices[0] < _bodyView.Count)
+            listViewActions.BeginUpdate();
+            listViewActions.Items.Clear();
+            if (listViewBodies.SelectedIndices.Count == 1 && listViewBodies.SelectedIndices[0] < _bodyView.Count)
             {
-                foreach (ActionEntry action in _bodyView[_bodyList.SelectedIndices[0]].Actions)
+                foreach (ActionEntry action in _bodyView[listViewBodies.SelectedIndices[0]].Actions)
                 {
                     var item = new ListViewItem(action.Action.ToString()) { Tag = action };
                     item.SubItems.Add(EcImageHelper.FormatSize(action.Entry.DecompressedSize) + (action.Entry.IsModified ? " *" : string.Empty));
-                    _actionList.Items.Add(item);
+                    listViewActions.Items.Add(item);
                 }
             }
-            _actionList.EndUpdate();
-            if (_actionList.Items.Count > 0)
+            listViewActions.EndUpdate();
+            if (listViewActions.Items.Count > 0)
             {
-                _actionList.Items[0].Selected = true;
+                listViewActions.Items[0].Selected = true;
             }
         }
 
         private void ShowAction()
         {
             StopPlay();
-            _frameList.Items.Clear();
-            _preview.Image = null;
+            listViewFrames.Items.Clear();
+            previewPanel.Image = null;
             _animation = null;
-            _current = _actionList.SelectedItems.Count == 1 ? _actionList.SelectedItems[0].Tag as ActionEntry : null;
+            _current = listViewActions.SelectedItems.Count == 1 ? listViewActions.SelectedItems[0].Tag as ActionEntry : null;
             if (_current == null)
             {
                 return;
@@ -407,29 +237,29 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             {
                 _animation = EcAnimation.Read(_current.Package.ReadData(_current.Entry));
                 _updating = true;
-                _perDirectionBox.Value = Math.Min(_perDirectionBox.Maximum, _animation.SuggestedFramesPerDirection());
-                _directionBox.Value = _viewStored[_view];
+                numericUpDownPerDirection.Value = Math.Min(numericUpDownPerDirection.Maximum, _animation.SuggestedFramesPerDirection());
+                numericUpDownDirection.Value = _viewStored[_view];
                 _updating = false;
                 UpdateViewButtons();
                 FillDirection();
-                _statusLabel.Text = $"{_current.File}: {_current.Entry.Name}  –  {_animation.Frames.Count} frames, {_animation.Colors.Count} colors, bounds ({_animation.X1},{_animation.Y1})-({_animation.X2},{_animation.Y2})";
+                toolStripStatusLabel.Text = $"{_current.File}: {_current.Entry.Name}  –  {_animation.Frames.Count} frames, {_animation.Colors.Count} colors, bounds ({_animation.X1},{_animation.Y1})-({_animation.X2},{_animation.Y2})";
             }
             catch (Exception ex)
             {
-                _statusLabel.Text = $"{_current.Entry.DisplayName}: {ex.Message}";
+                toolStripStatusLabel.Text = $"{_current.Entry.DisplayName}: {ex.Message}";
             }
         }
 
-        private int DirectionOf(EcAnimationFrame frame) => Math.Min(4, (frame.Number - 1) / Math.Max(1, (int)_perDirectionBox.Value));
+        private int DirectionOf(EcAnimationFrame frame) => Math.Min(4, (frame.Number - 1) / Math.Max(1, (int)numericUpDownPerDirection.Value));
 
         private void FillDirection()
         {
             StopPlay();
-            _frameList.BeginUpdate();
-            _frameList.Items.Clear();
+            listViewFrames.BeginUpdate();
+            listViewFrames.Items.Clear();
             if (_animation != null)
             {
-                int direction = (int)_directionBox.Value;
+                int direction = (int)numericUpDownDirection.Value;
                 _directionFrames = _animation.Frames.Where(f => DirectionOf(f) == direction).OrderBy(f => f.Number).ToList();
                 foreach (EcAnimationFrame frame in _animation.Frames.OrderBy(f => f.Number))
                 {
@@ -441,10 +271,10 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
                     {
                         item.ForeColor = Color.Gray;
                     }
-                    _frameList.Items.Add(item);
+                    listViewFrames.Items.Add(item);
                 }
             }
-            _frameList.EndUpdate();
+            listViewFrames.EndUpdate();
 
             if (_directionFrames.Count > 0)
             {
@@ -466,9 +296,9 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
         {
             _view = ((view % 8) + 8) % 8;
             UpdateViewButtons();
-            bool playing = _timer.Enabled;
+            bool playing = timerPlay.Enabled;
             _updating = true;
-            _directionBox.Value = _viewStored[_view];
+            numericUpDownDirection.Value = _viewStored[_view];
             _updating = false;
             int index = _playIndex;
             FillDirection();
@@ -513,7 +343,7 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             bool mirror = Mirrored;
             using (Graphics g = Graphics.FromImage(canvas))
             {
-                if (_groundBox.Checked)
+                if (checkBoxGround.Checked)
                 {
                     // the tile the mobile stands on (classic size 44 x 44 diamond)
                     var diamond = new[] { new Point(half, -top - 22), new Point(half + 22, -top), new Point(half, -top + 22), new Point(half - 22, -top) };
@@ -545,8 +375,8 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
                     }
                 }
             }
-            _preview.Image = canvas;
-            _info.Text = $"View {_viewArrows[_view]}: stored direction {_viewStored[_view]}{(mirror ? " (mirrored, not stored)" : string.Empty)}  –  " +
+            previewPanel.Image = canvas;
+            labelInfo.Text = $"View {_viewArrows[_view]}: stored direction {_viewStored[_view]}{(mirror ? " (mirrored, not stored)" : string.Empty)}  –  " +
                          $"frame {frame.Number}  {frame.Width} x {frame.Height}  at {frame.X1}, {frame.Y1}\r\n" +
                          "x/y are relative to the feet of the mobile. Turn with the arrows, ⟳ or the keys Left / Right.";
         }
@@ -558,20 +388,20 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
                 return;
             }
             _playIndex = 0;
-            _timer.Interval = (int)_speedBox.Value;
-            _timer.Start();
-            _playButton.Text = "Stop";
+            timerPlay.Interval = (int)numericUpDownSpeed.Value;
+            timerPlay.Start();
+            buttonPlay.Text = "Stop";
         }
 
         private void StopPlay()
         {
-            _timer.Stop();
-            _playButton.Text = "Play";
+            timerPlay.Stop();
+            buttonPlay.Text = "Play";
         }
 
         private void TogglePlay()
         {
-            if (_timer.Enabled)
+            if (timerPlay.Enabled)
             {
                 StopPlay();
             }
@@ -589,7 +419,7 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
                 return;
             }
             _playIndex = (_playIndex + 1) % _directionFrames.Count;
-            if (_playIndex == 0 && _turnBox.Checked)
+            if (_playIndex == 0 && checkBoxTurn.Checked)
             {
                 SetView(_view + 1);
                 return;
@@ -599,7 +429,7 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
 
         // ------------------------------------------------------------------ export / import
 
-        private EcAnimationFrame SelectedFrame => _frameList.SelectedItems.Count == 1 ? _frameList.SelectedItems[0].Tag as EcAnimationFrame : null;
+        private EcAnimationFrame SelectedFrame => listViewFrames.SelectedItems.Count == 1 ? listViewFrames.SelectedItems[0].Tag as EcAnimationFrame : null;
 
         private string FrameFileName(EcAnimationFrame frame) =>
             $"{_current.Body:D6}_{_current.Action:D2}_{frame.Number:D3}_x{frame.X1}_y{frame.Y1}.png";
@@ -627,7 +457,7 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
                         count++;
                     }
                 }
-                _statusLabel.Text = $"{count} frames exported to {dialog.SelectedPath}.";
+                toolStripStatusLabel.Text = $"{count} frames exported to {dialog.SelectedPath}.";
             }
         }
 
@@ -670,7 +500,7 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
         private void StoreAnimation()
         {
             _current.Package.SetData(_current.Entry, _animation.Write());
-            _saveButton.Enabled = true;
+            toolStripButtonSave.Enabled = true;
         }
 
         private static readonly Regex _pngRegex = new Regex(@"_(\d{3})_x(-?\d+)_y(-?\d+)\.png$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
@@ -706,7 +536,7 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
                     ReplaceFrame(frame, dialog.FileName);
                     StoreAnimation();
                     FillDirection();
-                    _statusLabel.Text = $"Frame {frame.Number} replaced (colors mapped to the palette of the action). Save to keep it.";
+                    toolStripStatusLabel.Text = $"Frame {frame.Number} replaced (colors mapped to the palette of the action). Save to keep it.";
                 }
                 catch (Exception ex)
                 {
@@ -784,7 +614,7 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
 
                     StoreAnimation();
                     FillDirection();
-                    _statusLabel.Text = $"{images.Count} frames imported. Save to keep them.";
+                    toolStripStatusLabel.Text = $"{images.Count} frames imported. Save to keep them.";
                 }
                 catch (Exception ex)
                 {
@@ -811,7 +641,7 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
                     byte[] data = File.ReadAllBytes(dialog.FileName);
                     EcAnimation.Read(data); // validates
                     _current.Package.SetData(_current.Entry, data);
-                    _saveButton.Enabled = true;
+                    toolStripButtonSave.Enabled = true;
                     ShowAction();
                 }
                 catch (Exception ex)
@@ -866,10 +696,10 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
                     }
 
                     package.AddOrReplace(name, animation.Write(), EcUopCompression.Zlib);
-                    _saveButton.Enabled = true;
+                    toolStripButtonSave.Enabled = true;
                     _loaded = false;
                     OnActivated();
-                    _searchBox.Text = body.ToString();
+                    toolStripTextBoxSearch.Text = body.ToString();
                     ApplyFilter();
                 }
                 catch (Exception ex)
@@ -924,8 +754,8 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
                 {
                     package.Save(folder == null ? package.FilePath : Path.Combine(folder, Path.GetFileName(package.FilePath)));
                 }
-                _saveButton.Enabled = false;
-                _statusLabel.Text = "Saved.";
+                toolStripButtonSave.Enabled = false;
+                toolStripStatusLabel.Text = "Saved.";
             }
             catch (Exception ex)
             {
@@ -937,13 +767,113 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             }
         }
 
-        protected override void Dispose(bool disposing)
+        private void OnControlDisposed(object sender, EventArgs e)
         {
-            if (disposing)
-            {
-                _timer.Dispose();
-            }
-            base.Dispose(disposing);
+            timerPlay.Dispose();
         }
+
+        // ==================================================================== event handlers (designer)
+
+        private void OnSearchKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                e.SuppressKeyPress = true;
+                ApplyFilter();
+            }
+        }
+
+        private void OnClickSearch(object sender, EventArgs e) => ApplyFilter();
+
+        private void OnClickExportPng(object sender, EventArgs e) => ExportPng();
+
+        private void OnClickExportFramePng(object sender, EventArgs e) => ExportSelectedFramePng();
+
+        private void OnClickExportBin(object sender, EventArgs e) => ExportBin();
+
+        private void OnClickImportFramePng(object sender, EventArgs e) => ImportFramePng();
+
+        private void OnClickImportPngFolder(object sender, EventArgs e) => ImportPngFolder();
+
+        private void OnClickImportBin(object sender, EventArgs e) => ImportBin();
+
+        private void OnClickAddBin(object sender, EventArgs e) => AddBin();
+
+        private void OnClickSave(object sender, EventArgs e) => Save(false);
+
+        private void OnClickSaveAs(object sender, EventArgs e) => Save(true);
+
+        private void OnBodySelectedIndexChanged(object sender, EventArgs e) => ShowBody();
+
+        private void OnActionSelectedIndexChanged(object sender, EventArgs e) => ShowAction();
+
+        private void OnFrameSelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (!timerPlay.Enabled && listViewFrames.SelectedItems.Count == 1)
+            {
+                ShowFrame((EcAnimationFrame)listViewFrames.SelectedItems[0].Tag);
+            }
+        }
+
+        private void OnDirectionChanged(object sender, EventArgs e)
+        {
+            if (!_updating)
+            {
+                _view = _storedView[(int)numericUpDownDirection.Value];
+                UpdateViewButtons();
+                FillDirection();
+            }
+        }
+
+        private void OnPerDirectionChanged(object sender, EventArgs e)
+        {
+            if (!_updating)
+            {
+                FillDirection();
+            }
+        }
+
+        private void OnSpeedChanged(object sender, EventArgs e) => timerPlay.Interval = (int)numericUpDownSpeed.Value;
+
+        private void OnClickPlay(object sender, EventArgs e) => TogglePlay();
+
+        private void OnClickView(object sender, EventArgs e)
+        {
+            if (sender is Control c && int.TryParse(c.Tag as string, out int view))
+            {
+                SetView(view);
+            }
+        }
+
+        private void OnTurnMouseUp(object sender, MouseEventArgs e) => SetView(_view + (e.Button == MouseButtons.Right ? 7 : 1));
+
+        private void OnGroundChanged(object sender, EventArgs e) => ShowFrame(CurrentFrame);
+
+        private void OnPreviewMouseDown(object sender, MouseEventArgs e) => previewPanel.Focus();
+
+        private void OnPreviewPreviewKeyDown(object sender, PreviewKeyDownEventArgs e)
+        {
+            if (e.KeyCode == Keys.Left || e.KeyCode == Keys.Right)
+            {
+                e.IsInputKey = true;
+            }
+        }
+
+        private void OnPreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Right)
+            {
+                SetView(_view + 1);
+                e.Handled = true;
+            }
+            else if (e.KeyCode == Keys.Left)
+            {
+                SetView(_view + 7);
+                e.Handled = true;
+            }
+        }
+
+        private void OnTimerTick(object sender, EventArgs e) => NextFrame();
+
     }
 }

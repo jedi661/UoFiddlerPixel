@@ -25,22 +25,12 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
     /// Folder tree of the UOP files that store real paths (Interface.uop with the UI windows / lua / textures,
     /// GameData.uop with csv tables, MainMisc, Shaders, ...). Text files can be edited directly.
     /// </summary>
-    public sealed class EcFileTreeControl : UserControl, IEcEditor
+    public sealed partial class EcFileTreeControl : UserControl, IEcEditor
     {
         private static readonly string[] _defaultFiles =
         {
             "Interface.uop", "GameData.uop", "MainMisc.uop", "Shaders.uop", "SystemTextures.uop", "LegacyTerrain.uop", "EffectTexture.uop", "TerrainDefinition.uop"
         };
-
-        private readonly ToolStripComboBox _fileBox;
-        private readonly ToolStripTextBox _filterBox;
-        private readonly ToolStripButton _saveButton;
-        private readonly TreeView _tree;
-        private readonly TextBox _textBox;
-        private readonly EcPreviewPanel _preview;
-        private readonly Label _info;
-        private readonly Button _applyButton;
-        private readonly ToolStripStatusLabel _statusLabel;
 
         private EcClient _client;
         private bool _loaded;
@@ -51,61 +41,8 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
 
         public EcFileTreeControl()
         {
+            InitializeComponent();
             Dock = DockStyle.Fill;
-
-            var toolStrip = new ToolStrip { GripStyle = ToolStripGripStyle.Hidden };
-            _fileBox = new ToolStripComboBox { DropDownStyle = ComboBoxStyle.DropDownList, Width = 180 };
-            _fileBox.SelectedIndexChanged += (s, e) => { if (_loaded) { OpenFile(); } };
-            _filterBox = new ToolStripTextBox { Width = 160, ToolTipText = "Part of the path – Enter" };
-            _filterBox.KeyDown += (s, e) => { if (e.KeyCode == Keys.Enter) { e.SuppressKeyPress = true; FillTree(); } };
-            _saveButton = new ToolStripButton("Save", null, (s, e) => Save(false)) { Enabled = false };
-
-            toolStrip.Items.Add(new ToolStripLabel("File:"));
-            toolStrip.Items.Add(_fileBox);
-            toolStrip.Items.Add(new ToolStripLabel("Filter:"));
-            toolStrip.Items.Add(_filterBox);
-            toolStrip.Items.Add(new ToolStripButton("Apply", null, (s, e) => FillTree()));
-            toolStrip.Items.Add(new ToolStripSeparator());
-            toolStrip.Items.Add(new ToolStripButton("Open", null, (s, e) => OpenExternally()) { ToolTipText = "Open with the Windows program" });
-            var exportButton = new ToolStripDropDownButton("Export");
-            exportButton.DropDownItems.Add("Selected file...", null, (s, e) => ExportSelected());
-            exportButton.DropDownItems.Add("Selected folder (with sub folders)...", null, (s, e) => ExportFolder());
-            toolStrip.Items.Add(exportButton);
-            toolStrip.Items.Add(new ToolStripButton("Replace...", null, (s, e) => ReplaceSelected()));
-            toolStrip.Items.Add(new ToolStripButton("Add...", null, (s, e) => AddFile()));
-            toolStrip.Items.Add(new ToolStripButton("Remove", null, (s, e) => RemoveSelected()));
-            toolStrip.Items.Add(new ToolStripSeparator());
-            toolStrip.Items.Add(_saveButton);
-            toolStrip.Items.Add(new ToolStripButton("Save as...", null, (s, e) => Save(true)));
-
-            _tree = new TreeView { Dock = DockStyle.Fill, HideSelection = false };
-            _tree.AfterSelect += (s, e) => ShowSelected();
-
-            _textBox = new TextBox { Dock = DockStyle.Fill, Multiline = true, ScrollBars = ScrollBars.Both, WordWrap = false, Font = EcDialogs.MonoFont(9f), MaxLength = 0, AcceptsTab = true, Visible = false };
-            _textBox.TextChanged += (s, e) => { if (_textBox.Focused) { _applyButton.Enabled = true; } };
-            _preview = new EcPreviewPanel { Dock = DockStyle.Fill, Visible = false };
-            _info = new Label { Dock = DockStyle.Top, Height = 36, Padding = new Padding(4), Font = EcDialogs.MonoFont(8.5f) };
-            _applyButton = new Button { Text = "Apply text changes", Dock = DockStyle.Bottom, Height = 28, Enabled = false };
-            _applyButton.Click += (s, e) => ApplyText();
-
-            var right = new Panel { Dock = DockStyle.Fill };
-            right.Controls.Add(_textBox);
-            right.Controls.Add(_preview);
-            right.Controls.Add(_applyButton);
-            right.Controls.Add(_info);
-
-            var split = new SplitContainer { Dock = DockStyle.Fill };
-            split.Panel1.Controls.Add(_tree);
-            split.Panel2.Controls.Add(right);
-            split.HandleCreated += (s, e) => { try { split.SplitterDistance = 360; } catch (InvalidOperationException) { } };
-
-            var status = new StatusStrip();
-            _statusLabel = new ToolStripStatusLabel("Choose the Enhanced Client folder on top.") { Spring = true, TextAlign = ContentAlignment.MiddleLeft };
-            status.Items.Add(_statusLabel);
-
-            Controls.Add(split);
-            Controls.Add(toolStrip);
-            Controls.Add(status);
         }
 
         public void SetClient(EcClient client)
@@ -114,9 +51,9 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             _loaded = false;
             _package = null;
             _current = null;
-            _tree.Nodes.Clear();
-            _fileBox.Items.Clear();
-            _saveButton.Enabled = false;
+            treeViewFiles.Nodes.Clear();
+            toolStripComboBoxFile.Items.Clear();
+            toolStripButtonSave.Enabled = false;
             if (Visible && client != null)
             {
                 OnActivated();
@@ -132,22 +69,22 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             _loaded = true;
             foreach (string f in _defaultFiles.Where(f => _client.FindFile(f) != null))
             {
-                _fileBox.Items.Add(f);
+                toolStripComboBoxFile.Items.Add(f);
             }
-            if (_fileBox.Items.Count > 0)
+            if (toolStripComboBoxFile.Items.Count > 0)
             {
-                _fileBox.SelectedIndex = 0;
+                toolStripComboBoxFile.SelectedIndex = 0;
                 OpenFile();
             }
             else
             {
-                _statusLabel.Text = "None of the path based UOP files was found.";
+                toolStripStatusLabel.Text = "None of the path based UOP files was found.";
             }
         }
 
         private void OpenFile()
         {
-            if (_fileBox.SelectedItem is not string file)
+            if (toolStripComboBoxFile.SelectedItem is not string file)
             {
                 return;
             }
@@ -171,7 +108,7 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
 
         private void PackageChanged(object sender, EventArgs e)
         {
-            _saveButton.Enabled = _defaultFiles.Any(f => _client.IsOpen(f) && (_client.GetPackage(f)?.IsDirty ?? false));
+            toolStripButtonSave.Enabled = _defaultFiles.Any(f => _client.IsOpen(f) && (_client.GetPackage(f)?.IsDirty ?? false));
         }
 
         private void FillTree()
@@ -180,9 +117,9 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             {
                 return;
             }
-            string filter = _filterBox.Text.Trim();
-            _tree.BeginUpdate();
-            _tree.Nodes.Clear();
+            string filter = toolStripTextBoxFilter.Text.Trim();
+            treeViewFiles.BeginUpdate();
+            treeViewFiles.Nodes.Clear();
             var folders = new Dictionary<string, TreeNode>(StringComparer.OrdinalIgnoreCase);
             int named = 0;
 
@@ -194,7 +131,7 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
                 }
                 named++;
                 string[] parts = entry.Name.Replace('\\', '/').Split('/');
-                TreeNodeCollection nodes = _tree.Nodes;
+                TreeNodeCollection nodes = treeViewFiles.Nodes;
                 string path = string.Empty;
                 for (int i = 0; i < parts.Length - 1; i++)
                 {
@@ -218,28 +155,28 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
                 {
                     node.Nodes.Add(new TreeNode($"{e.Hash:X16}") { Tag = e });
                 }
-                _tree.Nodes.Add(node);
+                treeViewFiles.Nodes.Add(node);
             }
 
-            if (_tree.Nodes.Count == 1)
+            if (treeViewFiles.Nodes.Count == 1)
             {
-                _tree.Nodes[0].Expand();
+                treeViewFiles.Nodes[0].Expand();
             }
-            _tree.EndUpdate();
-            _statusLabel.Text = $"{_fileBox.SelectedItem}: {_package.Count} entries, {_package.Entries.Count(e => e.Name != null)} with name" + (filter.Length > 0 ? $", {named} shown" : string.Empty);
+            treeViewFiles.EndUpdate();
+            toolStripStatusLabel.Text = $"{toolStripComboBoxFile.SelectedItem}: {_package.Count} entries, {_package.Entries.Count(e => e.Name != null)} with name" + (filter.Length > 0 ? $", {named} shown" : string.Empty);
         }
 
-        private EcUopEntry SelectedEntry => _tree.SelectedNode?.Tag as EcUopEntry;
+        private EcUopEntry SelectedEntry => treeViewFiles.SelectedNode?.Tag as EcUopEntry;
 
         private void ShowSelected()
         {
             _current = SelectedEntry;
-            _applyButton.Enabled = false;
+            buttonApply.Enabled = false;
             if (_current == null)
             {
-                _textBox.Visible = false;
-                _preview.Visible = false;
-                _info.Text = _tree.SelectedNode?.Tag as string ?? string.Empty;
+                textBoxText.Visible = false;
+                previewPanel.Visible = false;
+                labelInfo.Text = treeViewFiles.SelectedNode?.Tag as string ?? string.Empty;
                 return;
             }
 
@@ -249,34 +186,34 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
                 Bitmap image = EcImageHelper.TryDecode(data, out string info, _current.Name);
                 if (image != null)
                 {
-                    _preview.Image = image;
-                    _preview.Visible = true;
-                    _textBox.Visible = false;
+                    previewPanel.Image = image;
+                    previewPanel.Visible = true;
+                    textBoxText.Visible = false;
                 }
                 else
                 {
-                    _preview.Image = null;
-                    _preview.Visible = false;
-                    _textBox.Visible = true;
+                    previewPanel.Image = null;
+                    previewPanel.Visible = false;
+                    textBoxText.Visible = true;
                     if (EcImageHelper.IsText(data) || (data.Length > 1 && data[0] == 0xFF && data[1] == 0xFE))
                     {
-                        _textBox.Text = DecodeText(data);
-                        _textBox.ReadOnly = false;
+                        textBoxText.Text = DecodeText(data);
+                        textBoxText.ReadOnly = false;
                     }
                     else
                     {
                         _currentEncoding = null;
-                        _textBox.Text = HexDump(data, 8192);
-                        _textBox.ReadOnly = true;
+                        textBoxText.Text = HexDump(data, 8192);
+                        textBoxText.ReadOnly = true;
                     }
                 }
-                _info.Text = $"{_current.DisplayName}\r\n{EcImageHelper.FormatSize(data.Length)}  {info ?? EcImageHelper.DescribeData(data)}";
+                labelInfo.Text = $"{_current.DisplayName}\r\n{EcImageHelper.FormatSize(data.Length)}  {info ?? EcImageHelper.DescribeData(data)}";
             }
             catch (Exception ex)
             {
-                _textBox.Visible = true;
-                _textBox.ReadOnly = true;
-                _textBox.Text = ex.Message;
+                textBoxText.Visible = true;
+                textBoxText.ReadOnly = true;
+                textBoxText.Text = ex.Message;
             }
         }
 
@@ -300,11 +237,11 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
 
         private void ApplyText()
         {
-            if (_current == null || _currentEncoding == null || _textBox.ReadOnly)
+            if (_current == null || _currentEncoding == null || textBoxText.ReadOnly)
             {
                 return;
             }
-            string text = _textBox.Text.Replace("\r\n", "\n");
+            string text = textBoxText.Text.Replace("\r\n", "\n");
             if (_lineEnding == "\r\n" || _currentEncoding == Encoding.Unicode)
             {
                 text = text.Replace("\n", "\r\n");
@@ -312,12 +249,12 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             byte[] body = _currentEncoding.GetBytes(text);
             byte[] bom = !_currentBom ? Array.Empty<byte>() : _currentEncoding == Encoding.Unicode ? new byte[] { 0xFF, 0xFE } : new byte[] { 0xEF, 0xBB, 0xBF };
             _package.SetData(_current, bom.Concat(body).ToArray());
-            _applyButton.Enabled = false;
-            if (_tree.SelectedNode != null)
+            buttonApply.Enabled = false;
+            if (treeViewFiles.SelectedNode != null)
             {
-                _tree.SelectedNode.ForeColor = Color.DarkBlue;
+                treeViewFiles.SelectedNode.ForeColor = Color.DarkBlue;
             }
-            _statusLabel.Text = $"{_current.DisplayName} changed. Save the file to keep it.";
+            toolStripStatusLabel.Text = $"{_current.DisplayName} changed. Save the file to keep it.";
         }
 
         private static string HexDump(byte[] data, int max)
@@ -385,7 +322,7 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
 
         private void ExportFolder()
         {
-            TreeNode node = _tree.SelectedNode;
+            TreeNode node = treeViewFiles.SelectedNode;
             if (node == null)
             {
                 return;
@@ -405,7 +342,7 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
                     File.WriteAllBytes(path, _package.ReadData(entry));
                     count++;
                 }
-                _statusLabel.Text = $"{count} files exported.";
+                toolStripStatusLabel.Text = $"{count} files exported.";
             }
         }
 
@@ -452,7 +389,7 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
                 {
                     return;
                 }
-                string folder = _tree.SelectedNode?.Tag as string;
+                string folder = treeViewFiles.SelectedNode?.Tag as string;
                 if (folder == null && _current?.Name != null)
                 {
                     folder = _current.Name.Substring(0, _current.Name.LastIndexOf('/') + 1);
@@ -488,10 +425,78 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             var packages = _defaultFiles.Where(f => _client != null && _client.IsOpen(f)).Select(f => _client.GetPackage(f));
             if (EcPackageSaver.Save(this, packages, saveAs))
             {
-                _saveButton.Enabled = false;
+                toolStripButtonSave.Enabled = false;
                 FillTree();
-                _statusLabel.Text = "Saved.";
+                toolStripStatusLabel.Text = "Saved.";
             }
         }
+
+        // ==================================================================== event handlers (designer)
+
+        private void OnFileChanged(object sender, EventArgs e)
+        {
+            if (_loaded)
+            {
+                OpenFile();
+            }
+        }
+
+        private void OnFilterKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                e.SuppressKeyPress = true;
+                FillTree();
+            }
+        }
+
+        private void OnClickApply(object sender, EventArgs e) => FillTree();
+
+        private void OnClickOpen(object sender, EventArgs e) => OpenExternally();
+
+        private void OnClickExportFile(object sender, EventArgs e) => ExportSelected();
+
+        private void OnClickExportFolder(object sender, EventArgs e) => ExportFolder();
+
+        private void OnClickReplace(object sender, EventArgs e) => ReplaceSelected();
+
+        private void OnClickAdd(object sender, EventArgs e) => AddFile();
+
+        private void OnClickRemove(object sender, EventArgs e) => RemoveSelected();
+
+        private void OnClickSave(object sender, EventArgs e) => Save(false);
+
+        private void OnClickSaveAs(object sender, EventArgs e) => Save(true);
+
+        private void OnAfterSelect(object sender, TreeViewEventArgs e) => ShowSelected();
+
+        /// <summary>Right click selects the node first, so the context menu works on it.</summary>
+        private void OnNodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
+        {
+            if (e.Button == MouseButtons.Right)
+            {
+                treeViewFiles.SelectedNode = e.Node;
+            }
+        }
+
+        private void OnClickCopyPath(object sender, EventArgs e)
+        {
+            string path = (treeViewFiles.SelectedNode?.Tag as EcUopEntry)?.Name ?? treeViewFiles.SelectedNode?.FullPath;
+            if (!string.IsNullOrEmpty(path))
+            {
+                Clipboard.SetText(path);
+            }
+        }
+
+        private void OnTextChanged(object sender, EventArgs e)
+        {
+            if (textBoxText.Focused)
+            {
+                buttonApply.Enabled = true;
+            }
+        }
+
+        private void OnClickApplyText(object sender, EventArgs e) => ApplyText();
+
     }
 }
