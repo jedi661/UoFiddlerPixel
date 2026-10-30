@@ -1,6 +1,7 @@
 /***************************************************************************
  *
  * "THE BEER-WARE LICENSE"
+ * Nikodemus (UoFiddlerPixel) wrote this file.
  * As long as you retain this notice you can do whatever you want with
  * this stuff. If we meet some day, and you think this stuff is worth it,
  * you can buy me a beer in return.
@@ -69,6 +70,18 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
         private int _playIndex;
         private bool _updating;
 
+        // view direction on screen, clockwise from "up": 0 = ↑, 1 = ↗, 2 = →, 3 = ↘, 4 = ↓, 5 = ↙, 6 = ←, 7 = ↖.
+        // Like the classic client only 5 directions are stored (0 = ↓, 1 = ↙, 2 = ←, 3 = ↖, 4 = ↑),
+        // ↗ → ↘ are the mirrored ↖ ← ↙.
+        private static readonly int[] _viewStored = { 4, 3, 2, 1, 0, 1, 2, 3 };
+        private static readonly bool[] _viewMirrored = { false, true, true, true, false, false, false, false };
+        private static readonly string[] _viewArrows = { "↑", "↗", "→", "↘", "↓", "↙", "←", "↖" };
+        private static readonly int[] _storedView = { 4, 5, 6, 7, 0 };
+        private int _view = 4;
+        private readonly Button[] _viewButtons = new Button[8];
+        private readonly CheckBox _turnBox;
+        private readonly CheckBox _groundBox;
+
         public EcMobileAnimationControl()
         {
             Dock = DockStyle.Fill;
@@ -121,7 +134,15 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             _frameList.SelectedIndexChanged += (s, e) => { if (!_timer.Enabled && _frameList.SelectedItems.Count == 1) { ShowFrame((EcAnimationFrame)_frameList.SelectedItems[0].Tag); } };
 
             _directionBox = new NumericUpDown { Minimum = 0, Maximum = 4, Width = 45 };
-            _directionBox.ValueChanged += (s, e) => { if (!_updating) { FillDirection(); } };
+            _directionBox.ValueChanged += (s, e) =>
+            {
+                if (!_updating)
+                {
+                    _view = _storedView[(int)_directionBox.Value];
+                    UpdateViewButtons();
+                    FillDirection();
+                }
+            };
             _perDirectionBox = new NumericUpDown { Minimum = 1, Maximum = 200, Width = 50 };
             _perDirectionBox.ValueChanged += (s, e) => { if (!_updating) { FillDirection(); } };
             _speedBox = new NumericUpDown { Minimum = 20, Maximum = 2000, Value = 120, Increment = 10, Width = 60 };
@@ -129,8 +150,50 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             _playButton = new Button { Text = "Play", Width = 60 };
             _playButton.Click += (s, e) => TogglePlay();
 
-            var controls = new FlowLayoutPanel { Dock = DockStyle.Top, Height = 34, Padding = new Padding(2) };
-            controls.Controls.Add(new Label { Text = "Direction:", AutoSize = true, Margin = new Padding(3, 8, 0, 0) });
+            // compass: 3 x 3 buttons around the turn buttons
+            var compass = new TableLayoutPanel { ColumnCount = 3, RowCount = 3, Width = 96, Height = 96, Margin = new Padding(3, 0, 6, 0) };
+            for (int i = 0; i < 3; i++)
+            {
+                compass.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 32));
+                compass.RowStyles.Add(new RowStyle(SizeType.Absolute, 32));
+            }
+            int[,] cells = { { 7, 0, 1 }, { 6, -1, 2 }, { 5, 4, 3 } };
+            var tip = new ToolTip();
+            for (int row = 0; row < 3; row++)
+            {
+                for (int col = 0; col < 3; col++)
+                {
+                    int view = cells[row, col];
+                    if (view < 0)
+                    {
+                        var turn = new Button { Text = "⟳", Dock = DockStyle.Fill, Margin = new Padding(1), Font = new Font(Font.FontFamily, 11f) };
+                        turn.MouseUp += (s, e) => SetView(_view + (e.Button == MouseButtons.Right ? 7 : 1));
+                        tip.SetToolTip(turn, "Turn right (right click: turn left). Keys: Left / Right in the preview");
+                        compass.Controls.Add(turn, col, row);
+                        continue;
+                    }
+                    var button = new Button { Text = _viewArrows[view], Dock = DockStyle.Fill, Margin = new Padding(1), Font = new Font(Font.FontFamily, 11f) };
+                    button.Click += (s, e) => SetView(view);
+                    tip.SetToolTip(button, $"View {_viewArrows[view]} – stored direction {_viewStored[view]}{(_viewMirrored[view] ? " mirrored" : string.Empty)}");
+                    _viewButtons[view] = button;
+                    compass.Controls.Add(button, col, row);
+                }
+            }
+
+            _turnBox = new CheckBox { Text = "Turn around while playing", AutoSize = true, Margin = new Padding(3, 4, 0, 0) };
+            _groundBox = new CheckBox { Text = "Ground tile", AutoSize = true, Checked = true, Margin = new Padding(3, 4, 0, 0) };
+            _groundBox.CheckedChanged += (s, e) => ShowFrame(CurrentFrame);
+
+            var controlsPanel = new FlowLayoutPanel { Dock = DockStyle.Top, Height = 104, Padding = new Padding(2), FlowDirection = FlowDirection.LeftToRight };
+            var options = new FlowLayoutPanel { FlowDirection = FlowDirection.TopDown, AutoSize = true, WrapContents = false, Margin = new Padding(0) };
+            var line = new FlowLayoutPanel { AutoSize = true, WrapContents = false, Margin = new Padding(0) };
+            options.Controls.Add(line);
+            options.Controls.Add(_turnBox);
+            options.Controls.Add(_groundBox);
+            controlsPanel.Controls.Add(compass);
+            controlsPanel.Controls.Add(options);
+            FlowLayoutPanel controls = line;
+            controls.Controls.Add(new Label { Text = "Stored dir:", AutoSize = true, Margin = new Padding(3, 8, 0, 0) });
             controls.Controls.Add(_directionBox);
             controls.Controls.Add(new Label { Text = "Frames/dir:", AutoSize = true, Margin = new Padding(6, 8, 0, 0) });
             controls.Controls.Add(_perDirectionBox);
@@ -138,13 +201,28 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             controls.Controls.Add(_speedBox);
             controls.Controls.Add(_playButton);
 
-            _preview = new EcPreviewPanel { Dock = DockStyle.Fill, Zoom = 2f };
+            _preview = new EcPreviewPanel { Dock = DockStyle.Fill, Zoom = 2f, TabStop = true };
+            _preview.MouseDown += (s, e) => _preview.Focus();
+            _preview.PreviewKeyDown += (s, e) => { if (e.KeyCode == Keys.Left || e.KeyCode == Keys.Right) { e.IsInputKey = true; } };
+            _preview.KeyDown += (s, e) =>
+            {
+                if (e.KeyCode == Keys.Right)
+                {
+                    SetView(_view + 1);
+                    e.Handled = true;
+                }
+                else if (e.KeyCode == Keys.Left)
+                {
+                    SetView(_view + 7);
+                    e.Handled = true;
+                }
+            };
             _info = new Label { Dock = DockStyle.Top, Height = 36, Padding = new Padding(4), Font = EcDialogs.MonoFont(8.5f) };
 
             var previewPanel = new Panel { Dock = DockStyle.Fill };
             previewPanel.Controls.Add(_preview);
             previewPanel.Controls.Add(_info);
-            previewPanel.Controls.Add(controls);
+            previewPanel.Controls.Add(controlsPanel);
 
             var frameSplit = new SplitContainer { Dock = DockStyle.Fill };
             frameSplit.Panel1.Controls.Add(_frameList);
@@ -330,8 +408,9 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
                 _animation = EcAnimation.Read(_current.Package.ReadData(_current.Entry));
                 _updating = true;
                 _perDirectionBox.Value = Math.Min(_perDirectionBox.Maximum, _animation.SuggestedFramesPerDirection());
-                _directionBox.Value = 0;
+                _directionBox.Value = _viewStored[_view];
                 _updating = false;
+                UpdateViewButtons();
                 FillDirection();
                 _statusLabel.Text = $"{_current.File}: {_current.Entry.Name}  –  {_animation.Frames.Count} frames, {_animation.Colors.Count} colors, bounds ({_animation.X1},{_animation.Y1})-({_animation.X2},{_animation.Y2})";
             }
@@ -377,8 +456,47 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             }
         }
 
+        private EcAnimationFrame CurrentFrame =>
+            _directionFrames.Count == 0 ? null : _directionFrames[Math.Min(_playIndex, _directionFrames.Count - 1)];
+
+        private bool Mirrored => _viewMirrored[_view];
+
+        /// <summary>Shows the view direction (0 = ↑ ... 7 = ↖, clockwise).</summary>
+        private void SetView(int view)
+        {
+            _view = ((view % 8) + 8) % 8;
+            UpdateViewButtons();
+            bool playing = _timer.Enabled;
+            _updating = true;
+            _directionBox.Value = _viewStored[_view];
+            _updating = false;
+            int index = _playIndex;
+            FillDirection();
+            if (!playing && _directionFrames.Count > 0)
+            {
+                // keep the frame number when turning a stopped animation
+                StopPlay();
+                _playIndex = Math.Min(index, _directionFrames.Count - 1);
+                ShowFrame(_directionFrames[_playIndex]);
+            }
+        }
+
+        private void UpdateViewButtons()
+        {
+            for (int i = 0; i < _viewButtons.Length; i++)
+            {
+                if (_viewButtons[i] != null)
+                {
+                    _viewButtons[i].BackColor = i == _view ? SystemColors.Highlight : SystemColors.Control;
+                    _viewButtons[i].ForeColor = i == _view ? SystemColors.HighlightText : SystemColors.ControlText;
+                    _viewButtons[i].UseVisualStyleBackColor = i != _view;
+                }
+            }
+        }
+
         /// <summary>
-        /// Draws the frame on a canvas of the animation bounds, so frames don't jump while playing.
+        /// Draws the frame on a canvas around the feet of the mobile that is the same for every frame and direction,
+        /// so frames don't jump while playing or turning. Mirrored views are drawn flipped.
         /// </summary>
         private void ShowFrame(EcAnimationFrame frame)
         {
@@ -387,20 +505,50 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
                 return;
             }
 
-            int width = Math.Max(1, _animation.X2 - _animation.X1);
-            int height = Math.Max(1, _animation.Y2 - _animation.Y1);
-            var canvas = new Bitmap(width, height, PixelFormat.Format32bppArgb);
-            if (!frame.IsEmpty)
+            // symmetric around x = 0 (the feet), so mirrored frames fit too
+            int half = Math.Max(22, Math.Max(Math.Abs((int)_animation.X1), Math.Abs((int)_animation.X2))) + 4;
+            int top = Math.Min(-4, (int)_animation.Y1) - 4;
+            int bottom = Math.Max(16, (int)_animation.Y2) + 4;
+            var canvas = new Bitmap(half * 2, bottom - top, PixelFormat.Format32bppArgb);
+            bool mirror = Mirrored;
+            using (Graphics g = Graphics.FromImage(canvas))
             {
-                using (Bitmap image = EcImageHelper.ToBitmap(_animation.ToBgra(frame), frame.Width, frame.Height))
-                using (Graphics g = Graphics.FromImage(canvas))
+                if (_groundBox.Checked)
                 {
-                    g.DrawImageUnscaled(image, frame.X1 - _animation.X1, frame.Y1 - _animation.Y1);
+                    // the tile the mobile stands on (classic size 44 x 44 diamond)
+                    var diamond = new[] { new Point(half, -top - 22), new Point(half + 22, -top), new Point(half, -top + 22), new Point(half - 22, -top) };
+                    using (var brush = new SolidBrush(Color.FromArgb(40, Color.SteelBlue)))
+                    using (var pen = new Pen(Color.FromArgb(110, Color.SteelBlue)))
+                    {
+                        g.FillPolygon(brush, diamond);
+                        g.DrawPolygon(pen, diamond);
+                    }
+                    // arrow of the view direction
+                    double angle = (_view * 45 - 90) * Math.PI / 180.0;
+                    var tipPoint = new PointF(half + (float)(Math.Cos(angle) * 20), -top + (float)(Math.Sin(angle) * 10));
+                    using (var pen = new Pen(Color.FromArgb(160, Color.OrangeRed), 2f) { EndCap = System.Drawing.Drawing2D.LineCap.ArrowAnchor })
+                    {
+                        g.DrawLine(pen, half, -top, tipPoint.X, tipPoint.Y);
+                    }
+                }
+
+                if (!frame.IsEmpty)
+                {
+                    using (Bitmap image = EcImageHelper.ToBitmap(_animation.ToBgra(frame), frame.Width, frame.Height))
+                    {
+                        int x = mirror ? -frame.X2 : frame.X1;
+                        if (mirror)
+                        {
+                            image.RotateFlip(RotateFlipType.RotateNoneFlipX);
+                        }
+                        g.DrawImageUnscaled(image, x + half, frame.Y1 - top);
+                    }
                 }
             }
             _preview.Image = canvas;
-            _info.Text = $"Frame {frame.Number} (direction {DirectionOf(frame)})  {frame.Width} x {frame.Height}  at {frame.X1}, {frame.Y1}\r\n" +
-                         "x/y are relative to the tile center (feet of the mobile)";
+            _info.Text = $"View {_viewArrows[_view]}: stored direction {_viewStored[_view]}{(mirror ? " (mirrored, not stored)" : string.Empty)}  –  " +
+                         $"frame {frame.Number}  {frame.Width} x {frame.Height}  at {frame.X1}, {frame.Y1}\r\n" +
+                         "x/y are relative to the feet of the mobile. Turn with the arrows, ⟳ or the keys Left / Right.";
         }
 
         private void StartPlay()
@@ -441,6 +589,11 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
                 return;
             }
             _playIndex = (_playIndex + 1) % _directionFrames.Count;
+            if (_playIndex == 0 && _turnBox.Checked)
+            {
+                SetView(_view + 1);
+                return;
+            }
             ShowFrame(_directionFrames[_playIndex]);
         }
 

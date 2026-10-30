@@ -1,6 +1,7 @@
 /***************************************************************************
  *
  * "THE BEER-WARE LICENSE"
+ * Nikodemus (UoFiddlerPixel) wrote this file.
  * As long as you retain this notice you can do whatever you want with
  * this stuff. If we meet some day, and you think this stuff is worth it,
  * you can buy me a beer in return.
@@ -394,7 +395,41 @@ namespace UoFiddler.Plugin.Enhanced.EcUltima
         /// </summary>
         public byte[] GetItemImage(uint tileId, out string description)
         {
+            return GetItemImage(tileId, out description, out _);
+        }
+
+        /// <summary>
+        /// Image data of one art source by id (e.g. <see cref="ArtSources"/>[0] = "build/worldart/{id}.dds"), or null.
+        /// </summary>
+        public byte[] GetArtData(EcArtSource source, int id)
+        {
+            foreach (string fileName in source.FileNames)
+            {
+                try
+                {
+                    EcUopPackage package = GetPackage(fileName);
+                    EcUopEntry entry = package?.GetEntry(source.GetName(id));
+                    if (entry != null)
+                    {
+                        return package.ReadData(entry);
+                    }
+                }
+                catch (Exception)
+                {
+                    // try the next file
+                }
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Like <see cref="GetItemImage(uint, out string)"/>, also returns where the image was found
+        /// (<see cref="ArtSources"/>[0] = world art in EC size, [1] = legacy art in classic size).
+        /// </summary>
+        public byte[] GetItemImage(uint tileId, out string description, out EcArtSource foundSource)
+        {
             description = null;
+            foundSource = null;
             var candidates = new List<(EcArtSource Source, int Id)>();
 
             TileArtFile tileArt = TileArtIfLoaded ?? (FindFile(TileArtFileName) != null ? GetTileArt() : null);
@@ -426,6 +461,7 @@ namespace UoFiddler.Plugin.Enhanced.EcUltima
                         if (entry != null)
                         {
                             description = $"{fileName}: {entry.Name}";
+                            foundSource = source;
                             return package.ReadData(entry);
                         }
                     }

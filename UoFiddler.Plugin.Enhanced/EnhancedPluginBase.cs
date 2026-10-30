@@ -1,6 +1,7 @@
 /***************************************************************************
  *
  * "THE BEER-WARE LICENSE"
+ * Nikodemus (UoFiddlerPixel) wrote this file.
  * As long as you retain this notice you can do whatever you want with
  * this stuff. If we meet some day, and you think this stuff is worth it,
  * you can buy me a beer in return.
@@ -24,9 +25,9 @@ namespace UoFiddler.Plugin.Enhanced
         public override string Description { get; } = "View and edit the files of the Ultima Online Enhanced Client:\r\n" +
                                                       "art, tiledata, gumps, hues, animations, animdata, multis, maps, sounds, cliloc, interface and every UOP file.";
 
-        public override string Author { get; } = "UoFiddlerPixel";
+        public override string Author { get; } = "Nikodemus (UoFiddlerPixel)";
 
-        public override string Version { get; } = "0.7.0";
+        public override string Version { get; } = "0.9.0";
 
         public override IPluginHost Host { get; set; }
 
