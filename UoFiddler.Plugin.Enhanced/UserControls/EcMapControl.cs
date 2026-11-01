@@ -19,6 +19,7 @@ using UoFiddler.Plugin.Enhanced.Classes;
 using UoFiddler.Plugin.Enhanced.EcUltima;
 using UoFiddler.Plugin.Enhanced.EcUltima.Imaging;
 using UoFiddler.Plugin.Enhanced.EcUltima.Maps;
+using UoFiddler.Plugin.Enhanced.EcUltima.TileArt;
 using UoFiddler.Plugin.Enhanced.EcUltima.Uop;
 
 namespace UoFiddler.Plugin.Enhanced.UserControls
@@ -38,6 +39,8 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
         private int _sectorX = -1, _sectorY = -1;
         private EcSector _sector;
         private EcMapTile _clipboard;
+        private Rectangle _region = Rectangle.Empty;
+        private EcItemSprites _sprites;
         private readonly Dictionary<string, EcFacet> _facets = new Dictionary<string, EcFacet>(StringComparer.OrdinalIgnoreCase);
 
         public EcMapControl()
@@ -50,6 +53,8 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             overviewPanel.TileClicked += (x, y) => SelectSector(x / EcSector.Size, y / EcSector.Size, x % EcSector.Size, y % EcSector.Size);
             sectorPanel.TileClicked += (x, y) => ShowTile(x, y);
             sectorPanel.TileHover += OnSectorTileHover;
+            sectorPanel.MarkChanged += OnSectorMarkChanged;
+            overviewPanel.MarkChanged += OnOverviewMarkChanged;
         }
 
         public void SetClient(EcClient client)
@@ -57,6 +62,8 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             _client = client;
             _loaded = false;
             _facet = null;
+            _sprites?.Clear();
+            _sprites = null;
             _facets.Clear();
             _sector = null;
             sectorPanel.Sector = null;
@@ -108,6 +115,7 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
                     package.Changed += (s, e) => toolStripButtonSave.Enabled = _facets.Values.Any(f => f.IsModified || f.Package.IsDirty);
                 }
                 _facet = facet;
+                ClearMark();
                 LoadOverview();
                 _sector = null;
                 sectorPanel.Sector = null;
@@ -253,8 +261,11 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
                 return;
             }
             var st = (EcStatic)listViewStatics.SelectedItems[0].Tag;
-            byte[] data = _client.GetItemImage(st.ItemId, out _);
-            previewPanelStatic.Image = data != null ? EcImageHelper.TryDecode(data, out _) : null;
+            _sprites ??= new EcItemSprites(_client);
+            EcItemSprite sprite = _sprites.Get(st.ItemId, false);
+            // the panel disposes its image: give it a copy
+            previewPanelStatic.Image = sprite.Image != null ? new Bitmap(sprite.Image) : null;
+            toolStripStatusLabel.Text = $"0x{st.ItemId:X4} {sprite.Name}: {sprite.Source ?? "no image"}";
         }
 
         private void Changed()
@@ -433,6 +444,189 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             }
         }
 
+        // ------------------------------------------------------------------ marked area / region viewer
+
+        /// <summary>Most rows of the "Marked area" list (the export always takes all statics).</summary>
+        private const int MaxMarkedRows = 5000;
+
+        private void ClearMark()
+        {
+            _region = Rectangle.Empty;
+            sectorPanel.Mark = Rectangle.Empty;
+            overviewPanel.Mark = Rectangle.Empty;
+            sectorPanel.Invalidate();
+            overviewPanel.Invalidate();
+            listViewMarked.Items.Clear();
+            labelMarkedInfo.Text = "Check \"Mark area\" and drag a rectangle on the sector or the overview.";
+            labelMark.Text = string.Empty;
+        }
+
+        private void SetRegion(Rectangle region)
+        {
+            if (_facet == null)
+            {
+                return;
+            }
+            _region = _facet.Clip(region);
+            overviewPanel.Mark = _region;
+            overviewPanel.Invalidate();
+            if (_sectorX >= 0)
+            {
+                // the part of the mark inside the shown sector
+                var sectorArea = new Rectangle(_sectorX * EcSector.Size, _sectorY * EcSector.Size, EcSector.Size, EcSector.Size);
+                Rectangle inside = Rectangle.Intersect(sectorArea, _region);
+                sectorPanel.Mark = inside.Width > 0 ? new Rectangle(inside.X - sectorArea.X, inside.Y - sectorArea.Y, inside.Width, inside.Height) : Rectangle.Empty;
+                sectorPanel.Invalidate();
+            }
+            ShowMarked();
+            tabControlInspector.SelectedTab = tabPageMarked;
+        }
+
+        private void ShowMarked()
+        {
+            listViewMarked.BeginUpdate();
+            listViewMarked.Items.Clear();
+            if (_facet == null || _region.Width <= 0)
+            {
+                listViewMarked.EndUpdate();
+                return;
+            }
+            Cursor = Cursors.WaitCursor;
+            try
+            {
+                List<(int X, int Y, EcStatic Static)> statics = _facet.GetStatics(_region);
+                foreach (var (x, y, st) in statics.Take(MaxMarkedRows))
+                {
+                    var item = new ListViewItem(x.ToString(CultureInfo.InvariantCulture)) { Tag = (x, y, st) };
+                    item.SubItems.Add(y.ToString(CultureInfo.InvariantCulture));
+                    item.SubItems.Add($"0x{st.ItemId:X4}");
+                    item.SubItems.Add(ItemName(st.ItemId));
+                    item.SubItems.Add(st.Z.ToString(CultureInfo.InvariantCulture));
+                    item.SubItems.Add(st.Hue.ToString(CultureInfo.InvariantCulture));
+                    listViewMarked.Items.Add(item);
+                }
+                string area = $"{_region.X},{_region.Y} – {_region.Right - 1},{_region.Bottom - 1} ({_region.Width} x {_region.Height})";
+                labelMark.Text = area;
+                labelMarkedInfo.Text = $"Area {area}\r\n{statics.Count} statics" + (statics.Count > MaxMarkedRows ? $" (the first {MaxMarkedRows} are listed)" : string.Empty);
+            }
+            finally
+            {
+                listViewMarked.EndUpdate();
+                Cursor = Cursors.Default;
+            }
+        }
+
+        private string ItemName(uint id)
+        {
+            try
+            {
+                TileArtEntry tile = _client?.TileArtIfLoaded?.Get(id)?.Entry;
+                return tile != null && _client.HasStringDictionary ? _client.StringDictionary.Get(tile.NameIndex) ?? string.Empty : string.Empty;
+            }
+            catch (Exception)
+            {
+                return string.Empty;
+            }
+        }
+
+        /// <summary>The marked area, else the shown sector.</summary>
+        private Rectangle RegionOrSector =>
+            _region.Width > 0 ? _region
+            : _sectorX >= 0 ? new Rectangle(_sectorX * EcSector.Size, _sectorY * EcSector.Size, EcSector.Size, EcSector.Size)
+            : Rectangle.Empty;
+
+        /// <summary>Called after statics were changed outside the sector editor (marked area, region viewer).</summary>
+        private void StaticsChanged()
+        {
+            toolStripButtonSave.Enabled = true;
+            if (_sectorX >= 0)
+            {
+                // the sector may have been read again by the facet
+                _sector = _facet.GetSector(_sectorX, _sectorY);
+                sectorPanel.Sector = _sector;
+                sectorPanel.Invalidate();
+                if (sectorPanel.Selected.X >= 0)
+                {
+                    ShowTile(sectorPanel.Selected.X, sectorPanel.Selected.Y);
+                }
+            }
+            if (_region.Width > 0)
+            {
+                ShowMarked();
+            }
+        }
+
+        private void ViewRegion()
+        {
+            Rectangle area = RegionOrSector;
+            if (_facet == null || area.Width <= 0)
+            {
+                EcDialogs.ShowError(this, "Mark an area or select a sector first.");
+                return;
+            }
+            if (area.Width > Forms.EcRegionViewerForm.MaxAreaLegacy || area.Height > Forms.EcRegionViewerForm.MaxAreaLegacy)
+            {
+                if (!EcDialogs.Confirm(this, $"The area is {area.Width} x {area.Height} tiles. The viewer shows up to {Forms.EcRegionViewerForm.MaxAreaEc} x {Forms.EcRegionViewerForm.MaxAreaEc} tiles " +
+                                             $"with EC images ({Forms.EcRegionViewerForm.MaxAreaLegacy} with legacy images) from the upper left corner; import / export use the whole area. Continue?"))
+                {
+                    return;
+                }
+            }
+            var form = new Forms.EcRegionViewerForm(_client, _facet, area, _radar, StaticsChanged, () => Save(false));
+            form.Show(this);
+        }
+
+        private IEnumerable<(int X, int Y, EcStatic Static)> SelectedMarked =>
+            listViewMarked.SelectedItems.Cast<ListViewItem>().Select(i => ((int X, int Y, EcStatic Static))i.Tag);
+
+        private void RemoveMarked()
+        {
+            var selected = SelectedMarked.ToList();
+            if (selected.Count == 0 || !EcDialogs.Confirm(this, $"Remove {selected.Count} statics?"))
+            {
+                return;
+            }
+            foreach (var (x, y, st) in selected)
+            {
+                _facet.RemoveStatic(x, y, st);
+            }
+            StaticsChanged();
+        }
+
+        private void ClearMarkedStatics()
+        {
+            if (_region.Width <= 0 || !EcDialogs.Confirm(this, $"Remove all statics of the marked area ({_region.Width} x {_region.Height} tiles)?"))
+            {
+                return;
+            }
+            int removed = _facet.ClearStatics(_region);
+            StaticsChanged();
+            toolStripStatusLabel.Text = $"{removed} statics removed.";
+        }
+
+        private void ImportMarked()
+        {
+            Rectangle area = RegionOrSector;
+            if (_facet == null || area.Width <= 0)
+            {
+                EcDialogs.ShowError(this, "Mark an area or select a sector first (the import is placed there).");
+                return;
+            }
+            Point tile = _sectorX >= 0 && sectorPanel.Selected.X >= 0 && _region.Width <= 0
+                ? new Point((_sectorX * EcSector.Size) + sectorPanel.Selected.X, (_sectorY * EcSector.Size) + sectorPanel.Selected.Y)
+                : new Point(-1, -1);
+            string message = EcStaticsUi.Import(this, _facet, area, tile, out Rectangle target);
+            if (message != null)
+            {
+                if (_region.Width > 0)
+                {
+                    SetRegion(Rectangle.Union(_region, target));
+                }
+                StaticsChanged();
+                toolStripStatusLabel.Text = message;
+            }
+        }
+
         // ==================================================================== event handlers (designer)
 
         private void OnFacetChanged(object sender, EventArgs e)
@@ -508,5 +702,68 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
 
         private void OnClickRemoveStatic(object sender, EventArgs e) => RemoveStatic();
 
+
+        private void OnMarkModeChanged(object sender, EventArgs e)
+        {
+            sectorPanel.MarkMode = checkBoxMark.Checked;
+            overviewPanel.MarkMode = checkBoxMark.Checked;
+            sectorPanel.Cursor = checkBoxMark.Checked ? Cursors.Cross : Cursors.Default;
+            overviewPanel.Cursor = checkBoxMark.Checked ? Cursors.Cross : Cursors.Default;
+            toolStripStatusLabel.Text = checkBoxMark.Checked ? "Drag a rectangle on the sector or on the overview." : string.Empty;
+        }
+
+        private void OnSectorMarkChanged(Rectangle mark)
+        {
+            if (_sectorX >= 0 && mark.Width > 0)
+            {
+                SetRegion(new Rectangle((_sectorX * EcSector.Size) + mark.X, (_sectorY * EcSector.Size) + mark.Y, mark.Width, mark.Height));
+            }
+        }
+
+        private void OnOverviewMarkChanged(Rectangle mark)
+        {
+            if (mark.Width > 0)
+            {
+                SetRegion(mark);
+            }
+        }
+
+        private void OnClickClearMark(object sender, EventArgs e) => ClearMark();
+
+        private void OnClickViewRegion(object sender, EventArgs e) => ViewRegion();
+
+        private void OnMarkedDoubleClick(object sender, EventArgs e)
+        {
+            var first = SelectedMarked.FirstOrDefault();
+            if (first.Static == null)
+            {
+                return;
+            }
+            SelectSector(first.X / EcSector.Size, first.Y / EcSector.Size, first.X % EcSector.Size, first.Y % EcSector.Size);
+            tabControlInspector.SelectedTab = tabPageTile;
+            foreach (ListViewItem item in listViewStatics.Items)
+            {
+                item.Selected = ReferenceEquals(item.Tag, first.Static);
+            }
+        }
+
+        private void OnClickRemoveMarked(object sender, EventArgs e) => RemoveMarked();
+
+        private void OnClickClearMarkedStatics(object sender, EventArgs e) => ClearMarkedStatics();
+
+        private void OnClickImportMarked(object sender, EventArgs e) => ImportMarked();
+
+        private void OnClickExportMarked(object sender, EventArgs e)
+        {
+            Rectangle area = RegionOrSector;
+            if (_facet != null && area.Width > 0 && Enum.TryParse((sender as ToolStripItem)?.Tag as string, out EcStaticsFormat format))
+            {
+                string message = EcStaticsUi.Export(this, _facet, area, format);
+                if (message != null)
+                {
+                    toolStripStatusLabel.Text = message;
+                }
+            }
+        }
     }
 }

@@ -33,6 +33,23 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
         public Rectangle Selection;     // in tiles
         public event Action<int, int> TileClicked;
 
+        /// <summary>Mark mode: dragging marks an area (in tiles) instead of selecting a sector.</summary>
+        public bool MarkMode;
+
+        /// <summary>Marked area in map tiles (empty = none).</summary>
+        public Rectangle Mark;
+
+        /// <summary>Raised when a mark was dragged (area in map tiles).</summary>
+        public event Action<Rectangle> MarkChanged;
+
+        private Point _markStart = new Point(-1, -1);
+
+        private Point TileAt(Point client) =>
+            new Point((int)((client.X - AutoScrollPosition.X) * TileScale), (int)((client.Y - AutoScrollPosition.Y) * TileScale));
+
+        private static Rectangle MarkRect(Point a, Point b) =>
+            Rectangle.FromLTRB(Math.Min(a.X, b.X), Math.Min(a.Y, b.Y), Math.Max(a.X, b.X) + 1, Math.Max(a.Y, b.Y) + 1);
+
         public EcMapOverviewPanel()
         {
             SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer | ControlStyles.UserPaint | ControlStyles.ResizeRedraw, true);
@@ -57,6 +74,20 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
                 return;
             }
             e.Graphics.DrawImageUnscaled(Image, AutoScrollPosition.X, AutoScrollPosition.Y);
+            if (Mark.Width > 0 && Mark.Height > 0)
+            {
+                var m = new Rectangle(
+                    (int)(Mark.X / TileScale) + AutoScrollPosition.X,
+                    (int)(Mark.Y / TileScale) + AutoScrollPosition.Y,
+                    Math.Max(2, (int)(Mark.Width / TileScale)),
+                    Math.Max(2, (int)(Mark.Height / TileScale)));
+                using (var brush = new SolidBrush(Color.FromArgb(50, Color.Cyan)))
+                using (var pen = new Pen(Color.Cyan, 2))
+                {
+                    e.Graphics.FillRectangle(brush, m);
+                    e.Graphics.DrawRectangle(pen, m);
+                }
+            }
             if (Selection.Width > 0)
             {
                 var r = new Rectangle(
@@ -78,9 +109,38 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             {
                 return;
             }
+            if (MarkMode && e.Button == MouseButtons.Left)
+            {
+                _markStart = TileAt(e.Location);
+                Mark = MarkRect(_markStart, _markStart);
+                Invalidate();
+                return;
+            }
             int x = (int)((e.X - AutoScrollPosition.X) * TileScale);
             int y = (int)((e.Y - AutoScrollPosition.Y) * TileScale);
             TileClicked?.Invoke(x, y);
+        }
+
+        protected override void OnMouseMove(MouseEventArgs e)
+        {
+            base.OnMouseMove(e);
+            if (MarkMode && _markStart.X >= 0 && e.Button == MouseButtons.Left)
+            {
+                Mark = MarkRect(_markStart, TileAt(e.Location));
+                Invalidate();
+            }
+        }
+
+        protected override void OnMouseUp(MouseEventArgs e)
+        {
+            base.OnMouseUp(e);
+            if (MarkMode && _markStart.X >= 0)
+            {
+                Mark = MarkRect(_markStart, TileAt(e.Location));
+                _markStart = new Point(-1, -1);
+                Invalidate();
+                MarkChanged?.Invoke(Mark);
+            }
         }
 
         public void ScrollTo(int tileX, int tileY)

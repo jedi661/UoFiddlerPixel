@@ -38,6 +38,24 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
         public event Action<int, int> TileClicked;
         public event Action<int, int> TileHover;
 
+        /// <summary>Mark mode: dragging marks an area (in tiles of the sector) instead of selecting a tile.</summary>
+        public bool MarkMode;
+
+        /// <summary>Marked area in tiles of the sector (empty = none).</summary>
+        [System.ComponentModel.Browsable(false)]
+        [System.ComponentModel.DesignerSerializationVisibility(System.ComponentModel.DesignerSerializationVisibility.Hidden)]
+        public Rectangle Mark { get; set; }
+
+        /// <summary>Raised when a mark was dragged (area in tiles of the sector).</summary>
+        public event Action<Rectangle> MarkChanged;
+
+        private Point _markStart = new Point(-1, -1);
+
+        private static Rectangle MarkRect(Point a, Point b) =>
+            Rectangle.FromLTRB(Math.Min(a.X, b.X), Math.Min(a.Y, b.Y), Math.Max(a.X, b.X) + 1, Math.Max(a.Y, b.Y) + 1);
+
+        private static Point Clamp(Point p) => new Point(Math.Max(0, Math.Min(EcSector.Size - 1, p.X)), Math.Max(0, Math.Min(EcSector.Size - 1, p.Y)));
+
         public EcMapSectorPanel()
         {
             SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer | ControlStyles.UserPaint | ControlStyles.ResizeRedraw | ControlStyles.Selectable, true);
@@ -71,6 +89,17 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
                             g.FillRectangle(staticBrush, (x * CellSize) + ((CellSize - s) / 2), (y * CellSize) + ((CellSize - s) / 2), s, s);
                         }
                     }
+                }
+            }
+
+            if (Mark.Width > 0 && Mark.Height > 0)
+            {
+                using (var brush = new SolidBrush(Color.FromArgb(50, Color.Cyan)))
+                using (var pen = new Pen(Color.Cyan, 2))
+                {
+                    var r = new Rectangle(Mark.X * CellSize, Mark.Y * CellSize, Mark.Width * CellSize, Mark.Height * CellSize);
+                    g.FillRectangle(brush, r);
+                    g.DrawRectangle(pen, r);
                 }
             }
 
@@ -118,6 +147,13 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             base.OnMouseDown(e);
             Focus();
             int x = e.X / CellSize, y = e.Y / CellSize;
+            if (MarkMode && e.Button == MouseButtons.Left && Sector != null)
+            {
+                _markStart = Clamp(new Point(x, y));
+                Mark = MarkRect(_markStart, _markStart);
+                Invalidate();
+                return;
+            }
             if (Sector != null && x >= 0 && y >= 0 && x < EcSector.Size && y < EcSector.Size)
             {
                 Selected = new Point(x, y);
@@ -130,9 +166,26 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
         {
             base.OnMouseMove(e);
             int x = e.X / CellSize, y = e.Y / CellSize;
+            if (MarkMode && _markStart.X >= 0 && e.Button == MouseButtons.Left)
+            {
+                Mark = MarkRect(_markStart, Clamp(new Point(x, y)));
+                Invalidate();
+            }
             if (x >= 0 && y >= 0 && x < EcSector.Size && y < EcSector.Size)
             {
                 TileHover?.Invoke(x, y);
+            }
+        }
+
+        protected override void OnMouseUp(MouseEventArgs e)
+        {
+            base.OnMouseUp(e);
+            if (MarkMode && _markStart.X >= 0)
+            {
+                Mark = MarkRect(_markStart, Clamp(new Point(e.X / CellSize, e.Y / CellSize)));
+                _markStart = new Point(-1, -1);
+                Invalidate();
+                MarkChanged?.Invoke(Mark);
             }
         }
 

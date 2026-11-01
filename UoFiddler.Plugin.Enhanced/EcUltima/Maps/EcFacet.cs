@@ -147,6 +147,92 @@ namespace UoFiddler.Plugin.Enhanced.EcUltima.Maps
             _modified.Clear();
         }
 
+        /// <summary>The map area clipped to the size of the map.</summary>
+        public System.Drawing.Rectangle Clip(System.Drawing.Rectangle area)
+        {
+            area.Intersect(new System.Drawing.Rectangle(0, 0, Width, Height));
+            return area;
+        }
+
+        /// <summary>All statics of an area (map coordinates), sorted by x, y.</summary>
+        public List<(int X, int Y, EcStatic Static)> GetStatics(System.Drawing.Rectangle area, int limit = int.MaxValue)
+        {
+            var result = new List<(int, int, EcStatic)>();
+            area = Clip(area);
+            for (int x = area.Left; x < area.Right && result.Count < limit; x++)
+            {
+                for (int y = area.Top; y < area.Bottom && result.Count < limit; y++)
+                {
+                    EcMapTile tile = GetTile(x, y);
+                    if (tile == null)
+                    {
+                        continue;
+                    }
+                    foreach (EcStatic st in tile.Statics)
+                    {
+                        result.Add((x, y, st));
+                    }
+                }
+            }
+            return result;
+        }
+
+        /// <summary>Adds a static at map coordinates (the package still needs to be saved). False outside the map.</summary>
+        public bool AddStatic(int x, int y, EcStatic st)
+        {
+            EcSector sector = x >= 0 && y >= 0 && x < Width && y < Height ? GetSector(x / EcSector.Size, y / EcSector.Size) : null;
+            if (sector == null)
+            {
+                return false;
+            }
+            sector[x % EcSector.Size, y % EcSector.Size].Statics.Add(st);
+            MarkModified(sector);
+            return true;
+        }
+
+        /// <summary>Removes a static at map coordinates.</summary>
+        public bool RemoveStatic(int x, int y, EcStatic st)
+        {
+            EcSector sector = x >= 0 && y >= 0 && x < Width && y < Height ? GetSector(x / EcSector.Size, y / EcSector.Size) : null;
+            if (sector == null || !sector[x % EcSector.Size, y % EcSector.Size].Statics.Remove(st))
+            {
+                return false;
+            }
+            MarkModified(sector);
+            return true;
+        }
+
+        /// <summary>Marks the sector of map coordinates as changed (after a static was edited in place).</summary>
+        public void MarkModified(int x, int y)
+        {
+            EcSector sector = x >= 0 && y >= 0 && x < Width && y < Height ? GetSector(x / EcSector.Size, y / EcSector.Size) : null;
+            if (sector != null)
+            {
+                MarkModified(sector);
+            }
+        }
+
+        /// <summary>Removes all statics of an area; returns the number removed.</summary>
+        public int ClearStatics(System.Drawing.Rectangle area)
+        {
+            int count = 0;
+            area = Clip(area);
+            for (int x = area.Left; x < area.Right; x++)
+            {
+                for (int y = area.Top; y < area.Bottom; y++)
+                {
+                    EcMapTile tile = GetTile(x, y);
+                    if (tile != null && tile.Statics.Count > 0)
+                    {
+                        count += tile.Statics.Count;
+                        tile.Statics.Clear();
+                        MarkModified(x, y);
+                    }
+                }
+            }
+            return count;
+        }
+
         /// <summary>Path of the radar image (facet{N:D2}.dds) in the folder, or null.</summary>
         public static string FindRadarImage(string folder, int facetId)
         {

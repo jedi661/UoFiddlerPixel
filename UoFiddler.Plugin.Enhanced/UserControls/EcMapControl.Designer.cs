@@ -48,6 +48,8 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             toolStripLabelGoTo = new System.Windows.Forms.ToolStripLabel();
             toolStripTextBoxGoTo = new System.Windows.Forms.ToolStripTextBox();
             toolStripButtonShading = new System.Windows.Forms.ToolStripButton();
+            toolStripSeparatorRegion = new System.Windows.Forms.ToolStripSeparator();
+            toolStripButtonViewRegion = new System.Windows.Forms.ToolStripButton();
             toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             toolStripDropDownSector = new System.Windows.Forms.ToolStripDropDownButton();
             exportSectorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -60,6 +62,36 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             splitContainerMain = new System.Windows.Forms.SplitContainer();
             overviewPanel = new EcMapOverviewPanel();
             splitContainerRight = new System.Windows.Forms.SplitContainer();
+            flowLayoutPanelMark = new System.Windows.Forms.FlowLayoutPanel();
+            checkBoxMark = new System.Windows.Forms.CheckBox();
+            buttonViewRegion = new System.Windows.Forms.Button();
+            buttonClearMark = new System.Windows.Forms.Button();
+            labelMark = new System.Windows.Forms.Label();
+            tabControlInspector = new System.Windows.Forms.TabControl();
+            tabPageTile = new System.Windows.Forms.TabPage();
+            tabPageMarked = new System.Windows.Forms.TabPage();
+            listViewMarked = new System.Windows.Forms.ListView();
+            columnHeaderMarkedX = new System.Windows.Forms.ColumnHeader();
+            columnHeaderMarkedY = new System.Windows.Forms.ColumnHeader();
+            columnHeaderMarkedItem = new System.Windows.Forms.ColumnHeader();
+            columnHeaderMarkedName = new System.Windows.Forms.ColumnHeader();
+            columnHeaderMarkedZ = new System.Windows.Forms.ColumnHeader();
+            columnHeaderMarkedHue = new System.Windows.Forms.ColumnHeader();
+            contextMenuStripMarked = new System.Windows.Forms.ContextMenuStrip(components);
+            goToMarkedToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            removeMarkedToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            toolStripSeparatorMarkedMenu = new System.Windows.Forms.ToolStripSeparator();
+            viewRegionMenuToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            toolStripMarked = new System.Windows.Forms.ToolStrip();
+            toolStripButtonMarkedView = new System.Windows.Forms.ToolStripButton();
+            toolStripDropDownMarkedExport = new System.Windows.Forms.ToolStripDropDownButton();
+            exportMarkedTextToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            exportMarkedCsvToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            exportMarkedMultiToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            toolStripButtonMarkedImport = new System.Windows.Forms.ToolStripButton();
+            toolStripButtonMarkedRemove = new System.Windows.Forms.ToolStripButton();
+            toolStripButtonMarkedClear = new System.Windows.Forms.ToolStripButton();
+            labelMarkedInfo = new System.Windows.Forms.Label();
             panelSectorScroll = new System.Windows.Forms.Panel();
             sectorPanel = new EcMapSectorPanel();
             contextMenuStripSector = new System.Windows.Forms.ContextMenuStrip(components);
@@ -67,6 +99,7 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             pasteTileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             toolStripSeparatorMenu1 = new System.Windows.Forms.ToolStripSeparator();
             addStaticMenuToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            viewRegionSectorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             toolStripSeparatorMenu2 = new System.Windows.Forms.ToolStripSeparator();
             exportSectorMenuToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             importSectorMenuToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -115,6 +148,12 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             splitContainerRight.Panel1.SuspendLayout();
             splitContainerRight.Panel2.SuspendLayout();
             splitContainerRight.SuspendLayout();
+            flowLayoutPanelMark.SuspendLayout();
+            tabControlInspector.SuspendLayout();
+            tabPageTile.SuspendLayout();
+            tabPageMarked.SuspendLayout();
+            contextMenuStripMarked.SuspendLayout();
+            toolStripMarked.SuspendLayout();
             panelSectorScroll.SuspendLayout();
             contextMenuStripSector.SuspendLayout();
             panelInspector.SuspendLayout();
@@ -129,7 +168,7 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             //
             // toolStrip
             //
-            toolStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { toolStripLabelMap, toolStripComboBoxFacet, toolStripLabelOverview, toolStripComboBoxZoom, toolStripSeparator1, toolStripLabelGoTo, toolStripTextBoxGoTo, toolStripButtonShading, toolStripSeparator2, toolStripDropDownSector, toolStripSeparator3, toolStripButtonSave, toolStripButtonSaveAs });
+            toolStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { toolStripLabelMap, toolStripComboBoxFacet, toolStripLabelOverview, toolStripComboBoxZoom, toolStripSeparator1, toolStripLabelGoTo, toolStripTextBoxGoTo, toolStripButtonShading, toolStripSeparatorRegion, toolStripButtonViewRegion, toolStripSeparator2, toolStripDropDownSector, toolStripSeparator3, toolStripButtonSave, toolStripButtonSaveAs });
             toolStrip.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
             toolStrip.Location = new System.Drawing.Point(0, 0);
             toolStrip.Name = "toolStrip";
@@ -187,6 +226,19 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             toolStripButtonShading.Name = "toolStripButtonShading";
             toolStripButtonShading.Text = "Height shading";
             toolStripButtonShading.CheckedChanged += OnShadingChanged;
+            //
+            // toolStripSeparatorRegion
+            //
+            toolStripSeparatorRegion.Name = "toolStripSeparatorRegion";
+            //
+            // toolStripButtonViewRegion
+            //
+            toolStripButtonViewRegion.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            toolStripButtonViewRegion.Enabled = true;
+            toolStripButtonViewRegion.Name = "toolStripButtonViewRegion";
+            toolStripButtonViewRegion.Text = "View region";
+            toolStripButtonViewRegion.ToolTipText = "Open the marked area (or the sector) in the region viewer with the EC images";
+            toolStripButtonViewRegion.Click += OnClickViewRegion;
             //
             // toolStripSeparator2
             //
@@ -261,13 +313,245 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             // splitContainerRight
             //
             splitContainerRight.Panel1.Controls.Add(panelSectorScroll);
-            splitContainerRight.Panel2.Controls.Add(panelInspector);
+            splitContainerRight.Panel1.Controls.Add(flowLayoutPanelMark);
+            splitContainerRight.Panel2.Controls.Add(tabControlInspector);
             splitContainerRight.Dock = System.Windows.Forms.DockStyle.Fill;
             splitContainerRight.FixedPanel = System.Windows.Forms.FixedPanel.Panel2;
             splitContainerRight.Name = "splitContainerRight";
             splitContainerRight.Size = new System.Drawing.Size(546, 450);
-            splitContainerRight.SplitterDistance = 280;
+            splitContainerRight.SplitterDistance = 220;
             splitContainerRight.TabIndex = 1;
+            //
+            // flowLayoutPanelMark
+            //
+            flowLayoutPanelMark.Controls.Add(checkBoxMark);
+            flowLayoutPanelMark.Controls.Add(buttonViewRegion);
+            flowLayoutPanelMark.Controls.Add(buttonClearMark);
+            flowLayoutPanelMark.Controls.Add(labelMark);
+            flowLayoutPanelMark.Dock = System.Windows.Forms.DockStyle.Top;
+            flowLayoutPanelMark.Name = "flowLayoutPanelMark";
+            flowLayoutPanelMark.Size = new System.Drawing.Size(220, 30);
+            flowLayoutPanelMark.TabIndex = 1;
+            flowLayoutPanelMark.WrapContents = false;
+            //
+            // checkBoxMark
+            //
+            checkBoxMark.AutoSize = true;
+            checkBoxMark.Margin = new System.Windows.Forms.Padding(3, 6, 3, 0);
+            checkBoxMark.Name = "checkBoxMark";
+            checkBoxMark.TabIndex = 0;
+            checkBoxMark.Text = "Mark area";
+            checkBoxMark.UseVisualStyleBackColor = true;
+            checkBoxMark.CheckedChanged += OnMarkModeChanged;
+            //
+            // buttonViewRegion
+            //
+            buttonViewRegion.AutoSize = true;
+            buttonViewRegion.Name = "buttonViewRegion";
+            buttonViewRegion.TabIndex = 1;
+            buttonViewRegion.Text = "View region";
+            buttonViewRegion.UseVisualStyleBackColor = true;
+            buttonViewRegion.Click += OnClickViewRegion;
+            //
+            // buttonClearMark
+            //
+            buttonClearMark.AutoSize = true;
+            buttonClearMark.Name = "buttonClearMark";
+            buttonClearMark.TabIndex = 2;
+            buttonClearMark.Text = "Clear";
+            buttonClearMark.UseVisualStyleBackColor = true;
+            buttonClearMark.Click += OnClickClearMark;
+            //
+            // labelMark
+            //
+            labelMark.AutoSize = true;
+            labelMark.ForeColor = System.Drawing.SystemColors.GrayText;
+            labelMark.Margin = new System.Windows.Forms.Padding(3, 8, 0, 0);
+            labelMark.Name = "labelMark";
+            labelMark.Text = "";
+            //
+            // tabControlInspector
+            //
+            tabControlInspector.Controls.Add(tabPageTile);
+            tabControlInspector.Controls.Add(tabPageMarked);
+            tabControlInspector.Dock = System.Windows.Forms.DockStyle.Fill;
+            tabControlInspector.Name = "tabControlInspector";
+            tabControlInspector.SelectedIndex = 0;
+            tabControlInspector.TabIndex = 0;
+            //
+            // tabPageTile
+            //
+            tabPageTile.Controls.Add(panelInspector);
+            tabPageTile.Location = new System.Drawing.Point(4, 24);
+            tabPageTile.Name = "tabPageTile";
+            tabPageTile.Padding = new System.Windows.Forms.Padding(3);
+            tabPageTile.Size = new System.Drawing.Size(500, 300);
+            tabPageTile.TabIndex = 0;
+            tabPageTile.Text = "Tile";
+            tabPageTile.UseVisualStyleBackColor = true;
+            //
+            // tabPageMarked
+            //
+            tabPageMarked.Controls.Add(listViewMarked);
+            tabPageMarked.Controls.Add(toolStripMarked);
+            tabPageMarked.Controls.Add(labelMarkedInfo);
+            tabPageMarked.Location = new System.Drawing.Point(4, 24);
+            tabPageMarked.Name = "tabPageMarked";
+            tabPageMarked.Padding = new System.Windows.Forms.Padding(3);
+            tabPageMarked.Size = new System.Drawing.Size(500, 300);
+            tabPageMarked.TabIndex = 1;
+            tabPageMarked.Text = "Marked area";
+            tabPageMarked.UseVisualStyleBackColor = true;
+            //
+            // listViewMarked
+            //
+            listViewMarked.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] { columnHeaderMarkedX, columnHeaderMarkedY, columnHeaderMarkedItem, columnHeaderMarkedName, columnHeaderMarkedZ, columnHeaderMarkedHue });
+            listViewMarked.ContextMenuStrip = contextMenuStripMarked;
+            listViewMarked.Dock = System.Windows.Forms.DockStyle.Fill;
+            listViewMarked.FullRowSelect = true;
+            listViewMarked.HideSelection = false;
+            listViewMarked.Name = "listViewMarked";
+            listViewMarked.TabIndex = 2;
+            listViewMarked.UseCompatibleStateImageBehavior = false;
+            listViewMarked.View = System.Windows.Forms.View.Details;
+            listViewMarked.DoubleClick += OnMarkedDoubleClick;
+            //
+            // columnHeaderMarkedX
+            //
+            columnHeaderMarkedX.Text = "X";
+            columnHeaderMarkedX.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            columnHeaderMarkedX.Width = 45;
+            //
+            // columnHeaderMarkedY
+            //
+            columnHeaderMarkedY.Text = "Y";
+            columnHeaderMarkedY.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            columnHeaderMarkedY.Width = 45;
+            //
+            // columnHeaderMarkedItem
+            //
+            columnHeaderMarkedItem.Text = "Item";
+            columnHeaderMarkedItem.Width = 60;
+            //
+            // columnHeaderMarkedName
+            //
+            columnHeaderMarkedName.Text = "Name";
+            columnHeaderMarkedName.Width = 110;
+            //
+            // columnHeaderMarkedZ
+            //
+            columnHeaderMarkedZ.Text = "z";
+            columnHeaderMarkedZ.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            columnHeaderMarkedZ.Width = 35;
+            //
+            // columnHeaderMarkedHue
+            //
+            columnHeaderMarkedHue.Text = "Hue";
+            columnHeaderMarkedHue.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            columnHeaderMarkedHue.Width = 45;
+            //
+            // contextMenuStripMarked
+            //
+            contextMenuStripMarked.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { goToMarkedToolStripMenuItem, removeMarkedToolStripMenuItem, toolStripSeparatorMarkedMenu, viewRegionMenuToolStripMenuItem });
+            contextMenuStripMarked.Name = "contextMenuStripMarked";
+            //
+            // goToMarkedToolStripMenuItem
+            //
+            goToMarkedToolStripMenuItem.Name = "goToMarkedToolStripMenuItem";
+            goToMarkedToolStripMenuItem.Text = "Go to tile";
+            goToMarkedToolStripMenuItem.Click += OnMarkedDoubleClick;
+            //
+            // removeMarkedToolStripMenuItem
+            //
+            removeMarkedToolStripMenuItem.Name = "removeMarkedToolStripMenuItem";
+            removeMarkedToolStripMenuItem.Text = "Remove selected statics";
+            removeMarkedToolStripMenuItem.Click += OnClickRemoveMarked;
+            //
+            // toolStripSeparatorMarkedMenu
+            //
+            toolStripSeparatorMarkedMenu.Name = "toolStripSeparatorMarkedMenu";
+            //
+            // viewRegionMenuToolStripMenuItem
+            //
+            viewRegionMenuToolStripMenuItem.Name = "viewRegionMenuToolStripMenuItem";
+            viewRegionMenuToolStripMenuItem.Text = "View region";
+            viewRegionMenuToolStripMenuItem.Click += OnClickViewRegion;
+            //
+            // toolStripMarked
+            //
+            toolStripMarked.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { toolStripButtonMarkedView, toolStripDropDownMarkedExport, toolStripButtonMarkedImport, toolStripButtonMarkedRemove, toolStripButtonMarkedClear });
+            toolStripMarked.Dock = System.Windows.Forms.DockStyle.Top;
+            toolStripMarked.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
+            toolStripMarked.Name = "toolStripMarked";
+            toolStripMarked.TabIndex = 1;
+            //
+            // toolStripButtonMarkedView
+            //
+            toolStripButtonMarkedView.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            toolStripButtonMarkedView.Name = "toolStripButtonMarkedView";
+            toolStripButtonMarkedView.Text = "View";
+            toolStripButtonMarkedView.ToolTipText = "Open the marked area in the region viewer";
+            toolStripButtonMarkedView.Click += OnClickViewRegion;
+            //
+            // toolStripDropDownMarkedExport
+            //
+            toolStripDropDownMarkedExport.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { exportMarkedTextToolStripMenuItem, exportMarkedCsvToolStripMenuItem, exportMarkedMultiToolStripMenuItem });
+            toolStripDropDownMarkedExport.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            toolStripDropDownMarkedExport.Name = "toolStripDropDownMarkedExport";
+            toolStripDropDownMarkedExport.Text = "Export";
+            //
+            // exportMarkedTextToolStripMenuItem
+            //
+            exportMarkedTextToolStripMenuItem.Name = "exportMarkedTextToolStripMenuItem";
+            exportMarkedTextToolStripMenuItem.Tag = "Text";
+            exportMarkedTextToolStripMenuItem.Text = "Text (item x y z hue, relative)...";
+            exportMarkedTextToolStripMenuItem.Click += OnClickExportMarked;
+            //
+            // exportMarkedCsvToolStripMenuItem
+            //
+            exportMarkedCsvToolStripMenuItem.Name = "exportMarkedCsvToolStripMenuItem";
+            exportMarkedCsvToolStripMenuItem.Tag = "Csv";
+            exportMarkedCsvToolStripMenuItem.Text = "CSV (map coordinates)...";
+            exportMarkedCsvToolStripMenuItem.Click += OnClickExportMarked;
+            //
+            // exportMarkedMultiToolStripMenuItem
+            //
+            exportMarkedMultiToolStripMenuItem.Name = "exportMarkedMultiToolStripMenuItem";
+            exportMarkedMultiToolStripMenuItem.Tag = "MultiText";
+            exportMarkedMultiToolStripMenuItem.Text = "Multi text (for the Multis tab)...";
+            exportMarkedMultiToolStripMenuItem.Click += OnClickExportMarked;
+            //
+            // toolStripButtonMarkedImport
+            //
+            toolStripButtonMarkedImport.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            toolStripButtonMarkedImport.Name = "toolStripButtonMarkedImport";
+            toolStripButtonMarkedImport.Text = "Import...";
+            toolStripButtonMarkedImport.ToolTipText = "Import statics (own text / CSV, or a multi: text, UOA, CSV, WSC) into the marked area";
+            toolStripButtonMarkedImport.Click += OnClickImportMarked;
+            //
+            // toolStripButtonMarkedRemove
+            //
+            toolStripButtonMarkedRemove.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            toolStripButtonMarkedRemove.Name = "toolStripButtonMarkedRemove";
+            toolStripButtonMarkedRemove.Text = "Remove";
+            toolStripButtonMarkedRemove.ToolTipText = "Remove the selected statics";
+            toolStripButtonMarkedRemove.Click += OnClickRemoveMarked;
+            //
+            // toolStripButtonMarkedClear
+            //
+            toolStripButtonMarkedClear.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            toolStripButtonMarkedClear.Name = "toolStripButtonMarkedClear";
+            toolStripButtonMarkedClear.Text = "Clear area";
+            toolStripButtonMarkedClear.ToolTipText = "Remove all statics of the marked area";
+            toolStripButtonMarkedClear.Click += OnClickClearMarkedStatics;
+            //
+            // labelMarkedInfo
+            //
+            labelMarkedInfo.Dock = System.Windows.Forms.DockStyle.Top;
+            labelMarkedInfo.Font = new System.Drawing.Font("Consolas", 8.5F);
+            labelMarkedInfo.Name = "labelMarkedInfo";
+            labelMarkedInfo.Padding = new System.Windows.Forms.Padding(4);
+            labelMarkedInfo.Size = new System.Drawing.Size(310, 36);
             //
             // panelSectorScroll
             //
@@ -287,7 +571,7 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             //
             // contextMenuStripSector
             //
-            contextMenuStripSector.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { copyTileToolStripMenuItem, pasteTileToolStripMenuItem, toolStripSeparatorMenu1, addStaticMenuToolStripMenuItem, toolStripSeparatorMenu2, exportSectorMenuToolStripMenuItem, importSectorMenuToolStripMenuItem, toolStripSeparatorMenu3, saveToolStripMenuItem });
+            contextMenuStripSector.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { copyTileToolStripMenuItem, pasteTileToolStripMenuItem, toolStripSeparatorMenu1, addStaticMenuToolStripMenuItem, viewRegionSectorToolStripMenuItem, toolStripSeparatorMenu2, exportSectorMenuToolStripMenuItem, importSectorMenuToolStripMenuItem, toolStripSeparatorMenu3, saveToolStripMenuItem });
             contextMenuStripSector.Name = "contextMenuStripSector";
             //
             // copyTileToolStripMenuItem
@@ -311,6 +595,12 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             addStaticMenuToolStripMenuItem.Name = "addStaticMenuToolStripMenuItem";
             addStaticMenuToolStripMenuItem.Text = "Add static...";
             addStaticMenuToolStripMenuItem.Click += OnClickAddStatic;
+            //
+            // viewRegionSectorToolStripMenuItem
+            //
+            viewRegionSectorToolStripMenuItem.Name = "viewRegionSectorToolStripMenuItem";
+            viewRegionSectorToolStripMenuItem.Text = "View region";
+            viewRegionSectorToolStripMenuItem.Click += OnClickViewRegion;
             //
             // toolStripSeparatorMenu2
             //
@@ -627,6 +917,16 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             splitContainerRight.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)splitContainerRight).EndInit();
             splitContainerRight.ResumeLayout(false);
+            flowLayoutPanelMark.ResumeLayout(false);
+            flowLayoutPanelMark.PerformLayout();
+            tabControlInspector.ResumeLayout(false);
+            tabPageTile.ResumeLayout(false);
+            tabPageTile.PerformLayout();
+            tabPageMarked.ResumeLayout(false);
+            tabPageMarked.PerformLayout();
+            contextMenuStripMarked.ResumeLayout(false);
+            toolStripMarked.ResumeLayout(false);
+            toolStripMarked.PerformLayout();
             panelSectorScroll.ResumeLayout(false);
             panelSectorScroll.PerformLayout();
             contextMenuStripSector.ResumeLayout(false);
@@ -659,6 +959,8 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
         private System.Windows.Forms.ToolStripLabel toolStripLabelGoTo;
         private System.Windows.Forms.ToolStripTextBox toolStripTextBoxGoTo;
         private System.Windows.Forms.ToolStripButton toolStripButtonShading;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparatorRegion;
+        private System.Windows.Forms.ToolStripButton toolStripButtonViewRegion;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
         private System.Windows.Forms.ToolStripDropDownButton toolStripDropDownSector;
         private System.Windows.Forms.ToolStripMenuItem exportSectorToolStripMenuItem;
@@ -671,6 +973,36 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
         private System.Windows.Forms.SplitContainer splitContainerMain;
         private EcMapOverviewPanel overviewPanel;
         private System.Windows.Forms.SplitContainer splitContainerRight;
+        private System.Windows.Forms.FlowLayoutPanel flowLayoutPanelMark;
+        private System.Windows.Forms.CheckBox checkBoxMark;
+        private System.Windows.Forms.Button buttonViewRegion;
+        private System.Windows.Forms.Button buttonClearMark;
+        private System.Windows.Forms.Label labelMark;
+        private System.Windows.Forms.TabControl tabControlInspector;
+        private System.Windows.Forms.TabPage tabPageTile;
+        private System.Windows.Forms.TabPage tabPageMarked;
+        private System.Windows.Forms.ListView listViewMarked;
+        private System.Windows.Forms.ColumnHeader columnHeaderMarkedX;
+        private System.Windows.Forms.ColumnHeader columnHeaderMarkedY;
+        private System.Windows.Forms.ColumnHeader columnHeaderMarkedItem;
+        private System.Windows.Forms.ColumnHeader columnHeaderMarkedName;
+        private System.Windows.Forms.ColumnHeader columnHeaderMarkedZ;
+        private System.Windows.Forms.ColumnHeader columnHeaderMarkedHue;
+        private System.Windows.Forms.ContextMenuStrip contextMenuStripMarked;
+        private System.Windows.Forms.ToolStripMenuItem goToMarkedToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem removeMarkedToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparatorMarkedMenu;
+        private System.Windows.Forms.ToolStripMenuItem viewRegionMenuToolStripMenuItem;
+        private System.Windows.Forms.ToolStrip toolStripMarked;
+        private System.Windows.Forms.ToolStripButton toolStripButtonMarkedView;
+        private System.Windows.Forms.ToolStripDropDownButton toolStripDropDownMarkedExport;
+        private System.Windows.Forms.ToolStripMenuItem exportMarkedTextToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem exportMarkedCsvToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem exportMarkedMultiToolStripMenuItem;
+        private System.Windows.Forms.ToolStripButton toolStripButtonMarkedImport;
+        private System.Windows.Forms.ToolStripButton toolStripButtonMarkedRemove;
+        private System.Windows.Forms.ToolStripButton toolStripButtonMarkedClear;
+        private System.Windows.Forms.Label labelMarkedInfo;
         private System.Windows.Forms.Panel panelSectorScroll;
         private EcMapSectorPanel sectorPanel;
         private System.Windows.Forms.ContextMenuStrip contextMenuStripSector;
@@ -678,6 +1010,7 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
         private System.Windows.Forms.ToolStripMenuItem pasteTileToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparatorMenu1;
         private System.Windows.Forms.ToolStripMenuItem addStaticMenuToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem viewRegionSectorToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparatorMenu2;
         private System.Windows.Forms.ToolStripMenuItem exportSectorMenuToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem importSectorMenuToolStripMenuItem;
