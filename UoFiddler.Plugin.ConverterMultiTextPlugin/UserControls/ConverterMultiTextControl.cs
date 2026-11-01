@@ -305,6 +305,31 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
         }
         #endregion
 
+        #region [ BtAnimationVDEditorForm ]
+        // Own instance instead of the shared _isFormOpen flag, so the VD editor
+        // does not block the other tool windows (and vice versa).
+        private AnimationVDEditorForm _animationVDEditorForm;
+
+        private void BtAnimationVDEditorForm_Click(object sender, EventArgs e)
+        {
+            // already open: just bring it to the front
+            if (_animationVDEditorForm != null && !_animationVDEditorForm.IsDisposed)
+            {
+                if (_animationVDEditorForm.WindowState == FormWindowState.Minimized)
+                {
+                    _animationVDEditorForm.WindowState = FormWindowState.Normal;
+                }
+                _animationVDEditorForm.BringToFront();
+                _animationVDEditorForm.Activate();
+                return;
+            }
+
+            _animationVDEditorForm = new AnimationVDEditorForm();
+            _animationVDEditorForm.FormClosed += (s, args) => _animationVDEditorForm = null;
+            _animationVDEditorForm.Show();
+        }
+        #endregion
+
         #region [ BtAnimationVDForm ]
         private void BtAnimationVDForm_Click(object sender, EventArgs e)
         {

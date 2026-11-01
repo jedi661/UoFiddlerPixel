@@ -62,6 +62,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             BtAltitudeTool = new System.Windows.Forms.Button();
             tabPageAnimation = new System.Windows.Forms.TabPage();
             lbAnimationVD = new System.Windows.Forms.Label();
+            lbAnimationVDEditor = new System.Windows.Forms.Label();
+            BtAnimationVDEditorForm = new System.Windows.Forms.Button();
             lbAnimationEdit = new System.Windows.Forms.Label();
             BtAnimationVDForm = new System.Windows.Forms.Button();
             BtAnimationEditFormButton = new System.Windows.Forms.Button();
@@ -315,6 +317,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             // 
             // tabPageAnimation
             // 
+            tabPageAnimation.Controls.Add(lbAnimationVDEditor);
+            tabPageAnimation.Controls.Add(BtAnimationVDEditorForm);
             tabPageAnimation.Controls.Add(lbAnimationVD);
             tabPageAnimation.Controls.Add(lbAnimationEdit);
             tabPageAnimation.Controls.Add(BtAnimationVDForm);
@@ -325,6 +329,25 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             tabPageAnimation.TabIndex = 3;
             tabPageAnimation.Text = "Animation";
             tabPageAnimation.UseVisualStyleBackColor = true;
+            // 
+            // lbAnimationVDEditor
+            // 
+            lbAnimationVDEditor.AutoSize = true;
+            lbAnimationVDEditor.Location = new System.Drawing.Point(3, 235);
+            lbAnimationVDEditor.Name = "lbAnimationVDEditor";
+            lbAnimationVDEditor.Size = new System.Drawing.Size(105, 15);
+            lbAnimationVDEditor.TabIndex = 20;
+            lbAnimationVDEditor.Text = "VD Editor (UOEC)";
+            // 
+            // BtAnimationVDEditorForm
+            // 
+            BtAnimationVDEditorForm.Image = Properties.Resources.animation_edit_2_;
+            BtAnimationVDEditorForm.Location = new System.Drawing.Point(3, 176);
+            BtAnimationVDEditorForm.Name = "BtAnimationVDEditorForm";
+            BtAnimationVDEditorForm.Size = new System.Drawing.Size(59, 56);
+            BtAnimationVDEditorForm.TabIndex = 19;
+            BtAnimationVDEditorForm.UseVisualStyleBackColor = true;
+            BtAnimationVDEditorForm.Click += BtAnimationVDEditorForm_Click;
             // 
             // lbAnimationVD
             // 
@@ -954,6 +977,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
         private System.Windows.Forms.Label lbDecriptClient;
         private System.Windows.Forms.Label lbAltitudeTool;
         private System.Windows.Forms.Label lbAnimationVD;
+        private System.Windows.Forms.Label lbAnimationVDEditor;
+        private System.Windows.Forms.Button BtAnimationVDEditorForm;
         private System.Windows.Forms.Label lbAnimationEdit;
         private System.Windows.Forms.Label lbGumpsEdit;
         private System.Windows.Forms.Label lbTextureCutter;
