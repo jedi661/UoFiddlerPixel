@@ -743,7 +743,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         {
             try
             {
-                Hue hue = Hues.GetHue(hueId - 1);
+                // fully qualified: MapReplaceNewForm.cs has its own Hues class in this namespace
+                Ultima.Hue hue = Ultima.Hues.GetHue(hueId - 1);
                 if (hue == null)
                 {
                     return null;
