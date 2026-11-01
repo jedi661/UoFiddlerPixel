@@ -52,28 +52,16 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
         private RenderResult _render;
         private Color _backgroundColor = Color.White;
 
-        private readonly Dictionary<(uint Id, bool Legacy), Sprite> _sprites = new Dictionary<(uint, bool), Sprite>();
+        private EcItemSprites _sprites;
 
-        /// <summary>
-        /// Item image cut to its used area, with its position relative to the tile:
-        /// X from the left corner of the tile, Y from the bottom corner (negative = up).
-        /// </summary>
-        private sealed class Sprite
-        {
-            public Bitmap Image;
-            public int OffsetX;
-            public int OffsetY;
-            public bool Background;
-            public int Height;
-            public string Name;
-            public string Source;
-        }
+        /// <summary>Item images of the current client folder (shared logic with the animation view).</summary>
+        private EcItemSprites Sprites => _sprites ??= new EcItemSprites(_client);
 
         private sealed class Placed
         {
             public int Index;
             public EcMultiPart Part;
-            public Sprite Sprite;
+            public EcItemSprite EcItemSprite;
             public Rectangle Rect;
             public Point[] Tile;
         }
@@ -746,190 +734,14 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
 
         // ==================================================================== images
 
-        // EC images are 1.5 times the classic size: a tile is 66 pixels wide, one z step 6 pixels
-        private const float EcScale = 1.5f;
-
         private bool LegacyMode => comboBoxArt.SelectedIndex == 1;
 
-        private Sprite SpriteFor(uint id, bool legacy)
-        {
-            if (_sprites.TryGetValue((id, legacy), out Sprite sprite))
-            {
-                return sprite;
-            }
-
-            sprite = new Sprite();
-            _sprites[(id, legacy)] = sprite;
-            if (_client == null)
-            {
-                return sprite;
-            }
-
-            TileArtEntry tile = _client.TileArtIfLoaded?.Get(id)?.Entry;
-            if (tile != null)
-            {
-                sprite.Background = ((tile.Flags2 | (ulong)tile.Flags) & 0x1) != 0;
-                sprite.Height = (int)(tile.Properties.FirstOrDefault(p => p.Id == TileArtPropertyId.Height)?.Value ?? 0);
-                sprite.Name = ItemName(id);
-            }
-
-            try
-            {
-                if (!legacy && tile != null)
-                {
-                    // EC world art "build/worldart/<id>.dds": the item is the area (x start, y start)-(x end, y end) of the
-                    // padded DDS; the offset places it on the tile. Floors etc. have no area (they are drawn from terrain
-                    // like textures in the client) – for them the legacy art is used, scaled to EC size.
-                    // Several items can share one image (atlas): the sails and the mast of a boat all point to
-                    // "00016093_mast.tga" and only use different areas of it. So the image tileart points to is used,
-                    // not "worldart/<item id>".
-                    TileArtImageOffset o = tile.EcImageOffset;
-                    int artId = WorldArtId(tile, id);
-                    if (o.XEnd > o.XStart && o.YEnd > o.YStart && artId >= 0)
-                    {
-                        Bitmap cut = Cut(WorldArt(artId), o);
-                        if (cut != null)
-                        {
-                            sprite.Image = cut;
-                            sprite.OffsetX = o.XOffset;
-                            sprite.OffsetY = o.YOffset - cut.Height;
-                            sprite.Source = artId == id ? "World art (EC)" : $"World art (EC) {artId:D8}, area {o.XStart},{o.YStart}-{o.XEnd},{o.YEnd}";
-                            return sprite;
-                        }
-                    }
-                }
-
-                // legacy (classic) art "build/tileartlegacy/<id>.dds": the classic image is the area of the classic offset
-                Bitmap legacyFull = Decode(_client.GetArtData(EcClient.ArtSources[1], (int)id));
-                Bitmap image = tile != null ? Cut(legacyFull, tile.CcImageOffset) : legacyFull;
-                if (image != legacyFull)
-                {
-                    legacyFull?.Dispose();
-                }
-                if (image == null && legacyFull == null)
-                {
-                    // last try: any image tileart points to
-                    image = Decode(_client.GetItemImage(id, out _));
-                }
-                if (image == null)
-                {
-                    return sprite;
-                }
-
-                if (!legacy)
-                {
-                    var scaled = new Bitmap(Math.Max(1, (int)Math.Round(image.Width * EcScale)), Math.Max(1, (int)Math.Round(image.Height * EcScale)), PixelFormat.Format32bppArgb);
-                    using (Graphics g = Graphics.FromImage(scaled))
-                    {
-                        g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
-                        g.PixelOffsetMode = System.Drawing.Drawing2D.PixelOffsetMode.Half;
-                        g.DrawImage(image, 0, 0, scaled.Width, scaled.Height);
-                    }
-                    image.Dispose();
-                    image = scaled;
-                }
-
-                // classic placement: bottom center of the image on the bottom corner of the tile
-                int tileWidth = legacy ? 44 : 66;
-                sprite.Image = image;
-                sprite.OffsetX = (tileWidth / 2) - (image.Width / 2);
-                sprite.OffsetY = -image.Height;
-                sprite.Source = legacy ? "Legacy art" : "Legacy art (scaled, no EC image)";
-            }
-            catch (Exception)
-            {
-                // drawn as red frame
-            }
-            return sprite;
-        }
-
-        private static Bitmap Decode(byte[] data) => data == null ? null : EcImageHelper.TryDecode(data, out _);
-
-        private readonly Dictionary<int, Bitmap> _worldArt = new Dictionary<int, Bitmap>();
-
-        /// <summary>Decoded world art image (cached, shared by all items that use it – don't dispose).</summary>
-        private Bitmap WorldArt(int artId)
-        {
-            if (!_worldArt.TryGetValue(artId, out Bitmap image))
-            {
-                image = Decode(_client.GetArtData(EcClient.ArtSources[0], artId));
-                _worldArt[artId] = image;
-            }
-            return image;
-        }
-
-        /// <summary>
-        /// World art id of the item image: the slot 0 image of tileart with the item id if there is one, else the
-        /// first slot 0 image that is not a helper texture (ids from 1000000 on: noise, ripple, ground textures, ...).
-        /// </summary>
-        private int WorldArtId(TileArtEntry tile, uint itemId)
-        {
-            var ids = new List<int>();
-            if (_client.HasStringDictionary)
-            {
-                foreach (TileArtTexture texture in tile.Textures.Where(t => t.Slot == 0))
-                {
-                    foreach (TileArtTextureImage image in texture.Images)
-                    {
-                        if (EcClient.TryParseTexturePath(_client.StringDictionary.Get(image.NameIndex), out EcArtSource source, out int artId)
-                            && source == EcClient.ArtSources[0])
-                        {
-                            ids.Add(artId);
-                        }
-                    }
-                }
-            }
-            if (ids.Contains((int)itemId))
-            {
-                return (int)itemId;
-            }
-            if (ids.Count == 0)
-            {
-                return (int)itemId;
-            }
-            List<int> items = ids.Where(i => i < 1000000).ToList();
-            return items.Count > 0 ? items[0] : -1;
-        }
-
-        /// <summary>Cuts the used area out of a padded image or atlas (the full image is kept; may return it unchanged).</summary>
-        private static Bitmap Cut(Bitmap full, TileArtImageOffset o)
-        {
-            if (full == null)
-            {
-                return null;
-            }
-            if (o.XEnd <= o.XStart || o.YEnd <= o.YStart)
-            {
-                return full;
-            }
-            Rectangle rect = Rectangle.Intersect(new Rectangle(o.XStart, o.YStart, o.XEnd - o.XStart, o.YEnd - o.YStart), new Rectangle(0, 0, full.Width, full.Height));
-            if (rect.Width <= 0 || rect.Height <= 0)
-            {
-                return full;
-            }
-            if (rect.Size == full.Size)
-            {
-                return full;
-            }
-            return full.Clone(rect, PixelFormat.Format32bppArgb);
-        }
+        private EcItemSprite SpriteFor(uint id, bool legacy) => Sprites.Get(id, legacy);
 
         private void ClearSprites()
         {
-            var shared = new HashSet<Bitmap>(_worldArt.Values.Where(b => b != null));
-            foreach (Sprite s in _sprites.Values)
-            {
-                if (s.Image != null && !shared.Contains(s.Image))
-                {
-                    s.Image.Dispose();
-                }
-            }
-            _sprites.Clear();
-            foreach (Bitmap b in shared)
-            {
-                b.Dispose();
-            }
-            _worldArt.Clear();
+            _sprites?.Clear();
+            _sprites = null;
         }
 
         // ==================================================================== drawing
@@ -953,12 +765,12 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
 
             var order = Enumerable.Range(0, multi.Parts.Count)
                 .Where(i => hiddenParts == null || !hiddenParts.Contains(i))
-                .Select(i => (Index: i, Part: multi.Parts[i], Sprite: SpriteFor(multi.Parts[i].ItemId, legacy)))
+                .Select(i => (Index: i, Part: multi.Parts[i], EcItemSprite: SpriteFor(multi.Parts[i].ItemId, legacy)))
                 .Where(t => t.Part.Z <= maxZ && t.Part.Z >= minZ && (showFlagged || t.Part.Flags == 0))
                 .Select(t =>
                 {
-                    int threshold = (t.Sprite.Height > 0 ? 1 : 0) + (t.Sprite.Background ? 0 : 1);
-                    return (t.Index, t.Part, t.Sprite, Threshold: threshold);
+                    int threshold = (t.EcItemSprite.Height > 0 ? 1 : 0) + (t.EcItemSprite.Background ? 0 : 1);
+                    return (t.Index, t.Part, t.EcItemSprite, Threshold: threshold);
                 })
                 .OrderBy(t => t.Part.X).ThenBy(t => t.Part.Y)
                 .ThenBy(t => t.Part.Z + t.Threshold).ThenBy(t => t.Threshold).ThenBy(t => t.Index)
@@ -977,7 +789,7 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
                     new Point(left + half, bottom - tile), new Point(left + tile, bottom - half),
                     new Point(left + half, bottom), new Point(left, bottom - half)
                 };
-                result.Placed.Add(new Placed { Index = index, Part = p, Sprite = sprite, Rect = rect, Tile = diamond });
+                result.Placed.Add(new Placed { Index = index, Part = p, EcItemSprite = sprite, Rect = rect, Tile = diamond });
                 minX = Math.Min(minX, rect.Left);
                 minY = Math.Min(minY, rect.Top);
                 maxX = Math.Max(maxX, rect.Right);
@@ -1031,13 +843,13 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
 
                 foreach (Placed placed in result.Placed)
                 {
-                    if (placed.Sprite.Image == null)
+                    if (placed.EcItemSprite.Image == null)
                     {
                         g.DrawPolygon(Pens.Red, placed.Tile);
                     }
                     else
                     {
-                        g.DrawImageUnscaled(placed.Sprite.Image, placed.Rect.X, placed.Rect.Y);
+                        g.DrawImageUnscaled(placed.EcItemSprite.Image, placed.Rect.X, placed.Rect.Y);
                     }
                 }
             }
@@ -1066,7 +878,7 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
 
             var b = _current.Bounds();
             int surface = _current.Parts.Select(p => (p.X, p.Y)).Distinct().Count();
-            int missing = _render.Placed.Count(p => p.Sprite.Image == null);
+            int missing = _render.Placed.Count(p => p.EcItemSprite.Image == null);
             toolStripStatusLabel.Text = $"Multi {_current.Id}: Size: {b.MaxX - b.MinX + 1},{b.MaxY - b.MinY + 1} MaxHeight: {b.MaxZ} " +
                                 $"MultiRegion: {b.MinX},{b.MinY},{b.MaxX},{b.MaxY} Surface: {surface}  –  {_current.Parts.Count} parts, {_render.Placed.Count} drawn" +
                                 (missing > 0 ? $", {missing} without image (red)" : string.Empty);
@@ -1120,7 +932,7 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
                 {
                     continue;
                 }
-                if (placed.Sprite.Image == null || placed.Sprite.Image.GetPixel(p.X - placed.Rect.X, p.Y - placed.Rect.Y).A > 16)
+                if (placed.EcItemSprite.Image == null || placed.EcItemSprite.Image.GetPixel(p.X - placed.Rect.X, p.Y - placed.Rect.Y).A > 16)
                 {
                     return placed;
                 }
@@ -1138,7 +950,7 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             }
             _hoverPart = index;
             toolStripStatusLabelHover.Text = placed == null ? string.Empty
-                : $"0x{placed.Part.ItemId:X4} {placed.Sprite.Name}  x {placed.Part.X} y {placed.Part.Y} z {placed.Part.Z} flags {placed.Part.Flags}";
+                : $"0x{placed.Part.ItemId:X4} {placed.EcItemSprite.Name}  x {placed.Part.X} y {placed.Part.Y} z {placed.Part.Z} flags {placed.Part.Flags}";
             previewPanel.Invalidate();
         }
 
@@ -1187,7 +999,7 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
                 return;
             }
             EcMultiPart p = _current.Parts[index];
-            Sprite sprite = SpriteFor(p.ItemId, LegacyMode);
+            EcItemSprite sprite = SpriteFor(p.ItemId, LegacyMode);
             pictureBoxPart.Image = sprite.Image;
             labelPartInfo.Text = $"0x{p.ItemId:X4} {sprite.Name}\r\nx {p.X} y {p.Y} z {p.Z} flags {p.Flags}\r\n{sprite.Source ?? "no image"}";
         }

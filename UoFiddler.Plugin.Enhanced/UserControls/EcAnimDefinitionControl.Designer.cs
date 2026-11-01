@@ -43,11 +43,16 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             toolStripLabelSearch = new System.Windows.Forms.ToolStripLabel();
             toolStripTextBoxSearch = new System.Windows.Forms.ToolStripTextBox();
             toolStripButtonApply = new System.Windows.Forms.ToolStripButton();
+            toolStripComboBoxFilter = new System.Windows.Forms.ToolStripComboBox();
             toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
+            toolStripLabelArt = new System.Windows.Forms.ToolStripLabel();
+            toolStripComboBoxArt = new System.Windows.Forms.ToolStripComboBox();
+            toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             toolStripButtonNew = new System.Windows.Forms.ToolStripButton();
             toolStripButtonDuplicate = new System.Windows.Forms.ToolStripButton();
+            toolStripButtonFromClassic = new System.Windows.Forms.ToolStripButton();
             toolStripButtonRemove = new System.Windows.Forms.ToolStripButton();
-            toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
+            toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
             toolStripButtonSave = new System.Windows.Forms.ToolStripButton();
             toolStripButtonSaveAs = new System.Windows.Forms.ToolStripButton();
             splitContainerMain = new System.Windows.Forms.SplitContainer();
@@ -57,11 +62,16 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             columnHeaderItemName = new System.Windows.Forms.ColumnHeader();
             columnHeaderFrames = new System.Windows.Forms.ColumnHeader();
             columnHeaderTime = new System.Windows.Forms.ColumnHeader();
+            columnHeaderEcImages = new System.Windows.Forms.ColumnHeader();
+            columnHeaderClassic = new System.Windows.Forms.ColumnHeader();
             contextMenuStripList = new System.Windows.Forms.ContextMenuStrip(components);
             newToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             duplicateToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            fromClassicToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             removeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            toolStripSeparatorMenu = new System.Windows.Forms.ToolStripSeparator();
+            toolStripSeparatorMenu1 = new System.Windows.Forms.ToolStripSeparator();
+            copyIdToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            toolStripSeparatorMenu2 = new System.Windows.Forms.ToolStripSeparator();
             saveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             splitContainerDetail = new System.Windows.Forms.SplitContainer();
             panelFrames = new System.Windows.Forms.Panel();
@@ -70,6 +80,8 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             columnHeaderFrameItem = new System.Windows.Forms.ColumnHeader();
             columnHeaderFrameHex = new System.Windows.Forms.ColumnHeader();
             columnHeaderFrameName = new System.Windows.Forms.ColumnHeader();
+            columnHeaderFrameImage = new System.Windows.Forms.ColumnHeader();
+            columnHeaderFrameClassic = new System.Windows.Forms.ColumnHeader();
             contextMenuStripFrames = new System.Windows.Forms.ContextMenuStrip(components);
             addFrameToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             changeFrameToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -87,10 +99,19 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             labelTime = new System.Windows.Forms.Label();
             numericUpDownFrameTime = new System.Windows.Forms.NumericUpDown();
             buttonPlay = new System.Windows.Forms.Button();
+            checkBoxShowEc = new System.Windows.Forms.CheckBox();
+            checkBoxShowClassic = new System.Windows.Forms.CheckBox();
+            checkBoxGround = new System.Windows.Forms.CheckBox();
             panelPreview = new System.Windows.Forms.Panel();
+            splitContainerCompare = new System.Windows.Forms.SplitContainer();
+            groupBoxEc = new System.Windows.Forms.GroupBox();
             previewPanel = new EcPreviewPanel();
             labelPreviewInfo = new System.Windows.Forms.Label();
+            groupBoxClassic = new System.Windows.Forms.GroupBox();
+            previewPanelClassic = new EcPreviewPanel();
+            labelClassicInfo = new System.Windows.Forms.Label();
             timerPlay = new System.Windows.Forms.Timer(components);
+            timerClassic = new System.Windows.Forms.Timer(components);
             statusStrip = new System.Windows.Forms.StatusStrip();
             toolStripStatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
             toolStrip.SuspendLayout();
@@ -109,12 +130,18 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             flowLayoutPanelTime.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)numericUpDownFrameTime).BeginInit();
             panelPreview.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)splitContainerCompare).BeginInit();
+            splitContainerCompare.Panel1.SuspendLayout();
+            splitContainerCompare.Panel2.SuspendLayout();
+            splitContainerCompare.SuspendLayout();
+            groupBoxEc.SuspendLayout();
+            groupBoxClassic.SuspendLayout();
             statusStrip.SuspendLayout();
             SuspendLayout();
             //
             // toolStrip
             //
-            toolStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { toolStripLabelSearch, toolStripTextBoxSearch, toolStripButtonApply, toolStripSeparator1, toolStripButtonNew, toolStripButtonDuplicate, toolStripButtonRemove, toolStripSeparator2, toolStripButtonSave, toolStripButtonSaveAs });
+            toolStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { toolStripLabelSearch, toolStripTextBoxSearch, toolStripButtonApply, toolStripComboBoxFilter, toolStripSeparator1, toolStripLabelArt, toolStripComboBoxArt, toolStripSeparator2, toolStripButtonNew, toolStripButtonDuplicate, toolStripButtonFromClassic, toolStripButtonRemove, toolStripSeparator3, toolStripButtonSave, toolStripButtonSaveAs });
             toolStrip.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
             toolStrip.Location = new System.Drawing.Point(0, 0);
             toolStrip.Name = "toolStrip";
@@ -139,9 +166,36 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             toolStripButtonApply.Text = "Apply";
             toolStripButtonApply.Click += OnClickApply;
             //
+            // toolStripComboBoxFilter
+            //
+            toolStripComboBoxFilter.Items.AddRange(new object[] { "All EC animations", "All frames with EC images", "Frames without EC images", "Different from classic", "Not in classic", "Only in classic (missing in EC)" });
+            toolStripComboBoxFilter.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            toolStripComboBoxFilter.Name = "toolStripComboBoxFilter";
+            toolStripComboBoxFilter.Size = new System.Drawing.Size(210, 25);
+            toolStripComboBoxFilter.ToolTipText = "Which animations are listed";
+            toolStripComboBoxFilter.SelectedIndexChanged += OnFilterChanged;
+            //
             // toolStripSeparator1
             //
             toolStripSeparator1.Name = "toolStripSeparator1";
+            //
+            // toolStripLabelArt
+            //
+            toolStripLabelArt.Name = "toolStripLabelArt";
+            toolStripLabelArt.Text = "Art:";
+            //
+            // toolStripComboBoxArt
+            //
+            toolStripComboBoxArt.Items.AddRange(new object[] { "Enhanced (EC art)", "Legacy (classic art)" });
+            toolStripComboBoxArt.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            toolStripComboBoxArt.Name = "toolStripComboBoxArt";
+            toolStripComboBoxArt.Size = new System.Drawing.Size(140, 25);
+            toolStripComboBoxArt.ToolTipText = "Images of the EC preview: EC world art (legacy art where the EC has none) or the legacy art";
+            toolStripComboBoxArt.SelectedIndexChanged += OnArtChanged;
+            //
+            // toolStripSeparator2
+            //
+            toolStripSeparator2.Name = "toolStripSeparator2";
             //
             // toolStripButtonNew
             //
@@ -159,6 +213,14 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             toolStripButtonDuplicate.ToolTipText = "Copy the selected animation to another item id";
             toolStripButtonDuplicate.Click += OnClickDuplicate;
             //
+            // toolStripButtonFromClassic
+            //
+            toolStripButtonFromClassic.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            toolStripButtonFromClassic.Name = "toolStripButtonFromClassic";
+            toolStripButtonFromClassic.Text = "From classic";
+            toolStripButtonFromClassic.ToolTipText = "Take the frames and the speed of the classic animdata.mul (creates the EC animation if it is missing)";
+            toolStripButtonFromClassic.Click += OnClickFromClassic;
+            //
             // toolStripButtonRemove
             //
             toolStripButtonRemove.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
@@ -166,9 +228,9 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             toolStripButtonRemove.Text = "Remove";
             toolStripButtonRemove.Click += OnClickRemove;
             //
-            // toolStripSeparator2
+            // toolStripSeparator3
             //
-            toolStripSeparator2.Name = "toolStripSeparator2";
+            toolStripSeparator3.Name = "toolStripSeparator3";
             //
             // toolStripButtonSave
             //
@@ -191,13 +253,13 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             splitContainerMain.Panel2.Controls.Add(splitContainerDetail);
             splitContainerMain.Dock = System.Windows.Forms.DockStyle.Fill;
             splitContainerMain.Name = "splitContainerMain";
-            splitContainerMain.Size = new System.Drawing.Size(900, 450);
-            splitContainerMain.SplitterDistance = 350;
+            splitContainerMain.Size = new System.Drawing.Size(1100, 550);
+            splitContainerMain.SplitterDistance = 470;
             splitContainerMain.TabIndex = 1;
             //
             // listViewAnimations
             //
-            listViewAnimations.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] { columnHeaderId, columnHeaderHex, columnHeaderItemName, columnHeaderFrames, columnHeaderTime });
+            listViewAnimations.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] { columnHeaderId, columnHeaderHex, columnHeaderItemName, columnHeaderFrames, columnHeaderTime, columnHeaderEcImages, columnHeaderClassic });
             listViewAnimations.ContextMenuStrip = contextMenuStripList;
             listViewAnimations.Dock = System.Windows.Forms.DockStyle.Fill;
             listViewAnimations.FullRowSelect = true;
@@ -215,33 +277,43 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             //
             columnHeaderId.Text = "Id";
             columnHeaderId.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
-            columnHeaderId.Width = 70;
+            columnHeaderId.Width = 60;
             //
             // columnHeaderHex
             //
             columnHeaderHex.Text = "Hex";
-            columnHeaderHex.Width = 70;
+            columnHeaderHex.Width = 60;
             //
             // columnHeaderItemName
             //
             columnHeaderItemName.Text = "Item name";
-            columnHeaderItemName.Width = 200;
+            columnHeaderItemName.Width = 130;
             //
             // columnHeaderFrames
             //
             columnHeaderFrames.Text = "Frames";
             columnHeaderFrames.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
-            columnHeaderFrames.Width = 55;
+            columnHeaderFrames.Width = 50;
             //
             // columnHeaderTime
             //
             columnHeaderTime.Text = "Time";
             columnHeaderTime.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
-            columnHeaderTime.Width = 55;
+            columnHeaderTime.Width = 45;
+            //
+            // columnHeaderEcImages
+            //
+            columnHeaderEcImages.Text = "EC images";
+            columnHeaderEcImages.Width = 65;
+            //
+            // columnHeaderClassic
+            //
+            columnHeaderClassic.Text = "Classic";
+            columnHeaderClassic.Width = 80;
             //
             // contextMenuStripList
             //
-            contextMenuStripList.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { newToolStripMenuItem, duplicateToolStripMenuItem, removeToolStripMenuItem, toolStripSeparatorMenu, saveToolStripMenuItem });
+            contextMenuStripList.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { newToolStripMenuItem, duplicateToolStripMenuItem, fromClassicToolStripMenuItem, removeToolStripMenuItem, toolStripSeparatorMenu1, copyIdToolStripMenuItem, toolStripSeparatorMenu2, saveToolStripMenuItem });
             contextMenuStripList.Name = "contextMenuStripList";
             //
             // newToolStripMenuItem
@@ -256,15 +328,31 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             duplicateToolStripMenuItem.Text = "Duplicate...";
             duplicateToolStripMenuItem.Click += OnClickDuplicate;
             //
+            // fromClassicToolStripMenuItem
+            //
+            fromClassicToolStripMenuItem.Name = "fromClassicToolStripMenuItem";
+            fromClassicToolStripMenuItem.Text = "Take frames from classic";
+            fromClassicToolStripMenuItem.Click += OnClickFromClassic;
+            //
             // removeToolStripMenuItem
             //
             removeToolStripMenuItem.Name = "removeToolStripMenuItem";
             removeToolStripMenuItem.Text = "Remove";
             removeToolStripMenuItem.Click += OnClickRemove;
             //
-            // toolStripSeparatorMenu
+            // toolStripSeparatorMenu1
             //
-            toolStripSeparatorMenu.Name = "toolStripSeparatorMenu";
+            toolStripSeparatorMenu1.Name = "toolStripSeparatorMenu1";
+            //
+            // copyIdToolStripMenuItem
+            //
+            copyIdToolStripMenuItem.Name = "copyIdToolStripMenuItem";
+            copyIdToolStripMenuItem.Text = "Copy id (hex)";
+            copyIdToolStripMenuItem.Click += OnClickCopyId;
+            //
+            // toolStripSeparatorMenu2
+            //
+            toolStripSeparatorMenu2.Name = "toolStripSeparatorMenu2";
             //
             // saveToolStripMenuItem
             //
@@ -279,8 +367,8 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             splitContainerDetail.Dock = System.Windows.Forms.DockStyle.Fill;
             splitContainerDetail.Name = "splitContainerDetail";
             splitContainerDetail.Orientation = System.Windows.Forms.Orientation.Horizontal;
-            splitContainerDetail.Size = new System.Drawing.Size(540, 450);
-            splitContainerDetail.SplitterDistance = 220;
+            splitContainerDetail.Size = new System.Drawing.Size(626, 550);
+            splitContainerDetail.SplitterDistance = 210;
             splitContainerDetail.TabIndex = 1;
             //
             // panelFrames
@@ -294,7 +382,7 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             //
             // listViewFrames
             //
-            listViewFrames.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] { columnHeaderFrameNumber, columnHeaderFrameItem, columnHeaderFrameHex, columnHeaderFrameName });
+            listViewFrames.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] { columnHeaderFrameNumber, columnHeaderFrameItem, columnHeaderFrameHex, columnHeaderFrameName, columnHeaderFrameImage, columnHeaderFrameClassic });
             listViewFrames.ContextMenuStrip = contextMenuStripFrames;
             listViewFrames.Dock = System.Windows.Forms.DockStyle.Fill;
             listViewFrames.FullRowSelect = true;
@@ -317,17 +405,27 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             //
             columnHeaderFrameItem.Text = "Item id";
             columnHeaderFrameItem.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
-            columnHeaderFrameItem.Width = 70;
+            columnHeaderFrameItem.Width = 60;
             //
             // columnHeaderFrameHex
             //
             columnHeaderFrameHex.Text = "Hex";
-            columnHeaderFrameHex.Width = 65;
+            columnHeaderFrameHex.Width = 60;
             //
             // columnHeaderFrameName
             //
             columnHeaderFrameName.Text = "Name";
-            columnHeaderFrameName.Width = 200;
+            columnHeaderFrameName.Width = 130;
+            //
+            // columnHeaderFrameImage
+            //
+            columnHeaderFrameImage.Text = "Image";
+            columnHeaderFrameImage.Width = 150;
+            //
+            // columnHeaderFrameClassic
+            //
+            columnHeaderFrameClassic.Text = "Classic";
+            columnHeaderFrameClassic.Width = 70;
             //
             // contextMenuStripFrames
             //
@@ -416,11 +514,15 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             flowLayoutPanelTime.Controls.Add(labelTime);
             flowLayoutPanelTime.Controls.Add(numericUpDownFrameTime);
             flowLayoutPanelTime.Controls.Add(buttonPlay);
+            flowLayoutPanelTime.Controls.Add(checkBoxShowEc);
+            flowLayoutPanelTime.Controls.Add(checkBoxShowClassic);
+            flowLayoutPanelTime.Controls.Add(checkBoxGround);
             flowLayoutPanelTime.Dock = System.Windows.Forms.DockStyle.Top;
             flowLayoutPanelTime.Name = "flowLayoutPanelTime";
             flowLayoutPanelTime.Padding = new System.Windows.Forms.Padding(4);
-            flowLayoutPanelTime.Size = new System.Drawing.Size(540, 32);
+            flowLayoutPanelTime.Size = new System.Drawing.Size(626, 32);
             flowLayoutPanelTime.TabIndex = 0;
+            flowLayoutPanelTime.WrapContents = false;
             //
             // labelTime
             //
@@ -436,7 +538,7 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             numericUpDownFrameTime.Maximum = new decimal(new int[] { 60, 0, 0, 0 });
             numericUpDownFrameTime.Minimum = new decimal(new int[] { 1, 0, 0, 196608 });
             numericUpDownFrameTime.Name = "numericUpDownFrameTime";
-            numericUpDownFrameTime.Size = new System.Drawing.Size(80, 23);
+            numericUpDownFrameTime.Size = new System.Drawing.Size(70, 23);
             numericUpDownFrameTime.TabIndex = 1;
             numericUpDownFrameTime.Value = new decimal(new int[] { 1, 0, 0, 196608 });
             numericUpDownFrameTime.ValueChanged += OnFrameTimeChanged;
@@ -444,19 +546,74 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             // buttonPlay
             //
             buttonPlay.Name = "buttonPlay";
-            buttonPlay.Size = new System.Drawing.Size(70, 23);
+            buttonPlay.Size = new System.Drawing.Size(60, 23);
             buttonPlay.TabIndex = 2;
             buttonPlay.Text = "Play";
             buttonPlay.UseVisualStyleBackColor = true;
             buttonPlay.Click += OnClickPlay;
             //
+            // checkBoxShowEc
+            //
+            checkBoxShowEc.AutoSize = true;
+            checkBoxShowEc.CheckState = System.Windows.Forms.CheckState.Checked;
+            checkBoxShowEc.Checked = true;
+            checkBoxShowEc.Margin = new System.Windows.Forms.Padding(12, 6, 0, 0);
+            checkBoxShowEc.Name = "checkBoxShowEc";
+            checkBoxShowEc.TabIndex = 3;
+            checkBoxShowEc.Text = "EC";
+            checkBoxShowEc.UseVisualStyleBackColor = true;
+            checkBoxShowEc.CheckedChanged += OnCompareViewChanged;
+            //
+            // checkBoxShowClassic
+            //
+            checkBoxShowClassic.AutoSize = true;
+            checkBoxShowClassic.CheckState = System.Windows.Forms.CheckState.Checked;
+            checkBoxShowClassic.Checked = true;
+            checkBoxShowClassic.Margin = new System.Windows.Forms.Padding(6, 6, 0, 0);
+            checkBoxShowClassic.Name = "checkBoxShowClassic";
+            checkBoxShowClassic.TabIndex = 4;
+            checkBoxShowClassic.Text = "Classic";
+            checkBoxShowClassic.UseVisualStyleBackColor = true;
+            checkBoxShowClassic.CheckedChanged += OnCompareViewChanged;
+            //
+            // checkBoxGround
+            //
+            checkBoxGround.AutoSize = true;
+            checkBoxGround.CheckState = System.Windows.Forms.CheckState.Checked;
+            checkBoxGround.Checked = true;
+            checkBoxGround.Margin = new System.Windows.Forms.Padding(6, 6, 0, 0);
+            checkBoxGround.Name = "checkBoxGround";
+            checkBoxGround.TabIndex = 5;
+            checkBoxGround.Text = "Tile";
+            checkBoxGround.UseVisualStyleBackColor = true;
+            checkBoxGround.CheckedChanged += OnGroundChanged;
+            //
             // panelPreview
             //
-            panelPreview.Controls.Add(previewPanel);
-            panelPreview.Controls.Add(labelPreviewInfo);
+            panelPreview.Controls.Add(splitContainerCompare);
             panelPreview.Dock = System.Windows.Forms.DockStyle.Fill;
             panelPreview.Name = "panelPreview";
             panelPreview.TabIndex = 0;
+            //
+            // splitContainerCompare
+            //
+            splitContainerCompare.Panel1.Controls.Add(groupBoxEc);
+            splitContainerCompare.Panel2.Controls.Add(groupBoxClassic);
+            splitContainerCompare.Dock = System.Windows.Forms.DockStyle.Fill;
+            splitContainerCompare.Name = "splitContainerCompare";
+            splitContainerCompare.Size = new System.Drawing.Size(626, 330);
+            splitContainerCompare.SplitterDistance = 310;
+            splitContainerCompare.TabIndex = 1;
+            //
+            // groupBoxEc
+            //
+            groupBoxEc.Controls.Add(previewPanel);
+            groupBoxEc.Controls.Add(labelPreviewInfo);
+            groupBoxEc.Dock = System.Windows.Forms.DockStyle.Fill;
+            groupBoxEc.Name = "groupBoxEc";
+            groupBoxEc.TabIndex = 0;
+            groupBoxEc.TabStop = false;
+            groupBoxEc.Text = "Enhanced Client (AnimationDefinition.uop)";
             //
             // previewPanel
             //
@@ -472,11 +629,42 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             labelPreviewInfo.Font = new System.Drawing.Font("Consolas", 8.5F);
             labelPreviewInfo.Name = "labelPreviewInfo";
             labelPreviewInfo.Padding = new System.Windows.Forms.Padding(4);
-            labelPreviewInfo.Size = new System.Drawing.Size(540, 36);
+            labelPreviewInfo.Size = new System.Drawing.Size(300, 48);
+            //
+            // groupBoxClassic
+            //
+            groupBoxClassic.Controls.Add(previewPanelClassic);
+            groupBoxClassic.Controls.Add(labelClassicInfo);
+            groupBoxClassic.Dock = System.Windows.Forms.DockStyle.Fill;
+            groupBoxClassic.Name = "groupBoxClassic";
+            groupBoxClassic.TabIndex = 0;
+            groupBoxClassic.TabStop = false;
+            groupBoxClassic.Text = "Classic client (animdata.mul + art)";
+            //
+            // previewPanelClassic
+            //
+            previewPanelClassic.AutoScroll = true;
+            previewPanelClassic.BackColor = System.Drawing.Color.White;
+            previewPanelClassic.Dock = System.Windows.Forms.DockStyle.Fill;
+            previewPanelClassic.Name = "previewPanelClassic";
+            previewPanelClassic.TabIndex = 1;
+            previewPanelClassic.Zoom = 1.5F;
+            //
+            // labelClassicInfo
+            //
+            labelClassicInfo.Dock = System.Windows.Forms.DockStyle.Top;
+            labelClassicInfo.Font = new System.Drawing.Font("Consolas", 8.5F);
+            labelClassicInfo.Name = "labelClassicInfo";
+            labelClassicInfo.Padding = new System.Windows.Forms.Padding(4);
+            labelClassicInfo.Size = new System.Drawing.Size(300, 48);
             //
             // timerPlay
             //
             timerPlay.Tick += OnTimerTick;
+            //
+            // timerClassic
+            //
+            timerClassic.Tick += OnTimerClassicTick;
             //
             // statusStrip
             //
@@ -499,7 +687,7 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             Controls.Add(toolStrip);
             Controls.Add(statusStrip);
             Name = "EcAnimDefinitionControl";
-            Size = new System.Drawing.Size(900, 500);
+            Size = new System.Drawing.Size(1100, 600);
             toolStrip.ResumeLayout(false);
             toolStrip.PerformLayout();
             splitContainerMain.Panel1.ResumeLayout(false);
@@ -521,6 +709,14 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             ((System.ComponentModel.ISupportInitialize)numericUpDownFrameTime).EndInit();
             panelPreview.ResumeLayout(false);
             panelPreview.PerformLayout();
+            splitContainerCompare.Panel1.ResumeLayout(false);
+            splitContainerCompare.Panel2.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)splitContainerCompare).EndInit();
+            splitContainerCompare.ResumeLayout(false);
+            groupBoxEc.ResumeLayout(false);
+            groupBoxEc.PerformLayout();
+            groupBoxClassic.ResumeLayout(false);
+            groupBoxClassic.PerformLayout();
             statusStrip.ResumeLayout(false);
             statusStrip.PerformLayout();
             ResumeLayout(false);
@@ -533,11 +729,16 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
         private System.Windows.Forms.ToolStripLabel toolStripLabelSearch;
         private System.Windows.Forms.ToolStripTextBox toolStripTextBoxSearch;
         private System.Windows.Forms.ToolStripButton toolStripButtonApply;
+        private System.Windows.Forms.ToolStripComboBox toolStripComboBoxFilter;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
+        private System.Windows.Forms.ToolStripLabel toolStripLabelArt;
+        private System.Windows.Forms.ToolStripComboBox toolStripComboBoxArt;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
         private System.Windows.Forms.ToolStripButton toolStripButtonNew;
         private System.Windows.Forms.ToolStripButton toolStripButtonDuplicate;
+        private System.Windows.Forms.ToolStripButton toolStripButtonFromClassic;
         private System.Windows.Forms.ToolStripButton toolStripButtonRemove;
-        private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
         private System.Windows.Forms.ToolStripButton toolStripButtonSave;
         private System.Windows.Forms.ToolStripButton toolStripButtonSaveAs;
         private System.Windows.Forms.SplitContainer splitContainerMain;
@@ -547,11 +748,16 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
         private System.Windows.Forms.ColumnHeader columnHeaderItemName;
         private System.Windows.Forms.ColumnHeader columnHeaderFrames;
         private System.Windows.Forms.ColumnHeader columnHeaderTime;
+        private System.Windows.Forms.ColumnHeader columnHeaderEcImages;
+        private System.Windows.Forms.ColumnHeader columnHeaderClassic;
         private System.Windows.Forms.ContextMenuStrip contextMenuStripList;
         private System.Windows.Forms.ToolStripMenuItem newToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem duplicateToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem fromClassicToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem removeToolStripMenuItem;
-        private System.Windows.Forms.ToolStripSeparator toolStripSeparatorMenu;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparatorMenu1;
+        private System.Windows.Forms.ToolStripMenuItem copyIdToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparatorMenu2;
         private System.Windows.Forms.ToolStripMenuItem saveToolStripMenuItem;
         private System.Windows.Forms.SplitContainer splitContainerDetail;
         private System.Windows.Forms.Panel panelFrames;
@@ -560,6 +766,8 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
         private System.Windows.Forms.ColumnHeader columnHeaderFrameItem;
         private System.Windows.Forms.ColumnHeader columnHeaderFrameHex;
         private System.Windows.Forms.ColumnHeader columnHeaderFrameName;
+        private System.Windows.Forms.ColumnHeader columnHeaderFrameImage;
+        private System.Windows.Forms.ColumnHeader columnHeaderFrameClassic;
         private System.Windows.Forms.ContextMenuStrip contextMenuStripFrames;
         private System.Windows.Forms.ToolStripMenuItem addFrameToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem changeFrameToolStripMenuItem;
@@ -577,10 +785,19 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
         private System.Windows.Forms.Label labelTime;
         private System.Windows.Forms.NumericUpDown numericUpDownFrameTime;
         private System.Windows.Forms.Button buttonPlay;
+        private System.Windows.Forms.CheckBox checkBoxShowEc;
+        private System.Windows.Forms.CheckBox checkBoxShowClassic;
+        private System.Windows.Forms.CheckBox checkBoxGround;
         private System.Windows.Forms.Panel panelPreview;
+        private System.Windows.Forms.SplitContainer splitContainerCompare;
+        private System.Windows.Forms.GroupBox groupBoxEc;
         private EcPreviewPanel previewPanel;
         private System.Windows.Forms.Label labelPreviewInfo;
+        private System.Windows.Forms.GroupBox groupBoxClassic;
+        private EcPreviewPanel previewPanelClassic;
+        private System.Windows.Forms.Label labelClassicInfo;
         private System.Windows.Forms.Timer timerPlay;
+        private System.Windows.Forms.Timer timerClassic;
         private System.Windows.Forms.StatusStrip statusStrip;
         private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel;
     }
