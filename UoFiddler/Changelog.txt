@@ -3,7 +3,6 @@ Version 4.12.19 #XG1
 ## What's new in UoFiddlerPixel
 
 ### UoFiddler.Plugin.Enhanced (Enhanced Client editor) – version 0.15.0
-- Every tab has a real designer** (.Designer.cs + .resx) and can be edited in Visual Studio.
 - Multis: preview with the correct EC graphics (houses, boats, sails), heights, highlight single parts,
   free slots, context menu (import, export, remove, reload, save), background image.
 - AnimDefinition:** side-by-side comparison with the classic Animdata, each side can be shown or hidden.
