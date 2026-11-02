@@ -1,27 +1,29 @@
 Version 4.12.19 #XG1
 
-### UoFiddler.Plugin.Enhanced (Enhanced Client Editor) – Version 0.15.0
+## What's new in UoFiddlerPixel
 
-- Multis: Vorschau mit richtigen EC-Grafiken (Häuser, Boote, Segel), Höhen, Teile hervorheben,
-  freie Slots, Kontextmenü (Import, Export, Entfernen, Neu laden, Speichern), Hintergrundbild.
-- AnimDefinition: Vergleich mit der Classic-Animdata nebeneinander, ein- und ausblendbar.
-- Map: Bereich markieren, alle Statics im Bereich anzeigen, Regionsansicht mit Enhanced-Grafiken,
-  Statics importieren, exportieren, einfügen und speichern.
-- Map Converter (neuer Reiter):** Classic-Karten (map#.mul, statics) ↔ EC-facet#.uop in beide
-  Richtungen, Radarbild, automatische Dateiauswahl je Karte, Analyse und Reparatur, neue Karten anlegen.
-- Hues (neu aufgebaut, huesmul2uop eingebaut und verbessert):
-  - Editor mit den 32 Classic-Farben zum Anklicken; hues.dds und Übersicht werden immer mitgeschrieben
-    (Items und Animationen zeigen jetzt dieselbe Farbe).
-  - Compare: hues.mul ↔ Hues.uop nebeneinander, Filter, markierte Hues in beide Richtungen übernehmen.
-  - Converter: hues.mul → Hues.uop als Update oder neue Datei, Hues.uop → hues.mul byte-genau,
-    Zeichenart wie im Original-Client oder wie huesmul2uop, Sicherung (alt + neu), Analyse und Reparatur.
-- Hilfe in Englisch und Deutsch.
+### UoFiddler.Plugin.Enhanced (Enhanced Client editor) – version 0.15.0
+- Every tab has a real designer** (.Designer.cs + .resx) and can be edited in Visual Studio.
+- Multis: preview with the correct EC graphics (houses, boats, sails), heights, highlight single parts,
+  free slots, context menu (import, export, remove, reload, save), background image.
+- AnimDefinition:** side-by-side comparison with the classic Animdata, each side can be shown or hidden.
+- Map: mark an area, list all statics in it, region view with Enhanced graphics,
+  import, export, insert and save statics.
+- Map Converter (new tab): classic maps (map#.mul, statics) ↔ EC facet#.uop in both directions,
+  radar image, automatic file choice per map, analysis and repair, create new maps.
+- **Hues (rebuilt, huesmul2uop built in and improved):**
+  - Editor with the 32 classic colors you can click and change; hues.dds and the overview are always
+    written too, so items and animations now show the same color.
+  - Compare: hues.mul ↔ Hues.uop side by side, filters, copy marked hues in either direction.
+  - Converter: hues.mul → Hues.uop as an update or a new file, Hues.uop → hues.mul byte for byte,
+    ramps drawn like the original client or like huesmul2uop, backup (old + new), analysis and repair.
+- Help in English and German.
 
-### UoFiddler.Plugin.UopPacker – Version 2.0.0
-- Neu strukturiert, alter Reiter-Stil beibehalten, Fehler behoben.
-- Neue Reiter: Multis (MultiCollection.uop + housing.bin), UOP Info, Backup, Help (EN/DE).
-- Automatische Sicherung (alte und neue Datei in einem Sicherungsordner), Wiederherstellen.
-- Unterstützt Art, Gumps, Sounds, Maps (auch größere eigene Karten) und Multis.
+### UoFiddler.Plugin.UopPacker – version 2.0.0
+- Restructured, the old tab style kept, bugs fixed.
+- New tabs: Multis (MultiCollection.uop + housing.bin), UOP Info, Backup, Help (EN/DE).
+- Automatic backup (old and new file in one backup folder), with restore.
+- Supports art, gumps, sounds, maps (including larger custom maps) and multis.
 
 Version 4.12.17 #XG1
 
