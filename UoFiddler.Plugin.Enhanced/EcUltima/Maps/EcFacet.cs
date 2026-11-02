@@ -32,8 +32,8 @@ namespace UoFiddler.Plugin.Enhanced.EcUltima.Maps
         public EcUopPackage Package { get; }
         public string FileName { get; }
         public int FacetId { get; }
-        public int Width { get; }
-        public int Height { get; }
+        public int Width { get; private set; }
+        public int Height { get; private set; }
         public int SectorsX => (Width + EcSector.Size - 1) / EcSector.Size;
         public int SectorsY => (Height + EcSector.Size - 1) / EcSector.Size;
         public bool IsModified => _modified.Count > 0;
@@ -44,19 +44,40 @@ namespace UoFiddler.Plugin.Enhanced.EcUltima.Maps
             (7168, 4096), (7168, 4096), (2304, 1600), (2560, 2048), (1448, 1448), (1280, 4096)
         };
 
+        /// <summary>
+        /// Opens the map with a given size (for maps without the size entry data.map, e.g. custom maps);
+        /// 0 = take the size from the file.
+        /// </summary>
+        public EcFacet(EcUopPackage package, string fileName, int width, int height)
+            : this(package, fileName)
+        {
+            if (width > 0 && height > 0 && (width != Width || height != Height))
+            {
+                Width = width;
+                Height = height;
+                package.ResolveNames(string.Format(CultureInfo.InvariantCulture, "build/sectors/facet_{0:D2}/", FacetId) + "{0:D8}.bin", 0, Math.Max(0, (SectorsX * SectorsY) - 1));
+            }
+        }
+
+        /// <summary>True when the size comes from the size entry of the file (data.map).</summary>
+        public bool HasSizeEntry { get; private set; }
+
         public EcFacet(EcUopPackage package, string fileName)
         {
             Package = package;
             FileName = fileName;
             FacetId = ParseFacetId(fileName);
 
-            // the size entry is the only entry with 8 bytes
-            EcUopEntry sizeEntry = package.Entries.FirstOrDefault(e => e.DecompressedSize == 8);
+            // the size entry "build/sectors/facet_NN/data.map" (uint height, uint width); older files: the only 8 byte entry
+            package.ResolveNames(string.Format(CultureInfo.InvariantCulture, EcMapConverter.SizeEntryPattern, FacetId), 0, 0);
+            EcUopEntry sizeEntry = package.GetEntry(string.Format(CultureInfo.InvariantCulture, EcMapConverter.SizeEntryPattern, FacetId))
+                                   ?? package.Entries.FirstOrDefault(e => e.DecompressedSize == 8);
             if (sizeEntry != null)
             {
                 byte[] size = package.ReadData(sizeEntry);
                 Height = BitConverter.ToInt32(size, 0);
                 Width = BitConverter.ToInt32(size, 4);
+                HasSizeEntry = true;
             }
             else if (FacetId >= 0 && FacetId < _defaultSizes.Length)
             {

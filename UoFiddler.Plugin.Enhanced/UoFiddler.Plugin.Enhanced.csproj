@@ -7,8 +7,9 @@
 		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
 		<AssemblyTitle>UoFiddler Enhanced Client Plugin</AssemblyTitle>
 		<Product>UoFiddler.Plugin.Enhanced</Product>
-		<Copyright>Copyright © 2026</Copyright>
-		<Version>0.7.0</Version>
+		<Copyright>Copyright © 2026 Nikodemus</Copyright>
+		<Authors>Nikodemus</Authors>
+		<Version>0.14.0</Version>
 	</PropertyGroup>
 	<PropertyGroup>
 		<EnableNETAnalyzers>true</EnableNETAnalyzers>
@@ -34,5 +35,151 @@
 			<Private>false</Private>
 			<ExcludeAssets>runtime</ExcludeAssets>
 		</ProjectReference>
+	</ItemGroup>
+	<ItemGroup>
+		<Compile Update="Forms\EcRegionViewerForm.cs">
+			<SubType>Form</SubType>
+		</Compile>
+		<Compile Update="Forms\EcRegionViewerForm.Designer.cs">
+			<DependentUpon>EcRegionViewerForm.cs</DependentUpon>
+		</Compile>
+		<EmbeddedResource Update="Forms\EcRegionViewerForm.resx">
+			<DependentUpon>EcRegionViewerForm.cs</DependentUpon>
+		</EmbeddedResource>
+		<Compile Update="UserControls\EcAnimDefinitionControl.cs">
+			<SubType>UserControl</SubType>
+		</Compile>
+		<Compile Update="UserControls\EcAnimDefinitionControl.Designer.cs">
+			<DependentUpon>EcAnimDefinitionControl.cs</DependentUpon>
+		</Compile>
+		<EmbeddedResource Update="UserControls\EcAnimDefinitionControl.resx">
+			<DependentUpon>EcAnimDefinitionControl.cs</DependentUpon>
+		</EmbeddedResource>
+		<Compile Update="UserControls\EcArtControl.cs">
+			<SubType>UserControl</SubType>
+		</Compile>
+		<Compile Update="UserControls\EcArtControl.Designer.cs">
+			<DependentUpon>EcArtControl.cs</DependentUpon>
+		</Compile>
+		<EmbeddedResource Update="UserControls\EcArtControl.resx">
+			<DependentUpon>EcArtControl.cs</DependentUpon>
+		</EmbeddedResource>
+		<Compile Update="UserControls\EcClilocControl.cs">
+			<SubType>UserControl</SubType>
+		</Compile>
+		<Compile Update="UserControls\EcClilocControl.Designer.cs">
+			<DependentUpon>EcClilocControl.cs</DependentUpon>
+		</Compile>
+		<EmbeddedResource Update="UserControls\EcClilocControl.resx">
+			<DependentUpon>EcClilocControl.cs</DependentUpon>
+		</EmbeddedResource>
+		<Compile Update="UserControls\EcFileTreeControl.cs">
+			<SubType>UserControl</SubType>
+		</Compile>
+		<Compile Update="UserControls\EcFileTreeControl.Designer.cs">
+			<DependentUpon>EcFileTreeControl.cs</DependentUpon>
+		</Compile>
+		<EmbeddedResource Update="UserControls\EcFileTreeControl.resx">
+			<DependentUpon>EcFileTreeControl.cs</DependentUpon>
+		</EmbeddedResource>
+		<Compile Update="UserControls\EcGumpsControl.cs">
+			<SubType>UserControl</SubType>
+		</Compile>
+		<Compile Update="UserControls\EcGumpsControl.Designer.cs">
+			<DependentUpon>EcGumpsControl.cs</DependentUpon>
+		</Compile>
+		<EmbeddedResource Update="UserControls\EcGumpsControl.resx">
+			<DependentUpon>EcGumpsControl.cs</DependentUpon>
+		</EmbeddedResource>
+		<Compile Update="UserControls\EcHuesControl.cs">
+			<SubType>UserControl</SubType>
+		</Compile>
+		<Compile Update="UserControls\EcHuesControl.Designer.cs">
+			<DependentUpon>EcHuesControl.cs</DependentUpon>
+		</Compile>
+		<EmbeddedResource Update="UserControls\EcHuesControl.resx">
+			<DependentUpon>EcHuesControl.cs</DependentUpon>
+		</EmbeddedResource>
+		<Compile Update="UserControls\EcMapControl.cs">
+			<SubType>UserControl</SubType>
+		</Compile>
+		<Compile Update="UserControls\EcMapControl.Designer.cs">
+			<DependentUpon>EcMapControl.cs</DependentUpon>
+		</Compile>
+		<EmbeddedResource Update="UserControls\EcMapControl.resx">
+			<DependentUpon>EcMapControl.cs</DependentUpon>
+		</EmbeddedResource>
+		<Compile Update="UserControls\EcMapConverterControl.cs">
+			<SubType>UserControl</SubType>
+		</Compile>
+		<Compile Update="UserControls\EcMapConverterControl.Designer.cs">
+			<DependentUpon>EcMapConverterControl.cs</DependentUpon>
+		</Compile>
+		<EmbeddedResource Update="UserControls\EcMapConverterControl.resx">
+			<DependentUpon>EcMapConverterControl.cs</DependentUpon>
+		</EmbeddedResource>
+		<Compile Update="UserControls\EcMobileAnimationControl.cs">
+			<SubType>UserControl</SubType>
+		</Compile>
+		<Compile Update="UserControls\EcMobileAnimationControl.Designer.cs">
+			<DependentUpon>EcMobileAnimationControl.cs</DependentUpon>
+		</Compile>
+		<EmbeddedResource Update="UserControls\EcMobileAnimationControl.resx">
+			<DependentUpon>EcMobileAnimationControl.cs</DependentUpon>
+		</EmbeddedResource>
+		<Compile Update="UserControls\EcMultisControl.cs">
+			<SubType>UserControl</SubType>
+		</Compile>
+		<Compile Update="UserControls\EcMultisControl.Designer.cs">
+			<DependentUpon>EcMultisControl.cs</DependentUpon>
+		</Compile>
+		<EmbeddedResource Update="UserControls\EcMultisControl.resx">
+			<DependentUpon>EcMultisControl.cs</DependentUpon>
+		</EmbeddedResource>
+		<Compile Update="UserControls\EcSoundsControl.cs">
+			<SubType>UserControl</SubType>
+		</Compile>
+		<Compile Update="UserControls\EcSoundsControl.Designer.cs">
+			<DependentUpon>EcSoundsControl.cs</DependentUpon>
+		</Compile>
+		<EmbeddedResource Update="UserControls\EcSoundsControl.resx">
+			<DependentUpon>EcSoundsControl.cs</DependentUpon>
+		</EmbeddedResource>
+		<Compile Update="UserControls\EcStringsControl.cs">
+			<SubType>UserControl</SubType>
+		</Compile>
+		<Compile Update="UserControls\EcStringsControl.Designer.cs">
+			<DependentUpon>EcStringsControl.cs</DependentUpon>
+		</Compile>
+		<EmbeddedResource Update="UserControls\EcStringsControl.resx">
+			<DependentUpon>EcStringsControl.cs</DependentUpon>
+		</EmbeddedResource>
+		<Compile Update="UserControls\EcTileArtControl.cs">
+			<SubType>UserControl</SubType>
+		</Compile>
+		<Compile Update="UserControls\EcTileArtControl.Designer.cs">
+			<DependentUpon>EcTileArtControl.cs</DependentUpon>
+		</Compile>
+		<EmbeddedResource Update="UserControls\EcTileArtControl.resx">
+			<DependentUpon>EcTileArtControl.cs</DependentUpon>
+		</EmbeddedResource>
+		<Compile Update="UserControls\EcUopBrowserControl.cs">
+			<SubType>UserControl</SubType>
+		</Compile>
+		<Compile Update="UserControls\EcUopBrowserControl.Designer.cs">
+			<DependentUpon>EcUopBrowserControl.cs</DependentUpon>
+		</Compile>
+		<EmbeddedResource Update="UserControls\EcUopBrowserControl.resx">
+			<DependentUpon>EcUopBrowserControl.cs</DependentUpon>
+		</EmbeddedResource>
+		<Compile Update="UserControls\EnhancedClientControl.cs">
+			<SubType>UserControl</SubType>
+		</Compile>
+		<Compile Update="UserControls\EnhancedClientControl.Designer.cs">
+			<DependentUpon>EnhancedClientControl.cs</DependentUpon>
+		</Compile>
+		<EmbeddedResource Update="UserControls\EnhancedClientControl.resx">
+			<DependentUpon>EnhancedClientControl.cs</DependentUpon>
+		</EmbeddedResource>
 	</ItemGroup>
 </Project>

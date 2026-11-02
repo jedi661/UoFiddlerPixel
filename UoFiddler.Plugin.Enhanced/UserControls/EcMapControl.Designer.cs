@@ -781,7 +781,7 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             //
             // columnHeaderBlend
             //
-            columnHeaderBlend.Text = "Blend";
+            columnHeaderBlend.Text = "Direction";
             columnHeaderBlend.Width = 50;
             //
             // columnHeaderLayerZ
@@ -799,7 +799,7 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             labelLayers.Dock = System.Windows.Forms.DockStyle.Top;
             labelLayers.Name = "labelLayers";
             labelLayers.Size = new System.Drawing.Size(256, 18);
-            labelLayers.Text = "Blend layers";
+            labelLayers.Text = "Border neighbours (land of the next sector, for blending)";
             //
             // flowLayoutPanelTileButtons
             //

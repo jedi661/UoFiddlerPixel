@@ -79,7 +79,7 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
         private IEcEditor[] Editors => new IEcEditor[]
         {
             ecArtControl, ecTileArtControl, ecGumpsControl, ecHuesControl, ecMobileAnimationControl, ecAnimDefinitionControl, ecMultisControl,
-            ecMapControl, ecSoundsControl, ecClilocControl, ecStringsControl, ecFileTreeControl, ecUopBrowserControl
+            ecMapControl, ecMapConverterControl, ecSoundsControl, ecClilocControl, ecStringsControl, ecFileTreeControl, ecUopBrowserControl
         };
 
         protected override void OnVisibleChanged(EventArgs e)
