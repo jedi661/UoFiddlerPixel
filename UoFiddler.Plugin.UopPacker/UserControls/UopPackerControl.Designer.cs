@@ -93,6 +93,85 @@ namespace UoFiddler.Plugin.UopPacker.UserControls
             VersionLabel = new System.Windows.Forms.ToolStripStatusLabel();
             FolderDialog = new System.Windows.Forms.FolderBrowserDialog();
             splitContainer = new System.Windows.Forms.SplitContainer();
+            components = new System.ComponentModel.Container();
+            checkBoxOverwriteMul = new System.Windows.Forms.CheckBox();
+            labelCompression = new System.Windows.Forms.Label();
+            labelSingleInfo = new System.Windows.Forms.Label();
+            buttonCheckFolder = new System.Windows.Forms.Button();
+            checkBoxOverwriteBatch = new System.Windows.Forms.CheckBox();
+            buttonCancelFolder = new System.Windows.Forms.Button();
+            checkedListBoxSets = new System.Windows.Forms.CheckedListBox();
+            textBoxLog = new System.Windows.Forms.TextBox();
+            labelLog = new System.Windows.Forms.Label();
+            MultisTabPage = new System.Windows.Forms.TabPage();
+            labelMultiPack = new System.Windows.Forms.Label();
+            labelMultiMul = new System.Windows.Forms.Label();
+            textBoxMultiMul = new System.Windows.Forms.TextBox();
+            buttonMultiMul = new System.Windows.Forms.Button();
+            labelMultiIdx = new System.Windows.Forms.Label();
+            textBoxMultiIdx = new System.Windows.Forms.TextBox();
+            buttonMultiIdx = new System.Windows.Forms.Button();
+            labelMultiHousing = new System.Windows.Forms.Label();
+            textBoxMultiHousing = new System.Windows.Forms.TextBox();
+            buttonMultiHousing = new System.Windows.Forms.Button();
+            labelMultiOutUop = new System.Windows.Forms.Label();
+            textBoxMultiOutUop = new System.Windows.Forms.TextBox();
+            buttonMultiOutUop = new System.Windows.Forms.Button();
+            labelMultiCompression = new System.Windows.Forms.Label();
+            comboBoxMultiCompression = new System.Windows.Forms.ComboBox();
+            buttonMultiPack = new System.Windows.Forms.Button();
+            labelMultiUnpack = new System.Windows.Forms.Label();
+            labelMultiInUop = new System.Windows.Forms.Label();
+            textBoxMultiInUop = new System.Windows.Forms.TextBox();
+            buttonMultiInUop = new System.Windows.Forms.Button();
+            labelMultiOutMul = new System.Windows.Forms.Label();
+            textBoxMultiOutMul = new System.Windows.Forms.TextBox();
+            buttonMultiOutMul = new System.Windows.Forms.Button();
+            labelMultiOutIdx = new System.Windows.Forms.Label();
+            textBoxMultiOutIdx = new System.Windows.Forms.TextBox();
+            buttonMultiOutIdx = new System.Windows.Forms.Button();
+            labelMultiOutHousing = new System.Windows.Forms.Label();
+            textBoxMultiOutHousing = new System.Windows.Forms.TextBox();
+            buttonMultiOutHousing = new System.Windows.Forms.Button();
+            buttonMultiUnpack = new System.Windows.Forms.Button();
+            labelMultiInfo = new System.Windows.Forms.Label();
+            InfoTabPage = new System.Windows.Forms.TabPage();
+            labelInfoFile = new System.Windows.Forms.Label();
+            textBoxInfoFile = new System.Windows.Forms.TextBox();
+            buttonInfoBrowse = new System.Windows.Forms.Button();
+            buttonInfoAnalyze = new System.Windows.Forms.Button();
+            checkBoxInfoVerify = new System.Windows.Forms.CheckBox();
+            textBoxInfoSummary = new System.Windows.Forms.TextBox();
+            listViewInfo = new System.Windows.Forms.ListView();
+            columnInfoIndex = new System.Windows.Forms.ColumnHeader();
+            columnInfoName = new System.Windows.Forms.ColumnHeader();
+            columnInfoOffset = new System.Windows.Forms.ColumnHeader();
+            columnInfoSize = new System.Windows.Forms.ColumnHeader();
+            columnInfoUnpacked = new System.Windows.Forms.ColumnHeader();
+            columnInfoCompression = new System.Windows.Forms.ColumnHeader();
+            columnInfoChecksum = new System.Windows.Forms.ColumnHeader();
+            BackupTabPage = new System.Windows.Forms.TabPage();
+            checkBoxBackupEnabled = new System.Windows.Forms.CheckBox();
+            radioButtonBackupNextTo = new System.Windows.Forms.RadioButton();
+            radioButtonBackupFixed = new System.Windows.Forms.RadioButton();
+            textBoxBackupFolder = new System.Windows.Forms.TextBox();
+            buttonBackupFolder = new System.Windows.Forms.Button();
+            checkBoxBackupCopyNew = new System.Windows.Forms.CheckBox();
+            labelBackupInfo = new System.Windows.Forms.Label();
+            listViewBackup = new System.Windows.Forms.ListView();
+            columnBackupFile = new System.Windows.Forms.ColumnHeader();
+            columnBackupOriginal = new System.Windows.Forms.ColumnHeader();
+            columnBackupTime = new System.Windows.Forms.ColumnHeader();
+            columnBackupCopies = new System.Windows.Forms.ColumnHeader();
+            buttonBackupRefresh = new System.Windows.Forms.Button();
+            buttonBackupOpen = new System.Windows.Forms.Button();
+            buttonBackupRestore = new System.Windows.Forms.Button();
+            HelpTabPage = new System.Windows.Forms.TabPage();
+            radioButtonHelpEnglish = new System.Windows.Forms.RadioButton();
+            radioButtonHelpGerman = new System.Windows.Forms.RadioButton();
+            richTextBoxHelp = new System.Windows.Forms.RichTextBox();
+            progressBarFolder = new System.Windows.Forms.ToolStripProgressBar();
+            toolTip = new System.Windows.Forms.ToolTip(components);
             ((System.ComponentModel.ISupportInitialize)mulMapIndex).BeginInit();
             ((System.ComponentModel.ISupportInitialize)uopMapIndex).BeginInit();
             OperationTypeTabControl.SuspendLayout();
@@ -104,6 +183,10 @@ namespace UoFiddler.Plugin.UopPacker.UserControls
             splitContainer.Panel1.SuspendLayout();
             splitContainer.Panel2.SuspendLayout();
             splitContainer.SuspendLayout();
+            MultisTabPage.SuspendLayout();
+            InfoTabPage.SuspendLayout();
+            BackupTabPage.SuspendLayout();
+            HelpTabPage.SuspendLayout();
             SuspendLayout();
             // 
             // label1
@@ -480,7 +563,7 @@ namespace UoFiddler.Plugin.UopPacker.UserControls
             StartFolderButton.Location = new System.Drawing.Point(10, 96);
             StartFolderButton.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             StartFolderButton.Name = "StartFolderButton";
-            StartFolderButton.Size = new System.Drawing.Size(326, 27);
+            StartFolderButton.Size = new System.Drawing.Size(240, 27);
             StartFolderButton.TabIndex = 12;
             StartFolderButton.Text = "Start";
             StartFolderButton.UseVisualStyleBackColor = true;
@@ -488,7 +571,7 @@ namespace UoFiddler.Plugin.UopPacker.UserControls
             // 
             // ExtractionStatusStrip
             // 
-            ExtractionStatusStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { statustext, toolStripStatusLabel2 });
+            ExtractionStatusStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { statustext, progressBarFolder, toolStripStatusLabel2 });
             ExtractionStatusStrip.Location = new System.Drawing.Point(4, 417);
             ExtractionStatusStrip.Name = "ExtractionStatusStrip";
             ExtractionStatusStrip.Padding = new System.Windows.Forms.Padding(1, 0, 16, 0);
@@ -618,7 +701,7 @@ namespace UoFiddler.Plugin.UopPacker.UserControls
             compressionBox.Name = "compressionBox";
             compressionBox.Size = new System.Drawing.Size(191, 23);
             compressionBox.TabIndex = 42;
-            compressionBox.Text = "None";
+            compressionBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             // 
             // CheckBoxAutoFill
             // 
@@ -641,9 +724,710 @@ namespace UoFiddler.Plugin.UopPacker.UserControls
             checkBoxOverwriteSaveUop.Text = "Overwrite .uop";
             checkBoxOverwriteSaveUop.UseVisualStyleBackColor = true;
             // 
+            // checkBoxOverwriteMul
+            // 
+            checkBoxOverwriteMul.AutoSize = true;
+            checkBoxOverwriteMul.Location = new System.Drawing.Point(173, 201);
+            checkBoxOverwriteMul.Name = "checkBoxOverwriteMul";
+            checkBoxOverwriteMul.Text = "Overwrite .mul";
+            checkBoxOverwriteMul.UseVisualStyleBackColor = true;
+            checkBoxOverwriteMul.CheckedChanged += OnOverwriteMulChanged;
+            ExtractSingleFileTabPage.Controls.Add(checkBoxOverwriteMul);
+            // 
+            // labelCompression
+            // 
+            labelCompression.AutoSize = true;
+            labelCompression.ForeColor = System.Drawing.SystemColors.GrayText;
+            labelCompression.Location = new System.Drawing.Point(168, 117);
+            labelCompression.Name = "labelCompression";
+            labelCompression.Text = "Compression";
+            ExtractSingleFileTabPage.Controls.Add(labelCompression);
+            // 
+            // labelSingleInfo
+            // 
+            labelSingleInfo.AutoSize = true;
+            labelSingleInfo.AutoSize = false;
+            labelSingleInfo.ForeColor = System.Drawing.SystemColors.GrayText;
+            labelSingleInfo.Location = new System.Drawing.Point(35, 400);
+            labelSingleInfo.Name = "labelSingleInfo";
+            labelSingleInfo.Size = new System.Drawing.Size(590, 36);
+            labelSingleInfo.Text = "";
+            ExtractSingleFileTabPage.Controls.Add(labelSingleInfo);
+            // 
+            // buttonCheckFolder
+            // 
+            buttonCheckFolder.Location = new System.Drawing.Point(200, 40);
+            buttonCheckFolder.Name = "buttonCheckFolder";
+            buttonCheckFolder.Size = new System.Drawing.Size(136, 23);
+            buttonCheckFolder.Text = "Check folder";
+            buttonCheckFolder.UseVisualStyleBackColor = true;
+            buttonCheckFolder.Click += OnClickCheckFolder;
+            ExtractAllFilesTabPage.Controls.Add(buttonCheckFolder);
+            // 
+            // checkBoxOverwriteBatch
+            // 
+            checkBoxOverwriteBatch.AutoSize = true;
+            checkBoxOverwriteBatch.Location = new System.Drawing.Point(200, 70);
+            checkBoxOverwriteBatch.Name = "checkBoxOverwriteBatch";
+            checkBoxOverwriteBatch.Text = "Overwrite outputs";
+            checkBoxOverwriteBatch.UseVisualStyleBackColor = true;
+            checkBoxOverwriteBatch.CheckedChanged += OnOverwriteBatchChanged;
+            ExtractAllFilesTabPage.Controls.Add(checkBoxOverwriteBatch);
+            // 
+            // buttonCancelFolder
+            // 
+            buttonCancelFolder.Enabled = false;
+            buttonCancelFolder.Location = new System.Drawing.Point(256, 96);
+            buttonCancelFolder.Name = "buttonCancelFolder";
+            buttonCancelFolder.Size = new System.Drawing.Size(80, 27);
+            buttonCancelFolder.Text = "Cancel";
+            buttonCancelFolder.UseVisualStyleBackColor = true;
+            buttonCancelFolder.Click += OnClickCancelFolder;
+            ExtractAllFilesTabPage.Controls.Add(buttonCancelFolder);
+            // 
+            // checkedListBoxSets
+            // 
+            checkedListBoxSets.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left;
+            checkedListBoxSets.CheckOnClick = true;
+            checkedListBoxSets.FormattingEnabled = true;
+            checkedListBoxSets.IntegralHeight = false;
+            checkedListBoxSets.Location = new System.Drawing.Point(10, 130);
+            checkedListBoxSets.Name = "checkedListBoxSets";
+            checkedListBoxSets.Size = new System.Drawing.Size(326, 280);
+            ExtractAllFilesTabPage.Controls.Add(checkedListBoxSets);
+            // 
+            // textBoxLog
+            // 
+            textBoxLog.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
+            textBoxLog.BackColor = System.Drawing.Color.White;
+            textBoxLog.Font = new System.Drawing.Font("Consolas", 9F);
+            textBoxLog.Location = new System.Drawing.Point(345, 45);
+            textBoxLog.Multiline = true;
+            textBoxLog.Name = "textBoxLog";
+            textBoxLog.ReadOnly = true;
+            textBoxLog.ScrollBars = System.Windows.Forms.ScrollBars.Both;
+            textBoxLog.Size = new System.Drawing.Size(285, 365);
+            textBoxLog.WordWrap = false;
+            ExtractAllFilesTabPage.Controls.Add(textBoxLog);
+            // 
+            // labelLog
+            // 
+            labelLog.AutoSize = true;
+            labelLog.Location = new System.Drawing.Point(345, 24);
+            labelLog.Name = "labelLog";
+            labelLog.Text = "Log";
+            ExtractAllFilesTabPage.Controls.Add(labelLog);
+            // 
+            // MultisTabPage
+            // 
+            MultisTabPage.Location = new System.Drawing.Point(4, 24);
+            MultisTabPage.Name = "MultisTabPage";
+            MultisTabPage.Padding = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            MultisTabPage.Size = new System.Drawing.Size(637, 442);
+            MultisTabPage.TabIndex = 2;
+            MultisTabPage.Text = "Multis";
+            MultisTabPage.UseVisualStyleBackColor = true;
+            // 
+            // labelMultiPack
+            // 
+            labelMultiPack.AutoSize = true;
+            labelMultiPack.Location = new System.Drawing.Point(7, 3);
+            labelMultiPack.Name = "labelMultiPack";
+            labelMultiPack.Text = "Pack multi.mul to MultiCollection.uop";
+            MultisTabPage.Controls.Add(labelMultiPack);
+            // 
+            // labelMultiMul
+            // 
+            labelMultiMul.AutoSize = true;
+            labelMultiMul.Location = new System.Drawing.Point(35, 42);
+            labelMultiMul.Name = "labelMultiMul";
+            labelMultiMul.Text = "multi.mul";
+            MultisTabPage.Controls.Add(labelMultiMul);
+            // 
+            // textBoxMultiMul
+            // 
+            textBoxMultiMul.BackColor = System.Drawing.Color.White;
+            textBoxMultiMul.Location = new System.Drawing.Point(118, 38);
+            textBoxMultiMul.Name = "textBoxMultiMul";
+            textBoxMultiMul.Size = new System.Drawing.Size(241, 23);
+            MultisTabPage.Controls.Add(textBoxMultiMul);
+            // 
+            // buttonMultiMul
+            // 
+            buttonMultiMul.Location = new System.Drawing.Point(366, 38);
+            buttonMultiMul.Name = "buttonMultiMul";
+            buttonMultiMul.Size = new System.Drawing.Size(31, 23);
+            buttonMultiMul.Text = "...";
+            buttonMultiMul.UseVisualStyleBackColor = true;
+            buttonMultiMul.Click += OnClickBrowseMultiMul;
+            MultisTabPage.Controls.Add(buttonMultiMul);
+            // 
+            // labelMultiIdx
+            // 
+            labelMultiIdx.AutoSize = true;
+            labelMultiIdx.Location = new System.Drawing.Point(35, 72);
+            labelMultiIdx.Name = "labelMultiIdx";
+            labelMultiIdx.Text = "multi.idx";
+            MultisTabPage.Controls.Add(labelMultiIdx);
+            // 
+            // textBoxMultiIdx
+            // 
+            textBoxMultiIdx.BackColor = System.Drawing.Color.White;
+            textBoxMultiIdx.Location = new System.Drawing.Point(118, 68);
+            textBoxMultiIdx.Name = "textBoxMultiIdx";
+            textBoxMultiIdx.Size = new System.Drawing.Size(241, 23);
+            MultisTabPage.Controls.Add(textBoxMultiIdx);
+            // 
+            // buttonMultiIdx
+            // 
+            buttonMultiIdx.Location = new System.Drawing.Point(366, 68);
+            buttonMultiIdx.Name = "buttonMultiIdx";
+            buttonMultiIdx.Size = new System.Drawing.Size(31, 23);
+            buttonMultiIdx.Text = "...";
+            buttonMultiIdx.UseVisualStyleBackColor = true;
+            buttonMultiIdx.Click += OnClickBrowseMultiIdx;
+            MultisTabPage.Controls.Add(buttonMultiIdx);
+            // 
+            // labelMultiHousing
+            // 
+            labelMultiHousing.AutoSize = true;
+            labelMultiHousing.Location = new System.Drawing.Point(35, 102);
+            labelMultiHousing.Name = "labelMultiHousing";
+            labelMultiHousing.Text = "housing.bin";
+            MultisTabPage.Controls.Add(labelMultiHousing);
+            // 
+            // textBoxMultiHousing
+            // 
+            textBoxMultiHousing.BackColor = System.Drawing.Color.White;
+            textBoxMultiHousing.Location = new System.Drawing.Point(118, 98);
+            textBoxMultiHousing.Name = "textBoxMultiHousing";
+            textBoxMultiHousing.Size = new System.Drawing.Size(241, 23);
+            MultisTabPage.Controls.Add(textBoxMultiHousing);
+            // 
+            // buttonMultiHousing
+            // 
+            buttonMultiHousing.Location = new System.Drawing.Point(366, 98);
+            buttonMultiHousing.Name = "buttonMultiHousing";
+            buttonMultiHousing.Size = new System.Drawing.Size(31, 23);
+            buttonMultiHousing.Text = "...";
+            buttonMultiHousing.UseVisualStyleBackColor = true;
+            buttonMultiHousing.Click += OnClickBrowseMultiHousing;
+            MultisTabPage.Controls.Add(buttonMultiHousing);
+            // 
+            // labelMultiOutUop
+            // 
+            labelMultiOutUop.AutoSize = true;
+            labelMultiOutUop.Location = new System.Drawing.Point(35, 132);
+            labelMultiOutUop.Name = "labelMultiOutUop";
+            labelMultiOutUop.Text = "Output UOP";
+            MultisTabPage.Controls.Add(labelMultiOutUop);
+            // 
+            // textBoxMultiOutUop
+            // 
+            textBoxMultiOutUop.BackColor = System.Drawing.Color.White;
+            textBoxMultiOutUop.Location = new System.Drawing.Point(118, 128);
+            textBoxMultiOutUop.Name = "textBoxMultiOutUop";
+            textBoxMultiOutUop.Size = new System.Drawing.Size(241, 23);
+            MultisTabPage.Controls.Add(textBoxMultiOutUop);
+            // 
+            // buttonMultiOutUop
+            // 
+            buttonMultiOutUop.Location = new System.Drawing.Point(366, 128);
+            buttonMultiOutUop.Name = "buttonMultiOutUop";
+            buttonMultiOutUop.Size = new System.Drawing.Size(31, 23);
+            buttonMultiOutUop.Text = "...";
+            buttonMultiOutUop.UseVisualStyleBackColor = true;
+            buttonMultiOutUop.Click += OnClickBrowseMultiOutUop;
+            MultisTabPage.Controls.Add(buttonMultiOutUop);
+            // 
+            // labelMultiCompression
+            // 
+            labelMultiCompression.AutoSize = true;
+            labelMultiCompression.Location = new System.Drawing.Point(35, 162);
+            labelMultiCompression.Name = "labelMultiCompression";
+            labelMultiCompression.Text = "Compression";
+            MultisTabPage.Controls.Add(labelMultiCompression);
+            // 
+            // comboBoxMultiCompression
+            // 
+            comboBoxMultiCompression.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            comboBoxMultiCompression.Location = new System.Drawing.Point(118, 158);
+            comboBoxMultiCompression.Name = "comboBoxMultiCompression";
+            comboBoxMultiCompression.Size = new System.Drawing.Size(120, 23);
+            MultisTabPage.Controls.Add(comboBoxMultiCompression);
+            // 
+            // buttonMultiPack
+            // 
+            buttonMultiPack.Location = new System.Drawing.Point(410, 38);
+            buttonMultiPack.Name = "buttonMultiPack";
+            buttonMultiPack.Size = new System.Drawing.Size(97, 113);
+            buttonMultiPack.Text = "Pack";
+            buttonMultiPack.UseVisualStyleBackColor = true;
+            buttonMultiPack.Click += OnClickMultiPack;
+            MultisTabPage.Controls.Add(buttonMultiPack);
+            // 
+            // labelMultiUnpack
+            // 
+            labelMultiUnpack.AutoSize = true;
+            labelMultiUnpack.Location = new System.Drawing.Point(7, 203);
+            labelMultiUnpack.Name = "labelMultiUnpack";
+            labelMultiUnpack.Text = "Unpack MultiCollection.uop";
+            MultisTabPage.Controls.Add(labelMultiUnpack);
+            // 
+            // labelMultiInUop
+            // 
+            labelMultiInUop.AutoSize = true;
+            labelMultiInUop.Location = new System.Drawing.Point(35, 242);
+            labelMultiInUop.Name = "labelMultiInUop";
+            labelMultiInUop.Text = "Input UOP";
+            MultisTabPage.Controls.Add(labelMultiInUop);
+            // 
+            // textBoxMultiInUop
+            // 
+            textBoxMultiInUop.BackColor = System.Drawing.Color.White;
+            textBoxMultiInUop.Location = new System.Drawing.Point(118, 238);
+            textBoxMultiInUop.Name = "textBoxMultiInUop";
+            textBoxMultiInUop.Size = new System.Drawing.Size(241, 23);
+            MultisTabPage.Controls.Add(textBoxMultiInUop);
+            // 
+            // buttonMultiInUop
+            // 
+            buttonMultiInUop.Location = new System.Drawing.Point(366, 238);
+            buttonMultiInUop.Name = "buttonMultiInUop";
+            buttonMultiInUop.Size = new System.Drawing.Size(31, 23);
+            buttonMultiInUop.Text = "...";
+            buttonMultiInUop.UseVisualStyleBackColor = true;
+            buttonMultiInUop.Click += OnClickBrowseMultiInUop;
+            MultisTabPage.Controls.Add(buttonMultiInUop);
+            // 
+            // labelMultiOutMul
+            // 
+            labelMultiOutMul.AutoSize = true;
+            labelMultiOutMul.Location = new System.Drawing.Point(35, 272);
+            labelMultiOutMul.Name = "labelMultiOutMul";
+            labelMultiOutMul.Text = "Output MUL";
+            MultisTabPage.Controls.Add(labelMultiOutMul);
+            // 
+            // textBoxMultiOutMul
+            // 
+            textBoxMultiOutMul.BackColor = System.Drawing.Color.White;
+            textBoxMultiOutMul.Location = new System.Drawing.Point(118, 268);
+            textBoxMultiOutMul.Name = "textBoxMultiOutMul";
+            textBoxMultiOutMul.Size = new System.Drawing.Size(241, 23);
+            MultisTabPage.Controls.Add(textBoxMultiOutMul);
+            // 
+            // buttonMultiOutMul
+            // 
+            buttonMultiOutMul.Location = new System.Drawing.Point(366, 268);
+            buttonMultiOutMul.Name = "buttonMultiOutMul";
+            buttonMultiOutMul.Size = new System.Drawing.Size(31, 23);
+            buttonMultiOutMul.Text = "...";
+            buttonMultiOutMul.UseVisualStyleBackColor = true;
+            buttonMultiOutMul.Click += OnClickBrowseMultiOutMul;
+            MultisTabPage.Controls.Add(buttonMultiOutMul);
+            // 
+            // labelMultiOutIdx
+            // 
+            labelMultiOutIdx.AutoSize = true;
+            labelMultiOutIdx.Location = new System.Drawing.Point(35, 302);
+            labelMultiOutIdx.Name = "labelMultiOutIdx";
+            labelMultiOutIdx.Text = "Output IDX";
+            MultisTabPage.Controls.Add(labelMultiOutIdx);
+            // 
+            // textBoxMultiOutIdx
+            // 
+            textBoxMultiOutIdx.BackColor = System.Drawing.Color.White;
+            textBoxMultiOutIdx.Location = new System.Drawing.Point(118, 298);
+            textBoxMultiOutIdx.Name = "textBoxMultiOutIdx";
+            textBoxMultiOutIdx.Size = new System.Drawing.Size(241, 23);
+            MultisTabPage.Controls.Add(textBoxMultiOutIdx);
+            // 
+            // buttonMultiOutIdx
+            // 
+            buttonMultiOutIdx.Location = new System.Drawing.Point(366, 298);
+            buttonMultiOutIdx.Name = "buttonMultiOutIdx";
+            buttonMultiOutIdx.Size = new System.Drawing.Size(31, 23);
+            buttonMultiOutIdx.Text = "...";
+            buttonMultiOutIdx.UseVisualStyleBackColor = true;
+            buttonMultiOutIdx.Click += OnClickBrowseMultiOutIdx;
+            MultisTabPage.Controls.Add(buttonMultiOutIdx);
+            // 
+            // labelMultiOutHousing
+            // 
+            labelMultiOutHousing.AutoSize = true;
+            labelMultiOutHousing.Location = new System.Drawing.Point(35, 332);
+            labelMultiOutHousing.Name = "labelMultiOutHousing";
+            labelMultiOutHousing.Text = "housing.bin";
+            MultisTabPage.Controls.Add(labelMultiOutHousing);
+            // 
+            // textBoxMultiOutHousing
+            // 
+            textBoxMultiOutHousing.BackColor = System.Drawing.Color.White;
+            textBoxMultiOutHousing.Location = new System.Drawing.Point(118, 328);
+            textBoxMultiOutHousing.Name = "textBoxMultiOutHousing";
+            textBoxMultiOutHousing.Size = new System.Drawing.Size(241, 23);
+            MultisTabPage.Controls.Add(textBoxMultiOutHousing);
+            // 
+            // buttonMultiOutHousing
+            // 
+            buttonMultiOutHousing.Location = new System.Drawing.Point(366, 328);
+            buttonMultiOutHousing.Name = "buttonMultiOutHousing";
+            buttonMultiOutHousing.Size = new System.Drawing.Size(31, 23);
+            buttonMultiOutHousing.Text = "...";
+            buttonMultiOutHousing.UseVisualStyleBackColor = true;
+            buttonMultiOutHousing.Click += OnClickBrowseMultiOutHousing;
+            MultisTabPage.Controls.Add(buttonMultiOutHousing);
+            // 
+            // buttonMultiUnpack
+            // 
+            buttonMultiUnpack.Location = new System.Drawing.Point(410, 238);
+            buttonMultiUnpack.Name = "buttonMultiUnpack";
+            buttonMultiUnpack.Size = new System.Drawing.Size(97, 113);
+            buttonMultiUnpack.Text = "Unpack";
+            buttonMultiUnpack.UseVisualStyleBackColor = true;
+            buttonMultiUnpack.Click += OnClickMultiUnpack;
+            MultisTabPage.Controls.Add(buttonMultiUnpack);
+            // 
+            // labelMultiInfo
+            // 
+            labelMultiInfo.AutoSize = true;
+            labelMultiInfo.AutoSize = false;
+            labelMultiInfo.ForeColor = System.Drawing.SystemColors.GrayText;
+            labelMultiInfo.Location = new System.Drawing.Point(35, 365);
+            labelMultiInfo.Name = "labelMultiInfo";
+            labelMultiInfo.Size = new System.Drawing.Size(590, 60);
+            labelMultiInfo.Text = "housing.bin is part of MultiCollection.uop and needed by the client: unpack an original MultiCollection.uop first to get it.\r\nmulti.mul in the new (16 bytes per part) and the old format (12 bytes) is read.";
+            MultisTabPage.Controls.Add(labelMultiInfo);
+            // 
+            // InfoTabPage
+            // 
+            InfoTabPage.Location = new System.Drawing.Point(4, 24);
+            InfoTabPage.Name = "InfoTabPage";
+            InfoTabPage.Padding = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            InfoTabPage.Size = new System.Drawing.Size(637, 442);
+            InfoTabPage.TabIndex = 3;
+            InfoTabPage.Text = "UOP Info";
+            InfoTabPage.UseVisualStyleBackColor = true;
+            // 
+            // labelInfoFile
+            // 
+            labelInfoFile.AutoSize = true;
+            labelInfoFile.Location = new System.Drawing.Point(7, 12);
+            labelInfoFile.Name = "labelInfoFile";
+            labelInfoFile.Text = "UOP file";
+            InfoTabPage.Controls.Add(labelInfoFile);
+            // 
+            // textBoxInfoFile
+            // 
+            textBoxInfoFile.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
+            textBoxInfoFile.BackColor = System.Drawing.Color.White;
+            textBoxInfoFile.Location = new System.Drawing.Point(66, 9);
+            textBoxInfoFile.Name = "textBoxInfoFile";
+            textBoxInfoFile.Size = new System.Drawing.Size(330, 23);
+            InfoTabPage.Controls.Add(textBoxInfoFile);
+            // 
+            // buttonInfoBrowse
+            // 
+            buttonInfoBrowse.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right;
+            buttonInfoBrowse.Location = new System.Drawing.Point(402, 8);
+            buttonInfoBrowse.Name = "buttonInfoBrowse";
+            buttonInfoBrowse.Size = new System.Drawing.Size(31, 23);
+            buttonInfoBrowse.Text = "...";
+            buttonInfoBrowse.UseVisualStyleBackColor = true;
+            buttonInfoBrowse.Click += OnClickInfoBrowse;
+            InfoTabPage.Controls.Add(buttonInfoBrowse);
+            // 
+            // buttonInfoAnalyze
+            // 
+            buttonInfoAnalyze.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right;
+            buttonInfoAnalyze.Location = new System.Drawing.Point(439, 8);
+            buttonInfoAnalyze.Name = "buttonInfoAnalyze";
+            buttonInfoAnalyze.Size = new System.Drawing.Size(80, 23);
+            buttonInfoAnalyze.Text = "Analyze";
+            buttonInfoAnalyze.UseVisualStyleBackColor = true;
+            buttonInfoAnalyze.Click += OnClickInfoAnalyze;
+            InfoTabPage.Controls.Add(buttonInfoAnalyze);
+            // 
+            // checkBoxInfoVerify
+            // 
+            checkBoxInfoVerify.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right;
+            checkBoxInfoVerify.AutoSize = true;
+            checkBoxInfoVerify.Location = new System.Drawing.Point(527, 11);
+            checkBoxInfoVerify.Name = "checkBoxInfoVerify";
+            checkBoxInfoVerify.Text = "Checksums";
+            checkBoxInfoVerify.UseVisualStyleBackColor = true;
+            InfoTabPage.Controls.Add(checkBoxInfoVerify);
+            // 
+            // textBoxInfoSummary
+            // 
+            textBoxInfoSummary.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
+            textBoxInfoSummary.BackColor = System.Drawing.Color.White;
+            textBoxInfoSummary.Font = new System.Drawing.Font("Consolas", 9F);
+            textBoxInfoSummary.Location = new System.Drawing.Point(7, 40);
+            textBoxInfoSummary.Multiline = true;
+            textBoxInfoSummary.Name = "textBoxInfoSummary";
+            textBoxInfoSummary.ReadOnly = true;
+            textBoxInfoSummary.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
+            textBoxInfoSummary.Size = new System.Drawing.Size(622, 160);
+            InfoTabPage.Controls.Add(textBoxInfoSummary);
+            // 
+            // listViewInfo
+            // 
+            listViewInfo.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
+            listViewInfo.FullRowSelect = true;
+            listViewInfo.Location = new System.Drawing.Point(7, 206);
+            listViewInfo.Name = "listViewInfo";
+            listViewInfo.Size = new System.Drawing.Size(622, 230);
+            listViewInfo.UseCompatibleStateImageBehavior = false;
+            listViewInfo.View = System.Windows.Forms.View.Details;
+            listViewInfo.VirtualMode = true;
+            listViewInfo.RetrieveVirtualItem += OnRetrieveInfoItem;
+            InfoTabPage.Controls.Add(listViewInfo);
+            // 
+            // columnInfoIndex
+            // 
+            columnInfoIndex.Text = "#";
+            columnInfoIndex.Width = 50;
+            // 
+            // columnInfoName
+            // 
+            columnInfoName.Text = "Name / hash";
+            columnInfoName.Width = 230;
+            // 
+            // columnInfoOffset
+            // 
+            columnInfoOffset.Text = "Offset";
+            columnInfoOffset.Width = 80;
+            // 
+            // columnInfoSize
+            // 
+            columnInfoSize.Text = "Stored";
+            columnInfoSize.Width = 70;
+            // 
+            // columnInfoUnpacked
+            // 
+            columnInfoUnpacked.Text = "Unpacked";
+            columnInfoUnpacked.Width = 70;
+            // 
+            // columnInfoCompression
+            // 
+            columnInfoCompression.Text = "Compr.";
+            columnInfoCompression.Width = 55;
+            // 
+            // columnInfoChecksum
+            // 
+            columnInfoChecksum.Text = "Checksum";
+            columnInfoChecksum.Width = 65;
+            // 
+            // BackupTabPage
+            // 
+            BackupTabPage.Location = new System.Drawing.Point(4, 24);
+            BackupTabPage.Name = "BackupTabPage";
+            BackupTabPage.Padding = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            BackupTabPage.Size = new System.Drawing.Size(637, 442);
+            BackupTabPage.TabIndex = 4;
+            BackupTabPage.Text = "Backup";
+            BackupTabPage.UseVisualStyleBackColor = true;
+            // 
+            // checkBoxBackupEnabled
+            // 
+            checkBoxBackupEnabled.AutoSize = true;
+            checkBoxBackupEnabled.Location = new System.Drawing.Point(10, 12);
+            checkBoxBackupEnabled.Name = "checkBoxBackupEnabled";
+            checkBoxBackupEnabled.Text = "Automatic backup: copy every file to the backup folder before it is replaced";
+            checkBoxBackupEnabled.UseVisualStyleBackColor = true;
+            checkBoxBackupEnabled.CheckedChanged += OnBackupSettingChanged;
+            BackupTabPage.Controls.Add(checkBoxBackupEnabled);
+            // 
+            // radioButtonBackupNextTo
+            // 
+            radioButtonBackupNextTo.AutoSize = true;
+            radioButtonBackupNextTo.Location = new System.Drawing.Point(30, 40);
+            radioButtonBackupNextTo.Name = "radioButtonBackupNextTo";
+            radioButtonBackupNextTo.Text = "Next to the written files (\"UoFiddlerBackups\\UopPacker\")";
+            radioButtonBackupNextTo.UseVisualStyleBackColor = true;
+            radioButtonBackupNextTo.CheckedChanged += OnBackupSettingChanged;
+            BackupTabPage.Controls.Add(radioButtonBackupNextTo);
+            // 
+            // radioButtonBackupFixed
+            // 
+            radioButtonBackupFixed.AutoSize = true;
+            radioButtonBackupFixed.Location = new System.Drawing.Point(30, 66);
+            radioButtonBackupFixed.Name = "radioButtonBackupFixed";
+            radioButtonBackupFixed.Text = "Fixed folder:";
+            radioButtonBackupFixed.UseVisualStyleBackColor = true;
+            radioButtonBackupFixed.CheckedChanged += OnBackupSettingChanged;
+            BackupTabPage.Controls.Add(radioButtonBackupFixed);
+            // 
+            // textBoxBackupFolder
+            // 
+            textBoxBackupFolder.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
+            textBoxBackupFolder.BackColor = System.Drawing.Color.White;
+            textBoxBackupFolder.Location = new System.Drawing.Point(130, 64);
+            textBoxBackupFolder.Name = "textBoxBackupFolder";
+            textBoxBackupFolder.Size = new System.Drawing.Size(430, 23);
+            BackupTabPage.Controls.Add(textBoxBackupFolder);
+            // 
+            // buttonBackupFolder
+            // 
+            buttonBackupFolder.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right;
+            buttonBackupFolder.Location = new System.Drawing.Point(566, 63);
+            buttonBackupFolder.Name = "buttonBackupFolder";
+            buttonBackupFolder.Size = new System.Drawing.Size(31, 23);
+            buttonBackupFolder.Text = "...";
+            buttonBackupFolder.UseVisualStyleBackColor = true;
+            buttonBackupFolder.Click += OnClickBackupFolder;
+            BackupTabPage.Controls.Add(buttonBackupFolder);
+            // 
+            // checkBoxBackupCopyNew
+            // 
+            checkBoxBackupCopyNew.AutoSize = true;
+            checkBoxBackupCopyNew.Location = new System.Drawing.Point(30, 94);
+            checkBoxBackupCopyNew.Name = "checkBoxBackupCopyNew";
+            checkBoxBackupCopyNew.Text = "Also copy the new files (folder \"new\") – old and new version in one place";
+            checkBoxBackupCopyNew.UseVisualStyleBackColor = true;
+            checkBoxBackupCopyNew.CheckedChanged += OnBackupSettingChanged;
+            BackupTabPage.Controls.Add(checkBoxBackupCopyNew);
+            // 
+            // labelBackupInfo
+            // 
+            labelBackupInfo.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
+            labelBackupInfo.AutoSize = true;
+            labelBackupInfo.AutoSize = false;
+            labelBackupInfo.Location = new System.Drawing.Point(10, 122);
+            labelBackupInfo.Name = "labelBackupInfo";
+            labelBackupInfo.Size = new System.Drawing.Size(615, 36);
+            labelBackupInfo.Text = "";
+            BackupTabPage.Controls.Add(labelBackupInfo);
+            // 
+            // listViewBackup
+            // 
+            listViewBackup.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
+            listViewBackup.FullRowSelect = true;
+            listViewBackup.Location = new System.Drawing.Point(10, 162);
+            listViewBackup.Name = "listViewBackup";
+            listViewBackup.Size = new System.Drawing.Size(617, 240);
+            listViewBackup.UseCompatibleStateImageBehavior = false;
+            listViewBackup.View = System.Windows.Forms.View.Details;
+            BackupTabPage.Controls.Add(listViewBackup);
+            // 
+            // columnBackupFile
+            // 
+            columnBackupFile.Text = "File";
+            columnBackupFile.Width = 150;
+            // 
+            // columnBackupOriginal
+            // 
+            columnBackupOriginal.Text = "Original location";
+            columnBackupOriginal.Width = 260;
+            // 
+            // columnBackupTime
+            // 
+            columnBackupTime.Text = "Time";
+            columnBackupTime.Width = 120;
+            // 
+            // columnBackupCopies
+            // 
+            columnBackupCopies.Text = "Copies";
+            columnBackupCopies.Width = 70;
+            // 
+            // buttonBackupRefresh
+            // 
+            buttonBackupRefresh.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left;
+            buttonBackupRefresh.Location = new System.Drawing.Point(10, 408);
+            buttonBackupRefresh.Name = "buttonBackupRefresh";
+            buttonBackupRefresh.Size = new System.Drawing.Size(90, 25);
+            buttonBackupRefresh.Text = "Refresh";
+            buttonBackupRefresh.UseVisualStyleBackColor = true;
+            buttonBackupRefresh.Click += OnClickBackupRefresh;
+            BackupTabPage.Controls.Add(buttonBackupRefresh);
+            // 
+            // buttonBackupOpen
+            // 
+            buttonBackupOpen.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left;
+            buttonBackupOpen.Location = new System.Drawing.Point(106, 408);
+            buttonBackupOpen.Name = "buttonBackupOpen";
+            buttonBackupOpen.Size = new System.Drawing.Size(110, 25);
+            buttonBackupOpen.Text = "Open folder";
+            buttonBackupOpen.UseVisualStyleBackColor = true;
+            buttonBackupOpen.Click += OnClickBackupOpen;
+            BackupTabPage.Controls.Add(buttonBackupOpen);
+            // 
+            // buttonBackupRestore
+            // 
+            buttonBackupRestore.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left;
+            buttonBackupRestore.Location = new System.Drawing.Point(222, 408);
+            buttonBackupRestore.Name = "buttonBackupRestore";
+            buttonBackupRestore.Size = new System.Drawing.Size(110, 25);
+            buttonBackupRestore.Text = "Restore old";
+            buttonBackupRestore.UseVisualStyleBackColor = true;
+            buttonBackupRestore.Click += OnClickBackupRestore;
+            BackupTabPage.Controls.Add(buttonBackupRestore);
+            // 
+            // HelpTabPage
+            // 
+            HelpTabPage.Location = new System.Drawing.Point(4, 24);
+            HelpTabPage.Name = "HelpTabPage";
+            HelpTabPage.Padding = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            HelpTabPage.Size = new System.Drawing.Size(637, 442);
+            HelpTabPage.TabIndex = 5;
+            HelpTabPage.Text = "Help";
+            HelpTabPage.UseVisualStyleBackColor = true;
+            // 
+            // radioButtonHelpEnglish
+            // 
+            radioButtonHelpEnglish.AutoSize = true;
+            radioButtonHelpEnglish.Checked = true;
+            radioButtonHelpEnglish.Location = new System.Drawing.Point(10, 10);
+            radioButtonHelpEnglish.Name = "radioButtonHelpEnglish";
+            radioButtonHelpEnglish.TabStop = true;
+            radioButtonHelpEnglish.Text = "English";
+            radioButtonHelpEnglish.UseVisualStyleBackColor = true;
+            radioButtonHelpEnglish.CheckedChanged += OnHelpLanguageChanged;
+            HelpTabPage.Controls.Add(radioButtonHelpEnglish);
+            // 
+            // radioButtonHelpGerman
+            // 
+            radioButtonHelpGerman.AutoSize = true;
+            radioButtonHelpGerman.Location = new System.Drawing.Point(100, 10);
+            radioButtonHelpGerman.Name = "radioButtonHelpGerman";
+            radioButtonHelpGerman.Text = "Deutsch";
+            radioButtonHelpGerman.UseVisualStyleBackColor = true;
+            radioButtonHelpGerman.CheckedChanged += OnHelpLanguageChanged;
+            HelpTabPage.Controls.Add(radioButtonHelpGerman);
+            // 
+            // richTextBoxHelp
+            // 
+            richTextBoxHelp.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
+            richTextBoxHelp.BackColor = System.Drawing.Color.White;
+            richTextBoxHelp.Font = new System.Drawing.Font("Consolas", 9F);
+            richTextBoxHelp.Location = new System.Drawing.Point(7, 36);
+            richTextBoxHelp.Name = "richTextBoxHelp";
+            richTextBoxHelp.ReadOnly = true;
+            richTextBoxHelp.Size = new System.Drawing.Size(622, 400);
+            richTextBoxHelp.WordWrap = false;
+            HelpTabPage.Controls.Add(richTextBoxHelp);
+            // 
+            // progressBarFolder
+            // 
+            progressBarFolder.Name = "progressBarFolder";
+            progressBarFolder.Size = new System.Drawing.Size(120, 16);
+            // 
+            // toolTip
+            // 
+            listViewInfo.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] { columnInfoIndex, columnInfoName, columnInfoOffset, columnInfoSize, columnInfoUnpacked, columnInfoCompression, columnInfoChecksum });
+            listViewBackup.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] { columnBackupFile, columnBackupOriginal, columnBackupTime, columnBackupCopies });
+            comboBoxMultiCompression.Items.AddRange(new object[] { "None", "Zlib" });
+            OperationTypeTabControl.Controls.Add(MultisTabPage);
+            OperationTypeTabControl.Controls.Add(InfoTabPage);
+            OperationTypeTabControl.Controls.Add(BackupTabPage);
+            OperationTypeTabControl.Controls.Add(HelpTabPage);
+            toolTip.SetToolTip(compressionBox, "None = like the client files, Zlib = smaller, Mythic = only gumps (newer gumpartLegacyMUL.uop)");
+            toolTip.SetToolTip(buttonCheckFolder, "Show for every file whether the source exists and whether the output would be replaced");
+            toolTip.SetToolTip(checkBoxInfoVerify, "Read all data and check the Adler-32 checksums (slower)");
+            // 
             // MainStatusStrip
             // 
-            MainStatusStrip.Enabled = false;
             MainStatusStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { toolStripStatusLabel1, guilabel, VersionLabel });
             MainStatusStrip.Location = new System.Drawing.Point(0, 8);
             MainStatusStrip.Name = "MainStatusStrip";
@@ -663,7 +1447,7 @@ namespace UoFiddler.Plugin.UopPacker.UserControls
             // 
             guilabel.Name = "guilabel";
             guilabel.Size = new System.Drawing.Size(260, 17);
-            guilabel.Text = "RunUO's LegacyMUL Converter v4 3rd party GUI";
+            guilabel.Text = "RunUO's LegacyMUL Converter v4 3rd party GUI – advanced by Nikodemus";
             // 
             // VersionLabel
             // 
@@ -712,6 +1496,14 @@ namespace UoFiddler.Plugin.UopPacker.UserControls
             ExtractionStatusStrip.PerformLayout();
             ExtractSingleFileTabPage.ResumeLayout(false);
             ExtractSingleFileTabPage.PerformLayout();
+            MultisTabPage.ResumeLayout(false);
+            MultisTabPage.PerformLayout();
+            InfoTabPage.ResumeLayout(false);
+            InfoTabPage.PerformLayout();
+            BackupTabPage.ResumeLayout(false);
+            BackupTabPage.PerformLayout();
+            HelpTabPage.ResumeLayout(false);
+            HelpTabPage.PerformLayout();
             MainStatusStrip.ResumeLayout(false);
             MainStatusStrip.PerformLayout();
             splitContainer.Panel1.ResumeLayout(false);
@@ -778,5 +1570,83 @@ namespace UoFiddler.Plugin.UopPacker.UserControls
         private System.Windows.Forms.Button SingleFileExtractButton;
         private System.Windows.Forms.CheckBox CheckBoxAutoFill;
         private System.Windows.Forms.ComboBox compressionBox;
+        private System.Windows.Forms.CheckBox checkBoxOverwriteMul;
+        private System.Windows.Forms.Label labelCompression;
+        private System.Windows.Forms.Label labelSingleInfo;
+        private System.Windows.Forms.Button buttonCheckFolder;
+        private System.Windows.Forms.CheckBox checkBoxOverwriteBatch;
+        private System.Windows.Forms.Button buttonCancelFolder;
+        private System.Windows.Forms.CheckedListBox checkedListBoxSets;
+        private System.Windows.Forms.TextBox textBoxLog;
+        private System.Windows.Forms.Label labelLog;
+        private System.Windows.Forms.TabPage MultisTabPage;
+        private System.Windows.Forms.Label labelMultiPack;
+        private System.Windows.Forms.Label labelMultiMul;
+        private System.Windows.Forms.TextBox textBoxMultiMul;
+        private System.Windows.Forms.Button buttonMultiMul;
+        private System.Windows.Forms.Label labelMultiIdx;
+        private System.Windows.Forms.TextBox textBoxMultiIdx;
+        private System.Windows.Forms.Button buttonMultiIdx;
+        private System.Windows.Forms.Label labelMultiHousing;
+        private System.Windows.Forms.TextBox textBoxMultiHousing;
+        private System.Windows.Forms.Button buttonMultiHousing;
+        private System.Windows.Forms.Label labelMultiOutUop;
+        private System.Windows.Forms.TextBox textBoxMultiOutUop;
+        private System.Windows.Forms.Button buttonMultiOutUop;
+        private System.Windows.Forms.Label labelMultiCompression;
+        private System.Windows.Forms.ComboBox comboBoxMultiCompression;
+        private System.Windows.Forms.Button buttonMultiPack;
+        private System.Windows.Forms.Label labelMultiUnpack;
+        private System.Windows.Forms.Label labelMultiInUop;
+        private System.Windows.Forms.TextBox textBoxMultiInUop;
+        private System.Windows.Forms.Button buttonMultiInUop;
+        private System.Windows.Forms.Label labelMultiOutMul;
+        private System.Windows.Forms.TextBox textBoxMultiOutMul;
+        private System.Windows.Forms.Button buttonMultiOutMul;
+        private System.Windows.Forms.Label labelMultiOutIdx;
+        private System.Windows.Forms.TextBox textBoxMultiOutIdx;
+        private System.Windows.Forms.Button buttonMultiOutIdx;
+        private System.Windows.Forms.Label labelMultiOutHousing;
+        private System.Windows.Forms.TextBox textBoxMultiOutHousing;
+        private System.Windows.Forms.Button buttonMultiOutHousing;
+        private System.Windows.Forms.Button buttonMultiUnpack;
+        private System.Windows.Forms.Label labelMultiInfo;
+        private System.Windows.Forms.TabPage InfoTabPage;
+        private System.Windows.Forms.Label labelInfoFile;
+        private System.Windows.Forms.TextBox textBoxInfoFile;
+        private System.Windows.Forms.Button buttonInfoBrowse;
+        private System.Windows.Forms.Button buttonInfoAnalyze;
+        private System.Windows.Forms.CheckBox checkBoxInfoVerify;
+        private System.Windows.Forms.TextBox textBoxInfoSummary;
+        private System.Windows.Forms.ListView listViewInfo;
+        private System.Windows.Forms.ColumnHeader columnInfoIndex;
+        private System.Windows.Forms.ColumnHeader columnInfoName;
+        private System.Windows.Forms.ColumnHeader columnInfoOffset;
+        private System.Windows.Forms.ColumnHeader columnInfoSize;
+        private System.Windows.Forms.ColumnHeader columnInfoUnpacked;
+        private System.Windows.Forms.ColumnHeader columnInfoCompression;
+        private System.Windows.Forms.ColumnHeader columnInfoChecksum;
+        private System.Windows.Forms.TabPage BackupTabPage;
+        private System.Windows.Forms.CheckBox checkBoxBackupEnabled;
+        private System.Windows.Forms.RadioButton radioButtonBackupNextTo;
+        private System.Windows.Forms.RadioButton radioButtonBackupFixed;
+        private System.Windows.Forms.TextBox textBoxBackupFolder;
+        private System.Windows.Forms.Button buttonBackupFolder;
+        private System.Windows.Forms.CheckBox checkBoxBackupCopyNew;
+        private System.Windows.Forms.Label labelBackupInfo;
+        private System.Windows.Forms.ListView listViewBackup;
+        private System.Windows.Forms.ColumnHeader columnBackupFile;
+        private System.Windows.Forms.ColumnHeader columnBackupOriginal;
+        private System.Windows.Forms.ColumnHeader columnBackupTime;
+        private System.Windows.Forms.ColumnHeader columnBackupCopies;
+        private System.Windows.Forms.Button buttonBackupRefresh;
+        private System.Windows.Forms.Button buttonBackupOpen;
+        private System.Windows.Forms.Button buttonBackupRestore;
+        private System.Windows.Forms.TabPage HelpTabPage;
+        private System.Windows.Forms.RadioButton radioButtonHelpEnglish;
+        private System.Windows.Forms.RadioButton radioButtonHelpGerman;
+        private System.Windows.Forms.RichTextBox richTextBoxHelp;
+        private System.Windows.Forms.ToolStripProgressBar progressBarFolder;
+        private System.Windows.Forms.ToolTip toolTip;
     }
 }
