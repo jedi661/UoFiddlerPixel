@@ -6,6 +6,31 @@ UOFiddler based on Ultima SDK it's a tool to view and alter almost every UO 2D c
 This is an extended version of UoFiddler that has more maps and more tools, as well as Map Edit, and will be expanded over time to support the Ultima standard 
 version more than the original version. Also, some source codes from older and New projects that are no longer supported have been integrated.
 
+Version 4.12.18
+
+### UoFiddler.Plugin.Enhanced (Enhanced Client Editor) – Version 0.15.0
+
+- **Multis:** Vorschau mit richtigen EC-Grafiken (Häuser, Boote, Segel), Höhen, Teile hervorheben,
+  freie Slots, Kontextmenü (Import, Export, Entfernen, Neu laden, Speichern), Hintergrundbild.
+- **AnimDefinition:** Vergleich mit der Classic-Animdata nebeneinander, ein- und ausblendbar.
+- **Map:** Bereich markieren, alle Statics im Bereich anzeigen, Regionsansicht mit Enhanced-Grafiken,
+  Statics importieren, exportieren, einfügen und speichern.
+- **Map Converter (neuer Reiter):** Classic-Karten (map#.mul, statics) ↔ EC-facet#.uop in beide
+  Richtungen, Radarbild, automatische Dateiauswahl je Karte, Analyse und Reparatur, neue Karten anlegen.
+- **Hues (neu aufgebaut, huesmul2uop eingebaut und verbessert):**
+  - Editor mit den 32 Classic-Farben zum Anklicken; hues.dds und Übersicht werden immer mitgeschrieben
+    (Items und Animationen zeigen jetzt dieselbe Farbe).
+  - Compare: hues.mul ↔ Hues.uop nebeneinander, Filter, markierte Hues in beide Richtungen übernehmen.
+  - Converter: hues.mul → Hues.uop als Update oder neue Datei, Hues.uop → hues.mul byte-genau,
+    Zeichenart wie im Original-Client oder wie huesmul2uop, Sicherung (alt + neu), Analyse und Reparatur.
+- **Hilfe** in Englisch und Deutsch.
+
+### UoFiddler.Plugin.UopPacker – Version 2.0.0
+- Neu strukturiert, alter Reiter-Stil beibehalten, Fehler behoben.
+- Neue Reiter: Multis (MultiCollection.uop + housing.bin), UOP Info, Backup, Help (EN/DE).
+- Automatische Sicherung (alte und neue Datei in einem Sicherungsordner), Wiederherstellen.
+- Unterstützt Art, Gumps, Sounds, Maps (auch größere eigene Karten) und Multis.
+
 Version 4.12.17
 - **MultiMap images** (MultiMap tab → "Create image..."): create an image of any map – built-in, from the map list or external map files (also only an area) – or of any image file. Styles: **ink map** (drawn like a treasure map: coast lines with waves, mountains, trees, houses, dotted roads, sand/swamp/hills), radar colors, grayscale, black/white (dithered like MultiMap.rle) and sketch; options for parchment look, frame, coordinate grid, symbol size, density and random pattern.
 - **Image list**: generated, saved or added images appear under "Load.." (stored inside the app or linked from any folder); open image files, paste from the clipboard, manage (rename/remove/open folder).

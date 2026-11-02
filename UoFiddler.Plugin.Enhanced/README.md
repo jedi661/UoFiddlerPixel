@@ -15,7 +15,7 @@ Every tab can search, show, change, add, delete, export / import and save (with 
 | **Items / Art** | `Texture.uop`, `LegacyTexture.uop`, `EffectTexture.uop`, `TerrainTexture.uop` | Thumbnail grid of the item / effect / terrain images (DDS, TGA), replace / insert / remove (DXT1/3/5, ARGB32, mipmaps), export |
 | **TileData** | `tileart.uop`, `string_dictionary.uop` | All entries: name, flags (EC and classic), properties, layer, radar color, image offsets, texture references; duplicate, remove, import/export |
 | **Gumps** | `Interface.uop` (`…/textures/gumpart/<id>.tga`), `gumpartLegacyMUL.uop` | Thumbnail grid, replace / insert / remove, export (legacy gumps are encoded in the classic RLE format) |
-| **Hues** | `Hues.uop` | Color ramps (256 × 2 BMP per hue) and names; import / export ramp, add copy, delete |
+| **Hues** | `Hues.uop`, `hues.mul` | Sub tabs: **Editor** (ramps, the 32 classic colors, names; hues.dds and the overview are updated with every change), **Compare** (classic ↔ EC, filter, show / hide columns, copy marked hues in both directions), **Converter** (hues.mul → Hues.uop like huesmul2uop but as update, Hues.uop → hues.mul without loss, backup old + new, analyze, rebuild hues.dds), **Help** EN / DE |
 | **Animations** | `AnimationFrame1–6.uop`, `Paperdoll.uop` | Bodies and actions (AMOU), playback in all 8 view directions (compass, turn buttons, keys Left / Right, "turn around while playing"; ↗ → ↘ are the mirrored stored directions like in the classic client), ground tile, PNG / `.bin` export and import, new bodies / actions |
 | **AnimData** | `AnimationDefinition.uop` | Animated items (frames, time per frame); preview with the item images placed like in the client (EC world art, shared images cut out, legacy art where the EC has no image), list columns "EC images" and "Classic", filters (complete / missing EC images, different from classic, not in classic, only in classic), **classic comparison**: animdata.mul + art of the loaded classic client next to it (show / hide each side), "From classic" takes the classic frames and speed |
 | **Multis** | `MultiCollection.uop` | Built like the Multis tab (designer layout): list with the names of `Multilist.xml`, free slots, context menu (new, import, export, remove, reload, save), height slider (max z), min z, floors, art EC or legacy, same draw order as the Multis tab, grid; hover / click highlights parts, component list with show / hide per part, part image; extract image (bmp/tiff/jpg/png), copy, background grass / water / own image / color; export parts (text, UOA, WSC, CSV, UOX3, XML), export all images / parts, import (text, UOA, CSV, WSC), new / copy / remove |
@@ -65,8 +65,13 @@ Saving always writes a new file; the old one is kept as `<file>.<date>.bak`. The
   int count + uint clilocs).
 * Legacy gumps (`build/gumpartlegacymul/<id>.tga`, no real TGA): uint width, uint height, row offsets (in 4 byte units from the
   table), runs of (ushort RGB555 color, ushort length); color 0 = transparent.
-* Hues: `data/definitions/hues/hue<nr 4 digits>.bmp` (256 × 2, 32 bit; the original header is kept when a ramp is replaced),
-  names in a text entry ("number,name").
+* Hues: `data/definitions/hues/hue<nr 4 digits>.bmp` (256 × 2, 32 bit; line 0 = ramp, line 1 = color 31; the size field of
+  the original files is file size / 4), `data/definitions/hues/huenames.csv` ("number,name" or just "number"),
+  `build/hues/hues.dds` (1024 × 1024, one 256 pixel row per hue: column n / 1024, row n % 1024; colors the items) and the
+  unnamed entry 0xFA5C6A1BC0D8B01B (64 × 64 A8R8G8B8, one pixel = color 31 per hue, column n / 64, row n % 64).
+  Original ramps: color i at pixel 8 · i, linear in between, 5 bit value · 8. huesmul2uop: 8 pixels per color, blurred (4 / 6),
+  value · 255 / 31. `build/hues/classichues.bin` (written by this plugin, ignored by the client) keeps the exact hues.mul data.
+  EC hue n = hues.mul entry n − 1 (groups of 4 byte header + 8 × 88 bytes).
 * Sounds: `data/audio/audio_sounds.csv` (id, path), `data/audio/audio_music.csv` (id, path, loop); files are `data/audio/<path>`.
 * `string_dictionary.uop`: one entry; `ulong`, `uint count`, `uint`, then `ushort length + text` per string.
 * MYP version 5 files (`Texture.uop`, `Interface.uop`, `AnimationFrame*.uop`, `facet*.uop`, `EffectTexture.uop`, ...):

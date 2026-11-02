@@ -464,9 +464,13 @@ namespace UoFiddler.Plugin.Enhanced.EcUltima.Uop
         /// <summary>
         /// Replaces the entry with the given name, or adds a new one if it doesn't exist.
         /// </summary>
-        public EcUopEntry AddOrReplace(string name, byte[] data, EcUopCompression compression)
+        public EcUopEntry AddOrReplace(string name, byte[] data, EcUopCompression compression) => AddOrReplace(EcUopHash.HashFileName(name), name, data, compression);
+
+        /// <summary>
+        /// Replaces the entry with the given hash, or adds a new one (for entries whose name is unknown, <paramref name="name"/> may be null).
+        /// </summary>
+        public EcUopEntry AddOrReplace(ulong hash, string name, byte[] data, EcUopCompression compression)
         {
-            ulong hash = EcUopHash.HashFileName(name);
             if (_byHash.TryGetValue(hash, out EcUopEntry existing))
             {
                 existing.Name ??= name;
