@@ -6,7 +6,7 @@ UOFiddler based on Ultima SDK it's a tool to view and alter almost every UO 2D c
 This is an extended version of UoFiddler that has more maps and more tools, as well as Map Edit, and will be expanded over time to support the Ultima standard 
 version more than the original version. Also, some source codes from older and New projects that are no longer supported have been integrated.
 
-Version 4.12.18
+Version 4.12.19
 
 ### UoFiddler.Plugin.Enhanced (Enhanced Client Editor) – Version 0.15.0
 

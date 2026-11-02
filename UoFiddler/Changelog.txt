@@ -1,4 +1,4 @@
-Version 4.12.18 #XG1
+Version 4.12.19 #XG1
 
 ### UoFiddler.Plugin.Enhanced (Enhanced Client Editor) – Version 0.15.0
 
