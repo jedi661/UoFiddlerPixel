@@ -64,6 +64,26 @@ namespace UoFiddler.Plugin.Enhanced.Forms
             toolStripButtonSave = new System.Windows.Forms.ToolStripButton();
             toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
             toolStripLabelHint = new System.Windows.Forms.ToolStripLabel();
+            toolStripTools = new System.Windows.Forms.ToolStrip();
+            toolStripLabelTool = new System.Windows.Forms.ToolStripLabel();
+            toolStripComboBoxTool = new System.Windows.Forms.ToolStripComboBox();
+            toolStripSeparatorT1 = new System.Windows.Forms.ToolStripSeparator();
+            toolStripLabelItem = new System.Windows.Forms.ToolStripLabel();
+            toolStripTextBoxItem = new System.Windows.Forms.ToolStripTextBox();
+            toolStripButtonPickItem = new System.Windows.Forms.ToolStripButton();
+            toolStripSeparatorT2 = new System.Windows.Forms.ToolStripSeparator();
+            toolStripLabelLand = new System.Windows.Forms.ToolStripLabel();
+            toolStripTextBoxLand = new System.Windows.Forms.ToolStripTextBox();
+            toolStripLabelBrush = new System.Windows.Forms.ToolStripLabel();
+            toolStripComboBoxBrush = new System.Windows.Forms.ToolStripComboBox();
+            toolStripSeparatorT3 = new System.Windows.Forms.ToolStripSeparator();
+            toolStripLabelZ = new System.Windows.Forms.ToolStripLabel();
+            toolStripTextBoxZ = new System.Windows.Forms.ToolStripTextBox();
+            toolStripSeparatorT4 = new System.Windows.Forms.ToolStripSeparator();
+            toolStripLabelMulti = new System.Windows.Forms.ToolStripLabel();
+            toolStripTextBoxMulti = new System.Windows.Forms.ToolStripTextBox();
+            toolStripSeparatorT5 = new System.Windows.Forms.ToolStripSeparator();
+            toolStripLabelToolHint = new System.Windows.Forms.ToolStripLabel();
             splitContainer = new System.Windows.Forms.SplitContainer();
             previewPanel = new UoFiddler.Plugin.Enhanced.UserControls.EcPreviewPanel();
             contextMenuStripPreview = new System.Windows.Forms.ContextMenuStrip(components);
@@ -88,6 +108,7 @@ namespace UoFiddler.Plugin.Enhanced.Forms
             statusStrip = new System.Windows.Forms.StatusStrip();
             toolStripStatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
             toolStrip.SuspendLayout();
+            toolStripTools.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)splitContainer).BeginInit();
             splitContainer.Panel1.SuspendLayout();
             splitContainer.Panel2.SuspendLayout();
@@ -265,6 +286,118 @@ namespace UoFiddler.Plugin.Enhanced.Forms
             toolStripLabelHint.Name = "toolStripLabelHint";
             toolStripLabelHint.Text = "Ctrl + wheel = zoom, click = select";
             //
+            // toolStripTools
+            //
+            toolStripTools.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { toolStripLabelTool, toolStripComboBoxTool, toolStripSeparatorT1, toolStripLabelItem, toolStripTextBoxItem, toolStripButtonPickItem, toolStripSeparatorT2, toolStripLabelLand, toolStripTextBoxLand, toolStripLabelBrush, toolStripComboBoxBrush, toolStripSeparatorT3, toolStripLabelZ, toolStripTextBoxZ, toolStripSeparatorT4, toolStripLabelMulti, toolStripTextBoxMulti, toolStripSeparatorT5, toolStripLabelToolHint });
+            toolStripTools.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
+            toolStripTools.Location = new System.Drawing.Point(0, 0);
+            toolStripTools.Name = "toolStripTools";
+            toolStripTools.TabIndex = 0;
+            //
+            // toolStripLabelTool
+            //
+            toolStripLabelTool.Name = "toolStripLabelTool";
+            toolStripLabelTool.Text = "Tool:";
+            //
+            // toolStripComboBoxTool
+            //
+            toolStripComboBoxTool.Items.AddRange(new object[] { "Select / move", "Place item", "Paint land", "Place multi" });
+            toolStripComboBoxTool.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            toolStripComboBoxTool.Name = "toolStripComboBoxTool";
+            toolStripComboBoxTool.Size = new System.Drawing.Size(110, 25);
+            toolStripComboBoxTool.SelectedIndexChanged += OnToolChanged;
+            //
+            // toolStripSeparatorT1
+            //
+            toolStripSeparatorT1.Name = "toolStripSeparatorT1";
+            //
+            // toolStripLabelItem
+            //
+            toolStripLabelItem.Name = "toolStripLabelItem";
+            toolStripLabelItem.Text = "Item:";
+            //
+            // toolStripTextBoxItem
+            //
+            toolStripTextBoxItem.Name = "toolStripTextBoxItem";
+            toolStripTextBoxItem.Size = new System.Drawing.Size(60, 25);
+            toolStripTextBoxItem.ToolTipText = "Item id for \"Place item\" (decimal or 0x hex)";
+            //
+            // toolStripButtonPickItem
+            //
+            toolStripButtonPickItem.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            toolStripButtonPickItem.Name = "toolStripButtonPickItem";
+            toolStripButtonPickItem.Text = "Find...";
+            toolStripButtonPickItem.ToolTipText = "Search an item by id or name and place it";
+            toolStripButtonPickItem.Click += OnClickPickItem;
+            //
+            // toolStripSeparatorT2
+            //
+            toolStripSeparatorT2.Name = "toolStripSeparatorT2";
+            //
+            // toolStripLabelLand
+            //
+            toolStripLabelLand.Name = "toolStripLabelLand";
+            toolStripLabelLand.Text = "Land:";
+            //
+            // toolStripTextBoxLand
+            //
+            toolStripTextBoxLand.Name = "toolStripTextBoxLand";
+            toolStripTextBoxLand.Size = new System.Drawing.Size(60, 25);
+            toolStripTextBoxLand.ToolTipText = "Land tile id for \"Paint land\" (decimal or 0x hex)";
+            //
+            // toolStripLabelBrush
+            //
+            toolStripLabelBrush.Name = "toolStripLabelBrush";
+            toolStripLabelBrush.Text = "Brush:";
+            //
+            // toolStripComboBoxBrush
+            //
+            toolStripComboBoxBrush.Items.AddRange(new object[] { "1", "3", "5", "9" });
+            toolStripComboBoxBrush.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            toolStripComboBoxBrush.Name = "toolStripComboBoxBrush";
+            toolStripComboBoxBrush.Size = new System.Drawing.Size(45, 25);
+            toolStripComboBoxBrush.ToolTipText = "Brush size in tiles";
+            //
+            // toolStripSeparatorT3
+            //
+            toolStripSeparatorT3.Name = "toolStripSeparatorT3";
+            //
+            // toolStripLabelZ
+            //
+            toolStripLabelZ.Name = "toolStripLabelZ";
+            toolStripLabelZ.Text = "z:";
+            //
+            // toolStripTextBoxZ
+            //
+            toolStripTextBoxZ.Name = "toolStripTextBoxZ";
+            toolStripTextBoxZ.Size = new System.Drawing.Size(40, 25);
+            toolStripTextBoxZ.ToolTipText = "z for placing / painting; empty = z of the land (painting: keep the z)";
+            //
+            // toolStripSeparatorT4
+            //
+            toolStripSeparatorT4.Name = "toolStripSeparatorT4";
+            //
+            // toolStripLabelMulti
+            //
+            toolStripLabelMulti.Name = "toolStripLabelMulti";
+            toolStripLabelMulti.Text = "Multi:";
+            //
+            // toolStripTextBoxMulti
+            //
+            toolStripTextBoxMulti.Name = "toolStripTextBoxMulti";
+            toolStripTextBoxMulti.Size = new System.Drawing.Size(60, 25);
+            toolStripTextBoxMulti.ToolTipText = "Multi id for \"Place multi\" (MultiCollection.uop)";
+            //
+            // toolStripSeparatorT5
+            //
+            toolStripSeparatorT5.Name = "toolStripSeparatorT5";
+            //
+            // toolStripLabelToolHint
+            //
+            toolStripLabelToolHint.ForeColor = System.Drawing.SystemColors.GrayText;
+            toolStripLabelToolHint.Name = "toolStripLabelToolHint";
+            toolStripLabelToolHint.Text = "Drag = move, arrows = move, PgUp / PgDn = z, Del = remove";
+            //
             // splitContainer
             //
             splitContainer.Panel1.Controls.Add(previewPanel);
@@ -286,6 +419,8 @@ namespace UoFiddler.Plugin.Enhanced.Forms
             previewPanel.TabIndex = 0;
             previewPanel.MouseMove += OnPreviewMouseMove;
             previewPanel.MouseClick += OnPreviewMouseClick;
+            previewPanel.MouseDown += OnPreviewMouseDown;
+            previewPanel.MouseUp += OnPreviewMouseUp;
             //
             // contextMenuStripPreview
             //
@@ -442,14 +577,19 @@ namespace UoFiddler.Plugin.Enhanced.Forms
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             Controls.Add(splitContainer);
+            Controls.Add(toolStripTools);
             Controls.Add(toolStrip);
             Controls.Add(statusStrip);
             Name = "EcRegionViewerForm";
             ClientSize = new System.Drawing.Size(1000, 650);
             StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             Text = "Region Viewer (Enhanced Client)";
+            KeyPreview = true;
+            KeyDown += OnFormKeyDown;
             toolStrip.ResumeLayout(false);
             toolStrip.PerformLayout();
+            toolStripTools.ResumeLayout(false);
+            toolStripTools.PerformLayout();
             splitContainer.Panel1.ResumeLayout(false);
             splitContainer.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)splitContainer).EndInit();
@@ -493,6 +633,26 @@ namespace UoFiddler.Plugin.Enhanced.Forms
         private System.Windows.Forms.ToolStripButton toolStripButtonSave;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
         private System.Windows.Forms.ToolStripLabel toolStripLabelHint;
+        private System.Windows.Forms.ToolStrip toolStripTools;
+        private System.Windows.Forms.ToolStripLabel toolStripLabelTool;
+        private System.Windows.Forms.ToolStripComboBox toolStripComboBoxTool;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparatorT1;
+        private System.Windows.Forms.ToolStripLabel toolStripLabelItem;
+        private System.Windows.Forms.ToolStripTextBox toolStripTextBoxItem;
+        private System.Windows.Forms.ToolStripButton toolStripButtonPickItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparatorT2;
+        private System.Windows.Forms.ToolStripLabel toolStripLabelLand;
+        private System.Windows.Forms.ToolStripTextBox toolStripTextBoxLand;
+        private System.Windows.Forms.ToolStripLabel toolStripLabelBrush;
+        private System.Windows.Forms.ToolStripComboBox toolStripComboBoxBrush;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparatorT3;
+        private System.Windows.Forms.ToolStripLabel toolStripLabelZ;
+        private System.Windows.Forms.ToolStripTextBox toolStripTextBoxZ;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparatorT4;
+        private System.Windows.Forms.ToolStripLabel toolStripLabelMulti;
+        private System.Windows.Forms.ToolStripTextBox toolStripTextBoxMulti;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparatorT5;
+        private System.Windows.Forms.ToolStripLabel toolStripLabelToolHint;
         private System.Windows.Forms.SplitContainer splitContainer;
         private UoFiddler.Plugin.Enhanced.UserControls.EcPreviewPanel previewPanel;
         private System.Windows.Forms.ContextMenuStrip contextMenuStripPreview;

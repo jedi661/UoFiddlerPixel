@@ -20,6 +20,7 @@ using System.Windows.Forms;
 using UoFiddler.Plugin.Enhanced.Classes;
 using UoFiddler.Plugin.Enhanced.EcUltima;
 using UoFiddler.Plugin.Enhanced.EcUltima.Maps;
+using UoFiddler.Plugin.Enhanced.EcUltima.Multis;
 
 namespace UoFiddler.Plugin.Enhanced.Forms
 {
@@ -66,6 +67,8 @@ namespace UoFiddler.Plugin.Enhanced.Forms
             _updating = true;
             toolStripComboBoxArt.SelectedIndex = 0;
             toolStripTextBoxMaxZ.Text = "127";
+            toolStripComboBoxTool.SelectedIndex = 0;
+            toolStripComboBoxBrush.SelectedIndex = 0;
             _updating = false;
             previewPanel.Overlay = DrawOverlay;
             Text = $"Region Viewer (Enhanced Client) – {facet.FileName}  {_area.X},{_area.Y} – {_area.Right - 1},{_area.Bottom - 1}  ({_area.Width} x {_area.Height})";
@@ -284,6 +287,171 @@ namespace UoFiddler.Plugin.Enhanced.Forms
             }
         }
 
+        // ------------------------------------------------------------------ tools (place, paint, move)
+
+        private enum Tool
+        {
+            Select,
+            PlaceItem,
+            PaintLand,
+            PlaceMulti
+        }
+
+        private Tool CurrentTool => (Tool)Math.Max(0, toolStripComboBoxTool.SelectedIndex);
+
+        private EcPlacedStatic _drag;
+        private Point _dragTile;
+        private bool _painting;
+        private Rectangle _painted;
+
+        private static bool TryNumber(string text, out long value) => EcDialogs.TryParseNumber(text.Trim(), out value);
+
+        /// <summary>z from the tool bar, or the z of the land when the field is empty.</summary>
+        private sbyte ToolZ(EcMapTile tile)
+        {
+            return TryNumber(toolStripTextBoxZ.Text, out long z) ? (sbyte)Math.Max(sbyte.MinValue, Math.Min(sbyte.MaxValue, z)) : tile.Z;
+        }
+
+        private void PlaceItem(Point tilePos)
+        {
+            EcMapTile tile = _facet.GetTile(tilePos.X, tilePos.Y);
+            if (tile == null)
+            {
+                return;
+            }
+            if (!TryNumber(toolStripTextBoxItem.Text, out long id) || id < 0)
+            {
+                PickItem();
+                return;
+            }
+            var st = new EcStatic { ItemId = (uint)id, Z = ToolZ(tile) };
+            if (_facet.AddStatic(tilePos.X, tilePos.Y, st))
+            {
+                _tile = tilePos;
+                _selected = new EcPlacedStatic { X = tilePos.X, Y = tilePos.Y, Static = st };
+                Changed();
+                toolStripStatusLabel.Text = $"0x{id:X4} placed at {tilePos.X}, {tilePos.Y}, {st.Z}. Click again to place more, right click / \"Select\" to stop.";
+            }
+        }
+
+        private void PlaceMulti(Point tilePos)
+        {
+            EcMapTile tile = _facet.GetTile(tilePos.X, tilePos.Y);
+            if (tile == null)
+            {
+                return;
+            }
+            if (!TryNumber(toolStripTextBoxMulti.Text, out long id) || id < 0)
+            {
+                EcDialogs.ShowError(this, "Enter the multi id in the tool bar (field \"Multi\").");
+                return;
+            }
+            byte[] data = _client.GetPackage("MultiCollection.uop")?.ReadData(string.Format(CultureInfo.InvariantCulture, EcMulti.NamePattern, id));
+            if (data == null)
+            {
+                EcDialogs.ShowError(this, $"Multi {id} is not in MultiCollection.uop.");
+                return;
+            }
+            EcMulti multi = EcMulti.Read(data);
+            sbyte baseZ = ToolZ(tile);
+            int placed = 0, outside = 0;
+            foreach (EcMultiPart part in multi.Parts.Where(p => p.Flags == 0))
+            {
+                var st = new EcStatic { ItemId = part.ItemId, Z = (sbyte)Math.Max(sbyte.MinValue, Math.Min(sbyte.MaxValue, baseZ + part.Z)) };
+                if (_facet.AddStatic(tilePos.X + part.X, tilePos.Y + part.Y, st))
+                {
+                    placed++;
+                }
+                else
+                {
+                    outside++;
+                }
+            }
+            var b = multi.Bounds();
+            _area = _facet.Clip(Rectangle.Union(_area, new Rectangle(tilePos.X + b.MinX, tilePos.Y + b.MinY, b.MaxX - b.MinX + 1, b.MaxY - b.MinY + 1)));
+            Changed();
+            toolStripStatusLabel.Text = $"Multi {id}: {placed} parts placed at {tilePos.X}, {tilePos.Y}, {baseZ}" + (outside > 0 ? $", {outside} outside the map" : string.Empty) + ".";
+        }
+
+        private void PaintAt(Point tilePos)
+        {
+            if (!TryNumber(toolStripTextBoxLand.Text, out long land) || land < 0 || land > ushort.MaxValue)
+            {
+                _painting = false;
+                EcDialogs.ShowError(this, "Enter the land tile id in the tool bar (field \"Land\").");
+                return;
+            }
+            sbyte? z = TryNumber(toolStripTextBoxZ.Text, out long zv) ? (sbyte)Math.Max(sbyte.MinValue, Math.Min(sbyte.MaxValue, zv)) : (sbyte?)null;
+            int size = new[] { 1, 3, 5, 9 }[Math.Max(0, toolStripComboBoxBrush.SelectedIndex)];
+            var brush = new Rectangle(tilePos.X - (size / 2), tilePos.Y - (size / 2), size, size);
+            for (int x = brush.Left; x < brush.Right; x++)
+            {
+                for (int y = brush.Top; y < brush.Bottom; y++)
+                {
+                    _facet.SetLand(x, y, (ushort)land, z);
+                }
+            }
+            _painted = _painted.IsEmpty ? brush : Rectangle.Union(_painted, brush);
+            toolStripStatusLabel.Text = $"Painting land 0x{land:X4} ... ({_painted.Width} x {_painted.Height} tiles)";
+        }
+
+        private void EndPaint()
+        {
+            if (!_painting)
+            {
+                return;
+            }
+            _painting = false;
+            if (!_painted.IsEmpty)
+            {
+                int borders = _facet.RefreshBorders(_painted);
+                Rectangle area = _painted;
+                _painted = Rectangle.Empty;
+                Changed();
+                toolStripStatusLabel.Text = $"Land painted in {area.Width} x {area.Height} tiles ({borders} border tiles updated for the terrain blending).";
+            }
+        }
+
+        private void MoveSelected(int dx, int dy, int dz)
+        {
+            EcStatic st = SelectedStatic;
+            if (st == null || _tile.X < 0)
+            {
+                return;
+            }
+            if (dz != 0)
+            {
+                st.Z = (sbyte)Math.Max(sbyte.MinValue, Math.Min(sbyte.MaxValue, st.Z + dz));
+                _facet.MarkModified(_tile.X, _tile.Y);
+            }
+            if (dx != 0 || dy != 0)
+            {
+                var target = new Point(_tile.X + dx, _tile.Y + dy);
+                if (!_facet.MoveStatic(_tile.X, _tile.Y, st, target.X, target.Y))
+                {
+                    return;
+                }
+                _tile = target;
+            }
+            _selected = new EcPlacedStatic { X = _tile.X, Y = _tile.Y, Static = st };
+            Changed();
+            toolStripStatusLabel.Text = $"0x{st.ItemId:X4} at {_tile.X}, {_tile.Y}, {st.Z}";
+        }
+
+        private void PickItem()
+        {
+            TryNumber(toolStripTextBoxItem.Text, out long current);
+            using (var picker = new EcItemPickerForm(_client, _sprites, (uint)Math.Max(0, current)))
+            {
+                if (picker.ShowDialog(this) == DialogResult.OK)
+                {
+                    toolStripTextBoxItem.Text = $"0x{picker.SelectedId:X4}";
+                    toolStripComboBoxTool.SelectedIndex = (int)Tool.PlaceItem;
+                    toolStripStatusLabel.Text = $"Click on the map to place 0x{picker.SelectedId:X4}.";
+                }
+            }
+        }
+
         // ------------------------------------------------------------------ import / export
 
         private void ExportStatics(EcStaticsFormat format)
@@ -380,6 +548,11 @@ namespace UoFiddler.Plugin.Enhanced.Forms
             {
                 return;
             }
+            if (_painting && e.Button == MouseButtons.Left)
+            {
+                PaintAt(EcMapRenderer.TileAt(_render, p.Value, _facet));
+                return;
+            }
             EcPlacedStatic hit = EcMapRenderer.HitTest(_render, p.Value);
             Point tile = hit != null ? new Point(hit.X, hit.Y) : EcMapRenderer.TileAt(_render, p.Value, _facet);
             toolStripStatusLabel.Text = hit != null
@@ -394,11 +567,145 @@ namespace UoFiddler.Plugin.Enhanced.Forms
             {
                 return;
             }
+            if (e.Button == MouseButtons.Right && CurrentTool != Tool.Select)
+            {
+                toolStripComboBoxTool.SelectedIndex = (int)Tool.Select;
+                return;
+            }
+            if (e.Button == MouseButtons.Left && CurrentTool == Tool.PlaceItem)
+            {
+                PlaceItem(EcMapRenderer.TileAt(_render, p.Value, _facet));
+                return;
+            }
+            if (e.Button == MouseButtons.Left && CurrentTool == Tool.PlaceMulti)
+            {
+                PlaceMulti(EcMapRenderer.TileAt(_render, p.Value, _facet));
+                return;
+            }
+            if (CurrentTool == Tool.PaintLand)
+            {
+                return;
+            }
             EcPlacedStatic hit = EcMapRenderer.HitTest(_render, p.Value);
             _selected = hit;
             _tile = hit != null ? new Point(hit.X, hit.Y) : EcMapRenderer.TileAt(_render, p.Value, _facet);
             ShowTile();
         }
+
+        private void OnPreviewMouseDown(object sender, MouseEventArgs e)
+        {
+            previewPanel.Focus();
+            Point? p = previewPanel.ClientToImage(e.Location);
+            if (p == null || _render == null || e.Button != MouseButtons.Left)
+            {
+                return;
+            }
+            if (CurrentTool == Tool.PaintLand)
+            {
+                _painting = true;
+                _painted = Rectangle.Empty;
+                PaintAt(EcMapRenderer.TileAt(_render, p.Value, _facet));
+                return;
+            }
+            if (CurrentTool == Tool.Select)
+            {
+                EcPlacedStatic hit = EcMapRenderer.HitTest(_render, p.Value);
+                _drag = hit != null && _selected != null && ReferenceEquals(hit.Static, _selected.Static) ? hit : null;
+                _dragTile = hit != null ? new Point(hit.X, hit.Y) : Point.Empty;
+            }
+        }
+
+        private void OnPreviewMouseUp(object sender, MouseEventArgs e)
+        {
+            if (_painting)
+            {
+                EndPaint();
+                return;
+            }
+            Point? p = previewPanel.ClientToImage(e.Location);
+            EcPlacedStatic drag = _drag;
+            _drag = null;
+            if (drag == null || p == null || _render == null)
+            {
+                return;
+            }
+            Point target = EcMapRenderer.TileAt(_render, p.Value, _facet);
+            if (target != _dragTile && target.X >= 0 && _facet.MoveStatic(_dragTile.X, _dragTile.Y, drag.Static, target.X, target.Y))
+            {
+                _tile = target;
+                _selected = new EcPlacedStatic { X = target.X, Y = target.Y, Static = drag.Static };
+                Changed();
+                toolStripStatusLabel.Text = $"0x{drag.Static.ItemId:X4} moved to {target.X}, {target.Y}.";
+            }
+        }
+
+        /// <summary>Keys for the selected static (arrow keys never reach KeyDown, so they are handled here).</summary>
+        private bool HandleStaticKey(Keys keyData)
+        {
+            if (toolStrip.ContainsFocus || toolStripTools.ContainsFocus || listViewTileStatics.Focused || SelectedStatic == null)
+            {
+                return false;
+            }
+            Keys key = keyData & Keys.KeyCode;
+            int step = (keyData & Keys.Shift) != 0 ? 5 : 1;
+            switch (key)
+            {
+                case Keys.Delete:
+                    RemoveStatic();
+                    return true;
+                case Keys.Left:
+                    MoveSelected(-1, 0, 0);
+                    return true;
+                case Keys.Right:
+                    MoveSelected(1, 0, 0);
+                    return true;
+                case Keys.Up:
+                    MoveSelected(0, -1, 0);
+                    return true;
+                case Keys.Down:
+                    MoveSelected(0, 1, 0);
+                    return true;
+                case Keys.PageUp:
+                    MoveSelected(0, 0, step);
+                    return true;
+                case Keys.PageDown:
+                    MoveSelected(0, 0, -step);
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
+        {
+            return HandleStaticKey(keyData) || base.ProcessCmdKey(ref msg, keyData);
+        }
+
+        private void OnFormKeyDown(object sender, KeyEventArgs e)
+        {
+            // most keys are handled in ProcessCmdKey; this catches the rest (e.g. when the preview has the focus)
+            if (!e.Handled && HandleStaticKey(e.KeyData))
+            {
+                e.Handled = true;
+                e.SuppressKeyPress = true;
+            }
+        }
+
+        private void OnToolChanged(object sender, EventArgs e)
+        {
+            _painting = false;
+            _drag = null;
+            previewPanel.Cursor = CurrentTool == Tool.Select ? Cursors.Default : Cursors.Cross;
+            toolStripLabelToolHint.Text = CurrentTool switch
+            {
+                Tool.PlaceItem => "Click = place the item (z field or land z), right click = stop",
+                Tool.PaintLand => "Hold the mouse button and paint; z field empty = keep the z",
+                Tool.PlaceMulti => "Click = place the multi (its center on the tile), right click = stop",
+                _ => "Drag = move, arrows = move, PgUp / PgDn = z (Shift: 5), Del = remove"
+            };
+        }
+
+        private void OnClickPickItem(object sender, EventArgs e) => PickItem();
 
         private void OnTileStaticSelected(object sender, EventArgs e)
         {

@@ -84,6 +84,9 @@ namespace UoFiddler.Plugin.Enhanced.EcUltima.Uop
         private readonly List<EcUopEntry> _entries = new List<EcUopEntry>();
         private readonly Dictionary<ulong, EcUopEntry> _byHash = new Dictionary<ulong, EcUopEntry>();
         private readonly HashSet<ulong> _removed = new HashSet<ulong>();
+
+        /// <summary>Hashes of entries removed since the file was read (or last saved).</summary>
+        public IReadOnlyCollection<ulong> RemovedHashes => _removed;
         private FileStream _stream;
         private byte[] _headerTail = new byte[HeaderLength - 28];
 

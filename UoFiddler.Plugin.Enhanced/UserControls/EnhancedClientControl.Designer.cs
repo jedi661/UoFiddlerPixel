@@ -60,6 +60,8 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             ecTileArtControl = new EcTileArtControl();
             tabPageGumps = new System.Windows.Forms.TabPage();
             ecGumpsControl = new EcGumpsControl();
+            tabPageArtConverter = new System.Windows.Forms.TabPage();
+            ecArtConverterControl = new EcArtConverterControl();
             tabPageHues = new System.Windows.Forms.TabPage();
             ecHuesControl = new EcHuesControl();
             tabPageAnimations = new System.Windows.Forms.TabPage();
@@ -82,11 +84,18 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             ecFileTreeControl = new EcFileTreeControl();
             tabPageBrowser = new System.Windows.Forms.TabPage();
             ecUopBrowserControl = new EcUopBrowserControl();
+            tabPageSearch = new System.Windows.Forms.TabPage();
+            ecSearchControl = new EcSearchControl();
+            tabPageCheck = new System.Windows.Forms.TabPage();
+            ecClientCheckControl = new EcClientCheckControl();
+            tabPagePatches = new System.Windows.Forms.TabPage();
+            ecPatchControl = new EcPatchControl();
             toolStrip.SuspendLayout();
             tabControl.SuspendLayout();
             tabPageArt.SuspendLayout();
             tabPageTileData.SuspendLayout();
             tabPageGumps.SuspendLayout();
+            tabPageArtConverter.SuspendLayout();
             tabPageHues.SuspendLayout();
             tabPageAnimations.SuspendLayout();
             tabPageAnimData.SuspendLayout();
@@ -98,6 +107,9 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             tabPageStrings.SuspendLayout();
             tabPageInterface.SuspendLayout();
             tabPageBrowser.SuspendLayout();
+            tabPageSearch.SuspendLayout();
+            tabPageCheck.SuspendLayout();
+            tabPagePatches.SuspendLayout();
             SuspendLayout();
             //
             // toolStrip
@@ -194,6 +206,7 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             tabControl.Controls.Add(tabPageArt);
             tabControl.Controls.Add(tabPageTileData);
             tabControl.Controls.Add(tabPageGumps);
+            tabControl.Controls.Add(tabPageArtConverter);
             tabControl.Controls.Add(tabPageHues);
             tabControl.Controls.Add(tabPageAnimations);
             tabControl.Controls.Add(tabPageAnimData);
@@ -205,6 +218,9 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             tabControl.Controls.Add(tabPageStrings);
             tabControl.Controls.Add(tabPageInterface);
             tabControl.Controls.Add(tabPageBrowser);
+            tabControl.Controls.Add(tabPageSearch);
+            tabControl.Controls.Add(tabPageCheck);
+            tabControl.Controls.Add(tabPagePatches);
             tabControl.Dock = System.Windows.Forms.DockStyle.Fill;
             tabControl.Name = "tabControl";
             tabControl.SelectedIndex = 0;
@@ -262,6 +278,23 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             ecGumpsControl.Name = "ecGumpsControl";
             ecGumpsControl.TabIndex = 0;
             //
+            // tabPageArtConverter
+            //
+            tabPageArtConverter.Controls.Add(ecArtConverterControl);
+            tabPageArtConverter.Location = new System.Drawing.Point(4, 24);
+            tabPageArtConverter.Name = "tabPageArtConverter";
+            tabPageArtConverter.Padding = new System.Windows.Forms.Padding(3);
+            tabPageArtConverter.Size = new System.Drawing.Size(500, 300);
+            tabPageArtConverter.TabIndex = 3;
+            tabPageArtConverter.Text = "Art Converter";
+            tabPageArtConverter.UseVisualStyleBackColor = true;
+            //
+            // ecArtConverterControl
+            //
+            ecArtConverterControl.Dock = System.Windows.Forms.DockStyle.Fill;
+            ecArtConverterControl.Name = "ecArtConverterControl";
+            ecArtConverterControl.TabIndex = 0;
+            //
             // tabPageHues
             //
             tabPageHues.Controls.Add(ecHuesControl);
@@ -269,7 +302,7 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             tabPageHues.Name = "tabPageHues";
             tabPageHues.Padding = new System.Windows.Forms.Padding(3);
             tabPageHues.Size = new System.Drawing.Size(500, 300);
-            tabPageHues.TabIndex = 3;
+            tabPageHues.TabIndex = 4;
             tabPageHues.Text = "Hues";
             tabPageHues.UseVisualStyleBackColor = true;
             //
@@ -286,7 +319,7 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             tabPageAnimations.Name = "tabPageAnimations";
             tabPageAnimations.Padding = new System.Windows.Forms.Padding(3);
             tabPageAnimations.Size = new System.Drawing.Size(500, 300);
-            tabPageAnimations.TabIndex = 4;
+            tabPageAnimations.TabIndex = 5;
             tabPageAnimations.Text = "Animations";
             tabPageAnimations.UseVisualStyleBackColor = true;
             //
@@ -303,7 +336,7 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             tabPageAnimData.Name = "tabPageAnimData";
             tabPageAnimData.Padding = new System.Windows.Forms.Padding(3);
             tabPageAnimData.Size = new System.Drawing.Size(500, 300);
-            tabPageAnimData.TabIndex = 5;
+            tabPageAnimData.TabIndex = 6;
             tabPageAnimData.Text = "AnimData";
             tabPageAnimData.UseVisualStyleBackColor = true;
             //
@@ -320,7 +353,7 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             tabPageMultis.Name = "tabPageMultis";
             tabPageMultis.Padding = new System.Windows.Forms.Padding(3);
             tabPageMultis.Size = new System.Drawing.Size(500, 300);
-            tabPageMultis.TabIndex = 6;
+            tabPageMultis.TabIndex = 7;
             tabPageMultis.Text = "Multis";
             tabPageMultis.UseVisualStyleBackColor = true;
             //
@@ -337,7 +370,7 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             tabPageMap.Name = "tabPageMap";
             tabPageMap.Padding = new System.Windows.Forms.Padding(3);
             tabPageMap.Size = new System.Drawing.Size(500, 300);
-            tabPageMap.TabIndex = 7;
+            tabPageMap.TabIndex = 8;
             tabPageMap.Text = "Map";
             tabPageMap.UseVisualStyleBackColor = true;
             //
@@ -354,7 +387,7 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             tabPageMapConverter.Name = "tabPageMapConverter";
             tabPageMapConverter.Padding = new System.Windows.Forms.Padding(3);
             tabPageMapConverter.Size = new System.Drawing.Size(500, 300);
-            tabPageMapConverter.TabIndex = 8;
+            tabPageMapConverter.TabIndex = 9;
             tabPageMapConverter.Text = "Map Converter";
             tabPageMapConverter.UseVisualStyleBackColor = true;
             //
@@ -371,7 +404,7 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             tabPageSounds.Name = "tabPageSounds";
             tabPageSounds.Padding = new System.Windows.Forms.Padding(3);
             tabPageSounds.Size = new System.Drawing.Size(500, 300);
-            tabPageSounds.TabIndex = 9;
+            tabPageSounds.TabIndex = 10;
             tabPageSounds.Text = "Sounds";
             tabPageSounds.UseVisualStyleBackColor = true;
             //
@@ -388,7 +421,7 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             tabPageCliloc.Name = "tabPageCliloc";
             tabPageCliloc.Padding = new System.Windows.Forms.Padding(3);
             tabPageCliloc.Size = new System.Drawing.Size(500, 300);
-            tabPageCliloc.TabIndex = 10;
+            tabPageCliloc.TabIndex = 11;
             tabPageCliloc.Text = "Cliloc";
             tabPageCliloc.UseVisualStyleBackColor = true;
             //
@@ -405,7 +438,7 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             tabPageStrings.Name = "tabPageStrings";
             tabPageStrings.Padding = new System.Windows.Forms.Padding(3);
             tabPageStrings.Size = new System.Drawing.Size(500, 300);
-            tabPageStrings.TabIndex = 11;
+            tabPageStrings.TabIndex = 12;
             tabPageStrings.Text = "String Dictionary";
             tabPageStrings.UseVisualStyleBackColor = true;
             //
@@ -422,7 +455,7 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             tabPageInterface.Name = "tabPageInterface";
             tabPageInterface.Padding = new System.Windows.Forms.Padding(3);
             tabPageInterface.Size = new System.Drawing.Size(500, 300);
-            tabPageInterface.TabIndex = 12;
+            tabPageInterface.TabIndex = 13;
             tabPageInterface.Text = "Interface / Data";
             tabPageInterface.UseVisualStyleBackColor = true;
             //
@@ -439,7 +472,7 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             tabPageBrowser.Name = "tabPageBrowser";
             tabPageBrowser.Padding = new System.Windows.Forms.Padding(3);
             tabPageBrowser.Size = new System.Drawing.Size(500, 300);
-            tabPageBrowser.TabIndex = 13;
+            tabPageBrowser.TabIndex = 14;
             tabPageBrowser.Text = "UOP Browser";
             tabPageBrowser.UseVisualStyleBackColor = true;
             //
@@ -448,6 +481,57 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             ecUopBrowserControl.Dock = System.Windows.Forms.DockStyle.Fill;
             ecUopBrowserControl.Name = "ecUopBrowserControl";
             ecUopBrowserControl.TabIndex = 0;
+            //
+            // tabPageSearch
+            //
+            tabPageSearch.Controls.Add(ecSearchControl);
+            tabPageSearch.Location = new System.Drawing.Point(4, 24);
+            tabPageSearch.Name = "tabPageSearch";
+            tabPageSearch.Padding = new System.Windows.Forms.Padding(3);
+            tabPageSearch.Size = new System.Drawing.Size(500, 300);
+            tabPageSearch.TabIndex = 15;
+            tabPageSearch.Text = "Search";
+            tabPageSearch.UseVisualStyleBackColor = true;
+            //
+            // ecSearchControl
+            //
+            ecSearchControl.Dock = System.Windows.Forms.DockStyle.Fill;
+            ecSearchControl.Name = "ecSearchControl";
+            ecSearchControl.TabIndex = 0;
+            //
+            // tabPageCheck
+            //
+            tabPageCheck.Controls.Add(ecClientCheckControl);
+            tabPageCheck.Location = new System.Drawing.Point(4, 24);
+            tabPageCheck.Name = "tabPageCheck";
+            tabPageCheck.Padding = new System.Windows.Forms.Padding(3);
+            tabPageCheck.Size = new System.Drawing.Size(500, 300);
+            tabPageCheck.TabIndex = 16;
+            tabPageCheck.Text = "Check";
+            tabPageCheck.UseVisualStyleBackColor = true;
+            //
+            // ecClientCheckControl
+            //
+            ecClientCheckControl.Dock = System.Windows.Forms.DockStyle.Fill;
+            ecClientCheckControl.Name = "ecClientCheckControl";
+            ecClientCheckControl.TabIndex = 0;
+            //
+            // tabPagePatches
+            //
+            tabPagePatches.Controls.Add(ecPatchControl);
+            tabPagePatches.Location = new System.Drawing.Point(4, 24);
+            tabPagePatches.Name = "tabPagePatches";
+            tabPagePatches.Padding = new System.Windows.Forms.Padding(3);
+            tabPagePatches.Size = new System.Drawing.Size(500, 300);
+            tabPagePatches.TabIndex = 17;
+            tabPagePatches.Text = "Patches";
+            tabPagePatches.UseVisualStyleBackColor = true;
+            //
+            // ecPatchControl
+            //
+            ecPatchControl.Dock = System.Windows.Forms.DockStyle.Fill;
+            ecPatchControl.Name = "ecPatchControl";
+            ecPatchControl.TabIndex = 0;
             //
             // EnhancedClientControl
             //
@@ -466,6 +550,8 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             tabPageTileData.PerformLayout();
             tabPageGumps.ResumeLayout(false);
             tabPageGumps.PerformLayout();
+            tabPageArtConverter.ResumeLayout(false);
+            tabPageArtConverter.PerformLayout();
             tabPageHues.ResumeLayout(false);
             tabPageHues.PerformLayout();
             tabPageAnimations.ResumeLayout(false);
@@ -488,6 +574,12 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             tabPageInterface.PerformLayout();
             tabPageBrowser.ResumeLayout(false);
             tabPageBrowser.PerformLayout();
+            tabPageSearch.ResumeLayout(false);
+            tabPageSearch.PerformLayout();
+            tabPageCheck.ResumeLayout(false);
+            tabPageCheck.PerformLayout();
+            tabPagePatches.ResumeLayout(false);
+            tabPagePatches.PerformLayout();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -515,6 +607,8 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
         private EcTileArtControl ecTileArtControl;
         private System.Windows.Forms.TabPage tabPageGumps;
         private EcGumpsControl ecGumpsControl;
+        private System.Windows.Forms.TabPage tabPageArtConverter;
+        private EcArtConverterControl ecArtConverterControl;
         private System.Windows.Forms.TabPage tabPageHues;
         private EcHuesControl ecHuesControl;
         private System.Windows.Forms.TabPage tabPageAnimations;
@@ -537,5 +631,11 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
         private EcFileTreeControl ecFileTreeControl;
         private System.Windows.Forms.TabPage tabPageBrowser;
         private EcUopBrowserControl ecUopBrowserControl;
+        private System.Windows.Forms.TabPage tabPageSearch;
+        private EcSearchControl ecSearchControl;
+        private System.Windows.Forms.TabPage tabPageCheck;
+        private EcClientCheckControl ecClientCheckControl;
+        private System.Windows.Forms.TabPage tabPagePatches;
+        private EcPatchControl ecPatchControl;
     }
 }

@@ -6,6 +6,38 @@ UOFiddler based on Ultima SDK it's a tool to view and alter almost every UO 2D c
 This is an extended version of UoFiddler that has more maps and more tools, as well as Map Edit, and will be expanded over time to support the Ultima standard 
 version more than the original version. Also, some source codes from older and New projects that are no longer supported have been integrated.
 
+Version 4.12.20
+
+### Tabs
+| Tab | What you can do |
+|---|---|
+| **Items / Art** | EC world art, legacy art, effect and terrain textures |
+| **TileData** | tileart.uop entries: names, flags, properties, textures |
+| **Gumps** | Interface gumps and legacy gumps |
+| **Art Converter** | Classic items and gumps → EC, own images on any id, report of what is missing in the EC |
+| **Hues** | Editor (32 classic colors, preview on item / gump / animation, gradient), compare hues.mul ↔ Hues.uop, converter in both directions |
+| **Animations** | Mobile animations; import from the classic client, sprite sheets |
+| **AnimData** | Item animations, compared with the classic animdata |
+| **Multis** | Multi editor with EC graphics |
+| **Map** | Facets, statics, region viewer with editing tools |
+| **Map Converter** | Classic maps ↔ EC facets, analysis, repair, new maps |
+| **Sounds, Cliloc, String Dictionary, Interface / Data, UOP Browser** | the other EC files |
+| **Search** | Find an item, gump, hue, multi or name everywhere; double click opens it |
+| **Check** | One check of the whole client with a report |
+| **Patches** | Create, save and apply patch packages (.ecpatch) |
+
+### Highlights of 0.17.0
+- **Search** across the classic client and the whole EC (optionally all maps).
+- **Map editor tools:** move statics (drag, arrow keys, PgUp/PgDn for z, Del), place items with an item search window, paint land (border layers rebuilt automatically), place multis.
+- **Hues:** preview a hue on an item, gump or animation; gradient from two colors.
+- **Check:** tileart, missing texture files, multis and item animations with unknown items, hues, maps.
+- **Animations:** convert classic animations to EC (optionally 1.5×), export/import sprite sheets.
+- **Patches:** collect changes, save as one file, apply to any client folder with backup.
+
+### Notes
+- Texture.uop and LegacyTexture.uop are signed (version 5); changed entries are written without signature.
+- Every write keeps a backup (`.bak` or `UoFiddlerBackups` with old + new copy).
+
 Version 4.12.19
 
 ## What's new in UoFiddlerPixel

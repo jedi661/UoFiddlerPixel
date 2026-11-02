@@ -163,6 +163,20 @@ namespace UoFiddler.Plugin.Enhanced.EcUltima.TileArt
             return record;
         }
 
+        /// <summary>Adds a new entry with the given id.</summary>
+        public TileArtRecord AddEntry(TileArtEntry entry, uint id)
+        {
+            if (_byId.ContainsKey(id))
+            {
+                throw new InvalidOperationException($"Id {id} already exists.");
+            }
+            entry.TileId = id;
+            var record = new TileArtRecord { Entry = entry, Id = id, NameKnown = true, IsModified = true };
+            Add(record);
+            _records.Sort((a, b) => a.Id.CompareTo(b.Id));
+            return record;
+        }
+
         public bool Remove(TileArtRecord record)
         {
             if (!_records.Remove(record))

@@ -48,12 +48,17 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             exportPngToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             exportFramePngToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             exportBinToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            toolStripSeparatorExport = new System.Windows.Forms.ToolStripSeparator();
+            exportSheetToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             toolStripDropDownImport = new System.Windows.Forms.ToolStripDropDownButton();
             importFramePngToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             importPngFolderToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             toolStripSeparatorImport = new System.Windows.Forms.ToolStripSeparator();
             importBinToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             addBinToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            importSheetToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            toolStripSeparatorImport2 = new System.Windows.Forms.ToolStripSeparator();
+            importClassicToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             toolStripButtonSave = new System.Windows.Forms.ToolStripButton();
             toolStripButtonSaveAs = new System.Windows.Forms.ToolStripButton();
@@ -175,7 +180,7 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             //
             // toolStripDropDownExport
             //
-            toolStripDropDownExport.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { exportPngToolStripMenuItem, exportFramePngToolStripMenuItem, exportBinToolStripMenuItem });
+            toolStripDropDownExport.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { exportPngToolStripMenuItem, exportFramePngToolStripMenuItem, exportBinToolStripMenuItem, toolStripSeparatorExport, exportSheetToolStripMenuItem });
             toolStripDropDownExport.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             toolStripDropDownExport.Name = "toolStripDropDownExport";
             toolStripDropDownExport.Text = "Export";
@@ -198,9 +203,19 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             exportBinToolStripMenuItem.Text = "Action as .bin (AMOU)...";
             exportBinToolStripMenuItem.Click += OnClickExportBin;
             //
+            // toolStripSeparatorExport
+            //
+            toolStripSeparatorExport.Name = "toolStripSeparatorExport";
+            //
+            // exportSheetToolStripMenuItem
+            //
+            exportSheetToolStripMenuItem.Name = "exportSheetToolStripMenuItem";
+            exportSheetToolStripMenuItem.Text = "Action as sprite sheet (PNG, 5 rows = directions)...";
+            exportSheetToolStripMenuItem.Click += OnClickExportSheet;
+            //
             // toolStripDropDownImport
             //
-            toolStripDropDownImport.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { importFramePngToolStripMenuItem, importPngFolderToolStripMenuItem, toolStripSeparatorImport, importBinToolStripMenuItem, addBinToolStripMenuItem });
+            toolStripDropDownImport.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { importFramePngToolStripMenuItem, importPngFolderToolStripMenuItem, importSheetToolStripMenuItem, toolStripSeparatorImport, importBinToolStripMenuItem, addBinToolStripMenuItem, toolStripSeparatorImport2, importClassicToolStripMenuItem });
             toolStripDropDownImport.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             toolStripDropDownImport.Name = "toolStripDropDownImport";
             toolStripDropDownImport.Text = "Import";
@@ -232,6 +247,22 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             addBinToolStripMenuItem.Name = "addBinToolStripMenuItem";
             addBinToolStripMenuItem.Text = "Add .bin as new body / action...";
             addBinToolStripMenuItem.Click += OnClickAddBin;
+            //
+            // importSheetToolStripMenuItem
+            //
+            importSheetToolStripMenuItem.Name = "importSheetToolStripMenuItem";
+            importSheetToolStripMenuItem.Text = "Replace action with sprite sheet (PNG)...";
+            importSheetToolStripMenuItem.Click += OnClickImportSheet;
+            //
+            // toolStripSeparatorImport2
+            //
+            toolStripSeparatorImport2.Name = "toolStripSeparatorImport2";
+            //
+            // importClassicToolStripMenuItem
+            //
+            importClassicToolStripMenuItem.Name = "importClassicToolStripMenuItem";
+            importClassicToolStripMenuItem.Text = "From the classic client (body / actions)...";
+            importClassicToolStripMenuItem.Click += OnClickImportClassic;
             //
             // toolStripSeparator2
             //
@@ -809,12 +840,17 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
         private System.Windows.Forms.ToolStripMenuItem exportPngToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem exportFramePngToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem exportBinToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparatorExport;
+        private System.Windows.Forms.ToolStripMenuItem exportSheetToolStripMenuItem;
         private System.Windows.Forms.ToolStripDropDownButton toolStripDropDownImport;
         private System.Windows.Forms.ToolStripMenuItem importFramePngToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem importPngFolderToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparatorImport;
         private System.Windows.Forms.ToolStripMenuItem importBinToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem addBinToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem importSheetToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparatorImport2;
+        private System.Windows.Forms.ToolStripMenuItem importClassicToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
         private System.Windows.Forms.ToolStripButton toolStripButtonSave;
         private System.Windows.Forms.ToolStripButton toolStripButtonSaveAs;

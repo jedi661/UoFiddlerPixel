@@ -74,12 +74,47 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             }
             toolStripTextBoxFolder.Text = folder ?? string.Empty;
             Disposed += OnControlDisposed;
+            ecSearchControl.NavigateRequested += NavigateTo;
+        }
+
+        /// <summary>Shows a search result in its tab.</summary>
+        public void NavigateTo(EcNavigation target)
+        {
+            if (target == null)
+            {
+                return;
+            }
+            (TabPage page, IEcNavigable editor) = target.Target switch
+            {
+                EcTarget.TileArt => (tabPageTileData, (IEcNavigable)ecTileArtControl),
+                EcTarget.Item => (tabPageArtConverter, ecArtConverterControl),
+                EcTarget.Gump => (tabPageArtConverter, ecArtConverterControl),
+                EcTarget.Hue => (tabPageHues, ecHuesControl),
+                EcTarget.Multi => (tabPageMultis, ecMultisControl),
+                EcTarget.Map => (tabPageMap, ecMapControl),
+                EcTarget.AnimDefinition => (tabPageAnimData, ecAnimDefinitionControl),
+                EcTarget.Animation => (tabPageAnimations, ecMobileAnimationControl),
+                _ => (null, null)
+            };
+            if (page == null)
+            {
+                return;
+            }
+            tabControl.SelectedTab = page;
+            try
+            {
+                editor.Navigate(target);
+            }
+            catch (Exception ex)
+            {
+                EcDialogs.ShowError(this, "The result can't be shown.", ex);
+            }
         }
 
         private IEcEditor[] Editors => new IEcEditor[]
         {
-            ecArtControl, ecTileArtControl, ecGumpsControl, ecHuesControl, ecMobileAnimationControl, ecAnimDefinitionControl, ecMultisControl,
-            ecMapControl, ecMapConverterControl, ecSoundsControl, ecClilocControl, ecStringsControl, ecFileTreeControl, ecUopBrowserControl
+            ecArtControl, ecTileArtControl, ecGumpsControl, ecArtConverterControl, ecHuesControl, ecMobileAnimationControl, ecAnimDefinitionControl, ecMultisControl,
+            ecMapControl, ecMapConverterControl, ecSoundsControl, ecClilocControl, ecStringsControl, ecFileTreeControl, ecUopBrowserControl, ecSearchControl, ecClientCheckControl, ecPatchControl
         };
 
         protected override void OnVisibleChanged(EventArgs e)

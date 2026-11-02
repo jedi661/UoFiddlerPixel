@@ -61,6 +61,7 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
             toolStripButtonFromClassic = new System.Windows.Forms.ToolStripButton();
             toolStripButtonToClassic = new System.Windows.Forms.ToolStripButton();
+            toolStripButtonGradient = new System.Windows.Forms.ToolStripButton();
             splitContainer = new System.Windows.Forms.SplitContainer();
             listViewHues = new System.Windows.Forms.ListView();
             columnHeaderHue = new System.Windows.Forms.ColumnHeader();
@@ -75,6 +76,7 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             toolStripSeparatorMenu1 = new System.Windows.Forms.ToolStripSeparator();
             fromClassicToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             toClassicToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            gradientToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             compareToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             toolStripSeparatorMenu2 = new System.Windows.Forms.ToolStripSeparator();
             saveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -87,6 +89,13 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             labelColors = new System.Windows.Forms.Label();
             panelColors = new System.Windows.Forms.Panel();
             labelInfo = new System.Windows.Forms.Label();
+            flowLayoutPanelPreview = new System.Windows.Forms.FlowLayoutPanel();
+            labelPreview = new System.Windows.Forms.Label();
+            comboBoxPreview = new System.Windows.Forms.ComboBox();
+            textBoxPreviewId = new System.Windows.Forms.TextBox();
+            checkBoxPartial = new System.Windows.Forms.CheckBox();
+            buttonPreview = new System.Windows.Forms.Button();
+            pictureBoxPreview = new System.Windows.Forms.PictureBox();
             toolTip = new System.Windows.Forms.ToolTip(components);
             tabPageCompare = new System.Windows.Forms.TabPage();
             toolStripCompare = new System.Windows.Forms.ToolStrip();
@@ -188,6 +197,8 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             flowLayoutPanelName.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)pictureBoxRamp).BeginInit();
             panelColors.SuspendLayout();
+            flowLayoutPanelPreview.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)pictureBoxPreview).BeginInit();
             tabPageCompare.SuspendLayout();
             toolStripCompare.SuspendLayout();
             contextMenuStripCompare.SuspendLayout();
@@ -298,7 +309,7 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             //
             // toolStripEditor
             //
-            toolStripEditor.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { toolStripLabelSearch, toolStripTextBoxSearch, toolStripButtonApply, toolStripSeparator2, toolStripButtonImportRamp, toolStripButtonExportRamp, toolStripButtonAddCopy, toolStripButtonDelete, toolStripSeparator3, toolStripButtonFromClassic, toolStripButtonToClassic });
+            toolStripEditor.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { toolStripLabelSearch, toolStripTextBoxSearch, toolStripButtonApply, toolStripSeparator2, toolStripButtonImportRamp, toolStripButtonExportRamp, toolStripButtonAddCopy, toolStripButtonDelete, toolStripSeparator3, toolStripButtonFromClassic, toolStripButtonToClassic, toolStripButtonGradient });
             toolStripEditor.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
             toolStripEditor.Location = new System.Drawing.Point(0, 0);
             toolStripEditor.Name = "toolStripEditor";
@@ -377,6 +388,14 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             toolStripButtonToClassic.ToolTipText = "Writes the colors of the selected hues into the loaded classic hues.mul";
             toolStripButtonToClassic.Click += OnClickToClassic;
             //
+            // toolStripButtonGradient
+            //
+            toolStripButtonGradient.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            toolStripButtonGradient.Name = "toolStripButtonGradient";
+            toolStripButtonGradient.Text = "Gradient...";
+            toolStripButtonGradient.ToolTipText = "New colors for the selected hue: a gradient from a dark to a light color";
+            toolStripButtonGradient.Click += OnClickGradient;
+            //
             // splitContainer
             //
             splitContainer.Panel1.Controls.Add(listViewHues);
@@ -429,7 +448,7 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             //
             // contextMenuStripList
             //
-            contextMenuStripList.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { importRampToolStripMenuItem, exportRampToolStripMenuItem, addCopyToolStripMenuItem, deleteToolStripMenuItem, toolStripSeparatorMenu1, fromClassicToolStripMenuItem, toClassicToolStripMenuItem, compareToolStripMenuItem, toolStripSeparatorMenu2, saveToolStripMenuItem });
+            contextMenuStripList.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { importRampToolStripMenuItem, exportRampToolStripMenuItem, addCopyToolStripMenuItem, deleteToolStripMenuItem, toolStripSeparatorMenu1, fromClassicToolStripMenuItem, toClassicToolStripMenuItem, gradientToolStripMenuItem, compareToolStripMenuItem, toolStripSeparatorMenu2, saveToolStripMenuItem });
             contextMenuStripList.Name = "contextMenuStripList";
             //
             // importRampToolStripMenuItem
@@ -472,6 +491,12 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             toClassicToolStripMenuItem.Text = "Colors to classic hues.mul";
             toClassicToolStripMenuItem.Click += OnClickToClassic;
             //
+            // gradientToolStripMenuItem
+            //
+            gradientToolStripMenuItem.Name = "gradientToolStripMenuItem";
+            gradientToolStripMenuItem.Text = "Gradient from two colors...";
+            gradientToolStripMenuItem.Click += OnClickGradient;
+            //
             // compareToolStripMenuItem
             //
             compareToolStripMenuItem.Name = "compareToolStripMenuItem";
@@ -491,6 +516,8 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             // panelDetails
             //
             panelDetails.Controls.Add(labelInfo);
+            panelDetails.Controls.Add(pictureBoxPreview);
+            panelDetails.Controls.Add(flowLayoutPanelPreview);
             panelDetails.Controls.Add(panelColors);
             panelDetails.Controls.Add(labelColors);
             panelDetails.Controls.Add(pictureBoxRamp);
@@ -569,6 +596,68 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             labelInfo.Name = "labelInfo";
             labelInfo.Padding = new System.Windows.Forms.Padding(4);
             labelInfo.Size = new System.Drawing.Size(320, 120);
+            //
+            // flowLayoutPanelPreview
+            //
+            flowLayoutPanelPreview.Controls.Add(labelPreview);
+            flowLayoutPanelPreview.Controls.Add(comboBoxPreview);
+            flowLayoutPanelPreview.Controls.Add(textBoxPreviewId);
+            flowLayoutPanelPreview.Controls.Add(checkBoxPartial);
+            flowLayoutPanelPreview.Controls.Add(buttonPreview);
+            flowLayoutPanelPreview.Dock = System.Windows.Forms.DockStyle.Top;
+            flowLayoutPanelPreview.Name = "flowLayoutPanelPreview";
+            flowLayoutPanelPreview.Padding = new System.Windows.Forms.Padding(0, 6, 0, 0);
+            flowLayoutPanelPreview.Size = new System.Drawing.Size(320, 36);
+            flowLayoutPanelPreview.TabIndex = 4;
+            //
+            // labelPreview
+            //
+            labelPreview.AutoSize = true;
+            labelPreview.Margin = new System.Windows.Forms.Padding(3, 8, 0, 0);
+            labelPreview.Name = "labelPreview";
+            labelPreview.Text = "Preview on:";
+            //
+            // comboBoxPreview
+            //
+            comboBoxPreview.Items.AddRange(new object[] { "Item", "Gump", "Animation (body)" });
+            comboBoxPreview.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            comboBoxPreview.Name = "comboBoxPreview";
+            comboBoxPreview.Size = new System.Drawing.Size(120, 23);
+            comboBoxPreview.SelectedIndexChanged += OnPreviewChanged;
+            //
+            // textBoxPreviewId
+            //
+            textBoxPreviewId.Name = "textBoxPreviewId";
+            textBoxPreviewId.Size = new System.Drawing.Size(70, 23);
+            textBoxPreviewId.Text = "0x0E75";
+            textBoxPreviewId.KeyDown += OnPreviewIdKeyDown;
+            //
+            // checkBoxPartial
+            //
+            checkBoxPartial.AutoSize = true;
+            checkBoxPartial.Margin = new System.Windows.Forms.Padding(3, 6, 3, 0);
+            checkBoxPartial.Name = "checkBoxPartial";
+            checkBoxPartial.Text = "Only gray pixels";
+            checkBoxPartial.UseVisualStyleBackColor = true;
+            checkBoxPartial.CheckedChanged += OnPreviewChanged;
+            //
+            // buttonPreview
+            //
+            buttonPreview.AutoSize = true;
+            buttonPreview.Name = "buttonPreview";
+            buttonPreview.Text = "Show";
+            buttonPreview.UseVisualStyleBackColor = true;
+            buttonPreview.Click += OnPreviewChanged;
+            //
+            // pictureBoxPreview
+            //
+            pictureBoxPreview.BackColor = System.Drawing.Color.White;
+            pictureBoxPreview.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            pictureBoxPreview.Dock = System.Windows.Forms.DockStyle.Top;
+            pictureBoxPreview.Name = "pictureBoxPreview";
+            pictureBoxPreview.Size = new System.Drawing.Size(320, 170);
+            pictureBoxPreview.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage;
+            pictureBoxPreview.TabStop = false;
             //
             // toolTip
             //
@@ -1362,6 +1451,9 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             ((System.ComponentModel.ISupportInitialize)pictureBoxRamp).EndInit();
             panelColors.ResumeLayout(false);
             panelColors.PerformLayout();
+            flowLayoutPanelPreview.ResumeLayout(false);
+            flowLayoutPanelPreview.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)pictureBoxPreview).EndInit();
             tabPageCompare.ResumeLayout(false);
             tabPageCompare.PerformLayout();
             toolStripCompare.ResumeLayout(false);
@@ -1433,6 +1525,7 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
         private System.Windows.Forms.ToolStripButton toolStripButtonFromClassic;
         private System.Windows.Forms.ToolStripButton toolStripButtonToClassic;
+        private System.Windows.Forms.ToolStripButton toolStripButtonGradient;
         private System.Windows.Forms.SplitContainer splitContainer;
         private System.Windows.Forms.ListView listViewHues;
         private System.Windows.Forms.ColumnHeader columnHeaderHue;
@@ -1447,6 +1540,7 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
         private System.Windows.Forms.ToolStripSeparator toolStripSeparatorMenu1;
         private System.Windows.Forms.ToolStripMenuItem fromClassicToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem toClassicToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem gradientToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem compareToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparatorMenu2;
         private System.Windows.Forms.ToolStripMenuItem saveToolStripMenuItem;
@@ -1459,6 +1553,13 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
         private System.Windows.Forms.Label labelColors;
         private System.Windows.Forms.Panel panelColors;
         private System.Windows.Forms.Label labelInfo;
+        private System.Windows.Forms.FlowLayoutPanel flowLayoutPanelPreview;
+        private System.Windows.Forms.Label labelPreview;
+        private System.Windows.Forms.ComboBox comboBoxPreview;
+        private System.Windows.Forms.TextBox textBoxPreviewId;
+        private System.Windows.Forms.CheckBox checkBoxPartial;
+        private System.Windows.Forms.Button buttonPreview;
+        private System.Windows.Forms.PictureBox pictureBoxPreview;
         private System.Windows.Forms.ToolTip toolTip;
         private System.Windows.Forms.TabPage tabPageCompare;
         private System.Windows.Forms.ToolStrip toolStripCompare;

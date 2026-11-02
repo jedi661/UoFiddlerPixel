@@ -22,6 +22,8 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using UoFiddler.Plugin.Enhanced.Classes;
 using UoFiddler.Plugin.Enhanced.EcUltima;
+using UoFiddler.Plugin.Enhanced.EcUltima.Animations;
+using UoFiddler.Plugin.Enhanced.EcUltima.Gumps;
 using UoFiddler.Plugin.Enhanced.EcUltima.Hues;
 using UoFiddler.Plugin.Enhanced.EcUltima.Uop;
 
@@ -74,6 +76,7 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             _updating = true;
             comboBoxStyle.SelectedIndex = 0;
             comboBoxScale.SelectedIndex = (int)HueColorScale.Shift;
+            comboBoxPreview.SelectedIndex = 0;
             toolStripComboBoxFilter.SelectedIndex = 1;
             textBoxOutput.Text = EcSettings.Get(OutputSetting) ?? string.Empty;
             textBoxBackup.Text = EcSettings.Get(BackupSetting) ?? string.Empty;
@@ -95,6 +98,8 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
             _client = client;
             _loaded = false;
             _hues = null;
+            _sprites?.Dispose();
+            _sprites = null;
             ClearCaches();
             _view = new List<EcHue>();
             listViewHues.VirtualListSize = 0;
@@ -413,6 +418,140 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
                 sb.AppendLine($"Classic: \"{classic.Name}\", " + (diff == 0 ? "same colors" : $"{diff} colors differ"));
             }
             labelInfo.Text = sb.ToString();
+            ShowHuePreview();
+        }
+
+        // ==================================================================== editor: preview and gradient
+
+        private EcItemSprites _sprites;
+
+        /// <summary>The image to hue: item (EC image), gump (EC legacy gump or classic) or the first frame of a body.</summary>
+        private byte[] PreviewSource(out int width, out int height)
+        {
+            width = height = 0;
+            if (_client == null || !EcDialogs.TryParseNumber(textBoxPreviewId.Text.Trim(), out long id) || id < 0)
+            {
+                return null;
+            }
+            switch (comboBoxPreview.SelectedIndex)
+            {
+                case 1:
+                {
+                    byte[] data = _client.GetPackage("gumpartLegacyMUL.uop")?.ReadData(string.Format(CultureInfo.InvariantCulture, "build/gumpartlegacymul/{0:D8}.tga", id));
+                    if (data != null && EcLegacyGump.IsLegacyGump(data))
+                    {
+                        byte[] px = EcLegacyGump.Decode(data, out width, out height);
+                        if (width > 0)
+                        {
+                            return px;
+                        }
+                    }
+                    try
+                    {
+                        Bitmap cached = Ultima.Gumps.IsValidIndex((int)id) ? Ultima.Gumps.GetGump((int)id) : null;
+                        if (cached != null)
+                        {
+                            using (var copy = new Bitmap(cached))
+                            {
+                                return EcImageHelper.ToBgra(copy, out width, out height);
+                            }
+                        }
+                    }
+                    catch (Exception)
+                    {
+                        // no classic client
+                    }
+                    return null;
+                }
+                case 2:
+                {
+                    foreach (string file in new[] { "AnimationFrame1.uop", "AnimationFrame2.uop", "AnimationFrame3.uop", "AnimationFrame4.uop", "AnimationFrame5.uop", "AnimationFrame6.uop" })
+                    {
+                        EcUopPackage package = _client.GetPackage(file);
+                        for (int action = 0; package != null && action < 35; action++)
+                        {
+                            byte[] data = package.ReadData(string.Format(CultureInfo.InvariantCulture, EcClient.AnimationFramePattern, id, action));
+                            if (data == null || !EcAnimation.IsAnimation(data))
+                            {
+                                continue;
+                            }
+                            EcAnimation animation = EcAnimation.Read(data);
+                            EcAnimationFrame frame = animation.Frames.FirstOrDefault(f => !f.IsEmpty);
+                            if (frame != null)
+                            {
+                                width = frame.Width;
+                                height = frame.Height;
+                                return animation.ToBgra(frame);
+                            }
+                        }
+                    }
+                    return null;
+                }
+                default:
+                {
+                    _sprites ??= new EcItemSprites(_client);
+                    Bitmap image = _sprites.Get((uint)id, false).Image;
+                    return image == null ? null : EcImageHelper.ToBgra(image, out width, out height);
+                }
+            }
+        }
+
+        private void ShowHuePreview()
+        {
+            EcHue hue = Selected;
+            HueDecodeResult colors = hue == null ? null : Colors(hue);
+            Image old = pictureBoxPreview.Image;
+            pictureBoxPreview.Image = null;
+            old?.Dispose();
+            if (colors == null)
+            {
+                return;
+            }
+            try
+            {
+                byte[] px = PreviewSource(out int w, out int h);
+                if (px == null || w <= 0 || h <= 0)
+                {
+                    return;
+                }
+                EcHueRender.ApplyHue(px, colors.Colors, _hues.Options.Scale, checkBoxPartial.Checked);
+                pictureBoxPreview.Image = EcImageHelper.ToBitmap(px, w, h);
+            }
+            catch (Exception ex)
+            {
+                toolStripStatusLabel.Text = "Preview: " + ex.Message;
+            }
+        }
+
+        /// <summary>New colors for the selected hue: a gradient from a dark (color 0) to a light color (color 31).</summary>
+        private void Gradient()
+        {
+            EcHue hue = Selected;
+            HueDecodeResult colors = hue == null ? null : Colors(hue);
+            if (colors == null)
+            {
+                return;
+            }
+            Color start, end;
+            using (var dialog = new ColorDialog { Color = ToColor(colors.Colors[0]), FullOpen = true })
+            {
+                MessageBox.Show(this, "First choose the dark color (color 0), then the light color (color 31).", "Gradient", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                if (dialog.ShowDialog(this) != DialogResult.OK)
+                {
+                    return;
+                }
+                start = dialog.Color;
+                dialog.Color = ToColor(colors.Colors[31]);
+                if (dialog.ShowDialog(this) != DialogResult.OK)
+                {
+                    return;
+                }
+                end = dialog.Color;
+            }
+            ushort[] gradient = EcHueRender.Gradient(start.R, start.G, start.B, end.R, end.G, end.B, _hues.Options.Scale);
+            _hues.SetColors(hue, gradient);
+            RefreshHue(hue);
+            toolStripStatusLabel.Text = $"Hue {hue.Number}: gradient written (bitmap, hues.dds and overview).";
         }
 
         private void RefreshHue(EcHue hue)
@@ -1310,6 +1449,7 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
 
         private void OnControlDisposed(object sender, EventArgs e)
         {
+            _sprites?.Dispose();
             ClearCaches();
         }
 
@@ -1500,5 +1640,18 @@ namespace UoFiddler.Plugin.Enhanced.UserControls
         private void OnClickRebuildAtlas(object sender, EventArgs e) => RebuildAtlas();
 
         private void OnHelpLanguageChanged(object sender, EventArgs e) => ShowHelp();
+
+        private void OnClickGradient(object sender, EventArgs e) => Gradient();
+
+        private void OnPreviewChanged(object sender, EventArgs e) => ShowHuePreview();
+
+        private void OnPreviewIdKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                e.SuppressKeyPress = true;
+                ShowHuePreview();
+            }
+        }
     }
 }

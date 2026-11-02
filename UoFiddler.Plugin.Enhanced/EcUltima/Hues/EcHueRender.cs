@@ -292,6 +292,53 @@ namespace UoFiddler.Plugin.Enhanced.EcUltima.Hues
             _ => ClassicHue.Red(color)
         };
 
+        /// <summary>
+        /// Hues an image like the client: the brightness of a pixel picks one of the 32 colors.
+        /// <paramref name="partial"/>: only gray pixels are hued (tiledata flag "partial hue").
+        /// </summary>
+        public static void ApplyHue(byte[] bgra, ushort[] colors, HueColorScale scale, bool partial)
+        {
+            var table = new byte[32 * 3];
+            for (int i = 0; i < 32; i++)
+            {
+                table[i * 3] = (byte)To8(ClassicHue.Blue(colors[i]), scale);
+                table[(i * 3) + 1] = (byte)To8(ClassicHue.Green(colors[i]), scale);
+                table[(i * 3) + 2] = (byte)To8(ClassicHue.Red(colors[i]), scale);
+            }
+            for (int i = 0; i + 3 < bgra.Length; i += 4)
+            {
+                if (bgra[i + 3] == 0)
+                {
+                    continue;
+                }
+                int b = bgra[i], g = bgra[i + 1], r = bgra[i + 2];
+                if (partial && (Math.Max(r, Math.Max(g, b)) - Math.Min(r, Math.Min(g, b)) > 8))
+                {
+                    continue;
+                }
+                int gray = partial ? r : ((r * 299) + (g * 587) + (b * 114)) / 1000;
+                int index = Math.Min(31, gray * 32 / 256);
+                bgra[i] = table[index * 3];
+                bgra[i + 1] = table[(index * 3) + 1];
+                bgra[i + 2] = table[(index * 3) + 2];
+            }
+        }
+
+        /// <summary>32 colors from a dark to a light color (linear).</summary>
+        public static ushort[] Gradient(int r0, int g0, int b0, int r1, int g1, int b1, HueColorScale scale)
+        {
+            var colors = new ushort[32];
+            for (int i = 0; i < 32; i++)
+            {
+                double t = i / 31.0;
+                colors[i] = ClassicHue.Make(
+                    To5(r0 + ((r1 - r0) * t), scale),
+                    To5(g0 + ((g1 - g0) * t), scale),
+                    To5(b0 + ((b1 - b0) * t), scale));
+            }
+            return colors;
+        }
+
         /// <summary>Scales any image row to 256 BGRA pixels (for ramps that were imported as images).</summary>
         public static byte[] ResampleRow(byte[] bgra, int width, int y)
         {

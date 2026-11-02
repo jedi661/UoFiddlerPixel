@@ -229,6 +229,9 @@ namespace UoFiddler.Plugin.Enhanced.EcUltima.TileArt
         /// <summary>False when the texture blocks couldn't be parsed completely.</summary>
         public bool TexturesComplete { get; private set; }
 
+        /// <summary>Position in <see cref="Tail"/> right after the 4 texture slots (valid when <see cref="TexturesComplete"/>).</summary>
+        public int TexturesEnd { get; private set; }
+
         public static TileArtEntry Read(byte[] data)
         {
             var e = new TileArtEntry();
@@ -394,6 +397,7 @@ namespace UoFiddler.Plugin.Enhanced.EcUltima.TileArt
                     }
                     Textures.Add(tex);
                 }
+                TexturesEnd = p;
                 TexturesComplete = true;
             }
             catch (ArgumentException)
@@ -403,6 +407,75 @@ namespace UoFiddler.Plugin.Enhanced.EcUltima.TileArt
             catch (IndexOutOfRangeException)
             {
             }
+        }
+
+        /// <summary>
+        /// Writes new texture blocks (slots 0 to 3) into <see cref="Tail"/>; everything after the textures is kept.
+        /// Only possible when the textures were parsed completely.
+        /// </summary>
+        public void SetTextures(IEnumerable<TileArtTexture> textures)
+        {
+            if (!TexturesComplete)
+            {
+                throw new InvalidOperationException("The texture blocks of this entry could not be read.");
+            }
+            var bySlot = new TileArtTexture[4];
+            foreach (TileArtTexture t in textures)
+            {
+                bySlot[t.Slot] = t;
+            }
+            using (var ms = new MemoryStream())
+            using (var w = new BinaryWriter(ms))
+            {
+                for (int slot = 0; slot < 4; slot++)
+                {
+                    TileArtTexture t = bySlot[slot];
+                    if (t == null)
+                    {
+                        w.Write((byte)0);
+                        continue;
+                    }
+                    w.Write((byte)1);
+                    w.Write(t.Unknown1);
+                    w.Write(t.ShaderIndex);
+                    w.Write((byte)t.Images.Count);
+                    foreach (TileArtTextureImage img in t.Images)
+                    {
+                        w.Write(img.NameIndex);
+                        w.Write(img.Unknown1);
+                        w.Write(img.Unknown2);
+                        w.Write(img.Unknown3);
+                        w.Write(img.Unknown4);
+                    }
+                    w.Write((uint)t.Unknown8.Count);
+                    foreach (int v in t.Unknown8)
+                    {
+                        w.Write(v);
+                    }
+                    w.Write((uint)t.Unknown9.Count);
+                    foreach (float v in t.Unknown9)
+                    {
+                        w.Write(v);
+                    }
+                }
+                w.Write(Tail, TexturesEnd, Tail.Length - TexturesEnd);
+                w.Flush();
+                Tail = ms.ToArray();
+            }
+            ParseTextures();
+        }
+
+        /// <summary>Copy of a texture block (images and lists copied).</summary>
+        public static TileArtTexture CloneTexture(TileArtTexture source, int slot)
+        {
+            var t = new TileArtTexture { Slot = slot, Unknown1 = source.Unknown1, ShaderIndex = source.ShaderIndex };
+            foreach (TileArtTextureImage i in source.Images)
+            {
+                t.Images.Add(new TileArtTextureImage { NameIndex = i.NameIndex, Unknown1 = i.Unknown1, Unknown2 = i.Unknown2, Unknown3 = i.Unknown3, Unknown4 = i.Unknown4, TailOffset = -1 });
+            }
+            t.Unknown8.AddRange(source.Unknown8);
+            t.Unknown9.AddRange(source.Unknown9);
+            return t;
         }
 
         /// <summary>

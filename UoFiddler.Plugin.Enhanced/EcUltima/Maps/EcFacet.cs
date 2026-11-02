@@ -147,6 +147,16 @@ namespace UoFiddler.Plugin.Enhanced.EcUltima.Maps
             return sector?[x % EcSector.Size, y % EcSector.Size];
         }
 
+        /// <summary>Releases a read sector from memory (not when it was changed).</summary>
+        public void Forget(int sectorX, int sectorY)
+        {
+            int index = SectorIndex(sectorX, sectorY);
+            if (!_modified.Contains(index))
+            {
+                _cache.Remove(index);
+            }
+        }
+
         public void MarkModified(EcSector sector)
         {
             _modified.Add(sector.Index);
@@ -231,6 +241,72 @@ namespace UoFiddler.Plugin.Enhanced.EcUltima.Maps
             {
                 MarkModified(sector);
             }
+        }
+
+        /// <summary>Moves a static to another tile (keeps its z). False when the static or the target is not there.</summary>
+        public bool MoveStatic(int x, int y, EcStatic st, int newX, int newY)
+        {
+            if (newX < 0 || newY < 0 || newX >= Width || newY >= Height || GetTile(newX, newY) == null)
+            {
+                return false;
+            }
+            return RemoveStatic(x, y, st) && AddStatic(newX, newY, st);
+        }
+
+        /// <summary>
+        /// Sets the land tile (and optionally the z) of a tile. Call <see cref="RefreshBorders"/> for the changed area
+        /// afterwards, so the neighbour sectors know the new land (terrain blending).
+        /// </summary>
+        public bool SetLand(int x, int y, ushort landId, sbyte? z)
+        {
+            EcMapTile tile = x >= 0 && y >= 0 && x < Width && y < Height ? GetTile(x, y) : null;
+            if (tile == null)
+            {
+                return false;
+            }
+            tile.LandId = landId;
+            if (z.HasValue)
+            {
+                tile.Z = z.Value;
+            }
+            MarkModified(x, y);
+            return true;
+        }
+
+        /// <summary>
+        /// Builds the border layers (land of the neighbour tiles in the next sector) again for every border tile
+        /// in the area and one tile around it.
+        /// </summary>
+        public int RefreshBorders(System.Drawing.Rectangle area)
+        {
+            area = Clip(System.Drawing.Rectangle.Inflate(area, 1, 1));
+            int count = 0;
+            for (int x = area.Left; x < area.Right; x++)
+            {
+                for (int y = area.Top; y < area.Bottom; y++)
+                {
+                    int lx = x % EcSector.Size, ly = y % EcSector.Size;
+                    if (lx != 0 && ly != 0 && lx != EcSector.Size - 1 && ly != EcSector.Size - 1)
+                    {
+                        continue;
+                    }
+                    EcMapTile tile = GetTile(x, y);
+                    if (tile == null)
+                    {
+                        continue;
+                    }
+                    List<EcLandLayer> layers = EcMapConverter.BorderLayers(x, y, Width, Height, (nx, ny) =>
+                    {
+                        EcMapTile n = GetTile(nx, ny);
+                        return n == null ? ((ushort)0, (sbyte)0) : (n.LandId, n.Z);
+                    });
+                    tile.Layers.Clear();
+                    tile.Layers.AddRange(layers);
+                    MarkModified(x, y);
+                    count++;
+                }
+            }
+            return count;
         }
 
         /// <summary>Removes all statics of an area; returns the number removed.</summary>

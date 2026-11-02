@@ -1,3 +1,25 @@
+Version 4.12.20 #XG1
+
+- Enhanced 0.17.0
+- Fixed: Art Converter crash "Parameter is not valid" (classic images from UoFiddler's cache were disposed).
+- New tab Search: item / gump / hue / multi id or name across classic client, tileart, textures, multis, item animations, hues and (optional) all maps; double click opens the result in its tab.
+- New tab Check: whole-client check with report (tileart, texture files, multis, item animations, hues, maps).
+- New tab Patches: .ecpatch packages – collect changes, add files, save, open, apply with backup.
+- Map region viewer: tool bar with move (drag, arrow keys, PgUp/PgDn, Del), place item (item search window), paint land (brush 1–9, border layers rebuilt), place multi.
+- Hues: preview on item / gump / animation, gradient from two colors.
+- Enhanced 0.16.0
+- New tab Art Converter: classic items and gumps → EC, own images on existing or free ids, legacy only or legacy + EC image (Smooth / Sharp / Soft enlarging), preview, report "missing in EC".
+- New tileart entries built exactly like the original ones (texture names, flags, header values).
+- Enhanced 0.15.0
+- Hues tab rebuilt with sub tabs Editor / Compare / Converter / Help (huesmul2uop built in and improved).
+- Hue changes now also update hues.dds and the overview (items use hues.dds).
+- Hues.uop → hues.mul byte for byte; original ramp style (linear, ×8) reproduced exactly.
+
+- Enhanced 0.14.0
+- New tab Map Converter: classic maps ↔ EC facets, radar image, analysis and repair, new maps.
+- UopPacker 2.0.0
+- Restructured, old tab style kept, new tabs Multis, UOP Info, Backup, Help (EN/DE); automatic backup; Mythic compression fixed.
+
 Version 4.12.19 #XG1
 
 ## What's new in UoFiddlerPixel

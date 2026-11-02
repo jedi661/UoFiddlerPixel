@@ -9,7 +9,7 @@
 		<Product>UoFiddler.Plugin.Enhanced</Product>
 		<Copyright>Copyright © 2026 Nikodemus</Copyright>
 		<Authors>Nikodemus</Authors>
-		<Version>0.15.0</Version>
+		<Version>0.17.0</Version>
 	</PropertyGroup>
 	<PropertyGroup>
 		<EnableNETAnalyzers>true</EnableNETAnalyzers>
@@ -37,6 +37,15 @@
 		</ProjectReference>
 	</ItemGroup>
 	<ItemGroup>
+		<Compile Update="Forms\EcItemPickerForm.cs">
+			<SubType>Form</SubType>
+		</Compile>
+		<Compile Update="Forms\EcItemPickerForm.Designer.cs">
+			<DependentUpon>EcItemPickerForm.cs</DependentUpon>
+		</Compile>
+		<EmbeddedResource Update="Forms\EcItemPickerForm.resx">
+			<DependentUpon>EcItemPickerForm.cs</DependentUpon>
+		</EmbeddedResource>
 		<Compile Update="Forms\EcRegionViewerForm.cs">
 			<SubType>Form</SubType>
 		</Compile>
@@ -63,6 +72,24 @@
 		</Compile>
 		<EmbeddedResource Update="UserControls\EcArtControl.resx">
 			<DependentUpon>EcArtControl.cs</DependentUpon>
+		</EmbeddedResource>
+		<Compile Update="UserControls\EcArtConverterControl.cs">
+			<SubType>UserControl</SubType>
+		</Compile>
+		<Compile Update="UserControls\EcArtConverterControl.Designer.cs">
+			<DependentUpon>EcArtConverterControl.cs</DependentUpon>
+		</Compile>
+		<EmbeddedResource Update="UserControls\EcArtConverterControl.resx">
+			<DependentUpon>EcArtConverterControl.cs</DependentUpon>
+		</EmbeddedResource>
+		<Compile Update="UserControls\EcClientCheckControl.cs">
+			<SubType>UserControl</SubType>
+		</Compile>
+		<Compile Update="UserControls\EcClientCheckControl.Designer.cs">
+			<DependentUpon>EcClientCheckControl.cs</DependentUpon>
+		</Compile>
+		<EmbeddedResource Update="UserControls\EcClientCheckControl.resx">
+			<DependentUpon>EcClientCheckControl.cs</DependentUpon>
 		</EmbeddedResource>
 		<Compile Update="UserControls\EcClilocControl.cs">
 			<SubType>UserControl</SubType>
@@ -136,6 +163,24 @@
 		<EmbeddedResource Update="UserControls\EcMultisControl.resx">
 			<DependentUpon>EcMultisControl.cs</DependentUpon>
 		</EmbeddedResource>
+		<Compile Update="UserControls\EcPatchControl.cs">
+			<SubType>UserControl</SubType>
+		</Compile>
+		<Compile Update="UserControls\EcPatchControl.Designer.cs">
+			<DependentUpon>EcPatchControl.cs</DependentUpon>
+		</Compile>
+		<EmbeddedResource Update="UserControls\EcPatchControl.resx">
+			<DependentUpon>EcPatchControl.cs</DependentUpon>
+		</EmbeddedResource>
+		<Compile Update="UserControls\EcSearchControl.cs">
+			<SubType>UserControl</SubType>
+		</Compile>
+		<Compile Update="UserControls\EcSearchControl.Designer.cs">
+			<DependentUpon>EcSearchControl.cs</DependentUpon>
+		</Compile>
+		<EmbeddedResource Update="UserControls\EcSearchControl.resx">
+			<DependentUpon>EcSearchControl.cs</DependentUpon>
+		</EmbeddedResource>
 		<Compile Update="UserControls\EcSoundsControl.cs">
 			<SubType>UserControl</SubType>
 		</Compile>
@@ -181,5 +226,12 @@
 		<EmbeddedResource Update="UserControls\EnhancedClientControl.resx">
 			<DependentUpon>EnhancedClientControl.cs</DependentUpon>
 		</EmbeddedResource>
+		<Compile Update="UserControls\EcMobileAnimationControl.Tools.cs">
+			<DependentUpon>EcMobileAnimationControl.cs</DependentUpon>
+			<SubType>Code</SubType>
+		</Compile>
+		<Compile Update="UserControls\IEcNavigable.cs">
+			<SubType>Code</SubType>
+		</Compile>
 	</ItemGroup>
 </Project>
