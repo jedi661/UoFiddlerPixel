@@ -97,6 +97,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             RefreshServerList();
             ResetStats();
             UpdateSelectionButtons();
+            InitProviderTab();
 
             labelIP.Text = "-";
             _statusTimer.Tick += async (_, _) => await UpdateInternetStatusAsync();
@@ -166,7 +167,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             {
                 Task internet = UpdateInternetStatusAsync();
                 Task network = RefreshNetworkInfoAsync();
-                await Task.WhenAll(internet, network);
+                Task provider = UpdateProviderInfoAsync(CancellationToken.None);
+                await Task.WhenAll(internet, network, provider);
             }
             catch (Exception ex)
             {
@@ -388,7 +390,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             _busy = busy;
             foreach (ToolStripItem item in new ToolStripItem[]
                      {
-                         BtnPing, BtnPingContinuous, BtnTracert, BtnDns, BtnPortCheck, BtnPortScan, BtnUoStatus, BtnLanScan
+                         BtnPing, BtnPingContinuous, BtnTracert, BtnDns, BtnPortCheck, BtnPortScan, BtnUoStatus, BtnLanScan,
+                         BtnDiagnose, BtnProvDetect, BtnProvCheck, BtnProvDiagnose
                      })
             {
                 item.Enabled = !busy;
@@ -1902,6 +1905,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 }
 
                 string summary = $"{online} of {servers.Count} server(s) online";
+                if (online == 0 && servers.Count > 1)
+                {
+                    LogWarn("No server answers – click \"Diagnose\" to check if your own connection or the provider is the problem.");
+                }
+
                 if (online == servers.Count)
                 {
                     LogOk(summary);

@@ -158,6 +158,25 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             menuDelete = new System.Windows.Forms.ToolStripMenuItem();
             timerSearch = new System.Windows.Forms.Timer(components);
             toolTip = new System.Windows.Forms.ToolTip(components);
+            BtnDiagnose = new System.Windows.Forms.ToolStripButton();
+            tabProvider = new System.Windows.Forms.TabPage();
+            listProviders = new System.Windows.Forms.ListView();
+            colProvName = new System.Windows.Forms.ColumnHeader();
+            colProvAddress = new System.Windows.Forms.ColumnHeader();
+            colProvKind = new System.Windows.Forms.ColumnHeader();
+            colProvStatus = new System.Windows.Forms.ColumnHeader();
+            colProvPing = new System.Windows.Forms.ColumnHeader();
+            colProvLastCheck = new System.Windows.Forms.ColumnHeader();
+            toolStripProviders = new System.Windows.Forms.ToolStrip();
+            BtnProvAdd = new System.Windows.Forms.ToolStripButton();
+            BtnProvEdit = new System.Windows.Forms.ToolStripButton();
+            BtnProvDelete = new System.Windows.Forms.ToolStripButton();
+            toolSepProv1 = new System.Windows.Forms.ToolStripSeparator();
+            BtnProvDetect = new System.Windows.Forms.ToolStripButton();
+            BtnProvCheck = new System.Windows.Forms.ToolStripButton();
+            BtnProvDiagnose = new System.Windows.Forms.ToolStripButton();
+            lblProviderInfo = new System.Windows.Forms.Label();
+            lblDiagnosis = new System.Windows.Forms.Label();
             panelHeader.SuspendLayout();
             toolStripMain.SuspendLayout();
             toolStripOptions.SuspendLayout();
@@ -165,6 +184,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             toolStripLog.SuspendLayout();
             toolStripResults.SuspendLayout();
             toolStripNetwork.SuspendLayout();
+            toolStripProviders.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)splitMain).BeginInit();
             splitMain.Panel1.SuspendLayout();
             splitMain.Panel2.SuspendLayout();
@@ -178,6 +198,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             tableStats.SuspendLayout();
             tabResults.SuspendLayout();
             tabNetwork.SuspendLayout();
+            tabProvider.SuspendLayout();
             contextServers.SuspendLayout();
             SuspendLayout();
             // 
@@ -225,7 +246,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // toolStripMain
             // 
             toolStripMain.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
-            toolStripMain.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { toolLabelTarget, comboTarget, toolSepMain1, BtnPing, BtnPingContinuous, BtnTracert, BtnDns, BtnPortCheck, BtnPortScan, BtnUoStatus, toolSepMain2, BtnLanScan, toolSepMain3, BtnStop });
+            toolStripMain.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { toolLabelTarget, comboTarget, toolSepMain1, BtnPing, BtnPingContinuous, BtnTracert, BtnDns, BtnPortCheck, BtnPortScan, BtnUoStatus, toolSepMain2, BtnLanScan, BtnDiagnose, toolSepMain3, BtnStop });
             toolStripMain.Name = "toolStripMain";
             toolStripMain.Padding = new System.Windows.Forms.Padding(8, 2, 8, 2);
             toolStripMain.RenderMode = System.Windows.Forms.ToolStripRenderMode.System;
@@ -700,6 +721,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             tabMain.Controls.Add(tabOutput);
             tabMain.Controls.Add(tabStats);
             tabMain.Controls.Add(tabResults);
+            tabMain.Controls.Add(tabProvider);
             tabMain.Controls.Add(tabNetwork);
             tabMain.Dock = System.Windows.Forms.DockStyle.Fill;
             tabMain.Name = "tabMain";
@@ -993,6 +1015,150 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             BtnCopyPublicIp.Text = "Copy public IP";
             BtnCopyPublicIp.Click += BtnCopyPublicIp_Click;
             // 
+            // BtnDiagnose
+            // 
+            BtnDiagnose.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            BtnDiagnose.Name = "BtnDiagnose";
+            BtnDiagnose.Text = "Diagnose";
+            BtnDiagnose.ToolTipText = "Check router → provider → internet → DNS → server and show where a problem is";
+            BtnDiagnose.Click += BtnDiagnose_Click;
+            // 
+            // tabProvider
+            // 
+            tabProvider.Controls.Add(listProviders);
+            tabProvider.Controls.Add(lblDiagnosis);
+            tabProvider.Controls.Add(lblProviderInfo);
+            tabProvider.Controls.Add(toolStripProviders);
+            tabProvider.Name = "tabProvider";
+            tabProvider.Padding = new System.Windows.Forms.Padding(0);
+            tabProvider.Text = "Provider / Connection";
+            tabProvider.UseVisualStyleBackColor = true;
+            // 
+            // toolStripProviders
+            // 
+            toolStripProviders.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
+            toolStripProviders.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { BtnProvAdd, BtnProvEdit, BtnProvDelete, toolSepProv1, BtnProvDetect, BtnProvCheck, BtnProvDiagnose });
+            toolStripProviders.Name = "toolStripProviders";
+            toolStripProviders.Padding = new System.Windows.Forms.Padding(8, 2, 8, 2);
+            toolStripProviders.RenderMode = System.Windows.Forms.ToolStripRenderMode.System;
+            // 
+            // BtnProvAdd
+            // 
+            BtnProvAdd.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            BtnProvAdd.Name = "BtnProvAdd";
+            BtnProvAdd.Text = "Add…";
+            BtnProvAdd.ToolTipText = "Save an address of your router, provider, DNS or an internet host";
+            BtnProvAdd.Click += BtnProvAdd_Click;
+            // 
+            // BtnProvEdit
+            // 
+            BtnProvEdit.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            BtnProvEdit.Name = "BtnProvEdit";
+            BtnProvEdit.Text = "Edit…";
+            BtnProvEdit.Click += BtnProvEdit_Click;
+            // 
+            // BtnProvDelete
+            // 
+            BtnProvDelete.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            BtnProvDelete.Name = "BtnProvDelete";
+            BtnProvDelete.Text = "Delete";
+            BtnProvDelete.Click += BtnProvDelete_Click;
+            // 
+            // toolSepProv1
+            // 
+            toolSepProv1.Name = "toolSepProv1";
+            // 
+            // BtnProvDetect
+            // 
+            BtnProvDetect.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            BtnProvDetect.Name = "BtnProvDetect";
+            BtnProvDetect.Text = "Auto-detect";
+            BtnProvDetect.ToolTipText = "Find your router, DNS servers and the first node of your provider automatically";
+            BtnProvDetect.Click += BtnProvDetect_Click;
+            // 
+            // BtnProvCheck
+            // 
+            BtnProvCheck.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            BtnProvCheck.Name = "BtnProvCheck";
+            BtnProvCheck.Text = "Ping all";
+            BtnProvCheck.ToolTipText = "Ping all saved connection addresses";
+            BtnProvCheck.Click += BtnProvCheck_Click;
+            // 
+            // BtnProvDiagnose
+            // 
+            BtnProvDiagnose.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            BtnProvDiagnose.Name = "BtnProvDiagnose";
+            BtnProvDiagnose.Text = "Diagnose";
+            BtnProvDiagnose.ToolTipText = "Check router → provider → internet → DNS → server";
+            BtnProvDiagnose.Click += BtnProvDiagnose_Click;
+            // 
+            // lblProviderInfo
+            // 
+            lblProviderInfo.BackColor = System.Drawing.Color.FromArgb(32, 36, 44);
+            lblProviderInfo.Dock = System.Windows.Forms.DockStyle.Top;
+            lblProviderInfo.Font = new System.Drawing.Font("Consolas", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            lblProviderInfo.ForeColor = System.Drawing.Color.White;
+            lblProviderInfo.Name = "lblProviderInfo";
+            lblProviderInfo.Padding = new System.Windows.Forms.Padding(10, 6, 10, 6);
+            lblProviderInfo.Size = new System.Drawing.Size(660, 70);
+            lblProviderInfo.Text = "Provider: -";
+            // 
+            // lblDiagnosis
+            // 
+            lblDiagnosis.BackColor = System.Drawing.Color.FromArgb(32, 36, 44);
+            lblDiagnosis.Dock = System.Windows.Forms.DockStyle.Bottom;
+            lblDiagnosis.Font = new System.Drawing.Font("Segoe UI", 10.5F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+            lblDiagnosis.ForeColor = System.Drawing.Color.White;
+            lblDiagnosis.Name = "lblDiagnosis";
+            lblDiagnosis.Padding = new System.Windows.Forms.Padding(10, 4, 10, 4);
+            lblDiagnosis.Size = new System.Drawing.Size(660, 56);
+            lblDiagnosis.Text = "-";
+            lblDiagnosis.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // listProviders
+            // 
+            listProviders.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] { colProvName, colProvAddress, colProvKind, colProvStatus, colProvPing, colProvLastCheck });
+            listProviders.Dock = System.Windows.Forms.DockStyle.Fill;
+            listProviders.FullRowSelect = true;
+            listProviders.GridLines = true;
+            listProviders.HideSelection = false;
+            listProviders.ShowItemToolTips = true;
+            listProviders.UseCompatibleStateImageBehavior = false;
+            listProviders.Name = "listProviders";
+            listProviders.View = System.Windows.Forms.View.Details;
+            listProviders.DoubleClick += ListProviders_DoubleClick;
+            listProviders.KeyDown += ListProviders_KeyDown;
+            // 
+            // colProvName
+            // 
+            colProvName.Text = "Name";
+            colProvName.Width = 170;
+            // 
+            // colProvAddress
+            // 
+            colProvAddress.Text = "Address";
+            colProvAddress.Width = 170;
+            // 
+            // colProvKind
+            // 
+            colProvKind.Text = "Type";
+            colProvKind.Width = 75;
+            // 
+            // colProvStatus
+            // 
+            colProvStatus.Text = "Status";
+            colProvStatus.Width = 80;
+            // 
+            // colProvPing
+            // 
+            colProvPing.Text = "Ping";
+            colProvPing.Width = 60;
+            // 
+            // colProvLastCheck
+            // 
+            colProvLastCheck.Text = "Last check";
+            colProvLastCheck.Width = 120;
+            // 
             // contextServers
             // 
             contextServers.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { menuUseTarget, menuPing, menuCheck, menuPortCheck, menuTracert, menuUoStatus, menuSep1, menuCopyHost, menuCopyIPv4, menuCopyIPv6, menuCopyAll, menuSep2, menuFavorite, menuEdit, menuDelete });
@@ -1113,6 +1279,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             Text = "AdminTool - Server Admin";
             contextServers.ResumeLayout(false);
             tabNetwork.ResumeLayout(false);
+            tabProvider.ResumeLayout(false);
             tabResults.ResumeLayout(false);
             tableStats.ResumeLayout(false);
             tabStats.ResumeLayout(false);
@@ -1122,6 +1289,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             tableSearch.ResumeLayout(false);
             tableBook.ResumeLayout(false);
             tabNetwork.PerformLayout();
+            tabProvider.PerformLayout();
             tabResults.PerformLayout();
             tabOutput.PerformLayout();
             flowBookButtons.PerformLayout();
@@ -1131,6 +1299,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             splitMain.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)splitMain).EndInit();
             splitMain.ResumeLayout(false);
+            toolStripProviders.ResumeLayout(false);
+            toolStripProviders.PerformLayout();
             toolStripNetwork.ResumeLayout(false);
             toolStripNetwork.PerformLayout();
             toolStripResults.ResumeLayout(false);
@@ -1268,5 +1438,24 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private System.Windows.Forms.ToolStripMenuItem menuDelete;
         private System.Windows.Forms.Timer timerSearch;
         private System.Windows.Forms.ToolTip toolTip;
+        private System.Windows.Forms.ToolStripButton BtnDiagnose;
+        private System.Windows.Forms.TabPage tabProvider;
+        private System.Windows.Forms.ListView listProviders;
+        private System.Windows.Forms.ColumnHeader colProvName;
+        private System.Windows.Forms.ColumnHeader colProvAddress;
+        private System.Windows.Forms.ColumnHeader colProvKind;
+        private System.Windows.Forms.ColumnHeader colProvStatus;
+        private System.Windows.Forms.ColumnHeader colProvPing;
+        private System.Windows.Forms.ColumnHeader colProvLastCheck;
+        private System.Windows.Forms.ToolStrip toolStripProviders;
+        private System.Windows.Forms.ToolStripButton BtnProvAdd;
+        private System.Windows.Forms.ToolStripButton BtnProvEdit;
+        private System.Windows.Forms.ToolStripButton BtnProvDelete;
+        private System.Windows.Forms.ToolStripSeparator toolSepProv1;
+        private System.Windows.Forms.ToolStripButton BtnProvDetect;
+        private System.Windows.Forms.ToolStripButton BtnProvCheck;
+        private System.Windows.Forms.ToolStripButton BtnProvDiagnose;
+        private System.Windows.Forms.Label lblProviderInfo;
+        private System.Windows.Forms.Label lblDiagnosis;
     }
 }

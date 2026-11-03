@@ -80,6 +80,29 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         }
     }
 
+    /// <summary>
+    /// A reference address of the own connection (router, provider node, DNS, internet).
+    /// Pinging these shows whether a problem is on the own side or at the server.
+    /// </summary>
+    public class ReferenceHost
+    {
+        public static readonly string[] Kinds = { "Router", "Provider", "DNS", "Internet", "Other" };
+
+        public string Id { get; set; } = Guid.NewGuid().ToString("N");
+        public string Name { get; set; } = "";
+        public string Address { get; set; } = "";
+        public string Kind { get; set; } = "Provider";
+        public string Notes { get; set; } = "";
+        public DateTime? LastCheck { get; set; }
+        public string LastStatus { get; set; } = "";
+        public long? LastLatency { get; set; }
+
+        public ReferenceHost Clone()
+        {
+            return (ReferenceHost)MemberwiseClone();
+        }
+    }
+
     public class AdminToolSettings
     {
         public int TimeoutMs { get; set; } = 1000;
@@ -97,6 +120,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
     {
         public List<ServerEntry> Servers { get; set; } = new();
         public List<string> History { get; set; } = new();
+        public List<ReferenceHost> Providers { get; set; } = new();
+        public string ProviderInfo { get; set; } = "";
         public AdminToolSettings Settings { get; set; } = new();
     }
 
@@ -133,6 +158,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                     {
                         data.Servers ??= new List<ServerEntry>();
                         data.History ??= new List<string>();
+                        data.Providers ??= new List<ReferenceHost>();
+                        data.ProviderInfo ??= "";
                         data.Settings ??= new AdminToolSettings();
                         return data;
                     }

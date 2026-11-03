@@ -49,6 +49,31 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         public override string ToString() => $"{AdapterName}: {LocalAddress}/{PrefixLength} ({Hosts.Count} hosts)";
     }
 
+    public sealed class ProviderInfo
+    {
+        public string Ip { get; init; } = "";
+        public string Hostname { get; init; } = "";
+        public string Org { get; init; } = "";
+        public string City { get; init; } = "";
+        public string Country { get; init; } = "";
+
+        public string ToDisplayText()
+        {
+            var lines = new List<string>
+            {
+                "Provider : " + (Org.Length > 0 ? Org : "unknown"),
+                "Public IP: " + (Ip.Length > 0 ? Ip : "-") + (Hostname.Length > 0 ? "   (" + Hostname + ")" : "")
+            };
+            string place = string.Join(", ", new[] { City, Country }.Where(x => x.Length > 0));
+            if (place.Length > 0)
+            {
+                lines.Add("Location : " + place);
+            }
+
+            return string.Join(Environment.NewLine, lines);
+        }
+    }
+
     /// <summary>
     /// Async network helpers used by the AdminTool. Nothing here touches the UI.
     /// </summary>
@@ -427,6 +452,173 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             }
 
             return (bitsPerSecond / 1_000_000d).ToString("0.#", CultureInfo.InvariantCulture) + " Mbit/s";
+        }
+
+        /// <summary>
+        /// Default gateways (your router) of all active adapters.
+        /// </summary>
+        public static List<(string Adapter, IPAddress Address)> GetGateways()
+        {
+            var result = new List<(string, IPAddress)>();
+            foreach (NetworkInterface nic in NetworkInterface.GetAllNetworkInterfaces())
+            {
+                if (nic.OperationalStatus != OperationalStatus.Up || nic.NetworkInterfaceType == NetworkInterfaceType.Loopback)
+                {
+                    continue;
+                }
+
+                foreach (GatewayIPAddressInformation gw in nic.GetIPProperties().GatewayAddresses)
+                {
+                    IPAddress a = gw.Address;
+                    if (a == null || a.Equals(IPAddress.Any) || a.Equals(IPAddress.IPv6Any) || a.ToString() == "0.0.0.0")
+                    {
+                        continue;
+                    }
+
+                    if (!result.Any(r => r.Item2.Equals(a)))
+                    {
+                        result.Add((nic.Name, a));
+                    }
+                }
+            }
+
+            // IPv4 router first, it answers ping more reliably
+            return result.OrderBy(r => r.Item2.AddressFamily == AddressFamily.InterNetwork ? 0 : 1).ToList();
+        }
+
+        /// <summary>
+        /// DNS servers of all active adapters (without the Windows placeholder fec0::).
+        /// </summary>
+        public static List<IPAddress> GetDnsServers()
+        {
+            var result = new List<IPAddress>();
+            foreach (NetworkInterface nic in NetworkInterface.GetAllNetworkInterfaces())
+            {
+                if (nic.OperationalStatus != OperationalStatus.Up || nic.NetworkInterfaceType == NetworkInterfaceType.Loopback)
+                {
+                    continue;
+                }
+
+                foreach (IPAddress dns in nic.GetIPProperties().DnsAddresses)
+                {
+                    if (!dns.IsIPv6SiteLocal && !IPAddress.IsLoopback(dns) && !result.Contains(dns))
+                    {
+                        result.Add(dns);
+                    }
+                }
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// True for addresses of the own home network (RFC 1918, link-local, loopback, IPv6 ULA).
+        /// Carrier-grade NAT (100.64.0.0/10) counts as provider, not as private.
+        /// </summary>
+        public static bool IsPrivate(IPAddress ip)
+        {
+            if (IPAddress.IsLoopback(ip))
+            {
+                return true;
+            }
+
+            if (ip.AddressFamily == AddressFamily.InterNetwork)
+            {
+                byte[] b = ip.GetAddressBytes();
+                return b[0] == 10 || (b[0] == 172 && b[1] >= 16 && b[1] <= 31) || (b[0] == 192 && b[1] == 168) ||
+                       (b[0] == 169 && b[1] == 254);
+            }
+
+            byte[] v6 = ip.GetAddressBytes();
+            return ip.IsIPv6LinkLocal || ip.IsIPv6SiteLocal || (v6[0] & 0xFE) == 0xFC;
+        }
+
+        /// <summary>
+        /// Finds the first address on the way to the internet that is outside the home network:
+        /// that is the access node of your provider.
+        /// </summary>
+        public static async Task<IPAddress> FindProviderNodeAsync(int timeoutMs, CancellationToken ct)
+        {
+            IPAddress probe = IPAddress.Parse("1.1.1.1");
+            for (int ttl = 1; ttl <= 10; ttl++)
+            {
+                ct.ThrowIfCancellationRequested();
+                try
+                {
+                    PingReply reply = await PingAsync(probe, timeoutMs, ttl).ConfigureAwait(false);
+                    if ((reply.Status is IPStatus.TtlExpired or IPStatus.TimeExceeded) && reply.Address != null &&
+                        !IsPrivate(reply.Address))
+                    {
+                        return reply.Address;
+                    }
+
+                    if (reply.Status == IPStatus.Success)
+                    {
+                        break;
+                    }
+                }
+                catch (PingException)
+                {
+                    // try the next hop
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Provider name, public IP and location (ipinfo.io). Falls back to the public IP and its host name.
+        /// </summary>
+        public static async Task<ProviderInfo> GetProviderInfoAsync(CancellationToken ct)
+        {
+            try
+            {
+                string json = await _http.GetStringAsync("https://ipinfo.io/json", ct).ConfigureAwait(false);
+                using var doc = System.Text.Json.JsonDocument.Parse(json);
+                System.Text.Json.JsonElement root = doc.RootElement;
+
+                string Get(string name) =>
+                    root.TryGetProperty(name, out System.Text.Json.JsonElement v) && v.ValueKind == System.Text.Json.JsonValueKind.String
+                        ? v.GetString() ?? ""
+                        : "";
+
+                string org = Get("org");
+                // "AS3320 Deutsche Telekom AG" -> "Deutsche Telekom AG (AS3320)"
+                if (org.StartsWith("AS", StringComparison.Ordinal) && org.Contains(' '))
+                {
+                    int sp = org.IndexOf(' ');
+                    org = org.Substring(sp + 1) + " (" + org.Substring(0, sp) + ")";
+                }
+
+                return new ProviderInfo
+                {
+                    Ip = Get("ip"),
+                    Hostname = Get("hostname"),
+                    Org = org,
+                    City = Get("city"),
+                    Country = Get("country")
+                };
+            }
+            catch (Exception) when (!ct.IsCancellationRequested)
+            {
+                string ip = await GetPublicIpAsync(false).ConfigureAwait(false);
+                if (ip.Length == 0)
+                {
+                    return null;
+                }
+
+                string host = await ReverseLookupAsync(IPAddress.Parse(ip), 2000, ct).ConfigureAwait(false);
+                return new ProviderInfo { Ip = ip, Hostname = host, Org = ProviderFromHostname(host) };
+            }
+        }
+
+        /// <summary>
+        /// "p5dd1234.dip0.t-ipconnect.de" -> "t-ipconnect.de"
+        /// </summary>
+        private static string ProviderFromHostname(string host)
+        {
+            string[] parts = (host ?? "").Split('.', StringSplitOptions.RemoveEmptyEntries);
+            return parts.Length >= 2 ? parts[^2] + "." + parts[^1] : "";
         }
 
         public static async Task<bool> CheckInternetAsync()
