@@ -1286,18 +1286,41 @@ namespace UoFiddler.Forms
         private NotepadForm _notepadForm; // Declare an instance of NotepadForm
         private void NotPadToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            GetNotepad().Show();
+            _notepadForm.Activate();
+        }
+
+        /// <summary>
+        /// Returns the open notepad or creates it, connected to the Items and Gumps tabs.
+        /// </summary>
+        private NotepadForm GetNotepad()
+        {
             if (_notepadForm == null || _notepadForm.IsDisposed)
             {
-                _notepadForm = new NotepadForm()
+                _notepadForm = new NotepadForm
                 {
-                    TopMost = true
+                    ShowItemInFiddler = id =>
+                    {
+                        TabPanel.SelectedTab = ItemsTab;
+                        UoFiddler.Controls.UserControls.ItemsControl.SearchGraphic(id);
+                        Activate();
+                    },
+                    SelectedItemProvider = () => UoFiddler.Controls.UserControls.ItemsControl.RefMarker?.SelectedGraphicId ?? -1,
+                    SelectedGumpProvider = UoFiddler.Controls.UserControls.GumpControl.GetSelectedGumpId
                 };
-                _notepadForm.Show();
             }
-            else
-            {
-                _notepadForm.Focus();
-            }
+
+            return _notepadForm;
+        }
+
+        /// <summary>
+        /// Opens a note from a reminder popup.
+        /// </summary>
+        private void OpenNoteFromReminder(string noteId)
+        {
+            NotepadForm notepad = GetNotepad();
+            notepad.Show();
+            notepad.OpenNoteById(noteId);
         }
         #endregion
 
@@ -1461,6 +1484,9 @@ namespace UoFiddler.Forms
         #region [ MainForm_Load ]
         private void MainForm_Load(object sender, EventArgs e)
         {
+            // Note reminders (Notepad) run while UoFiddler is open
+            UoFiddler.Forms.Notepad.NoteReminderService.Start(OpenNoteFromReminder);
+
             // Load the saved background color
             int savedColorArgb = Properties.Settings.Default.BackgroundColor;
 
