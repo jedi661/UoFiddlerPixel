@@ -68,7 +68,7 @@ namespace UoFiddler.Plugin.SendItem
         /// <summary>
         /// Version of the plugin
         /// </summary>
-        public override string Version { get; } = "1.0.1";
+        public override string Version { get; } = "2.0.0";
 
         /// <summary>
         /// Host of the plugin.
@@ -131,7 +131,24 @@ namespace UoFiddler.Plugin.SendItem
 
         private static void ToolStripClick(object sender, EventArgs e)
         {
-            new SendItemOptionsForm().Show();
+            SendItemOptionsForm form = SendItemOptionsForm.GetInstance();
+            form.Show();
+            form.Activate();
+        }
+
+        /// <summary>
+        /// Id of the item selected in UoFiddler's Items tab, or -1.
+        /// </summary>
+        public static int GetItemsTabSelectedId()
+        {
+            try
+            {
+                return _refMarker?.Host?.GetSelectedIdFromItemsControl() ?? -1;
+            }
+            catch
+            {
+                return -1;
+            }
         }
 
         private void EventsModifyItemsControlContextMenuEvent(ContextMenuStrip strip)
