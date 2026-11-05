@@ -30,7 +30,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
     {
         private Bitmap _image;
         private Bitmap _highlight;
-        private short[] _indices;
+        private int[] _indices;
         private int _imgW;
         private int _imgH;
         private int _zoom = 2;
@@ -87,10 +87,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
             byte[] data = System.IO.File.ReadAllBytes(path);
             Bitmap shown;
             byte[] indices;
+            int[] cells;
             int w, h;
             if (IndexedBitmapIO.TryReadBmp8(data, out w, out h, out indices, out Color[] pal))
             {
-                var map = new IndexedMap(w, h, indices);
+                cells = Array.ConvertAll(indices, b => (int)b);
+                var map = new IndexedMap(w, h, Array.ConvertAll(indices, b => (ushort)b));
                 shown = IndexedBitmapIO.ToBitmap(map, pal);
             }
             else
@@ -99,14 +101,14 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                 w = src.Width;
                 h = src.Height;
                 IndexedMap map = IndexedBitmapIO.FromBitmap(src, rules, null);
-                indices = map.Pixels;
+                cells = Array.ConvertAll(map.Pixels, b => (int)b);
                 shown = new Bitmap(src);
             }
-            SetImage(shown, Array.ConvertAll(indices, b => (short)b), w, h);
+            SetImage(shown, cells, w, h);
         }
 
         /// <summary>Uses an image that was generated in memory (palette index per pixel, -1 = no colour).</summary>
-        public void SetImage(Bitmap image, short[] indices, int width, int height)
+        public void SetImage(Bitmap image, int[] indices, int width, int height)
         {
             _image?.Dispose();
             _image = image;

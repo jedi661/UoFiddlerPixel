@@ -277,7 +277,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
     {
         private readonly DragonRuleSet _rules;
         private readonly GeneratorSettings _s;
-        private readonly int[][] _altLookup = new int[256][];
+        private readonly Dictionary<int, int[]> _altLookup = new Dictionary<int, int[]>();
 
         public MapGenerator(DragonRuleSet rules, GeneratorSettings settings)
         {
@@ -376,9 +376,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                 snowLevel = 3;
             }
 
-            byte water = IndexFor(_s.WaterGroup, _s.WaterAltitude);
+            ushort water = IndexFor(_s.WaterGroup, _s.WaterAltitude);
             int snowMax = MaxAltitudeOf(_s.SnowGroup);
-            var map = new IndexedMap(outW, outH, water);
+            var map = new IndexedMap(outW, outH, water, _rules.ColorBits);
             List<GeneratorBiome> biomes = _s.Biomes.Where(b => b.Enabled).ToList();
             done = 0;
 
@@ -460,21 +460,22 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         /// <summary>Places 2×2 invisible cave entrances in the mountain border (one side touches the land).</summary>
         private void AddCaveEntrances(IndexedMap map, int seed, CancellationToken cancel)
         {
-            int cave = _s.CaveGroup & 0xFF, mountain = _s.MountainGroup, water = _s.WaterGroup;
+            int cave = _s.CaveGroup, mountain = _s.MountainGroup, water = _s.WaterGroup;
             List<DragonPaletteEntry> caveColours = _rules.EntriesOfGroup(cave);
             if (caveColours.Count == 0)
             {
                 return;
             }
-            var groupOf = new int[256];
-            var altOf = new int[256];
+            var groupOf = new int[65536];
+            Array.Fill(groupOf, -1);
+            var altOf = new int[65536];
             foreach (DragonPaletteEntry e in _rules.Palette)
             {
                 groupOf[e.Index] = e.Group;
                 altOf[e.Index] = e.Altitude;
             }
             int w = map.Width, h = map.Height;
-            byte[] px = map.Pixels;
+            ushort[] px = map.Pixels;
             int G(int x, int y) => x < 0 || y < 0 || x >= w || y >= h ? -1 : groupOf[px[y * w + x]];
             bool IsLand(int x, int y)
             {
@@ -528,7 +529,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                 int pX = c.dy, pY = c.dx;
                 foreach ((int x, int y) in new[] { (c.x, c.y), (c.x + pX, c.y + pY), (c.x - c.dx, c.y - c.dy), (c.x + pX - c.dx, c.y + pY - c.dy) })
                 {
-                    px[y * w + x] = (byte)colour.Index;
+                    px[y * w + x] = (ushort)colour.Index;
                 }
                 placed.Add((c.x, c.y));
             }
@@ -577,7 +578,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             cancel.ThrowIfCancellationRequested();
             var gapNoise = new PerlinNoise(seed + 606);
             double gapLevel = 1 - Math.Clamp(_s.BeachPercent / 100.0, 0, 1);
-            byte beach = IndexFor(_s.BeachGroup, 0);
+            ushort beach = IndexFor(_s.BeachGroup, 0);
             double gapScale = 60.0 / Math.Max(1, scale);
             for (int i = 0; i < n; i++)
             {
@@ -633,11 +634,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         }
 
         /// <summary>Colour of <paramref name="group"/> nearest to <paramref name="alt"/> (cached; falls back to the fallback group).</summary>
-        private byte IndexFor(int group, int alt)
+        private ushort IndexFor(int group, int alt)
         {
-            group &= 0xFF;
-            int[] lookup = _altLookup[group];
-            if (lookup == null)
+            if (!_altLookup.TryGetValue(group, out int[] lookup))
             {
                 lookup = new int[256];
                 for (int z = -128; z < 128; z++)
@@ -647,11 +646,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                 _altLookup[group] = lookup;
             }
             int idx = lookup[Math.Clamp(alt, -128, 127) + 128];
-            if (idx < 0 && group != (_s.FallbackGroup & 0xFF))
+            if (idx < 0 && group != _s.FallbackGroup)
             {
                 return IndexFor(_s.FallbackGroup, alt);
             }
-            return (byte)Math.Max(0, idx);
+            return (ushort)Math.Max(0, idx);
         }
     }
 }

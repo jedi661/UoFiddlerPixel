@@ -168,15 +168,16 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
         private void UpdateTitle()
         {
             string name = _map == null ? "keine Karte" : (_map.FilePath == null ? "Unbenannt" : Path.GetFileName(_map.FilePath));
-            string size = _map == null ? string.Empty : $" ({_map.Width}×{_map.Height})";
+            string size = _map == null ? string.Empty : $" ({_map.Width}×{_map.Height}, {_map.Bits} Bit)";
             string mod = _map != null && _map.Modified ? " *" : string.Empty;
-            Text = $"Dragon Map Studio – {name}{size}{mod} – Regeln: {_rules.Name}{(_rulesDirty ? " *" : string.Empty)}";
+            Text = $"Dragon Map Studio – {name}{size}{mod} – Regeln: {_rules.Name} ({_rules.ColorBits} Bit){(_rulesDirty ? " *" : string.Empty)}";
         }
 
         private void SetStatus(string text) => lblStatus.Text = text;
 
         private void TabMain_SelectedIndexChanged(object sender, EventArgs e)
         {
+            HideColorPreview();
             if (tabMain.SelectedTab == tabEditor)
             {
                 mapCanvas.Focus();
@@ -223,7 +224,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
         private void ApplyRules()
         {
             RefreshPaletteViews();
-            _rules.BuildHeightLookups(out byte[] raise, out byte[] lower);
+            _rules.BuildHeightLookups(out ushort[] raise, out ushort[] lower);
             mapCanvas.SetHeightLookups(raise, lower);
             mapCanvas.SetAltitudes(_rules.Palette.Select(p => p.Altitude).ToArray());
             BindRuleGrids();
@@ -233,7 +234,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                 FillLandPresets();
             }
             lblRuleSetInfo.Text = $"{_rules.Name}  –  {_rules.Palette.Count(p => p.Defined)} Farben · {_rules.Groups.Count} Gruppen · {_rules.Transitions.Count} Übergänge · {_rules.TransitionFiles.Sum(f => f.Patterns.Count)} Muster · {_rules.ItemFiles.Sum(f => f.Groups.Count)} Item-Gruppen";
-            txtRuleWarnings.Text = _rules.Warnings.Count == 0 ? "Keine Hinweise." : string.Join(Environment.NewLine, _rules.Warnings);
+            txtRuleWarnings.Text = _rules.Warnings.Count == 0 ? "Keine Hinweise." : string.Join(Environment.NewLine, _rules.Warnings) +
+                Environment.NewLine + Environment.NewLine + L.Pick("→ Knopf 'Hinweise beheben' (Reiter Regeln) erledigt das meiste automatisch.", "→ The button 'Fix hints' (Rules tab) does most of it automatically.", "→ Le bouton 'Corriger' fait l'essentiel automatiquement.");
+            UpdateRulesToolbar();
             UpdateTitle();
         }
 
@@ -247,6 +250,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             editorPalette.SetPalette(colors, defined, names);
             mapCanvas.SetPalette(colors);
             UpdateBrushColorPanels();
+            UpdatePaletteBitsUi();
             if (_selectedColor >= 0)
             {
                 ShowColorInfo(_selectedColor);
@@ -281,7 +285,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
 
         private void RenderColorTableFromRules()
         {
-            Bitmap bmp = ColorTableRenderer.Render(_rules, out short[] indices);
+            Bitmap bmp = ColorTableRenderer.Render(_rules, out int[] indices);
             colorTableView.SetImage(bmp, indices, bmp.Width, bmp.Height);
         }
 
@@ -331,11 +335,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                     break;
                 case MouseButtons.Right:
                     SetBrushColor(e.Index, true);
-                    SetStatus($"Farbe 1 = {e.Index:x2} {_rules.Palette[e.Index].Name}");
+                    SetStatus($"Farbe 1 = {_rules.HexIndex(e.Index)} {_rules.Palette[e.Index].Name}");
                     break;
                 case MouseButtons.Middle:
                     SetBrushColor(e.Index, false);
-                    SetStatus($"Farbe 2 = {e.Index:x2} {_rules.Palette[e.Index].Name}");
+                    SetStatus($"Farbe 2 = {_rules.HexIndex(e.Index)} {_rules.Palette[e.Index].Name}");
                     break;
             }
         }
@@ -345,10 +349,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             if (e.Index < 0)
             {
                 lblPosition.Text = "-";
+                HideColorPreview();
                 return;
             }
             DragonPaletteEntry p = _rules.Palette[e.Index];
             lblPosition.Text = $"{p.HexIndex} · {p.HtmlColor} · {p.Name}";
+            ShowColorPreview(e.Index, Math.Max(16, colorTableView.Zoom * 15));
         }
 
         private void PaletteGrid_IndexClicked(object sender, PaletteIndexEventArgs e)
@@ -362,11 +368,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
 
         private void SelectColor(int index)
         {
-            if (index < 0 || index > 255)
+            if (index < 0 || index >= _rules.Palette.Count)
             {
                 return;
             }
             _selectedColor = index;
+            ShowPaletteIndex(index);
             colorTableView.SelectedIndex = index;
             paletteGrid.PrimaryIndex = index;
             propColorEntry.SelectedObject = _rules.Palette[index];
@@ -377,8 +384,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
         {
             DragonPaletteEntry p = _rules.Palette[index];
             panelColorSwatch.BackColor = p.Color;
-            lblColorAddress.Text = $"{p.HexIndex}  (0x{index:X2} / {index})";
-            string group = p.Group >= 0 ? $"{p.Group:x2} {_rules.GroupName(p.Group)}" : "keine";
+            lblColorAddress.Text = $"{_rules.HexIndex(index)}  ({index})";
+            string group = p.Group >= 0 ? $"{_rules.HexGroup(p.Group)} {_rules.GroupName(p.Group)}" : "keine";
             string tiles = p.GetTileIds().Length == 0 ? "-" : string.Join(" ", p.GetTileIds().Take(12).Select(t => t.ToString("x4"))) + (p.GetTileIds().Length > 12 ? " …" : string.Empty);
             lblColorDetails.Text =
                 $"Name: {p.Name}{Environment.NewLine}" +
@@ -430,7 +437,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                 case CopyFormat.MapTransLine:
                     return $"{p.HexIndex} {(p.Altitude >= 0 ? p.Altitude.ToString("000", CultureInfo.InvariantCulture) : p.Altitude.ToString(CultureInfo.InvariantCulture).PadLeft(3))} {string.Join(" ", p.GetTileIds().Select(t => t.ToString("x4")))}";
                 case CopyFormat.Full:
-                    return $"Index {p.HexIndex} (0x{index:X2}, {index}) | {p.HtmlColor} | RGB {p.R},{p.G},{p.B} | Gruppe {(p.Group >= 0 ? p.Group.ToString("x2") : "-")} {_rules.GroupName(p.Group)} | Z {p.Altitude} | Tiles {p.Tiles}";
+                    return $"Index {_rules.HexIndex(index)} ({index}) | {p.HtmlColor} | RGB {p.R},{p.G},{p.B} | Gruppe {(p.Group >= 0 ? _rules.HexGroup(p.Group) : "-")} {_rules.GroupName(p.Group)} | Z {p.Altitude} | Tiles {p.Tiles}";
                 default:
                     return p.HexIndex;
             }
@@ -480,7 +487,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             {
                 _settings.Outline.LandIndex = _selectedColor;
                 propOutline.Refresh();
-                SetStatus($"Umriss-Land = {_selectedColor:x2}");
+                SetStatus($"Umriss-Land = {_rules.HexIndex(_selectedColor)}");
             }
         }
 
@@ -490,7 +497,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             {
                 _settings.Outline.WaterIndex = _selectedColor;
                 propOutline.Refresh();
-                SetStatus($"Umriss-Wasser = {_selectedColor:x2}");
+                SetStatus($"Umriss-Wasser = {_rules.HexIndex(_selectedColor)}");
             }
         }
 
@@ -498,32 +505,29 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
         private void BtnNewColor_Click(object sender, EventArgs e)
         {
             int free = _rules.FirstFreeIndex();
+            if (free < 0 && _rules.ColorBits == 8)
+            {
+                DialogResult r = MessageBox.Show(this, L.Pick(
+                        "Alle 256 Farben sind belegt (8 Bit, klassisches Dragon).\n\nRegelsatz auf 16 Bit umstellen? Dann gibt es bis zu 65 536 Farben.\n" +
+                        "Karten mit Farben über ff werden als 16-Bit-PNG gespeichert; das alte Dragon kann diese Skripte nicht lesen.",
+                        "All 256 colours are used (8 bit, classic Dragon).\n\nSwitch the rule set to 16 bit? Then up to 65 536 colours are possible.\n" +
+                        "Maps with colours above ff are saved as 16-bit PNG; the old Dragon cannot read these scripts.",
+                        "Les 256 couleurs sont utilisées (8 bits, Dragon classique).\n\nPasser le jeu de règles en 16 bits ? Jusqu'à 65 536 couleurs seront possibles.\n" +
+                        "Les cartes avec des couleurs au-delà de ff sont enregistrées en PNG 16 bits ; l'ancien Dragon ne lit pas ces scripts."),
+                    Text, MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                if (r != DialogResult.Yes)
+                {
+                    return;
+                }
+                ConvertRulesTo16();
+                free = _rules.FirstFreeIndex();
+            }
             if (free < 0)
             {
-                MessageBox.Show(this, "Alle 256 Farben sind belegt. Dragon-BMPs haben 8 Bit (max. 256 Farben).\n" +
-                                      "Tipp: nicht benutzte Farben im Reiter 'Regeln → Farben' freigeben (Defined = aus, Group = -1).",
-                    Text, MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show(this, L.Pick("Alle Farben sind belegt.", "All colours are used.", "Toutes les couleurs sont utilisées."), Text, MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
-            using var dlg = new ColorDialog { FullOpen = true, Color = Color.Magenta };
-            if (dlg.ShowDialog(this) != DialogResult.OK)
-            {
-                return;
-            }
-            DragonPaletteEntry template = _selectedColor >= 0 ? _rules.Palette[_selectedColor] : null;
-            DragonPaletteEntry entry = _rules.Palette[free];
-            entry.SetColor(dlg.Color);
-            entry.Defined = true;
-            entry.Name = "Neue Farbe";
-            entry.Category = "Eigene";
-            entry.Group = template?.Group ?? 0;
-            entry.Altitude = template?.Altitude ?? 0;
-            entry.Tiles = template?.Tiles ?? "0003";
-            entry.Comment = "Eigene Farbe";
-            MarkRulesDirty();
-            ApplyRules();
-            SelectColor(free);
-            SetStatus($"Neue Farbe auf Index {free:x2} angelegt – rechts Name, Gruppe, Höhe, Tiles und Textur einstellen.");
+            EditColor(-1);
         }
 
         private void BtnEditRgb_Click(object sender, EventArgs e)
@@ -552,7 +556,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                 e.ChangedItem?.PropertyDescriptor?.Name == nameof(DragonPaletteEntry.Altitude) ||
                 e.ChangedItem?.PropertyDescriptor?.Name == nameof(DragonPaletteEntry.Defined))
             {
-                _rules.BuildHeightLookups(out byte[] raise, out byte[] lower);
+                _rules.BuildHeightLookups(out ushort[] raise, out ushort[] lower);
                 mapCanvas.SetHeightLookups(raise, lower);
             }
             gridPaletteEntries.Refresh();
@@ -562,6 +566,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
 
         private void SetBrushColor(int index, bool primary)
         {
+            if (!EnsureMapCanUse(index))
+            {
+                return;
+            }
             if (primary)
             {
                 mapCanvas.PrimaryIndex = index;
@@ -579,8 +587,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             {
                 return;
             }
-            DragonPaletteEntry p1 = _rules.Palette[Math.Clamp(mapCanvas.PrimaryIndex, 0, 255)];
-            DragonPaletteEntry p2 = _rules.Palette[Math.Clamp(mapCanvas.SecondaryIndex, 0, 255)];
+            int last = _rules.Palette.Count - 1;
+            DragonPaletteEntry p1 = _rules.Palette[Math.Clamp(mapCanvas.PrimaryIndex, 0, last)];
+            DragonPaletteEntry p2 = _rules.Palette[Math.Clamp(mapCanvas.SecondaryIndex, 0, last)];
             panelPrimarySwatch.BackColor = p1.Color;
             panelSecondarySwatch.BackColor = p2.Color;
             lblPrimary.Text = $"1: {p1.HexIndex}{Environment.NewLine}{p1.Name}";
@@ -818,7 +827,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             if (copy != null)
             {
                 _clipboard = copy;
-                mapCanvas.FillSelection((byte)mapCanvas.SecondaryIndex, "Ausschneiden");
+                mapCanvas.FillSelection((ushort)mapCanvas.SecondaryIndex, "Ausschneiden");
             }
         }
 
@@ -835,9 +844,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             SetStatus("Einfügen: Linksklick setzt (mehrfach möglich), Esc oder Rechtsklick beendet.");
         }
 
-        private void MnuDeleteSelection_Click(object sender, EventArgs e) => mapCanvas.FillSelection((byte)mapCanvas.SecondaryIndex, "Auswahl löschen");
+        private void MnuDeleteSelection_Click(object sender, EventArgs e) => mapCanvas.FillSelection((ushort)mapCanvas.SecondaryIndex, "Auswahl löschen");
 
-        private void MnuFillSelection_Click(object sender, EventArgs e) => mapCanvas.FillSelection((byte)mapCanvas.PrimaryIndex, "Auswahl füllen");
+        private void MnuFillSelection_Click(object sender, EventArgs e) => mapCanvas.FillSelection((ushort)mapCanvas.PrimaryIndex, "Auswahl füllen");
 
         private void MnuSelectAll_Click(object sender, EventArgs e) => mapCanvas.SelectAll();
 
@@ -848,8 +857,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             _map = map;
             _history.Attach(map);
             mapCanvas.SetMap(map, _history);
-            mapCanvas.PrimaryIndex = Math.Clamp(_settings.PrimaryIndex, 0, 255);
-            mapCanvas.SecondaryIndex = Math.Clamp(_settings.SecondaryIndex, 0, 255);
+            mapCanvas.PrimaryIndex = Math.Clamp(_settings.PrimaryIndex, 0, Math.Min(map.MaxIndex, _rules.Palette.Count - 1));
+            mapCanvas.SecondaryIndex = Math.Clamp(_settings.SecondaryIndex, 0, Math.Min(map.MaxIndex, _rules.Palette.Count - 1));
             UpdateBrushColorPanels();
             _thumbDirty = true;
             TimerThumbnail_Tick(this, EventArgs.Empty);
@@ -902,14 +911,16 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                 return false;
             }
             string path = _map.FilePath;
-            if (saveAs || string.IsNullOrEmpty(path) || !path.EndsWith(".bmp", StringComparison.OrdinalIgnoreCase))
+            string ext = MapExtension(_map);
+            if (saveAs || string.IsNullOrEmpty(path) || !path.EndsWith(ext, StringComparison.OrdinalIgnoreCase))
             {
                 Directory.CreateDirectory(_settings.ProjectFolder);
                 using var dlg = new SaveFileDialog
                 {
                     Filter = IndexedBitmapIO.SaveFilter,
                     InitialDirectory = _settings.ProjectFolder,
-                    FileName = string.IsNullOrEmpty(path) ? "NeueKarte.bmp" : Path.GetFileNameWithoutExtension(path) + ".bmp",
+                    FileName = (string.IsNullOrEmpty(path) ? "NeueKarte" : Path.GetFileNameWithoutExtension(path)) + ext,
+                    FilterIndex = _map.Bits == 16 ? 2 : 1,
                     Title = "Karte speichern"
                 };
                 if (dlg.ShowDialog(this) != DialogResult.OK)
@@ -917,16 +928,27 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                     return false;
                 }
                 path = dlg.FileName;
+                // the chosen file type decides the format: .png = 16 bit, .bmp = 8 bit (only when all colours fit)
                 if (path.EndsWith(".png", StringComparison.OrdinalIgnoreCase))
                 {
-                    IndexedBitmapIO.SavePng(path, _map, _rules.GetColors());
-                    SetStatus("PNG exportiert (nur Vorschau – Dragon braucht das 8-Bit-BMP).");
-                    return false;
+                    _map.Bits = 16;
+                }
+                else if (_map.Bits == 16)
+                {
+                    if (_map.HighestUsedIndex() > 0xFF)
+                    {
+                        MessageBox.Show(this, L.Pick("Die Karte benutzt Farben über ff und kann nur als 16-Bit-PNG gespeichert werden.",
+                                "The map uses colours above ff and can only be saved as 16-bit PNG.",
+                                "La carte utilise des couleurs au-delà de ff et ne peut être enregistrée qu'en PNG 16 bits."),
+                            Text, MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        return false;
+                    }
+                    _map.Bits = 8;
                 }
             }
             try
             {
-                IndexedBitmapIO.SaveBmp8(path, _map, _rules.GetColors());
+                IndexedBitmapIO.Save(path, _map, _rules.GetColors());
                 _map.FilePath = path;
                 _map.Modified = false;
                 _settings.AddRecent(path);
@@ -957,9 +979,13 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             }
             _settings.NewMapWidth = dlg.MapWidth;
             _settings.NewMapHeight = dlg.MapHeight;
-            var map = new IndexedMap(dlg.MapWidth, dlg.MapHeight, dlg.FillIndex)
+            if (dlg.Bits == 16 && _rules.ColorBits == 8)
             {
-                FilePath = Path.Combine(_settings.ProjectFolder, MakeSafeFileName(dlg.MapName) + ".bmp"),
+                ConvertRulesTo16();
+            }
+            var map = new IndexedMap(dlg.MapWidth, dlg.MapHeight, dlg.FillIndex, dlg.Bits)
+            {
+                FilePath = Path.Combine(_settings.ProjectFolder, MakeSafeFileName(dlg.MapName) + (dlg.Bits == 16 ? ".png" : ".bmp")),
                 Modified = true
             };
             SetMap(map);
@@ -1044,7 +1070,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                     return;
                 }
                 Directory.CreateDirectory(_settings.ProjectFolder);
-                foreach (string file in Directory.GetFiles(_settings.ProjectFolder, "*.bmp").OrderBy(f => f, StringComparer.OrdinalIgnoreCase))
+                // 8-bit BMPs and 16-bit PNG maps (other PNGs are previews and are not listed)
+                IEnumerable<string> files = Directory.GetFiles(_settings.ProjectFolder, "*.bmp")
+                    .Concat(Directory.GetFiles(_settings.ProjectFolder, "*.png").Where(IndexedBitmapIO.IsPng16));
+                foreach (string file in files.OrderBy(f => f, StringComparer.OrdinalIgnoreCase))
                 {
                     var info = new FileInfo(file);
                     string size = ReadBmpSize(file);
@@ -1075,6 +1104,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                 {
                     return $"{BitConverter.ToInt32(head, 18)}×{Math.Abs(BitConverter.ToInt32(head, 22))}";
                 }
+                if (head[1] == 'P' && head[2] == 'N' && head[3] == 'G')
+                {
+                    int w = (head[16] << 24) | (head[17] << 16) | (head[18] << 8) | head[19];
+                    int h = (head[20] << 24) | (head[21] << 16) | (head[22] << 8) | head[23];
+                    return $"{w}×{h} 16 Bit";
+                }
             }
             catch (Exception)
             {
@@ -1103,10 +1138,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             }
             string dir = Path.GetDirectoryName(file);
             string name = Path.GetFileNameWithoutExtension(file);
-            string target = Path.Combine(dir, name + "_Kopie.bmp");
+            string fileExt = Path.GetExtension(file);
+            string target = Path.Combine(dir, name + "_Kopie" + fileExt);
             for (int i = 2; File.Exists(target); i++)
             {
-                target = Path.Combine(dir, $"{name}_Kopie{i}.bmp");
+                target = Path.Combine(dir, $"{name}_Kopie{i}{fileExt}");
             }
             File.Copy(file, target);
             RefreshLibrary();
@@ -1124,7 +1160,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             {
                 return;
             }
-            string target = Path.Combine(Path.GetDirectoryName(file), MakeSafeFileName(name.Trim()) + ".bmp");
+            string target = Path.Combine(Path.GetDirectoryName(file), MakeSafeFileName(name.Trim()) + Path.GetExtension(file));
             if (File.Exists(target))
             {
                 MessageBox.Show(this, "Eine Karte mit diesem Namen gibt es schon.", Text, MessageBoxButtons.OK, MessageBoxIcon.Information);

@@ -156,7 +156,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             var ctx = new Context(map, rules);
             foreach (string t in (o.SkipGroups ?? string.Empty).Split(new[] { ' ', ',', ';' }, StringSplitOptions.RemoveEmptyEntries))
             {
-                if (HexList.TryParseHexByte(t, out int sg))
+                if (HexList.TryParseHexAddress(t, out int sg))
                 {
                     ctx.Skip[sg] = true;
                 }
@@ -215,10 +215,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         {
             public readonly IndexedMap Map;
             public readonly DragonRuleSet Rules;
-            public readonly int[] GroupOf = new int[256];
-            public readonly int[] AltOf = new int[256];
-            public readonly bool[] Defined = new bool[256];
-            public readonly bool[] Skip = new bool[257];
+            public readonly int[] GroupOf = new int[65536];
+            public readonly int[] AltOf = new int[65536];
+            public readonly bool[] Defined = new bool[65536];
+            public readonly bool[] Skip = new bool[65537];
             public readonly HashSet<int> Pairs;
             private readonly Dictionary<int, List<DragonPaletteEntry>> _entries = new Dictionary<int, List<DragonPaletteEntry>>();
 
@@ -226,6 +226,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             {
                 Map = map;
                 Rules = rules;
+                Array.Fill(GroupOf, -1);
                 foreach (DragonPaletteEntry e in rules.Palette)
                 {
                     GroupOf[e.Index] = e.Group;
@@ -239,7 +240,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             public int H => Map.Height;
             public int Group(int i) => GroupOf[Map.Pixels[i]];
 
-            public bool IsSkip(int group) => group >= 0 && group < 256 && Skip[group];
+            public bool IsSkip(int group) => group >= 0 && group < Skip.Length && Skip[group];
             public int Alt(int i) => AltOf[Map.Pixels[i]];
 
             public List<DragonPaletteEntry> Entries(int group)
@@ -257,7 +258,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             private readonly Dictionary<long, int> _below = new Dictionary<long, int>();
 
             /// <summary>Colour of the group nearest to the altitude.</summary>
-            public byte Nearest(int group, int alt)
+            public ushort Nearest(int group, int alt)
             {
                 long key = ((long)group << 32) | (uint)alt;
                 if (!_nearest.TryGetValue(key, out int idx))
@@ -265,7 +266,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                     DragonPaletteEntry best = Entries(group).OrderBy(e => Math.Abs(e.Altitude - alt)).FirstOrDefault();
                     _nearest[key] = idx = best?.Index ?? 0;
                 }
-                return (byte)idx;
+                return (ushort)idx;
             }
 
             /// <summary>Highest colour of the group with altitude &lt;= max (or the lowest one).</summary>
@@ -289,7 +290,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                 return best?.Index ?? -1;
             }
 
-            public bool HasRule(int a, int b) => a == b || Pairs.Contains((a << 8) | b);
+            public bool HasRule(int a, int b) => a == b || Pairs.Contains(DragonRuleSet.PairKey(a, b));
         }
 
         private static void CheckUndefined(Context c, MapFixReport r)
@@ -312,10 +313,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                 "Dragon braucht mindestens 2 Tiles nebeneinander (Tutorial: 'contract selection by at least 2'). Fläche verbreitern oder entfernen.",
                 "Dragon needs at least 2 tiles side by side (tutorial: 'contract selection by at least 2'). Make the area wider or remove it.", true);
             int w = c.W, h = c.H;
-            byte[] px = c.Map.Pixels;
+            ushort[] px = c.Map.Pixels;
             for (int pass = 0; pass < 3; pass++)
             {
-                var copy = (byte[])px.Clone();
+                var copy = (ushort[])px.Clone();
                 int changed = 0;
                 for (int y = 0; y < h; y++)
                 {
@@ -336,7 +337,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                         }
                         // most frequent other group of the 8 neighbours that has transitions to all neighbours
                         var count = new Dictionary<int, int>();
-                        var colourOf = new Dictionary<int, byte>();
+                        var colourOf = new Dictionary<int, ushort>();
                         var neighbourGroups = new List<int>(8);
                         for (int k = 0; k < 8; k++)
                         {
@@ -345,7 +346,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                             {
                                 continue;
                             }
-                            byte nc = copy[ny * w + nx];
+                            ushort nc = copy[ny * w + nx];
                             int ng = c.GroupOf[nc];
                             if (ng < 0)
                             {
@@ -371,7 +372,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                         }
                         if (bestIdx >= 0)
                         {
-                            px[i] = (byte)bestIdx;
+                            px[i] = (ushort)bestIdx;
                             e.Add(x, y);
                             changed++;
                         }
@@ -393,7 +394,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             foreach (string part in (text ?? string.Empty).Split(new[] { ';', ',' }, StringSplitOptions.RemoveEmptyEntries))
             {
                 string[] t = part.Trim().Split(':');
-                if (t.Length >= 2 && HexList.TryParseHexByte(t[0].Trim(), out int g) && HexList.TryParseHexByte(t[1].Trim(), out int s))
+                if (t.Length >= 2 && HexList.TryParseHexAddress(t[0].Trim(), out int g) && HexList.TryParseHexAddress(t[1].Trim(), out int s))
                 {
                     int width = t.Length > 2 && int.TryParse(t[2].Trim(), out int wv) ? Math.Clamp(wv, 1, 8) : 2;
                     yield return (g, s, width);
@@ -406,7 +407,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             foreach (string part in (text ?? string.Empty).Split(new[] { ';', ',' }, StringSplitOptions.RemoveEmptyEntries))
             {
                 string[] t = part.Trim().Split(':');
-                if (t.Length >= 2 && HexList.TryParseHexByte(t[0].Trim(), out int g) && HexList.TryParseHexByte(t[1].Trim(), out int n))
+                if (t.Length >= 2 && HexList.TryParseHexAddress(t[0].Trim(), out int g) && HexList.TryParseHexAddress(t[1].Trim(), out int n))
                 {
                     yield return (g, n);
                 }
@@ -433,7 +434,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             {
                 return;
             }
-            MapFixEntry e = r.Get($"surround_{g:x2}_{s:x2}", $"{c.Rules.GroupName(g)} ohne {width} Tiles {c.Rules.GroupName(s)} drumherum",
+            MapFixEntry e = r.Get($"surround_{c.Rules.HexGroup(g)}_{c.Rules.HexGroup(s)}", $"{c.Rules.GroupName(g)} ohne {width} Tiles {c.Rules.GroupName(s)} drumherum",
                 $"{c.Rules.GroupName(g)} without {width} tiles of {c.Rules.GroupName(s)} around it",
                 $"Dragon hat für {c.Rules.GroupName(g)} nur Übergänge zu {c.Rules.GroupName(s)} – mindestens {width} Tiles {c.Rules.GroupName(s)} drumherum malen.",
                 $"Dragon only has transitions from {c.Rules.GroupName(g)} to {c.Rules.GroupName(s)} – paint at least {width} tiles of {c.Rules.GroupName(s)} around it.", true);
@@ -496,12 +497,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             {
                 candidates.AddRange(preferred);
             }
-            candidates.AddRange(Enumerable.Range(0, 256).Where(g => g != water && c.HasGroup(g)));
+            candidates.AddRange(c.Rules.AllGroupIds().Where(g => g != water && c.HasGroup(g)));
             candidates = candidates.Distinct().ToList();
             var bridges = new Dictionary<int, int>();
             int Bridge(int g, int n)
             {
-                int key = (g << 8) | n;
+                int key = DragonRuleSet.PairKey(g, n);
                 if (!bridges.TryGetValue(key, out int b))
                 {
                     b = candidates.FirstOrDefault(x => x != g && x != n && c.HasGroup(x) && c.HasRule(x, g) && c.HasRule(x, n), -1);
@@ -622,7 +623,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                 int idx = z > max ? c.Below(mountain, target) : c.Above(mountain, target);
                 if (idx >= 0 && idx != c.Map.Pixels[i])
                 {
-                    c.Map.Pixels[i] = (byte)idx;
+                    c.Map.Pixels[i] = (ushort)idx;
                     e.Add(i % w, i / w);
                 }
             }
@@ -635,7 +636,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                 "Höhen in Stufen malen (Tutorial: 5, 10, 15, 20 …), keine großen Sprünge zwischen Nachbarn.",
                 "Paint heights in steps (tutorial: 5, 10, 15, 20 …), no big jumps between neighbours.", true);
             int w = c.W, h = c.H;
-            byte[] px = c.Map.Pixels;
+            ushort[] px = c.Map.Pixels;
             for (int pass = 0; pass < 6; pass++)
             {
                 int changed = 0;
@@ -675,7 +676,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                         int idx = c.Below(g, limit);
                         if (idx >= 0 && c.AltOf[idx] < z)
                         {
-                            px[i] = (byte)idx;
+                            px[i] = (ushort)idx;
                             changed++;
                             if (pass == 0)
                             {
@@ -705,7 +706,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             {
                 return;
             }
-            MapFixEntry e = r.Get($"lower_{g:x2}_{n:x2}", $"{c.Rules.GroupName(g)} nicht tiefer als {c.Rules.GroupName(n)}",
+            MapFixEntry e = r.Get($"lower_{c.Rules.HexGroup(g)}_{c.Rules.HexGroup(n)}", $"{c.Rules.GroupName(g)} nicht tiefer als {c.Rules.GroupName(n)}",
                 $"{c.Rules.GroupName(g)} not lower than {c.Rules.GroupName(n)}",
                 $"Tutorial 'Grass cliffs': {c.Rules.GroupName(g)} muss immer eine kleinere Höhe haben als angrenzendes {c.Rules.GroupName(n)}.",
                 $"Tutorial 'grass cliffs': {c.Rules.GroupName(g)} must always have a lower z than the adjacent {c.Rules.GroupName(n)}.", false);
@@ -758,7 +759,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                             continue;
                         }
                         int a = Math.Min(g, n), b = Math.Max(g, n);
-                        r.Get($"nopair_{a:x2}_{b:x2}", $"Kein Übergang {c.Rules.GroupName(a)} / {c.Rules.GroupName(b)}",
+                        r.Get($"nopair_{c.Rules.HexGroup(a)}_{c.Rules.HexGroup(b)}", $"Kein Übergang {c.Rules.GroupName(a)} / {c.Rules.GroupName(b)}",
                             $"No transition {c.Rules.GroupName(a)} / {c.Rules.GroupName(b)}",
                             "Keine Übergangsdatei für dieses Paar und keine Brücken-Gruppe gefunden – Übergangsregel anlegen oder anders malen.",
                             "No transition file for this pair and no bridge group – add a transition rule or paint differently.", false).Add(x, y);

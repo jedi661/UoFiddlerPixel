@@ -68,7 +68,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             {
                 MarkRulesDirty();
                 BindRuleGrids();
-                Log($"Regel aktiviert: {g.CaveGroup:x2} → {g.MountainGroup:x2} map/cave-enti2mountain.txt (Höhleneingänge). Mit 'JSON speichern' oder 'Als Dragon-Skripte exportieren' dauerhaft machen.");
+                Log($"Regel aktiviert: {_rules.HexGroup(g.CaveGroup)} → {_rules.HexGroup(g.MountainGroup)} map/cave-enti2mountain.txt (Höhleneingänge). Mit 'JSON speichern' oder 'Als Dragon-Skripte exportieren' dauerhaft machen.");
             }
         }
 
@@ -130,7 +130,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                 }
                 else
                 {
-                    generated.FilePath = Path.Combine(_settings.ProjectFolder, $"Generiert_{gs.Seed}.bmp");
+                    generated.FilePath = Path.Combine(_settings.ProjectFolder, $"Generiert_{gs.Seed}{MapExtension(generated)}");
                     generated.Modified = true;
                     SetMap(generated);
                 }
@@ -404,6 +404,15 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                 gridItemRules.CurrentCellChanged += (s, e) => ShowItemFile(gridItemRules.CurrentRow?.DataBoundItem as ItemRule);
                 gridPatterns.CellPainting += GridPatterns_CellPainting;
                 gridPaletteEntries.CellPainting += GridPalette_CellPainting;
+                // mouse over a colour row: preview of tiles, items and statics (like in the colour table)
+                gridPaletteEntries.CellMouseEnter += GridRules_CellMouseEnter;
+                gridGroups.CellMouseEnter += GridRules_CellMouseEnter;
+                foreach (DataGridView g in new[] { gridPaletteEntries, gridGroups })
+                {
+                    g.MouseLeave += (s, e) => HideColorPreview();
+                    g.Scroll += (s, e) => HideColorPreview();
+                    g.CellBeginEdit += (s, e) => HideColorPreview();
+                }
                 foreach (DataGridView g in new[] { gridGroups, gridPaletteEntries, gridTransitions, gridItemRules, gridUneven, gridFixes, gridAliases, gridPatterns, gridItemGroups })
                 {
                     g.CellFormatting += RuleGrid_CellFormatting;
@@ -453,7 +462,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             if (sender == gridPaletteEntries || sender == gridGroups)
             {
                 RefreshPaletteViews();
-                _rules.BuildHeightLookups(out byte[] raise, out byte[] lower);
+                _rules.BuildHeightLookups(out ushort[] raise, out ushort[] lower);
                 mapCanvas.SetHeightLookups(raise, lower);
             }
             if (sender == gridTransitions)
@@ -498,7 +507,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                 return;
             }
             long v = Convert.ToInt64(e.Value);
-            e.Value = v < 0 ? "*" : v.ToString(digits == 4 ? "x4" : "x2");
+            e.Value = v < 0 ? "*" : v.ToString(digits == 4 || v > 0xFF ? "x4" : "x2");
             e.FormattingApplied = true;
         }
 
@@ -909,7 +918,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             int w = (int)numM2BWidth.Value / 8 * 8, h = (int)numM2BHeight.Value / 8 * 8, num = (int)numM2BMapNo.Value;
             DragonRuleSet rules = _rules;
             int unknownIdx = rules.NearestIndex(0x04, 0);
-            byte unknown = (byte)(unknownIdx < 0 ? 0 : unknownIdx);
+            ushort unknown = (ushort)(unknownIdx < 0 ? 0 : unknownIdx);
             Log($"=== Einlesen: {file} ({w}×{h}) ===");
             RunBusy("Karte einlesen", (progress, token) =>
             {
@@ -918,11 +927,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                 return (map, unknownCount);
             }, r =>
             {
-                r.map.FilePath = Path.Combine(_settings.ProjectFolder, Path.GetFileNameWithoutExtension(file) + "_import.bmp");
+                r.map.FilePath = Path.Combine(_settings.ProjectFolder, Path.GetFileNameWithoutExtension(file) + "_import" + MapExtension(r.map));
                 r.map.Modified = true;
                 SetMap(r.map);
                 tabMain.SelectedTab = tabEditor;
-                Log($"Eingelesen: {w}×{h}, {r.unknownCount:N0} Tiles ohne passende Farbe (als {unknown:x2} gesetzt).");
+                Log($"Eingelesen: {w}×{h}, {r.unknownCount:N0} Tiles ohne passende Farbe (als {_rules.HexIndex(unknown)} gesetzt).");
             });
         }
 

@@ -1,6 +1,6 @@
 ﻿// /***************************************************************************
 //  *
-//  * Dragon Map Studio – 8-bit map in memory + undo / redo
+//  * Dragon Map Studio – indexed map (8 or 16 bit colour addresses) in memory + undo / redo
 //  *
 //  * "THE BEER-WINE-WARE LICENSE"
 //  * As long as you retain this notice you can do whatever you want with
@@ -15,10 +15,13 @@ using System.Drawing;
 
 namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
 {
-    /// <summary>The map as Dragon sees it: one byte (palette index) per tile.</summary>
+    /// <summary>
+    /// The map as Dragon sees it: one colour address (palette index) per tile. Stored as 16 bit; an 8 bit map
+    /// (classic Dragon, BMP) only uses the addresses 0..255, a 16 bit map 0..65535.
+    /// </summary>
     public sealed class IndexedMap
     {
-        public IndexedMap(int width, int height, byte fill = 0)
+        public IndexedMap(int width, int height, ushort fill = 0, int bits = 8)
         {
             if (width <= 0 || height <= 0)
             {
@@ -26,30 +29,52 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             }
             Width = width;
             Height = height;
-            Pixels = new byte[width * height];
+            Bits = bits == 16 ? 16 : 8;
+            Pixels = new ushort[width * height];
             if (fill != 0)
             {
                 Array.Fill(Pixels, fill);
             }
         }
 
-        public IndexedMap(int width, int height, byte[] pixels)
+        public IndexedMap(int width, int height, ushort[] pixels, int bits = 8)
         {
             Width = width;
             Height = height;
             Pixels = pixels;
+            Bits = bits == 16 ? 16 : 8;
         }
 
         public int Width { get; }
         public int Height { get; }
-        public byte[] Pixels { get; }
+        public ushort[] Pixels { get; }
+
+        /// <summary>8 = classic Dragon (256 colours, 8-bit BMP), 16 = extended (65 536 colours, 16-bit PNG).</summary>
+        public int Bits { get; set; }
+
+        /// <summary>Highest colour address of the map format.</summary>
+        public int MaxIndex => Bits == 16 ? 0xFFFF : 0xFF;
+
+        /// <summary>Highest address used in the map.</summary>
+        public int HighestUsedIndex()
+        {
+            int max = 0;
+            foreach (ushort v in Pixels)
+            {
+                if (v > max)
+                {
+                    max = v;
+                }
+            }
+            return max;
+        }
 
         /// <summary>Full path of the file the map was loaded from / saved to (null = new map).</summary>
         public string FilePath { get; set; }
 
         public bool Modified { get; set; }
 
-        public byte this[int x, int y]
+        public ushort this[int x, int y]
         {
             get => Pixels[y * Width + x];
             set => Pixels[y * Width + x] = value;
@@ -61,7 +86,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
 
         public IndexedMap Clone()
         {
-            return new IndexedMap(Width, Height, (byte[])Pixels.Clone()) { FilePath = FilePath };
+            return new IndexedMap(Width, Height, (ushort[])Pixels.Clone(), Bits) { FilePath = FilePath };
         }
 
         /// <summary>Copies a rectangle into a new map (for copy / paste).</summary>
@@ -72,19 +97,19 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             {
                 return null;
             }
-            var result = new IndexedMap(r.Width, r.Height);
+            var result = new IndexedMap(r.Width, r.Height, 0, Bits);
             for (int y = 0; y < r.Height; y++)
             {
-                Buffer.BlockCopy(Pixels, (r.Y + y) * Width + r.X, result.Pixels, y * r.Width, r.Width);
+                Array.Copy(Pixels, (r.Y + y) * Width + r.X, result.Pixels, y * r.Width, r.Width);
             }
             return result;
         }
 
-        /// <summary>Histogram of the palette indices.</summary>
+        /// <summary>Histogram of the palette indices (length 256 or 65 536).</summary>
         public int[] CountIndices()
         {
-            var counts = new int[256];
-            foreach (byte b in Pixels)
+            var counts = new int[Bits == 16 ? 65536 : 256];
+            foreach (ushort b in Pixels)
             {
                 counts[b]++;
             }
@@ -103,8 +128,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         private sealed class Step
         {
             public string Name;
-            public readonly Dictionary<int, byte[]> Before = new Dictionary<int, byte[]>();
-            public readonly Dictionary<int, byte[]> After = new Dictionary<int, byte[]>();
+            public readonly Dictionary<int, ushort[]> Before = new Dictionary<int, ushort[]>();
+            public readonly Dictionary<int, ushort[]> After = new Dictionary<int, ushort[]>();
             public long Bytes;
         }
 
@@ -192,11 +217,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                 return;
             }
             bool changed = false;
-            foreach (KeyValuePair<int, byte[]> kv in step.Before)
+            foreach (KeyValuePair<int, ushort[]> kv in step.Before)
             {
-                byte[] after = CopyTile(kv.Key % _tilesX, kv.Key / _tilesX);
+                ushort[] after = CopyTile(kv.Key % _tilesX, kv.Key / _tilesX);
                 step.After[kv.Key] = after;
-                step.Bytes += kv.Value.Length * 2L;
+                step.Bytes += kv.Value.Length * 4L;
                 if (!changed && !after.AsSpan().SequenceEqual(kv.Value))
                 {
                     changed = true;
@@ -219,7 +244,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             {
                 return;
             }
-            foreach (KeyValuePair<int, byte[]> kv in _current.Before)
+            foreach (KeyValuePair<int, ushort[]> kv in _current.Before)
             {
                 WriteTile(kv.Key % _tilesX, kv.Key / _tilesX, kv.Value);
             }
@@ -260,10 +285,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             return area;
         }
 
-        private Rectangle Apply(Dictionary<int, byte[]> tiles)
+        private Rectangle Apply(Dictionary<int, ushort[]> tiles)
         {
             Rectangle area = Rectangle.Empty;
-            foreach (KeyValuePair<int, byte[]> kv in tiles)
+            foreach (KeyValuePair<int, ushort[]> kv in tiles)
             {
                 int tx = kv.Key % _tilesX, ty = kv.Key / _tilesX;
                 WriteTile(tx, ty, kv.Value);
@@ -288,25 +313,25 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             }
         }
 
-        private byte[] CopyTile(int tx, int ty)
+        private ushort[] CopyTile(int tx, int ty)
         {
             int x0 = tx * TileSize, y0 = ty * TileSize;
             int w = Math.Min(TileSize, _map.Width - x0), h = Math.Min(TileSize, _map.Height - y0);
-            var data = new byte[w * h];
+            var data = new ushort[w * h];
             for (int y = 0; y < h; y++)
             {
-                Buffer.BlockCopy(_map.Pixels, (y0 + y) * _map.Width + x0, data, y * w, w);
+                Array.Copy(_map.Pixels, (y0 + y) * _map.Width + x0, data, y * w, w);
             }
             return data;
         }
 
-        private void WriteTile(int tx, int ty, byte[] data)
+        private void WriteTile(int tx, int ty, ushort[] data)
         {
             int x0 = tx * TileSize, y0 = ty * TileSize;
             int w = Math.Min(TileSize, _map.Width - x0), h = Math.Min(TileSize, _map.Height - y0);
             for (int y = 0; y < h; y++)
             {
-                Buffer.BlockCopy(data, y * w, _map.Pixels, (y0 + y) * _map.Width + x0, w);
+                Array.Copy(data, y * w, _map.Pixels, (y0 + y) * _map.Width + x0, w);
             }
         }
     }

@@ -6,6 +6,46 @@ UOFiddler based on Ultima SDK it's a tool to view and alter almost every UO 2D c
 This is an extended version of UoFiddler that has more maps and more tools, as well as Map Edit, and will be expanded over time to support the Ultima standard 
 version more than the original version. Also, some source codes from older and New projects that are no longer supported have been integrated.
 
+Version 4.12.21
+
+## Dragon Map Studio (new) – UoFiddler.Plugin.ConverterMultiTextPlugin
+
+A complete rebuild of **Dragon 1.03.62 (IMod13)** inside UoFiddler: paint a map as an image, build `map#.mul` / `staidx#.mul` / `statics#.mul` (and `map#LegacyMUL.uop`), look at it like the client and edit it there.
+Open it in the **ConverterMultiText** plugin → tab **Map** → button **Dragon Map Studio** (below "Uo Map"). All forms can be opened in the Visual Studio designer.
+
+### Tabs
+| Tab | What you can do |
+|---|---|
+| **Colour table** | IMod13 colour table: left click copies the colour address (format selectable), right/middle click = brush colour 1/2. Generate a table from the rules, define new colours. Mouse over a colour shows its land tiles / textures, items and transition statics. |
+| **Map editor** | Paint the 8-bit (or 16-bit) map: brush, eraser, spray, line, rectangle, ellipse, fill, picker, height + / −, select / copy / paste, undo / redo, overview, heights shown from zoom 12, map list of the project folder. |
+| **CGI view** | Client view of the built map (land art, textures on slopes, statics with hue) and a **2D view** from above. Edit statics, land, coast, water, caves, templates (see below). |
+| **Generator & outline** | Random continents (seed, land %, mountains, snow, climate, beach, cave entrances) or land from an outline image (PNG with transparency, silhouette, mask). |
+| **Rules & scripts** | The whole Dragon rule set in tables: groups, colours (maptrans), transitions with 3×3 pattern preview, items, unevenly, fix table, colour aliases, hints – plus the rules workshop (see below). |
+| **Create MUL / UOP** | Build with all Dragon steps (colours → tiles, unevenly, map and static transitions, items, fix table), remove duplicate statics, repair before building, coast like the original map, `dragon_log.txt` with missing transitions and coordinates. MUL / UOP → BMP import (like Dragon_m2b). |
+| **Settings / Help** | All settings in one place, help in **English, German and French**. |
+
+### Highlights
+- **Uses all Dragon scripts and addons** (IMod13 shipped in `DragonData`), reads and writes the original script folder format, plus an own JSON rule set with all information. Palettes: ACT, PAL (JASC/RIFF), ACO, GPL, BMP.
+- **8 bit or 16 bit:** classic Dragon (256 colours, 8-bit BMP, 2-digit addresses) or extended (up to **65 536 colours**, groups up to 7fff, 16-bit greyscale PNG, 4-digit addresses). One switch in the rules tab, convert maps without loss, palettes with pages of 256.
+- **Rules workshop:** coloured tool bar with the 8/16-bit switch, **+ New colour** (address check, RGB duplicate check, group, height, tiles from a picture catalogue), **+ New group**, **+ New transition rule** with an example file of the 12 standard patterns (edges, outer and inner corners), **Check**, **Fix hints**, save the rule set under a name (loaded at the next start), help with examples.
+- **Script editor:** edit every Dragon script as text; for the line under the cursor it shows what it addresses (colour, group, tiles / statics as pictures, transition pattern as 3×3 picture) and a syntax help with an example per file type.
+- **Map check and repair** following the Dragon tutorial: single tiles and 1-tile strips, swamp surrounded by grass, bridge groups between groups without transition, mountains rising in rings from the ground, height jumps, GrassBump lower than grass. Bilingual log files (`map_check_log.txt`) to send on.
+- **Coast like the original map0** (values read with the built-in **map analysis**): sea floor `0064` at −15 with water statics `1797`–`179c` at −5, beach −3 / −1 / 0, shore statics at water level.
+- **Map analysis:** reads heights of any map (e.g. the original `map0.mul`) – land z by distance to water, sea floor, shore tiles, coast statics, height steps → `map_analysis_log.txt`.
+
+### CGI view (client view) – editing
+- **Statics:** select, place (picture catalogue of all items, hue, z offset, stack), place multis, delete, colour; arrows move, Ctrl+arrow copies next to it, PgUp/PgDn z; copy / paste; selected statics are marked in the item catalogue (key **I** takes them over).
+- **Land:** paint land tiles / textures (picture catalogue, big catalogue window for land, textures and items), height + / − / =, smooth, brush size 1–33. Floor and road presets from the colour table groups (cobblestones, marble, wood floor, cave floor …), mixed at random, optionally at one height.
+- **Area tool:** fill, smooth, raise / lower, adjust coast, water, delete or select statics, copy / paste land + statics.
+- **Coast brush** (shape a coast like the original), **water brush** (water statics; items with the tiledata flag *Translucent* are drawn see-through), **cave brush** (dig a tunnel into a mountain – floor at one height, the edge becomes the wall with the rock texture behind).
+- **Templates (buildings / floors):** library with categories, search and preview. Reads **UoFiddler multi text** (hex and decimal), **UO Architect `.uoa`** (v1/v2), **world saves `.wsc`** and **Sphere `.scp`**; 586 buildings are included in `DragonData/Multis`. Place with a see-through preview on the ground height, then move with the arrow keys. Save a marked area or a selection as a new template (land with heights and/or statics) as `.dmsv.json`, UoFiddler `.txt` or `.uoa`.
+- **Problems scan** (missing art, cliffs, statics below ground, duplicates), overview map with the editor selection, key help always shown below the view.
+- Saving writes statics and (when changed) the map, UOP as option; old files are kept as `.bak`.
+
+### Languages
+The interface switches between **German, English and French** (menu *Sprache / Language / Langue*). Translations are plain text tables in `DragonData/Lang` (`en.txt`, `fr.txt`) and can be extended.
+
+
 Version 4.12.20
 
 ### Tabs

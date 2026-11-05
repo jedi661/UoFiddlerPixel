@@ -223,9 +223,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         {
             history?.Begin("Umriss anwenden");
             history?.TouchAll();
-            byte land = (byte)Math.Clamp(s.LandIndex, 0, 255);
-            byte water = (byte)Math.Clamp(s.WaterIndex, 0, 255);
-            byte outline = (byte)Math.Clamp(s.OutlineIndex, 0, 255);
+            ushort land = (ushort)Math.Clamp(s.LandIndex, 0, map.MaxIndex);
+            ushort water = (ushort)Math.Clamp(s.WaterIndex, 0, map.MaxIndex);
+            ushort outline = (ushort)Math.Clamp(s.OutlineIndex, 0, map.MaxIndex);
             int w = map.Width, h = map.Height;
 
             if (s.Mode != OutlineApplyMode.OutlineOnly)
@@ -348,7 +348,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         /// <summary>Mask from the current map: every cell that is not water (group) counts as land.</summary>
         public static float[] MaskFromMap(IndexedMap map, DragonRuleSet rules, int waterGroup)
         {
-            var isWater = new bool[256];
+            var isWater = new bool[65536];
             foreach (DragonPaletteEntry e in rules.Palette)
             {
                 isWater[e.Index] = e.Group == waterGroup;

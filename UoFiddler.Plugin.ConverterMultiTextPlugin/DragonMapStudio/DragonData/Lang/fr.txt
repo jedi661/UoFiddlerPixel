@@ -632,3 +632,78 @@ Zur Auswahl im Karten-Editor	Vers la sélection de l'éditeur
 Übergang: Höhe Z1..Z2	Transition : hauteur Z1..Z2
 Übergänge	Transitions
 Übernehmen	Reprendre
+Seite:	Page :
+8 Bit · 256 Farben	8 bits · 256 couleurs
+16 Bit (bis 65 536 Farben, PNG)	16 bits (jusqu'à 65 536 couleurs, PNG)
+Karte in &16 Bit umwandeln (mehr Farben)	Convertir la carte en &16 bits (plus de couleurs)
+Regelsatz auf &16 Bit umstellen (bis 65 536 Farben)	Passer le jeu de règles en &16 bits (jusqu'à 65 536 couleurs)
+(keine Daten erkannt)	(aucune donnée reconnue)
+(leer)	(vide)
+* alle anderen Gruppen	* tous les autres groupes
++ Neue Farbe…	+ Nouvelle couleur…
++ Neue Gruppe…	+ Nouveau groupe…
++ Neue Übergangsregel…	+ Nouvelle règle de transition…
+16 Bit (bis 65 536 Farben)	16 bits (jusqu'à 65 536 couleurs)
+16 Bit – Seite dazu (+256)	16 bits – ajouter une page (+256)
+8 Bit (Dragon, 256 Farben)	8 bits (Dragon, 256 couleurs)
+Adresse (hex):	Adresse (hex) :
+Als Dragon-Skript-Ordner exportieren (groups.txt, maptrans.txt …)	Exporter en dossier de scripts Dragon (groups.txt, maptrans.txt …)
+Als Dragon-Skripte…	En scripts Dragon…
+Beispiel-Zeile:  BBBAAAAA 0035 0036 000 000  = Norden ist B (Kante oben), Tile 0035 oder 0036, Höhe +0.	Ligne exemple :  BBBAAAAA 0035 0036 000 000  = le nord est B (bord haut), tuile 0035 ou 0036, hauteur +0.
+Datei fehlt!	Fichier manquant !
+Datei neu laden	Recharger le fichier
+Die Beispiel-Datei enthält die 12 Standard-Formen (rechts) mit einem Platzhalter-Tile – im Reiter Übergänge unten die Tiles eintragen. Für weiche Übergänge braucht meist auch B → A eine Regel.	Le fichier exemple contient les 12 formes standard (à droite) avec une tuile provisoire – saisissez les tuiles dans l'onglet Transitions. Pour des transitions douces, il faut souvent aussi une règle B → A.
+Dragon-Skripte als Text bearbeiten – mit Anzeige, was jede Zeile anspricht	Modifier les scripts Dragon en texte – montre ce que chaque ligne désigne
+Ebene:	Couche :
+Eindeutig machen	Rendre unique
+Eine Farbe ist eine Adresse im Kartenbild. Beim Bauen wird daraus: eines der Land-Tiles (zufällig, an Hängen deren Textur) auf der Höhe Z, die Übergänge und Items ihrer Gruppe. Jede Farbe braucht einen eigenen RGB-Wert, sonst kann das Bild sie nicht unterscheiden.	Une couleur est une adresse dans l'image. La construction en fait une des tuiles (au hasard, sur les pentes sa texture) à la hauteur Z, avec les transitions et objets de son groupe. Chaque couleur a besoin de sa propre valeur RVB.
+Eine Gruppe fasst Farben zusammen (z. B. alle Höhen von Gras). Übergänge und Items gelten für Gruppen. Eine neue Gruppe braucht Übergangsregeln zu ihren Nachbarn (Knopf 'Neue Übergangsregel').	Un groupe réunit des couleurs (p. ex. toutes les hauteurs d'herbe). Transitions et objets s'appliquent aux groupes. Un nouveau groupe a besoin de règles de transition vers ses voisins.
+Erweitert: 4-stellige Adressen, Gruppen bis 7fff, Karten als 16-Bit-PNG	Étendu : adresses à 4 chiffres, groupes jusqu'à 7fff, cartes en PNG 16 bits
+Farbe (RGB):	Couleur (RVB) :
+Farbe bearbeiten	Modifier la couleur
+Farbe definieren	Définir la couleur
+Farben ohne Gruppe zuordnen, Regeln mit fehlender Datei umleiten oder ausschalten	Attribuer les couleurs sans groupe, rediriger ou désactiver les règles sans fichier
+Gruppe A (Zelle):	Groupe A (cellule) :
+Gruppe B (Nachbar):	Groupe B (voisin) :
+Gruppe:	Groupe :
+Hinweise beheben	Corriger les remarques
+Höhe (Z):	Hauteur (Z) :
+Items der Gruppe	Objets du groupe
+Katalog…	Catalogue…
+Klassisches Dragon: 2-stellige Adressen, Karten als 8-Bit-BMP	Dragon classique : adresses à 2 chiffres, cartes en BMP 8 bits
+Kommentar:	Commentaire :
+Land-Tiles (hex):	Tuiles (hex) :
+Land-Tiles / Texturen	Tuiles / textures
+Links eine Datei wählen. Rechts steht, was die Zeile unter dem Cursor anspricht. Nach dem Speichern die Regeln neu laden.	Choisissez un fichier à gauche. À droite : ce que désigne la ligne sous le curseur. Rechargez les règles après l'enregistrement.
+Map – Boden-Tile wird ersetzt	Map – la tuile du sol est remplacée
+Name des Regelsatzes (Dateiname beim Speichern)	Nom du jeu de règles (nom de fichier)
+Neue Datei mit den 12 Standard-Mustern anlegen (Beispiel)	Créer un nouveau fichier avec les 12 motifs standard (exemple)
+Neue Farbe	Nouvelle couleur
+Neue Farbe definieren	Définir une nouvelle couleur
+Neue Farbe für neue Texturen / Land-Tiles: Adresse, Name, Kategorie, RGB, Gruppe, Höhe, Tiles	Nouvelle couleur pour de nouvelles textures / tuiles : adresse, nom, catégorie, RVB, groupe, hauteur, tuiles
+Neue Gruppe	Nouveau groupe
+Neue Gruppe (groups.txt) – für eigene Übergänge und Items	Nouveau groupe (groups.txt) – pour vos transitions et objets
+Neue Gruppe…	Nouveau groupe…
+Neue Übergangsregel	Nouvelle règle de transition
+Nummer (hex):	Numéro (hex) :
+Regelsatz prüfen: doppelte Farben, fehlende Gruppen, fehlende Dateien	Vérifier : couleurs en double, groupes manquants, fichiers manquants
+Regelsatz speichern – wird beim nächsten Start automatisch geladen	Enregistrer le jeu de règles – chargé au prochain démarrage
+Skript-&Editor…	&Éditeur de scripts…
+Skript-Editor (Dragon-Skripte)	Éditeur de scripts (scripts Dragon)
+Skript-Editor…	Éditeur de scripts…
+So funktioniert ein Übergang: Für jede Zelle der Gruppe A werden die 8 Nachbarn angesehen (NW N NO O SO S SW W). A = Nachbar gehört zur eigenen Gruppe, B = Nachbar ist Gruppe B. Passt ein Muster der Datei, wird das Tile (oder Static) der Zeile gesetzt.	Fonctionnement : pour chaque cellule du groupe A, les 8 voisins sont examinés (NO N NE E SE S SO O). A = même groupe, B = groupe B. Si un motif correspond, la tuile (ou statique) de la ligne est posée.
+Speichern (Strg+S)	Enregistrer (Ctrl+S)
+Static – Statics werden gesetzt	Static – des statiques sont posées
+Statics der Übergänge	Statiques des transitions
+Suchen:	Rechercher :
+Teile	parties
+Tiles (zufällig)	tuiles (au hasard)
+Vorhandene Gruppen:	Groupes existants :
+Weiter	Suivant
+Wählen…	Choisir…
+Zeile	Ligne
+außerhalb der Palette	hors de la palette
+keine Gruppe	aucun groupe
+nicht definiert	non définie
+vorhanden	présent
+Übergang zwischen zwei Gruppen, auf Wunsch mit Beispiel-Datei (12 Standard-Muster)	Transition entre deux groupes, avec fichier exemple (12 motifs standard) si souhaité

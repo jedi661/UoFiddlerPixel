@@ -29,7 +29,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
         public MouseButtons Button { get; }
     }
 
-    /// <summary>Shows the 256 palette colours; left click = colour 1, right click = colour 2.</summary>
+    /// <summary>
+    /// Shows 256 palette colours (one page); left click = colour 1, right click = colour 2.
+    /// 16-bit rule sets have several pages (<see cref="Page"/>, mouse wheel).
+    /// </summary>
     [ToolboxItem(true)]
     public class PaletteGridView : Control
     {
@@ -39,6 +42,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
         private int _primary;
         private int _secondary = -1;
         private int _hover = -1;
+        private int _page;
         private readonly ToolTip _toolTip = new ToolTip();
 
         public PaletteGridView()
@@ -54,6 +58,42 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
 
         public event EventHandler<PaletteIndexEventArgs> IndexClicked;
         public event EventHandler<PaletteIndexEventArgs> IndexDoubleClicked;
+
+        /// <summary>The mouse moved onto another colour (-1 = none).</summary>
+        public event EventHandler<PaletteIndexEventArgs> IndexHovered;
+
+        /// <summary>Height of one colour cell in pixels.</summary>
+        [Browsable(false)]
+        public int CellHeight => Math.Max(1, (Height - 1) / 16);
+
+        /// <summary>The page (256 colours each) changed.</summary>
+        public event EventHandler PageChanged;
+
+        /// <summary>Number of pages of 256 colours.</summary>
+        [Browsable(false)]
+        public int PageCount => Math.Max(1, (_colors.Length + 255) / 256);
+
+        /// <summary>Shown page: colours Page*256 .. Page*256+255.</summary>
+        [Category("Dragon"), DefaultValue(0)]
+        public int Page
+        {
+            get => _page;
+            set
+            {
+                int p = Math.Clamp(value, 0, PageCount - 1);
+                if (p != _page)
+                {
+                    _page = p;
+                    _hover = -1;
+                    Invalidate();
+                    PageChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+        }
+
+        private int First => _page * 256;
+
+        private bool OnPage(int index) => index >= First && index < First + 256 && index < _colors.Length;
 
         [Category("Dragon"), DefaultValue(0)]
         public int PrimaryIndex
@@ -86,11 +126,17 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
             _colors = colors ?? _colors;
             _defined = defined ?? _defined;
             _names = names ?? _names;
+            if (_page >= PageCount)
+            {
+                _page = PageCount - 1;
+                PageChanged?.Invoke(this, EventArgs.Empty);
+            }
             Invalidate();
         }
 
         private RectangleF CellRect(int index)
         {
+            index -= First;
             float cw = (Width - 1) / 16f, ch = (Height - 1) / 16f;
             return new RectangleF(index % 16 * cw, index / 16 * ch, cw, ch);
         }
@@ -103,14 +149,15 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                 return -1;
             }
             int cx = (int)(p.X / cw), cy = (int)(p.Y / ch);
-            return cx < 0 || cy < 0 || cx > 15 || cy > 15 ? -1 : cy * 16 + cx;
+            int idx = cx < 0 || cy < 0 || cx > 15 || cy > 15 ? -1 : First + cy * 16 + cx;
+            return idx >= _colors.Length ? -1 : idx;
         }
 
         protected override void OnPaint(PaintEventArgs e)
         {
             Graphics g = e.Graphics;
             g.Clear(BackColor);
-            for (int i = 0; i < 256; i++)
+            for (int i = First; i < First + 256 && i < _colors.Length; i++)
             {
                 RectangleF r = CellRect(i);
                 using (var b = new SolidBrush(_colors[i]))
@@ -136,7 +183,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
 
         private void DrawMarker(Graphics g, int index, Color outer, Color inner, string text)
         {
-            if (index < 0 || index > 255)
+            if (!OnPage(index))
             {
                 return;
             }
@@ -166,18 +213,26 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
             {
                 _hover = idx;
                 Invalidate();
+                IndexHovered?.Invoke(this, new PaletteIndexEventArgs(idx, MouseButtons.None));
                 if (idx >= 0)
                 {
                     string def = _defined[idx] ? string.Empty : " (nicht definiert)";
-                    _toolTip.SetToolTip(this, $"{idx:x2} / {idx} – {_names[idx]}{def}");
+                    _toolTip.SetToolTip(this, $"{(idx > 0xFF ? idx.ToString("x4") : idx.ToString("x2"))} / {idx} – {_names[idx]}{def}");
                 }
             }
+        }
+
+        protected override void OnMouseWheel(MouseEventArgs e)
+        {
+            base.OnMouseWheel(e);
+            Page += e.Delta > 0 ? -1 : 1;
         }
 
         protected override void OnMouseLeave(EventArgs e)
         {
             base.OnMouseLeave(e);
             _hover = -1;
+            IndexHovered?.Invoke(this, new PaletteIndexEventArgs(-1, MouseButtons.None));
             Invalidate();
         }
 

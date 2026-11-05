@@ -32,7 +32,21 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         public string Name { get; set; } = "Dragon IMod13";
         public string Description { get; set; } = string.Empty;
 
-        /// <summary>Always 256 entries (palette index = position).</summary>
+        /// <summary>
+        /// Colour addresses: 8 = classic Dragon (256 colours, 2-digit hex in the scripts), 16 = extended
+        /// (up to 65 536 colours, 4-digit hex). 8-bit scripts and maps can always be read.
+        /// </summary>
+        public int ColorBits { get; set; } = 8;
+
+        /// <summary>Highest number of colours of the format.</summary>
+        [JsonIgnore]
+        public int MaxColors => ColorBits == 16 ? 65536 : 256;
+
+        /// <summary>Highest group number (groups.txt); 8 bit: ff = "any" in the scripts.</summary>
+        [JsonIgnore]
+        public int MaxGroup => ColorBits == 16 ? 0x7FFF : 0xFE;
+
+        /// <summary>Palette index = position. 8 bit: 256 entries; 16 bit: grows in pages of 256.</summary>
         public List<DragonPaletteEntry> Palette { get; set; } = CreateEmptyPalette();
 
         public List<DragonGroup> Groups { get; set; } = new List<DragonGroup>();
@@ -51,24 +65,31 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         [JsonIgnore]
         public List<string> Warnings { get; } = new List<string>();
 
-        public static List<DragonPaletteEntry> CreateEmptyPalette()
+        public static List<DragonPaletteEntry> CreateEmptyPalette(int count = 256)
         {
-            var list = new List<DragonPaletteEntry>(256);
-            for (int i = 0; i < 256; i++)
+            var list = new List<DragonPaletteEntry>(count);
+            for (int i = 0; i < count; i++)
             {
                 list.Add(new DragonPaletteEntry { Index = i, Name = "frei" });
             }
             return list;
         }
 
-        /// <summary>Makes sure there are exactly 256 entries with correct indices.</summary>
+        /// <summary>Makes sure the palette has the right size (256 or a multiple of 256) with correct indices.</summary>
         public void Normalize()
         {
             Palette ??= CreateEmptyPalette();
-            var fixedList = CreateEmptyPalette();
+            int highest = Palette.Where(e => e != null && e.Index >= 0).Select(e => e.Index).DefaultIfEmpty(0).Max();
+            if (highest > 0xFF)
+            {
+                ColorBits = 16;
+            }
+            ColorBits = ColorBits == 16 ? 16 : 8;
+            int size = ColorBits == 16 ? Math.Min(65536, Math.Max(256, (highest / 256 + 1) * 256)) : 256;
+            var fixedList = CreateEmptyPalette(size);
             foreach (DragonPaletteEntry e in Palette)
             {
-                if (e != null && e.Index >= 0 && e.Index < 256)
+                if (e != null && e.Index >= 0 && e.Index < size)
                 {
                     fixedList[e.Index] = e;
                 }
@@ -85,10 +106,46 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             FileHeaders ??= new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         }
 
+        /// <summary>Switches the rule set to 16-bit colour addresses (nothing is lost; the export writes 4-digit hex).</summary>
+        public void ConvertTo16Bit()
+        {
+            ColorBits = 16;
+        }
+
+        /// <summary>16 bit: makes the palette at least <paramref name="count"/> entries long (pages of 256).</summary>
+        public void EnsurePaletteSize(int count)
+        {
+            count = Math.Min(MaxColors, (Math.Max(count, 1) + 255) / 256 * 256);
+            while (Palette.Count < count)
+            {
+                Palette.Add(new DragonPaletteEntry { Index = Palette.Count, Name = "frei" });
+            }
+        }
+
+        /// <summary>All group numbers used by groups.txt, the palette and the rules.</summary>
+        public SortedSet<int> AllGroupIds()
+        {
+            var ids = new SortedSet<int>(Groups.Select(g => g.Id));
+            foreach (DragonPaletteEntry p in Palette)
+            {
+                if (p.Group >= 0)
+                {
+                    ids.Add(p.Group);
+                }
+            }
+            return ids;
+        }
+
+        /// <summary>Hex text of a colour address: 2 digits (8 bit) or 4 digits (16 bit).</summary>
+        public string HexIndex(int index) => ColorBits == 16 ? index.ToString("x4") : index.ToString("x2");
+
+        /// <summary>Hex text of a group: 2 digits (8 bit) or 4 digits (16 bit).</summary>
+        public string HexGroup(int group) => ColorBits == 16 ? group.ToString("x4") : group.ToString("x2");
+
         public Color[] GetColors()
         {
-            var colors = new Color[256];
-            for (int i = 0; i < 256; i++)
+            var colors = new Color[Palette.Count];
+            for (int i = 0; i < colors.Length; i++)
             {
                 colors[i] = Palette[i].Color;
             }
@@ -147,44 +204,48 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         }
 
         /// <summary>For each index: the index of the same group with the next higher / lower altitude.</summary>
-        public void BuildHeightLookups(out byte[] raise, out byte[] lower)
+        public void BuildHeightLookups(out ushort[] raise, out ushort[] lower)
         {
-            raise = new byte[256];
-            lower = new byte[256];
-            for (int i = 0; i < 256; i++)
+            raise = new ushort[Palette.Count];
+            lower = new ushort[Palette.Count];
+            for (int i = 0; i < raise.Length; i++)
             {
-                raise[i] = (byte)i;
-                lower[i] = (byte)i;
+                raise[i] = (ushort)i;
+                lower[i] = (ushort)i;
             }
             foreach (IGrouping<int, DragonPaletteEntry> grp in Palette.Where(p => p.Defined && p.Group >= 0).GroupBy(p => p.Group))
             {
                 List<DragonPaletteEntry> sorted = grp.OrderBy(p => p.Altitude).ThenBy(p => p.Index).ToList();
                 for (int k = 0; k < sorted.Count; k++)
                 {
-                    raise[sorted[k].Index] = (byte)sorted[Math.Min(k + 1, sorted.Count - 1)].Index;
-                    lower[sorted[k].Index] = (byte)sorted[Math.Max(k - 1, 0)].Index;
+                    raise[sorted[k].Index] = (ushort)sorted[Math.Min(k + 1, sorted.Count - 1)].Index;
+                    lower[sorted[k].Index] = (ushort)sorted[Math.Max(k - 1, 0)].Index;
                 }
             }
         }
 
-        /// <summary>Group pairs (a &lt;&lt; 8 | b, both directions) that have an active map transition.</summary>
+        /// <summary>Key of a group pair (both groups up to 7FFF).</summary>
+        public static int PairKey(int a, int b) => (a << 16) | (b & 0xFFFF);
+
+        /// <summary>Group pairs (<see cref="PairKey"/>, both directions) that have an active map transition.</summary>
         public HashSet<int> MapTransitionPairs()
         {
             var pairs = new HashSet<int>();
+            int[] groups = AllGroupIds().ToArray();
             foreach (TransitionRule r in Transitions)
             {
                 if (!r.Enabled || r.Layer != TransitionLayer.Map || FindTransitionFile(r.File) == null)
                 {
                     continue;
                 }
-                for (int x = 0; x < 256; x++)
+                foreach (int x in groups)
                 {
                     int a = r.GroupA >= 0 ? r.GroupA : x;
                     int b = r.GroupB >= 0 ? r.GroupB : x;
                     if (a != b)
                     {
-                        pairs.Add((a << 8) | b);
-                        pairs.Add((b << 8) | a);
+                        pairs.Add(PairKey(a, b));
+                        pairs.Add(PairKey(b, a));
                     }
                     if (r.GroupA >= 0 && r.GroupB >= 0)
                     {
@@ -238,6 +299,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                 {
                     return p.Index;
                 }
+            }
+            if (ColorBits == 16 && Palette.Count < MaxColors)
+            {
+                int next = Palette.Count;
+                EnsurePaletteSize(next + 1);
+                return next;
             }
             return -1;
         }
@@ -307,7 +374,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                     problems.Add($"Farbe {p.HexIndex}: Höhe {p.Altitude} außerhalb -128..127.");
                 }
             }
-            foreach (TransitionRule r in Transitions)
+            foreach (List<DragonPaletteEntry> dup in RuleSetTools.DuplicateColors(this))
+            {
+                problems.Add($"Doppelte Farbe {dup[0].HtmlColor}: " + string.Join(", ", dup.Take(6).Select(d => $"{HexIndex(d.Index)} {d.Name}")) + (dup.Count > 6 ? $" (+{dup.Count - 6})" : string.Empty) +
+                             " – im Bild nicht unterscheidbar, eine davon umfärben (RGB ändern).");
+            }
+            foreach (TransitionRule r in Transitions.Where(t => t.Enabled))
             {
                 if (FindTransitionFile(r.File) == null)
                 {

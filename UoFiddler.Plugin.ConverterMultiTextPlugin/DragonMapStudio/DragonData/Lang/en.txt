@@ -632,3 +632,78 @@ Zur Auswahl im Karten-Editor	To the selection in the map editor
 Übergang: Höhe Z1..Z2	Transition: height Z1..Z2
 Übergänge	Transitions
 Übernehmen	Take
+Seite:	Page:
+8 Bit · 256 Farben	8 bit · 256 colours
+16 Bit (bis 65 536 Farben, PNG)	16 bit (up to 65 536 colours, PNG)
+Karte in &16 Bit umwandeln (mehr Farben)	Convert map to &16 bit (more colours)
+Regelsatz auf &16 Bit umstellen (bis 65 536 Farben)	Switch rule set to &16 bit (up to 65 536 colours)
+(keine Daten erkannt)	(no data recognised)
+(leer)	(empty)
+* alle anderen Gruppen	* all other groups
++ Neue Farbe…	+ New colour…
++ Neue Gruppe…	+ New group…
++ Neue Übergangsregel…	+ New transition rule…
+16 Bit (bis 65 536 Farben)	16 bit (up to 65 536 colours)
+16 Bit – Seite dazu (+256)	16 bit – add a page (+256)
+8 Bit (Dragon, 256 Farben)	8 bit (Dragon, 256 colours)
+Adresse (hex):	Address (hex):
+Als Dragon-Skript-Ordner exportieren (groups.txt, maptrans.txt …)	Export as Dragon script folder (groups.txt, maptrans.txt …)
+Als Dragon-Skripte…	As Dragon scripts…
+Beispiel-Zeile:  BBBAAAAA 0035 0036 000 000  = Norden ist B (Kante oben), Tile 0035 oder 0036, Höhe +0.	Example line:  BBBAAAAA 0035 0036 000 000  = north is B (top edge), tile 0035 or 0036, height +0.
+Datei fehlt!	File missing!
+Datei neu laden	Reload file
+Die Beispiel-Datei enthält die 12 Standard-Formen (rechts) mit einem Platzhalter-Tile – im Reiter Übergänge unten die Tiles eintragen. Für weiche Übergänge braucht meist auch B → A eine Regel.	The example file contains the 12 standard shapes (right) with a placeholder tile – enter the tiles in the Transitions tab below. Smooth transitions usually also need a rule B → A.
+Dragon-Skripte als Text bearbeiten – mit Anzeige, was jede Zeile anspricht	Edit the Dragon scripts as text – shows what every line addresses
+Ebene:	Layer:
+Eindeutig machen	Make unique
+Eine Farbe ist eine Adresse im Kartenbild. Beim Bauen wird daraus: eines der Land-Tiles (zufällig, an Hängen deren Textur) auf der Höhe Z, die Übergänge und Items ihrer Gruppe. Jede Farbe braucht einen eigenen RGB-Wert, sonst kann das Bild sie nicht unterscheiden.	A colour is an address in the map image. Building turns it into one of the land tiles (at random, on slopes its texture) at height Z, plus the transitions and items of its group. Every colour needs its own RGB value, otherwise the image cannot tell them apart.
+Eine Gruppe fasst Farben zusammen (z. B. alle Höhen von Gras). Übergänge und Items gelten für Gruppen. Eine neue Gruppe braucht Übergangsregeln zu ihren Nachbarn (Knopf 'Neue Übergangsregel').	A group collects colours (e.g. all heights of grass). Transitions and items apply to groups. A new group needs transition rules to its neighbours (button 'New transition rule').
+Erweitert: 4-stellige Adressen, Gruppen bis 7fff, Karten als 16-Bit-PNG	Extended: 4-digit addresses, groups up to 7fff, maps as 16-bit PNG
+Farbe (RGB):	Colour (RGB):
+Farbe bearbeiten	Edit colour
+Farbe definieren	Define colour
+Farben ohne Gruppe zuordnen, Regeln mit fehlender Datei umleiten oder ausschalten	Assign colours without group, redirect or switch off rules with a missing file
+Gruppe A (Zelle):	Group A (cell):
+Gruppe B (Nachbar):	Group B (neighbour):
+Gruppe:	Group:
+Hinweise beheben	Fix hints
+Höhe (Z):	Height (Z):
+Items der Gruppe	Items of the group
+Katalog…	Catalogue…
+Klassisches Dragon: 2-stellige Adressen, Karten als 8-Bit-BMP	Classic Dragon: 2-digit addresses, maps as 8-bit BMP
+Kommentar:	Comment:
+Land-Tiles (hex):	Land tiles (hex):
+Land-Tiles / Texturen	Land tiles / textures
+Links eine Datei wählen. Rechts steht, was die Zeile unter dem Cursor anspricht. Nach dem Speichern die Regeln neu laden.	Choose a file on the left. On the right you see what the line under the cursor addresses. Reload the rules after saving.
+Map – Boden-Tile wird ersetzt	Map – the ground tile is replaced
+Name des Regelsatzes (Dateiname beim Speichern)	Name of the rule set (file name when saving)
+Neue Datei mit den 12 Standard-Mustern anlegen (Beispiel)	Create a new file with the 12 standard patterns (example)
+Neue Farbe	New colour
+Neue Farbe definieren	Define new colour
+Neue Farbe für neue Texturen / Land-Tiles: Adresse, Name, Kategorie, RGB, Gruppe, Höhe, Tiles	New colour for new textures / land tiles: address, name, category, RGB, group, height, tiles
+Neue Gruppe	New group
+Neue Gruppe (groups.txt) – für eigene Übergänge und Items	New group (groups.txt) – for own transitions and items
+Neue Gruppe…	New group…
+Neue Übergangsregel	New transition rule
+Nummer (hex):	Number (hex):
+Regelsatz prüfen: doppelte Farben, fehlende Gruppen, fehlende Dateien	Check the rule set: duplicate colours, missing groups, missing files
+Regelsatz speichern – wird beim nächsten Start automatisch geladen	Save the rule set – loaded automatically at the next start
+Skript-&Editor…	Script &editor…
+Skript-Editor (Dragon-Skripte)	Script editor (Dragon scripts)
+Skript-Editor…	Script editor…
+So funktioniert ein Übergang: Für jede Zelle der Gruppe A werden die 8 Nachbarn angesehen (NW N NO O SO S SW W). A = Nachbar gehört zur eigenen Gruppe, B = Nachbar ist Gruppe B. Passt ein Muster der Datei, wird das Tile (oder Static) der Zeile gesetzt.	How a transition works: for every cell of group A the 8 neighbours are checked (NW N NE E SE S SW W). A = neighbour belongs to the own group, B = neighbour is group B. If a pattern of the file matches, the tile (or static) of that line is placed.
+Speichern (Strg+S)	Save (Ctrl+S)
+Static – Statics werden gesetzt	Static – statics are placed
+Statics der Übergänge	Statics of the transitions
+Suchen:	Search:
+Teile	parts
+Tiles (zufällig)	tiles (at random)
+Vorhandene Gruppen:	Existing groups:
+Weiter	Next
+Wählen…	Choose…
+Zeile	Line
+außerhalb der Palette	outside the palette
+keine Gruppe	no group
+nicht definiert	not defined
+vorhanden	present
+Übergang zwischen zwei Gruppen, auf Wunsch mit Beispiel-Datei (12 Standard-Muster)	Transition between two groups, optionally with an example file (12 standard patterns)

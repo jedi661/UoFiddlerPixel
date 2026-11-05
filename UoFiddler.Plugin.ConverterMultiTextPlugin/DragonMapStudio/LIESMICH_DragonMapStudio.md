@@ -392,3 +392,53 @@ Neue Dateien: `Core/MapTemplate.cs`, `Dialogs/SaveTemplateDialog.cs` (+ Designer
 
 **English:** menu „Sprache / Language / Langue“ switches the whole interface (German, English, French); translation tables in `DragonData/Lang` can be edited.
 **Français :** le menu „Sprache / Language / Langue“ change toute l'interface (allemand, anglais, français) ; les tables de traduction dans `DragonData/Lang` sont modifiables.
+
+---
+
+## Version 10: 8 Bit (Dragon) oder 16 Bit (bis 65 536 Farben)
+
+| | 8 Bit (klassisch) | 16 Bit (erweitert) |
+|---|---|---|
+| Farbadressen | 256 (`00`–`ff`) | bis 65 536 (`0000`–`ffff`), in Seiten zu 256 |
+| Gruppen | bis `fe` | bis `7fff` |
+| Karten-Datei | 8-Bit-BMP | 16-Bit-PNG (Graustufen = Adresse, verlustfrei, mit anderen Programmen lesbar) |
+| maptrans / groups / betweentrans … | 2-stellige Adressen | 4-stellige Adressen |
+| mit altem Dragon austauschbar | ja | nein (Import alter Daten geht immer) |
+
+* **Umschalten:** Regeln → „Regelsatz auf 16 Bit umstellen“ (jeder weitere Klick = eine neue Seite mit 256 Farben),
+  Bearbeiten → „Karte in 16 Bit umwandeln“, „Neue Karte“ → Häkchen „16 Bit“.
+  „Neue Farbe definieren“ bietet 16 Bit an, wenn alle 256 Farben belegt sind; eine Farbe über `ff` in einer 8-Bit-Karte fragt nach.
+* **Paletten** im Editor und in der Farbtabelle: „Seite“ bzw. Mausrad blättert durch je 256 Farben.
+* **Speichern:** `.bmp` = 8 Bit (nur wenn alle Farben ≤ `ff`), `.png` = 16 Bit. Die Kartenliste zeigt beide.
+* Intern speichert der Editor jetzt 16 Bit pro Tile (auch bei 8-Bit-Karten) – doppelter Arbeitsspeicher, dafür ein einziger Codepfad.
+* 4-stellige Adressen in Skripten stellen den Regelsatz beim Laden automatisch auf 16 Bit.
+* Neue Gruppen brauchen eigene Übergangsdateien (sonst „Regel fehlt“ im Log) und ggf. Items – wie bisher im Reiter „Regeln & Skripte“.
+
+---
+
+## Version 11: Regeln-Werkstatt, Skript-Editor, Vorschau beim Überfahren
+
+**Meldungen beim Laden behoben** – es waren Fehler in den IMod13-Skripten:
+
+| Meldung | Ursache | Korrektur |
+|---|---|---|
+| Farbe 1e: keine Gruppe | Zeile `1e 01` fehlte in `groups.txt` (Wald Z 40) | ergänzt |
+| Farbe 7e: keine Gruppe | Tippfehler `7f 08` statt `7e 08` (Dschungel Z 40) | korrigiert (7f bleibt Höhleneingang) |
+| statics/cave2blackRalls.txt fehlt | Tippfehler für `cave2blackWalls.txt` | korrigiert |
+| statics/grass2wasteland.txt fehlt | Datei gibt es im IMod13-Paket nicht | Zeile auskommentiert |
+
+Für eigene / gespeicherte Regelsätze: **„Hinweise beheben“** ordnet Farben ohne Gruppe zu (gleiche Tiles) und leitet Regeln mit fehlender Datei auf eine ähnlich benannte Datei um bzw. schaltet sie aus.
+
+**Reiter „Regeln & Skripte“** – farbige Leiste oben:
+* **Format 8 Bit / 16 Bit** (aktives Format farbig hervorgehoben; bei 16 Bit fügt ein weiterer Klick eine Seite mit 256 Farben hinzu).
+* **+ Neue Farbe…** (auch Doppelklick auf eine Farbe): Adresse mit frei/belegt-Prüfung, Name, Kategorie, RGB mit Prüfung auf doppelte Farben („Eindeutig machen“), Gruppe (oder neue), Höhe, Land-Tiles mit Katalog und Vorschau. Die Farbe ist sofort zum Zeichnen verfügbar.
+* **+ Neue Gruppe…** (nächste freie Nummer), **+ Neue Übergangsregel…** mit Beispiel-Datei (12 Standard-Muster als Bild erklärt).
+* **Prüfen** (doppelte RGB-Farben, fehlende Gruppen/Dateien), **Hinweise beheben**, **Skript-Editor…**
+* **Name + Speichern**: der Regelsatz wird unter seinem Namen in `Dokumente\DragonMapStudio\Regeln` gespeichert und beim nächsten Start geladen.
+* Rechts: Hilfe mit Beispielen zum gewählten Unter-Reiter.
+
+**Vorschau beim Überfahren** einer Farbe (Farbtabelle, Paletten im Editor und im Reiter Farbtabelle): Land-Tiles/Texturen, Items der Gruppe, Statics der Übergänge – unter der Zeile, damit sie sichtbar bleibt.
+
+**Skript-Editor** (`Dialogs/ScriptEditorForm`, auch Menü Regeln): alle Skript-Dateien als Text, Suche, Speichern mit `.bak`; rechts die Bedeutung der aktuellen Zeile (Farbe, Gruppe, Tiles/Statics als Bilder, Muster als 3×3-Bild), unten Syntax und Beispiel des Dateityps. Nach dem Speichern werden die Regeln auf Wunsch neu eingelesen.
+
+Neue Dateien: `Core/RuleSetTools.cs`, `Controls/ColorPreviewPopup.cs`, `Dialogs/ColorDefinitionDialog`, `Dialogs/GroupDialog`, `Dialogs/TransitionRuleDialog`, `Dialogs/ScriptEditorForm` (jeweils mit `.Designer.cs`), `DragonMapStudioForm.RulesUi.cs`.
