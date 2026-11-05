@@ -404,6 +404,15 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                 gridItemRules.CurrentCellChanged += (s, e) => ShowItemFile(gridItemRules.CurrentRow?.DataBoundItem as ItemRule);
                 gridPatterns.CellPainting += GridPatterns_CellPainting;
                 gridPaletteEntries.CellPainting += GridPalette_CellPainting;
+                // mouse over a colour row: preview of tiles, items and statics (like in the colour table)
+                gridPaletteEntries.CellMouseEnter += GridRules_CellMouseEnter;
+                gridGroups.CellMouseEnter += GridRules_CellMouseEnter;
+                foreach (DataGridView g in new[] { gridPaletteEntries, gridGroups })
+                {
+                    g.MouseLeave += (s, e) => HideColorPreview();
+                    g.Scroll += (s, e) => HideColorPreview();
+                    g.CellBeginEdit += (s, e) => HideColorPreview();
+                }
                 foreach (DataGridView g in new[] { gridGroups, gridPaletteEntries, gridTransitions, gridItemRules, gridUneven, gridFixes, gridAliases, gridPatterns, gridItemGroups })
                 {
                     g.CellFormatting += RuleGrid_CellFormatting;

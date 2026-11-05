@@ -39,7 +39,14 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             {
                 _colorPopup = new ColorPreviewPopup();
                 FormClosed += (s, e) => _colorPopup?.Dispose();
-                Deactivate += (s, e) => HideColorPreview();
+                // hide when the studio is minimised (not on Deactivate: showing the preview itself would hide it again)
+                Resize += (s, e) =>
+                {
+                    if (WindowState == FormWindowState.Minimized)
+                    {
+                        HideColorPreview();
+                    }
+                };
                 colorTableView.MouseLeave += (s, e) => HideColorPreview();
             }
             _colorPopup.ShowFor(_rules, index, Control.MousePosition, rowHeight);
@@ -55,6 +62,29 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                 return;
             }
             ShowColorPreview(e.Index, (sender as PaletteGridView)?.CellHeight ?? 20);
+        }
+
+        /// <summary>Rules grids: a colour row (or a group row = its first colour) shows the preview below the row.</summary>
+        private void GridRules_CellMouseEnter(object sender, DataGridViewCellEventArgs e)
+        {
+            if (sender is not DataGridView grid || e.RowIndex < 0 || e.RowIndex >= grid.Rows.Count || grid.IsCurrentCellInEditMode)
+            {
+                HideColorPreview();
+                return;
+            }
+            object item = grid.Rows[e.RowIndex].DataBoundItem;
+            int index = item switch
+            {
+                DragonPaletteEntry p => p.Index,
+                DragonGroup g => _rules.EntriesOfGroup(g.Id).Select(x => x.Index).DefaultIfEmpty(-1).First(),
+                _ => -1
+            };
+            if (index < 0)
+            {
+                HideColorPreview();
+                return;
+            }
+            ShowColorPreview(index, grid.Rows[e.RowIndex].Height);
         }
 
         private void Palette_IndexDoubleClicked(object sender, PaletteIndexEventArgs e) => EditColor(e.Index);
