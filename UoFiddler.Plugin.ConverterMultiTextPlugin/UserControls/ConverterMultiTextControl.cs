@@ -788,6 +788,36 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
         }
         #endregion
 
+        #region [ DragonMapStudio ]
+        private DragonMapStudio.DragonMapStudioForm _dragonMapStudioForm;
+
+        private void BtDragonMapStudio_Click(object sender, EventArgs e)
+        {
+            // only one window: bring the open one to the front
+            if (_dragonMapStudioForm != null && !_dragonMapStudioForm.IsDisposed)
+            {
+                if (_dragonMapStudioForm.WindowState == FormWindowState.Minimized)
+                {
+                    _dragonMapStudioForm.WindowState = FormWindowState.Normal;
+                }
+                _dragonMapStudioForm.BringToFront();
+                _dragonMapStudioForm.Activate();
+                return;
+            }
+
+            ToolTip toolTip1 = new ToolTip();
+            toolTip1.AutoPopDelay = 5000;
+            toolTip1.InitialDelay = 1000;
+            toolTip1.ReshowDelay = 500;
+            toolTip1.ShowAlways = true;
+            toolTip1.SetToolTip(BtDragonMapStudio, "Dragon Map Studio – Karten malen, generieren und als MUL / UOP erzeugen");
+
+            _dragonMapStudioForm = new DragonMapStudio.DragonMapStudioForm();
+            _dragonMapStudioForm.FormClosed += (s, args) => _dragonMapStudioForm = null;
+            _dragonMapStudioForm.Show();
+        }
+        #endregion
+
         #region [ BtTileArtForm ]
         private bool _isTileArtFormOpen = false;
         private void BtTileArtForm_Click(object sender, EventArgs e)

@@ -1,0 +1,157 @@
+// -----------------------------------------------------------------------------------------
+// Syntax :
+// [Frqequency] [ItemGroup1] [ItemGroup2] [ItemGroup3] ...
+// 
+// Itemgroup = [Item(hex)] [ZLevel(dec)] [Color(hex)] [Xmovement(dec)] [Ymovement(dec)]
+// -----------------------------------------------------------------------------------------
+//Original Dragon scripts modified by StormCrow 5-15-01
+//This gives a more normalized UO type grasslands
+//The odd tree of any type will showup here and there but you mostly get flowers,grasses,mushrooms and rocks
+
+//Modified by Ryandor 2-8-02
+//I changed this script for my purposes, however I want to make them available to everyone
+//The unmodified version is available at www.uocm.de/index2.htm in the Dragon - Scripts forum
+
+// Peach Tree with green leaves
+0008 0d9c 0000 0000 0000 0000
+// Peach Tree with green leaves & peaches
+0002 0d9c 0000 1154 0000 0000
+// Peach Tree with brown leaves
+0001 0d9c 0000 0000 0000 0000
+
+// Peach Tree with green leaves
+0008 0da0 0000 0000 0000 0000
+// Peach Tree with green leaves & peaches
+0002 0da0 0000 0000 0000 0000
+// Peach Tree with brown leaves
+0001 0da0 0000 1154 0000 0000
+
+
+// Pear Tree with green leaves
+0008 0da4 0000 0000 0000 0000
+// Pear Tree with green leaves & pears
+0002 0da4 0000 1154 0000 0000
+// Pear Tree with brown leaves
+0001 0da4 0000 0000 0000 0000
+
+// Pear Tree with green leaves
+0008 0da8 0000 0000 0000 0000
+// Pear Tree with green leaves & pears
+0002 0da8 0000 1154 0000 0000
+// Pear Tree with brown leaves
+0001 0da8 0000 0000 0000 0000
+
+// Tree grey + green leaves
+0002 0ccd 0000 0000 0000 0000
+// Tree grey + brown leaves
+0008 0ccd 0000 1154 0000 0000
+
+// Tree - warm brown + green leaves
+0002 0cd0 0000 1154 0000 0000
+// Tree - warm brown + brown leaves
+0008 0cd0 0000 0000 0000 0000
+
+// Tree grey + green leaves
+0008 0cd3 0000 0000 0000 0000
+// Tree grey + brown leaves
+0002 0cd3 0000 1154 0000 0000
+
+// Oak tree + green leaves
+0002 0cda 0000 1154 0000 0000
+// Oak tree + brown leaves
+0008 0cda 0000 0000 0000 0000
+
+// Oak tree + green leaves
+0008 0cdd 0000 0000 0000 0000
+// Oak tree + brown leaves
+0002 0cdd 0000 1154 0000 0000
+
+// Walnut tree + green leaves
+0008 0ce0 0000 0000 0000 0000
+// Walnut tree + brown leaves
+0002 0ce0 0000 1154 0000 0000
+
+// Walnut tree + green leaves
+0002 0ce3 0000 1154 0000 0000
+// Walnut tree + brown leaves
+0008 0ce3 0000 0000 0000 0000
+
+// Willow tree + green leaves
+0008 0ce6 0000 0000 0000 0000
+// Willow tree + brown leaves
+0002 0ce6 0000 1154 0000 0000
+
+// Tree (dark brown)
+0002 0ccb 0000 1154 0000 0000
+
+// Apple tree + green leaves
+0008 0d94 0000 0000 0000 0000
+// Apple tree + green leaves + apples
+0002 0d94 0000 1154 0000 0000
+// Apple tree + brown leaves
+0001 0d94 0000 0000 0000 0000
+
+// Apple tree + green leaves
+0008 0d98 0000 0000 0000 0000
+// Apple tree + green leaves + apples
+0001 0d98 0000 1154 0000 0000
+// Apple tree + brown leaves
+0002 0d98 0000 0000 0000 0000
+
+// Stump
+0001 0e59 0000 1154 0000 0000
+
+// Rocks
+0001 1364 0000 1153 0000 0000
+0001 1367 0000 1153 0000 0000
+0001 136b 0000 1153 0000 0000
+0001 136c 0000 1153 0000 0000
+0001 136d 0000 1153 0000 0000
+0001 1773 0000 1153 0000 0000
+0001 1774 0000 1153 0000 0000
+0001 1775 0000 1153 0000 0000
+0001 1777 0000 1153 0000 0000
+0001 1778 0000 1153 0000 0000
+0001 1779 0000 1153 0000 0000
+0001 177b 0000 1153 0000 0000
+0001 177c 0000 1153 0000 0000
+
+// Brambles
+0001 0d3f 0000 1154 0000 0000
+0001 0d40 0000 1154 0000 0000
+0001 0d3f 0000 1153 0000 0000
+0001 0d40 0000 1153 0000 0000
+0001 0d3f 0000 0000 0000 0000
+0001 0d40 0000 0000 0000 0000
+
+// Sticks
+0001 1b9b 0000 1154 0000 0000
+0001 1b9b 0000 0000 0000 0000
+0001 1b9b 0000 1153 0000 0000
+
+// Twigs
+0001 1b9c 0000 1154 0000 0000
+0001 1b9d 0000 1154 0000 0000
+0001 1b9e 0000 1154 0000 0000
+0001 1b9c 0000 0000 0000 0000
+0001 1b9d 0000 0000 0000 0000
+0001 1b9e 0000 0000 0000 0000
+0001 1b9c 0000 1153 0000 0000
+0001 1b9d 0000 1153 0000 0000
+0001 1b9e 0000 1153 0000 0000
+
+//fallen log N/S
+0001 0cf3 0000 1153 0000 0000 0cf4 0000 1153 0000 0001
+0001 0cf3 0000 0000 0000 0000 0cf4 0000 0000 0000 0001
+0001 0cf3 0000 1154 0000 0000 0cf4 0000 1153 0000 0001
+
+//fallen log W/E
+0001 0cf5 0000 1153 0000 0000 0cf6 0000 1153 0001 0000 0cf7 0000 1153 0002 0000
+0001 0cf5 0000 0000 0000 0000 0cf6 0000 0000 0001 0000 0cf7 0000 0000 0002 0000
+0001 0cf5 0000 1154 0000 0000 0cf6 0000 1154 0001 0000 0cf7 0000 1154 0002 0000
+
+//Cedar tree small group
+0003 0cd6 0003 0000 0000 0000 0cd7 0003 0000 0000 0000 0cd8 0003 0000 0002 0000 0cd9 0003 0000 0002 0000 0cd6 0003 0000 0001 0002 0cd7 0003 0000 0001 0002 0cd8 0003 0000 0000 0002 0cd9 0003 0000 0000 0002 0cd6 0003 0000 0001 0003 0cd7 0003 0000 0001 0003 0cd8 0003 0000 0003 0003 0cd9 0003 0000 0003 0003
+
+//Cedar tree large group
+0001 0cd6 0003 0000 0000 0000 0cd7 0003 0000 0000 0000 0cd8 0003 0000 0003 0000 0cd9 0003 0000 0003 0000 0cd8 0003 0000 0001 0001 0cd9 0003 0000 0001 0001 0cd6 0003 0000 0002 0001 0cd7 0003 0000 0002 0001 0cd6 0003 0000 0003 0002 0cd7 0003 0000 0003 0002 0cd8 0003 0000 0004 0002 0cd9 0003 0000 0004 0002 0cd8 0003 0000 0000 0003 0cd9 0003 0000 0000 0003 0cd6 0003 0000 0001 0003 0cd7 0003 0000 0001 0003 0cd8 0003 0000 0002 0004 0cd9 0003 0000 0002 0004 0cd6 0003 0000 0003 0004 0cd7 0003 0000 0003 0004

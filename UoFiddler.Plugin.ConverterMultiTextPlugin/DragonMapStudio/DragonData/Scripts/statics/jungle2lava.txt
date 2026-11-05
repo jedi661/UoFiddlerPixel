@@ -1,0 +1,80 @@
+///////////////////////////////
+// N TileA S TileB
+///////////////////////////////
+AAAABBBA 32AE 32AF 000 000
+AAAAABBA 32AE 32AF 000 000
+AAAABBAA 32AE 32AF 000 000
+AAAAABAA 32AE 32AF 000 000
+
+///////////////////////////////
+// W TileA E TileB
+///////////////////////////////
+AABBBAAA 32AA 32AB 000 000
+AAABBAAA 32AA 32AB 000 000
+AABBAAAA 32AA 32AB 000 000
+AAABAAAA 32AA 32AB 000 000
+
+///////////////////////////////
+// E TileA W TileB
+///////////////////////////////
+BAAAAABB 32B0 32B1 000 000
+BAAAAAAB 32B0 32B1 000 000
+AAAAAABB 32B0 32B1 000 000
+AAAAAAAB 32B0 32B1 000 000
+
+///////////////////////////////
+// S TileA N TileB
+///////////////////////////////
+BBBAAAAA 32AC 32AD 000 000
+ABBAAAAA 32AC 32AD 000 000
+BBAAAAAA 32AC 32AD 000 000
+ABAAAAAA 32AC 32AD 000 000
+
+///////////////////////////////
+// NW Corner is TileB
+///////////////////////////////
+AAAABAAA 32A8 000 000
+
+AABAAAAA 32A6 000 000
+BAAAAAAA 32A7 000 000
+AAABABBA 32A2 000 000
+AAAABBBB 32A5 000 000
+
+///////////////////////////////
+// NW corner is TileA
+///////////////////////////////
+AABBBBBA 32A2 000 000
+AAABBBBA 32A2 000 000
+AABBBBAA 32A2 000 000
+AAABBBAA 32A2 000 000
+
+///////////////////////////////
+// SE corner is TileA
+///////////////////////////////
+BBBAAABB 32A4 000 000
+BBAAAABB 32A4 000 000
+BBBAAAAB 32A4 000 000
+BBAAAAAB 32A4 000 000
+
+///////////////////////////////
+// SW corner is TileA
+///////////////////////////////
+BBBBBAAA 32A3 000 000
+ABBBBAAA 32A3 000 000
+ABBBAAAA 32A3 000 000
+
+
+///////////////////////////////
+// NW corner is TileA
+///////////////////////////////
+BAAAABBB 32A5 000 000
+AAAAAABA 329E 000 000
+BAAABBBB 32A5 000 000
+
+///////////////////////////////
+// Corners
+///////////////////////////////
+AAAAABBB 32A5 000 000
+BBBBAAAA 32A3 000 000
+
+

@@ -1,0 +1,15 @@
+//#####################################################################
+// This is an after-fix table. If you make changes with worldforge
+// and want use other tables and recalculating you will never do your 
+// Worldforge changes again. In future i will release a program to create
+// these tables automatic.
+//
+//#####################################################################
+// NOTE: this format has been fixed since there is an internal error in Dragon when reading this file
+//####################
+// X  Y   ID(dec) Z(hex)
+//####################
+0000 0000 0008 0000
+0000 0012 0009  -12
+
+

@@ -104,6 +104,15 @@
 		</EmbeddedResource>
 	</ItemGroup>
 	<ItemGroup>
+		<!-- Dragon Map Studio: shipped IMod13 scripts, colour table and palettes (plugins\DragonMapStudio\DragonData) -->
+		<None Update="DragonMapStudio\DragonData\**\*">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+		<Compile Update="DragonMapStudio\DragonMapStudioForm.Tools.cs">
+			<DependentUpon>DragonMapStudioForm.cs</DependentUpon>
+		</Compile>
+	</ItemGroup>
+	<ItemGroup>
 	  <None Update="Properties\Settings.settings">
 	    <Generator>SettingsSingleFileGenerator</Generator>
 	    <LastGenOutput>Settings.Designer.cs</LastGenOutput>
