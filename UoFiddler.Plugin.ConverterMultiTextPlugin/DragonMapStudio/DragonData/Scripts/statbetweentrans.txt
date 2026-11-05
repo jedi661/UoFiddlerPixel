@@ -1,0 +1,56 @@
+0f 04 sandstone2black.txt
+04 0f black2sandstone.txt
+03 04 cavelow2black.txt
+14 04 marble2black.txt
+04 14 black2marble.txt
+0e 04 dunegon2black.txt
+04 0e black2dunegon.txt
+//newcave mod:
+04 03 black2caveRand.txt 
+04 03 black2caveWalls.txt 
+03 04 cave2blackRand.txt 
+03 04 cave2blackRalls.txt
+//forest2swamp mod:
+18 01 swamp2forestb.txt
+01 18 forest2swampb.txt
+////////////////////////////////
+//dungeon house in cave
+////////////////////////////////
+//03 11 roof.txt
+//11 03 roof2.txt
+//11 03 stone2cave.txt
+//03 11 cave2stone.txt
+//11 03 rooftopfloor2.txt
+////////////////////////////////
+//lava borders
+////////////////////////////////
+06 10 mountain2lava.txt
+10 06 lava2mountain.txt
+10 00 lava2grass.txt
+00 10 grass2lava.txt
+10 01 lava2forest.txt
+01 10 forest2lava.txt
+10 05 lava2desert.txt
+05 10 desert2lava.txt
+10 07 lava2snow.txt
+07 10 snow2lava.txt
+10 08 lava2jungle.txt
+08 10 jungle2lava.txt
+10 09 lava2dirt.txt
+09 10 dirt2lava.txt
+10 18 lava2swamp.txt
+18 10 swamp2lava.txt
+10 1b lava2star.txt
+1b 10 star2lava.txt
+10 03 lava2cave.txt
+03 10 cave2lava.txt
+///////////////////////////////////
+//starfield transition to grass
+///////////////////////////////////
+00 1b rock2grass.txt
+1b 00 star2rock.txt
+///////////////////////////////////
+//wasteland to grass
+///////////////////////////////////
+00 0b grass2wasteland.txt
+

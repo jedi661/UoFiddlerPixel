@@ -1,0 +1,52 @@
+// -----------------------------------------------------------------------------------------
+// Syntax :
+// [Frqequency] [ItemGroup1] [ItemGroup2] [ItemGroup3] ...
+// 
+// Itemgroup = [Item(hex)] [ZLevel(dec)] [Color(hex)] [Xmovement(dec)] [Ymovement(dec)]
+// -----------------------------------------------------------------------------------------
+//Dragon script created by Ryandor 9 Feb 2002
+//This places stalagmites and flowstones on cave floor. Pretty simple.
+//Optionally: ore carts, ore piles and hay
+
+//**This script has not really been tested for amounts.
+//**There may be too much or too little of each item. Adjust accordingly.
+
+//Flowstones - tall
+0010 08e2 0000 0000 0000 0000
+0010 08e8 0000 0000 0000 0000
+
+//flowstones - short
+0010 08e3 0000 0000 0000 0000
+0010 08e6 0000 0000 0000 0000
+
+//stalagmites - tall
+0010 08e0 0000 0000 0000 0000
+0010 08e1 0000 0000 0000 0000
+
+//stalagmites - short
+0005 08e4 0000 0000 0000 0000
+0005 08e5 0000 0000 0000 0000
+0005 08e9 0000 0000 0000 0000
+0005 08ea 0000 0000 0000 0000
+
+//stalagmite - red
+0005 08e7 0000 0000 0000 0000
+
+//ore cart n-s
+0001 1a83 0000 0000 0000 0000 1a82 0000 0000 0000 0001
+
+//ore cart e-w
+0001 1a88 0000 0000 0000 0000 1a87 0000 0000 0001 0000
+
+//iron ore piles (small to large)
+0001 19b7 0000 0000 0000 0000
+0002 19ba 0000 0000 0000 0000
+0002 19b8 0000 0000 0000 0000
+0001 19b9 0000 0000 0000 0000
+
+//hay
+0005 0f34 0000 0000 0000 0000
+0005 1037 0000 0000 0000 0000
+0005 1036 0000 0000 0000 0000
+
+

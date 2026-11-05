@@ -88,6 +88,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             TextureCutter = new System.Windows.Forms.Button();
             tabPageMap = new System.Windows.Forms.TabPage();
             lbUoMap = new System.Windows.Forms.Label();
+            lbDragonMapStudio = new System.Windows.Forms.Label();
+            BtDragonMapStudio = new System.Windows.Forms.Button();
             UOMap = new System.Windows.Forms.Button();
             lbCopyMapReplace = new System.Windows.Forms.Label();
             BtMapReplace = new System.Windows.Forms.Button();
@@ -587,6 +589,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             // 
             // tabPageMap
             // 
+            tabPageMap.Controls.Add(lbDragonMapStudio);
+            tabPageMap.Controls.Add(BtDragonMapStudio);
             tabPageMap.Controls.Add(lbUoMap);
             tabPageMap.Controls.Add(UOMap);
             tabPageMap.Controls.Add(lbCopyMapReplace);
@@ -608,6 +612,25 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             lbUoMap.Size = new System.Drawing.Size(49, 15);
             lbUoMap.TabIndex = 18;
             lbUoMap.Text = "Uo Map";
+            // 
+            // lbDragonMapStudio
+            // 
+            lbDragonMapStudio.AutoSize = true;
+            lbDragonMapStudio.Location = new System.Drawing.Point(6, 315);
+            lbDragonMapStudio.Name = "lbDragonMapStudio";
+            lbDragonMapStudio.Size = new System.Drawing.Size(108, 15);
+            lbDragonMapStudio.TabIndex = 20;
+            lbDragonMapStudio.Text = "Dragon Map Studio";
+            // 
+            // BtDragonMapStudio
+            // 
+            BtDragonMapStudio.Image = Properties.Resources.dragon_map_studio;
+            BtDragonMapStudio.Location = new System.Drawing.Point(6, 253);
+            BtDragonMapStudio.Name = "BtDragonMapStudio";
+            BtDragonMapStudio.Size = new System.Drawing.Size(59, 57);
+            BtDragonMapStudio.TabIndex = 19;
+            BtDragonMapStudio.UseVisualStyleBackColor = true;
+            BtDragonMapStudio.Click += BtDragonMapStudio_Click;
             // 
             // UOMap
             // 
@@ -1007,6 +1030,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
         private System.Windows.Forms.Label lbIsoTiloSlicer;
         private System.Windows.Forms.Button UOMap;
         private System.Windows.Forms.Label lbUoMap;
+        private System.Windows.Forms.Label lbDragonMapStudio;
+        private System.Windows.Forms.Button BtDragonMapStudio;
         private System.Windows.Forms.Button BtTileArtForm;
         private System.Windows.Forms.Label lbTileArtForm;
         private System.Windows.Forms.Label lbTransitions;

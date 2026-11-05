@@ -1,0 +1,72 @@
+﻿// /***************************************************************************
+//  *
+//  * Dragon Map Studio – "new map" dialog
+//  *
+//  * "THE BEER-WINE-WARE LICENSE"
+//  * As long as you retain this notice you can do whatever you want with
+//  * this stuff. If we meet some day, and you think this stuff is worth it,
+//  * you can buy me a beer and Wine in return.
+//  *
+//  ***************************************************************************/
+
+using System;
+using System.Windows.Forms;
+using UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core;
+
+namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Dialogs
+{
+    public partial class NewMapDialog : Form
+    {
+        private readonly DragonRuleSet _rules;
+
+        public NewMapDialog() : this(null, 6144, 4096, 0x20)
+        {
+        }
+
+        public NewMapDialog(DragonRuleSet rules, int width, int height, int fillIndex)
+        {
+            InitializeComponent();
+            _rules = rules;
+            cmbPreset.Items.Add("Eigene Größe");
+            foreach (MapSizePreset p in MapSizePreset.All)
+            {
+                cmbPreset.Items.Add(p);
+            }
+            cmbPreset.SelectedIndex = 0;
+            numWidth.Value = Math.Clamp(width, 8, 16384);
+            numHeight.Value = Math.Clamp(height, 8, 16384);
+            numFill.Value = Math.Clamp(fillIndex, 0, 255);
+            UpdateFillPreview();
+        }
+
+        public string MapName => string.IsNullOrWhiteSpace(txtName.Text) ? "NeueKarte" : txtName.Text.Trim();
+
+        public int MapWidth => ((int)numWidth.Value + 7) / 8 * 8;
+
+        public int MapHeight => ((int)numHeight.Value + 7) / 8 * 8;
+
+        public byte FillIndex => (byte)numFill.Value;
+
+        private void CmbPreset_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (cmbPreset.SelectedItem is MapSizePreset p)
+            {
+                numWidth.Value = p.Width;
+                numHeight.Value = p.Height;
+            }
+        }
+
+        private void NumFill_ValueChanged(object sender, EventArgs e) => UpdateFillPreview();
+
+        private void UpdateFillPreview()
+        {
+            if (_rules == null)
+            {
+                return;
+            }
+            DragonPaletteEntry entry = _rules.Palette[(int)numFill.Value];
+            panelFillSwatch.BackColor = entry.Color;
+            lblFillName.Text = entry.Name;
+        }
+    }
+}

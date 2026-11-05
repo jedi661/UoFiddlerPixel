@@ -1,0 +1,11 @@
+// **************************************************************************************
+// 
+//  This script ist for making areas unevenly
+// 
+// Syntax :
+//  [Source Group] [Frequency] [Left] [Top] [Right] [Bottom] [Altritude random addition]
+//                      ^- from 1 to 1000
+// ***************************************************************************************
+
+// Making Grass unevenly on the hole map 
+//00 0100 0000 0000 6143 4095 002
