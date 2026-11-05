@@ -19,6 +19,7 @@ using System.Linq;
 using System.Windows.Forms;
 using UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls;
 using UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core;
+using UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Dialogs;
 
 namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
 {
@@ -94,7 +95,24 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             _cgiTools[tsbCgiSetHeight] = IsoTool.SetHeight;
             _cgiTools[tsbCgiSmooth] = IsoTool.Smooth;
             _cgiTools[tsbCgiArea] = IsoTool.Area;
+            _cgiTools[tsbCgiCoast] = IsoTool.Coast;
+            _cgiTools[tsbCgiWater] = IsoTool.Water;
             isoView.LandPicked += IsoView_LandPicked;
+            for (int r = 0; r <= 16; r++)
+            {
+                tscCgiBrush.Items.Add(r == 0 ? "1 Tile" : $"{r * 2 + 1}×{r * 2 + 1}");
+            }
+            tscCgiBrush.SelectedIndex = 0;
+            foreach (ComboBox c in new[] { cmbCgiItemSize, cmbCgiLandSize })
+            {
+                c.Items.AddRange(new object[] { "Bilder klein", "Bilder mittel", "Bilder groß" });
+                c.SelectedIndex = 1;
+            }
+            gridCgiItems.ImageOf = id => UoArtCache.Static(id, 0);
+            gridCgiItems.NameOf = UoArtCache.ItemName;
+            gridCgiLand.ImageOf = LandPicture;
+            gridCgiLand.NameOf = id => UoArtCache.LandName(id) + (UoArtCache.Texture(id) != null ? "  (mit Textur)" : string.Empty);
+            LoadCoastSettings(CoastSettings.From(CurrentBuildOptions()));
             SelectCgiTool(IsoTool.Select);
             foreach (string z in new[] { "127", "100", "80", "60", "40", "30", "20", "10", "0" })
             {
@@ -103,10 +121,6 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             tscCgiMaxZ.Text = "127";
             tsbCgiStatics.Checked = true;
             tsbCgiProblems.Checked = true;
-            toolTip.SetToolTip(isoView,
-                "Mausrad = Zoom, mittlere Maus / Leertaste = verschieben, Rechtsklick = Item aufnehmen\n" +
-                "Pfeiltasten = Auswahl verschieben (ohne Auswahl: Ansicht), Strg+Pfeil = Kopie daneben einfügen\n" +
-                "Bild↑/Bild↓ = Z ±1 (Umschalt ±5), Entf = löschen, H = färben, Strg+C / Strg+V, Strg+Z / Strg+Y");
             CgiPlaceSettings_Changed(this, EventArgs.Empty);
             UpdateCgiState();
         }
@@ -131,7 +145,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                 tabCgiSide.SelectedTab = tabCgiLand;
                 EnsureLandList();
             }
+            else if (tool == IsoTool.Coast || tool == IsoTool.Water)
+            {
+                tabCgiSide.SelectedTab = tabCgiCoast;
+            }
             isoView.Invalidate();
+            UpdateCgiKeys();
         }
 
         private void CgiTool_Click(object sender, EventArgs e)
@@ -399,7 +418,21 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             lblPosition.Text = $"X {e.X}  Y {e.Y}  Land {land:x4} {UoArtCache.LandName(land)} z {_cgiMap.LandZ(e.X, e.Y)}{st}";
         }
 
-        private void IsoView_Message(object sender, string e) => SetStatus(e);
+        private void IsoView_Message(object sender, string e)
+        {
+            SetStatus(e);
+            UpdateCgiKeys();
+        }
+
+        /// <summary>Keys and mouse of the current tool, always visible below the view.</summary>
+        private void UpdateCgiKeys()
+        {
+            string text = isoView.KeyHelp();
+            if (lblCgiKeys.Text != text)
+            {
+                lblCgiKeys.Text = text;
+            }
+        }
 
         private void IsoView_MapChanged(object sender, EventArgs e) => UpdateCgiState();
 
@@ -417,7 +450,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             isoView.ShowStatics = tsbCgiStatics.Checked;
             isoView.ShowProblems = tsbCgiProblems.Checked;
             isoView.ShowHeights = tsbCgiHeights.Checked;
+            isoView.TranslucentWater = tsbCgiSeeThrough.Checked;
+            isoView.TopDown = tsbCgi2D.Checked;
             isoView.Refresh(true);
+            UpdateCgiKeys();
         }
 
         private void TscCgiMaxZ_Changed(object sender, EventArgs e)
@@ -449,6 +485,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                     _allLand.Add(id);
                 }
             }
+            if (_allLand.Count == 0)
+            {
+                // art index not readable: show all ids instead of an empty catalogue
+                _allLand.AddRange(Enumerable.Range(0, UoArtCache.MaxLandId + 1));
+            }
             ApplyLandFilter();
             CgiLandSettings_Changed(this, EventArgs.Empty);
         }
@@ -462,29 +503,87 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                 ? _allLand ?? new List<int>()
                 : (_allLand ?? new List<int>()).Where(id => (isHex && id.ToString("x4").Contains(hexText, StringComparison.OrdinalIgnoreCase)) ||
                                                             UoArtCache.LandName(id).Contains(f, StringComparison.OrdinalIgnoreCase)).ToList();
-            lstCgiLand.VirtualListSize = _shownLand.Count;
-            lstCgiLand.Invalidate();
+            gridCgiLand.Ids = _shownLand;
         }
 
         private void TxtCgiLandFilter_TextChanged(object sender, EventArgs e) => ApplyLandFilter();
 
-        private void LstCgiLand_RetrieveVirtualItem(object sender, RetrieveVirtualItemEventArgs e)
+        /// <summary>Picture in the land catalogue: land art, or the texture (for slopes) when 'Texturen zeigen' is on.</summary>
+        private Image LandPicture(int id)
         {
-            int id = e.ItemIndex < _shownLand.Count ? _shownLand[e.ItemIndex] : 0;
-            e.Item = new ListViewItem(id.ToString("x4"));
-            e.Item.SubItems.Add(UoArtCache.LandName(id));
+            return chkCgiLandTextures.Checked ? UoArtCache.Texture(id) ?? (Image)UoArtCache.Land(id) : UoArtCache.Land(id);
         }
 
-        private void LstCgiLand_SelectedIndexChanged(object sender, EventArgs e)
+        private void ChkCgiLandTextures_CheckedChanged(object sender, EventArgs e) => gridCgiLand.Invalidate();
+
+        private void GridCgiLand_SelectedIdChanged(object sender, EventArgs e)
         {
-            if (lstCgiLand.SelectedIndices.Count > 0 && lstCgiLand.SelectedIndices[0] < _shownLand.Count)
+            if (gridCgiLand.SelectedId < 0)
             {
-                txtCgiLandId.Text = _shownLand[lstCgiLand.SelectedIndices[0]].ToString("x4");
-                if (isoView.Tool != IsoTool.LandSet)
-                {
-                    SelectCgiTool(IsoTool.LandSet);
-                }
+                return;
             }
+            txtCgiLandId.Text = gridCgiLand.SelectedId.ToString("x4");
+            if (isoView.Tool != IsoTool.LandSet)
+            {
+                SelectCgiTool(IsoTool.LandSet);
+            }
+        }
+
+        private void GridCgiLand_ItemActivated(object sender, EventArgs e)
+        {
+            SelectCgiTool(IsoTool.LandSet);
+            isoView.Focus();
+        }
+
+        private void CmbCgiGridSize_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            int[] sizes = { 48, 64, 96 };
+            if (sender is ComboBox c && c.SelectedIndex >= 0)
+            {
+                (c == cmbCgiItemSize ? gridCgiItems : gridCgiLand).CellSize = sizes[c.SelectedIndex];
+            }
+        }
+
+        private void TscCgiBrush_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            isoView.LandRadius = Math.Max(0, tscCgiBrush.SelectedIndex);
+            isoView.Invalidate();
+        }
+
+        private void BtnCgiAreaFill_Click(object sender, EventArgs e) => isoView.FillArea();
+
+        private void BtnCgiAreaHeight_Click(object sender, EventArgs e) => isoView.SetAreaHeight();
+
+        private void BtnCgiAreaSmooth_Click(object sender, EventArgs e) => isoView.SmoothArea();
+
+        private void BtnCgiLandCatalog_Click(object sender, EventArgs e) => OpenCatalog(TileCatalogMode.Land);
+
+        private void BtnCgiItemCatalog_Click(object sender, EventArgs e) => OpenCatalog(TileCatalogMode.Items);
+
+        /// <summary>Big picture catalogue (land, textures, items); the chosen tile goes to the matching tool.</summary>
+        private void OpenCatalog(TileCatalogMode mode)
+        {
+            EnsureLandList();
+            EnsureItemList();
+            int current = mode == TileCatalogMode.Items ? isoView.PlaceId : isoView.PlaceLandId;
+            using var dlg = new TilePickerForm(_allLand, _allItems, mode, current);
+            if (dlg.ShowDialog(this) != DialogResult.OK || dlg.SelectedId < 0)
+            {
+                return;
+            }
+            if (dlg.Mode == TileCatalogMode.Items)
+            {
+                ShowInItemCatalog(dlg.SelectedId);
+                SelectCgiTool(IsoTool.Place);
+            }
+            else
+            {
+                txtCgiLandId.Text = dlg.SelectedId.ToString("x4");
+                gridCgiLand.SelectedId = dlg.SelectedId;
+                chkCgiLandTextures.Checked = dlg.Mode == TileCatalogMode.Textures;
+                SelectCgiTool(IsoTool.LandSet);
+            }
+            isoView.Focus();
         }
 
         private void CgiLandSettings_Changed(object sender, EventArgs e)
@@ -493,14 +592,18 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             {
                 isoView.PlaceLandId = (ushort)(id & 0x3FFF);
             }
-            isoView.LandRadius = (int)numCgiRadius.Value;
             isoView.HeightStep = (int)numCgiStep.Value;
             isoView.TargetHeight = (int)numCgiTarget.Value;
             picCgiLandArt.Image = UoArtCache.Land(isoView.PlaceLandId);
             picCgiLandTex.Image = UoArtCache.Texture(isoView.PlaceLandId);
             string wet = UoArtCache.LandIsWetFlat(isoView.PlaceLandId) ? " · nass, ohne Textur (wird flach gezeichnet)" : string.Empty;
             lblCgiLandInfo.Text = $"{isoView.PlaceLandId:x4} {UoArtCache.LandName(isoView.PlaceLandId)}{wet}{Environment.NewLine}" +
-                                  "Links: Land-Grafik, rechts: Textur für Hänge. Ziehen mit gedrückter Maus malt, ein Zug = ein Rückgängig-Schritt. Rechtsklick nimmt Land-ID und Höhe auf.";
+                                  "Links Land-Grafik, rechts Textur für Hänge. Bild anklicken = auswählen, Doppelklick = malen. " +
+                                  "Bereich-Knöpfe gelten für den mit 'Bereich' markierten Teil (Höhe = nimmt 'Höhe = :').";
+            if (gridCgiLand.SelectedId != isoView.PlaceLandId)
+            {
+                gridCgiLand.SelectedId = isoView.PlaceLandId;
+            }
             isoView.Invalidate();
         }
 
@@ -547,34 +650,41 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                     (isHex && id.ToString("x4").Contains(hexText, StringComparison.OrdinalIgnoreCase)) ||
                     UoArtCache.ItemName(id).Contains(f, StringComparison.OrdinalIgnoreCase)).ToList();
             }
-            lstCgiItems.VirtualListSize = _shownItems.Count;
-            lstCgiItems.Invalidate();
+            gridCgiItems.Ids = _shownItems;
         }
 
         private void TxtCgiFilter_TextChanged(object sender, EventArgs e) => ApplyItemFilter();
 
-        private void LstCgiItems_RetrieveVirtualItem(object sender, RetrieveVirtualItemEventArgs e)
+        private void GridCgiItems_SelectedIdChanged(object sender, EventArgs e)
         {
-            int id = e.ItemIndex < _shownItems.Count ? _shownItems[e.ItemIndex] : 0;
-            e.Item = new ListViewItem(id.ToString("x4"));
-            e.Item.SubItems.Add(UoArtCache.ItemName(id));
-        }
-
-        private void LstCgiItems_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            if (lstCgiItems.SelectedIndices.Count == 0)
+            if (gridCgiItems.SelectedId < 0)
             {
                 return;
             }
-            int idx = lstCgiItems.SelectedIndices[0];
-            if (idx < _shownItems.Count)
+            txtCgiItemId.Text = gridCgiItems.SelectedId.ToString("x4");
+            if (isoView.Tool != IsoTool.Place && isoView.Tool != IsoTool.Hue)
             {
-                txtCgiItemId.Text = _shownItems[idx].ToString("x4");
-                if (isoView.Tool != IsoTool.Place && isoView.Tool != IsoTool.Hue)
-                {
-                    SelectCgiTool(IsoTool.Place);
-                }
+                SelectCgiTool(IsoTool.Place);
             }
+        }
+
+        private void GridCgiItems_ItemActivated(object sender, EventArgs e)
+        {
+            SelectCgiTool(IsoTool.Place);
+            isoView.Focus();
+        }
+
+        /// <summary>Shows an item in the catalogue (clears a filter that hides it) and takes it as the item to place.</summary>
+        private void ShowInItemCatalog(int id)
+        {
+            EnsureItemList();
+            if (!gridCgiItems.Contains(id) && txtCgiFilter.Text.Length > 0)
+            {
+                txtCgiFilter.Text = string.Empty;
+            }
+            gridCgiItems.SelectedId = id;
+            txtCgiItemId.Text = id.ToString("x4");
+            tabCgiSide.SelectedTab = tabCgiItems;
         }
 
         private void CgiPlaceSettings_Changed(object sender, EventArgs e)
@@ -582,6 +692,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             if (HexList.TryParseHex(txtCgiItemId.Text, out ushort id))
             {
                 isoView.PlaceId = id;
+                if (gridCgiItems.SelectedId != id)
+                {
+                    gridCgiItems.SelectedId = id;
+                }
             }
             isoView.PlaceHue = (ushort)numCgiHue.Value;
             isoView.ZOffset = (int)numCgiZOffset.Value;
@@ -590,7 +704,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             Color hueColor = UoArtCache.HueColor(isoView.PlaceHue);
             panelCgiHueSwatch.BackColor = hueColor == Color.Transparent ? SystemColors.Control : hueColor;
             picCgiItem.Image = UoArtCache.Static(isoView.PlaceId, isoView.PlaceHue);
-            lblCgiItemInfo.Text = $"{isoView.PlaceId:x4} {UoArtCache.ItemName(isoView.PlaceId)}  ·  Höhe {UoArtCache.ItemHeight(isoView.PlaceId)}{Environment.NewLine}Hue {isoView.PlaceHue}: {UoArtCache.HueName(isoView.PlaceHue)}";
+            lblCgiItemInfo.Text = $"{isoView.PlaceId:x4} {UoArtCache.ItemName(isoView.PlaceId)}  ·  Höhe {UoArtCache.ItemHeight(isoView.PlaceId)}  ·  Hue {isoView.PlaceHue}: {UoArtCache.HueName(isoView.PlaceHue)}" +
+                                  $"{Environment.NewLine}TileData: {UoArtCache.ItemFlagsText(isoView.PlaceId)}";
             isoView.Invalidate();
         }
 
@@ -611,7 +726,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
         /// <summary>Right click on a static: take over id and hue.</summary>
         private void IsoView_ItemPicked(object sender, StaticPickEventArgs e)
         {
-            txtCgiItemId.Text = e.Item.Id.ToString("x4");
+            ShowInItemCatalog(e.Item.Id);
             numCgiHue.Value = Math.Clamp(e.Item.Hue, 0, (int)numCgiHue.Maximum);
             SetStatus($"Aufgenommen: {e.Item.Id:x4} {UoArtCache.ItemName(e.Item.Id)}, Hue {e.Item.Hue}");
         }
@@ -630,13 +745,100 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                 return;
             }
             StaticItem f = sel.First();
+            if (sel.All(s => s.Id == f.Id) && gridCgiItems.Contains(f.Id))
+            {
+                // the selected item is also marked in the catalogue (ready to place again)
+                gridCgiItems.SelectedId = f.Id;
+            }
+            UpdateCgiKeys();
             lblCgiSelInfo.Text = sel.Count == 1
-                ? $"{f.Id:x4} {UoArtCache.ItemName(f.Id)}{Environment.NewLine}({f.X}, {f.Y}, {f.Z})  Hue {f.Hue}{Environment.NewLine}" +
+                ? $"{f.Id:x4} {UoArtCache.ItemName(f.Id)}{Environment.NewLine}({f.X}, {f.Y}, {f.Z})  Hue {f.Hue}  ·  TileData: {UoArtCache.ItemFlagsText(f.Id)}{Environment.NewLine}" +
                   "Pfeile = verschieben, Strg+Pfeil = Kopie daneben, Bild↑/↓ = Z, Entf = löschen"
                 : $"{sel.Count} Statics ausgewählt.{Environment.NewLine}Pfeile = verschieben, Strg+Pfeil = Kopie daneben, Bild↑/↓ = Z, Entf = löschen";
             propCgiSelection.SelectedObject = new CgiSelectionInfo { ItemId = f.Id.ToString("x4"), Hue = f.Hue, Z = f.Z, X = f.X, Y = f.Y };
             UpdateCgiState();
         }
+
+        private void BtnCgiSelToCatalog_Click(object sender, EventArgs e)
+        {
+            StaticItem f = isoView.Selection.FirstOrDefault();
+            if (f == null)
+            {
+                SetStatus("Nichts ausgewählt.");
+                return;
+            }
+            IsoView_ItemPicked(this, new StaticPickEventArgs(f));
+        }
+
+        private void BtnCgiSelCopy_Click(object sender, EventArgs e)
+        {
+            isoView.CopySelection();
+            isoView.Focus();
+        }
+
+        private void BtnCgiSelPaste_Click(object sender, EventArgs e)
+        {
+            isoView.BeginPaste();
+            isoView.Focus();
+        }
+
+        // ================================================================== coast / water
+
+        private bool _loadingCoast;
+
+        private void LoadCoastSettings(CoastSettings c)
+        {
+            _loadingCoast = true;
+            txtCgiCoastHeights.Text = c.LandHeights;
+            numCgiCoastMaxLand.Value = Math.Clamp(c.MaxLandZ, -128, 127);
+            numCgiFloorZ.Value = Math.Clamp(c.FloorZ, -128, 127);
+            numCgiWaterWidth.Value = Math.Clamp(c.WaterWidth, 0, 16);
+            numCgiSurfaceZ.Value = Math.Clamp(c.SurfaceZ, -128, 127);
+            txtCgiFloorTiles.Text = c.FloorTiles;
+            txtCgiWaterIds.Text = c.WaterStaticIds;
+            _loadingCoast = false;
+            CgiCoastSettings_Changed(this, EventArgs.Empty);
+        }
+
+        private void CgiCoastSettings_Changed(object sender, EventArgs e)
+        {
+            if (_loadingCoast)
+            {
+                return;
+            }
+            isoView.Coast = new CoastSettings
+            {
+                LandHeights = txtCgiCoastHeights.Text,
+                MaxLandZ = (int)numCgiCoastMaxLand.Value,
+                FloorZ = (int)numCgiFloorZ.Value,
+                WaterWidth = (int)numCgiWaterWidth.Value,
+                SurfaceZ = (int)numCgiSurfaceZ.Value,
+                FloorTiles = txtCgiFloorTiles.Text,
+                WaterStaticIds = txtCgiWaterIds.Text,
+                SetFloor = chkCgiSetFloor.Checked
+            };
+            ushort[] ids = HexList.Parse(txtCgiWaterIds.Text);
+            string water = ids.Length == 0
+                ? "keine gültige ID"
+                : string.Join(Environment.NewLine, ids.Distinct().Take(4).Select(id =>
+                    $"{id:x4} {UoArtCache.ItemName(id)}: {(UoArtCache.IsTranslucent(id) ? "durchsichtig" : "deckend")} ({UoArtCache.ItemFlagsText(id)})"));
+            lblCgiCoastInfo.Text =
+                "Pinsel 'Küste' / Taste K: Wasser bis 'Breite' vom Land = Grund-Tile auf 'Meeresgrund z' (äußerer Ring = 'Wasser z') " +
+                "mit Wasser-Statics auf 'Wasser z'; Land am Wasser bekommt die Strand-Höhen (1., 2., 3. Tile). Land höher als 'Klippe ab z' bleibt." +
+                Environment.NewLine + Environment.NewLine +
+                "Pinsel 'Wasser': setzt die Wasser-Statics (zufällig aus der Liste), Strg = entfernen. Durchsichtig zeichnet der Client nur Items mit dem TileData-Flag 'Translucent':" +
+                Environment.NewLine + water;
+        }
+
+        private void BtnCgiCoastDefaults_Click(object sender, EventArgs e) => LoadCoastSettings(CoastSettings.From(CurrentBuildOptions()));
+
+        private void BtnCgiWaterFromItem_Click(object sender, EventArgs e) => txtCgiWaterIds.Text = isoView.PlaceId.ToString("x4");
+
+        private void BtnCgiCoastArea_Click(object sender, EventArgs e) => isoView.ShapeCoastArea();
+
+        private void BtnCgiWaterArea_Click(object sender, EventArgs e) => isoView.WaterArea(false);
+
+        private void BtnCgiWaterAreaRemove_Click(object sender, EventArgs e) => isoView.WaterArea(true);
 
         private void PropCgiSelection_PropertyValueChanged(object s, PropertyValueChangedEventArgs e)
         {

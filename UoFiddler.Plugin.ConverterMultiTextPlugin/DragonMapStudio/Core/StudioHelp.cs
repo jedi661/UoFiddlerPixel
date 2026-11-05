@@ -115,6 +115,21 @@ Zeigt die gebaute Karte wie der Client (Land-Art, Texturen an Hängen, Statics m
 * Wie der Client: nasse Kacheln ohne Textur (Wasser) werden flach gezeichnet, alle anderen
   an Hängen mit Textur gestreckt.
 * Speichern: Statics, bei geändertem Land auch die Map (UOP laut Build-Option), alte Dateien -> .bak.
+* Unter der Ansicht steht immer, welche Tasten und Maus-Aktionen das aktuelle Werkzeug hat.
+* ""2D"" (oder Taste T): Ansicht von oben, Land-Tiles als Quadrate mit Schattierung für Hänge.
+  Alle Werkzeuge gehen auch hier – gut zum Malen von Land-Tiles und Übergängen (Bögen).
+* Reiter Items und Land: Bilder-Katalog statt Liste (Bildgröße wählbar), Doppelklick = malen /
+  setzen. ""Großer Katalog…"" öffnet ein eigenes Fenster mit Land-Tiles, Texturen und Items.
+* Static auswählen -> es wird im Item-Katalog markiert; ""Im Item-Katalog zeigen"" oder Taste I
+  übernimmt ID + Hue zum erneuten Setzen; Kopieren / Einfügen auch als Knöpfe.
+* Pinsel ""Küste"": Ziehen über eine Küste formt sie wie das Original (Meeresgrund -15,
+  Wasser-Statics -5, Strand -3 / -1 / 0). Werte im Reiter ""Küste / Wasser"".
+* Pinsel ""Wasser"": Wasser-Statics malen (Strg = entfernen), auf Wunsch mit Meeresgrund.
+  Durchsichtig zeigt der Client nur Items mit dem TileData-Flag ""Translucent"" – die
+  Flags stehen im Reiter. ""Wasser durchsichtig"" zeigt den Grund darunter zur Kontrolle.
+* Markierter Bereich: F = mit Land-Tile füllen, K = Küste anpassen, W = Wasser
+  (Umschalt+W entfernen), G = glätten; dazu Knöpfe in den Reitern Land und Küste / Wasser.
+* Pinsel-Größe für alle Land-Werkzeuge oben in der Leiste ""Land"".
 
 6. GENERATOR & UMRISS
 ---------------------
@@ -244,6 +259,21 @@ Shows the built map like the client (land art, textures on slopes, statics with 
 * Like the client: wet tiles without texture (water) are drawn flat, all others are stretched
   with their texture on slopes.
 * Save: statics, with changed land also the map (UOP per build option), old files -> .bak.
+* Below the view the keys and mouse actions of the current tool are always shown.
+* ""2D"" (or key T): view from above, land tiles as squares with shading for slopes. All tools
+  work here too – good for painting land tiles and transitions (curves).
+* Tabs Items and Land: picture catalogue instead of a list (picture size selectable), double
+  click = paint / place. ""Großer Katalog…"" opens a window with land tiles, textures and items.
+* Select a static -> it is marked in the item catalogue; ""Im Item-Katalog zeigen"" or key I
+  takes id + hue to place it again; copy / paste also as buttons.
+* Brush ""Küste"" (coast): dragging over a coast shapes it like the original (sea floor -15,
+  water statics -5, beach -3 / -1 / 0). Values in the tab ""Küste / Wasser"".
+* Brush ""Wasser"" (water): paint water statics (Ctrl = remove), optionally with sea floor.
+  The client draws only items with the tiledata flag ""Translucent"" see-through – the flags
+  are shown in the tab. ""Wasser durchsichtig"" shows the ground below for checking.
+* Marked area: F = fill with land tile, K = adjust coast, W = water (Shift+W removes),
+  G = smooth; also buttons in the tabs Land and Küste / Wasser.
+* Brush size for all land tools at the top of the bar ""Land"".
 
 6. GENERATOR & OUTLINE
 ----------------------

@@ -33,7 +33,13 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
         Lower,
         SetHeight,
         Smooth,
-        Area
+        Area,
+
+        /// <summary>Brush: coast like the original map (sea floor, water statics, beach heights).</summary>
+        Coast,
+
+        /// <summary>Brush: water statics (Ctrl = remove).</summary>
+        Water
     }
 
     public sealed class StaticPickEventArgs : EventArgs
@@ -58,11 +64,17 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
         private const int Half = 22;
         private const int ZStep = 4;
 
+        /// <summary>Size of a tile in the 2D view (at zoom 1).</summary>
+        private const int Cell = 32;
+
         private sealed class Placed
         {
             public StaticItem Item;
             public Rectangle Rect;
             public Bitmap Image;
+
+            /// <summary>Drawn size / image size (2D view draws smaller).</summary>
+            public float Scale = 1;
         }
 
         private MapData _map;
@@ -102,6 +114,15 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
             public List<StaticItem> Statics = new List<StaticItem>();
         }
         private int _multiId = -1;
+        private readonly Random _rnd = new Random();
+        private static readonly ImageAttributes TranslucentAttr = CreateAlpha(0.55f);
+
+        private static ImageAttributes CreateAlpha(float alpha)
+        {
+            var a = new ImageAttributes();
+            a.SetColorMatrix(new ColorMatrix { Matrix33 = alpha });
+            return a;
+        }
 
         public IsoMapView()
         {
@@ -145,6 +166,31 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
         /// <summary>Show the land height of every tile (numbers on the grid).</summary>
         [Category("Dragon"), DefaultValue(false)]
         public bool ShowHeights { get; set; }
+
+        /// <summary>2D view from above (land tiles as squares, no heights) instead of the client view.</summary>
+        [Category("Dragon"), DefaultValue(false)]
+        public bool TopDown
+        {
+            get => _topDown;
+            set
+            {
+                if (_topDown != value)
+                {
+                    _topDown = value;
+                    OnViewChanged();
+                }
+            }
+        }
+
+        private bool _topDown;
+
+        /// <summary>Draws all water statics see-through (in any case: items with the tiledata flag Translucent).</summary>
+        [Category("Dragon"), DefaultValue(false)]
+        public bool TranslucentWater { get; set; }
+
+        /// <summary>Values of the coast and water brushes.</summary>
+        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public CoastSettings Coast { get; set; } = new CoastSettings();
 
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public ushort PlaceLandId { get; set; } = 0x0003;
@@ -211,6 +257,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
         {
             get
             {
+                if (_topDown)
+                {
+                    double w = Width / (Cell * _zoom), h = Height / (Cell * _zoom);
+                    return new RectangleF((float)(_camX - w / 2), (float)(_camY - h / 2), (float)w, (float)h);
+                }
                 double r = (Width + Height) / (Tile * _zoom) / 1.2;
                 return new RectangleF((float)(_camX - r / 2), (float)(_camY - r / 2), (float)r, (float)r);
             }
@@ -292,6 +343,32 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                               (float)(SceneH / 2.0 + (x + y - (_camX + _camY)) * Half - Half));
         }
 
+        /// <summary>Scene position of the map corner (x, y): north corner of the tile, at its land height (iso) or flat (2D).</summary>
+        private PointF Corner(int x, int y)
+        {
+            if (_topDown)
+            {
+                return new PointF((float)(SceneW / 2.0 + (x - _camX - 0.5) * Cell), (float)(SceneH / 2.0 + (y - _camY - 0.5) * Cell));
+            }
+            PointF t = TileTop(x, y);
+            return new PointF(t.X, t.Y - _map.LandZ(Math.Clamp(x, 0, _map.Width - 1), Math.Clamp(y, 0, _map.Height - 1)) * ZStep);
+        }
+
+        /// <summary>Where an item image is drawn (2D: smaller, standing in its cell).</summary>
+        private RectangleF ItemRect(int x, int y, int z, Bitmap img)
+        {
+            float w = img?.Width ?? 16, h = img?.Height ?? 16;
+            if (_topDown)
+            {
+                PointF c = Corner(x, y);
+                float k = Cell / (float)Tile;
+                return new RectangleF(c.X + Cell / 2f - w * k / 2, c.Y + Cell - h * k, w * k, h * k);
+            }
+            PointF top = TileTop(x, y);
+            float bottom = top.Y + Tile - z * ZStep;
+            return img != null ? new RectangleF(top.X - w / 2f, bottom - h, w, h) : new RectangleF(top.X - 8, bottom - 20, 16, 16);
+        }
+
         private Point ToScene(Point p) => new Point((int)(p.X / _zoom), (int)(p.Y / _zoom));
 
         /// <summary>Tile under a screen point (the land height is taken into account).</summary>
@@ -302,6 +379,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                 return new Point(-1, -1);
             }
             Point s = ToScene(screen);
+            if (_topDown)
+            {
+                return new Point((int)Math.Floor((s.X - SceneW / 2.0) / Cell + _camX + 0.5), (int)Math.Floor((s.Y - SceneH / 2.0) / Cell + _camY + 0.5));
+            }
             double u = (s.X - SceneW / 2.0) / Half + (_camX - _camY);
             double v0 = (s.Y - SceneH / 2.0 + Half) / Half + (_camX + _camY);
             double v = v0;
@@ -331,6 +412,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
             _sceneDirty = false;
             if (_map == null)
             {
+                return;
+            }
+
+            if (_topDown)
+            {
+                RenderTopDown(g, sw, sh);
                 return;
             }
 
@@ -397,9 +484,14 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                         int threshold = (height > 0 ? 1 : 0) + (UoArtCache.IsBackground(st.Id) ? 0 : 1);
                         var placed = new Placed { Item = st, Rect = rect, Image = img };
                         StaticItem item = st;
+                        bool seeThrough = IsSeeThrough(st.Id);
                         drawables.Add((x + y, (st.Z + threshold) * 4 + threshold, order++, () =>
                         {
-                            if (img != null)
+                            if (img != null && seeThrough)
+                            {
+                                g.DrawImage(img, rect, 0, 0, img.Width, img.Height, GraphicsUnit.Pixel, TranslucentAttr);
+                            }
+                            else if (img != null)
                             {
                                 g.DrawImageUnscaled(img, rect.X, rect.Y);
                             }
@@ -432,6 +524,130 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
             if (ShowHeights)
             {
                 DrawHeights(g, sMin, sMax, cd, dHalf);
+            }
+        }
+
+        /// <summary>Tiledata flag Translucent, or a water static while 'water see-through' is on.</summary>
+        private bool IsSeeThrough(ushort id) => UoArtCache.IsTranslucent(id) || (TranslucentWater && UoArtCache.ItemIsWet(id));
+
+        /// <summary>2D view: land tiles from above as squares with relief shading, statics small in their cell.</summary>
+        private void RenderTopDown(Graphics g, int sw, int sh)
+        {
+            int x0 = (int)Math.Floor(_camX - sw / 2.0 / Cell) - 1, x1 = (int)Math.Ceiling(_camX + sw / 2.0 / Cell) + 1;
+            int y0 = (int)Math.Floor(_camY - sh / 2.0 / Cell) - 1, y1 = (int)Math.Ceiling(_camY + sh / 2.0 / Cell) + 4;
+            x0 = Math.Max(0, x0);
+            y0 = Math.Max(0, y0);
+            x1 = Math.Min(_map.Width - 1, x1);
+            y1 = Math.Min(_map.Height - 1, y1);
+            g.InterpolationMode = InterpolationMode.NearestNeighbor;
+            g.PixelOffsetMode = PixelOffsetMode.Half;
+            using var gridPen = new Pen(Color.FromArgb(60, Color.White));
+            for (int y = y0; y <= y1; y++)
+            {
+                for (int x = x0; x <= x1; x++)
+                {
+                    PointF c = Corner(x, y);
+                    var cell = new Rectangle((int)Math.Floor(c.X), (int)Math.Floor(c.Y), Cell, Cell);
+                    try
+                    {
+                        g.DrawImageUnscaled(UoArtCache.LandTopDown(_map.LandId(x, y), Cell), cell.X, cell.Y);
+                    }
+                    catch (Exception)
+                    {
+                        // a broken tile must not stop the view
+                    }
+                    // light from the north-west: slopes become brighter / darker
+                    int z = _map.LandZ(x, y);
+                    int slope = (_map.LandZ(Math.Max(0, x - 1), y) - z) + (_map.LandZ(x, Math.Max(0, y - 1)) - z);
+                    if (slope != 0)
+                    {
+                        int a = Math.Min(120, Math.Abs(slope) * 6);
+                        using var shade = new SolidBrush(slope > 0 ? Color.FromArgb(a, 0, 0, 0) : Color.FromArgb(a / 2, 255, 255, 255));
+                        g.FillRectangle(shade, cell);
+                    }
+                    if (ShowGrid)
+                    {
+                        g.DrawRectangle(gridPen, cell);
+                    }
+                }
+            }
+            if (ShowStatics)
+            {
+                g.InterpolationMode = InterpolationMode.Bilinear;
+                for (int y = y0; y <= y1; y++)
+                {
+                    for (int x = x0; x <= x1; x++)
+                    {
+                        foreach (StaticItem st in _map.StaticsAt(x, y).OrderBy(s => s.Z))
+                        {
+                            if (st.Z > MaxZ)
+                            {
+                                continue;
+                            }
+                            bool seeThrough = IsSeeThrough(st.Id);
+                            Bitmap flat = UoArtCache.ItemIsWet(st.Id) ? UoArtCache.StaticTopDown(st.Id, st.Hue, Cell) : null;
+                            if (flat != null)
+                            {
+                                PointF c = Corner(x, y);
+                                var r = new Rectangle((int)Math.Floor(c.X), (int)Math.Floor(c.Y), Cell, Cell);
+                                if (seeThrough)
+                                {
+                                    g.DrawImage(flat, r, 0, 0, Cell, Cell, GraphicsUnit.Pixel, TranslucentAttr);
+                                }
+                                else
+                                {
+                                    g.DrawImageUnscaled(flat, r.X, r.Y);
+                                }
+                                _placed.Add(new Placed { Item = st, Rect = r, Image = flat });
+                                continue;
+                            }
+                            Bitmap img = UoArtCache.Static(st.Id, st.Hue);
+                            RectangleF rf = ItemRect(x, y, st.Z, img);
+                            var rect = Rectangle.Round(rf);
+                            if (rect.Right < 0 || rect.Left > sw || rect.Bottom < 0 || rect.Top > sh || rect.Width < 1 || rect.Height < 1)
+                            {
+                                continue;
+                            }
+                            try
+                            {
+                                if (img == null)
+                                {
+                                    using var b = new SolidBrush(UoArtCache.ItemColor(st.Id));
+                                    g.FillRectangle(b, rect);
+                                }
+                                else if (seeThrough)
+                                {
+                                    g.DrawImage(img, rect, 0, 0, img.Width, img.Height, GraphicsUnit.Pixel, TranslucentAttr);
+                                }
+                                else
+                                {
+                                    g.DrawImage(img, rect);
+                                }
+                            }
+                            catch (Exception)
+                            {
+                                continue;
+                            }
+                            _placed.Add(new Placed { Item = st, Rect = rect, Image = img, Scale = img == null ? 1 : rect.Width / (float)img.Width });
+                        }
+                    }
+                }
+            }
+            if (ShowHeights && _zoom >= 0.75)
+            {
+                using var font = new Font("Segoe UI", 7f, FontStyle.Bold);
+                using var sf = new StringFormat { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Center };
+                for (int y = y0; y <= y1; y++)
+                {
+                    for (int x = x0; x <= x1; x++)
+                    {
+                        PointF c = Corner(x, y);
+                        int z = _map.LandZ(x, y);
+                        string text = z.ToString();
+                        g.DrawString(text, font, Brushes.Black, c.X + Cell / 2f + 1, c.Y + Cell / 2f + 1, sf);
+                        g.DrawString(text, font, z < 0 ? Brushes.LightSkyBlue : Brushes.White, c.X + Cell / 2f, c.Y + Cell / 2f, sf);
+                    }
+                }
             }
         }
 
@@ -656,28 +872,18 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
             }
         }
 
-        private static bool IsLandTool(IsoTool t) => t == IsoTool.LandSet || t == IsoTool.Raise || t == IsoTool.Lower || t == IsoTool.SetHeight || t == IsoTool.Smooth;
+        private static bool IsLandTool(IsoTool t) => t == IsoTool.LandSet || t == IsoTool.Raise || t == IsoTool.Lower || t == IsoTool.SetHeight || t == IsoTool.Smooth ||
+                                                     t == IsoTool.Coast || t == IsoTool.Water;
 
         /// <summary>Outline of a map rectangle (at the land heights of its corners).</summary>
         private PointF[] AreaPoly(Rectangle r)
         {
-            PointF P(int x, int y)
-            {
-                PointF t = TileTop(x, y);
-                return new PointF(t.X, t.Y - _map.LandZ(Math.Min(x, _map.Width - 1), Math.Min(y, _map.Height - 1)) * ZStep);
-            }
-            return new[] { P(r.Left, r.Top), P(r.Right, r.Top), P(r.Right, r.Bottom), P(r.Left, r.Bottom) };
+            return new[] { Corner(r.Left, r.Top), Corner(r.Right, r.Top), Corner(r.Right, r.Bottom), Corner(r.Left, r.Bottom) };
         }
 
         private PointF[] LandPoly(int x, int y)
         {
-            PointF top = TileTop(x, y);
-            int zt = _map.LandZ(x, y), zr = _map.LandZ(x + 1, y), zb = _map.LandZ(x + 1, y + 1), zl = _map.LandZ(x, y + 1);
-            return new[]
-            {
-                new PointF(top.X, top.Y - zt * ZStep), new PointF(top.X + Half, top.Y + Half - zr * ZStep),
-                new PointF(top.X, top.Y + Tile - zb * ZStep), new PointF(top.X - Half, top.Y + Half - zl * ZStep)
-            };
+            return new[] { Corner(x, y), Corner(x + 1, y), Corner(x + 1, y + 1), Corner(x, y + 1) };
         }
 
         /// <summary>Semi transparent preview of the item / multi that would be placed.</summary>
@@ -714,15 +920,14 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
             foreach ((ushort id, int x, int y, int z) in parts)
             {
                 Bitmap img = UoArtCache.Static(id, Tool == IsoTool.Place ? PlaceHue : 0);
-                PointF top = TileTop(x, y);
-                float bottom = top.Y + Tile - z * ZStep;
+                Rectangle r = Rectangle.Round(ItemRect(x, y, z, img));
                 if (img != null)
                 {
-                    g.DrawImage(img, new Rectangle((int)(top.X - img.Width / 2f), (int)(bottom - img.Height), img.Width, img.Height), 0, 0, img.Width, img.Height, GraphicsUnit.Pixel, attr);
+                    g.DrawImage(img, r, 0, 0, img.Width, img.Height, GraphicsUnit.Pixel, attr);
                 }
                 else
                 {
-                    g.DrawRectangle(Pens.Orange, top.X - 8, bottom - 20, 16, 16);
+                    g.DrawRectangle(Pens.Orange, r);
                 }
             }
         }
@@ -753,7 +958,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                 }
                 try
                 {
-                    if (s.Image.GetPixel(p.X - s.Rect.X, p.Y - s.Rect.Y).A > 16)
+                    int px = Math.Clamp((int)((p.X - s.Rect.X) / s.Scale), 0, s.Image.Width - 1);
+                    int py = Math.Clamp((int)((p.Y - s.Rect.Y) / s.Scale), 0, s.Image.Height - 1);
+                    if (s.Image.GetPixel(px, py).A > 16)
                     {
                         return s.Item;
                     }
@@ -905,6 +1112,13 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
             }
             if (_panning)
             {
+                if (_topDown)
+                {
+                    _camX = Math.Clamp(_panCamX - (e.X - _panStart.X) / (Cell * _zoom), 0, _map.Width - 1);
+                    _camY = Math.Clamp(_panCamY - (e.Y - _panStart.Y) / (Cell * _zoom), 0, _map.Height - 1);
+                    OnViewChanged();
+                    return;
+                }
                 double du = -(e.X - _panStart.X) / (Half * _zoom), dv = -(e.Y - _panStart.Y) / (Half * _zoom);
                 _camX = Math.Clamp(_panCamX + (du + dv) / 2, 0, _map.Width - 1);
                 _camY = Math.Clamp(_panCamY + (dv - du) / 2, 0, _map.Height - 1);
@@ -944,14 +1158,14 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                 if (n > 0)
                 {
                     MapChanged?.Invoke(this, EventArgs.Empty);
-                    Message?.Invoke(this, $"{n} Land-Tile(s) geändert.");
+                    Message?.Invoke(this, $"{n} Änderung(en) – ein Rückgängig-Schritt.");
                 }
             }
             if (_areaDragging)
             {
                 _areaDragging = false;
                 SelectionChanged?.Invoke(this, EventArgs.Empty);
-                Message?.Invoke(this, $"Bereich {_area.Width}×{_area.Height} ab ({_area.X}, {_area.Y}) – Strg+C kopiert Land + Statics, Entf löscht die Statics darin, Bild↑/↓ hebt / senkt das Land.");
+                Message?.Invoke(this, $"Bereich {_area.Width}×{_area.Height} ab ({_area.X}, {_area.Y}) markiert.");
             }
         }
 
@@ -997,6 +1211,18 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                         break;
                     case Keys.PageDown:
                         RaiseArea(e.Shift ? -5 : -1);
+                        break;
+                    case Keys.F:
+                        FillArea();
+                        break;
+                    case Keys.K:
+                        ShapeCoastArea();
+                        break;
+                    case Keys.W:
+                        WaterArea(e.Shift);
+                        break;
+                    case Keys.G:
+                        SmoothArea();
                         break;
                     case Keys.Escape:
                         _area = Rectangle.Empty;
@@ -1085,6 +1311,16 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                     break;
                 case Keys.H:
                     HueSelection(PlaceHue);
+                    break;
+                case Keys.I:
+                    if (_selection.Count > 0)
+                    {
+                        ItemPicked?.Invoke(this, new StaticPickEventArgs(_selection.First()));
+                    }
+                    break;
+                case Keys.T:
+                    TopDown = !TopDown;
+                    Message?.Invoke(this, TopDown ? "2D-Ansicht (von oben)." : "CGI-Ansicht (wie der Client).");
                     break;
                 default:
                     handled = false;
@@ -1284,6 +1520,16 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
             }
             _lastLandTile = center;
             int r = Math.Max(0, LandRadius);
+            if (Tool == IsoTool.Coast || Tool == IsoTool.Water)
+            {
+                var brush = new Rectangle(center.X - r, center.Y - r, r * 2 + 1, r * 2 + 1);
+                CoastEdit edit = Tool == IsoTool.Coast
+                    ? CoastShaper.Shape(_map, brush, Coast, _rnd)
+                    : CoastShaper.Water(_map, brush, Coast, _rnd, (ModifierKeys & Keys.Control) != 0);
+                edit.ApplyTo(_map);
+                Refresh(true);
+                return;
+            }
             var smoothSource = Tool == IsoTool.Smooth ? (sbyte[])_map.Z.Clone() : null;
             for (int y = center.Y - r; y <= center.Y + r; y++)
             {
@@ -1450,6 +1696,167 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
             Refresh(true);
             MapChanged?.Invoke(this, EventArgs.Empty);
             Message?.Invoke(this, $"Bereich um {dz:+0;-0} angehoben/abgesenkt (Land + Statics).");
+        }
+
+        private bool NeedArea()
+        {
+            if (_map != null && !_area.IsEmpty)
+            {
+                return true;
+            }
+            Message?.Invoke(this, "Erst einen Bereich markieren (Werkzeug 'Bereich', mit der Maus aufziehen).");
+            return false;
+        }
+
+        private void LandArea(Func<int, int, (ushort id, int z)> change, string message)
+        {
+            if (!NeedArea())
+            {
+                return;
+            }
+            var land = new List<LandChange>();
+            for (int y = _area.Top; y < _area.Bottom; y++)
+            {
+                for (int x = _area.Left; x < _area.Right; x++)
+                {
+                    int i = y * _map.Width + x;
+                    (ushort id, int z) = change(x, y);
+                    var c = new LandChange { Index = i, OldId = _map.Tiles[i], OldZ = _map.Z[i], NewId = id, NewZ = (sbyte)Math.Clamp(z, -128, 127) };
+                    if (c.NewId != c.OldId || c.NewZ != c.OldZ)
+                    {
+                        land.Add(c);
+                    }
+                }
+            }
+            _map.Apply(null, land);
+            Refresh(true);
+            MapChanged?.Invoke(this, EventArgs.Empty);
+            Message?.Invoke(this, $"{message}: {land.Count} Tile(s).");
+        }
+
+        /// <summary>Fills the marked area with the land tile of the land tools (heights stay).</summary>
+        public void FillArea() => LandArea((x, y) => (PlaceLandId, _map.LandZ(x, y)), $"Bereich mit {PlaceLandId:x4} gefüllt");
+
+        /// <summary>Sets the land of the marked area to <see cref="TargetHeight"/>.</summary>
+        public void SetAreaHeight() => LandArea((x, y) => (_map.LandId(x, y), TargetHeight), $"Bereich auf Höhe {TargetHeight}");
+
+        /// <summary>Smooths the land heights of the marked area.</summary>
+        public void SmoothArea()
+        {
+            if (!NeedArea())
+            {
+                return;
+            }
+            sbyte[] z = (sbyte[])_map.Z.Clone();
+            LandArea((x, y) =>
+            {
+                int sum = 0, n = 0;
+                for (int dy = -1; dy <= 1; dy++)
+                {
+                    for (int dx = -1; dx <= 1; dx++)
+                    {
+                        if (_map.InBounds(x + dx, y + dy))
+                        {
+                            sum += z[(y + dy) * _map.Width + x + dx];
+                            n++;
+                        }
+                    }
+                }
+                return (_map.LandId(x, y), (int)Math.Round(sum / (double)n));
+            }, "Bereich geglättet");
+        }
+
+        /// <summary>Coast of the marked area like the original map.</summary>
+        public void ShapeCoastArea()
+        {
+            if (!NeedArea())
+            {
+                return;
+            }
+            CoastEdit edit = CoastShaper.Shape(_map, _area, Coast, _rnd);
+            edit.ApplyTo(_map);
+            Refresh(true);
+            MapChanged?.Invoke(this, EventArgs.Empty);
+            Message?.Invoke(this, edit.Count == 0 ? "Küste: nichts zu ändern (kein Wasser / Land im Bereich?)." : $"Küste angepasst: {edit.Land.Count} Land-Tiles, {edit.Statics.Count} Statics.");
+        }
+
+        /// <summary>Water statics on the marked area (or removes them).</summary>
+        public void WaterArea(bool erase)
+        {
+            if (!NeedArea())
+            {
+                return;
+            }
+            CoastEdit edit = CoastShaper.Water(_map, _area, Coast, _rnd, erase);
+            edit.ApplyTo(_map);
+            Refresh(true);
+            MapChanged?.Invoke(this, EventArgs.Empty);
+            Message?.Invoke(this, erase ? $"{edit.Statics.Count} Wasser-Statics entfernt." : $"Wasser gesetzt: {edit.Statics.Count} Statics, {edit.Land.Count} Land-Tiles.");
+        }
+
+        /// <summary>Key and mouse help for the current tool (shown below the view).</summary>
+        public string KeyHelp()
+        {
+            string view = (_topDown ? "2D-Ansicht" : "CGI-Ansicht") +
+                          ": Mausrad = Zoom · mittlere Maus oder Leertaste + Ziehen = verschieben · Pfeile ohne Auswahl = Ansicht (Umschalt = 8 Tiles) · T = 2D / CGI · Strg+Z / Strg+Y = Rückgängig / Wiederholen";
+            string tool;
+            if (_pasteGhost)
+            {
+                tool = "Einfügen: Linksklick setzt die kopierten Statics (mehrfach möglich) · Rechtsklick oder Esc = fertig";
+            }
+            else if (_areaPaste)
+            {
+                tool = "Bereich einfügen: Linksklick setzt Land + Statics (Höhe passt sich an) · Esc = fertig";
+            }
+            else
+            {
+                switch (Tool)
+                {
+                    case IsoTool.Select:
+                        tool = "Auswahl: Klick = wählen · Strg+Klick = dazu · Umschalt+Klick / Strg+A = alles auf dem Tile · Pfeile = verschieben · Strg+Pfeil = Kopie daneben · " +
+                               "Bild↑/↓ = Z ±1 (Umschalt ±5) · Entf = löschen · H = färben · I = im Item-Katalog zeigen · Strg+C / Strg+V = kopieren / einfügen · Rechtsklick = Item aufnehmen · Esc = Auswahl weg";
+                        break;
+                    case IsoTool.Place:
+                        tool = "Static setzen: Klick setzt das Item aus dem Katalog (Reiter Items) · Z + und 'auf Statics stapeln' rechts · Rechtsklick auf ein Static = ID + Hue aufnehmen";
+                        break;
+                    case IsoTool.Multi:
+                        tool = "Multi setzen: Klick setzt das Multi (Reiter Multis) als Statics, danach ist es ausgewählt und mit den Pfeilen verschiebbar";
+                        break;
+                    case IsoTool.Delete:
+                        tool = "Löschen: Klick auf ein Static löscht es";
+                        break;
+                    case IsoTool.Hue:
+                        tool = "Färben: Klick färbt das Static mit der Hue (Reiter Items) · mit Auswahl: H";
+                        break;
+                    case IsoTool.LandSet:
+                        tool = "Land setzen: Klicken / Ziehen malt das Land-Tile aus dem Katalog (Reiter Land) · Pinsel oben · Rechtsklick = Land-ID + Höhe aufnehmen · ein Zug = ein Rückgängig-Schritt";
+                        break;
+                    case IsoTool.Raise:
+                    case IsoTool.Lower:
+                        tool = "Höhe + / −: Klicken / Ziehen hebt oder senkt das Land um den Schritt (Reiter Land) · Pinsel oben · Rechtsklick = Land aufnehmen";
+                        break;
+                    case IsoTool.SetHeight:
+                        tool = "Höhe =: Klicken / Ziehen setzt das Land auf 'Höhe =' (Reiter Land) · Rechtsklick nimmt die Höhe auf";
+                        break;
+                    case IsoTool.Smooth:
+                        tool = "Glätten: Ziehen gleicht die Höhen an die Nachbarn an · Pinsel oben";
+                        break;
+                    case IsoTool.Coast:
+                        tool = "Küste: Ziehen über die Küste formt sie wie das Original – Meeresgrund, Wasser-Statics, Strand-Höhen (Reiter Küste / Wasser) · Pinsel oben · ein Zug = ein Rückgängig-Schritt";
+                        break;
+                    case IsoTool.Water:
+                        tool = "Wasser: Ziehen malt Wasser-Statics (Reiter Küste / Wasser) · Strg+Ziehen entfernt sie · durchsichtig, wenn die TileData 'Translucent' hat";
+                        break;
+                    case IsoTool.Area:
+                        tool = "Bereich: Ziehen = markieren · F = mit Land-Tile füllen · K = Küste anpassen · W = Wasser setzen (Umschalt+W entfernen) · G = glätten · Bild↑/↓ = heben / senken · " +
+                               "Strg+C / Strg+V = Land + Statics kopieren / einfügen · Entf = Statics löschen · Esc = Markierung weg";
+                        break;
+                    default:
+                        tool = string.Empty;
+                        break;
+                }
+            }
+            return tool + Environment.NewLine + view;
         }
 
         public void Undo()

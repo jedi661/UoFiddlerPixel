@@ -331,3 +331,22 @@ Strand −3/−1/0 – passt zum Original. Der braune „Graben“ (Tile `0066` 
 ist dadurch abgedeckt.
 
 Die Analyse wertet Zellen mit Wasser-Statics jetzt als Wasser und zeigt zusätzlich die Höhe des Meeresgrunds.
+
+---
+
+## Version 7: CGI-Ansicht – 2D, Kataloge, Küsten- und Wasser-Pinsel
+
+| Neu | Bedienung |
+|---|---|
+| **Tasten-Hilfe** | Leiste unter der Ansicht zeigt immer die Tasten / Maus-Aktionen des aktuellen Werkzeugs (statt kurzem Tooltip). |
+| **2D-Ansicht** | Knopf „2D“ oder Taste **T**: Karte von oben, Land-Tiles als Quadrate, Hänge schattiert. Alle Werkzeuge (Land malen, Bereich, Küste, Wasser, Statics) gehen auch hier. |
+| **Bilder-Katalog** | Reiter Items und Land zeigen Vorschaubilder statt Liste (klein / mittel / groß). Klick = auswählen, Doppelklick = Werkzeug aktivieren. „Texturen zeigen“ im Reiter Land. |
+| **Großer Katalog…** | Eigenes Fenster (`Dialogs/TilePickerForm`, im Designer öffnbar): Land-Tiles, Texturen, Items mit Suche und Vorschau. |
+| **Static finden** | Ausgewähltes Static wird im Item-Katalog markiert. „Im Item-Katalog zeigen + übernehmen“ / Taste **I** übernimmt ID + Hue zum erneuten Setzen. Kopieren / Einfügen auch als Knöpfe. |
+| **Pinsel „Küste“** | Über eine Küste ziehen: Meeresgrund (`0064`, −15), äußerer Ring −5, Wasser-Statics −5, Strand −3/−1/0 – wie die Original-map0. Ein Zug = ein Rückgängig-Schritt. |
+| **Pinsel „Wasser“** | Wasser-Statics malen (Strg = entfernen), wahlweise mit Meeresgrund darunter. Eigene IDs möglich („= Item aus dem Katalog“). |
+| **Transparentes Wasser** | Items mit TileData-Flag `Translucent` werden durchsichtig gezeichnet (wie im Client); der Reiter „Küste / Wasser“ zeigt die Flags der Wasser-IDs. „Wasser durchsichtig“ zeigt alle Wasser-Statics durchsichtig zur Kontrolle. |
+| **Bereich** | Mit der Maus aufziehen, dann **F** füllen (Land-Tile), **K** Küste anpassen, **W** Wasser (Umschalt+W entfernen), **G** glätten, Bild↑/↓ heben / senken, Strg+C / Strg+V. Auch als Knöpfe. |
+| **Pinsel-Größe** | Oben in der Leiste „Land“ (1 Tile bis 33×33). |
+
+Neue Dateien: `Core/CoastShaper.cs`, `Controls/TileGridView.cs`, `Dialogs/TilePickerForm.cs` (+ `.Designer.cs`).

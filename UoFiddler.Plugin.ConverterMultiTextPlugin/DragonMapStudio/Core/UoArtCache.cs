@@ -41,6 +41,14 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         /// <summary>Empties the caches (after hues / art were changed in UoFiddler).</summary>
         public static void Clear()
         {
+            lock (_topDown)
+            {
+                _topDown.Clear();
+            }
+            lock (_flatStatic)
+            {
+                _flatStatic.Clear();
+            }
             lock (_lock)
             {
                 foreach (Bitmap b in _static.Values)
@@ -164,6 +172,163 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         }
 
         public static int MaxLandId => 0x3FFF;
+
+        /// <summary>Wet land tile (water, also sea floor). Without tiledata: the classic water tiles.</summary>
+        public static bool LandIsWet(int id)
+        {
+            try
+            {
+                return (TileData.LandTable[id & 0x3FFF].Flags & TileFlag.Wet) != 0;
+            }
+            catch (Exception)
+            {
+                return (id >= 0xA8 && id <= 0xAB) || id == 0x136 || id == 0x137;
+            }
+        }
+
+        /// <summary>Water static (tiledata flag Wet). Without tiledata: the classic water statics 1796–17b2.</summary>
+        public static bool ItemIsWet(int id)
+        {
+            try
+            {
+                return (TileData.ItemTable[id].Flags & TileFlag.Wet) != 0;
+            }
+            catch (Exception)
+            {
+                return id >= 0x1796 && id <= 0x17B2;
+            }
+        }
+
+        /// <summary>Tiledata flag Translucent: the client draws the item see-through (e.g. transparent water).</summary>
+        public static bool IsTranslucent(int id)
+        {
+            try
+            {
+                return (TileData.ItemTable[id].Flags & TileFlag.Translucent) != 0;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+        /// <summary>Short list of the tiledata flags of an item (for the info texts).</summary>
+        public static string ItemFlagsText(int id)
+        {
+            try
+            {
+                TileFlag f = TileData.ItemTable[id].Flags;
+                var names = new List<string>();
+                foreach (TileFlag t in new[] { TileFlag.Wet, TileFlag.Translucent, TileFlag.Impassable, TileFlag.Surface, TileFlag.Background, TileFlag.Foliage, TileFlag.PartialHue })
+                {
+                    if ((f & t) != 0)
+                    {
+                        names.Add(t.ToString());
+                    }
+                }
+                return names.Count == 0 ? "-" : string.Join(", ", names);
+            }
+            catch (Exception)
+            {
+                return "(tiledata nicht geladen)";
+            }
+        }
+
+        /// <summary>Draws a 44×44 diamond (land art, flat water statics) as a square of <paramref name="size"/> pixels.</summary>
+        public static void DrawDiamondTopDown(Graphics g, Bitmap art, int size)
+        {
+            // diamond (22,0) (44,22) (22,44) (0,22) -> corners of the square; the image corners (0,0) (w,0) (0,h) go to these points
+            float s = size;
+            var dest = new[] { new PointF(-s / 2, s / 2), new PointF(s / 2, -s / 2), new PointF(s / 2, s * 1.5f) };
+            using var attr = new ImageAttributes();
+            attr.SetWrapMode(System.Drawing.Drawing2D.WrapMode.TileFlipXY);
+            g.DrawImage(art, dest, new RectangleF(0, 0, art.Width, art.Height), GraphicsUnit.Pixel, attr);
+        }
+
+        private static readonly Dictionary<long, Bitmap> _flatStatic = new Dictionary<long, Bitmap>();
+
+        /// <summary>Flat 44×44 static (water) seen from above, null for other items.</summary>
+        public static Bitmap StaticTopDown(int id, int hue, int size)
+        {
+            long key = ((long)id << 24) | ((long)(hue & 0xFFFF) << 8) | (uint)(size & 0xFF);
+            lock (_flatStatic)
+            {
+                if (_flatStatic.TryGetValue(key, out Bitmap cached))
+                {
+                    return cached;
+                }
+            }
+            Bitmap art = Static(id, hue);
+            Bitmap b = null;
+            if (art != null && art.Width == 44 && art.Height == 44)
+            {
+                b = new Bitmap(size, size, PixelFormat.Format32bppPArgb);
+                using Graphics g = Graphics.FromImage(b);
+                g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBilinear;
+                g.PixelOffsetMode = System.Drawing.Drawing2D.PixelOffsetMode.Half;
+                try
+                {
+                    DrawDiamondTopDown(g, art, size);
+                }
+                catch (Exception)
+                {
+                    b.Dispose();
+                    b = null;
+                }
+            }
+            lock (_flatStatic)
+            {
+                _flatStatic[key] = b;
+            }
+            return b;
+        }
+
+        private static readonly Dictionary<int, Bitmap> _topDown = new Dictionary<int, Bitmap>();
+
+        /// <summary>
+        /// Land tile seen from above as a square of <paramref name="size"/> pixels: the land art diamond turned by 45°
+        /// (top corner = north-west corner of the square). Falls back to the texture or the radar colour.
+        /// </summary>
+        public static Bitmap LandTopDown(int id, int size)
+        {
+            int key = ((id & 0x3FFF) << 8) | (size & 0xFF);
+            lock (_topDown)
+            {
+                if (_topDown.TryGetValue(key, out Bitmap cached))
+                {
+                    return cached;
+                }
+            }
+            var b = new Bitmap(size, size, System.Drawing.Imaging.PixelFormat.Format32bppPArgb);
+            using (Graphics g = Graphics.FromImage(b))
+            {
+                g.Clear(LandColor(id));
+                Bitmap art = Land(id);
+                Bitmap tex = art == null ? Texture(id) : null;
+                g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBilinear;
+                g.PixelOffsetMode = System.Drawing.Drawing2D.PixelOffsetMode.Half;
+                try
+                {
+                    if (art != null)
+                    {
+                        DrawDiamondTopDown(g, art, size);
+                    }
+                    else if (tex != null)
+                    {
+                        g.DrawImage(tex, new Rectangle(0, 0, size, size));
+                    }
+                }
+                catch (Exception)
+                {
+                    // keep the colour
+                }
+            }
+            lock (_topDown)
+            {
+                _topDown[key] = b;
+            }
+            return b;
+        }
 
         public static int ItemHeight(int id)
         {

@@ -217,7 +217,35 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
 
         // ------------------------------------------------------------------ land strokes (mouse drag = one undo step)
 
-        public void BeginLand() => _pendingLand = new Dictionary<int, LandChange>();
+        public void BeginLand()
+        {
+            _pendingLand = new Dictionary<int, LandChange>();
+            _pendingStatics = new List<StaticChange>();
+        }
+
+        private List<StaticChange> _pendingStatics;
+
+        /// <summary>
+        /// Static changes inside a stroke (BeginLand / EndLand): applied at once and stored in the same undo step as the land.
+        /// Outside a stroke they become an undo step of their own.
+        /// </summary>
+        public void ApplyStatics(List<StaticChange> changes)
+        {
+            if (changes == null || changes.Count == 0)
+            {
+                return;
+            }
+            if (_pendingStatics == null)
+            {
+                Apply(changes);
+                return;
+            }
+            foreach (StaticChange c in changes)
+            {
+                SetState(c.Item, c.After, c.After != null);
+                _pendingStatics.Add(c);
+            }
+        }
 
         public bool LandStrokeActive => _pendingLand != null;
 
@@ -253,15 +281,19 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         public int EndLand()
         {
             Dictionary<int, LandChange> pending = _pendingLand;
+            List<StaticChange> statics = _pendingStatics ?? new List<StaticChange>();
             _pendingLand = null;
-            if (pending == null || pending.Count == 0)
+            _pendingStatics = null;
+            if ((pending == null || pending.Count == 0) && statics.Count == 0)
             {
                 return 0;
             }
-            _undo.Push(new EditStep { Land = pending.Values.ToList() });
+            var step = new EditStep { Land = pending?.Values.ToList() ?? new List<LandChange>(), Statics = statics };
+            _undo.Push(step);
             _redo.Clear();
-            LandModified = true;
-            return pending.Count;
+            LandModified |= step.Land.Count > 0;
+            StaticsModified |= statics.Count > 0;
+            return step.Land.Count + statics.Count;
         }
 
         public bool Undo()
