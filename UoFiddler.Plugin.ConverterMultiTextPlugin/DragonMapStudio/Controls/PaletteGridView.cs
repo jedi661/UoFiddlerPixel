@@ -59,6 +59,13 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
         public event EventHandler<PaletteIndexEventArgs> IndexClicked;
         public event EventHandler<PaletteIndexEventArgs> IndexDoubleClicked;
 
+        /// <summary>The mouse moved onto another colour (-1 = none).</summary>
+        public event EventHandler<PaletteIndexEventArgs> IndexHovered;
+
+        /// <summary>Height of one colour cell in pixels.</summary>
+        [Browsable(false)]
+        public int CellHeight => Math.Max(1, (Height - 1) / 16);
+
         /// <summary>The page (256 colours each) changed.</summary>
         public event EventHandler PageChanged;
 
@@ -206,6 +213,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
             {
                 _hover = idx;
                 Invalidate();
+                IndexHovered?.Invoke(this, new PaletteIndexEventArgs(idx, MouseButtons.None));
                 if (idx >= 0)
                 {
                     string def = _defined[idx] ? string.Empty : " (nicht definiert)";
@@ -224,6 +232,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
         {
             base.OnMouseLeave(e);
             _hover = -1;
+            IndexHovered?.Invoke(this, new PaletteIndexEventArgs(-1, MouseButtons.None));
             Invalidate();
         }
 

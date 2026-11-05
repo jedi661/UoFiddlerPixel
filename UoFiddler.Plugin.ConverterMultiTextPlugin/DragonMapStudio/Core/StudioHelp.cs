@@ -146,6 +146,23 @@ Zeigt die gebaute Karte wie der Client (Land-Art, Texturen an Hängen, Statics m
 * Wege / Gebäude-Böden: Reiter Land -> ""Aus der Farbtabelle"" (cobblestones, marble, Holzboden …),
   dazu ""Höhe vom ersten Klick übernehmen"". Mehrere IDs im Feld = zufällig gemischt.
 
+5a. REGELN-WERKSTATT (Reiter ""Regeln & Skripte"")
+-------------------------------------------------
+* Leiste oben: Format ""8 Bit"" / ""16 Bit"" (farbig = aktiv), ""+ Neue Farbe"", ""+ Neue Gruppe"",
+  ""+ Neue Übergangsregel"", ""Prüfen"", ""Hinweise beheben"", ""Skript-Editor"", Name + ""Speichern"".
+* Neue Farbe / Doppelklick auf eine Farbe: Adresse (frei / belegt), Name, Kategorie, RGB (wird auf
+  doppelte Farben geprüft, ""Eindeutig machen""), Gruppe (oder neue), Höhe, Land-Tiles mit Katalog.
+  Die Farbe ist sofort zum Zeichnen da.
+* Neue Übergangsregel: Gruppe A / B, Map oder Static, auf Wunsch eine Beispiel-Datei mit den 12
+  Standard-Mustern (Kanten, Außen- und Innenecken) – danach nur noch die Tiles eintragen.
+* Maus über einer Farbe (Farbtabelle, Paletten): Vorschau unter der Zeile mit Land-Tiles/Texturen,
+  Items der Gruppe und Statics der Übergänge.
+* Skript-Editor: alle Skript-Dateien als Text; rechts steht, was die Zeile anspricht (Farbe, Gruppe,
+  Tiles als Bilder, Muster als 3×3-Bild), unten Hilfe mit Beispiel zum Dateityp. Beim Speichern -> .bak.
+* ""Speichern"" legt den Regelsatz unter seinem Namen ab (Dokumente\DragonMapStudio\Regeln) und lädt
+  ihn beim nächsten Start.
+* Rechts im Reiter: Hilfe mit Beispielen zum gewählten Unter-Reiter.
+
 5b. 8 BIT ODER 16 BIT (MEHR FARBEN)
 ----------------------------------
 * 8 Bit = klassisches Dragon: 256 Farbadressen (00..ff), Karte als 8-Bit-BMP, Skripte mit
@@ -319,6 +336,20 @@ Shows the built map like the client (land art, textures on slopes, statics with 
   the edge is raised to a wall (the client shows the rock texture behind). Tab ""Höhle / Weg"".
 * Roads / building floors: tab Land -> ""Aus der Farbtabelle"" (cobblestones, marble, wood floor …),
   plus ""Höhe vom ersten Klick übernehmen"". Several ids in the field = mixed at random.
+
+5a. RULES WORKSHOP (tab ""Regeln & Skripte"")
+---------------------------------------------
+* Bar at the top: format ""8 bit"" / ""16 bit"" (coloured = active), ""+ New colour"", ""+ New group"",
+  ""+ New transition rule"", ""Check"", ""Fix hints"", ""Script editor"", name + ""Save"".
+* New colour / double click on a colour: address (free / used), name, category, RGB (checked for
+  duplicates, ""Make unique""), group (or a new one), height, land tiles with catalogue.
+* New transition rule: group A / B, map or static, optionally an example file with the 12 standard
+  patterns (edges, outer and inner corners) – then only enter the tiles.
+* Mouse over a colour (colour table, palettes): preview below the row with land tiles/textures,
+  items of the group and statics of the transitions.
+* Script editor: all script files as text; on the right what the line addresses (colour, group, tiles
+  as pictures, pattern as 3×3 picture), below a help with an example for the file type.
+* ""Save"" stores the rule set under its name (Documents\DragonMapStudio\Regeln) and loads it at start.
 
 5b. 8 BIT OR 16 BIT (MORE COLOURS)
 ---------------------------------

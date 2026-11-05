@@ -71,6 +71,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             CgiCaveSettings_Changed(this, EventArgs.Empty);
             IsoView_SelectionChanged(this, EventArgs.Empty);
             lblCgiTplInfo.Text = L.T("Ordner:") + " " + _settings.TemplateFolder;
+            UpdateRulesToolbar();
 
             if (save && _settings.Language != lang)
             {

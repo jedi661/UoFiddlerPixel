@@ -9,7 +9,7 @@
 04 03 black2caveRand.txt 
 04 03 black2caveWalls.txt 
 03 04 cave2blackRand.txt 
-03 04 cave2blackRalls.txt
+03 04 cave2blackWalls.txt
 //forest2swamp mod:
 18 01 swamp2forestb.txt
 01 18 forest2swampb.txt
@@ -52,5 +52,6 @@
 ///////////////////////////////////
 //wasteland to grass
 ///////////////////////////////////
-00 0b grass2wasteland.txt
+// grass2wasteland.txt is missing in the IMod13 package - disabled (Dragon Map Studio)
+//00 0b grass2wasteland.txt
 

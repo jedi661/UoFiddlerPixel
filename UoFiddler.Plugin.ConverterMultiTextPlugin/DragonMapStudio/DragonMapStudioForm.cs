@@ -177,6 +177,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
 
         private void TabMain_SelectedIndexChanged(object sender, EventArgs e)
         {
+            HideColorPreview();
             if (tabMain.SelectedTab == tabEditor)
             {
                 mapCanvas.Focus();
@@ -233,7 +234,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                 FillLandPresets();
             }
             lblRuleSetInfo.Text = $"{_rules.Name}  –  {_rules.Palette.Count(p => p.Defined)} Farben · {_rules.Groups.Count} Gruppen · {_rules.Transitions.Count} Übergänge · {_rules.TransitionFiles.Sum(f => f.Patterns.Count)} Muster · {_rules.ItemFiles.Sum(f => f.Groups.Count)} Item-Gruppen";
-            txtRuleWarnings.Text = _rules.Warnings.Count == 0 ? "Keine Hinweise." : string.Join(Environment.NewLine, _rules.Warnings);
+            txtRuleWarnings.Text = _rules.Warnings.Count == 0 ? "Keine Hinweise." : string.Join(Environment.NewLine, _rules.Warnings) +
+                Environment.NewLine + Environment.NewLine + L.Pick("→ Knopf 'Hinweise beheben' (Reiter Regeln) erledigt das meiste automatisch.", "→ The button 'Fix hints' (Rules tab) does most of it automatically.", "→ Le bouton 'Corriger' fait l'essentiel automatiquement.");
+            UpdateRulesToolbar();
             UpdateTitle();
         }
 
@@ -346,10 +349,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             if (e.Index < 0)
             {
                 lblPosition.Text = "-";
+                HideColorPreview();
                 return;
             }
             DragonPaletteEntry p = _rules.Palette[e.Index];
             lblPosition.Text = $"{p.HexIndex} · {p.HtmlColor} · {p.Name}";
+            ShowColorPreview(e.Index, Math.Max(16, colorTableView.Zoom * 15));
         }
 
         private void PaletteGrid_IndexClicked(object sender, PaletteIndexEventArgs e)
@@ -522,25 +527,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                 MessageBox.Show(this, L.Pick("Alle Farben sind belegt.", "All colours are used.", "Toutes les couleurs sont utilisées."), Text, MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
-            using var dlg = new ColorDialog { FullOpen = true, Color = Color.Magenta };
-            if (dlg.ShowDialog(this) != DialogResult.OK)
-            {
-                return;
-            }
-            DragonPaletteEntry template = _selectedColor >= 0 ? _rules.Palette[_selectedColor] : null;
-            DragonPaletteEntry entry = _rules.Palette[free];
-            entry.SetColor(dlg.Color);
-            entry.Defined = true;
-            entry.Name = "Neue Farbe";
-            entry.Category = "Eigene";
-            entry.Group = template?.Group ?? 0;
-            entry.Altitude = template?.Altitude ?? 0;
-            entry.Tiles = template?.Tiles ?? "0003";
-            entry.Comment = "Eigene Farbe";
-            MarkRulesDirty();
-            ApplyRules();
-            SelectColor(free);
-            SetStatus($"Neue Farbe auf Index {_rules.HexIndex(free)} angelegt – rechts Name, Gruppe, Höhe, Tiles und Textur einstellen.");
+            EditColor(-1);
         }
 
         private void BtnEditRgb_Click(object sender, EventArgs e)

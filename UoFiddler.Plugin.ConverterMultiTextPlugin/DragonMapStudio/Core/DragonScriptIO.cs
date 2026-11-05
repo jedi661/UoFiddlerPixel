@@ -234,6 +234,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                 string[] t = Tokens(StripInlineComment(line));
                 if (t.Length >= 2 && HexList.TryParseHexAddress(t[0], out int index) && HexList.TryParseHexAddress(t[1], out int group))
                 {
+                    // IMod13 overrides some addresses on purpose at the end of the file (e.g. cave entrances) – the last one wins
                     Entry(set, index, t[0]).Group = group;
                     if (!names.ContainsKey(group))
                     {
@@ -298,6 +299,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                 if (t.Length >= 3 && HexList.TryParseHexAddress(t[0], out int index) && HexList.IsInt(t[1]))
                 {
                     DragonPaletteEntry e = Entry(set, index, t[0]);
+                    if (e.Defined)
+                    {
+                        set.Warnings.Add($"maptrans Zeile {lineNo}: Adresse {t[0]} steht doppelt – die letzte gilt.");
+                    }
                     e.Defined = true;
                     e.Altitude = HexList.ParseInt(t[1]);
                     e.Tiles = string.Join(" ", t.Skip(2).Select(s => HexList.ParseHex(s).ToString("x4")));

@@ -69,6 +69,7 @@
             mnuRulesSep2 = new System.Windows.Forms.ToolStripSeparator();
             mnuValidate = new System.Windows.Forms.ToolStripMenuItem();
             mnuRules16 = new System.Windows.Forms.ToolStripMenuItem();
+            mnuScriptEditor = new System.Windows.Forms.ToolStripMenuItem();
             mnuLanguage = new System.Windows.Forms.ToolStripMenuItem();
             mnuLangDe = new System.Windows.Forms.ToolStripMenuItem();
             mnuLangEn = new System.Windows.Forms.ToolStripMenuItem();
@@ -371,12 +372,27 @@
             picGenPreview = new System.Windows.Forms.PictureBox();
             lblGenInfo = new System.Windows.Forms.Label();
             tabRulesInner = new System.Windows.Forms.TabControl();
-            panelRulesTop = new System.Windows.Forms.FlowLayoutPanel();
+            txtRulesHelp = new System.Windows.Forms.TextBox();
             lblRuleSetInfo = new System.Windows.Forms.Label();
-            btnRulesReload = new System.Windows.Forms.Button();
-            btnRulesSaveJson = new System.Windows.Forms.Button();
-            btnRulesExport = new System.Windows.Forms.Button();
-            btnRulesValidate = new System.Windows.Forms.Button();
+            toolStripRules = new System.Windows.Forms.ToolStrip();
+            tslRulesFormat = new System.Windows.Forms.ToolStripLabel();
+            tsbRules8 = new System.Windows.Forms.ToolStripButton();
+            tsbRules16 = new System.Windows.Forms.ToolStripButton();
+            tssRules1 = new System.Windows.Forms.ToolStripSeparator();
+            tsbRulesNewColor = new System.Windows.Forms.ToolStripButton();
+            tsbRulesNewGroup = new System.Windows.Forms.ToolStripButton();
+            tsbRulesNewTransition = new System.Windows.Forms.ToolStripButton();
+            tssRules2 = new System.Windows.Forms.ToolStripSeparator();
+            tsbRulesValidate = new System.Windows.Forms.ToolStripButton();
+            tsbRulesFixHints = new System.Windows.Forms.ToolStripButton();
+            tsbScriptEditor = new System.Windows.Forms.ToolStripButton();
+            tssRules3 = new System.Windows.Forms.ToolStripSeparator();
+            tslRulesName = new System.Windows.Forms.ToolStripLabel();
+            tstRulesName = new System.Windows.Forms.ToolStripTextBox();
+            tsbRulesSave = new System.Windows.Forms.ToolStripButton();
+            tsbRulesSaveJson = new System.Windows.Forms.ToolStripButton();
+            tsbRulesExport = new System.Windows.Forms.ToolStripButton();
+            tsbRulesReload = new System.Windows.Forms.ToolStripButton();
             tabRuleGroups = new System.Windows.Forms.TabPage();
             tabRulePalette = new System.Windows.Forms.TabPage();
             tabRuleTransitions = new System.Windows.Forms.TabPage();
@@ -522,7 +538,7 @@
             flowBiomeButtons.SuspendLayout();
             flowOutlineButtons.SuspendLayout();
             tabRulesInner.SuspendLayout();
-            panelRulesTop.SuspendLayout();
+            toolStripRules.SuspendLayout();
             tabRuleGroups.SuspendLayout();
             tabRulePalette.SuspendLayout();
             tabRuleTransitions.SuspendLayout();
@@ -743,7 +759,7 @@
             // 
             // mnuRules
             // 
-            mnuRules.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { mnuLoadScripts, mnuLoadJson, mnuSaveJson, mnuExportScripts, mnuRulesSep1, mnuImportPalette, mnuExportPalette, mnuCreateColorTable, mnuRulesSep2, mnuValidate, mnuRules16 });
+            mnuRules.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { mnuLoadScripts, mnuLoadJson, mnuSaveJson, mnuExportScripts, mnuRulesSep1, mnuImportPalette, mnuExportPalette, mnuCreateColorTable, mnuRulesSep2, mnuValidate, mnuRules16, mnuScriptEditor });
             mnuRules.Text = "&Regeln";
             mnuRules.Name = "mnuRules";
             // 
@@ -808,6 +824,12 @@
             mnuRules16.Text = "Regelsatz auf &16 Bit umstellen (bis 65 536 Farben)";
             mnuRules16.Name = "mnuRules16";
             mnuRules16.Click += MnuRules16_Click;
+            // 
+            // mnuScriptEditor
+            // 
+            mnuScriptEditor.Text = "Skript-&Editor…";
+            mnuScriptEditor.Name = "mnuScriptEditor";
+            mnuScriptEditor.Click += TsbScriptEditor_Click;
             // 
             // mnuLanguage
             // 
@@ -954,7 +976,9 @@
             // tabRules
             // 
             tabRules.Controls.Add(tabRulesInner);
-            tabRules.Controls.Add(panelRulesTop);
+            tabRules.Controls.Add(txtRulesHelp);
+            tabRules.Controls.Add(lblRuleSetInfo);
+            tabRules.Controls.Add(toolStripRules);
             tabRules.Text = "Regeln & Skripte";
             tabRules.UseVisualStyleBackColor = true;
             tabRules.Padding = new System.Windows.Forms.Padding(3);
@@ -1113,6 +1137,8 @@
             paletteGrid.Name = "paletteGrid";
             paletteGrid.IndexClicked += PaletteGrid_IndexClicked;
             paletteGrid.PageChanged += PaletteGrid_PageChanged;
+            paletteGrid.IndexHovered += Palette_IndexHovered;
+            paletteGrid.IndexDoubleClicked += Palette_IndexDoubleClicked;
             // 
             // panelColorInfo
             // 
@@ -1390,6 +1416,7 @@
             editorPalette.Name = "editorPalette";
             editorPalette.IndexClicked += EditorPalette_IndexClicked;
             editorPalette.PageChanged += PaletteGrid_PageChanged;
+            editorPalette.IndexHovered += Palette_IndexHovered;
             // 
             // panelEditorPage
             // 
@@ -3395,62 +3422,159 @@
             tabRulesInner.Controls.Add(tabRuleWarnings);
             tabRulesInner.Dock = System.Windows.Forms.DockStyle.Fill;
             tabRulesInner.Name = "tabRulesInner";
+            tabRulesInner.SelectedIndexChanged += TabRulesInner_SelectedIndexChanged;
             // 
-            // panelRulesTop
+            // txtRulesHelp
             // 
-            panelRulesTop.Controls.Add(lblRuleSetInfo);
-            panelRulesTop.Controls.Add(btnRulesReload);
-            panelRulesTop.Controls.Add(btnRulesSaveJson);
-            panelRulesTop.Controls.Add(btnRulesExport);
-            panelRulesTop.Controls.Add(btnRulesValidate);
-            panelRulesTop.Dock = System.Windows.Forms.DockStyle.Top;
-            panelRulesTop.Size = new System.Drawing.Size(800, 36);
-            panelRulesTop.Padding = new System.Windows.Forms.Padding(2);
-            panelRulesTop.Name = "panelRulesTop";
+            txtRulesHelp.Dock = System.Windows.Forms.DockStyle.Right;
+            txtRulesHelp.Size = new System.Drawing.Size(340, 400);
+            txtRulesHelp.Multiline = true;
+            txtRulesHelp.ReadOnly = true;
+            txtRulesHelp.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
+            txtRulesHelp.BackColor = System.Drawing.Color.FromArgb(250, 248, 232);
+            txtRulesHelp.Font = new System.Drawing.Font("Segoe UI", 9F);
+            txtRulesHelp.Name = "txtRulesHelp";
             // 
             // lblRuleSetInfo
             // 
-            lblRuleSetInfo.AutoSize = true;
+            lblRuleSetInfo.Dock = System.Windows.Forms.DockStyle.Top;
+            lblRuleSetInfo.Size = new System.Drawing.Size(800, 24);
             lblRuleSetInfo.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
-            lblRuleSetInfo.Margin = new System.Windows.Forms.Padding(3, 8, 12, 0);
+            lblRuleSetInfo.Padding = new System.Windows.Forms.Padding(4, 4, 0, 0);
             lblRuleSetInfo.Text = "Regelsatz";
             lblRuleSetInfo.Name = "lblRuleSetInfo";
             // 
-            // btnRulesReload
+            // toolStripRules
             // 
-            btnRulesReload.Text = "Neu laden";
-            btnRulesReload.UseVisualStyleBackColor = true;
-            btnRulesReload.AutoSize = true;
-            btnRulesReload.Margin = new System.Windows.Forms.Padding(3);
-            btnRulesReload.Name = "btnRulesReload";
-            btnRulesReload.Click += BtnRulesReload_Click;
+            toolStripRules.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { tslRulesFormat, tsbRules8, tsbRules16, tssRules1, tsbRulesNewColor, tsbRulesNewGroup, tsbRulesNewTransition, tssRules2, tsbRulesValidate, tsbRulesFixHints, tsbScriptEditor, tssRules3, tslRulesName, tstRulesName, tsbRulesSave, tsbRulesSaveJson, tsbRulesExport, tsbRulesReload });
+            toolStripRules.Dock = System.Windows.Forms.DockStyle.Top;
+            toolStripRules.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
+            toolStripRules.BackColor = System.Drawing.Color.FromArgb(255, 244, 214);
+            toolStripRules.Padding = new System.Windows.Forms.Padding(4, 2, 4, 2);
+            toolStripRules.Name = "toolStripRules";
             // 
-            // btnRulesSaveJson
+            // tslRulesFormat
             // 
-            btnRulesSaveJson.Text = "JSON speichern…";
-            btnRulesSaveJson.UseVisualStyleBackColor = true;
-            btnRulesSaveJson.AutoSize = true;
-            btnRulesSaveJson.Margin = new System.Windows.Forms.Padding(3);
-            btnRulesSaveJson.Name = "btnRulesSaveJson";
-            btnRulesSaveJson.Click += MnuSaveJson_Click;
+            tslRulesFormat.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            tslRulesFormat.Text = "Format:";
+            tslRulesFormat.Name = "tslRulesFormat";
             // 
-            // btnRulesExport
+            // tsbRules8
             // 
-            btnRulesExport.Text = "Als Dragon-Skripte exportieren…";
-            btnRulesExport.UseVisualStyleBackColor = true;
-            btnRulesExport.AutoSize = true;
-            btnRulesExport.Margin = new System.Windows.Forms.Padding(3);
-            btnRulesExport.Name = "btnRulesExport";
-            btnRulesExport.Click += MnuExportScripts_Click;
+            tsbRules8.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            tsbRules8.Text = "8 Bit (Dragon, 256 Farben)";
+            tsbRules8.ToolTipText = "Klassisches Dragon: 2-stellige Adressen, Karten als 8-Bit-BMP";
+            tsbRules8.Name = "tsbRules8";
+            tsbRules8.Click += TsbRulesBits_Click;
             // 
-            // btnRulesValidate
+            // tsbRules16
             // 
-            btnRulesValidate.Text = "Prüfen";
-            btnRulesValidate.UseVisualStyleBackColor = true;
-            btnRulesValidate.AutoSize = true;
-            btnRulesValidate.Margin = new System.Windows.Forms.Padding(3);
-            btnRulesValidate.Name = "btnRulesValidate";
-            btnRulesValidate.Click += MnuValidate_Click;
+            tsbRules16.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            tsbRules16.Text = "16 Bit (bis 65 536 Farben)";
+            tsbRules16.ToolTipText = "Erweitert: 4-stellige Adressen, Gruppen bis 7fff, Karten als 16-Bit-PNG";
+            tsbRules16.Name = "tsbRules16";
+            tsbRules16.Click += TsbRulesBits_Click;
+            // 
+            // tssRules1
+            // 
+            tssRules1.Name = "tssRules1";
+            // 
+            // tsbRulesNewColor
+            // 
+            tsbRulesNewColor.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            tsbRulesNewColor.Text = "+ Neue Farbe…";
+            tsbRulesNewColor.ToolTipText = "Neue Farbe für neue Texturen / Land-Tiles: Adresse, Name, Kategorie, RGB, Gruppe, Höhe, Tiles";
+            tsbRulesNewColor.Name = "tsbRulesNewColor";
+            tsbRulesNewColor.Click += TsbRulesNewColor_Click;
+            // 
+            // tsbRulesNewGroup
+            // 
+            tsbRulesNewGroup.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            tsbRulesNewGroup.Text = "+ Neue Gruppe…";
+            tsbRulesNewGroup.ToolTipText = "Neue Gruppe (groups.txt) – für eigene Übergänge und Items";
+            tsbRulesNewGroup.Name = "tsbRulesNewGroup";
+            tsbRulesNewGroup.Click += TsbRulesNewGroup_Click;
+            // 
+            // tsbRulesNewTransition
+            // 
+            tsbRulesNewTransition.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            tsbRulesNewTransition.Text = "+ Neue Übergangsregel…";
+            tsbRulesNewTransition.ToolTipText = "Übergang zwischen zwei Gruppen, auf Wunsch mit Beispiel-Datei (12 Standard-Muster)";
+            tsbRulesNewTransition.Name = "tsbRulesNewTransition";
+            tsbRulesNewTransition.Click += TsbRulesNewTransition_Click;
+            // 
+            // tssRules2
+            // 
+            tssRules2.Name = "tssRules2";
+            // 
+            // tsbRulesValidate
+            // 
+            tsbRulesValidate.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            tsbRulesValidate.Text = "Prüfen";
+            tsbRulesValidate.ToolTipText = "Regelsatz prüfen: doppelte Farben, fehlende Gruppen, fehlende Dateien";
+            tsbRulesValidate.Name = "tsbRulesValidate";
+            tsbRulesValidate.Click += MnuValidate_Click;
+            // 
+            // tsbRulesFixHints
+            // 
+            tsbRulesFixHints.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            tsbRulesFixHints.Text = "Hinweise beheben";
+            tsbRulesFixHints.ToolTipText = "Farben ohne Gruppe zuordnen, Regeln mit fehlender Datei umleiten oder ausschalten";
+            tsbRulesFixHints.Name = "tsbRulesFixHints";
+            tsbRulesFixHints.Click += TsbRulesFixHints_Click;
+            // 
+            // tsbScriptEditor
+            // 
+            tsbScriptEditor.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            tsbScriptEditor.Text = "Skript-Editor…";
+            tsbScriptEditor.ToolTipText = "Dragon-Skripte als Text bearbeiten – mit Anzeige, was jede Zeile anspricht";
+            tsbScriptEditor.Name = "tsbScriptEditor";
+            tsbScriptEditor.Click += TsbScriptEditor_Click;
+            // 
+            // tssRules3
+            // 
+            tssRules3.Name = "tssRules3";
+            // 
+            // tslRulesName
+            // 
+            tslRulesName.Text = "Name:";
+            tslRulesName.Name = "tslRulesName";
+            // 
+            // tstRulesName
+            // 
+            tstRulesName.Size = new System.Drawing.Size(150, 25);
+            tstRulesName.ToolTipText = "Name des Regelsatzes (Dateiname beim Speichern)";
+            tstRulesName.TextChanged += TstRulesName_TextChanged;
+            // 
+            // tsbRulesSave
+            // 
+            tsbRulesSave.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            tsbRulesSave.Text = "Speichern";
+            tsbRulesSave.ToolTipText = "Regelsatz speichern – wird beim nächsten Start automatisch geladen";
+            tsbRulesSave.Name = "tsbRulesSave";
+            tsbRulesSave.Click += TsbRulesSave_Click;
+            // 
+            // tsbRulesSaveJson
+            // 
+            tsbRulesSaveJson.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            tsbRulesSaveJson.Text = "Speichern unter…";
+            tsbRulesSaveJson.Name = "tsbRulesSaveJson";
+            tsbRulesSaveJson.Click += MnuSaveJson_Click;
+            // 
+            // tsbRulesExport
+            // 
+            tsbRulesExport.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            tsbRulesExport.Text = "Als Dragon-Skripte…";
+            tsbRulesExport.ToolTipText = "Als Dragon-Skript-Ordner exportieren (groups.txt, maptrans.txt …)";
+            tsbRulesExport.Name = "tsbRulesExport";
+            tsbRulesExport.Click += MnuExportScripts_Click;
+            // 
+            // tsbRulesReload
+            // 
+            tsbRulesReload.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            tsbRulesReload.Text = "Neu laden";
+            tsbRulesReload.Name = "tsbRulesReload";
+            tsbRulesReload.Click += BtnRulesReload_Click;
             // 
             // tabRuleGroups
             // 
@@ -3555,6 +3679,7 @@
             gridPaletteEntries.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.RowHeaderSelect;
             gridPaletteEntries.Name = "gridPaletteEntries";
             gridPaletteEntries.DataError += Grid_DataError;
+            gridPaletteEntries.CellDoubleClick += GridPaletteEntries_CellDoubleClick;
             // 
             // splitTransitions
             // 
@@ -4083,8 +4208,8 @@
             tabRulePalette.PerformLayout();
             tabRuleGroups.ResumeLayout(false);
             tabRuleGroups.PerformLayout();
-            panelRulesTop.ResumeLayout(false);
-            panelRulesTop.PerformLayout();
+            toolStripRules.ResumeLayout(false);
+            toolStripRules.PerformLayout();
             tabRulesInner.ResumeLayout(false);
             flowOutlineButtons.ResumeLayout(false);
             flowOutlineButtons.PerformLayout();
@@ -4285,6 +4410,7 @@
         private System.Windows.Forms.ToolStripSeparator mnuRulesSep2;
         private System.Windows.Forms.ToolStripMenuItem mnuValidate;
         private System.Windows.Forms.ToolStripMenuItem mnuRules16;
+        private System.Windows.Forms.ToolStripMenuItem mnuScriptEditor;
         private System.Windows.Forms.ToolStripMenuItem mnuLanguage;
         private System.Windows.Forms.ToolStripMenuItem mnuLangDe;
         private System.Windows.Forms.ToolStripMenuItem mnuLangEn;
@@ -4587,12 +4713,27 @@
         private System.Windows.Forms.PictureBox picGenPreview;
         private System.Windows.Forms.Label lblGenInfo;
         private System.Windows.Forms.TabControl tabRulesInner;
-        private System.Windows.Forms.FlowLayoutPanel panelRulesTop;
+        private System.Windows.Forms.TextBox txtRulesHelp;
         private System.Windows.Forms.Label lblRuleSetInfo;
-        private System.Windows.Forms.Button btnRulesReload;
-        private System.Windows.Forms.Button btnRulesSaveJson;
-        private System.Windows.Forms.Button btnRulesExport;
-        private System.Windows.Forms.Button btnRulesValidate;
+        private System.Windows.Forms.ToolStrip toolStripRules;
+        private System.Windows.Forms.ToolStripLabel tslRulesFormat;
+        private System.Windows.Forms.ToolStripButton tsbRules8;
+        private System.Windows.Forms.ToolStripButton tsbRules16;
+        private System.Windows.Forms.ToolStripSeparator tssRules1;
+        private System.Windows.Forms.ToolStripButton tsbRulesNewColor;
+        private System.Windows.Forms.ToolStripButton tsbRulesNewGroup;
+        private System.Windows.Forms.ToolStripButton tsbRulesNewTransition;
+        private System.Windows.Forms.ToolStripSeparator tssRules2;
+        private System.Windows.Forms.ToolStripButton tsbRulesValidate;
+        private System.Windows.Forms.ToolStripButton tsbRulesFixHints;
+        private System.Windows.Forms.ToolStripButton tsbScriptEditor;
+        private System.Windows.Forms.ToolStripSeparator tssRules3;
+        private System.Windows.Forms.ToolStripLabel tslRulesName;
+        private System.Windows.Forms.ToolStripTextBox tstRulesName;
+        private System.Windows.Forms.ToolStripButton tsbRulesSave;
+        private System.Windows.Forms.ToolStripButton tsbRulesSaveJson;
+        private System.Windows.Forms.ToolStripButton tsbRulesExport;
+        private System.Windows.Forms.ToolStripButton tsbRulesReload;
         private System.Windows.Forms.TabPage tabRuleGroups;
         private System.Windows.Forms.TabPage tabRulePalette;
         private System.Windows.Forms.TabPage tabRuleTransitions;

@@ -374,7 +374,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                     problems.Add($"Farbe {p.HexIndex}: Höhe {p.Altitude} außerhalb -128..127.");
                 }
             }
-            foreach (TransitionRule r in Transitions)
+            foreach (List<DragonPaletteEntry> dup in RuleSetTools.DuplicateColors(this))
+            {
+                problems.Add($"Doppelte Farbe {dup[0].HtmlColor}: " + string.Join(", ", dup.Take(6).Select(d => $"{HexIndex(d.Index)} {d.Name}")) + (dup.Count > 6 ? $" (+{dup.Count - 6})" : string.Empty) +
+                             " – im Bild nicht unterscheidbar, eine davon umfärben (RGB ändern).");
+            }
+            foreach (TransitionRule r in Transitions.Where(t => t.Enabled))
             {
                 if (FindTransitionFile(r.File) == null)
                 {
