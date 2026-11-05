@@ -287,14 +287,39 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             }
 
             cancel.ThrowIfCancellationRequested();
-            WriteFiles(result, progress, cancel);
+            if (!_inMemory)
+            {
+                WriteFiles(result, progress, cancel);
+            }
             progress?.Report(100);
             result.Duration = DateTime.Now - start;
-            if (_o.WriteReport)
+            if (_o.WriteReport && !_inMemory)
             {
                 WriteReport(result);
             }
             return result;
+        }
+
+        private bool _inMemory;
+
+        /// <summary>Runs all steps without writing files (for the CGI view). Statics are always created.</summary>
+        public MapData BuildInMemory(IndexedMap source, IProgress<int> progress, CancellationToken cancel)
+        {
+            _inMemory = true;
+            bool writeStatics = _o.WriteStatics;
+            _o.WriteStatics = true;
+            try
+            {
+                BuildResult result = Build(source, progress, cancel);
+                var data = new MapData(_w, _h, _tile, _z) { Source = "Editor-Karte (im Speicher gebaut)", MapNumber = _o.MapNumber, Report = result };
+                data.Statics.AddRange(_statics);
+                return data;
+            }
+            finally
+            {
+                _o.WriteStatics = writeStatics;
+                _inMemory = false;
+            }
         }
 
         private IndexedMap PadToBlocks(IndexedMap source, BuildResult result)

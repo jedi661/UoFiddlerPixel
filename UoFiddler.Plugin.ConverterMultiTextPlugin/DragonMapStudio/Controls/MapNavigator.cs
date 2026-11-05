@@ -45,6 +45,15 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
             Invalidate();
         }
 
+        /// <summary>Extra marked area (e.g. the selection of the map editor), empty = none.</summary>
+        public void SetMark(RectangleF mark)
+        {
+            _mark = mark;
+            Invalidate();
+        }
+
+        private RectangleF _mark;
+
         public void SetView(RectangleF view)
         {
             _view = view;
@@ -71,6 +80,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
             g.DrawImage(_thumb, r);
             float k = r.Width / _mapW;
             var v = new RectangleF(r.X + _view.X * k, r.Y + _view.Y * k, _view.Width * k, _view.Height * k);
+            if (!_mark.IsEmpty)
+            {
+                using var markPen = new Pen(Color.OrangeRed, 2f) { DashStyle = DashStyle.Dash };
+                g.DrawRectangle(markPen, r.X + _mark.X * k, r.Y + _mark.Y * k, Math.Max(2, _mark.Width * k), Math.Max(2, _mark.Height * k));
+            }
             using var pen = new Pen(Color.Yellow, 1.5f);
             g.DrawRectangle(Pens.Black, v.X - 1, v.Y - 1, v.Width + 2, v.Height + 2);
             g.DrawRectangle(pen, v.X, v.Y, v.Width, v.Height);

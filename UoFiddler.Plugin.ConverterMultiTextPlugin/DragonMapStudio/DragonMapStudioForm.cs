@@ -110,6 +110,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             LoadColorTable();
             RefreshLibrary();
             UpdateRecentMenu();
+            InitCgi();
 
             if (!string.IsNullOrWhiteSpace(_settings.LastMap) && File.Exists(_settings.LastMap))
             {
@@ -134,7 +135,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                 }
                 _cts?.Cancel();
             }
-            if (!ConfirmDiscardMap())
+            if (!ConfirmDiscardMap() || !ConfirmDiscardCgi())
             {
                 e.Cancel = true;
                 return;
@@ -178,6 +179,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             {
                 mapCanvas.Focus();
             }
+            else if (tabMain.SelectedTab == tabCgi)
+            {
+                EnsureItemList();
+                UpdateCgiMark();
+                isoView.Focus();
+            }
         }
 
         // ================================================================== rules
@@ -217,6 +224,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             _rules.BuildHeightLookups(out byte[] raise, out byte[] lower);
             mapCanvas.SetHeightLookups(raise, lower);
             BindRuleGrids();
+            if (_cgiTools.Count > 0)
+            {
+                UpdateRuleLandColors();
+            }
             lblRuleSetInfo.Text = $"{_rules.Name}  –  {_rules.Palette.Count(p => p.Defined)} Farben · {_rules.Groups.Count} Gruppen · {_rules.Transitions.Count} Übergänge · {_rules.TransitionFiles.Sum(f => f.Patterns.Count)} Muster · {_rules.ItemFiles.Sum(f => f.Groups.Count)} Item-Gruppen";
             txtRuleWarnings.Text = _rules.Warnings.Count == 0 ? "Keine Hinweise." : string.Join(Environment.NewLine, _rules.Warnings);
             UpdateTitle();

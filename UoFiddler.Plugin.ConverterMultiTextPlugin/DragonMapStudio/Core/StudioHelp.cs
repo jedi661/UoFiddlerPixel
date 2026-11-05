@@ -48,6 +48,32 @@ Links: Karten im Projekt-Ordner (öffnen, neu, duplizieren, umbenennen, löschen
 Papierkorb), Farbauswahl und Übersicht (klicken = dorthin springen).
 Gespeichert wird immer ein 8-Bit-BMP mit Palette – genau das Dragon-Format.
 
+2b. CGI-Ansicht (Client-Ansicht)
+--------------------------------
+Zeigt die gebaute Karte wie der Client: Land-Kacheln, Texturen an Hängen, Statics mit Hue,
+in Client-Reihenfolge. Braucht die in UoFiddler geladenen Client-Dateien (sonst Ersatzfarben).
+* ""Aus Editor-Karte bauen"" baut die Karte im Speicher (Übergänge, Items …) und zeigt sie.
+  Im Karten-Editor: ""CGI-Ansicht hier"" springt an dieselbe Stelle.
+* ""MUL / UOP laden"" zeigt eine fertige Karte (map#.mul/.uop + staidx/statics im Ordner).
+* Rechts: Übersicht (klicken = springen, orange = Auswahl im Karten-Editor), Gehe zu X/Y,
+  Item-Liste mit Suche, Hue, Z, Multis, Eigenschaften der Auswahl, Fehlersuche.
+* Werkzeuge: Auswahl, Static setzen, Multi setzen, Löschen, Färben.
+  Rechtsklick auf ein Static = ID und Hue übernehmen.
+* Tasten (Ansicht anklicken):
+  Pfeile          = Auswahl um 1 Tile verschieben (ohne Auswahl: Ansicht verschieben)
+                    ↑ = Norden (y−1), ↓ = Süden, ← = Westen (x−1), → = Osten
+  Strg + Pfeil    = Kopie der Auswahl daneben einfügen (die Kopie wird ausgewählt –
+                    mehrmals drücken = Zaun / Mauer ziehen)
+  Bild↑ / Bild↓   = Z +1 / −1 (mit Umschalt ±5)
+  Entf = löschen, H = mit Hue färben, Esc = Auswahl aufheben
+  Strg+C / Strg+V = kopieren / einfügen (Linksklick setzt, mehrfach möglich)
+  Strg+A = alle Statics unter der Maus wählen, Strg+Z / Strg+Y = Rückgängig / Wiederholen
+  Mausrad = Zoom, mittlere Maus / Leertaste + ziehen = verschieben
+* Max Z blendet Statics darüber aus (unter Dächer schauen).
+* Probleme: Land/Statics ohne Grafik, Steilkanten, Statics im Boden, doppelte Statics –
+  rot markiert, Klick in der Liste springt hin.
+* Speichern: Statics (bei gebauter Karte auch map#.mul und ggf. UOP) – alte Dateien → .bak.
+
 3. Generator & Umriss
 ---------------------
 Generator: Zufallswelt (Seed, Land %, Kontinent-Größe, Gebirge, Schnee, Klima,

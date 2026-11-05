@@ -42,6 +42,33 @@ Ellipse gefüllt, Füllen (F), Pipette (I), Höhe + / Höhe −, Auswahl (S), Ha
 - Übersicht unten links (klicken = hinspringen). 8×8-Raster = UO-Blöcke.
 - Undo/Redo speichert nur geänderte 64×64-Kacheln – auch 7168×4096 bleibt flüssig.
 
+### CGI-Ansicht (neu)
+Die gebaute Karte so ansehen, wie sie im Client aussieht, Fehler finden und Statics bearbeiten.
+
+- **Aus Editor-Karte bauen** – baut im Speicher (Übergänge, Items, Unebenheit …) und zeigt das Ergebnis.
+  Im Karten-Editor springt **CGI-Ansicht hier** an dieselbe Stelle.
+- **MUL / UOP laden** – fertige Karte (`map#.mul` / `map#LegacyMUL.uop` + `staidx#`/`statics#` aus dem Ordner).
+- Darstellung: 44×44-Land-Kacheln, Texturen (texmaps) an Hängen mit Licht, Statics mit Hue, Client-Reihenfolge,
+  Raster, Max Z (unter Dächer schauen). Ohne Client-Dateien: Dragon-Farben als Ersatz.
+- Rechte Leiste: Übersicht (Klick = springen, orange = Auswahl aus dem Karten-Editor), *Gehe zu X/Y*,
+  Item-Liste mit Suche (Name / hex), Hue mit Farbfeld, Z-Versatz, *auf Statics stapeln*, Multis mit Vorschau,
+  Eigenschaften der Auswahl (ID, Hue, Z, X, Y), Fehlersuche.
+- Werkzeuge: Auswahl, Static setzen, Multi setzen, Löschen, Färben. Rechtsklick = ID + Hue übernehmen.
+
+| Taste | Wirkung |
+|---|---|
+| Pfeile | Auswahl 1 Tile verschieben (↑ Norden y−1, → Osten x+1); ohne Auswahl: Ansicht |
+| Strg + Pfeil | Kopie der Auswahl daneben einfügen, Kopie wird ausgewählt (mehrmals = Mauer/Zaun ziehen) |
+| Bild↑ / Bild↓ | Z ±1 (Umschalt ±5) |
+| Entf / H / Esc | löschen / mit Hue färben / Auswahl aufheben |
+| Strg+C, Strg+V | kopieren, einfügen (Linksklick setzt, mehrfach) |
+| Strg+A | alle Statics unter der Maus |
+| Strg+Z, Strg+Y | Rückgängig, Wiederholen |
+
+- **Probleme**: Land/Statics ohne Grafik, Steilkanten (ab einstellbarer Höhe), Statics im Boden, doppelte Statics.
+- **Speichern**: Statics; bei einer im Speicher gebauten Karte auch `map#.mul` (und UOP, wenn in den Build-Optionen an).
+  Vorhandene Dateien werden vorher als `.bak` gesichert.
+
 ### Generator & Umriss
 - **Generator**: Seed, Land-%, Kontinent-Größe, Küsten-Rauheit, Wasserrand, Strand, Gebirge, Schnee,
   Klima (Norden kalt), Höhen. Die Höhe wird über die Farbe der Gruppe gesetzt.
@@ -122,11 +149,13 @@ Eigenschaftsfenstern und im JSON.
 DragonMapStudio/
 ├─ DragonMapStudioForm.cs / .Designer.cs / .resx   Hauptfenster (VS-Designer)
 ├─ DragonMapStudioForm.Tools.cs                    Generator, Umriss, Regeln, Build, Einstellungen
+├─ DragonMapStudioForm.Cgi.cs                      CGI-Ansicht (Client-Ansicht, Statics bearbeiten)
 ├─ Controls/
 │  ├─ ColorTableView.cs     klickbare Farbtabelle
 │  ├─ PaletteGridView.cs    16×16-Palette
 │  ├─ MapCanvas.cs          Zeichenfläche mit allen Werkzeugen
-│  └─ MapNavigator.cs       Übersicht
+│  ├─ MapNavigator.cs       Übersicht
+│  └─ IsoMapView.cs         CGI-Ansicht: isometrisch zeichnen, Statics bearbeiten
 ├─ Dialogs/NewMapDialog.*   Neue Karte (VS-Designer)
 ├─ Core/
 │  ├─ DragonModel.cs        Datenklassen (Farbe, Gruppe, Übergang, Item …)
@@ -139,6 +168,9 @@ DragonMapStudio/
 │  ├─ OutlineImporter.cs    Umriss aus Bild → Maske / Karte
 │  ├─ DragonCompiler.cs     BMP → MUL (der eigentliche Dragon-Ablauf)
 │  ├─ MulMapIO.cs           MUL/UOP lesen/schreiben, MUL → BMP
+│  ├─ MapData.cs            gebaute Karte: Land + Statics (bearbeitbar, Undo/Redo)
+│  ├─ UoArtCache.cs         Client-Grafiken (Art, Texturen, Hues, Multis, Radarfarben)
+│  ├─ MapProblemScanner.cs  Fehlersuche
 │  ├─ ColorTableRenderer.cs Farbtabelle aus den Regeln zeichnen
 │  ├─ StudioSettings.cs     Einstellungen + Pfade
 │  └─ StudioHelp.cs         Hilfetext
@@ -166,7 +198,7 @@ Geändert: `UserControls/ConverterMultiTextControl(.Designer).cs` (Knopf), `Prop
 1. **Im Client prüfen** – Z1/Z2 der Übergänge, Item-Chance, Static-Höhen festlegen.
 2. **Übergangs-Editor**: Muster per Klick im 3×3-Raster, Tiles per Drag & Drop aus der UoFiddler-Kachelliste,
    fehlende Muster aus `build_report.txt` mit einem Klick anlegen.
-3. **Echte Vorschau**: Kartenausschnitt mit den UO-Land-Tiles (Art) statt Farben, später isometrisch mit Statics.
+3. ~~Echte Vorschau~~ → erledigt (CGI-Ansicht). Weiter: Land in der CGI-Ansicht bearbeiten (Höhe, Tile), Auswahl per Rahmen ziehen, Statics mit der Maus ziehen.
 4. **UOP komplett**: Statics in UOP-Clients, UOP-Karte direkt öffnen/speichern, Client-Ordner direkt beschreiben (mit Backup).
 5. **Mehr Generator**: Flüsse, Seen, Straßen, Städte/Dungeon-Bereiche, Höhenkarte als Graustufen-Import/-Export, Erosion.
 6. **Ebenen**: getrennte Ebenen für Terrain, Höhe, Statics-Zonen; Höhe frei malen statt über die Farbe.

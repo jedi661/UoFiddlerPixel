@@ -137,6 +137,39 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             ReplaceFile(tmpSta, staticsPath);
         }
 
+        /// <summary>Reads staidx#.mul / statics#.mul into a list (absolute coordinates).</summary>
+        public static List<StaticEntry> ReadStatics(string idxPath, string staticsPath, int width, int height)
+        {
+            var list = new List<StaticEntry>();
+            int bw = width / 8, bh = height / 8;
+            using var idx = new BinaryReader(new FileStream(idxPath, FileMode.Open, FileAccess.Read, FileShare.Read, 1 << 16));
+            byte[] sta = File.ReadAllBytes(staticsPath);
+            long blocks = Math.Min((long)bw * bh, idx.BaseStream.Length / 12);
+            for (long b = 0; b < blocks; b++)
+            {
+                int offset = idx.ReadInt32();
+                int length = idx.ReadInt32();
+                idx.ReadInt32();
+                if (offset < 0 || length <= 0 || offset + (long)length > sta.Length)
+                {
+                    continue;
+                }
+                int bx = (int)(b / bh), by = (int)(b % bh);
+                for (int o = offset; o + 7 <= offset + length; o += 7)
+                {
+                    list.Add(new StaticEntry
+                    {
+                        Id = (ushort)(sta[o] | (sta[o + 1] << 8)),
+                        X = bx * 8 + (sta[o + 2] & 7),
+                        Y = by * 8 + (sta[o + 3] & 7),
+                        Z = (sbyte)sta[o + 4],
+                        Hue = (ushort)(sta[o + 5] | (sta[o + 6] << 8))
+                    });
+                }
+            }
+            return list;
+        }
+
         /// <summary>Packs map#.mul into map#LegacyMUL.uop (UoFiddler UOP packer).</summary>
         public static void WriteUop(string mulPath, string uopPath, int mapNumber)
         {

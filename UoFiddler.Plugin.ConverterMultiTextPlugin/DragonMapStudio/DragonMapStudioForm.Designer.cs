@@ -75,6 +75,7 @@
             tabMain = new System.Windows.Forms.TabControl();
             tabColors = new System.Windows.Forms.TabPage();
             tabEditor = new System.Windows.Forms.TabPage();
+            tabCgi = new System.Windows.Forms.TabPage();
             tabGenerator = new System.Windows.Forms.TabPage();
             tabRules = new System.Windows.Forms.TabPage();
             tabBuild = new System.Windows.Forms.TabPage();
@@ -157,6 +158,73 @@
             tssEd3 = new System.Windows.Forms.ToolStripSeparator();
             tsbUndo = new System.Windows.Forms.ToolStripButton();
             tsbRedo = new System.Windows.Forms.ToolStripButton();
+            tssEd4 = new System.Windows.Forms.ToolStripSeparator();
+            tsbCgiHere = new System.Windows.Forms.ToolStripButton();
+            splitCgi = new System.Windows.Forms.SplitContainer();
+            isoView = new UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls.IsoMapView();
+            tabCgiSide = new System.Windows.Forms.TabControl();
+            grpCgiGoto = new System.Windows.Forms.GroupBox();
+            cgiNavigator = new UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls.MapNavigator();
+            lblCgiX = new System.Windows.Forms.Label();
+            numCgiX = new System.Windows.Forms.NumericUpDown();
+            lblCgiY = new System.Windows.Forms.Label();
+            numCgiY = new System.Windows.Forms.NumericUpDown();
+            btnCgiGoto = new System.Windows.Forms.Button();
+            btnCgiToSelection = new System.Windows.Forms.Button();
+            tabCgiItems = new System.Windows.Forms.TabPage();
+            tabCgiMulti = new System.Windows.Forms.TabPage();
+            tabCgiSelection = new System.Windows.Forms.TabPage();
+            tabCgiProblems = new System.Windows.Forms.TabPage();
+            lstCgiItems = new System.Windows.Forms.ListView();
+            colCgiItemId = new System.Windows.Forms.ColumnHeader();
+            colCgiItemName = new System.Windows.Forms.ColumnHeader();
+            txtCgiFilter = new System.Windows.Forms.TextBox();
+            panelCgiItem = new System.Windows.Forms.Panel();
+            picCgiItem = new System.Windows.Forms.PictureBox();
+            lblCgiItemId = new System.Windows.Forms.Label();
+            txtCgiItemId = new System.Windows.Forms.TextBox();
+            lblCgiHue = new System.Windows.Forms.Label();
+            numCgiHue = new System.Windows.Forms.NumericUpDown();
+            panelCgiHueSwatch = new System.Windows.Forms.Panel();
+            lblCgiZ = new System.Windows.Forms.Label();
+            numCgiZOffset = new System.Windows.Forms.NumericUpDown();
+            chkCgiStack = new System.Windows.Forms.CheckBox();
+            lblCgiItemInfo = new System.Windows.Forms.Label();
+            picCgiMulti = new System.Windows.Forms.PictureBox();
+            panelCgiMultiTop = new System.Windows.Forms.Panel();
+            lblCgiMultiId = new System.Windows.Forms.Label();
+            numCgiMultiId = new System.Windows.Forms.NumericUpDown();
+            chkCgiMultiInvisible = new System.Windows.Forms.CheckBox();
+            lblCgiMultiInfo = new System.Windows.Forms.Label();
+            propCgiSelection = new System.Windows.Forms.PropertyGrid();
+            lblCgiSelInfo = new System.Windows.Forms.Label();
+            lstCgiProblems = new System.Windows.Forms.ListBox();
+            panelCgiProblemsTop = new System.Windows.Forms.Panel();
+            lblCgiCliff = new System.Windows.Forms.Label();
+            numCgiCliff = new System.Windows.Forms.NumericUpDown();
+            btnCgiScan = new System.Windows.Forms.Button();
+            toolStripCgi = new System.Windows.Forms.ToolStrip();
+            tsbCgiBuild = new System.Windows.Forms.ToolStripButton();
+            tsbCgiLoad = new System.Windows.Forms.ToolStripButton();
+            tsbCgiSave = new System.Windows.Forms.ToolStripButton();
+            tsbCgiSaveAs = new System.Windows.Forms.ToolStripButton();
+            tssCgi1 = new System.Windows.Forms.ToolStripSeparator();
+            tsbCgiSelect = new System.Windows.Forms.ToolStripButton();
+            tsbCgiPlace = new System.Windows.Forms.ToolStripButton();
+            tsbCgiMulti = new System.Windows.Forms.ToolStripButton();
+            tsbCgiDelete = new System.Windows.Forms.ToolStripButton();
+            tsbCgiHue = new System.Windows.Forms.ToolStripButton();
+            tssCgi2 = new System.Windows.Forms.ToolStripSeparator();
+            tsbCgiUndo = new System.Windows.Forms.ToolStripButton();
+            tsbCgiRedo = new System.Windows.Forms.ToolStripButton();
+            tssCgi3 = new System.Windows.Forms.ToolStripSeparator();
+            tsbCgiZoomIn = new System.Windows.Forms.ToolStripButton();
+            tsbCgiZoomOut = new System.Windows.Forms.ToolStripButton();
+            tsbCgiGrid = new System.Windows.Forms.ToolStripButton();
+            tsbCgiStatics = new System.Windows.Forms.ToolStripButton();
+            tsbCgiProblems = new System.Windows.Forms.ToolStripButton();
+            tslCgiMaxZ = new System.Windows.Forms.ToolStripLabel();
+            tscCgiMaxZ = new System.Windows.Forms.ToolStripComboBox();
             splitGenerator = new System.Windows.Forms.SplitContainer();
             tabGenOptions = new System.Windows.Forms.TabControl();
             tabGenSettings = new System.Windows.Forms.TabPage();
@@ -254,6 +322,10 @@
             splitEditor.Panel1.SuspendLayout();
             splitEditor.Panel2.SuspendLayout();
             splitEditor.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)splitCgi).BeginInit();
+            splitCgi.Panel1.SuspendLayout();
+            splitCgi.Panel2.SuspendLayout();
+            splitCgi.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)splitGenerator).BeginInit();
             splitGenerator.Panel1.SuspendLayout();
             splitGenerator.Panel2.SuspendLayout();
@@ -275,6 +347,7 @@
             tabMain.SuspendLayout();
             tabColors.SuspendLayout();
             tabEditor.SuspendLayout();
+            tabCgi.SuspendLayout();
             tabGenerator.SuspendLayout();
             tabRules.SuspendLayout();
             tabBuild.SuspendLayout();
@@ -293,6 +366,17 @@
             panelPrimarySwatch.SuspendLayout();
             panelSecondarySwatch.SuspendLayout();
             toolStripEditor.SuspendLayout();
+            tabCgiSide.SuspendLayout();
+            grpCgiGoto.SuspendLayout();
+            tabCgiItems.SuspendLayout();
+            tabCgiMulti.SuspendLayout();
+            tabCgiSelection.SuspendLayout();
+            tabCgiProblems.SuspendLayout();
+            panelCgiItem.SuspendLayout();
+            panelCgiHueSwatch.SuspendLayout();
+            panelCgiMultiTop.SuspendLayout();
+            panelCgiProblemsTop.SuspendLayout();
+            toolStripCgi.SuspendLayout();
             tabGenOptions.SuspendLayout();
             tabGenSettings.SuspendLayout();
             tabGenBiomes.SuspendLayout();
@@ -315,6 +399,14 @@
             flowSettingsButtons.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)numColorTableZoom).BeginInit();
             ((System.ComponentModel.ISupportInitialize)picTilePreview).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)numCgiX).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)numCgiY).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)picCgiItem).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)numCgiHue).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)numCgiZOffset).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)picCgiMulti).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)numCgiMultiId).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)numCgiCliff).BeginInit();
             ((System.ComponentModel.ISupportInitialize)gridBiomes).BeginInit();
             ((System.ComponentModel.ISupportInitialize)picGenPreview).BeginInit();
             ((System.ComponentModel.ISupportInitialize)gridGroups).BeginInit();
@@ -599,6 +691,7 @@
             // 
             tabMain.Controls.Add(tabColors);
             tabMain.Controls.Add(tabEditor);
+            tabMain.Controls.Add(tabCgi);
             tabMain.Controls.Add(tabGenerator);
             tabMain.Controls.Add(tabRules);
             tabMain.Controls.Add(tabBuild);
@@ -628,6 +721,17 @@
             tabEditor.Name = "tabEditor";
             tabEditor.Location = new System.Drawing.Point(4, 24);
             tabEditor.Size = new System.Drawing.Size(1176, 640);
+            // 
+            // tabCgi
+            // 
+            tabCgi.Controls.Add(splitCgi);
+            tabCgi.Controls.Add(toolStripCgi);
+            tabCgi.Text = "CGI-Ansicht";
+            tabCgi.UseVisualStyleBackColor = true;
+            tabCgi.Padding = new System.Windows.Forms.Padding(3);
+            tabCgi.Name = "tabCgi";
+            tabCgi.Location = new System.Drawing.Point(4, 24);
+            tabCgi.Size = new System.Drawing.Size(1176, 640);
             // 
             // tabGenerator
             // 
@@ -1108,7 +1212,7 @@
             // 
             // toolStripEditor
             // 
-            toolStripEditor.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { tsbBrush, tsbEraser, tsbSpray, tsbLine, tsbRect, tsbRectFill, tsbEllipse, tsbEllipseFill, tsbFill, tsbPicker, tsbRaise, tsbLower, tsbSelect, tsbPan, tssEd1, tslBrushSize, tscBrushSize, tsbSquare, tssEd2, tsbZoomIn, tsbZoomOut, tsbZoomFit, tsbZoom100, tsbGrid, tssEd3, tsbUndo, tsbRedo });
+            toolStripEditor.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { tsbBrush, tsbEraser, tsbSpray, tsbLine, tsbRect, tsbRectFill, tsbEllipse, tsbEllipseFill, tsbFill, tsbPicker, tsbRaise, tsbLower, tsbSelect, tsbPan, tssEd1, tslBrushSize, tscBrushSize, tsbSquare, tssEd2, tsbZoomIn, tsbZoomOut, tsbZoomFit, tsbZoom100, tsbGrid, tssEd3, tsbUndo, tsbRedo, tssEd4, tsbCgiHere });
             toolStripEditor.Dock = System.Windows.Forms.DockStyle.Top;
             toolStripEditor.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
             toolStripEditor.Name = "toolStripEditor";
@@ -1307,6 +1411,547 @@
             tsbRedo.Text = "Wiederholen";
             tsbRedo.Name = "tsbRedo";
             tsbRedo.Click += MnuRedo_Click;
+            // 
+            // tssEd4
+            // 
+            tssEd4.Name = "tssEd4";
+            // 
+            // tsbCgiHere
+            // 
+            tsbCgiHere.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            tsbCgiHere.Text = "CGI-Ansicht hier";
+            tsbCgiHere.ToolTipText = "Diese Stelle im CGI-Modus (Client-Ansicht) anzeigen";
+            tsbCgiHere.Name = "tsbCgiHere";
+            tsbCgiHere.Click += TsbCgiHere_Click;
+            // 
+            // splitCgi
+            // 
+            splitCgi.Panel1.Controls.Add(isoView);
+            splitCgi.Panel2.Controls.Add(tabCgiSide);
+            splitCgi.Panel2.Controls.Add(grpCgiGoto);
+            splitCgi.Panel2.Controls.Add(cgiNavigator);
+            splitCgi.Dock = System.Windows.Forms.DockStyle.Fill;
+            splitCgi.Orientation = System.Windows.Forms.Orientation.Vertical;
+            splitCgi.Size = new System.Drawing.Size(1170, 634);
+            splitCgi.SplitterDistance = 860;
+            splitCgi.FixedPanel = System.Windows.Forms.FixedPanel.Panel2;
+            splitCgi.Name = "splitCgi";
+            // 
+            // isoView
+            // 
+            isoView.Dock = System.Windows.Forms.DockStyle.Fill;
+            isoView.Name = "isoView";
+            isoView.HoverChanged += IsoView_HoverChanged;
+            isoView.SelectionChanged += IsoView_SelectionChanged;
+            isoView.MapChanged += IsoView_MapChanged;
+            isoView.ViewChanged += IsoView_ViewChanged;
+            isoView.ItemPicked += IsoView_ItemPicked;
+            isoView.Message += IsoView_Message;
+            // 
+            // tabCgiSide
+            // 
+            tabCgiSide.Controls.Add(tabCgiItems);
+            tabCgiSide.Controls.Add(tabCgiMulti);
+            tabCgiSide.Controls.Add(tabCgiSelection);
+            tabCgiSide.Controls.Add(tabCgiProblems);
+            tabCgiSide.Dock = System.Windows.Forms.DockStyle.Fill;
+            tabCgiSide.Name = "tabCgiSide";
+            // 
+            // grpCgiGoto
+            // 
+            grpCgiGoto.Controls.Add(lblCgiX);
+            grpCgiGoto.Controls.Add(numCgiX);
+            grpCgiGoto.Controls.Add(lblCgiY);
+            grpCgiGoto.Controls.Add(numCgiY);
+            grpCgiGoto.Controls.Add(btnCgiGoto);
+            grpCgiGoto.Controls.Add(btnCgiToSelection);
+            grpCgiGoto.Dock = System.Windows.Forms.DockStyle.Top;
+            grpCgiGoto.Size = new System.Drawing.Size(300, 80);
+            grpCgiGoto.Text = "Gehe zu";
+            grpCgiGoto.Name = "grpCgiGoto";
+            // 
+            // cgiNavigator
+            // 
+            cgiNavigator.Dock = System.Windows.Forms.DockStyle.Top;
+            cgiNavigator.Size = new System.Drawing.Size(300, 220);
+            cgiNavigator.Name = "cgiNavigator";
+            cgiNavigator.NavigateTo += CgiNavigator_NavigateTo;
+            // 
+            // lblCgiX
+            // 
+            lblCgiX.AutoSize = true;
+            lblCgiX.Location = new System.Drawing.Point(6, 24);
+            lblCgiX.Text = "X:";
+            lblCgiX.Name = "lblCgiX";
+            // 
+            // numCgiX
+            // 
+            numCgiX.Location = new System.Drawing.Point(24, 21);
+            numCgiX.Maximum = new decimal(new int[] { 16383, 0, 0, 0 });
+            numCgiX.Size = new System.Drawing.Size(64, 23);
+            numCgiX.Name = "numCgiX";
+            // 
+            // lblCgiY
+            // 
+            lblCgiY.AutoSize = true;
+            lblCgiY.Location = new System.Drawing.Point(94, 24);
+            lblCgiY.Text = "Y:";
+            lblCgiY.Name = "lblCgiY";
+            // 
+            // numCgiY
+            // 
+            numCgiY.Location = new System.Drawing.Point(112, 21);
+            numCgiY.Maximum = new decimal(new int[] { 16383, 0, 0, 0 });
+            numCgiY.Size = new System.Drawing.Size(64, 23);
+            numCgiY.Name = "numCgiY";
+            // 
+            // btnCgiGoto
+            // 
+            btnCgiGoto.Location = new System.Drawing.Point(182, 20);
+            btnCgiGoto.Size = new System.Drawing.Size(60, 25);
+            btnCgiGoto.Text = "Gehe";
+            btnCgiGoto.UseVisualStyleBackColor = true;
+            btnCgiGoto.Name = "btnCgiGoto";
+            btnCgiGoto.Click += BtnCgiGoto_Click;
+            // 
+            // btnCgiToSelection
+            // 
+            btnCgiToSelection.Location = new System.Drawing.Point(6, 48);
+            btnCgiToSelection.Size = new System.Drawing.Size(236, 25);
+            btnCgiToSelection.Text = "Zur Auswahl im Karten-Editor";
+            btnCgiToSelection.UseVisualStyleBackColor = true;
+            btnCgiToSelection.Name = "btnCgiToSelection";
+            btnCgiToSelection.Click += BtnCgiToSelection_Click;
+            // 
+            // tabCgiItems
+            // 
+            tabCgiItems.Controls.Add(lstCgiItems);
+            tabCgiItems.Controls.Add(txtCgiFilter);
+            tabCgiItems.Controls.Add(panelCgiItem);
+            tabCgiItems.Text = "Items";
+            tabCgiItems.UseVisualStyleBackColor = true;
+            tabCgiItems.Padding = new System.Windows.Forms.Padding(3);
+            tabCgiItems.Name = "tabCgiItems";
+            tabCgiItems.Location = new System.Drawing.Point(4, 24);
+            tabCgiItems.Size = new System.Drawing.Size(1176, 640);
+            // 
+            // tabCgiMulti
+            // 
+            tabCgiMulti.Controls.Add(picCgiMulti);
+            tabCgiMulti.Controls.Add(panelCgiMultiTop);
+            tabCgiMulti.Text = "Multis";
+            tabCgiMulti.UseVisualStyleBackColor = true;
+            tabCgiMulti.Padding = new System.Windows.Forms.Padding(3);
+            tabCgiMulti.Name = "tabCgiMulti";
+            tabCgiMulti.Location = new System.Drawing.Point(4, 24);
+            tabCgiMulti.Size = new System.Drawing.Size(1176, 640);
+            // 
+            // tabCgiSelection
+            // 
+            tabCgiSelection.Controls.Add(propCgiSelection);
+            tabCgiSelection.Controls.Add(lblCgiSelInfo);
+            tabCgiSelection.Text = "Auswahl";
+            tabCgiSelection.UseVisualStyleBackColor = true;
+            tabCgiSelection.Padding = new System.Windows.Forms.Padding(3);
+            tabCgiSelection.Name = "tabCgiSelection";
+            tabCgiSelection.Location = new System.Drawing.Point(4, 24);
+            tabCgiSelection.Size = new System.Drawing.Size(1176, 640);
+            // 
+            // tabCgiProblems
+            // 
+            tabCgiProblems.Controls.Add(lstCgiProblems);
+            tabCgiProblems.Controls.Add(panelCgiProblemsTop);
+            tabCgiProblems.Text = "Probleme";
+            tabCgiProblems.UseVisualStyleBackColor = true;
+            tabCgiProblems.Padding = new System.Windows.Forms.Padding(3);
+            tabCgiProblems.Name = "tabCgiProblems";
+            tabCgiProblems.Location = new System.Drawing.Point(4, 24);
+            tabCgiProblems.Size = new System.Drawing.Size(1176, 640);
+            // 
+            // lstCgiItems
+            // 
+            lstCgiItems.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] { colCgiItemId, colCgiItemName });
+            lstCgiItems.Dock = System.Windows.Forms.DockStyle.Fill;
+            lstCgiItems.FullRowSelect = true;
+            lstCgiItems.HideSelection = false;
+            lstCgiItems.MultiSelect = false;
+            lstCgiItems.VirtualMode = true;
+            lstCgiItems.View = System.Windows.Forms.View.Details;
+            lstCgiItems.Name = "lstCgiItems";
+            lstCgiItems.RetrieveVirtualItem += LstCgiItems_RetrieveVirtualItem;
+            lstCgiItems.SelectedIndexChanged += LstCgiItems_SelectedIndexChanged;
+            // 
+            // colCgiItemId
+            // 
+            colCgiItemId.Text = "ID";
+            colCgiItemId.Width = 60;
+            // 
+            // colCgiItemName
+            // 
+            colCgiItemName.Text = "Name";
+            colCgiItemName.Width = 190;
+            // 
+            // txtCgiFilter
+            // 
+            txtCgiFilter.Dock = System.Windows.Forms.DockStyle.Top;
+            txtCgiFilter.PlaceholderText = "Suche: Name oder ID (hex)";
+            txtCgiFilter.Name = "txtCgiFilter";
+            txtCgiFilter.TextChanged += TxtCgiFilter_TextChanged;
+            // 
+            // panelCgiItem
+            // 
+            panelCgiItem.Controls.Add(picCgiItem);
+            panelCgiItem.Controls.Add(lblCgiItemId);
+            panelCgiItem.Controls.Add(txtCgiItemId);
+            panelCgiItem.Controls.Add(lblCgiHue);
+            panelCgiItem.Controls.Add(numCgiHue);
+            panelCgiItem.Controls.Add(panelCgiHueSwatch);
+            panelCgiItem.Controls.Add(lblCgiZ);
+            panelCgiItem.Controls.Add(numCgiZOffset);
+            panelCgiItem.Controls.Add(chkCgiStack);
+            panelCgiItem.Controls.Add(lblCgiItemInfo);
+            panelCgiItem.Dock = System.Windows.Forms.DockStyle.Bottom;
+            panelCgiItem.Size = new System.Drawing.Size(290, 170);
+            panelCgiItem.Name = "panelCgiItem";
+            // 
+            // picCgiItem
+            // 
+            picCgiItem.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            picCgiItem.Location = new System.Drawing.Point(4, 4);
+            picCgiItem.Size = new System.Drawing.Size(96, 120);
+            picCgiItem.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
+            picCgiItem.BackColor = System.Drawing.Color.FromArgb(40, 40, 40);
+            picCgiItem.Name = "picCgiItem";
+            // 
+            // lblCgiItemId
+            // 
+            lblCgiItemId.AutoSize = true;
+            lblCgiItemId.Location = new System.Drawing.Point(108, 8);
+            lblCgiItemId.Text = "Item (hex):";
+            lblCgiItemId.Name = "lblCgiItemId";
+            // 
+            // txtCgiItemId
+            // 
+            txtCgiItemId.Location = new System.Drawing.Point(184, 4);
+            txtCgiItemId.Size = new System.Drawing.Size(70, 23);
+            txtCgiItemId.Text = "0e75";
+            txtCgiItemId.Name = "txtCgiItemId";
+            txtCgiItemId.TextChanged += CgiPlaceSettings_Changed;
+            // 
+            // lblCgiHue
+            // 
+            lblCgiHue.AutoSize = true;
+            lblCgiHue.Location = new System.Drawing.Point(108, 37);
+            lblCgiHue.Text = "Hue:";
+            lblCgiHue.Name = "lblCgiHue";
+            // 
+            // numCgiHue
+            // 
+            numCgiHue.Location = new System.Drawing.Point(184, 33);
+            numCgiHue.Maximum = new decimal(new int[] { 3000, 0, 0, 0 });
+            numCgiHue.Size = new System.Drawing.Size(70, 23);
+            numCgiHue.Name = "numCgiHue";
+            numCgiHue.ValueChanged += CgiPlaceSettings_Changed;
+            // 
+            // panelCgiHueSwatch
+            // 
+            panelCgiHueSwatch.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            panelCgiHueSwatch.Location = new System.Drawing.Point(258, 33);
+            panelCgiHueSwatch.Size = new System.Drawing.Size(24, 23);
+            panelCgiHueSwatch.Name = "panelCgiHueSwatch";
+            // 
+            // lblCgiZ
+            // 
+            lblCgiZ.AutoSize = true;
+            lblCgiZ.Location = new System.Drawing.Point(108, 66);
+            lblCgiZ.Text = "Z + :";
+            lblCgiZ.Name = "lblCgiZ";
+            // 
+            // numCgiZOffset
+            // 
+            numCgiZOffset.Location = new System.Drawing.Point(184, 62);
+            numCgiZOffset.Maximum = new decimal(new int[] { 127, 0, 0, 0 });
+            numCgiZOffset.Minimum = new decimal(new int[] { 128, 0, 0, -2147483648 });
+            numCgiZOffset.Size = new System.Drawing.Size(70, 23);
+            numCgiZOffset.Name = "numCgiZOffset";
+            numCgiZOffset.ValueChanged += CgiPlaceSettings_Changed;
+            // 
+            // chkCgiStack
+            // 
+            chkCgiStack.AutoSize = true;
+            chkCgiStack.Location = new System.Drawing.Point(108, 92);
+            chkCgiStack.Text = "auf Statics stapeln";
+            chkCgiStack.Name = "chkCgiStack";
+            chkCgiStack.CheckedChanged += CgiPlaceSettings_Changed;
+            // 
+            // lblCgiItemInfo
+            // 
+            lblCgiItemInfo.Location = new System.Drawing.Point(4, 128);
+            lblCgiItemInfo.Size = new System.Drawing.Size(280, 38);
+            lblCgiItemInfo.Text = "-";
+            lblCgiItemInfo.Name = "lblCgiItemInfo";
+            // 
+            // picCgiMulti
+            // 
+            picCgiMulti.Dock = System.Windows.Forms.DockStyle.Fill;
+            picCgiMulti.BackColor = System.Drawing.Color.FromArgb(40, 40, 40);
+            picCgiMulti.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
+            picCgiMulti.Name = "picCgiMulti";
+            // 
+            // panelCgiMultiTop
+            // 
+            panelCgiMultiTop.Controls.Add(lblCgiMultiId);
+            panelCgiMultiTop.Controls.Add(numCgiMultiId);
+            panelCgiMultiTop.Controls.Add(chkCgiMultiInvisible);
+            panelCgiMultiTop.Controls.Add(lblCgiMultiInfo);
+            panelCgiMultiTop.Dock = System.Windows.Forms.DockStyle.Top;
+            panelCgiMultiTop.Size = new System.Drawing.Size(290, 92);
+            panelCgiMultiTop.Name = "panelCgiMultiTop";
+            // 
+            // lblCgiMultiId
+            // 
+            lblCgiMultiId.AutoSize = true;
+            lblCgiMultiId.Location = new System.Drawing.Point(4, 8);
+            lblCgiMultiId.Text = "Multi-ID (hex):";
+            lblCgiMultiId.Name = "lblCgiMultiId";
+            // 
+            // numCgiMultiId
+            // 
+            numCgiMultiId.Hexadecimal = true;
+            numCgiMultiId.Location = new System.Drawing.Point(100, 4);
+            numCgiMultiId.Maximum = new decimal(new int[] { 65535, 0, 0, 0 });
+            numCgiMultiId.Size = new System.Drawing.Size(80, 23);
+            numCgiMultiId.Name = "numCgiMultiId";
+            numCgiMultiId.ValueChanged += NumCgiMultiId_ValueChanged;
+            // 
+            // chkCgiMultiInvisible
+            // 
+            chkCgiMultiInvisible.AutoSize = true;
+            chkCgiMultiInvisible.Location = new System.Drawing.Point(4, 34);
+            chkCgiMultiInvisible.Text = "unsichtbare Teile mitsetzen";
+            chkCgiMultiInvisible.Name = "chkCgiMultiInvisible";
+            chkCgiMultiInvisible.CheckedChanged += CgiPlaceSettings_Changed;
+            // 
+            // lblCgiMultiInfo
+            // 
+            lblCgiMultiInfo.Location = new System.Drawing.Point(4, 58);
+            lblCgiMultiInfo.Size = new System.Drawing.Size(280, 32);
+            lblCgiMultiInfo.Text = "Werkzeug 'Multi setzen' wählen und in die Karte klicken.";
+            lblCgiMultiInfo.Name = "lblCgiMultiInfo";
+            // 
+            // propCgiSelection
+            // 
+            propCgiSelection.Dock = System.Windows.Forms.DockStyle.Fill;
+            propCgiSelection.ToolbarVisible = false;
+            propCgiSelection.PropertySort = System.Windows.Forms.PropertySort.NoSort;
+            propCgiSelection.Name = "propCgiSelection";
+            propCgiSelection.PropertyValueChanged += PropCgiSelection_PropertyValueChanged;
+            // 
+            // lblCgiSelInfo
+            // 
+            lblCgiSelInfo.Dock = System.Windows.Forms.DockStyle.Top;
+            lblCgiSelInfo.Size = new System.Drawing.Size(290, 96);
+            lblCgiSelInfo.Text = "Nichts ausgewählt.";
+            lblCgiSelInfo.Padding = new System.Windows.Forms.Padding(3);
+            lblCgiSelInfo.Name = "lblCgiSelInfo";
+            // 
+            // lstCgiProblems
+            // 
+            lstCgiProblems.Dock = System.Windows.Forms.DockStyle.Fill;
+            lstCgiProblems.HorizontalScrollbar = true;
+            lstCgiProblems.IntegralHeight = false;
+            lstCgiProblems.Name = "lstCgiProblems";
+            lstCgiProblems.DoubleClick += LstCgiProblems_DoubleClick;
+            lstCgiProblems.SelectedIndexChanged += LstCgiProblems_DoubleClick;
+            // 
+            // panelCgiProblemsTop
+            // 
+            panelCgiProblemsTop.Controls.Add(lblCgiCliff);
+            panelCgiProblemsTop.Controls.Add(numCgiCliff);
+            panelCgiProblemsTop.Controls.Add(btnCgiScan);
+            panelCgiProblemsTop.Dock = System.Windows.Forms.DockStyle.Top;
+            panelCgiProblemsTop.Size = new System.Drawing.Size(290, 60);
+            panelCgiProblemsTop.Name = "panelCgiProblemsTop";
+            // 
+            // lblCgiCliff
+            // 
+            lblCgiCliff.AutoSize = true;
+            lblCgiCliff.Location = new System.Drawing.Point(4, 8);
+            lblCgiCliff.Text = "Steilkante ab z:";
+            lblCgiCliff.Name = "lblCgiCliff";
+            // 
+            // numCgiCliff
+            // 
+            numCgiCliff.Location = new System.Drawing.Point(110, 4);
+            numCgiCliff.Maximum = new decimal(new int[] { 255, 0, 0, 0 });
+            numCgiCliff.Minimum = new decimal(new int[] { 1, 0, 0, 0 });
+            numCgiCliff.Size = new System.Drawing.Size(60, 23);
+            numCgiCliff.Value = new decimal(new int[] { 40, 0, 0, 0 });
+            numCgiCliff.Name = "numCgiCliff";
+            // 
+            // btnCgiScan
+            // 
+            btnCgiScan.Location = new System.Drawing.Point(4, 31);
+            btnCgiScan.Size = new System.Drawing.Size(166, 25);
+            btnCgiScan.Text = "Ganze Karte prüfen";
+            btnCgiScan.UseVisualStyleBackColor = true;
+            btnCgiScan.Name = "btnCgiScan";
+            btnCgiScan.Click += BtnCgiScan_Click;
+            // 
+            // toolStripCgi
+            // 
+            toolStripCgi.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { tsbCgiBuild, tsbCgiLoad, tsbCgiSave, tsbCgiSaveAs, tssCgi1, tsbCgiSelect, tsbCgiPlace, tsbCgiMulti, tsbCgiDelete, tsbCgiHue, tssCgi2, tsbCgiUndo, tsbCgiRedo, tssCgi3, tsbCgiZoomIn, tsbCgiZoomOut, tsbCgiGrid, tsbCgiStatics, tsbCgiProblems, tslCgiMaxZ, tscCgiMaxZ });
+            toolStripCgi.Dock = System.Windows.Forms.DockStyle.Top;
+            toolStripCgi.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
+            toolStripCgi.Name = "toolStripCgi";
+            // 
+            // tsbCgiBuild
+            // 
+            tsbCgiBuild.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            tsbCgiBuild.Text = "Aus Editor-Karte bauen";
+            tsbCgiBuild.ToolTipText = "Baut die Karte aus dem Editor im Speicher (Übergänge, Items …) und zeigt sie an";
+            tsbCgiBuild.Name = "tsbCgiBuild";
+            tsbCgiBuild.Click += TsbCgiBuild_Click;
+            // 
+            // tsbCgiLoad
+            // 
+            tsbCgiLoad.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            tsbCgiLoad.Text = "MUL / UOP laden…";
+            tsbCgiLoad.ToolTipText = "map#.mul / map#LegacyMUL.uop + staidx/statics aus dem gleichen Ordner";
+            tsbCgiLoad.Name = "tsbCgiLoad";
+            tsbCgiLoad.Click += TsbCgiLoad_Click;
+            // 
+            // tsbCgiSave
+            // 
+            tsbCgiSave.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            tsbCgiSave.Text = "Speichern";
+            tsbCgiSave.ToolTipText = "Statics (und bei gebauter Karte auch die Map) speichern – alte Dateien bekommen .bak";
+            tsbCgiSave.Name = "tsbCgiSave";
+            tsbCgiSave.Click += TsbCgiSave_Click;
+            // 
+            // tsbCgiSaveAs
+            // 
+            tsbCgiSaveAs.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            tsbCgiSaveAs.Text = "Speichern unter…";
+            tsbCgiSaveAs.Name = "tsbCgiSaveAs";
+            tsbCgiSaveAs.Click += TsbCgiSaveAs_Click;
+            // 
+            // tssCgi1
+            // 
+            tssCgi1.Name = "tssCgi1";
+            // 
+            // tsbCgiSelect
+            // 
+            tsbCgiSelect.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            tsbCgiSelect.Text = "Auswahl";
+            tsbCgiSelect.ToolTipText = "Klick = auswählen, Strg+Klick = dazu, Umschalt+Klick = alle auf dem Tile";
+            tsbCgiSelect.Name = "tsbCgiSelect";
+            tsbCgiSelect.Click += CgiTool_Click;
+            // 
+            // tsbCgiPlace
+            // 
+            tsbCgiPlace.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            tsbCgiPlace.Text = "Static setzen";
+            tsbCgiPlace.ToolTipText = "Gewähltes Item (rechts) setzen";
+            tsbCgiPlace.Name = "tsbCgiPlace";
+            tsbCgiPlace.Click += CgiTool_Click;
+            // 
+            // tsbCgiMulti
+            // 
+            tsbCgiMulti.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            tsbCgiMulti.Text = "Multi setzen";
+            tsbCgiMulti.ToolTipText = "Gewähltes Multi (rechts) als Statics setzen";
+            tsbCgiMulti.Name = "tsbCgiMulti";
+            tsbCgiMulti.Click += CgiTool_Click;
+            // 
+            // tsbCgiDelete
+            // 
+            tsbCgiDelete.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            tsbCgiDelete.Text = "Löschen";
+            tsbCgiDelete.Name = "tsbCgiDelete";
+            tsbCgiDelete.Click += CgiTool_Click;
+            // 
+            // tsbCgiHue
+            // 
+            tsbCgiHue.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            tsbCgiHue.Text = "Färben";
+            tsbCgiHue.ToolTipText = "Klick färbt das Static mit der Hue (rechts)";
+            tsbCgiHue.Name = "tsbCgiHue";
+            tsbCgiHue.Click += CgiTool_Click;
+            // 
+            // tssCgi2
+            // 
+            tssCgi2.Name = "tssCgi2";
+            // 
+            // tsbCgiUndo
+            // 
+            tsbCgiUndo.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            tsbCgiUndo.Text = "Rückgängig";
+            tsbCgiUndo.Name = "tsbCgiUndo";
+            tsbCgiUndo.Click += TsbCgiUndo_Click;
+            // 
+            // tsbCgiRedo
+            // 
+            tsbCgiRedo.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            tsbCgiRedo.Text = "Wiederholen";
+            tsbCgiRedo.Name = "tsbCgiRedo";
+            tsbCgiRedo.Click += TsbCgiRedo_Click;
+            // 
+            // tssCgi3
+            // 
+            tssCgi3.Name = "tssCgi3";
+            // 
+            // tsbCgiZoomIn
+            // 
+            tsbCgiZoomIn.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            tsbCgiZoomIn.Text = "Zoom +";
+            tsbCgiZoomIn.Name = "tsbCgiZoomIn";
+            tsbCgiZoomIn.Click += TsbCgiZoomIn_Click;
+            // 
+            // tsbCgiZoomOut
+            // 
+            tsbCgiZoomOut.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            tsbCgiZoomOut.Text = "Zoom −";
+            tsbCgiZoomOut.Name = "tsbCgiZoomOut";
+            tsbCgiZoomOut.Click += TsbCgiZoomOut_Click;
+            // 
+            // tsbCgiGrid
+            // 
+            tsbCgiGrid.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            tsbCgiGrid.Text = "Raster";
+            tsbCgiGrid.CheckOnClick = true;
+            tsbCgiGrid.Name = "tsbCgiGrid";
+            tsbCgiGrid.Click += TsbCgiView_Click;
+            // 
+            // tsbCgiStatics
+            // 
+            tsbCgiStatics.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            tsbCgiStatics.Text = "Statics";
+            tsbCgiStatics.ToolTipText = "Statics anzeigen";
+            tsbCgiStatics.CheckOnClick = true;
+            tsbCgiStatics.Name = "tsbCgiStatics";
+            tsbCgiStatics.Click += TsbCgiView_Click;
+            // 
+            // tsbCgiProblems
+            // 
+            tsbCgiProblems.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            tsbCgiProblems.Text = "Probleme";
+            tsbCgiProblems.ToolTipText = "Gefundene Probleme rot markieren";
+            tsbCgiProblems.CheckOnClick = true;
+            tsbCgiProblems.Name = "tsbCgiProblems";
+            tsbCgiProblems.Click += TsbCgiView_Click;
+            // 
+            // tslCgiMaxZ
+            // 
+            tslCgiMaxZ.Text = "Max Z:";
+            tslCgiMaxZ.Name = "tslCgiMaxZ";
+            // 
+            // tscCgiMaxZ
+            // 
+            tscCgiMaxZ.Size = new System.Drawing.Size(56, 25);
+            tscCgiMaxZ.Name = "tscCgiMaxZ";
+            tscCgiMaxZ.SelectedIndexChanged += TscCgiMaxZ_Changed;
+            tscCgiMaxZ.TextChanged += TscCgiMaxZ_Changed;
             // 
             // splitGenerator
             // 
@@ -2138,6 +2783,14 @@
             KeyDown += DragonMapStudioForm_KeyDown;
             ((System.ComponentModel.ISupportInitialize)numColorTableZoom).EndInit();
             ((System.ComponentModel.ISupportInitialize)picTilePreview).EndInit();
+            ((System.ComponentModel.ISupportInitialize)numCgiX).EndInit();
+            ((System.ComponentModel.ISupportInitialize)numCgiY).EndInit();
+            ((System.ComponentModel.ISupportInitialize)picCgiItem).EndInit();
+            ((System.ComponentModel.ISupportInitialize)numCgiHue).EndInit();
+            ((System.ComponentModel.ISupportInitialize)numCgiZOffset).EndInit();
+            ((System.ComponentModel.ISupportInitialize)picCgiMulti).EndInit();
+            ((System.ComponentModel.ISupportInitialize)numCgiMultiId).EndInit();
+            ((System.ComponentModel.ISupportInitialize)numCgiCliff).EndInit();
             ((System.ComponentModel.ISupportInitialize)gridBiomes).EndInit();
             ((System.ComponentModel.ISupportInitialize)picGenPreview).EndInit();
             ((System.ComponentModel.ISupportInitialize)gridGroups).EndInit();
@@ -2190,6 +2843,27 @@
             tabGenSettings.ResumeLayout(false);
             tabGenSettings.PerformLayout();
             tabGenOptions.ResumeLayout(false);
+            toolStripCgi.ResumeLayout(false);
+            toolStripCgi.PerformLayout();
+            panelCgiProblemsTop.ResumeLayout(false);
+            panelCgiProblemsTop.PerformLayout();
+            panelCgiMultiTop.ResumeLayout(false);
+            panelCgiMultiTop.PerformLayout();
+            panelCgiHueSwatch.ResumeLayout(false);
+            panelCgiHueSwatch.PerformLayout();
+            panelCgiItem.ResumeLayout(false);
+            panelCgiItem.PerformLayout();
+            tabCgiProblems.ResumeLayout(false);
+            tabCgiProblems.PerformLayout();
+            tabCgiSelection.ResumeLayout(false);
+            tabCgiSelection.PerformLayout();
+            tabCgiMulti.ResumeLayout(false);
+            tabCgiMulti.PerformLayout();
+            tabCgiItems.ResumeLayout(false);
+            tabCgiItems.PerformLayout();
+            grpCgiGoto.ResumeLayout(false);
+            grpCgiGoto.PerformLayout();
+            tabCgiSide.ResumeLayout(false);
             toolStripEditor.ResumeLayout(false);
             toolStripEditor.PerformLayout();
             panelSecondarySwatch.ResumeLayout(false);
@@ -2226,6 +2900,8 @@
             tabRules.PerformLayout();
             tabGenerator.ResumeLayout(false);
             tabGenerator.PerformLayout();
+            tabCgi.ResumeLayout(false);
+            tabCgi.PerformLayout();
             tabEditor.ResumeLayout(false);
             tabEditor.PerformLayout();
             tabColors.ResumeLayout(false);
@@ -2259,6 +2935,12 @@
             splitGenerator.Panel2.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)splitGenerator).EndInit();
             splitGenerator.ResumeLayout(false);
+            splitCgi.Panel1.ResumeLayout(false);
+            splitCgi.Panel1.PerformLayout();
+            splitCgi.Panel2.ResumeLayout(false);
+            splitCgi.Panel2.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)splitCgi).EndInit();
+            splitCgi.ResumeLayout(false);
             splitEditor.Panel1.ResumeLayout(false);
             splitEditor.Panel1.PerformLayout();
             splitEditor.Panel2.ResumeLayout(false);
@@ -2329,6 +3011,7 @@
         private System.Windows.Forms.TabControl tabMain;
         private System.Windows.Forms.TabPage tabColors;
         private System.Windows.Forms.TabPage tabEditor;
+        private System.Windows.Forms.TabPage tabCgi;
         private System.Windows.Forms.TabPage tabGenerator;
         private System.Windows.Forms.TabPage tabRules;
         private System.Windows.Forms.TabPage tabBuild;
@@ -2411,6 +3094,73 @@
         private System.Windows.Forms.ToolStripSeparator tssEd3;
         private System.Windows.Forms.ToolStripButton tsbUndo;
         private System.Windows.Forms.ToolStripButton tsbRedo;
+        private System.Windows.Forms.ToolStripSeparator tssEd4;
+        private System.Windows.Forms.ToolStripButton tsbCgiHere;
+        private System.Windows.Forms.SplitContainer splitCgi;
+        private UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls.IsoMapView isoView;
+        private System.Windows.Forms.TabControl tabCgiSide;
+        private System.Windows.Forms.GroupBox grpCgiGoto;
+        private UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls.MapNavigator cgiNavigator;
+        private System.Windows.Forms.Label lblCgiX;
+        private System.Windows.Forms.NumericUpDown numCgiX;
+        private System.Windows.Forms.Label lblCgiY;
+        private System.Windows.Forms.NumericUpDown numCgiY;
+        private System.Windows.Forms.Button btnCgiGoto;
+        private System.Windows.Forms.Button btnCgiToSelection;
+        private System.Windows.Forms.TabPage tabCgiItems;
+        private System.Windows.Forms.TabPage tabCgiMulti;
+        private System.Windows.Forms.TabPage tabCgiSelection;
+        private System.Windows.Forms.TabPage tabCgiProblems;
+        private System.Windows.Forms.ListView lstCgiItems;
+        private System.Windows.Forms.ColumnHeader colCgiItemId;
+        private System.Windows.Forms.ColumnHeader colCgiItemName;
+        private System.Windows.Forms.TextBox txtCgiFilter;
+        private System.Windows.Forms.Panel panelCgiItem;
+        private System.Windows.Forms.PictureBox picCgiItem;
+        private System.Windows.Forms.Label lblCgiItemId;
+        private System.Windows.Forms.TextBox txtCgiItemId;
+        private System.Windows.Forms.Label lblCgiHue;
+        private System.Windows.Forms.NumericUpDown numCgiHue;
+        private System.Windows.Forms.Panel panelCgiHueSwatch;
+        private System.Windows.Forms.Label lblCgiZ;
+        private System.Windows.Forms.NumericUpDown numCgiZOffset;
+        private System.Windows.Forms.CheckBox chkCgiStack;
+        private System.Windows.Forms.Label lblCgiItemInfo;
+        private System.Windows.Forms.PictureBox picCgiMulti;
+        private System.Windows.Forms.Panel panelCgiMultiTop;
+        private System.Windows.Forms.Label lblCgiMultiId;
+        private System.Windows.Forms.NumericUpDown numCgiMultiId;
+        private System.Windows.Forms.CheckBox chkCgiMultiInvisible;
+        private System.Windows.Forms.Label lblCgiMultiInfo;
+        private System.Windows.Forms.PropertyGrid propCgiSelection;
+        private System.Windows.Forms.Label lblCgiSelInfo;
+        private System.Windows.Forms.ListBox lstCgiProblems;
+        private System.Windows.Forms.Panel panelCgiProblemsTop;
+        private System.Windows.Forms.Label lblCgiCliff;
+        private System.Windows.Forms.NumericUpDown numCgiCliff;
+        private System.Windows.Forms.Button btnCgiScan;
+        private System.Windows.Forms.ToolStrip toolStripCgi;
+        private System.Windows.Forms.ToolStripButton tsbCgiBuild;
+        private System.Windows.Forms.ToolStripButton tsbCgiLoad;
+        private System.Windows.Forms.ToolStripButton tsbCgiSave;
+        private System.Windows.Forms.ToolStripButton tsbCgiSaveAs;
+        private System.Windows.Forms.ToolStripSeparator tssCgi1;
+        private System.Windows.Forms.ToolStripButton tsbCgiSelect;
+        private System.Windows.Forms.ToolStripButton tsbCgiPlace;
+        private System.Windows.Forms.ToolStripButton tsbCgiMulti;
+        private System.Windows.Forms.ToolStripButton tsbCgiDelete;
+        private System.Windows.Forms.ToolStripButton tsbCgiHue;
+        private System.Windows.Forms.ToolStripSeparator tssCgi2;
+        private System.Windows.Forms.ToolStripButton tsbCgiUndo;
+        private System.Windows.Forms.ToolStripButton tsbCgiRedo;
+        private System.Windows.Forms.ToolStripSeparator tssCgi3;
+        private System.Windows.Forms.ToolStripButton tsbCgiZoomIn;
+        private System.Windows.Forms.ToolStripButton tsbCgiZoomOut;
+        private System.Windows.Forms.ToolStripButton tsbCgiGrid;
+        private System.Windows.Forms.ToolStripButton tsbCgiStatics;
+        private System.Windows.Forms.ToolStripButton tsbCgiProblems;
+        private System.Windows.Forms.ToolStripLabel tslCgiMaxZ;
+        private System.Windows.Forms.ToolStripComboBox tscCgiMaxZ;
         private System.Windows.Forms.SplitContainer splitGenerator;
         private System.Windows.Forms.TabControl tabGenOptions;
         private System.Windows.Forms.TabPage tabGenSettings;
