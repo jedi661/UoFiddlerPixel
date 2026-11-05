@@ -66,9 +66,11 @@ Bearbeiten -> ""Karte prüfen (Log)"" und ""Karte automatisch reparieren"".
 * Lava im Original-Dragon funktioniert nicht zuverlässig.
 * Berge gehen IMMER vom Boden aus nach oben: Rock-Höhe = Höhe des Grases daneben + 20, 30 …
   Die Reparatur und der Generator rechnen das Berg-Profil relativ zum Boden.
-* Küste wie die Original-Karte (Build-Optionen ""6 Küste""): Ufer-Wasser gleichmäßig -15
-  (6 Tiles breit), Land fällt zum Wasser hin ab (-5, -2, 0 je Abstand), Ufer-Statics fest
-  auf z 0. Ersetzt die zufälligen -10/0-Höhen der Skripte (sonst Zacken / ""Zelte"").
+* Küste wie die Original-Karte (aus map0 ausgelesen, Build-Optionen ""6 Küste""):
+  Ufer-Wasser ist KEIN Wasser-Tile, sondern Meeresgrund (Tile 0064) auf -15 mit
+  Wasser-Statics (1797–179c) auf -5 darüber, 6 Tiles breit; der äußere Ring liegt auf -5
+  und schließt an das offene Wasser (a8–ab, -5) an. Strand: -3, -1, dann 0.
+  Ufer-Statics (1796, 17a9, 17ab, 179f …) liegen auf -5 = Wasserhöhe.
   Klippen-Küsten (Land höher als 10) bleiben unverändert.
 * Höhleneingänge: Gruppe 1d (Invisible Cave Entrance) am Bergrand; die Regel
   1d -> Berg (map/cave-enti2mountain.txt) aktiviert der Generator automatisch.
@@ -194,10 +196,11 @@ Edit -> ""Karte prüfen (Log)"" (check map) and ""Karte automatisch reparieren""
 * Lava did not work reliably in the original Dragon.
 * Mountains ALWAYS rise from the ground: rock height = height of the grass next to it + 20, 30 …
   Repair and generator calculate the mountain profile relative to the ground.
-* Coast like the original map (build options ""6 Küste""): shore water evenly -15 (6 tiles
-  wide), land falls towards the water (-5, -2, 0 by distance), shore statics fixed at z 0.
-  Replaces the random -10/0 heights of the scripts (zigzag / ""tents""). Cliff coasts (land
-  higher than 10) stay as they are.
+* Coast like the original map (read from map0, build options ""6 Küste""): shore water is
+  NOT a water tile but sea floor (tile 0064) at -15 with water statics (1797–179c) at -5 on
+  top, 6 tiles wide; the outer ring lies at -5 and joins the open water (a8–ab, -5).
+  Beach: -3, -1, then 0. Shore statics (1796, 17a9, 17ab, 179f …) lie at -5 = water level.
+  Cliff coasts (land higher than 10) stay as they are.
 * Cave entrances: group 1d (invisible cave entrance) at the mountain border; the generator
   activates the rule 1d -> mountain (map/cave-enti2mountain.txt) automatically.
 

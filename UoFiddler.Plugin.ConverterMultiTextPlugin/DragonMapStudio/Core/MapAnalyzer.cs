@@ -79,8 +79,27 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
 
         public static string Analyze(MapData map, Rectangle area, string source, IProgress<int> progress, CancellationToken cancel)
         {
-            bool[] isWater = WaterTable();
+            bool[] isWaterTile = WaterTable();
             int w = map.Width, h = map.Height, n = w * h;
+            // a cell is water when its land tile is wet OR it is covered by water statics (0x1796–0x17B2, original coasts)
+            var waterCell = new bool[n];
+            var floorUnderWater = new Stat();
+            for (int i = 0; i < n; i++)
+            {
+                waterCell[i] = isWaterTile[map.Tiles[i]];
+            }
+            foreach (StaticItem s in map.AllStatics())
+            {
+                if (s.Id >= 0x1796 && s.Id <= 0x17B2)
+                {
+                    int i = s.Y * w + s.X;
+                    if (!isWaterTile[map.Tiles[i]] && !waterCell[i])
+                    {
+                        floorUnderWater.Add(map.Z[i]);
+                    }
+                    waterCell[i] = true;
+                }
+            }
             var sb = new StringBuilder();
             sb.AppendLine("==========================================================================");
             sb.AppendLine(" Dragon Map Studio – Karten-Analyse / map analysis");
@@ -94,7 +113,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             var q = new Queue<int>();
             for (int i = 0; i < n; i++)
             {
-                bool wi = isWater[map.Tiles[i]];
+                bool wi = waterCell[i];
                 // a tile is at distance 1 when an 8-neighbour has the other kind
                 int x = i % w, y = i / w;
                 for (int dy = -1; dy <= 1 && dist[i] == 255; dy++)
@@ -102,7 +121,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                     for (int dx = -1; dx <= 1; dx++)
                     {
                         int nx = x + dx, ny = y + dy;
-                        if (nx >= 0 && ny >= 0 && nx < w && ny < h && isWater[map.Tiles[ny * w + nx]] != wi)
+                        if (nx >= 0 && ny >= 0 && nx < w && ny < h && waterCell[ny * w + nx] != wi)
                         {
                             dist[i] = 1;
                             q.Enqueue(i);
@@ -123,7 +142,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                 {
                     continue;
                 }
-                bool wi = isWater[map.Tiles[i]];
+                bool wi = waterCell[i];
                 int x = i % w, y = i / w;
                 for (int dy = -1; dy <= 1; dy++)
                 {
@@ -135,7 +154,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                             continue;
                         }
                         int j = ny * w + nx;
-                        if (dist[j] == 255 && isWater[map.Tiles[j]] == wi)
+                        if (dist[j] == 255 && waterCell[j] == wi)
                         {
                             dist[j] = (byte)(dist[i] + 1);
                             q.Enqueue(j);
@@ -159,7 +178,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                 ushort id = map.Tiles[i];
                 int z = map.Z[i];
                 int d = dist[i] == 255 ? 0 : dist[i];
-                if (isWater[id])
+                if (waterCell[i])
                 {
                     if (d > 0)
                     {
@@ -187,7 +206,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                 }
                 lt.Add(z);
                 int x = i % w;
-                if (x + 1 < w && !isWater[id] && !isWater[map.Tiles[i + 1]])
+                if (x + 1 < w && !waterCell[i] && !waterCell[i + 1])
                 {
                     steps.Add(Math.Abs(map.Z[i + 1] - z));
                 }
@@ -210,6 +229,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             {
                 sb.AppendLine($"d={d,2}: {waterByDist[d]}");
             }
+            sb.AppendLine();
+            sb.AppendLine("--- Meeresgrund unter Wasser-Statics / sea floor below water statics: land z ---");
+            sb.AppendLine(floorUnderWater.ToString());
+            sb.AppendLine("(Wasser = nasses Land-Tile ODER Wasser-Static 1796–17b2 / water = wet land tile OR water static)");
             sb.AppendLine();
             sb.AppendLine("--- Ufer-Tiles (Land direkt am Wasser) / shore tiles (land next to water): id name : z ---");
             foreach (KeyValuePair<ushort, Stat> kv in shoreTiles.OrderByDescending(k => k.Value.N).Take(40))

@@ -120,7 +120,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         [Browsable(false)]
         public int SettingsVersion { get; set; }
 
-        public const int CurrentSettingsVersion = 5;
+        public const int CurrentSettingsVersion = 6;
 
         // ------------------------------------------------------------------ storage
 
@@ -205,6 +205,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                 Build.Fix.SkipGroups = string.IsNullOrWhiteSpace(Build.Fix.SkipGroups) ? "1d" : Build.Fix.SkipGroups;
                 Build.CoastProfile = true;
                 Build.CoastStaticFixed = true;
+                // version 6: values from the original map0 (map analysis)
+                Build.CoastStaticZ = -5;
+                Build.CoastLandHeights = "-3 -1 0";
+                Build.CoastWaterWidth = 6;
+                Build.CoastWaterZ = -15;
                 SettingsVersion = CurrentSettingsVersion;
             }
             RecentMaps ??= new List<string>();

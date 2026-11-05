@@ -112,26 +112,38 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         [Category("3 Details"), DisplayName("Küste glätten: Durchgänge")]
         public int SmoothCoastPasses { get; set; } = 2;
 
-        [Category("6 Küste"), DisplayName("Küsten-Profil an"), Description("Wie die Original-Karte: Land fällt zum Wasser hin in Stufen ab, Ufer-Wasser liegt gleichmäßig tief. Ersetzt die zufälligen -10/0-Höhen der Skripte.")]
+        [Category("6 Küste"), DisplayName("Küsten-Profil an"), Description("Küste wie die Original-Karte (map0 ausgewertet): Meeresgrund-Tiles auf -15 mit Wasser-Statics auf -5 darüber, äußerer Rand auf -5, Strand flach zum Wasser. Ersetzt die zufälligen -10/0-Höhen der Skripte.")]
         public bool CoastProfile { get; set; } = true;
 
         [Category("6 Küste"), DisplayName("Land-Höhen zum Wasser"), Description("Höchste Höhe der Land-Tiles in 1, 2, 3 … Tiles Abstand zum Wasser (Leerzeichen getrennt).")]
-        public string CoastLandHeights { get; set; } = "-5 -2 0";
+        public string CoastLandHeights { get; set; } = "-3 -1 0";
 
         [Category("6 Küste"), DisplayName("Nur flache Küsten"), Description("Land höher als dieser Wert wird nicht abgesenkt (Klippen-Küsten bleiben).")]
         public int CoastMaxLandZ { get; set; } = 10;
 
-        [Category("6 Küste"), DisplayName("Ufer-Wasser Höhe"), Description("Höhe des Wassers in Küstennähe (Original-Karte: -15).")]
+        [Category("6 Küste"), DisplayName("Meeresgrund Höhe"), Description("Höhe des Meeresgrunds unter dem Ufer-Wasser (Original map0: -15 bei 88 %).")]
         public int CoastWaterZ { get; set; } = -15;
 
-        [Category("6 Küste"), DisplayName("Ufer-Wasser Breite"), Description("So viele Tiles vom Land aus bekommt das Wasser die Ufer-Höhe (0 = aus).")]
+        [Category("6 Küste"), DisplayName("Ufer-Wasser Breite"), Description("So viele Tiles vom Land aus wird das Wasser zu Meeresgrund + Wasser-Statics (Original: 6). 0 = aus. Der äußerste Ring liegt auf Wasserhöhe und schließt an das offene Wasser an.")]
         public int CoastWaterWidth { get; set; } = 6;
+
+        [Category("6 Küste"), DisplayName("Meeresgrund-Tiles"), Description("Land-Tile(s) des Meeresgrunds, hex (Original map0: 0064).")]
+        public string SeaFloorTiles { get; set; } = "0064";
+
+        [Category("6 Küste"), DisplayName("Wasser-Statics setzen"), Description("Auf den Meeresgrund kommen Wasser-Statics (Original: 1797–179c auf z -5), sonst sieht man einen braunen Graben.")]
+        public bool CoastWaterStatics { get; set; } = true;
+
+        [Category("6 Küste"), DisplayName("Wasser-Statics IDs"), Description("Zufällig gewählte Wasser-Statics (hex).")]
+        public string CoastWaterStaticIds { get; set; } = "1797 1798 1799 179a 179b 179c";
+
+        [Category("6 Küste"), DisplayName("Wasserhöhe"), Description("Höhe der Wasser-Oberfläche (Wasser-Statics, äußerer Ring; Original: -5).")]
+        public int WaterSurfaceZ { get; set; } = -5;
 
         [Category("6 Küste"), DisplayName("Ufer-Statics feste Höhe"), Description("Statics der Wasser-Übergänge (water2x / x2water) auf eine feste Höhe setzen.")]
         public bool CoastStaticFixed { get; set; } = true;
 
-        [Category("6 Küste"), DisplayName("Ufer-Statics Höhe"), Description("Feste Höhe der Ufer-Statics (Standard 0).")]
-        public int CoastStaticZ { get; set; }
+        [Category("6 Küste"), DisplayName("Ufer-Statics Höhe"), Description("Feste Höhe der Ufer-Statics (Original map0: 1796, 17a9, 17ab, 179f … liegen auf -5 = Wasserhöhe).")]
+        public int CoastStaticZ { get; set; } = -5;
 
         [Category("3 Details"), DisplayName("Doppelte Statics entfernen"), Description("Gleiche ID an gleicher Stelle und Höhe nur einmal schreiben.")]
         public bool RemoveDuplicateStatics { get; set; } = true;
@@ -335,6 +347,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             if (_o.ApplyStaticTransitions && _o.WriteStatics)
             {
                 ApplyTransitions(TransitionLayer.Static, result, progress, 45, 60, cancel);
+            }
+
+            long waterStatics = AddCoastWaterStatics();
+            if (waterStatics > 0)
+            {
+                _log($"Wasser-Statics auf dem Meeresgrund: {waterStatics:N0}");
             }
 
             // 5) items
@@ -582,6 +600,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                         int baseZ = _o.StaticZ == StaticZMode.Cell ? _z[i] : SourceGroupZ(x, y, cr.Rule, _o.StaticZ == StaticZMode.SourceHighest);
                         bool coastRule = _o.CoastStaticFixed && (cr.Rule.GroupA == WaterGroup || cr.Rule.GroupB == WaterGroup);
                         int sz = coastRule ? _o.CoastStaticZ : baseZ + RandomZ(p);
+                        if (coastRule)
+                        {
+                            _hasCoastStatic ??= new bool[_w * _h];
+                            _hasCoastStatic[i] = true;
+                        }
                         if (_o.StaticMode == StaticTileMode.RandomOne)
                         {
                             AddStatic(ids[_rnd.Next(ids.Length)], x, y, sz, 0);
@@ -710,6 +733,34 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
 
         private int WaterGroup => _o.Fix?.WaterGroup ?? 2;
 
+        private bool[] _coastBand;
+        private bool[] _hasCoastStatic;
+
+        /// <summary>Water statics on the sea floor band, except where a coast transition static already lies.</summary>
+        private long AddCoastWaterStatics()
+        {
+            if (_coastBand == null || !_o.CoastWaterStatics)
+            {
+                return 0;
+            }
+            ushort[] ids = HexList.Parse(_o.CoastWaterStaticIds);
+            if (ids.Length == 0)
+            {
+                return 0;
+            }
+            long count = 0;
+            for (int i = 0; i < _coastBand.Length; i++)
+            {
+                if (_coastBand[i] && (_hasCoastStatic == null || !_hasCoastStatic[i]))
+                {
+                    AddStatic(ids[_rnd.Next(ids.Length)], i % _w, i / _w, _o.WaterSurfaceZ, 0);
+                    _occupied[i] = true;
+                    count++;
+                }
+            }
+            return count;
+        }
+
         private HashSet<int> _skipGroups;
 
         private bool SkipGroup(int g)
@@ -798,14 +849,25 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             Bfs(qLand, distToLand);
             cancel.ThrowIfCancellationRequested();
 
+            ushort[] floor = HexList.Parse(_o.SeaFloorTiles);
             long landChanged = 0, waterChanged = 0;
             for (int i = 0; i < n; i++)
             {
                 if (_group[i] == water)
                 {
-                    if (_o.CoastWaterWidth > 0 && distToLand[i] <= _o.CoastWaterWidth && _z[i] != _o.CoastWaterZ)
+                    int dl = distToLand[i];
+                    if (_o.CoastWaterWidth > 0 && dl >= 1 && dl <= _o.CoastWaterWidth)
                     {
-                        _z[i] = ClampZ(_o.CoastWaterZ);
+                        // like the original map: sea floor below, water statics on the surface;
+                        // the outermost ring lies at the water surface and joins the open water
+                        bool rim = dl == _o.CoastWaterWidth;
+                        _z[i] = ClampZ(rim ? _o.WaterSurfaceZ : _o.CoastWaterZ);
+                        if (floor.Length > 0)
+                        {
+                            _tile[i] = floor.Length == 1 ? floor[0] : floor[_rnd.Next(floor.Length)];
+                        }
+                        _coastBand ??= new bool[n];
+                        _coastBand[i] = true;
                         waterChanged++;
                     }
                     continue;

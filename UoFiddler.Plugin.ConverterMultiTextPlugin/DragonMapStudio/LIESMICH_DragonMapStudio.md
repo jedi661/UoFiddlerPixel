@@ -311,3 +311,23 @@ Mit markiertem Bereich zusätzlich ein Raster (Höhe, Land-ID, Statics). **Diese
 schicken** – dann stelle ich Küsten-Profil, Wellen-Höhe und Berg-Regeln genau auf die Originalwerte ein.
 
 Außerdem: Höhleneingänge (1d) erscheinen nicht mehr als „Regel fehlt“ im Log (die offene Seite ist gewollt).
+
+---
+
+## Version 6: Küste nach der Original-map0
+
+Ausgewertet mit „Karte analysieren“ auf der Original-`map0.mul` (7168×4096, 2,79 Mio. Statics):
+
+| Original map0 | Bedeutung | Umsetzung (Build-Optionen „6 Küste“) |
+|---|---|---|
+| Land-Tile `0064` 564 000×, 88 % auf z −15, in 1–6 Tiles Abstand zum offenen Wasser | Ufer-Wasser ist **Meeresgrund**, kein Wasser-Tile | Wasser in 1–6 Tiles Abstand zum Land → Tile `0064`, z −15 (äußerer Ring −5) |
+| Statics `1797`–`179c` je ~100 000×, z −5, 10 über dem Land | **Wasser-Statics** liegen auf dem Grund | auf jedes dieser Tiles ein zufälliges `1797`–`179c` auf z −5 (nicht dort, wo schon ein Ufer-Static liegt) |
+| `1796`, `17a9`, `17ab`, `179f`, `17a0` … abs z −5 | Ufer-Statics auf **Wasserhöhe** | „Ufer-Statics Höhe“ = −5 (vorher 0) |
+| offenes Wasser `a8`–`ab` z −5 (97 %) | bleibt | bleibt |
+| Strand nach dem Grund: 0, −1…−3 | flacher Strand | „Land-Höhen zum Wasser“ = −3 −1 0 |
+
+Vergleich gebaute 2048²-Karte mit derselben Analyse: Meeresgrund −15 (77 %), Wasser-Statics +10 über dem Grund (100 %),
+Strand −3/−1/0 – passt zum Original. Der braune „Graben“ (Tile `0066` von `map2/water2x` ohne Wasser darüber)
+ist dadurch abgedeckt.
+
+Die Analyse wertet Zellen mit Wasser-Statics jetzt als Wasser und zeigt zusätzlich die Höhe des Meeresgrunds.
