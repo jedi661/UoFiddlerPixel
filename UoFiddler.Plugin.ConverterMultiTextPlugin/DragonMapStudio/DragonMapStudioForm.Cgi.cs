@@ -270,14 +270,15 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                 return;
             }
             string file = dlg.FileName;
-            MapSizePreset size = MulMapIO.GuessSize(file);
+            int num = MulMapIO.GuessMapNumber(file);
+            MapSizePreset size = MulMapIO.GuessSize(file, _map?.Width ?? 0, _map?.Height ?? 0, num);
+            if (size == null)
+            {
+                MessageBox.Show(this, "Die Kartengröße passt zu keiner bekannten Größe. Bitte im Reiter 'MUL / UOP erzeugen' unter 'MUL / UOP → BMP' Breite und Höhe einstellen – diese Werte werden benutzt.",
+                    Text, MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
             int w = size?.Width ?? (int)numM2BWidth.Value / 8 * 8;
             int h = size?.Height ?? (int)numM2BHeight.Value / 8 * 8;
-            if (size == null && file.EndsWith(".uop", StringComparison.OrdinalIgnoreCase) == false)
-            {
-                SetStatus($"Größe nicht erkannt – benutze {w}×{h} (Reiter MUL/UOP → BMP).");
-            }
-            int num = MulMapIO.GuessMapNumber(file);
             RunBusy("Karte laden", (progress, token) =>
             {
                 MapData data = MapData.LoadFiles(file, w, h, num, out string info);

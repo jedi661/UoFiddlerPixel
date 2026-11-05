@@ -284,3 +284,30 @@ Land setzen, Höhe +, Höhe −, Höhe =, Glätten (Radius, Schritt), Rechtsklic
 
 Einstellungen werden beim ersten Start auf Version 4 umgestellt (StaticZ = SourceLowest, Küste glätten an,
 Gebirgshöhen 15–70 über Boden). / Settings are migrated to version 4 on first start.
+
+---
+
+## Version 5: Küste wie das Original, Höhen-Analyse, Größen-Erkennung
+
+**Dein CGI-Log:** Alle 2 051 „Steilkanten“ lagen genau an 8er-Blockgrenzen (x mod 8 = 7). Ursache: Eine
+2048×2048-MUL hat keine Standardgröße, die CGI-Ansicht hat beim Laden 7168×4096 angenommen und die Blöcke an
+falsche Stellen gelegt. **Behoben:** Die Größe kommt jetzt aus Dateigröße + offener Editor-Karte (quadratisch,
+übliche Höhen; auch für UOP). Die Steilkanten in diesem Log und vermutlich auch die 2 949 „im Boden“ sind dadurch nicht echt.
+
+**Küste (Build-Optionen „6 Küste“, Standard an):**
+
+| | vorher | jetzt (wie Original-Bilder) |
+|---|---|---|
+| Wasser am Ufer | −5 / −15 zufällig, 1 Tile breit | gleichmäßig −15, 6 Tiles breit |
+| Land am Wasser | −10 oder 0 (Zickzack) | −5, dann −2, dann 0 (Abstand 1, 2, 3) |
+| Ufer-Statics (Wellen) | Wasserhöhe + 10 | fest z 0 |
+
+Klippen-Küsten (Land > 10) bleiben. Alle Werte sind einstellbar.
+
+**„Karte analysieren (Höhen-Log)“** (CGI-Ansicht → Probleme): lädt man die **Original-map0.mul**, schreibt das
+Werkzeug `map_analysis_log.txt` mit: Land-Höhe nach Abstand zum Wasser, Wasser-Höhe nach Abstand zum Land,
+häufigste Ufer-Tiles, Statics an der Küste (z absolut und über Land), Höhensprünge, Land-Tiles mit Höhen.
+Mit markiertem Bereich zusätzlich ein Raster (Höhe, Land-ID, Statics). **Diese Datei aus dem Original bitte
+schicken** – dann stelle ich Küsten-Profil, Wellen-Höhe und Berg-Regeln genau auf die Originalwerte ein.
+
+Außerdem: Höhleneingänge (1d) erscheinen nicht mehr als „Regel fehlt“ im Log (die offene Seite ist gewollt).

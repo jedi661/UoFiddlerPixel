@@ -242,15 +242,75 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             return 0;
         }
 
-        /// <summary>Guesses the size from the MUL file length (null if unknown).</summary>
-        public static MapSizePreset GuessSize(string path)
+        /// <summary>
+        /// Size of a map file: known client sizes, the preferred size (e.g. the map open in the editor),
+        /// a square map, or a common height. Works for MUL and UOP (null if nothing fits).
+        /// </summary>
+        public static MapSizePreset GuessSize(string path, int preferWidth = 0, int preferHeight = 0, int mapNumber = -1)
         {
-            if (!File.Exists(path) || path.EndsWith(".uop", StringComparison.OrdinalIgnoreCase))
+            if (!File.Exists(path))
             {
                 return null;
             }
-            long len = new FileInfo(path).Length;
-            return MapSizePreset.All.FirstOrDefault(p => p.MulSize == len);
+            long blocks = BlockCount(path, mapNumber);
+            return FromBlocks(blocks, preferWidth, preferHeight);
+        }
+
+        /// <summary>Number of 8×8 blocks in map#.mul / map#LegacyMUL.uop.</summary>
+        public static long BlockCount(string path, int mapNumber = -1)
+        {
+            if (!path.EndsWith(".uop", StringComparison.OrdinalIgnoreCase))
+            {
+                return new FileInfo(path).Length / BlockSize;
+            }
+            string temp = Path.Combine(Path.GetTempPath(), $"dms_size_{Guid.NewGuid():N}.mul");
+            try
+            {
+                LegacyMulFileConverter.FromUop(path, temp, null, FileType.MapLegacyMul, mapNumber >= 0 ? mapNumber : GuessMapNumber(path));
+                return new FileInfo(temp).Length / BlockSize;
+            }
+            catch (Exception)
+            {
+                return 0;
+            }
+            finally
+            {
+                if (File.Exists(temp))
+                {
+                    File.Delete(temp);
+                }
+            }
+        }
+
+        public static MapSizePreset FromBlocks(long blocks, int preferWidth = 0, int preferHeight = 0)
+        {
+            if (blocks <= 0)
+            {
+                return null;
+            }
+            MapSizePreset preset = MapSizePreset.All.FirstOrDefault(p => (long)(p.Width / 8) * (p.Height / 8) == blocks);
+            if (preferWidth > 0 && preferHeight > 0 && (long)(preferWidth / 8) * (preferHeight / 8) == blocks)
+            {
+                return new MapSizePreset("wie Editor-Karte", preferWidth / 8 * 8, preferHeight / 8 * 8);
+            }
+            if (preset != null)
+            {
+                return preset;
+            }
+            long side = (long)Math.Round(Math.Sqrt(blocks));
+            if (side * side == blocks)
+            {
+                return new MapSizePreset("quadratisch", (int)side * 8, (int)side * 8);
+            }
+            foreach (int h in new[] { 4096, 2048, 1600, 1448, 1024, 512, 256 })
+            {
+                int bh = h / 8;
+                if (blocks % bh == 0 && blocks / bh * 8 >= h / 2)
+                {
+                    return new MapSizePreset("aus Dateigröße", (int)(blocks / bh * 8), h);
+                }
+            }
+            return null;
         }
 
         private static void ReplaceFile(string tmp, string target)

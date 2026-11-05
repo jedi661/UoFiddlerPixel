@@ -120,7 +120,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         [Browsable(false)]
         public int SettingsVersion { get; set; }
 
-        public const int CurrentSettingsVersion = 4;
+        public const int CurrentSettingsVersion = 5;
 
         // ------------------------------------------------------------------ storage
 
@@ -203,6 +203,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                 Generator.MinMountainAltitude = 15;
                 Generator.MaxMountainAltitude = 70;
                 Build.Fix.SkipGroups = string.IsNullOrWhiteSpace(Build.Fix.SkipGroups) ? "1d" : Build.Fix.SkipGroups;
+                Build.CoastProfile = true;
+                Build.CoastStaticFixed = true;
                 SettingsVersion = CurrentSettingsVersion;
             }
             RecentMaps ??= new List<string>();

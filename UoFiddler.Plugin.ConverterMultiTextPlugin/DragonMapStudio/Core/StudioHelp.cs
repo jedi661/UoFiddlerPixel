@@ -66,9 +66,10 @@ Bearbeiten -> ""Karte prüfen (Log)"" und ""Karte automatisch reparieren"".
 * Lava im Original-Dragon funktioniert nicht zuverlässig.
 * Berge gehen IMMER vom Boden aus nach oben: Rock-Höhe = Höhe des Grases daneben + 20, 30 …
   Die Reparatur und der Generator rechnen das Berg-Profil relativ zum Boden.
-* Küste: sand2water / grass2water senken Kanten auf -10, Ecken bleiben 0 -> ""Küste glätten""
-  (Build-Option) gleicht die Ufer-Höhen aus. Ufer-Wellen (x2water, +10) sitzen auf der
-  tiefsten Wasserhöhe daneben (Option ""Static-Z Basis"" = SourceLowest).
+* Küste wie die Original-Karte (Build-Optionen ""6 Küste""): Ufer-Wasser gleichmäßig -15
+  (6 Tiles breit), Land fällt zum Wasser hin ab (-5, -2, 0 je Abstand), Ufer-Statics fest
+  auf z 0. Ersetzt die zufälligen -10/0-Höhen der Skripte (sonst Zacken / ""Zelte"").
+  Klippen-Küsten (Land höher als 10) bleiben unverändert.
 * Höhleneingänge: Gruppe 1d (Invisible Cave Entrance) am Bergrand; die Regel
   1d -> Berg (map/cave-enti2mountain.txt) aktiviert der Generator automatisch.
 
@@ -98,6 +99,11 @@ Zeigt die gebaute Karte wie der Client (Land-Art, Texturen an Hängen, Statics m
 * Tasten: Pfeile = Auswahl verschieben (ohne Auswahl: Ansicht), Strg+Pfeil = Kopie daneben,
   Bild↑/↓ = Z ±1 (Umschalt ±5), Entf, H = färben, Esc, Strg+C/V, Strg+A, Strg+Z/Y.
 * Probleme: ""Ganze Karte prüfen"", ""Doppelte entfernen"", ""Log speichern"".
+* ""Karte analysieren (Höhen-Log)"" liest Höhen aus (z. B. der Original-map0.mul):
+  Land-Höhe nach Abstand zum Wasser, Wasser-Höhe nach Abstand zum Land, Ufer-Tiles,
+  Statics an der Küste (absolut und über Land), Höhensprünge, Land-Tiles. Mit ""Bereich""
+  markiert: zusätzlich ein Raster mit Höhe, Land-ID und Statics. -> map_analysis_log.txt
+* Die Kartengröße beim Laden wird aus der Dateigröße bestimmt (auch 2048×2048 usw.).
 * ""Höhen"" blendet die Land-Höhe jedes Tiles ein (auch im Karten-Editor ab Zoom 12).
 * Zweite Leiste ""Land"": Land setzen (Tile/Textur aus dem Reiter Land), Höhe +, Höhe −,
   Höhe = (feste Höhe), Glätten – mit Radius und Schritt; ziehen = ein Rückgängig-Schritt.
@@ -188,9 +194,10 @@ Edit -> ""Karte prüfen (Log)"" (check map) and ""Karte automatisch reparieren""
 * Lava did not work reliably in the original Dragon.
 * Mountains ALWAYS rise from the ground: rock height = height of the grass next to it + 20, 30 …
   Repair and generator calculate the mountain profile relative to the ground.
-* Coast: sand2water / grass2water lower edges to -10, corners stay 0 -> ""Küste glätten""
-  (build option) evens out the shore heights. Shore waves (x2water, +10) sit on the lowest
-  water height next to them (option ""Static-Z Basis"" = SourceLowest).
+* Coast like the original map (build options ""6 Küste""): shore water evenly -15 (6 tiles
+  wide), land falls towards the water (-5, -2, 0 by distance), shore statics fixed at z 0.
+  Replaces the random -10/0 heights of the scripts (zigzag / ""tents""). Cliff coasts (land
+  higher than 10) stay as they are.
 * Cave entrances: group 1d (invisible cave entrance) at the mountain border; the generator
   activates the rule 1d -> mountain (map/cave-enti2mountain.txt) automatically.
 
@@ -220,6 +227,11 @@ Shows the built map like the client (land art, textures on slopes, statics with 
 * Keys: arrows = move selection (no selection: view), Ctrl+arrow = copy next to it,
   PgUp/PgDn = Z ±1 (Shift ±5), Del, H = colour, Esc, Ctrl+C/V, Ctrl+A, Ctrl+Z/Y.
 * Problems: ""Ganze Karte prüfen"", ""Doppelte entfernen"" (remove duplicates), ""Log speichern"".
+* ""Karte analysieren (Höhen-Log)"" reads the heights (e.g. of the original map0.mul):
+  land z by distance to water, water z by distance to land, shore tiles, statics at the coast
+  (absolute and above land), height steps, land tiles. With a marked ""Bereich"": also a grid
+  of height, land id and statics. -> map_analysis_log.txt
+* The map size on loading is taken from the file size (also 2048×2048 etc.).
 * ""Höhen"" shows the land height of every tile (also in the map editor from zoom 12).
 * Second bar ""Land"": set land (tile / texture from the Land tab), height +, height −,
   height = (fixed), smooth – with radius and step; one drag = one undo step.

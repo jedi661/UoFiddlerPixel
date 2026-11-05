@@ -112,6 +112,27 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         [Category("3 Details"), DisplayName("Küste glätten: Durchgänge")]
         public int SmoothCoastPasses { get; set; } = 2;
 
+        [Category("6 Küste"), DisplayName("Küsten-Profil an"), Description("Wie die Original-Karte: Land fällt zum Wasser hin in Stufen ab, Ufer-Wasser liegt gleichmäßig tief. Ersetzt die zufälligen -10/0-Höhen der Skripte.")]
+        public bool CoastProfile { get; set; } = true;
+
+        [Category("6 Küste"), DisplayName("Land-Höhen zum Wasser"), Description("Höchste Höhe der Land-Tiles in 1, 2, 3 … Tiles Abstand zum Wasser (Leerzeichen getrennt).")]
+        public string CoastLandHeights { get; set; } = "-5 -2 0";
+
+        [Category("6 Küste"), DisplayName("Nur flache Küsten"), Description("Land höher als dieser Wert wird nicht abgesenkt (Klippen-Küsten bleiben).")]
+        public int CoastMaxLandZ { get; set; } = 10;
+
+        [Category("6 Küste"), DisplayName("Ufer-Wasser Höhe"), Description("Höhe des Wassers in Küstennähe (Original-Karte: -15).")]
+        public int CoastWaterZ { get; set; } = -15;
+
+        [Category("6 Küste"), DisplayName("Ufer-Wasser Breite"), Description("So viele Tiles vom Land aus bekommt das Wasser die Ufer-Höhe (0 = aus).")]
+        public int CoastWaterWidth { get; set; } = 6;
+
+        [Category("6 Küste"), DisplayName("Ufer-Statics feste Höhe"), Description("Statics der Wasser-Übergänge (water2x / x2water) auf eine feste Höhe setzen.")]
+        public bool CoastStaticFixed { get; set; } = true;
+
+        [Category("6 Küste"), DisplayName("Ufer-Statics Höhe"), Description("Feste Höhe der Ufer-Statics (Standard 0).")]
+        public int CoastStaticZ { get; set; }
+
         [Category("3 Details"), DisplayName("Doppelte Statics entfernen"), Description("Gleiche ID an gleicher Stelle und Höhe nur einmal schreiben.")]
         public bool RemoveDuplicateStatics { get; set; } = true;
 
@@ -299,7 +320,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                 ApplyTransitions(TransitionLayer.Map, result, progress, 15, 45, cancel);
             }
 
-            if (_o.SmoothCoast)
+            if (_o.CoastProfile)
+            {
+                (long land, long water) = ApplyCoastProfile(cancel);
+                _log($"Küsten-Profil: {land:N0} Land-Tiles, {water:N0} Wasser-Tiles angepasst.");
+            }
+            else if (_o.SmoothCoast)
             {
                 long smoothed = SmoothCoastHeights(cancel);
                 _log($"Küste geglättet: {smoothed:N0} Tile-Höhen angepasst.");
@@ -554,17 +580,18 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                         }
 
                         int baseZ = _o.StaticZ == StaticZMode.Cell ? _z[i] : SourceGroupZ(x, y, cr.Rule, _o.StaticZ == StaticZMode.SourceHighest);
+                        bool coastRule = _o.CoastStaticFixed && (cr.Rule.GroupA == WaterGroup || cr.Rule.GroupB == WaterGroup);
+                        int sz = coastRule ? _o.CoastStaticZ : baseZ + RandomZ(p);
                         if (_o.StaticMode == StaticTileMode.RandomOne)
                         {
-                            AddStatic(ids[_rnd.Next(ids.Length)], x, y, baseZ + RandomZ(p), 0);
+                            AddStatic(ids[_rnd.Next(ids.Length)], x, y, sz, 0);
                             applied++;
                         }
                         else
                         {
-                            int dz = RandomZ(p);
                             foreach (ushort id in ids)
                             {
-                                AddStatic(id, x, y, baseZ + dz, 0);
+                                AddStatic(id, x, y, sz, 0);
                                 applied++;
                             }
                         }
@@ -592,7 +619,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                             }
                         }
                         string key = null;
-                        if (directed.Contains((g << 8) | other))
+                        if (SkipGroup(g) || SkipGroup(other))
+                        {
+                            // e.g. invisible cave entrance: the open side has no transition on purpose
+                        }
+                        else if (directed.Contains((g << 8) | other))
                         {
                             key = $"Muster fehlt  {g:x2}->{other:x2} {TransitionPattern.MaskToPattern(mask)}";
                         }
@@ -675,6 +706,141 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                 return _z[y * _w + x];
             }
             return highest ? best : lowest;
+        }
+
+        private int WaterGroup => _o.Fix?.WaterGroup ?? 2;
+
+        private HashSet<int> _skipGroups;
+
+        private bool SkipGroup(int g)
+        {
+            if (_skipGroups == null)
+            {
+                _skipGroups = new HashSet<int>();
+                foreach (string t in (_o.Fix?.SkipGroups ?? "1d").Split(new[] { ' ', ',', ';' }, StringSplitOptions.RemoveEmptyEntries))
+                {
+                    if (HexList.TryParseHexByte(t, out int v))
+                    {
+                        _skipGroups.Add(v);
+                    }
+                }
+            }
+            return _skipGroups.Contains(g);
+        }
+
+        /// <summary>
+        /// Coast like the original map: land z capped by its distance to the water (e.g. -5, -2, 0),
+        /// water within CoastWaterWidth tiles of the land at CoastWaterZ. Uses 8-neighbour distances.
+        /// </summary>
+        private (long land, long water) ApplyCoastProfile(CancellationToken cancel)
+        {
+            var heights = new List<int>();
+            foreach (string t in (_o.CoastLandHeights ?? string.Empty).Split(new[] { ' ', ';', ',' }, StringSplitOptions.RemoveEmptyEntries))
+            {
+                if (int.TryParse(t, NumberStyles.Integer, CultureInfo.InvariantCulture, out int v))
+                {
+                    heights.Add(v);
+                }
+            }
+            int water = WaterGroup;
+            int maxDist = Math.Max(heights.Count, Math.Max(0, _o.CoastWaterWidth));
+            int n = _w * _h;
+            var distToWater = new int[n];
+            var distToLand = new int[n];
+            Array.Fill(distToWater, int.MaxValue);
+            Array.Fill(distToLand, int.MaxValue);
+            var qWater = new Queue<int>();
+            var qLand = new Queue<int>();
+            for (int i = 0; i < n; i++)
+            {
+                if (_group[i] == water)
+                {
+                    distToWater[i] = 0;
+                    qWater.Enqueue(i);
+                }
+                else
+                {
+                    distToLand[i] = 0;
+                    qLand.Enqueue(i);
+                }
+            }
+            void Bfs(Queue<int> q, int[] dist)
+            {
+                while (q.Count > 0)
+                {
+                    int i = q.Dequeue();
+                    if (dist[i] >= maxDist)
+                    {
+                        continue;
+                    }
+                    int x = i % _w, y = i / _w;
+                    for (int dy = -1; dy <= 1; dy++)
+                    {
+                        for (int dx = -1; dx <= 1; dx++)
+                        {
+                            int nx = x + dx, ny = y + dy;
+                            if (nx < 0 || ny < 0 || nx >= _w || ny >= _h)
+                            {
+                                continue;
+                            }
+                            int j = ny * _w + nx;
+                            if (dist[j] == int.MaxValue)
+                            {
+                                dist[j] = dist[i] + 1;
+                                q.Enqueue(j);
+                            }
+                        }
+                    }
+                }
+            }
+            Bfs(qWater, distToWater);
+            cancel.ThrowIfCancellationRequested();
+            Bfs(qLand, distToLand);
+            cancel.ThrowIfCancellationRequested();
+
+            long landChanged = 0, waterChanged = 0;
+            for (int i = 0; i < n; i++)
+            {
+                if (_group[i] == water)
+                {
+                    if (_o.CoastWaterWidth > 0 && distToLand[i] <= _o.CoastWaterWidth && _z[i] != _o.CoastWaterZ)
+                    {
+                        _z[i] = ClampZ(_o.CoastWaterZ);
+                        waterChanged++;
+                    }
+                    continue;
+                }
+                int d = distToWater[i];
+                if (d < 1 || d > heights.Count)
+                {
+                    continue;
+                }
+                int cap = heights[d - 1];
+                int z = _z[i];
+                if (z > _o.CoastMaxLandZ)
+                {
+                    continue; // cliff coast stays
+                }
+                int target;
+                if (d == 1)
+                {
+                    target = cap; // the tile at the water: always the same height (no zigzag)
+                }
+                else if (z < cap)
+                {
+                    target = cap; // dips from the scripts (-10) are filled
+                }
+                else
+                {
+                    target = cap + (z - cap) / 2; // softer slope towards the water
+                }
+                if (target != z)
+                {
+                    _z[i] = ClampZ(target);
+                    landChanged++;
+                }
+            }
+            return (landChanged, waterChanged);
         }
 
         /// <summary>Land cells next to water get the average height of the shore cells around them.</summary>

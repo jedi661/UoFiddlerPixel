@@ -226,6 +226,7 @@
             btnCgiScan = new System.Windows.Forms.Button();
             btnCgiRemoveDup = new System.Windows.Forms.Button();
             btnCgiSaveLog = new System.Windows.Forms.Button();
+            btnCgiAnalyze = new System.Windows.Forms.Button();
             toolStripCgiLand = new System.Windows.Forms.ToolStrip();
             tslCgiLandTools = new System.Windows.Forms.ToolStripLabel();
             tsbCgiLandSet = new System.Windows.Forms.ToolStripButton();
@@ -1993,8 +1994,9 @@
             panelCgiProblemsTop.Controls.Add(btnCgiScan);
             panelCgiProblemsTop.Controls.Add(btnCgiRemoveDup);
             panelCgiProblemsTop.Controls.Add(btnCgiSaveLog);
+            panelCgiProblemsTop.Controls.Add(btnCgiAnalyze);
             panelCgiProblemsTop.Dock = System.Windows.Forms.DockStyle.Top;
-            panelCgiProblemsTop.Size = new System.Drawing.Size(290, 92);
+            panelCgiProblemsTop.Size = new System.Drawing.Size(290, 122);
             panelCgiProblemsTop.Name = "panelCgiProblemsTop";
             // 
             // lblCgiCliff
@@ -2039,6 +2041,15 @@
             btnCgiSaveLog.UseVisualStyleBackColor = true;
             btnCgiSaveLog.Name = "btnCgiSaveLog";
             btnCgiSaveLog.Click += BtnCgiSaveLog_Click;
+            // 
+            // btnCgiAnalyze
+            // 
+            btnCgiAnalyze.Location = new System.Drawing.Point(4, 89);
+            btnCgiAnalyze.Size = new System.Drawing.Size(246, 25);
+            btnCgiAnalyze.Text = "Karte analysieren (Höhen-Log)";
+            btnCgiAnalyze.UseVisualStyleBackColor = true;
+            btnCgiAnalyze.Name = "btnCgiAnalyze";
+            btnCgiAnalyze.Click += BtnCgiAnalyze_Click;
             // 
             // toolStripCgiLand
             // 
@@ -3539,6 +3550,7 @@
         private System.Windows.Forms.Button btnCgiScan;
         private System.Windows.Forms.Button btnCgiRemoveDup;
         private System.Windows.Forms.Button btnCgiSaveLog;
+        private System.Windows.Forms.Button btnCgiAnalyze;
         private System.Windows.Forms.ToolStrip toolStripCgiLand;
         private System.Windows.Forms.ToolStripLabel tslCgiLandTools;
         private System.Windows.Forms.ToolStripButton tsbCgiLandSet;

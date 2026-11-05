@@ -863,10 +863,21 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             }
             txtM2BFile.Text = dlg.FileName;
             numM2BMapNo.Value = Math.Clamp(MulMapIO.GuessMapNumber(dlg.FileName), 0, 9);
-            MapSizePreset guess = MulMapIO.GuessSize(dlg.FileName);
+            MapSizePreset guess = MulMapIO.GuessSize(dlg.FileName, _map?.Width ?? 0, _map?.Height ?? 0, (int)numM2BMapNo.Value);
             if (guess != null)
             {
-                cmbM2BSize.SelectedItem = guess;
+                MapSizePreset known = MapSizePreset.All.FirstOrDefault(p => p.Width == guess.Width && p.Height == guess.Height);
+                if (known != null)
+                {
+                    cmbM2BSize.SelectedItem = known;
+                }
+                else
+                {
+                    cmbM2BSize.SelectedIndex = 0;
+                    numM2BWidth.Value = guess.Width;
+                    numM2BHeight.Value = guess.Height;
+                }
+                SetStatus($"Größe erkannt: {guess.Width}×{guess.Height} ({guess.Name})");
             }
         }
 

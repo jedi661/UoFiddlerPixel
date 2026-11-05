@@ -165,6 +165,24 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             SetStatus($"{changes.Count:N0} doppelte Statics entfernt (Rückgängig möglich).");
         }
 
+        /// <summary>Reads heights, coast, statics of the loaded map (e.g. the original map) into map_analysis_log.txt.</summary>
+        private void BtnCgiAnalyze_Click(object sender, EventArgs e)
+        {
+            if (_cgiMap == null)
+            {
+                MessageBox.Show(this, "Erst eine Karte laden (z. B. die Original-map0.mul mit 'MUL / UOP laden').", Text, MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+            MapData data = _cgiMap;
+            System.Drawing.Rectangle area = isoView.Area;
+            RunBusy("Karte analysieren", (progress, token) => MapAnalyzer.Analyze(data, area, data.Source, progress, token), text =>
+            {
+                string path = WriteLog("map_analysis_log.txt", text);
+                SetStatus("Analyse gespeichert: " + path + (area.IsEmpty ? "  (Tipp: mit 'Bereich' ein Stück markieren – dann kommt ein Höhen-Raster dazu)" : string.Empty));
+                Log("Analyse: " + path);
+            });
+        }
+
         private void BtnCgiSaveLog_Click(object sender, EventArgs e)
         {
             if (_cgiMap == null)
