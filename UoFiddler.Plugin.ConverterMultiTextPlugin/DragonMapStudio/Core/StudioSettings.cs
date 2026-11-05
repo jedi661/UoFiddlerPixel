@@ -44,6 +44,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
     /// <summary>All settings of the studio (JSON, %AppData%\UoFiddler\DragonMapStudio\settings.json).</summary>
     public sealed class StudioSettings
     {
+        [Category("0 Sprache / Language"), DisplayName("Sprache / Language / Langue"), Description("Sprache der Oberfläche: Deutsch, English, Français. Auch im Menü 'Sprache / Language / Langue'.")]
+        public UiLanguage Language { get; set; } = UiLanguage.Deutsch;
+
         [Category("1 Ordner"), DisplayName("Projekt-Ordner (Karten)"), Description("Hier speichert der Editor die Karten-BMPs; die Kartenliste zeigt diesen Ordner.")]
         [Editor(typeof(FolderNameEditor), typeof(UITypeEditor))]
         public string ProjectFolder { get; set; } = string.Empty;
@@ -67,6 +70,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         [Category("1 Ordner"), DisplayName("Regelsatz (JSON)"), Description("Eigenes Format mit allen Infos. Wenn gesetzt und vorhanden, wird es statt der Skripte geladen.")]
         [Editor(typeof(FileNameEditor), typeof(UITypeEditor))]
         public string RuleSetFile { get; set; } = string.Empty;
+
+        [Category("1 Ordner"), DisplayName("Vorlagen-Ordner (Gebäude / Böden)"), Description("Gebäude (UoFiddler-txt, UO Architect .uoa, .wsc, Sphere .scp) und eigene Vorlagen (.dmsv.json). Jeder Unterordner ist eine Kategorie. Standard: mitgelieferter Ordner Multis.")]
+        [Editor(typeof(FolderNameEditor), typeof(UITypeEditor))]
+        public string TemplateFolder { get; set; } = string.Empty;
 
         [Category("1 Ordner"), DisplayName("maptrans-Datei"), Description("maptrans.txt oder maptrans105.txt …")]
         public string MapTransFile { get; set; } = "maptrans.txt";
@@ -115,6 +122,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
 
         [Browsable(false)]
         public int BrushSize { get; set; } = 8;
+
+        /// <summary>Version of the settings file (for changed defaults).</summary>
+        [Browsable(false)]
+        public int SettingsVersion { get; set; }
+
+        public const int CurrentSettingsVersion = 6;
 
         // ------------------------------------------------------------------ storage
 
@@ -184,6 +197,28 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             Generator.Biomes ??= GeneratorSettings.CreateDefaultBiomes();
             Outline ??= new OutlineSettings();
             Build ??= new BuildOptions();
+            Build.Fix ??= new MapFixOptions();
+            if (SettingsVersion < CurrentSettingsVersion)
+            {
+                // version 3: defaults from the Dragon tutorial (one random static id per line, duplicates removed)
+                Build.StaticMode = StaticTileMode.RandomOne;
+                Build.RemoveDuplicateStatics = true;
+                Generator.SeparateBiomes = true;
+                Build.StaticZ = StaticZMode.SourceLowest;
+                Build.SmoothCoast = true;
+                // mountain heights are now relative to the ground
+                Generator.MinMountainAltitude = 15;
+                Generator.MaxMountainAltitude = 70;
+                Build.Fix.SkipGroups = string.IsNullOrWhiteSpace(Build.Fix.SkipGroups) ? "1d" : Build.Fix.SkipGroups;
+                Build.CoastProfile = true;
+                Build.CoastStaticFixed = true;
+                // version 6: values from the original map0 (map analysis)
+                Build.CoastStaticZ = -5;
+                Build.CoastLandHeights = "-3 -1 0";
+                Build.CoastWaterWidth = 6;
+                Build.CoastWaterZ = -15;
+                SettingsVersion = CurrentSettingsVersion;
+            }
             RecentMaps ??= new List<string>();
 
             string data = StudioPaths.DataFolder;
@@ -194,6 +229,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             if (string.IsNullOrWhiteSpace(ColorTableImage) || !File.Exists(ColorTableImage))
             {
                 ColorTableImage = data == null ? string.Empty : Path.Combine(data, "Addon", "IMod13_Colortable.bmp");
+            }
+            if (string.IsNullOrWhiteSpace(TemplateFolder) || !Directory.Exists(TemplateFolder))
+            {
+                TemplateFolder = data == null ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "DragonMapStudio", "Multis") : Path.Combine(data, "Multis");
             }
             string docs = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "DragonMapStudio");
             if (string.IsNullOrWhiteSpace(ProjectFolder))

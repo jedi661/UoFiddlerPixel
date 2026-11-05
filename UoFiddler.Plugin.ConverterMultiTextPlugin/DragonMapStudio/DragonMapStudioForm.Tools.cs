@@ -60,8 +60,21 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
 
         private void BtnGenPreview_Click(object sender, EventArgs e) => GeneratePreview();
 
+        /// <summary>Cave entrances need the rule 1d -> mountain (map/cave-enti2mountain.txt); activate it once.</summary>
+        private void EnsureCaveRule()
+        {
+            GeneratorSettings g = _settings.Generator;
+            if (g.CaveEntrances > 0 && _rules.EnsureCaveRule(g.CaveGroup, g.MountainGroup))
+            {
+                MarkRulesDirty();
+                BindRuleGrids();
+                Log($"Regel aktiviert: {g.CaveGroup:x2} → {g.MountainGroup:x2} map/cave-enti2mountain.txt (Höhleneingänge). Mit 'JSON speichern' oder 'Als Dragon-Skripte exportieren' dauerhaft machen.");
+            }
+        }
+
         private void GeneratePreview()
         {
+            EnsureCaveRule();
             DragonRuleSet rules = _rules;
             GeneratorSettings gs = _settings.Generator.Clone();
             if (gs.RandomSeed)
@@ -95,6 +108,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
 
         private void BtnGenToEditor_Click(object sender, EventArgs e)
         {
+            EnsureCaveRule();
             bool intoCurrent = _settings.Generator.UseCurrentMapSize && _map != null;
             if (!intoCurrent && !ConfirmDiscardMap())
             {
@@ -849,10 +863,21 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             }
             txtM2BFile.Text = dlg.FileName;
             numM2BMapNo.Value = Math.Clamp(MulMapIO.GuessMapNumber(dlg.FileName), 0, 9);
-            MapSizePreset guess = MulMapIO.GuessSize(dlg.FileName);
+            MapSizePreset guess = MulMapIO.GuessSize(dlg.FileName, _map?.Width ?? 0, _map?.Height ?? 0, (int)numM2BMapNo.Value);
             if (guess != null)
             {
-                cmbM2BSize.SelectedItem = guess;
+                MapSizePreset known = MapSizePreset.All.FirstOrDefault(p => p.Width == guess.Width && p.Height == guess.Height);
+                if (known != null)
+                {
+                    cmbM2BSize.SelectedItem = known;
+                }
+                else
+                {
+                    cmbM2BSize.SelectedIndex = 0;
+                    numM2BWidth.Value = guess.Width;
+                    numM2BHeight.Value = guess.Height;
+                }
+                SetStatus($"Größe erkannt: {guess.Width}×{guess.Height} ({guess.Name})");
             }
         }
 

@@ -87,6 +87,24 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                 }
             }
 
+            // transition files that no list uses (e.g. map/cave-enti2mountain.txt) are loaded too – nothing gets lost
+            foreach (string folder in new[] { "map", "map2", "map3", "statics", "statics2", "statics3" })
+            {
+                string dir = Path.Combine(scriptFolder, folder);
+                if (!Directory.Exists(dir))
+                {
+                    continue;
+                }
+                foreach (string f in Directory.GetFiles(dir, "*.txt").OrderBy(f => f, StringComparer.OrdinalIgnoreCase))
+                {
+                    string rel = DragonRuleSet.NormalizePath(folder + "/" + Path.GetFileName(f));
+                    if (set.FindTransitionFile(rel) == null)
+                    {
+                        set.TransitionFiles.Add(ReadTransitionFile(set, f, rel));
+                    }
+                }
+            }
+
             ReadItems(set, scriptFolder, Find(scriptFolder, "items.txt"));
             ReadUnevenly(set, Find(scriptFolder, "unevenly.txt"));
 

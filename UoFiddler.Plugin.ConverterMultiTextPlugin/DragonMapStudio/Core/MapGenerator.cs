@@ -187,11 +187,17 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         [Category("4 Höhen"), DisplayName("Max. Landhöhe"), Description("Höchste Z des normalen Landes (IMod13: Gras bis 40).")]
         public int MaxLandAltitude { get; set; } = 30;
 
-        [Category("4 Höhen"), DisplayName("Min. Gebirgshöhe")]
-        public int MinMountainAltitude { get; set; } = 10;
+        [Category("4 Höhen"), DisplayName("Min. Gebirgshöhe über Boden"), Description("Gebirge beginnen so hoch über dem Land daneben (Berge gehen immer nach oben).")]
+        public int MinMountainAltitude { get; set; } = 15;
 
-        [Category("4 Höhen"), DisplayName("Max. Gebirgshöhe"), Description("IMod13: Fels bis 90.")]
-        public int MaxMountainAltitude { get; set; } = 90;
+        [Category("4 Höhen"), DisplayName("Max. Gebirgshöhe über Boden"), Description("IMod13: Fels bis 90 (absolut).")]
+        public int MaxMountainAltitude { get; set; } = 70;
+
+        [Category("3 Gebirge"), DisplayName("Höhleneingänge"), Description("Anzahl unsichtbarer Höhleneingänge (Gruppe 1d) am Bergrand. Aktiviert die Regel 1d→Berg (map/cave-enti2mountain.txt). 0 = keine.")]
+        public int CaveEntrances { get; set; } = 8;
+
+        [Category("3 Gebirge"), DisplayName("Höhleneingang-Gruppe"), Description("IMod13: 29 (= 1d hex, Invisible Cave entrance).")]
+        public int CaveGroup { get; set; } = 0x1d;
 
         [Category("4 Höhen"), DisplayName("Wasserhöhe")]
         public int WaterAltitude { get; set; } = -5;
@@ -220,7 +226,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         [Category("6 Gruppen"), DisplayName("Ersatz-Gruppe"), Description("Wenn kein Biom passt (IMod13: 0 = Grass).")]
         public int FallbackGroup { get; set; } = 0x00;
 
-        [Category("6 Gruppen"), DisplayName("Biome ohne Übergang trennen"), Description("Setzt zwischen zwei Gruppen ohne Übergangs-Regel eine Gruppe, die zu beiden Übergänge hat (z. B. Wald zwischen Gras und GrassBump). Vermeidet harte Kanten.")]
+        [Category("6 Gruppen"), DisplayName("Nach dem Erzeugen reparieren"), Description("Tutorial-Regeln anwenden: keine 1-Tile-Streifen, Brücken-Gruppen zwischen Gruppen ohne Übergang, Sumpf mit Gras umgeben, Berge in Ringen ansteigen lassen, keine Stacheln.")]
         public bool SeparateBiomes { get; set; } = true;
 
         [Category("7 Umriss-Maske"), DisplayName("Umriss-Maske benutzen"), Description("Land nur dort, wo die geladene Umriss-Maske Land ist.")]
@@ -272,8 +278,6 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         private readonly DragonRuleSet _rules;
         private readonly GeneratorSettings _s;
         private readonly int[][] _altLookup = new int[256][];
-        private static readonly int[] NeighbourDx = { -1, 1, 0, 0, -1, 1, -1, 1 };
-        private static readonly int[] NeighbourDy = { 0, 0, -1, 1, -1, -1, 1, 1 };
 
         public MapGenerator(DragonRuleSet rules, GeneratorSettings settings)
         {
@@ -398,7 +402,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                     if (ms >= mountainLevel)
                     {
                         double t = Math.Clamp((ms - mountainLevel) / Math.Max(1e-6, 1 - mountainLevel), 0, 1);
-                        int alt = (int)Math.Round(PerlinNoise.Lerp(_s.MinMountainAltitude, _s.MaxMountainAltitude, t));
+                        int ground = (int)Math.Round(Math.Clamp(r * 2.2, 0, 1) * _s.MaxLandAltitude);
+                        int alt = Math.Min(127, ground + (int)Math.Round(PerlinNoise.Lerp(_s.MinMountainAltitude, _s.MaxMountainAltitude, t)));
                         int group = ms >= snowLevel && _s.SnowPercent > 0 ? _s.SnowGroup : _s.MountainGroup;
                         if (group == _s.SnowGroup)
                         {
@@ -435,20 +440,29 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             AddBeaches(map, height, seaLevel, ridge, mountainLevel, sx, seed, cancel);
             if (_s.SeparateBiomes)
             {
-                SeparateBiomes(map, cancel);
+                // tutorial rules: no 1 tile strips, bridge groups, swamp in grass, mountains in rings, no spikes
+                var fix = new MapFixOptions
+                {
+                    WaterGroup = _s.WaterGroup,
+                    MountainGroup = _s.MountainGroup,
+                    FallbackGroup = _s.FallbackGroup
+                };
+                MapFixer.Fix(map, _rules, fix, null, cancel);
+            }
+            if (_s.CaveEntrances > 0)
+            {
+                AddCaveEntrances(map, seed, cancel);
             }
             progress?.Report(100);
             return map;
         }
 
-        /// <summary>
-        /// Where two neighbouring groups have no map transition in either direction, the cell gets a "bridge" group
-        /// that has transitions to both (fallback group first, then the biome groups).
-        /// </summary>
-        private void SeparateBiomes(IndexedMap map, CancellationToken cancel)
+        /// <summary>Places 2×2 invisible cave entrances in the mountain border (one side touches the land).</summary>
+        private void AddCaveEntrances(IndexedMap map, int seed, CancellationToken cancel)
         {
-            HashSet<int> pairs = _rules.MapTransitionPairs();
-            if (pairs.Count == 0)
+            int cave = _s.CaveGroup & 0xFF, mountain = _s.MountainGroup, water = _s.WaterGroup;
+            List<DragonPaletteEntry> caveColours = _rules.EntriesOfGroup(cave);
+            if (caveColours.Count == 0)
             {
                 return;
             }
@@ -459,62 +473,64 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                 groupOf[e.Index] = e.Group;
                 altOf[e.Index] = e.Altitude;
             }
-            var candidates = new List<int> { _s.FallbackGroup };
-            candidates.AddRange(_s.Biomes.Where(b => b.Enabled).Select(b => b.Group));
-            candidates.Add(_s.BeachGroup);
-            candidates = candidates.Distinct().ToList();
-            var bridges = new Dictionary<int, int>();
-            int Bridge(int g, int n)
-            {
-                int key = (g << 8) | n;
-                if (!bridges.TryGetValue(key, out int b))
-                {
-                    b = candidates.FirstOrDefault(c => c != g && c != n && _rules.NearestIndex(c, 0) >= 0 &&
-                                                       pairs.Contains((c << 8) | g) && pairs.Contains((c << 8) | n), -1);
-                    bridges[key] = b;
-                }
-                return b;
-            }
-
-            int w = map.Width, h = map.Height, water = _s.WaterGroup;
+            int w = map.Width, h = map.Height;
             byte[] px = map.Pixels;
-            for (int pass = 0; pass < 2; pass++)
+            int G(int x, int y) => x < 0 || y < 0 || x >= w || y >= h ? -1 : groupOf[px[y * w + x]];
+            bool IsLand(int x, int y)
             {
-                for (int y = 0; y < h; y++)
+                int g = G(x, y);
+                return g >= 0 && g != mountain && g != water && g != cave;
+            }
+            int[] dxs = { -1, 1, 0, 0 }, dys = { 0, 0, -1, 1 };
+            var candidates = new List<(int x, int y, int dx, int dy)>();
+            for (int y = 2; y < h - 2; y += 2)
+            {
+                for (int x = 2; x < w - 2; x += 2)
                 {
-                    for (int x = 0; x < w; x++)
+                    if (G(x, y) != mountain)
                     {
-                        int i = y * w + x;
-                        int g = groupOf[px[i]];
-                        if (g < 0 || g == water)
+                        continue;
+                    }
+                    for (int k = 0; k < 4; k++)
+                    {
+                        int px1 = dys[k], py1 = dxs[k]; // along the border
+                        // (x,y) and (x+p) touch land in direction d, the cells behind are mountain
+                        if (IsLand(x + dxs[k], y + dys[k]) && IsLand(x + px1 + dxs[k], y + py1 + dys[k]) &&
+                            G(x + px1, y + py1) == mountain && G(x - dxs[k], y - dys[k]) == mountain &&
+                            G(x + px1 - dxs[k], y + py1 - dys[k]) == mountain)
                         {
-                            continue;
-                        }
-                        for (int k = 0; k < 8; k++)
-                        {
-                            int nx = x + NeighbourDx[k], ny = y + NeighbourDy[k];
-                            if (nx < 0 || ny < 0 || nx >= w || ny >= h)
-                            {
-                                continue;
-                            }
-                            int n = groupOf[px[ny * w + nx]];
-                            if (n < 0 || n == g || n == water || pairs.Contains((g << 8) | n))
-                            {
-                                continue;
-                            }
-                            int b = Bridge(g, n);
-                            if (b >= 0)
-                            {
-                                px[i] = IndexFor(b, altOf[px[i]]);
-                            }
+                            candidates.Add((x, y, dxs[k], dys[k]));
                             break;
                         }
                     }
-                    if ((y & 63) == 0)
-                    {
-                        cancel.ThrowIfCancellationRequested();
-                    }
                 }
+                if ((y & 63) == 0)
+                {
+                    cancel.ThrowIfCancellationRequested();
+                }
+            }
+            var rnd = new Random(seed + 707);
+            var placed = new List<(int x, int y)>();
+            int minDist = Math.Max(16, Math.Max(w, h) / 12);
+            foreach (var c in candidates.OrderBy(_ => rnd.Next()))
+            {
+                if (placed.Count >= _s.CaveEntrances)
+                {
+                    break;
+                }
+                if (placed.Any(p => Math.Abs(p.x - c.x) + Math.Abs(p.y - c.y) < minDist))
+                {
+                    continue;
+                }
+                int groundZ = altOf[px[(c.y + c.dy) * w + c.x + c.dx]];
+                int alt = groundZ + 10;
+                DragonPaletteEntry colour = caveColours.OrderBy(e => Math.Abs(e.Altitude - alt)).First();
+                int pX = c.dy, pY = c.dx;
+                foreach ((int x, int y) in new[] { (c.x, c.y), (c.x + pX, c.y + pY), (c.x - c.dx, c.y - c.dy), (c.x + pX - c.dx, c.y + pY - c.dy) })
+                {
+                    px[y * w + x] = (byte)colour.Index;
+                }
+                placed.Add((c.x, c.y));
             }
         }
 

@@ -1,0 +1,634 @@
+# Dragon Map Studio – Français
+# Deutsch<TAB>Français  (\n = new line). Add or change lines as you like; the file is read when the language is chosen.
+ · nass, ohne Textur (wird flach gezeichnet)	 · humide, sans texture (dessinée à plat)
+&Anleitung	&Guide
+&Ausschneiden	&Couper
+&Bearbeiten	&Édition
+&Datei	&Fichier
+&Einfügen (Stempel)	Co&ller (tampon)
+&Hilfe	&Aide
+&Kopieren	&Copier
+&Neue Karte…	&Nouvelle carte…
+&Regeln	&Règles
+&Rückgängig	&Annuler
+&Speichern	&Enregistrer
+&Wiederholen	&Rétablir
+&Zuletzt geöffnet	Cartes &récentes
+0 = Felucca, 1 = Trammel, 2 = Ilshenar, 3 = Malas, 4 = Tokuno, 5 = Ter Mur …	0 = Felucca, 1 = Trammel, 2 = Ilshenar, 3 = Malas, 4 = Tokuno, 5 = Ter Mur …
+0 = Küste exakt wie die Maske, 1 = stark verwirbelt.	0 = côte exactement comme le masque, 1 = très tourbillonnée.
+0 = Land bis zum Rand, 1 = immer Wasser am Kartenrand.	0 = terre jusqu'au bord, 1 = toujours de l'eau au bord.
+0 Sprache / Language	0 Sprache / Language
+1 Allgemein	1 Général
+1 Ausgabe	1 Sortie
+1 Bild	1 Image
+1 Ordner	1 Dossiers
+1 Tile	1 tuile
+1. Zahl nach den Tiles (Z-Versatz).	1er nombre après les tuiles (décalage Z).
+2 Farbtabelle	2 Table des couleurs
+2 Land und Wasser	2 Terre et eau
+2 Platzierung	2 Placement
+2 Schritte	2 Étapes
+2. Zahl nach den Tiles (bei Statics: zusätzlicher Wert, siehe Anleitung).	2e nombre après les tuiles (statiques : valeur supplémentaire, voir le guide).
+2D-Ansicht	Vue 2D
+2D-Ansicht von oben – Land-Tiles und Übergänge malen (Taste T)	Vue 2D de dessus – peindre tuiles de terrain et transitions (touche T)
+3 Anwenden	3 Appliquer
+3 Details	3 Détails
+3 Editor	3 Éditeur
+3 Gebirge	3 Montagnes
+4 Bestehende Statics	4 Statiques existantes
+4 Höhen	4 Hauteurs
+5 Klima	5 Climat
+5 Reparatur	5 Réparation
+6 Gruppen	6 Groupes
+6 Küste	6 Côte
+7 Umriss-Maske	7 Masque de contour
+8 Zeichen A/B. Reihenfolge im Uhrzeigersinn: NW, N, NO, O, SO, S, SW, W. A = eigene Gruppe, B = Nachbar-Gruppe.	8 caractères A/B, sens horaire : NO, N, NE, E, SE, S, SO, O. A = propre groupe, B = groupe voisin.
+8×8-Blockraster (bei starkem Zoom)	Grille de blocs 8×8 (fort zoom)
+8×8-Blockraster ab diesem Zoom anzeigen.	Afficher la grille de blocs 8×8 à partir de ce zoom.
+: Mausrad = Zoom · mittlere Maus oder Leertaste + Ziehen = verschieben · Pfeile ohne Auswahl = Ansicht (Umschalt = 8 Tiles) · T = 2D / CGI · Strg+Z / Strg+Y = Rückgängig / Wiederholen	 : molette = zoom · bouton du milieu ou espace + glisser = déplacer · flèches sans sélection = vue (Maj = 8 tuiles) · T = 2D / CGI · Ctrl+Z / Ctrl+Y = annuler / rétablir
+= Item aus dem Katalog	= objet du catalogue
+Abbrechen	Annuler
+Abschnitts-Kommentar (// Zeile davor).	Commentaire de section (ligne // avant).
+Adresse	Adresse
+Adresse kopieren	Copier l'adresse
+Aktiv	Actif
+Aktualisieren	Actualiser
+Aktuelle Karte → MUL / UOP	Carte actuelle → MUL / UOP
+Alle Kategorien	Toutes les catégories
+Alles	Tout
+Alles a&uswählen	Tout &sélectionner
+Als &PNG exportieren…	Exporter en &PNG…
+Als Dragon-Skripte &exportieren…	&Exporter en scripts Dragon…
+Als Dragon-Skripte exportieren…	Exporter en scripts Dragon…
+Als Farbe 1	Comme couleur 1
+Als Farbe 2	Comme couleur 2
+Als Maske für Generator	Comme masque du générateur
+Als Umriss-Land	Comme terre du contour
+Als Umriss-Wasser	Comme eau du contour
+Als Vorlage speichern	Enregistrer comme modèle
+An: dunkle Pixel = Land (typische Silhouette auf weißem Grund).	Activé : pixels sombres = terre (silhouette typique sur fond blanc).
+Anlegen	Créer
+Anteil der Gebirge, der oben Schnee bekommt (0 = aus).	Part des montagnes enneigées au sommet (0 = désactivé).
+Anteil der Kartenbreite.	Part de la largeur de la carte.
+Anteil des Landes, der Gebirge wird.	Part de la terre qui devient montagne.
+Anteil Land an der Karte (ohne Umriss-Maske).	Part de terre sur la carte (sans masque de contour).
+Anzahl unsichtbarer Höhleneingänge (Gruppe 1d) am Bergrand. Aktiviert die Regel 1d→Berg (map/cave-enti2mountain.txt). 0 = keine.	Nombre d'entrées de grotte invisibles (groupe 1d) au bord des montagnes. Active la règle 1d→montagne (map/cave-enti2mountain.txt). 0 = aucune.
+Anzeigename (frei wählbar).	Nom affiché (libre).
+Auf den Meeresgrund kommen Wasser-Statics (Original: 1797–179c auf z -5), sonst sieht man einen braunen Graben.	Des statiques d'eau sont posées sur le fond marin (original : 1797–179c à z -5), sinon une tranchée brune est visible.
+auf Statics stapeln	empiler sur les statiques
+Aus = Breite/Höhe unten verwenden (neue Karte).	Désactivé = utiliser largeur/hauteur ci-dessous (nouvelle carte).
+Aus = Pixelwerte direkt übernehmen (wie Dragon). An = Farben vergleichen.	Désactivé = reprendre les valeurs de pixels (comme Dragon). Activé = comparer les couleurs.
+Aus der Farbtabelle: Boden, Weg, Höhle …	Depuis la table des couleurs : sol, chemin, grotte …
+Aus Editor-Karte bauen	Construire depuis l'éditeur
+Aus Regeln erzeugen	Créer depuis les règles
+Ausgabe	Sortie
+Ausgabe-Ordner	Dossier de sortie
+Ausgabe-Ordner (MUL / UOP)	Dossier de sortie (MUL / UOP)
+Ausgabe-Ordner öffnen	Ouvrir le dossier de sortie
+Ausgewählte Farbe	Couleur sélectionnée
+Auswahl	Sélection
+Auswahl &löschen (Farbe 2)	&Effacer la sélection (couleur 2)
+Auswahl mit Farbe 1 &füllen	&Remplir la sélection avec la couleur 1
+Auswahl → Vorlage…	Sélection → modèle…
+Auswahl: Klick = wählen · Strg+Klick = dazu · Umschalt+Klick / Strg+A = alles auf dem Tile · Pfeile = verschieben · Strg+Pfeil = Kopie daneben · Bild↑/↓ = Z ±1 (Umschalt ±5) · Entf = löschen · H = färben · I = im Item-Katalog zeigen · Strg+C / Strg+V = kopieren / einfügen · Rechtsklick = Item aufnehmen · Esc = Auswahl weg	Sélection : clic = choisir · Ctrl+clic = ajouter · Maj+clic / Ctrl+A = tout sur la tuile · flèches = déplacer · Ctrl+flèche = copie à côté · PgPréc/PgSuiv = Z ±1 (Maj ±5) · Suppr = supprimer · H = teinter · I = montrer dans le catalogue · Ctrl+C / Ctrl+V = copier / coller · clic droit = prendre l'objet · Échap = vider la sélection
+Auto: Transparenz wenn vorhanden, sonst Helligkeit.	Auto : transparence si présente, sinon luminosité.
+Baut die Karte aus dem Editor im Speicher (Übergänge, Items …) und zeigt sie an	Construit la carte de l'éditeur en mémoire (transitions, objets …) et l'affiche
+Bereich	Zone
+Bereich aufziehen: F füllen, K Küste, W Wasser, G glätten, Strg+C / Strg+V, Entf, Bild↑/↓	Tracer une zone : F remplir, K côte, W eau, G lisser, Ctrl+C / Ctrl+V, Suppr, PgPréc/PgSuiv
+Bereich einfügen: Linksklick setzt Land + Statics (Höhe passt sich an) · Esc = fertig	Coller la zone : clic gauche pose terrain + statiques (la hauteur s'adapte) · Échap = terminé
+Bereich mit Schwarz (0244) füllen	Remplir la zone de noir (0244)
+Bereich → Vorlage…	Zone → modèle…
+Bereich:	Zone :
+Bereich: Statics wählen	Zone : choisir les statiques
+Bereich: Wasser (W)	Zone : eau (W)
+Bereich: Ziehen = markieren · F = füllen · K = Küste · W = Wasser (Umschalt+W weg) · G = glätten · S = Statics darin auswählen · Bild↑/↓ = heben / senken · Strg+C / Strg+V = Land + Statics kopieren / einfügen · Entf = Statics löschen · als Vorlage speichern: Reiter Vorlagen · Esc = Markierung weg	Zone : glisser = marquer · F = remplir · K = côte · W = eau (Maj+W retire) · G = lisser · S = choisir les statiques · PgPréc/PgSuiv = élever / abaisser · Ctrl+C / Ctrl+V = copier / coller terrain + statiques · Suppr = supprimer les statiques · enregistrer comme modèle : onglet Modèles · Échap = effacer
+Bereit	Prêt
+Berg-Gruppe	Groupe montagne
+Berg-Profil	Profil de montagne
+Berg-Profil Höhen	Hauteurs du profil de montagne
+Berge steigen vom umgebenden Boden aus nach innen an (Dragon-Tutorial: Rock 20, 30, 50, 60, 65, 70 über Gras 0). Ein Berg liegt nie tiefer als das Gras daneben.	Les montagnes montent vers l'intérieur depuis le sol environnant (tutoriel Dragon : roche 20, 30, 50, 60, 65, 70 au-dessus de l'herbe 0). Une montagne n'est jamais plus basse que l'herbe voisine.
+Bericht schreiben	Écrire le rapport
+Beschreibung	Description
+Bevorzugte Brücken-Gruppe (IMod13: 0 = Gras).	Groupe pont préféré (IMod13 : 0 = herbe).
+Bild anklicken = auswählen, Doppelklick oder OK = übernehmen.	Cliquer une image = choisir, double-clic ou OK = reprendre.
+Bild der Farbtabelle (IMod13_Colortable.bmp). Klick auf eine Farbe = Adresse kopieren.	Image de la table des couleurs (IMod13_Colortable.bmp). Clic sur une couleur = copier l'adresse.
+Bild laden…	Charger une image…
+Bilddatei	Fichier image
+Bilder groß	Grandes images
+Bilder klein	Petites images
+Bilder mittel	Images moyennes
+Biome	Biomes
+Blau	Bleu
+Blau-Anteil der Palettenfarbe.	Composante bleue de la couleur de palette.
+BMP-Datei → MUL / UOP…	Fichier BMP → MUL / UOP…
+Boden	Sol
+Boden auf 'Höhe =' (Reiter Land)	Sol à 'Hauteur =' (onglet Terrain)
+Boden mit Höhe	Sol avec hauteur
+Breite	Largeur
+Breite des Strandes an der Küste (0 = kein Strand).	Largeur de la plage sur la côte (0 = pas de plage).
+Breite und Höhe werden auf Vielfache von 8 gerundet (UO speichert 8×8-Blöcke). 1 Pixel = 1 Tile.	Largeur et hauteur sont arrondies à des multiples de 8 (UO stocke des blocs 8×8). 1 pixel = 1 tuile.
+Breite:	Largeur :
+Brücken-Gruppen einsetzen	Insérer des groupes pont
+CGI-Ansicht	Vue CGI
+CGI-Ansicht hier	Vue CGI ici
+Chance	Chance
+Chance in items.txt geteilt durch diesen Wert (1000 = Promille).	Chance de items.txt divisée par cette valeur (1000 = pour mille).
+Chance pro Zelle (Basis = Build-Einstellung, Standard 1000 = Promille).	Chance par cellule (base = réglage de construction, défaut 1000 = pour mille).
+Datei	Fichier
+Datei relativ zum Skript-Ordner, z. B. items/grass.txt	Fichier relatif au dossier des scripts, p. ex. items/grass.txt
+Datei relativ zum Skript-Ordner, z. B. map/grass2sand.txt (Ordner: map, map2, statics, statics2, statics3).	Fichier relatif au dossier des scripts, p. ex. map/grass2sand.txt (dossiers : map, map2, statics, statics2, statics3).
+Datei:	Fichier :
+deckend	opaque
+Definiert	Défini
+Detailstufen des Rauschens (mehr = rauere Küsten).	Niveaux de détail du bruit (plus = côtes plus rugueuses).
+Diese Stelle im CGI-Modus (Client-Ansicht) anzeigen	Afficher cet endroit en mode CGI (vue client)
+Doppelte entfernen	Supprimer les doublons
+Doppelte Statics entfernen	Supprimer les statiques en double
+Dragon braucht mindestens 2 Tiles nebeneinander für einen Übergang. Einzelne Pixel und 1 Tile breite Streifen werden zur häufigsten Nachbar-Gruppe.	Dragon a besoin d'au moins 2 tuiles côte à côte pour une transition. Les pixels isolés et les bandes de 1 tuile deviennent le groupe voisin le plus fréquent.
+Dragon Skript-Ordner	Dossier des scripts Dragon
+Dragon-&Skripte laden…	Charger les &scripts Dragon…
+Dragon-Gruppe (dezimal; IMod13: 2 = Water).	Groupe Dragon (décimal ; IMod13 : 2 = eau).
+Dragon-Tutorial: neue Höhe = alte Höhe + Zufallszahl zwischen Z1 und Z2 (z. B. '005 007' → +5..+7). Aus = Höhe bleibt.	Tutoriel Dragon : nouvelle hauteur = ancienne + nombre aléatoire entre Z1 et Z2 (p. ex. '005 007' → +5..+7). Désactivé = la hauteur reste.
+Dragon-Vorlage (.dmsv.json) – Land + Statics	Modèle Dragon (.dmsv.json) – terrain + statiques
+dragon_log.txt: Statistik, Reparaturen, fehlende Übergänge mit Koordinaten (zum Weiterschicken).	dragon_log.txt : statistiques, réparations, transitions manquantes avec coordonnées (à transmettre).
+Duplizieren	Dupliquer
+durchsichtig	transparent
+Ebene	Couche
+Eckig	Carré
+Eckiger Pinsel	Pinceau carré
+Eigene Größe	Taille personnalisée
+Eigenes Format mit allen Infos. Wenn gesetzt und vorhanden, wird es statt der Skripte geladen.	Format propre avec toutes les infos. S'il est défini et présent, il est chargé à la place des scripts.
+Eigenes Format: Land-Tiles mit Höhen (relativ zur Mitte) und Statics. Beim Setzen wählbar: mit oder ohne Höhe.	Format propre : tuiles de terrain avec hauteurs (relatives au centre) et statiques. À la pose : avec ou sans hauteur.
+Einfügen (Strg+V)	Coller (Ctrl+V)
+Einfügen: Linksklick setzt die kopierten Statics (mehrfach möglich) · Rechtsklick oder Esc = fertig	Coller : clic gauche pose les statiques copiées (plusieurs fois) · clic droit ou Échap = terminé
+Einlesen → Editor	Importer → éditeur
+Einpassen	Ajuster
+Einstellungen	Paramètres
+Einstellungs-Ordner öffnen	Ouvrir le dossier des paramètres
+Einträge	entrées
+Einzel-Tiles / 1er-Streifen entfernen	Supprimer tuiles isolées / bandes de 1
+Ellipse	Ellipse
+Ellipse ●	Ellipse ●
+Erkennung	Détection
+Ersatz-Gruppe	Groupe de repli
+Erweiterung	Extension
+Farb-Aliase	Alias de couleurs
+Farbe	Couleur
+Farbe (0 = original). Gilt für alle ausgewählten Statics.	Teinte (0 = originale). S'applique à toutes les statiques sélectionnées.
+Farbe aufnehmen (I)	Prélever la couleur (I)
+Farbe der Küstenlinie (IMod13: 0x50.. Sand).	Couleur du littoral (IMod13 : 0x50.. sable).
+Farben (links = 1, rechts = 2)	Couleurs (gauche = 1, droite = 2)
+Farben (maptrans)	Couleurs (maptrans)
+Farbtabelle	Table des couleurs
+Farbtabelle (Bild)	Table des couleurs (image)
+Farbtabelle als &Bild speichern…	Enregistrer la table des couleurs en &image…
+Farbtabelle laden…	Charger la table des couleurs…
+Fertige Böden / Höhlen-Stücke lassen sich mit 'Bereich → Vorlage…' (Reiter Vorlagen) speichern und wieder setzen.	Les sols / morceaux de grotte finis s'enregistrent avec 'Zone → modèle…' (onglet Modèles) et se reposent.
+Feste Höhe der Ufer-Statics (Original map0: 1796, 17a9, 17ab, 179f … liegen auf -5 = Wasserhöhe).	Hauteur fixe des statiques du rivage (map0 originale : 1796, 17a9, 17ab, 179f … à -5 = niveau de l'eau).
+Feuchte max	Humidité max
+Feuchte min	Humidité min
+Fix-Tabelle	Table de corrections
+Fläche füllen (F)	Remplir la surface (F)
+Format:	Format :
+Freier Kommentar / Notiz.	Commentaire / note libre.
+Freier Rand (Wasser) um das Bild.	Marge libre (eau) autour de l'image.
+Fremde 8-Bit-Bilder umrechnen	Convertir les images 8 bits étrangères
+Färben	Teinter
+Färben: Klick färbt das Static mit der Hue (Reiter Items) · mit Auswahl: H	Teinter : le clic teinte la statique (onglet Objets) · avec sélection : H
+Füllen	Remplir
+Füllfarbe (Index):	Couleur de remplissage (index) :
+Für neuere Clients (ab 7.0.24). Benutzt den UOP-Packer von UoFiddler.	Pour les clients récents (7.0.24 et plus). Utilise le packer UOP d'UoFiddler.
+Ganz	Tout
+Ganze Karte anzeigen	Afficher toute la carte
+Ganze Karte prüfen	Vérifier toute la carte
+Gebirge %	Montagnes %
+Gebirge beginnen so hoch über dem Land daneben (Berge gehen immer nach oben).	Les montagnes commencent à cette hauteur au-dessus du terrain voisin (elles montent toujours).
+Gebirgs-Gruppe	Groupe montagne
+Gebirgs-Größe (0..1)	Taille des montagnes (0..1)
+Gebäude (UoFiddler-txt, UO Architect .uoa, .wsc, Sphere .scp) und eigene Vorlagen (.dmsv.json). Jeder Unterordner ist eine Kategorie. Standard: mitgelieferter Ordner Multis.	Bâtiments (txt UoFiddler, UO Architect .uoa, .wsc, Sphere .scp) et modèles propres (.dmsv.json). Chaque sous-dossier est une catégorie. Défaut : dossier Multis fourni.
+Gebäude / Boden-Vorlage (Reiter Vorlagen) halbtransparent zeigen und setzen	Afficher et poser un modèle de bâtiment / sol (onglet Modèles) en transparence
+Gefundene Probleme rot markieren	Marquer les problèmes trouvés en rouge
+Gefüllte Ellipse	Ellipse pleine
+Gefülltes Rechteck (R)	Rectangle plein (R)
+Gehe	Aller
+Gehe zu	Aller à
+Generator	Générateur
+Generator & Umriss	Générateur & contour
+Gewähltes Item (rechts) setzen	Poser l'objet choisi (à droite)
+Gewähltes Multi (rechts) als Statics setzen	Poser le multi choisi (à droite) en statiques
+Geändert	Modifié
+Gipfel-Gruppe	Groupe sommet
+Gleiche ID an gleicher Stelle und Höhe nur einmal schreiben.	N'écrire qu'une fois le même ID au même endroit et à la même hauteur.
+Gleiche Zahl = gleiche Karte.	Même nombre = même carte.
+Gleiche Zahl = gleiche Tiles / Items.	Même nombre = mêmes tuiles / objets.
+Glätten	Lisser
+Glätten (Tiles)	Lissage (tuiles)
+Glätten: Ziehen gleicht die Höhen an die Nachbarn an · Pinsel oben	Lisser : glisser égalise les hauteurs avec les voisins · pinceau en haut
+GrassBump-Prüfung	Contrôle GrassBump
+groß	grand
+Großer Katalog…	Grand catalogue…
+Grund-Tile:	Tuile du fond :
+Gruppe	Groupe
+Gruppe (groups.txt). -1 = keine Gruppe.	Groupe (groups.txt). -1 = aucun groupe.
+Gruppe (hex in Dragon) – die Höhe wählt die passende Farbe der Gruppe.	Groupe (hex dans Dragon) – la hauteur choisit la couleur correspondante du groupe.
+Gruppe A	Groupe A
+Gruppe B	Groupe B
+Gruppe der Nachbarn, -1 = jede andere Gruppe als A.	Groupe des voisins, -1 = tout groupe autre que A.
+Gruppe der Zelle, -1 = jede andere Gruppe als B.	Groupe de la cellule, -1 = tout groupe autre que B.
+Gruppe:Nachbar – Gruppe muss tiefer liegen als der Nachbar (Tutorial 'Grass cliffs': 19:00).	Groupe:voisin – le groupe doit être plus bas que le voisin (tutoriel 'Grass cliffs' : 19:00).
+Gruppe:Umgebung:Breite, mehrere mit ';'. Standard '18:00:2' = Sumpf immer mit 2 Tiles Gras umgeben (Dragon-Tutorial).	Groupe:entourage:largeur, plusieurs avec ';'. Défaut '18:00:2' = marais toujours entouré de 2 tuiles d'herbe (tutoriel Dragon).
+Gruppen	Groupes
+Gruppen (hex), die die Reparatur nie ändert, z. B. 1d = unsichtbarer Höhleneingang.	Groupes (hex) que la réparation ne modifie jamais, p. ex. 1d = entrée de grotte invisible.
+Gruppen-Nummer (hex in den Dragon-Skripten, 00..FF).	Numéro de groupe (hex dans les scripts Dragon, 00..FF).
+Größe	Taille
+Größe der aktuellen Karte nutzen	Utiliser la taille de la carte actuelle
+Größe der Klimazonen als Anteil der Kartenbreite.	Taille des zones climatiques en part de la largeur de la carte.
+Größe:	Taille :
+Größter Höhenunterschied zwischen Nachbarn (außer Berg/Berg).	Plus grande différence de hauteur entre voisins (sauf montagne/montagne).
+Größter Höhenunterschied zwischen zwei Berg-Tiles.	Plus grande différence de hauteur entre deux tuiles de montagne.
+Grün	Vert
+Grün-Anteil der Palettenfarbe.	Composante verte de la couleur de palette.
+Hand	Main
+hex 02 = IMod13 Water (dezimal eingeben: 2).	hex 02 = eau IMod13 (saisir en décimal : 2).
+Hier speichert der Editor die Karten-BMPs; die Kartenliste zeigt diesen Ordner.	L'éditeur enregistre ici les BMP des cartes ; la liste des cartes montre ce dossier.
+Hier werden map#.mul, staidx#.mul, statics#.mul (und map#LegacyMUL.uop) gespeichert.	map#.mul, staidx#.mul, statics#.mul (et map#LegacyMUL.uop) sont enregistrés ici.
+Hilfe	Aide
+Hinweise	Remarques
+Hue	Teinte
+Hue:	Teinte :
+Häufigkeit	Fréquence
+Häufigkeit 1..1000 (Promille).	Fréquence 1..1000 (pour mille).
+Höchste Höhe der Land-Tiles in 1, 2, 3 … Tiles Abstand zum Wasser (Leerzeichen getrennt).	Hauteur maximale des tuiles à 1, 2, 3 … tuiles de l'eau (séparées par des espaces).
+Höchste Z des normalen Landes (IMod13: Gras bis 40).	Z maximal du terrain normal (IMod13 : herbe jusqu'à 40).
+Höhe	Hauteur
+Höhe (Z)	Hauteur (Z)
+Höhe (Z) des Bodens für diese Farbe, -128..127.	Hauteur (Z) du sol pour cette couleur, -128..127.
+Höhe (Z) jeder Farbe einblenden (ab Zoom 12)	Afficher la hauteur (Z) de chaque couleur (dès zoom 12)
+Höhe +	Hauteur +
+Höhe + / −: Klicken / Ziehen hebt oder senkt das Land um den Schritt (Reiter Land) · Pinsel oben · Rechtsklick = Land aufnehmen	Hauteur + / − : clic / glisser élève ou abaisse le terrain du pas (onglet Terrain) · pinceau en haut · clic droit = prendre le terrain
+Höhe =	Hauteur =
+Höhe = :	Hauteur = :
+Höhe =: Klicken / Ziehen setzt das Land auf 'Höhe =' (Reiter Land) · Rechtsklick nimmt die Höhe auf	Hauteur = : clic / glisser met le terrain à 'Hauteur =' (onglet Terrain) · clic droit prend la hauteur
+Höhe der Wasser-Oberfläche (Wasser-Statics, äußerer Ring; Original: -5).	Hauteur de la surface de l'eau (statiques d'eau, anneau extérieur ; original : -5).
+Höhe des Meeresgrunds unter dem Ufer-Wasser (Original map0: -15 bei 88 %).	Hauteur du fond marin sous l'eau du rivage (map0 originale : -15 à 88 %).
+Höhe kühlt (0..1)	La hauteur refroidit (0..1)
+Höhe ± Schritt:	Pas de hauteur ± :
+Höhe ÜBER dem Boden je Ring vom Rand aus (Leerzeichen getrennt). Jeder Ring liegt zwischen der Hälfte und diesem Wert.	Hauteur AU-DESSUS du sol par anneau depuis le bord (séparées par des espaces). Chaque anneau est entre la moitié et cette valeur.
+Höhe −	Hauteur −
+Höhe. Bei mehreren: alle bekommen diese Höhe.	Hauteur. Pour plusieurs : toutes reçoivent cette hauteur.
+Höhe:	Hauteur :
+Höhen	Hauteurs
+Höhenunterschied zwischen zwei Nachbar-Tiles begrenzen (gegen Stacheln und Klippen).	Limiter la différence de hauteur entre deux tuiles voisines (contre les pics et falaises).
+Höhle	Grotte
+Höhle / Weg	Grotte / chemin
+Höhle: am Eingang anfangen und in den Berg ziehen – Boden auf der Höhe des ersten Klicks (oder 'Höhe ='), der Rand wird Wand (Reiter Höhle / Weg) · Pinsel oben · ein Zug = ein Rückgängig-Schritt	Grotte : commencer à l'entrée et tirer dans la montagne – sol à la hauteur du premier clic (ou 'Hauteur ='), le bord devient mur (onglet Grotte / chemin) · pinceau en haut · un trait = une étape d'annulation
+Höhle: Werkzeug 'Höhle' (Leiste Land), am Fuß des Berges anfangen und hineinziehen. Der Boden bekommt die Höhe des ersten Klicks (oder 'Höhe =' aus dem Reiter Land), der Rand wird bis zur Wand-Höhe angehoben – der Client zeichnet dort die Fels-Textur als Wand. Pinsel-Größe oben = Breite des Ganges. Ein Zug = ein Rückgängig-Schritt.	Grotte : outil 'Grotte' (barre Terrain), commencer au pied de la montagne et tirer vers l'intérieur. Le sol prend la hauteur du premier clic (ou 'Hauteur =' de l'onglet Terrain), le bord est élevé à la hauteur des murs – le client y dessine la texture de roche comme mur. Taille du pinceau en haut = largeur du tunnel. Un trait = une étape d'annulation.
+Höhlen-Pinsel wählen	Choisir le pinceau grotte
+Höhlenboden:	Sol de grotte :
+Höhleneingang-Gruppe	Groupe entrée de grotte
+Höhleneingänge	Entrées de grotte
+Im Item-Katalog zeigen + übernehmen (I)	Montrer dans le catalogue + reprendre (I)
+IMod13: 29 (= 1d hex, Invisible Cave entrance).	IMod13 : 29 (= 1d hex, entrée de grotte invisible).
+IMod13: 32 (0x20) = Wasser -5.	IMod13 : 32 (0x20) = eau -5.
+IMod13: 5 = Desert/Sand.	IMod13 : 5 = désert/sable.
+IMod13: 6 = Mountain/Rock.	IMod13 : 6 = montagne/roche.
+IMod13: 6 = mountain/rock.	IMod13 : 6 = montagne/roche.
+IMod13: 7 = Snow.	IMod13 : 7 = neige.
+IMod13: Fels bis 90 (absolut).	IMod13 : roche jusqu'à 90 (absolu).
+In Karte zeichnen	Dessiner dans la carte
+Index dezimal (10)	Index décimal (10)
+Ist die Farbe in maptrans.txt definiert? Nur dann wird daraus eine Karte erzeugt.	La couleur est-elle définie dans maptrans.txt ? Seulement alors une carte en est créée.
+Item (hex):	Objet (hex) :
+Item-Gruppen der gewählten Datei (Statics: id z hue dx dy; …)	Groupes d'objets du fichier choisi (statiques : id z hue dx dy ; …)
+Item-ID (hex)	ID d'objet (hex)
+Items	Objets
+Items (items.txt)	Objets (items.txt)
+Items / Statics	Objets / statiques
+Items nicht überlappen	Objets sans chevauchement
+Items nur auf gleicher Gruppe	Objets seulement sur le même groupe
+Items: Chance-Basis	Objets : base de chance
+JSON speichern…	Enregistrer JSON…
+Karte # (UOP):	Carte n° (UOP) :
+Karte &prüfen (Log)…	&Vérifier la carte (journal)…
+Karte analysieren (Höhen-Log)	Analyser la carte (journal des hauteurs)
+Karte automatisch &reparieren	&Réparer la carte automatiquement
+Karte erzeugen → Editor	Générer la carte → éditeur
+Karte prüfen (Log)	Vérifier la carte (journal)
+Karte reparieren	Réparer la carte
+Karte ö&ffnen…	&Ouvrir une carte…
+Karten (Projekt-Ordner)	Cartes (dossier du projet)
+Karten-Editor	Éditeur de carte
+Karten-Nummer	Numéro de carte
+Katalog – Land-Tiles, Texturen, Items	Catalogue – tuiles de terrain, textures, objets
+Kategorie	Catégorie
+Kategorie für eigene Sortierung, z. B. Natur, Dungeon, Stadt.	Catégorie pour votre tri, p. ex. nature, donjon, ville.
+Kategorie:	Catégorie :
+keine gültige ID	aucun ID valide
+Keine Items auf Übergangs-Statics	Pas d'objets sur les statiques de transition
+klein	petit
+Klick = auswählen, Strg+Klick = dazu, Umschalt+Klick = alle auf dem Tile	Clic = sélectionner, Ctrl+clic = ajouter, Maj+clic = tout sur la tuile
+Klick = auswählen, Strg+Klick = dazu, Umschalt+Klick = alles auf dem Tile.	Clic = choisir, Ctrl+clic = ajouter, Maj+clic = tout sur la tuile.
+Klick färbt das Static mit der Hue (rechts)	Le clic teinte la statique avec la teinte (à droite)
+Klick kopiert:	Le clic copie :
+Klicke auf eine Farbe in der Farbtabelle.	Cliquez sur une couleur de la table.
+Klima-Größe (0..1)	Taille du climat (0..1)
+Klippe ab z:	Falaise dès z :
+Kommentar	Commentaire
+Kommentar (wird beim Export als // Zeile geschrieben).	Commentaire (écrit en ligne // à l'export).
+Kontinent-Größe (0..1)	Taille du continent (0..1)
+Kopier-Format	Format de copie
+Kopieren (Strg+C)	Copier (Ctrl+C)
+Küste	Côte
+Küste / Wasser	Côte / eau
+Küste glätten	Lisser la côte
+Küste glätten: Durchgänge	Lisser la côte : passes
+Küste wie die Original-Karte (map0 ausgewertet): Meeresgrund-Tiles auf -15 mit Wasser-Statics auf -5 darüber, äußerer Rand auf -5, Strand flach zum Wasser. Ersetzt die zufälligen -10/0-Höhen der Skripte.	Côte comme la carte originale (map0 analysée) : tuiles de fond marin à -15 avec statiques d'eau à -5 au-dessus, bord extérieur à -5, plage plate vers l'eau. Remplace les hauteurs aléatoires -10/0 des scripts.
+Küste: Ziehen über die Küste formt sie wie das Original – Meeresgrund, Wasser-Statics, Strand-Höhen (Reiter Küste / Wasser) · Pinsel oben · ein Zug = ein Rückgängig-Schritt	Côte : glisser sur la côte la forme comme l'original – fond marin, statiques d'eau, hauteurs de plage (onglet Côte / eau) · pinceau en haut · un trait = une étape d'annulation
+Küsten-Profil an	Profil de côte activé
+Küsten-Rauheit (0..1)	Rugosité de la côte (0..1)
+Küsten-Unschärfe (Tiles)	Flou de la côte (tuiles)
+Lakunarität	Lacunarité
+Land	Terrain
+Land %	Terre %
+Land (hex):	Terrain (hex) :
+Land absenken	Abaisser le terrain
+Land anheben (Schritt und Radius rechts im Reiter Land)	Élever le terrain (pas et rayon dans l'onglet Terrain)
+Land auf eine feste Höhe setzen	Mettre le terrain à une hauteur fixe
+Land höher als dieser Wert wird nicht abgesenkt (Klippen-Küsten bleiben).	Le terrain plus haut n'est pas abaissé (les côtes en falaise restent).
+Land ist dunkel	La terre est sombre
+Land nur dort, wo die geladene Umriss-Maske Land ist.	Terre seulement là où le masque de contour chargé est de la terre.
+Land setzen	Poser le terrain
+Land setzen: Klicken / Ziehen malt das Land-Tile aus dem Katalog (Reiter Land) · Pinsel oben · Rechtsklick = Land-ID + Höhe aufnehmen · ein Zug = ein Rückgängig-Schritt	Poser le terrain : clic / glisser peint la tuile du catalogue (onglet Terrain) · pinceau en haut · clic droit = prendre ID + hauteur · un trait = une étape d'annulation
+Land-Farbe (Index)	Couleur de terre (index)
+Land-Höhe jedes Tiles einblenden	Afficher la hauteur de chaque tuile
+Land-Höhen glätten	Lisser les hauteurs du terrain
+Land-Höhen zum Wasser	Hauteurs du terrain vers l'eau
+Land-Tile / Textur (Reiter Land) malen – Rechtsklick nimmt Land-ID und Höhe auf	Peindre tuile / texture (onglet Terrain) – clic droit prend l'ID et la hauteur
+Land-Tile(s) des Meeresgrunds, hex (Original map0: 0064).	Tuile(s) du fond marin, hex (map0 originale : 0064).
+Land-Tile-IDs (hex, durch Leerzeichen getrennt). Eine davon wird zufällig gewählt.	IDs de tuiles (hex, séparées par des espaces). L'une est choisie au hasard.
+Land-Tiles	Tuiles de terrain
+Land-Tiles (Boden) mit Höhen	Tuiles de terrain (sol) avec hauteurs
+Land:	Terrain :
+Linie	Ligne
+Linie (L)	Ligne (L)
+Links	Gauche
+Links Land-Grafik, rechts Textur für Hänge. Bild anklicken = auswählen, Doppelklick = malen. Bereich-Knöpfe gelten für den mit 'Bereich' markierten Teil (Höhe = nimmt 'Höhe = :').	À gauche le graphisme du terrain, à droite la texture des pentes. Cliquer une image = choisir, double-clic = peindre. Les boutons Zone agissent sur la partie marquée avec 'Zone' ('Hauteur =' utilise 'Hauteur = :').
+Log speichern	Enregistrer le journal
+Log öffnen	Ouvrir le journal
+Löschen	Supprimer
+Löschen: Klick auf ein Static löscht es	Supprimer : un clic sur une statique la supprime
+Macht den Wasserrand unregelmäßig.	Rend le bord de l'eau irrégulier.
+Malt mit Farbe 2 (E)	Peint avec la couleur 2 (E)
+Map = Boden-Tile wird ersetzt, Static = Statics werden gesetzt.	Map = la tuile du sol est remplacée, Static = des statiques sont posées.
+map#.mul / map#LegacyMUL.uop + staidx/statics aus dem gleichen Ordner	map#.mul / map#LegacyMUL.uop + staidx/statics du même dossier
+map#.mul schreiben	Écrire map#.mul
+map#LegacyMUL.uop schreiben	Écrire map#LegacyMUL.uop
+Map-Übergänge	Transitions de carte
+maptrans-Datei	Fichier maptrans
+maptrans-Zeile	Ligne maptrans
+maptrans.txt oder maptrans105.txt …	maptrans.txt ou maptrans105.txt …
+Markierten Bereich: Küste anpassen (K)	Zone marquée : ajuster la côte (K)
+Maske aus aktueller Karte	Masque depuis la carte actuelle
+Maske löschen	Effacer le masque
+Max Z:	Z max :
+Max. Gebirgshöhe über Boden	Hauteur max. des montagnes au-dessus du sol
+Max. Landhöhe	Hauteur max. du terrain
+Max. Sprung Berg	Saut max. montagne
+Max. Sprung Land	Saut max. terrain
+Meeresgrund Höhe	Hauteur du fond marin
+Meeresgrund z:	Fond marin z :
+Meeresgrund-Tiles	Tuiles du fond marin
+Mehrteilige Items nur, wenn alle Teile auf der Gruppe liegen.	Objets en plusieurs parties seulement si toutes sont sur le groupe.
+Min. Gebirgshöhe über Boden	Hauteur min. des montagnes au-dessus du sol
+mit Textur (für Hänge)	avec texture (pour les pentes)
+mittel	moyen
+Modus	Mode
+MUL / UOP einlesen (→ BMP)…	Importer MUL / UOP (→ BMP)…
+MUL / UOP erzeugen	Créer MUL / UOP
+MUL / UOP laden…	Charger MUL / UOP…
+MUL / UOP → BMP (bestehende Karte einlesen, wie Dragon_m2b)	MUL / UOP → BMP (importer une carte existante, comme Dragon_m2b)
+Multi setzen	Poser un multi
+Multi setzen: Klick setzt das Multi (Reiter Multis) als Statics, danach ist es ausgewählt und mit den Pfeilen verschiebbar	Poser un multi : le clic pose le multi (onglet Multis) en statiques, ensuite il est sélectionné et se déplace avec les flèches
+Multi-ID (hex):	ID du multi (hex) :
+Multis	Multis
+Muster	Motif
+Muster der gewählten Übergangsdatei	Motifs du fichier de transition choisi
+Nach dem Erzeugen reparieren	Réparer après la génération
+Name	Nom
+Name der Gruppe (aus dem Kommentar in groups.txt).	Nom du groupe (d'après le commentaire de groups.txt).
+Name oder ID (hex)	Nom ou ID (hex)
+Name:	Nom :
+nass	humide
+Neu laden	Recharger
+Neue Farbe definieren…	Définir une nouvelle couleur…
+Neue Karte	Nouvelle carte
+Neue Karte: Breite	Nouvelle carte : largeur
+Neue Karte: Höhe	Nouvelle carte : hauteur
+Neue Vorlage	Nouveau modèle
+NeueKarte	NouvelleCarte
+Neuer Seed + Vorschau	Nouvelle graine + aperçu
+Neuer Seed bei jedem Lauf	Nouvelle graine à chaque exécution
+Neu…	Nouveau…
+Nicht verändern	Ne pas modifier
+Nichts ausgewählt.	Rien de sélectionné.
+Norden kalt / Süden warm	Nord froid / sud chaud
+Nr	N°
+Nur bei einem Static änderbar.	Modifiable seulement pour une statique.
+Nur flache Küsten	Seulement les côtes plates
+Nur Statics – lesbar von UoFiddler (Multi-Import .txt) bzw. UO Architect (.uoa).	Statiques seulement – lisibles par UoFiddler (import multi .txt) ou UO Architect (.uoa).
+Nächste höhere Farbe der Gruppe (rechte Maustaste: tiefer)	Couleur suivante plus haute du groupe (clic droit : plus bas)
+Nächste tiefere Farbe der Gruppe	Couleur suivante plus basse du groupe
+Oben	Haut
+ohne Textur	sans texture
+Oktaven	Octaves
+Optionales Bild / Textur (PNG, BMP) als Vorschau oder für eigene Textur-Erweiterungen.	Image / texture optionnelle (PNG, BMP) comme aperçu ou pour vos extensions de textures.
+Ordner	Dossiers
+Ordner mit groups.txt, maptrans.txt … (Standard: mitgelieferte IMod13-Skripte).	Dossier avec groups.txt, maptrans.txt … (défaut : scripts IMod13 fournis).
+Ordner öffnen	Ouvrir le dossier
+Ordner:	Dossier :
+Palette	Palette
+Palette &importieren…	&Importer une palette…
+Palette e&xportieren (ACT / PAL / ACO / GPL)…	E&xporter la palette (ACT / PAL / ACO / GPL)…
+Palette für die 256 Farben (BMP, ACT, PAL, ACO, GPL). Leer = Farbtabelle.	Palette des 256 couleurs (BMP, ACT, PAL, ACO, GPL). Vide = table des couleurs.
+Palettenindex 0..255 (= Pixelwert im 8-Bit-BMP).	Index de palette 0..255 (= valeur de pixel dans le BMP 8 bits).
+Palettenindex dezimal (IMod13: 0 = Gras z0). Tipp: in der Farbtabelle klicken und 'Als Land-Farbe' wählen.	Index de palette décimal (IMod13 : 0 = herbe z0). Astuce : cliquez dans la table et choisissez 'comme couleur de terre'.
+Palettenindex, auf den diese Farbe abgebildet wird.	Index de palette vers lequel cette couleur est convertie.
+Persistenz	Persistance
+Pfeile = verschieben, Strg+Pfeil = Kopie daneben, Bild↑/↓ = Z, Entf = löschen	Flèches = déplacer, Ctrl+flèche = copie à côté, PgPréc/PgSuiv = Z, Suppr = supprimer
+Pinsel	Pinceau
+Pinsel 'Küste' / Taste K: Wasser bis 'Breite' vom Land = Grund-Tile auf 'Meeresgrund z' (äußerer Ring = 'Wasser z') mit Wasser-Statics auf 'Wasser z'; Land am Wasser bekommt die Strand-Höhen (1., 2., 3. Tile). Land höher als 'Klippe ab z' bleibt.	Pinceau 'Côte' / touche K : l'eau jusqu'à 'Largeur' de la terre = tuile de fond à 'Fond marin z' (anneau extérieur = 'Eau z') avec statiques d'eau à 'Eau z' ; la terre au bord reçoit les hauteurs de plage (1re, 2e, 3e tuile). Le terrain plus haut que 'Falaise dès z' reste.
+Pinsel 'Wasser': setzt die Wasser-Statics (zufällig aus der Liste), Strg = entfernen. Durchsichtig zeichnet der Client nur Items mit dem TileData-Flag 'Translucent':	Pinceau 'Eau' : pose les statiques d'eau (au hasard dans la liste), Ctrl = retirer. Le client ne dessine en transparence que les objets avec le flag TileData 'Translucent' :
+Pinsel (B)	Pinceau (B)
+Pinsel-Größe der Land-, Küsten- und Wasser-Werkzeuge	Taille du pinceau des outils terrain, côte et eau
+Pinsel:	Pinceau :
+Pinsel: Höhle in den Berg graben – Boden auf einer Höhe, der Rand wird Wand (Reiter Höhle / Weg)	Pinceau : creuser une grotte dans la montagne – sol à une hauteur, le bord devient mur (onglet Grotte / chemin)
+Pinsel: Küste wie das Original formen (Meeresgrund, Wasser-Statics, Strand-Höhen – Reiter Küste / Wasser)	Pinceau : former la côte comme l'original (fond marin, statiques d'eau, hauteurs de plage – onglet Côte / eau)
+Pinsel: Wasser-Statics malen, Strg = entfernen (durchsichtig bei TileData-Flag Translucent)	Pinceau : peindre des statiques d'eau, Ctrl = retirer (transparent avec le flag TileData Translucent)
+Pipette	Pipette
+Preset laden…	Charger un préréglage…
+Preset speichern…	Enregistrer un préréglage…
+Probleme	Problèmes
+Projekt-Ordner (Karten)	Dossier du projet (cartes)
+Projekt-Ordner öffnen	Ouvrir le dossier du projet
+Prüfen	Vérifier
+Radierer	Gomme
+Rand %	Marge %
+Rand zu Wänden anheben (Textur dahinter)	Élever le bord en murs (texture derrière)
+Rand-Breite (0..1)	Largeur du bord (0..1)
+Rand-Verwirbelung (0..1)	Tourbillon du bord (0..1)
+RandomOne = eine ID zufällig (wie Dragon: 'itemid1 to x will be used randomly'), PlaceAll = alle IDs einer Zeile setzen.	RandomOne = un ID au hasard (comme Dragon : 'itemid1 to x will be used randomly'), PlaceAll = poser tous les IDs d'une ligne.
+Raster	Grille
+Raster ab Zoom	Grille dès le zoom
+Rechteck	Rectangle
+Rechteck auswählen – Kopieren / Einfügen / Löschen (S)	Sélection rectangulaire – copier / coller / supprimer (S)
+Rechteck ■	Rectangle ■
+Rechts	Droite
+Regeln & Skripte	Règles & scripts
+Regelsatz	Jeu de règles
+Regelsatz &prüfen	&Vérifier le jeu de règles
+Regelsatz (JSON)	Jeu de règles (JSON)
+Regelsatz (JSON) &laden…	&Charger le jeu de règles (JSON)…
+Regelsatz (JSON) &speichern…	&Enregistrer le jeu de règles (JSON)…
+Reihenfolge = Priorität. Temperatur/Feuchte 0..1, Gruppe dezimal.	Ordre = priorité. Température/humidité 0..1, groupe en décimal.
+Reparatur	Réparation
+Reparatur-Einstellungen	Réglages de réparation
+Repariert eine Kopie der Karte vor dem Build (die Karte im Editor bleibt unverändert). Einstellungen unten.	Répare une copie de la carte avant la construction (la carte de l'éditeur ne change pas). Réglages ci-dessous.
+RGB ändern…	Modifier RVB…
+Rot	Rouge
+Rot-Anteil der Palettenfarbe.	Composante rouge de la couleur de palette.
+Rundet treppige Kanten ab (0 = aus).	Arrondit les bords en escalier (0 = désactivé).
+Rückgängig	Annuler
+S&chließen	&Fermer
+Satz	Jeu
+Schnee auf Gipfeln %	Neige sur les sommets %
+Schwelle 0..255	Seuil 0..255
+sehr groß	très grand
+Setzen	Poser
+Skript-Ordner öffnen	Ouvrir le dossier des scripts
+Skript-Satz 1, 2 oder 3 (bestimmt Listen-Datei und Unterordner).	Jeu de scripts 1, 2 ou 3 (détermine le fichier de liste et le sous-dossier).
+So viele Tiles vom Land aus wird das Wasser zu Meeresgrund + Wasser-Statics (Original: 6). 0 = aus. Der äußerste Ring liegt auf Wasserhöhe und schließt an das offene Wasser an.	Sur autant de tuiles depuis la terre, l'eau devient fond marin + statiques d'eau (original : 6). 0 = désactivé. L'anneau extérieur est au niveau de l'eau et rejoint la pleine eau.
+SourceLowest (Standard) = tiefste Höhe der Nachbarn der Quellgruppe + Z1..Z2 – Ufer-Wellen liegen dann auf dem (abgesenkten) Wasser. SourceHighest = höchste (Tutorial-Text), Cell = Höhe der Zelle.	SourceLowest (défaut) = hauteur la plus basse des voisins du groupe source + Z1..Z2 – les vagues du rivage sont alors sur l'eau (abaissée). SourceHighest = la plus haute (texte du tutoriel), Cell = hauteur de la cellule.
+Speichern	Enregistrer
+Speichern &unter…	Enregistrer &sous…
+Speichern + Regeln neu laden	Enregistrer + recharger les règles
+Speichern unter…	Enregistrer sous…
+Sprache / Language / Langue	Sprache / Language / Langue
+Sprache / Language:	Sprache / Language / Langue :
+Sprache der Oberfläche: Deutsch, English, Français. Auch im Menü 'Sprache / Language / Langue'.	Langue de l'interface : Deutsch, English, Français. Aussi dans le menu 'Sprache / Language / Langue'.
+Sprühen	Aérographe
+staidx#.mul (alt)	staidx#.mul (ancien)
+staidx#.mul und statics#.mul.	staidx#.mul et statics#.mul.
+Standard-Biome	Biomes par défaut
+Static setzen	Poser une statique
+Static setzen: Klick setzt das Item aus dem Katalog (Reiter Items) · Z + und 'auf Statics stapeln' rechts · Rechtsklick auf ein Static = ID + Hue aufnehmen	Poser une statique : le clic pose l'objet du catalogue (onglet Objets) · Z + et 'empiler sur les statiques' à droite · clic droit sur une statique = prendre ID + teinte
+Static-Z Basis	Base Z des statiques
+Static-Übergänge	Transitions de statiques
+Statics	Statiques
+Statics (id z hue dx dy; …)	Statiques (id z hue dx dy ; …)
+Statics (und bei gebauter Karte auch die Map) speichern – alte Dateien bekommen .bak	Enregistrer les statiques (et la carte si construite) – les anciens fichiers reçoivent .bak
+Statics an der Stelle vorher löschen	Supprimer d'abord les statiques à cet endroit
+Statics anzeigen	Afficher les statiques
+Statics aus vorhandenen Dateien dazu mischen (wie Dragonsp).	Fusionner les statiques de fichiers existants (comme Dragonsp).
+Statics ausgewählt.	statiques sélectionnées.
+Statics der Wasser-Übergänge (water2x / x2water) auf eine feste Höhe setzen.	Mettre les statiques des transitions d'eau (water2x / x2water) à une hauteur fixe.
+Statics mehrerer IDs	Statiques à plusieurs IDs
+Statics schreiben	Écrire les statiques
+Statics zusätzlich als Text (wie Dragon 'UOX Static File').	Statiques aussi en texte (comme Dragon 'UOX Static File').
+Statics übernehmen	Reprendre les statiques
+statics#.mul (alt)	statics#.mul (ancien)
+Steile Sprünge glätten	Lisser les sauts raides
+Steilkante ab z:	Falaise dès z :
+Strand-Anteil %	Part de plage %
+Strand-Breite (Tiles)	Largeur de plage (tuiles)
+Strand-Gruppe	Groupe plage
+Strand-Höhen:	Hauteurs de plage :
+Suche:	Recherche :
+Suche: Name oder ID (hex)	Recherche : nom ou ID (hex)
+Suche: Name, Kategorie, Autor	Recherche : nom, catégorie, auteur
+Temp. max	Temp. max
+Temp. min	Temp. min
+Textur / Bild	Texture / image
+Texturen (Land mit Textur)	Textures (terrain avec texture)
+Texturen zeigen	Afficher les textures
+Tile	Tuile
+Tile für Farben ohne maptrans-Eintrag (hex, 0244 = schwarz/nodraw).	Tuile pour les couleurs sans entrée maptrans (hex, 0244 = noir/nodraw).
+Tile-IDs hex (Map: eine wird zufällig gewählt, Statics: Einstellung im Build).	IDs de tuiles hex (carte : une au hasard, statiques : réglage de construction).
+Tiles (hex)	Tuiles (hex)
+Tutorial-Regeln anwenden: keine 1-Tile-Streifen, Brücken-Gruppen zwischen Gruppen ohne Übergang, Sumpf mit Gras umgeben, Berge in Ringen ansteigen lassen, keine Stacheln.	Appliquer les règles du tutoriel : pas de bandes de 1 tuile, groupes pont entre groupes sans transition, marais entouré d'herbe, montagnes montant en anneaux, pas de pics.
+Typische Größe der Landmassen als Anteil der Kartenbreite (0.3 = ein Drittel).	Taille typique des masses de terre en part de la largeur (0.3 = un tiers).
+Ufer-Statics feste Höhe	Hauteur fixe des statiques du rivage
+Ufer-Statics Höhe	Hauteur des statiques du rivage
+Ufer-Tiles (Land neben Wasser) bekommen den Durchschnitt der Nachbar-Uferhöhen – verhindert das Zickzack, das sand2water / grass2water (-10 an Kanten, 0 an Ecken) erzeugt.	Les tuiles du rivage reçoivent la moyenne des hauteurs voisines – évite le zigzag de sand2water / grass2water (-10 aux bords, 0 aux coins).
+Ufer-Wasser Breite	Largeur de l'eau du rivage
+Umbenennen	Renommer
+Umgebungs-Regeln	Règles d'entourage
+Umkehren	Inverser
+Umriss eines Landes / Kontinents (PNG mit Transparenz, Schwarz-Weiß-Bild, Karte …).	Contour d'un pays / continent (PNG avec transparence, image noir et blanc, carte …).
+Umriss-Bild	Image de contour
+Umriss-Dicke (Tiles)	Épaisseur du contour (tuiles)
+Umriss-Farbe (Index)	Couleur du contour (index)
+Umriss-Maske benutzen	Utiliser le masque de contour
+Unbekannte Farbe: Tile	Couleur inconnue : tuile
+Undo-Speicher (MB)	Mémoire d'annulation (Mo)
+Unebenheit	Irrégularité
+Unebenheit (unevenly.txt)	Irrégularité (unevenly.txt)
+unsichtbare Teile mitsetzen	poser aussi les parties invisibles
+Unten	Bas
+UO Architect (.uoa) – nur Statics	UO Architect (.uoa) – statiques seulement
+UoFiddler-Multi (.txt) – nur Statics	Multi UoFiddler (.txt) – statiques seulement
+Verschieben (auch mittlere Maustaste oder Leertaste)	Déplacer (aussi bouton du milieu ou espace)
+Vielfaches von 8 (UO-Blöcke). Felucca: 6144 / 7168.	Multiple de 8 (blocs UO). Felucca : 6144 / 7168.
+Vielfaches von 8. Felucca: 4096.	Multiple de 8. Felucca : 4096.
+Vor dem Build reparieren	Réparer avant la construction
+Vorgabe:	Préréglage :
+Vorlage setzen	Poser un modèle
+Vorlage setzen: die Vorschau folgt der Maus, Klick setzt auf die Boden-Höhe + 'Z +' · danach ausgewählt: Pfeile / Bild↑↓ verschieben, Entf löscht · Strg+Z nimmt alles zurück	Poser un modèle : l'aperçu suit la souris, le clic le pose à la hauteur du sol + 'Z +' · ensuite sélectionné : flèches / PgPréc/PgSuiv déplacent, Suppr supprime · Ctrl+Z annule tout
+Vorlagen	Modèles
+Vorlagen-Ordner (Gebäude / Böden)	Dossier des modèles (bâtiments / sols)
+Vorschau	Aperçu
+Vorschau: Einstellungen links wählen und 'Vorschau' klicken.	Aperçu : choisissez les réglages à gauche et cliquez sur 'Aperçu'.
+Wand-Höhe:	Hauteur des murs :
+Was beim Klick auf eine Farbe in die Zwischenablage kommt.	Ce qui va dans le presse-papiers au clic sur une couleur.
+Wasser	Eau
+Wasser am Rand (0..1)	Eau au bord (0..1)
+Wasser durchsichtig	Eau transparente
+Wasser entfernen	Retirer l'eau
+Wasser z:	Eau z :
+Wasser-Farbe (Index)	Couleur de l'eau (index)
+Wasser-Gruppe	Groupe eau
+Wasser-Pinsel setzt den Meeresgrund darunter	Le pinceau eau pose le fond marin dessous
+Wasser-Statics (hex)	Statiques d'eau (hex)
+Wasser-Statics durchsichtig zeigen (Items mit TileData-Flag Translucent sind es immer)	Afficher les statiques d'eau en transparence (les objets avec le flag TileData Translucent le sont toujours)
+Wasser-Statics IDs	IDs des statiques d'eau
+Wasser-Statics setzen	Poser des statiques d'eau
+Wasser-Statics:	Statiques d'eau :
+Wasser: Ziehen malt Wasser-Statics (Reiter Küste / Wasser) · Strg+Ziehen entfernt sie · durchsichtig, wenn die TileData 'Translucent' hat	Eau : glisser peint des statiques d'eau (onglet Côte / eau) · Ctrl+glisser les retire · transparentes si la TileData a 'Translucent'
+Wasserhöhe	Niveau de l'eau
+Weg / Boden: Höhe vom ersten Klick übernehmen	Chemin / sol : prendre la hauteur du premier clic
+Wege und Gebäude-Böden: Reiter Land → 'Aus der Farbtabelle' (z. B. cobblestones, marble floor, Wood Floorboards) und 'Höhe vom ersten Klick übernehmen'. Ganze Flächen: Werkzeug 'Bereich', dann F.	Chemins et sols de bâtiments : onglet Terrain → 'Depuis la table des couleurs' (p. ex. pavés, sol de marbre, plancher) et 'prendre la hauteur du premier clic'. Surfaces entières : outil 'Zone', puis F.
+Weicht die Maske auf, damit die Küste natürlich wirkt.	Adoucit le masque pour une côte naturelle.
+Wenn kein Biom passt (IMod13: 0 = Grass).	Si aucun biome ne convient (IMod13 : 0 = herbe).
+Werkzeug 'Multi setzen' wählen und in die Karte klicken.	Choisissez l'outil 'Poser un multi' et cliquez dans la carte.
+Werte aus den Build-Optionen	Valeurs des options de construction
+Wie stark die Höhe die Temperatur senkt.	Combien la hauteur baisse la température.
+Wie viel der Küste Strand bekommt (100 = überall).	Quelle part de la côte reçoit une plage (100 = partout).
+Wie weit der Wasserrand ins Innere reicht.	Jusqu'où le bord de l'eau pénètre vers l'intérieur.
+Wiederholen	Rétablir
+Wo zwei Gruppen ohne Übergangsregel aneinander stoßen, wird eine Gruppe dazwischen gesetzt, die zu beiden Übergänge hat.	Là où deux groupes sans règle de transition se touchent, un groupe ayant des transitions vers les deux est inséré.
+WSC-Datei (UOX3) schreiben	Écrire le fichier WSC (UOX3)
+Z + :	Z + :
+Zeigen:	Afficher :
+Ziel für map#.mul, staidx#.mul, statics#.mul, map#LegacyMUL.uop.	Cible pour map#.mul, staidx#.mul, statics#.mul, map#LegacyMUL.uop.
+Zoom +	Zoom +
+Zoom Farbtabelle	Zoom de la table des couleurs
+Zoom −	Zoom −
+Zufalls-Seed	Graine aléatoire
+Zufällig gewählte Wasser-Statics (hex).	Statiques d'eau choisies au hasard (hex).
+Zufällige Höhe 0..Amount wird addiert.	Une hauteur aléatoire 0..Amount est ajoutée.
+Zufällige Punkte – gut für Mischungen	Points aléatoires – idéal pour les mélanges
+Zur Auswahl im Karten-Editor	Vers la sélection de l'éditeur
+Ändert die ID aller ausgewählten Statics.	Modifie l'ID de toutes les statiques sélectionnées.
+Öffnen	Ouvrir
+Übergang: Höhe Z1..Z2	Transition : hauteur Z1..Z2
+Übergänge	Transitions
+Übernehmen	Reprendre

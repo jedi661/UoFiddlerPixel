@@ -195,6 +195,33 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             return pairs;
         }
 
+        /// <summary>
+        /// Activates the IMod13 cave entrance transition (map/cave-enti2mountain.txt: entrance group next to mountain)
+        /// when it is not in betweentrans yet. Returns true when a rule was added.
+        /// </summary>
+        public bool EnsureCaveRule(int caveGroup, int mountainGroup)
+        {
+            if (Transitions.Any(t => t.Layer == TransitionLayer.Map && t.GroupA == caveGroup))
+            {
+                return false;
+            }
+            TransitionFile file = FindTransitionFile("map/cave-enti2mountain.txt") ?? FindTransitionFile("map/cave-ent2mountain.txt");
+            if (file == null)
+            {
+                return false;
+            }
+            Transitions.Add(new TransitionRule
+            {
+                Layer = TransitionLayer.Map,
+                ScriptSet = 1,
+                GroupA = caveGroup,
+                GroupB = mountainGroup,
+                File = file.Path,
+                Comment = "Höhleneingang (vom Dragon Map Studio aktiviert)"
+            });
+            return true;
+        }
+
         /// <summary>First free (undefined) palette index or -1.</summary>
         public int FirstFreeIndex()
         {

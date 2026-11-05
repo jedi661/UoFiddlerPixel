@@ -72,6 +72,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
         private void DragonMapStudioForm_Load(object sender, EventArgs e)
         {
             _settings = StudioSettings.Load();
+            LocalizedTypeProvider.RegisterAll();
             _history.MemoryLimit = Math.Max(64, _settings.UndoMemoryMb) * 1024L * 1024;
 
             cmbCopyFormat.Items.AddRange(new object[]
@@ -90,14 +91,14 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             mapCanvas.GridFromZoom = _settings.GridFromZoom;
             SelectTool(MapTool.Brush);
 
-            cmbM2BSize.Items.Add("Eigene Größe");
+            cmbM2BSize.Items.Add(L.T("Eigene Größe"));
             foreach (MapSizePreset p in MapSizePreset.All)
             {
                 cmbM2BSize.Items.Add(p);
             }
             cmbM2BSize.SelectedIndex = 1;
 
-            txtHelp.Text = StudioHelp.Text.Replace("\n", Environment.NewLine).Replace("\r\r", "\r");
+            InitHelp();
             toolTip.SetToolTip(colorTableView, "Linksklick = Adresse kopieren, Rechtsklick = Farbe 1, Mitte = Farbe 2");
             toolTip.SetToolTip(paletteGrid, "Linksklick = auswählen, Rechtsklick = Farbe 2 im Editor");
 
@@ -110,6 +111,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             LoadColorTable();
             RefreshLibrary();
             UpdateRecentMenu();
+            InitCgi();
+            ApplyLanguage(_settings.Language, false);
 
             if (!string.IsNullOrWhiteSpace(_settings.LastMap) && File.Exists(_settings.LastMap))
             {
@@ -134,7 +137,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                 }
                 _cts?.Cancel();
             }
-            if (!ConfirmDiscardMap())
+            if (!ConfirmDiscardMap() || !ConfirmDiscardCgi())
             {
                 e.Cancel = true;
                 return;
@@ -178,6 +181,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             {
                 mapCanvas.Focus();
             }
+            else if (tabMain.SelectedTab == tabCgi)
+            {
+                EnsureItemList();
+                UpdateCgiMark();
+                isoView.Focus();
+            }
         }
 
         // ================================================================== rules
@@ -216,7 +225,13 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             RefreshPaletteViews();
             _rules.BuildHeightLookups(out byte[] raise, out byte[] lower);
             mapCanvas.SetHeightLookups(raise, lower);
+            mapCanvas.SetAltitudes(_rules.Palette.Select(p => p.Altitude).ToArray());
             BindRuleGrids();
+            if (_cgiTools.Count > 0)
+            {
+                UpdateRuleLandColors();
+                FillLandPresets();
+            }
             lblRuleSetInfo.Text = $"{_rules.Name}  –  {_rules.Palette.Count(p => p.Defined)} Farben · {_rules.Groups.Count} Gruppen · {_rules.Transitions.Count} Übergänge · {_rules.TransitionFiles.Sum(f => f.Patterns.Count)} Muster · {_rules.ItemFiles.Sum(f => f.Groups.Count)} Item-Gruppen";
             txtRuleWarnings.Text = _rules.Warnings.Count == 0 ? "Keine Hinweise." : string.Join(Environment.NewLine, _rules.Warnings);
             UpdateTitle();
@@ -638,6 +653,16 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
         private void TsbZoomFit_Click(object sender, EventArgs e) => mapCanvas.ZoomToFit();
 
         private void TsbZoom100_Click(object sender, EventArgs e) => mapCanvas.SetZoom(1);
+
+        private void TsbHeights_Click(object sender, EventArgs e)
+        {
+            mapCanvas.ShowHeights = tsbHeights.Checked;
+            if (tsbHeights.Checked && mapCanvas.Zoom < 12)
+            {
+                SetStatus("Höhen werden ab Zoom 12 angezeigt (Mausrad).");
+            }
+            mapCanvas.Invalidate();
+        }
 
         private void TsbGrid_Click(object sender, EventArgs e)
         {

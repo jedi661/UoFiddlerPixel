@@ -23,6 +23,17 @@ using System.Windows.Forms.Design;
 
 namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
 {
+    /// <summary>Base height of transition statics.</summary>
+    public enum StaticZMode
+    {
+        /// <summary>Height of the cell itself.</summary>
+        Cell,
+        /// <summary>Highest land z of the neighbours of the source group (literal tutorial text).</summary>
+        SourceHighest,
+        /// <summary>Lowest land z of the neighbours of the source group – shore waves sit on the (lowered) water.</summary>
+        SourceLowest
+    }
+
     public enum StaticTileMode
     {
         /// <summary>All statics of a pattern line are placed on the tile (multi part borders).</summary>
@@ -53,7 +64,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         [Category("1 Ausgabe"), DisplayName("WSC-Datei (UOX3) schreiben"), Description("Statics zusätzlich als Text (wie Dragon 'UOX Static File').")]
         public bool WriteWsc { get; set; }
 
-        [Category("1 Ausgabe"), DisplayName("Bericht schreiben"), Description("build_report.txt mit Statistik und fehlenden Übergängen.")]
+        [Category("1 Ausgabe"), DisplayName("Bericht schreiben"), Description("dragon_log.txt: Statistik, Reparaturen, fehlende Übergänge mit Koordinaten (zum Weiterschicken).")]
         public bool WriteReport { get; set; } = true;
 
         [Category("2 Schritte"), DisplayName("Zufalls-Seed"), Description("Gleiche Zahl = gleiche Tiles / Items.")]
@@ -86,11 +97,62 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         [Category("3 Details"), DisplayName("Keine Items auf Übergangs-Statics")]
         public bool ItemsAvoidTransitionStatics { get; set; } = true;
 
-        [Category("3 Details"), DisplayName("Statics mehrerer IDs"), Description("PlaceAll = alle IDs einer Zeile setzen, RandomOne = eine zufällig.")]
-        public StaticTileMode StaticMode { get; set; } = StaticTileMode.PlaceAll;
+        [Category("3 Details"), DisplayName("Statics mehrerer IDs"), Description("RandomOne = eine ID zufällig (wie Dragon: 'itemid1 to x will be used randomly'), PlaceAll = alle IDs einer Zeile setzen.")]
+        public StaticTileMode StaticMode { get; set; } = StaticTileMode.RandomOne;
 
-        [Category("3 Details"), DisplayName("Map-Übergang: Z1 addieren"), Description("1. Zahl nach den Tiles wird zur Höhe addiert.")]
+        [Category("3 Details"), DisplayName("Übergang: Höhe Z1..Z2"), Description("Dragon-Tutorial: neue Höhe = alte Höhe + Zufallszahl zwischen Z1 und Z2 (z. B. '005 007' → +5..+7). Aus = Höhe bleibt.")]
         public bool MapTransitionZ { get; set; } = true;
+
+        [Category("3 Details"), DisplayName("Static-Z Basis"), Description("SourceLowest (Standard) = tiefste Höhe der Nachbarn der Quellgruppe + Z1..Z2 – Ufer-Wellen liegen dann auf dem (abgesenkten) Wasser. SourceHighest = höchste (Tutorial-Text), Cell = Höhe der Zelle.")]
+        public StaticZMode StaticZ { get; set; } = StaticZMode.SourceLowest;
+
+        [Category("3 Details"), DisplayName("Küste glätten"), Description("Ufer-Tiles (Land neben Wasser) bekommen den Durchschnitt der Nachbar-Uferhöhen – verhindert das Zickzack, das sand2water / grass2water (-10 an Kanten, 0 an Ecken) erzeugt.")]
+        public bool SmoothCoast { get; set; } = true;
+
+        [Category("3 Details"), DisplayName("Küste glätten: Durchgänge")]
+        public int SmoothCoastPasses { get; set; } = 2;
+
+        [Category("6 Küste"), DisplayName("Küsten-Profil an"), Description("Küste wie die Original-Karte (map0 ausgewertet): Meeresgrund-Tiles auf -15 mit Wasser-Statics auf -5 darüber, äußerer Rand auf -5, Strand flach zum Wasser. Ersetzt die zufälligen -10/0-Höhen der Skripte.")]
+        public bool CoastProfile { get; set; } = true;
+
+        [Category("6 Küste"), DisplayName("Land-Höhen zum Wasser"), Description("Höchste Höhe der Land-Tiles in 1, 2, 3 … Tiles Abstand zum Wasser (Leerzeichen getrennt).")]
+        public string CoastLandHeights { get; set; } = "-3 -1 0";
+
+        [Category("6 Küste"), DisplayName("Nur flache Küsten"), Description("Land höher als dieser Wert wird nicht abgesenkt (Klippen-Küsten bleiben).")]
+        public int CoastMaxLandZ { get; set; } = 10;
+
+        [Category("6 Küste"), DisplayName("Meeresgrund Höhe"), Description("Höhe des Meeresgrunds unter dem Ufer-Wasser (Original map0: -15 bei 88 %).")]
+        public int CoastWaterZ { get; set; } = -15;
+
+        [Category("6 Küste"), DisplayName("Ufer-Wasser Breite"), Description("So viele Tiles vom Land aus wird das Wasser zu Meeresgrund + Wasser-Statics (Original: 6). 0 = aus. Der äußerste Ring liegt auf Wasserhöhe und schließt an das offene Wasser an.")]
+        public int CoastWaterWidth { get; set; } = 6;
+
+        [Category("6 Küste"), DisplayName("Meeresgrund-Tiles"), Description("Land-Tile(s) des Meeresgrunds, hex (Original map0: 0064).")]
+        public string SeaFloorTiles { get; set; } = "0064";
+
+        [Category("6 Küste"), DisplayName("Wasser-Statics setzen"), Description("Auf den Meeresgrund kommen Wasser-Statics (Original: 1797–179c auf z -5), sonst sieht man einen braunen Graben.")]
+        public bool CoastWaterStatics { get; set; } = true;
+
+        [Category("6 Küste"), DisplayName("Wasser-Statics IDs"), Description("Zufällig gewählte Wasser-Statics (hex).")]
+        public string CoastWaterStaticIds { get; set; } = "1797 1798 1799 179a 179b 179c";
+
+        [Category("6 Küste"), DisplayName("Wasserhöhe"), Description("Höhe der Wasser-Oberfläche (Wasser-Statics, äußerer Ring; Original: -5).")]
+        public int WaterSurfaceZ { get; set; } = -5;
+
+        [Category("6 Küste"), DisplayName("Ufer-Statics feste Höhe"), Description("Statics der Wasser-Übergänge (water2x / x2water) auf eine feste Höhe setzen.")]
+        public bool CoastStaticFixed { get; set; } = true;
+
+        [Category("6 Küste"), DisplayName("Ufer-Statics Höhe"), Description("Feste Höhe der Ufer-Statics (Original map0: 1796, 17a9, 17ab, 179f … liegen auf -5 = Wasserhöhe).")]
+        public int CoastStaticZ { get; set; } = -5;
+
+        [Category("3 Details"), DisplayName("Doppelte Statics entfernen"), Description("Gleiche ID an gleicher Stelle und Höhe nur einmal schreiben.")]
+        public bool RemoveDuplicateStatics { get; set; } = true;
+
+        [Category("5 Reparatur"), DisplayName("Vor dem Build reparieren"), Description("Repariert eine Kopie der Karte vor dem Build (die Karte im Editor bleibt unverändert). Einstellungen unten.")]
+        public bool AutoFixBeforeBuild { get; set; }
+
+        [Category("5 Reparatur"), DisplayName("Reparatur-Einstellungen"), TypeConverter(typeof(ExpandableObjectConverter))]
+        public MapFixOptions Fix { get; set; } = new MapFixOptions();
 
         [Category("3 Details"), DisplayName("Unbekannte Farbe: Tile"), Description("Tile für Farben ohne maptrans-Eintrag (hex, 0244 = schwarz/nodraw).")]
         public string UnknownTile { get; set; } = "0244";
@@ -106,7 +168,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         [Editor(typeof(FileNameEditor), typeof(UITypeEditor))]
         public string MergeStaticsFile { get; set; } = string.Empty;
 
-        public BuildOptions Clone() => (BuildOptions)MemberwiseClone();
+        public BuildOptions Clone()
+        {
+            var c = (BuildOptions)MemberwiseClone();
+            c.Fix = (Fix ?? new MapFixOptions()).Clone();
+            return c;
+        }
     }
 
     public struct StaticEntry
@@ -132,6 +199,13 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         public long MergedStatics;
         public long UnknownColors;
         public long UnmatchedEdges;
+        public long DuplicatesRemoved;
+
+        /// <summary>Up to 10 example coordinates per entry of <see cref="MissingTransitions"/>.</summary>
+        public readonly Dictionary<string, List<System.Drawing.Point>> MissingSamples = new Dictionary<string, List<System.Drawing.Point>>();
+
+        /// <summary>Report of the automatic repair (when on).</summary>
+        public MapFixReport FixReport;
         public readonly List<string> Files = new List<string>();
         public readonly List<string> Warnings = new List<string>();
 
@@ -180,6 +254,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         {
             DateTime start = DateTime.Now;
             var result = new BuildResult();
+            if (_o.AutoFixBeforeBuild)
+            {
+                source = source.Clone();
+                result.FixReport = MapFixer.Fix(source, _rules, _o.Fix ?? new MapFixOptions(), null, cancel);
+                _log(result.FixReport.Summary());
+            }
             IndexedMap map = PadToBlocks(source, result);
             _w = map.Width;
             _h = map.Height;
@@ -252,10 +332,27 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                 ApplyTransitions(TransitionLayer.Map, result, progress, 15, 45, cancel);
             }
 
+            if (_o.CoastProfile)
+            {
+                (long land, long water) = ApplyCoastProfile(cancel);
+                _log($"Küsten-Profil: {land:N0} Land-Tiles, {water:N0} Wasser-Tiles angepasst.");
+            }
+            else if (_o.SmoothCoast)
+            {
+                long smoothed = SmoothCoastHeights(cancel);
+                _log($"Küste geglättet: {smoothed:N0} Tile-Höhen angepasst.");
+            }
+
             // 4) static transitions
             if (_o.ApplyStaticTransitions && _o.WriteStatics)
             {
                 ApplyTransitions(TransitionLayer.Static, result, progress, 45, 60, cancel);
+            }
+
+            long waterStatics = AddCoastWaterStatics();
+            if (waterStatics > 0)
+            {
+                _log($"Wasser-Statics auf dem Meeresgrund: {waterStatics:N0}");
             }
 
             // 5) items
@@ -287,14 +384,50 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             }
 
             cancel.ThrowIfCancellationRequested();
-            WriteFiles(result, progress, cancel);
+            if (_o.RemoveDuplicateStatics)
+            {
+                var seen = new HashSet<(int, int, sbyte, ushort, ushort)>();
+                int before = _statics.Count;
+                _statics = _statics.Where(st => seen.Add((st.X, st.Y, st.Z, st.Id, st.Hue))).ToList();
+                result.DuplicatesRemoved = before - _statics.Count;
+                if (result.DuplicatesRemoved > 0)
+                {
+                    _log($"Doppelte Statics entfernt: {result.DuplicatesRemoved:N0}");
+                }
+            }
+            if (!_inMemory)
+            {
+                WriteFiles(result, progress, cancel);
+            }
             progress?.Report(100);
             result.Duration = DateTime.Now - start;
-            if (_o.WriteReport)
+            if (_o.WriteReport && !_inMemory)
             {
                 WriteReport(result);
             }
             return result;
+        }
+
+        private bool _inMemory;
+
+        /// <summary>Runs all steps without writing files (for the CGI view). Statics are always created.</summary>
+        public MapData BuildInMemory(IndexedMap source, IProgress<int> progress, CancellationToken cancel)
+        {
+            _inMemory = true;
+            bool writeStatics = _o.WriteStatics;
+            _o.WriteStatics = true;
+            try
+            {
+                BuildResult result = Build(source, progress, cancel);
+                var data = new MapData(_w, _h, _tile, _z) { Source = "Editor-Karte (im Speicher gebaut)", MapNumber = _o.MapNumber, Report = result };
+                data.Statics.AddRange(_statics);
+                return data;
+            }
+            finally
+            {
+                _o.WriteStatics = writeStatics;
+                _inMemory = false;
+            }
         }
 
         private IndexedMap PadToBlocks(IndexedMap source, BuildResult result)
@@ -457,23 +590,31 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                             newTile[i] = ids.Length == 1 ? ids[0] : ids[_rnd.Next(ids.Length)];
                             if (_o.MapTransitionZ)
                             {
-                                newZ[i] = ClampZ(_z[i] + p.Z1);
+                                newZ[i] = ClampZ(_z[i] + RandomZ(p));
                             }
                             applied++;
                             matched = true;
                             break; // one map tile per cell
                         }
 
+                        int baseZ = _o.StaticZ == StaticZMode.Cell ? _z[i] : SourceGroupZ(x, y, cr.Rule, _o.StaticZ == StaticZMode.SourceHighest);
+                        bool coastRule = _o.CoastStaticFixed && (cr.Rule.GroupA == WaterGroup || cr.Rule.GroupB == WaterGroup);
+                        int sz = coastRule ? _o.CoastStaticZ : baseZ + RandomZ(p);
+                        if (coastRule)
+                        {
+                            _hasCoastStatic ??= new bool[_w * _h];
+                            _hasCoastStatic[i] = true;
+                        }
                         if (_o.StaticMode == StaticTileMode.RandomOne)
                         {
-                            AddStatic(ids[_rnd.Next(ids.Length)], x, y, _z[i] + p.Z1, 0);
+                            AddStatic(ids[_rnd.Next(ids.Length)], x, y, sz, 0);
                             applied++;
                         }
                         else
                         {
                             foreach (ushort id in ids)
                             {
-                                AddStatic(id, x, y, _z[i] + p.Z1, 0);
+                                AddStatic(id, x, y, sz, 0);
                                 applied++;
                             }
                         }
@@ -501,7 +642,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                             }
                         }
                         string key = null;
-                        if (directed.Contains((g << 8) | other))
+                        if (SkipGroup(g) || SkipGroup(other))
+                        {
+                            // e.g. invisible cave entrance: the open side has no transition on purpose
+                        }
+                        else if (directed.Contains((g << 8) | other))
                         {
                             key = $"Muster fehlt  {g:x2}->{other:x2} {TransitionPattern.MaskToPattern(mask)}";
                         }
@@ -516,6 +661,14 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                             {
                                 result.MissingTransitions.TryGetValue(key, out int count);
                                 result.MissingTransitions[key] = count + 1;
+                                if (!result.MissingSamples.TryGetValue(key, out var samples))
+                                {
+                                    result.MissingSamples[key] = samples = new List<System.Drawing.Point>();
+                                }
+                                if (samples.Count < 10)
+                                {
+                                    samples.Add(new System.Drawing.Point(x, y));
+                                }
                             }
                         }
                     }
@@ -532,13 +685,294 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                 _tile = newTile;
                 _z = newZ;
                 result.MapTransitions = applied;
-                _log($"Map-Übergänge: {applied:N0} Tiles, {result.UnmatchedEdges:N0} Rand-Tiles ohne passenden Übergang (siehe build_report.txt).");
+                _log($"Map-Übergänge: {applied:N0} Tiles, {result.UnmatchedEdges:N0} Rand-Tiles ohne passenden Übergang (siehe dragon_log.txt).");
             }
             else
             {
                 result.StaticTransitionStatics = applied;
                 _log($"Static-Übergänge: {applied:N0} Statics.");
             }
+        }
+
+        /// <summary>Random height change between Z1 and Z2 (both included).</summary>
+        private int RandomZ(TransitionPattern p)
+        {
+            int a = Math.Min(p.Z1, p.Z2), b = Math.Max(p.Z1, p.Z2);
+            return a == b ? a : _rnd.Next(a, b + 1);
+        }
+
+        /// <summary>Highest / lowest land z of the cell and its 8 neighbours that belong to the source group of the rule.</summary>
+        private int SourceGroupZ(int x, int y, TransitionRule rule, bool highest)
+        {
+            int source = rule.GroupA >= 0 ? rule.GroupA : rule.GroupB;
+            int best = int.MinValue;
+            int lowest = int.MaxValue;
+            for (int dy = -1; dy <= 1; dy++)
+            {
+                for (int dx = -1; dx <= 1; dx++)
+                {
+                    int nx = x + dx, ny = y + dy;
+                    if (nx < 0 || ny < 0 || nx >= _w || ny >= _h)
+                    {
+                        continue;
+                    }
+                    int i = ny * _w + nx;
+                    if (_group[i] == source)
+                    {
+                        best = Math.Max(best, _z[i]);
+                        lowest = Math.Min(lowest, _z[i]);
+                    }
+                }
+            }
+            if (best == int.MinValue)
+            {
+                return _z[y * _w + x];
+            }
+            return highest ? best : lowest;
+        }
+
+        private int WaterGroup => _o.Fix?.WaterGroup ?? 2;
+
+        private bool[] _coastBand;
+        private bool[] _hasCoastStatic;
+
+        /// <summary>Water statics on the sea floor band, except where a coast transition static already lies.</summary>
+        private long AddCoastWaterStatics()
+        {
+            if (_coastBand == null || !_o.CoastWaterStatics)
+            {
+                return 0;
+            }
+            ushort[] ids = HexList.Parse(_o.CoastWaterStaticIds);
+            if (ids.Length == 0)
+            {
+                return 0;
+            }
+            long count = 0;
+            for (int i = 0; i < _coastBand.Length; i++)
+            {
+                if (_coastBand[i] && (_hasCoastStatic == null || !_hasCoastStatic[i]))
+                {
+                    AddStatic(ids[_rnd.Next(ids.Length)], i % _w, i / _w, _o.WaterSurfaceZ, 0);
+                    _occupied[i] = true;
+                    count++;
+                }
+            }
+            return count;
+        }
+
+        private HashSet<int> _skipGroups;
+
+        private bool SkipGroup(int g)
+        {
+            if (_skipGroups == null)
+            {
+                _skipGroups = new HashSet<int>();
+                foreach (string t in (_o.Fix?.SkipGroups ?? "1d").Split(new[] { ' ', ',', ';' }, StringSplitOptions.RemoveEmptyEntries))
+                {
+                    if (HexList.TryParseHexByte(t, out int v))
+                    {
+                        _skipGroups.Add(v);
+                    }
+                }
+            }
+            return _skipGroups.Contains(g);
+        }
+
+        /// <summary>
+        /// Coast like the original map: land z capped by its distance to the water (e.g. -5, -2, 0),
+        /// water within CoastWaterWidth tiles of the land at CoastWaterZ. Uses 8-neighbour distances.
+        /// </summary>
+        private (long land, long water) ApplyCoastProfile(CancellationToken cancel)
+        {
+            var heights = new List<int>();
+            foreach (string t in (_o.CoastLandHeights ?? string.Empty).Split(new[] { ' ', ';', ',' }, StringSplitOptions.RemoveEmptyEntries))
+            {
+                if (int.TryParse(t, NumberStyles.Integer, CultureInfo.InvariantCulture, out int v))
+                {
+                    heights.Add(v);
+                }
+            }
+            int water = WaterGroup;
+            int maxDist = Math.Max(heights.Count, Math.Max(0, _o.CoastWaterWidth));
+            int n = _w * _h;
+            var distToWater = new int[n];
+            var distToLand = new int[n];
+            Array.Fill(distToWater, int.MaxValue);
+            Array.Fill(distToLand, int.MaxValue);
+            var qWater = new Queue<int>();
+            var qLand = new Queue<int>();
+            for (int i = 0; i < n; i++)
+            {
+                if (_group[i] == water)
+                {
+                    distToWater[i] = 0;
+                    qWater.Enqueue(i);
+                }
+                else
+                {
+                    distToLand[i] = 0;
+                    qLand.Enqueue(i);
+                }
+            }
+            void Bfs(Queue<int> q, int[] dist)
+            {
+                while (q.Count > 0)
+                {
+                    int i = q.Dequeue();
+                    if (dist[i] >= maxDist)
+                    {
+                        continue;
+                    }
+                    int x = i % _w, y = i / _w;
+                    for (int dy = -1; dy <= 1; dy++)
+                    {
+                        for (int dx = -1; dx <= 1; dx++)
+                        {
+                            int nx = x + dx, ny = y + dy;
+                            if (nx < 0 || ny < 0 || nx >= _w || ny >= _h)
+                            {
+                                continue;
+                            }
+                            int j = ny * _w + nx;
+                            if (dist[j] == int.MaxValue)
+                            {
+                                dist[j] = dist[i] + 1;
+                                q.Enqueue(j);
+                            }
+                        }
+                    }
+                }
+            }
+            Bfs(qWater, distToWater);
+            cancel.ThrowIfCancellationRequested();
+            Bfs(qLand, distToLand);
+            cancel.ThrowIfCancellationRequested();
+
+            ushort[] floor = HexList.Parse(_o.SeaFloorTiles);
+            long landChanged = 0, waterChanged = 0;
+            for (int i = 0; i < n; i++)
+            {
+                if (_group[i] == water)
+                {
+                    int dl = distToLand[i];
+                    if (_o.CoastWaterWidth > 0 && dl >= 1 && dl <= _o.CoastWaterWidth)
+                    {
+                        // like the original map: sea floor below, water statics on the surface;
+                        // the outermost ring lies at the water surface and joins the open water
+                        bool rim = dl == _o.CoastWaterWidth;
+                        _z[i] = ClampZ(rim ? _o.WaterSurfaceZ : _o.CoastWaterZ);
+                        if (floor.Length > 0)
+                        {
+                            _tile[i] = floor.Length == 1 ? floor[0] : floor[_rnd.Next(floor.Length)];
+                        }
+                        _coastBand ??= new bool[n];
+                        _coastBand[i] = true;
+                        waterChanged++;
+                    }
+                    continue;
+                }
+                int d = distToWater[i];
+                if (d < 1 || d > heights.Count)
+                {
+                    continue;
+                }
+                int cap = heights[d - 1];
+                int z = _z[i];
+                if (z > _o.CoastMaxLandZ)
+                {
+                    continue; // cliff coast stays
+                }
+                int target;
+                if (d == 1)
+                {
+                    target = cap; // the tile at the water: always the same height (no zigzag)
+                }
+                else if (z < cap)
+                {
+                    target = cap; // dips from the scripts (-10) are filled
+                }
+                else
+                {
+                    target = cap + (z - cap) / 2; // softer slope towards the water
+                }
+                if (target != z)
+                {
+                    _z[i] = ClampZ(target);
+                    landChanged++;
+                }
+            }
+            return (landChanged, waterChanged);
+        }
+
+        /// <summary>Land cells next to water get the average height of the shore cells around them.</summary>
+        private long SmoothCoastHeights(CancellationToken cancel)
+        {
+            int water = _o.Fix?.WaterGroup ?? 2;
+            var shore = new bool[_w * _h];
+            for (int y = 0; y < _h; y++)
+            {
+                for (int x = 0; x < _w; x++)
+                {
+                    int i = y * _w + x;
+                    if (_group[i] == water)
+                    {
+                        continue;
+                    }
+                    for (int dy = -1; dy <= 1 && !shore[i]; dy++)
+                    {
+                        for (int dx = -1; dx <= 1; dx++)
+                        {
+                            int nx = x + dx, ny = y + dy;
+                            if (nx >= 0 && ny >= 0 && nx < _w && ny < _h && _group[ny * _w + nx] == water)
+                            {
+                                shore[i] = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            long changed = 0;
+            for (int pass = 0; pass < Math.Max(1, _o.SmoothCoastPasses); pass++)
+            {
+                var z = (sbyte[])_z.Clone();
+                for (int y = 0; y < _h; y++)
+                {
+                    for (int x = 0; x < _w; x++)
+                    {
+                        int i = y * _w + x;
+                        if (!shore[i])
+                        {
+                            continue;
+                        }
+                        int sum = 0, n = 0;
+                        for (int dy = -1; dy <= 1; dy++)
+                        {
+                            for (int dx = -1; dx <= 1; dx++)
+                            {
+                                int nx = x + dx, ny = y + dy;
+                                if (nx >= 0 && ny >= 0 && nx < _w && ny < _h && shore[ny * _w + nx])
+                                {
+                                    sum += z[ny * _w + nx];
+                                    n++;
+                                }
+                            }
+                        }
+                        sbyte avg = ClampZ((int)Math.Round(sum / (double)n));
+                        if (avg != _z[i])
+                        {
+                            _z[i] = avg;
+                            changed++;
+                        }
+                    }
+                    if ((y & 63) == 0)
+                    {
+                        cancel.ThrowIfCancellationRequested();
+                    }
+                }
+            }
+            return changed;
         }
 
         private void AddStatic(ushort id, int x, int y, int z, ushort hue)
@@ -771,33 +1205,13 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             try
             {
                 string folder = string.IsNullOrWhiteSpace(_o.OutputFolder) ? Environment.CurrentDirectory : _o.OutputFolder;
-                var sb = new StringBuilder();
-                sb.AppendLine("Dragon Map Studio – Build-Bericht");
-                sb.AppendLine(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture));
-                sb.AppendLine($"Karte {r.Width}x{r.Height}, Nummer {_o.MapNumber}, Seed {_o.Seed}, Dauer {r.Duration.TotalSeconds:0.0} s");
-                sb.AppendLine($"Map-Übergänge: {r.MapTransitions:N0}, Kanten ohne Muster: {r.UnmatchedEdges:N0}");
-                sb.AppendLine($"Static-Übergänge: {r.StaticTransitionStatics:N0}, Items: {r.Items:N0} ({r.ItemStatics:N0} Statics)");
-                sb.AppendLine($"Unebenheit: {r.UnevenCells:N0} Zellen, Fixes: {r.Fixes:N0}, übernommene Statics: {r.MergedStatics:N0}");
-                sb.AppendLine();
-                foreach (string w in r.Warnings)
-                {
-                    sb.AppendLine("WARNUNG: " + w);
-                }
-                sb.AppendLine();
-                sb.AppendLine("Häufigste Rand-Tiles ohne Übergang (Muster-Reihenfolge NW N NO O SO S SW W, A = eigene Gruppe, B = Nachbar)");
-                sb.AppendLine("'Muster fehlt': die Regel gibt es, aber nicht dieses Muster -> in der Übergangsdatei ergänzen.");
-                sb.AppendLine("'Regel fehlt': für diese zwei Gruppen gibt es keine Übergangsdatei -> neue Regel anlegen.");
-                foreach (KeyValuePair<string, int> kv in r.MissingTransitions.OrderByDescending(k => k.Value).Take(300))
-                {
-                    sb.AppendLine($"{kv.Key} : {kv.Value}");
-                }
-                string path = Path.Combine(folder, "build_report.txt");
-                File.WriteAllText(path, sb.ToString());
+                string path = Path.Combine(folder, "dragon_log.txt");
+                File.WriteAllText(path, BuildLog.Create(_rules, _o, r));
                 r.Files.Add(path);
             }
             catch (Exception ex)
             {
-                _log("Bericht konnte nicht geschrieben werden: " + ex.Message);
+                _log("Log konnte nicht geschrieben werden / log could not be written: " + ex.Message);
             }
         }
     }

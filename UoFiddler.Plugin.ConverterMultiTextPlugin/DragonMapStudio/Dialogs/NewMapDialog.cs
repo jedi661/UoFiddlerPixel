@@ -26,8 +26,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Dialogs
         public NewMapDialog(DragonRuleSet rules, int width, int height, int fillIndex)
         {
             InitializeComponent();
+            UiTranslator.Apply(this);
             _rules = rules;
-            cmbPreset.Items.Add("Eigene Größe");
+            cmbPreset.Items.Add(L.T("Eigene Größe"));
             foreach (MapSizePreset p in MapSizePreset.All)
             {
                 cmbPreset.Items.Add(p);
