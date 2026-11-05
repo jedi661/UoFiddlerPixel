@@ -265,3 +265,22 @@ repair it, build `map#.mul`, `staidx#.mul`, `statics#.mul` (+ `map#LegacyMUL.uop
 - **Logs** (`dragon_log.txt`, `map_check_log.txt`, `map_fix_log.txt`, `cgi_check_log.txt`) are German + English with
   coordinates – send them for analysis.
 - Help tab: language selection German / English.
+
+---
+
+## Version 4: Küsten, Berge, Höhlen, Land bearbeiten
+
+| Problem (deine Bilder) | Ursache | Lösung |
+|---|---|---|
+| Zacken / „Zelte“ an der Küste | Daten: `sand2water`, `grass2water` setzen Kanten-Tiles auf −10, Ecken bleiben 0 → Zickzack. Zusätzlich hat die Ansicht nasse Kacheln ohne Textur gestreckt. | Build-Option **Küste glätten** (Durchschnitt der Ufer-Höhen); die Ansicht zeichnet nasse Kacheln ohne Textur flach wie der Client. Test 2048²: 0 Sprünge ≥ 8 zwischen Ufer-Nachbarn. |
+| Ufer-Welle zu hoch | Static-Z = höchste Wasserhöhe + 10; `water2x` senkt das Ufer-Wasser auf −15…−5 | **Static-Z Basis = SourceLowest** (tiefstes Wasser + 10 ≈ Wasserhöhe). Ø z der Wellen jetzt −7,7. |
+| Berg tiefer als Gras („Mulde“) | Berg-Profil 20/30/50… war absolut, Gras lag schon auf 25–30 | Berg-Profil jetzt **relativ zum Boden**: Ring n liegt zwischen Boden + h/2 und Boden + h. Generator ebenso. Test: 0 Berg-Tiles tiefer als das Land daneben. |
+| Keine Höhlen | `map/cave-enti2mountain.txt` liegt bei, ist aber nicht in `betweentrans.txt` | Generator setzt Höhleneingänge (Gruppe 1d) am Bergrand und aktiviert die Regel 1d → Berg. Die Reparatur lässt Gruppe 1d in Ruhe. Nicht eingetragene Übergangsdateien werden jetzt mitgeladen. |
+
+**CGI-Ansicht – Land bearbeiten** (zweite Leiste „Land“, Reiter „Land“ mit Land-Grafik und Textur):
+Land setzen, Höhe +, Höhe −, Höhe =, Glätten (Radius, Schritt), Rechtsklick nimmt Land-ID + Höhe auf.
+**Bereich**: Strg+C / Strg+V (Land + Statics, Höhe passt sich an), Entf (Statics löschen), Bild↑/↓ (heben/senken).
+**Höhen** blendet die Z-Werte ein – auch im Karten-Editor ab Zoom 12.
+
+Einstellungen werden beim ersten Start auf Version 4 umgestellt (StaticZ = SourceLowest, Küste glätten an,
+Gebirgshöhen 15–70 über Boden). / Settings are migrated to version 4 on first start.

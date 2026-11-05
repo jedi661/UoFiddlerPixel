@@ -23,6 +23,17 @@ using System.Windows.Forms.Design;
 
 namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
 {
+    /// <summary>Base height of transition statics.</summary>
+    public enum StaticZMode
+    {
+        /// <summary>Height of the cell itself.</summary>
+        Cell,
+        /// <summary>Highest land z of the neighbours of the source group (literal tutorial text).</summary>
+        SourceHighest,
+        /// <summary>Lowest land z of the neighbours of the source group – shore waves sit on the (lowered) water.</summary>
+        SourceLowest
+    }
+
     public enum StaticTileMode
     {
         /// <summary>All statics of a pattern line are placed on the tile (multi part borders).</summary>
@@ -92,8 +103,14 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         [Category("3 Details"), DisplayName("Übergang: Höhe Z1..Z2"), Description("Dragon-Tutorial: neue Höhe = alte Höhe + Zufallszahl zwischen Z1 und Z2 (z. B. '005 007' → +5..+7). Aus = Höhe bleibt.")]
         public bool MapTransitionZ { get; set; } = true;
 
-        [Category("3 Details"), DisplayName("Static-Z von den Nachbarn"), Description("Dragon-Tutorial: Static-Höhe = höchste Höhe der umliegenden Tiles der Quellgruppe + Z1..Z2. Aus = Höhe der Zelle.")]
-        public bool StaticZFromNeighbours { get; set; } = true;
+        [Category("3 Details"), DisplayName("Static-Z Basis"), Description("SourceLowest (Standard) = tiefste Höhe der Nachbarn der Quellgruppe + Z1..Z2 – Ufer-Wellen liegen dann auf dem (abgesenkten) Wasser. SourceHighest = höchste (Tutorial-Text), Cell = Höhe der Zelle.")]
+        public StaticZMode StaticZ { get; set; } = StaticZMode.SourceLowest;
+
+        [Category("3 Details"), DisplayName("Küste glätten"), Description("Ufer-Tiles (Land neben Wasser) bekommen den Durchschnitt der Nachbar-Uferhöhen – verhindert das Zickzack, das sand2water / grass2water (-10 an Kanten, 0 an Ecken) erzeugt.")]
+        public bool SmoothCoast { get; set; } = true;
+
+        [Category("3 Details"), DisplayName("Küste glätten: Durchgänge")]
+        public int SmoothCoastPasses { get; set; } = 2;
 
         [Category("3 Details"), DisplayName("Doppelte Statics entfernen"), Description("Gleiche ID an gleicher Stelle und Höhe nur einmal schreiben.")]
         public bool RemoveDuplicateStatics { get; set; } = true;
@@ -280,6 +297,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             if (_o.ApplyMapTransitions)
             {
                 ApplyTransitions(TransitionLayer.Map, result, progress, 15, 45, cancel);
+            }
+
+            if (_o.SmoothCoast)
+            {
+                long smoothed = SmoothCoastHeights(cancel);
+                _log($"Küste geglättet: {smoothed:N0} Tile-Höhen angepasst.");
             }
 
             // 4) static transitions
@@ -530,7 +553,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                             break; // one map tile per cell
                         }
 
-                        int baseZ = _o.StaticZFromNeighbours ? SourceGroupTopZ(x, y, cr.Rule) : _z[i];
+                        int baseZ = _o.StaticZ == StaticZMode.Cell ? _z[i] : SourceGroupZ(x, y, cr.Rule, _o.StaticZ == StaticZMode.SourceHighest);
                         if (_o.StaticMode == StaticTileMode.RandomOne)
                         {
                             AddStatic(ids[_rnd.Next(ids.Length)], x, y, baseZ + RandomZ(p), 0);
@@ -624,11 +647,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             return a == b ? a : _rnd.Next(a, b + 1);
         }
 
-        /// <summary>Highest land z of the cell and its 8 neighbours that belong to the source group of the rule.</summary>
-        private int SourceGroupTopZ(int x, int y, TransitionRule rule)
+        /// <summary>Highest / lowest land z of the cell and its 8 neighbours that belong to the source group of the rule.</summary>
+        private int SourceGroupZ(int x, int y, TransitionRule rule, bool highest)
         {
             int source = rule.GroupA >= 0 ? rule.GroupA : rule.GroupB;
             int best = int.MinValue;
+            int lowest = int.MaxValue;
             for (int dy = -1; dy <= 1; dy++)
             {
                 for (int dx = -1; dx <= 1; dx++)
@@ -642,10 +666,85 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                     if (_group[i] == source)
                     {
                         best = Math.Max(best, _z[i]);
+                        lowest = Math.Min(lowest, _z[i]);
                     }
                 }
             }
-            return best == int.MinValue ? _z[y * _w + x] : best;
+            if (best == int.MinValue)
+            {
+                return _z[y * _w + x];
+            }
+            return highest ? best : lowest;
+        }
+
+        /// <summary>Land cells next to water get the average height of the shore cells around them.</summary>
+        private long SmoothCoastHeights(CancellationToken cancel)
+        {
+            int water = _o.Fix?.WaterGroup ?? 2;
+            var shore = new bool[_w * _h];
+            for (int y = 0; y < _h; y++)
+            {
+                for (int x = 0; x < _w; x++)
+                {
+                    int i = y * _w + x;
+                    if (_group[i] == water)
+                    {
+                        continue;
+                    }
+                    for (int dy = -1; dy <= 1 && !shore[i]; dy++)
+                    {
+                        for (int dx = -1; dx <= 1; dx++)
+                        {
+                            int nx = x + dx, ny = y + dy;
+                            if (nx >= 0 && ny >= 0 && nx < _w && ny < _h && _group[ny * _w + nx] == water)
+                            {
+                                shore[i] = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            long changed = 0;
+            for (int pass = 0; pass < Math.Max(1, _o.SmoothCoastPasses); pass++)
+            {
+                var z = (sbyte[])_z.Clone();
+                for (int y = 0; y < _h; y++)
+                {
+                    for (int x = 0; x < _w; x++)
+                    {
+                        int i = y * _w + x;
+                        if (!shore[i])
+                        {
+                            continue;
+                        }
+                        int sum = 0, n = 0;
+                        for (int dy = -1; dy <= 1; dy++)
+                        {
+                            for (int dx = -1; dx <= 1; dx++)
+                            {
+                                int nx = x + dx, ny = y + dy;
+                                if (nx >= 0 && ny >= 0 && nx < _w && ny < _h && shore[ny * _w + nx])
+                                {
+                                    sum += z[ny * _w + nx];
+                                    n++;
+                                }
+                            }
+                        }
+                        sbyte avg = ClampZ((int)Math.Round(sum / (double)n));
+                        if (avg != _z[i])
+                        {
+                            _z[i] = avg;
+                            changed++;
+                        }
+                    }
+                    if ((y & 63) == 0)
+                    {
+                        cancel.ThrowIfCancellationRequested();
+                    }
+                }
+            }
+            return changed;
         }
 
         private void AddStatic(ushort id, int x, int y, int z, ushort hue)

@@ -145,6 +145,19 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
         [Category("Dragon"), DefaultValue(6)]
         public int GridFromZoom { get; set; } = 6;
 
+        /// <summary>Show the altitude of every pixel (from zoom 12).</summary>
+        [Category("Dragon"), DefaultValue(false)]
+        public bool ShowHeights { get; set; }
+
+        private int[] _altitudes = new int[256];
+
+        /// <summary>Altitude (Z) of every palette index (for the height numbers).</summary>
+        public void SetAltitudes(int[] altitudes)
+        {
+            _altitudes = altitudes ?? new int[256];
+            Invalidate();
+        }
+
         /// <summary>Spray: dots per step in percent of the brush area.</summary>
         [Category("Dragon"), DefaultValue(8)]
         public int SprayDensity { get; set; } = 8;
@@ -342,6 +355,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
             g.DrawImageUnscaled(_view, 0, 0);
 
             DrawGrid(g);
+            DrawHeights(g);
             DrawOverlay(g);
         }
 
@@ -371,6 +385,30 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                 {
                     float sy = MapToScreen(0, y).Y;
                     g.DrawLine(y % 8 == 0 ? block : cell, MapToScreen(x0, 0).X, sy, MapToScreen(x1, 0).X, sy);
+                }
+            }
+        }
+
+        private void DrawHeights(Graphics g)
+        {
+            if (!ShowHeights || _zoom < 12)
+            {
+                return;
+            }
+            RectangleF v = ViewRect;
+            int x0 = Math.Max(0, (int)Math.Floor(v.Left)), x1 = Math.Min(_map.Width - 1, (int)Math.Ceiling(v.Right));
+            int y0 = Math.Max(0, (int)Math.Floor(v.Top)), y1 = Math.Min(_map.Height - 1, (int)Math.Ceiling(v.Bottom));
+            using var font = new Font("Segoe UI", Math.Min(9f, (float)(_zoom * 0.32)), FontStyle.Bold);
+            using var sf = new StringFormat { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Center };
+            for (int y = y0; y <= y1; y++)
+            {
+                for (int x = x0; x <= x1; x++)
+                {
+                    int z = _altitudes[_map[x, y]];
+                    PointF c = MapToScreen(x + 0.5, y + 0.5);
+                    string t = z.ToString();
+                    g.DrawString(t, font, Brushes.Black, c.X + 1, c.Y + 1, sf);
+                    g.DrawString(t, font, Brushes.White, c.X, c.Y, sf);
                 }
             }
         }

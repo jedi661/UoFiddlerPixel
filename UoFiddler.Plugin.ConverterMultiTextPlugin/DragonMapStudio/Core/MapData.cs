@@ -30,6 +30,23 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         public override string ToString() => $"{Id:x4} ({X},{Y},{Z}) hue {Hue}";
     }
 
+    /// <summary>A land tile before / after an edit.</summary>
+    public struct LandChange
+    {
+        public int Index;
+        public ushort OldId;
+        public sbyte OldZ;
+        public ushort NewId;
+        public sbyte NewZ;
+    }
+
+    /// <summary>One undo step: statics and / or land.</summary>
+    public sealed class EditStep
+    {
+        public List<StaticChange> Statics = new List<StaticChange>();
+        public List<LandChange> Land = new List<LandChange>();
+    }
+
     /// <summary>State of a static before / after an edit (null = does not exist).</summary>
     public sealed class StaticChange
     {
@@ -45,8 +62,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
     public sealed class MapData
     {
         private readonly List<StaticItem>[] _blocks;
-        private readonly Stack<List<StaticChange>> _undo = new Stack<List<StaticChange>>();
-        private readonly Stack<List<StaticChange>> _redo = new Stack<List<StaticChange>>();
+        private readonly Stack<EditStep> _undo = new Stack<EditStep>();
+        private readonly Stack<EditStep> _redo = new Stack<EditStep>();
+        private Dictionary<int, LandChange> _pendingLand;
 
         public MapData(int width, int height, ushort[] tiles, sbyte[] z)
         {
@@ -171,20 +189,79 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
 
         // ------------------------------------------------------------------ edits (undoable)
 
-        /// <summary>Applies a group of changes as one undo step.</summary>
-        public void Apply(List<StaticChange> changes)
+        /// <summary>Applies a group of static changes as one undo step.</summary>
+        public void Apply(List<StaticChange> changes) => Apply(changes, null);
+
+        /// <summary>Applies static and land changes as one undo step.</summary>
+        public void Apply(List<StaticChange> changes, List<LandChange> land)
         {
-            if (changes == null || changes.Count == 0)
+            var step = new EditStep { Statics = changes ?? new List<StaticChange>(), Land = land ?? new List<LandChange>() };
+            if (step.Statics.Count == 0 && step.Land.Count == 0)
             {
                 return;
             }
-            foreach (StaticChange c in changes)
+            foreach (StaticChange c in step.Statics)
             {
                 SetState(c.Item, c.After, c.After != null);
             }
-            _undo.Push(changes);
+            foreach (LandChange l in step.Land)
+            {
+                Tiles[l.Index] = l.NewId;
+                Z[l.Index] = l.NewZ;
+            }
+            _undo.Push(step);
             _redo.Clear();
-            StaticsModified = true;
+            StaticsModified |= step.Statics.Count > 0;
+            LandModified |= step.Land.Count > 0;
+        }
+
+        // ------------------------------------------------------------------ land strokes (mouse drag = one undo step)
+
+        public void BeginLand() => _pendingLand = new Dictionary<int, LandChange>();
+
+        public bool LandStrokeActive => _pendingLand != null;
+
+        /// <summary>Changes a land tile; inside BeginLand / EndLand the change is collected into one step.</summary>
+        public void SetLand(int x, int y, ushort id, int z)
+        {
+            if (!InBounds(x, y))
+            {
+                return;
+            }
+            int i = y * Width + x;
+            sbyte nz = (sbyte)Math.Clamp(z, -128, 127);
+            if (Tiles[i] == id && Z[i] == nz)
+            {
+                return;
+            }
+            if (_pendingLand == null)
+            {
+                Apply(null, new List<LandChange> { new LandChange { Index = i, OldId = Tiles[i], OldZ = Z[i], NewId = id, NewZ = nz } });
+                return;
+            }
+            if (!_pendingLand.TryGetValue(i, out LandChange c))
+            {
+                c = new LandChange { Index = i, OldId = Tiles[i], OldZ = Z[i] };
+            }
+            c.NewId = id;
+            c.NewZ = nz;
+            _pendingLand[i] = c;
+            Tiles[i] = id;
+            Z[i] = nz;
+        }
+
+        public int EndLand()
+        {
+            Dictionary<int, LandChange> pending = _pendingLand;
+            _pendingLand = null;
+            if (pending == null || pending.Count == 0)
+            {
+                return 0;
+            }
+            _undo.Push(new EditStep { Land = pending.Values.ToList() });
+            _redo.Clear();
+            LandModified = true;
+            return pending.Count;
         }
 
         public bool Undo()
@@ -193,13 +270,19 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             {
                 return false;
             }
-            List<StaticChange> step = _undo.Pop();
-            for (int i = step.Count - 1; i >= 0; i--)
+            EditStep step = _undo.Pop();
+            for (int i = step.Statics.Count - 1; i >= 0; i--)
             {
-                SetState(step[i].Item, step[i].Before, step[i].Before != null);
+                SetState(step.Statics[i].Item, step.Statics[i].Before, step.Statics[i].Before != null);
+            }
+            foreach (LandChange l in step.Land)
+            {
+                Tiles[l.Index] = l.OldId;
+                Z[l.Index] = l.OldZ;
             }
             _redo.Push(step);
-            StaticsModified = true;
+            StaticsModified |= step.Statics.Count > 0;
+            LandModified |= step.Land.Count > 0;
             return true;
         }
 
@@ -209,13 +292,19 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             {
                 return false;
             }
-            List<StaticChange> step = _redo.Pop();
-            foreach (StaticChange c in step)
+            EditStep step = _redo.Pop();
+            foreach (StaticChange c in step.Statics)
             {
                 SetState(c.Item, c.After, c.After != null);
             }
+            foreach (LandChange l in step.Land)
+            {
+                Tiles[l.Index] = l.NewId;
+                Z[l.Index] = l.NewZ;
+            }
             _undo.Push(step);
-            StaticsModified = true;
+            StaticsModified |= step.Statics.Count > 0;
+            LandModified |= step.Land.Count > 0;
             return true;
         }
 

@@ -149,6 +149,22 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             }
         }
 
+        /// <summary>Wet land tile without texture: the client draws it flat (water), never stretched.</summary>
+        public static bool LandIsWetFlat(int id)
+        {
+            try
+            {
+                LandData d = TileData.LandTable[id & 0x3FFF];
+                return (d.Flags & TileFlag.Wet) != 0 && d.TextureId == 0;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+        public static int MaxLandId => 0x3FFF;
+
         public static int ItemHeight(int id)
         {
             try

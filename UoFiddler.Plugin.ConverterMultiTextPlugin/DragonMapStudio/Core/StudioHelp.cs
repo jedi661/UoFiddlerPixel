@@ -64,6 +64,13 @@ Bearbeiten -> ""Karte prüfen (Log)"" und ""Karte automatisch reparieren"".
   (damit Gras weich in Berge übergeht). Statics: höchste Höhe der Nachbarn der Quellgruppe + Z.
 * Unebenheit (unevenly.txt): nicht gewünschte Zeilen mit // auskommentieren.
 * Lava im Original-Dragon funktioniert nicht zuverlässig.
+* Berge gehen IMMER vom Boden aus nach oben: Rock-Höhe = Höhe des Grases daneben + 20, 30 …
+  Die Reparatur und der Generator rechnen das Berg-Profil relativ zum Boden.
+* Küste: sand2water / grass2water senken Kanten auf -10, Ecken bleiben 0 -> ""Küste glätten""
+  (Build-Option) gleicht die Ufer-Höhen aus. Ufer-Wellen (x2water, +10) sitzen auf der
+  tiefsten Wasserhöhe daneben (Option ""Static-Z Basis"" = SourceLowest).
+* Höhleneingänge: Gruppe 1d (Invisible Cave Entrance) am Bergrand; die Regel
+  1d -> Berg (map/cave-enti2mountain.txt) aktiviert der Generator automatisch.
 
 4. KARTE PRÜFEN UND REPARIEREN
 ------------------------------
@@ -91,7 +98,15 @@ Zeigt die gebaute Karte wie der Client (Land-Art, Texturen an Hängen, Statics m
 * Tasten: Pfeile = Auswahl verschieben (ohne Auswahl: Ansicht), Strg+Pfeil = Kopie daneben,
   Bild↑/↓ = Z ±1 (Umschalt ±5), Entf, H = färben, Esc, Strg+C/V, Strg+A, Strg+Z/Y.
 * Probleme: ""Ganze Karte prüfen"", ""Doppelte entfernen"", ""Log speichern"".
-* Speichern: Statics (bei gebauter Karte auch Map / UOP), alte Dateien -> .bak.
+* ""Höhen"" blendet die Land-Höhe jedes Tiles ein (auch im Karten-Editor ab Zoom 12).
+* Zweite Leiste ""Land"": Land setzen (Tile/Textur aus dem Reiter Land), Höhe +, Höhe −,
+  Höhe = (feste Höhe), Glätten – mit Radius und Schritt; ziehen = ein Rückgängig-Schritt.
+  Rechtsklick nimmt Land-ID und Höhe auf.
+* ""Bereich"" aufziehen: Strg+C / Strg+V kopiert Land + Statics (Höhe passt sich an),
+  Entf löscht die Statics darin, Bild↑/↓ hebt / senkt Land + Statics.
+* Wie der Client: nasse Kacheln ohne Textur (Wasser) werden flach gezeichnet, alle anderen
+  an Hängen mit Textur gestreckt.
+* Speichern: Statics, bei geändertem Land auch die Map (UOP laut Build-Option), alte Dateien -> .bak.
 
 6. GENERATOR & UMRISS
 ---------------------
@@ -171,6 +186,13 @@ Edit -> ""Karte prüfen (Log)"" (check map) and ""Karte automatisch reparieren""
   (so grass flows into mountains). Statics: highest z of the neighbours of the source group + Z.
 * Unevenly (unevenly.txt): comment out lines you don't want with //.
 * Lava did not work reliably in the original Dragon.
+* Mountains ALWAYS rise from the ground: rock height = height of the grass next to it + 20, 30 …
+  Repair and generator calculate the mountain profile relative to the ground.
+* Coast: sand2water / grass2water lower edges to -10, corners stay 0 -> ""Küste glätten""
+  (build option) evens out the shore heights. Shore waves (x2water, +10) sit on the lowest
+  water height next to them (option ""Static-Z Basis"" = SourceLowest).
+* Cave entrances: group 1d (invisible cave entrance) at the mountain border; the generator
+  activates the rule 1d -> mountain (map/cave-enti2mountain.txt) automatically.
 
 4. CHECK AND REPAIR THE MAP
 ---------------------------
@@ -198,7 +220,15 @@ Shows the built map like the client (land art, textures on slopes, statics with 
 * Keys: arrows = move selection (no selection: view), Ctrl+arrow = copy next to it,
   PgUp/PgDn = Z ±1 (Shift ±5), Del, H = colour, Esc, Ctrl+C/V, Ctrl+A, Ctrl+Z/Y.
 * Problems: ""Ganze Karte prüfen"", ""Doppelte entfernen"" (remove duplicates), ""Log speichern"".
-* Save: statics (for a built map also map / UOP), old files -> .bak.
+* ""Höhen"" shows the land height of every tile (also in the map editor from zoom 12).
+* Second bar ""Land"": set land (tile / texture from the Land tab), height +, height −,
+  height = (fixed), smooth – with radius and step; one drag = one undo step.
+  Right click takes land id and height.
+* ""Bereich"" (area): Ctrl+C / Ctrl+V copies land + statics (height adapts), Del deletes the
+  statics inside, PgUp/PgDn raises / lowers land + statics.
+* Like the client: wet tiles without texture (water) are drawn flat, all others are stretched
+  with their texture on slopes.
+* Save: statics, with changed land also the map (UOP per build option), old files -> .bak.
 
 6. GENERATOR & OUTLINE
 ----------------------

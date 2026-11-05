@@ -37,11 +37,14 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         public string SurroundRules { get; set; } = "18:00:2";
 
         [Category("Reparatur"), DisplayName("Berg-Profil"),
-         Description("Berge steigen vom Rand nach innen an (Dragon-Tutorial: Rock 20, 30, 50, 60, 65, 70). Zahl n = höchste Höhe im n-ten Ring.")]
+         Description("Berge steigen vom umgebenden Boden aus nach innen an (Dragon-Tutorial: Rock 20, 30, 50, 60, 65, 70 über Gras 0). Ein Berg liegt nie tiefer als das Gras daneben.")]
         public bool MountainProfile { get; set; } = true;
 
-        [Category("Reparatur"), DisplayName("Berg-Profil Höhen"), Description("Höchste Höhe je Ring vom Rand aus (Leerzeichen getrennt).")]
+        [Category("Reparatur"), DisplayName("Berg-Profil Höhen"), Description("Höhe ÜBER dem Boden je Ring vom Rand aus (Leerzeichen getrennt). Jeder Ring liegt zwischen der Hälfte und diesem Wert.")]
         public string MountainHeights { get; set; } = "20 30 50 60 65 70 80 90";
+
+        [Category("Gruppen"), DisplayName("Nicht verändern"), Description("Gruppen (hex), die die Reparatur nie ändert, z. B. 1d = unsichtbarer Höhleneingang.")]
+        public string SkipGroups { get; set; } = "1d";
 
         [Category("Reparatur"), DisplayName("Steile Sprünge glätten"), Description("Höhenunterschied zwischen zwei Nachbar-Tiles begrenzen (gegen Stacheln und Klippen).")]
         public bool LimitSteps { get; set; } = true;
@@ -151,6 +154,13 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             history?.Begin("Karte reparieren");
             history?.TouchAll();
             var ctx = new Context(map, rules);
+            foreach (string t in (o.SkipGroups ?? string.Empty).Split(new[] { ' ', ',', ';' }, StringSplitOptions.RemoveEmptyEntries))
+            {
+                if (HexList.TryParseHexByte(t, out int sg))
+                {
+                    ctx.Skip[sg] = true;
+                }
+            }
 
             CheckUndefined(ctx, report);
             if (o.RemoveThin)
@@ -171,11 +181,16 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             }
             if (o.MountainProfile)
             {
-                MountainProfile(ctx, report, o.MountainGroup, ParseInts(o.MountainHeights), cancel);
+                MountainProfile(ctx, report, o.MountainGroup, ParseInts(o.MountainHeights), o.WaterGroup, cancel);
             }
             if (o.LimitSteps)
             {
                 LimitSteps(ctx, report, o, cancel);
+                if (o.MountainProfile)
+                {
+                    // smoothing must not push a mountain under its ground again
+                    MountainProfile(ctx, report, o.MountainGroup, ParseInts(o.MountainHeights), o.WaterGroup, cancel);
+                }
             }
             foreach ((int g, int n) in ParsePairs(o.LowerThanRules))
             {
@@ -203,6 +218,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             public readonly int[] GroupOf = new int[256];
             public readonly int[] AltOf = new int[256];
             public readonly bool[] Defined = new bool[256];
+            public readonly bool[] Skip = new bool[257];
             public readonly HashSet<int> Pairs;
             private readonly Dictionary<int, List<DragonPaletteEntry>> _entries = new Dictionary<int, List<DragonPaletteEntry>>();
 
@@ -222,6 +238,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             public int W => Map.Width;
             public int H => Map.Height;
             public int Group(int i) => GroupOf[Map.Pixels[i]];
+
+            public bool IsSkip(int group) => group >= 0 && group < 256 && Skip[group];
             public int Alt(int i) => AltOf[Map.Pixels[i]];
 
             public List<DragonPaletteEntry> Entries(int group)
@@ -263,6 +281,14 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                 return idx;
             }
 
+            /// <summary>Lowest colour of the group with altitude &gt;= min (or the highest one).</summary>
+            public int Above(int group, int min)
+            {
+                List<DragonPaletteEntry> list = Entries(group);
+                DragonPaletteEntry best = list.Where(e => e.Altitude >= min).OrderBy(e => e.Altitude).FirstOrDefault() ?? list.LastOrDefault();
+                return best?.Index ?? -1;
+            }
+
             public bool HasRule(int a, int b) => a == b || Pairs.Contains((a << 8) | b);
         }
 
@@ -297,6 +323,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                     {
                         int i = y * w + x;
                         int g = c.GroupOf[copy[i]];
+                        if (c.IsSkip(g))
+                        {
+                            continue;
+                        }
                         bool Same(int nx, int ny) => nx < 0 || ny < 0 || nx >= w || ny >= h || c.GroupOf[copy[ny * w + nx]] == g;
                         bool thinX = !Same(x - 1, y) && !Same(x + 1, y);
                         bool thinY = !Same(x, y - 1) && !Same(x, y + 1);
@@ -445,7 +475,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                     }
                     dist[j] = dist[i] + 1;
                     int ng = c.Group(j);
-                    if (ng != g && ng != s && ng >= 0)
+                    if (ng != g && ng != s && ng >= 0 && !c.IsSkip(ng))
                     {
                         c.Map.Pixels[j] = c.Nearest(s, ng == water ? 0 : c.Alt(j));
                         e.Add(nx, ny);
@@ -488,7 +518,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                     {
                         int i = y * w + x;
                         int g = c.Group(i);
-                        if (g < 0 || g == water)
+                        if (g < 0 || g == water || c.IsSkip(g))
                         {
                             continue;
                         }
@@ -500,7 +530,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                                 continue;
                             }
                             int n = c.Group(ny * w + nx);
-                            if (n < 0 || n == water || c.HasRule(g, n))
+                            if (n < 0 || n == water || c.IsSkip(n) || c.HasRule(g, n))
                             {
                                 continue;
                             }
@@ -521,25 +551,31 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             }
         }
 
-        /// <summary>Mountain cells are capped by their distance to the mountain border (rings like in the tutorial).</summary>
-        private static void MountainProfile(Context c, MapFixReport r, int mountain, List<int> heights, CancellationToken cancel)
+        /// <summary>
+        /// Mountains rise from the surrounding ground: ring n (distance n to the border) lies between
+        /// ground + h[n]/2 and ground + h[n]. The ground is the height of the nearest non-mountain land (water = 0).
+        /// </summary>
+        private static void MountainProfile(Context c, MapFixReport r, int mountain, List<int> heights, int water, CancellationToken cancel)
         {
             if (heights.Count == 0 || !c.HasGroup(mountain))
             {
                 return;
             }
-            MapFixEntry e = r.Get("mountain", "Berg zu steil am Rand (abgesenkt)", "Mountain too steep at the border (lowered)",
-                "Tutorial: Berge in Ringen malen – Rand Rock 20, dann 30, 50, 60, 65, 70. Nicht über 80 in kleinen Flächen.",
-                "Tutorial: paint mountains in rings – border Rock 20, then 30, 50, 60, 65, 70. Not over 80 in small spots.", true);
+            MapFixEntry e = r.Get("mountain", "Berg-Höhe an den Boden angepasst", "Mountain height adapted to the ground",
+                "Tutorial: Berge in Ringen vom Boden aus nach oben malen – Rand Rock 20, dann 30, 50, 60, 65, 70 (über Gras 0). Ein Berg darf nie tiefer liegen als das Gras daneben.",
+                "Tutorial: paint mountains in rings rising from the ground – border Rock 20, then 30, 50, 60, 65, 70 (above grass 0). A mountain must never be lower than the grass next to it.", true);
             int w = c.W, h = c.H;
             var dist = new int[w * h];
+            var ground = new int[w * h];
             Array.Fill(dist, int.MaxValue);
             var queue = new Queue<int>();
             for (int i = 0; i < dist.Length; i++)
             {
-                if (c.Group(i) != mountain)
+                int g = c.Group(i);
+                if (g != mountain)
                 {
                     dist[i] = 0;
+                    ground[i] = g == water ? 0 : c.Alt(i);
                     queue.Enqueue(i);
                 }
             }
@@ -558,28 +594,36 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                     if (dist[j] == int.MaxValue)
                     {
                         dist[j] = dist[i] + 1;
-                        if (dist[j] <= heights.Count)
-                        {
-                            queue.Enqueue(j);
-                        }
+                        ground[j] = ground[i];
+                        queue.Enqueue(j);
+                    }
+                    else if (dist[j] == dist[i] + 1 && dist[i] == 0)
+                    {
+                        ground[j] = Math.Max(ground[j], ground[i]); // highest ground along the border
                     }
                 }
             }
+            int last = heights[heights.Count - 1];
             for (int i = 0; i < dist.Length; i++)
             {
-                if (dist[i] == 0 || dist[i] == int.MaxValue || dist[i] > heights.Count)
+                if (dist[i] == 0 || dist[i] == int.MaxValue)
                 {
                     continue;
                 }
-                int cap = heights[dist[i] - 1];
-                if (c.Alt(i) > cap)
+                int ring = Math.Min(dist[i], heights.Count) - 1;
+                int max = Math.Clamp(ground[i] + heights[ring], -128, 127);
+                int min = Math.Clamp(ground[i] + Math.Max(5, heights[ring] / 2), -128, 127);
+                int z = c.Alt(i);
+                int target = z > max ? max : z < min ? min : z;
+                if (target == z)
                 {
-                    int idx = c.Below(mountain, cap);
-                    if (idx >= 0 && idx != c.Map.Pixels[i])
-                    {
-                        c.Map.Pixels[i] = (byte)idx;
-                        e.Add(i % w, i / w);
-                    }
+                    continue;
+                }
+                int idx = z > max ? c.Below(mountain, target) : c.Above(mountain, target);
+                if (idx >= 0 && idx != c.Map.Pixels[i])
+                {
+                    c.Map.Pixels[i] = (byte)idx;
+                    e.Add(i % w, i / w);
                 }
             }
             cancel.ThrowIfCancellationRequested();
@@ -601,10 +645,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                     {
                         int i = y * w + x;
                         int g = c.Group(i);
-                        if (g < 0 || g == o.WaterGroup)
+                        if (g < 0 || g == o.WaterGroup || c.IsSkip(g))
                         {
                             continue;
                         }
+                        bool isMountain = g == o.MountainGroup;
                         int z = c.Alt(i);
                         int limit = int.MaxValue;
                         for (int k = 0; k < 4; k++)
@@ -616,11 +661,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                             }
                             int j = ny * w + nx;
                             int ng = c.Group(j);
-                            if (ng < 0 || ng == o.WaterGroup)
+                            if (ng < 0 || ng == o.WaterGroup || (ng == o.MountainGroup) != isMountain)
                             {
-                                continue;
+                                continue; // land next to a mountain may be lower; mountains only compare with mountains
                             }
-                            int step = g == o.MountainGroup && ng == o.MountainGroup ? o.MaxMountainStep : o.MaxStep;
+                            int step = isMountain ? o.MaxMountainStep : o.MaxStep;
                             limit = Math.Min(limit, c.Alt(j) + step);
                         }
                         if (limit == int.MaxValue || z <= limit)
@@ -767,7 +812,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             sb.AppendLine($"Doppelte Statics entfernt / duplicate statics removed: {r.DuplicatesRemoved:N0}");
             sb.AppendLine($"Unebenheit / unevenly: {r.UnevenCells:N0}, Fixes: {r.Fixes:N0}, übernommen / merged: {r.MergedStatics:N0}, unbekannte Farben / unknown colours: {r.UnknownColors:N0}");
             Section(sb, "Optionen", "Options");
-            sb.AppendLine($"StaticMode={o.StaticMode}, MapTransitionZ={o.MapTransitionZ}, StaticZFromNeighbours={o.StaticZFromNeighbours}, ItemChanceBase={o.ItemChanceBase}, RemoveDuplicateStatics={o.RemoveDuplicateStatics}, AutoFix={o.AutoFixBeforeBuild}");
+            sb.AppendLine($"StaticMode={o.StaticMode}, MapTransitionZ={o.MapTransitionZ}, StaticZ={o.StaticZ}, SmoothCoast={o.SmoothCoast}, ItemChanceBase={o.ItemChanceBase}, RemoveDuplicateStatics={o.RemoveDuplicateStatics}, AutoFix={o.AutoFixBeforeBuild}");
             if (r.FixReport != null)
             {
                 Section(sb, "Automatische Reparatur", "Automatic repair");

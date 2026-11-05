@@ -120,7 +120,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         [Browsable(false)]
         public int SettingsVersion { get; set; }
 
-        public const int CurrentSettingsVersion = 3;
+        public const int CurrentSettingsVersion = 4;
 
         // ------------------------------------------------------------------ storage
 
@@ -196,8 +196,13 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                 // version 3: defaults from the Dragon tutorial (one random static id per line, duplicates removed)
                 Build.StaticMode = StaticTileMode.RandomOne;
                 Build.RemoveDuplicateStatics = true;
-                Build.StaticZFromNeighbours = true;
                 Generator.SeparateBiomes = true;
+                Build.StaticZ = StaticZMode.SourceLowest;
+                Build.SmoothCoast = true;
+                // mountain heights are now relative to the ground
+                Generator.MinMountainAltitude = 15;
+                Generator.MaxMountainAltitude = 70;
+                Build.Fix.SkipGroups = string.IsNullOrWhiteSpace(Build.Fix.SkipGroups) ? "1d" : Build.Fix.SkipGroups;
                 SettingsVersion = CurrentSettingsVersion;
             }
             RecentMaps ??= new List<string>();

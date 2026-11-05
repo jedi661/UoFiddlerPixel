@@ -60,8 +60,21 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
 
         private void BtnGenPreview_Click(object sender, EventArgs e) => GeneratePreview();
 
+        /// <summary>Cave entrances need the rule 1d -> mountain (map/cave-enti2mountain.txt); activate it once.</summary>
+        private void EnsureCaveRule()
+        {
+            GeneratorSettings g = _settings.Generator;
+            if (g.CaveEntrances > 0 && _rules.EnsureCaveRule(g.CaveGroup, g.MountainGroup))
+            {
+                MarkRulesDirty();
+                BindRuleGrids();
+                Log($"Regel aktiviert: {g.CaveGroup:x2} → {g.MountainGroup:x2} map/cave-enti2mountain.txt (Höhleneingänge). Mit 'JSON speichern' oder 'Als Dragon-Skripte exportieren' dauerhaft machen.");
+            }
+        }
+
         private void GeneratePreview()
         {
+            EnsureCaveRule();
             DragonRuleSet rules = _rules;
             GeneratorSettings gs = _settings.Generator.Clone();
             if (gs.RandomSeed)
@@ -95,6 +108,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
 
         private void BtnGenToEditor_Click(object sender, EventArgs e)
         {
+            EnsureCaveRule();
             bool intoCurrent = _settings.Generator.UseCurrentMapSize && _map != null;
             if (!intoCurrent && !ConfirmDiscardMap())
             {

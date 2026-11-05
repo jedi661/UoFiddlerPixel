@@ -88,6 +88,13 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             _cgiTools[tsbCgiMulti] = IsoTool.Multi;
             _cgiTools[tsbCgiDelete] = IsoTool.Delete;
             _cgiTools[tsbCgiHue] = IsoTool.Hue;
+            _cgiTools[tsbCgiLandSet] = IsoTool.LandSet;
+            _cgiTools[tsbCgiRaise] = IsoTool.Raise;
+            _cgiTools[tsbCgiLower] = IsoTool.Lower;
+            _cgiTools[tsbCgiSetHeight] = IsoTool.SetHeight;
+            _cgiTools[tsbCgiSmooth] = IsoTool.Smooth;
+            _cgiTools[tsbCgiArea] = IsoTool.Area;
+            isoView.LandPicked += IsoView_LandPicked;
             SelectCgiTool(IsoTool.Select);
             foreach (string z in new[] { "127", "100", "80", "60", "40", "30", "20", "10", "0" })
             {
@@ -118,6 +125,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             else if (tool == IsoTool.Place || tool == IsoTool.Hue)
             {
                 tabCgiSide.SelectedTab = tabCgiItems;
+            }
+            else if (tool == IsoTool.LandSet || tool == IsoTool.Raise || tool == IsoTool.Lower || tool == IsoTool.SetHeight || tool == IsoTool.Smooth)
+            {
+                tabCgiSide.SelectedTab = tabCgiLand;
+                EnsureLandList();
             }
             isoView.Invalidate();
         }
@@ -403,6 +415,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             isoView.ShowGrid = tsbCgiGrid.Checked;
             isoView.ShowStatics = tsbCgiStatics.Checked;
             isoView.ShowProblems = tsbCgiProblems.Checked;
+            isoView.ShowHeights = tsbCgiHeights.Checked;
             isoView.Refresh(true);
         }
 
@@ -413,6 +426,88 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                 isoView.MaxZ = Math.Clamp(z, -128, 127);
                 isoView.Refresh(true);
             }
+        }
+
+        // ================================================================== land / textures
+
+        private List<int> _allLand;
+        private List<int> _shownLand = new List<int>();
+
+        private void EnsureLandList()
+        {
+            if (_allLand != null)
+            {
+                return;
+            }
+            bool art = UoArtCache.ArtAvailableCached;
+            _allLand = new List<int>();
+            for (int id = 0; id <= UoArtCache.MaxLandId; id++)
+            {
+                if (!art || UoArtCache.IsValidLand(id))
+                {
+                    _allLand.Add(id);
+                }
+            }
+            ApplyLandFilter();
+            CgiLandSettings_Changed(this, EventArgs.Empty);
+        }
+
+        private void ApplyLandFilter()
+        {
+            string f = txtCgiLandFilter.Text.Trim();
+            string hexText = f.StartsWith("0x", StringComparison.OrdinalIgnoreCase) ? f.Substring(2) : f;
+            bool isHex = HexList.TryParseHex(hexText, out _);
+            _shownLand = string.IsNullOrEmpty(f)
+                ? _allLand ?? new List<int>()
+                : (_allLand ?? new List<int>()).Where(id => (isHex && id.ToString("x4").Contains(hexText, StringComparison.OrdinalIgnoreCase)) ||
+                                                            UoArtCache.LandName(id).Contains(f, StringComparison.OrdinalIgnoreCase)).ToList();
+            lstCgiLand.VirtualListSize = _shownLand.Count;
+            lstCgiLand.Invalidate();
+        }
+
+        private void TxtCgiLandFilter_TextChanged(object sender, EventArgs e) => ApplyLandFilter();
+
+        private void LstCgiLand_RetrieveVirtualItem(object sender, RetrieveVirtualItemEventArgs e)
+        {
+            int id = e.ItemIndex < _shownLand.Count ? _shownLand[e.ItemIndex] : 0;
+            e.Item = new ListViewItem(id.ToString("x4"));
+            e.Item.SubItems.Add(UoArtCache.LandName(id));
+        }
+
+        private void LstCgiLand_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (lstCgiLand.SelectedIndices.Count > 0 && lstCgiLand.SelectedIndices[0] < _shownLand.Count)
+            {
+                txtCgiLandId.Text = _shownLand[lstCgiLand.SelectedIndices[0]].ToString("x4");
+                if (isoView.Tool != IsoTool.LandSet)
+                {
+                    SelectCgiTool(IsoTool.LandSet);
+                }
+            }
+        }
+
+        private void CgiLandSettings_Changed(object sender, EventArgs e)
+        {
+            if (HexList.TryParseHex(txtCgiLandId.Text, out ushort id))
+            {
+                isoView.PlaceLandId = (ushort)(id & 0x3FFF);
+            }
+            isoView.LandRadius = (int)numCgiRadius.Value;
+            isoView.HeightStep = (int)numCgiStep.Value;
+            isoView.TargetHeight = (int)numCgiTarget.Value;
+            picCgiLandArt.Image = UoArtCache.Land(isoView.PlaceLandId);
+            picCgiLandTex.Image = UoArtCache.Texture(isoView.PlaceLandId);
+            string wet = UoArtCache.LandIsWetFlat(isoView.PlaceLandId) ? " · nass, ohne Textur (wird flach gezeichnet)" : string.Empty;
+            lblCgiLandInfo.Text = $"{isoView.PlaceLandId:x4} {UoArtCache.LandName(isoView.PlaceLandId)}{wet}{Environment.NewLine}" +
+                                  "Links: Land-Grafik, rechts: Textur für Hänge. Ziehen mit gedrückter Maus malt, ein Zug = ein Rückgängig-Schritt. Rechtsklick nimmt Land-ID und Höhe auf.";
+            isoView.Invalidate();
+        }
+
+        private void IsoView_LandPicked(object sender, MapPointEventArgs e)
+        {
+            txtCgiLandId.Text = e.Index.ToString("x4");
+            numCgiTarget.Value = Math.Clamp(_cgiMap.LandZ(e.X, e.Y), -128, 127);
+            SetStatus($"Land aufgenommen: {e.Index:x4} {UoArtCache.LandName(e.Index)}, Höhe {_cgiMap.LandZ(e.X, e.Y)}");
         }
 
         // ================================================================== items / hue / multis

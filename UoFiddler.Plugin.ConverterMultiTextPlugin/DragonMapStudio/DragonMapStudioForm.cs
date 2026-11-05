@@ -223,6 +223,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             RefreshPaletteViews();
             _rules.BuildHeightLookups(out byte[] raise, out byte[] lower);
             mapCanvas.SetHeightLookups(raise, lower);
+            mapCanvas.SetAltitudes(_rules.Palette.Select(p => p.Altitude).ToArray());
             BindRuleGrids();
             if (_cgiTools.Count > 0)
             {
@@ -649,6 +650,16 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
         private void TsbZoomFit_Click(object sender, EventArgs e) => mapCanvas.ZoomToFit();
 
         private void TsbZoom100_Click(object sender, EventArgs e) => mapCanvas.SetZoom(1);
+
+        private void TsbHeights_Click(object sender, EventArgs e)
+        {
+            mapCanvas.ShowHeights = tsbHeights.Checked;
+            if (tsbHeights.Checked && mapCanvas.Zoom < 12)
+            {
+                SetStatus("Höhen werden ab Zoom 12 angezeigt (Mausrad).");
+            }
+            mapCanvas.Invalidate();
+        }
 
         private void TsbGrid_Click(object sender, EventArgs e)
         {

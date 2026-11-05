@@ -27,7 +27,13 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
         Place,
         Multi,
         Delete,
-        Hue
+        Hue,
+        LandSet,
+        Raise,
+        Lower,
+        SetHeight,
+        Smooth,
+        Area
     }
 
     public sealed class StaticPickEventArgs : EventArgs
@@ -77,6 +83,24 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
         private bool _spaceDown;
         private HashSet<long> _problemTiles = new HashSet<long>();
         private List<MultiPart> _multiParts = new List<MultiPart>();
+        private Rectangle _area = Rectangle.Empty;
+        private Point _areaStart;
+        private bool _areaDragging;
+        private bool _landStroke;
+        private Point _lastLandTile = new Point(-1, -1);
+        private AreaClip _areaClip;
+        private bool _areaPaste;
+
+        /// <summary>Copied land + statics of an area.</summary>
+        private sealed class AreaClip
+        {
+            public int W;
+            public int H;
+            public ushort[] Tiles;
+            public sbyte[] Z;
+            public int BaseZ;
+            public List<StaticItem> Statics = new List<StaticItem>();
+        }
         private int _multiId = -1;
 
         public IsoMapView()
@@ -93,6 +117,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
         public event EventHandler ViewChanged;
         public event EventHandler<StaticPickEventArgs> ItemPicked;
         public event EventHandler<string> Message;
+
+        /// <summary>Right click with a land tool: land tile under the mouse (X, Y).</summary>
+        public event EventHandler<MapPointEventArgs> LandPicked;
 
         // ------------------------------------------------------------------ properties
 
@@ -114,6 +141,28 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
         /// <summary>Statics above this z are hidden (look under roofs).</summary>
         [Category("Dragon"), DefaultValue(127)]
         public int MaxZ { get; set; } = 127;
+
+        /// <summary>Show the land height of every tile (numbers on the grid).</summary>
+        [Category("Dragon"), DefaultValue(false)]
+        public bool ShowHeights { get; set; }
+
+        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public ushort PlaceLandId { get; set; } = 0x0003;
+
+        /// <summary>Brush radius of the land tools (0 = one tile).</summary>
+        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public int LandRadius { get; set; }
+
+        /// <summary>Raise / lower per tile and step.</summary>
+        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public int HeightStep { get; set; } = 1;
+
+        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public int TargetHeight { get; set; }
+
+        /// <summary>Marked map area (tool "Area"), empty = none.</summary>
+        [Browsable(false)]
+        public Rectangle Area => _area;
 
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public ushort PlaceId { get; set; } = 0x0E75;
@@ -379,16 +428,61 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                     // one broken tile / image must not stop the whole view
                 }
             }
+
+            if (ShowHeights)
+            {
+                DrawHeights(g, sMin, sMax, cd, dHalf);
+            }
+        }
+
+        /// <summary>Land z as number in the middle of every visible tile.</summary>
+        private void DrawHeights(Graphics g, int sMin, int sMax, double cd, int dHalf)
+        {
+            using var font = new Font("Segoe UI", 7f, FontStyle.Bold);
+            using var sf = new StringFormat { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Center };
+            int sw = SceneW, sh = SceneH;
+            for (int s = sMin; s <= sMax; s++)
+            {
+                for (int d = (int)Math.Floor(cd) - dHalf; d <= (int)Math.Ceiling(cd) + dHalf; d++)
+                {
+                    if (((s + d) & 1) != 0)
+                    {
+                        continue;
+                    }
+                    int x = (s + d) / 2, y = (s - d) / 2;
+                    if (!_map.InBounds(x, y))
+                    {
+                        continue;
+                    }
+                    PointF top = TileTop(x, y);
+                    int z = _map.LandZ(x, y);
+                    var c = new PointF(top.X, top.Y + Half - z * ZStep);
+                    if (c.X < -20 || c.Y < -20 || c.X > sw + 20 || c.Y > sh + 20)
+                    {
+                        continue;
+                    }
+                    string text = z.ToString();
+                    g.DrawString(text, font, Brushes.Black, c.X + 1, c.Y + 1, sf);
+                    g.DrawString(text, font, z < 0 ? Brushes.LightSkyBlue : Brushes.White, c.X, c.Y, sf);
+                }
+            }
         }
 
         private void DrawLand(Graphics g, ushort landId, PointF[] poly, int zt, int zr, int zb, int zl)
         {
             bool flat = zt == zr && zr == zb && zb == zl;
-            Bitmap art = flat ? UoArtCache.Land(landId) : null;
+            bool wetFlat = !flat && UoArtCache.LandIsWetFlat(landId);
+            Bitmap art = flat || wetFlat ? UoArtCache.Land(landId) : null;
             if (art != null)
             {
+                if (wetFlat)
+                {
+                    // like the client: wet tiles without texture (water) are never stretched
+                    using var under = new SolidBrush(UoArtCache.LandColor(landId));
+                    g.FillPolygon(under, poly);
+                }
                 g.InterpolationMode = InterpolationMode.NearestNeighbor;
-                g.DrawImage(art, new RectangleF(poly[3].X, poly[0].Y, Tile, Tile));
+                g.DrawImage(art, new RectangleF(poly[0].X - Half, poly[0].Y, Tile, Tile));
             }
             else
             {
@@ -539,12 +633,40 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                 }
             }
 
+            if (!_area.IsEmpty)
+            {
+                using var pen = new Pen(Color.Cyan, 2) { DashStyle = DashStyle.Dash };
+                g.DrawPolygon(pen, AreaPoly(_area));
+            }
+            if (_areaPaste && _areaClip != null && _map.InBounds(_hover.X, _hover.Y))
+            {
+                using var pen = new Pen(Color.Orange, 2) { DashStyle = DashStyle.Dash };
+                g.DrawPolygon(pen, AreaPoly(new Rectangle(_hover.X, _hover.Y, _areaClip.W, _areaClip.H)));
+            }
+            if (IsLandTool(Tool) && LandRadius > 0 && _map.InBounds(_hover.X, _hover.Y))
+            {
+                using var pen = new Pen(Color.FromArgb(160, 255, 255, 0));
+                g.DrawPolygon(pen, AreaPoly(new Rectangle(_hover.X - LandRadius, _hover.Y - LandRadius, LandRadius * 2 + 1, LandRadius * 2 + 1)));
+            }
             if (_map.InBounds(_hover.X, _hover.Y))
             {
                 using var pen = new Pen(Color.FromArgb(220, 255, 255, 255), 1.5f);
                 g.DrawPolygon(pen, LandPoly(_hover.X, _hover.Y));
                 DrawGhost(g);
             }
+        }
+
+        private static bool IsLandTool(IsoTool t) => t == IsoTool.LandSet || t == IsoTool.Raise || t == IsoTool.Lower || t == IsoTool.SetHeight || t == IsoTool.Smooth;
+
+        /// <summary>Outline of a map rectangle (at the land heights of its corners).</summary>
+        private PointF[] AreaPoly(Rectangle r)
+        {
+            PointF P(int x, int y)
+            {
+                PointF t = TileTop(x, y);
+                return new PointF(t.X, t.Y - _map.LandZ(Math.Min(x, _map.Width - 1), Math.Min(y, _map.Height - 1)) * ZStep);
+            }
+            return new[] { P(r.Left, r.Top), P(r.Right, r.Top), P(r.Right, r.Bottom), P(r.Left, r.Bottom) };
         }
 
         private PointF[] LandPoly(int x, int y)
@@ -680,6 +802,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                     Invalidate();
                     return;
                 }
+                if (IsLandTool(Tool) && _map.InBounds(tile.X, tile.Y))
+                {
+                    LandPicked?.Invoke(this, new MapPointEventArgs(tile.X, tile.Y, _map.LandId(tile.X, tile.Y)));
+                    return;
+                }
                 if (hit != null)
                 {
                     ItemPicked?.Invoke(this, new StaticPickEventArgs(hit));
@@ -694,6 +821,27 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
             if (_pasteGhost)
             {
                 PasteAt(tile.X, tile.Y);
+                return;
+            }
+            if (_areaPaste)
+            {
+                PasteArea(tile.X, tile.Y);
+                return;
+            }
+            if (IsLandTool(Tool))
+            {
+                _map.BeginLand();
+                _landStroke = true;
+                _lastLandTile = new Point(-1, -1);
+                ApplyLandTool(tile);
+                return;
+            }
+            if (Tool == IsoTool.Area)
+            {
+                _areaStart = tile;
+                _areaDragging = true;
+                _area = new Rectangle(tile.X, tile.Y, 1, 1);
+                Invalidate();
                 return;
             }
 
@@ -768,6 +916,15 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
             {
                 _hover = t;
                 HoverChanged?.Invoke(this, new MapPointEventArgs(t.X, t.Y, -1));
+                if (_landStroke && e.Button == MouseButtons.Left)
+                {
+                    ApplyLandTool(t);
+                }
+                if (_areaDragging)
+                {
+                    _area = Rectangle.FromLTRB(Math.Min(_areaStart.X, t.X), Math.Min(_areaStart.Y, t.Y), Math.Max(_areaStart.X, t.X) + 1, Math.Max(_areaStart.Y, t.Y) + 1);
+                    _area.Intersect(new Rectangle(0, 0, _map.Width, _map.Height));
+                }
                 Invalidate();
             }
         }
@@ -779,6 +936,22 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
             {
                 _panning = false;
                 Cursor = Cursors.Default;
+            }
+            if (_landStroke)
+            {
+                _landStroke = false;
+                int n = _map.EndLand();
+                if (n > 0)
+                {
+                    MapChanged?.Invoke(this, EventArgs.Empty);
+                    Message?.Invoke(this, $"{n} Land-Tile(s) geändert.");
+                }
+            }
+            if (_areaDragging)
+            {
+                _areaDragging = false;
+                SelectionChanged?.Invoke(this, EventArgs.Empty);
+                Message?.Invoke(this, $"Bereich {_area.Width}×{_area.Height} ab ({_area.X}, {_area.Y}) – Strg+C kopiert Land + Statics, Entf löscht die Statics darin, Bild↑/↓ hebt / senkt das Land.");
             }
         }
 
@@ -803,6 +976,48 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
             base.OnKeyDown(e);
             if (_map == null)
             {
+                return;
+            }
+            if (Tool == IsoTool.Area && !_area.IsEmpty && _selection.Count == 0)
+            {
+                bool done = true;
+                switch (e.KeyCode)
+                {
+                    case Keys.C when e.Control:
+                        CopyArea();
+                        break;
+                    case Keys.V when e.Control:
+                        BeginAreaPaste();
+                        break;
+                    case Keys.Delete:
+                        DeleteAreaStatics();
+                        break;
+                    case Keys.PageUp:
+                        RaiseArea(e.Shift ? 5 : 1);
+                        break;
+                    case Keys.PageDown:
+                        RaiseArea(e.Shift ? -5 : -1);
+                        break;
+                    case Keys.Escape:
+                        _area = Rectangle.Empty;
+                        _areaPaste = false;
+                        Invalidate();
+                        break;
+                    default:
+                        done = false;
+                        break;
+                }
+                if (done)
+                {
+                    e.Handled = true;
+                    e.SuppressKeyPress = true;
+                    return;
+                }
+            }
+            if (_areaPaste && e.KeyCode == Keys.Escape)
+            {
+                _areaPaste = false;
+                Invalidate();
                 return;
             }
             int dx = 0, dy = 0;
@@ -1057,6 +1272,184 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
             }
             Edit(changes, $"Multi {_multiId} gesetzt ({changes.Count} Teile) – als Statics ausgewählt, mit den Pfeiltasten verschiebbar.");
             SelectionChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        // ------------------------------------------------------------------ land tools
+
+        private void ApplyLandTool(Point center)
+        {
+            if (!_map.InBounds(center.X, center.Y) || center == _lastLandTile)
+            {
+                return;
+            }
+            _lastLandTile = center;
+            int r = Math.Max(0, LandRadius);
+            var smoothSource = Tool == IsoTool.Smooth ? (sbyte[])_map.Z.Clone() : null;
+            for (int y = center.Y - r; y <= center.Y + r; y++)
+            {
+                for (int x = center.X - r; x <= center.X + r; x++)
+                {
+                    if (!_map.InBounds(x, y) || (r > 1 && (x - center.X) * (x - center.X) + (y - center.Y) * (y - center.Y) > r * r + r))
+                    {
+                        continue;
+                    }
+                    ushort id = _map.LandId(x, y);
+                    int z = _map.LandZ(x, y);
+                    switch (Tool)
+                    {
+                        case IsoTool.LandSet:
+                            _map.SetLand(x, y, PlaceLandId, z);
+                            break;
+                        case IsoTool.Raise:
+                            _map.SetLand(x, y, id, z + Math.Max(1, HeightStep));
+                            break;
+                        case IsoTool.Lower:
+                            _map.SetLand(x, y, id, z - Math.Max(1, HeightStep));
+                            break;
+                        case IsoTool.SetHeight:
+                            _map.SetLand(x, y, id, TargetHeight);
+                            break;
+                        case IsoTool.Smooth:
+                            {
+                                int sum = 0, n = 0;
+                                for (int dy = -1; dy <= 1; dy++)
+                                {
+                                    for (int dx = -1; dx <= 1; dx++)
+                                    {
+                                        if (_map.InBounds(x + dx, y + dy))
+                                        {
+                                            sum += smoothSource[(y + dy) * _map.Width + x + dx];
+                                            n++;
+                                        }
+                                    }
+                                }
+                                _map.SetLand(x, y, id, (int)Math.Round(sum / (double)n));
+                                break;
+                            }
+                    }
+                }
+            }
+            Refresh(true);
+        }
+
+        public void CopyArea()
+        {
+            if (_area.IsEmpty)
+            {
+                return;
+            }
+            var clip = new AreaClip { W = _area.Width, H = _area.Height, Tiles = new ushort[_area.Width * _area.Height], Z = new sbyte[_area.Width * _area.Height] };
+            for (int y = 0; y < clip.H; y++)
+            {
+                for (int x = 0; x < clip.W; x++)
+                {
+                    int src = (_area.Y + y) * _map.Width + _area.X + x;
+                    clip.Tiles[y * clip.W + x] = _map.Tiles[src];
+                    clip.Z[y * clip.W + x] = _map.Z[src];
+                    foreach (StaticItem s in _map.StaticsAt(_area.X + x, _area.Y + y))
+                    {
+                        StaticItem c = s.Copy();
+                        c.X = x;
+                        c.Y = y;
+                        clip.Statics.Add(c);
+                    }
+                }
+            }
+            clip.BaseZ = clip.Z[0];
+            _areaClip = clip;
+            Message?.Invoke(this, $"Bereich {clip.W}×{clip.H} kopiert ({clip.Statics.Count} Statics) – Strg+V und klicken zum Einfügen (Höhe wird an die Zielstelle angepasst).");
+        }
+
+        public void BeginAreaPaste()
+        {
+            if (_areaClip == null)
+            {
+                Message?.Invoke(this, "Kein Bereich kopiert.");
+                return;
+            }
+            _areaPaste = true;
+            Invalidate();
+        }
+
+        private void PasteArea(int tx, int ty)
+        {
+            AreaClip clip = _areaClip;
+            int dz = _map.LandZ(tx, ty) - clip.BaseZ;
+            var land = new List<LandChange>();
+            var statics = new List<StaticChange>();
+            for (int y = 0; y < clip.H; y++)
+            {
+                for (int x = 0; x < clip.W; x++)
+                {
+                    int mx = tx + x, my = ty + y;
+                    if (!_map.InBounds(mx, my))
+                    {
+                        continue;
+                    }
+                    int i = my * _map.Width + mx;
+                    land.Add(new LandChange { Index = i, OldId = _map.Tiles[i], OldZ = _map.Z[i], NewId = clip.Tiles[y * clip.W + x], NewZ = (sbyte)Math.Clamp(clip.Z[y * clip.W + x] + dz, -128, 127) });
+                    foreach (StaticItem old in _map.StaticsAt(mx, my).ToList())
+                    {
+                        statics.Add(MapData.Remove(old));
+                    }
+                }
+            }
+            foreach (StaticItem s in clip.Statics)
+            {
+                var c = new StaticItem { Id = s.Id, Hue = s.Hue, X = tx + s.X, Y = ty + s.Y, Z = Math.Clamp(s.Z + dz, -128, 127) };
+                if (_map.InBounds(c.X, c.Y))
+                {
+                    statics.Add(MapData.Add(c));
+                }
+            }
+            _map.Apply(statics, land);
+            _area = new Rectangle(tx, ty, clip.W, clip.H);
+            _area.Intersect(new Rectangle(0, 0, _map.Width, _map.Height));
+            Refresh(true);
+            MapChanged?.Invoke(this, EventArgs.Empty);
+            Message?.Invoke(this, $"Bereich eingefügt bei ({tx}, {ty}) – weiter klicken für mehr, Esc beendet.");
+        }
+
+        public void DeleteAreaStatics()
+        {
+            if (_area.IsEmpty)
+            {
+                return;
+            }
+            var changes = new List<StaticChange>();
+            for (int y = _area.Top; y < _area.Bottom; y++)
+            {
+                for (int x = _area.Left; x < _area.Right; x++)
+                {
+                    changes.AddRange(_map.StaticsAt(x, y).ToList().Select(MapData.Remove));
+                }
+            }
+            _selection.Clear();
+            Edit(changes, $"{changes.Count} Statics im Bereich gelöscht");
+        }
+
+        /// <summary>Raises / lowers the land (and its statics) of the marked area.</summary>
+        public void RaiseArea(int dz)
+        {
+            if (_area.IsEmpty)
+            {
+                return;
+            }
+            var land = new List<LandChange>();
+            var statics = new List<StaticChange>();
+            for (int y = _area.Top; y < _area.Bottom; y++)
+            {
+                for (int x = _area.Left; x < _area.Right; x++)
+                {
+                    int i = y * _map.Width + x;
+                    land.Add(new LandChange { Index = i, OldId = _map.Tiles[i], OldZ = _map.Z[i], NewId = _map.Tiles[i], NewZ = (sbyte)Math.Clamp(_map.Z[i] + dz, -128, 127) });
+                    statics.AddRange(_map.StaticsAt(x, y).ToList().Select(s => MapData.Modify(s, t => t.Z = Math.Clamp(t.Z + dz, -128, 127))));
+                }
+            }
+            _map.Apply(statics, land);
+            Refresh(true);
+            MapChanged?.Invoke(this, EventArgs.Empty);
+            Message?.Invoke(this, $"Bereich um {dz:+0;-0} angehoben/abgesenkt (Land + Statics).");
         }
 
         public void Undo()
