@@ -180,6 +180,8 @@
             tabCgiMulti = new System.Windows.Forms.TabPage();
             tabCgiLand = new System.Windows.Forms.TabPage();
             tabCgiCoast = new System.Windows.Forms.TabPage();
+            tabCgiCave = new System.Windows.Forms.TabPage();
+            tabCgiTemplates = new System.Windows.Forms.TabPage();
             tabCgiSelection = new System.Windows.Forms.TabPage();
             tabCgiProblems = new System.Windows.Forms.TabPage();
             gridCgiItems = new UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls.TileGridView();
@@ -215,6 +217,8 @@
             btnCgiAreaSmooth = new System.Windows.Forms.Button();
             btnCgiLandCatalog = new System.Windows.Forms.Button();
             cmbCgiLandSize = new System.Windows.Forms.ComboBox();
+            cmbCgiLandPreset = new System.Windows.Forms.ComboBox();
+            chkCgiLandFlatten = new System.Windows.Forms.CheckBox();
             lblCgiLandInfo = new System.Windows.Forms.Label();
             panelCgiCoast = new System.Windows.Forms.Panel();
             lblCgiCoastHeights = new System.Windows.Forms.Label();
@@ -238,6 +242,35 @@
             btnCgiWaterAreaRemove = new System.Windows.Forms.Button();
             btnCgiCoastDefaults = new System.Windows.Forms.Button();
             lblCgiCoastInfo = new System.Windows.Forms.Label();
+            panelCgiCave = new System.Windows.Forms.Panel();
+            lblCgiCaveFloor = new System.Windows.Forms.Label();
+            txtCgiCaveFloor = new System.Windows.Forms.TextBox();
+            lblCgiCaveWall = new System.Windows.Forms.Label();
+            numCgiCaveWall = new System.Windows.Forms.NumericUpDown();
+            chkCgiCaveWalls = new System.Windows.Forms.CheckBox();
+            chkCgiCaveTarget = new System.Windows.Forms.CheckBox();
+            btnCgiCaveTool = new System.Windows.Forms.Button();
+            btnCgiCaveBlack = new System.Windows.Forms.Button();
+            lblCgiCaveInfo = new System.Windows.Forms.Label();
+            lstCgiTemplates = new System.Windows.Forms.ListBox();
+            panelCgiTplTop = new System.Windows.Forms.Panel();
+            cmbCgiTplCategory = new System.Windows.Forms.ComboBox();
+            txtCgiTplFilter = new System.Windows.Forms.TextBox();
+            panelCgiTpl = new System.Windows.Forms.Panel();
+            picCgiTpl = new System.Windows.Forms.PictureBox();
+            lblCgiTplInfo = new System.Windows.Forms.Label();
+            chkCgiTplStatics = new System.Windows.Forms.CheckBox();
+            chkCgiTplLand = new System.Windows.Forms.CheckBox();
+            chkCgiTplLandZ = new System.Windows.Forms.CheckBox();
+            chkCgiTplClear = new System.Windows.Forms.CheckBox();
+            lblCgiTplZ = new System.Windows.Forms.Label();
+            numCgiTplZ = new System.Windows.Forms.NumericUpDown();
+            btnCgiTplPlace = new System.Windows.Forms.Button();
+            btnCgiTplReload = new System.Windows.Forms.Button();
+            btnCgiTplSaveArea = new System.Windows.Forms.Button();
+            btnCgiTplSaveSel = new System.Windows.Forms.Button();
+            btnCgiTplAreaStatics = new System.Windows.Forms.Button();
+            btnCgiTplFolder = new System.Windows.Forms.Button();
             picCgiMulti = new System.Windows.Forms.PictureBox();
             panelCgiMultiTop = new System.Windows.Forms.Panel();
             lblCgiMultiId = new System.Windows.Forms.Label();
@@ -266,6 +299,7 @@
             tsbCgiSetHeight = new System.Windows.Forms.ToolStripButton();
             tsbCgiSmooth = new System.Windows.Forms.ToolStripButton();
             tsbCgiCoast = new System.Windows.Forms.ToolStripButton();
+            tsbCgiCave = new System.Windows.Forms.ToolStripButton();
             tsbCgiWater = new System.Windows.Forms.ToolStripButton();
             tsbCgiArea = new System.Windows.Forms.ToolStripButton();
             tssCgiLand1 = new System.Windows.Forms.ToolStripSeparator();
@@ -280,6 +314,7 @@
             tsbCgiSelect = new System.Windows.Forms.ToolStripButton();
             tsbCgiPlace = new System.Windows.Forms.ToolStripButton();
             tsbCgiMulti = new System.Windows.Forms.ToolStripButton();
+            tsbCgiTemplate = new System.Windows.Forms.ToolStripButton();
             tsbCgiDelete = new System.Windows.Forms.ToolStripButton();
             tsbCgiHue = new System.Windows.Forms.ToolStripButton();
             tssCgi2 = new System.Windows.Forms.ToolStripSeparator();
@@ -449,12 +484,17 @@
             tabCgiMulti.SuspendLayout();
             tabCgiLand.SuspendLayout();
             tabCgiCoast.SuspendLayout();
+            tabCgiCave.SuspendLayout();
+            tabCgiTemplates.SuspendLayout();
             tabCgiSelection.SuspendLayout();
             tabCgiProblems.SuspendLayout();
             panelCgiItem.SuspendLayout();
             panelCgiHueSwatch.SuspendLayout();
             panelCgiLand.SuspendLayout();
             panelCgiCoast.SuspendLayout();
+            panelCgiCave.SuspendLayout();
+            panelCgiTplTop.SuspendLayout();
+            panelCgiTpl.SuspendLayout();
             panelCgiMultiTop.SuspendLayout();
             panelCgiSelButtons.SuspendLayout();
             panelCgiProblemsTop.SuspendLayout();
@@ -496,6 +536,9 @@
             ((System.ComponentModel.ISupportInitialize)numCgiFloorZ).BeginInit();
             ((System.ComponentModel.ISupportInitialize)numCgiWaterWidth).BeginInit();
             ((System.ComponentModel.ISupportInitialize)numCgiSurfaceZ).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)numCgiCaveWall).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)picCgiTpl).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)numCgiTplZ).BeginInit();
             ((System.ComponentModel.ISupportInitialize)picCgiMulti).BeginInit();
             ((System.ComponentModel.ISupportInitialize)numCgiMultiId).BeginInit();
             ((System.ComponentModel.ISupportInitialize)numCgiCliff).BeginInit();
@@ -1584,10 +1627,14 @@
             tabCgiSide.Controls.Add(tabCgiMulti);
             tabCgiSide.Controls.Add(tabCgiLand);
             tabCgiSide.Controls.Add(tabCgiCoast);
+            tabCgiSide.Controls.Add(tabCgiCave);
+            tabCgiSide.Controls.Add(tabCgiTemplates);
             tabCgiSide.Controls.Add(tabCgiSelection);
             tabCgiSide.Controls.Add(tabCgiProblems);
             tabCgiSide.Dock = System.Windows.Forms.DockStyle.Fill;
+            tabCgiSide.Multiline = true;
             tabCgiSide.Name = "tabCgiSide";
+            tabCgiSide.SelectedIndexChanged += TabCgiSide_SelectedIndexChanged;
             // 
             // grpCgiGoto
             // 
@@ -1699,6 +1746,28 @@
             tabCgiCoast.Name = "tabCgiCoast";
             tabCgiCoast.Location = new System.Drawing.Point(4, 24);
             tabCgiCoast.Size = new System.Drawing.Size(1176, 640);
+            // 
+            // tabCgiCave
+            // 
+            tabCgiCave.Controls.Add(panelCgiCave);
+            tabCgiCave.Text = "Höhle / Weg";
+            tabCgiCave.UseVisualStyleBackColor = true;
+            tabCgiCave.Padding = new System.Windows.Forms.Padding(3);
+            tabCgiCave.Name = "tabCgiCave";
+            tabCgiCave.Location = new System.Drawing.Point(4, 24);
+            tabCgiCave.Size = new System.Drawing.Size(1176, 640);
+            // 
+            // tabCgiTemplates
+            // 
+            tabCgiTemplates.Controls.Add(lstCgiTemplates);
+            tabCgiTemplates.Controls.Add(panelCgiTplTop);
+            tabCgiTemplates.Controls.Add(panelCgiTpl);
+            tabCgiTemplates.Text = "Vorlagen";
+            tabCgiTemplates.UseVisualStyleBackColor = true;
+            tabCgiTemplates.Padding = new System.Windows.Forms.Padding(3);
+            tabCgiTemplates.Name = "tabCgiTemplates";
+            tabCgiTemplates.Location = new System.Drawing.Point(4, 24);
+            tabCgiTemplates.Size = new System.Drawing.Size(1176, 640);
             // 
             // tabCgiSelection
             // 
@@ -1880,9 +1949,11 @@
             panelCgiLand.Controls.Add(btnCgiAreaSmooth);
             panelCgiLand.Controls.Add(btnCgiLandCatalog);
             panelCgiLand.Controls.Add(cmbCgiLandSize);
+            panelCgiLand.Controls.Add(cmbCgiLandPreset);
+            panelCgiLand.Controls.Add(chkCgiLandFlatten);
             panelCgiLand.Controls.Add(lblCgiLandInfo);
             panelCgiLand.Dock = System.Windows.Forms.DockStyle.Bottom;
-            panelCgiLand.Size = new System.Drawing.Size(290, 250);
+            panelCgiLand.Size = new System.Drawing.Size(290, 300);
             panelCgiLand.Name = "panelCgiLand";
             // 
             // picCgiLandArt
@@ -2010,10 +2081,26 @@
             cmbCgiLandSize.Name = "cmbCgiLandSize";
             cmbCgiLandSize.SelectedIndexChanged += CmbCgiGridSize_SelectedIndexChanged;
             // 
+            // cmbCgiLandPreset
+            // 
+            cmbCgiLandPreset.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            cmbCgiLandPreset.Location = new System.Drawing.Point(4, 160);
+            cmbCgiLandPreset.Size = new System.Drawing.Size(278, 23);
+            cmbCgiLandPreset.Name = "cmbCgiLandPreset";
+            cmbCgiLandPreset.SelectedIndexChanged += CmbCgiLandPreset_SelectedIndexChanged;
+            // 
+            // chkCgiLandFlatten
+            // 
+            chkCgiLandFlatten.AutoSize = true;
+            chkCgiLandFlatten.Location = new System.Drawing.Point(4, 188);
+            chkCgiLandFlatten.Text = "Weg / Boden: Höhe vom ersten Klick übernehmen";
+            chkCgiLandFlatten.Name = "chkCgiLandFlatten";
+            chkCgiLandFlatten.CheckedChanged += CgiLandSettings_Changed;
+            // 
             // lblCgiLandInfo
             // 
-            lblCgiLandInfo.Location = new System.Drawing.Point(4, 160);
-            lblCgiLandInfo.Size = new System.Drawing.Size(280, 86);
+            lblCgiLandInfo.Location = new System.Drawing.Point(4, 212);
+            lblCgiLandInfo.Size = new System.Drawing.Size(280, 84);
             lblCgiLandInfo.Text = "-";
             lblCgiLandInfo.Name = "lblCgiLandInfo";
             // 
@@ -2218,6 +2305,273 @@
             lblCgiCoastInfo.Text = "-";
             lblCgiCoastInfo.Name = "lblCgiCoastInfo";
             // 
+            // panelCgiCave
+            // 
+            panelCgiCave.Controls.Add(lblCgiCaveFloor);
+            panelCgiCave.Controls.Add(txtCgiCaveFloor);
+            panelCgiCave.Controls.Add(lblCgiCaveWall);
+            panelCgiCave.Controls.Add(numCgiCaveWall);
+            panelCgiCave.Controls.Add(chkCgiCaveWalls);
+            panelCgiCave.Controls.Add(chkCgiCaveTarget);
+            panelCgiCave.Controls.Add(btnCgiCaveTool);
+            panelCgiCave.Controls.Add(btnCgiCaveBlack);
+            panelCgiCave.Controls.Add(lblCgiCaveInfo);
+            panelCgiCave.Dock = System.Windows.Forms.DockStyle.Fill;
+            panelCgiCave.AutoScroll = true;
+            panelCgiCave.Name = "panelCgiCave";
+            // 
+            // lblCgiCaveFloor
+            // 
+            lblCgiCaveFloor.AutoSize = true;
+            lblCgiCaveFloor.Location = new System.Drawing.Point(4, 8);
+            lblCgiCaveFloor.Text = "Höhlenboden:";
+            lblCgiCaveFloor.Name = "lblCgiCaveFloor";
+            // 
+            // txtCgiCaveFloor
+            // 
+            txtCgiCaveFloor.Location = new System.Drawing.Point(110, 4);
+            txtCgiCaveFloor.Size = new System.Drawing.Size(170, 23);
+            txtCgiCaveFloor.Text = "0245 0246 0247 0248 0249";
+            txtCgiCaveFloor.Name = "txtCgiCaveFloor";
+            txtCgiCaveFloor.TextChanged += CgiCaveSettings_Changed;
+            // 
+            // lblCgiCaveWall
+            // 
+            lblCgiCaveWall.AutoSize = true;
+            lblCgiCaveWall.Location = new System.Drawing.Point(4, 37);
+            lblCgiCaveWall.Text = "Wand-Höhe:";
+            lblCgiCaveWall.Name = "lblCgiCaveWall";
+            // 
+            // numCgiCaveWall
+            // 
+            numCgiCaveWall.Location = new System.Drawing.Point(110, 33);
+            numCgiCaveWall.Maximum = new decimal(new int[] { 120, 0, 0, 0 });
+            numCgiCaveWall.Minimum = new decimal(new int[] { 1, 0, 0, 0 });
+            numCgiCaveWall.Size = new System.Drawing.Size(60, 23);
+            numCgiCaveWall.Value = new decimal(new int[] { 20, 0, 0, 0 });
+            numCgiCaveWall.Name = "numCgiCaveWall";
+            numCgiCaveWall.ValueChanged += CgiCaveSettings_Changed;
+            // 
+            // chkCgiCaveWalls
+            // 
+            chkCgiCaveWalls.AutoSize = true;
+            chkCgiCaveWalls.Checked = true;
+            chkCgiCaveWalls.CheckState = System.Windows.Forms.CheckState.Checked;
+            chkCgiCaveWalls.Location = new System.Drawing.Point(4, 64);
+            chkCgiCaveWalls.Text = "Rand zu Wänden anheben (Textur dahinter)";
+            chkCgiCaveWalls.Name = "chkCgiCaveWalls";
+            chkCgiCaveWalls.CheckedChanged += CgiCaveSettings_Changed;
+            // 
+            // chkCgiCaveTarget
+            // 
+            chkCgiCaveTarget.AutoSize = true;
+            chkCgiCaveTarget.Location = new System.Drawing.Point(4, 88);
+            chkCgiCaveTarget.Text = "Boden auf 'Höhe =' (Reiter Land)";
+            chkCgiCaveTarget.Name = "chkCgiCaveTarget";
+            chkCgiCaveTarget.CheckedChanged += CgiCaveSettings_Changed;
+            // 
+            // btnCgiCaveTool
+            // 
+            btnCgiCaveTool.Location = new System.Drawing.Point(4, 114);
+            btnCgiCaveTool.Size = new System.Drawing.Size(276, 25);
+            btnCgiCaveTool.Text = "Höhlen-Pinsel wählen";
+            btnCgiCaveTool.UseVisualStyleBackColor = true;
+            btnCgiCaveTool.Name = "btnCgiCaveTool";
+            btnCgiCaveTool.Click += BtnCgiCaveTool_Click;
+            // 
+            // btnCgiCaveBlack
+            // 
+            btnCgiCaveBlack.Location = new System.Drawing.Point(4, 143);
+            btnCgiCaveBlack.Size = new System.Drawing.Size(276, 25);
+            btnCgiCaveBlack.Text = "Bereich mit Schwarz (0244) füllen";
+            btnCgiCaveBlack.UseVisualStyleBackColor = true;
+            btnCgiCaveBlack.Name = "btnCgiCaveBlack";
+            btnCgiCaveBlack.Click += BtnCgiCaveBlack_Click;
+            // 
+            // lblCgiCaveInfo
+            // 
+            lblCgiCaveInfo.Location = new System.Drawing.Point(4, 174);
+            lblCgiCaveInfo.Size = new System.Drawing.Size(280, 260);
+            lblCgiCaveInfo.Text = "-";
+            lblCgiCaveInfo.Name = "lblCgiCaveInfo";
+            // 
+            // lstCgiTemplates
+            // 
+            lstCgiTemplates.Dock = System.Windows.Forms.DockStyle.Fill;
+            lstCgiTemplates.IntegralHeight = false;
+            lstCgiTemplates.HorizontalScrollbar = true;
+            lstCgiTemplates.Name = "lstCgiTemplates";
+            lstCgiTemplates.SelectedIndexChanged += LstCgiTemplates_SelectedIndexChanged;
+            lstCgiTemplates.DoubleClick += BtnCgiTplPlace_Click;
+            // 
+            // panelCgiTplTop
+            // 
+            panelCgiTplTop.Controls.Add(cmbCgiTplCategory);
+            panelCgiTplTop.Controls.Add(txtCgiTplFilter);
+            panelCgiTplTop.Dock = System.Windows.Forms.DockStyle.Top;
+            panelCgiTplTop.Size = new System.Drawing.Size(290, 58);
+            panelCgiTplTop.Name = "panelCgiTplTop";
+            // 
+            // cmbCgiTplCategory
+            // 
+            cmbCgiTplCategory.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            cmbCgiTplCategory.Location = new System.Drawing.Point(4, 4);
+            cmbCgiTplCategory.Size = new System.Drawing.Size(278, 23);
+            cmbCgiTplCategory.Name = "cmbCgiTplCategory";
+            cmbCgiTplCategory.SelectedIndexChanged += CgiTemplateFilter_Changed;
+            // 
+            // txtCgiTplFilter
+            // 
+            txtCgiTplFilter.Location = new System.Drawing.Point(4, 31);
+            txtCgiTplFilter.Size = new System.Drawing.Size(278, 23);
+            txtCgiTplFilter.PlaceholderText = "Suche: Name, Kategorie, Autor";
+            txtCgiTplFilter.Name = "txtCgiTplFilter";
+            txtCgiTplFilter.TextChanged += CgiTemplateFilter_Changed;
+            // 
+            // panelCgiTpl
+            // 
+            panelCgiTpl.Controls.Add(picCgiTpl);
+            panelCgiTpl.Controls.Add(lblCgiTplInfo);
+            panelCgiTpl.Controls.Add(chkCgiTplStatics);
+            panelCgiTpl.Controls.Add(chkCgiTplLand);
+            panelCgiTpl.Controls.Add(chkCgiTplLandZ);
+            panelCgiTpl.Controls.Add(chkCgiTplClear);
+            panelCgiTpl.Controls.Add(lblCgiTplZ);
+            panelCgiTpl.Controls.Add(numCgiTplZ);
+            panelCgiTpl.Controls.Add(btnCgiTplPlace);
+            panelCgiTpl.Controls.Add(btnCgiTplReload);
+            panelCgiTpl.Controls.Add(btnCgiTplSaveArea);
+            panelCgiTpl.Controls.Add(btnCgiTplSaveSel);
+            panelCgiTpl.Controls.Add(btnCgiTplAreaStatics);
+            panelCgiTpl.Controls.Add(btnCgiTplFolder);
+            panelCgiTpl.Dock = System.Windows.Forms.DockStyle.Bottom;
+            panelCgiTpl.Size = new System.Drawing.Size(290, 330);
+            panelCgiTpl.Name = "panelCgiTpl";
+            // 
+            // picCgiTpl
+            // 
+            picCgiTpl.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            picCgiTpl.Location = new System.Drawing.Point(4, 4);
+            picCgiTpl.Size = new System.Drawing.Size(278, 130);
+            picCgiTpl.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
+            picCgiTpl.BackColor = System.Drawing.Color.FromArgb(40, 40, 40);
+            picCgiTpl.Name = "picCgiTpl";
+            // 
+            // lblCgiTplInfo
+            // 
+            lblCgiTplInfo.Location = new System.Drawing.Point(4, 138);
+            lblCgiTplInfo.Size = new System.Drawing.Size(278, 46);
+            lblCgiTplInfo.Text = "-";
+            lblCgiTplInfo.Name = "lblCgiTplInfo";
+            // 
+            // chkCgiTplStatics
+            // 
+            chkCgiTplStatics.AutoSize = true;
+            chkCgiTplStatics.Checked = true;
+            chkCgiTplStatics.CheckState = System.Windows.Forms.CheckState.Checked;
+            chkCgiTplStatics.Location = new System.Drawing.Point(4, 188);
+            chkCgiTplStatics.Text = "Statics";
+            chkCgiTplStatics.Name = "chkCgiTplStatics";
+            chkCgiTplStatics.CheckedChanged += CgiTemplateSettings_Changed;
+            // 
+            // chkCgiTplLand
+            // 
+            chkCgiTplLand.AutoSize = true;
+            chkCgiTplLand.Checked = true;
+            chkCgiTplLand.CheckState = System.Windows.Forms.CheckState.Checked;
+            chkCgiTplLand.Location = new System.Drawing.Point(80, 188);
+            chkCgiTplLand.Text = "Boden";
+            chkCgiTplLand.Name = "chkCgiTplLand";
+            chkCgiTplLand.CheckedChanged += CgiTemplateSettings_Changed;
+            // 
+            // chkCgiTplLandZ
+            // 
+            chkCgiTplLandZ.AutoSize = true;
+            chkCgiTplLandZ.Checked = true;
+            chkCgiTplLandZ.CheckState = System.Windows.Forms.CheckState.Checked;
+            chkCgiTplLandZ.Location = new System.Drawing.Point(150, 188);
+            chkCgiTplLandZ.Text = "Boden mit Höhe";
+            chkCgiTplLandZ.Name = "chkCgiTplLandZ";
+            chkCgiTplLandZ.CheckedChanged += CgiTemplateSettings_Changed;
+            // 
+            // chkCgiTplClear
+            // 
+            chkCgiTplClear.AutoSize = true;
+            chkCgiTplClear.Location = new System.Drawing.Point(4, 211);
+            chkCgiTplClear.Text = "Statics an der Stelle vorher löschen";
+            chkCgiTplClear.Name = "chkCgiTplClear";
+            chkCgiTplClear.CheckedChanged += CgiTemplateSettings_Changed;
+            // 
+            // lblCgiTplZ
+            // 
+            lblCgiTplZ.AutoSize = true;
+            lblCgiTplZ.Location = new System.Drawing.Point(4, 240);
+            lblCgiTplZ.Text = "Z +:";
+            lblCgiTplZ.Name = "lblCgiTplZ";
+            // 
+            // numCgiTplZ
+            // 
+            numCgiTplZ.Location = new System.Drawing.Point(40, 236);
+            numCgiTplZ.Maximum = new decimal(new int[] { 127, 0, 0, 0 });
+            numCgiTplZ.Minimum = new decimal(new int[] { 128, 0, 0, -2147483648 });
+            numCgiTplZ.Size = new System.Drawing.Size(60, 23);
+            numCgiTplZ.Name = "numCgiTplZ";
+            numCgiTplZ.ValueChanged += CgiTemplateSettings_Changed;
+            // 
+            // btnCgiTplPlace
+            // 
+            btnCgiTplPlace.Location = new System.Drawing.Point(106, 235);
+            btnCgiTplPlace.Size = new System.Drawing.Size(84, 25);
+            btnCgiTplPlace.Text = "Setzen";
+            btnCgiTplPlace.UseVisualStyleBackColor = true;
+            btnCgiTplPlace.Name = "btnCgiTplPlace";
+            btnCgiTplPlace.Click += BtnCgiTplPlace_Click;
+            // 
+            // btnCgiTplReload
+            // 
+            btnCgiTplReload.Location = new System.Drawing.Point(196, 235);
+            btnCgiTplReload.Size = new System.Drawing.Size(86, 25);
+            btnCgiTplReload.Text = "Neu laden";
+            btnCgiTplReload.UseVisualStyleBackColor = true;
+            btnCgiTplReload.Name = "btnCgiTplReload";
+            btnCgiTplReload.Click += BtnCgiTplReload_Click;
+            // 
+            // btnCgiTplSaveArea
+            // 
+            btnCgiTplSaveArea.Location = new System.Drawing.Point(4, 266);
+            btnCgiTplSaveArea.Size = new System.Drawing.Size(136, 25);
+            btnCgiTplSaveArea.Text = "Bereich → Vorlage…";
+            btnCgiTplSaveArea.UseVisualStyleBackColor = true;
+            btnCgiTplSaveArea.Name = "btnCgiTplSaveArea";
+            btnCgiTplSaveArea.Click += BtnCgiTplSaveArea_Click;
+            // 
+            // btnCgiTplSaveSel
+            // 
+            btnCgiTplSaveSel.Location = new System.Drawing.Point(146, 266);
+            btnCgiTplSaveSel.Size = new System.Drawing.Size(136, 25);
+            btnCgiTplSaveSel.Text = "Auswahl → Vorlage…";
+            btnCgiTplSaveSel.UseVisualStyleBackColor = true;
+            btnCgiTplSaveSel.Name = "btnCgiTplSaveSel";
+            btnCgiTplSaveSel.Click += BtnCgiTplSaveSel_Click;
+            // 
+            // btnCgiTplAreaStatics
+            // 
+            btnCgiTplAreaStatics.Location = new System.Drawing.Point(4, 296);
+            btnCgiTplAreaStatics.Size = new System.Drawing.Size(136, 25);
+            btnCgiTplAreaStatics.Text = "Bereich: Statics wählen";
+            btnCgiTplAreaStatics.UseVisualStyleBackColor = true;
+            btnCgiTplAreaStatics.Name = "btnCgiTplAreaStatics";
+            btnCgiTplAreaStatics.Click += BtnCgiTplAreaStatics_Click;
+            // 
+            // btnCgiTplFolder
+            // 
+            btnCgiTplFolder.Location = new System.Drawing.Point(146, 296);
+            btnCgiTplFolder.Size = new System.Drawing.Size(136, 25);
+            btnCgiTplFolder.Text = "Ordner öffnen";
+            btnCgiTplFolder.UseVisualStyleBackColor = true;
+            btnCgiTplFolder.Name = "btnCgiTplFolder";
+            btnCgiTplFolder.Click += BtnCgiTplFolder_Click;
+            // 
             // picCgiMulti
             // 
             picCgiMulti.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -2393,7 +2747,7 @@
             // 
             // toolStripCgiLand
             // 
-            toolStripCgiLand.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { tslCgiLandTools, tsbCgiLandSet, tsbCgiRaise, tsbCgiLower, tsbCgiSetHeight, tsbCgiSmooth, tsbCgiCoast, tsbCgiWater, tsbCgiArea, tssCgiLand1, tslCgiBrush, tscCgiBrush });
+            toolStripCgiLand.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { tslCgiLandTools, tsbCgiLandSet, tsbCgiRaise, tsbCgiLower, tsbCgiSetHeight, tsbCgiSmooth, tsbCgiCoast, tsbCgiCave, tsbCgiWater, tsbCgiArea, tssCgiLand1, tslCgiBrush, tscCgiBrush });
             toolStripCgiLand.Dock = System.Windows.Forms.DockStyle.Top;
             toolStripCgiLand.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
             toolStripCgiLand.Name = "toolStripCgiLand";
@@ -2451,6 +2805,14 @@
             tsbCgiCoast.Name = "tsbCgiCoast";
             tsbCgiCoast.Click += CgiTool_Click;
             // 
+            // tsbCgiCave
+            // 
+            tsbCgiCave.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            tsbCgiCave.Text = "Höhle";
+            tsbCgiCave.ToolTipText = "Pinsel: Höhle in den Berg graben – Boden auf einer Höhe, der Rand wird Wand (Reiter Höhle / Weg)";
+            tsbCgiCave.Name = "tsbCgiCave";
+            tsbCgiCave.Click += CgiTool_Click;
+            // 
             // tsbCgiWater
             // 
             tsbCgiWater.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
@@ -2486,7 +2848,7 @@
             // 
             // toolStripCgi
             // 
-            toolStripCgi.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { tsbCgiBuild, tsbCgiLoad, tsbCgiSave, tsbCgiSaveAs, tssCgi1, tsbCgiSelect, tsbCgiPlace, tsbCgiMulti, tsbCgiDelete, tsbCgiHue, tssCgi2, tsbCgiUndo, tsbCgiRedo, tssCgi3, tsbCgiZoomIn, tsbCgiZoomOut, tsbCgiGrid, tsbCgiHeights, tsbCgi2D, tsbCgiSeeThrough, tsbCgiStatics, tsbCgiProblems, tslCgiMaxZ, tscCgiMaxZ });
+            toolStripCgi.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { tsbCgiBuild, tsbCgiLoad, tsbCgiSave, tsbCgiSaveAs, tssCgi1, tsbCgiSelect, tsbCgiPlace, tsbCgiMulti, tsbCgiTemplate, tsbCgiDelete, tsbCgiHue, tssCgi2, tsbCgiUndo, tsbCgiRedo, tssCgi3, tsbCgiZoomIn, tsbCgiZoomOut, tsbCgiGrid, tsbCgiHeights, tsbCgi2D, tsbCgiSeeThrough, tsbCgiStatics, tsbCgiProblems, tslCgiMaxZ, tscCgiMaxZ });
             toolStripCgi.Dock = System.Windows.Forms.DockStyle.Top;
             toolStripCgi.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
             toolStripCgi.Name = "toolStripCgi";
@@ -2549,6 +2911,14 @@
             tsbCgiMulti.ToolTipText = "Gewähltes Multi (rechts) als Statics setzen";
             tsbCgiMulti.Name = "tsbCgiMulti";
             tsbCgiMulti.Click += CgiTool_Click;
+            // 
+            // tsbCgiTemplate
+            // 
+            tsbCgiTemplate.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            tsbCgiTemplate.Text = "Vorlage setzen";
+            tsbCgiTemplate.ToolTipText = "Gebäude / Boden-Vorlage (Reiter Vorlagen) halbtransparent zeigen und setzen";
+            tsbCgiTemplate.Name = "tsbCgiTemplate";
+            tsbCgiTemplate.Click += CgiTool_Click;
             // 
             // tsbCgiDelete
             // 
@@ -3562,6 +3932,9 @@
             ((System.ComponentModel.ISupportInitialize)numCgiFloorZ).EndInit();
             ((System.ComponentModel.ISupportInitialize)numCgiWaterWidth).EndInit();
             ((System.ComponentModel.ISupportInitialize)numCgiSurfaceZ).EndInit();
+            ((System.ComponentModel.ISupportInitialize)numCgiCaveWall).EndInit();
+            ((System.ComponentModel.ISupportInitialize)picCgiTpl).EndInit();
+            ((System.ComponentModel.ISupportInitialize)numCgiTplZ).EndInit();
             ((System.ComponentModel.ISupportInitialize)picCgiMulti).EndInit();
             ((System.ComponentModel.ISupportInitialize)numCgiMultiId).EndInit();
             ((System.ComponentModel.ISupportInitialize)numCgiCliff).EndInit();
@@ -3629,6 +4002,12 @@
             panelCgiSelButtons.PerformLayout();
             panelCgiMultiTop.ResumeLayout(false);
             panelCgiMultiTop.PerformLayout();
+            panelCgiTpl.ResumeLayout(false);
+            panelCgiTpl.PerformLayout();
+            panelCgiTplTop.ResumeLayout(false);
+            panelCgiTplTop.PerformLayout();
+            panelCgiCave.ResumeLayout(false);
+            panelCgiCave.PerformLayout();
             panelCgiCoast.ResumeLayout(false);
             panelCgiCoast.PerformLayout();
             panelCgiLand.ResumeLayout(false);
@@ -3641,6 +4020,10 @@
             tabCgiProblems.PerformLayout();
             tabCgiSelection.ResumeLayout(false);
             tabCgiSelection.PerformLayout();
+            tabCgiTemplates.ResumeLayout(false);
+            tabCgiTemplates.PerformLayout();
+            tabCgiCave.ResumeLayout(false);
+            tabCgiCave.PerformLayout();
             tabCgiCoast.ResumeLayout(false);
             tabCgiCoast.PerformLayout();
             tabCgiLand.ResumeLayout(false);
@@ -3904,6 +4287,8 @@
         private System.Windows.Forms.TabPage tabCgiMulti;
         private System.Windows.Forms.TabPage tabCgiLand;
         private System.Windows.Forms.TabPage tabCgiCoast;
+        private System.Windows.Forms.TabPage tabCgiCave;
+        private System.Windows.Forms.TabPage tabCgiTemplates;
         private System.Windows.Forms.TabPage tabCgiSelection;
         private System.Windows.Forms.TabPage tabCgiProblems;
         private UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls.TileGridView gridCgiItems;
@@ -3939,6 +4324,8 @@
         private System.Windows.Forms.Button btnCgiAreaSmooth;
         private System.Windows.Forms.Button btnCgiLandCatalog;
         private System.Windows.Forms.ComboBox cmbCgiLandSize;
+        private System.Windows.Forms.ComboBox cmbCgiLandPreset;
+        private System.Windows.Forms.CheckBox chkCgiLandFlatten;
         private System.Windows.Forms.Label lblCgiLandInfo;
         private System.Windows.Forms.Panel panelCgiCoast;
         private System.Windows.Forms.Label lblCgiCoastHeights;
@@ -3962,6 +4349,35 @@
         private System.Windows.Forms.Button btnCgiWaterAreaRemove;
         private System.Windows.Forms.Button btnCgiCoastDefaults;
         private System.Windows.Forms.Label lblCgiCoastInfo;
+        private System.Windows.Forms.Panel panelCgiCave;
+        private System.Windows.Forms.Label lblCgiCaveFloor;
+        private System.Windows.Forms.TextBox txtCgiCaveFloor;
+        private System.Windows.Forms.Label lblCgiCaveWall;
+        private System.Windows.Forms.NumericUpDown numCgiCaveWall;
+        private System.Windows.Forms.CheckBox chkCgiCaveWalls;
+        private System.Windows.Forms.CheckBox chkCgiCaveTarget;
+        private System.Windows.Forms.Button btnCgiCaveTool;
+        private System.Windows.Forms.Button btnCgiCaveBlack;
+        private System.Windows.Forms.Label lblCgiCaveInfo;
+        private System.Windows.Forms.ListBox lstCgiTemplates;
+        private System.Windows.Forms.Panel panelCgiTplTop;
+        private System.Windows.Forms.ComboBox cmbCgiTplCategory;
+        private System.Windows.Forms.TextBox txtCgiTplFilter;
+        private System.Windows.Forms.Panel panelCgiTpl;
+        private System.Windows.Forms.PictureBox picCgiTpl;
+        private System.Windows.Forms.Label lblCgiTplInfo;
+        private System.Windows.Forms.CheckBox chkCgiTplStatics;
+        private System.Windows.Forms.CheckBox chkCgiTplLand;
+        private System.Windows.Forms.CheckBox chkCgiTplLandZ;
+        private System.Windows.Forms.CheckBox chkCgiTplClear;
+        private System.Windows.Forms.Label lblCgiTplZ;
+        private System.Windows.Forms.NumericUpDown numCgiTplZ;
+        private System.Windows.Forms.Button btnCgiTplPlace;
+        private System.Windows.Forms.Button btnCgiTplReload;
+        private System.Windows.Forms.Button btnCgiTplSaveArea;
+        private System.Windows.Forms.Button btnCgiTplSaveSel;
+        private System.Windows.Forms.Button btnCgiTplAreaStatics;
+        private System.Windows.Forms.Button btnCgiTplFolder;
         private System.Windows.Forms.PictureBox picCgiMulti;
         private System.Windows.Forms.Panel panelCgiMultiTop;
         private System.Windows.Forms.Label lblCgiMultiId;
@@ -3990,6 +4406,7 @@
         private System.Windows.Forms.ToolStripButton tsbCgiSetHeight;
         private System.Windows.Forms.ToolStripButton tsbCgiSmooth;
         private System.Windows.Forms.ToolStripButton tsbCgiCoast;
+        private System.Windows.Forms.ToolStripButton tsbCgiCave;
         private System.Windows.Forms.ToolStripButton tsbCgiWater;
         private System.Windows.Forms.ToolStripButton tsbCgiArea;
         private System.Windows.Forms.ToolStripSeparator tssCgiLand1;
@@ -4004,6 +4421,7 @@
         private System.Windows.Forms.ToolStripButton tsbCgiSelect;
         private System.Windows.Forms.ToolStripButton tsbCgiPlace;
         private System.Windows.Forms.ToolStripButton tsbCgiMulti;
+        private System.Windows.Forms.ToolStripButton tsbCgiTemplate;
         private System.Windows.Forms.ToolStripButton tsbCgiDelete;
         private System.Windows.Forms.ToolStripButton tsbCgiHue;
         private System.Windows.Forms.ToolStripSeparator tssCgi2;

@@ -68,6 +68,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         [Editor(typeof(FileNameEditor), typeof(UITypeEditor))]
         public string RuleSetFile { get; set; } = string.Empty;
 
+        [Category("1 Ordner"), DisplayName("Vorlagen-Ordner (Gebäude / Böden)"), Description("Gebäude (UoFiddler-txt, UO Architect .uoa, .wsc, Sphere .scp) und eigene Vorlagen (.dmsv.json). Jeder Unterordner ist eine Kategorie. Standard: mitgelieferter Ordner Multis.")]
+        [Editor(typeof(FolderNameEditor), typeof(UITypeEditor))]
+        public string TemplateFolder { get; set; } = string.Empty;
+
         [Category("1 Ordner"), DisplayName("maptrans-Datei"), Description("maptrans.txt oder maptrans105.txt …")]
         public string MapTransFile { get; set; } = "maptrans.txt";
 
@@ -222,6 +226,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             if (string.IsNullOrWhiteSpace(ColorTableImage) || !File.Exists(ColorTableImage))
             {
                 ColorTableImage = data == null ? string.Empty : Path.Combine(data, "Addon", "IMod13_Colortable.bmp");
+            }
+            if (string.IsNullOrWhiteSpace(TemplateFolder) || !Directory.Exists(TemplateFolder))
+            {
+                TemplateFolder = data == null ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "DragonMapStudio", "Multis") : Path.Combine(data, "Multis");
             }
             string docs = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "DragonMapStudio");
             if (string.IsNullOrWhiteSpace(ProjectFolder))

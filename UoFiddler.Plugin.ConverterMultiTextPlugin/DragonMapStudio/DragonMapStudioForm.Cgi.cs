@@ -113,6 +113,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             gridCgiLand.ImageOf = LandPicture;
             gridCgiLand.NameOf = id => UoArtCache.LandName(id) + (UoArtCache.Texture(id) != null ? "  (mit Textur)" : string.Empty);
             LoadCoastSettings(CoastSettings.From(CurrentBuildOptions()));
+            InitTemplatesAndCaves();
             SelectCgiTool(IsoTool.Select);
             foreach (string z in new[] { "127", "100", "80", "60", "40", "30", "20", "10", "0" })
             {
@@ -149,6 +150,17 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             {
                 tabCgiSide.SelectedTab = tabCgiCoast;
             }
+            else if (tool == IsoTool.Cave)
+            {
+                tabCgiSide.SelectedTab = tabCgiCave;
+            }
+            else if (tool == IsoTool.Template)
+            {
+                tabCgiSide.SelectedTab = tabCgiTemplates;
+                EnsureTemplateLibrary();
+            }
+            // the Z offset belongs to the tool: 'Z +' of the items or of the templates
+            isoView.ZOffset = tool == IsoTool.Template ? (int)numCgiTplZ.Value : (int)numCgiZOffset.Value;
             isoView.Invalidate();
             UpdateCgiKeys();
         }
@@ -588,10 +600,14 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
 
         private void CgiLandSettings_Changed(object sender, EventArgs e)
         {
-            if (HexList.TryParseHex(txtCgiLandId.Text, out ushort id))
+            // one id or a list (e.g. from the colour table): one of them is taken at random per tile
+            ushort[] ids = HexList.Parse(txtCgiLandId.Text).Select(i => (ushort)(i & 0x3FFF)).ToArray();
+            if (ids.Length > 0)
             {
-                isoView.PlaceLandId = (ushort)(id & 0x3FFF);
+                isoView.PlaceLandId = ids[0];
             }
+            isoView.PlaceLandIds = ids;
+            isoView.LandFlatten = chkCgiLandFlatten.Checked;
             isoView.HeightStep = (int)numCgiStep.Value;
             isoView.TargetHeight = (int)numCgiTarget.Value;
             picCgiLandArt.Image = UoArtCache.Land(isoView.PlaceLandId);
@@ -698,7 +714,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                 }
             }
             isoView.PlaceHue = (ushort)numCgiHue.Value;
-            isoView.ZOffset = (int)numCgiZOffset.Value;
+            if (isoView.Tool != IsoTool.Template)
+            {
+                isoView.ZOffset = (int)numCgiZOffset.Value;
+            }
             isoView.StackOnStatics = chkCgiStack.Checked;
             isoView.MultiInvisibleParts = chkCgiMultiInvisible.Checked;
             Color hueColor = UoArtCache.HueColor(isoView.PlaceHue);

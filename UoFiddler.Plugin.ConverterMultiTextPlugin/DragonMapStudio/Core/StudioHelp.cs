@@ -130,6 +130,21 @@ Zeigt die gebaute Karte wie der Client (Land-Art, Texturen an Hängen, Statics m
 * Markierter Bereich: F = mit Land-Tile füllen, K = Küste anpassen, W = Wasser
   (Umschalt+W entfernen), G = glätten; dazu Knöpfe in den Reitern Land und Küste / Wasser.
 * Pinsel-Größe für alle Land-Werkzeuge oben in der Leiste ""Land"".
+* Reiter ""Vorlagen"": Gebäude und Böden aus dem Vorlagen-Ordner (Einstellungen, Standard: Multis).
+  Gelesen werden UoFiddler-Multis (.txt, auch alte Skripte mit dezimalen IDs), UO Architect (.uoa),
+  Weltdateien (.wsc) und Sphere-Skripte (.scp); jeder Unterordner ist eine Kategorie.
+  Kategorie + Suche, Vorschau mit Anzahl der Statics. ""Setzen"" (oder Doppelklick): halbtransparente
+  Vorschau an der Maus, Klick setzt auf die Boden-Höhe + ""Z +"". Danach ist alles ausgewählt:
+  Pfeile / Bild↑↓ verschieben, Entf löscht, Strg+Z nimmt alles zurück.
+* ""Bereich → Vorlage…"": markierten Bereich speichern – Boden (Land-Tiles mit Höhen) und / oder
+  Statics, mit Name und Kategorie, als Dragon-Vorlage (.dmsv.json), UoFiddler-.txt oder .uoa.
+  ""Auswahl → Vorlage…"" speichert nur die ausgewählten Statics. Beim Setzen wählbar: Statics,
+  Boden, Boden mit oder ohne Höhe, Statics an der Stelle vorher löschen.
+* Bereich + Taste S: alle Statics darin auswählen (verschieben, kopieren, löschen).
+* Pinsel ""Höhle"": am Fuß eines Berges anfangen und hineinziehen – Höhlenboden auf einer Höhe,
+  der Rand wird zur Wand angehoben (der Client zeigt die Fels-Textur dahinter). Reiter ""Höhle / Weg"".
+* Wege / Gebäude-Böden: Reiter Land -> ""Aus der Farbtabelle"" (cobblestones, marble, Holzboden …),
+  dazu ""Höhe vom ersten Klick übernehmen"". Mehrere IDs im Feld = zufällig gemischt.
 
 6. GENERATOR & UMRISS
 ---------------------
@@ -274,6 +289,21 @@ Shows the built map like the client (land art, textures on slopes, statics with 
 * Marked area: F = fill with land tile, K = adjust coast, W = water (Shift+W removes),
   G = smooth; also buttons in the tabs Land and Küste / Wasser.
 * Brush size for all land tools at the top of the bar ""Land"".
+* Tab ""Vorlagen"" (templates): buildings and floors from the template folder (settings, default:
+  Multis). Reads UoFiddler multis (.txt, also old scripts with decimal ids), UO Architect (.uoa),
+  world files (.wsc) and Sphere scripts (.scp); every sub folder is a category. Category + search,
+  preview with the number of statics. ""Setzen"" (or double click): see-through preview at the mouse,
+  click places it on the ground height + ""Z +"". Afterwards everything is selected: arrows /
+  PgUp/PgDn move, Del deletes, Ctrl+Z undoes all.
+* ""Bereich → Vorlage…"": save the marked area – floor (land tiles with heights) and / or statics,
+  with name and category, as Dragon template (.dmsv.json), UoFiddler .txt or .uoa.
+  ""Auswahl → Vorlage…"" saves only the selected statics. When placing: statics, floor, floor with
+  or without height, delete the statics there first.
+* Area + key S: select all statics inside (move, copy, delete).
+* Brush ""Höhle"" (cave): start at the foot of a mountain and drag into it – cave floor at one height,
+  the edge is raised to a wall (the client shows the rock texture behind). Tab ""Höhle / Weg"".
+* Roads / building floors: tab Land -> ""Aus der Farbtabelle"" (cobblestones, marble, wood floor …),
+  plus ""Höhe vom ersten Klick übernehmen"". Several ids in the field = mixed at random.
 
 6. GENERATOR & OUTLINE
 ----------------------

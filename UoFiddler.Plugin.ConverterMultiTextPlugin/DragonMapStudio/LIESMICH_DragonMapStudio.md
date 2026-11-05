@@ -350,3 +350,30 @@ Die Analyse wertet Zellen mit Wasser-Statics jetzt als Wasser und zeigt zusätzl
 | **Pinsel-Größe** | Oben in der Leiste „Land“ (1 Tile bis 33×33). |
 
 Neue Dateien: `Core/CoastShaper.cs`, `Controls/TileGridView.cs`, `Dialogs/TilePickerForm.cs` (+ `.Designer.cs`).
+
+---
+
+## Version 8: Vorlagen (Gebäude, Böden), Höhlen, Wege
+
+**Vorlagen-Ordner** (Einstellungen → „Vorlagen-Ordner“, Standard `DragonData/Multis`, im Plugin-Ordner): jeder Unterordner ist eine Kategorie.
+Mitgeliefert sind die 586 Gebäude aus `Multis.rar` (Fiddler, OLDScript, UOArchitect – Arena, Festungen, Haus, Kirchen, Minen, Schiffe …).
+
+| Format | Lesen | Schreiben |
+|---|---|---|
+| Dragon-Vorlage `.dmsv.json` | Land-Tiles mit Höhen + Statics + Name/Kategorie | ja |
+| UoFiddler-Multi `.txt` (`0xID x y z flag`, auch dezimale IDs alter Skripte) | ja | ja |
+| UO Architect `.uoa` (Version 1 und 2) | ja (mit Hue) | ja (Version 1) |
+| Weltdatei `.wsc` (`SECTION WORLDITEM`) | ja (absolut → zentriert) | – |
+| Sphere `.scp` (`ITEMDEF` mit `COMPONENT=`, oder `WORLDITEM` mit `P=`) | ja | – |
+
+**Reiter „Vorlagen“** (CGI-Ansicht): Kategorie, Suche (Name, Kategorie, Autor), Vorschau, Anzahl Statics und Größe.
+„Setzen“ / Doppelklick → halbtransparente Vorschau an der Maus, Klick setzt auf die Boden-Höhe + „Z +“; danach ist alles ausgewählt und mit Pfeilen / Bild↑↓ verschiebbar.
+Optionen: Statics, Boden, Boden mit Höhe, Statics an der Stelle vorher löschen.
+
+**Neue Vorlage aus der Karte:** Werkzeug „Bereich“ aufziehen → „Bereich → Vorlage…“ (Boden und/oder Statics) oder Statics auswählen → „Auswahl → Vorlage…“. Name, Kategorie (= Unterordner), Format wählbar. Bereich + **S** wählt alle Statics darin aus.
+
+**Höhle:** Pinsel „Höhle“ – am Fuß des Berges anfangen und hineinziehen; Boden (`0245`–`0249`) auf einer Höhe, Rand wird Wand (Fels-Textur dahinter). „Bereich mit Schwarz (0244) füllen“ für den Dungeon-Bereich.
+
+**Wege / Gebäude-Böden:** Reiter Land → „Aus der Farbtabelle“ (alle Gruppen des Regelsatzes, z. B. cobblestones, marble floor, Dark Wood Floorboards) + „Höhe vom ersten Klick übernehmen“. Mehrere IDs werden zufällig gemischt.
+
+Neue Dateien: `Core/MapTemplate.cs`, `Dialogs/SaveTemplateDialog.cs` (+ Designer), `DragonMapStudioForm.Templates.cs`, `DragonData/Multis/…`.

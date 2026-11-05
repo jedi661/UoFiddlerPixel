@@ -39,7 +39,13 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
         Coast,
 
         /// <summary>Brush: water statics (Ctrl = remove).</summary>
-        Water
+        Water,
+
+        /// <summary>Brush: digs a cave floor at one height into the mountain, the edge becomes a wall.</summary>
+        Cave,
+
+        /// <summary>Places a template (building / floor pattern) from the library.</summary>
+        Template
     }
 
     public sealed class StaticPickEventArgs : EventArgs
@@ -187,6 +193,58 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
         /// <summary>Draws all water statics see-through (in any case: items with the tiledata flag Translucent).</summary>
         [Category("Dragon"), DefaultValue(false)]
         public bool TranslucentWater { get; set; }
+
+        /// <summary>Land tiles of the brush "Land setzen"; one of them is taken at random per tile (empty = <see cref="PlaceLandId"/>).</summary>
+        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public ushort[] PlaceLandIds { get; set; } = Array.Empty<ushort>();
+
+        /// <summary>Land brush like a road: every painted tile gets the height of the first tile of the stroke.</summary>
+        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public bool LandFlatten { get; set; }
+
+        /// <summary>Cave brush: floor tiles (random), wall height above the floor, raise the walls.</summary>
+        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public ushort[] CaveFloorIds { get; set; } = { 0x245, 0x246, 0x247, 0x248, 0x249 };
+
+        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public int CaveWallHeight { get; set; } = 20;
+
+        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public bool CaveRaiseWalls { get; set; } = true;
+
+        /// <summary>Cave floor at <see cref="TargetHeight"/> instead of the height where the stroke starts.</summary>
+        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public bool CaveUseTargetHeight { get; set; }
+
+        /// <summary>Template of the tool "Template" (building / floor pattern).</summary>
+        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public MapTemplate Template
+        {
+            get => _template;
+            set
+            {
+                _template = value;
+                _templateGhost = value?.Statics.OrderBy(t => t.X + t.Y).ThenBy(t => t.Z).Take(4000).ToList() ?? new List<TemplateStatic>();
+                Invalidate();
+            }
+        }
+
+        private MapTemplate _template;
+        private List<TemplateStatic> _templateGhost = new List<TemplateStatic>();
+
+        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public bool TemplateStatics { get; set; } = true;
+
+        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public bool TemplateLand { get; set; } = true;
+
+        /// <summary>Land of the template with its heights (relative to the target) – otherwise only the tiles.</summary>
+        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public bool TemplateLandZ { get; set; } = true;
+
+        /// <summary>Remove the statics that lie in the area of the template before placing.</summary>
+        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public bool TemplateClearStatics { get; set; }
 
         /// <summary>Values of the coast and water brushes.</summary>
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
@@ -873,7 +931,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
         }
 
         private static bool IsLandTool(IsoTool t) => t == IsoTool.LandSet || t == IsoTool.Raise || t == IsoTool.Lower || t == IsoTool.SetHeight || t == IsoTool.Smooth ||
-                                                     t == IsoTool.Coast || t == IsoTool.Water;
+                                                     t == IsoTool.Coast || t == IsoTool.Water || t == IsoTool.Cave;
 
         /// <summary>Outline of a map rectangle (at the land heights of its corners).</summary>
         private PointF[] AreaPoly(Rectangle r)
@@ -901,6 +959,20 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                 {
                     parts.Add((m.Id, _hover.X + m.Dx, _hover.Y + m.Dy, baseZ + m.Dz));
                 }
+            }
+            else if (Tool == IsoTool.Template && _template != null)
+            {
+                int baseZ = _map.LandZ(_hover.X, _hover.Y) + ZOffset;
+                if (TemplateStatics)
+                {
+                    foreach (TemplateStatic t in _templateGhost)
+                    {
+                        parts.Add((t.Id, _hover.X + t.X, _hover.Y + t.Y, baseZ + t.Z));
+                    }
+                }
+                Rectangle b = _template.Bounds;
+                using var pen = new Pen(Color.FromArgb(200, 255, 170, 0), 2) { DashStyle = DashStyle.Dash };
+                g.DrawPolygon(pen, AreaPoly(new Rectangle(_hover.X + b.X, _hover.Y + b.Y, b.Width, b.Height)));
             }
             else if (_pasteGhost && _clipboard.Count > 0)
             {
@@ -933,6 +1005,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
         }
 
         private bool _pasteGhost;
+        private int _strokeZ;
 
         private int PlaceZ(int x, int y)
         {
@@ -1040,6 +1113,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                 _map.BeginLand();
                 _landStroke = true;
                 _lastLandTile = new Point(-1, -1);
+                _strokeZ = Tool == IsoTool.Cave && CaveUseTargetHeight ? TargetHeight : _map.LandZ(tile.X, tile.Y);
                 ApplyLandTool(tile);
                 return;
             }
@@ -1085,6 +1159,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                     break;
                 case IsoTool.Multi:
                     PlaceMulti(tile.X, tile.Y);
+                    break;
+                case IsoTool.Template:
+                    PlaceTemplate(tile.X, tile.Y);
                     break;
                 case IsoTool.Delete:
                     if (hit != null)
@@ -1223,6 +1300,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                         break;
                     case Keys.G:
                         SmoothArea();
+                        break;
+                    case Keys.S:
+                        SelectAreaStatics();
                         break;
                     case Keys.Escape:
                         _area = Rectangle.Empty;
@@ -1544,8 +1624,23 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                     switch (Tool)
                     {
                         case IsoTool.LandSet:
-                            _map.SetLand(x, y, PlaceLandId, z);
-                            break;
+                            {
+                                ushort nid = PlaceLandIds != null && PlaceLandIds.Length > 0 ? PlaceLandIds[_rnd.Next(PlaceLandIds.Length)] : PlaceLandId;
+                                // a stroke over the same tile does not reshuffle the random tiles
+                                if (PlaceLandIds != null && PlaceLandIds.Length > 1 && Array.IndexOf(PlaceLandIds, id) >= 0)
+                                {
+                                    nid = id;
+                                }
+                                _map.SetLand(x, y, nid, LandFlatten ? _strokeZ : z);
+                                break;
+                            }
+                        case IsoTool.Cave:
+                            {
+                                ushort[] floor = CaveFloorIds != null && CaveFloorIds.Length > 0 ? CaveFloorIds : new[] { PlaceLandId };
+                                ushort nid = Array.IndexOf(floor, id) >= 0 ? id : floor[_rnd.Next(floor.Length)];
+                                _map.SetLand(x, y, nid, _strokeZ);
+                                break;
+                            }
                         case IsoTool.Raise:
                             _map.SetLand(x, y, id, z + Math.Max(1, HeightStep));
                             break;
@@ -1575,7 +1670,182 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                     }
                 }
             }
+            if (Tool == IsoTool.Cave && CaveRaiseWalls)
+            {
+                RaiseCaveWalls(center, r + 1);
+            }
             Refresh(true);
+        }
+
+        /// <summary>Cells around the dug floor that are not floor become walls: at least the wall height above the floor.</summary>
+        private void RaiseCaveWalls(Point center, int r)
+        {
+            ushort[] floor = CaveFloorIds ?? Array.Empty<ushort>();
+            int wallZ = Math.Clamp(_strokeZ + Math.Max(1, CaveWallHeight), -128, 127);
+            for (int y = center.Y - r; y <= center.Y + r; y++)
+            {
+                for (int x = center.X - r; x <= center.X + r; x++)
+                {
+                    if (!_map.InBounds(x, y))
+                    {
+                        continue;
+                    }
+                    ushort id = _map.LandId(x, y);
+                    bool isFloor = Array.IndexOf(floor, id) >= 0 && _map.LandZ(x, y) == _strokeZ;
+                    if (!isFloor && _map.LandZ(x, y) < wallZ)
+                    {
+                        _map.SetLand(x, y, id, wallZ);
+                    }
+                }
+            }
+        }
+
+        // ------------------------------------------------------------------ templates
+
+        /// <summary>Places the template with its anchor on (x, y): statics on the ground height + Z offset, land optional.</summary>
+        public void PlaceTemplate(int x, int y)
+        {
+            MapTemplate t = _template;
+            if (t == null || !_map.InBounds(x, y))
+            {
+                Message?.Invoke(this, "Keine Vorlage gewählt (Reiter Vorlagen).");
+                return;
+            }
+            int groundZ = _map.LandZ(x, y);
+            int baseZ = groundZ + ZOffset;
+            var statics = new List<StaticChange>();
+            var land = new List<LandChange>();
+            Rectangle b = t.Bounds;
+            if (TemplateClearStatics)
+            {
+                for (int my = y + b.Top; my < y + b.Bottom; my++)
+                {
+                    for (int mx = x + b.Left; mx < x + b.Right; mx++)
+                    {
+                        statics.AddRange(_map.StaticsAt(mx, my).ToList().Select(MapData.Remove));
+                    }
+                }
+            }
+            if (TemplateLand && t.HasLand)
+            {
+                for (int ly = 0; ly < t.LandHeight; ly++)
+                {
+                    for (int lx = 0; lx < t.LandWidth; lx++)
+                    {
+                        int mx = x + t.LandX + lx, my = y + t.LandY + ly;
+                        if (!_map.InBounds(mx, my))
+                        {
+                            continue;
+                        }
+                        int k = ly * t.LandWidth + lx, i = my * _map.Width + mx;
+                        int nz = TemplateLandZ && t.LandZ != null && k < t.LandZ.Length ? baseZ + t.LandZ[k] : _map.Z[i];
+                        var c = new LandChange { Index = i, OldId = _map.Tiles[i], OldZ = _map.Z[i], NewId = t.LandTiles[k], NewZ = (sbyte)Math.Clamp(nz, -128, 127) };
+                        if (c.NewId != c.OldId || c.NewZ != c.OldZ)
+                        {
+                            land.Add(c);
+                        }
+                    }
+                }
+            }
+            _selection.Clear();
+            if (TemplateStatics)
+            {
+                foreach (TemplateStatic s in t.Statics)
+                {
+                    var item = new StaticItem { Id = s.Id, Hue = s.Hue, X = x + s.X, Y = y + s.Y, Z = Math.Clamp(baseZ + s.Z, -128, 127) };
+                    if (_map.InBounds(item.X, item.Y))
+                    {
+                        statics.Add(MapData.Add(item));
+                        _selection.Add(item);
+                    }
+                }
+            }
+            _map.Apply(statics, land);
+            Refresh(true);
+            MapChanged?.Invoke(this, EventArgs.Empty);
+            SelectionChanged?.Invoke(this, EventArgs.Empty);
+            Message?.Invoke(this, $"'{t.Name}' gesetzt auf ({x}, {y}, z {baseZ}): {_selection.Count} Statics, {land.Count} Land-Tiles – ausgewählt: Pfeile / Bild↑↓ verschieben, Strg+Z nimmt alles zurück.");
+        }
+
+        /// <summary>
+        /// Takes the marked area as a template: land tiles with heights relative to the centre and / or the statics.
+        /// Anchor = centre of the area, Z 0 = land height there.
+        /// </summary>
+        public MapTemplate CaptureArea(bool land, bool statics)
+        {
+            if (_map == null || _area.IsEmpty)
+            {
+                return null;
+            }
+            int ax = _area.X + _area.Width / 2, ay = _area.Y + _area.Height / 2;
+            int baseZ = _map.LandZ(ax, ay);
+            var t = new MapTemplate();
+            if (land)
+            {
+                t.LandX = _area.X - ax;
+                t.LandY = _area.Y - ay;
+                t.LandWidth = _area.Width;
+                t.LandHeight = _area.Height;
+                t.LandTiles = new ushort[_area.Width * _area.Height];
+                t.LandZ = new int[_area.Width * _area.Height];
+            }
+            for (int y = _area.Top; y < _area.Bottom; y++)
+            {
+                for (int x = _area.Left; x < _area.Right; x++)
+                {
+                    if (land)
+                    {
+                        int k = (y - _area.Y) * _area.Width + x - _area.X;
+                        t.LandTiles[k] = _map.LandId(x, y);
+                        t.LandZ[k] = _map.LandZ(x, y) - baseZ;
+                    }
+                    if (statics)
+                    {
+                        foreach (StaticItem s in _map.StaticsAt(x, y))
+                        {
+                            t.Statics.Add(new TemplateStatic { Id = s.Id, Hue = s.Hue, X = x - ax, Y = y - ay, Z = s.Z - baseZ });
+                        }
+                    }
+                }
+            }
+            return t;
+        }
+
+        /// <summary>The selected statics as a template (anchor = centre, Z 0 = land height there).</summary>
+        public MapTemplate CaptureSelection()
+        {
+            if (_map == null || _selection.Count == 0)
+            {
+                return null;
+            }
+            int ax = (_selection.Min(s => s.X) + _selection.Max(s => s.X)) / 2, ay = (_selection.Min(s => s.Y) + _selection.Max(s => s.Y)) / 2;
+            int baseZ = _map.LandZ(ax, ay);
+            var t = new MapTemplate();
+            t.Statics.AddRange(_selection.Select(s => new TemplateStatic { Id = s.Id, Hue = s.Hue, X = s.X - ax, Y = s.Y - ay, Z = s.Z - baseZ }));
+            return t;
+        }
+
+        /// <summary>Selects all statics of the marked area (then move / copy / delete them like a selection).</summary>
+        public void SelectAreaStatics()
+        {
+            if (!NeedArea())
+            {
+                return;
+            }
+            _selection.Clear();
+            for (int y = _area.Top; y < _area.Bottom; y++)
+            {
+                for (int x = _area.Left; x < _area.Right; x++)
+                {
+                    foreach (StaticItem s in _map.StaticsAt(x, y))
+                    {
+                        _selection.Add(s);
+                    }
+                }
+            }
+            SelectionChanged?.Invoke(this, EventArgs.Empty);
+            Invalidate();
+            Message?.Invoke(this, $"{_selection.Count} Statics im Bereich ausgewählt – Pfeile verschieben, Strg+Pfeil kopiert, Entf löscht, Strg+C kopiert.");
         }
 
         public void CopyArea()
@@ -1734,8 +2004,26 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
             Message?.Invoke(this, $"{message}: {land.Count} Tile(s).");
         }
 
+        /// <summary>Fills the marked area with one of the given tiles (random), heights stay.</summary>
+        public void FillArea(ushort[] ids, string name)
+        {
+            if (ids == null || ids.Length == 0)
+            {
+                return;
+            }
+            LandArea((x, y) =>
+            {
+                ushort id = _map.LandId(x, y);
+                return (Array.IndexOf(ids, id) >= 0 ? id : ids[_rnd.Next(ids.Length)], _map.LandZ(x, y));
+            }, $"Bereich mit {name} gefüllt");
+        }
+
         /// <summary>Fills the marked area with the land tile of the land tools (heights stay).</summary>
-        public void FillArea() => LandArea((x, y) => (PlaceLandId, _map.LandZ(x, y)), $"Bereich mit {PlaceLandId:x4} gefüllt");
+        public void FillArea()
+        {
+            ushort[] ids = PlaceLandIds != null && PlaceLandIds.Length > 0 ? PlaceLandIds : new[] { PlaceLandId };
+            FillArea(ids, string.Join(" ", ids.Take(4).Select(i => i.ToString("x4"))));
+        }
 
         /// <summary>Sets the land of the marked area to <see cref="TargetHeight"/>.</summary>
         public void SetAreaHeight() => LandArea((x, y) => (_map.LandId(x, y), TargetHeight), $"Bereich auf Höhe {TargetHeight}");
@@ -1848,8 +2136,14 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                         tool = "Wasser: Ziehen malt Wasser-Statics (Reiter Küste / Wasser) · Strg+Ziehen entfernt sie · durchsichtig, wenn die TileData 'Translucent' hat";
                         break;
                     case IsoTool.Area:
-                        tool = "Bereich: Ziehen = markieren · F = mit Land-Tile füllen · K = Küste anpassen · W = Wasser setzen (Umschalt+W entfernen) · G = glätten · Bild↑/↓ = heben / senken · " +
-                               "Strg+C / Strg+V = Land + Statics kopieren / einfügen · Entf = Statics löschen · Esc = Markierung weg";
+                        tool = "Bereich: Ziehen = markieren · F = füllen · K = Küste · W = Wasser (Umschalt+W weg) · G = glätten · S = Statics darin auswählen · Bild↑/↓ = heben / senken · " +
+                               "Strg+C / Strg+V = Land + Statics kopieren / einfügen · Entf = Statics löschen · als Vorlage speichern: Reiter Vorlagen · Esc = Markierung weg";
+                        break;
+                    case IsoTool.Cave:
+                        tool = "Höhle: am Eingang anfangen und in den Berg ziehen – Boden auf der Höhe des ersten Klicks (oder 'Höhe ='), der Rand wird Wand (Reiter Höhle / Weg) · Pinsel oben · ein Zug = ein Rückgängig-Schritt";
+                        break;
+                    case IsoTool.Template:
+                        tool = "Vorlage setzen: die Vorschau folgt der Maus, Klick setzt auf die Boden-Höhe + 'Z +' · danach ausgewählt: Pfeile / Bild↑↓ verschieben, Entf löscht · Strg+Z nimmt alles zurück";
                         break;
                     default:
                         tool = string.Empty;

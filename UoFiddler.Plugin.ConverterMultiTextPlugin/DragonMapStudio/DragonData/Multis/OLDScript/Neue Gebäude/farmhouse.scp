@@ -1,0 +1,29 @@
+[ITEMDEF i_deed_farmhouse]
+DEFNAME=i_deed_farmhouse
+NAME=Deed to a farmhouse
+ID=i_deed
+RESOURCES=i_deed,i_multi_farmhouse
+
+CATEGORY=Provisions - Deeds
+SUBSECTION=House Deeds
+DESCRIPTION=farmhouse
+
+ON=@Create
+MORE=i_multi_farmhouse
+
+[ITEMDEF 0401c]
+DEFNAME=i_multi_farmhouse
+Name=farmhouse
+TYPE=T_MULTI
+//VALUE=820000
+CATEGORY=Multis
+SUBSECTION=Houses
+DESCRIPTION=farmhouse
+MULTIREGION=0,0,0,0
+COMPONENT=006E5,0,4,4
+COMPONENT=006E7,1,4,4
+COMPONENT=006E5,0,4,25
+COMPONENT=00BD2,-3,8,3
+COMPONENT=006EF,-3,2,25
+
+[EOF]
