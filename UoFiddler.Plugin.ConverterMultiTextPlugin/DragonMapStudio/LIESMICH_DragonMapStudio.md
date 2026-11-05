@@ -377,3 +377,18 @@ Optionen: Statics, Boden, Boden mit Höhe, Statics an der Stelle vorher löschen
 **Wege / Gebäude-Böden:** Reiter Land → „Aus der Farbtabelle“ (alle Gruppen des Regelsatzes, z. B. cobblestones, marble floor, Dark Wood Floorboards) + „Höhe vom ersten Klick übernehmen“. Mehrere IDs werden zufällig gemischt.
 
 Neue Dateien: `Core/MapTemplate.cs`, `Dialogs/SaveTemplateDialog.cs` (+ Designer), `DragonMapStudioForm.Templates.cs`, `DragonData/Multis/…`.
+
+---
+
+## Version 9: Sprache umschalten – Deutsch / English / Français
+
+* Menü **„Sprache / Language / Langue“** (oder Einstellungen → „0 Sprache / Language“) schaltet die ganze Oberfläche sofort um:
+  Menüs, Werkzeugleisten, Reiter, Knöpfe, Tooltips, Einstellungs-Namen und -Beschreibungen, Tasten-Hilfe unter der CGI-Ansicht, Dialoge.
+  Die Wahl wird gespeichert.
+* Hilfe-Reiter: Deutsch, English und neu Français.
+* Übersetzungen liegen als Textdateien in `DragonData/Lang/en.txt` und `fr.txt` (eine Zeile pro Text: `Deutsch<TAB>Übersetzung`).
+  Fehlende Texte bleiben deutsch und lassen sich dort einfach ergänzen oder verbessern – auch weitere Sprachen nach demselben Muster sind möglich.
+* Noch deutsch: Status- und Log-Meldungen mit Zahlen darin (Logs sind ohnehin zweisprachig DE/EN).
+
+**English:** menu „Sprache / Language / Langue“ switches the whole interface (German, English, French); translation tables in `DragonData/Lang` can be edited.
+**Français :** le menu „Sprache / Language / Langue“ change toute l'interface (allemand, anglais, français) ; les tables de traduction dans `DragonData/Lang` sont modifiables.

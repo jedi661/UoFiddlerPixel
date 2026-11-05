@@ -328,5 +328,108 @@ MUL / UOP -> BMP: read an existing map.
 Files: DragonData\Scripts (IMod13 scripts), DragonData\Addon (colour table, palettes).
 Settings: %AppData%\UoFiddler\DragonMapStudio\settings.json
 ";
+
+        public const string TextFr =
+@"DRAGON MAP STUDIO – MANUEL (Français)
+=====================================
+Reconstruction et extension de Dragon 1.03.62 (IMod13) : peindre la carte comme image 8 bits
+et en créer map#.mul / staidx#.mul / statics#.mul (et map#LegacyMUL.uop).
+Langue de l'interface : menu ""Sprache / Language / Langue"" ou Paramètres.
+
+IDÉE DE BASE
+------------
+Chaque pixel est une tuile. La valeur du pixel (index de palette 00..ff) est ""l'adresse de couleur"".
+maptrans.txt : adresse -> altitude (Z) + tuiles de terrain (l'une est choisie au hasard).
+groups.txt :   adresse -> groupe (herbe, forêt, eau …).
+Entre les groupes, la construction pose des transitions (map/, statics/ …) et des objets (items/).
+
+1. TABLE DES COULEURS
+---------------------
+* Clic gauche = copier l'adresse dans le presse-papiers (format au-dessus).
+* Clic droit = couleur 1 dans l'éditeur, bouton du milieu = couleur 2.
+* À droite : les 256 couleurs, détails et toutes les valeurs modifiables.
+* ""Définir une nouvelle couleur"" utilise le premier index libre (terrains / textures propres).
+* Le nombre dans chaque case est l'altitude : ""Grass 10"" = herbe à Z 10.
+
+2. ÉDITEUR DE CARTE
+-------------------
+Outils : pinceau (B), gomme (E), aérographe, ligne (L), rectangle, rectangle plein (R), ellipse,
+remplir (F), pipette (I), hauteur + / −, sélection (S), main (H).
+Bouton gauche = couleur 1, bouton droit = couleur 2. Molette = zoom, milieu / espace = déplacer.
+[ ] = taille du pinceau. Ctrl+Z / Ctrl+Y. Sélection : Ctrl+C / X / V, Suppr, Ctrl+F, Ctrl+A.
+""Vue CGI ici"" montre le même endroit comme le client.
+Édition -> ""Vérifier la carte (journal)"" et ""Réparer la carte automatiquement"".
+
+3. CONSEILS DU TUTORIEL DRAGON (Ryandor, 2002)
+----------------------------------------------
+* Début : remplir toute la carte avec ""Water -5"", peindre les continents avec ""Grass 0"".
+  Zone des donjons (Felucca/Trammel x > 5119) : remplir avec ""Black 0"".
+* Collines : une zone ""Grass 5"", une plus petite ""Grass 10"" à l'intérieur etc. – par paliers.
+* Les transitions demandent AU MOINS 2 TUILES côte à côte. Les pixels isolés et les bandes
+  de 1 tuile provoquent des erreurs.
+* Le marais doit TOUJOURS être entouré d'au moins 2 tuiles d'herbe.
+* Montagnes en anneaux : bord ""Rock 20"", puis 30, 50, 60, 65, 70 vers l'intérieur.
+* Les montagnes montent TOUJOURS depuis le sol : hauteur de roche = herbe voisine + 20, 30 …
+* GrassBump (falaises d'herbe) : toujours PLUS BAS que l'herbe voisine.
+* Villes / routes : sols plutôt en tuiles de terrain (p. ex. pavés).
+* Côte comme l'original (map0) : l'eau du rivage est un fond marin (tuile 0064) à -15 avec des
+  statiques d'eau (1797–179c) à -5, sur 6 tuiles ; anneau extérieur à -5 ; plage -3, -1, 0.
+* Entrées de grotte : groupe 1d au bord des montagnes (règle 1d -> montagne automatique).
+
+4. VÉRIFIER ET RÉPARER LA CARTE
+-------------------------------
+""Vérifier la carte (journal)"" écrit map_check_log.txt (allemand + anglais, avec coordonnées).
+""Réparer la carte"" corrige (annulable) : tuiles isolées, règles d'entourage, groupes pont,
+profil de montagne, sauts de hauteur. Réglages : onglet ""Créer MUL / UOP"" -> ""5 Réparation"".
+
+5. VUE CGI (vue client)
+-----------------------
+Montre la carte construite comme le client (graphismes du terrain, textures sur les pentes,
+statiques avec teinte).
+* ""Construire depuis l'éditeur"" ou ""Charger MUL / UOP"".
+* Sous la vue : les touches et actions de souris de l'outil actuel sont toujours affichées.
+* ""2D"" (touche T) : vue de dessus, tous les outils fonctionnent aussi.
+* Outils : sélection, poser une statique, poser un multi, supprimer, teinter.
+  Flèches = déplacer la sélection, Ctrl+flèche = copie à côté, PgPréc/PgSuiv = Z ±1,
+  Suppr, H = teinter, I = montrer dans le catalogue, Ctrl+C / Ctrl+V, Ctrl+Z / Ctrl+Y.
+* Barre ""Terrain"" : poser le terrain, hauteur + / − / =, lisser, côte, grotte, eau, zone ;
+  taille du pinceau en haut. Un trait = une étape d'annulation. Clic droit = prendre ID et hauteur.
+* Onglets Objets et Terrain : catalogue d'images ; ""Grand catalogue…"" ouvre une fenêtre
+  avec tuiles, textures et objets. Terrain -> ""Depuis la table des couleurs"" : pavés,
+  marbre, plancher, sol de grotte … (tuiles mélangées au hasard).
+* Pinceau ""Côte"" : forme la côte comme l'original. Pinceau ""Eau"" : statiques d'eau
+  (Ctrl = retirer) ; transparentes dans le client seulement avec le flag TileData ""Translucent"".
+* Pinceau ""Grotte"" : commencer au pied d'une montagne et tirer vers l'intérieur – sol à une
+  hauteur, le bord devient mur (texture de roche derrière).
+* Zone marquée : F = remplir, K = côte, W = eau (Maj+W retirer), G = lisser, S = choisir les
+  statiques, PgPréc/PgSuiv = élever / abaisser, Ctrl+C / Ctrl+V = copier / coller terrain + statiques.
+* Onglet ""Modèles"" : bâtiments et sols du dossier des modèles (txt UoFiddler, UO Architect .uoa,
+  .wsc, Sphere .scp, .dmsv.json). Chaque sous-dossier est une catégorie ; recherche et aperçu.
+  ""Poser"" : aperçu transparent à la souris, le clic pose à la hauteur du sol + ""Z +"".
+  Ensuite tout est sélectionné et se déplace avec les flèches / PgPréc / PgSuiv.
+* ""Zone → modèle…"" / ""Sélection → modèle…"" : enregistrer sol et / ou statiques comme nouveau
+  modèle (nom, catégorie, format).
+* ""Analyser la carte"" lit les hauteurs (p. ex. de la map0 originale) -> map_analysis_log.txt.
+* Enregistrer : statiques, et la carte si le terrain a changé ; anciens fichiers -> .bak.
+
+6. GÉNÉRATEUR & CONTOUR
+-----------------------
+Générateur : graine, % de terre, taille des continents, montagnes, neige, climat, plage.
+Image de contour (PNG transparent ou silhouette sombre) : dessiner dans la carte ou masque.
+
+7. RÈGLES & SCRIPTS
+-------------------
+Groupes, couleurs, transitions (aperçu 3×3, NO N NE E SE S SO O ; A = propre groupe,
+B = voisin), objets, irrégularité, table de corrections, alias. Enregistrer en JSON ou en scripts Dragon.
+
+8. CRÉER MUL / UOP
+------------------
+Couleurs -> tuiles, irrégularité, transitions, objets, corrections, doublons supprimés.
+dragon_log.txt liste tout, y compris les transitions manquantes avec coordonnées.
+
+Fichiers : DragonData\Scripts (scripts IMod13), DragonData\Addon (table des couleurs),
+DragonData\Multis (modèles), DragonData\Lang (traductions en.txt / fr.txt, modifiables).
+Paramètres : %AppData%\UoFiddler\DragonMapStudio\settings.json
+";
     }
 }

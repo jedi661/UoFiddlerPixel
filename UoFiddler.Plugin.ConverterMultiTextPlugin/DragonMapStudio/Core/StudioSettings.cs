@@ -44,6 +44,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
     /// <summary>All settings of the studio (JSON, %AppData%\UoFiddler\DragonMapStudio\settings.json).</summary>
     public sealed class StudioSettings
     {
+        [Category("0 Sprache / Language"), DisplayName("Sprache / Language / Langue"), Description("Sprache der Oberfläche: Deutsch, English, Français. Auch im Menü 'Sprache / Language / Langue'.")]
+        public UiLanguage Language { get; set; } = UiLanguage.Deutsch;
+
         [Category("1 Ordner"), DisplayName("Projekt-Ordner (Karten)"), Description("Hier speichert der Editor die Karten-BMPs; die Kartenliste zeigt diesen Ordner.")]
         [Editor(typeof(FolderNameEditor), typeof(UITypeEditor))]
         public string ProjectFolder { get; set; } = string.Empty;

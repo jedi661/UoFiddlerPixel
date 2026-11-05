@@ -25,13 +25,13 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
         private void InitHelp()
         {
             cmbHelpLanguage.Items.Clear();
-            cmbHelpLanguage.Items.AddRange(new object[] { "Deutsch", "English" });
+            cmbHelpLanguage.Items.AddRange(new object[] { "Deutsch", "English", "Français" });
             cmbHelpLanguage.SelectedIndex = 0;
         }
 
         private void CmbHelpLanguage_SelectedIndexChanged(object sender, EventArgs e)
         {
-            string text = cmbHelpLanguage.SelectedIndex == 1 ? StudioHelp.TextEn : StudioHelp.TextDe;
+            string text = cmbHelpLanguage.SelectedIndex == 1 ? StudioHelp.TextEn : cmbHelpLanguage.SelectedIndex == 2 ? StudioHelp.TextFr : StudioHelp.TextDe;
             txtHelp.Text = text.Replace("\r\n", "\n").Replace("\n", Environment.NewLine);
         }
 

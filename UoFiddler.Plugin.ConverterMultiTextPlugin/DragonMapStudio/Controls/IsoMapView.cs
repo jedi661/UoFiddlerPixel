@@ -2085,65 +2085,65 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
         /// <summary>Key and mouse help for the current tool (shown below the view).</summary>
         public string KeyHelp()
         {
-            string view = (_topDown ? "2D-Ansicht" : "CGI-Ansicht") +
-                          ": Mausrad = Zoom · mittlere Maus oder Leertaste + Ziehen = verschieben · Pfeile ohne Auswahl = Ansicht (Umschalt = 8 Tiles) · T = 2D / CGI · Strg+Z / Strg+Y = Rückgängig / Wiederholen";
+            string view = L.T(_topDown ? "2D-Ansicht" : "CGI-Ansicht") + L.T(
+                          ": Mausrad = Zoom · mittlere Maus oder Leertaste + Ziehen = verschieben · Pfeile ohne Auswahl = Ansicht (Umschalt = 8 Tiles) · T = 2D / CGI · Strg+Z / Strg+Y = Rückgängig / Wiederholen");
             string tool;
             if (_pasteGhost)
             {
-                tool = "Einfügen: Linksklick setzt die kopierten Statics (mehrfach möglich) · Rechtsklick oder Esc = fertig";
+                tool = L.T("Einfügen: Linksklick setzt die kopierten Statics (mehrfach möglich) · Rechtsklick oder Esc = fertig");
             }
             else if (_areaPaste)
             {
-                tool = "Bereich einfügen: Linksklick setzt Land + Statics (Höhe passt sich an) · Esc = fertig";
+                tool = L.T("Bereich einfügen: Linksklick setzt Land + Statics (Höhe passt sich an) · Esc = fertig");
             }
             else
             {
                 switch (Tool)
                 {
                     case IsoTool.Select:
-                        tool = "Auswahl: Klick = wählen · Strg+Klick = dazu · Umschalt+Klick / Strg+A = alles auf dem Tile · Pfeile = verschieben · Strg+Pfeil = Kopie daneben · " +
-                               "Bild↑/↓ = Z ±1 (Umschalt ±5) · Entf = löschen · H = färben · I = im Item-Katalog zeigen · Strg+C / Strg+V = kopieren / einfügen · Rechtsklick = Item aufnehmen · Esc = Auswahl weg";
+                        tool = L.T("Auswahl: Klick = wählen · Strg+Klick = dazu · Umschalt+Klick / Strg+A = alles auf dem Tile · Pfeile = verschieben · Strg+Pfeil = Kopie daneben · " +
+                               "Bild↑/↓ = Z ±1 (Umschalt ±5) · Entf = löschen · H = färben · I = im Item-Katalog zeigen · Strg+C / Strg+V = kopieren / einfügen · Rechtsklick = Item aufnehmen · Esc = Auswahl weg");
                         break;
                     case IsoTool.Place:
-                        tool = "Static setzen: Klick setzt das Item aus dem Katalog (Reiter Items) · Z + und 'auf Statics stapeln' rechts · Rechtsklick auf ein Static = ID + Hue aufnehmen";
+                        tool = L.T("Static setzen: Klick setzt das Item aus dem Katalog (Reiter Items) · Z + und 'auf Statics stapeln' rechts · Rechtsklick auf ein Static = ID + Hue aufnehmen");
                         break;
                     case IsoTool.Multi:
-                        tool = "Multi setzen: Klick setzt das Multi (Reiter Multis) als Statics, danach ist es ausgewählt und mit den Pfeilen verschiebbar";
+                        tool = L.T("Multi setzen: Klick setzt das Multi (Reiter Multis) als Statics, danach ist es ausgewählt und mit den Pfeilen verschiebbar");
                         break;
                     case IsoTool.Delete:
-                        tool = "Löschen: Klick auf ein Static löscht es";
+                        tool = L.T("Löschen: Klick auf ein Static löscht es");
                         break;
                     case IsoTool.Hue:
-                        tool = "Färben: Klick färbt das Static mit der Hue (Reiter Items) · mit Auswahl: H";
+                        tool = L.T("Färben: Klick färbt das Static mit der Hue (Reiter Items) · mit Auswahl: H");
                         break;
                     case IsoTool.LandSet:
-                        tool = "Land setzen: Klicken / Ziehen malt das Land-Tile aus dem Katalog (Reiter Land) · Pinsel oben · Rechtsklick = Land-ID + Höhe aufnehmen · ein Zug = ein Rückgängig-Schritt";
+                        tool = L.T("Land setzen: Klicken / Ziehen malt das Land-Tile aus dem Katalog (Reiter Land) · Pinsel oben · Rechtsklick = Land-ID + Höhe aufnehmen · ein Zug = ein Rückgängig-Schritt");
                         break;
                     case IsoTool.Raise:
                     case IsoTool.Lower:
-                        tool = "Höhe + / −: Klicken / Ziehen hebt oder senkt das Land um den Schritt (Reiter Land) · Pinsel oben · Rechtsklick = Land aufnehmen";
+                        tool = L.T("Höhe + / −: Klicken / Ziehen hebt oder senkt das Land um den Schritt (Reiter Land) · Pinsel oben · Rechtsklick = Land aufnehmen");
                         break;
                     case IsoTool.SetHeight:
-                        tool = "Höhe =: Klicken / Ziehen setzt das Land auf 'Höhe =' (Reiter Land) · Rechtsklick nimmt die Höhe auf";
+                        tool = L.T("Höhe =: Klicken / Ziehen setzt das Land auf 'Höhe =' (Reiter Land) · Rechtsklick nimmt die Höhe auf");
                         break;
                     case IsoTool.Smooth:
-                        tool = "Glätten: Ziehen gleicht die Höhen an die Nachbarn an · Pinsel oben";
+                        tool = L.T("Glätten: Ziehen gleicht die Höhen an die Nachbarn an · Pinsel oben");
                         break;
                     case IsoTool.Coast:
-                        tool = "Küste: Ziehen über die Küste formt sie wie das Original – Meeresgrund, Wasser-Statics, Strand-Höhen (Reiter Küste / Wasser) · Pinsel oben · ein Zug = ein Rückgängig-Schritt";
+                        tool = L.T("Küste: Ziehen über die Küste formt sie wie das Original – Meeresgrund, Wasser-Statics, Strand-Höhen (Reiter Küste / Wasser) · Pinsel oben · ein Zug = ein Rückgängig-Schritt");
                         break;
                     case IsoTool.Water:
-                        tool = "Wasser: Ziehen malt Wasser-Statics (Reiter Küste / Wasser) · Strg+Ziehen entfernt sie · durchsichtig, wenn die TileData 'Translucent' hat";
+                        tool = L.T("Wasser: Ziehen malt Wasser-Statics (Reiter Küste / Wasser) · Strg+Ziehen entfernt sie · durchsichtig, wenn die TileData 'Translucent' hat");
                         break;
                     case IsoTool.Area:
-                        tool = "Bereich: Ziehen = markieren · F = füllen · K = Küste · W = Wasser (Umschalt+W weg) · G = glätten · S = Statics darin auswählen · Bild↑/↓ = heben / senken · " +
-                               "Strg+C / Strg+V = Land + Statics kopieren / einfügen · Entf = Statics löschen · als Vorlage speichern: Reiter Vorlagen · Esc = Markierung weg";
+                        tool = L.T("Bereich: Ziehen = markieren · F = füllen · K = Küste · W = Wasser (Umschalt+W weg) · G = glätten · S = Statics darin auswählen · Bild↑/↓ = heben / senken · " +
+                               "Strg+C / Strg+V = Land + Statics kopieren / einfügen · Entf = Statics löschen · als Vorlage speichern: Reiter Vorlagen · Esc = Markierung weg");
                         break;
                     case IsoTool.Cave:
-                        tool = "Höhle: am Eingang anfangen und in den Berg ziehen – Boden auf der Höhe des ersten Klicks (oder 'Höhe ='), der Rand wird Wand (Reiter Höhle / Weg) · Pinsel oben · ein Zug = ein Rückgängig-Schritt";
+                        tool = L.T("Höhle: am Eingang anfangen und in den Berg ziehen – Boden auf der Höhe des ersten Klicks (oder 'Höhe ='), der Rand wird Wand (Reiter Höhle / Weg) · Pinsel oben · ein Zug = ein Rückgängig-Schritt");
                         break;
                     case IsoTool.Template:
-                        tool = "Vorlage setzen: die Vorschau folgt der Maus, Klick setzt auf die Boden-Höhe + 'Z +' · danach ausgewählt: Pfeile / Bild↑↓ verschieben, Entf löscht · Strg+Z nimmt alles zurück";
+                        tool = L.T("Vorlage setzen: die Vorschau folgt der Maus, Klick setzt auf die Boden-Höhe + 'Z +' · danach ausgewählt: Pfeile / Bild↑↓ verschieben, Entf löscht · Strg+Z nimmt alles zurück");
                         break;
                     default:
                         tool = string.Empty;

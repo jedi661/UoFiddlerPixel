@@ -40,10 +40,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Dialogs
         public TilePickerForm(List<int> land, List<int> items, TileCatalogMode mode, int selected)
         {
             InitializeComponent();
+            UiTranslator.Apply(this);
             _land = land ?? new List<int>();
             _items = items ?? new List<int>();
-            cmbMode.Items.AddRange(new object[] { "Land-Tiles", "Texturen (Land mit Textur)", "Items / Statics" });
-            cmbSize.Items.AddRange(new object[] { "klein", "mittel", "groß", "sehr groß" });
+            cmbMode.Items.AddRange(new object[] { L.T("Land-Tiles"), L.T("Texturen (Land mit Textur)"), L.T("Items / Statics") });
+            cmbSize.Items.AddRange(new object[] { L.T("klein"), L.T("mittel"), L.T("groß"), L.T("sehr groß") });
             cmbSize.SelectedIndex = 2;
             grid.NameOf = NameOf;
             grid.ImageOf = ImageOf;
@@ -94,7 +95,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Dialogs
                 ? source
                 : source.Where(id => (isHex && id.ToString("x4").Contains(hex, StringComparison.OrdinalIgnoreCase)) ||
                                      NameOf(id).Contains(f, StringComparison.OrdinalIgnoreCase)).ToList();
-            lblCount.Text = $"{grid.Ids.Count:N0} Einträge";
+            lblCount.Text = $"{grid.Ids.Count:N0} " + L.T("Einträge");
         }
 
         private void UpdateInfo()
@@ -102,15 +103,15 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Dialogs
             int id = grid.SelectedId;
             if (id < 0)
             {
-                lblInfo.Text = "Bild anklicken = auswählen, Doppelklick oder OK = übernehmen.";
+                lblInfo.Text = L.T("Bild anklicken = auswählen, Doppelklick oder OK = übernehmen.");
                 picPreview.Image = null;
                 return;
             }
             picPreview.Image = ImageOf(id);
             lblInfo.Text = Mode == TileCatalogMode.Items
-                ? $"{id:x4}  {UoArtCache.ItemName(id)}{Environment.NewLine}Höhe {UoArtCache.ItemHeight(id)}  ·  TileData: {UoArtCache.ItemFlagsText(id)}"
-                : $"{id:x4}  {UoArtCache.LandName(id)}{Environment.NewLine}{(UoArtCache.Texture(id) != null ? "mit Textur (für Hänge)" : "ohne Textur")}" +
-                  (UoArtCache.LandIsWet(id) ? "  ·  nass" : string.Empty);
+                ? $"{id:x4}  {UoArtCache.ItemName(id)}{Environment.NewLine}{L.T("Höhe")} {UoArtCache.ItemHeight(id)}  ·  TileData: {UoArtCache.ItemFlagsText(id)}"
+                : $"{id:x4}  {UoArtCache.LandName(id)}{Environment.NewLine}{(UoArtCache.Texture(id) != null ? L.T("mit Textur (für Hänge)") : L.T("ohne Textur"))}" +
+                  (UoArtCache.LandIsWet(id) ? "  ·  " + L.T("nass") : string.Empty);
         }
 
         private void CmbMode_SelectedIndexChanged(object sender, EventArgs e)

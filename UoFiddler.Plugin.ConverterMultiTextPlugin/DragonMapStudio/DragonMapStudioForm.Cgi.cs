@@ -181,7 +181,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             tsbCgiUndo.Enabled = has && _cgiMap.CanUndo;
             tsbCgiRedo.Enabled = has && _cgiMap.CanRedo;
             btnCgiScan.Enabled = has;
-            tabCgi.Text = has && (_cgiMap.StaticsModified || _cgiMap.LandModified) ? "CGI-Ansicht *" : "CGI-Ansicht";
+            tabCgi.Text = L.T("CGI-Ansicht") + (has && (_cgiMap.StaticsModified || _cgiMap.LandModified) ? " *" : string.Empty);
         }
 
         private void SetCgiMap(MapData data, double? centerX = null, double? centerY = null)
@@ -612,10 +612,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             isoView.TargetHeight = (int)numCgiTarget.Value;
             picCgiLandArt.Image = UoArtCache.Land(isoView.PlaceLandId);
             picCgiLandTex.Image = UoArtCache.Texture(isoView.PlaceLandId);
-            string wet = UoArtCache.LandIsWetFlat(isoView.PlaceLandId) ? " · nass, ohne Textur (wird flach gezeichnet)" : string.Empty;
+            string wet = UoArtCache.LandIsWetFlat(isoView.PlaceLandId) ? L.T(" · nass, ohne Textur (wird flach gezeichnet)") : string.Empty;
             lblCgiLandInfo.Text = $"{isoView.PlaceLandId:x4} {UoArtCache.LandName(isoView.PlaceLandId)}{wet}{Environment.NewLine}" +
-                                  "Links Land-Grafik, rechts Textur für Hänge. Bild anklicken = auswählen, Doppelklick = malen. " +
-                                  "Bereich-Knöpfe gelten für den mit 'Bereich' markierten Teil (Höhe = nimmt 'Höhe = :').";
+                                  L.T("Links Land-Grafik, rechts Textur für Hänge. Bild anklicken = auswählen, Doppelklick = malen. " +
+                                      "Bereich-Knöpfe gelten für den mit 'Bereich' markierten Teil (Höhe = nimmt 'Höhe = :').");
             if (gridCgiLand.SelectedId != isoView.PlaceLandId)
             {
                 gridCgiLand.SelectedId = isoView.PlaceLandId;
@@ -757,8 +757,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             IReadOnlyCollection<StaticItem> sel = isoView.Selection;
             if (sel.Count == 0)
             {
-                lblCgiSelInfo.Text = "Nichts ausgewählt." + Environment.NewLine +
-                                     "Klick = auswählen, Strg+Klick = dazu, Umschalt+Klick = alles auf dem Tile.";
+                lblCgiSelInfo.Text = L.T("Nichts ausgewählt.") + Environment.NewLine +
+                                     L.T("Klick = auswählen, Strg+Klick = dazu, Umschalt+Klick = alles auf dem Tile.");
                 propCgiSelection.SelectedObject = null;
                 UpdateCgiState();
                 return;
@@ -772,8 +772,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             UpdateCgiKeys();
             lblCgiSelInfo.Text = sel.Count == 1
                 ? $"{f.Id:x4} {UoArtCache.ItemName(f.Id)}{Environment.NewLine}({f.X}, {f.Y}, {f.Z})  Hue {f.Hue}  ·  TileData: {UoArtCache.ItemFlagsText(f.Id)}{Environment.NewLine}" +
-                  "Pfeile = verschieben, Strg+Pfeil = Kopie daneben, Bild↑/↓ = Z, Entf = löschen"
-                : $"{sel.Count} Statics ausgewählt.{Environment.NewLine}Pfeile = verschieben, Strg+Pfeil = Kopie daneben, Bild↑/↓ = Z, Entf = löschen";
+                  L.T("Pfeile = verschieben, Strg+Pfeil = Kopie daneben, Bild↑/↓ = Z, Entf = löschen")
+                : $"{sel.Count} " + L.T("Statics ausgewählt.") + Environment.NewLine + L.T("Pfeile = verschieben, Strg+Pfeil = Kopie daneben, Bild↑/↓ = Z, Entf = löschen");
             propCgiSelection.SelectedObject = new CgiSelectionInfo { ItemId = f.Id.ToString("x4"), Hue = f.Hue, Z = f.Z, X = f.X, Y = f.Y };
             UpdateCgiState();
         }
@@ -838,14 +838,14 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             };
             ushort[] ids = HexList.Parse(txtCgiWaterIds.Text);
             string water = ids.Length == 0
-                ? "keine gültige ID"
+                ? L.T("keine gültige ID")
                 : string.Join(Environment.NewLine, ids.Distinct().Take(4).Select(id =>
-                    $"{id:x4} {UoArtCache.ItemName(id)}: {(UoArtCache.IsTranslucent(id) ? "durchsichtig" : "deckend")} ({UoArtCache.ItemFlagsText(id)})"));
+                    $"{id:x4} {UoArtCache.ItemName(id)}: {(UoArtCache.IsTranslucent(id) ? L.T("durchsichtig") : L.T("deckend"))} ({UoArtCache.ItemFlagsText(id)})"));
             lblCgiCoastInfo.Text =
-                "Pinsel 'Küste' / Taste K: Wasser bis 'Breite' vom Land = Grund-Tile auf 'Meeresgrund z' (äußerer Ring = 'Wasser z') " +
-                "mit Wasser-Statics auf 'Wasser z'; Land am Wasser bekommt die Strand-Höhen (1., 2., 3. Tile). Land höher als 'Klippe ab z' bleibt." +
+                L.T("Pinsel 'Küste' / Taste K: Wasser bis 'Breite' vom Land = Grund-Tile auf 'Meeresgrund z' (äußerer Ring = 'Wasser z') " +
+                    "mit Wasser-Statics auf 'Wasser z'; Land am Wasser bekommt die Strand-Höhen (1., 2., 3. Tile). Land höher als 'Klippe ab z' bleibt.") +
                 Environment.NewLine + Environment.NewLine +
-                "Pinsel 'Wasser': setzt die Wasser-Statics (zufällig aus der Liste), Strg = entfernen. Durchsichtig zeichnet der Client nur Items mit dem TileData-Flag 'Translucent':" +
+                L.T("Pinsel 'Wasser': setzt die Wasser-Statics (zufällig aus der Liste), Strg = entfernen. Durchsichtig zeichnet der Client nur Items mit dem TileData-Flag 'Translucent':") +
                 Environment.NewLine + water;
         }
 

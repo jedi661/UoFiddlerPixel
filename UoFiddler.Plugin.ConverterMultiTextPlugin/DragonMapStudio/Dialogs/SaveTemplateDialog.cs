@@ -35,17 +35,18 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Dialogs
         public SaveTemplateDialog(IEnumerable<string> categories, bool landAvailable, int staticCount, Image preview)
         {
             InitializeComponent();
+            UiTranslator.Apply(this);
             _landAvailable = landAvailable;
             cmbCategory.Items.AddRange(categories.Cast<object>().ToArray());
             cmbCategory.Text = "Eigene";
-            cmbFormat.Items.AddRange(new object[] { "Dragon-Vorlage (.dmsv.json) – Land + Statics", "UoFiddler-Multi (.txt) – nur Statics", "UO Architect (.uoa) – nur Statics" });
+            cmbFormat.Items.AddRange(new object[] { L.T("Dragon-Vorlage (.dmsv.json) – Land + Statics"), L.T("UoFiddler-Multi (.txt) – nur Statics"), L.T("UO Architect (.uoa) – nur Statics") });
             cmbFormat.SelectedIndex = 0;
             chkLand.Checked = landAvailable;
             chkLand.Enabled = landAvailable;
             chkStatics.Checked = staticCount > 0;
-            chkStatics.Text = $"Statics ({staticCount:N0})";
+            chkStatics.Text = L.T("Statics") + $" ({staticCount:N0})";
             picPreview.Image = preview;
-            txtName.Text = "Neue Vorlage";
+            txtName.Text = L.T("Neue Vorlage");
             UpdateState();
         }
 
@@ -69,8 +70,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Dialogs
             bool dragon = Format == TemplateFormat.Dragon;
             chkLand.Enabled = _landAvailable && dragon;
             lblInfo.Text = dragon
-                ? "Eigenes Format: Land-Tiles mit Höhen (relativ zur Mitte) und Statics. Beim Setzen wählbar: mit oder ohne Höhe."
-                : "Nur Statics – lesbar von UoFiddler (Multi-Import .txt) bzw. UO Architect (.uoa).";
+                ? L.T("Eigenes Format: Land-Tiles mit Höhen (relativ zur Mitte) und Statics. Beim Setzen wählbar: mit oder ohne Höhe.")
+                : L.T("Nur Statics – lesbar von UoFiddler (Multi-Import .txt) bzw. UO Architect (.uoa).");
             btnOk.Enabled = TemplateName.Length > 0 && (IncludeLand || IncludeStatics);
         }
 

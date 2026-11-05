@@ -66,6 +66,10 @@
             mnuCreateColorTable = new System.Windows.Forms.ToolStripMenuItem();
             mnuRulesSep2 = new System.Windows.Forms.ToolStripSeparator();
             mnuValidate = new System.Windows.Forms.ToolStripMenuItem();
+            mnuLanguage = new System.Windows.Forms.ToolStripMenuItem();
+            mnuLangDe = new System.Windows.Forms.ToolStripMenuItem();
+            mnuLangEn = new System.Windows.Forms.ToolStripMenuItem();
+            mnuLangFr = new System.Windows.Forms.ToolStripMenuItem();
             mnuHelp = new System.Windows.Forms.ToolStripMenuItem();
             mnuHelpTopics = new System.Windows.Forms.ToolStripMenuItem();
             mnuOpenSettingsFolder = new System.Windows.Forms.ToolStripMenuItem();
@@ -560,7 +564,7 @@
             // 
             // menuStrip
             // 
-            menuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { mnuFile, mnuEdit, mnuRules, mnuHelp });
+            menuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { mnuFile, mnuEdit, mnuRules, mnuLanguage, mnuHelp });
             menuStrip.Dock = System.Windows.Forms.DockStyle.Top;
             menuStrip.Name = "menuStrip";
             // 
@@ -776,6 +780,30 @@
             mnuValidate.Text = "Regelsatz &prüfen";
             mnuValidate.Name = "mnuValidate";
             mnuValidate.Click += MnuValidate_Click;
+            // 
+            // mnuLanguage
+            // 
+            mnuLanguage.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { mnuLangDe, mnuLangEn, mnuLangFr });
+            mnuLanguage.Text = "Sprache / Language / Langue";
+            mnuLanguage.Name = "mnuLanguage";
+            // 
+            // mnuLangDe
+            // 
+            mnuLangDe.Text = "Deutsch";
+            mnuLangDe.Name = "mnuLangDe";
+            mnuLangDe.Click += MnuLanguage_Click;
+            // 
+            // mnuLangEn
+            // 
+            mnuLangEn.Text = "English";
+            mnuLangEn.Name = "mnuLangEn";
+            mnuLangEn.Click += MnuLanguage_Click;
+            // 
+            // mnuLangFr
+            // 
+            mnuLangFr.Text = "Français";
+            mnuLangFr.Name = "mnuLangFr";
+            mnuLangFr.Click += MnuLanguage_Click;
             // 
             // mnuHelp
             // 
@@ -4173,6 +4201,10 @@
         private System.Windows.Forms.ToolStripMenuItem mnuCreateColorTable;
         private System.Windows.Forms.ToolStripSeparator mnuRulesSep2;
         private System.Windows.Forms.ToolStripMenuItem mnuValidate;
+        private System.Windows.Forms.ToolStripMenuItem mnuLanguage;
+        private System.Windows.Forms.ToolStripMenuItem mnuLangDe;
+        private System.Windows.Forms.ToolStripMenuItem mnuLangEn;
+        private System.Windows.Forms.ToolStripMenuItem mnuLangFr;
         private System.Windows.Forms.ToolStripMenuItem mnuHelp;
         private System.Windows.Forms.ToolStripMenuItem mnuHelpTopics;
         private System.Windows.Forms.ToolStripMenuItem mnuOpenSettingsFolder;

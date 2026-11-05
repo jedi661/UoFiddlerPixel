@@ -1,0 +1,634 @@
+# Dragon Map Studio – English
+# Deutsch<TAB>English  (\n = new line). Add or change lines as you like; the file is read when the language is chosen.
+ · nass, ohne Textur (wird flach gezeichnet)	 · wet, no texture (drawn flat)
+&Anleitung	&Guide
+&Ausschneiden	Cu&t
+&Bearbeiten	&Edit
+&Datei	&File
+&Einfügen (Stempel)	&Paste (stamp)
+&Hilfe	&Help
+&Kopieren	&Copy
+&Neue Karte…	&New map…
+&Regeln	&Rules
+&Rückgängig	&Undo
+&Speichern	&Save
+&Wiederholen	&Redo
+&Zuletzt geöffnet	&Recent maps
+0 = Felucca, 1 = Trammel, 2 = Ilshenar, 3 = Malas, 4 = Tokuno, 5 = Ter Mur …	0 = Felucca, 1 = Trammel, 2 = Ilshenar, 3 = Malas, 4 = Tokuno, 5 = Ter Mur …
+0 = Küste exakt wie die Maske, 1 = stark verwirbelt.	0 = coast exactly like the mask, 1 = strongly swirled.
+0 = Land bis zum Rand, 1 = immer Wasser am Kartenrand.	0 = land up to the edge, 1 = always water at the map edge.
+0 Sprache / Language	0 Sprache / Language
+1 Allgemein	1 General
+1 Ausgabe	1 Output
+1 Bild	1 Image
+1 Ordner	1 Folders
+1 Tile	1 tile
+1. Zahl nach den Tiles (Z-Versatz).	1st number after the tiles (Z offset).
+2 Farbtabelle	2 Colour table
+2 Land und Wasser	2 Land and water
+2 Platzierung	2 Placement
+2 Schritte	2 Steps
+2. Zahl nach den Tiles (bei Statics: zusätzlicher Wert, siehe Anleitung).	2nd number after the tiles (statics: additional value, see guide).
+2D-Ansicht	2D view
+2D-Ansicht von oben – Land-Tiles und Übergänge malen (Taste T)	2D view from above – paint land tiles and transitions (key T)
+3 Anwenden	3 Apply
+3 Details	3 Details
+3 Editor	3 Editor
+3 Gebirge	3 Mountains
+4 Bestehende Statics	4 Existing statics
+4 Höhen	4 Heights
+5 Klima	5 Climate
+5 Reparatur	5 Repair
+6 Gruppen	6 Groups
+6 Küste	6 Coast
+7 Umriss-Maske	7 Outline mask
+8 Zeichen A/B. Reihenfolge im Uhrzeigersinn: NW, N, NO, O, SO, S, SW, W. A = eigene Gruppe, B = Nachbar-Gruppe.	8 characters A/B, clockwise: NW, N, NE, E, SE, S, SW, W. A = own group, B = neighbour group.
+8×8-Blockraster (bei starkem Zoom)	8×8 block grid (at high zoom)
+8×8-Blockraster ab diesem Zoom anzeigen.	Show the 8×8 block grid from this zoom.
+: Mausrad = Zoom · mittlere Maus oder Leertaste + Ziehen = verschieben · Pfeile ohne Auswahl = Ansicht (Umschalt = 8 Tiles) · T = 2D / CGI · Strg+Z / Strg+Y = Rückgängig / Wiederholen	: wheel = zoom · middle mouse or space + drag = pan · arrows without selection = view (Shift = 8 tiles) · T = 2D / CGI · Ctrl+Z / Ctrl+Y = undo / redo
+= Item aus dem Katalog	= item from the catalogue
+Abbrechen	Cancel
+Abschnitts-Kommentar (// Zeile davor).	Section comment (// line before).
+Adresse	Address
+Adresse kopieren	Copy address
+Aktiv	Active
+Aktualisieren	Refresh
+Aktuelle Karte → MUL / UOP	Current map → MUL / UOP
+Alle Kategorien	All categories
+Alles	Everything
+Alles a&uswählen	Select &all
+Als &PNG exportieren…	Export as &PNG…
+Als Dragon-Skripte &exportieren…	&Export as Dragon scripts…
+Als Dragon-Skripte exportieren…	Export as Dragon scripts…
+Als Farbe 1	As colour 1
+Als Farbe 2	As colour 2
+Als Maske für Generator	As mask for the generator
+Als Umriss-Land	As outline land
+Als Umriss-Wasser	As outline water
+Als Vorlage speichern	Save as template
+An: dunkle Pixel = Land (typische Silhouette auf weißem Grund).	On: dark pixels = land (typical silhouette on white).
+Anlegen	Create
+Anteil der Gebirge, der oben Schnee bekommt (0 = aus).	Share of mountains that get snow on top (0 = off).
+Anteil der Kartenbreite.	Share of the map width.
+Anteil des Landes, der Gebirge wird.	Share of land that becomes mountains.
+Anteil Land an der Karte (ohne Umriss-Maske).	Share of land on the map (without outline mask).
+Anzahl unsichtbarer Höhleneingänge (Gruppe 1d) am Bergrand. Aktiviert die Regel 1d→Berg (map/cave-enti2mountain.txt). 0 = keine.	Number of invisible cave entrances (group 1d) at mountain edges. Enables the rule 1d→mountain (map/cave-enti2mountain.txt). 0 = none.
+Anzeigename (frei wählbar).	Display name (free).
+Auf den Meeresgrund kommen Wasser-Statics (Original: 1797–179c auf z -5), sonst sieht man einen braunen Graben.	Water statics are placed on the sea floor (original: 1797–179c at z -5), otherwise a brown trench is visible.
+auf Statics stapeln	stack on statics
+Aus = Breite/Höhe unten verwenden (neue Karte).	Off = use width/height below (new map).
+Aus = Pixelwerte direkt übernehmen (wie Dragon). An = Farben vergleichen.	Off = take pixel values directly (like Dragon). On = compare colours.
+Aus der Farbtabelle: Boden, Weg, Höhle …	From the colour table: floor, road, cave …
+Aus Editor-Karte bauen	Build from editor map
+Aus Regeln erzeugen	Create from rules
+Ausgabe	Output
+Ausgabe-Ordner	Output folder
+Ausgabe-Ordner (MUL / UOP)	Output folder (MUL / UOP)
+Ausgabe-Ordner öffnen	Open output folder
+Ausgewählte Farbe	Selected colour
+Auswahl	Select
+Auswahl &löschen (Farbe 2)	&Delete selection (colour 2)
+Auswahl mit Farbe 1 &füllen	&Fill selection with colour 1
+Auswahl → Vorlage…	Selection → template…
+Auswahl: Klick = wählen · Strg+Klick = dazu · Umschalt+Klick / Strg+A = alles auf dem Tile · Pfeile = verschieben · Strg+Pfeil = Kopie daneben · Bild↑/↓ = Z ±1 (Umschalt ±5) · Entf = löschen · H = färben · I = im Item-Katalog zeigen · Strg+C / Strg+V = kopieren / einfügen · Rechtsklick = Item aufnehmen · Esc = Auswahl weg	Select: click = select · Ctrl+click = add · Shift+click / Ctrl+A = all on the tile · arrows = move · Ctrl+arrow = copy next to it · PgUp/PgDn = Z ±1 (Shift ±5) · Del = delete · H = hue · I = show in item catalogue · Ctrl+C / Ctrl+V = copy / paste · right click = take item · Esc = clear selection
+Auto: Transparenz wenn vorhanden, sonst Helligkeit.	Auto: transparency if present, otherwise brightness.
+Baut die Karte aus dem Editor im Speicher (Übergänge, Items …) und zeigt sie an	Builds the editor map in memory (transitions, items …) and shows it
+Bereich	Area
+Bereich aufziehen: F füllen, K Küste, W Wasser, G glätten, Strg+C / Strg+V, Entf, Bild↑/↓	Drag an area: F fill, K coast, W water, G smooth, Ctrl+C / Ctrl+V, Del, PgUp/PgDn
+Bereich einfügen: Linksklick setzt Land + Statics (Höhe passt sich an) · Esc = fertig	Paste area: left click places land + statics (height adapts) · Esc = done
+Bereich mit Schwarz (0244) füllen	Fill area with black (0244)
+Bereich → Vorlage…	Area → template…
+Bereich:	Area:
+Bereich: Statics wählen	Area: select statics
+Bereich: Wasser (W)	Area: water (W)
+Bereich: Ziehen = markieren · F = füllen · K = Küste · W = Wasser (Umschalt+W weg) · G = glätten · S = Statics darin auswählen · Bild↑/↓ = heben / senken · Strg+C / Strg+V = Land + Statics kopieren / einfügen · Entf = Statics löschen · als Vorlage speichern: Reiter Vorlagen · Esc = Markierung weg	Area: drag = mark · F = fill · K = coast · W = water (Shift+W removes) · G = smooth · S = select the statics inside · PgUp/PgDn = raise / lower · Ctrl+C / Ctrl+V = copy / paste land + statics · Del = delete statics · save as template: tab Templates · Esc = clear
+Bereit	Ready
+Berg-Gruppe	Mountain group
+Berg-Profil	Mountain profile
+Berg-Profil Höhen	Mountain profile heights
+Berge steigen vom umgebenden Boden aus nach innen an (Dragon-Tutorial: Rock 20, 30, 50, 60, 65, 70 über Gras 0). Ein Berg liegt nie tiefer als das Gras daneben.	Mountains rise inwards from the surrounding ground (Dragon tutorial: rock 20, 30, 50, 60, 65, 70 above grass 0). A mountain is never lower than the grass next to it.
+Bericht schreiben	Write report
+Beschreibung	Description
+Bevorzugte Brücken-Gruppe (IMod13: 0 = Gras).	Preferred bridge group (IMod13: 0 = grass).
+Bild anklicken = auswählen, Doppelklick oder OK = übernehmen.	Click a picture = select, double click or OK = take.
+Bild der Farbtabelle (IMod13_Colortable.bmp). Klick auf eine Farbe = Adresse kopieren.	Image of the colour table (IMod13_Colortable.bmp). Click a colour = copy address.
+Bild laden…	Load image…
+Bilddatei	Image file
+Bilder groß	Large pictures
+Bilder klein	Small pictures
+Bilder mittel	Medium pictures
+Biome	Biomes
+Blau	Blue
+Blau-Anteil der Palettenfarbe.	Blue part of the palette colour.
+BMP-Datei → MUL / UOP…	BMP file → MUL / UOP…
+Boden	Floor
+Boden auf 'Höhe =' (Reiter Land)	Floor at 'Höhe =' (tab Land)
+Boden mit Höhe	Floor with height
+Breite	Width
+Breite des Strandes an der Küste (0 = kein Strand).	Width of the beach at the coast (0 = no beach).
+Breite und Höhe werden auf Vielfache von 8 gerundet (UO speichert 8×8-Blöcke). 1 Pixel = 1 Tile.	Width and height are rounded to multiples of 8 (UO stores 8×8 blocks). 1 pixel = 1 tile.
+Breite:	Width:
+Brücken-Gruppen einsetzen	Insert bridge groups
+CGI-Ansicht	CGI view
+CGI-Ansicht hier	CGI view here
+Chance	Chance
+Chance in items.txt geteilt durch diesen Wert (1000 = Promille).	Chance in items.txt divided by this value (1000 = per mille).
+Chance pro Zelle (Basis = Build-Einstellung, Standard 1000 = Promille).	Chance per cell (base = build setting, default 1000 = per mille).
+Datei	File
+Datei relativ zum Skript-Ordner, z. B. items/grass.txt	File relative to the script folder, e.g. items/grass.txt
+Datei relativ zum Skript-Ordner, z. B. map/grass2sand.txt (Ordner: map, map2, statics, statics2, statics3).	File relative to the script folder, e.g. map/grass2sand.txt (folders: map, map2, statics, statics2, statics3).
+Datei:	File:
+deckend	opaque
+Definiert	Defined
+Detailstufen des Rauschens (mehr = rauere Küsten).	Detail levels of the noise (more = rougher coasts).
+Diese Stelle im CGI-Modus (Client-Ansicht) anzeigen	Show this place in CGI mode (client view)
+Doppelte entfernen	Remove duplicates
+Doppelte Statics entfernen	Remove duplicate statics
+Dragon braucht mindestens 2 Tiles nebeneinander für einen Übergang. Einzelne Pixel und 1 Tile breite Streifen werden zur häufigsten Nachbar-Gruppe.	Dragon needs at least 2 tiles side by side for a transition. Single pixels and 1-tile strips become the most common neighbour group.
+Dragon Skript-Ordner	Dragon script folder
+Dragon-&Skripte laden…	Load Dragon &scripts…
+Dragon-Gruppe (dezimal; IMod13: 2 = Water).	Dragon group (decimal; IMod13: 2 = water).
+Dragon-Tutorial: neue Höhe = alte Höhe + Zufallszahl zwischen Z1 und Z2 (z. B. '005 007' → +5..+7). Aus = Höhe bleibt.	Dragon tutorial: new height = old height + random number between Z1 and Z2 (e.g. '005 007' → +5..+7). Off = height stays.
+Dragon-Vorlage (.dmsv.json) – Land + Statics	Dragon template (.dmsv.json) – land + statics
+dragon_log.txt: Statistik, Reparaturen, fehlende Übergänge mit Koordinaten (zum Weiterschicken).	dragon_log.txt: statistics, repairs, missing transitions with coordinates (to send on).
+Duplizieren	Duplicate
+durchsichtig	see-through
+Ebene	Layer
+Eckig	Square
+Eckiger Pinsel	Square brush
+Eigene Größe	Custom size
+Eigenes Format mit allen Infos. Wenn gesetzt und vorhanden, wird es statt der Skripte geladen.	Own format with all information. If set and present, it is loaded instead of the scripts.
+Eigenes Format: Land-Tiles mit Höhen (relativ zur Mitte) und Statics. Beim Setzen wählbar: mit oder ohne Höhe.	Own format: land tiles with heights (relative to the centre) and statics. When placing: with or without height.
+Einfügen (Strg+V)	Paste (Ctrl+V)
+Einfügen: Linksklick setzt die kopierten Statics (mehrfach möglich) · Rechtsklick oder Esc = fertig	Paste: left click places the copied statics (several times) · right click or Esc = done
+Einlesen → Editor	Import → editor
+Einpassen	Fit
+Einstellungen	Settings
+Einstellungs-Ordner öffnen	Open settings folder
+Einträge	entries
+Einzel-Tiles / 1er-Streifen entfernen	Remove single tiles / 1-tile strips
+Ellipse	Ellipse
+Ellipse ●	Ellipse ●
+Erkennung	Detection
+Ersatz-Gruppe	Fallback group
+Erweiterung	Extension
+Farb-Aliase	Colour aliases
+Farbe	Colour
+Farbe (0 = original). Gilt für alle ausgewählten Statics.	Hue (0 = original). Applies to all selected statics.
+Farbe aufnehmen (I)	Pick colour (I)
+Farbe der Küstenlinie (IMod13: 0x50.. Sand).	Colour of the coastline (IMod13: 0x50.. sand).
+Farben (links = 1, rechts = 2)	Colours (left = 1, right = 2)
+Farben (maptrans)	Colours (maptrans)
+Farbtabelle	Colour table
+Farbtabelle (Bild)	Colour table (image)
+Farbtabelle als &Bild speichern…	Save colour table as &image…
+Farbtabelle laden…	Load colour table…
+Fertige Böden / Höhlen-Stücke lassen sich mit 'Bereich → Vorlage…' (Reiter Vorlagen) speichern und wieder setzen.	Finished floors / cave pieces can be saved with 'Area → template…' (tab Templates) and placed again.
+Feste Höhe der Ufer-Statics (Original map0: 1796, 17a9, 17ab, 179f … liegen auf -5 = Wasserhöhe).	Fixed height of the shore statics (original map0: 1796, 17a9, 17ab, 179f … lie at -5 = water level).
+Feuchte max	Humidity max
+Feuchte min	Humidity min
+Fix-Tabelle	Fix table
+Fläche füllen (F)	Fill area (F)
+Format:	Format:
+Freier Kommentar / Notiz.	Free comment / note.
+Freier Rand (Wasser) um das Bild.	Free margin (water) around the image.
+Fremde 8-Bit-Bilder umrechnen	Convert foreign 8-bit images
+Färben	Hue
+Färben: Klick färbt das Static mit der Hue (Reiter Items) · mit Auswahl: H	Hue: click colours the static with the hue (tab Items) · with selection: H
+Füllen	Fill
+Füllfarbe (Index):	Fill colour (index):
+Für neuere Clients (ab 7.0.24). Benutzt den UOP-Packer von UoFiddler.	For newer clients (7.0.24 and later). Uses the UOP packer of UoFiddler.
+Ganz	Fit
+Ganze Karte anzeigen	Show whole map
+Ganze Karte prüfen	Check whole map
+Gebirge %	Mountains %
+Gebirge beginnen so hoch über dem Land daneben (Berge gehen immer nach oben).	Mountains start this high above the land next to them (mountains always go up).
+Gebirgs-Gruppe	Mountain group
+Gebirgs-Größe (0..1)	Mountain size (0..1)
+Gebäude (UoFiddler-txt, UO Architect .uoa, .wsc, Sphere .scp) und eigene Vorlagen (.dmsv.json). Jeder Unterordner ist eine Kategorie. Standard: mitgelieferter Ordner Multis.	Buildings (UoFiddler txt, UO Architect .uoa, .wsc, Sphere .scp) and own templates (.dmsv.json). Every sub folder is a category. Default: shipped folder Multis.
+Gebäude / Boden-Vorlage (Reiter Vorlagen) halbtransparent zeigen und setzen	Show and place a building / floor template (tab Templates) see-through
+Gefundene Probleme rot markieren	Mark found problems in red
+Gefüllte Ellipse	Filled ellipse
+Gefülltes Rechteck (R)	Filled rectangle (R)
+Gehe	Go
+Gehe zu	Go to
+Generator	Generator
+Generator & Umriss	Generator & outline
+Gewähltes Item (rechts) setzen	Place the chosen item (right)
+Gewähltes Multi (rechts) als Statics setzen	Place the chosen multi (right) as statics
+Geändert	Changed
+Gipfel-Gruppe	Peak group
+Gleiche ID an gleicher Stelle und Höhe nur einmal schreiben.	Write the same id at the same place and height only once.
+Gleiche Zahl = gleiche Karte.	Same number = same map.
+Gleiche Zahl = gleiche Tiles / Items.	Same number = same tiles / items.
+Glätten	Smooth
+Glätten (Tiles)	Smoothing (tiles)
+Glätten: Ziehen gleicht die Höhen an die Nachbarn an · Pinsel oben	Smooth: dragging evens the heights to the neighbours · brush at the top
+GrassBump-Prüfung	GrassBump check
+groß	large
+Großer Katalog…	Big catalogue…
+Grund-Tile:	Floor tile:
+Gruppe	Group
+Gruppe (groups.txt). -1 = keine Gruppe.	Group (groups.txt). -1 = no group.
+Gruppe (hex in Dragon) – die Höhe wählt die passende Farbe der Gruppe.	Group (hex in Dragon) – the height picks the matching colour of the group.
+Gruppe A	Group A
+Gruppe B	Group B
+Gruppe der Nachbarn, -1 = jede andere Gruppe als A.	Group of the neighbours, -1 = any group other than A.
+Gruppe der Zelle, -1 = jede andere Gruppe als B.	Group of the cell, -1 = any group other than B.
+Gruppe:Nachbar – Gruppe muss tiefer liegen als der Nachbar (Tutorial 'Grass cliffs': 19:00).	Group:neighbour – the group must be lower than the neighbour (tutorial 'Grass cliffs': 19:00).
+Gruppe:Umgebung:Breite, mehrere mit ';'. Standard '18:00:2' = Sumpf immer mit 2 Tiles Gras umgeben (Dragon-Tutorial).	Group:surrounding:width, several with ';'. Default '18:00:2' = swamp always surrounded by 2 tiles of grass (Dragon tutorial).
+Gruppen	Groups
+Gruppen (hex), die die Reparatur nie ändert, z. B. 1d = unsichtbarer Höhleneingang.	Groups (hex) the repair never changes, e.g. 1d = invisible cave entrance.
+Gruppen-Nummer (hex in den Dragon-Skripten, 00..FF).	Group number (hex in the Dragon scripts, 00..FF).
+Größe	Size
+Größe der aktuellen Karte nutzen	Use the size of the current map
+Größe der Klimazonen als Anteil der Kartenbreite.	Size of the climate zones as share of the map width.
+Größe:	Size:
+Größter Höhenunterschied zwischen Nachbarn (außer Berg/Berg).	Largest height difference between neighbours (except mountain/mountain).
+Größter Höhenunterschied zwischen zwei Berg-Tiles.	Largest height difference between two mountain tiles.
+Grün	Green
+Grün-Anteil der Palettenfarbe.	Green part of the palette colour.
+Hand	Hand
+hex 02 = IMod13 Water (dezimal eingeben: 2).	hex 02 = IMod13 water (enter decimal: 2).
+Hier speichert der Editor die Karten-BMPs; die Kartenliste zeigt diesen Ordner.	The editor saves the map BMPs here; the map list shows this folder.
+Hier werden map#.mul, staidx#.mul, statics#.mul (und map#LegacyMUL.uop) gespeichert.	map#.mul, staidx#.mul, statics#.mul (and map#LegacyMUL.uop) are saved here.
+Hilfe	Help
+Hinweise	Notes
+Hue	Hue
+Hue:	Hue:
+Häufigkeit	Frequency
+Häufigkeit 1..1000 (Promille).	Frequency 1..1000 (per mille).
+Höchste Höhe der Land-Tiles in 1, 2, 3 … Tiles Abstand zum Wasser (Leerzeichen getrennt).	Highest height of the land tiles at 1, 2, 3 … tiles distance to the water (separated by spaces).
+Höchste Z des normalen Landes (IMod13: Gras bis 40).	Highest Z of normal land (IMod13: grass up to 40).
+Höhe	Height
+Höhe (Z)	Height (Z)
+Höhe (Z) des Bodens für diese Farbe, -128..127.	Height (Z) of the ground for this colour, -128..127.
+Höhe (Z) jeder Farbe einblenden (ab Zoom 12)	Show the height (Z) of every colour (from zoom 12)
+Höhe +	Height +
+Höhe + / −: Klicken / Ziehen hebt oder senkt das Land um den Schritt (Reiter Land) · Pinsel oben · Rechtsklick = Land aufnehmen	Height + / −: click / drag raises or lowers the land by the step (tab Land) · brush at the top · right click = take land
+Höhe =	Height =
+Höhe = :	Height = :
+Höhe =: Klicken / Ziehen setzt das Land auf 'Höhe =' (Reiter Land) · Rechtsklick nimmt die Höhe auf	Height =: click / drag sets the land to 'Height =' (tab Land) · right click takes the height
+Höhe der Wasser-Oberfläche (Wasser-Statics, äußerer Ring; Original: -5).	Height of the water surface (water statics, outer ring; original: -5).
+Höhe des Meeresgrunds unter dem Ufer-Wasser (Original map0: -15 bei 88 %).	Height of the sea floor below the shore water (original map0: -15 for 88 %).
+Höhe kühlt (0..1)	Height cools (0..1)
+Höhe ± Schritt:	Height ± step:
+Höhe ÜBER dem Boden je Ring vom Rand aus (Leerzeichen getrennt). Jeder Ring liegt zwischen der Hälfte und diesem Wert.	Height ABOVE the ground per ring from the edge (separated by spaces). Each ring lies between half and this value.
+Höhe −	Height −
+Höhe. Bei mehreren: alle bekommen diese Höhe.	Height. With several: all get this height.
+Höhe:	Height:
+Höhen	Heights
+Höhenunterschied zwischen zwei Nachbar-Tiles begrenzen (gegen Stacheln und Klippen).	Limit the height difference between two neighbour tiles (against spikes and cliffs).
+Höhle	Cave
+Höhle / Weg	Cave / road
+Höhle: am Eingang anfangen und in den Berg ziehen – Boden auf der Höhe des ersten Klicks (oder 'Höhe ='), der Rand wird Wand (Reiter Höhle / Weg) · Pinsel oben · ein Zug = ein Rückgängig-Schritt	Cave: start at the entrance and drag into the mountain – floor at the height of the first click (or 'Height ='), the edge becomes wall (tab Cave / road) · brush at the top · one drag = one undo step
+Höhle: Werkzeug 'Höhle' (Leiste Land), am Fuß des Berges anfangen und hineinziehen. Der Boden bekommt die Höhe des ersten Klicks (oder 'Höhe =' aus dem Reiter Land), der Rand wird bis zur Wand-Höhe angehoben – der Client zeichnet dort die Fels-Textur als Wand. Pinsel-Größe oben = Breite des Ganges. Ein Zug = ein Rückgängig-Schritt.	Cave: tool 'Cave' (bar Land), start at the foot of the mountain and drag into it. The floor gets the height of the first click (or 'Height =' from the tab Land), the edge is raised to the wall height – the client draws the rock texture there as a wall. Brush size at the top = width of the tunnel. One drag = one undo step.
+Höhlen-Pinsel wählen	Choose cave brush
+Höhlenboden:	Cave floor:
+Höhleneingang-Gruppe	Cave entrance group
+Höhleneingänge	Cave entrances
+Im Item-Katalog zeigen + übernehmen (I)	Show in item catalogue + take over (I)
+IMod13: 29 (= 1d hex, Invisible Cave entrance).	IMod13: 29 (= 1d hex, invisible cave entrance).
+IMod13: 32 (0x20) = Wasser -5.	IMod13: 32 (0x20) = water -5.
+IMod13: 5 = Desert/Sand.	IMod13: 5 = desert/sand.
+IMod13: 6 = Mountain/Rock.	IMod13: 6 = mountain/rock.
+IMod13: 6 = mountain/rock.	IMod13: 6 = mountain/rock.
+IMod13: 7 = Snow.	IMod13: 7 = snow.
+IMod13: Fels bis 90 (absolut).	IMod13: rock up to 90 (absolute).
+In Karte zeichnen	Draw into the map
+Index dezimal (10)	Index decimal (10)
+Ist die Farbe in maptrans.txt definiert? Nur dann wird daraus eine Karte erzeugt.	Is the colour defined in maptrans.txt? Only then a map is created from it.
+Item (hex):	Item (hex):
+Item-Gruppen der gewählten Datei (Statics: id z hue dx dy; …)	Item groups of the chosen file (statics: id z hue dx dy; …)
+Item-ID (hex)	Item id (hex)
+Items	Items
+Items (items.txt)	Items (items.txt)
+Items / Statics	Items / statics
+Items nicht überlappen	Items do not overlap
+Items nur auf gleicher Gruppe	Items only on the same group
+Items: Chance-Basis	Items: chance base
+JSON speichern…	Save JSON…
+Karte # (UOP):	Map # (UOP):
+Karte &prüfen (Log)…	&Check map (log)…
+Karte analysieren (Höhen-Log)	Analyse map (height log)
+Karte automatisch &reparieren	&Repair map automatically
+Karte erzeugen → Editor	Generate map → editor
+Karte prüfen (Log)	Check map (log)
+Karte reparieren	Repair map
+Karte ö&ffnen…	&Open map…
+Karten (Projekt-Ordner)	Maps (project folder)
+Karten-Editor	Map editor
+Karten-Nummer	Map number
+Katalog – Land-Tiles, Texturen, Items	Catalogue – land tiles, textures, items
+Kategorie	Category
+Kategorie für eigene Sortierung, z. B. Natur, Dungeon, Stadt.	Category for own sorting, e.g. nature, dungeon, town.
+Kategorie:	Category:
+keine gültige ID	no valid id
+Keine Items auf Übergangs-Statics	No items on transition statics
+klein	small
+Klick = auswählen, Strg+Klick = dazu, Umschalt+Klick = alle auf dem Tile	Click = select, Ctrl+click = add, Shift+click = all on the tile
+Klick = auswählen, Strg+Klick = dazu, Umschalt+Klick = alles auf dem Tile.	Click = select, Ctrl+click = add, Shift+click = all on the tile.
+Klick färbt das Static mit der Hue (rechts)	Click colours the static with the hue (right)
+Klick kopiert:	Click copies:
+Klicke auf eine Farbe in der Farbtabelle.	Click a colour in the colour table.
+Klima-Größe (0..1)	Climate size (0..1)
+Klippe ab z:	Cliff from z:
+Kommentar	Comment
+Kommentar (wird beim Export als // Zeile geschrieben).	Comment (written as // line on export).
+Kontinent-Größe (0..1)	Continent size (0..1)
+Kopier-Format	Copy format
+Kopieren (Strg+C)	Copy (Ctrl+C)
+Küste	Coast
+Küste / Wasser	Coast / water
+Küste glätten	Smooth coast
+Küste glätten: Durchgänge	Smooth coast: passes
+Küste wie die Original-Karte (map0 ausgewertet): Meeresgrund-Tiles auf -15 mit Wasser-Statics auf -5 darüber, äußerer Rand auf -5, Strand flach zum Wasser. Ersetzt die zufälligen -10/0-Höhen der Skripte.	Coast like the original map (map0 analysed): sea floor tiles at -15 with water statics at -5 above, outer edge at -5, beach flat towards the water. Replaces the random -10/0 heights of the scripts.
+Küste: Ziehen über die Küste formt sie wie das Original – Meeresgrund, Wasser-Statics, Strand-Höhen (Reiter Küste / Wasser) · Pinsel oben · ein Zug = ein Rückgängig-Schritt	Coast: dragging over the coast shapes it like the original – sea floor, water statics, beach heights (tab Coast / water) · brush at the top · one drag = one undo step
+Küsten-Profil an	Coast profile on
+Küsten-Rauheit (0..1)	Coast roughness (0..1)
+Küsten-Unschärfe (Tiles)	Coast blur (tiles)
+Lakunarität	Lacunarity
+Land	Land
+Land %	Land %
+Land (hex):	Land (hex):
+Land absenken	Lower land
+Land anheben (Schritt und Radius rechts im Reiter Land)	Raise land (step and radius in the tab Land)
+Land auf eine feste Höhe setzen	Set land to a fixed height
+Land höher als dieser Wert wird nicht abgesenkt (Klippen-Küsten bleiben).	Land higher than this is not lowered (cliff coasts stay).
+Land ist dunkel	Land is dark
+Land nur dort, wo die geladene Umriss-Maske Land ist.	Land only where the loaded outline mask is land.
+Land setzen	Set land
+Land setzen: Klicken / Ziehen malt das Land-Tile aus dem Katalog (Reiter Land) · Pinsel oben · Rechtsklick = Land-ID + Höhe aufnehmen · ein Zug = ein Rückgängig-Schritt	Set land: click / drag paints the land tile from the catalogue (tab Land) · brush at the top · right click = take land id + height · one drag = one undo step
+Land-Farbe (Index)	Land colour (index)
+Land-Höhe jedes Tiles einblenden	Show the land height of every tile
+Land-Höhen glätten	Smooth land heights
+Land-Höhen zum Wasser	Land heights towards the water
+Land-Tile / Textur (Reiter Land) malen – Rechtsklick nimmt Land-ID und Höhe auf	Paint land tile / texture (tab Land) – right click takes land id and height
+Land-Tile(s) des Meeresgrunds, hex (Original map0: 0064).	Land tile(s) of the sea floor, hex (original map0: 0064).
+Land-Tile-IDs (hex, durch Leerzeichen getrennt). Eine davon wird zufällig gewählt.	Land tile ids (hex, separated by spaces). One of them is chosen at random.
+Land-Tiles	Land tiles
+Land-Tiles (Boden) mit Höhen	Land tiles (floor) with heights
+Land:	Land:
+Linie	Line
+Linie (L)	Line (L)
+Links	Left
+Links Land-Grafik, rechts Textur für Hänge. Bild anklicken = auswählen, Doppelklick = malen. Bereich-Knöpfe gelten für den mit 'Bereich' markierten Teil (Höhe = nimmt 'Höhe = :').	Left: land art, right: texture for slopes. Click a picture = select, double click = paint. Area buttons work on the part marked with 'Area' ('Height =' uses 'Height = :').
+Log speichern	Save log
+Log öffnen	Open log
+Löschen	Delete
+Löschen: Klick auf ein Static löscht es	Delete: click on a static deletes it
+Macht den Wasserrand unregelmäßig.	Makes the water edge irregular.
+Malt mit Farbe 2 (E)	Paints with colour 2 (E)
+Map = Boden-Tile wird ersetzt, Static = Statics werden gesetzt.	Map = the ground tile is replaced, Static = statics are placed.
+map#.mul / map#LegacyMUL.uop + staidx/statics aus dem gleichen Ordner	map#.mul / map#LegacyMUL.uop + staidx/statics from the same folder
+map#.mul schreiben	Write map#.mul
+map#LegacyMUL.uop schreiben	Write map#LegacyMUL.uop
+Map-Übergänge	Map transitions
+maptrans-Datei	maptrans file
+maptrans-Zeile	maptrans line
+maptrans.txt oder maptrans105.txt …	maptrans.txt or maptrans105.txt …
+Markierten Bereich: Küste anpassen (K)	Marked area: adjust coast (K)
+Maske aus aktueller Karte	Mask from current map
+Maske löschen	Clear mask
+Max Z:	Max Z:
+Max. Gebirgshöhe über Boden	Max. mountain height above ground
+Max. Landhöhe	Max. land height
+Max. Sprung Berg	Max. step mountain
+Max. Sprung Land	Max. step land
+Meeresgrund Höhe	Sea floor height
+Meeresgrund z:	Sea floor z:
+Meeresgrund-Tiles	Sea floor tiles
+Mehrteilige Items nur, wenn alle Teile auf der Gruppe liegen.	Multi-part items only if all parts lie on the group.
+Min. Gebirgshöhe über Boden	Min. mountain height above ground
+mit Textur (für Hänge)	with texture (for slopes)
+mittel	medium
+Modus	Mode
+MUL / UOP einlesen (→ BMP)…	Import MUL / UOP (→ BMP)…
+MUL / UOP erzeugen	Create MUL / UOP
+MUL / UOP laden…	Load MUL / UOP…
+MUL / UOP → BMP (bestehende Karte einlesen, wie Dragon_m2b)	MUL / UOP → BMP (import an existing map, like Dragon_m2b)
+Multi setzen	Place multi
+Multi setzen: Klick setzt das Multi (Reiter Multis) als Statics, danach ist es ausgewählt und mit den Pfeilen verschiebbar	Place multi: click places the multi (tab Multis) as statics, afterwards it is selected and can be moved with the arrows
+Multi-ID (hex):	Multi id (hex):
+Multis	Multis
+Muster	Pattern
+Muster der gewählten Übergangsdatei	Patterns of the chosen transition file
+Nach dem Erzeugen reparieren	Repair after generating
+Name	Name
+Name der Gruppe (aus dem Kommentar in groups.txt).	Name of the group (from the comment in groups.txt).
+Name oder ID (hex)	Name or id (hex)
+Name:	Name:
+nass	wet
+Neu laden	Reload
+Neue Farbe definieren…	Define new colour…
+Neue Karte	New map
+Neue Karte: Breite	New map: width
+Neue Karte: Höhe	New map: height
+Neue Vorlage	New template
+NeueKarte	NewMap
+Neuer Seed + Vorschau	New seed + preview
+Neuer Seed bei jedem Lauf	New seed every run
+Neu…	New…
+Nicht verändern	Do not change
+Nichts ausgewählt.	Nothing selected.
+Norden kalt / Süden warm	North cold / south warm
+Nr	No.
+Nur bei einem Static änderbar.	Only changeable for one static.
+Nur flache Küsten	Only flat coasts
+Nur Statics – lesbar von UoFiddler (Multi-Import .txt) bzw. UO Architect (.uoa).	Statics only – readable by UoFiddler (multi import .txt) or UO Architect (.uoa).
+Nächste höhere Farbe der Gruppe (rechte Maustaste: tiefer)	Next higher colour of the group (right mouse: lower)
+Nächste tiefere Farbe der Gruppe	Next lower colour of the group
+Oben	Top
+ohne Textur	no texture
+Oktaven	Octaves
+Optionales Bild / Textur (PNG, BMP) als Vorschau oder für eigene Textur-Erweiterungen.	Optional image / texture (PNG, BMP) as preview or for own texture extensions.
+Ordner	Folders
+Ordner mit groups.txt, maptrans.txt … (Standard: mitgelieferte IMod13-Skripte).	Folder with groups.txt, maptrans.txt … (default: shipped IMod13 scripts).
+Ordner öffnen	Open folder
+Ordner:	Folder:
+Palette	Palette
+Palette &importieren…	&Import palette…
+Palette e&xportieren (ACT / PAL / ACO / GPL)…	E&xport palette (ACT / PAL / ACO / GPL)…
+Palette für die 256 Farben (BMP, ACT, PAL, ACO, GPL). Leer = Farbtabelle.	Palette for the 256 colours (BMP, ACT, PAL, ACO, GPL). Empty = colour table.
+Palettenindex 0..255 (= Pixelwert im 8-Bit-BMP).	Palette index 0..255 (= pixel value in the 8-bit BMP).
+Palettenindex dezimal (IMod13: 0 = Gras z0). Tipp: in der Farbtabelle klicken und 'Als Land-Farbe' wählen.	Palette index decimal (IMod13: 0 = grass z0). Tip: click in the colour table and choose 'as land colour'.
+Palettenindex, auf den diese Farbe abgebildet wird.	Palette index this colour is mapped to.
+Persistenz	Persistence
+Pfeile = verschieben, Strg+Pfeil = Kopie daneben, Bild↑/↓ = Z, Entf = löschen	Arrows = move, Ctrl+arrow = copy next to it, PgUp/PgDn = Z, Del = delete
+Pinsel	Brush
+Pinsel 'Küste' / Taste K: Wasser bis 'Breite' vom Land = Grund-Tile auf 'Meeresgrund z' (äußerer Ring = 'Wasser z') mit Wasser-Statics auf 'Wasser z'; Land am Wasser bekommt die Strand-Höhen (1., 2., 3. Tile). Land höher als 'Klippe ab z' bleibt.	Brush 'Coast' / key K: water up to 'Width' from the land = floor tile at 'Sea floor z' (outer ring = 'Water z') with water statics at 'Water z'; land at the water gets the beach heights (1st, 2nd, 3rd tile). Land higher than 'Cliff from z' stays.
+Pinsel 'Wasser': setzt die Wasser-Statics (zufällig aus der Liste), Strg = entfernen. Durchsichtig zeichnet der Client nur Items mit dem TileData-Flag 'Translucent':	Brush 'Water': places the water statics (random from the list), Ctrl = remove. The client draws only items with the tiledata flag 'Translucent' see-through:
+Pinsel (B)	Brush (B)
+Pinsel-Größe der Land-, Küsten- und Wasser-Werkzeuge	Brush size of the land, coast and water tools
+Pinsel:	Brush:
+Pinsel: Höhle in den Berg graben – Boden auf einer Höhe, der Rand wird Wand (Reiter Höhle / Weg)	Brush: dig a cave into the mountain – floor at one height, the edge becomes wall (tab Cave / road)
+Pinsel: Küste wie das Original formen (Meeresgrund, Wasser-Statics, Strand-Höhen – Reiter Küste / Wasser)	Brush: shape the coast like the original (sea floor, water statics, beach heights – tab Coast / water)
+Pinsel: Wasser-Statics malen, Strg = entfernen (durchsichtig bei TileData-Flag Translucent)	Brush: paint water statics, Ctrl = remove (see-through with tiledata flag Translucent)
+Pipette	Picker
+Preset laden…	Load preset…
+Preset speichern…	Save preset…
+Probleme	Problems
+Projekt-Ordner (Karten)	Project folder (maps)
+Projekt-Ordner öffnen	Open project folder
+Prüfen	Check
+Radierer	Eraser
+Rand %	Margin %
+Rand zu Wänden anheben (Textur dahinter)	Raise the edge to walls (texture behind)
+Rand-Breite (0..1)	Edge width (0..1)
+Rand-Verwirbelung (0..1)	Edge swirl (0..1)
+RandomOne = eine ID zufällig (wie Dragon: 'itemid1 to x will be used randomly'), PlaceAll = alle IDs einer Zeile setzen.	RandomOne = one id at random (like Dragon: 'itemid1 to x will be used randomly'), PlaceAll = place all ids of a line.
+Raster	Grid
+Raster ab Zoom	Grid from zoom
+Rechteck	Rectangle
+Rechteck auswählen – Kopieren / Einfügen / Löschen (S)	Select rectangle – copy / paste / delete (S)
+Rechteck ■	Rectangle ■
+Rechts	Right
+Regeln & Skripte	Rules & scripts
+Regelsatz	Rule set
+Regelsatz &prüfen	&Validate rule set
+Regelsatz (JSON)	Rule set (JSON)
+Regelsatz (JSON) &laden…	&Load rule set (JSON)…
+Regelsatz (JSON) &speichern…	&Save rule set (JSON)…
+Reihenfolge = Priorität. Temperatur/Feuchte 0..1, Gruppe dezimal.	Order = priority. Temperature/humidity 0..1, group decimal.
+Reparatur	Repair
+Reparatur-Einstellungen	Repair settings
+Repariert eine Kopie der Karte vor dem Build (die Karte im Editor bleibt unverändert). Einstellungen unten.	Repairs a copy of the map before the build (the map in the editor stays unchanged). Settings below.
+RGB ändern…	Change RGB…
+Rot	Red
+Rot-Anteil der Palettenfarbe.	Red part of the palette colour.
+Rundet treppige Kanten ab (0 = aus).	Rounds stair-like edges (0 = off).
+Rückgängig	Undo
+S&chließen	&Close
+Satz	Set
+Schnee auf Gipfeln %	Snow on peaks %
+Schwelle 0..255	Threshold 0..255
+sehr groß	very large
+Setzen	Place
+Skript-Ordner öffnen	Open script folder
+Skript-Satz 1, 2 oder 3 (bestimmt Listen-Datei und Unterordner).	Script set 1, 2 or 3 (decides list file and sub folder).
+So viele Tiles vom Land aus wird das Wasser zu Meeresgrund + Wasser-Statics (Original: 6). 0 = aus. Der äußerste Ring liegt auf Wasserhöhe und schließt an das offene Wasser an.	So many tiles from the land the water becomes sea floor + water statics (original: 6). 0 = off. The outermost ring lies at water level and joins the open water.
+SourceLowest (Standard) = tiefste Höhe der Nachbarn der Quellgruppe + Z1..Z2 – Ufer-Wellen liegen dann auf dem (abgesenkten) Wasser. SourceHighest = höchste (Tutorial-Text), Cell = Höhe der Zelle.	SourceLowest (default) = lowest height of the source group neighbours + Z1..Z2 – shore waves then lie on the (lowered) water. SourceHighest = highest (tutorial text), Cell = height of the cell.
+Speichern	Save
+Speichern &unter…	Save &as…
+Speichern + Regeln neu laden	Save + reload rules
+Speichern unter…	Save as…
+Sprache / Language / Langue	Sprache / Language / Langue
+Sprache / Language:	Sprache / Language / Langue:
+Sprache der Oberfläche: Deutsch, English, Français. Auch im Menü 'Sprache / Language / Langue'.	Interface language: Deutsch, English, Français. Also in the menu 'Sprache / Language / Langue'.
+Sprühen	Spray
+staidx#.mul (alt)	staidx#.mul (old)
+staidx#.mul und statics#.mul.	staidx#.mul and statics#.mul.
+Standard-Biome	Default biomes
+Static setzen	Place static
+Static setzen: Klick setzt das Item aus dem Katalog (Reiter Items) · Z + und 'auf Statics stapeln' rechts · Rechtsklick auf ein Static = ID + Hue aufnehmen	Place static: click places the item from the catalogue (tab Items) · Z + and 'stack on statics' on the right · right click on a static = take id + hue
+Static-Z Basis	Static Z base
+Static-Übergänge	Static transitions
+Statics	Statics
+Statics (id z hue dx dy; …)	Statics (id z hue dx dy; …)
+Statics (und bei gebauter Karte auch die Map) speichern – alte Dateien bekommen .bak	Save statics (and the map of a built map) – old files get .bak
+Statics an der Stelle vorher löschen	Delete the statics there first
+Statics anzeigen	Show statics
+Statics aus vorhandenen Dateien dazu mischen (wie Dragonsp).	Merge statics from existing files (like Dragonsp).
+Statics ausgewählt.	statics selected.
+Statics der Wasser-Übergänge (water2x / x2water) auf eine feste Höhe setzen.	Set the statics of the water transitions (water2x / x2water) to a fixed height.
+Statics mehrerer IDs	Statics with several ids
+Statics schreiben	Write statics
+Statics zusätzlich als Text (wie Dragon 'UOX Static File').	Statics also as text (like Dragon 'UOX Static File').
+Statics übernehmen	Merge statics
+statics#.mul (alt)	statics#.mul (old)
+Steile Sprünge glätten	Smooth steep steps
+Steilkante ab z:	Cliff from z:
+Strand-Anteil %	Beach share %
+Strand-Breite (Tiles)	Beach width (tiles)
+Strand-Gruppe	Beach group
+Strand-Höhen:	Beach heights:
+Suche:	Search:
+Suche: Name oder ID (hex)	Search: name or id (hex)
+Suche: Name, Kategorie, Autor	Search: name, category, author
+Temp. max	Temp. max
+Temp. min	Temp. min
+Textur / Bild	Texture / image
+Texturen (Land mit Textur)	Textures (land with texture)
+Texturen zeigen	Show textures
+Tile	Tile
+Tile für Farben ohne maptrans-Eintrag (hex, 0244 = schwarz/nodraw).	Tile for colours without maptrans entry (hex, 0244 = black/nodraw).
+Tile-IDs hex (Map: eine wird zufällig gewählt, Statics: Einstellung im Build).	Tile ids hex (map: one is chosen at random, statics: setting in the build).
+Tiles (hex)	Tiles (hex)
+Tutorial-Regeln anwenden: keine 1-Tile-Streifen, Brücken-Gruppen zwischen Gruppen ohne Übergang, Sumpf mit Gras umgeben, Berge in Ringen ansteigen lassen, keine Stacheln.	Apply the tutorial rules: no 1-tile strips, bridge groups between groups without transition, swamp surrounded by grass, mountains rising in rings, no spikes.
+Typische Größe der Landmassen als Anteil der Kartenbreite (0.3 = ein Drittel).	Typical size of the land masses as share of the map width (0.3 = one third).
+Ufer-Statics feste Höhe	Shore statics fixed height
+Ufer-Statics Höhe	Shore statics height
+Ufer-Tiles (Land neben Wasser) bekommen den Durchschnitt der Nachbar-Uferhöhen – verhindert das Zickzack, das sand2water / grass2water (-10 an Kanten, 0 an Ecken) erzeugt.	Shore tiles (land next to water) get the average of the neighbouring shore heights – prevents the zigzag of sand2water / grass2water (-10 at edges, 0 at corners).
+Ufer-Wasser Breite	Shore water width
+Umbenennen	Rename
+Umgebungs-Regeln	Surrounding rules
+Umkehren	Invert
+Umriss eines Landes / Kontinents (PNG mit Transparenz, Schwarz-Weiß-Bild, Karte …).	Outline of a country / continent (PNG with transparency, black-and-white image, map …).
+Umriss-Bild	Outline image
+Umriss-Dicke (Tiles)	Outline thickness (tiles)
+Umriss-Farbe (Index)	Outline colour (index)
+Umriss-Maske benutzen	Use outline mask
+Unbekannte Farbe: Tile	Unknown colour: tile
+Undo-Speicher (MB)	Undo memory (MB)
+Unebenheit	Unevenness
+Unebenheit (unevenly.txt)	Unevenness (unevenly.txt)
+unsichtbare Teile mitsetzen	also place invisible parts
+Unten	Bottom
+UO Architect (.uoa) – nur Statics	UO Architect (.uoa) – statics only
+UoFiddler-Multi (.txt) – nur Statics	UoFiddler multi (.txt) – statics only
+Verschieben (auch mittlere Maustaste oder Leertaste)	Pan (also middle mouse or space)
+Vielfaches von 8 (UO-Blöcke). Felucca: 6144 / 7168.	Multiple of 8 (UO blocks). Felucca: 6144 / 7168.
+Vielfaches von 8. Felucca: 4096.	Multiple of 8. Felucca: 4096.
+Vor dem Build reparieren	Repair before the build
+Vorgabe:	Preset:
+Vorlage setzen	Place template
+Vorlage setzen: die Vorschau folgt der Maus, Klick setzt auf die Boden-Höhe + 'Z +' · danach ausgewählt: Pfeile / Bild↑↓ verschieben, Entf löscht · Strg+Z nimmt alles zurück	Place template: the preview follows the mouse, click places it on the ground height + 'Z +' · afterwards selected: arrows / PgUp/PgDn move, Del deletes · Ctrl+Z undoes all
+Vorlagen	Templates
+Vorlagen-Ordner (Gebäude / Böden)	Template folder (buildings / floors)
+Vorschau	Preview
+Vorschau: Einstellungen links wählen und 'Vorschau' klicken.	Preview: choose the settings on the left and click 'Preview'.
+Wand-Höhe:	Wall height:
+Was beim Klick auf eine Farbe in die Zwischenablage kommt.	What goes to the clipboard when clicking a colour.
+Wasser	Water
+Wasser am Rand (0..1)	Water at the edge (0..1)
+Wasser durchsichtig	Water see-through
+Wasser entfernen	Remove water
+Wasser z:	Water z:
+Wasser-Farbe (Index)	Water colour (index)
+Wasser-Gruppe	Water group
+Wasser-Pinsel setzt den Meeresgrund darunter	Water brush sets the sea floor below
+Wasser-Statics (hex)	Water statics (hex)
+Wasser-Statics durchsichtig zeigen (Items mit TileData-Flag Translucent sind es immer)	Show water statics see-through (items with tiledata flag Translucent always are)
+Wasser-Statics IDs	Water statics ids
+Wasser-Statics setzen	Place water statics
+Wasser-Statics:	Water statics:
+Wasser: Ziehen malt Wasser-Statics (Reiter Küste / Wasser) · Strg+Ziehen entfernt sie · durchsichtig, wenn die TileData 'Translucent' hat	Water: dragging paints water statics (tab Coast / water) · Ctrl+drag removes them · see-through when the tiledata has 'Translucent'
+Wasserhöhe	Water level
+Weg / Boden: Höhe vom ersten Klick übernehmen	Road / floor: use the height of the first click
+Wege und Gebäude-Böden: Reiter Land → 'Aus der Farbtabelle' (z. B. cobblestones, marble floor, Wood Floorboards) und 'Höhe vom ersten Klick übernehmen'. Ganze Flächen: Werkzeug 'Bereich', dann F.	Roads and building floors: tab Land → 'From the colour table' (e.g. cobblestones, marble floor, wood floorboards) and 'use the height of the first click'. Whole surfaces: tool 'Area', then F.
+Weicht die Maske auf, damit die Küste natürlich wirkt.	Softens the mask so the coast looks natural.
+Wenn kein Biom passt (IMod13: 0 = Grass).	If no biome fits (IMod13: 0 = grass).
+Werkzeug 'Multi setzen' wählen und in die Karte klicken.	Choose the tool 'Place multi' and click into the map.
+Werte aus den Build-Optionen	Values from the build options
+Wie stark die Höhe die Temperatur senkt.	How much the height lowers the temperature.
+Wie viel der Küste Strand bekommt (100 = überall).	How much of the coast gets beach (100 = everywhere).
+Wie weit der Wasserrand ins Innere reicht.	How far the water edge reaches inwards.
+Wiederholen	Redo
+Wo zwei Gruppen ohne Übergangsregel aneinander stoßen, wird eine Gruppe dazwischen gesetzt, die zu beiden Übergänge hat.	Where two groups without transition rule meet, a group with transitions to both is put in between.
+WSC-Datei (UOX3) schreiben	Write WSC file (UOX3)
+Z + :	Z + :
+Zeigen:	Show:
+Ziel für map#.mul, staidx#.mul, statics#.mul, map#LegacyMUL.uop.	Target for map#.mul, staidx#.mul, statics#.mul, map#LegacyMUL.uop.
+Zoom +	Zoom +
+Zoom Farbtabelle	Colour table zoom
+Zoom −	Zoom −
+Zufalls-Seed	Random seed
+Zufällig gewählte Wasser-Statics (hex).	Water statics chosen at random (hex).
+Zufällige Höhe 0..Amount wird addiert.	A random height 0..Amount is added.
+Zufällige Punkte – gut für Mischungen	Random dots – good for mixtures
+Zur Auswahl im Karten-Editor	To the selection in the map editor
+Ändert die ID aller ausgewählten Statics.	Changes the id of all selected statics.
+Öffnen	Open
+Übergang: Höhe Z1..Z2	Transition: height Z1..Z2
+Übergänge	Transitions
+Übernehmen	Take

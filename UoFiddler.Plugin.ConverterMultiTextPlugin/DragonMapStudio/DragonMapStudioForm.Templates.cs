@@ -35,7 +35,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             FillLandPresets();
             CgiCaveSettings_Changed(this, EventArgs.Empty);
             CgiTemplateSettings_Changed(this, EventArgs.Empty);
-            lblCgiTplInfo.Text = "Ordner: " + _settings.TemplateFolder;
+            lblCgiTplInfo.Text = L.T("Ordner:") + " " + _settings.TemplateFolder;
         }
 
         // ================================================================== land presets (colour table groups)
@@ -53,7 +53,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                 }
             }
             cmbCgiLandPreset.Items.Clear();
-            cmbCgiLandPreset.Items.Add("Aus der Farbtabelle: Boden, Weg, Höhle …");
+            cmbCgiLandPreset.Items.Add(L.T("Aus der Farbtabelle: Boden, Weg, Höhle …"));
             cmbCgiLandPreset.Items.AddRange(_landPresets.Select(p => (object)p.name).ToArray());
             cmbCgiLandPreset.SelectedIndex = 0;
         }
@@ -86,12 +86,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             isoView.CaveRaiseWalls = chkCgiCaveWalls.Checked;
             isoView.CaveUseTargetHeight = chkCgiCaveTarget.Checked;
             lblCgiCaveInfo.Text =
-                "Höhle: Werkzeug 'Höhle' (Leiste Land), am Fuß des Berges anfangen und hineinziehen. Der Boden bekommt die Höhe des ersten Klicks " +
+                L.T("Höhle: Werkzeug 'Höhle' (Leiste Land), am Fuß des Berges anfangen und hineinziehen. Der Boden bekommt die Höhe des ersten Klicks " +
                 "(oder 'Höhe =' aus dem Reiter Land), der Rand wird bis zur Wand-Höhe angehoben – der Client zeichnet dort die Fels-Textur als Wand. " +
-                "Pinsel-Größe oben = Breite des Ganges. Ein Zug = ein Rückgängig-Schritt." + Environment.NewLine + Environment.NewLine +
-                "Wege und Gebäude-Böden: Reiter Land → 'Aus der Farbtabelle' (z. B. cobblestones, marble floor, Wood Floorboards) und " +
-                "'Höhe vom ersten Klick übernehmen'. Ganze Flächen: Werkzeug 'Bereich', dann F." + Environment.NewLine + Environment.NewLine +
-                "Fertige Böden / Höhlen-Stücke lassen sich mit 'Bereich → Vorlage…' (Reiter Vorlagen) speichern und wieder setzen.";
+                "Pinsel-Größe oben = Breite des Ganges. Ein Zug = ein Rückgängig-Schritt.") + Environment.NewLine + Environment.NewLine +
+                L.T("Wege und Gebäude-Böden: Reiter Land → 'Aus der Farbtabelle' (z. B. cobblestones, marble floor, Wood Floorboards) und " +
+                "'Höhe vom ersten Klick übernehmen'. Ganze Flächen: Werkzeug 'Bereich', dann F.") + Environment.NewLine + Environment.NewLine +
+                L.T("Fertige Böden / Höhlen-Stücke lassen sich mit 'Bereich → Vorlage…' (Reiter Vorlagen) speichern und wieder setzen.");
         }
 
         private void BtnCgiCaveTool_Click(object sender, EventArgs e)
@@ -139,9 +139,16 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                 _templates = lib;
                 string current = cmbCgiTplCategory.SelectedIndex > 0 ? cmbCgiTplCategory.Text : null;
                 cmbCgiTplCategory.Items.Clear();
-                cmbCgiTplCategory.Items.Add("Alle Kategorien");
+                cmbCgiTplCategory.Items.Add(L.T("Alle Kategorien"));
                 cmbCgiTplCategory.Items.AddRange(lib.Categories.Cast<object>().ToArray());
-                cmbCgiTplCategory.SelectedItem = current != null && cmbCgiTplCategory.Items.Contains(current) ? current : "Alle Kategorien";
+                if (current != null && cmbCgiTplCategory.Items.Contains(current))
+                {
+                    cmbCgiTplCategory.SelectedItem = current;
+                }
+                else
+                {
+                    cmbCgiTplCategory.SelectedIndex = 0;
+                }
                 ApplyTemplateFilter(select);
                 lib.Errors.ForEach(err => Log("Vorlage nicht lesbar: " + err));
                 SetStatus($"{lib.Items.Count:N0} Vorlagen in {lib.Categories.Count()} Kategorien geladen ({root})" + (lib.Errors.Count > 0 ? $", {lib.Errors.Count} nicht lesbar (siehe Log)" : string.Empty));

@@ -72,6 +72,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
         private void DragonMapStudioForm_Load(object sender, EventArgs e)
         {
             _settings = StudioSettings.Load();
+            LocalizedTypeProvider.RegisterAll();
             _history.MemoryLimit = Math.Max(64, _settings.UndoMemoryMb) * 1024L * 1024;
 
             cmbCopyFormat.Items.AddRange(new object[]
@@ -90,7 +91,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             mapCanvas.GridFromZoom = _settings.GridFromZoom;
             SelectTool(MapTool.Brush);
 
-            cmbM2BSize.Items.Add("Eigene Größe");
+            cmbM2BSize.Items.Add(L.T("Eigene Größe"));
             foreach (MapSizePreset p in MapSizePreset.All)
             {
                 cmbM2BSize.Items.Add(p);
@@ -111,6 +112,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             RefreshLibrary();
             UpdateRecentMenu();
             InitCgi();
+            ApplyLanguage(_settings.Language, false);
 
             if (!string.IsNullOrWhiteSpace(_settings.LastMap) && File.Exists(_settings.LastMap))
             {
