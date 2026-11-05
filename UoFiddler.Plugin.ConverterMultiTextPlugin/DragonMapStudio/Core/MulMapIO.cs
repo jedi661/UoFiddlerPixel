@@ -329,7 +329,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
     /// </summary>
     public static class MapToBitmapConverter
     {
-        public static IndexedMap Convert(DragonRuleSet rules, ushort[] tiles, sbyte[] z, int width, int height, byte unknownIndex,
+        public static IndexedMap Convert(DragonRuleSet rules, ushort[] tiles, sbyte[] z, int width, int height, ushort unknownIndex,
             out long unknownCount, IProgress<int> progress, CancellationToken cancel)
         {
             var groupOfTile = new Dictionary<ushort, int>();
@@ -371,7 +371,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                 return t;
             }
 
-            var map = new IndexedMap(width, height);
+            var map = new IndexedMap(width, height, 0, rules.ColorBits);
             unknownCount = 0;
             for (int y = 0; y < height; y++)
             {
@@ -383,7 +383,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                         int idx = AltTable(g)[z[i] + 128];
                         if (idx >= 0)
                         {
-                            map.Pixels[i] = (byte)idx;
+                            map.Pixels[i] = (ushort)idx;
                             continue;
                         }
                     }

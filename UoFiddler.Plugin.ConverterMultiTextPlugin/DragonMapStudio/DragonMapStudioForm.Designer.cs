@@ -55,6 +55,8 @@
             mnuEditSep2 = new System.Windows.Forms.ToolStripSeparator();
             mnuCheckMap = new System.Windows.Forms.ToolStripMenuItem();
             mnuFixMap = new System.Windows.Forms.ToolStripMenuItem();
+            mnuEditSep16 = new System.Windows.Forms.ToolStripSeparator();
+            mnuConvertMap16 = new System.Windows.Forms.ToolStripMenuItem();
             mnuRules = new System.Windows.Forms.ToolStripMenuItem();
             mnuLoadScripts = new System.Windows.Forms.ToolStripMenuItem();
             mnuLoadJson = new System.Windows.Forms.ToolStripMenuItem();
@@ -66,6 +68,7 @@
             mnuCreateColorTable = new System.Windows.Forms.ToolStripMenuItem();
             mnuRulesSep2 = new System.Windows.Forms.ToolStripSeparator();
             mnuValidate = new System.Windows.Forms.ToolStripMenuItem();
+            mnuRules16 = new System.Windows.Forms.ToolStripMenuItem();
             mnuLanguage = new System.Windows.Forms.ToolStripMenuItem();
             mnuLangDe = new System.Windows.Forms.ToolStripMenuItem();
             mnuLangEn = new System.Windows.Forms.ToolStripMenuItem();
@@ -114,6 +117,8 @@
             btnUseAsWater = new System.Windows.Forms.Button();
             btnNewColor = new System.Windows.Forms.Button();
             btnEditRgb = new System.Windows.Forms.Button();
+            lblColorPage = new System.Windows.Forms.Label();
+            numColorPage = new System.Windows.Forms.NumericUpDown();
             propColorEntry = new System.Windows.Forms.PropertyGrid();
             splitEditor = new System.Windows.Forms.SplitContainer();
             grpPalette = new System.Windows.Forms.GroupBox();
@@ -131,6 +136,10 @@
             btnLibDelete = new System.Windows.Forms.Button();
             btnLibRefresh = new System.Windows.Forms.Button();
             editorPalette = new UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls.PaletteGridView();
+            panelEditorPage = new System.Windows.Forms.Panel();
+            lblEditorPage = new System.Windows.Forms.Label();
+            numEditorPage = new System.Windows.Forms.NumericUpDown();
+            lblEditorPageInfo = new System.Windows.Forms.Label();
             panelBrushColors = new System.Windows.Forms.Panel();
             panelPrimarySwatch = new System.Windows.Forms.Panel();
             lblPrimary = new System.Windows.Forms.Label();
@@ -478,6 +487,7 @@
             grpPalette.SuspendLayout();
             grpLibrary.SuspendLayout();
             flowLibraryButtons.SuspendLayout();
+            panelEditorPage.SuspendLayout();
             panelBrushColors.SuspendLayout();
             panelPrimarySwatch.SuspendLayout();
             panelSecondarySwatch.SuspendLayout();
@@ -527,6 +537,8 @@
             panelHelpTop.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)numColorTableZoom).BeginInit();
             ((System.ComponentModel.ISupportInitialize)picTilePreview).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)numColorPage).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)numEditorPage).BeginInit();
             ((System.ComponentModel.ISupportInitialize)numCgiX).BeginInit();
             ((System.ComponentModel.ISupportInitialize)numCgiY).BeginInit();
             ((System.ComponentModel.ISupportInitialize)picCgiItem).BeginInit();
@@ -639,7 +651,7 @@
             // 
             // mnuEdit
             // 
-            mnuEdit.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { mnuUndo, mnuRedo, mnuEditSep1, mnuCopy, mnuCut, mnuPaste, mnuDeleteSelection, mnuFillSelection, mnuSelectAll, mnuEditSep2, mnuCheckMap, mnuFixMap });
+            mnuEdit.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { mnuUndo, mnuRedo, mnuEditSep1, mnuCopy, mnuCut, mnuPaste, mnuDeleteSelection, mnuFillSelection, mnuSelectAll, mnuEditSep2, mnuCheckMap, mnuFixMap, mnuEditSep16, mnuConvertMap16 });
             mnuEdit.Text = "&Bearbeiten";
             mnuEdit.Name = "mnuEdit";
             // 
@@ -719,9 +731,19 @@
             mnuFixMap.Name = "mnuFixMap";
             mnuFixMap.Click += BtnFixMap_Click;
             // 
+            // mnuEditSep16
+            // 
+            mnuEditSep16.Name = "mnuEditSep16";
+            // 
+            // mnuConvertMap16
+            // 
+            mnuConvertMap16.Text = "Karte in &16 Bit umwandeln (mehr Farben)";
+            mnuConvertMap16.Name = "mnuConvertMap16";
+            mnuConvertMap16.Click += MnuConvertMap16_Click;
+            // 
             // mnuRules
             // 
-            mnuRules.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { mnuLoadScripts, mnuLoadJson, mnuSaveJson, mnuExportScripts, mnuRulesSep1, mnuImportPalette, mnuExportPalette, mnuCreateColorTable, mnuRulesSep2, mnuValidate });
+            mnuRules.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { mnuLoadScripts, mnuLoadJson, mnuSaveJson, mnuExportScripts, mnuRulesSep1, mnuImportPalette, mnuExportPalette, mnuCreateColorTable, mnuRulesSep2, mnuValidate, mnuRules16 });
             mnuRules.Text = "&Regeln";
             mnuRules.Name = "mnuRules";
             // 
@@ -780,6 +802,12 @@
             mnuValidate.Text = "Regelsatz &prüfen";
             mnuValidate.Name = "mnuValidate";
             mnuValidate.Click += MnuValidate_Click;
+            // 
+            // mnuRules16
+            // 
+            mnuRules16.Text = "Regelsatz auf &16 Bit umstellen (bis 65 536 Farben)";
+            mnuRules16.Name = "mnuRules16";
+            mnuRules16.Click += MnuRules16_Click;
             // 
             // mnuLanguage
             // 
@@ -1084,6 +1112,7 @@
             paletteGrid.Size = new System.Drawing.Size(340, 340);
             paletteGrid.Name = "paletteGrid";
             paletteGrid.IndexClicked += PaletteGrid_IndexClicked;
+            paletteGrid.PageChanged += PaletteGrid_PageChanged;
             // 
             // panelColorInfo
             // 
@@ -1133,8 +1162,10 @@
             flowColorButtons.Controls.Add(btnUseAsWater);
             flowColorButtons.Controls.Add(btnNewColor);
             flowColorButtons.Controls.Add(btnEditRgb);
+            flowColorButtons.Controls.Add(lblColorPage);
+            flowColorButtons.Controls.Add(numColorPage);
             flowColorButtons.Dock = System.Windows.Forms.DockStyle.Bottom;
-            flowColorButtons.Size = new System.Drawing.Size(200, 98);
+            flowColorButtons.Size = new System.Drawing.Size(200, 132);
             flowColorButtons.Padding = new System.Windows.Forms.Padding(3);
             flowColorButtons.Name = "flowColorButtons";
             // 
@@ -1201,6 +1232,20 @@
             btnEditRgb.Name = "btnEditRgb";
             btnEditRgb.Click += BtnEditRgb_Click;
             // 
+            // lblColorPage
+            // 
+            lblColorPage.AutoSize = true;
+            lblColorPage.Margin = new System.Windows.Forms.Padding(3, 8, 0, 3);
+            lblColorPage.Text = "Seite:";
+            lblColorPage.Name = "lblColorPage";
+            // 
+            // numColorPage
+            // 
+            numColorPage.Size = new System.Drawing.Size(56, 23);
+            numColorPage.Margin = new System.Windows.Forms.Padding(3, 5, 3, 3);
+            numColorPage.Name = "numColorPage";
+            numColorPage.ValueChanged += NumPalettePage_ValueChanged;
+            // 
             // propColorEntry
             // 
             propColorEntry.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -1224,6 +1269,7 @@
             // grpPalette
             // 
             grpPalette.Controls.Add(editorPalette);
+            grpPalette.Controls.Add(panelEditorPage);
             grpPalette.Controls.Add(panelBrushColors);
             grpPalette.Dock = System.Windows.Forms.DockStyle.Fill;
             grpPalette.Text = "Farben (links = 1, rechts = 2)";
@@ -1343,6 +1389,37 @@
             editorPalette.Dock = System.Windows.Forms.DockStyle.Fill;
             editorPalette.Name = "editorPalette";
             editorPalette.IndexClicked += EditorPalette_IndexClicked;
+            editorPalette.PageChanged += PaletteGrid_PageChanged;
+            // 
+            // panelEditorPage
+            // 
+            panelEditorPage.Controls.Add(lblEditorPage);
+            panelEditorPage.Controls.Add(numEditorPage);
+            panelEditorPage.Controls.Add(lblEditorPageInfo);
+            panelEditorPage.Dock = System.Windows.Forms.DockStyle.Bottom;
+            panelEditorPage.Size = new System.Drawing.Size(290, 28);
+            panelEditorPage.Name = "panelEditorPage";
+            // 
+            // lblEditorPage
+            // 
+            lblEditorPage.AutoSize = true;
+            lblEditorPage.Location = new System.Drawing.Point(4, 6);
+            lblEditorPage.Text = "Seite:";
+            lblEditorPage.Name = "lblEditorPage";
+            // 
+            // numEditorPage
+            // 
+            numEditorPage.Location = new System.Drawing.Point(48, 2);
+            numEditorPage.Size = new System.Drawing.Size(56, 23);
+            numEditorPage.Name = "numEditorPage";
+            numEditorPage.ValueChanged += NumPalettePage_ValueChanged;
+            // 
+            // lblEditorPageInfo
+            // 
+            lblEditorPageInfo.AutoSize = true;
+            lblEditorPageInfo.Location = new System.Drawing.Point(110, 6);
+            lblEditorPageInfo.Text = "8 Bit · 256 Farben";
+            lblEditorPageInfo.Name = "lblEditorPageInfo";
             // 
             // panelBrushColors
             // 
@@ -3947,6 +4024,8 @@
             KeyDown += DragonMapStudioForm_KeyDown;
             ((System.ComponentModel.ISupportInitialize)numColorTableZoom).EndInit();
             ((System.ComponentModel.ISupportInitialize)picTilePreview).EndInit();
+            ((System.ComponentModel.ISupportInitialize)numColorPage).EndInit();
+            ((System.ComponentModel.ISupportInitialize)numEditorPage).EndInit();
             ((System.ComponentModel.ISupportInitialize)numCgiX).EndInit();
             ((System.ComponentModel.ISupportInitialize)numCgiY).EndInit();
             ((System.ComponentModel.ISupportInitialize)picCgiItem).EndInit();
@@ -4071,6 +4150,8 @@
             panelPrimarySwatch.PerformLayout();
             panelBrushColors.ResumeLayout(false);
             panelBrushColors.PerformLayout();
+            panelEditorPage.ResumeLayout(false);
+            panelEditorPage.PerformLayout();
             flowLibraryButtons.ResumeLayout(false);
             flowLibraryButtons.PerformLayout();
             grpLibrary.ResumeLayout(false);
@@ -4190,6 +4271,8 @@
         private System.Windows.Forms.ToolStripSeparator mnuEditSep2;
         private System.Windows.Forms.ToolStripMenuItem mnuCheckMap;
         private System.Windows.Forms.ToolStripMenuItem mnuFixMap;
+        private System.Windows.Forms.ToolStripSeparator mnuEditSep16;
+        private System.Windows.Forms.ToolStripMenuItem mnuConvertMap16;
         private System.Windows.Forms.ToolStripMenuItem mnuRules;
         private System.Windows.Forms.ToolStripMenuItem mnuLoadScripts;
         private System.Windows.Forms.ToolStripMenuItem mnuLoadJson;
@@ -4201,6 +4284,7 @@
         private System.Windows.Forms.ToolStripMenuItem mnuCreateColorTable;
         private System.Windows.Forms.ToolStripSeparator mnuRulesSep2;
         private System.Windows.Forms.ToolStripMenuItem mnuValidate;
+        private System.Windows.Forms.ToolStripMenuItem mnuRules16;
         private System.Windows.Forms.ToolStripMenuItem mnuLanguage;
         private System.Windows.Forms.ToolStripMenuItem mnuLangDe;
         private System.Windows.Forms.ToolStripMenuItem mnuLangEn;
@@ -4249,6 +4333,8 @@
         private System.Windows.Forms.Button btnUseAsWater;
         private System.Windows.Forms.Button btnNewColor;
         private System.Windows.Forms.Button btnEditRgb;
+        private System.Windows.Forms.Label lblColorPage;
+        private System.Windows.Forms.NumericUpDown numColorPage;
         private System.Windows.Forms.PropertyGrid propColorEntry;
         private System.Windows.Forms.SplitContainer splitEditor;
         private System.Windows.Forms.GroupBox grpPalette;
@@ -4266,6 +4352,10 @@
         private System.Windows.Forms.Button btnLibDelete;
         private System.Windows.Forms.Button btnLibRefresh;
         private UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls.PaletteGridView editorPalette;
+        private System.Windows.Forms.Panel panelEditorPage;
+        private System.Windows.Forms.Label lblEditorPage;
+        private System.Windows.Forms.NumericUpDown numEditorPage;
+        private System.Windows.Forms.Label lblEditorPageInfo;
         private System.Windows.Forms.Panel panelBrushColors;
         private System.Windows.Forms.Panel panelPrimarySwatch;
         private System.Windows.Forms.Label lblPrimary;

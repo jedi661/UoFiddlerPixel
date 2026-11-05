@@ -38,6 +38,7 @@
             numHeight = new System.Windows.Forms.NumericUpDown();
             lblFill = new System.Windows.Forms.Label();
             numFill = new System.Windows.Forms.NumericUpDown();
+            chkBits16 = new System.Windows.Forms.CheckBox();
             panelFillSwatch = new System.Windows.Forms.Panel();
             lblFillName = new System.Windows.Forms.Label();
             lblHint = new System.Windows.Forms.Label();
@@ -144,6 +145,17 @@
             numFill.Value = new decimal(new int[] { 32, 0, 0, 0 });
             numFill.ValueChanged += NumFill_ValueChanged;
             //
+            // chkBits16
+            //
+            chkBits16.AutoSize = true;
+            chkBits16.Location = new System.Drawing.Point(120, 172);
+            chkBits16.Name = "chkBits16";
+            chkBits16.Size = new System.Drawing.Size(230, 19);
+            chkBits16.TabIndex = 12;
+            chkBits16.Text = "16 Bit (bis 65 536 Farben, PNG)";
+            chkBits16.UseVisualStyleBackColor = true;
+            chkBits16.CheckedChanged += ChkBits16_CheckedChanged;
+            //
             // panelFillSwatch
             //
             panelFillSwatch.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
@@ -164,7 +176,7 @@
             // lblHint
             //
             lblHint.ForeColor = System.Drawing.SystemColors.GrayText;
-            lblHint.Location = new System.Drawing.Point(14, 175);
+            lblHint.Location = new System.Drawing.Point(14, 199);
             lblHint.Name = "lblHint";
             lblHint.Size = new System.Drawing.Size(356, 34);
             lblHint.TabIndex = 12;
@@ -173,7 +185,7 @@
             // btnOk
             //
             btnOk.DialogResult = System.Windows.Forms.DialogResult.OK;
-            btnOk.Location = new System.Drawing.Point(214, 218);
+            btnOk.Location = new System.Drawing.Point(214, 242);
             btnOk.Name = "btnOk";
             btnOk.Size = new System.Drawing.Size(75, 27);
             btnOk.TabIndex = 13;
@@ -183,7 +195,7 @@
             // btnCancel
             //
             btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            btnCancel.Location = new System.Drawing.Point(295, 218);
+            btnCancel.Location = new System.Drawing.Point(295, 242);
             btnCancel.Name = "btnCancel";
             btnCancel.Size = new System.Drawing.Size(75, 27);
             btnCancel.TabIndex = 14;
@@ -196,7 +208,7 @@
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             CancelButton = btnCancel;
-            ClientSize = new System.Drawing.Size(384, 257);
+            ClientSize = new System.Drawing.Size(384, 281);
             Controls.Add(lblName);
             Controls.Add(txtName);
             Controls.Add(lblPreset);
@@ -207,6 +219,7 @@
             Controls.Add(numHeight);
             Controls.Add(lblFill);
             Controls.Add(numFill);
+            Controls.Add(chkBits16);
             Controls.Add(panelFillSwatch);
             Controls.Add(lblFillName);
             Controls.Add(lblHint);
@@ -238,6 +251,7 @@
         private System.Windows.Forms.NumericUpDown numHeight;
         private System.Windows.Forms.Label lblFill;
         private System.Windows.Forms.NumericUpDown numFill;
+        private System.Windows.Forms.CheckBox chkBits16;
         private System.Windows.Forms.Panel panelFillSwatch;
         private System.Windows.Forms.Label lblFillName;
         private System.Windows.Forms.Label lblHint;

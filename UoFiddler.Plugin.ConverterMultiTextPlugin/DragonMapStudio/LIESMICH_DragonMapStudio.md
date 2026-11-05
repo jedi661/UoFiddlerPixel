@@ -392,3 +392,24 @@ Neue Dateien: `Core/MapTemplate.cs`, `Dialogs/SaveTemplateDialog.cs` (+ Designer
 
 **English:** menu „Sprache / Language / Langue“ switches the whole interface (German, English, French); translation tables in `DragonData/Lang` can be edited.
 **Français :** le menu „Sprache / Language / Langue“ change toute l'interface (allemand, anglais, français) ; les tables de traduction dans `DragonData/Lang` sont modifiables.
+
+---
+
+## Version 10: 8 Bit (Dragon) oder 16 Bit (bis 65 536 Farben)
+
+| | 8 Bit (klassisch) | 16 Bit (erweitert) |
+|---|---|---|
+| Farbadressen | 256 (`00`–`ff`) | bis 65 536 (`0000`–`ffff`), in Seiten zu 256 |
+| Gruppen | bis `fe` | bis `7fff` |
+| Karten-Datei | 8-Bit-BMP | 16-Bit-PNG (Graustufen = Adresse, verlustfrei, mit anderen Programmen lesbar) |
+| maptrans / groups / betweentrans … | 2-stellige Adressen | 4-stellige Adressen |
+| mit altem Dragon austauschbar | ja | nein (Import alter Daten geht immer) |
+
+* **Umschalten:** Regeln → „Regelsatz auf 16 Bit umstellen“ (jeder weitere Klick = eine neue Seite mit 256 Farben),
+  Bearbeiten → „Karte in 16 Bit umwandeln“, „Neue Karte“ → Häkchen „16 Bit“.
+  „Neue Farbe definieren“ bietet 16 Bit an, wenn alle 256 Farben belegt sind; eine Farbe über `ff` in einer 8-Bit-Karte fragt nach.
+* **Paletten** im Editor und in der Farbtabelle: „Seite“ bzw. Mausrad blättert durch je 256 Farben.
+* **Speichern:** `.bmp` = 8 Bit (nur wenn alle Farben ≤ `ff`), `.png` = 16 Bit. Die Kartenliste zeigt beide.
+* Intern speichert der Editor jetzt 16 Bit pro Tile (auch bei 8-Bit-Karten) – doppelter Arbeitsspeicher, dafür ein einziger Codepfad.
+* 4-stellige Adressen in Skripten stellen den Regelsatz beim Laden automatisch auf 16 Bit.
+* Neue Gruppen brauchen eigene Übergangsdateien (sonst „Regel fehlt“ im Log) und ggf. Items – wie bisher im Reiter „Regeln & Skripte“.

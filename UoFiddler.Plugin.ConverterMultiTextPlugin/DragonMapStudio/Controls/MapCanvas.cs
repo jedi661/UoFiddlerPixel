@@ -64,7 +64,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
     {
         private IndexedMap _map;
         private MapHistory _history;
-        private readonly int[] _argb = new int[256];
+        private readonly int[] _argb = new int[65536];
         private Bitmap _view;
         private bool _viewDirty = true;
 
@@ -89,8 +89,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
         private IndexedMap _pasteBuffer;
         private bool _pasteMode;
 
-        private byte[] _raise = Identity();
-        private byte[] _lower = Identity();
+        private ushort[] _raise = Identity();
+        private ushort[] _lower = Identity();
 
         public MapCanvas()
         {
@@ -149,12 +149,13 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
         [Category("Dragon"), DefaultValue(false)]
         public bool ShowHeights { get; set; }
 
-        private int[] _altitudes = new int[256];
+        private int[] _altitudes = new int[65536];
 
         /// <summary>Altitude (Z) of every palette index (for the height numbers).</summary>
         public void SetAltitudes(int[] altitudes)
         {
-            _altitudes = altitudes ?? new int[256];
+            _altitudes = new int[65536];
+            altitudes?.AsSpan(0, Math.Min(altitudes.Length, 65536)).CopyTo(_altitudes);
             Invalidate();
         }
 
@@ -189,25 +190,29 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
 
         public void SetPalette(Color[] colors)
         {
-            for (int i = 0; i < 256; i++)
+            Array.Clear(_argb);
+            for (int i = 0; i < colors.Length && i < _argb.Length; i++)
             {
                 _argb[i] = colors[i].ToArgb();
             }
             InvalidateMap();
         }
 
-        public void SetHeightLookups(byte[] raise, byte[] lower)
+        public void SetHeightLookups(ushort[] raise, ushort[] lower)
         {
-            _raise = raise ?? Identity();
-            _lower = lower ?? Identity();
+            _raise = Identity();
+            _lower = Identity();
+            raise?.AsSpan(0, Math.Min(raise.Length, 65536)).CopyTo(_raise);
+            lower?.AsSpan(0, Math.Min(lower.Length, 65536)).CopyTo(_lower);
         }
 
-        private static byte[] Identity()
+        /// <summary>Table "index -> same index" for all 65 536 colour addresses.</summary>
+        private static ushort[] Identity()
         {
-            var a = new byte[256];
-            for (int i = 0; i < 256; i++)
+            var a = new ushort[65536];
+            for (int i = 0; i < a.Length; i++)
             {
-                a[i] = (byte)i;
+                a[i] = (ushort)i;
             }
             return a;
         }
@@ -306,10 +311,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                     double mx = Math.Floor(_originX + sx / _zoom);
                     colMap[sx] = mx < 0 || mx >= _map.Width ? -1 : (int)mx;
                 }
-                byte[] pixels = _map.Pixels;
+                ushort[] pixels = _map.Pixels;
                 int mapW = _map.Width;
                 fixed (int* pal = _argb)
-                fixed (byte* src = pixels)
+                fixed (ushort* src = pixels)
                 {
                     for (int sy = 0; sy < h; sy++)
                     {
@@ -323,7 +328,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                             }
                             continue;
                         }
-                        byte* line = src + (long)my * mapW;
+                        ushort* line = src + (long)my * mapW;
                         for (int sx = 0; sx < w; sx++)
                         {
                             int mx = colMap[sx];
@@ -498,8 +503,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
 
         private Color[] PaletteColors()
         {
-            var c = new Color[256];
-            for (int i = 0; i < 256; i++)
+            var c = new Color[65536];
+            for (int i = 0; i < c.Length; i++)
             {
                 c[i] = Color.FromArgb(_argb[i]);
             }
@@ -545,7 +550,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
             }
 
             Point p = ScreenToMap(e.Location);
-            byte color = (byte)(e.Button == MouseButtons.Left ? PrimaryIndex : SecondaryIndex);
+            ushort color = (ushort)(e.Button == MouseButtons.Left ? PrimaryIndex : SecondaryIndex);
 
             if (_pasteMode && _pasteBuffer != null)
             {
@@ -618,7 +623,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
 
             if (_drawing && !IsShapeTool(_tool) && _tool != MapTool.Select)
             {
-                byte color = (byte)(_drawButton == MouseButtons.Left ? PrimaryIndex : SecondaryIndex);
+                ushort color = (ushort)(_drawButton == MouseButtons.Left ? PrimaryIndex : SecondaryIndex);
                 StrokeLine(_last, p, color, _drawButton);
                 _last = p;
             }
@@ -643,7 +648,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
             }
             _drawing = false;
             Point p = ScreenToMap(e.Location);
-            byte color = (byte)(_drawButton == MouseButtons.Left ? PrimaryIndex : SecondaryIndex);
+            ushort color = (ushort)(_drawButton == MouseButtons.Left ? PrimaryIndex : SecondaryIndex);
 
             if (_tool == MapTool.Select)
             {
@@ -767,7 +772,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
             Invalidate(Rectangle.FromLTRB((int)a.X - 2, (int)a.Y - 2, (int)Math.Ceiling(b.X) + 2, (int)Math.Ceiling(b.Y) + 2));
         }
 
-        private void StrokeLine(Point a, Point b, byte color, MouseButtons button)
+        private void StrokeLine(Point a, Point b, ushort color, MouseButtons button)
         {
             int dx = Math.Abs(b.X - a.X), dy = Math.Abs(b.Y - a.Y);
             int steps = Math.Max(dx, dy);
@@ -788,7 +793,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
         }
 
         /// <summary>One brush stamp at (cx, cy).</summary>
-        private void Stamp(int cx, int cy, byte color, MouseButtons button)
+        private void Stamp(int cx, int cy, ushort color, MouseButtons button)
         {
             int size = Math.Max(1, BrushSize);
             int half = size / 2;
@@ -802,9 +807,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
             bool round = !SquareBrush && size > 2;
             double radius = size / 2.0;
             double ccx = cx - half + radius, ccy = cy - half + radius;
-            byte[] heightTable = _tool == MapTool.Raise ? (button == MouseButtons.Right ? _lower : _raise)
+            ushort[] heightTable = _tool == MapTool.Raise ? (button == MouseButtons.Right ? _lower : _raise)
                 : _tool == MapTool.Lower ? (button == MouseButtons.Right ? _raise : _lower) : null;
-            byte value = _tool == MapTool.Eraser ? (byte)SecondaryIndex : color;
+            ushort value = _tool == MapTool.Eraser ? (ushort)SecondaryIndex : color;
             int sprayChance = Math.Clamp(SprayDensity, 1, 100);
 
             for (int y = r.Top; y < r.Bottom; y++)
@@ -830,7 +835,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
             Changed(r);
         }
 
-        private void SetPixel(int x, int y, byte color)
+        private void SetPixel(int x, int y, ushort color)
         {
             if (_map.InBounds(x, y))
             {
@@ -838,7 +843,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
             }
         }
 
-        private void DrawShape(Point a, Point b, byte color)
+        private void DrawShape(Point a, Point b, ushort color)
         {
             Rectangle r = NormRect(a, b);
             var touch = new Rectangle(r.X - BrushSize, r.Y - BrushSize, r.Width + 2 * BrushSize + 1, r.Height + 2 * BrushSize + 1);
@@ -910,15 +915,15 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
         }
 
         /// <summary>Scanline flood fill (4 neighbours) of the area with the same palette index.</summary>
-        private void FloodFill(int sx, int sy, byte color)
+        private void FloodFill(int sx, int sy, ushort color)
         {
-            byte target = _map[sx, sy];
+            ushort target = _map[sx, sy];
             if (target == color)
             {
                 return;
             }
             int w = _map.Width, h = _map.Height;
-            byte[] px = _map.Pixels;
+            ushort[] px = _map.Pixels;
             var spans = new List<(int y, int x0, int x1)>();
             var visited = new System.Collections.BitArray(w * h);
             var stack = new Stack<Point>();
@@ -997,7 +1002,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
         public IndexedMap CopySelection() => _map == null || _selection.IsEmpty ? null : _map.Crop(_selection);
 
         /// <summary>Fills the selection (Delete = colour 2).</summary>
-        public void FillSelection(byte color, string name)
+        public void FillSelection(ushort color, string name)
         {
             if (_map == null || _selection.IsEmpty)
             {

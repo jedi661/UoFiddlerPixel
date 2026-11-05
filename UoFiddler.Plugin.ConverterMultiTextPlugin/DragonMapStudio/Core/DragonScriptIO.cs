@@ -30,7 +30,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
     {
         private static readonly Encoding FileEncoding = Encoding.Latin1;
         private static readonly char[] Separators = { ' ', '\t' };
-        private static readonly Regex GroupNameRegex = new Regex(@"^/+\s*([0-9a-fA-F]{2})\s*=\s*(.+?)\s*$", RegexOptions.Compiled);
+        private static readonly Regex GroupNameRegex = new Regex(@"^/+\s*([0-9a-fA-F]{2}|[0-9a-fA-F]{4})\s*=\s*(.+?)\s*$", RegexOptions.Compiled);
 
         // ================================================================== LOAD
 
@@ -232,12 +232,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                     continue;
                 }
                 string[] t = Tokens(StripInlineComment(line));
-                if (t.Length >= 2 && HexList.TryParseHexByte(t[0], out int index) && HexList.TryParseHexByte(t[1], out int group))
+                if (t.Length >= 2 && HexList.TryParseHexAddress(t[0], out int index) && HexList.TryParseHexAddress(t[1], out int group))
                 {
-                    set.Palette[index].Group = group;
+                    Entry(set, index, t[0]).Group = group;
                     if (!names.ContainsKey(group))
                     {
-                        names[group] = $"Gruppe {group:x2}";
+                        names[group] = $"Gruppe {set.HexGroup(group)}";
                     }
                 }
                 else
@@ -249,6 +249,20 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             {
                 set.Groups.Add(new DragonGroup { Id = kv.Key, Name = kv.Value });
             }
+        }
+
+        /// <summary>Palette entry of an address; a 4-digit address (or one above ff) switches the rule set to 16 bit.</summary>
+        private static DragonPaletteEntry Entry(DragonRuleSet set, int index, string token)
+        {
+            if (index > 0xFF || token.Length > 2)
+            {
+                set.ColorBits = 16;
+            }
+            if (index >= set.Palette.Count)
+            {
+                set.EnsurePaletteSize(index + 1);
+            }
+            return set.Palette[index];
         }
 
         private static void ReadMapTrans(DragonRuleSet set, string path)
@@ -281,9 +295,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                 }
                 headerDone = true;
                 string[] t = Tokens(StripInlineComment(line));
-                if (t.Length >= 3 && HexList.TryParseHexByte(t[0], out int index) && HexList.IsInt(t[1]))
+                if (t.Length >= 3 && HexList.TryParseHexAddress(t[0], out int index) && HexList.IsInt(t[1]))
                 {
-                    DragonPaletteEntry e = set.Palette[index];
+                    DragonPaletteEntry e = Entry(set, index, t[0]);
                     e.Defined = true;
                     e.Altitude = HexList.ParseInt(t[1]);
                     e.Tiles = string.Join(" ", t.Skip(2).Select(s => HexList.ParseHex(s).ToString("x4")));
@@ -368,7 +382,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             string[] t = Tokens(data);
             if (scriptSet <= 1)
             {
-                if (t.Length >= 3 && HexList.TryParseHexByte(t[0], out a) && HexList.TryParseHexByte(t[1], out b) &&
+                if (t.Length >= 3 && HexList.TryParseHexAddress(t[0], out a) && HexList.TryParseHexAddress(t[1], out b) &&
                     t[2].EndsWith(".txt", StringComparison.OrdinalIgnoreCase))
                 {
                     file = t[2];
@@ -376,7 +390,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                 }
                 return false;
             }
-            if (t.Length >= 2 && HexList.TryParseHexByte(t[0], out int g) && t[1].EndsWith(".txt", StringComparison.OrdinalIgnoreCase))
+            if (t.Length >= 2 && HexList.TryParseHexAddress(t[0], out int g) && t[1].EndsWith(".txt", StringComparison.OrdinalIgnoreCase))
             {
                 file = t[1];
                 if (scriptSet == 2)
@@ -538,7 +552,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         private static bool TryParseRectLine(string data, out string[] tokens)
         {
             tokens = Tokens(data);
-            if (tokens.Length < 7 || !HexList.TryParseHexByte(tokens[0], out _))
+            if (tokens.Length < 7 || !HexList.TryParseHexAddress(tokens[0], out _))
             {
                 return false;
             }
@@ -732,11 +746,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                         string file = Path.GetFileName(r.File);
                         if (scriptSet == 1)
                         {
-                            sb.AppendLine($"{prefix}{Hex2(r.GroupA)} {Hex2(r.GroupB)} {file}");
+                            sb.AppendLine($"{prefix}{HexG(set, r.GroupA)} {HexG(set, r.GroupB)} {file}");
                         }
                         else
                         {
-                            sb.AppendLine($"{prefix}{Hex2(scriptSet == 2 ? r.GroupA : r.GroupB)} {file}");
+                            sb.AppendLine($"{prefix}{HexG(set, scriptSet == 2 ? r.GroupA : r.GroupB)} {file}");
                         }
                     }
                     File.WriteAllText(Path.Combine(scriptFolder, listName), sb.ToString(), FileEncoding);
@@ -756,7 +770,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             }
         }
 
-        private static string Hex2(int v) => v < 0 ? "ff" : (v & 0xFF).ToString("x2");
+        /// <summary>Group in the scripts: 2 hex digits (8 bit) or 4 (16 bit); -1 = ff / ffff.</summary>
+        private static string HexG(DragonRuleSet set, int v) => set.ColorBits == 16 ? (v < 0 ? "ffff" : v.ToString("x4")) : (v < 0 ? "ff" : (v & 0xFF).ToString("x2"));
 
         private static string Dec3(int v) => v >= 0 ? v.ToString("000", CultureInfo.InvariantCulture) : v.ToString(CultureInfo.InvariantCulture).PadLeft(3);
 
@@ -785,11 +800,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             {
                 sb.AppendLine();
                 sb.AppendLine("// ****************************");
-                sb.AppendLine($"// {id:x2} = {set.GroupName(id)}");
+                sb.AppendLine($"// {set.HexGroup(id)} = {set.GroupName(id)}");
                 sb.AppendLine("// ****************************");
                 foreach (DragonPaletteEntry e in set.Palette.Where(p => p.Group == id))
                 {
-                    sb.AppendLine($"{e.Index:x2} {id:x2}");
+                    sb.AppendLine($"{set.HexIndex(e.Index)} {set.HexGroup(id)}");
                 }
             }
             File.WriteAllText(path, sb.ToString(), FileEncoding);
@@ -809,7 +824,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                 }
                 last = e.Comment;
                 string tiles = string.Join(" ", e.GetTileIds().Select(id => id.ToString("x4")));
-                sb.AppendLine($"{e.Index:x2} {Dec3(e.Altitude)} {tiles}");
+                sb.AppendLine($"{set.HexIndex(e.Index)} {Dec3(e.Altitude)} {tiles}");
             }
             File.WriteAllText(path, sb.ToString(), FileEncoding);
         }
@@ -848,7 +863,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             foreach (ItemRule r in set.ItemRules)
             {
                 string prefix = r.Enabled ? string.Empty : "//";
-                sb.AppendLine($"{prefix}{Hex2(r.Group)} {Dec4(r.Chance)} {Dec4(r.Left)} {Dec4(r.Top)} {Dec4(r.Right)} {Dec4(r.Bottom)} {Path.GetFileName(r.File)}");
+                sb.AppendLine($"{prefix}{HexG(set, r.Group)} {Dec4(r.Chance)} {Dec4(r.Left)} {Dec4(r.Top)} {Dec4(r.Right)} {Dec4(r.Bottom)} {Path.GetFileName(r.File)}");
             }
             File.WriteAllText(Path.Combine(scriptFolder, "items.txt"), sb.ToString(), FileEncoding);
 
@@ -890,7 +905,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             foreach (UnevenRule r in set.UnevenRules)
             {
                 string prefix = r.Enabled ? string.Empty : "//";
-                sb.AppendLine($"{prefix}{Hex2(r.Group)} {Dec4(r.Frequency)} {Dec4(r.Left)} {Dec4(r.Top)} {Dec4(r.Right)} {Dec4(r.Bottom)} {Dec3(r.Amount)}");
+                sb.AppendLine($"{prefix}{HexG(set, r.Group)} {Dec4(r.Frequency)} {Dec4(r.Left)} {Dec4(r.Top)} {Dec4(r.Right)} {Dec4(r.Bottom)} {Dec3(r.Amount)}");
             }
             File.WriteAllText(path, sb.ToString(), FileEncoding);
         }

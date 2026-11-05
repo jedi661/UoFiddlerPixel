@@ -146,6 +146,21 @@ Zeigt die gebaute Karte wie der Client (Land-Art, Texturen an Hängen, Statics m
 * Wege / Gebäude-Böden: Reiter Land -> ""Aus der Farbtabelle"" (cobblestones, marble, Holzboden …),
   dazu ""Höhe vom ersten Klick übernehmen"". Mehrere IDs im Feld = zufällig gemischt.
 
+5b. 8 BIT ODER 16 BIT (MEHR FARBEN)
+----------------------------------
+* 8 Bit = klassisches Dragon: 256 Farbadressen (00..ff), Karte als 8-Bit-BMP, Skripte mit
+  2-stelligen Adressen. Alles bleibt mit dem alten Dragon austauschbar.
+* 16 Bit = erweitert: bis 65 536 Farbadressen (0000..ffff), Gruppen bis 7fff, Karte als
+  16-Bit-PNG (Grauwert = Adresse, verlustfrei), Skripte mit 4-stelligen Adressen.
+* Umschalten: Regeln -> ""Regelsatz auf 16 Bit umstellen"" (ein weiterer Klick legt eine
+  neue Seite mit 256 Farben an), Bearbeiten -> ""Karte in 16 Bit umwandeln"", bei
+  ""Neue Karte"" das Häkchen ""16 Bit"". ""Neue Farbe definieren"" bietet 16 Bit an, wenn
+  alle 256 Farben belegt sind. Eine Farbe über ff in einer 8-Bit-Karte -> Nachfrage.
+* Paletten zeigen je 256 Farben; ""Seite"" (oder Mausrad) blättert.
+* Speichern: .bmp = 8 Bit (nur wenn alle Farben <= ff), .png = 16 Bit.
+* 8-Bit-Skripte und -Karten werden immer gelesen; 4-stellige Adressen stellen den Regelsatz
+  beim Laden automatisch auf 16 Bit.
+
 6. GENERATOR & UMRISS
 ---------------------
 Generator: Seed, Land %, Kontinent-Größe, Gebirge, Schnee, Klima, Strand.
@@ -305,6 +320,19 @@ Shows the built map like the client (land art, textures on slopes, statics with 
 * Roads / building floors: tab Land -> ""Aus der Farbtabelle"" (cobblestones, marble, wood floor …),
   plus ""Höhe vom ersten Klick übernehmen"". Several ids in the field = mixed at random.
 
+5b. 8 BIT OR 16 BIT (MORE COLOURS)
+---------------------------------
+* 8 bit = classic Dragon: 256 colour addresses (00..ff), map as 8-bit BMP, scripts with
+  2-digit addresses. Everything stays exchangeable with the old Dragon.
+* 16 bit = extended: up to 65 536 colour addresses (0000..ffff), groups up to 7fff, map as
+  16-bit PNG (grey value = address, lossless), scripts with 4-digit addresses.
+* Switch: Rules -> ""switch rule set to 16 bit"" (another click adds a page of 256 colours),
+  Edit -> ""convert map to 16 bit"", ""New map"" -> tick ""16 bit"". ""Define new colour""
+  offers 16 bit when all 256 colours are used. A colour above ff in an 8-bit map -> question.
+* Palettes show 256 colours each; ""Page"" (or the mouse wheel) turns the pages.
+* Save: .bmp = 8 bit (only if all colours <= ff), .png = 16 bit.
+* 8-bit scripts and maps are always read; 4-digit addresses switch the rule set to 16 bit.
+
 6. GENERATOR & OUTLINE
 ----------------------
 Generator: seed, land %, continent size, mountains, snow, climate, beach.
@@ -411,6 +439,16 @@ statiques avec teinte).
   modèle (nom, catégorie, format).
 * ""Analyser la carte"" lit les hauteurs (p. ex. de la map0 originale) -> map_analysis_log.txt.
 * Enregistrer : statiques, et la carte si le terrain a changé ; anciens fichiers -> .bak.
+
+5b. 8 BITS OU 16 BITS (PLUS DE COULEURS)
+---------------------------------------
+* 8 bits = Dragon classique : 256 adresses (00..ff), carte en BMP 8 bits, scripts à 2 chiffres.
+* 16 bits = étendu : jusqu'à 65 536 adresses (0000..ffff), groupes jusqu'à 7fff, carte en PNG
+  16 bits (niveau de gris = adresse, sans perte), scripts à 4 chiffres.
+* Changer : Règles -> ""passer le jeu de règles en 16 bits"" (un autre clic ajoute une page de
+  256 couleurs), Édition -> ""convertir la carte en 16 bits"", ""Nouvelle carte"" -> ""16 bits"".
+* Les palettes montrent 256 couleurs ; ""Page"" (ou la molette) tourne les pages.
+* Enregistrer : .bmp = 8 bits (si toutes les couleurs <= ff), .png = 16 bits.
 
 6. GÉNÉRATEUR & CONTOUR
 -----------------------

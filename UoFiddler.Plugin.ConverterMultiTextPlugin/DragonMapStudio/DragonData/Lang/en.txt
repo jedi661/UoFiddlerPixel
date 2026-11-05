@@ -632,3 +632,8 @@ Zur Auswahl im Karten-Editor	To the selection in the map editor
 Übergang: Höhe Z1..Z2	Transition: height Z1..Z2
 Übergänge	Transitions
 Übernehmen	Take
+Seite:	Page:
+8 Bit · 256 Farben	8 bit · 256 colours
+16 Bit (bis 65 536 Farben, PNG)	16 bit (up to 65 536 colours, PNG)
+Karte in &16 Bit umwandeln (mehr Farben)	Convert map to &16 bit (more colours)
+Regelsatz auf &16 Bit umstellen (bis 65 536 Farben)	Switch rule set to &16 bit (up to 65 536 colours)

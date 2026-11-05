@@ -632,3 +632,8 @@ Zur Auswahl im Karten-Editor	Vers la sélection de l'éditeur
 Übergang: Höhe Z1..Z2	Transition : hauteur Z1..Z2
 Übergänge	Transitions
 Übernehmen	Reprendre
+Seite:	Page :
+8 Bit · 256 Farben	8 bits · 256 couleurs
+16 Bit (bis 65 536 Farben, PNG)	16 bits (jusqu'à 65 536 couleurs, PNG)
+Karte in &16 Bit umwandeln (mehr Farben)	Convertir la carte en &16 bits (plus de couleurs)
+Regelsatz auf &16 Bit umstellen (bis 65 536 Farben)	Passer le jeu de règles en &16 bits (jusqu'à 65 536 couleurs)

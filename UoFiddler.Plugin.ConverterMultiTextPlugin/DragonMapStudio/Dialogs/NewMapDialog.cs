@@ -36,7 +36,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Dialogs
             cmbPreset.SelectedIndex = 0;
             numWidth.Value = Math.Clamp(width, 8, 16384);
             numHeight.Value = Math.Clamp(height, 8, 16384);
-            numFill.Value = Math.Clamp(fillIndex, 0, 255);
+            chkBits16.Checked = rules != null && rules.ColorBits == 16;
+            numFill.Maximum = chkBits16.Checked ? Math.Max(255, (rules?.Palette.Count ?? 256) - 1) : 255;
+            numFill.Value = Math.Clamp(fillIndex, 0, (int)numFill.Maximum);
             UpdateFillPreview();
         }
 
@@ -46,7 +48,16 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Dialogs
 
         public int MapHeight => ((int)numHeight.Value + 7) / 8 * 8;
 
-        public byte FillIndex => (byte)numFill.Value;
+        public ushort FillIndex => (ushort)numFill.Value;
+
+        /// <summary>8 = classic Dragon (BMP, 256 colours), 16 = extended (PNG, up to 65 536 colours).</summary>
+        public int Bits => chkBits16.Checked ? 16 : 8;
+
+        private void ChkBits16_CheckedChanged(object sender, EventArgs e)
+        {
+            numFill.Maximum = chkBits16.Checked ? Math.Max(255, (_rules?.Palette.Count ?? 256) - 1) : 255;
+            UpdateFillPreview();
+        }
 
         private void CmbPreset_SelectedIndexChanged(object sender, EventArgs e)
         {
@@ -65,7 +76,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Dialogs
             {
                 return;
             }
-            DragonPaletteEntry entry = _rules.Palette[(int)numFill.Value];
+            DragonPaletteEntry entry = _rules.Palette[Math.Min((int)numFill.Value, _rules.Palette.Count - 1)];
             panelFillSwatch.BackColor = entry.Color;
             lblFillName.Text = entry.Name;
         }

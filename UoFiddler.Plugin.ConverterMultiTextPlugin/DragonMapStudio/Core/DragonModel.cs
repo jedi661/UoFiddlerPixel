@@ -38,7 +38,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         public string Comment { get; set; } = string.Empty;
 
         [JsonIgnore, Browsable(false)]
-        public string HexId => Id.ToString("x2");
+        public string HexId => Id > 0xFF ? Id.ToString("x4") : Id.ToString("x2");
 
         public override string ToString() => $"{HexId} {Name}";
     }
@@ -52,7 +52,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         private string _tiles = string.Empty;
         private ushort[] _tileCache;
 
-        [Category("Adresse"), ReadOnly(true), Description("Palettenindex 0..255 (= Pixelwert im 8-Bit-BMP).")]
+        [Category("Adresse"), ReadOnly(true), Description("Palettenindex 0..255 (8 Bit, Pixelwert im BMP) bzw. 0..65535 (16 Bit, Grauwert im PNG).")]
         [DisplayName("Index")]
         public int Index { get; set; }
 
@@ -112,7 +112,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         public Color Color => Color.FromArgb(R, G, B);
 
         [JsonIgnore, Browsable(false)]
-        public string HexIndex => Index.ToString("x2");
+        public string HexIndex => Index > 0xFF ? Index.ToString("x4") : Index.ToString("x2");
 
         [JsonIgnore, Browsable(false)]
         public string HtmlColor => $"#{R:X2}{G:X2}{B:X2}";
@@ -310,8 +310,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
 
         public override string ToString()
         {
-            string a = GroupA < 0 ? "*" : GroupA.ToString("x2");
-            string b = GroupB < 0 ? "*" : GroupB.ToString("x2");
+            string a = GroupA < 0 ? "*" : GroupA > 0xFF ? GroupA.ToString("x4") : GroupA.ToString("x2");
+            string b = GroupB < 0 ? "*" : GroupB > 0xFF ? GroupB.ToString("x4") : GroupB.ToString("x2");
             return $"{Layer} {a}->{b} {File}";
         }
     }
@@ -550,6 +550,17 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                 s = s.Substring(2);
             }
             return int.TryParse(s, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out int v) ? v : 0;
+        }
+
+        /// <summary>Colour address or group: 1–4 hex digits (2 = classic Dragon, 4 = 16 bit).</summary>
+        public static bool TryParseHexAddress(string s, out int value)
+        {
+            value = 0;
+            if (string.IsNullOrEmpty(s) || s.Length > 4)
+            {
+                return false;
+            }
+            return int.TryParse(s, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out value);
         }
 
         public static bool TryParseHexByte(string s, out int value)

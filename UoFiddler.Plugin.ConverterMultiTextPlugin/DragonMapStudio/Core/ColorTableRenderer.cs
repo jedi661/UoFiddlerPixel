@@ -29,7 +29,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         /// One row per group: name + one field per colour with its altitude. Colours without a group are listed at the end.
         /// <paramref name="indices"/> gets the palette index of every pixel (-1 = label / background).
         /// </summary>
-        public static Bitmap Render(DragonRuleSet rules, out short[] indices)
+        public static Bitmap Render(DragonRuleSet rules, out int[] indices)
         {
             var rows = new List<(string name, List<DragonPaletteEntry> entries)>();
             foreach (IGrouping<int, DragonPaletteEntry> g in rules.Palette.Where(p => p.Group >= 0 && (p.Defined || p.Group >= 0)).GroupBy(p => p.Group).OrderBy(g => g.Key))
@@ -37,10 +37,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                 List<DragonPaletteEntry> sorted = g.OrderBy(p => p.Defined ? 0 : 1).ThenBy(p => p.Altitude).ThenBy(p => p.Index).ToList();
                 for (int k = 0; k < sorted.Count; k += MaxCells)
                 {
-                    rows.Add(($"{g.Key:x2} {rules.GroupName(g.Key)}", sorted.Skip(k).Take(MaxCells).ToList()));
+                    rows.Add(($"{rules.HexGroup(g.Key)} {rules.GroupName(g.Key)}", sorted.Skip(k).Take(MaxCells).ToList()));
                 }
             }
-            List<DragonPaletteEntry> free = rules.Palette.Where(p => p.Group < 0).ToList();
+            // 16 bit: thousands of free addresses – only the next free ones are shown
+            List<DragonPaletteEntry> free = rules.Palette.Where(p => p.Group < 0).Take(rules.ColorBits == 16 ? MaxCells * 2 : int.MaxValue).ToList();
             for (int k = 0; k < free.Count; k += MaxCells)
             {
                 rows.Add(("ohne Gruppe / frei", free.Skip(k).Take(MaxCells).ToList()));
@@ -48,8 +49,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
 
             int width = LabelWidth + MaxCells * Cell + 8;
             int height = Math.Max(1, rows.Count) * RowHeight + 8;
-            indices = new short[width * height];
-            Array.Fill(indices, (short)-1);
+            indices = new int[width * height];
+            Array.Fill(indices, -1);
             var bmp = new Bitmap(width, height);
             using Graphics gr = Graphics.FromImage(bmp);
             gr.Clear(Color.FromArgb(235, 228, 210));
@@ -77,7 +78,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                     {
                         for (int px = rect.Left; px <= rect.Right; px++)
                         {
-                            indices[py * width + px] = (short)e.Index;
+                            indices[py * width + px] = e.Index;
                         }
                     }
                 }

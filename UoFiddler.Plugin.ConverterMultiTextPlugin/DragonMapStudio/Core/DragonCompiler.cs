@@ -243,7 +243,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
 
         // working data
         private int _w, _h;
-        private byte[] _group;
+        private ushort[] _group;
+
+        /// <summary>Group value of a cell without group.</summary>
+        private const ushort NoGroup = 0xFFFF;
         private ushort[] _tile;
         private sbyte[] _z;
         private bool[] _occupied;
@@ -267,7 +270,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             result.Height = _h;
             int n = _w * _h;
             _rnd = new Random(_o.Seed);
-            _group = new byte[n];
+            _group = new ushort[n];
             _tile = new ushort[n];
             _z = new sbyte[n];
             _occupied = new bool[n];
@@ -277,22 +280,24 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
 
             // 1) colours -> group, altitude, tile
             ushort unknown = HexList.ParseHex(_o.UnknownTile);
-            var groupOf = new byte[256];
-            var defined = new bool[256];
-            var altOf = new int[256];
-            var tilesOf = new ushort[256][];
+            const int colours = 65536;
+            var groupOf = new ushort[colours];
+            Array.Fill(groupOf, NoGroup);
+            var defined = new bool[colours];
+            var altOf = new int[colours];
+            var tilesOf = new ushort[colours][];
             foreach (DragonPaletteEntry e in _rules.Palette)
             {
-                groupOf[e.Index] = (byte)(e.Group < 0 ? 0xFF : e.Group);
+                groupOf[e.Index] = e.Group < 0 ? NoGroup : (ushort)e.Group;
                 ushort[] ids = e.GetTileIds();
                 defined[e.Index] = e.Defined && ids.Length > 0;
                 altOf[e.Index] = e.Altitude;
                 tilesOf[e.Index] = ids;
             }
-            var unknownSeen = new bool[256];
+            var unknownSeen = new bool[colours];
             for (int i = 0; i < n; i++)
             {
-                byte c = map.Pixels[i];
+                ushort c = map.Pixels[i];
                 _group[i] = groupOf[c];
                 if (defined[c])
                 {
@@ -315,7 +320,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             }
             if (result.UnknownColors > 0)
             {
-                string list = string.Join(", ", Enumerable.Range(0, 256).Where(k => unknownSeen[k]).Select(k => k.ToString("x2")));
+                string list = string.Join(", ", Enumerable.Range(0, colours).Where(k => unknownSeen[k]).Take(200).Select(k => _rules.HexIndex(k)));
                 result.Warnings.Add($"{result.UnknownColors:N0} Pixel mit Farben ohne maptrans-Eintrag ({list}) – Tile {unknown:x4} gesetzt.");
             }
 
@@ -438,7 +443,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                 return source;
             }
             result.Warnings.Add($"Größe {source.Width}×{source.Height} ist nicht durch 8 teilbar – auf {w}×{h} aufgefüllt (Randfarbe wiederholt).");
-            var padded = new IndexedMap(w, h);
+            var padded = new IndexedMap(w, h, 0, source.Bits);
             for (int y = 0; y < h; y++)
             {
                 int sy = Math.Min(y, source.Height - 1);
@@ -508,8 +513,22 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                 return;
             }
             // candidate rules per cell group (keeps the file order)
-            var byGroup = new List<CompiledRule>[256];
-            for (int g = 0; g < 256; g++)
+            // all groups of the map (8 bit: up to fe, 16 bit: up to 7fff)
+            var groupIds = new SortedSet<int>(_rules.AllGroupIds());
+            var present = new bool[65536];
+            foreach (ushort gv in _group)
+            {
+                present[gv] = true;
+            }
+            for (int gv = 0; gv < NoGroup; gv++)
+            {
+                if (present[gv])
+                {
+                    groupIds.Add(gv);
+                }
+            }
+            var byGroup = new List<CompiledRule>[65536];
+            foreach (int g in groupIds)
             {
                 var l = all.Where(c => c.Rule.GroupA == g || (c.Rule.GroupA < 0 && c.Rule.GroupB != g)).ToList();
                 byGroup[g] = l.Count > 0 ? l : null;
@@ -522,24 +541,24 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             foreach (CompiledRule cr in all)
             {
                 int ga = cr.Rule.GroupA, gb = cr.Rule.GroupB;
-                for (int x = 0; x < 256; x++)
+                foreach (int x in groupIds)
                 {
                     if (ga >= 0 && x != ga)
                     {
                         continue;
                     }
-                    for (int y = 0; y < 256; y++)
+                    foreach (int y in groupIds)
                     {
                         if (x != y && (gb < 0 || y == gb) && (ga >= 0 || x != gb))
                         {
-                            directed.Add((x << 8) | y);
-                            anyDirection.Add((x << 8) | y);
-                            anyDirection.Add((y << 8) | x);
+                            directed.Add(DragonRuleSet.PairKey(x, y));
+                            anyDirection.Add(DragonRuleSet.PairKey(x, y));
+                            anyDirection.Add(DragonRuleSet.PairKey(y, x));
                         }
                     }
                 }
             }
-            var ng = new byte[8];
+            var ng = new ushort[8];
             var newTile = isMap ? (ushort[])_tile.Clone() : null;
             var newZ = isMap ? (sbyte[])_z.Clone() : null;
             long applied = 0;
@@ -549,7 +568,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                 for (int x = 0; x < _w; x++)
                 {
                     int i = y * _w + x;
-                    byte g = _group[i];
+                    ushort g = _group[i];
                     List<CompiledRule> rules = byGroup[g];
                     if (rules == null)
                     {
@@ -628,13 +647,13 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                     if (isMap && !matched)
                     {
                         // which neighbour group is the problem?
-                        byte other = 0xFF;
+                        ushort other = NoGroup;
                         byte mask = 0;
                         for (int k = 0; k < 8; k++)
                         {
                             if (ng[k] != g)
                             {
-                                if (other == 0xFF)
+                                if (other == NoGroup)
                                 {
                                     other = ng[k];
                                 }
@@ -646,13 +665,13 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                         {
                             // e.g. invisible cave entrance: the open side has no transition on purpose
                         }
-                        else if (directed.Contains((g << 8) | other))
+                        else if (directed.Contains(DragonRuleSet.PairKey(g, other)))
                         {
-                            key = $"Muster fehlt  {g:x2}->{other:x2} {TransitionPattern.MaskToPattern(mask)}";
+                            key = $"Muster fehlt  {_rules.HexGroup(g)}->{_rules.HexGroup(other)} {TransitionPattern.MaskToPattern(mask)}";
                         }
-                        else if (!anyDirection.Contains((g << 8) | other))
+                        else if (!anyDirection.Contains(DragonRuleSet.PairKey(g, other)))
                         {
-                            key = $"Regel fehlt   {g:x2}<>{other:x2} ({_rules.GroupName(g)} / {_rules.GroupName(other)})";
+                            key = $"Regel fehlt   {_rules.HexGroup(g)}<>{_rules.HexGroup(other)} ({_rules.GroupName(g)} / {_rules.GroupName(other)})";
                         }
                         if (key != null)
                         {
@@ -770,7 +789,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                 _skipGroups = new HashSet<int>();
                 foreach (string t in (_o.Fix?.SkipGroups ?? "1d").Split(new[] { ' ', ',', ';' }, StringSplitOptions.RemoveEmptyEntries))
                 {
-                    if (HexList.TryParseHexByte(t, out int v))
+                    if (HexList.TryParseHexAddress(t, out int v))
                     {
                         _skipGroups.Add(v);
                     }
@@ -982,7 +1001,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
 
         private void ApplyItems(BuildResult result, IProgress<int> progress, CancellationToken cancel)
         {
-            var byGroup = new List<(ItemRule rule, ItemFile file, int total)>[256];
+            var byGroup = new List<(ItemRule rule, ItemFile file, int total)>[65536];
             foreach (ItemRule r in _rules.ItemRules.Where(r => r.Enabled && r.Chance > 0))
             {
                 ItemFile f = _rules.FindItemFile(r.File);
@@ -995,7 +1014,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                 {
                     continue;
                 }
-                int gi = r.Group & 0xFF;
+                if (r.Group < 0 || r.Group > 0xFFFE)
+                {
+                    continue;
+                }
+                int gi = r.Group;
                 (byGroup[gi] ??= new List<(ItemRule, ItemFile, int)>()).Add((r, f, total));
             }
             int chanceBase = Math.Max(1, _o.ItemChanceBase);
@@ -1056,7 +1079,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             return null;
         }
 
-        private bool TryPlace(ItemGroupDef def, int x, int y, byte group)
+        private bool TryPlace(ItemGroupDef def, int x, int y, ushort group)
         {
             foreach (ItemPart p in def.Parts)
             {
