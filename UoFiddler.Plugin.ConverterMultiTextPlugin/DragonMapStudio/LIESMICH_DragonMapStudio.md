@@ -150,6 +150,7 @@ DragonMapStudio/
 ├─ DragonMapStudioForm.cs / .Designer.cs / .resx   Hauptfenster (VS-Designer)
 ├─ DragonMapStudioForm.Tools.cs                    Generator, Umriss, Regeln, Build, Einstellungen
 ├─ DragonMapStudioForm.Cgi.cs                      CGI-Ansicht (Client-Ansicht, Statics bearbeiten)
+├─ DragonMapStudioForm.Fix.cs                      Prüfen / Reparieren, Logs, Hilfe-Sprache
 ├─ Controls/
 │  ├─ ColorTableView.cs     klickbare Farbtabelle
 │  ├─ PaletteGridView.cs    16×16-Palette
@@ -170,7 +171,8 @@ DragonMapStudio/
 │  ├─ MulMapIO.cs           MUL/UOP lesen/schreiben, MUL → BMP
 │  ├─ MapData.cs            gebaute Karte: Land + Statics (bearbeitbar, Undo/Redo)
 │  ├─ UoArtCache.cs         Client-Grafiken (Art, Texturen, Hues, Multis, Radarfarben)
-│  ├─ MapProblemScanner.cs  Fehlersuche
+│  ├─ MapProblemScanner.cs  Fehlersuche (CGI)
+│  ├─ MapFixer.cs           Prüfen / Reparieren nach Tutorial-Regeln + zweisprachige Logs
 │  ├─ ColorTableRenderer.cs Farbtabelle aus den Regeln zeichnen
 │  ├─ StudioSettings.cs     Einstellungen + Pfade
 │  └─ StudioHelp.cs         Hilfetext
@@ -205,3 +207,61 @@ Geändert: `UserControls/ConverterMultiTextControl(.Designer).cs` (Knopf), `Prop
 7. **Mehr als 256 Farben**: eigenes 16-Bit-Kartenformat (Dragon-BMP bleibt als Export).
 8. **Bereichsregeln**: Items/Unebenheit per gemaltem Bereich statt Rechteck.
 9. **Statics-Import**: vorhandene Statics anzeigen und als Schicht bearbeiten.
+
+---
+
+## Prüfen, Reparieren und Logs (Version 3)
+
+Grundlage: *UO Dragon Mod 11 – Map Making Tutorial* (Ryandor, 2002).
+
+### Was aus dem Tutorial übernommen wurde
+
+| Tutorial | Umsetzung |
+|---|---|
+| Übergangs-Zeile `AAAABBBB 0238 005 007`: neue Höhe = alte Höhe + Zufall 5..7 | Build: Höhe + Zufall zwischen Z1 und Z2 (vorher nur + Z1) |
+| Statics: „höchste Höhe der umliegenden Tiles der Quellgruppe + Z“ | Option *Static-Z von den Nachbarn* (Standard an) |
+| „itemid1 to x will be used randomly“ | Statics: eine ID zufällig (Standard *RandomOne*, vorher alle IDs → doppelte Statics) |
+| Übergänge brauchen mindestens 2 Tiles nebeneinander | Reparatur entfernt Einzel-Tiles und 1 Tile breite Streifen |
+| Sumpf immer mit mindestens 2 Tiles Gras umgeben | Umgebungs-Regel `18:00:2` |
+| Berge in Ringen: Rock 20, 30, 50, 60, 65, 70, nicht über 80 | Berg-Profil `20 30 50 60 65 70 80 90` |
+| Höhen in Stufen 5, 10, 15 … | Höhensprünge begrenzen (Land 10, Berg 20) |
+| GrassBump immer tiefer als angrenzendes Gras | Prüfung `19:00` (Hinweis im Log) |
+| Remove Statics (sonst doppelte Items) | *Doppelte Statics entfernen* beim Build und in der CGI-Ansicht |
+
+### Knöpfe
+
+- **Bearbeiten → Karte prüfen (Log)** oder Reiter *MUL / UOP erzeugen* → **Karte prüfen (Log)**:
+  ändert nichts, schreibt `map_check_log.txt` in den Ausgabe-Ordner.
+- **Karte reparieren**: repariert die Editor-Karte (ein Rückgängig-Schritt), schreibt `map_fix_log.txt`.
+- **Vor dem Build reparieren** (Build-Optionen → *5 Reparatur*): repariert nur eine Kopie beim Build.
+- **Log öffnen**: zeigt das zuletzt geschriebene Log.
+- Build schreibt `dragon_log.txt`; die CGI-Ansicht hat *Doppelte entfernen* und *Log speichern* (`cgi_check_log.txt`).
+
+Alle Logs sind **Deutsch + Englisch** und enthalten **Koordinaten** (bis 15 Beispiele je Fehlerart) –
+zum Weiterschicken an mich, damit wir gezielt Regeln / Übergänge ergänzen können.
+
+Test 2048×2048 (generiert, ohne Reparatur → mit Reparatur): Rand-Tiles ohne Übergang 19 497 → 64,
+Steilkanten (≥ 30 z) 10 → 0, doppelte Statics werden entfernt.
+
+### CGI-Ansicht: Küsten-Darstellung
+
+Land-Kacheln ohne Textur (z. B. Wasser) wurden an Hängen falsch verzerrt – daher die schwarzen Dreiecke an der
+Küste. Jetzt wird die Kachel über zwei Dreiecke exakt auf die vier Ecken gelegt; sehr steile, entartete Kacheln
+werden einfarbig gefüllt statt die ganze Ansicht abbrechen zu lassen.
+
+---
+
+## English summary
+
+Dragon Map Studio rebuilds Dragon 1.03.62 (IMod13) inside UoFiddler: paint the map as 8-bit image, check and
+repair it, build `map#.mul`, `staidx#.mul`, `statics#.mul` (+ `map#LegacyMUL.uop`), look at the result in the
+**CGI view** (client like) and edit statics / multis there.
+
+- **Check / repair** follows the Dragon tutorial: no single tiles or 1 tile strips, swamp surrounded by 2 tiles of
+  grass, bridge groups between groups without transition, mountains rising in rings (20 30 50 60 65 70),
+  limited height jumps, GrassBump lower than grass.
+- **Build**: transition height = old height + random Z1..Z2, static z = highest z of the source group neighbours
+  + Z, one random static id per line, duplicates removed.
+- **Logs** (`dragon_log.txt`, `map_check_log.txt`, `map_fix_log.txt`, `cgi_check_log.txt`) are German + English with
+  coordinates – send them for analysis.
+- Help tab: language selection German / English.

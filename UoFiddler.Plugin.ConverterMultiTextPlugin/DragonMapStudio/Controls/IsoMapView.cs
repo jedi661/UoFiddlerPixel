@@ -370,7 +370,14 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
             g.PixelOffsetMode = PixelOffsetMode.Half;
             foreach (var d in drawables.OrderBy(d => d.depth).ThenBy(d => d.prio).ThenBy(d => d.order))
             {
-                d.draw();
+                try
+                {
+                    d.draw();
+                }
+                catch (Exception)
+                {
+                    // one broken tile / image must not stop the whole view
+                }
             }
         }
 
@@ -415,10 +422,30 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
             }
         }
 
-        /// <summary>Maps a square texture onto the 4 land corners (two triangles, light by slope).</summary>
-        private static void DrawTextured(Graphics g, Bitmap tex, PointF[] p, float light, bool diamondArt = false)
+        /// <summary>
+        /// Maps an image onto the 4 land corners with two affine triangles.
+        /// Texture: the square corners go to top / right / bottom / left. Land art (diamond): its 4 points go there.
+        /// </summary>
+        private static void DrawTextured(Graphics g, Bitmap img, PointF[] p, float light, bool diamondArt = false)
         {
             PointF t = p[0], r = p[1], b = p[2], l = p[3];
+            float w = img.Width, h = img.Height;
+            // source points of top, right, bottom, left
+            PointF st, sr, sb, sl;
+            if (diamondArt)
+            {
+                st = new PointF(w / 2, 0);
+                sr = new PointF(w, h / 2);
+                sb = new PointF(w / 2, h);
+                sl = new PointF(0, h / 2);
+            }
+            else
+            {
+                st = new PointF(0, 0);
+                sr = new PointF(w, 0);
+                sb = new PointF(w, h);
+                sl = new PointF(0, h);
+            }
             using var attr = new ImageAttributes();
             attr.SetColorMatrix(new ColorMatrix(new[]
             {
@@ -428,29 +455,44 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                 new[] { 0f, 0f, 0f, 1f, 0f },
                 new[] { 0f, 0f, 0f, 0f, 1f }
             }));
+            attr.SetWrapMode(WrapMode.TileFlipXY);
             g.InterpolationMode = InterpolationMode.Bilinear;
-            RectangleF src = diamondArt
-                ? new RectangleF(0, 0, tex.Width, tex.Height)
-                : new RectangleF(0, 0, tex.Width, tex.Height);
-            if (diamondArt)
+            DrawTriangle(g, img, attr, st, sr, sl, t, r, l);
+            DrawTriangle(g, img, attr, sr, sb, sl, r, b, l);
+            g.ResetClip();
+        }
+
+        /// <summary>Draws the source triangle (s0, s1, s2) of the image into the destination triangle (d0, d1, d2).</summary>
+        private static void DrawTriangle(Graphics g, Bitmap img, ImageAttributes attr, PointF s0, PointF s1, PointF s2, PointF d0, PointF d1, PointF d2)
+        {
+            // affine map M with M(s_i) = d_i; the image corners (0,0), (w,0), (0,h) go to the three DrawImage points
+            double det = (s1.X - s0.X) * (s2.Y - s0.Y) - (s2.X - s0.X) * (s1.Y - s0.Y);
+            double area = (d1.X - d0.X) * (d2.Y - d0.Y) - (d2.X - d0.X) * (d1.Y - d0.Y);
+            if (Math.Abs(det) < 1e-6 || Math.Abs(area) < 1.0)
             {
-                // the land art is already a diamond: map its bounding box onto the corner quad
-                PointF ul = new PointF(l.X, t.Y), ur = new PointF(r.X, t.Y), ll = new PointF(l.X, b.Y);
-                g.DrawImage(tex, new[] { ul, ur, ll }, src, GraphicsUnit.Pixel, attr);
-                return;
+                return; // very steep tile: triangle is only a line
             }
-            using (var clip = new GraphicsPath())
+            double ax = ((d1.X - d0.X) * (s2.Y - s0.Y) - (d2.X - d0.X) * (s1.Y - s0.Y)) / det;
+            double bx = ((d2.X - d0.X) * (s1.X - s0.X) - (d1.X - d0.X) * (s2.X - s0.X)) / det;
+            double ay = ((d1.Y - d0.Y) * (s2.Y - s0.Y) - (d2.Y - d0.Y) * (s1.Y - s0.Y)) / det;
+            double by = ((d2.Y - d0.Y) * (s1.X - s0.X) - (d1.Y - d0.Y) * (s2.X - s0.X)) / det;
+            PointF Map(double u, double v) => new PointF((float)(d0.X + ax * (u - s0.X) + bx * (v - s0.Y)), (float)(d0.Y + ay * (u - s0.X) + by * (v - s0.Y)));
+            PointF[] dest = { Map(0, 0), Map(img.Width, 0), Map(0, img.Height) };
+            using var clip = new GraphicsPath();
+            // grow the triangle a little so neighbouring triangles do not leave hairline gaps
+            PointF c = new PointF((d0.X + d1.X + d2.X) / 3, (d0.Y + d1.Y + d2.Y) / 3);
+            PointF Grow(PointF q) => new PointF(q.X + Math.Sign(q.X - c.X) * 0.6f, q.Y + Math.Sign(q.Y - c.Y) * 0.6f);
+            clip.AddPolygon(new[] { Grow(d0), Grow(d1), Grow(d2) });
+            g.SetClip(clip);
+            try
             {
-                clip.AddPolygon(new[] { t, r, l });
-                g.SetClip(clip);
-                g.DrawImage(tex, new[] { t, r, l }, src, GraphicsUnit.Pixel, attr);
+                g.DrawImage(img, dest, new RectangleF(0, 0, img.Width, img.Height), GraphicsUnit.Pixel, attr);
             }
-            using (var clip = new GraphicsPath())
+            catch (Exception)
             {
-                clip.AddPolygon(new[] { r, b, l });
-                g.SetClip(clip);
-                var ul = new PointF(r.X + l.X - b.X, r.Y + l.Y - b.Y);
-                g.DrawImage(tex, new[] { ul, r, l }, src, GraphicsUnit.Pixel, attr);
+                // GDI+ refuses extreme parallelograms – fill the triangle instead
+                using var brush = new SolidBrush(Color.FromArgb(90, 90, 90));
+                g.FillPolygon(brush, new[] { d0, d1, d2 });
             }
             g.ResetClip();
         }

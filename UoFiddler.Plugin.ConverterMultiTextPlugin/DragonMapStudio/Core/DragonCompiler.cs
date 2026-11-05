@@ -53,7 +53,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         [Category("1 Ausgabe"), DisplayName("WSC-Datei (UOX3) schreiben"), Description("Statics zusätzlich als Text (wie Dragon 'UOX Static File').")]
         public bool WriteWsc { get; set; }
 
-        [Category("1 Ausgabe"), DisplayName("Bericht schreiben"), Description("build_report.txt mit Statistik und fehlenden Übergängen.")]
+        [Category("1 Ausgabe"), DisplayName("Bericht schreiben"), Description("dragon_log.txt: Statistik, Reparaturen, fehlende Übergänge mit Koordinaten (zum Weiterschicken).")]
         public bool WriteReport { get; set; } = true;
 
         [Category("2 Schritte"), DisplayName("Zufalls-Seed"), Description("Gleiche Zahl = gleiche Tiles / Items.")]
@@ -86,11 +86,23 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         [Category("3 Details"), DisplayName("Keine Items auf Übergangs-Statics")]
         public bool ItemsAvoidTransitionStatics { get; set; } = true;
 
-        [Category("3 Details"), DisplayName("Statics mehrerer IDs"), Description("PlaceAll = alle IDs einer Zeile setzen, RandomOne = eine zufällig.")]
-        public StaticTileMode StaticMode { get; set; } = StaticTileMode.PlaceAll;
+        [Category("3 Details"), DisplayName("Statics mehrerer IDs"), Description("RandomOne = eine ID zufällig (wie Dragon: 'itemid1 to x will be used randomly'), PlaceAll = alle IDs einer Zeile setzen.")]
+        public StaticTileMode StaticMode { get; set; } = StaticTileMode.RandomOne;
 
-        [Category("3 Details"), DisplayName("Map-Übergang: Z1 addieren"), Description("1. Zahl nach den Tiles wird zur Höhe addiert.")]
+        [Category("3 Details"), DisplayName("Übergang: Höhe Z1..Z2"), Description("Dragon-Tutorial: neue Höhe = alte Höhe + Zufallszahl zwischen Z1 und Z2 (z. B. '005 007' → +5..+7). Aus = Höhe bleibt.")]
         public bool MapTransitionZ { get; set; } = true;
+
+        [Category("3 Details"), DisplayName("Static-Z von den Nachbarn"), Description("Dragon-Tutorial: Static-Höhe = höchste Höhe der umliegenden Tiles der Quellgruppe + Z1..Z2. Aus = Höhe der Zelle.")]
+        public bool StaticZFromNeighbours { get; set; } = true;
+
+        [Category("3 Details"), DisplayName("Doppelte Statics entfernen"), Description("Gleiche ID an gleicher Stelle und Höhe nur einmal schreiben.")]
+        public bool RemoveDuplicateStatics { get; set; } = true;
+
+        [Category("5 Reparatur"), DisplayName("Vor dem Build reparieren"), Description("Repariert eine Kopie der Karte vor dem Build (die Karte im Editor bleibt unverändert). Einstellungen unten.")]
+        public bool AutoFixBeforeBuild { get; set; }
+
+        [Category("5 Reparatur"), DisplayName("Reparatur-Einstellungen"), TypeConverter(typeof(ExpandableObjectConverter))]
+        public MapFixOptions Fix { get; set; } = new MapFixOptions();
 
         [Category("3 Details"), DisplayName("Unbekannte Farbe: Tile"), Description("Tile für Farben ohne maptrans-Eintrag (hex, 0244 = schwarz/nodraw).")]
         public string UnknownTile { get; set; } = "0244";
@@ -106,7 +118,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         [Editor(typeof(FileNameEditor), typeof(UITypeEditor))]
         public string MergeStaticsFile { get; set; } = string.Empty;
 
-        public BuildOptions Clone() => (BuildOptions)MemberwiseClone();
+        public BuildOptions Clone()
+        {
+            var c = (BuildOptions)MemberwiseClone();
+            c.Fix = (Fix ?? new MapFixOptions()).Clone();
+            return c;
+        }
     }
 
     public struct StaticEntry
@@ -132,6 +149,13 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         public long MergedStatics;
         public long UnknownColors;
         public long UnmatchedEdges;
+        public long DuplicatesRemoved;
+
+        /// <summary>Up to 10 example coordinates per entry of <see cref="MissingTransitions"/>.</summary>
+        public readonly Dictionary<string, List<System.Drawing.Point>> MissingSamples = new Dictionary<string, List<System.Drawing.Point>>();
+
+        /// <summary>Report of the automatic repair (when on).</summary>
+        public MapFixReport FixReport;
         public readonly List<string> Files = new List<string>();
         public readonly List<string> Warnings = new List<string>();
 
@@ -180,6 +204,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         {
             DateTime start = DateTime.Now;
             var result = new BuildResult();
+            if (_o.AutoFixBeforeBuild)
+            {
+                source = source.Clone();
+                result.FixReport = MapFixer.Fix(source, _rules, _o.Fix ?? new MapFixOptions(), null, cancel);
+                _log(result.FixReport.Summary());
+            }
             IndexedMap map = PadToBlocks(source, result);
             _w = map.Width;
             _h = map.Height;
@@ -287,6 +317,17 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             }
 
             cancel.ThrowIfCancellationRequested();
+            if (_o.RemoveDuplicateStatics)
+            {
+                var seen = new HashSet<(int, int, sbyte, ushort, ushort)>();
+                int before = _statics.Count;
+                _statics = _statics.Where(st => seen.Add((st.X, st.Y, st.Z, st.Id, st.Hue))).ToList();
+                result.DuplicatesRemoved = before - _statics.Count;
+                if (result.DuplicatesRemoved > 0)
+                {
+                    _log($"Doppelte Statics entfernt: {result.DuplicatesRemoved:N0}");
+                }
+            }
             if (!_inMemory)
             {
                 WriteFiles(result, progress, cancel);
@@ -482,23 +523,25 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                             newTile[i] = ids.Length == 1 ? ids[0] : ids[_rnd.Next(ids.Length)];
                             if (_o.MapTransitionZ)
                             {
-                                newZ[i] = ClampZ(_z[i] + p.Z1);
+                                newZ[i] = ClampZ(_z[i] + RandomZ(p));
                             }
                             applied++;
                             matched = true;
                             break; // one map tile per cell
                         }
 
+                        int baseZ = _o.StaticZFromNeighbours ? SourceGroupTopZ(x, y, cr.Rule) : _z[i];
                         if (_o.StaticMode == StaticTileMode.RandomOne)
                         {
-                            AddStatic(ids[_rnd.Next(ids.Length)], x, y, _z[i] + p.Z1, 0);
+                            AddStatic(ids[_rnd.Next(ids.Length)], x, y, baseZ + RandomZ(p), 0);
                             applied++;
                         }
                         else
                         {
+                            int dz = RandomZ(p);
                             foreach (ushort id in ids)
                             {
-                                AddStatic(id, x, y, _z[i] + p.Z1, 0);
+                                AddStatic(id, x, y, baseZ + dz, 0);
                                 applied++;
                             }
                         }
@@ -541,6 +584,14 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                             {
                                 result.MissingTransitions.TryGetValue(key, out int count);
                                 result.MissingTransitions[key] = count + 1;
+                                if (!result.MissingSamples.TryGetValue(key, out var samples))
+                                {
+                                    result.MissingSamples[key] = samples = new List<System.Drawing.Point>();
+                                }
+                                if (samples.Count < 10)
+                                {
+                                    samples.Add(new System.Drawing.Point(x, y));
+                                }
                             }
                         }
                     }
@@ -557,13 +608,44 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                 _tile = newTile;
                 _z = newZ;
                 result.MapTransitions = applied;
-                _log($"Map-Übergänge: {applied:N0} Tiles, {result.UnmatchedEdges:N0} Rand-Tiles ohne passenden Übergang (siehe build_report.txt).");
+                _log($"Map-Übergänge: {applied:N0} Tiles, {result.UnmatchedEdges:N0} Rand-Tiles ohne passenden Übergang (siehe dragon_log.txt).");
             }
             else
             {
                 result.StaticTransitionStatics = applied;
                 _log($"Static-Übergänge: {applied:N0} Statics.");
             }
+        }
+
+        /// <summary>Random height change between Z1 and Z2 (both included).</summary>
+        private int RandomZ(TransitionPattern p)
+        {
+            int a = Math.Min(p.Z1, p.Z2), b = Math.Max(p.Z1, p.Z2);
+            return a == b ? a : _rnd.Next(a, b + 1);
+        }
+
+        /// <summary>Highest land z of the cell and its 8 neighbours that belong to the source group of the rule.</summary>
+        private int SourceGroupTopZ(int x, int y, TransitionRule rule)
+        {
+            int source = rule.GroupA >= 0 ? rule.GroupA : rule.GroupB;
+            int best = int.MinValue;
+            for (int dy = -1; dy <= 1; dy++)
+            {
+                for (int dx = -1; dx <= 1; dx++)
+                {
+                    int nx = x + dx, ny = y + dy;
+                    if (nx < 0 || ny < 0 || nx >= _w || ny >= _h)
+                    {
+                        continue;
+                    }
+                    int i = ny * _w + nx;
+                    if (_group[i] == source)
+                    {
+                        best = Math.Max(best, _z[i]);
+                    }
+                }
+            }
+            return best == int.MinValue ? _z[y * _w + x] : best;
         }
 
         private void AddStatic(ushort id, int x, int y, int z, ushort hue)
@@ -796,33 +878,13 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             try
             {
                 string folder = string.IsNullOrWhiteSpace(_o.OutputFolder) ? Environment.CurrentDirectory : _o.OutputFolder;
-                var sb = new StringBuilder();
-                sb.AppendLine("Dragon Map Studio – Build-Bericht");
-                sb.AppendLine(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture));
-                sb.AppendLine($"Karte {r.Width}x{r.Height}, Nummer {_o.MapNumber}, Seed {_o.Seed}, Dauer {r.Duration.TotalSeconds:0.0} s");
-                sb.AppendLine($"Map-Übergänge: {r.MapTransitions:N0}, Kanten ohne Muster: {r.UnmatchedEdges:N0}");
-                sb.AppendLine($"Static-Übergänge: {r.StaticTransitionStatics:N0}, Items: {r.Items:N0} ({r.ItemStatics:N0} Statics)");
-                sb.AppendLine($"Unebenheit: {r.UnevenCells:N0} Zellen, Fixes: {r.Fixes:N0}, übernommene Statics: {r.MergedStatics:N0}");
-                sb.AppendLine();
-                foreach (string w in r.Warnings)
-                {
-                    sb.AppendLine("WARNUNG: " + w);
-                }
-                sb.AppendLine();
-                sb.AppendLine("Häufigste Rand-Tiles ohne Übergang (Muster-Reihenfolge NW N NO O SO S SW W, A = eigene Gruppe, B = Nachbar)");
-                sb.AppendLine("'Muster fehlt': die Regel gibt es, aber nicht dieses Muster -> in der Übergangsdatei ergänzen.");
-                sb.AppendLine("'Regel fehlt': für diese zwei Gruppen gibt es keine Übergangsdatei -> neue Regel anlegen.");
-                foreach (KeyValuePair<string, int> kv in r.MissingTransitions.OrderByDescending(k => k.Value).Take(300))
-                {
-                    sb.AppendLine($"{kv.Key} : {kv.Value}");
-                }
-                string path = Path.Combine(folder, "build_report.txt");
-                File.WriteAllText(path, sb.ToString());
+                string path = Path.Combine(folder, "dragon_log.txt");
+                File.WriteAllText(path, BuildLog.Create(_rules, _o, r));
                 r.Files.Add(path);
             }
             catch (Exception ex)
             {
-                _log("Bericht konnte nicht geschrieben werden: " + ex.Message);
+                _log("Log konnte nicht geschrieben werden / log could not be written: " + ex.Message);
             }
         }
     }

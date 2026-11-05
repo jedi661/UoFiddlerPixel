@@ -52,6 +52,9 @@
             mnuDeleteSelection = new System.Windows.Forms.ToolStripMenuItem();
             mnuFillSelection = new System.Windows.Forms.ToolStripMenuItem();
             mnuSelectAll = new System.Windows.Forms.ToolStripMenuItem();
+            mnuEditSep2 = new System.Windows.Forms.ToolStripSeparator();
+            mnuCheckMap = new System.Windows.Forms.ToolStripMenuItem();
+            mnuFixMap = new System.Windows.Forms.ToolStripMenuItem();
             mnuRules = new System.Windows.Forms.ToolStripMenuItem();
             mnuLoadScripts = new System.Windows.Forms.ToolStripMenuItem();
             mnuLoadJson = new System.Windows.Forms.ToolStripMenuItem();
@@ -203,6 +206,8 @@
             lblCgiCliff = new System.Windows.Forms.Label();
             numCgiCliff = new System.Windows.Forms.NumericUpDown();
             btnCgiScan = new System.Windows.Forms.Button();
+            btnCgiRemoveDup = new System.Windows.Forms.Button();
+            btnCgiSaveLog = new System.Windows.Forms.Button();
             toolStripCgi = new System.Windows.Forms.ToolStrip();
             tsbCgiBuild = new System.Windows.Forms.ToolStripButton();
             tsbCgiLoad = new System.Windows.Forms.ToolStripButton();
@@ -287,6 +292,9 @@
             btnBuildFromFile = new System.Windows.Forms.Button();
             btnOpenOutput = new System.Windows.Forms.Button();
             btnBuildCancel = new System.Windows.Forms.Button();
+            btnCheckMap = new System.Windows.Forms.Button();
+            btnFixMap = new System.Windows.Forms.Button();
+            btnOpenLog = new System.Windows.Forms.Button();
             grpM2B = new System.Windows.Forms.GroupBox();
             lblM2BFile = new System.Windows.Forms.Label();
             txtM2BFile = new System.Windows.Forms.TextBox();
@@ -308,6 +316,9 @@
             btnOpenOutputFolder = new System.Windows.Forms.Button();
             btnOpenScriptFolder = new System.Windows.Forms.Button();
             txtHelp = new System.Windows.Forms.TextBox();
+            panelHelpTop = new System.Windows.Forms.Panel();
+            lblHelpLanguage = new System.Windows.Forms.Label();
+            cmbHelpLanguage = new System.Windows.Forms.ComboBox();
             toolTip = new System.Windows.Forms.ToolTip(components);
             timerThumbnail = new System.Windows.Forms.Timer(components);
             ((System.ComponentModel.ISupportInitialize)splitColors).BeginInit();
@@ -397,6 +408,7 @@
             flowBuildButtons.SuspendLayout();
             grpM2B.SuspendLayout();
             flowSettingsButtons.SuspendLayout();
+            panelHelpTop.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)numColorTableZoom).BeginInit();
             ((System.ComponentModel.ISupportInitialize)picTilePreview).BeginInit();
             ((System.ComponentModel.ISupportInitialize)numCgiX).BeginInit();
@@ -500,7 +512,7 @@
             // 
             // mnuEdit
             // 
-            mnuEdit.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { mnuUndo, mnuRedo, mnuEditSep1, mnuCopy, mnuCut, mnuPaste, mnuDeleteSelection, mnuFillSelection, mnuSelectAll });
+            mnuEdit.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { mnuUndo, mnuRedo, mnuEditSep1, mnuCopy, mnuCut, mnuPaste, mnuDeleteSelection, mnuFillSelection, mnuSelectAll, mnuEditSep2, mnuCheckMap, mnuFixMap });
             mnuEdit.Text = "&Bearbeiten";
             mnuEdit.Name = "mnuEdit";
             // 
@@ -563,6 +575,22 @@
             mnuSelectAll.ShortcutKeyDisplayString = "Strg+A";
             mnuSelectAll.Name = "mnuSelectAll";
             mnuSelectAll.Click += MnuSelectAll_Click;
+            // 
+            // mnuEditSep2
+            // 
+            mnuEditSep2.Name = "mnuEditSep2";
+            // 
+            // mnuCheckMap
+            // 
+            mnuCheckMap.Text = "Karte &prüfen (Log)…";
+            mnuCheckMap.Name = "mnuCheckMap";
+            mnuCheckMap.Click += BtnCheckMap_Click;
+            // 
+            // mnuFixMap
+            // 
+            mnuFixMap.Text = "Karte automatisch &reparieren";
+            mnuFixMap.Name = "mnuFixMap";
+            mnuFixMap.Click += BtnFixMap_Click;
             // 
             // mnuRules
             // 
@@ -778,6 +806,7 @@
             // tabHelp
             // 
             tabHelp.Controls.Add(txtHelp);
+            tabHelp.Controls.Add(panelHelpTop);
             tabHelp.Text = "Hilfe";
             tabHelp.UseVisualStyleBackColor = true;
             tabHelp.Padding = new System.Windows.Forms.Padding(3);
@@ -1769,8 +1798,10 @@
             panelCgiProblemsTop.Controls.Add(lblCgiCliff);
             panelCgiProblemsTop.Controls.Add(numCgiCliff);
             panelCgiProblemsTop.Controls.Add(btnCgiScan);
+            panelCgiProblemsTop.Controls.Add(btnCgiRemoveDup);
+            panelCgiProblemsTop.Controls.Add(btnCgiSaveLog);
             panelCgiProblemsTop.Dock = System.Windows.Forms.DockStyle.Top;
-            panelCgiProblemsTop.Size = new System.Drawing.Size(290, 60);
+            panelCgiProblemsTop.Size = new System.Drawing.Size(290, 92);
             panelCgiProblemsTop.Name = "panelCgiProblemsTop";
             // 
             // lblCgiCliff
@@ -1797,6 +1828,24 @@
             btnCgiScan.UseVisualStyleBackColor = true;
             btnCgiScan.Name = "btnCgiScan";
             btnCgiScan.Click += BtnCgiScan_Click;
+            // 
+            // btnCgiRemoveDup
+            // 
+            btnCgiRemoveDup.Location = new System.Drawing.Point(4, 60);
+            btnCgiRemoveDup.Size = new System.Drawing.Size(130, 25);
+            btnCgiRemoveDup.Text = "Doppelte entfernen";
+            btnCgiRemoveDup.UseVisualStyleBackColor = true;
+            btnCgiRemoveDup.Name = "btnCgiRemoveDup";
+            btnCgiRemoveDup.Click += BtnCgiRemoveDup_Click;
+            // 
+            // btnCgiSaveLog
+            // 
+            btnCgiSaveLog.Location = new System.Drawing.Point(140, 60);
+            btnCgiSaveLog.Size = new System.Drawing.Size(110, 25);
+            btnCgiSaveLog.Text = "Log speichern";
+            btnCgiSaveLog.UseVisualStyleBackColor = true;
+            btnCgiSaveLog.Name = "btnCgiSaveLog";
+            btnCgiSaveLog.Click += BtnCgiSaveLog_Click;
             // 
             // toolStripCgi
             // 
@@ -2524,8 +2573,11 @@
             flowBuildButtons.Controls.Add(btnBuildFromFile);
             flowBuildButtons.Controls.Add(btnOpenOutput);
             flowBuildButtons.Controls.Add(btnBuildCancel);
+            flowBuildButtons.Controls.Add(btnCheckMap);
+            flowBuildButtons.Controls.Add(btnFixMap);
+            flowBuildButtons.Controls.Add(btnOpenLog);
             flowBuildButtons.Dock = System.Windows.Forms.DockStyle.Bottom;
-            flowBuildButtons.Size = new System.Drawing.Size(200, 70);
+            flowBuildButtons.Size = new System.Drawing.Size(200, 100);
             flowBuildButtons.Padding = new System.Windows.Forms.Padding(3);
             flowBuildButtons.Name = "flowBuildButtons";
             // 
@@ -2564,6 +2616,33 @@
             btnBuildCancel.Margin = new System.Windows.Forms.Padding(3);
             btnBuildCancel.Name = "btnBuildCancel";
             btnBuildCancel.Click += LblCancel_Click;
+            // 
+            // btnCheckMap
+            // 
+            btnCheckMap.Text = "Karte prüfen (Log)";
+            btnCheckMap.UseVisualStyleBackColor = true;
+            btnCheckMap.AutoSize = true;
+            btnCheckMap.Margin = new System.Windows.Forms.Padding(3);
+            btnCheckMap.Name = "btnCheckMap";
+            btnCheckMap.Click += BtnCheckMap_Click;
+            // 
+            // btnFixMap
+            // 
+            btnFixMap.Text = "Karte reparieren";
+            btnFixMap.UseVisualStyleBackColor = true;
+            btnFixMap.AutoSize = true;
+            btnFixMap.Margin = new System.Windows.Forms.Padding(3);
+            btnFixMap.Name = "btnFixMap";
+            btnFixMap.Click += BtnFixMap_Click;
+            // 
+            // btnOpenLog
+            // 
+            btnOpenLog.Text = "Log öffnen";
+            btnOpenLog.UseVisualStyleBackColor = true;
+            btnOpenLog.AutoSize = true;
+            btnOpenLog.Margin = new System.Windows.Forms.Padding(3);
+            btnOpenLog.Name = "btnOpenLog";
+            btnOpenLog.Click += BtnOpenLog_Click;
             // 
             // grpM2B
             // 
@@ -2756,6 +2835,29 @@
             txtHelp.BackColor = System.Drawing.SystemColors.Window;
             txtHelp.Name = "txtHelp";
             // 
+            // panelHelpTop
+            // 
+            panelHelpTop.Controls.Add(lblHelpLanguage);
+            panelHelpTop.Controls.Add(cmbHelpLanguage);
+            panelHelpTop.Dock = System.Windows.Forms.DockStyle.Top;
+            panelHelpTop.Size = new System.Drawing.Size(800, 32);
+            panelHelpTop.Name = "panelHelpTop";
+            // 
+            // lblHelpLanguage
+            // 
+            lblHelpLanguage.AutoSize = true;
+            lblHelpLanguage.Location = new System.Drawing.Point(6, 8);
+            lblHelpLanguage.Text = "Sprache / Language:";
+            lblHelpLanguage.Name = "lblHelpLanguage";
+            // 
+            // cmbHelpLanguage
+            // 
+            cmbHelpLanguage.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            cmbHelpLanguage.Location = new System.Drawing.Point(130, 4);
+            cmbHelpLanguage.Size = new System.Drawing.Size(140, 23);
+            cmbHelpLanguage.Name = "cmbHelpLanguage";
+            cmbHelpLanguage.SelectedIndexChanged += CmbHelpLanguage_SelectedIndexChanged;
+            // 
             // toolTip
             // 
             // 
@@ -2805,6 +2907,8 @@
             ((System.ComponentModel.ISupportInitialize)numM2BWidth).EndInit();
             ((System.ComponentModel.ISupportInitialize)numM2BHeight).EndInit();
             ((System.ComponentModel.ISupportInitialize)numM2BMapNo).EndInit();
+            panelHelpTop.ResumeLayout(false);
+            panelHelpTop.PerformLayout();
             flowSettingsButtons.ResumeLayout(false);
             flowSettingsButtons.PerformLayout();
             grpM2B.ResumeLayout(false);
@@ -2988,6 +3092,9 @@
         private System.Windows.Forms.ToolStripMenuItem mnuDeleteSelection;
         private System.Windows.Forms.ToolStripMenuItem mnuFillSelection;
         private System.Windows.Forms.ToolStripMenuItem mnuSelectAll;
+        private System.Windows.Forms.ToolStripSeparator mnuEditSep2;
+        private System.Windows.Forms.ToolStripMenuItem mnuCheckMap;
+        private System.Windows.Forms.ToolStripMenuItem mnuFixMap;
         private System.Windows.Forms.ToolStripMenuItem mnuRules;
         private System.Windows.Forms.ToolStripMenuItem mnuLoadScripts;
         private System.Windows.Forms.ToolStripMenuItem mnuLoadJson;
@@ -3139,6 +3246,8 @@
         private System.Windows.Forms.Label lblCgiCliff;
         private System.Windows.Forms.NumericUpDown numCgiCliff;
         private System.Windows.Forms.Button btnCgiScan;
+        private System.Windows.Forms.Button btnCgiRemoveDup;
+        private System.Windows.Forms.Button btnCgiSaveLog;
         private System.Windows.Forms.ToolStrip toolStripCgi;
         private System.Windows.Forms.ToolStripButton tsbCgiBuild;
         private System.Windows.Forms.ToolStripButton tsbCgiLoad;
@@ -3223,6 +3332,9 @@
         private System.Windows.Forms.Button btnBuildFromFile;
         private System.Windows.Forms.Button btnOpenOutput;
         private System.Windows.Forms.Button btnBuildCancel;
+        private System.Windows.Forms.Button btnCheckMap;
+        private System.Windows.Forms.Button btnFixMap;
+        private System.Windows.Forms.Button btnOpenLog;
         private System.Windows.Forms.GroupBox grpM2B;
         private System.Windows.Forms.Label lblM2BFile;
         private System.Windows.Forms.TextBox txtM2BFile;
@@ -3244,6 +3356,9 @@
         private System.Windows.Forms.Button btnOpenOutputFolder;
         private System.Windows.Forms.Button btnOpenScriptFolder;
         private System.Windows.Forms.TextBox txtHelp;
+        private System.Windows.Forms.Panel panelHelpTop;
+        private System.Windows.Forms.Label lblHelpLanguage;
+        private System.Windows.Forms.ComboBox cmbHelpLanguage;
         private System.Windows.Forms.ToolTip toolTip;
         private System.Windows.Forms.Timer timerThumbnail;
     }

@@ -1,6 +1,6 @@
 ﻿// /***************************************************************************
 //  *
-//  * Dragon Map Studio – help text (tab "Hilfe", F1)
+//  * Dragon Map Studio – help text (tab "Hilfe", F1) in German and English
 //  *
 //  ***************************************************************************/
 
@@ -8,115 +8,220 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
 {
     public static class StudioHelp
     {
-        public const string Text =
-@"DRAGON MAP STUDIO
-=================
-Nachbau und Erweiterung von Dragon 1.03.62 (IMod13): Karten als 8-Bit-Bild malen,
+        public static string Text => TextDe;
+
+        public const string TextDe =
+@"DRAGON MAP STUDIO – ANLEITUNG (Deutsch)
+=======================================
+Nachbau und Erweiterung von Dragon 1.03.62 (IMod13): Karte als 8-Bit-Bild malen,
 daraus map#.mul / staidx#.mul / statics#.mul (und map#LegacyMUL.uop) erzeugen.
 
-Grundidee
+GRUNDIDEE
 ---------
-Jedes Pixel der Karte ist ein Tile. Der Pixelwert (Palettenindex 00..ff) ist die
-""Farbadresse"". maptrans.txt sagt für jede Adresse: Höhe (Z) + Land-Tiles.
-groups.txt ordnet jede Adresse einer Gruppe zu (Gras, Wald, Wasser …).
-Zwischen Gruppen setzt der Build automatisch Übergänge (map/, statics/ …)
-und verteilt Items (Bäume, Steine …) aus items/.
+Jedes Pixel ist ein Tile. Der Pixelwert (Palettenindex 00..ff) ist die ""Farbadresse"".
+maptrans.txt: Adresse -> Höhe (Z) + Land-Tiles (eins davon zufällig).
+groups.txt:   Adresse -> Gruppe (Gras, Wald, Wasser …).
+Zwischen Gruppen setzt der Build Übergänge (map/, statics/ …) und verteilt Items (items/).
 
-1. Farbtabelle
+1. FARBTABELLE
 --------------
-* Linksklick auf eine Farbe  = Adresse in die Zwischenablage (Format oben wählbar).
-* Rechtsklick                = Farbe 1 (Malfarbe links) im Editor.
-* Mittlere Maustaste         = Farbe 2 (Malfarbe rechts).
-* Rechts: alle 256 Farben, Infos (Gruppe, Höhe, Tiles, Tile-Bild wenn Client geladen)
-  und alle Werte zum Bearbeiten.
-* ""Neue Farbe definieren"" nimmt den ersten freien Index – damit kannst du eigene
-  Farben/Terrains für Bilder und Texturen anlegen (Tiles, Gruppe, Höhe, Textur-Bild).
-* ""Aus Regeln erzeugen"" zeichnet eine aktuelle Farbtabelle aus deinen Regeln
-  (Menü Regeln → Farbtabelle als Bild speichern).
+* Linksklick = Adresse in die Zwischenablage (Format oben wählbar).
+* Rechtsklick = Farbe 1 im Editor, mittlere Maustaste = Farbe 2.
+* Rechts: alle 256 Farben, Infos und alle Werte zum Bearbeiten.
+* ""Neue Farbe definieren"" nimmt den ersten freien Index (eigene Terrains / Texturen).
+* ""Aus Regeln erzeugen"" zeichnet eine aktuelle Farbtabelle.
+* Die Zahl in jedem Feld der Tabelle ist die Höhe (Z): ""Grass 10"" = Gras auf Z 10.
 
-2. Karten-Editor
+2. KARTEN-EDITOR
 ----------------
-Werkzeuge: Pinsel (B), Radierer = Farbe 2 (E), Sprühen, Linie (L), Rechteck,
-Rechteck gefüllt (R), Ellipse, Füllen (F), Pipette (I), Höhe + / Höhe −
-(nächste Farbe derselben Gruppe), Auswahl (S), Hand.
-Linke Maus = Farbe 1, rechte Maus = Farbe 2.
-Mausrad = Zoom, mittlere Maus / Leertaste = verschieben, Pfeiltasten = verschieben.
-[ und ] = Pinselgröße.  Strg+Z / Strg+Y = Rückgängig / Wiederholen.
-Auswahl: Strg+C, Strg+X, Strg+V (Stempel – Linksklick setzt, Esc beendet),
-Entf = mit Farbe 2 füllen, Strg+F = mit Farbe 1 füllen, Strg+A = alles.
-Links: Karten im Projekt-Ordner (öffnen, neu, duplizieren, umbenennen, löschen →
-Papierkorb), Farbauswahl und Übersicht (klicken = dorthin springen).
-Gespeichert wird immer ein 8-Bit-BMP mit Palette – genau das Dragon-Format.
+Werkzeuge: Pinsel (B), Radierer (E), Sprühen, Linie (L), Rechteck, Rechteck gefüllt (R),
+Ellipse, Füllen (F), Pipette (I), Höhe + / −, Auswahl (S), Hand (H).
+Linke Maus = Farbe 1, rechte Maus = Farbe 2. Mausrad = Zoom, mittlere Maus / Leertaste
+= verschieben. [ ] = Pinselgröße. Strg+Z / Strg+Y. Auswahl: Strg+C / X / V, Entf, Strg+F, Strg+A.
+""CGI-Ansicht hier"" zeigt dieselbe Stelle wie im Client.
+Bearbeiten -> ""Karte prüfen (Log)"" und ""Karte automatisch reparieren"".
 
-2b. CGI-Ansicht (Client-Ansicht)
---------------------------------
-Zeigt die gebaute Karte wie der Client: Land-Kacheln, Texturen an Hängen, Statics mit Hue,
-in Client-Reihenfolge. Braucht die in UoFiddler geladenen Client-Dateien (sonst Ersatzfarben).
-* ""Aus Editor-Karte bauen"" baut die Karte im Speicher (Übergänge, Items …) und zeigt sie.
-  Im Karten-Editor: ""CGI-Ansicht hier"" springt an dieselbe Stelle.
-* ""MUL / UOP laden"" zeigt eine fertige Karte (map#.mul/.uop + staidx/statics im Ordner).
-* Rechts: Übersicht (klicken = springen, orange = Auswahl im Karten-Editor), Gehe zu X/Y,
-  Item-Liste mit Suche, Hue, Z, Multis, Eigenschaften der Auswahl, Fehlersuche.
-* Werkzeuge: Auswahl, Static setzen, Multi setzen, Löschen, Färben.
-  Rechtsklick auf ein Static = ID und Hue übernehmen.
-* Tasten (Ansicht anklicken):
-  Pfeile          = Auswahl um 1 Tile verschieben (ohne Auswahl: Ansicht verschieben)
-                    ↑ = Norden (y−1), ↓ = Süden, ← = Westen (x−1), → = Osten
-  Strg + Pfeil    = Kopie der Auswahl daneben einfügen (die Kopie wird ausgewählt –
-                    mehrmals drücken = Zaun / Mauer ziehen)
-  Bild↑ / Bild↓   = Z +1 / −1 (mit Umschalt ±5)
-  Entf = löschen, H = mit Hue färben, Esc = Auswahl aufheben
-  Strg+C / Strg+V = kopieren / einfügen (Linksklick setzt, mehrfach möglich)
-  Strg+A = alle Statics unter der Maus wählen, Strg+Z / Strg+Y = Rückgängig / Wiederholen
-  Mausrad = Zoom, mittlere Maus / Leertaste + ziehen = verschieben
-* Max Z blendet Statics darüber aus (unter Dächer schauen).
-* Probleme: Land/Statics ohne Grafik, Steilkanten, Statics im Boden, doppelte Statics –
-  rot markiert, Klick in der Liste springt hin.
-* Speichern: Statics (bei gebauter Karte auch map#.mul und ggf. UOP) – alte Dateien → .bak.
+3. TIPPS AUS DEM DRAGON-TUTORIAL (Ryandor, 2002)
+------------------------------------------------
+* Anfang: ganze Karte mit ""Water -5"" füllen, dann Kontinente mit ""Grass 0"" malen.
+  Dungeon-Bereich (Felucca/Trammel x > 5119) mit ""Black 0"" füllen.
+* Hügel: ""Grass 5"" Fläche, darin kleiner ""Grass 10"" usw. – Höhen in Stufen malen
+  (5, 10, 15, 20 …), keine großen Sprünge.
+* Übergänge brauchen MINDESTENS 2 TILES nebeneinander. Einzelne Pixel und 1 Tile
+  breite Streifen erzeugen Fehler (""Contract selection by at least 2"").
+* Sumpf (Swamp) muss IMMER von mindestens 2 Tiles Gras umgeben sein – Dragon hat für Sumpf
+  nur Übergänge zu Gras.
+* Berge in Ringen: Rand ""Rock 20"", 1 Tile nach innen ""Rock 30"", dann 50, 60, zufällig 65, 70.
+  Nicht über 80 in kleinen Flächen (OSI-Berge liegen meist bei 60–70).
+* Gemischtes Gelände (z. B. Wald über einen Hügel): für jede Höhe die passende Farbe
+  derselben Höhe nehmen (Forest 5 auf Grass 5, Forest 10 auf Grass 10 …).
+* Flüsse: ""Water -5"" malen, Ufer mindestens 2 Tiles breit mit Land-Höhen ansteigen lassen.
+* Grass-""Cliffs"" (GrassBump): immer TIEFER als das angrenzende Gras malen.
+* Dungeons: Gänge/Räume mit Cave- oder Floorplate-Farben – die Wände entstehen automatisch.
+  Für Treppen 1–2 Tiles Lücke mit passender ""Black""-Höhe lassen.
+* Städte/Wege: Böden lieber als Map-Tiles (z. B. Cobblestone) – spart Statics.
+* Übergangs-Zeile ""AAAABBBB 0238 005 007"": das Tile bekommt die alte Höhe + Zufall 5..7
+  (damit Gras weich in Berge übergeht). Statics: höchste Höhe der Nachbarn der Quellgruppe + Z.
+* Unebenheit (unevenly.txt): nicht gewünschte Zeilen mit // auskommentieren.
+* Lava im Original-Dragon funktioniert nicht zuverlässig.
 
-3. Generator & Umriss
+4. KARTE PRÜFEN UND REPARIEREN
+------------------------------
+""Karte prüfen (Log)"" schreibt map_check_log.txt (Deutsch + Englisch, mit Koordinaten) –
+diese Datei kann man zur Analyse weiterschicken. Gefunden werden:
+  Farben ohne maptrans-Eintrag, Einzel-Tiles / 1-Tile-Streifen, Sumpf ohne Gras-Ring,
+  Gruppen ohne Übergang, zu steile Berge, große Höhensprünge, GrassBump nicht tiefer
+  als Gras, Paare ohne Übergang, die nicht repariert werden können.
+""Karte reparieren"" behebt (mit Rückgängig):
+  * Einzel-Tiles und 1er-Streifen -> häufigste Nachbar-Gruppe
+  * Umgebungs-Regeln (Standard 18:00:2 = Sumpf mit 2 Tiles Gras umgeben)
+  * Brücken-Gruppen zwischen Gruppen ohne Übergang
+  * Berg-Profil (Ringe 20 30 50 60 65 70 80 90)
+  * Höhensprünge begrenzen (Land 10, Berg 20)
+Einstellungen: Reiter ""MUL / UOP erzeugen"" -> ""5 Reparatur"". ""Vor dem Build reparieren""
+repariert nur eine Kopie beim Build.
+
+5. CGI-ANSICHT (Client-Ansicht)
+-------------------------------
+Zeigt die gebaute Karte wie der Client (Land-Art, Texturen an Hängen, Statics mit Hue).
+* ""Aus Editor-Karte bauen"" oder ""MUL / UOP laden"".
+* Rechts: Übersicht (Klick = springen, orange = Auswahl aus dem Editor), Gehe zu X/Y,
+  Items mit Suche, Hue, Z, Multis, Auswahl-Eigenschaften, Probleme.
+* Werkzeuge: Auswahl, Static setzen, Multi setzen, Löschen, Färben. Rechtsklick = übernehmen.
+* Tasten: Pfeile = Auswahl verschieben (ohne Auswahl: Ansicht), Strg+Pfeil = Kopie daneben,
+  Bild↑/↓ = Z ±1 (Umschalt ±5), Entf, H = färben, Esc, Strg+C/V, Strg+A, Strg+Z/Y.
+* Probleme: ""Ganze Karte prüfen"", ""Doppelte entfernen"", ""Log speichern"".
+* Speichern: Statics (bei gebauter Karte auch Map / UOP), alte Dateien -> .bak.
+
+6. GENERATOR & UMRISS
 ---------------------
-Generator: Zufallswelt (Seed, Land %, Kontinent-Größe, Gebirge, Schnee, Klima,
-Strand). Die Höhe wird über die Farbe der Gruppe kodiert (wie in der IMod-Tabelle).
-Biome: Tabelle Klima → Gruppe (Reihenfolge = Priorität).
-Umriss-Bild: Bild eines Landes laden (PNG mit Transparenz oder dunkle Silhouette
-auf hellem Grund).
-* ""In Karte zeichnen"": Land/Wasser oder nur die Küstenlinie in die Karte malen.
-* ""Als Maske für Generator"": der Generator erzeugt Land nur innerhalb des Umrisses
-  (mit natürlicher Küste, Gebirgen und Biomen).
-* ""Maske aus aktueller Karte"": deine gemalte Land/Wasser-Verteilung als Maske.
+Generator: Seed, Land %, Kontinent-Größe, Gebirge, Schnee, Klima, Strand.
+""Nach dem Erzeugen reparieren"" wendet die Tutorial-Regeln an.
+Umriss-Bild (PNG mit Transparenz oder dunkle Silhouette): in die Karte zeichnen oder als
+Maske für den Generator.
 
-4. Regeln & Skripte
+7. REGELN & SKRIPTE
 -------------------
-Alle Dragon-Daten in Tabellen: Gruppen, Farben (maptrans), Übergänge mit Muster-
-Vorschau (3×3, Mitte = Zelle, A = eigene Gruppe, B = Nachbar), Items mit
-Objekt-Gruppen, Unebenheit, Fix-Tabelle und Farb-Aliase (fremde RGB-Farben →
-Adresse, z. B. für Bilder aus anderen Programmen).
-Speichern: als eigenes JSON (alles in einer Datei, erweiterbar) oder zurück als
-Dragon-Skript-Ordner. Auskommentierte Zeilen bleiben als ""deaktiviert"" erhalten.
-Muster-Reihenfolge: NW N NO O SO S SW W  (Uhrzeigersinn, Nordwesten zuerst).
+Gruppen, Farben, Übergänge (3×3-Vorschau, NW N NO O SO S SW W; A = eigene Gruppe,
+B = Nachbar), Items, Unebenheit, Fix-Tabelle, Farb-Aliase. Speichern als JSON oder als
+Dragon-Skript-Ordner.
 
-5. MUL / UOP erzeugen
+8. MUL / UOP ERZEUGEN
 ---------------------
-Ausgabe-Ordner, Karten-Nummer, MUL und/oder UOP, Statics, WSC (UOX3).
-Schritte: Farben → Tiles, Unebenheit, Map-Übergänge, Static-Übergänge, Items,
-Fix-Tabelle, optional alte Statics übernehmen (wie Dragonsp).
-build_report.txt listet Rand-Tiles ohne Übergang:
-  ""Muster fehlt"" → Muster in der Übergangsdatei ergänzen,
-  ""Regel fehlt""  → für diese zwei Gruppen eine Übergangsdatei anlegen.
-MUL / UOP → BMP: bestehende Karte einlesen (wie Dragon_m2b) und weiter bearbeiten.
+Farben -> Tiles, Unebenheit, Map-Übergänge, Static-Übergänge, Items, Fix-Tabelle,
+doppelte Statics entfernen. dragon_log.txt (Deutsch + Englisch) listet alles inkl.
+fehlender Übergänge mit Koordinaten. ""Log öffnen"" zeigt den Ausgabe-Ordner.
+MUL / UOP -> BMP: bestehende Karte einlesen.
 
-6. Einstellungen
-----------------
-Projekt-Ordner (Karten), Ausgabe-Ordner (MUL/UOP), Skript-Ordner, Farbtabelle,
-Palette, Regelsatz-JSON, Kopier-Format, Undo-Speicher.
-Die Einstellungen liegen in %AppData%\UoFiddler\DragonMapStudio\settings.json
-(bzw. im UoFiddler-Datenordner).
+Dateien: DragonData\Scripts (IMod13-Skripte), DragonData\Addon (Farbtabelle, Paletten).
+Einstellungen: %AppData%\UoFiddler\DragonMapStudio\settings.json
+";
 
-Dateien
--------
-DragonData\Scripts  = Original IMod13-Skripte (groups, maptrans, map, statics, items …)
-DragonData\Addon    = Farbtabelle, Paletten (ACT/ACO/PAL), Photoshop-Pinsel/Aktionen
+        public const string TextEn =
+@"DRAGON MAP STUDIO – MANUAL (English)
+====================================
+Rebuild and extension of Dragon 1.03.62 (IMod13): paint the map as an 8 bit image and
+build map#.mul / staidx#.mul / statics#.mul (and map#LegacyMUL.uop) from it.
+
+BASIC IDEA
+----------
+Every pixel is one tile. The pixel value (palette index 00..ff) is the ""colour address"".
+maptrans.txt: address -> altitude (Z) + land tiles (one of them is picked randomly).
+groups.txt:   address -> group (grass, forest, water …).
+Between groups the build places transitions (map/, statics/ …) and random items (items/).
+
+1. COLOUR TABLE
+---------------
+* Left click = copy the address to the clipboard (format selectable above).
+* Right click = colour 1 in the editor, middle button = colour 2.
+* Right side: all 256 colours, details and all values for editing.
+* ""Neue Farbe definieren"" (new colour) uses the first free index (own terrains / textures).
+* ""Aus Regeln erzeugen"" draws an up to date colour table.
+* The number inside each square is the altitude: ""Grass 10"" = grass at Z 10.
+
+2. MAP EDITOR
+-------------
+Tools: brush (B), eraser (E), spray, line (L), rectangle, filled rectangle (R), ellipse,
+fill (F), picker (I), height + / −, selection (S), hand (H).
+Left mouse = colour 1, right mouse = colour 2. Wheel = zoom, middle mouse / space = pan.
+[ ] = brush size. Ctrl+Z / Ctrl+Y. Selection: Ctrl+C / X / V, Del, Ctrl+F, Ctrl+A.
+""CGI-Ansicht hier"" shows the same place like the client does.
+Edit -> ""Karte prüfen (Log)"" (check map) and ""Karte automatisch reparieren"" (repair).
+
+3. TIPS FROM THE DRAGON TUTORIAL (Ryandor, 2002)
+------------------------------------------------
+* Start: flood fill the whole map with ""Water -5"", paint continents with ""Grass 0"".
+  Dungeon area (Felucca/Trammel x > 5119): fill with ""Black 0"".
+* Hills: an area of ""Grass 5"", a smaller ""Grass 10"" inside etc. – paint heights in steps
+  (5, 10, 15, 20 …), no big jumps.
+* Transitions need AT LEAST 2 TILES side by side. Single pixels and 1 tile wide strips cause
+  errors (""contract selection by at least 2"").
+* Swamp must ALWAYS be surrounded by at least 2 tiles of grass – Dragon only has swamp
+  transitions to grass.
+* Mountains in rings: border ""Rock 20"", one tile inwards ""Rock 30"", then 50, 60, random 65, 70.
+  Not over 80 in small spots (OSI mountains are mostly 60–70).
+* Mixed terrain (e.g. forest over a hill): use the colour of the same height
+  (Forest 5 on Grass 5, Forest 10 on Grass 10 …).
+* Rivers: paint ""Water -5"", let the banks rise over at least 2 tiles.
+* Grass ""cliffs"" (GrassBump): always LOWER than the adjacent grass.
+* Dungeons: corridors / rooms with cave or floorplate colours – walls are created automatically.
+  Leave a 1–2 tile gap with the right ""Black"" height for stairs.
+* Towns / roads: floors better as map tiles (e.g. cobblestone) – keeps the statics small.
+* Transition line ""AAAABBBB 0238 005 007"": the tile gets the old height + random 5..7
+  (so grass flows into mountains). Statics: highest z of the neighbours of the source group + Z.
+* Unevenly (unevenly.txt): comment out lines you don't want with //.
+* Lava did not work reliably in the original Dragon.
+
+4. CHECK AND REPAIR THE MAP
+---------------------------
+""Karte prüfen (Log)"" writes map_check_log.txt (German + English, with coordinates) – send
+this file for analysis. Found are:
+  colours without maptrans entry, single tiles / 1 tile strips, swamp without grass ring,
+  groups without transition, too steep mountains, big height jumps, GrassBump not lower than
+  grass, pairs without transition that cannot be repaired.
+""Karte reparieren"" fixes (with undo):
+  * single tiles and 1 tile strips -> most frequent neighbour group
+  * surround rules (default 18:00:2 = swamp surrounded by 2 tiles of grass)
+  * bridge groups between groups without transition
+  * mountain profile (rings 20 30 50 60 65 70 80 90)
+  * limit height jumps (land 10, mountain 20)
+Settings: tab ""MUL / UOP erzeugen"" -> ""5 Reparatur"". ""Vor dem Build reparieren"" repairs
+only a copy while building.
+
+5. CGI VIEW (client view)
+-------------------------
+Shows the built map like the client (land art, textures on slopes, statics with hue).
+* ""Aus Editor-Karte bauen"" (build from editor) or ""MUL / UOP laden"" (load).
+* Right side: overview (click = jump, orange = editor selection), go to X/Y, items with
+  search, hue, Z, multis, selection properties, problems.
+* Tools: select, place static, place multi, delete, colour. Right click = take id + hue.
+* Keys: arrows = move selection (no selection: view), Ctrl+arrow = copy next to it,
+  PgUp/PgDn = Z ±1 (Shift ±5), Del, H = colour, Esc, Ctrl+C/V, Ctrl+A, Ctrl+Z/Y.
+* Problems: ""Ganze Karte prüfen"", ""Doppelte entfernen"" (remove duplicates), ""Log speichern"".
+* Save: statics (for a built map also map / UOP), old files -> .bak.
+
+6. GENERATOR & OUTLINE
+----------------------
+Generator: seed, land %, continent size, mountains, snow, climate, beach.
+""Nach dem Erzeugen reparieren"" applies the tutorial rules.
+Outline image (PNG with transparency or dark silhouette): draw it into the map or use it
+as mask for the generator.
+
+7. RULES & SCRIPTS
+------------------
+Groups, colours, transitions (3×3 preview, NW N NE E SE S SW W; A = own group,
+B = neighbour), items, unevenly, fix table, colour aliases. Save as JSON or as Dragon
+script folder.
+
+8. BUILD MUL / UOP
+------------------
+Colours -> tiles, unevenly, map transitions, static transitions, items, fix table,
+remove duplicate statics. dragon_log.txt (German + English) lists everything including
+missing transitions with coordinates. ""Log öffnen"" opens the output folder.
+MUL / UOP -> BMP: read an existing map.
+
+Files: DragonData\Scripts (IMod13 scripts), DragonData\Addon (colour table, palettes).
+Settings: %AppData%\UoFiddler\DragonMapStudio\settings.json
 ";
     }
 }

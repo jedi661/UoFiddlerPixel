@@ -97,7 +97,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             }
             cmbM2BSize.SelectedIndex = 1;
 
-            txtHelp.Text = StudioHelp.Text.Replace("\n", Environment.NewLine).Replace("\r\r", "\r");
+            InitHelp();
             toolTip.SetToolTip(colorTableView, "Linksklick = Adresse kopieren, Rechtsklick = Farbe 1, Mitte = Farbe 2");
             toolTip.SetToolTip(paletteGrid, "Linksklick = auswählen, Rechtsklick = Farbe 2 im Editor");
 

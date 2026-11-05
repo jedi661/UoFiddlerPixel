@@ -220,7 +220,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         [Category("6 Gruppen"), DisplayName("Ersatz-Gruppe"), Description("Wenn kein Biom passt (IMod13: 0 = Grass).")]
         public int FallbackGroup { get; set; } = 0x00;
 
-        [Category("6 Gruppen"), DisplayName("Biome ohne Übergang trennen"), Description("Setzt zwischen zwei Gruppen ohne Übergangs-Regel eine Gruppe, die zu beiden Übergänge hat (z. B. Wald zwischen Gras und GrassBump). Vermeidet harte Kanten.")]
+        [Category("6 Gruppen"), DisplayName("Nach dem Erzeugen reparieren"), Description("Tutorial-Regeln anwenden: keine 1-Tile-Streifen, Brücken-Gruppen zwischen Gruppen ohne Übergang, Sumpf mit Gras umgeben, Berge in Ringen ansteigen lassen, keine Stacheln.")]
         public bool SeparateBiomes { get; set; } = true;
 
         [Category("7 Umriss-Maske"), DisplayName("Umriss-Maske benutzen"), Description("Land nur dort, wo die geladene Umriss-Maske Land ist.")]
@@ -272,8 +272,6 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         private readonly DragonRuleSet _rules;
         private readonly GeneratorSettings _s;
         private readonly int[][] _altLookup = new int[256][];
-        private static readonly int[] NeighbourDx = { -1, 1, 0, 0, -1, 1, -1, 1 };
-        private static readonly int[] NeighbourDy = { 0, 0, -1, 1, -1, -1, 1, 1 };
 
         public MapGenerator(DragonRuleSet rules, GeneratorSettings settings)
         {
@@ -435,87 +433,17 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             AddBeaches(map, height, seaLevel, ridge, mountainLevel, sx, seed, cancel);
             if (_s.SeparateBiomes)
             {
-                SeparateBiomes(map, cancel);
+                // tutorial rules: no 1 tile strips, bridge groups, swamp in grass, mountains in rings, no spikes
+                var fix = new MapFixOptions
+                {
+                    WaterGroup = _s.WaterGroup,
+                    MountainGroup = _s.MountainGroup,
+                    FallbackGroup = _s.FallbackGroup
+                };
+                MapFixer.Fix(map, _rules, fix, null, cancel);
             }
             progress?.Report(100);
             return map;
-        }
-
-        /// <summary>
-        /// Where two neighbouring groups have no map transition in either direction, the cell gets a "bridge" group
-        /// that has transitions to both (fallback group first, then the biome groups).
-        /// </summary>
-        private void SeparateBiomes(IndexedMap map, CancellationToken cancel)
-        {
-            HashSet<int> pairs = _rules.MapTransitionPairs();
-            if (pairs.Count == 0)
-            {
-                return;
-            }
-            var groupOf = new int[256];
-            var altOf = new int[256];
-            foreach (DragonPaletteEntry e in _rules.Palette)
-            {
-                groupOf[e.Index] = e.Group;
-                altOf[e.Index] = e.Altitude;
-            }
-            var candidates = new List<int> { _s.FallbackGroup };
-            candidates.AddRange(_s.Biomes.Where(b => b.Enabled).Select(b => b.Group));
-            candidates.Add(_s.BeachGroup);
-            candidates = candidates.Distinct().ToList();
-            var bridges = new Dictionary<int, int>();
-            int Bridge(int g, int n)
-            {
-                int key = (g << 8) | n;
-                if (!bridges.TryGetValue(key, out int b))
-                {
-                    b = candidates.FirstOrDefault(c => c != g && c != n && _rules.NearestIndex(c, 0) >= 0 &&
-                                                       pairs.Contains((c << 8) | g) && pairs.Contains((c << 8) | n), -1);
-                    bridges[key] = b;
-                }
-                return b;
-            }
-
-            int w = map.Width, h = map.Height, water = _s.WaterGroup;
-            byte[] px = map.Pixels;
-            for (int pass = 0; pass < 2; pass++)
-            {
-                for (int y = 0; y < h; y++)
-                {
-                    for (int x = 0; x < w; x++)
-                    {
-                        int i = y * w + x;
-                        int g = groupOf[px[i]];
-                        if (g < 0 || g == water)
-                        {
-                            continue;
-                        }
-                        for (int k = 0; k < 8; k++)
-                        {
-                            int nx = x + NeighbourDx[k], ny = y + NeighbourDy[k];
-                            if (nx < 0 || ny < 0 || nx >= w || ny >= h)
-                            {
-                                continue;
-                            }
-                            int n = groupOf[px[ny * w + nx]];
-                            if (n < 0 || n == g || n == water || pairs.Contains((g << 8) | n))
-                            {
-                                continue;
-                            }
-                            int b = Bridge(g, n);
-                            if (b >= 0)
-                            {
-                                px[i] = IndexFor(b, altOf[px[i]]);
-                            }
-                            break;
-                        }
-                    }
-                    if ((y & 63) == 0)
-                    {
-                        cancel.ThrowIfCancellationRequested();
-                    }
-                }
-            }
         }
 
         private static double Rel(double v) => v > 1.5 ? v / 6144.0 : Math.Clamp(v, 0.005, 2);

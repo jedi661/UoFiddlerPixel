@@ -116,6 +116,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         [Browsable(false)]
         public int BrushSize { get; set; } = 8;
 
+        /// <summary>Version of the settings file (for changed defaults).</summary>
+        [Browsable(false)]
+        public int SettingsVersion { get; set; }
+
+        public const int CurrentSettingsVersion = 3;
+
         // ------------------------------------------------------------------ storage
 
         [JsonIgnore, Browsable(false)]
@@ -184,6 +190,16 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             Generator.Biomes ??= GeneratorSettings.CreateDefaultBiomes();
             Outline ??= new OutlineSettings();
             Build ??= new BuildOptions();
+            Build.Fix ??= new MapFixOptions();
+            if (SettingsVersion < CurrentSettingsVersion)
+            {
+                // version 3: defaults from the Dragon tutorial (one random static id per line, duplicates removed)
+                Build.StaticMode = StaticTileMode.RandomOne;
+                Build.RemoveDuplicateStatics = true;
+                Build.StaticZFromNeighbours = true;
+                Generator.SeparateBiomes = true;
+                SettingsVersion = CurrentSettingsVersion;
+            }
             RecentMaps ??= new List<string>();
 
             string data = StudioPaths.DataFolder;

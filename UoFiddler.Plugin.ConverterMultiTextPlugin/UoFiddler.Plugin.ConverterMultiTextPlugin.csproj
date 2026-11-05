@@ -114,6 +114,9 @@
 		<Compile Update="DragonMapStudio\DragonMapStudioForm.Cgi.cs">
 			<DependentUpon>DragonMapStudioForm.cs</DependentUpon>
 		</Compile>
+		<Compile Update="DragonMapStudio\DragonMapStudioForm.Fix.cs">
+			<DependentUpon>DragonMapStudioForm.cs</DependentUpon>
+		</Compile>
 	</ItemGroup>
 	<ItemGroup>
 	  <None Update="Properties\Settings.settings">
