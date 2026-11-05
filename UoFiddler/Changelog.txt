@@ -1,3 +1,43 @@
+Version 4.12.21 #XG1
+
+- Dragon Map Studio (new) – ConverterMultiText plugin, tab Map, button "Dragon Map Studio"
+- Rebuild of Dragon 1.03.62 (IMod13): paint a map as an image, build map#.mul / staidx#.mul / statics#.mul and map#LegacyMUL.uop.
+- Uses all Dragon scripts and addons (IMod13 shipped in DragonData), reads and writes the script folder format, own JSON rule set with all information.
+- Palettes: ACT, PAL (JASC/RIFF), ACO, GPL, BMP.
+- Colour table: left click copies the colour address (format selectable), right/middle click = brush colour 1/2, generate a table from the rules.
+- Map editor: brush, eraser, spray, line, rectangle, ellipse, fill, picker, height + / −, select / copy / paste, undo / redo, overview, heights from zoom 12, map list of the project folder.
+- Generator: random continents (seed, land %, mountains, snow, climate, beach, cave entrances) and land from an outline image or mask.
+- Build: colours → tiles, unevenly, map and static transitions, items, fix table, remove duplicate statics, dragon_log.txt with missing transitions and coordinates.
+- MUL / UOP → BMP import like Dragon_m2b (map size detected from the file).
+- Map check and repair after the Dragon tutorial: single tiles, 1-tile strips, swamp ring, bridge groups, mountain rings from the ground, height jumps, GrassBump; bilingual log files.
+- Coast like the original map0: sea floor 0064 at -15, water statics 1797–179c at -5, beach -3 / -1 / 0, shore statics at water level.
+- Map analysis: reads heights of any map (e.g. original map0.mul) → map_analysis_log.txt.
+- Dragon Map Studio – CGI view
+- Client view of the built or loaded map (land art, textures on slopes, statics with hue) and 2D view from above (key T).
+- Statics: select, place, multis, delete, hue; arrows move, Ctrl+arrow copies, PgUp/PgDn z; selected statics are marked in the item catalogue (key I).
+- Land: paint land tiles / textures, height + / − / =, smooth, brush 1–33, floor and road presets from the colour table groups.
+- Area tool: fill, smooth, raise / lower, adjust coast, water, select or delete statics, copy / paste land + statics.
+- Coast brush, water brush (items with tiledata flag Translucent drawn see-through), cave brush (tunnel into a mountain, edge becomes wall).
+- Picture catalogue for items, land tiles and textures, big catalogue window.
+- Key help always shown below the view, problem scan, overview with editor selection.
+- Save statics and map (UOP optional), old files kept as .bak.
+- Dragon Map Studio – Templates
+- Building and floor library with categories, search and preview; 586 buildings included in DragonData/Multis.
+- Reads UoFiddler multi txt (hex and decimal), UO Architect .uoa (v1/v2), .wsc and Sphere .scp.
+- Place with see-through preview on the ground height, move afterwards with the arrow keys.
+- Save a marked area or a selection as new template (land with heights and/or statics) as .dmsv.json, .txt or .uoa.
+- Dragon Map Studio – 8 / 16 bit
+- Switch between 8 bit (classic Dragon, 256 colours, 8-bit BMP) and 16 bit (up to 65 536 colours, groups up to 7fff, 16-bit PNG).
+- Convert maps and rule sets without loss, palettes with pages of 256 colours.
+- Dragon Map Studio – Rules workshop
+- Tool bar with 8/16-bit switch, new colour (address and RGB duplicate check, tiles from the catalogue), new group, new transition rule with example file (12 standard patterns).
+- Check, fix hints, save the rule set under a name (loaded at the next start), help with examples.
+- Script editor: all Dragon scripts as text, shows what each line addresses (colour, group, tiles, statics, 3×3 pattern).
+- Mouse over a colour (colour table, palettes, rules tables) shows its land tiles / textures, items and transition statics.
+- Interface in German, English and French (menu Sprache / Language / Langue), translation tables in DragonData/Lang.
+- Help in German, English and French.
+- Fixed in the shipped IMod13 scripts: groups.txt 1e / 7e, statbetweentrans.txt cave2blackWalls.txt, missing grass2wasteland.txt switched off.
+
 Version 4.12.20 #XG1
 
 - Enhanced 0.17.0
