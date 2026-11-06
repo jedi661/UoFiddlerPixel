@@ -1,1714 +1,1531 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
-using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using Ultima;
 using UoFiddler.Controls.Classes;
 using UoFiddler.Plugin.ConverterMultiTextPlugin.Class;
+using UoFiddler.Plugin.ConverterMultiTextPlugin.Class.AnimEdit;
+using Timer = System.Windows.Forms.Timer;
 
 namespace UoFiddler.Controls.Forms
 {
+    /// <summary>
+    /// Animation frame editor: 10 frames with layers (original / paint), shared reference animation,
+    /// onion skin, guide lines, drawing tools, undo/redo, playback, and browsers for UO animations,
+    /// art and clipboard images.
+    /// </summary>
     public partial class AnimationEditFormButton : Form
     {
         #region Fields
 
-        // --- Frame Editor ---
-        private int currentIndex = 0;
-        private CheckBox[] checks;
-        private bool pipetteMode = false;
-        private Label line = new Label();
-        private Label vLine = new Label();
+        private readonly AnimDocument doc = new AnimDocument();
+        private int current;
+        private bool updatingUi;
 
-        // --- Zoom levels per PictureBox ---
-        private int zoomLevel1 = 0, zoomLevel2 = 0, zoomLevel3 = 0, zoomLevel4 = 0,
-                    zoomLevel5 = 0, zoomLevel6 = 0, zoomLevel7 = 0, zoomLevel8 = 0,
-                    zoomLevel9 = 0, zoomLevel10 = 0;
-
-        private SelectablePictureBox[] pictureBoxes;
-        public static SelectablePictureBox[] boxes = new SelectablePictureBox[10];
-
-        // --- Clipboard Animation ---
-        private Dictionary<string, Image> originalImages = new Dictionary<string, Image>();
-        private Dictionary<string, Image> images = new Dictionary<string, Image>();
-        private int imageCounter = 1;
         private Timer playTimer;
-        private int currentImageIndex = 0;
+        private List<int> playOrder = new List<int>();
+        private int playPos = -1;
+        private Bitmap previewImage;
 
-        // --- UO Animation Browser ---
-        private int selectedAnimBody = 0;
-        private int selectedAnimAction = 0;
-        private int selectedAnimDir = 0;
-        private int selectedAnimHue = 0;
-        private int selectedAnimFileIndex = 1;
-        private List<Ultima.AnimationFrame[]> loadedAnimFrames = new List<Ultima.AnimationFrame[]>();
-        private List<Bitmap> loadedCustomBitmaps = new List<Bitmap>();
-        private int animPreviewCurrentFrame = 0;
-        private Timer animBrowserTimer;
+        private readonly List<Color> recentColors = new List<Color>();
+        private readonly int[] frameZoom = new int[AnimDocument.FrameCount];
+        private Image customBackground;
+        private string lastProjectFolder;
 
-        // --- Art Browser ---
-        private int artSearchIndex = 0;
-        private bool artShowStatic = true;
-        private List<int> artSearchResults = new List<int>();
-
-        // FIX: Guard flag to prevent CheckedChanged during initialization
-        private bool _artBrowserInitializing = true;
+        /// <summary>
+        /// Kept for compatibility: SelectablePictureBox.MirrorAllImages() iterates over this array.
+        /// The new editor does not use SelectablePictureBox anymore, so it stays empty.
+        /// </summary>
+        public static SelectablePictureBox[] boxes = new SelectablePictureBox[AnimDocument.FrameCount];
 
         #endregion
 
-        #region Constructor
+        #region Constructor / lifetime
 
         public AnimationEditFormButton()
         {
             InitializeComponent();
-
             Icon = Options.GetFiddlerIcon();
-            this.KeyPreview = true;
+            KeyPreview = true;
 
-            // --- Setup boxes and checks arrays ---
-            boxes = new SelectablePictureBox[]
-            {
-                selectablePictureBox1, selectablePictureBox2, selectablePictureBox3,
-                selectablePictureBox4, selectablePictureBox5, selectablePictureBox6,
-                selectablePictureBox7, selectablePictureBox8, selectablePictureBox9,
-                selectablePictureBox10
-            };
+            BuildLayout();
+            WireEditor();
+            WireOverlays();
 
-            checks = new CheckBox[]
-            {
-                checkBox1, checkBox2, checkBox3, checkBox4, checkBox5,
-                checkBox6, checkBox7, checkBox8, checkBox9, checkBox10
-            };
+            playTimer = new Timer(components);
+            playTimer.Tick += PlayTimer_Tick;
 
-            // --- Timer Setup ---
-            timer.Interval = 1000;
-            timer.Tick += new EventHandler(timer_Tick);
+            InitAnimBrowser();
+            InitArtBrowser();
+            InitClipboardTab();
 
-            numericUpDownFrameDelay.ValueChanged += new EventHandler(numericUpDownFrameDelay_ValueChanged);
-            btColordialog.Click += (sender, e) => SelectColor();
-            tboxColorCode.TextChanged += tboxColorCode_TextChanged;
-
-            // --- Zoom Tag Setup ---
-            SetupZoomTags();
-
-            // --- Overlay Lines Setup ---
-            SetupOverlayLines();
-
-            // --- Play Timer for Clipboard Anim Tab ---
-            playTimer = new Timer();
-            playTimer.Tick += new EventHandler(PlayTimer_Tick);
-
-            // --- Anim Browser Timer ---
-            animBrowserTimer = new Timer();
-            animBrowserTimer.Tick += new EventHandler(AnimBrowserTimer_Tick);
-            animBrowserTimer.Interval = 150;
-
-            // --- Initialize Anim Browser Tab (bind events only) ---
-            InitAnimBrowserTab();
-
-            // --- Initialize Art Browser Tab (bind events only) ---
-            InitArtBrowserTab();
-
-            // FIX: Allow CheckedChanged to work after full init
-            _artBrowserInitializing = false;
+            Load += OnLoad;
+            FormClosing += OnFormClosing;
         }
-
-        #endregion
-
-        #region Setup Helpers
-
-        private void SetupZoomTags()
-        {
-            zoomInButton1.Tag = selectablePictureBox1; zoomOutButton1.Tag = selectablePictureBox1;
-            zoomInButton2.Tag = selectablePictureBox2; zoomOutButton2.Tag = selectablePictureBox2;
-            zoomInButton3.Tag = selectablePictureBox3; zoomOutButton3.Tag = selectablePictureBox3;
-            zoomInButton4.Tag = selectablePictureBox4; zoomOutButton4.Tag = selectablePictureBox4;
-            zoomInButton5.Tag = selectablePictureBox5; zoomOutButton5.Tag = selectablePictureBox5;
-            zoomInButton6.Tag = selectablePictureBox6; zoomOutButton6.Tag = selectablePictureBox6;
-            zoomInButton7.Tag = selectablePictureBox7; zoomOutButton7.Tag = selectablePictureBox7;
-            zoomInButton8.Tag = selectablePictureBox8; zoomOutButton8.Tag = selectablePictureBox8;
-            zoomInButton9.Tag = selectablePictureBox9; zoomOutButton9.Tag = selectablePictureBox9;
-            zoomInButton10.Tag = selectablePictureBox10; zoomOutButton10.Tag = selectablePictureBox10;
-        }
-
-        private void SetupOverlayLines()
-        {
-            line.BackColor = Color.Red;
-            line.Width = AnimationPictureBox.Width;
-            line.Visible = false;
-
-            vLine.BackColor = Color.Red;
-            vLine.Height = AnimationPictureBox.Height;
-            vLine.Visible = false;
-
-            panelAnimationPictureBox.Controls.Add(line);
-            panelAnimationPictureBox.Controls.Add(vLine);
-            panelAnimationPictureBox.BackColor = Color.Transparent;
-
-            numericUpDownHighAnimationPictureBox.ValueChanged += (s, e) => UpdateLine();
-            numericUpDownSizeLineAnimationPictureBox.ValueChanged += (s, e) => UpdateLine();
-            numericUpDownWidthAnimationPictureBox.ValueChanged += (s, e) => UpdateVLine();
-            numericUpDownSizeLine2AnimationPictureBox.ValueChanged += (s, e) => UpdateVLine();
-            numericUpDownColor.ValueChanged += (s, e) => { UpdateLine(); UpdateVLine(); UpdateOverlayColor(); };
-        }
-
-        #endregion
-
-        #region Overlay Line Methods
-
-        private void UpdateLine()
-        {
-            int y = (int)numericUpDownHighAnimationPictureBox.Value;
-            int thickness = (int)numericUpDownSizeLineAnimationPictureBox.Value;
-            line.Top = y;
-            line.Height = thickness;
-            line.BackColor = GetOverlayColor();
-            line.Visible = thickness > 0;
-            line.BringToFront();
-        }
-
-        private void UpdateVLine()
-        {
-            int x = (int)numericUpDownWidthAnimationPictureBox.Value;
-            int thickness = (int)numericUpDownSizeLine2AnimationPictureBox.Value;
-            vLine.Left = x;
-            vLine.Width = thickness;
-            vLine.BackColor = GetOverlayColor();
-            vLine.Visible = thickness > 0;
-            vLine.BringToFront();
-        }
-
-        private void UpdateOverlayColor()
-        {
-            Color c = GetOverlayColor();
-            line.BackColor = c;
-            vLine.BackColor = c;
-            line.Invalidate();
-            vLine.Invalidate();
-        }
-
-        private Color GetOverlayColor()
-        {
-            switch ((int)numericUpDownColor.Value)
-            {
-                case 0: return Color.Red;
-                case 1: return Color.Blue;
-                case 2: return Color.Green;
-                case 3: return Color.Yellow;
-                case 4: return Color.Black;
-                case 5: return Color.White;
-                case 6: return Color.Orange;
-                case 7: return Color.Pink;
-                case 8: return Color.Turquoise;
-                case 9: return Color.Gray;
-                case 10: return Color.Gold;
-                default: return Color.Red;
-            }
-        }
-
-        #endregion
-
-        #region Timer_Tick (Frame Animation)
-
-        private void timer_Tick(object sender, EventArgs e)
-        {
-            currentIndex++;
-            if (currentIndex >= boxes.Length)
-                currentIndex = (int)numericUpDownStartDelay.Value - 1;
-
-            Bitmap imageBitmap = null;
-            Bitmap flippedImageBitmap = null;
-
-            if (boxes[currentIndex].Image != null && checks[currentIndex].Checked)
-            {
-                imageBitmap = new Bitmap(boxes[currentIndex].Image);
-
-                Color[] colorsToMakeTransparent = new Color[]
-                {
-                    Color.FromArgb(0, 0, 0),
-                    Color.FromArgb(255, 255, 255),
-                    Color.FromArgb(211, 211, 211)
-                };
-
-                foreach (Color color in colorsToMakeTransparent)
-                    imageBitmap = MakeTransparent(imageBitmap, color);
-
-                flippedImageBitmap = new Bitmap(imageBitmap);
-                flippedImageBitmap.RotateFlip(RotateFlipType.RotateNoneFlipX);
-            }
-
-            if (checkBoxShowFrame.Checked || imageBitmap == null)
-            {
-                AnimationPictureBox.Image = boxes[currentIndex].Image;
-                if (boxes[currentIndex].Image != null)
-                {
-                    Bitmap originalFlippedImage = new Bitmap(boxes[currentIndex].Image);
-                    originalFlippedImage.RotateFlip(RotateFlipType.RotateNoneFlipX);
-                    AnimationPictureBox2.Image = originalFlippedImage;
-                }
-                else
-                {
-                    AnimationPictureBox2.Image = null;
-                }
-            }
-            else
-            {
-                AnimationPictureBox.Image = imageBitmap;
-                AnimationPictureBox2.Image = flippedImageBitmap;
-            }
-
-            frameLabel.Text = (currentIndex + 1).ToString();
-        }
-
-        #endregion
-
-        #region Form Events
 
         private async void OnLoad(object sender, EventArgs e)
         {
-            await Task.Yield();
+            split.SplitterDistance = Math.Max(300, split.Width - 330);
+            ZoomToFit();
+            SetTool(DrawTool.Pencil);
+            ApplyColors();
+            SelectFrame(0);
+            SetStatus("Ready. F1 = help / Hilfe.");
 
-            // FIX: Run PopulateAnimBodyList in background too — Animations.IsActionDefined
-            // can cause deep call stacks (stack overflow) when called 2048 times on UI thread
-            await Task.Run(() =>
+            try
             {
-                try
-                {
-                    var bodyItems = new List<int>();
-                    for (int body = 0; body < 2048; body++)
-                    {
-                        try
-                        {
-                            if (Animations.IsActionDefined(body, 0, 0))
-                                bodyItems.Add(body);
-                        }
-                        catch { }
-                    }
-
-                    this.Invoke((Action)(() =>
-                    {
-                        if (listBoxAnimBodies == null || listBoxAnimBodies.IsDisposed) return;
-                        listBoxAnimBodies.BeginUpdate();
-                        listBoxAnimBodies.Items.Clear();
-                        foreach (var b in bodyItems)
-                            listBoxAnimBodies.Items.Add(b);
-                        listBoxAnimBodies.EndUpdate();
-
-                        // Populate directions and file combo (must be on UI thread)
-                        if (listBoxAnimDirections != null)
-                        {
-                            listBoxAnimDirections.Items.Clear();
-                            string[] dirNames = { "East", "NE", "North", "NW", "West", "SW", "South", "SE" };
-                            for (int i = 0; i < 8; i++)
-                                listBoxAnimDirections.Items.Add($"Dir {i}: {dirNames[i]}");
-                            if (listBoxAnimDirections.Items.Count > 0)
-                                listBoxAnimDirections.SelectedIndex = 0;
-                        }
-
-                        if (comboBoxAnimFile != null)
-                        {
-                            comboBoxAnimFile.Items.Clear();
-                            comboBoxAnimFile.Items.AddRange(new object[] {
-                        "anim.mul (1)", "anim2.mul (2)", "anim3.mul (3)",
-                        "anim4.mul (4)", "anim5.mul (5)",
-                        "AnimationFrame1.uop", "AnimationFrame2.uop", "AnimationFrame3.uop"
-                    });
-                            comboBoxAnimFile.SelectedIndex = 0;
-                        }
-                    }));
-                }
-                catch (Exception ex)
-                {
-                    this.Invoke((Action)(() =>
-                    {
-                        if (labelAnimFrameInfo != null)
-                            labelAnimFrameInfo.Text = $"Body load error: {ex.Message}";
-                    }));
-                }
-            });
-
-            // Art list background load (unchanged)
-            await Task.Run(() =>
+                await LoadBrowserBodiesAsync();
+                await LoadArtListAsync();
+            }
+            catch (Exception ex)
             {
-                try
-                {
-                    var results = new List<(int id, string label)>();
-                    bool isStatic = true;
-
-                    for (int i = 0; i < 0x4000; i++)
-                    {
-                        try
-                        {
-                            Bitmap bmp = isStatic ? Art.GetStatic(i) : Art.GetLand(i);
-                            if (bmp != null)
-                                results.Add((i, $"0x{i:X4} ({i})"));
-                        }
-                        catch { }
-                    }
-
-                    this.Invoke((Action)(() =>
-                    {
-                        if (listBoxArtItems == null || listBoxArtItems.IsDisposed) return;
-                        listBoxArtItems.BeginUpdate();
-                        listBoxArtItems.Items.Clear();
-                        artSearchResults.Clear();
-                        foreach (var (id, label) in results)
-                        {
-                            artSearchResults.Add(id);
-                            listBoxArtItems.Items.Add(label);
-                        }
-                        listBoxArtItems.EndUpdate();
-                        if (labelArtInfo != null)
-                            labelArtInfo.Text = $"Loaded: {artSearchResults.Count} items";
-                    }));
-                }
-                catch (Exception ex)
-                {
-                    this.Invoke((Action)(() =>
-                    {
-                        if (labelArtInfo != null)
-                            labelArtInfo.Text = $"Art load error: {ex.Message}";
-                    }));
-                }
-            });
+                if (!IsDisposed) SetStatus("Load error: " + ex.Message);
+            }
         }
 
-        private void AnimationEdit_FormClosing(object sender, FormClosingEventArgs e)
+        private void OnFormClosing(object sender, FormClosingEventArgs e)
         {
-            animBrowserTimer?.Stop();
             playTimer?.Stop();
-            timer?.Stop();
+            CloseBrowsers();
+            preview.Image = null;
+            previewImage?.Dispose();
+            previewImage = null;
+            canvas.Reference?.Dispose();
+            canvas.Reference = null;
+            customBackground?.Dispose();
+            doc.Dispose();
         }
 
         #endregion
 
-        #region Load Toolbar / Menu
+        #region Wiring
 
-        private void loadToolStripMenuItem_Click(object sender, EventArgs e)
+        private void WireEditor()
         {
-            LoadImageToCheckedBoxes(false, false);
-        }
+            canvas.Document = doc;
+            strip.Document = doc;
+            strip.ThumbnailRenderer = i => doc.Compose(i);
+            canvas.AffectedFrames = Affected;
 
-        private void loadToolStripMenuItem1_Click(object sender, EventArgs e)
-        {
-            LoadImageToCheckedBoxes(false, false);
-        }
-
-        private void loadToolStripMenuItemAllSingle_Click(object sender, EventArgs e)
-        {
-            LoadSingleImagesPerBox(false);
-        }
-
-        private void loadToolStripMenuItemAllSingleMirror_Click(object sender, EventArgs e)
-        {
-            LoadSingleImagesPerBox(true);
-        }
-
-        private void loadOneImageAllMirrorToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            LoadImageToCheckedBoxes(true, true);
-        }
-
-        #endregion
-
-        #region Load Image Helpers
-
-        private void LoadImageToCheckedBoxes(bool mirror, bool mirrorAll)
-        {
-            using (OpenFileDialog dlg = new OpenFileDialog())
+            canvas.ContentChanged += frames => RefreshFrames(frames);
+            canvas.HoverChanged += OnHover;
+            canvas.ColorPicked += (c, button) =>
             {
-                dlg.Filter = "Image files (*.bmp;*.jpg;*.jpeg;*.gif;*.png)|*.bmp;*.jpg;*.jpeg;*.gif;*.png";
-                dlg.Title = "Please select an image file.";
-                if (dlg.ShowDialog() != DialogResult.OK) return;
+                if (c.A == 0) { SetStatus("Transparent pixel – no color picked."); return; }
+                if (button == MouseButtons.Right) canvas.SecondaryColor = c;
+                else canvas.PrimaryColor = Color.FromArgb(255, c);
+                if (button != MouseButtons.Right) numAlpha.Value = c.A;
+                ApplyColors();
+            };
+            canvas.ZoomRequested += d => SetZoom(canvas.Zoom + d);
 
-                Image image = Image.FromFile(dlg.FileName);
+            strip.FrameSelected += SelectFrame;
+            strip.FrameCheckedChanged += i => { UpdatePlayOrder(); UpdatePreviewStill(); };
+            strip.FilesDropped += (i, files) => LoadFilesInto(i, files);
+            strip.FrameDoubleClicked += i => { SelectFrame(i); LoadImagesSequential(); };
+            strip.ContextMenuStrip = BuildFrameMenu();
 
-                for (int i = 0; i < boxes.Length; i++)
-                {
-                    boxes[i].Image = null;
-                    boxes[i].ClearImage();
-                }
+            doc.HistoryChanged += (s, e) => UpdateHistoryUi();
+            canvas.SelectionChanged += () =>
+            {
+                Rectangle r = canvas.Selection;
+                lbSelection.Text = r.IsEmpty
+                    ? "No selection – tool 'Select' (S) or Ctrl + drag."
+                    : $"Selection: x {r.X}, y {r.Y}, {r.Width} x {r.Height}";
+            };
 
-                for (int i = 0; i < boxes.Length; i++)
-                {
-                    if (checks[i].Checked)
+            // layers
+            chkOrigVisible.CheckedChanged += (s, e) => SetLayerProp(f => f.OriginalVisible = chkOrigVisible.Checked);
+            chkPaintVisible.CheckedChanged += (s, e) => SetLayerProp(f => f.PaintVisible = chkPaintVisible.Checked);
+            trkOrigOpacity.ValueChanged += (s, e) => SetLayerProp(f => f.OriginalOpacity = trkOrigOpacity.Value / 100f);
+            trkPaintOpacity.ValueChanged += (s, e) => SetLayerProp(f => f.PaintOpacity = trkPaintOpacity.Value / 100f);
+
+            chkRefVisible.CheckedChanged += (s, e) => { canvas.ReferenceVisible = chkRefVisible.Checked; RefreshView(); };
+            trkRefOpacity.ValueChanged += (s, e) => { canvas.ReferenceOpacity = trkRefOpacity.Value / 100f; RefreshView(); };
+            chkRefOnTop.CheckedChanged += (s, e) => { canvas.ReferenceOnTop = chkRefOnTop.Checked; RefreshView(); };
+            numRefFrame.ValueChanged += (s, e) => { canvas.ReferenceFixedFrame = (int)numRefFrame.Value - 1; RefreshView(); };
+            numRefOffX.ValueChanged += (s, e) => { canvas.ReferenceOffset = new Point((int)numRefOffX.Value, (int)numRefOffY.Value); RefreshView(); };
+            numRefOffY.ValueChanged += (s, e) => { canvas.ReferenceOffset = new Point((int)numRefOffX.Value, (int)numRefOffY.Value); RefreshView(); };
+
+            // align
+            numOffX.ValueChanged += (s, e) => OffsetFromUi();
+            numOffY.ValueChanged += (s, e) => OffsetFromUi();
+            numAnchorX.ValueChanged += (s, e) => AnchorFromUi();
+            numAnchorY.ValueChanged += (s, e) => AnchorFromUi();
+
+            // view
+            chkGrid.CheckedChanged += (s, e) => { canvas.ShowGrid = chkGrid.Checked; canvas.Invalidate(); };
+            chkAnchor.CheckedChanged += (s, e) => { canvas.ShowAnchor = chkAnchor.Checked; canvas.Invalidate(); };
+            chkBounds.CheckedChanged += (s, e) => { canvas.ShowLayerBounds = chkBounds.Checked; canvas.Invalidate(); };
+            chkGuides.CheckedChanged += (s, e) => GuidesFromUi();
+            numGuideY1.ValueChanged += (s, e) => GuidesFromUi();
+            numGuideY2.ValueChanged += (s, e) => GuidesFromUi();
+            numGuideX.ValueChanged += (s, e) => GuidesFromUi();
+            chkOnion.CheckedChanged += (s, e) => OnionFromUi();
+            chkOnionTint.CheckedChanged += (s, e) => OnionFromUi();
+            chkOnionWrap.CheckedChanged += (s, e) => OnionFromUi();
+            numOnionPrev.ValueChanged += (s, e) => OnionFromUi();
+            numOnionNext.ValueChanged += (s, e) => OnionFromUi();
+            trkOnionOpacity.ValueChanged += (s, e) => OnionFromUi();
+            cbBackground.SelectedIndexChanged += (s, e) => BackgroundFromUi();
+
+            // colors
+            tbHex.KeyDown += (s, e) =>
+            {
+                if (e.KeyCode != Keys.Enter) return;
+                e.SuppressKeyPress = true;
+                HexToColor();
+            };
+            tbHex.Leave += (s, e) => HexToColor();
+            BuildBasicPalette();
+
+            // playback
+            numFps.ValueChanged += (s, e) => { if (playTimer.Enabled) playTimer.Interval = 1000 / (int)numFps.Value; };
+            numFrom.ValueChanged += (s, e) => UpdatePlayOrder();
+            numTo.ValueChanged += (s, e) => UpdatePlayOrder();
+            chkPingPong.CheckedChanged += (s, e) => UpdatePlayOrder();
+            chkOnlyChecked.CheckedChanged += (s, e) => UpdatePlayOrder();
+            numPreviewZoom.ValueChanged += (s, e) => { preview.Zoom = (int)numPreviewZoom.Value; preview.Invalidate(); };
+            chkMirrorPreview.CheckedChanged += (s, e) => { preview.ShowMirrored = chkMirrorPreview.Checked; preview.Invalidate(); };
+            chkPreviewRef.CheckedChanged += (s, e) => UpdatePreviewStill();
+        }
+
+        private ContextMenuStrip BuildFrameMenu()
+        {
+            var m = new ContextMenuStrip();
+            m.Items.Add("Load images here…", null, (s, e) => LoadImagesSequential());
+            m.Items.Add("Paste as original (Ctrl+V)", null, (s, e) => PasteFromClipboard(false));
+            m.Items.Add("Copy image (Ctrl+C)", null, (s, e) => CopyFrameToClipboard());
+            m.Items.Add(new ToolStripSeparator());
+            m.Items.Add("Duplicate to next (Ctrl+D)", null, (s, e) => DuplicateToNext());
+            m.Items.Add("Copy to all checked", null, (s, e) => CopyFrameToChecked());
+            m.Items.Add("Move left", null, (s, e) => MoveFrame(-1));
+            m.Items.Add("Move right", null, (s, e) => MoveFrame(1));
+            m.Items.Add(new ToolStripSeparator());
+            m.Items.Add("Mirror", null, (s, e) => ApplyToAffected("Mirror", i => doc.MirrorFrame(i)));
+            m.Items.Add("Clear frame", null, (s, e) => ClearFrames());
+            m.Items.Add(new ToolStripSeparator());
+            m.Items.Add("Check only this frame", null, (s, e) =>
+            {
+                for (int i = 0; i < AnimDocument.FrameCount; i++) doc.Frames[i].Enabled = i == current;
+                strip.Invalidate();
+                UpdatePlayOrder();
+            });
+            m.Items.Add("Add to clipboard animation", null, (s, e) => AddCurrentFrameToClipboardList());
+            return m;
+        }
+
+        #endregion
+
+        #region Frame selection / refresh
+
+        /// <summary>Current frame, plus all checked frames when "All checked" is on.</summary>
+        private IEnumerable<int> Affected()
+        {
+            var list = new List<int> { current };
+            if (btAllChecked != null && btAllChecked.Checked)
+            {
+                for (int i = 0; i < AnimDocument.FrameCount; i++)
+                    if (doc.Frames[i].Enabled && i != current) list.Add(i);
+            }
+            return list;
+        }
+
+        private List<int> CheckedFrames() =>
+            Enumerable.Range(0, AnimDocument.FrameCount).Where(i => doc.Frames[i].Enabled).ToList();
+
+        private void SelectFrame(int i)
+        {
+            if (canvas.IsBusy) return;
+            current = Math.Max(0, Math.Min(AnimDocument.FrameCount - 1, i));
+            canvas.FrameIndex = current;
+            if (chkZoomPerFrame.Checked && frameZoom[current] > 0 && frameZoom[current] != canvas.Zoom)
+                SetZoom(frameZoom[current]);
+            strip.Selected = current;
+            LoadFrameUi();
+            UpdatePreviewStill();
+        }
+
+        /// <summary>Copies the properties of the current frame into the side panel controls.</summary>
+        private void LoadFrameUi()
+        {
+            updatingUi = true;
+            try
+            {
+                AnimFrame f = doc.Frames[current];
+                chkOrigVisible.Checked = f.OriginalVisible;
+                chkPaintVisible.Checked = f.PaintVisible;
+                trkOrigOpacity.Value = (int)Math.Round(f.OriginalOpacity * 100);
+                trkPaintOpacity.Value = (int)Math.Round(f.PaintOpacity * 100);
+                numOffX.Value = Math.Max(numOffX.Minimum, Math.Min(numOffX.Maximum, f.Offset.X));
+                numOffY.Value = Math.Max(numOffY.Minimum, Math.Min(numOffY.Maximum, f.Offset.Y));
+                numOffX.Enabled = numOffY.Enabled = f.HasOriginal;
+                numCanvasW.Value = doc.CanvasSize.Width;
+                numCanvasH.Value = doc.CanvasSize.Height;
+                numAnchorX.Maximum = doc.CanvasSize.Width - 1;
+                numAnchorY.Maximum = doc.CanvasSize.Height - 1;
+                numAnchorX.Value = Math.Min(numAnchorX.Maximum, doc.Anchor.X);
+                numAnchorY.Value = Math.Min(numAnchorY.Maximum, doc.Anchor.Y);
+
+                string size = f.HasOriginal ? $"{f.Original.Width}x{f.Original.Height}" : "no original";
+                lbFrameInfo.Text = $"Frame {current + 1}: {size}" + (string.IsNullOrEmpty(f.Source) ? "" : "\n" + f.Source);
+                stFrame.Text = $"Frame {current + 1}/10 | {size} | offset {f.Offset.X},{f.Offset.Y}" + (string.IsNullOrEmpty(f.Source) ? "" : " | " + f.Source);
+            }
+            finally { updatingUi = false; }
+        }
+
+        private void RefreshFrames(IEnumerable<int> frames)
+        {
+            foreach (int i in frames.Distinct()) strip.RefreshFrame(i);
+            canvas.Invalidate();
+            LoadFrameUi();
+            UpdatePreviewStill();
+        }
+
+        private void RefreshAllFrames()
+        {
+            canvas.UpdateCanvasSize();
+            CenterCanvas();
+            strip.RefreshAll();
+            canvas.Invalidate();
+            LoadFrameUi();
+            UpdatePlayOrder();
+            UpdatePreviewStill();
+            SyncOverlayList();
+            LoadOverlayUi();
+        }
+
+        /// <summary>For view-only changes (reference, onion, background).</summary>
+        private void RefreshView()
+        {
+            canvas.Invalidate();
+            UpdatePreviewStill();
+        }
+
+        private void SetStatus(string text) => stMsg.Text = text;
+
+        private void OnHover(Point? p, Color c)
+        {
+            if (p == null)
+            {
+                stPos.Text = "x: -  y: -";
+                stColor.Text = "";
+                stColorSwatch.Image?.Dispose();
+                stColorSwatch.Image = null;
+                return;
+            }
+            stPos.Text = $"x: {p.Value.X}  y: {p.Value.Y}";
+            stColor.Text = c.A == 0 ? "transparent" : $"{ImageUtil.ToHex(c)}  A{c.A}";
+            stColorSwatch.Image?.Dispose();
+            stColorSwatch.Image = Swatch(c, 14);
+        }
+
+        #endregion
+
+        #region Tools, colors, zoom
+
+        private void SetTool(DrawTool t)
+        {
+            canvas.Tool = t;
+            foreach (var kv in toolButtons) kv.Value.Checked = kv.Key == t;
+            canvas.UpdateCursor();
+            SetStatus("Tool: " + t);
+        }
+
+        private void SetZoom(int z)
+        {
+            canvas.Zoom = z;
+            frameZoom[current] = canvas.Zoom;
+            lbZoom.Text = canvas.Zoom + "x";
+            stZoom.Text = "Zoom " + canvas.Zoom + "x";
+            CenterCanvas();
+        }
+
+        private void ZoomToFit()
+        {
+            int zx = Math.Max(1, (canvasHost.ClientSize.Width - 10) / doc.CanvasSize.Width);
+            int zy = Math.Max(1, (canvasHost.ClientSize.Height - 10) / doc.CanvasSize.Height);
+            SetZoom(Math.Min(zx, zy));
+        }
+
+        private void ApplyColors()
+        {
+            canvas.PrimaryColor = Color.FromArgb((int)numAlpha.Value, canvas.PrimaryColor);
+            btPrimary.Image?.Dispose();
+            btPrimary.Image = Swatch(canvas.PrimaryColor);
+            btSecondary.Image?.Dispose();
+            btSecondary.Image = Swatch(canvas.SecondaryColor);
+            pnlPrimary.BackColor = Color.FromArgb(255, canvas.PrimaryColor);
+            pnlSecondary.BackColor = Color.FromArgb(255, canvas.SecondaryColor);
+            if (!tbHex.Focused) tbHex.Text = ImageUtil.ToHex(canvas.PrimaryColor);
+            AddRecentColor(canvas.PrimaryColor);
+        }
+
+        private void SwapColors()
+        {
+            Color p = canvas.PrimaryColor;
+            canvas.PrimaryColor = Color.FromArgb((int)numAlpha.Value, canvas.SecondaryColor);
+            canvas.SecondaryColor = Color.FromArgb(255, p);
+            ApplyColors();
+        }
+
+        private void PickColorDialog(bool primary)
+        {
+            using (var dlg = new ColorDialog { FullOpen = true, Color = primary ? canvas.PrimaryColor : canvas.SecondaryColor })
+            {
+                if (dlg.ShowDialog(this) != DialogResult.OK) return;
+                if (primary) canvas.PrimaryColor = dlg.Color;
+                else canvas.SecondaryColor = dlg.Color;
+                ApplyColors();
+            }
+        }
+
+        private void HexToColor()
+        {
+            string code = tbHex.Text.Trim();
+            if (!code.StartsWith("#")) code = "#" + code;
+            if (!Regex.IsMatch(code, "^#[0-9A-Fa-f]{6}$")) return;
+            canvas.PrimaryColor = ColorTranslator.FromHtml(code);
+            ApplyColors();
+        }
+
+        private Button ColorButton(Color c)
+        {
+            var b = new Button
+            {
+                Size = new Size(16, 16),
+                Margin = new Padding(1),
+                FlatStyle = FlatStyle.Flat,
+                BackColor = Color.FromArgb(255, c),
+                Tag = c
+            };
+            b.FlatAppearance.BorderColor = Color.Gray;
+            b.MouseUp += (s, e) =>
+            {
+                if (e.Button == MouseButtons.Right) canvas.SecondaryColor = c;
+                else canvas.PrimaryColor = c;
+                ApplyColors();
+            };
+            tips.SetToolTip(b, ImageUtil.ToHex(c));
+            return b;
+        }
+
+        private void AddRecentColor(Color c)
+        {
+            Color opaque = Color.FromArgb(255, c);
+            int idx = recentColors.FindIndex(x => x.ToArgb() == opaque.ToArgb());
+            if (idx == 0) return;
+            if (idx > 0) recentColors.RemoveAt(idx);
+            recentColors.Insert(0, opaque);
+            if (recentColors.Count > 32) recentColors.RemoveAt(recentColors.Count - 1);
+
+            flowRecent.SuspendLayout();
+            foreach (Control ctl in flowRecent.Controls.Cast<Control>().ToList()) ctl.Dispose();
+            foreach (Color rc in recentColors) flowRecent.Controls.Add(ColorButton(rc));
+            flowRecent.ResumeLayout();
+        }
+
+        private void BuildBasicPalette()
+        {
+            Color[] basics =
+            {
+                Color.Black, Color.White, Color.FromArgb(64, 64, 64), Color.Gray, Color.Silver, Color.FromArgb(211, 211, 211),
+                Color.Red, Color.DarkRed, Color.Orange, Color.Gold, Color.Yellow, Color.FromArgb(139, 69, 19),
+                Color.Lime, Color.Green, Color.DarkGreen, Color.Cyan, Color.Teal, Color.DodgerBlue,
+                Color.Blue, Color.Navy, Color.Purple, Color.Magenta, Color.Pink, Color.FromArgb(255, 220, 177),
+                Color.FromArgb(222, 184, 135), Color.FromArgb(160, 120, 90), Color.FromArgb(110, 80, 60), Color.FromArgb(70, 50, 40),
+                Color.FromArgb(200, 200, 160), Color.FromArgb(120, 140, 160), Color.FromArgb(80, 100, 60), Color.FromArgb(150, 30, 30)
+            };
+            foreach (Color c in basics) flowBasic.Controls.Add(ColorButton(c));
+        }
+
+        private void FillFramePalette()
+        {
+            flowFramePalette.SuspendLayout();
+            foreach (Control ctl in flowFramePalette.Controls.Cast<Control>().ToList()) ctl.Dispose();
+            using (Bitmap b = doc.Compose(current))
+            {
+                foreach (Color c in ImageUtil.UsedColors(b, 96))
+                    flowFramePalette.Controls.Add(ColorButton(c));
+            }
+            flowFramePalette.ResumeLayout();
+            SetStatus($"{flowFramePalette.Controls.Count} colors in frame {current + 1}.");
+        }
+
+        #endregion
+
+        #region View settings
+
+        private void GuidesFromUi()
+        {
+            canvas.ShowGuides = chkGuides.Checked;
+            canvas.GuideY1 = (int)numGuideY1.Value;
+            canvas.GuideY2 = (int)numGuideY2.Value;
+            canvas.GuideX = (int)numGuideX.Value;
+            canvas.Invalidate();
+        }
+
+        private void GuidesAtAnchor()
+        {
+            numGuideY1.Value = doc.Anchor.Y;
+            numGuideX.Value = doc.Anchor.X;
+            if (numGuideY2.Value < 0) numGuideY2.Value = Math.Max(0, doc.Anchor.Y - 60);
+            chkGuides.Checked = true;
+        }
+
+        private void PickGuideColor()
+        {
+            using (var dlg = new ColorDialog { Color = canvas.GuideColor })
+            {
+                if (dlg.ShowDialog(this) != DialogResult.OK) return;
+                canvas.GuideColor = dlg.Color;
+                btGuideColor.BackColor = dlg.Color;
+                canvas.Invalidate();
+            }
+        }
+
+        private void OnionFromUi()
+        {
+            canvas.OnionEnabled = chkOnion.Checked;
+            canvas.OnionTint = chkOnionTint.Checked;
+            canvas.OnionWrap = chkOnionWrap.Checked;
+            canvas.OnionPrev = (int)numOnionPrev.Value;
+            canvas.OnionNext = (int)numOnionNext.Value;
+            canvas.OnionOpacity = trkOnionOpacity.Value / 100f;
+            canvas.Invalidate();
+        }
+
+        private void BackgroundFromUi()
+        {
+            string sel = cbBackground.SelectedItem?.ToString() ?? "Checker";
+            Image img = null;
+            switch (sel)
+            {
+                case "Checker": canvas.BackgroundMode = CanvasBackground.Checker; break;
+                case "Dark": SetSolid(Color.FromArgb(40, 40, 40)); break;
+                case "Black": SetSolid(Color.Black); break;
+                case "White": SetSolid(Color.White); break;
+                case "Magenta": SetSolid(Color.Magenta); break;
+                case "Green": img = UoFiddler.Plugin.ConverterMultiTextPlugin.Properties.Resources.Green2; break;
+                case "Water": img = UoFiddler.Plugin.ConverterMultiTextPlugin.Properties.Resources.water2; break;
+                case "Sand": img = UoFiddler.Plugin.ConverterMultiTextPlugin.Properties.Resources.Sand; break;
+                case "Street": img = UoFiddler.Plugin.ConverterMultiTextPlugin.Properties.Resources.Street; break;
+                case "Forest": img = UoFiddler.Plugin.ConverterMultiTextPlugin.Properties.Resources.Forest; break;
+                case "Dirt": img = UoFiddler.Plugin.ConverterMultiTextPlugin.Properties.Resources.Dirt; break;
+                case "Dungeon": img = UoFiddler.Plugin.ConverterMultiTextPlugin.Properties.Resources.Dungeon; break;
+                case "Cave": img = UoFiddler.Plugin.ConverterMultiTextPlugin.Properties.Resources.cave; break;
+                default:
+                    using (var dlg = new OpenFileDialog { Filter = ImageFilter, Title = "Background image" })
                     {
-                        boxes[i].Image = image;
-                        boxes[i].OriginalImage = new Bitmap(image);
-                        boxes[i].DrawingBitmaps[boxes[i].CurrentIndex] = new Bitmap(image.Width, image.Height);
-                        if (mirror) boxes[i].MirrorImage();
-                        if (mirrorAll) boxes[i].MirrorAllImages();
+                        if (dlg.ShowDialog(this) == DialogResult.OK)
+                        {
+                            try
+                            {
+                                customBackground?.Dispose();
+                                customBackground = ImageUtil.LoadCopy(dlg.FileName);
+                                img = customBackground;
+                            }
+                            catch (Exception ex) { ShowError("Image could not be loaded", ex); }
+                        }
                     }
-                }
+                    if (img == null) { cbBackground.SelectedIndex = 0; return; }
+                    break;
+            }
+
+            if (img != null)
+            {
+                canvas.BackgroundMode = CanvasBackground.Image;
+                canvas.BackgroundPicture = img;
+            }
+            preview.Checker = canvas.BackgroundMode == CanvasBackground.Checker;
+            RefreshView();
+
+            void SetSolid(Color c)
+            {
+                canvas.BackgroundMode = CanvasBackground.SolidColor;
+                canvas.BackgroundSolid = c;
             }
         }
 
-        private void LoadSingleImagesPerBox(bool mirror)
-        {
-            using (OpenFileDialog dlg = new OpenFileDialog())
-            {
-                dlg.Filter = "Image files (*.bmp;*.jpg;*.jpeg;*.gif;*.png)|*.bmp;*.jpg;*.jpeg;*.gif;*.png";
-                dlg.Title = "Please select an image file.";
+        #endregion
 
-                for (int i = 0; i < boxes.Length; i++)
+        #region Layer properties / operations
+
+        private void SetLayerProp(Action<AnimFrame> set)
+        {
+            if (updatingUi) return;
+            foreach (int i in Affected()) set(doc.Frames[i]);
+            RefreshFrames(Affected());
+        }
+
+        /// <summary>Runs an undoable operation on the affected frames (current + checked in multi mode).</summary>
+        private void ApplyToAffected(string name, Action<int> op)
+        {
+            var frames = Affected().ToList();
+            doc.BeginChange(name, frames);
+            foreach (int i in frames) op(i);
+            RefreshFrames(frames);
+            SetStatus($"{name}: {frames.Count} frame(s).");
+        }
+
+        private EditLayer TargetLayer => cbLayer.SelectedIndex == 1 ? EditLayer.Original : EditLayer.Paint;
+
+        /// <summary>Changes the pixels of the active layer of the affected frames.</summary>
+        private void ModifyLayerPixels(string name, Action<PixelBuffer> op)
+        {
+            var frames = Affected().Where(i => TargetLayer == EditLayer.Paint || doc.Frames[i].HasOriginal).ToList();
+            if (frames.Count == 0) { SetStatus("Nothing to change on this layer."); return; }
+            doc.BeginChange(name, frames);
+            foreach (int i in frames)
+            {
+                Bitmap target = TargetLayer == EditLayer.Original ? doc.Frames[i].Original : doc.Frames[i].Paint;
+                var pb = new PixelBuffer(target);
+                op(pb);
+                pb.WriteTo(target);
+            }
+            RefreshFrames(frames);
+            SetStatus($"{name}: {frames.Count} frame(s), layer {TargetLayer}.");
+        }
+
+        private void MakeKeysTransparent()
+        {
+            int tol = (int)numTolerance.Value;
+            ModifyLayerPixels("Keys → transparent", pb =>
+            {
+                pb.ReplaceColor(Color.Black.ToArgb(), 0, tol, true);
+                pb.ReplaceColor(Color.White.ToArgb(), 0, tol, true);
+                pb.ReplaceColor(Color.FromArgb(211, 211, 211).ToArgb(), 0, tol, true);
+            });
+        }
+
+        private void SecondaryToTransparent()
+        {
+            int key = Color.FromArgb(255, canvas.SecondaryColor).ToArgb();
+            int tol = (int)numTolerance.Value;
+            ModifyLayerPixels("Color → transparent", pb => pb.ReplaceColor(key, 0, tol, true));
+        }
+
+        private void ReplaceSecondaryWithPrimary()
+        {
+            int from = Color.FromArgb(255, canvas.SecondaryColor).ToArgb();
+            int to = canvas.PrimaryColor.ToArgb();
+            int tol = (int)numTolerance.Value;
+            ModifyLayerPixels("Replace color", pb => pb.ReplaceColor(from, to, tol, true));
+        }
+
+        private void DrawOutline()
+        {
+            int c = Color.FromArgb(255, canvas.PrimaryColor).ToArgb();
+            ModifyLayerPixels("Outline", pb => pb.Outline(c));
+        }
+
+        private void ClearTargetLayer()
+        {
+            if (TargetLayer == EditLayer.Original) ApplyToAffected("Clear original", i => doc.ClearOriginal(i));
+            else ApplyToAffected("Clear paint", i => doc.ClearPaint(i));
+        }
+
+        private void ClearFrames() => ApplyToAffected("Clear frame", i => doc.ClearFrame(i));
+
+        private void ClearAllFrames()
+        {
+            if (MessageBox.Show(this, "Clear all 10 frames? (Undo is possible)\nAlle 10 Frames leeren? (Rückgängig möglich)", "Confirm",
+                    MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes) return;
+            StopPlay();
+            doc.BeginChangeAll("Clear all");
+            for (int i = 0; i < AnimDocument.FrameCount; i++) doc.ClearFrame(i);
+            RefreshAllFrames();
+        }
+
+        private void CopyPaintToChecked()
+        {
+            var targets = CheckedFrames().Where(i => i != current).ToList();
+            if (targets.Count == 0) { SetStatus("No other checked frames."); return; }
+            doc.BeginChange("Paint → checked", targets);
+            foreach (int i in targets)
+            {
+                using (Graphics g = Graphics.FromImage(doc.Frames[i].Paint))
+                    g.DrawImage(doc.Frames[current].Paint, 0, 0, doc.CanvasSize.Width, doc.CanvasSize.Height);
+            }
+            RefreshFrames(targets);
+            SetStatus($"Paint layer of frame {current + 1} drawn onto {targets.Count} frame(s).");
+        }
+
+        #endregion
+
+        #region Key transparency / selection
+
+        private void SetKeyTransparent(bool on)
+        {
+            doc.KeyColorsTransparent = on;
+            btKeyTransparent.BackColor = on ? Color.LightGreen : SystemColors.Control;
+            strip.RefreshAll();
+            RefreshView();
+            SetStatus(on ? "Black/white/light gray of the originals shown transparent." : "Black/white shown normally again.");
+        }
+
+        /// <summary>
+        /// Puts an image into the marked rectangle as a floating overlay (not burned in): B/W stay in the
+        /// overlay and are shown transparent, the overlay can still be moved, scaled, tinted and baked later.
+        /// </summary>
+        private void InsertIntoSelection(Image src, string name)
+        {
+            Rectangle sel = canvas.Selection;
+            if (sel.IsEmpty || src == null)
+            {
+                SetStatus("Mark an area first: tool 'Select' (S) or Ctrl + drag. / Erst einen Bereich markieren: Werkzeug 'Select' (S) oder Strg + Ziehen.");
+                return;
+            }
+            using (Bitmap b = ImageUtil.To32(src))
+                AddOverlay(new List<Bitmap> { ImageUtil.To32(b) }, name, sel);
+        }
+
+        private void LoadImageIntoSelection()
+        {
+            if (canvas.Selection.IsEmpty) { InsertIntoSelection(null, null); return; }
+            using (var dlg = new OpenFileDialog { Filter = ImageFilter, Title = "Image for the selection" })
+            {
+                if (dlg.ShowDialog(this) != DialogResult.OK) return;
+                try
                 {
-                    if (!checks[i].Checked) continue;
-                    if (dlg.ShowDialog() != DialogResult.OK) break;
-
-                    Image image = Image.FromFile(dlg.FileName);
-                    boxes[i].ClearImage();
-                    boxes[i].Image = image;
-                    boxes[i].OriginalImage = new Bitmap(image);
-                    boxes[i].DrawingBitmaps[boxes[i].CurrentIndex] = new Bitmap(image.Width, image.Height);
-                    if (mirror) boxes[i].MirrorImage();
+                    using (Bitmap b = ImageUtil.LoadCopy(dlg.FileName))
+                        InsertIntoSelection(b, Path.GetFileName(dlg.FileName));
                 }
+                catch (Exception ex) { ShowError("Image could not be loaded", ex); }
             }
+        }
+
+        private void PasteIntoSelection()
+        {
+            if (canvas.Selection.IsEmpty) { InsertIntoSelection(null, null); return; }
+            Image clip = Clipboard.ContainsImage() ? Clipboard.GetImage() : null;
+            if (clip == null) { SetStatus("The clipboard does not contain an image."); return; }
+            using (clip) InsertIntoSelection(clip, "Clipboard image");
+        }
+
+        private void CopySelection()
+        {
+            Rectangle sel = canvas.Selection;
+            if (sel.IsEmpty) { SetStatus("Nothing marked."); return; }
+            using (Bitmap full = doc.Compose(current))
+            using (Bitmap part = full.Clone(sel, PixelFormat.Format32bppArgb))
+                Clipboard.SetImage(part);
+            SetStatus($"Selection {sel.Width}x{sel.Height} copied.");
+        }
+
+        private void ClearSelectionArea()
+        {
+            Rectangle sel = canvas.Selection;
+            if (sel.IsEmpty) { SetStatus("Nothing marked."); return; }
+            var frames = Affected().Where(i => TargetLayer == EditLayer.Paint || doc.Frames[i].HasOriginal).ToList();
+            if (frames.Count == 0) return;
+            doc.BeginChange("Clear selection", frames);
+            foreach (int i in frames)
+            {
+                AnimFrame f = doc.Frames[i];
+                Bitmap target = TargetLayer == EditLayer.Original ? f.Original : f.Paint;
+                Rectangle r = TargetLayer == EditLayer.Original ? new Rectangle(sel.X - f.Offset.X, sel.Y - f.Offset.Y, sel.Width, sel.Height) : sel;
+                var pb = new PixelBuffer(target);
+                pb.Rect(r, 1, 0, true, true);
+                pb.WriteTo(target);
+            }
+            RefreshFrames(frames);
         }
 
         #endregion
 
-        #region KeyDown / PreviewKeyDown
+        #region Alignment / canvas
 
-        private void pictureBox_KeyDown(object sender, KeyEventArgs e) { }
-
-        private void pictureBox_PreviewKeyDown(object sender, PreviewKeyDownEventArgs e)
+        private void OffsetFromUi()
         {
-            if (e.Control && e.KeyCode == Keys.V)
-            {
-                SelectablePictureBox currentBox = sender as SelectablePictureBox;
-                if (Clipboard.ContainsImage())
-                    currentBox.Image = Clipboard.GetImage();
-                else
-                    MessageBox.Show("The clipboard does not contain an image.");
-            }
+            if (updatingUi || !doc.Frames[current].HasOriginal) return;
+            doc.BeginChange("Offset", new[] { current }, true);
+            doc.Frames[current].Offset = new Point((int)numOffX.Value, (int)numOffY.Value);
+            RefreshFrames(new[] { current });
         }
 
-        #endregion
-
-        #region NumericUpDownFrameDelay
-
-        private void numericUpDownFrameDelay_ValueChanged(object sender, EventArgs e)
+        private void Nudge(int dx, int dy)
         {
-            if (numericUpDownFrameDelay.Value > 0)
-            {
-                timer.Interval = 1000 / (int)numericUpDownFrameDelay.Value;
-                delayLabel.Text = $"Processing speed: {timer.Interval} ms";
-                if (timer.Enabled) { timer.Stop(); timer.Start(); }
-            }
-            else
-            {
-                MessageBox.Show("Frame delay must be greater than zero.");
-            }
+            var frames = Affected().ToList();
+            doc.BeginChange("Nudge " + TargetLayer, frames, true);
+            foreach (int i in frames) doc.Shift(i, TargetLayer, dx, dy);
+            RefreshFrames(frames);
         }
 
-        #endregion
-
-        #region Start Animation
-
-        private void startAnimationButton_Click(object sender, EventArgs e)
+        private void CenterOnAnchor(int i)
         {
-            ToggleFrameAnimation();
+            AnimFrame f = doc.Frames[i];
+            if (f.Original == null) return;
+            f.Offset = new Point(doc.Anchor.X - f.Original.Width / 2, doc.Anchor.Y - f.Original.Height / 2);
         }
 
-        private void startToolStripMenuItem_Click(object sender, EventArgs e)
+        private void AlignCheckedBottoms()
         {
-            ToggleFrameAnimation();
+            var frames = CheckedFrames().Where(i => doc.Frames[i].HasOriginal).ToList();
+            if (frames.Count == 0) return;
+            doc.BeginChange("Align bottoms", frames);
+            foreach (int i in frames) doc.AlignBottomToAnchor(i);
+            RefreshFrames(frames);
+            SetStatus($"{frames.Count} frame(s) aligned: bottom center on the anchor.");
         }
 
-        private void ToggleFrameAnimation()
+        private void CopyOffsetToChecked()
         {
-            if (timer.Enabled)
+            Point o = doc.Frames[current].Offset;
+            var frames = CheckedFrames().Where(i => i != current && doc.Frames[i].HasOriginal).ToList();
+            if (frames.Count == 0) return;
+            doc.BeginChange("Offset → checked", frames);
+            foreach (int i in frames) doc.Frames[i].Offset = o;
+            RefreshFrames(frames);
+        }
+
+        private void ApplyCanvasSize()
+        {
+            doc.BeginChangeAll("Canvas size");
+            doc.ResizeCanvas((int)numCanvasW.Value, (int)numCanvasH.Value);
+            RefreshAllFrames();
+            ZoomToFit();
+        }
+
+        private void AnchorFromUi()
+        {
+            if (updatingUi) return;
+            doc.SetAnchor(new Point((int)numAnchorX.Value, (int)numAnchorY.Value));
+            RefreshView();
+        }
+
+        /// <summary>Resizes the canvas so that every frame fits (plus a small margin).</summary>
+        private void FitCanvas()
+        {
+            Rectangle all = Rectangle.Empty;
+            for (int i = 0; i < AnimDocument.FrameCount; i++)
             {
-                timer.Stop();
-                startAnimationButton.Text = "Start";
-                startAnimationButton.BackColor = SystemColors.Control;
-            }
-            else
-            {
-                if (numericUpDownFrameDelay.Value > 0)
+                AnimFrame f = doc.Frames[i];
+                if (f.Original != null)
                 {
-                    timer.Interval = 1000 / (int)numericUpDownFrameDelay.Value;
-                    currentIndex = (int)numericUpDownStartDelay.Value;
-                    timer.Start();
-                    startAnimationButton.Text = "Stop";
-                    startAnimationButton.BackColor = Color.OrangeRed;
+                    var r = new Rectangle(f.Offset, f.Original.Size);
+                    all = all.IsEmpty ? r : Rectangle.Union(all, r);
                 }
-                else
-                {
-                    MessageBox.Show("Frame delay must be greater than zero.");
-                }
+                Rectangle p = ImageUtil.ContentBounds(f.Paint);
+                if (!p.IsEmpty) all = all.IsEmpty ? p : Rectangle.Union(all, p);
             }
+            if (all.IsEmpty) { SetStatus("No content."); return; }
+
+            // keep the anchor horizontally centered: make room on both sides
+            int half = Math.Max(doc.Anchor.X - all.Left, all.Right - doc.Anchor.X) + 10;
+            int top = doc.Anchor.Y - all.Top + 10;
+            int bottom = Math.Max(30, all.Bottom - doc.Anchor.Y + 10);
+
+            doc.BeginChangeAll("Fit canvas");
+            doc.SetCanvas(new Size(half * 2, top + bottom), new Point(half, top));
+            RefreshAllFrames();
+            ZoomToFit();
         }
 
         #endregion
 
-        #region MakeTransparent
+        #region Frame order / copy
 
-        private Bitmap MakeTransparent(Bitmap original, Color color)
+        private void DuplicateToNext()
         {
-            Bitmap newBitmap = new Bitmap(original.Width, original.Height);
-            for (int i = 0; i < original.Width; i++)
-                for (int j = 0; j < original.Height; j++)
-                {
-                    Color originalColor = original.GetPixel(i, j);
-                    newBitmap.SetPixel(i, j, originalColor == color ? Color.Transparent : originalColor);
-                }
-            return newBitmap;
+            if (current >= AnimDocument.FrameCount - 1) { SetStatus("Frame 10 is the last frame."); return; }
+            int next = current + 1;
+            doc.BeginChange("Duplicate", new[] { next });
+            doc.CopyFrame(current, next);
+            doc.Frames[next].Enabled = true;
+            RefreshFrames(new[] { next });
+            SelectFrame(next);
         }
 
-        private Image MakeColorTransparent(Image image, Color color)
+        private void CopyFrameToChecked()
         {
-            Bitmap bitmap = new Bitmap(image);
-            for (int i = 0; i < bitmap.Width; i++)
-                for (int j = 0; j < bitmap.Height; j++)
-                {
-                    Color pixelColor = bitmap.GetPixel(i, j);
-                    if (pixelColor.ToArgb() == color.ToArgb())
-                        bitmap.SetPixel(i, j, Color.Transparent);
-                }
-            return bitmap;
+            var targets = CheckedFrames().Where(i => i != current).ToList();
+            if (targets.Count == 0) return;
+            doc.BeginChange("Copy frame", targets);
+            foreach (int i in targets) doc.CopyFrame(current, i);
+            RefreshFrames(targets);
         }
 
-        #endregion
-
-        #region SelectColor / UpdateColor
-
-        private void SelectColor()
+        private void MoveFrame(int dir)
         {
-            using (ColorDialog colorDialog = new ColorDialog())
-            {
-                if (colorDialog.ShowDialog() == DialogResult.OK)
-                {
-                    Color color = colorDialog.Color;
-                    tboxColorCode.Text = $"#{color.R:X2}{color.G:X2}{color.B:X2}";
-                    foreach (SelectablePictureBox box in boxes)
-                        box.SetDrawingColor(color);
-                }
-            }
+            int other = current + dir;
+            if (other < 0 || other >= AnimDocument.FrameCount) return;
+            doc.BeginChange("Move frame", new[] { current, other });
+            doc.SwapFrames(current, other);
+            RefreshFrames(new[] { current, other });
+            SelectFrame(other);
         }
 
-        private void UpdateColor()
+        private void ReverseChecked()
         {
-            string code = tboxColorCode.Text;
-            if (code.StartsWith("#")) code = code.Substring(1);
-            if (code.Length == 6 && int.TryParse(code, NumberStyles.HexNumber, null, out int number))
-            {
-                Color color = Color.FromArgb(number >> 16, (number >> 8) & 255, number & 255);
-                foreach (SelectablePictureBox box in boxes)
-                    box.SetDrawingColor(color);
-            }
+            var frames = CheckedFrames();
+            if (frames.Count < 2) return;
+            doc.BeginChange("Reverse", frames);
+            for (int a = 0, b = frames.Count - 1; a < b; a++, b--) doc.SwapFrames(frames[a], frames[b]);
+            RefreshFrames(frames);
         }
 
-        #endregion
-
-        #region Draw All
-
-        private void btDrawAllSelectableBox_Click(object sender, EventArgs e)
+        private void SetAllChecked(bool value)
         {
-            bool isActive = false;
-            foreach (SelectablePictureBox box in boxes)
-            {
-                box.ToggleDrawing();
-                if (box.IsDrawing()) isActive = true;
-            }
+            foreach (AnimFrame f in doc.Frames) f.Enabled = value;
+            strip.Invalidate();
+            UpdatePlayOrder();
+        }
 
-            if (isActive)
-            {
-                btDrawAllSelectableBox.BackColor = Color.Green;
-                labelDrawAll.Text = "Active";
-            }
-            else
-            {
-                btDrawAllSelectableBox.BackColor = SystemColors.Control;
-                labelDrawAll.Text = "Not active";
-            }
+        private void CheckNonEmpty()
+        {
+            for (int i = 0; i < AnimDocument.FrameCount; i++) doc.Frames[i].Enabled = !doc.IsEmpty(i);
+            strip.Invalidate();
+            UpdatePlayOrder();
         }
 
         #endregion
 
-        #region BrushSize
+        #region Undo / redo
 
-        private void numericUpDownBrushSize_ValueChanged(object sender, EventArgs e)
+        private void DoUndo()
         {
-            int size = (int)numericUpDownBrushSize.Value;
-            foreach (SelectablePictureBox box in boxes)
-                box.SetBrushSize(size);
+            if (canvas.IsBusy) return;
+            int[] frames = doc.Undo();
+            if (frames == null) { SetStatus("Nothing to undo."); return; }
+            canvas.SelectedOverlay = null;
+            RefreshAllFrames();
+            SetStatus("Undo (" + frames.Length + " frame(s)).");
         }
 
-        #endregion
-
-        #region ComboBox Background
-
-        private void comboBoxImageBackgrund_SelectedIndexChanged(object sender, EventArgs e)
+        private void DoRedo()
         {
-            if (comboBoxImageBackgrund.SelectedIndex < 0) return;
-            string selected = comboBoxImageBackgrund.SelectedItem.ToString();
-
-            Image bg = null;
-            switch (selected)
-            {
-                case "Green": bg = UoFiddler.Plugin.ConverterMultiTextPlugin.Properties.Resources.Green2; break;
-                case "Water": bg = UoFiddler.Plugin.ConverterMultiTextPlugin.Properties.Resources.water2; break;
-                case "Sand": bg = UoFiddler.Plugin.ConverterMultiTextPlugin.Properties.Resources.Sand; break;
-                case "Street": bg = UoFiddler.Plugin.ConverterMultiTextPlugin.Properties.Resources.Street; break;
-                case "Forest": bg = UoFiddler.Plugin.ConverterMultiTextPlugin.Properties.Resources.Forest; break;
-                case "Dirt": bg = UoFiddler.Plugin.ConverterMultiTextPlugin.Properties.Resources.Dirt; break;
-                case "Dungeon": bg = UoFiddler.Plugin.ConverterMultiTextPlugin.Properties.Resources.Dungeon; break;
-                case "Cave": bg = UoFiddler.Plugin.ConverterMultiTextPlugin.Properties.Resources.cave; break;
-                case "Clear": bg = null; break;
-            }
-
-            AnimationPictureBox.BackgroundImage = bg;
-            AnimationPictureBox2.BackgroundImage = bg;
+            if (canvas.IsBusy) return;
+            int[] frames = doc.Redo();
+            if (frames == null) { SetStatus("Nothing to redo."); return; }
+            canvas.SelectedOverlay = null;
+            RefreshAllFrames();
+            SetStatus("Redo (" + frames.Length + " frame(s)).");
         }
 
-        #endregion
-
-        #region NumericUpDownImageShow
-
-        private void numericUpDownImageShow_ValueChanged(object sender, EventArgs e)
+        private void UndoTo(int index)
         {
-            int index = (int)numericUpDownImageShow.Value - 1;
-            if (index >= 0 && index < boxes.Length && boxes[index].Image != null)
-            {
-                Bitmap imageBitmap = new Bitmap(boxes[index].Image);
-                Color[] colorsToMakeTransparent = {
-                    Color.FromArgb(0, 0, 0),
-                    Color.FromArgb(255, 255, 255),
-                    Color.FromArgb(211, 211, 211)
-                };
-                foreach (Color color in colorsToMakeTransparent)
-                    imageBitmap = MakeTransparent(imageBitmap, color);
-
-                AnimationPictureBox.Image = imageBitmap;
-                Bitmap flippedImageBitmap = new Bitmap(imageBitmap);
-                flippedImageBitmap.RotateFlip(RotateFlipType.RotateNoneFlipX);
-                AnimationPictureBox2.Image = flippedImageBitmap;
-            }
-            else
-            {
-                AnimationPictureBox.Image = null;
-                AnimationPictureBox2.Image = null;
-            }
-        }
-
-        #endregion
-
-        #region Pipette
-
-        private void selectablePictureBox_MouseClick(object sender, MouseEventArgs e)
-        {
-            if (sender is SelectablePictureBox box)
-            {
-                if (pipetteMode)
-                {
-                    Color color = box.GetPixelColor(e.Location);
-                    tboxColorCode.Text = $"#{color.R:X2}{color.G:X2}{color.B:X2}";
-                    pipetteMode = false;
-                    btPipette.BackColor = SystemColors.Control;
-                }
-            }
-        }
-
-        private void btPipette_Click(object sender, EventArgs e)
-        {
-            pipetteMode = !pipetteMode;
-            btPipette.BackColor = pipetteMode ? Color.Green : SystemColors.Control;
-        }
-
-        private void selectablePictureBox_MouseMove(object sender, MouseEventArgs e)
-        {
-            if (sender is SelectablePictureBox box)
-            {
-                Color color = box.GetPixelColor(e.Location);
-                panelFarbcode.BackColor = color;
-                lbColorCode.Text = $"#{color.R:X2}{color.G:X2}{color.B:X2}";
-            }
-        }
-
-        #endregion
-
-        #region TextBox ColorCode
-
-        private void tboxColorCode_TextChanged(object sender, EventArgs e)
-        {
-            string colorCode = tboxColorCode.Text;
-            if (!colorCode.StartsWith("#")) colorCode = "#" + colorCode;
-            if (Regex.IsMatch(colorCode, "^#[0-9A-Fa-f]{6}$"))
-            {
-                Color color = ColorTranslator.FromHtml(colorCode);
-                panelFarbCodeTB.BackColor = color;
-            }
-        }
-
-        #endregion
-
-        #region Zoom
-
-        private void ZoomIn(object sender, EventArgs e)
-        {
-            if (sender is Button button && button.Tag is SelectablePictureBox pictureBox)
-                ApplyZoom(pictureBox, true);
-        }
-
-        private void ZoomOut(object sender, EventArgs e)
-        {
-            if (sender is Button button && button.Tag is SelectablePictureBox pictureBox)
-                ApplyZoom(pictureBox, false);
-        }
-
-        private void ApplyZoom(SelectablePictureBox pictureBox, bool zoomIn)
-        {
-            int index = Array.IndexOf(boxes, pictureBox);
             if (index < 0) return;
-
-            int[] zoomLevels = { zoomLevel1, zoomLevel2, zoomLevel3, zoomLevel4, zoomLevel5,
-                                  zoomLevel6, zoomLevel7, zoomLevel8, zoomLevel9, zoomLevel10 };
-            int zl = zoomLevels[index];
-            ChangeZoomLevel(pictureBox, ref zl, zoomIn);
-            zoomLevels[index] = zl;
-
-            zoomLevel1 = zoomLevels[0]; zoomLevel2 = zoomLevels[1];
-            zoomLevel3 = zoomLevels[2]; zoomLevel4 = zoomLevels[3];
-            zoomLevel5 = zoomLevels[4]; zoomLevel6 = zoomLevels[5];
-            zoomLevel7 = zoomLevels[6]; zoomLevel8 = zoomLevels[7];
-            zoomLevel9 = zoomLevels[8]; zoomLevel10 = zoomLevels[9];
+            int steps = doc.UndoList.Count - index;
+            for (int k = 0; k < steps; k++) doc.Undo();
+            RefreshAllFrames();
         }
 
-        private void ChangeZoomLevel(SelectablePictureBox pictureBox, ref int zoomLevel, bool zoomIn)
+        private void UpdateHistoryUi()
         {
-            if (pictureBox.Image == null) return;
-            if (zoomIn && zoomLevel < 2)
-            {
-                pictureBox.Image = new Bitmap(pictureBox.Image, new Size(pictureBox.Image.Width * 2, pictureBox.Image.Height * 2));
-                zoomLevel++;
-            }
-            else if (!zoomIn && zoomLevel > 0)
-            {
-                pictureBox.Image = new Bitmap(pictureBox.Image, new Size(pictureBox.Image.Width / 2, pictureBox.Image.Height / 2));
-                zoomLevel--;
-            }
+            btUndo.Enabled = doc.CanUndo;
+            btRedo.Enabled = doc.CanRedo;
+            btUndo.Text = doc.CanUndo ? "Undo (" + doc.UndoList.Count + ")" : "Undo";
+            if (lbHistory == null) return;
+            lbHistory.BeginUpdate();
+            lbHistory.Items.Clear();
+            foreach (HistoryEntry e in doc.UndoList) lbHistory.Items.Add(e.ToString());
+            foreach (HistoryEntry e in doc.RedoList.Reverse()) lbHistory.Items.Add("  (redo) " + e.Name);
+            lbHistory.EndUpdate();
+            if (doc.UndoList.Count > 0) lbHistory.TopIndex = Math.Max(0, doc.UndoList.Count - 10);
         }
 
         #endregion
 
-        #region Background Image Loader
+        #region Playback
 
-        private void imageFadeinToolStripMenuItem_Click(object sender, EventArgs e)
+        private void UpdatePlayOrder()
         {
-            using (OpenFileDialog dlg = new OpenFileDialog())
+            int from = (int)numFrom.Value - 1, to = (int)numTo.Value - 1;
+            if (from > to) (from, to) = (to, from);
+
+            var list = new List<int>();
+            for (int i = from; i <= to; i++)
             {
-                dlg.Filter = "Image files (*.bmp;*.jpg;*.jpeg;*.gif;*.png)|*.bmp;*.jpg;*.jpeg;*.gif;*.png";
-                dlg.Title = "Please select an image file.";
-                if (dlg.ShowDialog() == DialogResult.OK)
-                {
-                    Image image = new Bitmap(Image.FromFile(dlg.FileName), new Size(176, 238));
-                    AnimationPictureBox.BackgroundImage = image;
-                    if (ShowAnimationPictureBox2.Checked)
-                        AnimationPictureBox2.BackgroundImage = image;
-                }
+                if (chkOnlyChecked.Checked && !doc.Frames[i].Enabled) continue;
+                if (doc.IsEmpty(i)) continue;
+                list.Add(i);
             }
+            if (chkPingPong.Checked && list.Count > 2)
+                list.AddRange(list.Skip(1).Take(list.Count - 2).Reverse().ToList());
+
+            playOrder = list;
+            if (playPos >= playOrder.Count) playPos = -1;
         }
 
-        private void ShowAnimationPictureBox2_CheckedChanged(object sender, EventArgs e)
+        private void TogglePlay()
         {
-            AnimationPictureBox2.BackgroundImage = ShowAnimationPictureBox2.Checked
-                ? AnimationPictureBox.BackgroundImage
-                : null;
+            if (playTimer.Enabled) { StopPlay(); return; }
+            UpdatePlayOrder();
+            if (playOrder.Count == 0)
+            {
+                SetStatus("Nothing to play: check frames with content. / Nichts abzuspielen: Frames mit Inhalt anhaken.");
+                return;
+            }
+            playPos = -1;
+            playTimer.Interval = Math.Max(1, 1000 / (int)numFps.Value);
+            playTimer.Start();
+            btPlay.Text = "■ Stop";
+            btPlay.BackColor = Color.OrangeRed;
+            btPlay.ForeColor = Color.White;
         }
 
-        #endregion
-
-        #region Clipboard Animation Tab
-
-        private void clipbordAllSingleToolStripMenuItem_Click(object sender, EventArgs e)
+        private void StopPlay()
         {
-            if (!Clipboard.ContainsImage()) { MessageBox.Show("The cache does not contain an image."); return; }
-            if (imageCounter > 30) { MessageBox.Show("Maximum number of images reached."); return; }
-
-            Image image = Clipboard.GetImage();
-            string imageName = "Item" + imageCounter.ToString("00");
-            originalImages[imageName] = (Image)image.Clone();
-
-            if (CheckBoxTransparent.Checked)
-            {
-                image = MakeColorTransparent(image, Color.FromArgb(0, 0, 0));
-                image = MakeColorTransparent(image, Color.FromArgb(255, 255, 255));
-            }
-
-            images[imageName] = image;
-            PictureBoxAll.Image = image;
-            PictureBoxAll.Refresh();
-            ListBoxAll.Items.Add(imageName);
-            imageCounter++;
-        }
-
-        private void listBoxAll_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            if (ListBoxAll.SelectedItem == null) return;
-            string selectedItem = ListBoxAll.SelectedItem.ToString();
-            if (images.ContainsKey(selectedItem))
-            {
-                PictureBoxAll.Image = images[selectedItem];
-                PictureBoxAll.Refresh();
-            }
-        }
-
-        private void CheckBoxTransparent_CheckedChanged(object sender, EventArgs e)
-        {
-            foreach (var key in images.Keys.ToList())
-            {
-                Image image;
-                if (CheckBoxTransparent.Checked)
-                {
-                    image = MakeColorTransparent(originalImages[key], Color.FromArgb(0, 0, 0));
-                    image = MakeColorTransparent(image, Color.FromArgb(255, 255, 255));
-                }
-                else
-                {
-                    image = originalImages[key];
-                }
-                images[key] = image;
-            }
-
-            if (ListBoxAll.SelectedItem != null)
-            {
-                string selectedItem = ListBoxAll.SelectedItem.ToString();
-                if (images.ContainsKey(selectedItem))
-                {
-                    PictureBoxAll.Image = images[selectedItem];
-                    PictureBoxAll.Refresh();
-                }
-            }
-        }
-
-        private void deleteToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            if (ListBoxAll.SelectedItem == null) { MessageBox.Show("No image selected for deletion."); return; }
-            string selectedItem = ListBoxAll.SelectedItem.ToString();
-            originalImages.Remove(selectedItem);
-            images.Remove(selectedItem);
-            ListBoxAll.Items.Remove(selectedItem);
-            PictureBoxAll.Image = null;
-        }
-
-        private void deleteAllToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            originalImages.Clear();
-            images.Clear();
-            ListBoxAll.Items.Clear();
-            PictureBoxAll.Image = null;
-        }
-
-        private void playToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            if (ListBoxAll.Items.Count > 0)
-            {
-                currentImageIndex = 0;
-                int frameDelay = (int)numericUpDownFrameDelay.Value;
-                playTimer.Interval = frameDelay > 0 ? 1000 / frameDelay : 1000;
-                playTimer.Start();
-            }
-            else
-            {
-                MessageBox.Show("No images available to play.");
-            }
+            playTimer.Stop();
+            btPlay.Text = "▶ Play";
+            btPlay.BackColor = SystemColors.Control;
+            btPlay.ForeColor = SystemColors.ControlText;
+            btPlay.UseVisualStyleBackColor = true;
+            strip.Playing = -1;
+            UpdatePreviewStill();
         }
 
         private void PlayTimer_Tick(object sender, EventArgs e)
         {
-            if (currentImageIndex >= ListBoxAll.Items.Count)
-                currentImageIndex = 0;
-
-            if (ListBoxAll.Items.Count > 0 && currentImageIndex < ListBoxAll.Items.Count)
+            if (playOrder.Count == 0) { StopPlay(); return; }
+            playPos++;
+            if (playPos >= playOrder.Count)
             {
-                string selectedItem = ListBoxAll.Items[currentImageIndex].ToString();
-                if (images.ContainsKey(selectedItem))
-                {
-                    PictureBoxAll.Image = images[selectedItem];
-                    PictureBoxAll.Refresh();
-                }
-                currentImageIndex++;
+                if (!chkLoop.Checked) { StopPlay(); return; }
+                playPos = 0;
             }
-            else
-            {
-                playTimer.Stop();
-            }
+            int idx = playOrder[playPos];
+            ShowPreview(idx);
+            strip.Playing = idx;
+            if (chkFollow.Checked && !canvas.IsBusy) SelectFrame(idx);
         }
 
-        private void stopToolStripMenuItem_Click(object sender, EventArgs e)
+        private void StepFrame(int dir)
         {
-            playTimer.Stop();
+            StopPlay();
+            SelectFrame((current + dir + AnimDocument.FrameCount) % AnimDocument.FrameCount);
         }
 
-        private void exchangeToolStripMenuItem_Click(object sender, EventArgs e)
+        private void ShowPreview(int idx)
         {
-            if (ListBoxAll.SelectedItem != null && Clipboard.ContainsImage())
-            {
-                string selectedItem = ListBoxAll.SelectedItem.ToString();
-                Image newImage = Clipboard.GetImage();
-                originalImages[selectedItem] = (Image)newImage.Clone();
+            Bitmap old = previewImage;
+            bool bg = canvas.BackgroundMode != CanvasBackground.Checker;
+            bool refVisible = canvas.ReferenceVisible;
+            canvas.ReferenceVisible = refVisible && chkPreviewRef.Checked;
+            previewImage = canvas.RenderComposite(idx, bg, false);
+            canvas.ReferenceVisible = refVisible;
+            preview.Image = previewImage;
+            preview.Caption = $"Frame {idx + 1}";
+            old?.Dispose();
+        }
 
-                if (CheckBoxTransparent.Checked)
-                {
-                    newImage = MakeColorTransparent(newImage, Color.FromArgb(0, 0, 0));
-                    newImage = MakeColorTransparent(newImage, Color.FromArgb(255, 255, 255));
-                }
-
-                images[selectedItem] = newImage;
-                PictureBoxAll.Image = newImage;
-                PictureBoxAll.Refresh();
-            }
-            else
-            {
-                MessageBox.Show("No image selected or no image in buffer.");
-            }
+        private void UpdatePreviewStill()
+        {
+            if (playTimer == null || playTimer.Enabled) return;
+            ShowPreview(current);
         }
 
         #endregion
 
-        // =====================================================================
-        // === UO ANIMATION BROWSER TAB ========================================
-        // =====================================================================
+        #region Import
 
-        #region Anim Browser Tab - Init
+        private const string ImageFilter = "Image files (*.png;*.bmp;*.gif;*.jpg;*.jpeg;*.tif)|*.png;*.bmp;*.gif;*.jpg;*.jpeg;*.tif;*.tiff|All files (*.*)|*.*";
 
-        private void InitAnimBrowserTab()
+        /// <summary>
+        /// Puts source frames into editor frames. Shared by file import, animation browser, art browser and clipboard.
+        /// </summary>
+        private void PutFrames(IList<SourceFrame> frames, IList<int> targets, string sourceName)
         {
-            if (listBoxAnimBodies == null) return;
-
-            listBoxAnimBodies.SelectedIndexChanged += listBoxAnimBodies_SelectedIndexChanged;
-            listBoxAnimActions.SelectedIndexChanged += listBoxAnimActions_SelectedIndexChanged;
-            listBoxAnimDirections.SelectedIndexChanged += listBoxAnimDirections_SelectedIndexChanged;
-            numericAnimHue.ValueChanged += numericAnimHue_ValueChanged;
-            btAnimPlay.Click += btAnimPlay_Click;
-            btAnimStop.Click += btAnimStop_Click;
-            btAnimCopyFramesToEditor.Click += btAnimCopyFramesToEditor_Click;
-            btAnimLoadFromFile.Click += btAnimLoadFromFile_Click;
-            btAnimExportFrames.Click += btAnimExportFrames_Click;
-            btAnimCopyFrameClipboard.Click += btAnimCopyFrameClipboard_Click;
-            comboBoxAnimFile.SelectedIndexChanged += comboBoxAnimFile_SelectedIndexChanged;
-            numericAnimZoom.ValueChanged += numericAnimZoom_ValueChanged;
-            btAnimSearch.Click += btAnimSearch_Click;
-            tboxAnimBodySearch.KeyDown += tboxAnimBodySearch_KeyDown;
-        }
-        #endregion
-
-        #region Anim Browser Tab - Body Selection
-
-        private void listBoxAnimBodies_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            if (listBoxAnimBodies.SelectedItem == null) return;
-            selectedAnimBody = (int)listBoxAnimBodies.SelectedItem;
-            PopulateAnimActions();
-        }
-
-        private void PopulateAnimActions()
-        {
-            if (listBoxAnimActions == null) return;
-            listBoxAnimActions.BeginUpdate();
-            listBoxAnimActions.Items.Clear();
-
-            try
+            int n = Math.Min(frames.Count, targets.Count);
+            if (n == 0) { SetStatus("Nothing imported."); return; }
+            var used = targets.Take(n).ToList();
+            doc.BeginChange("Import", used);
+            for (int k = 0; k < n; k++)
             {
-                string[] actionNames = {
-                    "Walk", "Run", "Stand", "Fight", "Attack 1", "Attack 2", "Attack 3",
-                    "Spell 1", "Spell 2", "Die 1", "Die 2", "Fidget 1", "Fidget 2",
-                    "Eat", "Looting", "Mounted", "Block", "Unknown"
-                };
-                for (int action = 0; action < 35; action++)
-                {
-                    try
-                    {
-                        if (Animations.IsActionDefined(selectedAnimBody, action, 0))
-                        {
-                            string name = action < actionNames.Length ? actionNames[action] : $"Action {action}";
-                            listBoxAnimActions.Items.Add($"{action}: {name}");
-                        }
-                    }
-                    catch { }
-                }
-
-                if (listBoxAnimActions.Items.Count == 0)
-                    for (int a = 0; a < 18; a++)
-                        listBoxAnimActions.Items.Add($"{a}: Action {a}");
+                SourceFrame sf = frames[k];
+                if (sf?.Bitmap == null) continue;
+                doc.SetOriginal(used[k], sf.Bitmap, sf.Center, sourceName + (n > 1 ? $" #{k + 1}" : ""), chkKeepPaint.Checked);
+                doc.Frames[used[k]].Enabled = true;
             }
-            catch
+            RefreshFrames(used);
+            UpdatePlayOrder();
+            SetStatus($"{n} frame(s) imported from {sourceName} into frame(s) {string.Join(",", used.Select(i => i + 1))}.");
+        }
+
+        private void LoadFilesInto(int start, string[] files)
+        {
+            var frames = new List<SourceFrame>();
+            foreach (string f in files.OrderBy(x => x, StringComparer.OrdinalIgnoreCase))
             {
-                for (int a = 0; a < 18; a++)
-                    listBoxAnimActions.Items.Add($"{a}: Action {a}");
+                try { frames.AddRange(ImageUtil.LoadAllFrames(f).Select(b => new SourceFrame { Bitmap = b })); }
+                catch (Exception ex) { SetStatus($"Skipped {Path.GetFileName(f)}: {ex.Message}"); }
             }
-
-            listBoxAnimActions.EndUpdate();
-            if (listBoxAnimActions.Items.Count > 0)
-                listBoxAnimActions.SelectedIndex = 0;
+            if (frames.Count == 0) return;
+            var targets = Enumerable.Range(start, AnimDocument.FrameCount - start).ToList();
+            string name = files.Length == 1 ? Path.GetFileName(files[0]) : $"{files.Length} files";
+            PutFrames(frames, targets, name);
+            foreach (SourceFrame f in frames) f.Bitmap?.Dispose();
+            SelectFrame(start);
         }
 
-        private void listBoxAnimActions_SelectedIndexChanged(object sender, EventArgs e)
+        private void LoadImagesSequential()
         {
-            if (listBoxAnimActions.SelectedItem == null) return;
-            string item = listBoxAnimActions.SelectedItem.ToString();
-            selectedAnimAction = int.Parse(item.Split(':')[0]);
-            LoadAnimFrames();
-        }
-
-        private void listBoxAnimDirections_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            selectedAnimDir = listBoxAnimDirections.SelectedIndex;
-            LoadAnimFrames();
-        }
-
-        private void numericAnimHue_ValueChanged(object sender, EventArgs e)
-        {
-            selectedAnimHue = (int)numericAnimHue.Value;
-            LoadAnimFrames();
-        }
-
-        private void comboBoxAnimFile_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            selectedAnimFileIndex = comboBoxAnimFile.SelectedIndex + 1;
-            // Re-use the background loader instead of calling PopulateAnimBodyList directly
-            Task.Run(() =>
+            using (var dlg = new OpenFileDialog { Filter = ImageFilter, Multiselect = true, Title = "Load images into frames (starting at the selected frame)" })
             {
+                if (dlg.ShowDialog(this) == DialogResult.OK) LoadFilesInto(current, dlg.FileNames);
+            }
+        }
+
+        private void LoadImageIntoChecked()
+        {
+            using (var dlg = new OpenFileDialog { Filter = ImageFilter, Title = "Load one image into all checked frames" })
+            {
+                if (dlg.ShowDialog(this) != DialogResult.OK) return;
                 try
                 {
-                    var bodyItems = new List<int>();
-                    for (int body = 0; body < 2048; body++)
+                    using (Bitmap b = ImageUtil.LoadCopy(dlg.FileName))
                     {
-                        try
-                        {
-                            if (Animations.IsActionDefined(body, 0, 0))
-                                bodyItems.Add(body);
-                        }
-                        catch { }
+                        var targets = CheckedFrames();
+                        var frames = targets.Select(_ => new SourceFrame { Bitmap = b }).ToList();
+                        PutFrames(frames, targets, Path.GetFileName(dlg.FileName));
                     }
-                    this.Invoke((Action)(() =>
-                    {
-                        if (listBoxAnimBodies == null || listBoxAnimBodies.IsDisposed) return;
-                        listBoxAnimBodies.BeginUpdate();
-                        listBoxAnimBodies.Items.Clear();
-                        foreach (var b in bodyItems)
-                            listBoxAnimBodies.Items.Add(b);
-                        listBoxAnimBodies.EndUpdate();
-                    }));
                 }
-                catch { }
-            });
+                catch (Exception ex) { ShowError("Image could not be loaded", ex); }
+            }
         }
 
-        #endregion
-
-        #region Anim Browser Tab - Load & Display Frames
-
-        private void LoadAnimFrames()
+        private void PasteFromClipboard(bool intoPaint)
         {
-            if (listBoxAnimFrames == null) return;
-            loadedAnimFrames.Clear();
-            loadedCustomBitmaps.Clear();
-            listBoxAnimFrames.Items.Clear();
-            animBrowserTimer.Stop();
-
-            try
+            Image clip = Clipboard.ContainsImage() ? Clipboard.GetImage() : null;
+            if (clip == null) { SetStatus("The clipboard does not contain an image."); return; }
+            using (clip)
+            using (Bitmap b = ImageUtil.To32(clip))
             {
-                int hue = selectedAnimHue;
-                bool preserveHue = false;
-
-                Ultima.AnimationFrame[] frames = Animations.GetAnimation(
-                    selectedAnimBody, selectedAnimAction, selectedAnimDir,
-                    ref hue, preserveHue, false);
-
-                if (frames == null || frames.Length == 0)
+                if (!intoPaint)
                 {
-                    labelAnimFrameInfo.Text = "No frames found.";
-                    picBoxAnimPreview.Image = null;
+                    PutFrames(new[] { new SourceFrame { Bitmap = b } }, new[] { current }, "Clipboard");
                     return;
                 }
-
-                for (int i = 0; i < frames.Length; i++)
-                    listBoxAnimFrames.Items.Add($"Frame {i + 1} ({frames[i].Bitmap?.Width ?? 0}x{frames[i].Bitmap?.Height ?? 0})");
-
-                labelAnimFrameInfo.Text = $"Body: {selectedAnimBody} | Action: {selectedAnimAction} | Dir: {selectedAnimDir} | Frames: {frames.Length}";
-                loadedAnimFrames.Add(frames);
-
-                if (frames.Length > 0 && frames[0].Bitmap != null)
-                    picBoxAnimPreview.Image = frames[0].Bitmap;
-
-                if (listBoxAnimFrames.Items.Count > 0)
-                    listBoxAnimFrames.SelectedIndex = 0;
-            }
-            catch (Exception ex)
-            {
-                labelAnimFrameInfo.Text = $"Error: {ex.Message}";
+                var frames = Affected().ToList();
+                doc.BeginChange("Paste into paint", frames);
+                Point p = doc.OffsetFor(b.Size, null);
+                foreach (int i in frames)
+                    using (Graphics g = Graphics.FromImage(doc.Frames[i].Paint))
+                        g.DrawImage(b, p.X, p.Y, b.Width, b.Height);
+                RefreshFrames(frames);
             }
         }
 
-        private void listBoxAnimFrames_SelectedIndexChanged(object sender, EventArgs e)
+        private void CopyFrameToClipboard()
         {
-            if (listBoxAnimFrames.SelectedIndex < 0) return;
-            int frameIdx = listBoxAnimFrames.SelectedIndex;
-            int zoom = (int)numericAnimZoom.Value;
-
-            if (loadedAnimFrames.Count == 0 && loadedCustomBitmaps.Count > 0)
-            {
-                if (frameIdx >= loadedCustomBitmaps.Count) return;
-                Bitmap bmp = loadedCustomBitmaps[frameIdx];
-                if (zoom > 1) bmp = new Bitmap(bmp, new Size(bmp.Width * zoom, bmp.Height * zoom));
-                picBoxAnimPreview.Image = bmp;
-                labelAnimFrameInfo.Text = $"Custom Frame: {frameIdx + 1}/{loadedCustomBitmaps.Count} | Size: {loadedCustomBitmaps[frameIdx].Width}x{loadedCustomBitmaps[frameIdx].Height}";
-                return;
-            }
-
-            if (loadedAnimFrames.Count == 0) return;
-            Ultima.AnimationFrame[] frames = loadedAnimFrames[0];
-            if (frameIdx < frames.Length && frames[frameIdx].Bitmap != null)
-            {
-                Bitmap bmp = frames[frameIdx].Bitmap;
-                if (zoom > 1) bmp = new Bitmap(bmp, new Size(bmp.Width * zoom, bmp.Height * zoom));
-                picBoxAnimPreview.Image = bmp;
-                labelAnimFrameInfo.Text = $"Body: {selectedAnimBody} | Action: {selectedAnimAction} | Dir: {selectedAnimDir} | Frame: {frameIdx + 1}/{frames.Length} | Size: {frames[frameIdx].Bitmap.Width}x{frames[frameIdx].Bitmap.Height}";
-            }
-        }
-
-        private void numericAnimZoom_ValueChanged(object sender, EventArgs e)
-        {
-            if (listBoxAnimFrames.SelectedIndex >= 0)
-                listBoxAnimFrames_SelectedIndexChanged(sender, e);
+            Bitmap b = doc.ComposeCropped(current, out _);
+            if (b == null) { SetStatus("Frame is empty."); return; }
+            using (b) Clipboard.SetImage(b);
+            SetStatus($"Frame {current + 1} copied to the clipboard.");
         }
 
         #endregion
 
-        #region Anim Browser Tab - Play / Stop Preview
+        #region Reference
 
-        private void btAnimPlay_Click(object sender, EventArgs e)
+        private void SetReference(ReferenceSet set)
         {
-            if (loadedAnimFrames.Count == 0 || loadedAnimFrames[0].Length == 0) return;
-            animPreviewCurrentFrame = 0;
-            animBrowserTimer.Interval = Math.Max(50, (int)numericAnimPreviewSpeed.Value);
-            animBrowserTimer.Start();
-            btAnimPlay.BackColor = Color.Green;
+            ReferenceSet old = canvas.Reference;
+            canvas.Reference = set;
+            old?.Dispose();
+            lbRefName.Text = set == null ? "(none)" : $"{set.Name} ({set.Frames.Count} frames)";
+            numRefFrame.Maximum = Math.Max(1, set?.Frames.Count ?? 1);
+            if (set != null) chkRefVisible.Checked = true;
+            RefreshView();
         }
 
-        private void btAnimStop_Click(object sender, EventArgs e)
+        private void LoadReferenceImages()
         {
-            animBrowserTimer.Stop();
-            btAnimPlay.BackColor = SystemColors.Control;
-        }
-
-        private void AnimBrowserTimer_Tick(object sender, EventArgs e)
-        {
-            int zoom = (int)numericAnimZoom.Value;
-
-            if (loadedAnimFrames.Count == 0 && loadedCustomBitmaps.Count > 0)
+            using (var dlg = new OpenFileDialog { Filter = ImageFilter, Multiselect = true, Title = "Reference images / GIF" })
             {
-                if (animPreviewCurrentFrame >= loadedCustomBitmaps.Count)
-                    animPreviewCurrentFrame = 0;
-                Bitmap bmp = loadedCustomBitmaps[animPreviewCurrentFrame];
-                if (zoom > 1) bmp = new Bitmap(bmp, new Size(bmp.Width * zoom, bmp.Height * zoom));
-                picBoxAnimPreview.Image = bmp;
-                animPreviewCurrentFrame++;
-                return;
-            }
-
-            if (loadedAnimFrames.Count == 0) return;
-            Ultima.AnimationFrame[] frames = loadedAnimFrames[0];
-            if (frames.Length == 0) return;
-
-            if (animPreviewCurrentFrame >= frames.Length)
-                animPreviewCurrentFrame = 0;
-
-            if (frames[animPreviewCurrentFrame].Bitmap != null)
-            {
-                Bitmap bmp = frames[animPreviewCurrentFrame].Bitmap;
-                if (zoom > 1) bmp = new Bitmap(bmp, new Size(bmp.Width * zoom, bmp.Height * zoom));
-                picBoxAnimPreview.Image = bmp;
-            }
-
-            animPreviewCurrentFrame++;
-        }
-
-        #endregion
-
-        #region Anim Browser Tab - Copy / Export
-
-        private void btAnimCopyFramesToEditor_Click(object sender, EventArgs e)
-        {
-            if (loadedAnimFrames.Count == 0 && loadedCustomBitmaps.Count > 0)
-            {
-                int copyCount = Math.Min(loadedCustomBitmaps.Count, boxes.Length);
-                for (int i = 0; i < copyCount; i++)
+                if (dlg.ShowDialog(this) != DialogResult.OK) return;
+                var set = new ReferenceSet { Name = dlg.FileNames.Length == 1 ? Path.GetFileName(dlg.FileName) : $"{dlg.FileNames.Length} files" };
+                foreach (string f in dlg.FileNames.OrderBy(x => x, StringComparer.OrdinalIgnoreCase))
                 {
-                    if (checks[i].Checked)
-                    {
-                        boxes[i].Image = new Bitmap(loadedCustomBitmaps[i]);
-                        boxes[i].OriginalImage = new Bitmap(loadedCustomBitmaps[i]);
-                        boxes[i].DrawingBitmaps[boxes[i].CurrentIndex] = new Bitmap(loadedCustomBitmaps[i].Width, loadedCustomBitmaps[i].Height);
-                    }
-                }
-                tabControl1.SelectedTab = tabPageFrame;
-                MessageBox.Show($"Copied {copyCount} custom frames to the Frame Editor.", "Done", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                return;
-            }
-
-            if (loadedAnimFrames.Count == 0) return;
-            Ultima.AnimationFrame[] frames = loadedAnimFrames[0];
-
-            int frameCount = Math.Min(frames.Length, boxes.Length);
-            for (int i = 0; i < frameCount; i++)
-            {
-                if (frames[i].Bitmap != null && checks[i].Checked)
-                {
-                    boxes[i].Image = new Bitmap(frames[i].Bitmap);
-                    boxes[i].OriginalImage = new Bitmap(frames[i].Bitmap);
-                    boxes[i].DrawingBitmaps[boxes[i].CurrentIndex] = new Bitmap(frames[i].Bitmap.Width, frames[i].Bitmap.Height);
-                }
-            }
-
-            tabControl1.SelectedTab = tabPageFrame;
-            MessageBox.Show($"Copied {frameCount} frames to the Frame Editor.", "Done", MessageBoxButtons.OK, MessageBoxIcon.Information);
-        }
-
-        private void btAnimCopyFrameClipboard_Click(object sender, EventArgs e)
-        {
-            if (listBoxAnimFrames.SelectedIndex < 0) return;
-            int idx = listBoxAnimFrames.SelectedIndex;
-
-            if (loadedAnimFrames.Count == 0 && loadedCustomBitmaps.Count > 0)
-            {
-                if (idx < loadedCustomBitmaps.Count)
-                {
-                    Clipboard.SetImage(loadedCustomBitmaps[idx]);
-                    MessageBox.Show("Frame copied to clipboard.", "Clipboard", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                }
-                return;
-            }
-
-            if (loadedAnimFrames.Count == 0) return;
-            Ultima.AnimationFrame[] frames = loadedAnimFrames[0];
-            if (idx < frames.Length && frames[idx].Bitmap != null)
-            {
-                Clipboard.SetImage(frames[idx].Bitmap);
-                MessageBox.Show("Frame copied to clipboard.", "Clipboard", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            }
-        }
-
-        private void btAnimExportFrames_Click(object sender, EventArgs e)
-        {
-            using (FolderBrowserDialog fbd = new FolderBrowserDialog())
-            {
-                fbd.Description = "Select export folder for animation frames";
-                if (fbd.ShowDialog() != DialogResult.OK) return;
-
-                int exported = 0;
-
-                if (loadedAnimFrames.Count == 0 && loadedCustomBitmaps.Count > 0)
-                {
-                    for (int i = 0; i < loadedCustomBitmaps.Count; i++)
-                    {
-                        string path = Path.Combine(fbd.SelectedPath, $"Custom_Frame{i:D3}.png");
-                        loadedCustomBitmaps[i].Save(path, ImageFormat.Png);
-                        exported++;
-                    }
-                    MessageBox.Show($"Exported {exported} frames to:\n{fbd.SelectedPath}", "Export Complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    return;
-                }
-
-                if (loadedAnimFrames.Count == 0) { MessageBox.Show("No frames loaded."); return; }
-                Ultima.AnimationFrame[] frames = loadedAnimFrames[0];
-
-                for (int i = 0; i < frames.Length; i++)
-                {
-                    if (frames[i].Bitmap != null)
-                    {
-                        string path = Path.Combine(fbd.SelectedPath, $"Body{selectedAnimBody}_Action{selectedAnimAction}_Dir{selectedAnimDir}_Frame{i:D3}.png");
-                        frames[i].Bitmap.Save(path, ImageFormat.Png);
-                        exported++;
-                    }
-                }
-
-                MessageBox.Show($"Exported {exported} frames to:\n{fbd.SelectedPath}", "Export Complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            }
-        }
-
-        private void btAnimLoadFromFile_Click(object sender, EventArgs e)
-        {
-            using (OpenFileDialog dlg = new OpenFileDialog())
-            {
-                dlg.Filter = "Image files (*.bmp;*.jpg;*.jpeg;*.gif;*.png)|*.bmp;*.jpg;*.jpeg;*.gif;*.png|All files (*.*)|*.*";
-                dlg.Title = "Load animation frame from file";
-                dlg.Multiselect = true;
-                if (dlg.ShowDialog() != DialogResult.OK) return;
-
-                loadedAnimFrames.Clear();
-                listBoxAnimFrames.Items.Clear();
-
-                var customBitmaps = new List<Bitmap>();
-                foreach (string file in dlg.FileNames)
-                {
-                    try { customBitmaps.Add(new Bitmap(file)); }
+                    try { foreach (Bitmap b in ImageUtil.LoadAllFrames(f)) set.Add(b, null); }
                     catch { }
                 }
-
-                if (customBitmaps.Count > 0)
-                {
-                    loadedCustomBitmaps = customBitmaps;
-                    loadedAnimFrames.Clear();
-
-                    listBoxAnimFrames.Items.Clear();
-                    for (int i = 0; i < customBitmaps.Count; i++)
-                        listBoxAnimFrames.Items.Add($"Frame {i + 1} ({customBitmaps[i].Width}x{customBitmaps[i].Height})");
-
-                    picBoxAnimPreview.Image = customBitmaps[0];
-                    labelAnimFrameInfo.Text = $"Custom | Frames: {customBitmaps.Count}";
-
-                    if (listBoxAnimFrames.Items.Count > 0)
-                        listBoxAnimFrames.SelectedIndex = 0;
-                }
+                SetReference(set);
             }
         }
 
-        private void btAnimSearch_Click(object sender, EventArgs e) => SearchAnimBodies();
-
-        private void tboxAnimBodySearch_KeyDown(object sender, KeyEventArgs e)
+        /// <summary>Uses a snapshot of the current editor frames as reference (e.g. to redraw over an old version).</summary>
+        private void UseFramesAsReference()
         {
-            if (e.KeyCode == Keys.Enter) SearchAnimBodies();
-        }
-
-        private void SearchAnimBodies()
-        {
-            if (string.IsNullOrWhiteSpace(tboxAnimBodySearch.Text)) return;
-            if (int.TryParse(tboxAnimBodySearch.Text, out int bodyId))
+            var set = new ReferenceSet { Name = "Editor snapshot" };
+            for (int i = 0; i < AnimDocument.FrameCount; i++)
             {
-                for (int i = 0; i < listBoxAnimBodies.Items.Count; i++)
-                {
-                    if ((int)listBoxAnimBodies.Items[i] == bodyId)
-                    {
-                        listBoxAnimBodies.SelectedIndex = i;
-                        listBoxAnimBodies.TopIndex = i;
-                        return;
-                    }
-                }
-                MessageBox.Show($"Body ID {bodyId} not found.", "Search", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                Bitmap b = doc.Compose(i, true);
+                // stored at canvas size with the anchor as "center" so it lines up 1:1
+                set.Add(b, new Point(doc.Anchor.X, doc.Anchor.Y - doc.CanvasSize.Height));
             }
+            SetReference(set);
         }
 
         #endregion
 
-        // =====================================================================
-        // === ART BROWSER TAB =================================================
-        // =====================================================================
+        #region Export
 
-        #region Art Browser Tab - Init
-
-        private void InitArtBrowserTab()
+        /// <summary>Union of the content of all given frames (keeps the relative alignment when cropping).</summary>
+        private Rectangle UnionBounds(IEnumerable<int> frames)
         {
-            if (listBoxArtItems == null) return;
-            listBoxArtItems.SelectedIndexChanged += listBoxArtItems_SelectedIndexChanged;
-            btArtSearch.Click += btArtSearch_Click;
-            btArtCopyClipboard.Click += btArtCopyClipboard_Click;
-            btArtCopyToFrameEditor.Click += btArtCopyToFrameEditor_Click;
-            btArtExport.Click += btArtExport_Click;
-
-            // FIX: Do NOT bind CheckedChanged here — already bound via Designer would double-fire.
-            // rbArtStatic.CheckedChanged and rbArtLand.CheckedChanged are bound in Designer.
-            // We only need to guard against them firing during init (see _artBrowserInitializing).
-
-            tboxArtSearch.KeyDown += tboxArtSearch_KeyDown;
-            numericArtZoom.ValueChanged += numericArtZoom_ValueChanged;
-            btArtLoadPrevious.Click += btArtLoadPrevious_Click;
-            btArtLoadNext.Click += btArtLoadNext_Click;
+            Rectangle all = Rectangle.Empty;
+            foreach (int i in frames)
+            {
+                using (Bitmap b = doc.Compose(i, true))
+                {
+                    Rectangle r = ImageUtil.ContentBounds(b);
+                    if (r.IsEmpty) continue;
+                    all = all.IsEmpty ? r : Rectangle.Union(all, r);
+                }
+            }
+            return all;
         }
 
-        // FIX: PopulateArtList is now called from OnLoad (async), NOT from rbArtType_CheckedChanged during init.
-        private void PopulateArtList()
+        private List<int> ExportFrames()
         {
-            if (listBoxArtItems == null) return;
-            listBoxArtItems.BeginUpdate();
-            listBoxArtItems.Items.Clear();
-            artSearchResults.Clear();
+            var frames = CheckedFrames().Where(i => !doc.IsEmpty(i)).ToList();
+            if (frames.Count == 0)
+                MessageBox.Show(this, "No checked frames with content.\nKeine angehakten Frames mit Inhalt.", "Export", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            return frames;
+        }
 
+        private static ImageFormat FormatFor(string file) =>
+            string.Equals(Path.GetExtension(file), ".bmp", StringComparison.OrdinalIgnoreCase) ? ImageFormat.Bmp : ImageFormat.Png;
+
+        private void ExportSpritesheet()
+        {
+            doc.ForceKeyTransparency = true;
             try
             {
-                bool isStatic = rbArtStatic == null || rbArtStatic.Checked;
+                var frames = ExportFrames();
+                if (frames.Count == 0) return;
+                Rectangle box = UnionBounds(frames);
 
-                for (int i = 0; i < 0x4000; i++)
+                using (var sfd = new SaveFileDialog { Filter = "PNG (*.png)|*.png|BMP (*.bmp)|*.bmp", FileName = "animation_sheet" })
                 {
+                    if (sfd.ShowDialog(this) != DialogResult.OK) return;
                     try
                     {
-                        Bitmap bmp = isStatic ? Art.GetStatic(i) : Art.GetLand(i);
-                        if (bmp != null)
+                        using (var sheet = new Bitmap(box.Width * frames.Count, box.Height, PixelFormat.Format32bppArgb))
                         {
-                            artSearchResults.Add(i);
-                            listBoxArtItems.Items.Add($"0x{i:X4} ({i})");
+                            using (Graphics g = Graphics.FromImage(sheet))
+                            {
+                                for (int k = 0; k < frames.Count; k++)
+                                    using (Bitmap b = doc.Compose(frames[k], true))
+                                        g.DrawImage(b, new Rectangle(k * box.Width, 0, box.Width, box.Height), box, GraphicsUnit.Pixel);
+                            }
+                            sheet.Save(sfd.FileName, FormatFor(sfd.FileName));
                         }
+                        SetStatus($"Spritesheet saved: {frames.Count} frames, {box.Width}x{box.Height} each.");
                     }
-                    catch { }
+                    catch (Exception ex) { ShowError("Export failed", ex); }
                 }
             }
-            catch
-            {
-                for (int i = 0; i < 100; i++)
-                {
-                    artSearchResults.Add(i);
-                    listBoxArtItems.Items.Add($"0x{i:X4} ({i})");
-                }
-            }
-
-            listBoxArtItems.EndUpdate();
-            if (labelArtInfo != null)
-                labelArtInfo.Text = $"Loaded: {artSearchResults.Count} items";
+            finally { doc.ForceKeyTransparency = false; }
         }
 
-        #endregion
-
-        #region Art Browser Tab - Events
-
-        private void listBoxArtItems_SelectedIndexChanged(object sender, EventArgs e)
+        private void ExportFramesSeparate()
         {
-            if (listBoxArtItems.SelectedIndex < 0 || listBoxArtItems.SelectedIndex >= artSearchResults.Count) return;
-            int artIdx = artSearchResults[listBoxArtItems.SelectedIndex];
-            DisplayArtImage(artIdx);
-        }
-
-        // FIX: Guard against firing during initialization
-        private void rbArtType_CheckedChanged(object sender, EventArgs e)
-        {
-            if (_artBrowserInitializing) return;
-            PopulateArtList();
-        }
-
-        private void tboxArtSearch_KeyDown(object sender, KeyEventArgs e)
-        {
-            if (e.KeyCode == Keys.Enter) btArtSearch_Click(sender, e);
-        }
-
-        private void numericArtZoom_ValueChanged(object sender, EventArgs e)
-        {
-            if (listBoxArtItems.SelectedIndex >= 0)
-                listBoxArtItems_SelectedIndexChanged(sender, e);
-        }
-
-        private void btArtLoadPrevious_Click(object sender, EventArgs e)
-        {
-            if (listBoxArtItems.SelectedIndex > 0)
-                listBoxArtItems.SelectedIndex--;
-        }
-
-        private void btArtLoadNext_Click(object sender, EventArgs e)
-        {
-            if (listBoxArtItems.SelectedIndex < listBoxArtItems.Items.Count - 1)
-                listBoxArtItems.SelectedIndex++;
-        }
-
-        #endregion
-
-        #region Art Browser Tab - Display
-
-        private void DisplayArtImage(int artIdx)
-        {
+            doc.ForceKeyTransparency = true;
             try
             {
-                bool isStatic = rbArtStatic == null || rbArtStatic.Checked;
-                Bitmap bmp = isStatic ? Art.GetStatic(artIdx) : Art.GetLand(artIdx);
+                var frames = ExportFrames();
+                if (frames.Count == 0) return;
+                Rectangle box = UnionBounds(frames);
 
-                if (bmp != null)
+                using (var fbd = new FolderBrowserDialog { Description = "Folder for the frame PNGs" })
                 {
-                    int zoom = numericArtZoom != null ? (int)numericArtZoom.Value : 1;
-                    if (zoom > 1)
-                        bmp = new Bitmap(bmp, new Size(bmp.Width * zoom, bmp.Height * zoom));
-
-                    picBoxArtPreview.Image = bmp;
-                    labelArtInfo.Text = $"ID: 0x{artIdx:X4} ({artIdx}) | Size: {bmp.Width}x{bmp.Height} | Type: {(isStatic ? "Static" : "Land")}";
-                }
-                else
-                {
-                    picBoxArtPreview.Image = null;
-                    labelArtInfo.Text = $"ID: 0x{artIdx:X4} - No image found";
-                }
-            }
-            catch (Exception ex)
-            {
-                labelArtInfo.Text = $"Error loading art: {ex.Message}";
-            }
-        }
-
-        #endregion
-
-        #region Art Browser Tab - Search / Copy / Export
-
-        private void btArtSearch_Click(object sender, EventArgs e)
-        {
-            if (string.IsNullOrWhiteSpace(tboxArtSearch.Text)) return;
-
-            string query = tboxArtSearch.Text.Trim();
-            int searchId = -1;
-
-            if (query.StartsWith("0x", StringComparison.OrdinalIgnoreCase))
-                int.TryParse(query.Substring(2), NumberStyles.HexNumber, null, out searchId);
-            else
-                int.TryParse(query, out searchId);
-
-            if (searchId >= 0)
-            {
-                for (int i = 0; i < artSearchResults.Count; i++)
-                {
-                    if (artSearchResults[i] == searchId)
+                    if (fbd.ShowDialog(this) != DialogResult.OK) return;
+                    try
                     {
-                        listBoxArtItems.SelectedIndex = i;
-                        listBoxArtItems.TopIndex = i;
-                        return;
+                        foreach (int i in frames)
+                        {
+                            using (Bitmap b = doc.Compose(i, true))
+                            using (Bitmap crop = b.Clone(box, PixelFormat.Format32bppArgb))
+                                crop.Save(Path.Combine(fbd.SelectedPath, $"Frame_{i + 1:D2}.png"), ImageFormat.Png);
+                        }
+                        SetStatus($"{frames.Count} frames saved to {fbd.SelectedPath} ({box.Width}x{box.Height}, anchor at {doc.Anchor.X - box.X},{doc.Anchor.Y - box.Y}).");
                     }
-                }
-                MessageBox.Show($"Art ID {query} not found.", "Search", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            }
-        }
-
-        private void btArtCopyClipboard_Click(object sender, EventArgs e)
-        {
-            if (picBoxArtPreview.Image == null) return;
-            Clipboard.SetImage(picBoxArtPreview.Image);
-            MessageBox.Show("Art image copied to clipboard.", "Clipboard", MessageBoxButtons.OK, MessageBoxIcon.Information);
-        }
-
-        private void btArtCopyToFrameEditor_Click(object sender, EventArgs e)
-        {
-            if (picBoxArtPreview.Image == null) return;
-
-            for (int i = 0; i < boxes.Length; i++)
-            {
-                if (checks[i].Checked)
-                {
-                    Bitmap bmp = new Bitmap(picBoxArtPreview.Image);
-                    boxes[i].Image = bmp;
-                    boxes[i].OriginalImage = new Bitmap(bmp);
-                    boxes[i].DrawingBitmaps[boxes[i].CurrentIndex] = new Bitmap(bmp.Width, bmp.Height);
-
-                    tabControl1.SelectedTab = tabPageFrame;
-                    MessageBox.Show($"Art copied to Frame {i + 1} in Frame Editor.", "Done", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    return;
+                    catch (Exception ex) { ShowError("Export failed", ex); }
                 }
             }
-            MessageBox.Show("Please check at least one frame checkbox.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            finally { doc.ForceKeyTransparency = false; }
         }
 
-        private void btArtExport_Click(object sender, EventArgs e)
+        private void ExportGif()
         {
-            if (picBoxArtPreview.Image == null) return;
-            if (listBoxArtItems.SelectedIndex < 0) return;
-
-            int artIdx = artSearchResults[listBoxArtItems.SelectedIndex];
-
-            using (SaveFileDialog sfd = new SaveFileDialog())
+            doc.ForceKeyTransparency = true;
+            try
             {
-                sfd.Filter = "PNG Image (*.png)|*.png|BMP Image (*.bmp)|*.bmp";
-                sfd.FileName = $"Art_0x{artIdx:X4}";
-                if (sfd.ShowDialog() == DialogResult.OK)
+                var frames = ExportFrames();
+                if (frames.Count == 0) return;
+                Rectangle box = UnionBounds(frames);
+
+                using (var sfd = new SaveFileDialog { Filter = "GIF (*.gif)|*.gif", FileName = "animation" })
                 {
-                    ImageFormat fmt = sfd.FileName.EndsWith(".bmp") ? ImageFormat.Bmp : ImageFormat.Png;
-                    picBoxArtPreview.Image.Save(sfd.FileName, fmt);
-                    MessageBox.Show("Art exported successfully.", "Export", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                }
-            }
-        }
-
-        #endregion
-
-        // =====================================================================
-        // === SAVE / EXPORT ANIMATION =========================================
-        // =====================================================================
-
-        #region Save / Export Animation
-
-        private void btSaveAnimationGif_Click(object sender, EventArgs e)
-        {
-            List<Bitmap> frames = new List<Bitmap>();
-            for (int i = 0; i < boxes.Length; i++)
-            {
-                if (checks[i].Checked && boxes[i].Image != null)
-                    frames.Add(new Bitmap(boxes[i].Image));
-            }
-
-            if (frames.Count == 0) { MessageBox.Show("No frames to save."); return; }
-
-            using (SaveFileDialog sfd = new SaveFileDialog())
-            {
-                sfd.Filter = "PNG Spritesheet (*.png)|*.png|BMP Files (*.bmp)|*.bmp";
-                sfd.Title = "Export animation frames";
-                sfd.FileName = "animation_export";
-                if (sfd.ShowDialog() != DialogResult.OK) return;
-
-                int totalWidth = frames.Sum(f => f.Width);
-                int maxHeight = frames.Max(f => f.Height);
-
-                using (Bitmap spritesheet = new Bitmap(totalWidth, maxHeight))
-                using (Graphics g = Graphics.FromImage(spritesheet))
-                {
-                    g.Clear(Color.Transparent);
-                    int x = 0;
-                    foreach (Bitmap frame in frames)
+                    if (sfd.ShowDialog(this) != DialogResult.OK) return;
+                    try
                     {
-                        g.DrawImage(frame, x, 0);
-                        x += frame.Width;
+                        int delay = Math.Max(10, 1000 / (int)numFps.Value);
+                        using (var gif = AnimatedGif.AnimatedGif.Create(sfd.FileName, delay))
+                        {
+                            bool bg = canvas.BackgroundMode != CanvasBackground.Checker;
+                            foreach (int i in frames)
+                            {
+                                using (Bitmap comp = canvas.RenderComposite(i, bg, false))
+                                using (var crop = new Bitmap(box.Width, box.Height, PixelFormat.Format32bppArgb))
+                                {
+                                    using (Graphics g = Graphics.FromImage(crop))
+                                    {
+                                        if (!bg) g.Clear(Color.White);
+                                        g.DrawImage(comp, new Rectangle(0, 0, box.Width, box.Height), box, GraphicsUnit.Pixel);
+                                    }
+                                    gif.AddFrame(crop, delay, AnimatedGif.GifQuality.Bit8);
+                                }
+                            }
+                        }
+                        SetStatus($"GIF saved: {frames.Count} frames, {1000 / delay} fps.");
                     }
-
-                    ImageFormat fmt = sfd.FileName.EndsWith(".bmp") ? ImageFormat.Bmp : ImageFormat.Png;
-                    spritesheet.Save(sfd.FileName, fmt);
+                    catch (Exception ex) { ShowError("GIF export failed", ex); }
                 }
-
-                MessageBox.Show($"Saved {frames.Count} frames as spritesheet to:\n{sfd.FileName}", "Export Complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
+            finally { doc.ForceKeyTransparency = false; }
         }
 
-        private void btSaveAllFramesSeparate_Click(object sender, EventArgs e)
+        #endregion
+
+        #region Project save / load
+
+        private sealed class ProjectFrame
         {
-            List<(int index, Bitmap bmp)> frames = new List<(int, Bitmap)>();
-            for (int i = 0; i < boxes.Length; i++)
+            public bool Enabled { get; set; }
+            public int OffsetX { get; set; }
+            public int OffsetY { get; set; }
+            public string Source { get; set; }
+            public bool OriginalVisible { get; set; }
+            public bool PaintVisible { get; set; }
+            public float OriginalOpacity { get; set; }
+            public float PaintOpacity { get; set; }
+            public bool HasOriginal { get; set; }
+        }
+
+        private sealed class ProjectFile
+        {
+            public int Version { get; set; } = 1;
+            public int CanvasWidth { get; set; }
+            public int CanvasHeight { get; set; }
+            public int AnchorX { get; set; }
+            public int AnchorY { get; set; }
+            public int Fps { get; set; }
+            public List<ProjectFrame> Frames { get; set; } = new List<ProjectFrame>();
+            public List<ProjectOverlay> Overlays { get; set; }
+            public bool KeyColorsTransparent { get; set; }
+        }
+
+        private void SaveProject()
+        {
+            using (var fbd = new FolderBrowserDialog { Description = "Project folder (frames are saved as PNG + project.json)" })
             {
-                if (checks[i].Checked && boxes[i].Image != null)
-                    frames.Add((i + 1, new Bitmap(boxes[i].Image)));
-            }
-
-            if (frames.Count == 0) { MessageBox.Show("No frames to save."); return; }
-
-            using (FolderBrowserDialog fbd = new FolderBrowserDialog())
-            {
-                fbd.Description = "Select folder to save frames";
-                if (fbd.ShowDialog() != DialogResult.OK) return;
-
-                foreach (var (index, bmp) in frames)
+                if (lastProjectFolder != null) fbd.SelectedPath = lastProjectFolder;
+                if (fbd.ShowDialog(this) != DialogResult.OK) return;
+                try
                 {
-                    string path = Path.Combine(fbd.SelectedPath, $"Frame_{index:D2}.png");
-                    bmp.Save(path, ImageFormat.Png);
+                    var p = new ProjectFile
+                    {
+                        CanvasWidth = doc.CanvasSize.Width,
+                        CanvasHeight = doc.CanvasSize.Height,
+                        AnchorX = doc.Anchor.X,
+                        AnchorY = doc.Anchor.Y,
+                        Fps = (int)numFps.Value
+                    };
+                    for (int i = 0; i < AnimDocument.FrameCount; i++)
+                    {
+                        AnimFrame f = doc.Frames[i];
+                        p.Frames.Add(new ProjectFrame
+                        {
+                            Enabled = f.Enabled,
+                            OffsetX = f.Offset.X,
+                            OffsetY = f.Offset.Y,
+                            Source = f.Source,
+                            OriginalVisible = f.OriginalVisible,
+                            PaintVisible = f.PaintVisible,
+                            OriginalOpacity = f.OriginalOpacity,
+                            PaintOpacity = f.PaintOpacity,
+                            HasOriginal = f.HasOriginal
+                        });
+                        string orig = Path.Combine(fbd.SelectedPath, $"frame_{i + 1:D2}_original.png");
+                        if (f.Original != null) f.Original.Save(orig, ImageFormat.Png);
+                        else if (File.Exists(orig)) File.Delete(orig);
+                        f.Paint.Save(Path.Combine(fbd.SelectedPath, $"frame_{i + 1:D2}_paint.png"), ImageFormat.Png);
+                    }
+                    p.Overlays = SaveOverlays(fbd.SelectedPath);
+                    p.KeyColorsTransparent = doc.KeyColorsTransparent;
+                    File.WriteAllText(Path.Combine(fbd.SelectedPath, "project.json"),
+                        JsonSerializer.Serialize(p, new JsonSerializerOptions { WriteIndented = true }));
+                    lastProjectFolder = fbd.SelectedPath;
+                    SetStatus("Project saved: " + fbd.SelectedPath);
                 }
-
-                MessageBox.Show($"Saved {frames.Count} frames to:\n{fbd.SelectedPath}", "Done", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                catch (Exception ex) { ShowError("Project could not be saved", ex); }
             }
         }
 
-        #endregion
-
-        #region Clear All Frames
-
-        private void btClearAllFrames_Click(object sender, EventArgs e)
+        private void OpenProject()
         {
-            if (MessageBox.Show("Clear all frame images?", "Confirm", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
-                return;
-
-            for (int i = 0; i < boxes.Length; i++)
+            using (var fbd = new FolderBrowserDialog { Description = "Project folder containing project.json" })
             {
-                boxes[i].Image = null;
-                boxes[i].ClearImage();
+                if (lastProjectFolder != null) fbd.SelectedPath = lastProjectFolder;
+                if (fbd.ShowDialog(this) != DialogResult.OK) return;
+                string json = Path.Combine(fbd.SelectedPath, "project.json");
+                if (!File.Exists(json)) { MessageBox.Show(this, "project.json not found.", "Open project"); return; }
+                try
+                {
+                    ProjectFile p = JsonSerializer.Deserialize<ProjectFile>(File.ReadAllText(json));
+                    StopPlay();
+                    doc.BeginChangeAll("Open project");
+                    doc.ResizeCanvas(p.CanvasWidth, p.CanvasHeight);
+                    doc.SetAnchor(new Point(p.AnchorX, p.AnchorY));
+                    for (int i = 0; i < AnimDocument.FrameCount && i < p.Frames.Count; i++)
+                    {
+                        ProjectFrame pf = p.Frames[i];
+                        AnimFrame f = doc.Frames[i];
+                        doc.ClearFrame(i);
+                        string orig = Path.Combine(fbd.SelectedPath, $"frame_{i + 1:D2}_original.png");
+                        string paint = Path.Combine(fbd.SelectedPath, $"frame_{i + 1:D2}_paint.png");
+                        if (pf.HasOriginal && File.Exists(orig)) f.Original = ImageUtil.LoadCopy(orig);
+                        if (File.Exists(paint))
+                        {
+                            using (Bitmap pb = ImageUtil.LoadCopy(paint))
+                            using (Graphics g = Graphics.FromImage(f.Paint))
+                                g.DrawImage(pb, 0, 0, pb.Width, pb.Height);
+                        }
+                        f.Offset = new Point(pf.OffsetX, pf.OffsetY);
+                        f.Enabled = pf.Enabled;
+                        f.Source = pf.Source ?? "";
+                        f.OriginalVisible = pf.OriginalVisible;
+                        f.PaintVisible = pf.PaintVisible;
+                        f.OriginalOpacity = pf.OriginalOpacity;
+                        f.PaintOpacity = pf.PaintOpacity;
+                    }
+                    if (p.Fps > 0) numFps.Value = Math.Min(numFps.Maximum, p.Fps);
+                    LoadOverlays(fbd.SelectedPath, p.Overlays);
+                    btKeyTransparent.Checked = p.KeyColorsTransparent;
+                    lastProjectFolder = fbd.SelectedPath;
+                    RefreshAllFrames();
+                    ZoomToFit();
+                    SetStatus("Project opened: " + fbd.SelectedPath);
+                }
+                catch (Exception ex) { ShowError("Project could not be opened", ex); }
             }
-
-            AnimationPictureBox.Image = null;
-            AnimationPictureBox2.Image = null;
-            frameLabel.Text = "0";
         }
 
         #endregion
+
+        #region Keyboard
+
+        private static Control FocusedControl(Control c)
+        {
+            while (c is ContainerControl cc && cc.ActiveControl != null) c = cc.ActiveControl;
+            return c;
+        }
+
+        protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
+        {
+            Control focused = FocusedControl(this);
+            bool typing = focused is TextBoxBase || focused is NumericUpDown || focused?.Parent is NumericUpDown ||
+                          focused is ComboBox || focused is ListBox || focused is TrackBar;
+            bool editor = mainTabs.SelectedTab == tabEditor;
+
+            if (keyData == Keys.F1)
+            {
+                AnimEditHelp.Show(this, System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "de");
+                return true;
+            }
+
+            if (!typing && editor && HandleEditorKey(keyData, focused == canvas)) return true;
+
+            return base.ProcessCmdKey(ref msg, keyData);
+        }
+
+        private bool HandleEditorKey(Keys keyData, bool canvasFocused)
+        {
+            Keys key = keyData & Keys.KeyCode;
+            bool ctrl = keyData.HasFlag(Keys.Control);
+            bool shift = keyData.HasFlag(Keys.Shift);
+
+            if (ctrl)
+            {
+                switch (key)
+                {
+                    case Keys.Z when shift: DoRedo(); return true;
+                    case Keys.Z: DoUndo(); return true;
+                    case Keys.Y: DoRedo(); return true;
+                    case Keys.C: CopyFrameToClipboard(); return true;
+                    case Keys.V when !canvas.Selection.IsEmpty: PasteIntoSelection(); return true;
+                    case Keys.V: PasteFromClipboard(false); return true;
+                    case Keys.Left when shift: MoveFrame(-1); return true;
+                    case Keys.Right when shift: MoveFrame(1); return true;
+                }
+                return false;
+            }
+            if (keyData.HasFlag(Keys.Alt)) return false;
+
+            int step = shift ? 10 : 1;
+            bool overlayMode = canvas.Tool == DrawTool.Overlay && SelOverlay != null;
+            switch (key)
+            {
+                case Keys.Left when overlayMode: NudgeOverlay(-step, 0); return true;
+                case Keys.Right when overlayMode: NudgeOverlay(step, 0); return true;
+                case Keys.Up when overlayMode: NudgeOverlay(0, -step); return true;
+                case Keys.Down when overlayMode: NudgeOverlay(0, step); return true;
+                case Keys.Delete when overlayMode: DeleteOverlay(); return true;
+                case Keys.Escape when overlayMode: canvas.SelectedOverlay = null; return true;
+                case Keys.P: SetTool(DrawTool.Overlay); return true;
+                case Keys.Left: Nudge(-step, 0); return true;
+                case Keys.Right: Nudge(step, 0); return true;
+                case Keys.Up: Nudge(0, -step); return true;
+                case Keys.Down: Nudge(0, step); return true;
+                case Keys.PageUp: StepFrame(-1); return true;
+                case Keys.PageDown: StepFrame(1); return true;
+                case Keys.Space: TogglePlay(); return true;
+                case Keys.Delete when !canvas.Selection.IsEmpty: ClearSelectionArea(); return true;
+                case Keys.Delete: ClearTargetLayer(); return true;
+                case Keys.Escape when !canvas.Selection.IsEmpty: canvas.Selection = Rectangle.Empty; return true;
+                case Keys.S: SetTool(DrawTool.Select); return true;
+                case Keys.T: btKeyTransparent.Checked = !btKeyTransparent.Checked; return true;
+                case Keys.Tab when canvasFocused: cbLayer.SelectedIndex = 1 - cbLayer.SelectedIndex; return true;
+                case Keys.B: SetTool(DrawTool.Pencil); return true;
+                case Keys.E: SetTool(DrawTool.Eraser); return true;
+                case Keys.L: SetTool(DrawTool.Line); return true;
+                case Keys.R: SetTool(shift ? DrawTool.FilledRectangle : DrawTool.Rectangle); return true;
+                case Keys.O: SetTool(shift ? DrawTool.FilledEllipse : DrawTool.Ellipse); return true;
+                case Keys.G: SetTool(DrawTool.Fill); return true;
+                case Keys.I: SetTool(DrawTool.Pipette); return true;
+                case Keys.M: SetTool(DrawTool.Move); return true;
+                case Keys.X: SwapColors(); return true;
+                case Keys.Oemplus:
+                case Keys.Add: SetZoom(canvas.Zoom + 1); return true;
+                case Keys.OemMinus:
+                case Keys.Subtract: SetZoom(canvas.Zoom - 1); return true;
+                case Keys.OemOpenBrackets: numBrush.Value = Math.Max(numBrush.Minimum, numBrush.Value - 1); return true;
+                case Keys.OemCloseBrackets: numBrush.Value = Math.Min(numBrush.Maximum, numBrush.Value + 1); return true;
+            }
+
+            if (key >= Keys.D0 && key <= Keys.D9)
+            {
+                int n = key == Keys.D0 ? 9 : key - Keys.D1;
+                SelectFrame(n);
+                return true;
+            }
+            return false;
+        }
+
+        #endregion
+
+        private void ShowError(string text, Exception ex)
+        {
+            MessageBox.Show(this, text + ":\n" + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
     }
 }

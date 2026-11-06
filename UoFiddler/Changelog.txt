@@ -1,3 +1,12 @@
+Version 4.12.22 #XG1
+
+Version 4.12.22
+
+- Animation Frame Editor neu aufgebaut: Ebenen pro Frame (Original/Paint/Referenz/Hintergrund), Undo/Redo, Zeichenwerkzeuge (Stift, Radierer, Linie, Rechteck, Ellipse, Füllen, Pipette, Verschieben) und „All checked“ zum Bearbeiten aller angehakten Frames gleichzeitig.
+Ausrichten und Vergleichen: Anker/Fußpunkt, Pfeiltasten-Versatz, Hilfslinien, Raster, Onion-Skin, durchscheinende Referenz-Animation, Zoom (global/pro Frame), Abspielen mit Bereich, Loop und Ping-Pong.
+Quellen: anim.mul–anim5.mul, UOP, VD-Dateien, anderer Client-Ordner, Bilder/GIF; neues Layout mit Frame-Leiste, Tooltips EN/DE, Hilfe (F1), Projekt speichern/öffnen sowie Export als Spritesheet, PNG und GIF.
+
+
 Version 4.12.21 #XG1
 
 - Dragon Map Studio (new) – ConverterMultiText plugin, tab Map, button "Dragon Map Studio"

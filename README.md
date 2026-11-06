@@ -6,6 +6,52 @@ UOFiddler based on Ultima SDK it's a tool to view and alter almost every UO 2D c
 This is an extended version of UoFiddler that has more maps and more tools, as well as Map Edit, and will be expanded over time to support the Ultima standard 
 version more than the original version. Also, some source codes from older and New projects that are no longer supported have been integrated.
 
+Version 4.12.22
+
+- # Animation Frame Editor
+
+Rebuilt editor in `UoFiddler.Plugin.ConverterMultiTextPlugin` for creating, painting and checking animations from up to 10 frames.
+*Neu aufgebauter Editor zum Erstellen, Bemalen und Prüfen von Animationen aus bis zu 10 Frames.*
+
+## Features
+
+- **Layers per frame / Ebenen pro Frame:** Original, Paint, shared Reference animation and Background, each with visibility and opacity.
+- **Undo / Redo:** up to 60 steps, including multi-frame actions, with a history list.
+- **Drawing tools / Zeichenwerkzeuge:** pencil, eraser, line, rectangle, ellipse (outline/filled), flood fill with tolerance, pipette, move. Primary/secondary color, alpha, recent colors, frame palette, color → transparent, replace color, outline.
+- **B/W transparent (switchable):** black, white and light gray of the original images shown as transparent – on/off at any time, images stay unchanged.
+- **Selection / Auswahl:** mark a rectangle (Select tool or Ctrl + drag) and load or paste an image into it, copy or clear the area.
+- **Overlays:** floating images above the frames (e.g. a cage around a bird) – move, undo, copy, place on all / checked / one frame, pixel-exact scale, tint (original, gray, color), auto-crop of black/white borders, animated overlays from GIF or animations, bake into the frames when done. Black/white stay transparent like in UO.
+- **All checked mode:** every edit applies to the current frame and all checked frames at once.
+- **Alignment / Ausrichtung:** anchor (feet position, UO centers like the client), arrow-key nudge, offsets, align bottoms, pixel-exact scale, rotate, mirror, canvas size.
+- **Comparison / Vergleich:** guide lines, pixel grid, onion skin, transparent reference animation, zoom (global or per frame).
+- **Playback / Abspielen:** FPS, from/to range, loop, ping-pong, mirrored preview, ground backgrounds.
+- **Sources / Quellen:** Auto (body.def/bodyconv), anim.mul–anim5.mul, UOP, `.vd` files, another client folder, images / animated GIF. Art browser and clipboard list are linked to the editor.
+- **Files / Dateien:** save/open project (PNG per layer + `project.json`), export spritesheet, single PNGs or animated GIF.
+- **UI:** toolbar, frame strip with all 10 frames (drag & drop), large canvas, side panel, status bar, bilingual tooltips (EN/DE) and help page (F1).
+
+## Shortcuts / Tastenkürzel
+
+| Key | Action |
+|---|---|
+| `1`…`0` | select frame 1–10 |
+| `PageUp` / `PageDown` | previous / next frame |
+| `Space` | play / stop |
+| `B E L R O G I M` | pencil, eraser, line, rect, ellipse, fill, pipette, move |
+| `S` / `Ctrl`+drag | select rectangle |
+| `T` | B/W transparent on/off |
+| `Esc` | deselect |
+| `P` | overlay tool (drag, arrows, Del) |
+| `X` | swap colors |
+| `[` / `]` | brush size |
+| `+` / `-`, `Ctrl`+wheel | zoom |
+| Arrow keys (`Shift` = 10 px) | move active layer |
+| `Tab` | switch layer Paint / Original |
+| `Ctrl+Z` / `Ctrl+Y` | undo / redo |
+| `Ctrl+C` / `Ctrl+V` | copy / paste frame image (with selection: paste into it) |
+| `Ctrl+D` | duplicate frame to next |
+| `Del` | clear active layer (with selection: clear the area) |
+| `F1` | help |
+
 Version 4.12.21
 
 ## Dragon Map Studio (new) – UoFiddler.Plugin.ConverterMultiTextPlugin
