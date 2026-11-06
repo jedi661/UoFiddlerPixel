@@ -2,11 +2,15 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
+using Ultima;
 using UoFiddler.Controls.Classes;
 using UoFiddler.Plugin.ConverterMultiTextPlugin.Class;
 using UoFiddler.Plugin.ConverterMultiTextPlugin.Class.AnimEdit;
@@ -53,7 +57,7 @@ namespace UoFiddler.Controls.Forms
             Icon = Options.GetFiddlerIcon();
             KeyPreview = true;
 
-            BuildLayout();
+            InitDesignerState();
             WireEditor();
             WireOverlays();
 
@@ -128,7 +132,6 @@ namespace UoFiddler.Controls.Forms
             strip.FrameCheckedChanged += i => { UpdatePlayOrder(); UpdatePreviewStill(); };
             strip.FilesDropped += (i, files) => LoadFilesInto(i, files);
             strip.FrameDoubleClicked += i => { SelectFrame(i); LoadImagesSequential(); };
-            strip.ContextMenuStrip = BuildFrameMenu();
 
             doc.HistoryChanged += (s, e) => UpdateHistoryUi();
             canvas.SelectionChanged += () =>
@@ -195,30 +198,6 @@ namespace UoFiddler.Controls.Forms
             chkPreviewRef.CheckedChanged += (s, e) => UpdatePreviewStill();
         }
 
-        private ContextMenuStrip BuildFrameMenu()
-        {
-            var m = new ContextMenuStrip();
-            m.Items.Add("Load images here…", null, (s, e) => LoadImagesSequential());
-            m.Items.Add("Paste as original (Ctrl+V)", null, (s, e) => PasteFromClipboard(false));
-            m.Items.Add("Copy image (Ctrl+C)", null, (s, e) => CopyFrameToClipboard());
-            m.Items.Add(new ToolStripSeparator());
-            m.Items.Add("Duplicate to next (Ctrl+D)", null, (s, e) => DuplicateToNext());
-            m.Items.Add("Copy to all checked", null, (s, e) => CopyFrameToChecked());
-            m.Items.Add("Move left", null, (s, e) => MoveFrame(-1));
-            m.Items.Add("Move right", null, (s, e) => MoveFrame(1));
-            m.Items.Add(new ToolStripSeparator());
-            m.Items.Add("Mirror", null, (s, e) => ApplyToAffected("Mirror", i => doc.MirrorFrame(i)));
-            m.Items.Add("Clear frame", null, (s, e) => ClearFrames());
-            m.Items.Add(new ToolStripSeparator());
-            m.Items.Add("Check only this frame", null, (s, e) =>
-            {
-                for (int i = 0; i < AnimDocument.FrameCount; i++) doc.Frames[i].Enabled = i == current;
-                strip.Invalidate();
-                UpdatePlayOrder();
-            });
-            m.Items.Add("Add to clipboard animation", null, (s, e) => AddCurrentFrameToClipboardList());
-            return m;
-        }
 
         #endregion
 
@@ -1527,5 +1506,1957 @@ namespace UoFiddler.Controls.Forms
         {
             MessageBox.Show(this, text + ":\n" + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
+    
+
+        // =====================================================================
+        // === BROWSERS
+        // =====================================================================
+
+        #region Helpers
+
+        /// <summary>Runs work on a thread with a big stack (the Ultima SDK has deep call chains).</summary>
+        private static Task<T> RunBigStack<T>(Func<T> work)
+        {
+            var tcs = new TaskCompletionSource<T>();
+            var thread = new Thread(() =>
+            {
+                try { tcs.SetResult(work()); }
+                catch (Exception ex) { tcs.SetException(ex); }
+            }, 16 * 1024 * 1024) { IsBackground = true };
+            thread.Start();
+            return tcs.Task;
+        }
+
+
+
+
+        #endregion
+
+        // =====================================================================
+        // === ANIMATION BROWSER ===============================================
+        // =====================================================================
+
+        #region Anim browser - fields and layout
+
+        private const int SourceAuto = 0, SourceUop = 6, SourceVd = 7, SourceFolder = 8, SourceImages = 9;
+
+        private Timer browserTimer;
+
+        private AnimSource source;
+        private int sourceIndex = SourceAuto;
+        private int bodiesVersion;
+        private List<SourceFrame> browserFrames = new List<SourceFrame>();
+        private int browserPos;
+        private bool browserBusy;
+
+
+        #endregion
+
+        #region Anim browser - logic
+
+        private enum BrowserTarget { Checked, FromCurrent, Current }
+
+        private void InitAnimBrowser()
+        {
+            browserTimer = new Timer(components) { Interval = 150 };
+            browserTimer.Tick += (s, e) =>
+            {
+                if (browserFrames.Count == 0) return;
+                browserPos = (browserPos + 1) % browserFrames.Count;
+                ShowBrowserFrame(browserPos);
+            };
+
+            cbSource.SelectedIndex = 0;
+            source = new AutoSource();
+            cbSource.SelectedIndexChanged += async (s, e) => await OnSourceChanged();
+            lbBodies.SelectedIndexChanged += (s, e) => OnBodySelected();
+            lbActions.SelectedIndexChanged += (s, e) => LoadBrowserFrames();
+            lbDirections.SelectedIndexChanged += (s, e) => LoadBrowserFrames();
+            numHue.ValueChanged += (s, e) => LoadBrowserFrames();
+            lbFrames.SelectedIndexChanged += (s, e) => { if (!browserTimer.Enabled) ShowBrowserFrame(lbFrames.SelectedIndex); };
+            numBrowserZoom.ValueChanged += (s, e) => { browserPreview.Zoom = (int)numBrowserZoom.Value; browserPreview.Invalidate(); };
+            numBrowserSpeed.ValueChanged += (s, e) => browserTimer.Interval = (int)numBrowserSpeed.Value;
+            tbBodySearch.KeyDown += (s, e) =>
+            {
+                if (e.KeyCode != Keys.Enter) return;
+                e.SuppressKeyPress = true;
+                SearchBody();
+            };
+        }
+
+        /// <summary>Programmatic source selection (e.g. from the File menu).</summary>
+        private void SelectSourceIndex(int index)
+        {
+            if (cbSource.SelectedIndex == index) _ = OnSourceChanged();
+            else cbSource.SelectedIndex = index;
+        }
+
+        private AnimSource CreateSource(int index)
+        {
+            switch (index)
+            {
+                case SourceAuto: return new AutoSource();
+                case 1: case 2: case 3: case 4: case 5: return new MulSource(index);
+                case SourceUop: return new UopSource();
+                case SourceVd:
+                    using (var dlg = new OpenFileDialog { Filter = "VD animation (*.vd)|*.vd|All files (*.*)|*.*", Title = "Open VD file" })
+                        return dlg.ShowDialog(this) == DialogResult.OK ? new VdSource(dlg.FileName) : null;
+                case SourceFolder:
+                    using (var fbd = new FolderBrowserDialog { Description = "Folder with anim.idx/anim.mul (anim2…anim5 too)" })
+                        return fbd.ShowDialog(this) == DialogResult.OK ? new ExternalMulSource(fbd.SelectedPath) : null;
+                case SourceImages:
+                    using (var dlg = new OpenFileDialog { Filter = ImageFilter, Multiselect = true, Title = "Images or animated GIF" })
+                        return dlg.ShowDialog(this) == DialogResult.OK ? new ImageFilesSource(dlg.FileNames) : null;
+            }
+            return null;
+        }
+
+        private async Task OnSourceChanged()
+        {
+            if (browserBusy) return;
+            AnimSource next = CreateSource(cbSource.SelectedIndex);
+            if (next == null)
+            {
+                // dialog cancelled -> back to the previous source
+                browserBusy = true;
+                cbSource.SelectedIndex = sourceIndex;
+                browserBusy = false;
+                return;
+            }
+
+            AnimSource old = source;
+            source = next;
+            sourceIndex = cbSource.SelectedIndex;
+            if (old != null) lock (old.SyncRoot) old.Dispose();
+
+            numHue.Enabled = source.SupportsHue;
+            lbDirections.Enabled = source.SupportsDirections;
+            await LoadBrowserBodiesAsync();
+        }
+
+        private async Task LoadBrowserBodiesAsync()
+        {
+            int version = ++bodiesVersion;
+            AnimSource src = source;
+            StopBrowserPlay();
+            lbBodies.Items.Clear();
+            lbActions.Items.Clear();
+            ClearBrowserFrames();
+            lbBrowserInfo.Text = $"Loading {src.Name} …";
+
+            List<ListEntry> bodies;
+            try
+            {
+                bodies = await RunBigStack(() => { lock (src.SyncRoot) return src.LoadBodies(); });
+            }
+            catch (Exception ex)
+            {
+                if (!IsDisposed && version == bodiesVersion) lbBrowserInfo.Text = "Load error: " + ex.Message;
+                return;
+            }
+            if (IsDisposed || version != bodiesVersion) return;
+
+            lbBodies.BeginUpdate();
+            lbBodies.Items.AddRange(bodies.Cast<object>().ToArray());
+            lbBodies.EndUpdate();
+
+            string err = src is UopSource u && u.LoadError != null ? " – " + u.LoadError : "";
+            lbBrowserInfo.Text = $"{src.Name}: {bodies.Count} entries{err}. Select Body → Action → Direction.";
+            if (lbBodies.Items.Count == 1) lbBodies.SelectedIndex = 0;
+        }
+
+        private void OnBodySelected()
+        {
+            if (!(lbBodies.SelectedItem is ListEntry body)) return;
+            List<ListEntry> actions;
+            try { lock (source.SyncRoot) actions = source.GetActions(body.Id); }
+            catch (Exception ex) { lbBrowserInfo.Text = "Error: " + ex.Message; return; }
+
+            lbActions.BeginUpdate();
+            lbActions.Items.Clear();
+            lbActions.Items.AddRange(actions.Cast<object>().ToArray());
+            lbActions.EndUpdate();
+            if (lbActions.Items.Count > 0) lbActions.SelectedIndex = 0;
+            else { ClearBrowserFrames(); lbBrowserInfo.Text = "No actions found for this body."; }
+        }
+
+        private void ClearBrowserFrames()
+        {
+            browserPreview.Image = null;
+            foreach (SourceFrame f in browserFrames) f.Bitmap?.Dispose();
+            browserFrames = new List<SourceFrame>();
+            lbFrames.Items.Clear();
+        }
+
+        private void LoadBrowserFrames()
+        {
+            if (!(lbBodies.SelectedItem is ListEntry body) || !(lbActions.SelectedItem is ListEntry action)) return;
+            bool wasPlaying = browserTimer.Enabled;
+            StopBrowserPlay();
+            ClearBrowserFrames();
+
+            int dir = Math.Max(0, lbDirections.SelectedIndex);
+            try
+            {
+                lock (source.SyncRoot) browserFrames = source.GetFrames(body.Id, action.Id, dir, (int)numHue.Value);
+            }
+            catch (Exception ex)
+            {
+                lbBrowserInfo.Text = "Error: " + ex.Message;
+                return;
+            }
+
+            for (int i = 0; i < browserFrames.Count; i++)
+            {
+                Bitmap b = browserFrames[i].Bitmap;
+                lbFrames.Items.Add(b == null ? $"Frame {i + 1} (empty)" : $"Frame {i + 1}  ({b.Width}x{b.Height})");
+            }
+            numBrowserStart.Maximum = Math.Max(1, browserFrames.Count);
+
+            if (browserFrames.Count == 0)
+            {
+                lbBrowserInfo.Text = "No frames found.";
+                return;
+            }
+            lbFrames.SelectedIndex = 0;
+            if (wasPlaying) ToggleBrowserPlay();
+        }
+
+        private string BrowserSourceName()
+        {
+            string body = (lbBodies.SelectedItem as ListEntry)?.Label ?? "?";
+            int action = (lbActions.SelectedItem as ListEntry)?.Id ?? 0;
+            return $"{source.Name} | {body.Split(new[] { "  " }, StringSplitOptions.None)[0]} A{action} D{Math.Max(0, lbDirections.SelectedIndex)}";
+        }
+
+        private void ShowBrowserFrame(int i)
+        {
+            if (i < 0 || i >= browserFrames.Count) return;
+            SourceFrame f = browserFrames[i];
+            browserPreview.Image = f.Bitmap;
+            browserPreview.Caption = $"{i + 1}/{browserFrames.Count}";
+            string center = f.Center.HasValue ? $" | center {f.Center.Value.X},{f.Center.Value.Y}" : "";
+            string size = f.Bitmap != null ? $"{f.Bitmap.Width}x{f.Bitmap.Height}" : "empty";
+            lbBrowserInfo.Text = $"{BrowserSourceName()} | frame {i + 1}/{browserFrames.Count} | {size}{center}";
+        }
+
+        private void ToggleBrowserPlay()
+        {
+            if (browserTimer.Enabled) { StopBrowserPlay(); return; }
+            if (browserFrames.Count == 0) return;
+            browserPos = Math.Max(0, lbFrames.SelectedIndex);
+            browserTimer.Interval = (int)numBrowserSpeed.Value;
+            browserTimer.Start();
+            btBrowserPlay.BackColor = Color.LightGreen;
+        }
+
+        private void StopBrowserPlay()
+        {
+            browserTimer?.Stop();
+            if (btBrowserPlay != null)
+            {
+                btBrowserPlay.BackColor = SystemColors.Control;
+                btBrowserPlay.UseVisualStyleBackColor = true;
+            }
+        }
+
+        /// <summary>Source frames picked by Start and Step.</summary>
+        private List<SourceFrame> PickBrowserFrames()
+        {
+            var list = new List<SourceFrame>();
+            int step = (int)numBrowserStep.Value;
+            for (int i = (int)numBrowserStart.Value - 1; i < browserFrames.Count; i += step)
+                list.Add(browserFrames[i]);
+            return list;
+        }
+
+        private void BrowserToEditor(BrowserTarget target)
+        {
+            if (browserFrames.Count == 0) { lbBrowserInfo.Text = "No frames loaded."; return; }
+            List<int> targets;
+            List<SourceFrame> frames;
+            switch (target)
+            {
+                case BrowserTarget.Current:
+                    int sel = Math.Max(0, lbFrames.SelectedIndex);
+                    frames = new List<SourceFrame> { browserFrames[sel] };
+                    targets = new List<int> { current };
+                    break;
+                case BrowserTarget.FromCurrent:
+                    frames = PickBrowserFrames();
+                    targets = Enumerable.Range(current, AnimDocument.FrameCount - current).ToList();
+                    break;
+                default:
+                    frames = PickBrowserFrames();
+                    targets = CheckedFrames();
+                    if (targets.Count == 0) { lbBrowserInfo.Text = "Check at least one frame in the frame strip."; return; }
+                    break;
+            }
+            PutFrames(frames, targets, BrowserSourceName());
+            if (frames.Count > targets.Count)
+                SetStatus($"Only {targets.Count} of {frames.Count} frames fit (10 frame limit / checked frames). Use Start/Step to choose.");
+            mainTabs.SelectedTab = tabEditor;
+        }
+
+        private void BrowserAsReference()
+        {
+            if (browserFrames.Count == 0) return;
+            var set = new ReferenceSet { Name = BrowserSourceName() };
+            foreach (SourceFrame f in PickBrowserFrames())
+                set.Add(f.Bitmap != null ? new Bitmap(f.Bitmap) : null, f.Center);
+            SetReference(set);
+            SetStatus("Reference set: " + set.Name);
+            mainTabs.SelectedTab = tabEditor;
+        }
+
+        private void BrowserCopyFrame()
+        {
+            int i = lbFrames.SelectedIndex;
+            if (i < 0 || browserFrames[i].Bitmap == null) return;
+            Clipboard.SetImage(browserFrames[i].Bitmap);
+            lbBrowserInfo.Text = "Frame copied to the clipboard.";
+        }
+
+        private void BrowserExport()
+        {
+            if (browserFrames.Count == 0) return;
+            using (var fbd = new FolderBrowserDialog { Description = "Export folder for the animation frames" })
+            {
+                if (fbd.ShowDialog(this) != DialogResult.OK) return;
+                try
+                {
+                    string prefix = string.Concat(BrowserSourceName().Split(Path.GetInvalidFileNameChars())).Replace(" ", "").Replace("|", "_");
+                    int n = 0;
+                    for (int i = 0; i < browserFrames.Count; i++)
+                    {
+                        if (browserFrames[i].Bitmap == null) continue;
+                        browserFrames[i].Bitmap.Save(Path.Combine(fbd.SelectedPath, $"{prefix}_F{i:D3}.png"), ImageFormat.Png);
+                        n++;
+                    }
+                    lbBrowserInfo.Text = $"{n} frames exported to {fbd.SelectedPath}";
+                }
+                catch (Exception ex) { ShowError("Export failed", ex); }
+            }
+        }
+
+        private void SearchBody()
+        {
+            string q = tbBodySearch.Text.Trim();
+            if (q.Length == 0 || lbBodies.Items.Count == 0) return;
+            bool isNum = int.TryParse(q, out int id);
+            int start = lbBodies.SelectedIndex + 1;
+            for (int k = 0; k < lbBodies.Items.Count; k++)
+            {
+                int i = (start + k) % lbBodies.Items.Count;
+                var e = (ListEntry)lbBodies.Items[i];
+                bool hit = isNum ? e.Id == id || e.Id % 100000 == id : e.Label.IndexOf(q, StringComparison.OrdinalIgnoreCase) >= 0;
+                if (!hit) continue;
+                lbBodies.SelectedIndex = i;
+                lbBodies.TopIndex = Math.Max(0, i - 3);
+                return;
+            }
+            lbBrowserInfo.Text = $"'{q}' not found.";
+        }
+
+        private void CloseBrowsers()
+        {
+            bodiesVersion++;
+            artLoadVersion++;
+            browserTimer?.Stop();
+            clipTimer?.Stop();
+            ClearBrowserFrames();
+            if (source != null) lock (source.SyncRoot) source.Dispose();
+            artPreview.Image = null;
+            artPreviewImage?.Dispose();
+            foreach (ClipItem c in clipItems) c.Dispose();
+            clipItems.Clear();
+        }
+
+        #endregion
+
+        // =====================================================================
+        // === ART BROWSER =====================================================
+        // =====================================================================
+
+        #region Art browser
+
+        private const int ArtIdLimit = 0x14000;
+
+        private readonly List<int> artIds = new List<int>();
+        private int artLoadVersion;
+        private Bitmap artPreviewImage;
+
+
+        private void InitArtBrowser()
+        {
+            lbArt.SelectedIndexChanged += (s, e) => ShowArt();
+            numArtZoom.ValueChanged += (s, e) => { artPreview.Zoom = (int)numArtZoom.Value; artPreview.Invalidate(); };
+            rbStatic.CheckedChanged += async (s, e) => { if (rbStatic.Checked) await LoadArtListAsync(); };
+            rbLand.CheckedChanged += async (s, e) => { if (rbLand.Checked) await LoadArtListAsync(); };
+            tbArtSearch.KeyDown += (s, e) =>
+            {
+                if (e.KeyCode != Keys.Enter) return;
+                e.SuppressKeyPress = true;
+                ArtSearch();
+            };
+        }
+
+        private async Task LoadArtListAsync()
+        {
+            int version = ++artLoadVersion;
+            bool isStatic = rbStatic.Checked;
+            lbArtInfo.Text = "Loading…";
+            lbArt.Items.Clear();
+            artIds.Clear();
+
+            List<int> ids;
+            try
+            {
+                ids = await RunBigStack(() =>
+                {
+                    lock (SdkSync.Lock)
+                    {
+                        var list = new List<int>();
+                        int limit = isStatic ? Math.Min(ArtIdLimit, Art.GetMaxItemId() + 1) : 0x4000;
+                        for (int i = 0; i < limit; i++)
+                        {
+                            try { if (isStatic ? Art.IsValidStatic(i) : Art.IsValidLand(i)) list.Add(i); }
+                            catch { }
+                        }
+                        return list;
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                if (!IsDisposed && version == artLoadVersion) lbArtInfo.Text = "Art load error: " + ex.Message;
+                return;
+            }
+            if (IsDisposed || version != artLoadVersion) return;
+
+            artIds.AddRange(ids);
+            lbArt.BeginUpdate();
+            lbArt.Items.AddRange(ids.Select(id => (object)$"0x{id:X4} ({id})").ToArray());
+            lbArt.EndUpdate();
+            lbArtInfo.Text = $"{ids.Count} {(isStatic ? "statics" : "land tiles")}";
+        }
+
+        /// <summary>The original (not zoomed) art bitmap. It comes from the SDK cache: never dispose it.</summary>
+        private Bitmap SelectedArt(out int id)
+        {
+            id = -1;
+            int sel = lbArt.SelectedIndex;
+            if (sel < 0 || sel >= artIds.Count) return null;
+            id = artIds[sel];
+            lock (SdkSync.Lock) return rbStatic.Checked ? Art.GetStatic(id) : Art.GetLand(id);
+        }
+
+        private void ShowArt()
+        {
+            try
+            {
+                Bitmap b = SelectedArt(out int id);
+                Bitmap old = artPreviewImage;
+                artPreviewImage = b != null ? ImageUtil.To32(b) : null;
+                artPreview.Image = artPreviewImage;
+                old?.Dispose();
+                lbArtInfo.Text = b != null
+                    ? $"ID 0x{id:X4} ({id}) | {b.Width}x{b.Height} | {(rbStatic.Checked ? "Static" : "Land")}"
+                    : $"ID 0x{id:X4} – no image";
+            }
+            catch (Exception ex) { lbArtInfo.Text = "Error: " + ex.Message; }
+        }
+
+        private void ArtSearch()
+        {
+            string q = tbArtSearch.Text.Trim();
+            if (q.Length == 0) return;
+            bool ok = q.StartsWith("0x", StringComparison.OrdinalIgnoreCase)
+                ? int.TryParse(q.Substring(2), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out int id)
+                : int.TryParse(q, out id);
+            if (!ok) { lbArtInfo.Text = "Enter a decimal ID or hex (0x…)."; return; }
+            int idx = artIds.IndexOf(id);
+            if (idx < 0) { lbArtInfo.Text = $"Art {q} not found."; return; }
+            lbArt.SelectedIndex = idx;
+            lbArt.TopIndex = Math.Max(0, idx - 3);
+        }
+
+        private void ArtToEditor(bool allChecked)
+        {
+            Bitmap b = SelectedArt(out int id);
+            if (b == null) return;
+            using (Bitmap copy = ImageUtil.To32(b))
+            {
+                var targets = allChecked ? CheckedFrames() : new List<int> { current };
+                if (targets.Count == 0) { lbArtInfo.Text = "Check at least one frame."; return; }
+                PutFrames(targets.Select(_ => new SourceFrame { Bitmap = copy }).ToList(), targets,
+                    $"{(rbStatic.Checked ? "Static" : "Land")} 0x{id:X4}");
+            }
+            mainTabs.SelectedTab = tabEditor;
+        }
+
+        private void ArtAsReference()
+        {
+            Bitmap b = SelectedArt(out int id);
+            if (b == null) return;
+            var set = new ReferenceSet { Name = $"Art 0x{id:X4}" };
+            set.Add(ImageUtil.To32(b), null);
+            SetReference(set);
+            mainTabs.SelectedTab = tabEditor;
+        }
+
+        private void ArtExport()
+        {
+            Bitmap b = SelectedArt(out int id);
+            if (b == null) return;
+            using (var sfd = new SaveFileDialog { Filter = "PNG (*.png)|*.png|BMP (*.bmp)|*.bmp", FileName = $"Art_0x{id:X4}" })
+            {
+                if (sfd.ShowDialog(this) != DialogResult.OK) return;
+                try
+                {
+                    using (Bitmap copy = ImageUtil.To32(b)) copy.Save(sfd.FileName, FormatFor(sfd.FileName));
+                    lbArtInfo.Text = "Saved: " + sfd.FileName;
+                }
+                catch (Exception ex) { ShowError("Export failed", ex); }
+            }
+        }
+
+        #endregion
+
+        // =====================================================================
+        // === CLIPBOARD ANIMATION =============================================
+        // =====================================================================
+
+        #region Clipboard animation
+
+        private sealed class ClipItem : IDisposable
+        {
+            public string Name;
+            public Bitmap Original;
+            public Bitmap Shown;
+
+            public void Dispose()
+            {
+                if (!ReferenceEquals(Shown, Original)) Shown?.Dispose();
+                Original?.Dispose();
+            }
+
+            public override string ToString() => Name;
+        }
+
+        private const int ClipLimit = 60;
+        private readonly List<ClipItem> clipItems = new List<ClipItem>();
+        private Timer clipTimer;
+        private int clipPos;
+        private int clipCounter = 1;
+
+
+        private void InitClipboardTab()
+        {
+            clipTimer = new Timer(components);
+            clipTimer.Tick += (s, e) =>
+            {
+                if (clipItems.Count == 0) { clipTimer.Stop(); return; }
+                clipPos = (clipPos + 1) % clipItems.Count;
+                clipPreview.Image = clipItems[clipPos].Shown;
+                clipPreview.Caption = clipItems[clipPos].Name;
+            };
+            lbClip.SelectedIndexChanged += (s, e) =>
+            {
+                if (lbClip.SelectedItem is ClipItem c) { clipPreview.Image = c.Shown; clipPreview.Caption = c.Name; }
+            };
+            chkClipTransparent.CheckedChanged += (s, e) =>
+            {
+                clipPreview.Image = null;
+                foreach (ClipItem c in clipItems) UpdateClipShown(c);
+                if (lbClip.SelectedItem is ClipItem sel) clipPreview.Image = sel.Shown;
+            };
+            numClipFps.ValueChanged += (s, e) => clipTimer.Interval = 1000 / (int)numClipFps.Value;
+        }
+
+        private void UpdateClipShown(ClipItem c)
+        {
+            if (!ReferenceEquals(c.Shown, c.Original)) c.Shown?.Dispose();
+            c.Shown = chkClipTransparent.Checked
+                ? ImageUtil.MakeTransparent(c.Original, new[] { Color.Black, Color.White })
+                : c.Original;
+        }
+
+        private void AddClipItem(Bitmap bmp, string name)
+        {
+            if (clipItems.Count >= ClipLimit) { MessageBox.Show(this, $"Maximum of {ClipLimit} images reached."); bmp.Dispose(); return; }
+            var item = new ClipItem { Name = name, Original = bmp };
+            UpdateClipShown(item);
+            clipItems.Add(item);
+            lbClip.Items.Add(item);
+            lbClip.SelectedItem = item;
+        }
+
+        private void AddClipboardImage()
+        {
+            Image img = Clipboard.ContainsImage() ? Clipboard.GetImage() : null;
+            if (img == null) { MessageBox.Show(this, "The clipboard does not contain an image."); return; }
+            using (img) AddClipItem(ImageUtil.To32(img), $"Item{clipCounter++:00}");
+        }
+
+        private void AddCurrentFrameToClipboardList()
+        {
+            Bitmap b = doc.ComposeCropped(current, out _);
+            if (b == null) { SetStatus("Frame is empty."); return; }
+            AddClipItem(b, $"Frame{current + 1}_{clipCounter++:00}");
+            SetStatus("Frame added to the clipboard animation list.");
+        }
+
+        private void ReplaceClipItem()
+        {
+            if (!(lbClip.SelectedItem is ClipItem c)) return;
+            Image img = Clipboard.ContainsImage() ? Clipboard.GetImage() : null;
+            if (img == null) { MessageBox.Show(this, "The clipboard does not contain an image."); return; }
+            clipPreview.Image = null;
+            if (!ReferenceEquals(c.Shown, c.Original)) c.Shown?.Dispose();
+            c.Original.Dispose();
+            using (img) c.Original = ImageUtil.To32(img);
+            c.Shown = null;
+            UpdateClipShown(c);
+            clipPreview.Image = c.Shown;
+        }
+
+        private void DeleteClipItem()
+        {
+            if (!(lbClip.SelectedItem is ClipItem c)) return;
+            clipPreview.Image = null;
+            clipItems.Remove(c);
+            lbClip.Items.Remove(c);
+            c.Dispose();
+        }
+
+        private void DeleteAllClipItems()
+        {
+            clipTimer.Stop();
+            clipPreview.Image = null;
+            foreach (ClipItem c in clipItems) c.Dispose();
+            clipItems.Clear();
+            lbClip.Items.Clear();
+        }
+
+        private void PlayClip()
+        {
+            if (clipItems.Count == 0) return;
+            clipPos = -1;
+            clipTimer.Interval = 1000 / (int)numClipFps.Value;
+            clipTimer.Start();
+        }
+
+        private void ClipToEditor()
+        {
+            if (clipItems.Count == 0) return;
+            int start = lbClip.SelectedIndex >= 0 ? lbClip.SelectedIndex : 0;
+            var frames = clipItems.Skip(start).Select(c => new SourceFrame { Bitmap = c.Shown }).ToList();
+            PutFrames(frames, Enumerable.Range(current, AnimDocument.FrameCount - current).ToList(), "Clipboard list");
+            mainTabs.SelectedTab = tabEditor;
+        }
+
+        #endregion
+    
+
+        // =====================================================================
+        // === OVERLAYS
+        // =====================================================================
+
+        private bool updatingOverlayUi;
+
+        private Overlay SelOverlay => canvas.SelectedOverlay;
+
+        private void WireOverlays()
+        {
+            canvas.OverlaySelected += o => { SyncOverlayList(); LoadOverlayUi(); };
+            canvas.OverlayMoved += o => LoadOverlayUi();
+
+            lbOverlays.SelectedIndexChanged += (s, e) =>
+            {
+                if (updatingOverlayUi) return;
+                int i = lbOverlays.SelectedIndex;
+                canvas.SelectedOverlay = i >= 0 && i < doc.Overlays.Count ? doc.Overlays[i] : null;
+            };
+
+            numOvX.ValueChanged += (s, e) => ChangeOverlay("Overlay position", o => o.Position = new Point((int)numOvX.Value, o.Position.Y), false);
+            numOvY.ValueChanged += (s, e) => ChangeOverlay("Overlay position", o => o.Position = new Point(o.Position.X, (int)numOvY.Value), false);
+            numOvScale.ValueChanged += (s, e) => ChangeOverlay("Overlay scale", o => o.ScalePercent = (int)numOvScale.Value, true);
+            cbOvTint.SelectedIndexChanged += (s, e) => ChangeOverlay("Overlay tint", o => o.Tint = (OverlayTint)cbOvTint.SelectedIndex, true);
+            chkOvVisible.CheckedChanged += (s, e) => ChangeOverlay("Overlay visible", o => o.Visible = chkOvVisible.Checked, false);
+            trkOvOpacity.ValueChanged += (s, e) => ChangeOverlay("Overlay opacity", o => o.Opacity = trkOvOpacity.Value / 100f, false);
+            cbOvScope.SelectedIndexChanged += (s, e) => ChangeOverlay("Overlay frames", ApplyScope, false);
+            chkOvFrames.CheckedChanged += (s, e) => { canvas.ShowOverlayFrames = chkOvFrames.Checked; canvas.Invalidate(); };
+
+            LoadOverlayUi();
+        }
+
+        #region UI sync
+
+        private void SyncOverlayList()
+        {
+            updatingOverlayUi = true;
+            try
+            {
+                lbOverlays.BeginUpdate();
+                lbOverlays.Items.Clear();
+                foreach (Overlay o in doc.Overlays) lbOverlays.Items.Add(o.Describe(current));
+                lbOverlays.SelectedIndex = SelOverlay != null ? doc.Overlays.IndexOf(SelOverlay) : -1;
+                lbOverlays.EndUpdate();
+            }
+            finally { updatingOverlayUi = false; }
+        }
+
+        private void LoadOverlayUi()
+        {
+            updatingOverlayUi = true;
+            try
+            {
+                Overlay o = SelOverlay;
+                bool has = o != null;
+                foreach (Control c in new Control[] { numOvX, numOvY, numOvScale, cbOvTint, btOvColor, cbOvScope, chkOvVisible, trkOvOpacity })
+                    c.Enabled = has;
+                if (!has) return;
+
+                numOvX.Value = Math.Max(numOvX.Minimum, Math.Min(numOvX.Maximum, o.Position.X));
+                numOvY.Value = Math.Max(numOvY.Minimum, Math.Min(numOvY.Maximum, o.Position.Y));
+                numOvScale.Value = Math.Max(numOvScale.Minimum, Math.Min(numOvScale.Maximum, o.ScalePercent));
+                cbOvTint.SelectedIndex = (int)o.Tint;
+                btOvColor.BackColor = o.TintColor;
+                chkOvVisible.Checked = o.Visible;
+                trkOvOpacity.Value = (int)Math.Round(o.Opacity * 100);
+                cbOvScope.SelectedIndex = o.Frames == null ? 0 : o.Frames.Count == 1 && o.Frames.Contains(current) ? 2 : 1;
+
+                int idx = doc.Overlays.IndexOf(o);
+                if (idx >= 0 && idx < lbOverlays.Items.Count) lbOverlays.Items[idx] = o.Describe(current);
+            }
+            finally { updatingOverlayUi = false; }
+        }
+
+        /// <summary>Undoable change of the selected overlay. invalidate = scale/tint changed (rebuild image).</summary>
+        private void ChangeOverlay(string name, Action<Overlay> change, bool invalidate)
+        {
+            if (updatingOverlayUi || SelOverlay == null) return;
+            doc.BeginChange(name, Array.Empty<int>(), true);
+            change(SelOverlay);
+            if (invalidate) SelOverlay.Invalidate();
+            OverlaysChanged();
+        }
+
+        private void ApplyScope(Overlay o)
+        {
+            switch (cbOvScope.SelectedIndex)
+            {
+                case 0: o.Frames = null; break;
+                case 1: o.Frames = new HashSet<int>(CheckedFrames()); break;
+                default: o.Frames = new HashSet<int> { current }; break;
+            }
+        }
+
+        /// <summary>Overlays affect every frame -> refresh thumbnails, canvas, preview and the list.</summary>
+        private void OverlaysChanged()
+        {
+            strip.RefreshAll();
+            canvas.Invalidate();
+            UpdatePlayOrder();
+            UpdatePreviewStill();
+            SyncOverlayList();
+            LoadOverlayUi();
+        }
+
+        #endregion
+
+        #region Create
+
+        /// <summary>
+        /// Adds a new overlay. fitInto = scale (keeping the aspect ratio) and center into this rectangle,
+        /// otherwise it is placed with its bottom center on the anchor.
+        /// </summary>
+        private void AddOverlay(List<Bitmap> images, string name, Rectangle? fitInto)
+        {
+            if (images == null || images.Count == 0) return;
+            if (chkAutoCrop.Checked)
+            {
+                for (int k = 0; k < images.Count; k++)
+                {
+                    Bitmap cropped = OverlayUtil.AutoCrop(images[k]);
+                    images[k].Dispose();
+                    images[k] = cropped;
+                }
+            }
+
+            var o = new Overlay { Name = string.IsNullOrEmpty(name) ? "Overlay " + (doc.Overlays.Count + 1) : name, Sources = images };
+            ApplyScope(o);
+            Size size = images[0].Size;
+
+            if (fitInto.HasValue && !fitInto.Value.IsEmpty)
+            {
+                Rectangle r = fitInto.Value;
+                double s = Math.Min(r.Width / (double)size.Width, r.Height / (double)size.Height);
+                if (!chkSelKeepAspect.Checked) s = Math.Max(r.Width / (double)size.Width, r.Height / (double)size.Height);
+                o.ScalePercent = Math.Max(10, (int)Math.Round(s * 100));
+                Size sz = o.SizeFor(0);
+                o.Position = new Point(r.X + (r.Width - sz.Width) / 2, r.Y + (r.Height - sz.Height) / 2);
+            }
+            else
+            {
+                o.Position = doc.OffsetFor(size, null);
+            }
+
+            doc.BeginChange("Add overlay", Array.Empty<int>());
+            doc.Overlays.Add(o);
+            SetTool(DrawTool.Overlay);
+            canvas.SelectedOverlay = o;
+            sideTabs.SelectedIndex = 0;
+            OverlaysChanged();
+            SetStatus($"Overlay '{o.Name}' added ({o.SizeFor(0).Width}x{o.SizeFor(0).Height}). Drag it with the Overlay tool, arrow keys = fine position. / Mit dem Overlay-Werkzeug ziehen, Pfeiltasten = fein.");
+        }
+
+        private void LoadOverlayFromFile()
+        {
+            using (var dlg = new OpenFileDialog { Filter = ImageFilter, Title = "Overlay image or animated GIF" })
+            {
+                if (dlg.ShowDialog(this) != DialogResult.OK) return;
+                try { AddOverlay(ImageUtil.LoadAllFrames(dlg.FileName), Path.GetFileNameWithoutExtension(dlg.FileName), null); }
+                catch (Exception ex) { ShowError("Image could not be loaded", ex); }
+            }
+        }
+
+        private void OverlayFromClipboard()
+        {
+            Image clip = Clipboard.ContainsImage() ? Clipboard.GetImage() : null;
+            if (clip == null) { SetStatus("The clipboard does not contain an image."); return; }
+            using (clip) AddOverlay(new List<Bitmap> { ImageUtil.To32(clip) }, "Clipboard", canvas.Selection.IsEmpty ? (Rectangle?)null : canvas.Selection);
+        }
+
+        /// <summary>Copies the visible content of the marked area as an overlay at the same position (to copy it elsewhere).</summary>
+        private void OverlayFromSelection()
+        {
+            Rectangle sel = canvas.Selection;
+            if (sel.IsEmpty) { SetStatus("Mark an area first (Select tool S or Ctrl + drag)."); return; }
+            Bitmap part;
+            using (Bitmap full = doc.Compose(current))
+                part = full.Clone(sel, PixelFormat.Format32bppArgb);
+            bool crop = chkAutoCrop.Checked;
+            chkAutoCrop.Checked = false; // keep the exact position
+            try { AddOverlay(new List<Bitmap> { part }, $"Part F{current + 1}", null); }
+            finally { chkAutoCrop.Checked = crop; }
+            SelOverlay.Position = sel.Location;
+            OverlaysChanged();
+        }
+
+        /// <summary>Used by the art and animation browsers ("→ Overlay").</summary>
+        private void AddOverlayFromBitmaps(IEnumerable<Bitmap> bitmaps, string name)
+        {
+            var list = bitmaps.Where(b => b != null).Select(b => ImageUtil.To32(b)).ToList();
+            if (list.Count == 0) return;
+            AddOverlay(list, name, canvas.Selection.IsEmpty ? (Rectangle?)null : canvas.Selection);
+            mainTabs.SelectedTab = tabEditor;
+        }
+
+        #endregion
+
+        #region Edit
+
+        private void PickOverlayColor()
+        {
+            if (SelOverlay == null) return;
+            using (var dlg = new ColorDialog { Color = SelOverlay.TintColor, FullOpen = true })
+            {
+                if (dlg.ShowDialog(this) == DialogResult.OK) SetOverlayTintColor(dlg.Color);
+            }
+        }
+
+        private void SetOverlayTintColor(Color c)
+        {
+            if (SelOverlay == null) return;
+            doc.BeginChange("Overlay tint", Array.Empty<int>());
+            SelOverlay.TintColor = Color.FromArgb(255, c);
+            SelOverlay.Tint = OverlayTint.Color;
+            SelOverlay.Invalidate();
+            OverlaysChanged();
+        }
+
+        private void ScaleOverlay(double factor)
+        {
+            if (SelOverlay == null) return;
+            Overlay o = SelOverlay;
+            Size before = o.SizeFor(current);
+            doc.BeginChange("Overlay scale", Array.Empty<int>());
+            o.ScalePercent = Math.Max(10, Math.Min(1600, (int)Math.Round(o.ScalePercent * factor)));
+            o.Invalidate();
+            Size after = o.SizeFor(current);
+            // keep the center in place
+            o.Position = new Point(o.Position.X + (before.Width - after.Width) / 2, o.Position.Y + (before.Height - after.Height) / 2);
+            OverlaysChanged();
+        }
+
+        private void FitOverlayToSelection()
+        {
+            if (SelOverlay == null) return;
+            Rectangle r = canvas.Selection;
+            if (r.IsEmpty) { SetStatus("Mark an area first (Select tool S or Ctrl + drag)."); return; }
+            Overlay o = SelOverlay;
+            Bitmap src = o.Sources[0];
+            doc.BeginChange("Overlay fit", Array.Empty<int>());
+            double s = Math.Min(r.Width / (double)src.Width, r.Height / (double)src.Height);
+            o.ScalePercent = Math.Max(10, (int)Math.Round(s * 100));
+            o.Invalidate();
+            Size sz = o.SizeFor(0);
+            o.Position = new Point(r.X + (r.Width - sz.Width) / 2, r.Y + (r.Height - sz.Height) / 2);
+            OverlaysChanged();
+        }
+
+        private void CenterOverlay()
+        {
+            if (SelOverlay == null) return;
+            doc.BeginChange("Overlay center", Array.Empty<int>());
+            Size sz = SelOverlay.SizeFor(current);
+            SelOverlay.Position = doc.OffsetFor(sz, null);
+            OverlaysChanged();
+        }
+
+        private void NudgeOverlay(int dx, int dy)
+        {
+            if (SelOverlay == null) return;
+            doc.BeginChange("Move overlay", Array.Empty<int>(), true);
+            SelOverlay.Position = new Point(SelOverlay.Position.X + dx, SelOverlay.Position.Y + dy);
+            OverlaysChanged();
+        }
+
+        private void DuplicateOverlay()
+        {
+            if (SelOverlay == null) return;
+            doc.BeginChange("Duplicate overlay", Array.Empty<int>());
+            Overlay copy = SelOverlay.Clone();
+            copy.Name = SelOverlay.Name + " copy";
+            copy.Position = new Point(copy.Position.X + 10, copy.Position.Y + 10);
+            doc.Overlays.Add(copy);
+            canvas.SelectedOverlay = copy;
+            OverlaysChanged();
+            SetStatus("Copy created – drag it to the new place. / Kopie erstellt – an die neue Stelle ziehen.");
+        }
+
+        private void MoveOverlayOrder(int dir)
+        {
+            if (SelOverlay == null) return;
+            int i = doc.Overlays.IndexOf(SelOverlay), j = i + dir;
+            if (j < 0 || j >= doc.Overlays.Count) return;
+            doc.BeginChange("Overlay order", Array.Empty<int>());
+            (doc.Overlays[i], doc.Overlays[j]) = (doc.Overlays[j], doc.Overlays[i]);
+            OverlaysChanged();
+        }
+
+        private void DeleteOverlay()
+        {
+            if (SelOverlay == null) return;
+            doc.BeginChange("Delete overlay", Array.Empty<int>());
+            Overlay o = SelOverlay;
+            doc.Overlays.Remove(o);
+            o.Invalidate();
+            canvas.SelectedOverlay = null;
+            OverlaysChanged();
+        }
+
+        private void BakeOverlay(bool remove)
+        {
+            Overlay o = SelOverlay;
+            if (o == null) { SetStatus("Select an overlay first."); return; }
+            var frames = Enumerable.Range(0, AnimDocument.FrameCount).Where(o.AppliesTo).ToList();
+            doc.BeginChange(remove ? "Bake + remove overlay" : "Bake overlay", frames);
+            foreach (int i in frames) doc.BakeOverlay(o, i);
+            if (remove)
+            {
+                doc.Overlays.Remove(o);
+                o.Invalidate();
+                canvas.SelectedOverlay = null;
+            }
+            RefreshFrames(frames);
+            OverlaysChanged();
+            SetStatus($"Overlay baked into the paint layer of {frames.Count} frame(s).");
+        }
+
+        private void BakeAllOverlays()
+        {
+            if (doc.Overlays.Count == 0) return;
+            doc.BeginChangeAll("Bake all overlays");
+            foreach (Overlay o in doc.Overlays)
+                for (int i = 0; i < AnimDocument.FrameCount; i++) doc.BakeOverlay(o, i);
+            foreach (Overlay o in doc.Overlays) o.Invalidate();
+            doc.Overlays.Clear();
+            canvas.SelectedOverlay = null;
+            RefreshAllFrames();
+            OverlaysChanged();
+        }
+
+        #endregion
+
+        #region Project save / load
+
+        private sealed class ProjectOverlay
+        {
+            public string Name { get; set; }
+            public int X { get; set; }
+            public int Y { get; set; }
+            public int Scale { get; set; }
+            public int Tint { get; set; }
+            public int TintColor { get; set; }
+            public bool Visible { get; set; }
+            public float Opacity { get; set; }
+            public List<int> Frames { get; set; }
+            public int ImageCount { get; set; }
+        }
+
+        private List<ProjectOverlay> SaveOverlays(string folder)
+        {
+            var list = new List<ProjectOverlay>();
+            for (int k = 0; k < doc.Overlays.Count; k++)
+            {
+                Overlay o = doc.Overlays[k];
+                list.Add(new ProjectOverlay
+                {
+                    Name = o.Name, X = o.Position.X, Y = o.Position.Y, Scale = o.ScalePercent, Tint = (int)o.Tint,
+                    TintColor = o.TintColor.ToArgb(), Visible = o.Visible, Opacity = o.Opacity,
+                    Frames = o.Frames?.OrderBy(x => x).ToList(), ImageCount = o.Sources.Count
+                });
+                for (int n = 0; n < o.Sources.Count; n++)
+                    o.Sources[n].Save(Path.Combine(folder, $"overlay_{k + 1:D2}_{n + 1:D2}.png"), ImageFormat.Png);
+            }
+            return list;
+        }
+
+        private void LoadOverlays(string folder, List<ProjectOverlay> list)
+        {
+            foreach (Overlay o in doc.Overlays) o.Invalidate();
+            doc.Overlays.Clear();
+            canvas.SelectedOverlay = null;
+            if (list == null) return;
+            for (int k = 0; k < list.Count; k++)
+            {
+                ProjectOverlay p = list[k];
+                var o = new Overlay
+                {
+                    Name = p.Name ?? "Overlay", Position = new Point(p.X, p.Y), ScalePercent = Math.Max(10, p.Scale),
+                    Tint = (OverlayTint)p.Tint, TintColor = Color.FromArgb(p.TintColor), Visible = p.Visible,
+                    Opacity = p.Opacity <= 0 ? 1f : p.Opacity, Frames = p.Frames != null ? new HashSet<int>(p.Frames) : null
+                };
+                for (int n = 0; n < p.ImageCount; n++)
+                {
+                    string file = Path.Combine(folder, $"overlay_{k + 1:D2}_{n + 1:D2}.png");
+                    if (File.Exists(file)) o.Sources.Add(ImageUtil.LoadCopy(file));
+                }
+                if (o.Sources.Count > 0) doc.Overlays.Add(o);
+            }
+        }
+
+        #endregion
+    
+
+        // =====================================================================
+        // === HELPERS
+        // =====================================================================
+
+        /// <summary>Tool button per drawing tool (filled in WireDesignerEvents).</summary>
+        private readonly Dictionary<DrawTool, ToolStripButton> toolButtons = new Dictionary<DrawTool, ToolStripButton>();
+
+        /// <summary>Small color square with checkerboard (for colors with alpha).</summary>
+        private static Bitmap Swatch(Color c, int size = 16)
+        {
+            var b = new Bitmap(size, size);
+            using (Graphics g = Graphics.FromImage(b))
+            {
+                ImageUtil.DrawChecker(g, new Rectangle(0, 0, size, size), 4);
+                using (var br = new SolidBrush(c)) g.FillRectangle(br, 0, 0, size, size);
+                g.DrawRectangle(Pens.Black, 0, 0, size - 1, size - 1);
+            }
+            return b;
+        }
+
+        /// <summary>Keeps the canvas centered in its scroll panel when it is smaller than the panel.</summary>
+        private void CenterCanvas()
+        {
+            if (canvas == null || canvasHost == null) return;
+            Point scroll = canvasHost.AutoScrollPosition;
+            int x = Math.Max(0, (canvasHost.ClientSize.Width - canvas.Width) / 2);
+            int y = Math.Max(0, (canvasHost.ClientSize.Height - canvas.Height) / 2);
+            canvas.Location = new Point(x + scroll.X, y + scroll.Y);
+        }
+    
+
+        #region Designer event handlers
+
+        /// <summary>Start values the designer does not store (tool map, selected list entries).</summary>
+        private void InitDesignerState()
+        {
+            toolButtons[DrawTool.Pencil] = this.btToolPen;
+            toolButtons[DrawTool.Eraser] = this.btToolEraser;
+            toolButtons[DrawTool.Line] = this.btToolLine;
+            toolButtons[DrawTool.Rectangle] = this.btToolRect;
+            toolButtons[DrawTool.FilledRectangle] = this.btToolRectFilled;
+            toolButtons[DrawTool.Ellipse] = this.btToolEllipse;
+            toolButtons[DrawTool.FilledEllipse] = this.btToolEllipseFilled;
+            toolButtons[DrawTool.Fill] = this.btToolFill;
+            toolButtons[DrawTool.Pipette] = this.btToolPick;
+            toolButtons[DrawTool.Move] = this.btToolMove;
+            toolButtons[DrawTool.Select] = this.btToolSelect;
+            toolButtons[DrawTool.Overlay] = this.btToolOverlay;
+
+            cbLayer.SelectedIndex = 0;
+            cbSource.SelectedIndex = 0;
+            lbDirections.SelectedIndex = 0;
+            cbOvTint.SelectedIndex = 0;
+            cbOvScope.SelectedIndex = 0;
+            cbBackground.SelectedIndex = 0;
+        }
+
+        private void miLoadImages_Click(object sender, EventArgs e)
+        {
+            LoadImagesSequential();
+        }
+
+        private void miLoadIntoChecked_Click(object sender, EventArgs e)
+        {
+            LoadImageIntoChecked();
+        }
+
+        private void miLoadVd_Click(object sender, EventArgs e)
+        {
+            mainTabs.SelectedTab = tabAnim; SelectSourceIndex(SourceVd);
+        }
+
+        private void miOpenProject_Click(object sender, EventArgs e)
+        {
+            OpenProject();
+        }
+
+        private void miSaveProject_Click(object sender, EventArgs e)
+        {
+            SaveProject();
+        }
+
+        private void miExportSheet_Click(object sender, EventArgs e)
+        {
+            ExportSpritesheet();
+        }
+
+        private void miExportPngs_Click(object sender, EventArgs e)
+        {
+            ExportFramesSeparate();
+        }
+
+        private void miExportGif_Click(object sender, EventArgs e)
+        {
+            ExportGif();
+        }
+
+        private void miClose_Click(object sender, EventArgs e)
+        {
+            Close();
+        }
+
+        private void miUndo_Click(object sender, EventArgs e)
+        {
+            DoUndo();
+        }
+
+        private void miRedo_Click(object sender, EventArgs e)
+        {
+            DoRedo();
+        }
+
+        private void miCopyFrame_Click(object sender, EventArgs e)
+        {
+            CopyFrameToClipboard();
+        }
+
+        private void miPasteOriginal_Click(object sender, EventArgs e)
+        {
+            PasteFromClipboard(false);
+        }
+
+        private void miPastePaint_Click(object sender, EventArgs e)
+        {
+            PasteFromClipboard(true);
+        }
+
+        private void miLoadIntoSelection_Click(object sender, EventArgs e)
+        {
+            LoadImageIntoSelection();
+        }
+
+        private void miPasteIntoSelection_Click(object sender, EventArgs e)
+        {
+            PasteIntoSelection();
+        }
+
+        private void miCopySelection_Click(object sender, EventArgs e)
+        {
+            CopySelection();
+        }
+
+        private void miClearSelection_Click(object sender, EventArgs e)
+        {
+            ClearSelectionArea();
+        }
+
+        private void miDeselect_Click(object sender, EventArgs e)
+        {
+            canvas.Selection = Rectangle.Empty;
+        }
+
+        private void miClearLayer_Click(object sender, EventArgs e)
+        {
+            ClearTargetLayer();
+        }
+
+        private void miClearFrame_Click(object sender, EventArgs e)
+        {
+            ClearFrames();
+        }
+
+        private void miClearAll_Click(object sender, EventArgs e)
+        {
+            ClearAllFrames();
+        }
+
+        private void miMirror_Click(object sender, EventArgs e)
+        {
+            ApplyToAffected("Mirror", i => doc.MirrorFrame(i));
+        }
+
+        private void miRotate_Click(object sender, EventArgs e)
+        {
+            ApplyToAffected("Rotate", i => doc.RotateOriginal90(i));
+        }
+
+        private void miMerge_Click(object sender, EventArgs e)
+        {
+            ApplyToAffected("Merge", i => doc.MergePaintDown(i));
+        }
+
+        private void miKeysTransparent_Click(object sender, EventArgs e)
+        {
+            MakeKeysTransparent();
+        }
+
+        private void miSecondaryTransparent_Click(object sender, EventArgs e)
+        {
+            SecondaryToTransparent();
+        }
+
+        private void miReplaceColor_Click(object sender, EventArgs e)
+        {
+            ReplaceSecondaryWithPrimary();
+        }
+
+        private void miOutline_Click(object sender, EventArgs e)
+        {
+            DrawOutline();
+        }
+
+        private void miCheckAll_Click(object sender, EventArgs e)
+        {
+            SetAllChecked(true);
+        }
+
+        private void miUncheckAll_Click(object sender, EventArgs e)
+        {
+            SetAllChecked(false);
+        }
+
+        private void miCheckNonEmpty_Click(object sender, EventArgs e)
+        {
+            CheckNonEmpty();
+        }
+
+        private void miDuplicate_Click(object sender, EventArgs e)
+        {
+            DuplicateToNext();
+        }
+
+        private void miCopyToChecked_Click(object sender, EventArgs e)
+        {
+            CopyFrameToChecked();
+        }
+
+        private void miMoveLeft_Click(object sender, EventArgs e)
+        {
+            MoveFrame(-1);
+        }
+
+        private void miMoveRight_Click(object sender, EventArgs e)
+        {
+            MoveFrame(1);
+        }
+
+        private void miReverse_Click(object sender, EventArgs e)
+        {
+            ReverseChecked();
+        }
+
+        private void miAlignBottoms_Click(object sender, EventArgs e)
+        {
+            AlignCheckedBottoms();
+        }
+
+        private void miFitCanvas_Click(object sender, EventArgs e)
+        {
+            FitCanvas();
+        }
+
+        private void miZoomIn_Click(object sender, EventArgs e)
+        {
+            SetZoom(canvas.Zoom + 1);
+        }
+
+        private void miZoomOut_Click(object sender, EventArgs e)
+        {
+            SetZoom(canvas.Zoom - 1);
+        }
+
+        private void miZoom1_Click(object sender, EventArgs e)
+        {
+            SetZoom(1);
+        }
+
+        private void miZoomFit_Click(object sender, EventArgs e)
+        {
+            ZoomToFit();
+        }
+
+        private void miPlay_Click(object sender, EventArgs e)
+        {
+            TogglePlay();
+        }
+
+        private void miHelpEn_Click(object sender, EventArgs e)
+        {
+            AnimEditHelp.Show(this, false);
+        }
+
+        private void miHelpDe_Click(object sender, EventArgs e)
+        {
+            AnimEditHelp.Show(this, true);
+        }
+
+        private void btToolPen_Click(object sender, EventArgs e)
+        {
+            SetTool(DrawTool.Pencil);
+        }
+
+        private void btToolEraser_Click(object sender, EventArgs e)
+        {
+            SetTool(DrawTool.Eraser);
+        }
+
+        private void btToolLine_Click(object sender, EventArgs e)
+        {
+            SetTool(DrawTool.Line);
+        }
+
+        private void btToolRect_Click(object sender, EventArgs e)
+        {
+            SetTool(DrawTool.Rectangle);
+        }
+
+        private void btToolRectFilled_Click(object sender, EventArgs e)
+        {
+            SetTool(DrawTool.FilledRectangle);
+        }
+
+        private void btToolEllipse_Click(object sender, EventArgs e)
+        {
+            SetTool(DrawTool.Ellipse);
+        }
+
+        private void btToolEllipseFilled_Click(object sender, EventArgs e)
+        {
+            SetTool(DrawTool.FilledEllipse);
+        }
+
+        private void btToolFill_Click(object sender, EventArgs e)
+        {
+            SetTool(DrawTool.Fill);
+        }
+
+        private void btToolPick_Click(object sender, EventArgs e)
+        {
+            SetTool(DrawTool.Pipette);
+        }
+
+        private void btToolMove_Click(object sender, EventArgs e)
+        {
+            SetTool(DrawTool.Move);
+        }
+
+        private void btToolSelect_Click(object sender, EventArgs e)
+        {
+            SetTool(DrawTool.Select);
+        }
+
+        private void btToolOverlay_Click(object sender, EventArgs e)
+        {
+            SetTool(DrawTool.Overlay);
+        }
+
+        private void btKeyTransparent_CheckedChanged(object sender, EventArgs e)
+        {
+            SetKeyTransparent(btKeyTransparent.Checked);
+        }
+
+        private void btPrimary_Click(object sender, EventArgs e)
+        {
+            PickColorDialog(true);
+        }
+
+        private void btSecondary_Click(object sender, EventArgs e)
+        {
+            PickColorDialog(false);
+        }
+
+        private void btSwapColors_Click(object sender, EventArgs e)
+        {
+            SwapColors();
+        }
+
+        private void numAlpha_ValueChanged(object sender, EventArgs e)
+        {
+            ApplyColors();
+        }
+
+        private void numBrush_ValueChanged(object sender, EventArgs e)
+        {
+            canvas.BrushSize = (int)numBrush.Value;
+        }
+
+        private void btRound_CheckedChanged(object sender, EventArgs e)
+        {
+            canvas.RoundBrush = btRound.Checked;
+        }
+
+        private void numTolerance_ValueChanged(object sender, EventArgs e)
+        {
+            canvas.FillTolerance = (int)numTolerance.Value;
+        }
+
+        private void cbLayer_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            canvas.Layer = cbLayer.SelectedIndex == 1 ? EditLayer.Original : EditLayer.Paint; canvas.Invalidate();
+        }
+
+        private void btAllChecked_CheckedChanged(object sender, EventArgs e)
+        {
+            btAllChecked.BackColor = btAllChecked.Checked ? Color.LightGreen : SystemColors.Control;
+            SetStatus(btAllChecked.Checked ? "Edits now apply to the current AND all checked frames." : "Edits apply to the current frame only.");
+        }
+
+        private void btUndo_Click(object sender, EventArgs e)
+        {
+            DoUndo();
+        }
+
+        private void btRedo_Click(object sender, EventArgs e)
+        {
+            DoRedo();
+        }
+
+        private void btZoomOut_Click(object sender, EventArgs e)
+        {
+            SetZoom(canvas.Zoom - 1);
+        }
+
+        private void btZoomIn_Click(object sender, EventArgs e)
+        {
+            SetZoom(canvas.Zoom + 1);
+        }
+
+        private void btHelp_Click(object sender, EventArgs e)
+        {
+            AnimEditHelp.Show(this, System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "de");
+        }
+
+        private void fmLoad_Click(object sender, EventArgs e)
+        {
+            LoadImagesSequential();
+        }
+
+        private void fmPaste_Click(object sender, EventArgs e)
+        {
+            PasteFromClipboard(false);
+        }
+
+        private void fmCopy_Click(object sender, EventArgs e)
+        {
+            CopyFrameToClipboard();
+        }
+
+        private void fmDuplicate_Click(object sender, EventArgs e)
+        {
+            DuplicateToNext();
+        }
+
+        private void fmCopyToChecked_Click(object sender, EventArgs e)
+        {
+            CopyFrameToChecked();
+        }
+
+        private void fmMoveLeft_Click(object sender, EventArgs e)
+        {
+            MoveFrame(-1);
+        }
+
+        private void fmMoveRight_Click(object sender, EventArgs e)
+        {
+            MoveFrame(1);
+        }
+
+        private void fmMirror_Click(object sender, EventArgs e)
+        {
+            ApplyToAffected("Mirror", i => doc.MirrorFrame(i));
+        }
+
+        private void fmClear_Click(object sender, EventArgs e)
+        {
+            ClearFrames();
+        }
+
+        private void fmCheckOnly_Click(object sender, EventArgs e)
+        {
+            for (int i = 0; i < AnimDocument.FrameCount; i++) doc.Frames[i].Enabled = i == current;
+            strip.Invalidate();
+            UpdatePlayOrder();
+        }
+
+        private void fmToClipList_Click(object sender, EventArgs e)
+        {
+            AddCurrentFrameToClipboardList();
+        }
+
+        private void canvasHost_Resize(object sender, EventArgs e)
+        {
+            CenterCanvas();
+        }
+
+        private void btBodySearch_Click(object sender, EventArgs e)
+        {
+            SearchBody();
+        }
+
+        private void btBrowserPlay_Click(object sender, EventArgs e)
+        {
+            ToggleBrowserPlay();
+        }
+
+        private void btBrowserStop_Click(object sender, EventArgs e)
+        {
+            StopBrowserPlay();
+        }
+
+        private void btBrowserToChecked_Click(object sender, EventArgs e)
+        {
+            BrowserToEditor(BrowserTarget.Checked);
+        }
+
+        private void btBrowserFromCurrent_Click(object sender, EventArgs e)
+        {
+            BrowserToEditor(BrowserTarget.FromCurrent);
+        }
+
+        private void btBrowserToCurrent_Click(object sender, EventArgs e)
+        {
+            BrowserToEditor(BrowserTarget.Current);
+        }
+
+        private void btBrowserAsRef_Click(object sender, EventArgs e)
+        {
+            BrowserAsReference();
+        }
+
+        private void btBrowserToOverlay_Click(object sender, EventArgs e)
+        {
+            AddOverlayFromBitmaps(PickBrowserFrames().Select(f => f.Bitmap), "Anim " + BrowserSourceName());
+        }
+
+        private void btBrowserCopy_Click(object sender, EventArgs e)
+        {
+            BrowserCopyFrame();
+        }
+
+        private void btBrowserExport_Click(object sender, EventArgs e)
+        {
+            BrowserExport();
+        }
+
+        private void btArtSearch_Click(object sender, EventArgs e)
+        {
+            ArtSearch();
+        }
+
+        private void btArtPrev_Click(object sender, EventArgs e)
+        {
+            if (lbArt.SelectedIndex > 0) lbArt.SelectedIndex--;
+        }
+
+        private void btArtNext_Click(object sender, EventArgs e)
+        {
+            if (lbArt.SelectedIndex < lbArt.Items.Count - 1) lbArt.SelectedIndex++;
+        }
+
+        private void btArtToCurrent_Click(object sender, EventArgs e)
+        {
+            ArtToEditor(false);
+        }
+
+        private void btArtToChecked_Click(object sender, EventArgs e)
+        {
+            ArtToEditor(true);
+        }
+
+        private void btArtAsRef_Click(object sender, EventArgs e)
+        {
+            ArtAsReference();
+        }
+
+        private void btArtToOverlay_Click(object sender, EventArgs e)
+        {
+            Bitmap b = SelectedArt(out int aid); if (b != null) AddOverlayFromBitmaps(new[] { b }, $"Art 0x{aid:X4}");
+        }
+
+        private void btArtCopy_Click(object sender, EventArgs e)
+        {
+            Bitmap b = SelectedArt(out _); if (b != null) Clipboard.SetImage(b);
+        }
+
+        private void btArtExport_Click(object sender, EventArgs e)
+        {
+            ArtExport();
+        }
+
+        private void btClipAdd_Click(object sender, EventArgs e)
+        {
+            AddClipboardImage();
+        }
+
+        private void btClipAddFrame_Click(object sender, EventArgs e)
+        {
+            AddCurrentFrameToClipboardList();
+        }
+
+        private void btClipReplace_Click(object sender, EventArgs e)
+        {
+            ReplaceClipItem();
+        }
+
+        private void btClipDelete_Click(object sender, EventArgs e)
+        {
+            DeleteClipItem();
+        }
+
+        private void btClipDeleteAll_Click(object sender, EventArgs e)
+        {
+            DeleteAllClipItems();
+        }
+
+        private void btClipPlay_Click(object sender, EventArgs e)
+        {
+            PlayClip();
+        }
+
+        private void btClipStop_Click(object sender, EventArgs e)
+        {
+            clipTimer.Stop();
+        }
+
+        private void btClipToEditor_Click(object sender, EventArgs e)
+        {
+            ClipToEditor();
+        }
+
+        private void btPrevFrame_Click(object sender, EventArgs e)
+        {
+            StepFrame(-1);
+        }
+
+        private void btPlay_Click(object sender, EventArgs e)
+        {
+            TogglePlay();
+        }
+
+        private void btNextFrame_Click(object sender, EventArgs e)
+        {
+            StepFrame(1);
+        }
+
+        private void btOvLoad_Click(object sender, EventArgs e)
+        {
+            LoadOverlayFromFile();
+        }
+
+        private void btOvPaste_Click(object sender, EventArgs e)
+        {
+            OverlayFromClipboard();
+        }
+
+        private void btOvFromSelection_Click(object sender, EventArgs e)
+        {
+            OverlayFromSelection();
+        }
+
+        private void btOvIntoSelection_Click(object sender, EventArgs e)
+        {
+            LoadImageIntoSelection();
+        }
+
+        private void btOvX2_Click(object sender, EventArgs e)
+        {
+            ScaleOverlay(2.0);
+        }
+
+        private void btOvHalf_Click(object sender, EventArgs e)
+        {
+            ScaleOverlay(0.5);
+        }
+
+        private void btOvFit_Click(object sender, EventArgs e)
+        {
+            FitOverlayToSelection();
+        }
+
+        private void btOvColor_Click(object sender, EventArgs e)
+        {
+            PickOverlayColor();
+        }
+
+        private void btOvColor_MouseUp(object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Right) SetOverlayTintColor(canvas.PrimaryColor);
+        }
+
+        private void btOvDuplicate_Click(object sender, EventArgs e)
+        {
+            DuplicateOverlay();
+        }
+
+        private void btOvCenter_Click(object sender, EventArgs e)
+        {
+            CenterOverlay();
+        }
+
+        private void btOvUp_Click(object sender, EventArgs e)
+        {
+            MoveOverlayOrder(1);
+        }
+
+        private void btOvDown_Click(object sender, EventArgs e)
+        {
+            MoveOverlayOrder(-1);
+        }
+
+        private void btOvDelete_Click(object sender, EventArgs e)
+        {
+            DeleteOverlay();
+        }
+
+        private void btOvBake_Click(object sender, EventArgs e)
+        {
+            BakeOverlay(false);
+        }
+
+        private void btOvBakeRemove_Click(object sender, EventArgs e)
+        {
+            BakeOverlay(true);
+        }
+
+        private void btOvBakeAll_Click(object sender, EventArgs e)
+        {
+            BakeAllOverlays();
+        }
+
+        private void btSelLoad_Click(object sender, EventArgs e)
+        {
+            LoadImageIntoSelection();
+        }
+
+        private void btSelPaste_Click(object sender, EventArgs e)
+        {
+            PasteIntoSelection();
+        }
+
+        private void btSelCopy_Click(object sender, EventArgs e)
+        {
+            CopySelection();
+        }
+
+        private void btSelClear_Click(object sender, EventArgs e)
+        {
+            ClearSelectionArea();
+        }
+
+        private void btSelDeselect_Click(object sender, EventArgs e)
+        {
+            canvas.Selection = Rectangle.Empty;
+        }
+
+        private void btMergePaint_Click(object sender, EventArgs e)
+        {
+            ApplyToAffected("Merge", i => doc.MergePaintDown(i));
+        }
+
+        private void btClearLayer_Click(object sender, EventArgs e)
+        {
+            ClearTargetLayer();
+        }
+
+        private void btPaintToChecked_Click(object sender, EventArgs e)
+        {
+            CopyPaintToChecked();
+        }
+
+        private void btRefLoad_Click(object sender, EventArgs e)
+        {
+            LoadReferenceImages();
+        }
+
+        private void btRefFromFrames_Click(object sender, EventArgs e)
+        {
+            UseFramesAsReference();
+        }
+
+        private void btRefClear_Click(object sender, EventArgs e)
+        {
+            SetReference(null);
+        }
+
+        private void btKeysTransparent_Click(object sender, EventArgs e)
+        {
+            MakeKeysTransparent();
+        }
+
+        private void btSecondaryTransparent_Click(object sender, EventArgs e)
+        {
+            SecondaryToTransparent();
+        }
+
+        private void btReplaceColor_Click(object sender, EventArgs e)
+        {
+            ReplaceSecondaryWithPrimary();
+        }
+
+        private void btOutline_Click(object sender, EventArgs e)
+        {
+            DrawOutline();
+        }
+
+        private void btCenterAnchor_Click(object sender, EventArgs e)
+        {
+            ApplyToAffected("Center", CenterOnAnchor);
+        }
+
+        private void btBottomAnchor_Click(object sender, EventArgs e)
+        {
+            ApplyToAffected("Align bottom", i => doc.AlignBottomToAnchor(i));
+        }
+
+        private void btAlignChecked_Click(object sender, EventArgs e)
+        {
+            AlignCheckedBottoms();
+        }
+
+        private void btOffsetToChecked_Click(object sender, EventArgs e)
+        {
+            CopyOffsetToChecked();
+        }
+
+        private void btScale_Click(object sender, EventArgs e)
+        {
+            ApplyToAffected("Scale", i => doc.ScaleOriginal(i, (double)numScale.Value / 100.0));
+        }
+
+        private void btMirror_Click(object sender, EventArgs e)
+        {
+            ApplyToAffected("Mirror", i => doc.MirrorFrame(i));
+        }
+
+        private void btRotate_Click(object sender, EventArgs e)
+        {
+            ApplyToAffected("Rotate", i => doc.RotateOriginal90(i));
+        }
+
+        private void btScaleX2_Click(object sender, EventArgs e)
+        {
+            ApplyToAffected("Scale", i => doc.ScaleOriginal(i, 2));
+        }
+
+        private void btScaleHalf_Click(object sender, EventArgs e)
+        {
+            ApplyToAffected("Scale", i => doc.ScaleOriginal(i, 0.5));
+        }
+
+        private void btCanvasApply_Click(object sender, EventArgs e)
+        {
+            ApplyCanvasSize();
+        }
+
+        private void btFitCanvas_Click(object sender, EventArgs e)
+        {
+            FitCanvas();
+        }
+
+        private void btGuideColor_Click(object sender, EventArgs e)
+        {
+            PickGuideColor();
+        }
+
+        private void btGuidesAtAnchor_Click(object sender, EventArgs e)
+        {
+            GuidesAtAnchor();
+        }
+
+        private void btGuidesOff_Click(object sender, EventArgs e)
+        {
+            numGuideY1.Value = -1; numGuideY2.Value = -1; numGuideX.Value = -1;
+        }
+
+        private void pnlPrimary_Click(object sender, EventArgs e)
+        {
+            PickColorDialog(true);
+        }
+
+        private void pnlSecondary_Click(object sender, EventArgs e)
+        {
+            PickColorDialog(false);
+        }
+
+        private void btSwapColors2_Click(object sender, EventArgs e)
+        {
+            SwapColors();
+        }
+
+        private void btReadPalette_Click(object sender, EventArgs e)
+        {
+            FillFramePalette();
+        }
+
+        private void btHistUndo_Click(object sender, EventArgs e)
+        {
+            DoUndo();
+        }
+
+        private void btHistRedo_Click(object sender, EventArgs e)
+        {
+            DoRedo();
+        }
+
+        private void btHistClear_Click(object sender, EventArgs e)
+        {
+            doc.ClearHistory();
+        }
+
+        private void lbHistory_DoubleClick(object sender, EventArgs e)
+        {
+            UndoTo(lbHistory.SelectedIndex);
+        }
+
+        #endregion
     }
 }

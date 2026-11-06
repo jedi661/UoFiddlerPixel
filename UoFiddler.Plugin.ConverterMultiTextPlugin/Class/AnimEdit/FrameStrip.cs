@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Windows.Forms;
@@ -9,7 +10,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Class.AnimEdit
     /// Shows all 10 frames as thumbnails. Click = select frame, click on the small box = include
     /// the frame in playback / batch actions ("checked"), files can be dropped onto a frame.
     /// </summary>
-    internal sealed class FrameStrip : Control
+    public sealed class FrameStrip : Control
     {
         private const int CheckSize = 14;
         private readonly Bitmap[] thumbs = new Bitmap[AnimDocument.FrameCount];
@@ -24,6 +25,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Class.AnimEdit
         public event Action<int> FrameDoubleClicked;
 
         /// <summary>Background used behind the thumbnails (null = checkerboard).</summary>
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public Func<int, Bitmap> ThumbnailRenderer { get; set; }
 
         public FrameStrip()
@@ -36,12 +39,16 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Class.AnimEdit
             ForeColor = Color.White;
         }
 
-        public AnimDocument Document
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        internal AnimDocument Document
         {
             get => document;
             set { document = value; RefreshAll(); }
         }
 
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public int Selected
         {
             get => selected;
@@ -49,6 +56,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Class.AnimEdit
         }
 
         /// <summary>Frame that is currently shown by the playback (-1 = none).</summary>
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public int Playing
         {
             get => playing;
@@ -210,7 +219,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Class.AnimEdit
     }
 
     /// <summary>Simple pixel exact image view with zoom, background and optional mirrored copy.</summary>
-    internal sealed class PreviewBox : Control
+    public sealed class PreviewBox : Control
     {
         private Image image;
 
@@ -222,6 +231,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Class.AnimEdit
         }
 
         /// <summary>The shown image. The caller keeps ownership.</summary>
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public Image Image
         {
             get => image;
@@ -231,7 +242,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Class.AnimEdit
         public int Zoom { get; set; } = 1;
         public bool ShowMirrored { get; set; }
         public bool Checker { get; set; } = true;
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public Image BackgroundPicture { get; set; }
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public string Caption { get; set; }
 
         protected override void OnPaint(PaintEventArgs e)

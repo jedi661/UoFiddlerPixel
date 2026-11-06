@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
@@ -55,7 +56,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Class.AnimEdit
     /// <summary>A recorded brush stroke. Used to replay the same stroke on other frames.</summary>
     internal sealed class Stroke
     {
-        public DrawTool Tool;
+        internal DrawTool Tool;
         public readonly List<Point> Points = new List<Point>();
         public int Argb;
         public bool Erase;
@@ -69,52 +70,112 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Class.AnimEdit
     /// Large editing surface for one frame. Shows background, reference animation, onion skin,
     /// the frame layers, grid, guide lines and the anchor, and implements the drawing tools.
     /// </summary>
-    internal sealed class FrameCanvas : Control
+    public sealed class FrameCanvas : Control
     {
         private AnimDocument document;
         private int frameIndex;
         private int zoom = 3;
 
         // --- Tool settings ---
-        public DrawTool Tool { get; set; } = DrawTool.Pencil;
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        internal DrawTool Tool { get; set; } = DrawTool.Pencil;
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public Color PrimaryColor { get; set; } = Color.Black;
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public Color SecondaryColor { get; set; } = Color.White;
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public int BrushSize { get; set; } = 1;
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public bool RoundBrush { get; set; } = true;
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public int FillTolerance { get; set; }
-        public EditLayer Layer { get; set; } = EditLayer.Paint;
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        internal EditLayer Layer { get; set; } = EditLayer.Paint;
 
         /// <summary>Returns the frames an edit applies to (the current frame, plus checked frames in multi mode).</summary>
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public Func<IEnumerable<int>> AffectedFrames { get; set; }
 
         // --- View settings ---
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public bool ShowGrid { get; set; } = true;
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public bool ShowAnchor { get; set; } = true;
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public bool ShowLayerBounds { get; set; } = true;
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public bool ShowGuides { get; set; } = true;
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public int GuideY1 { get; set; } = -1;
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public int GuideY2 { get; set; } = -1;
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public int GuideX { get; set; } = -1;
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public Color GuideColor { get; set; } = Color.Red;
 
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public bool OnionEnabled { get; set; }
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public int OnionPrev { get; set; } = 1;
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public int OnionNext { get; set; } = 1;
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public float OnionOpacity { get; set; } = 0.35f;
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public bool OnionTint { get; set; } = true;
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public bool OnionWrap { get; set; } = true;
 
-        public ReferenceSet Reference { get; set; }
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        internal ReferenceSet Reference { get; set; }
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public bool ReferenceVisible { get; set; } = true;
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public float ReferenceOpacity { get; set; } = 0.4f;
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public Point ReferenceOffset { get; set; }
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public bool ReferenceOnTop { get; set; }
 
         /// <summary>-1 = reference follows the edited frame number, otherwise a fixed reference frame.</summary>
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public int ReferenceFixedFrame { get; set; } = -1;
 
-        public CanvasBackground BackgroundMode { get; set; } = CanvasBackground.Checker;
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        internal CanvasBackground BackgroundMode { get; set; } = CanvasBackground.Checker;
         public Color BackgroundSolid { get; set; } = Color.FromArgb(40, 40, 40);
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public Image BackgroundPicture { get; set; }
 
         // --- Events ---
@@ -148,6 +209,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Class.AnimEdit
         private Rectangle selection;
 
         /// <summary>Marked area in canvas pixels (Rectangle.Empty = nothing marked).</summary>
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public Rectangle Selection
         {
             get => selection;
@@ -163,18 +226,22 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Class.AnimEdit
         private Point overlayStartPos;
 
         /// <summary>Show a frame + size label around every overlay of the current frame.</summary>
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public bool ShowOverlayFrames { get; set; } = true;
 
-        public Overlay SelectedOverlay
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        internal Overlay SelectedOverlay
         {
             get => selectedOverlay;
             set { selectedOverlay = value; Invalidate(); OverlaySelected?.Invoke(value); }
         }
 
-        public event Action<Overlay> OverlaySelected;
+        internal event Action<Overlay> OverlaySelected;
 
         /// <summary>The selected overlay was moved (live while dragging).</summary>
-        public event Action<Overlay> OverlayMoved;
+        internal event Action<Overlay> OverlayMoved;
         private Point panStart;
 
         public FrameCanvas()
@@ -186,18 +253,24 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Class.AnimEdit
             Cursor = Cursors.Cross;
         }
 
-        public AnimDocument Document
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        internal AnimDocument Document
         {
             get => document;
             set { document = value; UpdateCanvasSize(); Invalidate(); }
         }
 
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public int FrameIndex
         {
             get => frameIndex;
             set { frameIndex = Math.Max(0, Math.Min(AnimDocument.FrameCount - 1, value)); Invalidate(); }
         }
 
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public int Zoom
         {
             get => zoom;
