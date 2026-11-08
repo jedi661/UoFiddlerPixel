@@ -1,3 +1,18 @@
+Version 4.12.23 #XG1
+
+- MultiEditor 2.3 (rebuilt and extended) – tab Multi Editor
+- Import: text lists hex and decimal (auto detect), UO Architect .uoa v1/v2 with hues, WSC, UOX3, CSV, XML, ServUO/RunUO addon scripts (.cs), own project format .mep; multi browser with thumbnails.
+- Save: directly into multi.mul/multi.idx (output or client folder with backup), ServUO addon, ServUO house script (BaseHouse + HouseDeed with doors, sign, ban location), text/WSC/XML with hues, PNG preview; furniture can be kept out of multi.mul and exported as own addon.
+- Building: undo/redo (200 steps, buttons), rectangle filled or border with correct corners, line, box select, erase area, copy/paste as stamp, zoom, rotate/mirror, rotate view 90°, symmetry mode, hue picker with preview, big context menu, keyboard shortcuts.
+- Structure tool: drag a line = wall, drag a rectangle = room with flat or gable roof, drag again = next floor; learnable line patterns (e.g. wall – window – battlements).
+- Building parts library (stairs, door frames, battlements, furniture) with thumbnails, placed as stamp.
+- Layers per floor (visible / ghost / lock) and height ruler with total height.
+- House generator learns templates from good example houses (wall lines, corners, side patterns, floors, roof) and rebuilds them exactly or in other sizes; example shown colored by what was learned, values and tile roles correctable, parts placeable.
+- Map as building ground: choose a map area, land drawn like the client (stretched textures with light), grid follows the terrain, heights, find/select map statics, copy/take/move/delete them, write the multi into statics with undo until saved.
+- Backgrounds: grass, water, sand, dirt, snow, forest, own land ids or an image.
+- Walkability check (steps, holes, low ceilings, reachability), material and tile list with prices and CSV/JSON/C# export.
+- Tile groups editable (new groups, id ranges, search, recently used), help in German and English (F1).
+
 Version 4.12.22 #XG1
 
 Version 4.12.22

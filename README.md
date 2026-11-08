@@ -6,6 +6,115 @@ UOFiddler based on Ultima SDK it's a tool to view and alter almost every UO 2D c
 This is an extended version of UoFiddler that has more maps and more tools, as well as Map Edit, and will be expanded over time to support the Ultima standard 
 version more than the original version. Also, some source codes from older and New projects that are no longer supported have been integrated.
 
+
+Version 4.12.23
+
+# MultiEditor 2.3 – UO Fiddler Plugin
+
+An extended multi editor for Ultima Online. You can build houses, castles, bridges and decorations, learn from example buildings, plan on real map ground, and save the result as **multi.mul**, **map statics** or a **ServUO script**.
+The UI and help are available in **English and German** (switchable, help with F1).
+
+---
+
+## Import
+
+| Format | Notes |
+|---|---|
+| Text lists `ID X Y Z [flag] [hue]` | Hex (`0x..`) **and** decimal, detected automatically or forced |
+| UO Architect `.uoa` | Binary version 1 **and 2** (hues are kept), UOA text |
+| WSC / freeze, UOX3, CSV, XML | WSC/XML with hues |
+| **ServUO / RunUO addon scripts (`.cs`)** | Arrays, `AddComponent(...)`, variable style, `AddComplexComponent(...)` |
+| MultiEditor project `.mep` | Stores everything: size, origin, flags, hues, furniture, house markers |
+| multi.mul | Tree list or the **multi browser** with thumbnails |
+
+The editor also keeps a list of recent files and can import a tile list from the clipboard (Ctrl+V).
+
+## Save & export
+
+- **Directly into multi.mul / multi.idx**, either into the output folder or into the client folder (with a `*.bak_date` backup). You can also find the next free id or delete an id.
+- **ServUO addon** (`Addon` + `AddonDeed`) in array or line style. Hued tiles are written via `AddComplexComponent`.
+- **ServUO house script** (`BaseHouse` + `HouseDeed`) with:
+  - south/east doors (wood or metal)
+  - house sign and ban location
+  - area, price, lockdowns and secures
+
+  It works with ServUO and RunUO.
+- Text (hex/decimal), WSC/XML with hues, PNG preview and project `.mep`.
+- **Furniture** (decoration) is not written into multi.mul. You can export it as a separate addon instead.
+
+## Building
+
+- **Undo / redo** with 200 steps (Ctrl+Z / Ctrl+Y, also as buttons).
+- Tools: select, draw, remove, altitude, pipette, transparent, **rectangle (filled or border only)**, line, box select, erase area.
+- A rectangle border drawn with wall tiles of a learned style automatically gets the **correct corners**.
+- Multi selection, copy / cut / paste as a stamp (R = rotate). Arrow keys and Page Up/Down move the selection.
+- Zoom (Ctrl+mouse wheel), rotate, mirror, crop, set origin, replace ids.
+- **Rotate the view by 90°**. Exports always keep the original orientation.
+- **Symmetry mode**: X, Y or 4-way.
+- **Hue picker** with color gradient and tile preview.
+- Large **context menu** (right click) with all important actions.
+- Shortcuts: `1-9, 0` tools · `B` structure · `M` map select · `E` furniture · `G` grid · `H` heights · `L` ruler · `F1` help
+
+### Structure tool
+- Drag a line to build a **wall**. Drag a rectangle to build a **room** with a floor and a **flat roof** or **gable roof (shingles)**.
+- Drag over an existing building again to **add a floor on top** (can be turned off).
+- **Learn line patterns** (e.g. wall – wall – window with battlements). The pattern repeats while dragging.
+- Extensible through the `IStructurePattern` interface.
+
+### Building parts library
+- Save stairs, door frames, battlements, furniture and other parts from a selection, from map statics or from files.
+- Each part has a thumbnail and a category. Place it as a stamp and rotate it.
+
+### Layers & height ruler
+- One layer per floor, or your own Z ranges. Each layer can be visible, ghosted or locked.
+- "Show only this" and "set as build level" per layer.
+- A height ruler at the border shows the floors, the build level, the top edge and the total height.
+
+## House generator (learns from examples)
+
+- It learns a **template** from good, finished houses (current multi, a multi.mul id range, or files). The template contains:
+  - floor tiles and floor height
+  - where the wall lines lie relative to the floor edge
+  - the four corners and the four sides with their window pattern, for each floor
+  - the roof: type, overhang, step and rows
+- A house of the same size is **rebuilt exactly**; bigger houses follow the same rules.
+- The example house is shown next to the result, **colored by what was learned** (corners, sides, roof).
+- Tab **"Learned"**: view and correct every value.
+- Tab **"Parts"**: place ready parts with position, floor and rotation.
+- Tab **"Roles"**: correct wrongly detected tiles.
+- Random houses, and restyling an existing multi into another style.
+
+## Map as building ground
+
+- Choose a map area on any map, with zoom, static search and automatic base Z.
+- **Land is drawn like in the client**: each cell is stretched between its four corner heights (texture + lighting). The grid follows the terrain, and the height of every cell can be shown.
+- Map statics appear in the background (optionally semi-transparent). "Snap to ground" places drawn tiles on the land height.
+- **Select map statics** (single or area). You can copy them, take them as tiles, move them into the multi, delete them from the map or save them as a building part.
+- **Write the multi into map statics**. All map changes can be undone until `statics*.mul` / `staidx*.mul` are saved.
+- Other backgrounds: grass, water, sand, dirt, snow, forest, your own land ids or your own image (e.g. a floor plan).
+
+## Checks & lists
+
+- **Walkability check**: finds steps that are too high, missing floor, ceilings that are too low, and areas that can't be reached from a door or the ban location. Results are listed and marked in the view.
+- **Material and tile list** with counts, roles, prices per piece and a total sum. Export as CSV, JSON or a C# table for crafting or cost scripts.
+- **Multi browser**: all multis of multi.mul as thumbnails, with a filter. Double click opens a multi in the editor.
+
+## Data files (in `plugins/`)
+
+| File | Content |
+|---|---|
+| `multieditor.xml` | Tile groups (editable in the editor, a backup is made when saving) |
+| `MultiEditorSettings.json` | Language, recent files, recently used tiles, options |
+| `MultiEditorStyles.json` | Learned styles, templates and tile roles |
+| `MultiEditorStructures.json` | Building parts and learned line patterns |
+
+## Notes
+
+- multi.mul stores no hues. Hues are only used for the preview, ServUO scripts and map statics.
+- If the client uses `MultiCollection.uop`, pack it afterwards with the UOP packer.
+- The walkability check approximates UO movement (person height 16, step 2, stairs up to 10). It is not an exact server simulation.
+- Save your map files before writing statics.
+
 Version 4.12.22
 
 - # Animation Frame Editor

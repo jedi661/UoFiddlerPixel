@@ -34,7 +34,9 @@ namespace UoFiddler.Plugin.MultiEditor
         /// <summary>
         /// Description of the Plugin's purpose
         /// </summary>
-        public override string Description { get; } = "Plugin to Edit Multis\r\n(Adds 1 new Tab)";
+        public override string Description { get; } = "Plugin to Edit Multis\r\n(Adds 1 new Tab)\r\n" +
+            "Import: txt (hex/dec), UOA (v1/v2), WSC, CSV, UOX3, XML, ServUO addon scripts, projects\r\n" +
+            "Export: ServUO addons, Multi.mul, map statics, house generator, undo/redo, help DE/EN";
 
         /// <summary>
         /// Host of the plugin.
@@ -49,7 +51,7 @@ namespace UoFiddler.Plugin.MultiEditor
         /// <summary>
         /// Version of the plugin
         /// </summary>
-        public override string Version { get; } = "1.7.0";
+        public override string Version { get; } = "2.3.0";
 
         public override void Unload()
         {
