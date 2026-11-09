@@ -1,9 +1,9 @@
 ﻿/***************************************************************************
  *
  * $Author: Turley
- * 
+ *
  * "THE BEER-WARE LICENSE"
- * As long as you retain this notice you can do whatever you want with 
+ * As long as you retain this notice you can do whatever you want with
  * this stuff. If we meet some day, and you think this stuff is worth it,
  * you can buy me a beer in return.
  *
@@ -11,1018 +11,1783 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
-using System.Security.Cryptography;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using Ultima;
 using UoFiddler.Controls.Classes;
 using UoFiddler.Plugin.Compare.Classes;
+using UoFiddler.Plugin.Compare.Forms;
 
 namespace UoFiddler.Plugin.Compare.UserControls
 {
     public partial class CompareItemControl : UserControl
     {
-        private readonly Dictionary<int, bool> _compare = new Dictionary<int, bool>();
-        private readonly ImageConverter _ic = new ImageConverter();
-        private readonly SHA256 _sha256 = SHA256.Create();
+        private enum FilterMode
+        {
+            All = 0,
+            AllDifferences = 1,
+            Changed = 2,
+            OnlyOriginal = 3,
+            OnlySecond = 4,
+            FreeInOriginal = 5
+        }
 
-        private string _lastSelectedPath;
-        private string _settingsDirectory = Path.Combine("data", "DirectoryisSettings"); // Creates data/DirectoryisSettings directory
-        private string _settingsFileName = "CompareiItemsDirectoryisSettings.txt"; // Text file name
-        private string _settingsFilePath;
+        // File names are kept from the old version, so existing settings are still found.
+        private const string _settingsFileName = "CompareiItemsDirectoryisSettings.txt";
+        private const string _lastDirectoriesFileName = "CompareiItemsLastDirectories.txt";
+        private const int _maxRecentDirectories = 10;
+        private const int _maxReplaceMenuEntries = 30;
+
+        private readonly string _settingsDirectory =
+            Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data", "DirectoryisSettings");
+
+        private SecondArtFile _second;
+        private SecondTileData _secondTile;
+
+        /// <summary>Compare result per item id (index = item id).</summary>
+        private ItemDiffState[] _state = Array.Empty<ItemDiffState>();
+
+        /// <summary>Ids shown in both lists (sorted ascending, both lists always show the same ids).</summary>
+        private int[] _visibleIds = Array.Empty<int>();
+
+        private CancellationTokenSource _scanCts;
+        private Task _scanTask = Task.CompletedTask;
+        private bool _scanComplete;
+        private int _filterVersion;
+        private bool _syncingSelection;
+        private bool _changingFilter;
+        private bool _loaded;
+        private bool _eventsRegistered;
+        private readonly List<Image> _menuThumbnails = new List<Image>();
 
         #region [ CompareItemControl ]
         public CompareItemControl()
         {
             InitializeComponent();
-            listBoxSec.SelectedIndexChanged += OnSelectedIndexChangedSec; //Replace graphic
-            listBoxSec.KeyDown += ListBoxSec_KeyDown;
 
-            EnsureSettingsDirectoryExists(); // Ensure the directory exists on app start
-            LoadComboBoxSaveDir(); // Load saved directories into comboBoxSaveDir on startup
+            _changingFilter = true;
+            comboBoxFilter.SelectedIndex = 0;
+            comboBoxSearchMode.SelectedIndex = 0;
+            _changingFilter = false;
+
+            UpdateButtons();
         }
         #endregion
 
-        #region [ OnLoad ]
+        #region [ Load / CleanUp ]
         private void OnLoad(object sender, EventArgs e)
         {
-            listBoxOrg.Items.Clear();
-            listBoxOrg.BeginUpdate();
-            List<object> cache = new List<object>();
-            int staticsLength = Art.GetMaxItemId() + 1;
-            for (int i = 0; i < staticsLength; i++)
+            if (DesignMode || _loaded)
             {
-                cache.Add(i);
-            }
-            listBoxOrg.Items.AddRange(cache.ToArray());
-            listBoxOrg.EndUpdate();
-
-            // CompareiItemsDirectoryisSettings Directory last directory is loaded
-            if (!Directory.Exists(_settingsDirectory))
-            {
-                Directory.CreateDirectory(_settingsDirectory);
-            }
-            _settingsFilePath = Path.Combine(_settingsDirectory, _settingsFileName);
-
-            if (File.Exists(_settingsFilePath))
-            {
-                _lastSelectedPath = File.ReadAllText(_settingsFilePath);
-                textBoxSecondDir.Text = _lastSelectedPath;
+                return;
             }
 
-            //Load the settings for Combobox
-            LoadSettingsDirectoryComboBox();
+            _loaded = true;
+
+            EnsureSettingsDirectoryExists();
+            string settingsFile = Path.Combine(_settingsDirectory, _settingsFileName);
+            if (File.Exists(settingsFile))
+            {
+                textBoxSecondDir.Text = File.ReadAllText(settingsFile).Trim();
+            }
+            LoadComboBoxSaveDir();
+
+            ResetState();
+            RebuildLists();
+
+            if (!_eventsRegistered)
+            {
+                ControlEvents.ItemChangeEvent += OnItemChangeEvent;
+                ControlEvents.FilePathChangeEvent += OnFilePathChangeEvent;
+                _eventsRegistered = true;
+            }
+        }
+
+        /// <summary>
+        /// Called from Dispose (see designer file).
+        /// </summary>
+        private void CleanUp()
+        {
+            CancelScan();
+
+            if (_eventsRegistered)
+            {
+                ControlEvents.ItemChangeEvent -= OnItemChangeEvent;
+                ControlEvents.FilePathChangeEvent -= OnFilePathChangeEvent;
+                _eventsRegistered = false;
+            }
+
+            ClearReplaceMenu();
+            _second?.Dispose();
+            _second = null;
+        }
+
+        private void OnItemChangeEvent(object sender, int id)
+        {
+            if (!_loaded || ReferenceEquals(sender, this))
+            {
+                return;
+            }
+
+            // an item was changed in another tab -> compare it again
+            RefreshState(id);
+            listBoxOrg.Invalidate();
+            listBoxSec.Invalidate();
+            UpdatePreviews();
+        }
+
+        private void OnFilePathChangeEvent()
+        {
+            if (!_loaded)
+            {
+                return;
+            }
+
+            // the original client files were reloaded
+            ResetState();
+            RebuildLists();
+            if (_second != null)
+            {
+                _ = StartScanAsync();
+            }
         }
         #endregion
 
-        #region [ LoadSettingsDirectoryComboBox ]
-        private void LoadSettingsDirectoryComboBox()
+        #region [ Ids / State ]
+        private int OrgMaxId => Art.GetMaxItemId();
+        private int SecMaxId => _second?.GetMaxItemId() ?? -1;
+        private int MaxId => Math.Max(OrgMaxId, SecMaxId);
+
+        private bool IsOrgValid(int id) => id >= 0 && id <= OrgMaxId && Art.IsValidStatic(id);
+
+        private Bitmap GetOrg(int id) => IsOrgValid(id) ? Art.GetStatic(id) : null;
+
+        private Bitmap GetSec(int id) => _second != null && _second.IsValidStatic(id) ? _second.GetStatic(id) : null;
+
+        private void ResetState()
         {
-            string settingsDirectory = "DirectoryisSettings";
-            string lastDirectoriesFileName = "CompareiItemsLastDirectories.txt";
-            string lastDirectoriesFilePath = Path.Combine(settingsDirectory, lastDirectoriesFileName);
-            if (File.Exists(lastDirectoriesFilePath))
+            _state = new ItemDiffState[MaxId + 1];
+            _scanComplete = false;
+        }
+
+        private ItemDiffState GetState(int id)
+        {
+            if (_second == null || id < 0 || id >= _state.Length)
             {
-                string[] lines = File.ReadAllLines(lastDirectoriesFilePath);
-                foreach (string line in lines)
+                return ItemDiffState.Unknown;
+            }
+
+            if (_state[id] == ItemDiffState.Unknown)
+            {
+                _state[id] = ComputeState(id);
+            }
+
+            return _state[id];
+        }
+
+        private void RefreshState(int id)
+        {
+            if (id >= 0 && id < _state.Length)
+            {
+                _state[id] = ItemDiffState.Unknown;
+                if (_second != null)
                 {
-                    comboBoxSaveDir.Items.Add(line);
+                    _state[id] = ComputeState(id);
                 }
             }
         }
+
+        private ItemDiffState ComputeState(int id)
+        {
+            Bitmap org = GetOrg(id);
+            Bitmap sec = GetSec(id);
+
+            if (org == null && sec == null)
+            {
+                return ItemDiffState.BothEmpty;
+            }
+
+            if (org == null)
+            {
+                return ItemDiffState.OnlySecond;
+            }
+
+            if (sec == null)
+            {
+                return ItemDiffState.OnlyOriginal;
+            }
+
+            bool equal = ItemCompareHelper.BitmapsEqual(org, sec);
+
+            // Without the data cache every GetStatic call of the second file returns a new bitmap -> free it now.
+            if (!Files.CacheData)
+            {
+                sec.Dispose();
+            }
+
+            return equal ? ItemDiffState.Same : ItemDiffState.Different;
+        }
+
+        private bool IsDifference(ItemDiffState state)
+        {
+            return state == ItemDiffState.Different || state == ItemDiffState.OnlyOriginal || state == ItemDiffState.OnlySecond;
+        }
         #endregion
 
-        #region [ OnIndexChangedOrg ]
+        #region [ Scan ]
+        private void CancelScan()
+        {
+            _scanCts?.Cancel();
+        }
+
+        /// <summary>
+        /// Compares all items. Runs on the UI thread in small chunks (the Ultima classes are not thread safe),
+        /// so the window stays responsive.
+        /// </summary>
+        private Task StartScanAsync()
+        {
+            CancelScan();
+
+            CancellationTokenSource cts = new CancellationTokenSource();
+            _scanCts = cts;
+            _scanComplete = false;
+            _scanTask = ScanAsync(cts);
+            return _scanTask;
+        }
+
+        private async Task ScanAsync(CancellationTokenSource cts)
+        {
+            CancellationToken token = cts.Token;
+            ItemDiffState[] state = _state;
+
+            progressBarScan.Maximum = Math.Max(1, state.Length);
+            progressBarScan.Value = 0;
+            progressBarScan.Visible = true;
+            buttonCancelScan.Visible = true;
+            labelStatus.Text = "Comparing...";
+
+            bool completed = true;
+            Stopwatch watch = Stopwatch.StartNew();
+            for (int id = 0; id < state.Length; ++id)
+            {
+                if (token.IsCancellationRequested || IsDisposed || !ReferenceEquals(state, _state))
+                {
+                    completed = false;
+                    break;
+                }
+
+                if (state[id] == ItemDiffState.Unknown)
+                {
+                    state[id] = ComputeState(id);
+                }
+
+                if (watch.ElapsedMilliseconds > 40)
+                {
+                    progressBarScan.Value = id;
+                    labelStatus.Text = $"Comparing... {id * 100 / state.Length}%";
+                    await Task.Delay(1);
+                    watch.Restart();
+                }
+            }
+
+            if (ReferenceEquals(_scanCts, cts))
+            {
+                _scanCts = null;
+                _scanComplete = completed && ReferenceEquals(state, _state);
+
+                if (!IsDisposed)
+                {
+                    progressBarScan.Visible = false;
+                    buttonCancelScan.Visible = false;
+                }
+            }
+            cts.Dispose();
+
+            if (!IsDisposed)
+            {
+                UpdateStatus();
+                listBoxOrg.Invalidate();
+                listBoxSec.Invalidate();
+            }
+        }
+
+        private void ButtonCancelScan_Click(object sender, EventArgs e)
+        {
+            CancelScan();
+        }
+        #endregion
+
+        #region [ Lists / Filter ]
+        private FilterMode CurrentFilter => comboBoxFilter.SelectedIndex < 0 ? FilterMode.All : (FilterMode)comboBoxFilter.SelectedIndex;
+
+        private static bool FilterNeedsCompare(FilterMode mode) => mode != FilterMode.All && mode != FilterMode.FreeInOriginal;
+
+        private bool MatchesFilter(int id, FilterMode mode)
+        {
+            switch (mode)
+            {
+                case FilterMode.AllDifferences:
+                    return IsDifference(GetState(id));
+                case FilterMode.Changed:
+                    return GetState(id) == ItemDiffState.Different;
+                case FilterMode.OnlyOriginal:
+                    return GetState(id) == ItemDiffState.OnlyOriginal;
+                case FilterMode.OnlySecond:
+                    return GetState(id) == ItemDiffState.OnlySecond;
+                case FilterMode.FreeInOriginal:
+                    return id <= OrgMaxId && !Art.IsValidStatic(id);
+                default:
+                    return true;
+            }
+        }
+
+        private void SetFilterSilently(FilterMode mode)
+        {
+            _changingFilter = true;
+            comboBoxFilter.SelectedIndex = (int)mode;
+            _changingFilter = false;
+        }
+
+        private async void OnFilterChanged(object sender, EventArgs e)
+        {
+            if (_changingFilter || !_loaded)
+            {
+                return;
+            }
+
+            await ApplyFilterAsync();
+        }
+
+        private async Task ApplyFilterAsync()
+        {
+            int version = ++_filterVersion;
+            FilterMode mode = CurrentFilter;
+
+            if (FilterNeedsCompare(mode))
+            {
+                if (_second == null)
+                {
+                    MessageBox.Show("The second item file is not loaded.", "Filter", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    SetFilterSilently(FilterMode.All);
+                    return;
+                }
+
+                if (!_scanComplete)
+                {
+                    if (_scanCts == null)
+                    {
+                        _ = StartScanAsync();
+                    }
+
+                    await _scanTask;
+
+                    if (version != _filterVersion)
+                    {
+                        return; // the filter was changed again in the meantime
+                    }
+
+                    if (!_scanComplete)
+                    {
+                        // comparison was cancelled
+                        SetFilterSilently(FilterMode.All);
+                        RebuildLists();
+                        return;
+                    }
+                }
+            }
+
+            RebuildLists();
+        }
+
+        /// <summary>
+        /// Fills both lists with the ids of the current filter and keeps the focused item if possible.
+        /// </summary>
+        private void RebuildLists()
+        {
+            int focusId = GetFocusedId(listBoxSec);
+            if (focusId < 0)
+            {
+                focusId = GetFocusedId(listBoxOrg);
+            }
+
+            FilterMode mode = CurrentFilter;
+            int max = _second == null ? OrgMaxId : MaxId;
+            List<int> ids = new List<int>(max + 1);
+            for (int id = 0; id <= max; ++id)
+            {
+                if (MatchesFilter(id, mode))
+                {
+                    ids.Add(id);
+                }
+            }
+
+            _visibleIds = ids.ToArray();
+            object[] boxed = _visibleIds.Cast<object>().ToArray();
+
+            _syncingSelection = true;
+            try
+            {
+                listBoxOrg.BeginUpdate();
+                listBoxOrg.Items.Clear();
+                listBoxOrg.Items.AddRange(boxed);
+                listBoxOrg.EndUpdate();
+
+                listBoxSec.BeginUpdate();
+                listBoxSec.Items.Clear();
+                if (_second != null)
+                {
+                    listBoxSec.Items.AddRange(boxed);
+                }
+                listBoxSec.EndUpdate();
+            }
+            finally
+            {
+                _syncingSelection = false;
+            }
+
+            if (_visibleIds.Length > 0)
+            {
+                int pos = focusId >= 0 ? Array.BinarySearch(_visibleIds, focusId) : 0;
+                if (pos < 0)
+                {
+                    pos = Math.Min(~pos, _visibleIds.Length - 1);
+                }
+                SelectId(_visibleIds[pos]);
+            }
+            else
+            {
+                UpdatePreviews();
+            }
+
+            UpdateStatus();
+            UpdateButtons();
+        }
+
+        private int IndexOfId(int id)
+        {
+            int pos = Array.BinarySearch(_visibleIds, id);
+            return pos >= 0 ? pos : -1;
+        }
+
+        /// <summary>
+        /// Selects exactly this id in both lists and scrolls to it.
+        /// </summary>
+        private void SelectId(int id)
+        {
+            int pos = IndexOfId(id);
+            if (pos < 0)
+            {
+                return;
+            }
+
+            _syncingSelection = true;
+            try
+            {
+                SelectSingle(listBoxOrg, pos);
+                if (listBoxSec.Items.Count > pos)
+                {
+                    SelectSingle(listBoxSec, pos);
+                }
+            }
+            finally
+            {
+                _syncingSelection = false;
+            }
+
+            UpdatePreviews();
+        }
+
+        private static void SelectSingle(ListBox listBox, int pos)
+        {
+            if (pos < 0 || pos >= listBox.Items.Count)
+            {
+                return;
+            }
+
+            listBox.BeginUpdate();
+            listBox.ClearSelected();
+            listBox.SetSelected(pos, true);
+            listBox.EndUpdate();
+            EnsureVisible(listBox, pos);
+        }
+
+        private static void EnsureVisible(ListBox listBox, int pos)
+        {
+            int visible = Math.Max(1, listBox.ClientSize.Height / Math.Max(1, listBox.ItemHeight));
+            if (pos < listBox.TopIndex || pos >= listBox.TopIndex + visible)
+            {
+                listBox.TopIndex = Math.Max(0, pos - (visible / 2));
+            }
+        }
+
+        /// <summary>
+        /// Id of the item that has the focus (the one last clicked), -1 when nothing is selected.
+        /// </summary>
+        private static int GetFocusedId(ListBox listBox)
+        {
+            int index = ListBoxHelper.GetFocusedSelectedIndex(listBox);
+            return index >= 0 ? (int)listBox.Items[index] : -1;
+        }
+
+        private static List<int> GetSelectedIds(ListBox listBox)
+        {
+            List<int> ids = new List<int>(listBox.SelectedIndices.Count);
+            foreach (int index in listBox.SelectedIndices)
+            {
+                ids.Add((int)listBox.Items[index]);
+            }
+            ids.Sort();
+            return ids;
+        }
+        #endregion
+
+        #region [ Selection ]
         private void OnIndexChangedOrg(object sender, EventArgs e)
         {
-            if (listBoxOrg.SelectedIndex == -1 || listBoxOrg.Items.Count < 1)
+            if (_syncingSelection)
             {
                 return;
             }
 
-            int i = int.Parse(listBoxOrg.Items[listBoxOrg.SelectedIndex].ToString());
-            if (listBoxSec.Items.Count > 0)
+            int id = GetFocusedId(listBoxOrg);
+            if (id >= 0 && listBoxOrg.SelectedIndices.Count == 1 && listBoxSec.Items.Count > 0)
             {
-                int pos = listBoxSec.Items.IndexOf(i);
-                if (pos >= 0)
+                // single selection -> show the same id in the second list
+                int pos = IndexOfId(id);
+                _syncingSelection = true;
+                try
                 {
-                    listBoxSec.SelectedIndex = pos;
+                    SelectSingle(listBoxSec, pos);
+                }
+                finally
+                {
+                    _syncingSelection = false;
                 }
             }
 
-            pictureBoxOrg.BackgroundImage = Art.IsValidStatic(i)
-                ? Art.GetStatic(i)
-                : null;
+            if (id >= 0)
+            {
+                searchTextBox.Text = FormatId(id);
+            }
 
-            // Set the text of the searchTextBox to the hexadecimal representation of the selected item
-            searchTextBox.Text = $"0x{i:X}";
-
-            listBoxOrg.Invalidate();
+            UpdatePreviews();
+            UpdateButtons();
         }
-        #endregion
 
-        #region [ DrawItemOrg ]
-        private void DrawItemOrg(object sender, DrawItemEventArgs e)
-        {
-            if (e.Index == -1)
-            {
-                return;
-            }
-
-            Brush fontBrush = Brushes.Gray;
-
-            int i = int.Parse(listBoxOrg.Items[e.Index].ToString());
-            if (listBoxOrg.SelectedIndex == e.Index)
-            {
-                e.Graphics.FillRectangle(Brushes.LightSteelBlue, e.Bounds.X, e.Bounds.Y, e.Bounds.Width, e.Bounds.Height);
-            }
-
-            if (!Art.IsValidStatic(i))
-            {
-                fontBrush = Brushes.Red;
-            }
-            else if (listBoxSec.Items.Count > 0)
-            {
-                if (!Compare(i))
-                {
-                    fontBrush = Brushes.Blue;
-                }
-            }
-
-            e.Graphics.DrawString($"0x{i:X} ({i})", Font, fontBrush,
-                new PointF(5,
-                e.Bounds.Y + ((e.Bounds.Height / 2) -
-                (e.Graphics.MeasureString($"0x{i:X} ({i})", Font).Height / 2))));
-        }
-        #endregion
-
-        #region [ MeasureOrg ]
-        private void MeasureOrg(object sender, MeasureItemEventArgs e)
-        {
-            e.ItemHeight = 13;
-        }
-        #endregion
-
-        #region [ OnClickLoadSecond ]
-        private void OnClickLoadSecond(object sender, EventArgs e)
-        {
-            if (string.IsNullOrWhiteSpace(textBoxSecondDir.Text))
-            {
-                return;
-            }
-
-            string path = textBoxSecondDir.Text;
-            string mulFile = Path.Combine(path, "art.mul");
-            string idxFile = Path.Combine(path, "artidx.mul");
-            //string uopFile = Path.Combine(path, "artLegacyMUL.uop");
-            if (File.Exists(mulFile) && File.Exists(idxFile))
-            {
-                SecondArt.SetFileIndex(idxFile, mulFile); //Load .mul file
-                LoadSecond();
-            }
-            /*else if (File.Exists(uopFile)) //Load .uop file
-            {
-                SecondArt.SetFileIndex(idxFile, uopFile); 
-                LoadSecond();
-            }*/
-        }
-        #endregion
-
-        #region [ LoadSecond ]
-        private void LoadSecond()
-        {
-            _compare.Clear();
-            listBoxSec.BeginUpdate();
-            listBoxSec.Items.Clear();
-            List<object> cache = new List<object>();
-            int staticLength = SecondArt.GetMaxItemId() + 1;
-            for (int i = 0; i < staticLength; i++)
-            {
-                cache.Add(i);
-            }
-            listBoxSec.Items.AddRange(cache.ToArray());
-            listBoxSec.EndUpdate();
-        }
-        #endregion        
-
-        #region [ DrawItemSec ]
-        private void DrawItemSec(object sender, DrawItemEventArgs e)
-        {
-            if (e.Index == -1)
-            {
-                return;
-            }
-
-            Brush fontBrush = Brushes.Gray;
-            Brush selectionBrush = Brushes.LightSteelBlue; // Color for first choice
-            Brush secondSelectionBrush = Brushes.Yellow; // Color for second choice
-
-            int i = int.Parse(listBoxSec.Items[e.Index].ToString());
-
-            if (listBoxSec.SelectedIndices.Contains(e.Index))
-            {
-                if (ModifierKeys.HasFlag(Keys.Control)) // When CTRL key is pressed
-                {
-                    e.Graphics.FillRectangle(secondSelectionBrush, e.Bounds.X, e.Bounds.Y, e.Bounds.Width, e.Bounds.Height);
-                }
-                else
-                {
-                    e.Graphics.FillRectangle(selectionBrush, e.Bounds.X, e.Bounds.Y, e.Bounds.Width, e.Bounds.Height);
-                }
-            }
-
-            if (!SecondArt.IsValidStatic(i))
-            {
-                fontBrush = Brushes.Red;
-            }
-            else if (!Compare(i))
-            {
-                fontBrush = Brushes.Blue;
-            }
-
-            e.Graphics.DrawString($"0x{i:X} ({i})", Font, fontBrush,
-                new PointF(5,
-                e.Bounds.Y + ((e.Bounds.Height / 2) -
-                (e.Graphics.MeasureString($"0x{i:X} ({i})", Font).Height / 2))));
-        }
-        #endregion
-
-        #region [ listBoxSec_DrawItem ]
-        private void ListBoxSec_DrawItem(object sender, DrawItemEventArgs e)
-        {
-            if (e.Index == -1)
-            {
-                return;
-            }
-
-            Brush fontBrush = Brushes.Gray;
-            Brush backBrush = Brushes.White;
-
-            int i = int.Parse(listBoxSec.Items[e.Index].ToString());
-
-            if (e.State.HasFlag(DrawItemState.Selected))
-            {
-                backBrush = Brushes.LightSteelBlue;
-            }
-
-            if (Control.ModifierKeys == Keys.Control && listBoxSec.SelectedIndices.Contains(e.Index))
-            {
-                backBrush = Brushes.LightGreen;
-            }
-
-            if (!SecondArt.IsValidStatic(i))
-            {
-                fontBrush = Brushes.Red;
-            }
-            else if (!Compare(i))
-            {
-                fontBrush = Brushes.Blue;
-            }
-
-            e.Graphics.FillRectangle(backBrush, e.Bounds);
-            e.Graphics.DrawString($"0x{i:X}", Font, fontBrush,
-                new PointF(5,
-                e.Bounds.Y + ((e.Bounds.Height / 2) -
-                (e.Graphics.MeasureString($"0x{i:X}", Font).Height / 2))));
-        }
-        #endregion
-
-        #region [ MeasureSec ]
-        private void MeasureSec(object sender, MeasureItemEventArgs e)
-        {
-            e.ItemHeight = 13;
-        }
-        #endregion
-
-        #region [ OnIndexChangedSec ]
         private void OnIndexChangedSec(object sender, EventArgs e)
         {
-            if (listBoxSec.SelectedIndex == -1 || listBoxSec.Items.Count < 1)
+            if (_syncingSelection)
             {
                 return;
             }
 
-            int i = int.Parse(listBoxSec.Items[listBoxSec.SelectedIndex].ToString());
-            int pos = listBoxOrg.Items.IndexOf(i);
-            if (pos >= 0)
+            int id = GetFocusedId(listBoxSec);
+            if (id >= 0 && listBoxSec.SelectedIndices.Count == 1)
             {
-                listBoxOrg.SelectedIndex = pos;
+                int pos = IndexOfId(id);
+                _syncingSelection = true;
+                try
+                {
+                    SelectSingle(listBoxOrg, pos);
+                }
+                finally
+                {
+                    _syncingSelection = false;
+                }
             }
 
-            pictureBoxSec.BackgroundImage = SecondArt.IsValidStatic(i)
-                ? SecondArt.GetStatic(i)
-                : null;
+            UpdatePreviews();
+            UpdateButtons();
+        }
 
-            listBoxSec.Invalidate();
+        private string FormatId(int id)
+        {
+            return comboBoxSearchMode.SelectedIndex == 1 ? id.ToString() : $"0x{id:X}";
+        }
+
+        private void UpdateButtons()
+        {
+            bool secLoaded = _second != null;
+            bool secSelected = secLoaded && listBoxSec.SelectedIndices.Count > 0;
+            bool orgSelected = listBoxOrg.SelectedIndices.Count > 0;
+            bool tileDataLoaded = TileData.ItemTable != null;
+
+            btLeftMoveItem.Enabled = secSelected;
+            btLeftMoveItemMore.Enabled = secSelected;
+            buttonCopyTo.Enabled = secSelected;
+            buttonCopyAllDiff.Enabled = secLoaded;
+            btremoveitemfromindex.Enabled = orgSelected;
+            buttonEditTileData.Enabled = orgSelected && tileDataLoaded;
+            buttonSaveTileData.Enabled = tileDataLoaded;
+            checkBoxCopyTileData.Enabled = secLoaded && _secondTile != null && tileDataLoaded;
+            if (!checkBoxCopyTileData.Enabled)
+            {
+                checkBoxCopyTileData.Checked = false;
+            }
         }
         #endregion
 
-        #region [ Compare ]
-        private bool Compare(int index)
+        #region [ Drawing ]
+        private void DrawItemOrg(object sender, DrawItemEventArgs e)
         {
-            if (_compare.ContainsKey(index))
+            if (e.Index < 0 || e.Index >= listBoxOrg.Items.Count)
             {
-                return _compare[index];
-            }
-
-            Bitmap bitorg = Art.GetStatic(index);
-            Bitmap bitsec = SecondArt.GetStatic(index);
-            if (bitorg == null && bitsec == null)
-            {
-                _compare[index] = true;
-                return true;
-            }
-            if (bitorg == null || bitsec == null
-                               || bitorg.Size != bitsec.Size)
-            {
-                _compare[index] = false;
-                return false;
-            }
-
-            byte[] btImage1 = new byte[1];
-            btImage1 = (byte[])_ic.ConvertTo(bitorg, btImage1.GetType());
-            byte[] btImage2 = new byte[1];
-            btImage2 = (byte[])_ic.ConvertTo(bitsec, btImage2.GetType());
-
-            byte[] checksum1 = _sha256.ComputeHash(btImage1);
-            byte[] checksum2 = _sha256.ComputeHash(btImage2);
-            bool res = true;
-            for (int j = 0; j < checksum1.Length; ++j)
-            {
-                if (checksum1[j] != checksum2[j])
-                {
-                    res = false;
-                    break;
-                }
-            }
-            _compare[index] = res;
-            return res;
-        }
-        #endregion
-
-        #region [ OnChangeShowDiff ]
-        private void OnChangeShowDiff(object sender, EventArgs e)
-        {
-            if (_compare.Count < 1)
-            {
-                if (checkBox1.Checked)
-                {
-                    MessageBox.Show("Second Item file is not loaded!");
-                    checkBox1.Checked = false;
-                }
                 return;
             }
 
-            listBoxOrg.BeginUpdate();
-            listBoxSec.BeginUpdate();
-            listBoxOrg.Items.Clear();
-            listBoxSec.Items.Clear();
-            List<object> cache = new List<object>();
-            int staticLength = Math.Max(Art.GetMaxItemId(), SecondArt.GetMaxItemId());
-            if (checkBox1.Checked)
+            int id = (int)listBoxOrg.Items[e.Index];
+            bool selected = (e.State & DrawItemState.Selected) != 0;
+
+            Color color = Color.Gray;
+            if (!IsOrgValid(id))
             {
-                for (int i = 0; i < staticLength; i++)
+                color = Color.Red;
+            }
+            else if (_second != null)
+            {
+                ItemDiffState state = GetState(id);
+                if (state == ItemDiffState.Different)
                 {
-                    if (!Compare(i))
-                    {
-                        cache.Add(i);
-                    }
+                    color = Color.Blue;
                 }
+                else if (state == ItemDiffState.OnlyOriginal)
+                {
+                    color = Color.DarkOrange;
+                }
+            }
+
+            string name = TileData.ItemTable != null && id < TileData.ItemTable.Length ? TileData.ItemTable[id].Name : null;
+            DrawListEntry(e, id, name, color, selected);
+        }
+
+        private void DrawItemSec(object sender, DrawItemEventArgs e)
+        {
+            if (e.Index < 0 || e.Index >= listBoxSec.Items.Count || _second == null)
+            {
+                return;
+            }
+
+            int id = (int)listBoxSec.Items[e.Index];
+            bool selected = (e.State & DrawItemState.Selected) != 0;
+
+            Color color = Color.Gray;
+            if (!_second.IsValidStatic(id))
+            {
+                color = Color.Red;
             }
             else
             {
-                for (int i = 0; i < staticLength; i++)
+                ItemDiffState state = GetState(id);
+                if (state == ItemDiffState.Different)
                 {
-                    cache.Add(i);
+                    color = Color.Blue;
+                }
+                else if (state == ItemDiffState.OnlySecond)
+                {
+                    color = Color.Green;
                 }
             }
-            listBoxOrg.Items.AddRange(cache.ToArray());
-            listBoxSec.Items.AddRange(cache.ToArray());
-            listBoxOrg.EndUpdate();
-            listBoxSec.EndUpdate();
+
+            string name = _secondTile != null && _secondTile.HasItem(id) ? _secondTile.ItemTable[id].Name : null;
+            DrawListEntry(e, id, name, color, selected);
+        }
+
+        private static void DrawListEntry(DrawItemEventArgs e, int id, string name, Color color, bool selected)
+        {
+            using (Brush back = new SolidBrush(selected ? Color.LightSteelBlue : e.BackColor))
+            {
+                e.Graphics.FillRectangle(back, e.Bounds);
+            }
+
+            string text = string.IsNullOrEmpty(name) ? $"0x{id:X4} ({id})" : $"0x{id:X4} ({id}) {name}";
+            Rectangle bounds = new Rectangle(e.Bounds.X + 3, e.Bounds.Y, e.Bounds.Width - 3, e.Bounds.Height);
+            TextRenderer.DrawText(e.Graphics, text, e.Font, bounds, color,
+                TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.EndEllipsis | TextFormatFlags.NoPrefix);
+
+            if ((e.State & DrawItemState.Focus) != 0)
+            {
+                ControlPaint.DrawFocusRectangle(e.Graphics, e.Bounds);
+            }
         }
         #endregion
 
-        #region ExportAsBmp + ExportAsTiff listBoxSec
-        private void ExportAsBmp(object sender, EventArgs e)
+        #region [ Preview ]
+        private void UpdatePreviews()
         {
-            if (listBoxSec.SelectedIndex == -1)
+            int orgId = GetFocusedId(listBoxOrg);
+            int secId = GetFocusedId(listBoxSec);
+
+            if (orgId >= 0)
             {
-                return;
-            }
-
-            int i = int.Parse(listBoxSec.Items[listBoxSec.SelectedIndex].ToString());
-            if (!SecondArt.IsValidStatic(i))
-            {
-                return;
-            }
-
-            string path = Options.OutputPath;
-            string fileName = Path.Combine(path, $"Item(Sec) 0x{i:X}.bmp");
-            SecondArt.GetStatic(i).Save(fileName, ImageFormat.Bmp);
-            MessageBox.Show(
-                $"Item saved to {fileName}",
-                "Saved",
-                MessageBoxButtons.OK,
-                MessageBoxIcon.Information,
-                MessageBoxDefaultButton.Button1);
-        }
-
-        private void ExportAsTiff(object sender, EventArgs e)
-        {
-            if (listBoxSec.SelectedIndex == -1)
-            {
-                return;
-            }
-
-            int i = int.Parse(listBoxSec.Items[listBoxSec.SelectedIndex].ToString());
-            if (!SecondArt.IsValidStatic(i))
-            {
-                return;
-            }
-
-            string path = Options.OutputPath;
-            string fileName = Path.Combine(path, $"Item(Sec) 0x{i:X}.tiff");
-            SecondArt.GetStatic(i).Save(fileName, ImageFormat.Tiff);
-            MessageBox.Show(
-                $"Item saved to {fileName}",
-                "Saved",
-                MessageBoxButtons.OK,
-                MessageBoxIcon.Information,
-                MessageBoxDefaultButton.Button1);
-        }
-        #endregion
-
-        #region Export image from to
-        private void ExportAsBmp2(object sender, EventArgs e)
-        {
-            // Check if at least 2 items are selected
-            if (listBoxSec.SelectedIndices.Count < 2)
-            {
-                MessageBox.Show("Please select at least 2 items.");
-                return;
-            }
-
-            // Determine start and end address
-            int startAddress = int.MaxValue;
-            int endAddress = int.MinValue;
-            foreach (int index in listBoxSec.SelectedIndices)
-            {
-                int address = int.Parse(listBoxSec.Items[index].ToString());
-                if (address < startAddress) startAddress = address;
-                if (address > endAddress) endAddress = address;
-            }
-
-            // Save the BMP files in the specified area
-            for (int i = startAddress; i <= endAddress; i++)
-            {
-                if (!SecondArt.IsValidStatic(i)) continue;
-                string path = Options.OutputPath;
-                string fileName = Path.Combine(path, $"Item(Sec) 0x{i:X}.bmp");
-                SecondArt.GetStatic(i).Save(fileName, ImageFormat.Bmp);
-            }
-
-            MessageBox.Show($"Images saved to {Options.OutputPath}", "Saved", MessageBoxButtons.OK, MessageBoxIcon.Information);
-        }
-
-        private void ExportAsTiff2(object sender, EventArgs e)
-        {
-            // Check if at least 2 items are selected
-            if (listBoxSec.SelectedIndices.Count < 2)
-            {
-                MessageBox.Show("Please select at least 2 items.");
-                return;
-            }
-
-            // Determine start and end address
-            int startAddress = int.MaxValue;
-            int endAddress = int.MinValue;
-            foreach (int index in listBoxSec.SelectedIndices)
-            {
-                int address = int.Parse(listBoxSec.Items[index].ToString());
-                if (address < startAddress) startAddress = address;
-                if (address > endAddress) endAddress = address;
-            }
-
-            // Speichern der TIFF-Dateien im angegebenen Bereich
-            for (int i = startAddress; i <= endAddress; i++)
-            {
-                if (!SecondArt.IsValidStatic(i)) continue;
-                string path = Options.OutputPath;
-                string fileName = Path.Combine(path, $"Item(Sec) 0x{i:X}.tiff");
-                SecondArt.GetStatic(i).Save(fileName, ImageFormat.Tiff);
-            }
-
-            MessageBox.Show($"Images saved to {Options.OutputPath}", "Saved", MessageBoxButtons.OK, MessageBoxIcon.Information);
-        }
-
-        #endregion
-
-        #region OnClickCopy
-        private void OnClickCopy(object sender, EventArgs e)
-        {
-            if (listBoxSec.SelectedIndex == -1)
-            {
-                return;
-            }
-
-            int i = int.Parse(listBoxSec.Items[listBoxSec.SelectedIndex].ToString());
-            if (!SecondArt.IsValidStatic(i))
-            {
-                return;
-            }
-
-            int staticLength = Art.GetMaxItemId() + 1;
-            if (i >= staticLength)
-            {
-                return;
-            }
-
-            Bitmap copy = new Bitmap(SecondArt.GetStatic(i));
-            Art.ReplaceStatic(i, copy);
-            Options.ChangedUltimaClass["Art"] = true;
-            ControlEvents.FireItemChangeEvent(this, i);
-            _compare[i] = true;
-            listBoxOrg.BeginUpdate();
-            bool done = false;
-
-            for (int id = 0; id < staticLength; id++)
-            {
-                if (id > i)
-                {
-                    listBoxOrg.Items.Insert(id, i);
-                    done = true;
-                    break;
-                }
-
-                if (id == i)
-                {
-                    done = true;
-                    break;
-                }
-            }
-
-            if (!done)
-            {
-                listBoxOrg.Items.Add(i);
-            }
-
-            listBoxOrg.EndUpdate();
-            listBoxOrg.Invalidate();
-            listBoxSec.Invalidate();
-            OnIndexChangedOrg(this, null);
-        }
-        #endregion
-
-        #region Replace graphic        
-
-        private void OnClickReplace(object sender, EventArgs e)
-        {
-            // Open a dialog box that allows the user to select the areas to replace
-            using (var form = new Form())
-            {
-                form.Text = "Select the areas to be replaced.";
-                var label = new Label { Text = "Bereiche:", Left = 10, Top = 10 };
-                var textBox = new TextBox { Left = label.Right + 10, Top = label.Top };
-                var button = new Button { Text = "OK", Left = textBox.Right + 10, Top = textBox.Top };
-                button.Click += (s, e) =>
-                {
-                    // Verify that the ranges entered by the user are valid
-                    string[] areas = textBox.Text.Split(',');
-                    bool validAreas = true;
-                    foreach (string area in areas)
-                    {
-                        if (!int.TryParse(area.Trim(), out int position) || position < 0 || position >= listBoxOrg.Items.Count)
-                        {
-                            validAreas = false;
-                            break;
-                        }
-                    }
-
-                    if (validAreas)
-                    {
-                        // Replace the user-selected areas with the selection in listBoxSec
-                        foreach (string area in areas)
-                        {
-                            int position = int.Parse(area.Trim());
-                            listBoxOrg.Items[position] = listBoxSec.SelectedItem;
-                        }
-                        form.Close();
-                    }
-                    else
-                    {
-                        MessageBox.Show("Invalid areas. Please enter valid areas.");
-                    }
-                };
-                form.Controls.Add(label);
-                form.Controls.Add(textBox);
-                form.Controls.Add(button);
-                form.ShowDialog();
-            }
-        }
-
-        private void OnClickShowSelection(object sender, EventArgs e)
-        {
-            UpdateContextMenu();
-        }
-
-        /*private void UpdateContextMenu()
-        {
-            // Delete all existing items from contextMenuStrip2
-            contextMenuStrip2.Items.Clear();
-
-            // Add each selected item in listBoxSec to contextMenuStrip2
-            foreach (int index in listBoxSec.SelectedIndices)
-            {
-                int i = int.Parse(listBoxSec.Items[index].ToString());
-                Bitmap image = SecondArt.GetStatic(i);
-                string text = $"0x{i:X}";
-                ToolStripMenuItem item = new ToolStripMenuItem(text);
-                item.ImageScaling = ToolStripItemImageScaling.None; // Disable image scaling
-                item.Image = new Bitmap(image, new Size(image.Width * 2, image.Height * 2)); // Enlarge the image
-                item.Tag = i;
-                item.Click += Item_Click;
-                contextMenuStrip2.Items.Add(item);
-            }
-
-            // Add an "OK" button
-            ToolStripButton okButton = new ToolStripButton("OK");
-            okButton.Click += OnClickOkButton;
-            contextMenuStrip2.Items.Add(okButton);
-        }*/
-
-        private void UpdateContextMenu()
-        {
-            // Delete all existing items from contextMenuStrip2
-            contextMenuStrip2.Items.Clear();
-
-            // Add each selected item in listBoxSec to contextMenuStrip2
-            foreach (int index in listBoxSec.SelectedIndices)
-            {
-                int i = int.Parse(listBoxSec.Items[index].ToString());
-                Bitmap image = SecondArt.GetStatic(i);
-                if (image == null) // Check if the image is null
-                {
-                    continue; // Skip this iteration of the loop if the image is null
-                }
-                string text = $"0x{i:X}";
-                ToolStripMenuItem item = new ToolStripMenuItem(text);
-                item.ImageScaling = ToolStripItemImageScaling.None; // Disable image scaling
-                item.Image = new Bitmap(image, new Size(image.Width * 2, image.Height * 2)); // Enlarge the image
-                item.Tag = i;
-                item.Click += Item_Click;
-                contextMenuStrip2.Items.Add(item);
-            }
-
-            // Add an "OK" button
-            ToolStripButton okButton = new ToolStripButton("OK");
-            okButton.Click += OnClickOkButton;
-            contextMenuStrip2.Items.Add(okButton);
-        }
-
-
-        private void Item_Click(object sender, EventArgs e)
-        {
-            if (sender is ToolStripMenuItem item && item.Tag is int i)
-            {
-                int selectedIndex = listBoxOrg.SelectedIndex;
-                if (selectedIndex != -1)
-                {
-                    Bitmap image = SecondArt.GetStatic(i);
-                    Art.ReplaceStatic(selectedIndex, image);
-                    Options.ChangedUltimaClass["Art"] = true;
-                    ControlEvents.FireItemChangeEvent(this, selectedIndex);
-
-                    // Update pictureBoxOrg with the selected item
-                    pictureBoxOrg.BackgroundImage = Art.GetStatic(selectedIndex);
-
-                    // Uncheck the selected item in listBoxSec
-                    listBoxSec.SelectedIndices.Remove(listBoxSec.Items.IndexOf(i));
-                }
-            }
-        }
-
-        private void OnClickOkButton(object sender, EventArgs e)
-        {
-            // Replace the selected item in listBoxOrg with the first selected item in listBoxSec
-            int selectedIndex = listBoxOrg.SelectedIndex;
-            if (selectedIndex != -1 && listBoxSec.SelectedIndices.Count > 0)
-            {
-                int i = int.Parse(listBoxSec.Items[listBoxSec.SelectedIndices[0]].ToString());
-                Bitmap image = SecondArt.GetStatic(i);
-                Art.ReplaceStatic(selectedIndex, image);
-                Options.ChangedUltimaClass["Art"] = true;
-                ControlEvents.FireItemChangeEvent(this, selectedIndex);
-
-                // Update pictureBoxOrg with the selected item
-                pictureBoxOrg.BackgroundImage = Art.GetStatic(selectedIndex);
-            }
-        }
-
-        private void OnSelectedIndexChangedSec(object sender, EventArgs e)
-        {
-            UpdateContextMenu();
-        }
-        #endregion
-
-        #region Search Textbox Hex
-        private void OnClickSearch_Click(object sender, EventArgs e)
-        {
-            string addressText = searchTextBox.Text;
-            int address;
-            if (addressText.StartsWith("0x") || System.Text.RegularExpressions.Regex.IsMatch(addressText, @"\A\b[0-9a-fA-F]+\b\Z"))
-            {
-                string hexText = addressText.StartsWith("0x") ? addressText.Substring(2) : addressText;
-                if (int.TryParse(hexText, System.Globalization.NumberStyles.HexNumber, null, out address))
-                {
-                    int index = FindIndexByHexValue(listBoxOrg, hexText);
-                    if (index != -1)
-                    {
-                        listBoxOrg.SelectedIndex = index;
-                    }
-                    else
-                    {
-                        MessageBox.Show("Address not found.");
-                    }
-                }
-                else
-                {
-                    MessageBox.Show("Invalid address. Please enter a valid hex address.");
-                }
+                Bitmap bmp = GetOrg(orgId);
+                SetPreview(pictureBoxOrg, bmp);
+                string size = bmp != null ? $" {bmp.Width}x{bmp.Height}" : " (empty)";
+                string tile = TileData.ItemTable != null && orgId < TileData.ItemTable.Length
+                    ? "  | " + ItemCompareHelper.Describe(TileData.ItemTable[orgId])
+                    : string.Empty;
+                labelOrgInfo.Text = $"Original 0x{orgId:X4} ({orgId}){size}{tile}";
             }
             else
             {
-                MessageBox.Show("Invalid address. Please enter a valid hex address.");
+                SetPreview(pictureBoxOrg, null);
+                labelOrgInfo.Text = "Original";
             }
-        }
 
-        private int FindIndexByHexValue(ListBox listBox, string hexValue)
-        {
-            for (int i = 0; i < listBox.Items.Count; i++)
+            if (secId >= 0 && _second != null)
             {
-                if (listBox.Items[i] is int intValue && intValue.ToString("X").Equals(hexValue, StringComparison.OrdinalIgnoreCase))
+                Bitmap bmp = GetSec(secId);
+                SetPreview(pictureBoxSec, bmp);
+                string size = bmp != null ? $" {bmp.Width}x{bmp.Height}" : " (empty)";
+                string state;
+                switch (GetState(secId))
                 {
-                    return i;
+                    case ItemDiffState.Same: state = " [same]"; break;
+                    case ItemDiffState.Different: state = " [changed]"; break;
+                    case ItemDiffState.OnlySecond: state = " [new]"; break;
+                    case ItemDiffState.OnlyOriginal: state = " [missing]"; break;
+                    default: state = string.Empty; break;
                 }
+                string tile = _secondTile != null && _secondTile.HasItem(secId)
+                    ? "  | " + ItemCompareHelper.Describe(_secondTile.ItemTable[secId])
+                    : string.Empty;
+                labelSecInfo.Text = $"Second 0x{secId:X4} ({secId}){size}{state}{tile}";
             }
-            return -1;
+            else
+            {
+                SetPreview(pictureBoxSec, null);
+                labelSecInfo.Text = _second == null ? "Second (not loaded)" : "Second";
+            }
+
+            toolTip1.SetToolTip(labelOrgInfo, labelOrgInfo.Text);
+            toolTip1.SetToolTip(labelSecInfo, labelSecInfo.Text);
         }
 
+        /// <summary>
+        /// Shows an image centered, big images are zoomed to fit.
+        /// </summary>
+        private static void SetPreview(PictureBox pictureBox, Image image)
+        {
+            pictureBox.BackgroundImage = image;
+            UpdatePreviewLayout(pictureBox);
+        }
+
+        private static void UpdatePreviewLayout(PictureBox pictureBox)
+        {
+            Image image = pictureBox.BackgroundImage;
+            pictureBox.BackgroundImageLayout =
+                image != null && (image.Width > pictureBox.ClientSize.Width || image.Height > pictureBox.ClientSize.Height)
+                    ? ImageLayout.Zoom
+                    : ImageLayout.Center;
+        }
+
+        private void OnPreviewSizeChanged(object sender, EventArgs e)
+        {
+            if (sender is PictureBox pictureBox)
+            {
+                UpdatePreviewLayout(pictureBox);
+            }
+        }
+
+        private void UpdateStatus()
+        {
+            if (_second == null)
+            {
+                labelStatus.Text = $"Second file not loaded | showing {_visibleIds.Length}";
+                return;
+            }
+
+            string tile = _secondTile != null ? $"TileData: {_secondTile.FormatDescription}" : "no tiledata.mul";
+            string text = $"{_second.SourceDescription}, max 0x{SecMaxId:X} | {tile}";
+
+            if (_scanComplete)
+            {
+                int changed = 0, onlySec = 0, onlyOrg = 0;
+                foreach (ItemDiffState s in _state)
+                {
+                    switch (s)
+                    {
+                        case ItemDiffState.Different: changed++; break;
+                        case ItemDiffState.OnlySecond: onlySec++; break;
+                        case ItemDiffState.OnlyOriginal: onlyOrg++; break;
+                    }
+                }
+                text += $" | changed {changed}, new {onlySec}, only original {onlyOrg}";
+            }
+            else if (_scanCts == null)
+            {
+                text += " | comparison cancelled";
+            }
+
+            labelStatus.Text = $"{text} | showing {_visibleIds.Length}";
+            toolTip1.SetToolTip(labelStatus, $"{_second.Directory}\n{labelStatus.Text}\n\nGray = same, Blue = changed, Green = new in second, Orange = only in original, Red = empty");
+        }
         #endregion
 
-        #region [ EnsureSettingsDirectoryExists ]      
+        #region [ Load second ]
+        private async void OnClickLoadSecond(object sender, EventArgs e)
+        {
+            await LoadSecondAsync(textBoxSecondDir.Text);
+        }
 
+        private async Task LoadSecondAsync(string directory)
+        {
+            directory = directory?.Trim().Trim('"');
+            if (string.IsNullOrEmpty(directory))
+            {
+                MessageBox.Show("Please select the directory of the second client first.", "Load Second",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            SecondArtFile file;
+            SecondTileData tile = null;
+            string tileError = null;
+
+            Cursor = Cursors.WaitCursor;
+            try
+            {
+                file = SecondArtFile.Load(directory);
+            }
+            catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException || ex is ArgumentException)
+            {
+                Cursor = Cursors.Default;
+                MessageBox.Show(ex.Message, "Load Second", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            try
+            {
+                tile = SecondTileData.Load(directory, file.GetMaxItemId() >= 0xFFDC);
+            }
+            catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException || ex is ArgumentException)
+            {
+                tileError = ex.Message;
+            }
+            finally
+            {
+                Cursor = Cursors.Default;
+            }
+
+            CancelScan();
+            SetPreview(pictureBoxSec, null);
+
+            _second?.Dispose();
+            _second = file;
+            _secondTile = tile;
+
+            textBoxSecondDir.Text = directory;
+            SaveLastDirectory(directory);
+            LoadComboBoxSaveDir();
+
+            if (tile != null && TileData.ItemTable != null)
+            {
+                checkBoxCopyTileData.Checked = true;
+            }
+
+            ResetState();
+
+            if (FilterNeedsCompare(CurrentFilter))
+            {
+                // the old filter needs the new comparison -> start it and filter afterwards
+                RebuildListsUnfilteredWhileScanning();
+                await ApplyFilterAsync();
+            }
+            else
+            {
+                RebuildLists();
+                _ = StartScanAsync();
+            }
+
+            if (tileError != null)
+            {
+                MessageBox.Show($"tiledata.mul of the second client could not be read:\n{tileError}", "Load Second",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+        }
+
+        private void RebuildListsUnfilteredWhileScanning()
+        {
+            FilterMode mode = CurrentFilter;
+            SetFilterSilently(FilterMode.All);
+            RebuildLists();
+            SetFilterSilently(mode);
+        }
+
+        private void TextBoxSecondDir_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                e.Handled = true;
+                e.SuppressKeyPress = true;
+                OnClickLoadSecond(sender, e);
+            }
+        }
+
+        private void TextBoxSecondDir_DragEnter(object sender, DragEventArgs e)
+        {
+            e.Effect = GetDroppedDirectory(e) != null ? DragDropEffects.Copy : DragDropEffects.None;
+        }
+
+        private async void TextBoxSecondDir_DragDrop(object sender, DragEventArgs e)
+        {
+            string directory = GetDroppedDirectory(e);
+            if (directory != null)
+            {
+                textBoxSecondDir.Text = directory;
+                await LoadSecondAsync(directory);
+            }
+        }
+
+        private static string GetDroppedDirectory(DragEventArgs e)
+        {
+            if (e.Data?.GetData(DataFormats.FileDrop) is not string[] paths || paths.Length == 0)
+            {
+                return null;
+            }
+
+            string path = paths[0];
+            if (Directory.Exists(path))
+            {
+                return path;
+            }
+
+            return File.Exists(path) ? Path.GetDirectoryName(path) : null;
+        }
+        #endregion
+
+        #region [ Settings / recent directories ]
         private void EnsureSettingsDirectoryExists()
         {
-            if (!Directory.Exists(_settingsDirectory))
+            try
             {
                 Directory.CreateDirectory(_settingsDirectory);
             }
-            _settingsFilePath = Path.Combine(_settingsDirectory, _settingsFileName);
+            catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException)
+            {
+                // settings are optional
+            }
         }
-        #endregion
 
-        #region [ OnClickBrowse ]
+        private string RecentFilePath => Path.Combine(_settingsDirectory, _lastDirectoriesFileName);
+
+        private List<string> ReadRecentDirectories()
+        {
+            try
+            {
+                if (File.Exists(RecentFilePath))
+                {
+                    return File.ReadAllLines(RecentFilePath)
+                        .Select(l => l.Trim())
+                        .Where(l => l.Length > 0)
+                        .Distinct(StringComparer.OrdinalIgnoreCase)
+                        .ToList();
+                }
+            }
+            catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException)
+            {
+                // ignore
+            }
+            return new List<string>();
+        }
+
+        private void WriteRecentDirectories(List<string> directories)
+        {
+            try
+            {
+                EnsureSettingsDirectoryExists();
+                File.WriteAllLines(RecentFilePath, directories.Take(_maxRecentDirectories));
+            }
+            catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException)
+            {
+                // ignore
+            }
+        }
+
+        private void SaveLastDirectory(string directory)
+        {
+            List<string> list = ReadRecentDirectories();
+            list.RemoveAll(d => string.Equals(d.TrimEnd('\\', '/'), directory.TrimEnd('\\', '/'), StringComparison.OrdinalIgnoreCase));
+            list.Insert(0, directory);
+            WriteRecentDirectories(list);
+
+            try
+            {
+                EnsureSettingsDirectoryExists();
+                File.WriteAllText(Path.Combine(_settingsDirectory, _settingsFileName), directory);
+            }
+            catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException)
+            {
+                // ignore
+            }
+        }
+
+        private void LoadComboBoxSaveDir()
+        {
+            List<string> list = ReadRecentDirectories();
+            List<string> existing = list.Where(Directory.Exists).ToList();
+            if (existing.Count != list.Count)
+            {
+                WriteRecentDirectories(existing); // remove directories that do not exist any more
+            }
+
+            comboBoxSaveDir.BeginUpdate();
+            comboBoxSaveDir.Items.Clear();
+            comboBoxSaveDir.Items.AddRange(existing.Cast<object>().ToArray());
+            comboBoxSaveDir.EndUpdate();
+        }
+
+        private async void ComboBoxSaveDir_SelectionChangeCommitted(object sender, EventArgs e)
+        {
+            if (comboBoxSaveDir.SelectedItem is string directory)
+            {
+                textBoxSecondDir.Text = directory;
+                await LoadSecondAsync(directory);
+            }
+        }
+
         private void OnClickBrowse(object sender, EventArgs e)
         {
-            EnsureSettingsDirectoryExists();
-
             using (FolderBrowserDialog dialog = new FolderBrowserDialog())
             {
                 dialog.Description = "Select directory containing the art files";
                 dialog.ShowNewFolderButton = false;
-                if (!string.IsNullOrEmpty(_lastSelectedPath))
+                if (Directory.Exists(textBoxSecondDir.Text.Trim()))
                 {
-                    dialog.SelectedPath = _lastSelectedPath;
+                    dialog.SelectedPath = textBoxSecondDir.Text.Trim();
                 }
 
-                if (dialog.ShowDialog() == DialogResult.OK)
+                if (dialog.ShowDialog(this) == DialogResult.OK)
                 {
                     textBoxSecondDir.Text = dialog.SelectedPath;
-                    _lastSelectedPath = dialog.SelectedPath;
-                    File.WriteAllText(_settingsFilePath, _lastSelectedPath); // Save path to the file
-                    SaveLastDirectory(_lastSelectedPath); // Save in last directories list
-                    LoadComboBoxSaveDir(); // Refresh the ComboBox to include the new directory
+                    OnClickLoadSecond(sender, e);
                 }
             }
         }
-        #endregion        
 
-        #region [ comboBoxSaveDir_SelectedIndexChanged ]
-        private void ComboBoxSaveDir_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            if (comboBoxSaveDir.SelectedIndex != -1)
-            {
-                textBoxSecondDir.Text = comboBoxSaveDir.SelectedItem.ToString();
-            }
-        }
-        #endregion
-
-        #region [ SaveLastDirectory ]
-        private void SaveLastDirectory(string directory)
-        {
-            string lastDirectoriesFileName = "CompareiItemsLastDirectories.txt";
-            string lastDirectoriesFilePath = Path.Combine(_settingsDirectory, lastDirectoriesFileName);
-            List<string> lastDirectories = new List<string>();
-
-            // Read existing directories if file exists
-            if (File.Exists(lastDirectoriesFilePath))
-            {
-                lastDirectories.AddRange(File.ReadAllLines(lastDirectoriesFilePath));
-            }
-
-            // Ensure the new directory is unique and at the top
-            lastDirectories.Remove(directory);
-            lastDirectories.Insert(0, directory);
-
-            // Limit to the last 10 entries
-            if (lastDirectories.Count > 10)
-            {
-                lastDirectories = lastDirectories.Take(10).ToList();
-            }
-
-            // Write back the updated list to the file
-            File.WriteAllLines(lastDirectoriesFilePath, lastDirectories);
-        }
-        #endregion
-
-        #region [ LoadComboBoxSaveDir ]
-        private void LoadComboBoxSaveDir()
-        {
-            comboBoxSaveDir.Items.Clear(); // Clear existing items
-
-            string lastDirectoriesFileName = "CompareiItemsLastDirectories.txt";
-            string lastDirectoriesFilePath = Path.Combine(_settingsDirectory, lastDirectoriesFileName);
-
-            if (File.Exists(lastDirectoriesFilePath))
-            {
-                string[] lastDirectories = File.ReadAllLines(lastDirectoriesFilePath);
-                foreach (string dir in lastDirectories)
-                {
-                    comboBoxSaveDir.Items.Add(dir);
-                }
-            }
-        }
-        #endregion
-
-        #region [ btLeftMoveItem ]
-        private void BtLeftMoveItem_Click(object sender, EventArgs e)
-        {
-            if (listBoxSec.SelectedIndex == -1)
-            {
-                return;
-            }
-            int i = int.Parse(listBoxSec.Items[listBoxSec.SelectedIndex].ToString());
-            if (!SecondArt.IsValidStatic(i))
-            {
-                return;
-            }
-            int staticLength = Art.GetMaxItemId() + 1;
-            if (i >= staticLength)
-            {
-                return;
-            }
-            Bitmap copy = new Bitmap(SecondArt.GetStatic(i));
-            Art.ReplaceStatic(i, copy);
-            Options.ChangedUltimaClass["Art"] = true;
-            ControlEvents.FireItemChangeEvent(this, i);
-            _compare[i] = true;
-            listBoxOrg.BeginUpdate();
-            bool done = false;
-            for (int id = 0; id < staticLength; id++)
-            {
-                if (id > i)
-                {
-                    listBoxOrg.Items.Insert(id, i);
-                    done = true;
-                    break;
-                }
-                if (id == i)
-                {
-                    done = true;
-                    break;
-                }
-            }
-            if (!done)
-            {
-                listBoxOrg.Items.Add(i);
-            }
-            listBoxOrg.EndUpdate();
-            listBoxOrg.Invalidate();
-            listBoxSec.Invalidate();
-
-            // Update pictureBoxOrg with the selected item
-            pictureBoxOrg.BackgroundImage = Art.GetStatic(i);
-        }
-        #endregion
-
-        #region [ btLeftMoveItemMore ]
-        private void BtLeftMoveItemMore_Click(object sender, EventArgs e)
-        {
-            if (listBoxSec.SelectedIndices.Count == 0)
-            {
-                return;
-            }
-
-            int staticLength = Art.GetMaxItemId() + 1;
-            listBoxOrg.BeginUpdate();
-
-            foreach (int selectedIndex in listBoxSec.SelectedIndices)
-            {
-                int i = int.Parse(listBoxSec.Items[selectedIndex].ToString());
-                if (!SecondArt.IsValidStatic(i))
-                {
-                    continue;
-                }
-                if (i >= staticLength)
-                {
-                    continue;
-                }
-                Bitmap copy = new Bitmap(SecondArt.GetStatic(i));
-                Art.ReplaceStatic(i, copy);
-                Options.ChangedUltimaClass["Art"] = true;
-                ControlEvents.FireItemChangeEvent(this, i);
-                _compare[i] = true;
-
-                bool done = false;
-                for (int id = 0; id < staticLength; id++)
-                {
-                    if (id > i)
-                    {
-                        listBoxOrg.Items.Insert(id, i);
-                        done = true;
-                        break;
-                    }
-                    if (id == i)
-                    {
-                        done = true;
-                        break;
-                    }
-                }
-                if (!done)
-                {
-                    listBoxOrg.Items.Add(i);
-                }
-            }
-
-            listBoxOrg.EndUpdate();
-            listBoxOrg.Invalidate();
-            listBoxSec.Invalidate();
-
-            // Update pictureBoxOrg with the first item selected
-            int firstSelectedIndex = int.Parse(listBoxSec.Items[listBoxSec.SelectedIndices[0]].ToString());
-            pictureBoxOrg.BackgroundImage = Art.GetStatic(firstSelectedIndex);
-        }
-        #endregion
-
-        #region [ ListBoxSec_KeyDown ]
-        private void ListBoxSec_KeyDown(object sender, KeyEventArgs e)
-        {
-            if (e.KeyCode == Keys.Left)
-            {
-                BtLeftMoveItem_Click(sender, e);
-                e.Handled = true; // Prevents the default behavior of the left arrow key
-            }
-            if (e.KeyCode == Keys.Right)
-            {
-                Btremoveitemfromindex_Click(sender, e);
-                e.Handled = true; // Prevents the default behavior of the right arrow key
-            }
-        }
-        #endregion
-
-        #region [ btremoveitemfromindex ]
-        private void Btremoveitemfromindex_Click(object sender, EventArgs e)
-        {
-            if (listBoxOrg.SelectedIndex != -1)
-            {
-                int selectedIndex = listBoxOrg.SelectedIndex;
-                // Set the selected item to null in Kind
-                Art.ReplaceStatic(selectedIndex, null);
-                Options.ChangedUltimaClass["Art"] = true;
-                ControlEvents.FireItemChangeEvent(this, selectedIndex);
-
-                // Update pictureBoxOrg
-                pictureBoxOrg.BackgroundImage = null;
-            }
-        }
-        #endregion
-
-        #region [ BtDataDirectoryisSettings ]
         private void BtDataDirectoryisSettings_Click(object sender, EventArgs e)
         {
-            string settingsDirectory = Path.Combine("Data", "DirectoryisSettings"); // Directory Data/DirectoryisSettings
-            if (Directory.Exists(settingsDirectory))
+            EnsureSettingsDirectoryExists();
+            if (Directory.Exists(_settingsDirectory))
             {
-                System.Diagnostics.Process.Start("explorer.exe", settingsDirectory);
+                Process.Start(new ProcessStartInfo("explorer.exe", $"\"{_settingsDirectory}\"") { UseShellExecute = true });
             }
             else
             {
-                MessageBox.Show("The directory does not exist.");
+                MessageBox.Show($"The directory does not exist:\n{_settingsDirectory}");
             }
+        }
+        #endregion
+
+        #region [ Search ]
+        private void OnClickSearch_Click(object sender, EventArgs e)
+        {
+            if (!ItemCompareHelper.TryParseId(searchTextBox.Text, comboBoxSearchMode.SelectedIndex != 1, out int id))
+            {
+                MessageBox.Show(comboBoxSearchMode.SelectedIndex == 1
+                        ? "Invalid id. Please enter a decimal number (or a hex number with 0x)."
+                        : "Invalid address. Please enter a valid hex address.",
+                    "Search", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            GoToId(id);
+        }
+
+        private void SearchTextBox_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                e.Handled = true;
+                e.SuppressKeyPress = true;
+                OnClickSearch_Click(sender, e);
+            }
+        }
+
+        /// <summary>
+        /// Selects the id. When the current filter hides it, the user can switch to "All".
+        /// </summary>
+        private void GoToId(int id)
+        {
+            int max = _second == null ? OrgMaxId : MaxId;
+            if (id > max)
+            {
+                MessageBox.Show($"Id 0x{id:X} is outside of the item range (max 0x{max:X}).", "Search",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            if (IndexOfId(id) < 0)
+            {
+                if (MessageBox.Show($"Id 0x{id:X} is hidden by the current filter.\nShow all items?", "Search",
+                        MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
+                {
+                    return;
+                }
+
+                SetFilterSilently(FilterMode.All);
+                RebuildLists();
+            }
+
+            SelectId(id);
+            listBoxOrg.Focus();
+        }
+
+        private void OnClickNextFreeSlot(object sender, EventArgs e)
+        {
+            int start = Math.Max(0, GetFocusedId(listBoxOrg) + 1);
+            int free = CopyItemsForm.FindFreeSlot(start, new HashSet<int>(), false);
+            if (free < 0)
+            {
+                MessageBox.Show("No free slot found after the selected item.", "Free slot",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            GoToId(free);
+        }
+        #endregion
+
+        #region [ Keys ]
+        private void ListBoxSec_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Left && !e.Control && !e.Shift)
+            {
+                e.Handled = true;
+                e.SuppressKeyPress = true;
+                BtLeftMoveItemMore_Click(sender, e);
+            }
+            else if (e.KeyCode == Keys.A && e.Control)
+            {
+                e.Handled = true;
+                e.SuppressKeyPress = true;
+                SelectAll(listBoxSec);
+            }
+        }
+
+        private void ListBoxOrg_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Delete)
+            {
+                e.Handled = true;
+                e.SuppressKeyPress = true;
+                Btremoveitemfromindex_Click(sender, e);
+            }
+            else if (e.KeyCode == Keys.A && e.Control)
+            {
+                e.Handled = true;
+                e.SuppressKeyPress = true;
+                SelectAll(listBoxOrg);
+            }
+        }
+
+        private void SelectAll(ListBox listBox)
+        {
+            _syncingSelection = true;
+            try
+            {
+                listBox.BeginUpdate();
+                for (int i = 0; i < listBox.Items.Count; ++i)
+                {
+                    listBox.SetSelected(i, true);
+                }
+                listBox.EndUpdate();
+            }
+            finally
+            {
+                _syncingSelection = false;
+            }
+            UpdateButtons();
+        }
+        #endregion
+
+        #region [ Copy ]
+        /// <summary>
+        /// Copies the art (and optionally the tiledata) of the given mappings into the original.
+        /// </summary>
+        private int ApplyCopy(IEnumerable<CopyMapping> mappings)
+        {
+            int copied = 0;
+            bool tileDataChanged = false;
+            int orgMax = OrgMaxId;
+
+            Cursor = Cursors.WaitCursor;
+            try
+            {
+                foreach (CopyMapping m in mappings)
+                {
+                    Bitmap source = GetSec(m.SourceId);
+                    if (source == null || m.TargetId < 0 || m.TargetId > orgMax)
+                    {
+                        continue;
+                    }
+
+                    Art.ReplaceStatic(m.TargetId, ItemCompareHelper.CloneArt(source));
+                    ControlEvents.FireItemChangeEvent(this, m.TargetId);
+
+                    if (m.TileData.HasValue && TileData.ItemTable != null && m.TargetId < TileData.ItemTable.Length)
+                    {
+                        TileData.ItemTable[m.TargetId] = m.TileData.Value;
+                        ControlEvents.FireTileDataChangeEvent(this, m.TargetId + 0x4000);
+                        tileDataChanged = true;
+                    }
+
+                    RefreshState(m.TargetId);
+                    copied++;
+                }
+            }
+            finally
+            {
+                Cursor = Cursors.Default;
+            }
+
+            if (copied > 0)
+            {
+                Options.ChangedUltimaClass["Art"] = true;
+            }
+
+            if (tileDataChanged)
+            {
+                Options.ChangedUltimaClass["TileData"] = true;
+            }
+
+            listBoxOrg.Invalidate();
+            listBoxSec.Invalidate();
+            UpdatePreviews();
+            UpdateStatus();
+            return copied;
+        }
+
+        /// <summary>
+        /// Builds "same position" mappings; tiledata is taken from the second client when the checkbox is set.
+        /// </summary>
+        private List<CopyMapping> BuildSamePositionMappings(IEnumerable<int> sourceIds)
+        {
+            bool copyTile = checkBoxCopyTileData.Checked && _secondTile != null && TileData.ItemTable != null;
+            List<CopyMapping> list = new List<CopyMapping>();
+            foreach (int id in sourceIds)
+            {
+                if (GetSec(id) == null || id > OrgMaxId)
+                {
+                    continue;
+                }
+
+                list.Add(new CopyMapping
+                {
+                    SourceId = id,
+                    TargetId = id,
+                    IsValid = true,
+                    Overwrites = IsOrgValid(id),
+                    TileData = copyTile && _secondTile.HasItem(id) && id < TileData.ItemTable.Length
+                        ? _secondTile.ItemTable[id]
+                        : (ItemData?)null
+                });
+            }
+            return list;
+        }
+
+        /// <summary>
+        /// Copies the focused second item to the same position.
+        /// </summary>
+        private void BtLeftMoveItem_Click(object sender, EventArgs e)
+        {
+            int id = GetFocusedId(listBoxSec);
+            if (id < 0 || _second == null)
+            {
+                return;
+            }
+
+            if (GetSec(id) == null)
+            {
+                return;
+            }
+
+            if (id > OrgMaxId)
+            {
+                MessageBox.Show($"0x{id:X} is outside of the range of the original file (max 0x{OrgMaxId:X}).\nUse \"Copy selected to...\" to choose another position.",
+                    "Copy", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            ApplyCopy(BuildSamePositionMappings(new[] { id }));
+        }
+
+        /// <summary>
+        /// Copies all selected second items to the same positions.
+        /// </summary>
+        private void BtLeftMoveItemMore_Click(object sender, EventArgs e)
+        {
+            if (_second == null)
+            {
+                return;
+            }
+
+            List<int> ids = GetSelectedIds(listBoxSec);
+            if (ids.Count == 0)
+            {
+                return;
+            }
+
+            if (ids.Count == 1)
+            {
+                BtLeftMoveItem_Click(sender, e);
+                return;
+            }
+
+            List<CopyMapping> mappings = BuildSamePositionMappings(ids);
+            if (mappings.Count == 0)
+            {
+                MessageBox.Show("None of the selected items can be copied (empty or out of range).", "Copy",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            int overwrite = mappings.Count(m => m.Overwrites && GetState(m.SourceId) != ItemDiffState.Same);
+            string text = $"Copy {mappings.Count} item(s) to the same position in the original?";
+            if (overwrite > 0)
+            {
+                text += $"\n\n{overwrite} existing item(s) will be overwritten.";
+            }
+            if (mappings.Any(m => m.TileData.HasValue))
+            {
+                text += "\nTileData is copied too.";
+            }
+
+            if (MessageBox.Show(text, "Copy", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+            {
+                ApplyCopy(mappings);
+            }
+        }
+
+        private void OnClickCopyTo(object sender, EventArgs e)
+        {
+            int start = GetFocusedId(listBoxOrg);
+            ShowCopyDialog(GetSelectedIds(listBoxSec), CopyTargetMode.StartPosition, start);
+        }
+
+        private void OnClickCopyToFree(object sender, EventArgs e)
+        {
+            ShowCopyDialog(GetSelectedIds(listBoxSec), CopyTargetMode.FreeSlots, 0);
+        }
+
+        private async void OnClickCopyAllDifferences(object sender, EventArgs e)
+        {
+            if (_second == null)
+            {
+                return;
+            }
+
+            if (!_scanComplete)
+            {
+                if (_scanCts == null)
+                {
+                    _ = StartScanAsync();
+                }
+
+                await _scanTask;
+                if (!_scanComplete)
+                {
+                    return;
+                }
+            }
+
+            List<int> ids = new List<int>();
+            for (int id = 0; id < _state.Length; ++id)
+            {
+                ItemDiffState state = _state[id];
+                if (state == ItemDiffState.Different || state == ItemDiffState.OnlySecond)
+                {
+                    ids.Add(id);
+                }
+            }
+
+            if (ids.Count == 0)
+            {
+                MessageBox.Show("There are no new or changed items in the second file.", "Copy",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            ShowCopyDialog(ids, CopyTargetMode.SamePosition, 0);
+        }
+
+        private void ShowCopyDialog(List<int> sourceIds, CopyTargetMode mode, int startId)
+        {
+            if (_second == null || sourceIds.Count == 0)
+            {
+                return;
+            }
+
+            using (CopyItemsForm form = new CopyItemsForm(sourceIds, _second, _secondTile, mode, Math.Max(0, startId),
+                       checkBoxCopyTileData.Checked))
+            {
+                if (form.ShowDialog(this) != DialogResult.OK)
+                {
+                    return;
+                }
+
+                int copied = ApplyCopy(form.Result);
+                int first = form.Result.Count > 0 ? form.Result[0].TargetId : -1;
+                if (copied > 0 && first >= 0 && IndexOfId(first) >= 0)
+                {
+                    SelectId(first);
+                }
+            }
+        }
+        #endregion
+
+        #region [ Replace graphic (context menu of the original list) ]
+        private void ContextMenuStripOrg_Opening(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            int target = GetFocusedId(listBoxOrg);
+            bool hasOrgSelection = listBoxOrg.SelectedIndices.Count > 0;
+
+            ClearReplaceMenu();
+
+            List<int> secIds = _second != null ? GetSelectedIds(listBoxSec) : new List<int>();
+            foreach (int id in secIds.Take(_maxReplaceMenuEntries))
+            {
+                Bitmap image = GetSec(id);
+                if (image == null)
+                {
+                    continue;
+                }
+
+                Image thumbnail = CreateThumbnail(image, 48);
+                _menuThumbnails.Add(thumbnail);
+
+                ToolStripMenuItem item = new ToolStripMenuItem($"0x{id:X4} -> 0x{target:X4}", thumbnail)
+                {
+                    ImageScaling = ToolStripItemImageScaling.None,
+                    Tag = id
+                };
+                item.Click += OnClickReplaceWith;
+                replaceGraphicToolStripMenuItem.DropDownItems.Add(item);
+            }
+
+            replaceGraphicToolStripMenuItem.Enabled = target >= 0 && replaceGraphicToolStripMenuItem.DropDownItems.Count > 0;
+            replaceGraphicToolStripMenuItem.Text = replaceGraphicToolStripMenuItem.Enabled
+                ? "Replace graphic with"
+                : "Replace graphic with (select items in the second list)";
+            editTileDataOrgToolStripMenuItem.Enabled = hasOrgSelection && TileData.ItemTable != null;
+            exportOrgToolStripMenuItem.Enabled = hasOrgSelection;
+            removeOrgToolStripMenuItem.Enabled = hasOrgSelection;
+        }
+
+        private void ClearReplaceMenu()
+        {
+            foreach (ToolStripItem item in replaceGraphicToolStripMenuItem.DropDownItems)
+            {
+                item.Click -= OnClickReplaceWith;
+            }
+            replaceGraphicToolStripMenuItem.DropDownItems.Clear();
+
+            foreach (Image image in _menuThumbnails)
+            {
+                image.Dispose();
+            }
+            _menuThumbnails.Clear();
+        }
+
+        private static Image CreateThumbnail(Image image, int maxSize)
+        {
+            float scale = Math.Min(1f, Math.Min((float)maxSize / image.Width, (float)maxSize / image.Height));
+            int width = Math.Max(1, (int)(image.Width * scale));
+            int height = Math.Max(1, (int)(image.Height * scale));
+            Bitmap thumbnail = new Bitmap(width, height);
+            using (Graphics g = Graphics.FromImage(thumbnail))
+            {
+                g.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                g.DrawImage(image, 0, 0, width, height);
+            }
+            return thumbnail;
+        }
+
+        private void OnClickReplaceWith(object sender, EventArgs e)
+        {
+            if (sender is not ToolStripMenuItem item || item.Tag is not int sourceId)
+            {
+                return;
+            }
+
+            int target = GetFocusedId(listBoxOrg);
+            if (target < 0 || target > OrgMaxId)
+            {
+                return;
+            }
+
+            bool copyTile = checkBoxCopyTileData.Checked && _secondTile != null && _secondTile.HasItem(sourceId)
+                && TileData.ItemTable != null && target < TileData.ItemTable.Length;
+
+            ApplyCopy(new[]
+            {
+                new CopyMapping
+                {
+                    SourceId = sourceId,
+                    TargetId = target,
+                    IsValid = true,
+                    Overwrites = IsOrgValid(target),
+                    TileData = copyTile ? _secondTile.ItemTable[sourceId] : (ItemData?)null
+                }
+            });
+        }
+        #endregion
+
+        #region [ Remove ]
+        private void Btremoveitemfromindex_Click(object sender, EventArgs e)
+        {
+            List<int> ids = GetSelectedIds(listBoxOrg).Where(IsOrgValid).ToList();
+            if (ids.Count == 0)
+            {
+                return;
+            }
+
+            string what = ids.Count == 1 ? $"item 0x{ids[0]:X}" : $"{ids.Count} items";
+            if (MessageBox.Show($"Remove {what} from the original art file?", "Remove",
+                    MessageBoxButtons.YesNo, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2) != DialogResult.Yes)
+            {
+                return;
+            }
+
+            foreach (int id in ids)
+            {
+                Art.RemoveStatic(id);
+                ControlEvents.FireItemChangeEvent(this, id);
+                RefreshState(id);
+            }
+
+            Options.ChangedUltimaClass["Art"] = true;
+            listBoxOrg.Invalidate();
+            listBoxSec.Invalidate();
+            UpdatePreviews();
+            UpdateStatus();
+        }
+        #endregion
+
+        #region [ TileData ]
+        private void OnClickEditTileData(object sender, EventArgs e)
+        {
+            if (TileData.ItemTable == null)
+            {
+                MessageBox.Show("The tiledata.mul of the original is not loaded.", "TileData",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            List<int> ids = GetSelectedIds(listBoxOrg).Where(id => id < TileData.ItemTable.Length).ToList();
+            if (ids.Count == 0)
+            {
+                return;
+            }
+
+            if (ids.Count > 2000)
+            {
+                MessageBox.Show("Please select at most 2000 items.", "TileData", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            List<TileDataEditEntry> entries = ids.Select(id =>
+            {
+                bool hasSecond = _secondTile != null && _secondTile.HasItem(id);
+                return new TileDataEditEntry
+                {
+                    SourceId = hasSecond ? id : -1,
+                    TargetId = id,
+                    HasOriginal = true,
+                    Original = TileData.ItemTable[id],
+                    HasSecond = hasSecond,
+                    Second = hasSecond ? _secondTile.ItemTable[id] : default,
+                    Edited = TileData.ItemTable[id],
+                    Image = GetOrg(id) ?? GetSec(id)
+                };
+            }).ToList();
+
+            using (TileDataEditForm form = new TileDataEditForm(entries, "Edit TileData of the original", Art.IsUOAHS()))
+            {
+                if (form.ShowDialog(this) != DialogResult.OK)
+                {
+                    return;
+                }
+            }
+
+            int changed = 0;
+            foreach (TileDataEditEntry entry in entries)
+            {
+                if (ItemCompareHelper.ItemDataEquals(entry.Original, entry.Edited))
+                {
+                    continue;
+                }
+
+                TileData.ItemTable[entry.TargetId] = entry.Edited;
+                ControlEvents.FireTileDataChangeEvent(this, entry.TargetId + 0x4000);
+                changed++;
+            }
+
+            if (changed > 0)
+            {
+                Options.ChangedUltimaClass["TileData"] = true;
+                listBoxOrg.Invalidate();
+                UpdatePreviews();
+            }
+        }
+
+        private void OnClickSaveTileData(object sender, EventArgs e)
+        {
+            if (TileData.ItemTable == null)
+            {
+                return;
+            }
+
+            string fileName = Path.Combine(Options.OutputPath, "tiledata.mul");
+            if (MessageBox.Show($"Save TileData to\n{fileName}?", "Save TileData",
+                    MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
+            {
+                return;
+            }
+
+            try
+            {
+                Cursor = Cursors.WaitCursor;
+                Directory.CreateDirectory(Options.OutputPath);
+                TileData.SaveTileData(fileName);
+                Options.ChangedUltimaClass["TileData"] = false;
+            }
+            catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException)
+            {
+                MessageBox.Show($"TileData could not be saved:\n{ex.Message}", "Save TileData", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+            finally
+            {
+                Cursor = Cursors.Default;
+            }
+
+            MessageBox.Show($"TileData saved to {fileName}", "Saved", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
+        private void OnClickSaveArt(object sender, EventArgs e)
+        {
+            if (MessageBox.Show($"Save art.mul and artidx.mul to\n{Options.OutputPath}?\n\nThis can take a while.", "Save Art",
+                    MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
+            {
+                return;
+            }
+
+            try
+            {
+                Cursor = Cursors.WaitCursor;
+                Directory.CreateDirectory(Options.OutputPath);
+                Art.Save(Options.OutputPath);
+                Options.ChangedUltimaClass["Art"] = false;
+            }
+            catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException)
+            {
+                MessageBox.Show($"Art could not be saved:\n{ex.Message}", "Save Art", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+            finally
+            {
+                Cursor = Cursors.Default;
+            }
+
+            MessageBox.Show($"Art saved to {Options.OutputPath}", "Saved", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+        #endregion
+
+        #region [ Export ]
+        private void OnClickExportSec(object sender, EventArgs e)
+        {
+            if (_second == null)
+            {
+                return;
+            }
+
+            ExportImages(GetSelectedIds(listBoxSec), GetSec, "Item(Sec)", (sender as ToolStripItem)?.Tag as string);
+        }
+
+        private void OnClickExportOrg(object sender, EventArgs e)
+        {
+            ExportImages(GetSelectedIds(listBoxOrg), GetOrg, "Item", (sender as ToolStripItem)?.Tag as string);
+        }
+
+        /// <summary>
+        /// Exports every item from the lowest to the highest selected id of the second list.
+        /// </summary>
+        private void OnClickExportRange(object sender, EventArgs e)
+        {
+            if (_second == null)
+            {
+                return;
+            }
+
+            List<int> ids = GetSelectedIds(listBoxSec);
+            if (ids.Count < 2)
+            {
+                MessageBox.Show("Please select at least 2 items (Ctrl or Shift + click).", "Export",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            IEnumerable<int> range = Enumerable.Range(ids[0], ids[ids.Count - 1] - ids[0] + 1);
+            ExportImages(range, GetSec, "Item(Sec)", (sender as ToolStripItem)?.Tag as string);
+        }
+
+        private void ExportImages(IEnumerable<int> ids, Func<int, Bitmap> getImage, string prefix, string format)
+        {
+            format = string.IsNullOrEmpty(format) ? "bmp" : format;
+            string path = Options.OutputPath;
+            int count = 0;
+
+            try
+            {
+                Cursor = Cursors.WaitCursor;
+                Directory.CreateDirectory(path);
+
+                foreach (int id in ids)
+                {
+                    Bitmap image = getImage(id);
+                    if (image == null)
+                    {
+                        continue;
+                    }
+
+                    string fileName = Path.Combine(path, $"{prefix} 0x{id:X}.{format}");
+                    switch (format)
+                    {
+                        case "png":
+                            using (Bitmap copy = new Bitmap(image))
+                            {
+                                copy.Save(fileName, ImageFormat.Png);
+                            }
+                            break;
+                        case "tiff":
+                            image.Save(fileName, ImageFormat.Tiff);
+                            break;
+                        default:
+                            image.Save(fileName, ImageFormat.Bmp);
+                            break;
+                    }
+                    count++;
+                }
+            }
+            catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException || ex is System.Runtime.InteropServices.ExternalException)
+            {
+                MessageBox.Show($"Export failed:\n{ex.Message}", "Export", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+            finally
+            {
+                Cursor = Cursors.Default;
+            }
+
+            MessageBox.Show(count == 0 ? "Nothing to export (the selected items are empty)." : $"{count} image(s) saved to {path}",
+                "Export", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
         #endregion
     }
