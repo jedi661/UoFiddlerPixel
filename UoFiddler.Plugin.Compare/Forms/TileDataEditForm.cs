@@ -179,7 +179,7 @@ namespace UoFiddler.Plugin.Compare.Forms
             {
                 _flags.Items.Add(f.ToString());
             }
-            _flags.ItemCheck += (s, e) => BeginInvoke((Action)OnValueChanged);
+            _flags.ItemCheck += OnFlagItemCheck;
             right.Controls.Add(_flags, 1, 3);
 
             FlowLayoutPanel entryButtons = new FlowLayoutPanel { Dock = DockStyle.Fill, AutoSize = true };
@@ -323,7 +323,25 @@ namespace UoFiddler.Plugin.Compare.Forms
         private byte GetByte(string name) => (byte)_numbers[name].Value;
         private short GetShort(string name) => (short)_numbers[name].Value;
 
+        private void OnFlagItemCheck(object sender, ItemCheckEventArgs e)
+        {
+            // ItemCheck fires before the check state changes, so the new value is passed on directly.
+            // No BeginInvoke: the form may not have a window handle yet (e.g. while it is filled).
+            if (_loading)
+            {
+                return;
+            }
+
+            OnValueChanged(e.Index, e.NewValue == CheckState.Checked);
+        }
+
         private void OnValueChanged()
+        {
+            OnValueChanged(-1, false);
+        }
+
+        /// <param name="changedFlagIndex">Index of a flag whose new state is <paramref name="changedFlagChecked"/>, -1 for none.</param>
+        private void OnValueChanged(int changedFlagIndex, bool changedFlagChecked)
         {
             if (_loading)
             {
@@ -354,7 +372,8 @@ namespace UoFiddler.Plugin.Compare.Forms
             TileFlag flags = d.Flags;
             for (int i = 0; i < _flagValues.Count; ++i)
             {
-                if (_flags.GetItemChecked(i))
+                bool isChecked = i == changedFlagIndex ? changedFlagChecked : _flags.GetItemChecked(i);
+                if (isChecked)
                 {
                     flags |= _flagValues[i];
                 }
