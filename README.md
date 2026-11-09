@@ -8,8 +8,6 @@ version more than the original version. Also, some source codes from older and N
 
 Version 4.12.24
 
-**English**
-
 **CompareItemControl: Rework**
 
 *Bug fixes*
