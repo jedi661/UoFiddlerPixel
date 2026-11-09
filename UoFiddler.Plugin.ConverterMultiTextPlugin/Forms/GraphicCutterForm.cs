@@ -1,27 +1,36 @@
-﻿﻿using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
+using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Media;
-using System.Runtime.InteropServices;
 using System.Windows.Forms;
+using UoFiddler.Plugin.ConverterMultiTextPlugin.Class.GraphicCutter;
 
 namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 {
     /// <summary>
     /// Graphic Cutter: place an image on a 352 x 352 stage with an isometric grid,
-    /// cut an area out of it (e.g. 44 px wide art pieces) and edit / save / copy the result.
+    /// cut an area out of it (e.g. 44 px wide art pieces) and edit / save / copy / collect the result
+    /// or write it into art.mul.
     /// </summary>
-    public partial class GraphicCutterForm : Form
+    public partial class GraphicCutterForm : Form, ICutterHost
     {
         private const int StageSize = 352;
 
-        private static readonly string OutputDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "tempGrafic");
+        /// <summary>Distance between two diamond corners of the grid (32 * 250/256 * √2 / 2 ≈ 22.1 px).</summary>
+        private static readonly double GridStep = 32 * (250.0 / 256) * Math.Sqrt(2) / 2;
 
-        private const string ImageFilter = "Images|*.png;*.bmp;*.gif;*.jpg;*.jpeg;*.tif;*.tiff|All files|*.*";
+        private const int GridCenterX = StageSize / 2;  // x of the top corner of the diamond
+        private const int GridTopY = StageSize / 2 - 178; // y of the top corner of the diamond (-2)
+        private const int MaxUndo = 60;
+        private const int SidePanelWidth = 320;
+
+        private static readonly string OutputDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "tempGrafic");
 
         private enum SelectionShape { Rectangle, Circle, Freehand }
 
@@ -38,8 +47,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private bool _showRuler;
         private Color _gridColor = Color.Red;
         private Image _stageBackImage;
+        private Bitmap _landTile;
+        private int _landTileId = 0x0003;
+        private readonly List<Color> _pickedColors = new List<Color>();
+        private bool _pipette;
 
-        // Result (right side)
+        // Result (middle)
         private Bitmap _result;
         private bool _resultMirrored;
         private int _resultRotation; // quarter turns to the left
@@ -67,6 +80,26 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private bool _repeatMovesCut;
         private int _repeatTicks;
 
+        // Undo / redo
+        private sealed class UndoState : IDisposable
+        {
+            public Point ImagePos;
+            public Rectangle Cut;
+            public bool StageMirrored;
+            public Bitmap Result;
+            public bool ResultMirrored;
+            public int ResultRotation;
+
+            public void Dispose() => Result?.Dispose();
+        }
+
+        private readonly List<UndoState> _undo = new List<UndoState>();
+        private readonly List<UndoState> _redo = new List<UndoState>();
+        private string _lastUndoKind;
+        private DateTime _lastUndoTime;
+        private bool _restoring;
+        private Rectangle _shownCut; // cut area the current result belongs to (fields may already show a new value)
+
         private bool _updatingFields;
         private bool _playSound = true;
         private SoundPlayer _soundPlayer;
@@ -87,127 +120,67 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             panelResult.MouseWheel += Result_MouseWheel;
             pictureBox2.MouseWheel += Result_MouseWheel;
 
+            sidePanel.Host = this;
+
             tsFormat.SelectedIndex = 0;
+            tsFillMode.SelectedIndex = 0;
             tsBackground.SelectedIndex = 0;
             comboPreset.SelectedIndex = 0;
+            _shownCut = CutRect;
 
             InitTooltips();
             SyncUi();
+            UpdatePickedLabel();
             UpdateResultBox();
             UpdateStatus();
-            SetMessage("Ready – Ctrl+O open, Ctrl+V paste, arrows move the image, Ctrl+arrows move the cut area.");
+            SetMessage("Ready – Ctrl+O open, Ctrl+V paste, arrows move the image, Ctrl+arrows move the cut area, F1 help.");
         }
 
-        #region Helpers – bitmaps
+        #region ICutterHost
 
-        private static Bitmap To32Bpp(Image image)
+        Bitmap ICutterHost.CurrentResult => _result;
+
+        TransparentFill ICutterHost.SaveFill => SaveFill;
+
+        string ICutterHost.SaveExtension => SaveExtension;
+
+        void ICutterHost.LoadIntoStage(Bitmap bitmap, string name) => LoadStageImage(bitmap, name);
+
+        void ICutterHost.LoadIntoResult(Bitmap bitmap, string name)
         {
-            var bmp = new Bitmap(image.Width, image.Height, PixelFormat.Format32bppArgb);
-            using (var g = Graphics.FromImage(bmp))
-            {
-                g.CompositingMode = CompositingMode.SourceCopy;
-                g.DrawImage(image, new Rectangle(0, 0, image.Width, image.Height));
-            }
-            return bmp;
+            PushUndo(null);
+            ClearSelection();
+            SetResult(bitmap);
+            SetMessage($"Loaded {name} into the result ({bitmap.Width}×{bitmap.Height}). Moving the cut area replaces it again.");
         }
 
-        /// <summary>Loads an image without keeping the file locked.</summary>
-        private static Bitmap LoadBitmap(string path)
-        {
-            using (var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
-            using (var image = Image.FromStream(stream))
-            {
-                return To32Bpp(image);
-            }
-        }
+        void ICutterHost.UseLandBackground(int landId) => SetLandBackground(landId);
 
-        private static int[] GetPixels(Bitmap bmp)
-        {
-            var data = bmp.LockBits(new Rectangle(0, 0, bmp.Width, bmp.Height), ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
-            try
-            {
-                var pixels = new int[bmp.Width * bmp.Height];
-                Marshal.Copy(data.Scan0, pixels, 0, pixels.Length);
-                return pixels;
-            }
-            finally
-            {
-                bmp.UnlockBits(data);
-            }
-        }
+        void ICutterHost.ShowMessage(string text) => SetMessage(text);
 
-        private static void SetPixels(Bitmap bmp, int[] pixels)
-        {
-            var data = bmp.LockBits(new Rectangle(0, 0, bmp.Width, bmp.Height), ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb);
-            try
-            {
-                Marshal.Copy(pixels, 0, data.Scan0, pixels.Length);
-            }
-            finally
-            {
-                bmp.UnlockBits(data);
-            }
-        }
+        private TransparentFill SaveFill => (TransparentFill)Math.Max(0, tsFillMode.SelectedIndex);
 
-        /// <summary>Makes every pixel transparent whose color is within the tolerance of one of the given colors.</summary>
-        private static void MakeTransparent(Bitmap bmp, int tolerance, params Color[] colors)
+        private string SaveExtension
         {
-            int[] pixels = GetPixels(bmp);
-            for (int i = 0; i < pixels.Length; i++)
+            get
             {
-                int p = pixels[i];
-                int r = (p >> 16) & 0xFF, g = (p >> 8) & 0xFF, b = p & 0xFF;
-                foreach (Color c in colors)
+                switch (tsFormat.SelectedItem as string)
                 {
-                    if (Math.Abs(r - c.R) <= tolerance && Math.Abs(g - c.G) <= tolerance && Math.Abs(b - c.B) <= tolerance)
-                    {
-                        pixels[i] = 0;
-                        break;
-                    }
+                    case "TIFF": return ".tiff";
+                    case "PNG": return ".png";
+                    case "JPEG": return ".jpeg";
+                    default: return ".bmp";
                 }
             }
-            SetPixels(bmp, pixels);
         }
 
-        /// <summary>Returns the image cut to its non transparent area, or null if it is fully transparent.</summary>
-        private static Bitmap TrimTransparent(Bitmap bmp)
-        {
-            int[] pixels = GetPixels(bmp);
-            int w = bmp.Width, h = bmp.Height;
-            int minX = w, minY = h, maxX = -1, maxY = -1;
-            for (int y = 0; y < h; y++)
-            {
-                for (int x = 0; x < w; x++)
-                {
-                    if ((pixels[y * w + x] >> 24) != 0)
-                    {
-                        if (x < minX) minX = x;
-                        if (x > maxX) maxX = x;
-                        if (y < minY) minY = y;
-                        if (y > maxY) maxY = y;
-                    }
-                }
-            }
-            if (maxX < 0)
-            {
-                return null;
-            }
-            return bmp.Clone(Rectangle.FromLTRB(minX, minY, maxX + 1, maxY + 1), PixelFormat.Format32bppArgb);
-        }
+        #endregion
 
-        private static void FillTransparent(Bitmap bmp, Color color)
-        {
-            int[] pixels = GetPixels(bmp);
-            int argb = color.ToArgb();
-            for (int i = 0; i < pixels.Length; i++)
-            {
-                if ((pixels[i] >> 24) == 0)
-                {
-                    pixels[i] = argb;
-                }
-            }
-            SetPixels(bmp, pixels);
-        }
+        #region Helpers – UI
+
+        private static string Tip(string en, string de) => en + "\n\nDE: " + de;
+
+        private void SetMessage(string text) => statusMessage.Text = text;
 
         private static void ReplaceBitmap(ref Bitmap field, Bitmap value)
         {
@@ -220,19 +193,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             old?.Dispose();
         }
 
-        #endregion
-
-        #region Helpers – UI
-
-        private static string Tip(string en, string de) => en + "\n\nDE: " + de;
-
-        private void SetMessage(string text) => statusMessage.Text = text;
-
         private Rectangle CutRect => new Rectangle((int)numericX.Value, (int)numericY.Value, (int)numericWidth.Value, (int)numericHeight.Value);
 
         private static decimal Clamp(NumericUpDown n, int value) => Math.Max(n.Minimum, Math.Min(n.Maximum, value));
 
-        private void SetCut(Rectangle r)
+        /// <summary>Sets the four number fields without cutting again.</summary>
+        private void SetCutFields(Rectangle r)
         {
             _updatingFields = true;
             numericX.Value = Clamp(numericX, r.X);
@@ -240,15 +206,20 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             numericWidth.Value = Clamp(numericWidth, r.Width);
             numericHeight.Value = Clamp(numericHeight, r.Height);
             _updatingFields = false;
+        }
 
+        private void SetCut(Rectangle r)
+        {
+            SetCutFields(r);
             UpdateResult();
+            _shownCut = CutRect;
             pictureBox1.Invalidate();
             UpdateStatus();
         }
 
         private bool IsTextInputFocused()
         {
-            if (bgHexTextBox.Focused || tsFormat.Focused || tsBackground.Focused)
+            if (bgHexTextBox.Focused || tsFormat.Focused || tsBackground.Focused || tsFillMode.Focused)
             {
                 return true;
             }
@@ -257,7 +228,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             {
                 c = cc.ActiveControl;
             }
-            return c is TextBoxBase || c is UpDownBase || c?.Parent is UpDownBase || c is ComboBox;
+            return c is TextBoxBase || c is UpDownBase || c?.Parent is UpDownBase || c is ComboBox || c is ArtTileGrid;
         }
 
         private void SyncUi()
@@ -274,6 +245,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             showMaskMenuItem.Checked = ctxMask.Checked = tsMask.Checked = _showMask;
             soundMenuItem.Checked = _playSound;
             topMostMenuItem.Checked = TopMost;
+            snapMenuItem.Checked = checkBoxSnap.Checked;
+            pipetteMenuItem.Checked = tsPipette.Checked = _pipette;
+            sidePanelMenuItem.Checked = tsPanel.Checked = sidePanel.Visible;
             labelZoom.Text = _zoom + "x";
 
             if (checkBoxBake.Checked != _bakeStage)
@@ -284,6 +258,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             bgImageNoneMenuItem.Checked = tsBackground.SelectedIndex == 0;
             bgImageGreenMenuItem.Checked = tsBackground.SelectedIndex == 1;
             bgImageWaterMenuItem.Checked = tsBackground.SelectedIndex == 2;
+            bgLandMenuItem.Checked = tsBackground.SelectedIndex == 3;
+            bgLandMenuItem.Text = $"Land tile 0x{_landTileId:X4} (art.mul)";
+
+            undoMenuItem.Enabled = tsUndo.Enabled = _undo.Count > 0;
+            redoMenuItem.Enabled = tsRedo.Enabled = _redo.Count > 0;
         }
 
         private void UpdateStatus()
@@ -291,7 +270,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             string image = _work == null ? "no image" : $"image {_work.Width}×{_work.Height} at {_imagePos.X},{_imagePos.Y}";
             Rectangle cut = CutRect;
             string result = _result == null ? "no result" : $"result {_result.Width}×{_result.Height}";
-            statusInfo.Text = $"{image}   |   cut {cut.Width}×{cut.Height} at {cut.X},{cut.Y}   |   {result}   |   zoom {_zoom}x";
+            string collection = sidePanel.CollectionCount > 0 ? $"   |   collection {sidePanel.CollectionCount}" : string.Empty;
+            statusInfo.Text = $"{image}   |   cut {cut.Width}×{cut.Height} at {cut.X},{cut.Y}   |   {result}   |   zoom {_zoom}x{collection}";
         }
 
         private void InitTooltips()
@@ -321,11 +301,13 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             toolTip1.SetToolTip(numericY, Tip("Top edge of the cut area on the stage.", "Obere Kante des Ausschnitts auf der Arbeitsfläche."));
             toolTip1.SetToolTip(comboPreset, Tip("Common sizes. 44 × 123 matches the alignment mask.", "Übliche Größen. 44 × 123 passt zur Ausrichtungsmaske."));
             toolTip1.SetToolTip(checkBoxFollow, Tip("When the image is moved, the cut area moves with it.", "Wird das Bild verschoben, wandert der Ausschnitt mit."));
+            toolTip1.SetToolTip(checkBoxSnap, Tip("The cut area jumps to the corners of the diamond tiles (left and bottom edge).",
+                "Der Ausschnitt springt auf die Ecken der Rautenkacheln (linke Kante und Unterkante)."));
             toolTip1.SetToolTip(buttonQuickSave, Tip("Save the result into the tempGrafic folder (format from the toolbar).",
                 "Ergebnis im Ordner tempGrafic speichern (Format aus der Werkzeugleiste)."));
             toolTip1.SetToolTip(checkBoxTransparent, Tip("Show black and white of the image as transparent.", "Schwarz und Weiß des Bildes transparent darstellen."));
-            toolTip1.SetToolTip(numericTolerance, Tip("0 = only pure black / white. Higher values also remove nearly black / white pixels.",
-                "0 = nur reines Schwarz / Weiß. Höhere Werte entfernen auch fast schwarze / weiße Pixel."));
+            toolTip1.SetToolTip(numericTolerance, Tip("0 = only the exact color. Higher values also remove similar colors (also for picked colors).",
+                "0 = nur die genaue Farbe. Höhere Werte entfernen auch ähnliche Farben (auch für Pipetten-Farben)."));
             toolTip1.SetToolTip(radioRectangle, Tip("Select a rectangle in the result.", "Rechteck im Ergebnis auswählen."));
             toolTip1.SetToolTip(radioCircle, Tip("Select an ellipse / circle in the result.", "Ellipse / Kreis im Ergebnis auswählen."));
             toolTip1.SetToolTip(radioFreehand, Tip("Draw a free shape in the result. It is closed automatically.", "Freie Form im Ergebnis zeichnen. Sie wird automatisch geschlossen."));
@@ -334,26 +316,152 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             toolTip1.SetToolTip(resetButton, Tip("Zoom 1x and remove the selection.", "Zoom 1x und Auswahl entfernen."));
             toolTip1.SetToolTip(checkBoxBake, Tip("Background color, background image and grid become part of the cut (old \"Grafic Paint\").",
                 "Hintergrundfarbe, Hintergrundbild und Raster werden mit ausgeschnitten (früher \"Grafic Paint\")."));
+            toolTip1.SetToolTip(buttonClearPicked, Tip("Remove all colors picked with the pipette.", "Alle mit der Pipette gewählten Farben entfernen."));
 
             tsOpen.ToolTipText = Tip("Open image (Ctrl+O)", "Bild öffnen (Strg+O)");
             tsImport.ToolTipText = Tip("Paste image from clipboard (Ctrl+V)", "Bild aus der Zwischenablage einfügen (Strg+V)");
             tsSave.ToolTipText = Tip("Save result into tempGrafic (Ctrl+S)", "Ergebnis in tempGrafic speichern (Strg+S)");
             tsFormat.ToolTipText = Tip("File format for quick save", "Dateiformat für schnelles Speichern");
+            tsFillMode.ToolTipText = Tip("What transparent pixels become in saved files", "Was aus transparenten Pixeln in gespeicherten Dateien wird");
+            tsUndo.ToolTipText = Tip("Undo (Ctrl+Z)", "Rückgängig (Strg+Z)");
+            tsRedo.ToolTipText = Tip("Redo (Ctrl+Y)", "Wiederholen (Strg+Y)");
             tsCopy.ToolTipText = Tip("Copy result to clipboard (Ctrl+C)", "Ergebnis in die Zwischenablage kopieren (Strg+C)");
+            tsAddCollection.ToolTipText = Tip("Add the result to the collection (Ctrl+Enter)", "Ergebnis zur Sammlung hinzufügen (Strg+Enter)");
             tsMirror.ToolTipText = Tip("Mirror the result", "Ergebnis spiegeln");
             tsRotate.ToolTipText = Tip("Rotate the result 90° to the left", "Ergebnis um 90° nach links drehen");
-            tsCutStrips.ToolTipText = Tip("Cut the result into 44 px wide strips and save them", "Ergebnis in 44 px breite Streifen schneiden und speichern");
+            tsCutStrips.ToolTipText = Tip("Split the result into art pieces (44 px strips)", "Ergebnis in Art-Teile zerlegen (44-px-Streifen)");
             tsFill.ToolTipText = Tip("Fill the selection with a texture", "Auswahl mit einer Textur füllen");
+            tsPipette.ToolTipText = Tip("Pipette: click a color on the stage or in the result – it becomes transparent",
+                "Pipette: Farbe auf der Arbeitsfläche oder im Ergebnis anklicken – sie wird transparent");
             tsGrid.ToolTipText = Tip("Grid on the stage (Ctrl+G)", "Raster auf der Arbeitsfläche (Strg+G)");
             tsBorder.ToolTipText = Tip("Red frame around the image", "Roter Rahmen um das Bild");
             tsRuler.ToolTipText = Tip("Ruler around the stage", "Lineal um die Arbeitsfläche");
             tsMask.ToolTipText = Tip("Alignment mask 44 × 123 over the result (mask by Otimpyre). Only a view aid, not saved.",
                 "Ausrichtungsmaske 44 × 123 über dem Ergebnis (Maske von Otimpyre). Nur Anzeigehilfe, wird nicht gespeichert.");
-            tsBackground.ToolTipText = Tip("Background image of the stage", "Hintergrundbild der Arbeitsfläche");
+            tsBackground.ToolTipText = Tip("Background of the stage. \"land tile\" uses a land tile from art.mul (choose it in the art.mul panel).",
+                "Hintergrund der Arbeitsfläche. \"land tile\" nimmt eine Landkachel aus der art.mul (im art.mul-Panel wählen).");
             tsBackColor.ToolTipText = Tip("Switch the stage background between black and white", "Hintergrund der Arbeitsfläche zwischen Schwarz und Weiß umschalten");
+            tsPanel.ToolTipText = Tip("Show / hide the art.mul and collection panel (Ctrl+B)", "art.mul- und Sammlungs-Panel ein- / ausblenden (Strg+B)");
+            tsHelp.ToolTipText = Tip("Help (F1)", "Hilfe (F1)");
             autoTrimMenuItem.ToolTipText = Tip("Cuts away the transparent border of the image (old \"Change the border\").",
                 "Schneidet den transparenten Rand des Bildes weg (früher \"Change the border\").");
             bgHexTextBox.ToolTipText = Tip("Hex color, e.g. FF0000, then press Enter", "Hex-Farbe, z. B. FF0000, dann Enter");
+        }
+
+        #endregion
+
+        #region Undo / redo
+
+        private UndoState CaptureState() => new UndoState
+        {
+            ImagePos = _imagePos,
+            Cut = _shownCut,
+            StageMirrored = _stageMirrored,
+            Result = _result == null ? null : CutterImaging.To32Bpp(_result),
+            ResultMirrored = _resultMirrored,
+            ResultRotation = _resultRotation
+        };
+
+        /// <summary>
+        /// Remembers the state before a change. Changes of the same kind within one second
+        /// (e.g. holding an arrow key) become one step. kind = null: always a new step.
+        /// </summary>
+        private void PushUndo(string kind)
+        {
+            if (_restoring)
+            {
+                return;
+            }
+            DateTime now = DateTime.Now;
+            if (kind != null && kind == _lastUndoKind && (now - _lastUndoTime).TotalMilliseconds < 1000)
+            {
+                _lastUndoTime = now;
+                return;
+            }
+            _lastUndoKind = kind;
+            _lastUndoTime = now;
+
+            _undo.Add(CaptureState());
+            if (_undo.Count > MaxUndo)
+            {
+                _undo[0].Dispose();
+                _undo.RemoveAt(0);
+            }
+            ClearStates(_redo);
+            SyncUi();
+        }
+
+        private static void ClearStates(List<UndoState> list)
+        {
+            foreach (UndoState s in list)
+            {
+                s.Dispose();
+            }
+            list.Clear();
+        }
+
+        private void ClearHistory()
+        {
+            ClearStates(_undo);
+            ClearStates(_redo);
+            _lastUndoKind = null;
+            SyncUi();
+        }
+
+        private void Restore(UndoState state)
+        {
+            _restoring = true;
+            try
+            {
+                _imagePos = state.ImagePos;
+                if (state.StageMirrored != _stageMirrored && _source != null)
+                {
+                    _stageMirrored = state.StageMirrored;
+                    RebuildWork(keepPosition: true);
+                }
+                SetCutFields(state.Cut);
+                _shownCut = state.Cut;
+                _resultMirrored = state.ResultMirrored;
+                _resultRotation = state.ResultRotation;
+                ClearSelection();
+                SetResult(state.Result == null ? null : CutterImaging.To32Bpp(state.Result));
+                pictureBox1.Invalidate();
+                UpdateStatus();
+            }
+            finally
+            {
+                _restoring = false;
+                _lastUndoKind = null;
+            }
+            SyncUi();
+        }
+
+        private void Undo_Click(object sender, EventArgs e)
+        {
+            if (_undo.Count == 0)
+            {
+                return;
+            }
+            _redo.Add(CaptureState());
+            UndoState state = _undo[_undo.Count - 1];
+            _undo.RemoveAt(_undo.Count - 1);
+            Restore(state);
+            state.Dispose();
+            SetMessage($"Undo ({_undo.Count} more).");
+        }
+
+        private void Redo_Click(object sender, EventArgs e)
+        {
+            if (_redo.Count == 0)
+            {
+                return;
+            }
+            _undo.Add(CaptureState());
+            UndoState state = _redo[_redo.Count - 1];
+            _redo.RemoveAt(_redo.Count - 1);
+            Restore(state);
+            state.Dispose();
+            SetMessage($"Redo ({_redo.Count} more).");
         }
 
         #endregion
@@ -367,13 +475,27 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             _resultMirrored = false;
             _resultRotation = 0;
             ClearSelection();
+            ClearHistory();
             RebuildWork(forceRecenter: true);
             SyncUi();
             SetMessage($"Loaded {name} ({bmp.Width}×{bmp.Height}).");
         }
 
+        /// <summary>All colors that are removed from the image.</summary>
+        private List<Color> TransparentColors()
+        {
+            var colors = new List<Color>();
+            if (checkBoxTransparent.Checked)
+            {
+                colors.Add(Color.White);
+                colors.Add(Color.Black);
+            }
+            colors.AddRange(_pickedColors);
+            return colors;
+        }
+
         /// <summary>Builds the stage image from the source: transparency, trim, mirror.</summary>
-        private void RebuildWork(bool forceRecenter = false)
+        private void RebuildWork(bool forceRecenter = false, bool keepPosition = false)
         {
             if (_source == null)
             {
@@ -384,16 +506,13 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             }
 
             Size oldSize = _work?.Size ?? Size.Empty;
-            Bitmap bmp = To32Bpp(_source);
+            Bitmap bmp = CutterImaging.To32Bpp(_source);
 
-            if (checkBoxTransparent.Checked)
-            {
-                MakeTransparent(bmp, (int)numericTolerance.Value, Color.White, Color.Black);
-            }
+            CutterImaging.MakeTransparent(bmp, (int)numericTolerance.Value, TransparentColors());
 
             if (_autoTrim)
             {
-                Bitmap trimmed = TrimTransparent(bmp);
+                Bitmap trimmed = CutterImaging.TrimTransparent(bmp);
                 if (trimmed != null)
                 {
                     bmp.Dispose();
@@ -408,11 +527,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 
             ReplaceBitmap(ref _work, bmp);
 
-            if (forceRecenter || oldSize != bmp.Size)
+            if (!keepPosition && (forceRecenter || oldSize != bmp.Size))
             {
                 CenterImage();
             }
-            else
+            else if (!_restoring)
             {
                 UpdateResult();
                 pictureBox1.Invalidate();
@@ -433,7 +552,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 
         private void OpenImage_Click(object sender, EventArgs e)
         {
-            using (var dialog = new OpenFileDialog { Filter = ImageFilter, Title = "Open image" })
+            using (var dialog = new OpenFileDialog { Filter = CutterImaging.ImageFilter, Title = "Open image" })
             {
                 if (dialog.ShowDialog(this) != DialogResult.OK)
                 {
@@ -441,7 +560,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 }
                 try
                 {
-                    LoadStageImage(LoadBitmap(dialog.FileName), Path.GetFileName(dialog.FileName));
+                    LoadStageImage(CutterImaging.LoadBitmap(dialog.FileName), Path.GetFileName(dialog.FileName));
                 }
                 catch (Exception ex)
                 {
@@ -450,32 +569,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             }
         }
 
-        private static Bitmap GetClipboardImage()
-        {
-            // "PNG" keeps the transparency, the normal bitmap format does not.
-            if (Clipboard.ContainsData("PNG") && Clipboard.GetData("PNG") is Stream png)
-            {
-                using (var image = Image.FromStream(png))
-                {
-                    return To32Bpp(image);
-                }
-            }
-            if (Clipboard.ContainsImage())
-            {
-                using (Image image = Clipboard.GetImage())
-                {
-                    return image == null ? null : To32Bpp(image);
-                }
-            }
-            return null;
-        }
-
         private void ImportClipboard_Click(object sender, EventArgs e)
         {
             Bitmap bmp;
             try
             {
-                bmp = GetClipboardImage();
+                bmp = CutterImaging.GetClipboardImage();
             }
             catch (Exception ex)
             {
@@ -492,7 +591,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 
         private void OpenIntoResult_Click(object sender, EventArgs e)
         {
-            using (var dialog = new OpenFileDialog { Filter = ImageFilter, Title = "Open image into the result" })
+            using (var dialog = new OpenFileDialog { Filter = CutterImaging.ImageFilter, Title = "Open image into the result" })
             {
                 if (dialog.ShowDialog(this) != DialogResult.OK)
                 {
@@ -500,9 +599,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 }
                 try
                 {
-                    ClearSelection();
-                    SetResult(LoadBitmap(dialog.FileName));
-                    SetMessage("Opened " + Path.GetFileName(dialog.FileName) + " into the result. Moving the cut area replaces it again.");
+                    Bitmap bmp = CutterImaging.LoadBitmap(dialog.FileName);
+                    ((ICutterHost)this).LoadIntoResult(bmp, Path.GetFileName(dialog.FileName));
                 }
                 catch (Exception ex)
                 {
@@ -519,6 +617,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 return;
             }
             ReplaceBitmap(ref _source, null);
+            ClearHistory();
             RebuildWork();
             SetMessage("Stage image unloaded.");
         }
@@ -530,12 +629,25 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 SetMessage("There is no result.");
                 return;
             }
+            PushUndo(null);
             ClearSelection();
             SetResult(null);
             SetMessage("Result unloaded.");
         }
 
         private void Close_Click(object sender, EventArgs e) => Close();
+
+        protected override void OnFormClosing(FormClosingEventArgs e)
+        {
+            if (sidePanel.CollectionCount > 0 && e.CloseReason == CloseReason.UserClosing &&
+                MessageBox.Show(this, $"The collection still contains {sidePanel.CollectionCount} pieces that are lost when closing.\nClose anyway?",
+                    "Graphic Cutter", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
+            {
+                e.Cancel = true;
+                return;
+            }
+            base.OnFormClosing(e);
+        }
 
         protected override void OnFormClosed(FormClosedEventArgs e)
         {
@@ -544,6 +656,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             ReplaceBitmap(ref _work, null);
             ReplaceBitmap(ref _result, null);
             ReplaceBitmap(ref _maskOverlay, null);
+            ReplaceBitmap(ref _landTile, null);
+            ClearStates(_undo);
+            ClearStates(_redo);
             _stageBackImage?.Dispose();
             _soundPlayer?.Dispose();
             base.OnFormClosed(e);
@@ -553,14 +668,14 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 
         #region Stage – drawing
 
-        private void DrawIsoGrid(Graphics g, int width, int height)
+        private void DrawIsoGrid(Graphics g)
         {
             const int tileWidth = 32; // 32 * scale * sqrt(2) = 44 px on screen, like a UO tile
             const int tiles = 8;
             float scale = 250f / (tiles * tileWidth);
 
             GraphicsState state = g.Save();
-            g.TranslateTransform(width / 2, height / 2 - 178);
+            g.TranslateTransform(GridCenterX, GridTopY);
             g.ScaleTransform(scale, scale);
             g.RotateTransform(45);
             using (var pen = new Pen(_gridColor, 1f))
@@ -574,6 +689,32 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             g.Restore(state);
         }
 
+        /// <summary>Fills the 8 × 8 diamond of the grid with the chosen land tile.</summary>
+        private void DrawLandTiles(Graphics g)
+        {
+            if (_landTile == null || tsBackground.SelectedIndex != 3)
+            {
+                return;
+            }
+            InterpolationMode old = g.InterpolationMode;
+            g.InterpolationMode = InterpolationMode.NearestNeighbor;
+            for (int sum = 0; sum <= 14; sum++)
+            {
+                for (int i = 0; i < 8; i++)
+                {
+                    int j = sum - i;
+                    if (j < 0 || j > 7)
+                    {
+                        continue;
+                    }
+                    int x = (int)Math.Round(GridCenterX + (i - j) * GridStep) - CutterArt.LandSize / 2;
+                    int y = (int)Math.Round(GridTopY + (i + j) * GridStep);
+                    g.DrawImage(_landTile, new Rectangle(x, y, _landTile.Width, _landTile.Height));
+                }
+            }
+            g.InterpolationMode = old;
+        }
+
         private void DrawStageBackground(Graphics g)
         {
             using (var brush = new SolidBrush(pictureBox1.BackColor))
@@ -584,6 +725,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             {
                 g.DrawImage(_stageBackImage, new Rectangle(0, 0, StageSize, StageSize));
             }
+            DrawLandTiles(g);
         }
 
         /// <summary>Renders a part of the stage as it is cut: the image, plus grid and background when "bake" is on.</summary>
@@ -604,7 +746,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 }
                 if (_bakeStage && _showGrid)
                 {
-                    DrawIsoGrid(g, StageSize, StageSize);
+                    DrawIsoGrid(g);
                 }
             }
             return bmp;
@@ -627,7 +769,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 
             if (_showGrid)
             {
-                DrawIsoGrid(g, StageSize, StageSize);
+                DrawIsoGrid(g);
             }
 
             if (_showBorder && _work != null)
@@ -689,7 +831,19 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 
         #endregion
 
-        #region Stage – moving
+        #region Stage – moving and snapping
+
+        /// <summary>With "snap to grid": left edge and bottom edge of the cut area go to the nearest diamond corner.</summary>
+        private Rectangle SnapCut(Rectangle r)
+        {
+            if (!checkBoxSnap.Checked)
+            {
+                return r;
+            }
+            int x = (int)Math.Round(GridCenterX + Math.Round((r.X - GridCenterX) / GridStep) * GridStep);
+            int bottom = (int)Math.Round(GridTopY + Math.Round((r.Bottom - GridTopY) / GridStep) * GridStep);
+            return new Rectangle(x, bottom - r.Height, r.Width, r.Height);
+        }
 
         private void MoveImageBy(int dx, int dy)
         {
@@ -722,6 +876,14 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private void MoveCutBy(int dx, int dy)
         {
             Rectangle cut = CutRect;
+            if (checkBoxSnap.Checked)
+            {
+                // One diamond corner per step, four with Shift.
+                int steps = Math.Max(Math.Abs(dx), Math.Abs(dy)) >= 10 ? 4 : 1;
+                cut.Offset((int)Math.Round(Math.Sign(dx) * GridStep * steps), (int)Math.Round(Math.Sign(dy) * GridStep * steps));
+                SetCut(SnapCut(cut));
+                return;
+            }
             cut.Offset(dx, dy);
             SetCut(cut);
         }
@@ -737,6 +899,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 _repeatDelta = new Point(dx, dy);
                 _repeatMovesCut = movesCut;
                 _repeatTicks = 0;
+                PushUndo(movesCut ? "move-cut" : "move-image");
                 DoRepeatMove();
                 moveTimer.Start();
             };
@@ -749,6 +912,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 {
                     return;
                 }
+                PushUndo(movesCut ? "move-cut" : "move-image");
                 if (movesCut)
                 {
                     MoveCutBy(dx, dy);
@@ -784,16 +948,19 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 
         private void PictureBox1_MouseDown(object sender, MouseEventArgs e)
         {
-            if (_work == null)
-            {
-                return;
-            }
             ActiveControl = null; // arrow keys move the image again, not a number field
-            bool moveCut = e.Button == MouseButtons.Right || (e.Button == MouseButtons.Left && (ModifierKeys & Keys.Control) == Keys.Control);
-            if (e.Button != MouseButtons.Left && e.Button != MouseButtons.Right)
+
+            if (_pipette && e.Button == MouseButtons.Left)
+            {
+                PickStageColor(e.Location);
+                return;
+            }
+            if (_work == null || (e.Button != MouseButtons.Left && e.Button != MouseButtons.Right))
             {
                 return;
             }
+            bool moveCut = e.Button == MouseButtons.Right || (ModifierKeys & Keys.Control) == Keys.Control;
+            PushUndo(null);
             _stageDrag = moveCut ? StageDrag.Cut : StageDrag.Image;
             _dragStartMouse = e.Location;
             _dragStartImage = _imagePos;
@@ -819,14 +986,18 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             {
                 Rectangle cut = _dragStartCut;
                 cut.Offset(dx, dy);
-                SetCut(cut);
+                cut = SnapCut(cut);
+                if (cut != CutRect)
+                {
+                    SetCut(cut);
+                }
             }
         }
 
         private void PictureBox1_MouseUp(object sender, MouseEventArgs e)
         {
             _stageDrag = StageDrag.None;
-            pictureBox1.Cursor = Cursors.Default;
+            pictureBox1.Cursor = _pipette ? Cursors.Hand : Cursors.Default;
         }
 
         private void PictureBox1_MouseLeave(object sender, EventArgs e) => statusPos.Text = string.Empty;
@@ -841,7 +1012,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             {
                 return;
             }
+            PushUndo("cut-fields");
             UpdateResult();
+            _shownCut = CutRect;
             pictureBox1.Invalidate();
             UpdateStatus();
         }
@@ -854,11 +1027,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 case 1: // image size
                     if (_work == null)
                     {
+                        comboPreset.SelectedIndex = 0;
                         return;
                     }
-                    SetCut(new Rectangle(_imagePos, _work.Size));
-                    comboPreset.SelectedIndex = 0;
-                    return;
+                    cut = new Rectangle(_imagePos, _work.Size);
+                    break;
                 case 2:
                     cut.Size = new Size(44, 44);
                     break;
@@ -871,10 +1044,24 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 default:
                     return;
             }
-            SetCut(cut);
+            PushUndo(null);
+            SetCut(SnapCut(cut));
             // Back to "(choose size)" so the same preset can be chosen again.
             comboPreset.SelectedIndex = 0;
         }
+
+        private void Snap_CheckedChanged(object sender, EventArgs e)
+        {
+            if (checkBoxSnap.Checked)
+            {
+                PushUndo(null);
+                SetCut(SnapCut(CutRect));
+                SetMessage("Snap to grid: the cut area follows the diamond corners.");
+            }
+            SyncUi();
+        }
+
+        private void SnapMenu_Click(object sender, EventArgs e) => checkBoxSnap.Checked = !checkBoxSnap.Checked;
 
         #endregion
 
@@ -921,6 +1108,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             }
             CenterResultBox();
             pictureBox2.Invalidate();
+            panelResult.Invalidate();
         }
 
         private void CenterResultBox()
@@ -940,33 +1128,21 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             {
                 return;
             }
-            const string hint = "No result yet.\nOpen an image (Ctrl+O) or paste one (Ctrl+V).\n\nNoch kein Ergebnis.\nBild öffnen (Strg+O) oder einfügen (Strg+V).";
+            const string hint = "No result yet.\nOpen an image (Ctrl+O), paste one (Ctrl+V) or load art from art.mul.\n\n"
+                                + "Noch kein Ergebnis.\nBild öffnen (Strg+O), einfügen (Strg+V) oder Art aus der art.mul laden.";
             TextRenderer.DrawText(e.Graphics, hint, Font, panelResult.ClientRectangle, Color.Gainsboro,
                 TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.WordBreak);
-        }
-
-        private static void DrawChecker(Graphics g, Rectangle area)
-        {
-            const int cell = 8;
-            g.FillRectangle(Brushes.White, area);
-            using (var brush = new SolidBrush(Color.FromArgb(204, 204, 204)))
-            {
-                for (int y = area.Top; y < area.Bottom; y += cell)
-                {
-                    for (int x = area.Left + (((y - area.Top) / cell) % 2) * cell; x < area.Right; x += cell * 2)
-                    {
-                        g.FillRectangle(brush, x, y, Math.Min(cell, area.Right - x), Math.Min(cell, area.Bottom - y));
-                    }
-                }
-            }
         }
 
         private Bitmap GetMaskOverlay()
         {
             if (_maskOverlay == null)
             {
-                _maskOverlay = To32Bpp(Properties.Resources.showmask);
-                MakeTransparent(_maskOverlay, 0, Color.Black);
+                using (Bitmap mask = Properties.Resources.showmask)
+                {
+                    _maskOverlay = CutterImaging.To32Bpp(mask);
+                }
+                CutterImaging.MakeTransparent(_maskOverlay, 0, new[] { Color.Black });
             }
             return _maskOverlay;
         }
@@ -979,7 +1155,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             }
             Graphics g = e.Graphics;
             var area = new Rectangle(0, 0, _result.Width * _zoom, _result.Height * _zoom);
-            DrawChecker(g, area);
+            CutterImaging.DrawChecker(g, area);
 
             g.InterpolationMode = InterpolationMode.NearestNeighbor;
             g.PixelOffsetMode = PixelOffsetMode.Half;
@@ -999,10 +1175,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 g.ScaleTransform(_zoom, _zoom);
                 if (_work != null)
                 {
-                    Rectangle cut = CutRect;
-                    g.TranslateTransform(-cut.X, -cut.Y);
+                    g.TranslateTransform(-_shownCut.X, -_shownCut.Y);
                 }
-                DrawIsoGrid(g, StageSize, StageSize);
+                DrawIsoGrid(g);
                 g.Restore(state);
             }
 
@@ -1066,6 +1241,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             {
                 return;
             }
+            if (_pipette)
+            {
+                PickResultColor(e.Location);
+                return;
+            }
             _selecting = true;
             Point p = ToImagePoint(e.Location, true);
             if (_selectionShape == SelectionShape.Freehand)
@@ -1084,7 +1264,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private void PictureBox2_MouseMove(object sender, MouseEventArgs e)
         {
             Point p = ToImagePoint(e.Location, true);
-            statusPos.Text = $"Result X {Math.Min(p.X, Math.Max(0, (_result?.Width ?? 1) - 1))}  Y {Math.Min(p.Y, Math.Max(0, (_result?.Height ?? 1) - 1))}";
+            int maxX = Math.Max(0, (_result?.Width ?? 1) - 1);
+            int maxY = Math.Max(0, (_result?.Height ?? 1) - 1);
+            statusPos.Text = $"Result X {Math.Min(p.X, maxX)}  Y {Math.Min(p.Y, maxY)}";
 
             if (!_selecting)
             {
@@ -1159,7 +1341,6 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             _selectionShape = radioCircle.Checked ? SelectionShape.Circle
                 : radioFreehand.Checked ? SelectionShape.Freehand
                 : SelectionShape.Rectangle;
-            pictureBox2.Cursor = Cursors.Cross;
             ClearSelection();
         }
 
@@ -1271,6 +1452,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             {
                 return;
             }
+            PushUndo(null);
             _resultMirrored = !_resultMirrored;
             _result.RotateFlip(RotateFlipType.RotateNoneFlipX);
             ClearSelection();
@@ -1283,6 +1465,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             {
                 return;
             }
+            PushUndo(null);
             _resultRotation = (_resultRotation + 1) % 4;
             _result.RotateFlip(RotateFlipType.Rotate270FlipNone);
             ClearSelection();
@@ -1296,14 +1479,14 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             {
                 return;
             }
-            using (GraphicsPath path = GetSelectionPath(out Rectangle bounds))
+            using (GraphicsPath path = GetSelectionPath(out Rectangle _))
             {
                 if (path == null)
                 {
                     MessageBox.Show(this, "Select an area in the result first.", "Fill texture", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     return;
                 }
-                using (var dialog = new OpenFileDialog { Filter = ImageFilter, Title = "Choose a texture" })
+                using (var dialog = new OpenFileDialog { Filter = CutterImaging.ImageFilter, Title = "Choose a texture" })
                 {
                     if (dialog.ShowDialog(this) != DialogResult.OK)
                     {
@@ -1311,16 +1494,17 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                     }
                     try
                     {
-                        using (Bitmap texture = LoadBitmap(dialog.FileName))
+                        using (Bitmap texture = CutterImaging.LoadBitmap(dialog.FileName))
                         {
-                            Bitmap bmp = To32Bpp(_result);
+                            PushUndo(null);
+                            Bitmap bmp = CutterImaging.To32Bpp(_result);
                             using (var g = Graphics.FromImage(bmp))
                             {
                                 g.SetClip(path);
                                 g.DrawImage(texture, path.GetBounds());
                             }
                             SetResult(bmp);
-                            SetMessage("Texture filled into the selection. Moving the cut area replaces the result again.");
+                            SetMessage("Texture filled into the selection. Moving the cut area replaces the result again (Ctrl+Z goes back).");
                         }
                     }
                     catch (Exception ex)
@@ -1338,68 +1522,222 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             pictureBox2.Invalidate();
         }
 
+        /// <summary>Split into art pieces: files, art.mul and / or the collection.</summary>
         private void CutStrips_Click(object sender, EventArgs e)
         {
             if (!CheckResult())
             {
                 return;
             }
-            const int stripWidth = 44;
-            if (_result.Width < stripWidth)
+            StripSettings settings;
+            using (var dialog = new StripsDialog(_result.Size))
             {
-                MessageBox.Show(this, "The result is narrower than 44 pixels.", "Cut into strips", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                if (dialog.ShowDialog(this) != DialogResult.OK)
+                {
+                    return;
+                }
+                settings = dialog.Settings;
+            }
+
+            List<Bitmap> pieces = StripsDialog.Split(_result, settings);
+            if (pieces.Count == 0)
+            {
+                MessageBox.Show(this, "All pieces are empty – nothing to do.", "Split into art pieces", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
 
-            int count = (_result.Width + stripWidth - 1) / stripWidth;
-            string folder = Path.Combine(OutputDirectory, "Strips_" + DateTime.Now.ToString("yyyyMMdd_HHmmss"));
+            var report = new List<string>();
+            string folder = null;
             try
             {
-                Directory.CreateDirectory(folder);
-                for (int i = 0; i < count; i++)
+                if (settings.SaveFiles)
                 {
-                    int x = i * stripWidth;
-                    int width = Math.Min(stripWidth, _result.Width - x);
-                    // Every strip is 44 px wide. The rest of a narrow last strip and all transparent pixels become white.
-                    using (var strip = new Bitmap(stripWidth, _result.Height, PixelFormat.Format32bppArgb))
+                    folder = Path.Combine(OutputDirectory, "Strips_" + DateTime.Now.ToString("yyyyMMdd_HHmmss"));
+                    Directory.CreateDirectory(folder);
+                    for (int i = 0; i < pieces.Count; i++)
                     {
-                        using (var g = Graphics.FromImage(strip))
-                        {
-                            g.Clear(Color.Transparent);
-                            g.DrawImage(_result, new Rectangle(0, 0, width, _result.Height), new Rectangle(x, 0, width, _result.Height), GraphicsUnit.Pixel);
-                        }
-                        FillTransparent(strip, Color.White);
-                        strip.Save(Path.Combine(folder, "art" + (i + 1) + ".bmp"), ImageFormat.Bmp);
+                        CutterImaging.SaveImage(pieces[i], Path.Combine(folder, "art" + (i + 1) + settings.Extension), settings.Fill);
                     }
+                    report.Add($"{pieces.Count} files saved in {folder}");
+                }
+
+                if (settings.WriteToArt)
+                {
+                    List<int> ids = CutterArt.WriteMany(ArtKind.Item, settings.StartId, pieces, settings.SkipUsedIds, this);
+                    foreach (int id in ids)
+                    {
+                        sidePanel.MarkUsed(ArtKind.Item, id, true);
+                    }
+                    if (ids.Count > 0)
+                    {
+                        report.Add($"{ids.Count} pieces written to art.mul: 0x{ids[0]:X4} – 0x{ids[ids.Count - 1]:X4} (save art.mul to keep them)");
+                        sidePanel.SelectArtId(ArtKind.Item, ids[0]);
+                    }
+                    if (ids.Count < pieces.Count)
+                    {
+                        report.Add($"{pieces.Count - ids.Count} pieces did not fit before the last ID.");
+                    }
+                }
+
+                if (settings.AddToCollection)
+                {
+                    for (int i = 0; i < pieces.Count; i++)
+                    {
+                        sidePanel.AddToCollection(pieces[i], $"strip {i + 1}");
+                    }
+                    ShowSidePanel(true);
+                    report.Add($"{pieces.Count} pieces added to the collection");
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show(this, "The strips could not be saved:\n" + ex.Message, "Cut into strips", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(this, "Splitting failed:\n" + ex.Message, "Split into art pieces", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
-
-            SetMessage($"{count} strips saved in {folder}");
-            if (MessageBox.Show(this, $"{count} strips were saved in:\n{folder}\n\nOpen the folder?", "Cut into strips",
-                    MessageBoxButtons.YesNo, MessageBoxIcon.Information) == DialogResult.Yes)
+            finally
             {
-                OpenFolder(folder);
+                foreach (Bitmap p in pieces)
+                {
+                    p.Dispose();
+                }
+                UpdateStatus();
+            }
+
+            SetMessage(string.Join(" · ", report));
+            string text = string.Join("\n", report);
+            if (folder != null)
+            {
+                if (MessageBox.Show(this, text + "\n\nOpen the folder?", "Split into art pieces", MessageBoxButtons.YesNo, MessageBoxIcon.Information) == DialogResult.Yes)
+                {
+                    OpenFolder(folder);
+                }
+            }
+            else
+            {
+                MessageBox.Show(this, text, "Split into art pieces", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+        }
+
+        private void AddToCollection_Click(object sender, EventArgs e)
+        {
+            if (!CheckResult())
+            {
+                return;
+            }
+            Rectangle cut = _shownCut;
+            sidePanel.AddToCollection(_result, _work != null ? $"cut {cut.X},{cut.Y}" : "result");
+            ShowSidePanel(true);
+            UpdateStatus();
+            SetMessage($"Added to the collection ({sidePanel.CollectionCount} pieces).");
+        }
+
+        #endregion
+
+        #region Pipette
+
+        private void Pipette_Click(object sender, EventArgs e)
+        {
+            _pipette = !_pipette;
+            pictureBox1.Cursor = _pipette ? Cursors.Hand : Cursors.Default;
+            pictureBox2.Cursor = _pipette ? Cursors.Hand : Cursors.Cross;
+            SyncUi();
+            SetMessage(_pipette ? "Pipette: click a color on the stage or in the result (Esc = cancel)." : "Pipette off.");
+        }
+
+        private void AddPickedColor(Color color)
+        {
+            _pipette = false;
+            pictureBox1.Cursor = Cursors.Default;
+            pictureBox2.Cursor = Cursors.Cross;
+            Color opaque = Color.FromArgb(255, color);
+            if (!_pickedColors.Any(c => c.ToArgb() == opaque.ToArgb()))
+            {
+                _pickedColors.Add(opaque);
+            }
+            UpdatePickedLabel();
+            RebuildWork();
+            SyncUi();
+            SetMessage($"Color #{opaque.R:X2}{opaque.G:X2}{opaque.B:X2} is now transparent (tolerance {numericTolerance.Value}).");
+        }
+
+        private void PickStageColor(Point p)
+        {
+            if (_work == null)
+            {
+                return;
+            }
+            int x = p.X - _imagePos.X;
+            int y = p.Y - _imagePos.Y;
+            if (x < 0 || y < 0 || x >= _work.Width || y >= _work.Height)
+            {
+                SetMessage("Click inside the image.");
+                return;
+            }
+            Color c = _work.GetPixel(x, y);
+            if (c.A == 0)
+            {
+                SetMessage("This pixel is already transparent.");
+                return;
+            }
+            AddPickedColor(c);
+        }
+
+        private void PickResultColor(Point p)
+        {
+            Point ip = ToImagePoint(p, false);
+            if (ip.X < 0 || ip.Y < 0 || ip.X >= _result.Width || ip.Y >= _result.Height)
+            {
+                return;
+            }
+            Color c = _result.GetPixel(ip.X, ip.Y);
+            if (c.A == 0)
+            {
+                SetMessage("This pixel is already transparent.");
+                return;
+            }
+            AddPickedColor(c);
+        }
+
+        private void ClearPicked_Click(object sender, EventArgs e)
+        {
+            if (_pickedColors.Count == 0)
+            {
+                return;
+            }
+            _pickedColors.Clear();
+            UpdatePickedLabel();
+            RebuildWork();
+            SetMessage("Picked colors removed.");
+        }
+
+        private void UpdatePickedLabel()
+        {
+            labelPicked.Text = _pickedColors.Count == 0 ? "Picked colors: none" : $"Picked colors: {_pickedColors.Count}";
+            toolTip1.SetToolTip(labelPicked, _pickedColors.Count == 0
+                ? Tip("Use the pipette in the toolbar to make more colors transparent.", "Mit der Pipette in der Werkzeugleiste weitere Farben transparent machen.")
+                : string.Join("  ", _pickedColors.Select(c => $"#{c.R:X2}{c.G:X2}{c.B:X2}")));
+            buttonClearPicked.Enabled = _pickedColors.Count > 0;
+            labelPicked.Invalidate();
+        }
+
+        private void LabelPicked_Paint(object sender, PaintEventArgs e)
+        {
+            // Small color swatches behind the text.
+            int x = TextRenderer.MeasureText(labelPicked.Text, labelPicked.Font).Width + 4;
+            foreach (Color c in _pickedColors.Take(6))
+            {
+                using (var brush = new SolidBrush(c))
+                {
+                    e.Graphics.FillRectangle(brush, x, 2, 11, 11);
+                }
+                e.Graphics.DrawRectangle(Pens.Gray, x, 2, 11, 11);
+                x += 14;
             }
         }
 
         #endregion
 
         #region Copy and save
-
-        private static void CopyToClipboard(Bitmap bmp)
-        {
-            var data = new DataObject();
-            data.SetData(DataFormats.Bitmap, true, bmp);
-            var png = new MemoryStream();
-            bmp.Save(png, ImageFormat.Png);
-            data.SetData("PNG", false, png);
-            Clipboard.SetDataObject(data, true);
-        }
 
         private void PlayCopySound()
         {
@@ -1436,7 +1774,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             }
             try
             {
-                CopyToClipboard(_result);
+                CutterImaging.CopyToClipboard(_result);
                 PlayCopySound();
                 SetMessage("Result copied to the clipboard.");
             }
@@ -1461,7 +1799,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 }
                 try
                 {
-                    CopyToClipboard(part);
+                    CutterImaging.CopyToClipboard(part);
                     PlayCopySound();
                     SetMessage($"Selection {part.Width}×{part.Height} copied to the clipboard.");
                 }
@@ -1472,38 +1810,17 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             }
         }
 
-        private static ImageFormat FormatFromExtension(string extension)
-        {
-            switch (extension.ToLowerInvariant())
-            {
-                case ".png": return ImageFormat.Png;
-                case ".tif":
-                case ".tiff": return ImageFormat.Tiff;
-                case ".jpg":
-                case ".jpeg": return ImageFormat.Jpeg;
-                default: return ImageFormat.Bmp;
-            }
-        }
-
         private void Save_Click(object sender, EventArgs e)
         {
             if (!CheckResult())
             {
                 return;
             }
-            string extension;
-            switch (tsFormat.SelectedItem as string)
-            {
-                case "TIFF": extension = ".tiff"; break;
-                case "PNG": extension = ".png"; break;
-                case "JPEG": extension = ".jpeg"; break;
-                default: extension = ".bmp"; break;
-            }
             try
             {
                 Directory.CreateDirectory(OutputDirectory);
-                string file = Path.Combine(OutputDirectory, "ArtItem_" + DateTime.Now.ToString("yyyyMMdd_HHmmss_fff") + extension);
-                _result.Save(file, FormatFromExtension(extension));
+                string file = Path.Combine(OutputDirectory, "ArtItem_" + DateTime.Now.ToString("yyyyMMdd_HHmmss_fff") + SaveExtension);
+                CutterImaging.SaveImage(_result, file, SaveFill);
                 SetMessage("Saved: " + file);
             }
             catch (Exception ex)
@@ -1535,7 +1852,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 }
                 try
                 {
-                    _result.Save(dialog.FileName, FormatFromExtension(Path.GetExtension(dialog.FileName)));
+                    CutterImaging.SaveImage(_result, dialog.FileName, SaveFill);
                     SetMessage("Saved: " + dialog.FileName);
                 }
                 catch (Exception ex)
@@ -1560,6 +1877,33 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 
         private void OpenOutputFolder_Click(object sender, EventArgs e) => OpenFolder(OutputDirectory);
 
+        private void SaveArt_Click(object sender, EventArgs e)
+        {
+            if (!CutterArt.IsAvailable)
+            {
+                MessageBox.Show(this, "art.mul is not loaded.", "Save art.mul", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+            if (MessageBox.Show(this, $"Save artidx.mul and art.mul into:\n{UoFiddler.Controls.Classes.Options.OutputPath}", "Save art.mul",
+                    MessageBoxButtons.OKCancel, MessageBoxIcon.Question) != DialogResult.OK)
+            {
+                return;
+            }
+            try
+            {
+                Cursor.Current = Cursors.WaitCursor;
+                SetMessage("art.mul saved in " + CutterArt.Save());
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(this, "Saving failed:\n" + ex.Message, "Save art.mul", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            finally
+            {
+                Cursor.Current = Cursors.Default;
+            }
+        }
+
         private void Sound_Click(object sender, EventArgs e)
         {
             _playSound = !_playSound;
@@ -1577,6 +1921,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 SetMessage("No image is loaded on the stage.");
                 return;
             }
+            PushUndo(null);
             _stageMirrored = !_stageMirrored;
             RebuildWork();
             SyncUi();
@@ -1584,7 +1929,6 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 
         private void TransparentCheckBox_CheckedChanged(object sender, EventArgs e)
         {
-            numericTolerance.Enabled = checkBoxTransparent.Checked;
             RebuildWork();
             SyncUi();
         }
@@ -1593,7 +1937,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 
         private void Tolerance_ValueChanged(object sender, EventArgs e)
         {
-            if (checkBoxTransparent.Checked)
+            if (checkBoxTransparent.Checked || _pickedColors.Count > 0)
             {
                 RebuildWork();
             }
@@ -1616,7 +1960,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             SyncUi();
         }
 
-        private void CenterImage_Click(object sender, EventArgs e) => CenterImage();
+        private void CenterImage_Click(object sender, EventArgs e)
+        {
+            PushUndo(null);
+            CenterImage();
+        }
 
         private void Grid_Click(object sender, EventArgs e)
         {
@@ -1691,6 +2039,22 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             SyncUi();
         }
 
+        private void ShowSidePanel(bool visible)
+        {
+            sidePanel.Visible = visible;
+            mainLayout.ColumnStyles[2].Width = visible ? SidePanelWidth : 0;
+            SyncUi();
+        }
+
+        private void SidePanel_Click(object sender, EventArgs e) => ShowSidePanel(!sidePanel.Visible);
+
+        private void Help_Click(object sender, EventArgs e) =>
+            GraphicCutterHelp.Show(this, CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "de");
+
+        private void HelpEnglish_Click(object sender, EventArgs e) => GraphicCutterHelp.Show(this, false);
+
+        private void HelpGerman_Click(object sender, EventArgs e) => GraphicCutterHelp.Show(this, true);
+
         #endregion
 
         #region Background
@@ -1733,7 +2097,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             e.SuppressKeyPress = true;
 
             string code = bgHexTextBox.Text.Trim().TrimStart('#');
-            if (code.Length == 6 && int.TryParse(code, System.Globalization.NumberStyles.HexNumber, null, out int rgb))
+            if (code.Length == 6 && int.TryParse(code, NumberStyles.HexNumber, null, out int rgb))
             {
                 SetStageBackColor(Color.FromArgb(255, Color.FromArgb(rgb)));
                 SetMessage("Background color #" + code.ToUpperInvariant());
@@ -1745,10 +2109,34 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             }
         }
 
+        /// <summary>Loads a land tile from art.mul and shows it as ground on the stage.</summary>
+        private void SetLandBackground(int landId)
+        {
+            Bitmap tile = CutterArt.GetCopy(ArtKind.Land, landId);
+            if (tile == null)
+            {
+                MessageBox.Show(this, $"Land tile 0x{landId:X4} is not available. Is art.mul loaded?", "Background",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+            ReplaceBitmap(ref _landTile, tile);
+            _landTileId = landId;
+            if (tsBackground.SelectedIndex == 3)
+            {
+                BackgroundCombo_SelectedIndexChanged(this, EventArgs.Empty);
+            }
+            else
+            {
+                tsBackground.SelectedIndex = 3;
+            }
+            SetMessage($"Stage ground: land tile 0x{landId:X4}.");
+        }
+
         private void BackgroundCombo_SelectedIndexChanged(object sender, EventArgs e)
         {
             // Properties.Resources returns a new bitmap on every access.
             _stageBackImage?.Dispose();
+            _stageBackImage = null;
             switch (tsBackground.SelectedIndex)
             {
                 case 1:
@@ -1757,8 +2145,17 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 case 2:
                     _stageBackImage = Properties.Resources.water;
                     break;
-                default:
-                    _stageBackImage = null;
+                case 3:
+                    if (_landTile == null)
+                    {
+                        _landTile = CutterArt.GetCopy(ArtKind.Land, _landTileId);
+                        if (_landTile == null)
+                        {
+                            SetMessage("art.mul is not loaded – no land tile available.");
+                            tsBackground.SelectedIndex = 0;
+                            return;
+                        }
+                    }
                     break;
             }
             SyncUi();
@@ -1775,6 +2172,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 
         private void BgImageWater_Click(object sender, EventArgs e) => tsBackground.SelectedIndex = 2;
 
+        private void BgLand_Click(object sender, EventArgs e) => tsBackground.SelectedIndex = 3;
+
         #endregion
 
         #region Keyboard
@@ -1787,9 +2186,15 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             bool alt = (keyData & Keys.Alt) == Keys.Alt;
             bool textFocus = IsTextInputFocused();
 
+            if (key == Keys.F1 && !ctrl && !alt)
+            {
+                Help_Click(this, EventArgs.Empty);
+                return true;
+            }
+
             if (!alt)
             {
-                // Arrows: image (or cut area with Ctrl). Left alone while a number field or text box is used.
+                // Arrows: image (or cut area with Ctrl). Left alone while a number field, text box or list is used.
                 if (!textFocus && (key == Keys.Up || key == Keys.Down || key == Keys.Left || key == Keys.Right))
                 {
                     int step = shift ? 10 : 1;
@@ -1797,10 +2202,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                     int dy = key == Keys.Up ? -step : key == Keys.Down ? step : 0;
                     if (ctrl)
                     {
+                        PushUndo("move-cut");
                         MoveCutBy(dx, dy);
                     }
                     else
                     {
+                        PushUndo("move-image");
                         MoveImageBy(dx, dy);
                     }
                     return true;
@@ -1826,6 +2233,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                         case Keys.G:
                             Grid_Click(this, EventArgs.Empty);
                             return true;
+                        case Keys.B:
+                            SidePanel_Click(this, EventArgs.Empty);
+                            return true;
+                        case Keys.Enter:
+                            AddToCollection_Click(this, EventArgs.Empty);
+                            return true;
                         case Keys.Oemplus:
                         case Keys.Add:
                             SetZoom(_zoom + 1);
@@ -1843,6 +2256,19 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                             case Keys.V:
                                 ImportClipboard_Click(this, EventArgs.Empty);
                                 return true;
+                            case Keys.Z:
+                                if (shift)
+                                {
+                                    Redo_Click(this, EventArgs.Empty);
+                                }
+                                else
+                                {
+                                    Undo_Click(this, EventArgs.Empty);
+                                }
+                                return true;
+                            case Keys.Y:
+                                Redo_Click(this, EventArgs.Empty);
+                                return true;
                             case Keys.C:
                             case Keys.X: // Ctrl+X was the old shortcut for copying.
                                 if (shift)
@@ -1859,7 +2285,14 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 }
                 else if (key == Keys.Escape && !textFocus)
                 {
-                    ClearSelection();
+                    if (_pipette)
+                    {
+                        Pipette_Click(this, EventArgs.Empty);
+                    }
+                    else
+                    {
+                        ClearSelection();
+                    }
                     return true;
                 }
             }

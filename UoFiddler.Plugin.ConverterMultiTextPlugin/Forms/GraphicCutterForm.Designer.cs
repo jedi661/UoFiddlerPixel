@@ -180,6 +180,36 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             zoomButton = new System.Windows.Forms.Button();
             resetButton = new System.Windows.Forms.Button();
             checkBoxBake = new System.Windows.Forms.CheckBox();
+            saveArtMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            editMenu = new System.Windows.Forms.ToolStripMenuItem();
+            undoMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            redoMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            pipetteMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            clearPickedMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            snapMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            sidePanelMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            bgLandMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            addCollectionMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            helpMenu = new System.Windows.Forms.ToolStripMenuItem();
+            helpMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            helpEnglishMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            helpGermanMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            ctxAddCollection = new System.Windows.Forms.ToolStripMenuItem();
+            editSep1 = new System.Windows.Forms.ToolStripSeparator();
+            tsSepU = new System.Windows.Forms.ToolStripSeparator();
+            tsSep4 = new System.Windows.Forms.ToolStripSeparator();
+            tsUndo = new System.Windows.Forms.ToolStripButton();
+            tsRedo = new System.Windows.Forms.ToolStripButton();
+            tsAddCollection = new System.Windows.Forms.ToolStripButton();
+            tsPipette = new System.Windows.Forms.ToolStripButton();
+            tsPanel = new System.Windows.Forms.ToolStripButton();
+            tsHelp = new System.Windows.Forms.ToolStripButton();
+            tsFillLabel = new System.Windows.Forms.ToolStripLabel();
+            tsFillMode = new System.Windows.Forms.ToolStripComboBox();
+            checkBoxSnap = new System.Windows.Forms.CheckBox();
+            labelPicked = new System.Windows.Forms.Label();
+            buttonClearPicked = new System.Windows.Forms.Button();
+            sidePanel = new UoFiddler.Plugin.ConverterMultiTextPlugin.Class.GraphicCutter.CutterSidePanel();
             menuStrip1.SuspendLayout();
             toolStrip1.SuspendLayout();
             statusStrip1.SuspendLayout();
@@ -216,15 +246,15 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             //
             // menuStrip1
             //
-            menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { fileMenu, imageMenu, viewMenu, resultMenu });
+            menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { fileMenu, editMenu, imageMenu, viewMenu, resultMenu, helpMenu });
             menuStrip1.Location = new System.Drawing.Point(0, 0);
             menuStrip1.Name = "menuStrip1";
-            menuStrip1.Size = new System.Drawing.Size(1004, 24);
+            menuStrip1.Size = new System.Drawing.Size(1360, 24);
             menuStrip1.TabIndex = 0;
             //
             // fileMenu
             //
-            fileMenu.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { openImageMenuItem, importClipboardMenuItem, openIntoResultMenuItem, fileSep1, saveMenuItem, saveAsMenuItem, openOutputFolderMenuItem, fileSep2, unloadStageMenuItem, unloadResultMenuItem, fileSep3, closeMenuItem });
+            fileMenu.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { openImageMenuItem, importClipboardMenuItem, openIntoResultMenuItem, fileSep1, saveMenuItem, saveAsMenuItem, openOutputFolderMenuItem, saveArtMenuItem, fileSep2, unloadStageMenuItem, unloadResultMenuItem, fileSep3, closeMenuItem });
             fileMenu.Name = "fileMenu";
             fileMenu.Size = new System.Drawing.Size(37, 20);
             fileMenu.Text = "&File";
@@ -367,7 +397,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             //
             // viewMenu
             //
-            viewMenu.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { gridMenuItem, gridColorMenuItem, gridResultMenuItem, borderMenuItem, cutFrameMenuItem, rulerMenuItem, viewSep1, backgroundMenuItem, viewSep2, topMostMenuItem });
+            viewMenu.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { gridMenuItem, gridColorMenuItem, gridResultMenuItem, borderMenuItem, cutFrameMenuItem, snapMenuItem, rulerMenuItem, sidePanelMenuItem, viewSep1, backgroundMenuItem, viewSep2, topMostMenuItem });
             viewMenu.Name = "viewMenu";
             viewMenu.Size = new System.Drawing.Size(44, 20);
             viewMenu.Text = "&View";
@@ -426,7 +456,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             //
             // backgroundMenuItem
             //
-            backgroundMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { bgBlackMenuItem, bgWhiteMenuItem, bgColorMenuItem, bgHexTextBox, bgSep, bgImageNoneMenuItem, bgImageGreenMenuItem, bgImageWaterMenuItem });
+            backgroundMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { bgBlackMenuItem, bgWhiteMenuItem, bgColorMenuItem, bgHexTextBox, bgSep, bgImageNoneMenuItem, bgImageGreenMenuItem, bgImageWaterMenuItem, bgLandMenuItem });
             backgroundMenuItem.Image = Properties.Resources.Color;
             backgroundMenuItem.Name = "backgroundMenuItem";
             backgroundMenuItem.Size = new System.Drawing.Size(230, 22);
@@ -500,7 +530,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             //
             // resultMenu
             //
-            resultMenu.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { mirrorResultMenuItem, rotateResultMenuItem, resultSep1, copyResultMenuItem, copySelectionMenuItem, fillTextureMenuItem, cutStripsMenuItem, resultSep2, showMaskMenuItem, clearSelectionMenuItem, resultSep3, soundMenuItem });
+            resultMenu.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { mirrorResultMenuItem, rotateResultMenuItem, resultSep1, copyResultMenuItem, copySelectionMenuItem, addCollectionMenuItem, fillTextureMenuItem, cutStripsMenuItem, resultSep2, showMaskMenuItem, clearSelectionMenuItem, resultSep3, soundMenuItem });
             resultMenu.Name = "resultMenu";
             resultMenu.Size = new System.Drawing.Size(51, 20);
             resultMenu.Text = "&Result";
@@ -556,7 +586,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             cutStripsMenuItem.Image = Properties.Resources.Cut;
             cutStripsMenuItem.Name = "cutStripsMenuItem";
             cutStripsMenuItem.Size = new System.Drawing.Size(270, 22);
-            cutStripsMenuItem.Text = "Cut into 44 px strips";
+            cutStripsMenuItem.Text = "Split into art pieces...";
             cutStripsMenuItem.Click += CutStrips_Click;
             //
             // resultSep2
@@ -596,11 +626,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             //
             toolStrip1.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
             toolStrip1.ImageScalingSize = new System.Drawing.Size(20, 20);
-            toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { tsOpen, tsImport, tsSave, tsFormat, tsSep1, tsCopy, tsMirror, tsRotate, tsCutStrips, tsFill, tsSep2, tsGrid, tsBorder, tsRuler, tsMask, tsSep3, tsBgLabel, tsBackground, tsBackColor });
+            toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { tsOpen, tsImport, tsSave, tsFormat, tsFillLabel, tsFillMode, tsSep1, tsUndo, tsRedo, tsSepU, tsCopy, tsAddCollection, tsMirror, tsRotate, tsCutStrips, tsFill, tsPipette, tsSep2, tsGrid, tsBorder, tsRuler, tsMask, tsSep3, tsBgLabel, tsBackground, tsBackColor, tsSep4, tsPanel, tsHelp });
             toolStrip1.Location = new System.Drawing.Point(0, 24);
             toolStrip1.Name = "toolStrip1";
             toolStrip1.Padding = new System.Windows.Forms.Padding(4, 2, 4, 2);
-            toolStrip1.Size = new System.Drawing.Size(1004, 31);
+            toolStrip1.Size = new System.Drawing.Size(1360, 31);
             toolStrip1.TabIndex = 1;
             //
             // tsOpen
@@ -742,7 +772,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // tsBackground
             //
             tsBackground.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            tsBackground.Items.AddRange(new object[] { "none", "grass", "water" });
+            tsBackground.Items.AddRange(new object[] { "none", "grass", "water", "land tile" });
             tsBackground.Name = "tsBackground";
             tsBackground.Size = new System.Drawing.Size(80, 27);
             tsBackground.SelectedIndexChanged += BackgroundCombo_SelectedIndexChanged;
@@ -756,12 +786,196 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             tsBackColor.Text = "Black / white background";
             tsBackColor.Click += BackColorToggle_Click;
             //
+            // saveArtMenuItem
+            //
+            saveArtMenuItem.Name = "saveArtMenuItem";
+            saveArtMenuItem.Size = new System.Drawing.Size(250, 22);
+            saveArtMenuItem.Text = "Save art.mul (output folder)";
+            saveArtMenuItem.Click += SaveArt_Click;
+            //
+            // editMenu
+            //
+            editMenu.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { undoMenuItem, redoMenuItem, editSep1, pipetteMenuItem, clearPickedMenuItem });
+            editMenu.Name = "editMenu";
+            editMenu.Size = new System.Drawing.Size(39, 20);
+            editMenu.Text = "&Edit";
+            //
+            // undoMenuItem
+            //
+            undoMenuItem.ShortcutKeyDisplayString = "Ctrl+Z";
+            undoMenuItem.Name = "undoMenuItem";
+            undoMenuItem.Size = new System.Drawing.Size(250, 22);
+            undoMenuItem.Text = "Undo";
+            undoMenuItem.Click += Undo_Click;
+            //
+            // redoMenuItem
+            //
+            redoMenuItem.ShortcutKeyDisplayString = "Ctrl+Y";
+            redoMenuItem.Name = "redoMenuItem";
+            redoMenuItem.Size = new System.Drawing.Size(250, 22);
+            redoMenuItem.Text = "Redo";
+            redoMenuItem.Click += Redo_Click;
+            //
+            // editSep1
+            //
+            editSep1.Name = "editSep1";
+            editSep1.Size = new System.Drawing.Size(247, 6);
+            //
+            // pipetteMenuItem
+            //
+            pipetteMenuItem.Name = "pipetteMenuItem";
+            pipetteMenuItem.Size = new System.Drawing.Size(250, 22);
+            pipetteMenuItem.Text = "Pipette (pick a transparent color)";
+            pipetteMenuItem.Click += Pipette_Click;
+            //
+            // clearPickedMenuItem
+            //
+            clearPickedMenuItem.Name = "clearPickedMenuItem";
+            clearPickedMenuItem.Size = new System.Drawing.Size(250, 22);
+            clearPickedMenuItem.Text = "Clear picked colors";
+            clearPickedMenuItem.Click += ClearPicked_Click;
+            //
+            // snapMenuItem
+            //
+            snapMenuItem.Name = "snapMenuItem";
+            snapMenuItem.Size = new System.Drawing.Size(250, 22);
+            snapMenuItem.Text = "Snap cut area to grid";
+            snapMenuItem.Click += SnapMenu_Click;
+            //
+            // sidePanelMenuItem
+            //
+            sidePanelMenuItem.ShortcutKeyDisplayString = "Ctrl+B";
+            sidePanelMenuItem.Name = "sidePanelMenuItem";
+            sidePanelMenuItem.Size = new System.Drawing.Size(250, 22);
+            sidePanelMenuItem.Text = "Art / collection panel";
+            sidePanelMenuItem.Click += SidePanel_Click;
+            //
+            // bgLandMenuItem
+            //
+            bgLandMenuItem.Name = "bgLandMenuItem";
+            bgLandMenuItem.Size = new System.Drawing.Size(250, 22);
+            bgLandMenuItem.Text = "Land tile (art.mul)";
+            bgLandMenuItem.Click += BgLand_Click;
+            //
+            // addCollectionMenuItem
+            //
+            addCollectionMenuItem.ShortcutKeyDisplayString = "Ctrl+Enter";
+            addCollectionMenuItem.Name = "addCollectionMenuItem";
+            addCollectionMenuItem.Size = new System.Drawing.Size(250, 22);
+            addCollectionMenuItem.Text = "Add to collection";
+            addCollectionMenuItem.Click += AddToCollection_Click;
+            //
+            // ctxAddCollection
+            //
+            ctxAddCollection.ShortcutKeyDisplayString = "Ctrl+Enter";
+            ctxAddCollection.Name = "ctxAddCollection";
+            ctxAddCollection.Size = new System.Drawing.Size(250, 22);
+            ctxAddCollection.Text = "Add to collection";
+            ctxAddCollection.Click += AddToCollection_Click;
+            //
+            // helpMenu
+            //
+            helpMenu.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { helpMenuItem, helpEnglishMenuItem, helpGermanMenuItem });
+            helpMenu.Name = "helpMenu";
+            helpMenu.Size = new System.Drawing.Size(44, 20);
+            helpMenu.Text = "&Help";
+            //
+            // helpMenuItem
+            //
+            helpMenuItem.ShortcutKeyDisplayString = "F1";
+            helpMenuItem.Name = "helpMenuItem";
+            helpMenuItem.Size = new System.Drawing.Size(250, 22);
+            helpMenuItem.Text = "Help / Hilfe";
+            helpMenuItem.Click += Help_Click;
+            //
+            // helpEnglishMenuItem
+            //
+            helpEnglishMenuItem.Name = "helpEnglishMenuItem";
+            helpEnglishMenuItem.Size = new System.Drawing.Size(250, 22);
+            helpEnglishMenuItem.Text = "Help (English)";
+            helpEnglishMenuItem.Click += HelpEnglish_Click;
+            //
+            // helpGermanMenuItem
+            //
+            helpGermanMenuItem.Name = "helpGermanMenuItem";
+            helpGermanMenuItem.Size = new System.Drawing.Size(250, 22);
+            helpGermanMenuItem.Text = "Hilfe (Deutsch)";
+            helpGermanMenuItem.Click += HelpGerman_Click;
+            //
+            // tsFillLabel
+            //
+            tsFillLabel.Name = "tsFillLabel";
+            tsFillLabel.Text = "Transparent:";
+            //
+            // tsFillMode
+            //
+            tsFillMode.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            tsFillMode.Items.AddRange(new object[] { "keep", "black", "white" });
+            tsFillMode.Name = "tsFillMode";
+            tsFillMode.Size = new System.Drawing.Size(64, 27);
+            //
+            // tsUndo
+            //
+            tsUndo.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            tsUndo.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
+            tsUndo.Name = "tsUndo";
+            tsUndo.Text = "↶";
+            tsUndo.Click += Undo_Click;
+            //
+            // tsRedo
+            //
+            tsRedo.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            tsRedo.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
+            tsRedo.Name = "tsRedo";
+            tsRedo.Text = "↷";
+            tsRedo.Click += Redo_Click;
+            //
+            // tsAddCollection
+            //
+            tsAddCollection.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            tsAddCollection.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
+            tsAddCollection.Name = "tsAddCollection";
+            tsAddCollection.Text = "+";
+            tsAddCollection.Click += AddToCollection_Click;
+            //
+            // tsPipette
+            //
+            tsPipette.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            tsPipette.Name = "tsPipette";
+            tsPipette.Text = "Pipette";
+            tsPipette.Click += Pipette_Click;
+            //
+            // tsPanel
+            //
+            tsPanel.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            tsPanel.Name = "tsPanel";
+            tsPanel.Text = "art.mul";
+            tsPanel.Click += SidePanel_Click;
+            //
+            // tsHelp
+            //
+            tsHelp.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            tsHelp.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
+            tsHelp.Name = "tsHelp";
+            tsHelp.Text = "?";
+            tsHelp.Click += Help_Click;
+            //
+            // tsSepU
+            //
+            tsSepU.Name = "tsSepU";
+            tsSepU.Size = new System.Drawing.Size(6, 27);
+            //
+            // tsSep4
+            //
+            tsSep4.Name = "tsSep4";
+            tsSep4.Size = new System.Drawing.Size(6, 27);
+            //
             // statusStrip1
             //
             statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { statusPos, statusInfo, statusMessage });
-            statusStrip1.Location = new System.Drawing.Point(0, 739);
+            statusStrip1.Location = new System.Drawing.Point(0, 818);
             statusStrip1.Name = "statusStrip1";
-            statusStrip1.Size = new System.Drawing.Size(1004, 22);
+            statusStrip1.Size = new System.Drawing.Size(1360, 22);
             statusStrip1.TabIndex = 3;
             //
             // statusPos
@@ -786,12 +1000,14 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             //
             // mainLayout
             //
-            mainLayout.ColumnCount = 2;
+            mainLayout.ColumnCount = 3;
             mainLayout.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 440F));
             mainLayout.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            mainLayout.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 320F));
             mainLayout.Controls.Add(groupStage, 0, 0);
             mainLayout.Controls.Add(groupResult, 1, 0);
             mainLayout.Controls.Add(flowControls, 0, 1);
+            mainLayout.Controls.Add(sidePanel, 2, 0);
             mainLayout.Dock = System.Windows.Forms.DockStyle.Fill;
             mainLayout.Location = new System.Drawing.Point(0, 55);
             mainLayout.Name = "mainLayout";
@@ -799,9 +1015,16 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             mainLayout.RowCount = 2;
             mainLayout.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
             mainLayout.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.AutoSize));
-            mainLayout.Size = new System.Drawing.Size(1004, 684);
+            mainLayout.Size = new System.Drawing.Size(1360, 763);
             mainLayout.TabIndex = 2;
             mainLayout.SetColumnSpan(flowControls, 2);
+            mainLayout.SetRowSpan(sidePanel, 2);
+            //
+            // sidePanel
+            //
+            sidePanel.Dock = System.Windows.Forms.DockStyle.Fill;
+            sidePanel.Name = "sidePanel";
+            sidePanel.TabIndex = 3;
             //
             // groupStage
             //
@@ -880,7 +1103,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             //
             // contextMenuStrip1
             //
-            contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { ctxOpen, ctxSave, ctxSaveAs, ctxUnload, ctxSep1, ctxGrid, ctxMirror, ctxRotate, ctxCutStrips, ctxFill, ctxMask, ctxSep2, ctxCopySelection, ctxCopyResult });
+            contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { ctxOpen, ctxSave, ctxSaveAs, ctxUnload, ctxSep1, ctxGrid, ctxMirror, ctxRotate, ctxCutStrips, ctxFill, ctxMask, ctxSep2, ctxCopySelection, ctxCopyResult, ctxAddCollection });
             contextMenuStrip1.Name = "contextMenuStrip1";
             contextMenuStrip1.Size = new System.Drawing.Size(250, 280);
             //
@@ -950,7 +1173,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             ctxCutStrips.Image = Properties.Resources.Cut;
             ctxCutStrips.Name = "ctxCutStrips";
             ctxCutStrips.Size = new System.Drawing.Size(249, 22);
-            ctxCutStrips.Text = "Cut into 44 px strips";
+            ctxCutStrips.Text = "Split into art pieces...";
             ctxCutStrips.Click += CutStrips_Click;
             //
             // ctxFill
@@ -1003,7 +1226,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             flowControls.Dock = System.Windows.Forms.DockStyle.Fill;
             flowControls.Location = new System.Drawing.Point(7, 507);
             flowControls.Name = "flowControls";
-            flowControls.Size = new System.Drawing.Size(990, 170);
+            flowControls.Size = new System.Drawing.Size(1026, 192);
             flowControls.TabIndex = 2;
             //
             // groupMoveImage
@@ -1014,7 +1237,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             groupMoveImage.Controls.Add(btnDown);
             groupMoveImage.Location = new System.Drawing.Point(3, 3);
             groupMoveImage.Name = "groupMoveImage";
-            groupMoveImage.Size = new System.Drawing.Size(164, 160);
+            groupMoveImage.Size = new System.Drawing.Size(164, 182);
             groupMoveImage.TabIndex = 0;
             groupMoveImage.TabStop = false;
             groupMoveImage.Text = "Move image";
@@ -1072,9 +1295,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             groupCut.Controls.Add(labelPreset);
             groupCut.Controls.Add(comboPreset);
             groupCut.Controls.Add(checkBoxFollow);
+            groupCut.Controls.Add(checkBoxSnap);
             groupCut.Location = new System.Drawing.Point(173, 3);
             groupCut.Name = "groupCut";
-            groupCut.Size = new System.Drawing.Size(250, 160);
+            groupCut.Size = new System.Drawing.Size(250, 182);
             groupCut.TabIndex = 1;
             groupCut.TabStop = false;
             groupCut.Text = "Cut area";
@@ -1183,12 +1407,23 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             checkBoxFollow.AutoSize = true;
             checkBoxFollow.Checked = true;
             checkBoxFollow.CheckState = System.Windows.Forms.CheckState.Checked;
-            checkBoxFollow.Location = new System.Drawing.Point(12, 122);
+            checkBoxFollow.Location = new System.Drawing.Point(12, 120);
             checkBoxFollow.Name = "checkBoxFollow";
             checkBoxFollow.Size = new System.Drawing.Size(181, 19);
             checkBoxFollow.TabIndex = 10;
             checkBoxFollow.Text = "Cut area follows the image";
             checkBoxFollow.UseVisualStyleBackColor = true;
+            //
+            // checkBoxSnap
+            //
+            checkBoxSnap.AutoSize = true;
+            checkBoxSnap.Location = new System.Drawing.Point(12, 146);
+            checkBoxSnap.Name = "checkBoxSnap";
+            checkBoxSnap.Size = new System.Drawing.Size(150, 19);
+            checkBoxSnap.TabIndex = 11;
+            checkBoxSnap.Text = "Snap to grid";
+            checkBoxSnap.UseVisualStyleBackColor = true;
+            checkBoxSnap.CheckedChanged += Snap_CheckedChanged;
             //
             // groupMoveCut
             //
@@ -1199,7 +1434,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             groupMoveCut.Controls.Add(buttonQuickSave);
             groupMoveCut.Location = new System.Drawing.Point(429, 3);
             groupMoveCut.Name = "groupMoveCut";
-            groupMoveCut.Size = new System.Drawing.Size(164, 160);
+            groupMoveCut.Size = new System.Drawing.Size(164, 182);
             groupMoveCut.TabIndex = 2;
             groupMoveCut.TabStop = false;
             groupMoveCut.Text = "Move cut area";
@@ -1270,9 +1505,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             groupOptions.Controls.Add(zoomButton);
             groupOptions.Controls.Add(resetButton);
             groupOptions.Controls.Add(checkBoxBake);
+            groupOptions.Controls.Add(labelPicked);
+            groupOptions.Controls.Add(buttonClearPicked);
             groupOptions.Location = new System.Drawing.Point(599, 3);
             groupOptions.Name = "groupOptions";
-            groupOptions.Size = new System.Drawing.Size(300, 160);
+            groupOptions.Size = new System.Drawing.Size(300, 182);
             groupOptions.TabIndex = 3;
             groupOptions.TabStop = false;
             groupOptions.Text = "Options";
@@ -1403,7 +1640,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // checkBoxBake
             //
             checkBoxBake.AutoSize = true;
-            checkBoxBake.Location = new System.Drawing.Point(12, 124);
+            checkBoxBake.Location = new System.Drawing.Point(12, 120);
             checkBoxBake.Name = "checkBoxBake";
             checkBoxBake.Size = new System.Drawing.Size(196, 19);
             checkBoxBake.TabIndex = 12;
@@ -1411,18 +1648,37 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             checkBoxBake.UseVisualStyleBackColor = true;
             checkBoxBake.CheckedChanged += Bake_CheckedChanged;
             //
+            // labelPicked
+            //
+            labelPicked.Location = new System.Drawing.Point(10, 150);
+            labelPicked.Name = "labelPicked";
+            labelPicked.Size = new System.Drawing.Size(210, 18);
+            labelPicked.TabIndex = 13;
+            labelPicked.Text = "Picked colors: none";
+            labelPicked.Paint += LabelPicked_Paint;
+            //
+            // buttonClearPicked
+            //
+            buttonClearPicked.Location = new System.Drawing.Point(226, 145);
+            buttonClearPicked.Name = "buttonClearPicked";
+            buttonClearPicked.Size = new System.Drawing.Size(60, 26);
+            buttonClearPicked.TabIndex = 14;
+            buttonClearPicked.Text = "Clear";
+            buttonClearPicked.UseVisualStyleBackColor = true;
+            buttonClearPicked.Click += ClearPicked_Click;
+            //
             // GraphicCutterForm
             //
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            ClientSize = new System.Drawing.Size(1004, 761);
+            ClientSize = new System.Drawing.Size(1360, 840);
             Controls.Add(mainLayout);
             Controls.Add(statusStrip1);
             Controls.Add(toolStrip1);
             Controls.Add(menuStrip1);
             Icon = (System.Drawing.Icon)resources.GetObject("$this.Icon");
             MainMenuStrip = menuStrip1;
-            MinimumSize = new System.Drawing.Size(940, 720);
+            MinimumSize = new System.Drawing.Size(1000, 760);
             Name = "GraphicCutterForm";
             StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             Text = "Graphic Cutter";
@@ -1599,5 +1855,35 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private System.Windows.Forms.Button zoomButton;
         private System.Windows.Forms.Button resetButton;
         private System.Windows.Forms.CheckBox checkBoxBake;
+        private System.Windows.Forms.ToolStripMenuItem saveArtMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem editMenu;
+        private System.Windows.Forms.ToolStripMenuItem undoMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem redoMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem pipetteMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem clearPickedMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem snapMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem sidePanelMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem bgLandMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem addCollectionMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem helpMenu;
+        private System.Windows.Forms.ToolStripMenuItem helpMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem helpEnglishMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem helpGermanMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem ctxAddCollection;
+        private System.Windows.Forms.ToolStripSeparator editSep1;
+        private System.Windows.Forms.ToolStripSeparator tsSepU;
+        private System.Windows.Forms.ToolStripSeparator tsSep4;
+        private System.Windows.Forms.ToolStripButton tsUndo;
+        private System.Windows.Forms.ToolStripButton tsRedo;
+        private System.Windows.Forms.ToolStripButton tsAddCollection;
+        private System.Windows.Forms.ToolStripButton tsPipette;
+        private System.Windows.Forms.ToolStripButton tsPanel;
+        private System.Windows.Forms.ToolStripButton tsHelp;
+        private System.Windows.Forms.ToolStripLabel tsFillLabel;
+        private System.Windows.Forms.ToolStripComboBox tsFillMode;
+        private System.Windows.Forms.CheckBox checkBoxSnap;
+        private System.Windows.Forms.Label labelPicked;
+        private System.Windows.Forms.Button buttonClearPicked;
+        private UoFiddler.Plugin.ConverterMultiTextPlugin.Class.GraphicCutter.CutterSidePanel sidePanel;
     }
 }
