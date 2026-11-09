@@ -6,6 +6,35 @@ UOFiddler based on Ultima SDK it's a tool to view and alter almost every UO 2D c
 This is an extended version of UoFiddler that has more maps and more tools, as well as Map Edit, and will be expanded over time to support the Ultima standard 
 version more than the original version. Also, some source codes from older and New projects that are no longer supported have been integrated.
 
+Version 4.12.24
+
+**English**
+
+**CompareItemControl: Rework**
+
+*Bug fixes*
+- Replace and remove now hit the correct item. With a filter active, the wrong items were overwritten before.
+- Arrow keys act only once. Delete removes items and asks for confirmation first.
+- IDs outside the second file are no longer compared against item 0. The last item is no longer missing.
+- Fixed a memory leak in the context menu.
+- The "Compare Land" tab no longer overwrites the second file of the item tab.
+- The TileData window no longer crashes when it opens.
+
+*Loading*
+- Supports `artLegacyMUL.uop`. MUL is preferred when present.
+- `tiledata.mul` is loaded automatically. Old and new formats are detected.
+- Load via Enter, drag & drop or "Recent". Missing files are reported.
+- Fast pixel comparison with a progress bar and cancel, without freezing the window.
+
+*New features*
+- Filters: All, Differences, Changed, Only Original, Only Second, Free.
+- Multi-selection in both lists.
+- Copy dialog: same position, from a start position, or search for free slots, with a preview.
+- Copy TileData along, and review or edit it in its own window.
+- Save Art and TileData.
+- Export as Bmp, Tiff or Png, search in hex or decimal, "Next free slot".
+- The preview fits large items into the view and shows TileData info.
+
 
 Version 4.12.23
 

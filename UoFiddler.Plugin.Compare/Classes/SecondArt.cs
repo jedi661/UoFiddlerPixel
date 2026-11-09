@@ -1,34 +1,149 @@
-﻿using System.Drawing;
+﻿using System;
+using System.Collections.Generic;
+using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
+using System.Linq;
 using Ultima;
 
 namespace UoFiddler.Plugin.Compare.Classes
 {
+    /// <summary>
+    /// Static access to a second art file. Used by CompareLandControl.
+    /// The item compare uses its own <see cref="SecondArtFile"/> instance so both tabs do not overwrite each other.
+    /// </summary>
     internal static class SecondArt
     {
-        private static SecondFileIndex _fileIndex;
-        private static Bitmap[] _cache;
-
-        private static byte[] _streamBuffer;
-        private static byte[] _validBuffer;
+        private static SecondArtFile _file;
 
         public static void SetFileIndex(string idxPath, string mulPath)
         {
-            _fileIndex = new SecondFileIndex(idxPath, mulPath, 0x14000);
-            _cache = new Bitmap[0x14000];
+            _file?.Dispose();
+            _file = new SecondArtFile(new SecondFileIndex(idxPath, mulPath, SecondArtFile.TotalCount));
         }
 
-        public static int GetMaxItemId()
+        public static int GetMaxItemId() => _file?.GetMaxItemId() ?? 0x3FFF;
+
+        public static bool IsValidStatic(int index) => _file?.IsValidStatic(index) == true;
+
+        public static Bitmap GetStatic(int index) => _file?.GetStatic(index);
+
+        public static bool IsValidLand(int index) => _file?.IsValidLand(index) == true;
+
+        public static Bitmap GetLand(int index) => _file?.GetLand(index);
+    }
+
+    /// <summary>
+    /// A second art file (art.mul/artidx.mul or artLegacyMUL.uop) loaded from any directory.
+    /// </summary>
+    internal sealed class SecondArtFile : IDisposable
+    {
+        public const int LandCount = 0x4000;
+        public const int TotalCount = 0x14000;
+
+        private readonly SecondFileIndex _fileIndex;
+        private readonly Bitmap[] _cache = new Bitmap[TotalCount];
+        private byte[] _streamBuffer;
+        private readonly byte[] _validBuffer = new byte[4];
+
+        public SecondArtFile(SecondFileIndex fileIndex)
         {
-            // High Seas
-            if (GetIdxLength() >= 0x13FDC)
+            _fileIndex = fileIndex;
+        }
+
+        /// <summary>
+        /// Directory the file was loaded from.
+        /// </summary>
+        public string Directory { get; private set; }
+
+        /// <summary>
+        /// Short description of the loaded format, e.g. "MUL" or "UOP".
+        /// </summary>
+        public string SourceDescription { get; private set; }
+
+        /// <summary>
+        /// Loads the art files of a directory. MUL files are preferred, artLegacyMUL.uop is used as fallback.
+        /// File names are searched case-insensitive.
+        /// </summary>
+        /// <exception cref="FileNotFoundException">No usable art files found.</exception>
+        public static SecondArtFile Load(string directory)
+        {
+            if (string.IsNullOrWhiteSpace(directory) || !System.IO.Directory.Exists(directory))
+            {
+                throw new DirectoryNotFoundException($"Directory not found:\n{directory}");
+            }
+
+            string mulFile = FindFile(directory, "art.mul");
+            string idxFile = FindFile(directory, "artidx.mul");
+            string uopFile = FindFile(directory, "artLegacyMUL.uop");
+
+            if (mulFile != null && idxFile != null)
+            {
+                return new SecondArtFile(new SecondFileIndex(idxFile, mulFile, TotalCount))
+                {
+                    Directory = directory,
+                    SourceDescription = $"MUL ({Path.GetFileName(mulFile)} + {Path.GetFileName(idxFile)})"
+                };
+            }
+
+            if (uopFile != null)
+            {
+                return new SecondArtFile(SecondFileIndex.FromUop(uopFile, TotalCount, ".tga", 0x13FDC, false))
+                {
+                    Directory = directory,
+                    SourceDescription = $"UOP ({Path.GetFileName(uopFile)})"
+                };
+            }
+
+            List<string> missing = new List<string>();
+            if (mulFile == null)
+            {
+                missing.Add("art.mul");
+            }
+            if (idxFile == null)
+            {
+                missing.Add("artidx.mul");
+            }
+
+            throw new FileNotFoundException(
+                $"No art files found in:\n{directory}\n\nMissing: {string.Join(", ", missing)}\n" +
+                "Alternatively artLegacyMUL.uop can be used.");
+        }
+
+        /// <summary>
+        /// Finds a file in a directory ignoring the case of the file name.
+        /// </summary>
+        public static string FindFile(string directory, string fileName)
+        {
+            string direct = Path.Combine(directory, fileName);
+            if (File.Exists(direct))
+            {
+                return direct;
+            }
+
+            try
+            {
+                return System.IO.Directory.EnumerateFiles(directory)
+                    .FirstOrDefault(f => string.Equals(Path.GetFileName(f), fileName, StringComparison.OrdinalIgnoreCase));
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+
+        public int GetMaxItemId()
+        {
+            long idxLength = _fileIndex.IdxLength / 12;
+
+            // High Seas (or bigger)
+            if (idxLength >= 0x13FDC)
             {
                 return 0xFFDC;
             }
 
             // Stygian Abyss
-            if (GetIdxLength() == 0xC000)
+            if (idxLength == 0xC000)
             {
                 return 0x7FFF;
             }
@@ -37,51 +152,40 @@ namespace UoFiddler.Plugin.Compare.Classes
             return 0x3FFF;
         }
 
-        private static ushort GetLegalItemId(int itemId)
+        /// <summary>
+        /// Returns true when the id lies inside the range of this file.
+        /// Ids outside the range are NOT mapped to item 0 (that was a bug in the old implementation).
+        /// </summary>
+        public bool IsInRange(int itemId)
         {
-            if (itemId < 0)
-            {
-                return 0;
-            }
-
-            int max = GetMaxItemId();
-            if (itemId > max)
-            {
-                return 0;
-            }
-
-            return (ushort)itemId;
+            return itemId >= 0 && itemId <= GetMaxItemId();
         }
 
-        private static int GetIdxLength()
+        public bool IsValidStatic(int itemId)
         {
-            return (int)(_fileIndex.IdxLength / 12);
-        }
+            if (!IsInRange(itemId))
+            {
+                return false;
+            }
 
-        public static bool IsValidStatic(int index)
-        {
-            index = GetLegalItemId(index);
-            index += 0x4000;
+            int index = itemId + LandCount;
 
             if (_cache[index] != null)
             {
                 return true;
             }
 
-            Stream stream = _fileIndex.Seek(index, out _, out _);
-
-            if (stream == null)
+            Stream stream = _fileIndex.Seek(index, out int length, out _);
+            if (stream == null || length < 8)
             {
                 return false;
             }
 
-            if (_validBuffer == null)
-            {
-                _validBuffer = new byte[4];
-            }
-
             stream.Seek(4, SeekOrigin.Current);
-            stream.Read(_validBuffer, 0, 4);
+            if (stream.Read(_validBuffer, 0, 4) != 4)
+            {
+                return false;
+            }
 
             short width = (short)(_validBuffer[0] | (_validBuffer[1] << 8));
             short height = (short)(_validBuffer[2] | (_validBuffer[3] << 8));
@@ -89,10 +193,14 @@ namespace UoFiddler.Plugin.Compare.Classes
             return width > 0 && height > 0;
         }
 
-        public static Bitmap GetStatic(int index)
+        public Bitmap GetStatic(int itemId)
         {
-            index = GetLegalItemId(index);
-            index += 0x4000;
+            if (!IsInRange(itemId))
+            {
+                return null;
+            }
+
+            int index = itemId + LandCount;
 
             if (_cache[index] != null)
             {
@@ -105,59 +213,61 @@ namespace UoFiddler.Plugin.Compare.Classes
                 return null;
             }
 
+            Bitmap bmp = LoadStatic(stream, length);
             if (Files.CacheData)
             {
-                return _cache[index] = LoadStatic(stream, length);
+                _cache[index] = bmp;
             }
-            else
-            {
-                return LoadStatic(stream, length);
-            }
+            return bmp;
         }
 
-        // TODO: unused method?
-        // public static byte[] GetRawStatic(int index)
-        // {
-        //     index = GetLegalItemId(index);
-        //     index += 0x4000;
-        //
-        //     var stream = _fileIndex.Seek(index, out var length, out _);
-        //     if (stream == null)
-        //     {
-        //         return null;
-        //     }
-        //
-        //     var buffer = new byte[length];
-        //     stream.Read(buffer, 0, length);
-        //     return buffer;
-        // }
-
-        private static unsafe Bitmap LoadStatic(Stream stream, int length)
+        private bool ReadToBuffer(Stream stream, int length)
         {
-            Bitmap bmp;
+            if (length <= 0)
+            {
+                return false;
+            }
+
             if (_streamBuffer == null || _streamBuffer.Length < length)
             {
                 _streamBuffer = new byte[length];
             }
 
-            stream.Read(_streamBuffer, 0, length);
-            stream.Close();
+            int read = 0;
+            while (read < length)
+            {
+                int r = stream.Read(_streamBuffer, read, length - read);
+                if (r <= 0)
+                {
+                    return false;
+                }
+                read += r;
+            }
+            return true;
+        }
+
+        private unsafe Bitmap LoadStatic(Stream stream, int length)
+        {
+            if (!ReadToBuffer(stream, length) || length < 8)
+            {
+                return null;
+            }
+
+            int maxCount = length / 2; // number of ushorts in the buffer
 
             fixed (byte* data = _streamBuffer)
             {
                 ushort* binData = (ushort*)data;
                 int count = 2;
-                // bin.ReadInt32(); // TODO: ???
                 int width = binData[count++];
                 int height = binData[count++];
 
-                if (width <= 0 || height <= 0)
+                if (width <= 0 || height <= 0 || 4 + height > maxCount)
                 {
                     return null;
                 }
 
                 int[] lookups = new int[height];
-
                 int start = height + 4;
 
                 for (int i = 0; i < height; ++i)
@@ -165,52 +275,58 @@ namespace UoFiddler.Plugin.Compare.Classes
                     lookups[i] = start + binData[count++];
                 }
 
-                bmp = new Bitmap(width, height, PixelFormat.Format16bppArgb1555);
+                Bitmap bmp = new Bitmap(width, height, PixelFormat.Format16bppArgb1555);
                 BitmapData bd = bmp.LockBits(new Rectangle(0, 0, width, height), ImageLockMode.WriteOnly, PixelFormat.Format16bppArgb1555);
-
-                ushort* line = (ushort*)bd.Scan0;
-                int delta = bd.Stride >> 1;
-
-                for (int y = 0; y < height; ++y, line += delta)
+                try
                 {
-                    count = lookups[y];
+                    ushort* line = (ushort*)bd.Scan0;
+                    int delta = bd.Stride >> 1;
 
-                    ushort* cur = line;
-                    int xOffset, xRun;
-
-                    while ((xOffset = binData[count++]) + (xRun = binData[count++]) != 0)
+                    for (int y = 0; y < height; ++y, line += delta)
                     {
-                        if (xOffset > delta)
-                        {
-                            break;
-                        }
+                        count = lookups[y];
 
-                        cur += xOffset;
-                        if (xOffset + xRun > delta)
-                        {
-                            break;
-                        }
+                        ushort* cur = line;
+                        ushort* lineEnd = line + width;
 
-                        ushort* end = cur + xRun;
-
-                        while (cur < end)
+                        while (count + 1 < maxCount)
                         {
-                            *cur++ = (ushort)(binData[count++] ^ 0x8000);
+                            int xOffset = binData[count++];
+                            int xRun = binData[count++];
+                            if (xOffset + xRun == 0)
+                            {
+                                break;
+                            }
+
+                            cur += xOffset;
+                            if (cur + xRun > lineEnd || count + xRun > maxCount)
+                            {
+                                break; // corrupt data
+                            }
+
+                            ushort* end = cur + xRun;
+                            while (cur < end)
+                            {
+                                *cur++ = (ushort)(binData[count++] ^ 0x8000);
+                            }
                         }
                     }
                 }
-                bmp.UnlockBits(bd);
+                finally
+                {
+                    bmp.UnlockBits(bd);
+                }
+                return bmp;
             }
-            return bmp;
         }
 
-        public static bool IsValidLand(int index)
+        public bool IsValidLand(int index)
         {
             index &= 0x3FFF;
             return _cache[index] != null || _fileIndex.Valid(index, out _, out _);
         }
 
-        public static Bitmap GetLand(int index)
+        public Bitmap GetLand(int index)
         {
             index &= 0x3FFF;
 
@@ -225,74 +341,72 @@ namespace UoFiddler.Plugin.Compare.Classes
                 return null;
             }
 
-            return Files.CacheData
-                ? _cache[index] = LoadLand(stream, length)
-                : LoadLand(stream, length);
+            Bitmap bmp = LoadLand(stream, length);
+            if (Files.CacheData)
+            {
+                _cache[index] = bmp;
+            }
+            return bmp;
         }
 
-        // TODO: unused method?
-        // public static byte[] GetRawLand(int index)
-        // {
-        //     index &= 0x3FFF;
-        //
-        //     var stream = _fileIndex.Seek(index, out var length, out _);
-        //     if (stream == null)
-        //     {
-        //         return null;
-        //     }
-        //
-        //     var buffer = new byte[length];
-        //     stream.Read(buffer, 0, length);
-        //     return buffer;
-        // }
-
-        private static unsafe Bitmap LoadLand(Stream stream, int length)
+        private unsafe Bitmap LoadLand(Stream stream, int length)
         {
+            // A land tile always contains 1012 pixels (2024 bytes).
+            if (!ReadToBuffer(stream, length) || length < 2024)
+            {
+                return null;
+            }
+
             Bitmap bmp = new Bitmap(44, 44, PixelFormat.Format16bppArgb1555);
             BitmapData bd = bmp.LockBits(new Rectangle(0, 0, 44, 44), ImageLockMode.WriteOnly, PixelFormat.Format16bppArgb1555);
-            if (_streamBuffer == null || _streamBuffer.Length < length)
+            try
             {
-                _streamBuffer = new byte[length];
-            }
-
-            stream.Read(_streamBuffer, 0, length);
-            stream.Close();
-            fixed (byte* binData = _streamBuffer)
-            {
-                ushort* bdata = (ushort*)binData;
-                int xOffset = 21;
-                int xRun = 2;
-
-                ushort* line = (ushort*)bd.Scan0;
-                int delta = bd.Stride >> 1;
-
-                for (int y = 0; y < 22; ++y, --xOffset, xRun += 2, line += delta)
+                fixed (byte* binData = _streamBuffer)
                 {
-                    ushort* cur = line + xOffset;
-                    ushort* end = cur + xRun;
+                    ushort* bdata = (ushort*)binData;
+                    int xOffset = 21;
+                    int xRun = 2;
 
-                    while (cur < end)
+                    ushort* line = (ushort*)bd.Scan0;
+                    int delta = bd.Stride >> 1;
+
+                    for (int y = 0; y < 22; ++y, --xOffset, xRun += 2, line += delta)
                     {
-                        *cur++ = (ushort)(*bdata++ | 0x8000);
+                        ushort* cur = line + xOffset;
+                        ushort* end = cur + xRun;
+
+                        while (cur < end)
+                        {
+                            *cur++ = (ushort)(*bdata++ | 0x8000);
+                        }
                     }
-                }
 
-                xOffset = 0;
-                xRun = 44;
+                    xOffset = 0;
+                    xRun = 44;
 
-                for (int y = 0; y < 22; ++y, ++xOffset, xRun -= 2, line += delta)
-                {
-                    ushort* cur = line + xOffset;
-                    ushort* end = cur + xRun;
-
-                    while (cur < end)
+                    for (int y = 0; y < 22; ++y, ++xOffset, xRun -= 2, line += delta)
                     {
-                        *cur++ = (ushort)(*bdata++ | 0x8000);
+                        ushort* cur = line + xOffset;
+                        ushort* end = cur + xRun;
+
+                        while (cur < end)
+                        {
+                            *cur++ = (ushort)(*bdata++ | 0x8000);
+                        }
                     }
                 }
             }
-            bmp.UnlockBits(bd);
+            finally
+            {
+                bmp.UnlockBits(bd);
+            }
             return bmp;
+        }
+
+        public void Dispose()
+        {
+            _fileIndex?.Dispose();
+            Array.Clear(_cache, 0, _cache.Length);
         }
     }
 }

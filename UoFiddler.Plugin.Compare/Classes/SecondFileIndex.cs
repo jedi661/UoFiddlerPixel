@@ -4,13 +4,26 @@ using System.Runtime.InteropServices;
 
 namespace UoFiddler.Plugin.Compare.Classes
 {
-    public sealed class SecondFileIndex
+    /// <summary>
+    /// Index of a "second" (foreign) mul/uop file, independent of the files loaded by Ultima.Files.
+    /// </summary>
+    public sealed class SecondFileIndex : IDisposable
     {
         private readonly string _mulPath;
         private Entry3D[] Index { get; }
         private Stream Stream { get; set; }
 
-        public long IdxLength { get; }
+        public long IdxLength { get; private set; }
+
+        /// <summary>
+        /// True when the data comes from a .uop container.
+        /// </summary>
+        public bool IsUop { get; private set; }
+
+        /// <summary>
+        /// Path of the data file (mul or uop) or null when nothing could be loaded.
+        /// </summary>
+        public string DataPath => _mulPath;
 
         public Stream Seek(int index, out int length, out int extra)
         {
@@ -22,7 +35,7 @@ namespace UoFiddler.Plugin.Compare.Classes
 
             Entry3D e = Index[index];
 
-            if (e.Lookup < 0)
+            if (e.Lookup < 0 || e.Length < 0)
             {
                 length = extra = 0;
                 return null;
@@ -31,7 +44,6 @@ namespace UoFiddler.Plugin.Compare.Classes
             length = e.Length & 0x7FFFFFFF;
             extra = e.Extra;
 
-            // TODO: possible bug wrong ternary or condition?
             if (Stream?.CanRead != true || !Stream.CanSeek)
             {
                 Stream = _mulPath == null
@@ -39,7 +51,7 @@ namespace UoFiddler.Plugin.Compare.Classes
                     : new FileStream(_mulPath, FileMode.Open, FileAccess.Read, FileShare.Read);
             }
 
-            if (Stream == null)
+            if (Stream == null || e.Lookup >= Stream.Length)
             {
                 length = extra = 0;
                 return null;
@@ -59,12 +71,7 @@ namespace UoFiddler.Plugin.Compare.Classes
 
             Entry3D e = Index[index];
 
-            if (e.Lookup < 0)
-            {
-                length = extra = 0;
-                return false;
-            }
-            if (e.Length < 0)
+            if (e.Lookup < 0 || e.Length < 0)
             {
                 length = extra = 0;
                 return false;
@@ -93,6 +100,9 @@ namespace UoFiddler.Plugin.Compare.Classes
             return false;
         }
 
+        /// <summary>
+        /// Loads a classic idx/mul pair.
+        /// </summary>
         public SecondFileIndex(string idxFile, string mulFile, int length)
         {
             Index = new Entry3D[length];
@@ -117,13 +127,31 @@ namespace UoFiddler.Plugin.Compare.Classes
                     int count = (int)(index.Length / 12);
                     IdxLength = index.Length;
 
-                    GCHandle gc = GCHandle.Alloc(Index, GCHandleType.Pinned);
-                    byte[] buffer = new byte[index.Length];
-                    index.Read(buffer, 0, (int)index.Length);
-                    Marshal.Copy(buffer, 0, gc.AddrOfPinnedObject(), (int)Math.Min(IdxLength, length * 12));
-                    gc.Free();
+                    // Only copy as many entries as fit into the index (a bigger idx file must not overflow the buffer).
+                    int bytesToCopy = (int)Math.Min(IdxLength, (long)length * 12);
+                    byte[] buffer = new byte[bytesToCopy];
+                    int read = 0;
+                    while (read < bytesToCopy)
+                    {
+                        int r = index.Read(buffer, read, bytesToCopy - read);
+                        if (r <= 0)
+                        {
+                            break;
+                        }
+                        read += r;
+                    }
 
-                    for (int i = count; i < length; ++i)
+                    GCHandle gc = GCHandle.Alloc(Index, GCHandleType.Pinned);
+                    try
+                    {
+                        Marshal.Copy(buffer, 0, gc.AddrOfPinnedObject(), read);
+                    }
+                    finally
+                    {
+                        gc.Free();
+                    }
+
+                    for (int i = Math.Min(count, length); i < length; ++i)
                     {
                         Index[i].Lookup = -1;
                         Index[i].Length = -1;
@@ -133,8 +161,55 @@ namespace UoFiddler.Plugin.Compare.Classes
             }
             else
             {
+                for (int i = 0; i < length; ++i)
+                {
+                    Index[i].Lookup = -1;
+                    Index[i].Length = -1;
+                    Index[i].Extra = -1;
+                }
                 Stream = null;
             }
+        }
+
+        private SecondFileIndex(string uopFile, Entry3D[] index, long idxLength)
+        {
+            _mulPath = uopFile;
+            Index = index;
+            IdxLength = idxLength;
+            IsUop = true;
+        }
+
+        /// <summary>
+        /// Loads a legacy uop container (e.g. artLegacyMUL.uop) by using the uop reader of the Ultima library.
+        /// Compressed entries are not supported and are treated as missing.
+        /// </summary>
+        public static SecondFileIndex FromUop(string uopFile, int length, string entryExtension, int idxLength, bool hasExtra)
+        {
+            Ultima.UopFileAccessor accessor = new Ultima.UopFileAccessor(uopFile, entryExtension, length, idxLength, hasExtra);
+            try
+            {
+                Entry3D[] index = new Entry3D[length];
+                for (int i = 0; i < length; ++i)
+                {
+                    Ultima.IEntry e = accessor.GetEntry(i);
+                    bool usable = e != null && e.Lookup >= 0 && e.Length >= 0 && e.Flag == Ultima.CompressionFlag.None;
+                    index[i].Lookup = usable ? e.Lookup : -1;
+                    index[i].Length = usable ? e.Length : -1;
+                    index[i].Extra = usable ? e.Extra : -1;
+                }
+
+                return new SecondFileIndex(uopFile, index, accessor.IdxLength);
+            }
+            finally
+            {
+                accessor.Stream?.Dispose();
+            }
+        }
+
+        public void Dispose()
+        {
+            Stream?.Dispose();
+            Stream = null;
         }
     }
 
