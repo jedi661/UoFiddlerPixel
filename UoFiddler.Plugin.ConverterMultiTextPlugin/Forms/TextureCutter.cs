@@ -1,3962 +1,3373 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Diagnostics;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
+using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.Drawing.Drawing2D;
-using System.Media;
-using Microsoft.Win32;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.Window;
-
+using UoFiddler.Plugin.ConverterMultiTextPlugin.Class.GraphicCutter;
+using UoFiddler.Plugin.ConverterMultiTextPlugin.Class.TextureCutter;
 
 namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 {
+    /// <summary>
+    /// Texture Cutter: load images or textures, cut them into tiles, resize them, turn them into UO land tiles,
+    /// change their colors, paint on them, put other graphics on top and save them as files or into texmaps.mul.
+    /// </summary>
     public partial class TextureCutter : Form
     {
-        private Point _originalImageLocation = new Point(0, 0); //Determines the position in the picture box
-        private Bitmap _resizedImage;
-        private bool _isPickingColor = false;
+        private const int MaxUndo = 30;
+        private static readonly string OutputDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "tempGrafic");
 
-        // Save OrginalImage
-        private Bitmap _originalImage;
-        // Save Orginal Size
-        private Size _originalSize;
-        // Define a variable to store the custom colors
+        private enum PreviewKind { None, Adjust, Mode, Particle, Transition }
+
+        private enum PickTarget { Paint, From, To }
+
+        private Bitmap _image;                 // the edited image (32bpp, owned)
+        private Bitmap _previewImage;          // live preview of a color change, not applied yet
+        private PreviewKind _previewKind = PreviewKind.None;
+        private bool _resettingPreviewControls;
+        private readonly List<Bitmap> _undo = new List<Bitmap>();
+        private readonly List<Bitmap> _redo = new List<Bitmap>();
+        private Bitmap _pattern;               // pattern brush (owned)
+        private Bitmap _blendB;                // texture B of a transition (owned)
+        private readonly CutterPalette _palette = new CutterPalette();
+        private TerrainPreviewForm _terrain;
+        private PickTarget _pickTarget = PickTarget.Paint;
+        private CanvasTool _toolBeforePick = CanvasTool.Select;
         private int[] _customColors;
-        // Draw
-        private bool _isDrawing = false; // Variable to track drawing mode
-        private Point _lastPoint;
-        // Delete
-        private bool _isErasing = false;
-        //PictureBox1
-        private Point _startPoint;
-        private Rectangle _cropArea;
-        private bool _isDragging = false;
-        private bool _showGrid2;
-        //private Rectangle selectedRectangle; // The selected range.
-        private List<Point> _points = new List<Point>();
+        private bool _onlySelection;
+        private bool _protectBlackWhite = true;
+        private bool[] _usedTextures;
+        private bool _texLoaded;
+        private bool _updating;
 
         public TextureCutter()
         {
             InitializeComponent();
 
-            labelImageSize.Text = "";
+            BuildMenus();
+            BuildToolbar();
+            BuildTabs();
 
-            checkBoxChange.CheckedChanged += CheckBoxChange_CheckedChanged;
-
-            // Set the KeyPreview property of the form to true.
-            this.KeyPreview = true;
-            // Add a keyboard event handler to the form.
-            this.KeyDown += Form1_KeyDown;
-            //zoom
-            pictureBox1.MouseWheel += PictureBox1_MouseWheel;
-            // Set the initial value of the TrackBar control to the center
-            trackBarTolerance.Value = trackBarTolerance.Maximum / 2;
-            // Update the label with the current value of the TrackBar control
-            labelTolerance.Text = trackBarTolerance.Value.ToString();
-            // Update the label when the application starts.
-            UpdateSharpnessLabel();
-
-            // Set the initial value of the TrackBar
-            TrackbarWhiteBalance.Value = 1;  // or whatever value you want
-
-            // Display the initial value in the Label
-            LabelWhiteBalance.Text = $"change: {TrackbarWhiteBalance.Value}%";
-
-            // ParticleGrey 
-            textBoxColorToAdress.TextChanged += (s, e) => CheckBoxParticelGreyHue_CheckedChanged(s, e);
-            textBoxColorToAdress.TextChanged += (s, e) => CheckBoxParticelGreyHueShadow_CheckedChanged(s, e);
-        }
-        private void ButtonLoadImage_Click(object sender, EventArgs e)
-        {
-            System.Windows.Forms.OpenFileDialog openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
-            openFileDialog1.Filter = "image files|*.bmp;*.png;*.jpeg;*.jpg;*.tiff;*.gif|All files|*.*";
-
-            if (openFileDialog1.ShowDialog() == DialogResult.OK)
+            canvas.BeginEdit += Canvas_BeginEdit;
+            canvas.ImageEdited += (s, e) => UpdateStatus();
+            canvas.HoverPixel += Canvas_HoverPixel;
+            canvas.ColorPicked += Canvas_ColorPicked;
+            canvas.SelectionChanged += (s, e) => UpdateStatus();
+            canvas.OverlayMoved += Canvas_LayerMoved;
+            canvas.ActiveLayerChanged += (s, e) => RefreshLayerList();
+            canvas.ImageEdited += (s, e) => NotifyTerrain();
+            canvas.GridSize = new Size(64, 64);
+            panelCanvas.MouseWheel += Canvas_MouseWheel;
+            canvas.MouseWheel += Canvas_MouseWheel;
+            tabControl1.SelectedIndexChanged += (s, e) =>
             {
-                string selectedImagePath = openFileDialog1.FileName;
-
-                // Set the image of the PictureBox to null and remove it from the Controls collection of the Panel.
-                pictureBox1.Image = null;
-                panel1.Controls.Remove(pictureBox1);
-                pictureBox1.Dispose();
-
-                // Create a new PictureBox and add it to the Panel.
-                pictureBox1 = new PictureBox();
-                pictureBox1.Location = _originalImageLocation;
-                pictureBox1.SizeMode = PictureBoxSizeMode.AutoSize;
-                pictureBox1.Image = Image.FromFile(selectedImagePath);
-                panel1.Controls.Add(pictureBox1);
-
-                // Update originalImage to point to the new image
-                _originalImage = new Bitmap(pictureBox1.Image);
-
-                // Save the original size of the image
-                _originalSize = pictureBox1.Image.Size;
-
-                // Resetting the scroll position.
-                panel1.AutoScrollPosition = new Point(0, 0);
-
-                // Displaying the image size in the label.
-                Size imageSize = pictureBox1.Image.Size;
-                labelImageSize.Text = $"Image size: {imageSize.Width} x {imageSize.Height} Pixel";
-
-                // Make sure that the ContextMenuStrip of pictureBox1 is assigned.
-                if (pictureBox1.ContextMenuStrip == null)
+                if (tabControl1.SelectedTab == tabTexmaps && !_texLoaded)
                 {
-                    pictureBox1.ContextMenuStrip = contextMenuStrip1;
+                    ReloadTextures();
+                }
+            };
+
+            try
+            {
+                if (File.Exists(CutterPalette.DefaultFile))
+                {
+                    _palette.Colors.AddRange(CutterPalette.Load(CutterPalette.DefaultFile).Colors);
                 }
             }
-        }
-        private void ButtonTextureCutter_Click(object sender, EventArgs e)
-        {
-            // Check if an image has been loaded into the picture box
-            if (pictureBox1.Image == null)
+            catch (Exception)
             {
-                // Display a message to the user and exit the method
-                MessageBox.Show("No image was loaded.");
+                // a broken palette file is ignored
+            }
+            RefreshPalette();
+
+            SetTool(CanvasTool.Select);
+            SetPrimary(Color.Black);
+            SetSecondary(Color.White);
+            SyncUi();
+            UpdateStatus();
+            SetMessage("Ready – Ctrl+O open, Ctrl+V paste, F1 help.");
+        }
+
+        #region Small helpers
+
+        private static string Tip(string en, string de) => en + "\n\nDE: " + de;
+
+        private void SetMessage(string text) => statusMessage.Text = text;
+
+        private static string Hex(Color c) => $"#{c.R:X2}{c.G:X2}{c.B:X2}";
+
+        private static bool TryParseHex(string text, out Color color)
+        {
+            color = Color.Empty;
+            string t = (text ?? string.Empty).Trim().TrimStart('#');
+            if (t.Length != 6 || !int.TryParse(t, NumberStyles.HexNumber, null, out int rgb))
+            {
+                return false;
+            }
+            color = Color.FromArgb(255, Color.FromArgb(rgb));
+            return true;
+        }
+
+        private static Bitmap Swatch(Color c)
+        {
+            var bmp = new Bitmap(16, 16);
+            using (var g = Graphics.FromImage(bmp))
+            {
+                CutterImaging.DrawChecker(g, new Rectangle(0, 0, 16, 16));
+                using (var b = new SolidBrush(c))
+                {
+                    g.FillRectangle(b, 0, 0, 16, 16);
+                }
+                g.DrawRectangle(Pens.Gray, 0, 0, 15, 15);
+            }
+            return bmp;
+        }
+
+        private static void PaintSwatchButton(Button b, Color c)
+        {
+            b.BackColor = c;
+            b.ForeColor = c.R * 0.299 + c.G * 0.587 + c.B * 0.114 > 150 ? Color.Black : Color.White;
+            b.Text = Hex(c);
+        }
+
+        private bool CheckImage()
+        {
+            if (_image != null)
+            {
+                return true;
+            }
+            MessageBox.Show(this, "No image is loaded. Open one (Ctrl+O), paste one (Ctrl+V) or load a texture from the texmaps tab.",
+                "Texture Cutter", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            return false;
+        }
+
+        private Color? ChooseColor(Color current)
+        {
+            using (var dialog = new ColorDialog { Color = current, FullOpen = true })
+            {
+                if (_customColors != null)
+                {
+                    dialog.CustomColors = _customColors;
+                }
+                if (dialog.ShowDialog(this) != DialogResult.OK)
+                {
+                    return null;
+                }
+                _customColors = dialog.CustomColors;
+                return dialog.Color;
+            }
+        }
+
+        private bool IsTextInputFocused()
+        {
+            foreach (ToolStripItem item in toolStrip1.Items)
+            {
+                if ((item is ToolStripComboBox cb && cb.Focused) || (item is ToolStripTextBox tb && tb.Focused))
+                {
+                    return true;
+                }
+            }
+            Control c = ActiveControl;
+            while (c is ContainerControl cc && cc.ActiveControl != null)
+            {
+                c = cc.ActiveControl;
+            }
+            return c is TextBoxBase || c is UpDownBase || c?.Parent is UpDownBase || c is ComboBox || c is ListView || c is ListBox || c is ArtTileGrid || c is TrackBar;
+        }
+
+        #endregion
+
+        #region Menus and toolbar
+
+        private ToolStripMenuItem _undoMenu, _redoMenu, _onlySelMenu, _protectMenu, _gridMenu, _tiledMenu, _topMostMenu;
+        private ToolStripButton _tsUndo, _tsRedo, _tsMirror, _tsGrid, _tsTiled, _tsOnlySel, _tsProtect, _tsColor1, _tsColor2;
+        private ToolStripComboBox _tsFormat, _tsShape, _tsBrush;
+        private ToolStripLabel _tsZoom;
+        private ToolStripSplitButton _tsPattern;
+        private readonly Dictionary<CanvasTool, ToolStripButton> _toolButtons = new Dictionary<CanvasTool, ToolStripButton>();
+
+        private static ToolStripMenuItem Item(string text, EventHandler click, string keys = null, Image image = null)
+        {
+            var item = new ToolStripMenuItem(text, image, click);
+            if (keys != null)
+            {
+                item.ShortcutKeyDisplayString = keys;
+            }
+            return item;
+        }
+
+        private void BuildMenus()
+        {
+            var file = new ToolStripMenuItem("&File");
+            file.DropDownItems.AddRange(new ToolStripItem[]
+            {
+                Item("Open image...", (s, e) => OpenImage(), "Ctrl+O", Properties.Resources.Load),
+                Item("Paste image from clipboard", (s, e) => PasteImage(), "Ctrl+V", Properties.Resources.import),
+                Item("Paste clipboard as layer", (s, e) => LayerFromClipboard()),
+                new ToolStripSeparator(),
+                Item("Save (tempGrafic)", (s, e) => QuickSave(), "Ctrl+S", Properties.Resources.Save),
+                Item("Save as...", (s, e) => SaveAs(), "Ctrl+Shift+S"),
+                Item("Open tempGrafic folder", (s, e) => OpenFolder(OutputDirectory)),
+                new ToolStripSeparator(),
+                Item("Save texmaps.mul (output folder)", (s, e) => SaveTexmaps()),
+                new ToolStripSeparator(),
+                Item("Close", (s, e) => Close())
+            });
+
+            _undoMenu = Item("Undo", (s, e) => Undo(), "Ctrl+Z");
+            _redoMenu = Item("Redo", (s, e) => Redo(), "Ctrl+Y");
+            _onlySelMenu = Item("Changes only inside the selection", (s, e) => ToggleOnlySelection());
+            _protectMenu = Item("Protect black / white", (s, e) => ToggleProtect());
+            var edit = new ToolStripMenuItem("&Edit");
+            edit.DropDownItems.AddRange(new ToolStripItem[]
+            {
+                _undoMenu, _redoMenu, new ToolStripSeparator(),
+                Item("Copy image", (s, e) => CopyImage(), "Ctrl+C", Properties.Resources.Copy),
+                Item("Copy selection", (s, e) => CopySelection(), "Ctrl+Shift+C"),
+                new ToolStripSeparator(),
+                Item("Select all", (s, e) => canvas.SelectAll(), "Ctrl+A"),
+                Item("Remove selection", (s, e) => canvas.ClearSelection(), "Esc"),
+                Item("Crop to selection", (s, e) => CropToSelection()),
+                Item("Delete selection (transparent)", (s, e) => DeleteSelection(), "Del"),
+                new ToolStripSeparator(),
+                _onlySelMenu, _protectMenu
+            });
+
+            var image = new ToolStripMenuItem("&Image");
+            image.DropDownItems.AddRange(new ToolStripItem[]
+            {
+                Item("Rotate 90° right", (s, e) => ApplyFilter("Rotate", b => Rotated(b, RotateFlipType.Rotate90FlipNone), true), null, Properties.Resources.Rotate),
+                Item("Rotate 90° left", (s, e) => ApplyFilter("Rotate", b => Rotated(b, RotateFlipType.Rotate270FlipNone), true)),
+                Item("Mirror horizontally", (s, e) => ApplyFilter("Mirror", b => Rotated(b, RotateFlipType.RotateNoneFlipX), true), null, Properties.Resources.Mirror1),
+                Item("Mirror vertically", (s, e) => ApplyFilter("Mirror", b => Rotated(b, RotateFlipType.RotateNoneFlipY), true)),
+                new ToolStripSeparator(),
+                Item("Texture → land tile 44 × 44", (s, e) => MakeLandTile()),
+                Item("Make seamless (repeatable)", (s, e) => MakeSeamless()),
+                Item("Reduce to UO 16-bit colors", (s, e) => ApplyFilter("UO 16-bit colors", TextureImaging.To16Bit)),
+                new ToolStripSeparator(),
+                Item("New empty image...", (s, e) => NewImage())
+            });
+
+            _gridMenu = Item("Tile grid", (s, e) => ToggleGrid(), "Ctrl+G", Properties.Resources.Schablone);
+            _tiledMenu = Item("Tiled view 3 × 3 (seam check)", (s, e) => ToggleTiled(), "Ctrl+T");
+            _topMostMenu = Item("Always on top", (s, e) => { TopMost = !TopMost; SyncUi(); });
+            var view = new ToolStripMenuItem("&View");
+            view.DropDownItems.AddRange(new ToolStripItem[]
+            {
+                Item("Zoom in", (s, e) => SetZoom(canvas.Zoom + 1), "Ctrl++"),
+                Item("Zoom out", (s, e) => SetZoom(canvas.Zoom - 1), "Ctrl+-"),
+                Item("Zoom 1:1", (s, e) => SetZoom(1), "Ctrl+0"),
+                Item("Fit into window", (s, e) => FitZoom(), "Ctrl+F"),
+                new ToolStripSeparator(),
+                _gridMenu,
+                Item("Grid color...", (s, e) => { Color? c = ChooseColor(canvas.GridColor); if (c.HasValue) { canvas.GridColor = c.Value; canvas.Invalidate(); } }),
+                _tiledMenu,
+                new ToolStripSeparator(),
+                _topMostMenu
+            });
+
+            var help = new ToolStripMenuItem("&Help");
+            help.DropDownItems.AddRange(new ToolStripItem[]
+            {
+                Item("Help / Hilfe", (s, e) => ShowHelp(CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "de"), "F1"),
+                Item("Help (English)", (s, e) => ShowHelp(false)),
+                Item("Hilfe (Deutsch)", (s, e) => ShowHelp(true))
+            });
+
+            var tools = new ToolStripMenuItem("&Tools");
+            tools.DropDownItems.AddRange(new ToolStripItem[]
+            {
+                Item("Terrain preview (2D / 3D, map)...", (s, e) => OpenTerrainPreview(), "Ctrl+P"),
+                Item("Batch – many images at once...", (s, e) => OpenBatch(), "Ctrl+B"),
+                new ToolStripSeparator(),
+                Item("Pattern brush from selected layer", (s, e) => PatternFrom(() => ActiveLayer == null ? null : CutterImaging.To32Bpp(ActiveLayer.Image), "layer")),
+                Item("Pattern brush from selection", (s, e) => PatternFrom(() => _image == null ? null : ExtractSelection(_image), "selection")),
+                Item("Pattern brush from texture (texmaps)", (s, e) => PatternFrom(() => _gridTex.SelectedItem >= 0 ? TextureMul.GetCopy(_gridTex.SelectedItem) : null, "texture")),
+                Item("Pattern brush from file...", (s, e) => PatternFrom(PatternFromFile, "file")),
+                Item("Pattern brush from clipboard", (s, e) => PatternFrom(ReadClipboard, "clipboard image")),
+                Item("Pattern brush off", (s, e) => SetPattern(null))
+            });
+
+            menuStrip1.Items.AddRange(new ToolStripItem[] { file, edit, image, view, tools, help });
+        }
+
+        private ToolStripButton TextButton(string text, string tip, EventHandler click, bool bold = false)
+        {
+            var b = new ToolStripButton(text) { DisplayStyle = ToolStripItemDisplayStyle.Text, ToolTipText = tip };
+            if (bold)
+            {
+                b.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+            }
+            b.Click += click;
+            return b;
+        }
+
+        private ToolStripButton ImageButton(Image image, string tip, EventHandler click)
+        {
+            var b = new ToolStripButton(image) { DisplayStyle = ToolStripItemDisplayStyle.Image, ToolTipText = tip };
+            b.Click += click;
+            return b;
+        }
+
+        private void BuildToolbar()
+        {
+            _tsFormat = new ToolStripComboBox { DropDownStyle = ComboBoxStyle.DropDownList, Size = new Size(60, 23), ToolTipText = Tip("File format for Save and tiles", "Dateiformat für Speichern und Kacheln") };
+            _tsFormat.Items.AddRange(new object[] { "BMP", "PNG", "TIFF", "JPEG" });
+            _tsFormat.SelectedIndex = 0;
+
+            _tsUndo = TextButton("↶", Tip("Undo (Ctrl+Z)", "Rückgängig (Strg+Z)"), (s, e) => Undo(), true);
+            _tsRedo = TextButton("↷", Tip("Redo (Ctrl+Y)", "Wiederholen (Strg+Y)"), (s, e) => Redo(), true);
+
+            void AddTool(CanvasTool tool, string text, string en, string de)
+            {
+                ToolStripButton b = TextButton(text, Tip(en, de), (s, e) => SetTool(tool));
+                _toolButtons[tool] = b;
+            }
+            AddTool(CanvasTool.Select, "Select", "Select an area (M). Shape: list on the right.", "Bereich auswählen (M). Form: Liste rechts daneben.");
+            AddTool(CanvasTool.Pencil, "Pencil", "Draw (B). Left = color 1, right = color 2.", "Zeichnen (B). Links = Farbe 1, rechts = Farbe 2.");
+            AddTool(CanvasTool.Eraser, "Eraser", "Erase to transparent (E). Option on the Replace tab: erase to white.", "Radieren zu transparent (E). Option im Reiter Replace: zu Weiß radieren.");
+            AddTool(CanvasTool.Line, "Line", "Straight line (L).", "Gerade Linie (L).");
+            AddTool(CanvasTool.Rectangle, "Rect", "Rectangle outline (R).", "Rechteck-Rahmen (R).");
+            AddTool(CanvasTool.Fill, "Fill", "Fill an area of similar color (G). Tolerance on the Replace tab.", "Fläche ähnlicher Farbe füllen (G). Toleranz im Reiter Replace.");
+            AddTool(CanvasTool.Pipette, "Pipette", "Pick a color (I). Left = color 1, right = color 2.", "Farbe aufnehmen (I). Links = Farbe 1, rechts = Farbe 2.");
+            AddTool(CanvasTool.Overlay, "Move layer", "Click a layer to select it, drag it (O). Arrow keys = 1 px, Shift = 10 px.", "Ebene anklicken und ziehen (O). Pfeiltasten = 1 px, Umschalt = 10 px.");
+
+            _tsShape = new ToolStripComboBox { DropDownStyle = ComboBoxStyle.DropDownList, Size = new Size(85, 23), ToolTipText = Tip("Shape of the selection. Polygon: click points, double / right click closes.", "Form der Auswahl. Polygon: Punkte klicken, Doppel- / Rechtsklick schließt.") };
+            _tsShape.Items.AddRange(new object[] { "Rectangle", "Ellipse", "Freehand", "Polygon" });
+            _tsShape.SelectedIndex = 0;
+            _tsShape.SelectedIndexChanged += (s, e) =>
+            {
+                canvas.SelectionShape = (CanvasSelection)_tsShape.SelectedIndex;
+                canvas.ClearSelection();
+                SetTool(CanvasTool.Select);
+            };
+
+            _tsColor1 = new ToolStripButton { DisplayStyle = ToolStripItemDisplayStyle.Image, ToolTipText = Tip("Color 1 (left mouse button). Click = choose.", "Farbe 1 (linke Maustaste). Klick = wählen.") };
+            _tsColor1.Click += (s, e) => { Color? c = ChooseColor(canvas.PrimaryColor); if (c.HasValue) SetPrimary(c.Value); };
+            _tsColor2 = new ToolStripButton { DisplayStyle = ToolStripItemDisplayStyle.Image, ToolTipText = Tip("Color 2 (right mouse button). Click = choose.", "Farbe 2 (rechte Maustaste). Klick = wählen.") };
+            _tsColor2.Click += (s, e) => { Color? c = ChooseColor(canvas.SecondaryColor); if (c.HasValue) SetSecondary(c.Value); };
+            ToolStripButton swap = TextButton("⇄", Tip("Swap color 1 and 2 (X)", "Farbe 1 und 2 tauschen (X)"), (s, e) => SwapColors());
+
+            _tsBrush = new ToolStripComboBox { DropDownStyle = ComboBoxStyle.DropDownList, Size = new Size(45, 23), ToolTipText = Tip("Brush size in pixels", "Pinselgröße in Pixeln") };
+            foreach (int i in new[] { 1, 2, 3, 4, 5, 6, 8, 10, 12, 16, 24, 32 })
+            {
+                _tsBrush.Items.Add(i);
+            }
+            _tsBrush.SelectedIndex = 0;
+            _tsBrush.SelectedIndexChanged += (s, e) => canvas.BrushSize = (int)_tsBrush.SelectedItem;
+
+            _tsPattern = new ToolStripSplitButton("Pattern") { DisplayStyle = ToolStripItemDisplayStyle.Text,
+                ToolTipText = Tip("Pattern brush: pencil, line, rectangle and fill paint with an image. Arrow = choose the pattern.",
+                    "Muster-Pinsel: Stift, Linie, Rechteck und Füllen malen mit einem Bild. Pfeil = Muster wählen.") };
+            _tsPattern.ButtonClick += (s, e) =>
+            {
+                if (_pattern == null)
+                {
+                    _tsPattern.ShowDropDown();
+                    return;
+                }
+                canvas.UsePattern = !canvas.UsePattern;
+                SyncUi();
+            };
+            _tsPattern.DropDownItems.AddRange(new ToolStripItem[]
+            {
+                Item("From selected layer", (s, e) => PatternFrom(() => ActiveLayer == null ? null : CutterImaging.To32Bpp(ActiveLayer.Image), "layer")),
+                Item("From selection", (s, e) => PatternFrom(() => _image == null ? null : ExtractSelection(_image), "selection")),
+                Item("From texture (texmaps)", (s, e) => PatternFrom(() => _gridTex.SelectedItem >= 0 ? TextureMul.GetCopy(_gridTex.SelectedItem) : null, "texture")),
+                Item("From file...", (s, e) => PatternFrom(PatternFromFile, "file")),
+                Item("From clipboard", (s, e) => PatternFrom(ReadClipboard, "clipboard image")),
+                Item("Off", (s, e) => SetPattern(null))
+            });
+
+            _tsMirror = TextButton("Mirror draw", Tip("Paint a mirrored copy of every stroke (left / right)", "Jeden Strich gespiegelt mitzeichnen (links / rechts)"),
+                (s, e) => { canvas.MirrorDraw = !canvas.MirrorDraw; SyncUi(); });
+            _tsOnlySel = TextButton("Only selection", Tip("Color changes and filters only inside the selection", "Farbänderungen und Filter nur innerhalb der Auswahl"),
+                (s, e) => ToggleOnlySelection());
+            _tsProtect = TextButton("Protect B/W", Tip("Pure black and white (UO transparency) stay unchanged by color changes", "Reines Schwarz und Weiß (UO-Transparenz) bleiben bei Farbänderungen unverändert"),
+                (s, e) => ToggleProtect());
+
+            _tsZoom = new ToolStripLabel("1x") { AutoSize = false, Width = 36 };
+            _tsGrid = ImageButton(Properties.Resources.Schablone, Tip("Tile grid (Ctrl+G)", "Kachelraster (Strg+G)"), (s, e) => ToggleGrid());
+            _tsTiled = TextButton("3×3", Tip("Tiled view: shows the image 3 × 3 times to check the seams (Ctrl+T)", "Kachelansicht: Bild 3 × 3 mal, um Nahtstellen zu prüfen (Strg+T)"), (s, e) => ToggleTiled());
+
+            toolStrip1.Items.AddRange(new ToolStripItem[]
+            {
+                ImageButton(Properties.Resources.Load, Tip("Open image (Ctrl+O)", "Bild öffnen (Strg+O)"), (s, e) => OpenImage()),
+                ImageButton(Properties.Resources.import, Tip("Paste image (Ctrl+V)", "Bild einfügen (Strg+V)"), (s, e) => PasteImage()),
+                ImageButton(Properties.Resources.Save, Tip("Save into tempGrafic (Ctrl+S)", "In tempGrafic speichern (Strg+S)"), (s, e) => QuickSave()),
+                _tsFormat,
+                ImageButton(Properties.Resources.Copy, Tip("Copy image (Ctrl+C)", "Bild kopieren (Strg+C)"), (s, e) => CopyImage()),
+                new ToolStripSeparator(), _tsUndo, _tsRedo, new ToolStripSeparator(),
+                _toolButtons[CanvasTool.Select], _tsShape, _toolButtons[CanvasTool.Pencil], _toolButtons[CanvasTool.Eraser], _toolButtons[CanvasTool.Line],
+                _toolButtons[CanvasTool.Rectangle], _toolButtons[CanvasTool.Fill], _toolButtons[CanvasTool.Pipette], _toolButtons[CanvasTool.Overlay],
+                new ToolStripSeparator(), _tsColor1, _tsColor2, swap, _tsBrush, _tsPattern, _tsMirror,
+                new ToolStripSeparator(), _tsOnlySel, _tsProtect,
+                new ToolStripSeparator(),
+                TextButton("–", Tip("Zoom out (Ctrl+-)", "Verkleinern (Strg+-)"), (s, e) => SetZoom(canvas.Zoom - 1), true), _tsZoom,
+                TextButton("+", Tip("Zoom in (Ctrl++ or Ctrl+wheel)", "Vergrößern (Strg++ oder Strg+Mausrad)"), (s, e) => SetZoom(canvas.Zoom + 1), true),
+                _tsGrid, _tsTiled, new ToolStripSeparator(),
+                TextButton("Terrain", Tip("Terrain preview: the texture on the ground, 2D / 3D with heights, next to other textures or in a map area (Ctrl+P)",
+                    "Gelände-Vorschau: die Textur auf dem Boden, 2D / 3D mit Höhen, neben anderen Texturen oder in einem Kartenbereich (Strg+P)"), (s, e) => OpenTerrainPreview()),
+                TextButton("Batch", Tip("Process many images at once (Ctrl+B)", "Viele Bilder auf einmal bearbeiten (Strg+B)"), (s, e) => OpenBatch()),
+                TextButton("?", Tip("Help (F1)", "Hilfe (F1)"), (s, e) => ShowHelp(CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "de"), true)
+            });
+        }
+
+        private void SyncUi()
+        {
+            _undoMenu.Enabled = _tsUndo.Enabled = _undo.Count > 0;
+            _redoMenu.Enabled = _tsRedo.Enabled = _redo.Count > 0;
+            _onlySelMenu.Checked = _tsOnlySel.Checked = _onlySelection;
+            _protectMenu.Checked = _tsProtect.Checked = _protectBlackWhite;
+            _gridMenu.Checked = _tsGrid.Checked = canvas.ShowGrid;
+            _tiledMenu.Checked = _tsTiled.Checked = canvas.TiledView;
+            _topMostMenu.Checked = TopMost;
+            _tsMirror.Checked = canvas.MirrorDraw;
+            _tsPattern.Text = canvas.UsePattern && _pattern != null ? "Pattern ✔" : "Pattern";
+            _tsZoom.Text = canvas.Zoom + "x";
+            foreach (KeyValuePair<CanvasTool, ToolStripButton> kv in _toolButtons)
+            {
+                kv.Value.Checked = canvas.Tool == kv.Key;
+            }
+            if (_chkShowGrid != null && _chkShowGrid.Checked != canvas.ShowGrid)
+            {
+                _updating = true;
+                _chkShowGrid.Checked = canvas.ShowGrid;
+                _updating = false;
+            }
+        }
+
+        private void UpdateStatus()
+        {
+            string img = _image == null ? "no image" : $"image {_image.Width}×{_image.Height}";
+            Rectangle sel = canvas.GetSelectionBounds();
+            string selText = sel.Width > 0 ? $"   |   selection {sel.Width}×{sel.Height} at {sel.X},{sel.Y}" : string.Empty;
+            string preview = _previewImage != null ? "   |   PREVIEW (not applied)" : string.Empty;
+            statusInfo.Text = $"{img}   |   zoom {canvas.Zoom}x{selText}{preview}";
+        }
+
+        private void SetTool(CanvasTool tool)
+        {
+            canvas.Tool = tool;
+            if (tool != CanvasTool.Pipette)
+            {
+                _pickTarget = PickTarget.Paint;
+            }
+            SyncUi();
+        }
+
+        private void SetPrimary(Color c)
+        {
+            canvas.PrimaryColor = c;
+            _tsColor1.Image?.Dispose();
+            _tsColor1.Image = Swatch(c);
+        }
+
+        private void SetSecondary(Color c)
+        {
+            canvas.SecondaryColor = c;
+            _tsColor2.Image?.Dispose();
+            _tsColor2.Image = Swatch(c);
+        }
+
+        private void SwapColors()
+        {
+            Color a = canvas.PrimaryColor;
+            SetPrimary(canvas.SecondaryColor);
+            SetSecondary(a);
+        }
+
+        private void ToggleOnlySelection()
+        {
+            _onlySelection = !_onlySelection;
+            SyncUi();
+            SchedulePreviewRefresh();
+        }
+
+        private void ToggleProtect()
+        {
+            _protectBlackWhite = !_protectBlackWhite;
+            SyncUi();
+            SchedulePreviewRefresh();
+        }
+
+        private void ToggleGrid()
+        {
+            canvas.ShowGrid = !canvas.ShowGrid;
+            canvas.Invalidate();
+            SyncUi();
+        }
+
+        private void ToggleTiled()
+        {
+            canvas.TiledView = !canvas.TiledView;
+            canvas.RefreshView();
+            CenterCanvas();
+            SyncUi();
+            SetMessage(canvas.TiledView ? "Tiled view: painting is off. Ctrl+T switches back." : "Normal view.");
+        }
+
+        #endregion
+
+        #region Tabs – building
+
+        // Tiles tab
+        private ComboBox _comboTileSize, _comboQuality, _comboLandToTex;
+        private NumericUpDown _numTileW, _numTileH, _numOffX, _numOffY, _numResizeW, _numResizeH, _numSeamless;
+        private CheckBox _chkAllowTiny, _chkShowGrid, _chkPad, _chkSkipEmpty, _chkTexSkipUsed, _chkKeepAspect, _chkBlackOutside;
+        private TextBox _txtTexStart, _txtArtLandId;
+
+        // Colors tab
+        private Label _lblPreview;
+        private Button _btnApplyPreview, _btnCancelPreview;
+        private TrackBar _tbBright, _tbContrast, _tbGamma, _tbSat, _tbHue;
+        private Label _lblBright, _lblContrast, _lblGamma, _lblSat, _lblHue;
+        private CheckBox _chkGray, _chkDarken;
+        private NumericUpDown _numSharpen, _numWhite, _numPosterize;
+        private ComboBox _comboModes;
+        private Button _btnParticleColor;
+        private RadioButton _radioParticleShaded;
+        private Color _particleColor = Color.FromArgb(0xF4, 0x56, 0xEA);
+
+        // Replace tab
+        private Button _btnFrom, _btnTo;
+        private TextBox _txtFrom, _txtTo;
+        private NumericUpDown _numTolerance;
+        private CheckBox _chkKeepShading, _chkListSkipBW, _chkEraseWhite;
+        private ListView _listColors;
+        private Label _lblColorCount;
+        private Color _fromColor = Color.White, _toColor = Color.Black;
+
+        // Layers tab
+        private CheckedListBox _listLayers;
+        private TrackBar _tbOpacity;
+        private Label _lblOpacity;
+        private NumericUpDown _numOvScale, _numOvX, _numOvY;
+        private CheckBox _chkOvTransparent;
+        private RadioButton _radioOvArtLand, _radioFillTile;
+        private TextBox _txtOvArtId;
+
+        // Blend tab
+        private PictureBox _picBlendB;
+        private Label _lblBlendB;
+        private ComboBox _comboShape;
+        private NumericUpDown _numSoftness, _numRoughness, _numSeed;
+        private TextBox _txtBlendTexId;
+
+        // Palette
+        private FlowLayoutPanel _paletteFlow;
+        private Label _lblPalette;
+        private NumericUpDown _numHue;
+
+        // texmaps tab
+        private ComboBox _comboTexFilter;
+        private TextBox _txtTexId;
+        private ArtTileGrid _gridTex;
+        private Panel _panelTexPreview;
+        private Label _lblTexInfo;
+
+        private static FlowLayoutPanel Row(params Control[] controls)
+        {
+            var row = new FlowLayoutPanel { AutoSize = true, WrapContents = false, Margin = new Padding(0, 1, 0, 1) };
+            row.Controls.AddRange(controls);
+            return row;
+        }
+
+        private static Label Lbl(string text, int width = 0) =>
+            width > 0
+                ? new Label { Text = text, Width = width, Margin = new Padding(3, 7, 3, 0) }
+                : new Label { Text = text, AutoSize = true, Margin = new Padding(3, 7, 3, 0) };
+
+        private Button Btn(string text, EventHandler click, string tip = null, int width = 0)
+        {
+            var b = new Button { Text = text, AutoSize = width == 0, Height = 26, UseVisualStyleBackColor = true, Margin = new Padding(2) };
+            if (width > 0)
+            {
+                b.Width = width;
+            }
+            b.Click += click;
+            if (tip != null)
+            {
+                toolTip1.SetToolTip(b, tip);
+            }
+            return b;
+        }
+
+        private static NumericUpDown Num(int min, int max, int value, int width = 60) =>
+            new NumericUpDown { Minimum = min, Maximum = max, Value = value, Width = width, Margin = new Padding(3, 3, 3, 0) };
+
+        private static CheckBox Chk(string text, bool value = false) =>
+            new CheckBox { Text = text, AutoSize = true, Checked = value, Margin = new Padding(3, 5, 3, 0) };
+
+        private static GroupBox Group(string title, params Control[] rows)
+        {
+            var box = new GroupBox { Text = title, AutoSize = true, AutoSizeMode = AutoSizeMode.GrowAndShrink, Padding = new Padding(6, 4, 6, 6), Margin = new Padding(3, 3, 3, 6) };
+            var flow = new FlowLayoutPanel { FlowDirection = FlowDirection.TopDown, WrapContents = false, AutoSize = true, Dock = DockStyle.Fill };
+            flow.Controls.AddRange(rows);
+            box.Controls.Add(flow);
+            return box;
+        }
+
+        private static void FillTab(TabPage page, params Control[] groups)
+        {
+            var flow = new FlowLayoutPanel { Dock = DockStyle.Fill, FlowDirection = FlowDirection.TopDown, WrapContents = false, AutoScroll = true };
+            flow.Controls.AddRange(groups);
+            page.Controls.Add(flow);
+        }
+
+        private void BuildTabs()
+        {
+            BuildTilesTab();
+            BuildColorsTab();
+            BuildReplaceTab();
+            BuildOverlayTab();
+            BuildBlendTab();
+            BuildTexmapsTab();
+        }
+
+        private void BuildTilesTab()
+        {
+            _comboTileSize = new ComboBox { DropDownStyle = ComboBoxStyle.DropDownList, Width = 110 };
+            _comboTileSize.Items.AddRange(new object[] { "33 × 33", "44 × 44", "64 × 64", "128 × 128", "256 × 256", "Custom" });
+            _numTileW = Num(6, 4096, 64);
+            _numTileH = Num(6, 4096, 64);
+            _numOffX = Num(0, 4095, 0);
+            _numOffY = Num(0, 4095, 0);
+            _chkAllowTiny = Chk("Allow very small tiles (1–5 px)");
+            _chkShowGrid = Chk("Show tile grid");
+            _chkPad = Chk("Also cut the incomplete tiles at the edge");
+            _chkSkipEmpty = Chk("Skip empty (transparent) tiles", true);
+            _txtTexStart = new TextBox { Width = 80, Margin = new Padding(3, 4, 3, 0) };
+            _chkTexSkipUsed = Chk("Skip used IDs", true);
+
+            _comboTileSize.SelectedIndexChanged += (s, e) =>
+            {
+                int[] sizes = { 33, 44, 64, 128, 256 };
+                if (_comboTileSize.SelectedIndex >= 0 && _comboTileSize.SelectedIndex < sizes.Length)
+                {
+                    _updating = true;
+                    int v = sizes[_comboTileSize.SelectedIndex];
+                    _numTileW.Value = v;
+                    _numTileH.Value = v;
+                    _updating = false;
+                }
+                UpdateGrid();
+            };
+            EventHandler customSize = (s, e) =>
+            {
+                if (_updating)
+                {
+                    return;
+                }
+                _comboTileSize.SelectedIndex = 5;
+                UpdateGrid();
+            };
+            _numTileW.ValueChanged += customSize;
+            _numTileH.ValueChanged += customSize;
+            _numOffX.ValueChanged += (s, e) => UpdateGrid();
+            _numOffY.ValueChanged += (s, e) => UpdateGrid();
+            _chkAllowTiny.CheckedChanged += (s, e) =>
+            {
+                _numTileW.Minimum = _numTileH.Minimum = _chkAllowTiny.Checked ? 1 : 6;
+            };
+            _chkShowGrid.CheckedChanged += (s, e) =>
+            {
+                if (!_updating && _chkShowGrid.Checked != canvas.ShowGrid)
+                {
+                    ToggleGrid();
+                }
+            };
+            _comboTileSize.SelectedIndex = 2;
+
+            toolTip1.SetToolTip(_chkAllowTiny, Tip("Tiles of 1–5 px create very many files. Only on purpose.", "Kacheln von 1–5 px erzeugen sehr viele Dateien. Nur mit Absicht."));
+            toolTip1.SetToolTip(_chkPad, Tip("Off: only complete tiles. On: tiles at the right / bottom edge are filled up with transparency.",
+                "Aus: nur vollständige Kacheln. An: Kacheln am rechten / unteren Rand werden mit Transparenz aufgefüllt."));
+            toolTip1.SetToolTip(_txtTexStart, Tip("First texture ID (hex 0x1A2B or decimal).", "Erste Textur-ID (hex 0x1A2B oder dezimal)."));
+
+            GroupBox tiles = Group("Tile size / cut",
+                Row(Lbl("Size:", 45), _comboTileSize),
+                Row(Lbl("W:", 45), _numTileW, Lbl("H:"), _numTileH),
+                Row(Lbl("Offset:", 45), _numOffX, Lbl("Y:"), _numOffY),
+                _chkAllowTiny, _chkShowGrid, _chkPad, _chkSkipEmpty,
+                Row(Btn("Cut tiles → files", (s, e) => CutTilesToFiles(), Tip("Saves every tile into a new folder in tempGrafic.", "Speichert jede Kachel in einen neuen Ordner in tempGrafic.")),
+                    Btn("Crop to selection", (s, e) => CropToSelection())),
+                Row(Lbl("texmaps from ID:"), _txtTexStart, Btn("Free block", (s, e) => FindFreeTextureBlock())),
+                _chkTexSkipUsed,
+                Row(Btn("Cut tiles → texmaps", (s, e) => CutTilesToTexmaps(), Tip("Writes all tiles (64 or 128) into texmaps.mul from the start ID on.", "Schreibt alle Kacheln (64 oder 128) ab der Start-ID in texmaps.mul."))));
+
+            _numResizeW = Num(1, 4096, 64);
+            _numResizeH = Num(1, 4096, 64);
+            _chkKeepAspect = Chk("Keep aspect ratio");
+            _comboQuality = new ComboBox { DropDownStyle = ComboBoxStyle.DropDownList, Width = 110 };
+            _comboQuality.Items.AddRange(new object[] { "Pixel (hard)", "Smooth", "Smooth + sharpen" });
+            _comboQuality.SelectedIndex = 1;
+            _numResizeW.ValueChanged += (s, e) => KeepAspect(true);
+            _numResizeH.ValueChanged += (s, e) => KeepAspect(false);
+            GroupBox size = Group("Size (old \"Resolution\")",
+                Row(Lbl("W:", 25), _numResizeW, Lbl("H:"), _numResizeH),
+                Row(_chkKeepAspect, _comboQuality),
+                Row(Btn("Resize", (s, e) => ResizeImage(-1)), Btn("44", (s, e) => ResizeImage(44)), Btn("64", (s, e) => ResizeImage(64)),
+                    Btn("128", (s, e) => ResizeImage(128)), Btn("256", (s, e) => ResizeImage(256))));
+
+            _chkBlackOutside = Chk("Black outside the diamond", true);
+            _comboLandToTex = new ComboBox { DropDownStyle = ComboBoxStyle.DropDownList, Width = 70 };
+            _comboLandToTex.Items.AddRange(new object[] { "64", "128" });
+            _comboLandToTex.SelectedIndex = 0;
+            _txtArtLandId = new TextBox { Width = 80, Margin = new Padding(3, 4, 3, 0) };
+            toolTip1.SetToolTip(_txtArtLandId, Tip("Land tile ID in art.mul (hex 0x1A2B or decimal).", "Landkachel-ID in art.mul (hex 0x1A2B oder dezimal)."));
+            GroupBox land = Group("UO land tile 44 × 44",
+                Row(Btn("Texture → land tile", (s, e) => MakeLandTile(), Tip("Turns the square texture into the 44 × 44 diamond of a land tile (exact, smooth).",
+                        "Macht aus der quadratischen Textur die 44 × 44 Raute einer Landkachel (genau, weich).")),
+                    Btn("Old way (33 px, 45°)", (s, e) => ApplyFilter("Old land tile", TextureImaging.OldRotatedTile, true))),
+                _chkBlackOutside,
+                Row(Btn("Land tile → texture", (s, e) => LandTileToTexture(), Tip("The way back: 44 × 44 land tile → square texture.", "Der Rückweg: 44 × 44 Landkachel → quadratische Textur.")),
+                    _comboLandToTex),
+                Row(Lbl("art.mul land ID:"), _txtArtLandId),
+                Row(Btn("Load land tile", (s, e) => LoadArtLand()), Btn("Write land tile", (s, e) => WriteArtLand())));
+
+            _numSeamless = Num(10, 100, 50);
+            toolTip1.SetToolTip(_numSeamless, Tip("How wide the blended border is (% of the image).", "Wie breit der überblendete Rand ist (% des Bildes)."));
+            GroupBox repeat = Group("Repeat / seams",
+                Row(Btn("Make seamless", (s, e) => MakeSeamless()), Lbl("Blend %:"), _numSeamless),
+                Row(Btn("Tiled view 3 × 3", (s, e) => ToggleTiled())));
+
+            FillTab(tabTiles, tiles, size, land, repeat);
+        }
+
+        private (TrackBar Bar, Label Label) Slider(int min, int max, string name)
+        {
+            var bar = new TrackBar { Minimum = min, Maximum = max, Value = 0, TickStyle = TickStyle.None, Width = 200, AutoSize = false, Height = 26 };
+            var label = new Label { Width = 110, Margin = new Padding(3, 6, 3, 0), Text = $"{name}: 0" };
+            bar.ValueChanged += (s, e) =>
+            {
+                label.Text = $"{name}: {bar.Value}";
+                if (!_resettingPreviewControls)
+                {
+                    SchedulePreview(PreviewKind.Adjust);
+                }
+            };
+            return (bar, label);
+        }
+
+        private void BuildColorsTab()
+        {
+            _lblPreview = new Label { Text = "No preview.", AutoSize = true, ForeColor = Color.DimGray, Margin = new Padding(3, 7, 3, 0) };
+            _btnApplyPreview = Btn("Apply", (s, e) => CommitPreview(true), Tip("Applies the preview to the image (Enter).", "Übernimmt die Vorschau ins Bild (Enter)."));
+            _btnCancelPreview = Btn("Cancel", (s, e) => CancelPreview(), Tip("Throws the preview away.", "Verwirft die Vorschau."));
+            GroupBox preview = Group("Preview", Row(_btnApplyPreview, _btnCancelPreview, _lblPreview));
+
+            (_tbBright, _lblBright) = Slider(-100, 100, "Brightness");
+            (_tbContrast, _lblContrast) = Slider(-100, 100, "Contrast");
+            (_tbGamma, _lblGamma) = Slider(-90, 300, "Gamma");
+            (_tbSat, _lblSat) = Slider(-100, 100, "Saturation");
+            (_tbHue, _lblHue) = Slider(-180, 180, "Hue");
+            _chkGray = Chk("Grayscale");
+            _chkGray.CheckedChanged += (s, e) =>
+            {
+                if (!_resettingPreviewControls)
+                {
+                    SchedulePreview(PreviewKind.Adjust);
+                }
+            };
+            GroupBox adjust = Group("Adjust (old \"Modus\" / \"Optimize\")",
+                Row(_lblBright, _tbBright), Row(_lblContrast, _tbContrast), Row(_lblGamma, _tbGamma), Row(_lblSat, _tbSat), Row(_lblHue, _tbHue),
+                Row(_chkGray, Btn("Reset sliders", (s, e) => CancelPreview())));
+
+            _numSharpen = Num(1, 100, 30);
+            _numWhite = Num(1, 100, 10);
+            _chkDarken = Chk("Darken");
+            _numPosterize = Num(2, 64, 8);
+            GroupBox filters = Group("Filters",
+                Row(Btn("Sharpen", (s, e) => ApplyFilter("Sharpen", b => TextureImaging.Sharpen(b, (int)_numSharpen.Value, _protectBlackWhite)), null, 110), Lbl("Amount %:"), _numSharpen),
+                Row(Btn("White balance", (s, e) => ApplyFilter("White balance", b => TextureImaging.WhiteBalance(b, (int)_numWhite.Value, _chkDarken.Checked)), null, 110), Lbl("%:"), _numWhite, _chkDarken),
+                Row(Btn("Color enhance", (s, e) => ApplyFilter("Color enhancement", b => TextureImaging.AutoEnhance(b, _protectBlackWhite)), Tip("More saturation and a little contrast.", "Mehr Sättigung und etwas Kontrast."), 110),
+                    Btn("Normalize", (s, e) => ApplyFilter("Normalize", b => TextureImaging.Normalize(b, _protectBlackWhite)), Tip("Stretches the colors to the full range.", "Streckt die Farben auf den vollen Bereich."), 110)),
+                Row(Btn("Invert", (s, e) => ApplyFilter("Invert", b => TextureImaging.Invert(b, _protectBlackWhite)), null, 110),
+                    Btn("UO 16-bit", (s, e) => ApplyFilter("UO 16-bit colors", TextureImaging.To16Bit), Tip("Shows the colors as UO stores them (old \"indexed\").", "Zeigt die Farben so, wie UO sie speichert (früher \"indexed\")."), 110)),
+                Row(Btn("Posterize", (s, e) => ApplyFilter("Posterize", b => TextureImaging.Posterize(b, (int)_numPosterize.Value, _protectBlackWhite)), null, 110), Lbl("Levels:"), _numPosterize));
+
+            _comboModes = new ComboBox { DropDownStyle = ComboBoxStyle.DropDownList, Width = 210 };
+            _comboModes.Items.AddRange(TextureImaging.ColorModes);
+            _comboModes.SelectedIndexChanged += (s, e) =>
+            {
+                if (!_resettingPreviewControls && _comboModes.SelectedIndex >= 0)
+                {
+                    SchedulePreview(PreviewKind.Mode);
+                }
+            };
+            GroupBox modes = Group("Color modes (old R1 / R2)",
+                Row(_comboModes),
+                Row(Btn("◀ Previous", (s, e) => StepMode(-1)), Btn("Next ▶", (s, e) => StepMode(1)), Lbl("then Apply")));
+
+            _btnParticleColor = new Button { Width = 90, Height = 26, FlatStyle = FlatStyle.Flat, Margin = new Padding(2) };
+            PaintSwatchButton(_btnParticleColor, _particleColor);
+            _btnParticleColor.Click += (s, e) =>
+            {
+                Color? c = ChooseColor(_particleColor);
+                if (c.HasValue)
+                {
+                    _particleColor = c.Value;
+                    PaintSwatchButton(_btnParticleColor, _particleColor);
+                    if (_previewKind == PreviewKind.Particle)
+                    {
+                        SchedulePreview(PreviewKind.Particle);
+                    }
+                }
+            };
+            var flat = new RadioButton { Text = "Flat", AutoSize = true, Margin = new Padding(3, 6, 3, 0) };
+            _radioParticleShaded = new RadioButton { Text = "With shadow", AutoSize = true, Checked = true, Margin = new Padding(3, 6, 3, 0) };
+            _radioParticleShaded.CheckedChanged += (s, e) =>
+            {
+                if (_previewKind == PreviewKind.Particle)
+                {
+                    SchedulePreview(PreviewKind.Particle);
+                }
+            };
+            GroupBox particle = Group("Particle grey",
+                Row(Lbl("Color:"), _btnParticleColor, flat, _radioParticleShaded),
+                Row(Btn("Show preview", (s, e) => SchedulePreview(PreviewKind.Particle), Tip("All gray pixels (#030303 – #FBFBFB) get the color. With shadow keeps their brightness.",
+                    "Alle grauen Pixel (#030303 – #FBFBFB) bekommen die Farbe. Mit Schatten behält ihre Helligkeit."))));
+
+            FillTab(tabColors, preview, adjust, filters, modes, particle);
+        }
+
+        private Button SwatchButton(Color c, Action<Color> set)
+        {
+            var b = new Button { Width = 80, Height = 26, FlatStyle = FlatStyle.Flat, Margin = new Padding(2) };
+            PaintSwatchButton(b, c);
+            b.Click += (s, e) =>
+            {
+                Color? chosen = ChooseColor(b.BackColor);
+                if (chosen.HasValue)
+                {
+                    set(chosen.Value);
+                }
+            };
+            return b;
+        }
+
+        private void BuildReplaceTab()
+        {
+            _btnFrom = SwatchButton(_fromColor, SetFromColor);
+            _btnTo = SwatchButton(_toColor, SetToColor);
+            _txtFrom = new TextBox { Width = 70, Text = Hex(_fromColor), Margin = new Padding(3, 4, 3, 0) };
+            _txtTo = new TextBox { Width = 70, Text = Hex(_toColor), Margin = new Padding(3, 4, 3, 0) };
+            _txtFrom.TextChanged += (s, e) => HexChanged(_txtFrom, SetFromColor);
+            _txtTo.TextChanged += (s, e) => HexChanged(_txtTo, SetToColor);
+            var presets = new ComboBox { DropDownStyle = ComboBoxStyle.DropDownList, Width = 90 };
+            presets.Items.AddRange(new object[] { "#FFFFFF", "#000000", "#F456EA", "#FDE2CD" });
+            presets.SelectedIndexChanged += (s, e) =>
+            {
+                if (presets.SelectedItem is string hex && TryParseHex(hex, out Color c))
+                {
+                    SetFromColor(c);
+                }
+            };
+            _numTolerance = Num(0, 100, 0);
+            _chkKeepShading = Chk("Keep shading");
+            _chkEraseWhite = Chk("Eraser tool erases to white");
+            _chkEraseWhite.CheckedChanged += (s, e) => canvas.EraseToWhite = _chkEraseWhite.Checked;
+            _numTolerance.ValueChanged += (s, e) => canvas.FillTolerance = (int)Math.Round((int)_numTolerance.Value * 2.55);
+            toolTip1.SetToolTip(_numTolerance, Tip("How different a color may be and still count (0 = exact, 100 = all). Also for the fill tool.",
+                "Wie stark eine Farbe abweichen darf (0 = genau, 100 = alle). Gilt auch fürs Füllwerkzeug."));
+            toolTip1.SetToolTip(_chkKeepShading, Tip("The new color keeps the light and dark of the old pixels.", "Die neue Farbe behält Hell und Dunkel der alten Pixel."));
+
+            GroupBox replace = Group("Replace color",
+                Row(Lbl("From:", 40), _btnFrom, _txtFrom, Btn("Pick", (s, e) => StartPick(PickTarget.From), Tip("Click a pixel in the image.", "Pixel im Bild anklicken."))),
+                Row(Lbl("To:", 40), _btnTo, _txtTo, Btn("Pick", (s, e) => StartPick(PickTarget.To))),
+                Row(Lbl("Preset:", 40), presets, Btn("⇄ Swap", (s, e) => { Color a = _fromColor; SetFromColor(_toColor); SetToColor(a); })),
+                Row(Lbl("Tolerance %:"), _numTolerance, _chkKeepShading),
+                Row(Btn("Replace", (s, e) => ReplaceColor(), null, 100), Btn("Erase → transparent", (s, e) => EraseColor(false)), Btn("→ white", (s, e) => EraseColor(true))),
+                _chkEraseWhite);
+
+            _listColors = new ListView { View = View.Details, FullRowSelect = true, Width = 330, Height = 300, OwnerDraw = true, HideSelection = false };
+            _listColors.Columns.Add("", 30);
+            _listColors.Columns.Add("Color", 90);
+            _listColors.Columns.Add("Pixels", 80);
+            _listColors.Columns.Add("%", 70);
+            _listColors.DrawColumnHeader += (s, e) => e.DrawDefault = true;
+            _listColors.DrawSubItem += ListColors_DrawSubItem;
+            _listColors.ItemActivate += (s, e) =>
+            {
+                if (_listColors.SelectedItems.Count > 0 && _listColors.SelectedItems[0].Tag is Color c)
+                {
+                    Clipboard.SetText(Hex(c));
+                    SetMessage(Hex(c) + " copied to the clipboard.");
+                }
+            };
+            _listColors.SelectedIndexChanged += (s, e) =>
+            {
+                if (_listColors.SelectedItems.Count > 0 && _listColors.SelectedItems[0].Tag is Color c)
+                {
+                    SetFromColor(c);
+                }
+            };
+            _chkListSkipBW = Chk("Without black / white", true);
+            _lblColorCount = new Label { AutoSize = true, Margin = new Padding(3, 7, 3, 0) };
+            toolTip1.SetToolTip(_listColors, Tip("Click = use as \"From\" color. Double click = copy the hex code.", "Klick = als \"From\"-Farbe nehmen. Doppelklick = Hex-Code kopieren."));
+            GroupBox list = Group("Colors in the image (old \"Evaluate\" / \"Color List\")",
+                Row(Btn("Refresh", (s, e) => RefreshColorList()), _chkListSkipBW, _lblColorCount),
+                _listColors);
+
+            FillTab(tabReplace, BuildPaletteGroup(), replace, list);
+        }
+
+        private void BuildOverlayTab()
+        {
+            _listLayers = new CheckedListBox { Width = 330, Height = 120, CheckOnClick = false, IntegralHeight = false };
+            _listLayers.SelectedIndexChanged += ListLayers_SelectedIndexChanged;
+            _listLayers.ItemCheck += ListLayers_ItemCheck;
+            toolTip1.SetToolTip(_listLayers, Tip("Top layer first. Checkbox = visible. Selected = the layer you move and change.",
+                "Oberste Ebene zuerst. Häkchen = sichtbar. Ausgewählt = die Ebene, die du verschiebst und änderst."));
+
+            _radioOvArtLand = new RadioButton { Text = "Land", AutoSize = true, Margin = new Padding(3, 6, 3, 0) };
+            var items = new RadioButton { Text = "Item", AutoSize = true, Checked = true, Margin = new Padding(3, 6, 3, 0) };
+            _txtOvArtId = new TextBox { Width = 70, Margin = new Padding(3, 4, 3, 0) };
+            GroupBox add = Group("Layers (graphics on top, stay movable)",
+                _listLayers,
+                Row(Btn("+ File...", (s, e) => LayerFromFile()), Btn("+ Clipboard", (s, e) => LayerFromClipboard()), Btn("+ Texture (texmaps)", (s, e) => LayerFromTexture())),
+                Row(Lbl("art.mul:"), items, _radioOvArtLand, _txtOvArtId, Btn("+ Add", (s, e) => LayerFromArt())),
+                Row(Btn("▲", (s, e) => MoveLayer(1), Tip("Layer up", "Ebene nach oben")), Btn("▼", (s, e) => MoveLayer(-1), Tip("Layer down", "Ebene nach unten")),
+                    Btn("Duplicate", (s, e) => DuplicateLayer()), Btn("Remove", (s, e) => RemoveLayer(ActiveLayer))),
+                Row(Btn("Burn in selected", (s, e) => BurnLayers(false), Tip("Draw the selected layer into the image and remove the layer.", "Ausgewählte Ebene ins Bild zeichnen und die Ebene entfernen.")),
+                    Btn("Burn in all", (s, e) => BurnLayers(true))));
+
+            _chkOvTransparent = Chk("Black / white transparent", true);
+            _chkOvTransparent.CheckedChanged += (s, e) =>
+            {
+                if (!_updating && ActiveLayer != null)
+                {
+                    ActiveLayer.BlackWhiteTransparent = _chkOvTransparent.Checked;
+                    canvas.Invalidate();
+                    NotifyTerrain();
+                }
+            };
+            _tbOpacity = new TrackBar { Minimum = 0, Maximum = 100, Value = 100, TickStyle = TickStyle.None, Width = 180, AutoSize = false, Height = 26 };
+            _lblOpacity = new Label { Text = "Opacity: 100 %", Width = 100, Margin = new Padding(3, 6, 3, 0) };
+            _tbOpacity.ValueChanged += (s, e) =>
+            {
+                _lblOpacity.Text = $"Opacity: {_tbOpacity.Value} %";
+                if (!_updating && ActiveLayer != null)
+                {
+                    ActiveLayer.Opacity = _tbOpacity.Value;
+                    canvas.Invalidate();
+                    NotifyTerrain();
+                }
+            };
+            _numOvScale = Num(5, 1600, 100);
+            _numOvScale.ValueChanged += (s, e) =>
+            {
+                if (!_updating && ActiveLayer != null)
+                {
+                    ActiveLayer.Scale = (int)_numOvScale.Value;
+                    canvas.Invalidate();
+                    NotifyTerrain();
+                }
+            };
+            _numOvX = Num(-4096, 4096, 0);
+            _numOvY = Num(-4096, 4096, 0);
+            EventHandler pos = (s, e) =>
+            {
+                if (_updating || ActiveLayer == null)
+                {
+                    return;
+                }
+                ActiveLayer.Position = new Point((int)_numOvX.Value, (int)_numOvY.Value);
+                canvas.Invalidate();
+                NotifyTerrain();
+            };
+            _numOvX.ValueChanged += pos;
+            _numOvY.ValueChanged += pos;
+            GroupBox place = Group("Selected layer",
+                Row(_lblOpacity, _tbOpacity),
+                Row(Lbl("Scale %:", 60), _numOvScale, Btn("Fit", (s, e) => FitLayer(), Tip("Scale the layer to the image size.", "Ebene auf Bildgröße skalieren."))),
+                Row(Lbl("X:", 20), _numOvX, Lbl("Y:"), _numOvY, Btn("Center", (s, e) => CenterLayer())),
+                Row(_chkOvTransparent, Btn("Move tool", (s, e) => SetTool(CanvasTool.Overlay))));
+
+            _radioFillTile = new RadioButton { Text = "Repeat (tile)", AutoSize = true, Checked = true, Margin = new Padding(3, 6, 3, 0) };
+            var stretch = new RadioButton { Text = "Stretch", AutoSize = true, Margin = new Padding(3, 6, 3, 0) };
+            GroupBox fill = Group("Fill the selection (old \"Fill Texture\")",
+                Row(_radioFillTile, stretch),
+                Row(Btn("With image file...", (s, e) => FillSelectionFromFile()), Btn("With selected layer", (s, e) => FillSelection(ActiveLayer?.Image))));
+
+            FillTab(tabOverlay, add, place, fill);
+            LoadLayerProperties();
+        }
+
+        private void BuildBlendTab()
+        {
+            _picBlendB = new PictureBox { Width = 64, Height = 64, BorderStyle = BorderStyle.FixedSingle, SizeMode = PictureBoxSizeMode.Zoom, Margin = new Padding(3) };
+            _lblBlendB = new Label { Text = "B: none", AutoSize = true, Margin = new Padding(3, 7, 3, 0) };
+            GroupBox source = Group("Texture B (A = the edited image)",
+                Row(_picBlendB, _lblBlendB),
+                Row(Btn("From texmaps (selected)", (s, e) => SetBlendB(_gridTex.SelectedItem >= 0 ? TextureMul.GetCopy(_gridTex.SelectedItem) : null, $"texture 0x{_gridTex.SelectedItem:X4}")),
+                    Btn("From layer", (s, e) => SetBlendB(ActiveLayer == null ? null : CutterImaging.To32Bpp(ActiveLayer.Source), ActiveLayer?.Name ?? "layer"))),
+                Row(Btn("From file...", (s, e) =>
+                    {
+                        using (var d = new OpenFileDialog { Filter = CutterImaging.ImageFilter })
+                        {
+                            if (d.ShowDialog(this) == DialogResult.OK)
+                            {
+                                SetBlendB(CutterImaging.LoadBitmap(d.FileName), Path.GetFileNameWithoutExtension(d.FileName));
+                            }
+                        }
+                    }),
+                    Btn("From clipboard", (s, e) => SetBlendB(ReadClipboard(), "clipboard"))));
+
+            _comboShape = new ComboBox { DropDownStyle = ComboBoxStyle.DropDownList, Width = 170 };
+            _comboShape.Items.AddRange(TextureBlend.ShapeNames);
+            _comboShape.SelectedIndex = 0;
+            _numSoftness = Num(0, 100, 35);
+            _numRoughness = Num(0, 100, 40);
+            _numSeed = Num(0, 99999, 1, 70);
+            EventHandler changed = (s, e) =>
+            {
+                if (_previewKind == PreviewKind.Transition)
+                {
+                    SchedulePreview(PreviewKind.Transition);
+                }
+            };
+            _comboShape.SelectedIndexChanged += changed;
+            _numSoftness.ValueChanged += changed;
+            _numRoughness.ValueChanged += changed;
+            _numSeed.ValueChanged += changed;
+            toolTip1.SetToolTip(_numSoftness, Tip("Width of the soft border (0 = hard edge).", "Breite des weichen Übergangs (0 = harte Kante)."));
+            toolTip1.SetToolTip(_numRoughness, Tip("How much the border wanders (natural, irregular edge).", "Wie stark die Kante wandert (natürlich, unregelmäßig)."));
+            toolTip1.SetToolTip(_numSeed, Tip("Other number = other pattern of the irregular edge.", "Andere Zahl = anderes Muster der unregelmäßigen Kante."));
+            _txtBlendTexId = new TextBox { Width = 80, Margin = new Padding(3, 4, 3, 0) };
+            GroupBox shape = Group("Transition A → B",
+                Row(Lbl("Shape:", 70), _comboShape),
+                Row(Lbl("Softness:", 70), _numSoftness, Lbl("Rough:"), _numRoughness),
+                Row(Lbl("Pattern:", 70), _numSeed, Btn("New", (s, e) => _numSeed.Value = new Random().Next(0, 99999))),
+                Row(Btn("Show preview", (s, e) => ShowTransitionPreview()), Btn("Apply", (s, e) => CommitPreview(true)), Btn("Cancel", (s, e) => CancelPreview())),
+                Row(Btn("All 9 → files", (s, e) => AllTransitions(false), Tip("Saves all nine shapes (edges, diagonals, corners, island).", "Speichert alle neun Formen (Kanten, Diagonalen, Ecken, Insel)."))),
+                Row(Btn("All 9 → texmaps from", (s, e) => AllTransitions(true)), _txtBlendTexId),
+                Row(Btn("Check in terrain preview", (s, e) => OpenTerrainPreview(), Tip("Shows the result on the ground next to other textures.", "Zeigt das Ergebnis auf dem Boden neben anderen Texturen."))));
+
+            FillTab(tabBlend, source, shape);
+        }
+
+        private GroupBox BuildPaletteGroup()
+        {
+            _paletteFlow = new FlowLayoutPanel { Width = 330, Height = 66, AutoScroll = true, BorderStyle = BorderStyle.FixedSingle, Margin = new Padding(3) };
+            _lblPalette = new Label { AutoSize = true, Margin = new Padding(3, 7, 3, 0) };
+            _numHue = Num(1, 3000, 1, 60);
+            toolTip1.SetToolTip(_numHue, Tip("UO hue number from hues.mul (32 colors each).", "UO-Hue-Nummer aus hues.mul (je 32 Farben)."));
+            return Group("Palette",
+                _paletteFlow,
+                Row(Btn("+ Color 1", (s, e) => { _palette.Add(canvas.PrimaryColor); RefreshPalette(); }),
+                    Btn("+ From image", (s, e) => PaletteFromImage(), Tip("The 16 most common colors of the image.", "Die 16 häufigsten Farben des Bildes.")),
+                    Btn("Clear", (s, e) => { _palette.Colors.Clear(); RefreshPalette(); }), _lblPalette),
+                Row(Lbl("UO hue:"), _numHue, Btn("+ Hue", (s, e) => PaletteFromHue()), Btn("Load...", (s, e) => LoadPalette()), Btn("Save...", (s, e) => SavePalette())));
+        }
+
+        private void BuildTexmapsTab()
+        {
+            _comboTexFilter = new ComboBox { DropDownStyle = ComboBoxStyle.DropDownList, Width = 70 };
+            _comboTexFilter.Items.AddRange(new object[] { "All", "Used", "Free" });
+            _comboTexFilter.SelectedIndex = 1;
+            _comboTexFilter.SelectedIndexChanged += (s, e) => RebuildTextureList();
+            _txtTexId = new TextBox { Width = 70, Margin = new Padding(3, 4, 3, 0) };
+            _txtTexId.KeyDown += (s, e) =>
+            {
+                if (e.KeyCode == Keys.Enter)
+                {
+                    e.SuppressKeyPress = true;
+                    GoToTexture();
+                }
+            };
+            var top = new FlowLayoutPanel { Dock = DockStyle.Top, Height = 34 };
+            top.Controls.AddRange(new Control[] { _comboTexFilter, Lbl("ID:"), _txtTexId, Btn("Go", (s, e) => GoToTexture()), Btn("Next free", (s, e) => NextFreeTexture()) });
+
+            _gridTex = new ArtTileGrid { Dock = DockStyle.Fill, Text = "texmaps.mul is not loaded.\nLoad the client files in UoFiddler." };
+            _gridTex.ImageProvider = id => TextureMul.GetShared(id);
+            _gridTex.LabelProvider = id => $"0x{id:X4}";
+            _gridTex.IsMarked = id => _usedTextures != null && !_usedTextures[id];
+            _gridTex.SelectionChanged += (s, e) => UpdateTexturePreview();
+            _gridTex.ItemActivated += (s, e) => TextureToEditor();
+
+            _panelTexPreview = new Panel { Dock = DockStyle.Top, Height = 140, BackColor = Color.FromArgb(45, 45, 48) };
+            _panelTexPreview.Paint += PanelTexPreview_Paint;
+            _lblTexInfo = new Label { Dock = DockStyle.Top, Height = 34, TextAlign = ContentAlignment.MiddleLeft };
+
+            var buttons = new TableLayoutPanel { Dock = DockStyle.Bottom, ColumnCount = 2, RowCount = 5, Height = 5 * 32 + 4 };
+            buttons.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50));
+            buttons.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50));
+            for (int i = 0; i < 5; i++)
+            {
+                buttons.RowStyles.Add(new RowStyle(SizeType.Absolute, 32));
+            }
+            Button B(string text, EventHandler click, string tip)
+            {
+                Button b = Btn(text, click, tip);
+                b.AutoSize = false;
+                b.Dock = DockStyle.Fill;
+                return b;
+            }
+            buttons.Controls.Add(B("→ Editor", (s, e) => TextureToEditor(), Tip("Load the texture into the editor (double click).", "Textur in den Editor laden (Doppelklick).")), 0, 0);
+            buttons.Controls.Add(B("→ Layer", (s, e) => LayerFromTexture(), Tip("Show the texture as a layer over the image (e.g. to compare).", "Textur als Ebene über dem Bild einblenden (z. B. zum Vergleichen).")), 1, 0);
+            buttons.Controls.Add(B("Image → ID", (s, e) => ImageToTexture(), Tip("Write the edited image into the selected ID (64 or 128).", "Bearbeitetes Bild in die gewählte ID schreiben (64 oder 128).")), 0, 1);
+            buttons.Controls.Add(B("Remove ID", (s, e) => RemoveTexture(), Tip("Remove the texture of the selected ID.", "Textur der gewählten ID entfernen.")), 1, 1);
+            buttons.Controls.Add(B("Copy texture", (s, e) => CopyTexture(), Tip("Copy the selected texture to the clipboard.", "Gewählte Textur in die Zwischenablage kopieren.")), 0, 2);
+            buttons.Controls.Add(B("Reload list", (s, e) => ReloadTextures(), Tip("Read the used / free IDs again.", "Belegte / freie IDs neu einlesen.")), 1, 2);
+            buttons.Controls.Add(B("Image → its land tiles", (s, e) => ImageToLandTilesOfTexture(), Tip("Turns the image into a 44 × 44 land tile and writes it into every land tile that uses the selected texture (tiledata).",
+                "Macht aus dem Bild eine 44 × 44 Landkachel und schreibt sie in jede Landkachel, die laut tiledata die gewählte Textur benutzt.")), 0, 3);
+            buttons.Controls.Add(B("Terrain preview", (s, e) => OpenTerrainPreview(), Tip("See the image on the ground (2D / 3D).", "Das Bild auf dem Boden ansehen (2D / 3D).")), 1, 3);
+            Button save = B("Save texmaps.mul", (s, e) => SaveTexmaps(), Tip("Save texidx.mul and texmaps.mul into the UoFiddler output folder.", "texidx.mul und texmaps.mul in den UoFiddler-Ausgabeordner speichern."));
+            buttons.Controls.Add(save, 0, 4);
+            buttons.SetColumnSpan(save, 2);
+
+            tabTexmaps.Controls.Add(_gridTex);
+            tabTexmaps.Controls.Add(_lblTexInfo);
+            tabTexmaps.Controls.Add(_panelTexPreview);
+            tabTexmaps.Controls.Add(top);
+            tabTexmaps.Controls.Add(buttons);
+        }
+
+        #endregion
+
+        #region Image, undo, preview
+
+        private void Canvas_BeginEdit(object sender, EventArgs e)
+        {
+            CommitPreview(false);
+            PushUndo();
+        }
+
+        private void PushUndo()
+        {
+            if (_image == null)
+            {
                 return;
             }
-
-            // Create a temporary directory to store the output images
-            string directory = "tempGrafic";
-            Directory.CreateDirectory(directory);
-
-            int counter = 1;
-            string timestamp = DateTime.Now.ToString("yyyyMMddHHmmss");
-
-            // Define a dictionary of tile sizes and their corresponding checkbox names
-            Dictionary<string, Size> tileSizes = new Dictionary<string, Size>
+            _undo.Add(CutterImaging.To32Bpp(_image));
+            if (_undo.Count > MaxUndo)
             {
-                { "checkBox33x33", new Size(33, 33) },
-                { "checkBox44x44", new Size(44, 44) },
-                { "checkBox64x64", new Size(64, 64) },
-                { "checkBox128x128", new Size(128, 128) },
-                { "checkBox256x256", new Size(256, 256) }
-            };
-
-            // Iterate through the dictionary
-            foreach (var kvp in tileSizes)
-            {
-                // Find the corresponding checkbox control
-                CheckBox checkBox = Controls.Find(kvp.Key, true).FirstOrDefault() as CheckBox;
-
-                // Check if the checkbox is not null and is checked
-                if (checkBox != null && checkBox.Checked)
-                {
-                    // Get the tile size from the dictionary value
-                    Size tileSize = kvp.Value;
-
-                    // Calculate the number of tiles needed to cover the image in both the x and y directions
-                    int tileCountX = (int)Math.Ceiling((double)pictureBox1.Image.Width / tileSize.Width);
-                    int tileCountY = (int)Math.Ceiling((double)pictureBox1.Image.Height / tileSize.Height);
-
-                    // Use nested loops to iterate through each tile position
-                    for (int y = 0; y < tileCountY; y++)
-                    {
-                        for (int x = 0; x < tileCountX; x++)
-                        {
-                            // Define the output file name and path
-                            string outputFileName = $"TextureImage{counter:D2}_{timestamp}.bmp";
-                            string outputPath = Path.Combine(directory, outputFileName);
-
-                            // Call the CropImage method to crop the image and save it to the temporary directory
-                            CropImage(pictureBox1.Image, tileSize.Width, tileSize.Height, outputPath, x * tileSize.Width, y * tileSize.Height);
-                            counter++;
-                        }
-                    }
-                }
+                _undo[0].Dispose();
+                _undo.RemoveAt(0);
             }
-
-            int customTileSizeW, customTileSizeH;
-
-            // Check if custom tile sizes have been entered by the user
-            if (int.TryParse(textBoxSizeW.Text, out customTileSizeW) && int.TryParse(textBoxSizeH.Text, out customTileSizeH))
+            foreach (Bitmap b in _redo)
             {
-                // Ensure that the custom tile size does not exceed the size of the image
-                customTileSizeW = Math.Min(customTileSizeW, pictureBox1.Image.Width);
-                customTileSizeH = Math.Min(customTileSizeH, pictureBox1.Image.Height);
+                b.Dispose();
+            }
+            _redo.Clear();
+            SyncUi();
+        }
 
-                // Find the checkBox1 control
-                CheckBox checkBox1 = Controls.Find("checkBox1", true).FirstOrDefault() as CheckBox;
-
-                // Check if checkBox1 is not checked
-                if (checkBox1 == null || !checkBox1.Checked)
-                {
-                    // Define a list of disallowed custom tile sizes
-                    List<Size> disallowedCustomTileSizes = new List<Size>
+        private void Undo()
+        {
+            CancelPreview();
+            if (_undo.Count == 0)
             {
-                new Size(1, 1),
-                new Size(1, 2),
-                new Size(2, 1),
-                new Size(2, 2),
-                new Size(3, 3),
-                new Size(3, 4),
-                new Size(4, 4),
-                new Size(5, 5)
-            };
+                return;
+            }
+            if (_image != null)
+            {
+                _redo.Add(_image);
+            }
+            _image = _undo[_undo.Count - 1];
+            _undo.RemoveAt(_undo.Count - 1);
+            ShowImage();
+            SetMessage($"Undo ({_undo.Count} more).");
+        }
 
-                    // Check if the custom tile size is in the list of disallowed custom tile sizes
-                    if (disallowedCustomTileSizes.Contains(new Size(customTileSizeW, customTileSizeH)))
+        private void Redo()
+        {
+            CancelPreview();
+            if (_redo.Count == 0)
+            {
+                return;
+            }
+            if (_image != null)
+            {
+                _undo.Add(_image);
+            }
+            _image = _redo[_redo.Count - 1];
+            _redo.RemoveAt(_redo.Count - 1);
+            ShowImage();
+            SetMessage($"Redo ({_redo.Count} more).");
+        }
+
+        /// <summary>Shows _image on the canvas after it was replaced.</summary>
+        private void ShowImage()
+        {
+            Size old = canvas.Image?.Size ?? Size.Empty;
+            canvas.Image = _image;
+            if (_image != null && old != _image.Size)
+            {
+                canvas.ClearSelection();
+                UpdateResizeFields();
+            }
+            CenterCanvas();
+            SyncUi();
+            UpdateStatus();
+            panelCanvas.Invalidate();
+            NotifyTerrain();
+        }
+
+        /// <summary>Replaces the image (the old one is kept in the undo list by the caller).</summary>
+        private void ReplaceImage(Bitmap bmp)
+        {
+            Bitmap old = _image;
+            _image = bmp;
+            ShowImage();
+            if (old != null && !ReferenceEquals(old, bmp) && !_undo.Contains(old) && !_redo.Contains(old))
+            {
+                old.Dispose();
+            }
+        }
+
+        private void LoadImage(Bitmap bmp, string name)
+        {
+            CancelPreview();
+            if (_image != null)
+            {
+                PushUndo();
+            }
+            ReplaceImage(bmp);
+            canvas.ClearSelection();
+            FitZoom();
+            UpdateResizeFields();
+            SetMessage($"Loaded {name} ({bmp.Width}×{bmp.Height}).");
+        }
+
+        /// <summary>Only the selected area takes the change when "only selection" is on.</summary>
+        private Bitmap MaybeMergeSelection(Bitmap result)
+        {
+            if (!_onlySelection || !canvas.HasSelection || result.Size != _image.Size)
+            {
+                return result;
+            }
+            Bitmap merged = CutterImaging.To32Bpp(_image);
+            using (GraphicsPath path = canvas.GetSelectionPath())
+            using (var g = Graphics.FromImage(merged))
+            {
+                g.SetClip(path);
+                g.CompositingMode = CompositingMode.SourceCopy;
+                g.DrawImage(result, new Rectangle(0, 0, merged.Width, merged.Height));
+            }
+            result.Dispose();
+            return merged;
+        }
+
+        /// <summary>Runs a filter on the image with undo. sizeChanging: no selection merge (rotate, resize, ...).</summary>
+        private void ApplyFilter(string name, Func<Bitmap, Bitmap> filter, bool sizeChanging = false)
+        {
+            if (!CheckImage())
+            {
+                return;
+            }
+            CommitPreview(false);
+            Bitmap result;
+            Cursor.Current = Cursors.WaitCursor;
+            try
+            {
+                result = filter(_image);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(this, $"{name} failed:\n{ex.Message}", "Texture Cutter", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+            finally
+            {
+                Cursor.Current = Cursors.Default;
+            }
+            if (result == null)
+            {
+                return;
+            }
+            if (!sizeChanging)
+            {
+                result = MaybeMergeSelection(result);
+            }
+            PushUndo();
+            ReplaceImage(result);
+            SetMessage($"{name} applied" + (_onlySelection && canvas.HasSelection && !sizeChanging ? " (inside the selection)." : "."));
+        }
+
+        private static Bitmap Rotated(Bitmap b, RotateFlipType type)
+        {
+            Bitmap copy = CutterImaging.To32Bpp(b);
+            copy.RotateFlip(type);
+            return copy;
+        }
+
+        private void SchedulePreview(PreviewKind kind)
+        {
+            if (_image == null)
+            {
+                return;
+            }
+            if (_previewKind != PreviewKind.None && _previewKind != kind)
+            {
+                ResetPreviewControls(kind);
+            }
+            _previewKind = kind;
+            previewTimer.Stop();
+            previewTimer.Start();
+        }
+
+        private void SchedulePreviewRefresh()
+        {
+            if (_previewKind != PreviewKind.None)
+            {
+                SchedulePreview(_previewKind);
+            }
+        }
+
+        private ColorAdjust CurrentAdjust() => new ColorAdjust
+        {
+            Brightness = _tbBright.Value,
+            Contrast = _tbContrast.Value,
+            Gamma = _tbGamma.Value,
+            Saturation = _tbSat.Value,
+            Hue = _tbHue.Value,
+            Grayscale = _chkGray.Checked
+        };
+
+        private void PreviewTimer_Tick(object sender, EventArgs e)
+        {
+            previewTimer.Stop();
+            if (_image == null || _previewKind == PreviewKind.None)
+            {
+                return;
+            }
+            Bitmap preview = null;
+            switch (_previewKind)
+            {
+                case PreviewKind.Adjust:
+                    ColorAdjust a = CurrentAdjust();
+                    if (a.IsNeutral)
                     {
-                        // Display a message to the user and exit the method
-                        MessageBox.Show("This tile size is only allowed at your own risk by enabling checkBox.");
+                        CancelPreview();
                         return;
                     }
-                }
-
-                // Calculate the number of tiles needed to cover the image in both the x and y directions based on the custom tile size
-                int customTileCountX = (int)Math.Ceiling((double)pictureBox1.Image.Width / customTileSizeW);
-                int customTileCountY = (int)Math.Ceiling((double)pictureBox1.Image.Height / customTileSizeH);
-
-                // Use nested loops to iterate through each tile position
-                for (int y = 0; y < customTileCountY; y++)
-                {
-                    for (int x = 0; x < customTileCountX; x++)
+                    preview = TextureImaging.Adjust(_image, a, _protectBlackWhite);
+                    break;
+                case PreviewKind.Mode:
+                    if (_comboModes.SelectedItem is Class.TextureCutter.ColorMode mode)
                     {
-                        // Define the output file name and path
-                        string outputFileName = $"TextureImageCustom{counter:D2}_{timestamp}.bmp";
-                        string outputPath = Path.Combine(directory, outputFileName);
+                        preview = TextureImaging.ApplyColorMode(_image, mode, _protectBlackWhite);
+                    }
+                    break;
+                case PreviewKind.Particle:
+                    preview = TextureImaging.ParticleGrey(_image, _particleColor, _radioParticleShaded.Checked);
+                    break;
+                case PreviewKind.Transition:
+                    if (_blendB != null)
+                    {
+                        preview = MakeTransition(_image, (TransitionShape)Math.Max(0, _comboShape.SelectedIndex));
+                    }
+                    break;
+            }
+            if (preview == null)
+            {
+                return;
+            }
+            preview = MaybeMergeSelection(preview);
+            _previewImage?.Dispose();
+            _previewImage = preview;
+            canvas.Image = _previewImage;
+            NotifyTerrain();
+            _lblPreview.Text = "Preview – not applied yet.";
+            _lblPreview.ForeColor = Color.DarkRed;
+            UpdateStatus();
+        }
 
-                        // Call the CropImage method to crop the image and save it to the temporary directory
-                        CropImage(pictureBox1.Image, customTileSizeW, customTileSizeH, outputPath, x * customTileSizeW, y * customTileSizeH);
-                        counter++;
+        /// <summary>Puts the preview into the image (with undo).</summary>
+        private void CommitPreview(bool showMessage)
+        {
+            previewTimer.Stop();
+            if (_previewImage == null)
+            {
+                if (_previewKind != PreviewKind.None)
+                {
+                    ResetPreviewControls(PreviewKind.None);
+                }
+                return;
+            }
+            Bitmap result = _previewImage;
+            _previewImage = null;
+            PushUndo();
+            ReplaceImage(result);
+            ResetPreviewControls(PreviewKind.None);
+            if (showMessage)
+            {
+                SetMessage("Color change applied.");
+            }
+        }
+
+        private void CancelPreview()
+        {
+            previewTimer.Stop();
+            if (_previewImage != null)
+            {
+                _previewImage.Dispose();
+                _previewImage = null;
+                canvas.Image = _image;
+            }
+            ResetPreviewControls(PreviewKind.None);
+            UpdateStatus();
+        }
+
+        /// <summary>Sets the controls of all preview kinds except "keep" back to neutral.</summary>
+        private void ResetPreviewControls(PreviewKind keep)
+        {
+            _resettingPreviewControls = true;
+            if (keep != PreviewKind.Adjust)
+            {
+                _tbBright.Value = _tbContrast.Value = _tbGamma.Value = _tbSat.Value = _tbHue.Value = 0;
+                _chkGray.Checked = false;
+            }
+            if (keep != PreviewKind.Mode)
+            {
+                _comboModes.SelectedIndex = -1;
+            }
+            _resettingPreviewControls = false;
+            _previewKind = keep;
+            if (keep == PreviewKind.None)
+            {
+                _lblPreview.Text = "No preview.";
+                _lblPreview.ForeColor = Color.DimGray;
+            }
+        }
+
+        private void StepMode(int delta)
+        {
+            if (!CheckImage())
+            {
+                return;
+            }
+            int n = TextureImaging.ColorModes.Length;
+            int i = _comboModes.SelectedIndex < 0 ? (delta > 0 ? 0 : n - 1) : (_comboModes.SelectedIndex + delta + n) % n;
+            _comboModes.SelectedIndex = i;
+        }
+
+        #endregion
+
+        #region Canvas events, zoom
+
+        private void Canvas_HoverPixel(object sender, Point p)
+        {
+            Bitmap shown = canvas.Image;
+            if (p.X < 0 || shown == null || p.X >= shown.Width || p.Y >= shown.Height)
+            {
+                statusPos.Text = string.Empty;
+                statusColor.Text = string.Empty;
+                statusColor.BackColor = SystemColors.Control;
+                return;
+            }
+            Color c = shown.GetPixel(p.X, p.Y);
+            statusPos.Text = $"X {p.X}  Y {p.Y}";
+            statusColor.Text = c.A == 0 ? "transparent" : $"{Hex(c)}  ({c.R}, {c.G}, {c.B})";
+            statusColor.BackColor = c.A == 0 ? SystemColors.Control : c;
+            statusColor.ForeColor = c.R * 0.299 + c.G * 0.587 + c.B * 0.114 > 150 || c.A == 0 ? Color.Black : Color.White;
+        }
+
+        private void StartPick(PickTarget target)
+        {
+            if (!CheckImage())
+            {
+                return;
+            }
+            _toolBeforePick = canvas.Tool == CanvasTool.Pipette ? CanvasTool.Select : canvas.Tool;
+            canvas.Tool = CanvasTool.Pipette;
+            _pickTarget = target;
+            SyncUi();
+            SetMessage("Click a pixel in the image (Esc = cancel).");
+        }
+
+        private void Canvas_ColorPicked(object sender, (Color Color, bool Secondary) pick)
+        {
+            Color c = Color.FromArgb(255, pick.Color);
+            switch (_pickTarget)
+            {
+                case PickTarget.From:
+                    SetFromColor(c);
+                    SetTool(_toolBeforePick);
+                    break;
+                case PickTarget.To:
+                    SetToColor(c);
+                    SetTool(_toolBeforePick);
+                    break;
+                default:
+                    if (pick.Secondary)
+                    {
+                        SetSecondary(c);
+                    }
+                    else
+                    {
+                        SetPrimary(c);
+                    }
+                    break;
+            }
+            SetMessage($"Picked {Hex(c)}" + (pick.Color.A == 0 ? " (pixel was transparent)." : "."));
+        }
+
+        private void Canvas_MouseWheel(object sender, MouseEventArgs e)
+        {
+            if ((ModifierKeys & Keys.Control) != Keys.Control)
+            {
+                return;
+            }
+            if (e is HandledMouseEventArgs h)
+            {
+                h.Handled = true;
+            }
+            SetZoom(canvas.Zoom + (e.Delta > 0 ? 1 : -1));
+        }
+
+        private void SetZoom(int zoom)
+        {
+            canvas.Zoom = zoom;
+            CenterCanvas();
+            SyncUi();
+            UpdateStatus();
+        }
+
+        private void FitZoom()
+        {
+            if (_image == null)
+            {
+                return;
+            }
+            Size client = panelCanvas.ClientSize;
+            int repeat = canvas.TiledView ? 3 : 1;
+            int z = Math.Min((client.Width - 10) / (_image.Width * repeat), (client.Height - 10) / (_image.Height * repeat));
+            SetZoom(Math.Max(1, Math.Min(16, z)));
+        }
+
+        private void CenterCanvas()
+        {
+            Size client = panelCanvas.ClientSize;
+            Point scroll = panelCanvas.AutoScrollPosition;
+            int x = Math.Max(0, (client.Width - canvas.Width) / 2) + scroll.X;
+            int y = Math.Max(0, (client.Height - canvas.Height) / 2) + scroll.Y;
+            canvas.Location = new Point(x, y);
+        }
+
+        private void PanelCanvas_Resize(object sender, EventArgs e) => CenterCanvas();
+
+        private void PanelCanvas_Paint(object sender, PaintEventArgs e)
+        {
+            if (_image != null)
+            {
+                return;
+            }
+            const string hint = "No image.\nOpen one (Ctrl+O), paste one (Ctrl+V) or load a texture in the texmaps tab.\n\n"
+                                + "Kein Bild.\nÖffnen (Strg+O), einfügen (Strg+V) oder eine Textur im Reiter texmaps laden.";
+            TextRenderer.DrawText(e.Graphics, hint, Font, panelCanvas.ClientRectangle, Color.Gainsboro,
+                TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.WordBreak);
+        }
+
+        #endregion
+
+        #region File, clipboard
+
+        private void OpenImage()
+        {
+            using (var dialog = new OpenFileDialog { Filter = CutterImaging.ImageFilter, Title = "Open image" })
+            {
+                if (dialog.ShowDialog(this) != DialogResult.OK)
+                {
+                    return;
+                }
+                try
+                {
+                    LoadImage(CutterImaging.LoadBitmap(dialog.FileName), Path.GetFileName(dialog.FileName));
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(this, "The image could not be loaded:\n" + ex.Message, "Open image", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+        }
+
+        private Bitmap ReadClipboard()
+        {
+            try
+            {
+                Bitmap bmp = CutterImaging.GetClipboardImage();
+                if (bmp == null)
+                {
+                    SetMessage("The clipboard contains no image.");
+                }
+                return bmp;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(this, "The clipboard could not be read:\n" + ex.Message, "Paste", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return null;
+            }
+        }
+
+        private void PasteImage()
+        {
+            Bitmap bmp = ReadClipboard();
+            if (bmp != null)
+            {
+                LoadImage(bmp, "clipboard image");
+            }
+        }
+
+        private void NewImage()
+        {
+            int size = (int)_numTileW.Value;
+            CancelPreview();
+            var bmp = new Bitmap(size, (int)_numTileH.Value, PixelFormat.Format32bppArgb);
+            using (var g = Graphics.FromImage(bmp))
+            {
+                g.Clear(Color.Transparent);
+            }
+            LoadImage(bmp, "new empty image (tile size)");
+        }
+
+        private string Extension
+        {
+            get
+            {
+                switch (_tsFormat.SelectedIndex)
+                {
+                    case 1: return ".png";
+                    case 2: return ".tiff";
+                    case 3: return ".jpeg";
+                    default: return ".bmp";
+                }
+            }
+        }
+
+        private void QuickSave()
+        {
+            if (!CheckImage())
+            {
+                return;
+            }
+            CommitPreview(false);
+            try
+            {
+                Directory.CreateDirectory(OutputDirectory);
+                string file = Path.Combine(OutputDirectory, "TextureSingleImage_" + DateTime.Now.ToString("yyyyMMdd_HHmmss_fff") + Extension);
+                using (Bitmap output = Output())
+                {
+                    CutterImaging.SaveImage(output, file, TransparentFill.Keep);
+                }
+                SetMessage("Saved: " + file);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(this, "The image could not be saved:\n" + ex.Message, "Save", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void SaveAs()
+        {
+            if (!CheckImage())
+            {
+                return;
+            }
+            CommitPreview(false);
+            using (var dialog = new SaveFileDialog { Filter = "PNG|*.png|BMP|*.bmp|TIFF|*.tiff|JPEG|*.jpg", FileName = "Texture_" + DateTime.Now.ToString("yyyyMMdd_HHmmss") })
+            {
+                if (Directory.Exists(OutputDirectory))
+                {
+                    dialog.InitialDirectory = OutputDirectory;
+                }
+                if (dialog.ShowDialog(this) != DialogResult.OK)
+                {
+                    return;
+                }
+                try
+                {
+                    using (Bitmap output = Output())
+                    {
+                        CutterImaging.SaveImage(output, dialog.FileName, TransparentFill.Keep);
+                    }
+                    SetMessage("Saved: " + dialog.FileName);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(this, "The image could not be saved:\n" + ex.Message, "Save", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+        }
+
+        private static void OpenFolder(string folder)
+        {
+            try
+            {
+                Directory.CreateDirectory(folder);
+                Process.Start(new ProcessStartInfo(folder) { UseShellExecute = true });
+            }
+            catch (Exception)
+            {
+                // Explorer not available.
+            }
+        }
+
+        private void CopyImage()
+        {
+            if (!CheckImage())
+            {
+                return;
+            }
+            try
+            {
+                using (Bitmap output = Output())
+                {
+                    CutterImaging.CopyToClipboard(output);
+                }
+                SetMessage("Image copied to the clipboard" + (_previewImage != null ? " (with the preview)" : string.Empty) + (HasVisibleLayers ? " (with the layers)." : "."));
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(this, "Copy failed:\n" + ex.Message, "Copy", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private Bitmap ExtractSelection(Bitmap source)
+        {
+            Rectangle bounds = canvas.GetSelectionBounds();
+            if (bounds.Width <= 0 || bounds.Height <= 0)
+            {
+                return null;
+            }
+            var bmp = new Bitmap(bounds.Width, bounds.Height, PixelFormat.Format32bppArgb);
+            using (GraphicsPath path = canvas.GetSelectionPath())
+            using (var g = Graphics.FromImage(bmp))
+            {
+                g.Clear(Color.Transparent);
+                g.TranslateTransform(-bounds.X, -bounds.Y);
+                if (canvas.SelectionShape != CanvasSelection.Rectangle)
+                {
+                    g.SetClip(path);
+                }
+                g.DrawImage(source, new Rectangle(0, 0, source.Width, source.Height));
+            }
+            return bmp;
+        }
+
+        private void CopySelection()
+        {
+            if (!CheckImage())
+            {
+                return;
+            }
+            using (Bitmap part = ExtractSelection(canvas.Image))
+            {
+                if (part == null)
+                {
+                    SetMessage("Select an area first.");
+                    return;
+                }
+                try
+                {
+                    CutterImaging.CopyToClipboard(part);
+                    SetMessage($"Selection {part.Width}×{part.Height} copied.");
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(this, "Copy failed:\n" + ex.Message, "Copy", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+        }
+
+        private void CropToSelection()
+        {
+            if (!CheckImage())
+            {
+                return;
+            }
+            if (!canvas.HasSelection)
+            {
+                SetMessage("Select an area first.");
+                return;
+            }
+            ApplyFilter("Crop", ExtractSelection, true);
+        }
+
+        private void DeleteSelection()
+        {
+            if (!CheckImage() || !canvas.HasSelection)
+            {
+                return;
+            }
+            ApplyFilter("Delete selection", b =>
+            {
+                Bitmap copy = CutterImaging.To32Bpp(b);
+                using (GraphicsPath path = canvas.GetSelectionPath())
+                using (var g = Graphics.FromImage(copy))
+                {
+                    g.CompositingMode = CompositingMode.SourceCopy;
+                    using (var brush = new SolidBrush(Color.Transparent))
+                    {
+                        g.FillPath(brush, path);
                     }
                 }
-            }
-
-            // Display a message to the user indicating that the graphic was successfully cropped and saved in the temporary directory.
-            MessageBox.Show("The graphic has been successfully cropped and saved in the temporary directory.");
+                return copy;
+            }, true);
         }
 
-        private void CropImage(Image image, int width, int height, string outputPath, int x, int y)
+        #endregion
+
+        #region Tiles, size, land tiles
+
+        private void UpdateGrid()
         {
-            using (Bitmap bitmap = new Bitmap(width, height))
+            canvas.GridSize = new Size((int)_numTileW.Value, (int)_numTileH.Value);
+            canvas.GridOffset = new Point((int)_numOffX.Value, (int)_numOffY.Value);
+            canvas.Invalidate();
+        }
+
+        private Size TileSize => new Size((int)_numTileW.Value, (int)_numTileH.Value);
+
+        private List<(Bitmap Tile, Point Position)> CutTiles()
+        {
+            CommitPreview(false);
+            using (Bitmap output = Output())
             {
-                using (Graphics graphics = Graphics.FromImage(bitmap))
+                var tiles = TextureImaging.CutTiles(output, TileSize, new Point((int)_numOffX.Value, (int)_numOffY.Value), _chkPad.Checked, _chkSkipEmpty.Checked);
+                if (tiles.Count == 0)
                 {
-                    graphics.DrawImage(image, new Rectangle(0, 0, width, height), new Rectangle(x, y, width, height), GraphicsUnit.Pixel);
+                    MessageBox.Show(this, "No tile fits into the image. Turn on \"Also cut the incomplete tiles\" or choose a smaller size.",
+                        "Cut tiles", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
-
-                bitmap.Save(outputPath, ImageFormat.Bmp);
+                return tiles;
             }
         }
 
-        private void ButtonOpenTempGrafic_Click(object sender, EventArgs e)
+        private void CutTilesToFiles()
         {
-            // Get the path to the program directory
-            string programDirectory = Application.StartupPath;
-
-            // Define the path to the temporary directory in the program directory
-            string directory = Path.Combine(programDirectory, "tempGrafic");
-
-            // Check if the directory exists
-            if (Directory.Exists(directory))
+            if (!CheckImage())
             {
-                // Open the directory in the file explorer
-                Process.Start("explorer.exe", directory);
+                return;
+            }
+            Size size = TileSize;
+            int estimate = ((_image.Width + size.Width - 1) / size.Width) * ((_image.Height + size.Height - 1) / size.Height);
+            if (estimate > 2000 && MessageBox.Show(this, $"This creates about {estimate} files. Continue?", "Cut tiles", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) != DialogResult.Yes)
+            {
+                return;
+            }
+            List<(Bitmap Tile, Point Position)> tiles = CutTiles();
+            if (tiles.Count == 0)
+            {
+                return;
+            }
+            string folder = Path.Combine(OutputDirectory, $"Tiles_{size.Width}x{size.Height}_{DateTime.Now:yyyyMMdd_HHmmss}");
+            try
+            {
+                Directory.CreateDirectory(folder);
+                int n = 1;
+                foreach ((Bitmap tile, Point pos) in tiles)
+                {
+                    CutterImaging.SaveImage(tile, Path.Combine(folder, $"TextureImage{n:D3}_x{pos.X}_y{pos.Y}{Extension}"), TransparentFill.Keep);
+                    n++;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(this, "Saving the tiles failed:\n" + ex.Message, "Cut tiles", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+            finally
+            {
+                tiles.ForEach(t => t.Tile.Dispose());
+            }
+            SetMessage($"{tiles.Count} tiles saved in {folder}");
+            if (MessageBox.Show(this, $"{tiles.Count} tiles were saved in:\n{folder}\n\nOpen the folder?", "Cut tiles", MessageBoxButtons.YesNo, MessageBoxIcon.Information) == DialogResult.Yes)
+            {
+                OpenFolder(folder);
+            }
+        }
+
+        private void FindFreeTextureBlock()
+        {
+            if (!TextureMul.IsAvailable || _image == null)
+            {
+                SetMessage("texmaps.mul is not loaded or no image is open.");
+                return;
+            }
+            Size size = TileSize;
+            int count = Math.Max(1, (_image.Width / size.Width) * (_image.Height / size.Height));
+            CutterImaging.TryParseId(_txtTexStart.Text, out int start);
+            int id = TextureMul.FindFreeBlock(start, count);
+            if (id < 0)
+            {
+                SetMessage($"No {count} free texture IDs in a row found.");
+                return;
+            }
+            _txtTexStart.Text = $"0x{id:X4}";
+            SetMessage($"Free block for {count} tiles: 0x{id:X4} – 0x{id + count - 1:X4}");
+        }
+
+        private void CutTilesToTexmaps()
+        {
+            if (!CheckImage())
+            {
+                return;
+            }
+            if (!TextureMul.IsAvailable)
+            {
+                MessageBox.Show(this, "texmaps.mul is not loaded. Load the client files in UoFiddler first.", "texmaps", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+            if (!TextureMul.IsValidSize(TileSize))
+            {
+                MessageBox.Show(this, "Textures must be 64 × 64 or 128 × 128. Choose one of these tile sizes.", "texmaps", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+            if (!CutterImaging.TryParseId(_txtTexStart.Text, out int start))
+            {
+                MessageBox.Show(this, "Enter the first texture ID (hex 0x1A2B or decimal) or use \"Free block\".", "texmaps", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+            List<(Bitmap Tile, Point Position)> tiles = CutTiles();
+            if (tiles.Count == 0)
+            {
+                return;
+            }
+            try
+            {
+                string question = $"Write {tiles.Count} tiles into texmaps.mul from 0x{start:X4} on?" + (_chkTexSkipUsed.Checked ? "\nUsed IDs are skipped." : "\nUsed IDs are REPLACED.");
+                if (MessageBox.Show(this, question, "texmaps", MessageBoxButtons.OKCancel, MessageBoxIcon.Question) != DialogResult.OK)
+                {
+                    return;
+                }
+                List<int> ids = TextureMul.WriteMany(start, tiles.Select(t => t.Tile).ToList(), _chkTexSkipUsed.Checked, this);
+                MarkTexturesUsed(ids);
+                string range = ids.Count > 0 ? $"0x{ids[0]:X4} – 0x{ids[ids.Count - 1]:X4}" : "-";
+                SetMessage($"{ids.Count} tiles written to texmaps ({range}). Save texmaps.mul to keep them.");
+                if (ids.Count > 0)
+                {
+                    SelectTexture(ids[0]);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(this, "Writing failed:\n" + ex.Message, "texmaps", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            finally
+            {
+                tiles.ForEach(t => t.Tile.Dispose());
+            }
+        }
+
+        private void UpdateResizeFields()
+        {
+            if (_image == null || _numResizeW == null)
+            {
+                return;
+            }
+            _updating = true;
+            _numResizeW.Value = Math.Min(_numResizeW.Maximum, _image.Width);
+            _numResizeH.Value = Math.Min(_numResizeH.Maximum, _image.Height);
+            _updating = false;
+        }
+
+        private void KeepAspect(bool widthChanged)
+        {
+            if (_updating || !_chkKeepAspect.Checked || _image == null)
+            {
+                return;
+            }
+            _updating = true;
+            if (widthChanged)
+            {
+                _numResizeH.Value = Math.Max(1, Math.Min(_numResizeH.Maximum, (int)Math.Round((double)_numResizeW.Value * _image.Height / _image.Width)));
             }
             else
             {
-                // Display a message to the user indicating that the directory does not exist
-                MessageBox.Show("The directory tempGraphic does not exist.");
+                _numResizeW.Value = Math.Max(1, Math.Min(_numResizeW.Maximum, (int)Math.Round((double)_numResizeH.Value * _image.Width / _image.Height)));
+            }
+            _updating = false;
+        }
+
+        private void ResizeImage(int square)
+        {
+            if (!CheckImage())
+            {
+                return;
+            }
+            int w = square > 0 ? square : (int)_numResizeW.Value;
+            int h = square > 0 ? square : (int)_numResizeH.Value;
+            var quality = (TextureImaging.ResizeQuality)_comboQuality.SelectedIndex;
+            ApplyFilter($"Resize to {w}×{h}", b => TextureImaging.Resize(b, w, h, quality), true);
+        }
+
+        private void MakeLandTile()
+        {
+            if (!CheckImage())
+            {
+                return;
+            }
+            if (_image.Width != _image.Height &&
+                MessageBox.Show(this, "The image is not square, the land tile will be stretched. Continue?", "Land tile", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
+            {
+                return;
+            }
+            ApplyFilter("Texture → land tile", b => TextureImaging.TextureToLandTile(b, _chkBlackOutside.Checked), true);
+        }
+
+        private void LandTileToTexture()
+        {
+            if (!CheckImage())
+            {
+                return;
+            }
+            if (_image.Width != TextureImaging.LandTileSize || _image.Height != TextureImaging.LandTileSize)
+            {
+                MessageBox.Show(this, "The image must be a 44 × 44 land tile.", "Land tile → texture", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+            int size = _comboLandToTex.SelectedIndex == 1 ? 128 : 64;
+            ApplyFilter("Land tile → texture", b => TextureImaging.LandTileToTexture(b, size), true);
+        }
+
+        private void MakeSeamless()
+        {
+            int blend = (int)_numSeamless.Value;
+            ApplyFilter("Make seamless", b => TextureImaging.MakeSeamless(b, blend), true);
+        }
+
+        private bool ReadArtLandId(out int id)
+        {
+            if (CutterImaging.TryParseId(_txtArtLandId.Text, out id) && id >= 0 && id <= CutterArt.MaxId(ArtKind.Land))
+            {
+                return true;
+            }
+            MessageBox.Show(this, "Enter a land tile ID (hex 0x1A2B or decimal, 0 – 0x3FFF).", "art.mul", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            return false;
+        }
+
+        private void LoadArtLand()
+        {
+            if (!ReadArtLandId(out int id))
+            {
+                return;
+            }
+            Bitmap bmp = CutterArt.GetCopy(ArtKind.Land, id);
+            if (bmp == null)
+            {
+                SetMessage($"Land tile 0x{id:X4} is empty or art.mul is not loaded.");
+                return;
+            }
+            LoadImage(bmp, $"land tile 0x{id:X4}");
+        }
+
+        private void WriteArtLand()
+        {
+            if (!CheckImage() || !ReadArtLandId(out int id))
+            {
+                return;
+            }
+            CommitPreview(false);
+            if (HasVisibleLayers)
+            {
+                SetMessage("Note: the visible layers are written too.");
+            }
+            if (_image.Width != CutterArt.LandSize || _image.Height != CutterArt.LandSize)
+            {
+                MessageBox.Show(this, "Land tiles must be 44 × 44. Use \"Texture → land tile\" first.", "art.mul", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+            if (!CutterArt.IsAvailable)
+            {
+                MessageBox.Show(this, "art.mul is not loaded.", "art.mul", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+            if (CutterArt.IsValid(ArtKind.Land, id) &&
+                MessageBox.Show(this, $"Land tile 0x{id:X4} already contains a graphic. Replace it?", "art.mul", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) != DialogResult.Yes)
+            {
+                return;
+            }
+            try
+            {
+                using (Bitmap output = Output())
+                {
+                    CutterArt.Write(ArtKind.Land, id, output, this);
+                }
+                SetMessage($"Written to land tile 0x{id:X4}. Save art.mul in UoFiddler (Land tiles tab) to keep it.");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(this, "Writing failed:\n" + ex.Message, "art.mul", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
-        #region Relesution
-        private void ButtonShrinkTexture_Click(object sender, EventArgs e)
+        #endregion
+
+        #region Replace colors and color list
+
+        private void SetFromColor(Color c)
         {
-            // Check if an image is loaded in the PictureBox.
-            if (pictureBox1.Image == null)
+            _fromColor = c;
+            PaintSwatchButton(_btnFrom, c);
+            if (!string.Equals(_txtFrom.Text, Hex(c), StringComparison.OrdinalIgnoreCase))
             {
-                // Display a message and exit the method.
-                MessageBox.Show("No image was loaded..");
+                _txtFrom.Text = Hex(c);
+            }
+        }
+
+        private void SetToColor(Color c)
+        {
+            _toColor = c;
+            PaintSwatchButton(_btnTo, c);
+            if (!string.Equals(_txtTo.Text, Hex(c), StringComparison.OrdinalIgnoreCase))
+            {
+                _txtTo.Text = Hex(c);
+            }
+        }
+
+        /// <summary>No message boxes while typing: invalid codes only turn the field red.</summary>
+        private static void HexChanged(TextBox box, Action<Color> set)
+        {
+            if (TryParseHex(box.Text, out Color c))
+            {
+                box.BackColor = SystemColors.Window;
+                set(c);
+            }
+            else
+            {
+                box.BackColor = Color.MistyRose;
+            }
+        }
+
+        private int ToleranceValue => (int)Math.Round((int)_numTolerance.Value * 2.55);
+
+        private void ReplaceColor()
+        {
+            int count = 0;
+            Color from = _fromColor, to = _toColor;
+            ApplyFilter($"Replace {Hex(from)} → {Hex(to)}", b => TextureImaging.ReplaceColor(b, from, to, ToleranceValue, _chkKeepShading.Checked, out count));
+            if (_image != null)
+            {
+                SetMessage($"{count} pixels replaced ({Hex(from)} → {Hex(to)}).");
+            }
+        }
+
+        private void EraseColor(bool toWhite)
+        {
+            int count = 0;
+            Color c = _fromColor;
+            ApplyFilter($"Erase {Hex(c)}", b => TextureImaging.EraseColor(b, c, ToleranceValue, toWhite, out count));
+            if (_image != null)
+            {
+                SetMessage($"{count} pixels of {Hex(c)} " + (toWhite ? "set to white." : "made transparent."));
+            }
+        }
+
+        private void RefreshColorList()
+        {
+            if (!CheckImage())
+            {
                 return;
             }
-
-            // Dictionary for the sizes and their corresponding checkbox names.
-            Dictionary<string, Size> tileSizes = new Dictionary<string, Size>
+            Cursor.Current = Cursors.WaitCursor;
+            List<KeyValuePair<int, int>> colors = TextureImaging.CountColors(canvas.Image, _chkListSkipBW.Checked);
+            int total = colors.Sum(c => c.Value);
+            _listColors.BeginUpdate();
+            _listColors.Items.Clear();
+            foreach (KeyValuePair<int, int> kv in colors.Take(1000))
             {
-                { "checkBox33x33", new Size(33, 33) },
-                { "checkBox44x44", new Size(44, 44) },
-                { "checkBox64x64", new Size(64, 64) },
-                { "checkBox128x128", new Size(128, 128) },
-                { "checkBox256x256", new Size(256, 256) }
-            };
+                Color c = Color.FromArgb(255, Color.FromArgb(kv.Key));
+                var item = new ListViewItem(new[] { string.Empty, Hex(c), kv.Value.ToString(), (100.0 * kv.Value / Math.Max(1, total)).ToString("F2") }) { Tag = c };
+                _listColors.Items.Add(item);
+            }
+            _listColors.EndUpdate();
+            _lblColorCount.Text = colors.Count > 1000 ? $"{colors.Count} colors (first 1000 shown)" : $"{colors.Count} colors";
+            Cursor.Current = Cursors.Default;
+        }
 
-            // Iterating through the dictionary
-            foreach (var kvp in tileSizes)
+        private void ListColors_DrawSubItem(object sender, DrawListViewSubItemEventArgs e)
+        {
+            if (e.ColumnIndex == 0 && e.Item.Tag is Color c)
             {
-                // Finding the CheckBox control based on the key
-                CheckBox checkBox = Controls.Find(kvp.Key, true).FirstOrDefault() as CheckBox;
-
-                // Check if the CheckBox is selected
-                if (checkBox != null && checkBox.Checked)
+                if (e.Item.Selected)
                 {
-                    // Retrieve target size from the dictionary value.
-                    Size targetSize = kvp.Value;
+                    e.Graphics.FillRectangle(SystemBrushes.Highlight, e.Bounds);
+                }
+                using (var brush = new SolidBrush(c))
+                {
+                    e.Graphics.FillRectangle(brush, e.Bounds.X + 4, e.Bounds.Y + 2, e.Bounds.Width - 8, e.Bounds.Height - 4);
+                }
+                e.Graphics.DrawRectangle(Pens.Gray, e.Bounds.X + 4, e.Bounds.Y + 2, e.Bounds.Width - 8, e.Bounds.Height - 4);
+                return;
+            }
+            e.DrawDefault = true;
+        }
 
-                    // Copy the original graphic.
-                    Bitmap originalImage = new Bitmap(pictureBox1.Image);
+        #endregion
 
+        #region Layers
+
+        private CanvasLayer ActiveLayer => canvas.ActiveLayer;
+
+        private void AddLayer(Bitmap bmp, string name)
+        {
+            if (bmp == null)
+            {
+                return;
+            }
+            var layer = new CanvasLayer(bmp, name) { BlackWhiteTransparent = _chkOvTransparent.Checked };
+            canvas.Layers.Add(layer);
+            canvas.ActiveLayer = layer;
+            CenterLayer();
+            RefreshLayerList();
+            SetTool(CanvasTool.Overlay);
+            tabControl1.SelectedTab = tabOverlay;
+            NotifyTerrain();
+            SetMessage($"Layer \"{name}\" ({bmp.Width}×{bmp.Height}) added. Drag it with \"Move layer\"; it stays a layer until you burn it in.");
+        }
+
+        private void RefreshLayerList()
+        {
+            _updating = true;
+            _listLayers.Items.Clear();
+            for (int i = canvas.Layers.Count - 1; i >= 0; i--)
+            {
+                CanvasLayer layer = canvas.Layers[i];
+                _listLayers.Items.Add(layer, layer.Visible);
+                if (ReferenceEquals(layer, canvas.ActiveLayer))
+                {
+                    _listLayers.SelectedIndex = _listLayers.Items.Count - 1;
+                }
+            }
+            _updating = false;
+            LoadLayerProperties();
+            canvas.Invalidate();
+        }
+
+        private void LoadLayerProperties()
+        {
+            CanvasLayer layer = ActiveLayer;
+            _updating = true;
+            bool has = layer != null;
+            _tbOpacity.Enabled = _numOvScale.Enabled = _numOvX.Enabled = _numOvY.Enabled = has;
+            if (has)
+            {
+                _tbOpacity.Value = Math.Max(0, Math.Min(100, layer.Opacity));
+                _lblOpacity.Text = $"Opacity: {layer.Opacity} %";
+                _numOvScale.Value = Math.Max(_numOvScale.Minimum, Math.Min(_numOvScale.Maximum, layer.Scale));
+                _numOvX.Value = Math.Max(_numOvX.Minimum, Math.Min(_numOvX.Maximum, layer.Position.X));
+                _numOvY.Value = Math.Max(_numOvY.Minimum, Math.Min(_numOvY.Maximum, layer.Position.Y));
+                _chkOvTransparent.Checked = layer.BlackWhiteTransparent;
+            }
+            _updating = false;
+        }
+
+        private void ListLayers_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (_updating)
+            {
+                return;
+            }
+            canvas.ActiveLayer = _listLayers.SelectedItem as CanvasLayer;
+            LoadLayerProperties();
+            canvas.Invalidate();
+        }
+
+        private void ListLayers_ItemCheck(object sender, ItemCheckEventArgs e)
+        {
+            if (_updating || !(_listLayers.Items[e.Index] is CanvasLayer layer))
+            {
+                return;
+            }
+            layer.Visible = e.NewValue == CheckState.Checked;
+            canvas.Invalidate();
+            NotifyTerrain();
+        }
+
+        private void Canvas_LayerMoved(object sender, EventArgs e)
+        {
+            if (ActiveLayer == null)
+            {
+                return;
+            }
+            _updating = true;
+            _numOvX.Value = Math.Max(_numOvX.Minimum, Math.Min(_numOvX.Maximum, ActiveLayer.Position.X));
+            _numOvY.Value = Math.Max(_numOvY.Minimum, Math.Min(_numOvY.Maximum, ActiveLayer.Position.Y));
+            _updating = false;
+            NotifyTerrain();
+        }
+
+        private void CenterLayer()
+        {
+            if (ActiveLayer == null || _image == null)
+            {
+                return;
+            }
+            Size s = ActiveLayer.Size;
+            ActiveLayer.Position = new Point((_image.Width - s.Width) / 2, (_image.Height - s.Height) / 2);
+            Canvas_LayerMoved(this, EventArgs.Empty);
+            canvas.Invalidate();
+        }
+
+        private void FitLayer()
+        {
+            if (ActiveLayer == null || _image == null)
+            {
+                return;
+            }
+            Bitmap img = ActiveLayer.Image;
+            int scale = (int)Math.Floor(100.0 * Math.Min((double)_image.Width / img.Width, (double)_image.Height / img.Height));
+            ActiveLayer.Scale = (int)Math.Max(_numOvScale.Minimum, Math.Min(_numOvScale.Maximum, scale));
+            LoadLayerProperties();
+            CenterLayer();
+        }
+
+        private void MoveLayer(int delta)
+        {
+            CanvasLayer layer = ActiveLayer;
+            if (layer == null)
+            {
+                return;
+            }
+            int i = canvas.Layers.IndexOf(layer);
+            int j = i + delta;
+            if (j < 0 || j >= canvas.Layers.Count)
+            {
+                return;
+            }
+            canvas.Layers.RemoveAt(i);
+            canvas.Layers.Insert(j, layer);
+            RefreshLayerList();
+            NotifyTerrain();
+        }
+
+        private void DuplicateLayer()
+        {
+            if (ActiveLayer == null)
+            {
+                return;
+            }
+            CanvasLayer copy = ActiveLayer.Clone();
+            copy.Position = new Point(copy.Position.X + 4, copy.Position.Y + 4);
+            canvas.Layers.Insert(canvas.Layers.IndexOf(ActiveLayer) + 1, copy);
+            canvas.ActiveLayer = copy;
+            RefreshLayerList();
+        }
+
+        private void RemoveLayer(CanvasLayer layer)
+        {
+            if (layer == null)
+            {
+                return;
+            }
+            int i = canvas.Layers.IndexOf(layer);
+            canvas.Layers.Remove(layer);
+            if (ReferenceEquals(canvas.ActiveLayer, layer))
+            {
+                canvas.ActiveLayer = canvas.Layers.Count == 0 ? null : canvas.Layers[Math.Max(0, Math.Min(canvas.Layers.Count - 1, i - 1))];
+            }
+            if (ReferenceEquals(canvas.Pattern, layer.Image))
+            {
+                SetPattern(null);
+            }
+            layer.Dispose();
+            if (canvas.Layers.Count == 0 && canvas.Tool == CanvasTool.Overlay)
+            {
+                SetTool(CanvasTool.Select);
+            }
+            RefreshLayerList();
+            NotifyTerrain();
+        }
+
+        private static void DrawLayers(Bitmap target, IEnumerable<CanvasLayer> layers)
+        {
+            using (var g = Graphics.FromImage(target))
+            {
+                foreach (CanvasLayer layer in layers)
+                {
+                    layer.DrawTo(g, 1f);
+                }
+            }
+        }
+
+        /// <summary>Burns layers into the image (with undo) and removes them.</summary>
+        private void BurnLayers(bool all)
+        {
+            List<CanvasLayer> layers = all ? canvas.Layers.Where(l => l.Visible).ToList() : (ActiveLayer != null ? new List<CanvasLayer> { ActiveLayer } : new List<CanvasLayer>());
+            if (layers.Count == 0)
+            {
+                SetMessage("There is no (visible) layer to burn in.");
+                return;
+            }
+            if (!CheckImage())
+            {
+                return;
+            }
+            ApplyFilter(layers.Count == 1 ? $"Layer \"{layers[0].Name}\" burned in" : $"{layers.Count} layers burned in", b =>
+            {
+                Bitmap copy = CutterImaging.To32Bpp(b);
+                DrawLayers(copy, layers);
+                return copy;
+            });
+            foreach (CanvasLayer layer in layers)
+            {
+                RemoveLayer(layer);
+            }
+        }
+
+        /// <summary>
+        /// The image as it is seen: base image (or color preview) plus all visible layers.
+        /// Used for saving, copying, tiles, texmaps / art.mul and the terrain preview. The caller disposes it.
+        /// </summary>
+        private Bitmap Output()
+        {
+            Bitmap shown = canvas.Image ?? _image;
+            if (shown == null)
+            {
+                return null;
+            }
+            Bitmap copy = CutterImaging.To32Bpp(shown);
+            if (canvas.Layers.Any(l => l.Visible))
+            {
+                DrawLayers(copy, canvas.Layers.Where(l => l.Visible));
+            }
+            return copy;
+        }
+
+        private bool HasVisibleLayers => canvas.Layers.Any(l => l.Visible);
+
+        private void LayerFromFile()
+        {
+            using (var dialog = new OpenFileDialog { Filter = CutterImaging.ImageFilter, Title = "Image for a new layer" })
+            {
+                if (dialog.ShowDialog(this) != DialogResult.OK)
+                {
+                    return;
+                }
+                try
+                {
+                    AddLayer(CutterImaging.LoadBitmap(dialog.FileName), Path.GetFileNameWithoutExtension(dialog.FileName));
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(this, "The image could not be loaded:\n" + ex.Message, "Layer", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+        }
+
+        private void LayerFromClipboard()
+        {
+            Bitmap bmp = ReadClipboard();
+            if (bmp != null)
+            {
+                AddLayer(bmp, "clipboard");
+            }
+        }
+
+        private void LayerFromTexture()
+        {
+            int id = _gridTex.SelectedItem;
+            Bitmap bmp = id >= 0 ? TextureMul.GetCopy(id) : null;
+            if (bmp == null)
+            {
+                SetMessage("Select a used texture in the texmaps tab first.");
+                return;
+            }
+            AddLayer(bmp, $"texture 0x{id:X4}");
+        }
+
+        private void LayerFromArt()
+        {
+            ArtKind kind = _radioOvArtLand.Checked ? ArtKind.Land : ArtKind.Item;
+            if (!CutterImaging.TryParseId(_txtOvArtId.Text, out int id))
+            {
+                SetMessage("Enter an art.mul ID (hex 0x1A2B or decimal).");
+                return;
+            }
+            Bitmap bmp = CutterArt.GetCopy(kind, id);
+            if (bmp == null)
+            {
+                SetMessage($"{kind} 0x{id:X4} is empty or art.mul is not loaded.");
+                return;
+            }
+            AddLayer(bmp, $"{kind.ToString().ToLowerInvariant()} 0x{id:X4}");
+        }
+
+        private void FillSelectionFromFile()
+        {
+            if (!CheckImage())
+            {
+                return;
+            }
+            if (!canvas.HasSelection)
+            {
+                SetMessage("Select an area first.");
+                return;
+            }
+            using (var dialog = new OpenFileDialog { Filter = CutterImaging.ImageFilter, Title = "Image for the selection" })
+            {
+                if (dialog.ShowDialog(this) != DialogResult.OK)
+                {
+                    return;
+                }
+                try
+                {
+                    using (Bitmap texture = CutterImaging.LoadBitmap(dialog.FileName))
+                    {
+                        FillSelection(texture);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(this, "The image could not be loaded:\n" + ex.Message, "Fill", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+        }
+
+        private void FillSelection(Bitmap texture)
+        {
+            if (texture == null)
+            {
+                SetMessage("Select a layer first.");
+                return;
+            }
+            if (!CheckImage())
+            {
+                return;
+            }
+            if (!canvas.HasSelection)
+            {
+                SetMessage("Select an area first.");
+                return;
+            }
+            bool tile = _radioFillTile.Checked;
+            ApplyFilter("Fill selection", b =>
+            {
+                Bitmap copy = CutterImaging.To32Bpp(b);
+                using (GraphicsPath path = canvas.GetSelectionPath())
+                using (var g = Graphics.FromImage(copy))
+                {
+                    RectangleF bounds = path.GetBounds();
+                    if (tile)
+                    {
+                        using (var brush = new TextureBrush(texture, WrapMode.Tile))
+                        {
+                            brush.TranslateTransform(bounds.X, bounds.Y);
+                            g.FillPath(brush, path);
+                        }
+                    }
+                    else
+                    {
+                        g.SetClip(path);
+                        g.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                        g.DrawImage(texture, bounds);
+                    }
+                }
+                return copy;
+            }, true);
+        }
+
+        #endregion
+
+        #region Pattern brush
+
+        private void SetPattern(Bitmap pattern)
+        {
+            Bitmap old = _pattern;
+            _pattern = pattern;
+            canvas.Pattern = pattern;
+            canvas.UsePattern = pattern != null;
+            _tsPattern.Image?.Dispose();
+            _tsPattern.Image = pattern == null ? null : TextureImaging.Resize(pattern, 16, 16, TextureImaging.ResizeQuality.Smooth);
+            _tsPattern.DisplayStyle = pattern == null ? ToolStripItemDisplayStyle.Text : ToolStripItemDisplayStyle.ImageAndText;
+            if (old != null && !ReferenceEquals(old, pattern))
+            {
+                old.Dispose();
+            }
+            SyncUi();
+            SetMessage(pattern == null ? "Pattern brush off." : $"Pattern brush on ({pattern.Width}×{pattern.Height}): pencil, line, rectangle and fill paint with it.");
+        }
+
+        private void PatternFrom(Func<Bitmap> source, string what)
+        {
+            Bitmap bmp = source();
+            if (bmp == null)
+            {
+                SetMessage($"No {what} for the pattern.");
+                return;
+            }
+            SetPattern(bmp);
+            if (canvas.Tool != CanvasTool.Pencil && canvas.Tool != CanvasTool.Fill && canvas.Tool != CanvasTool.Line && canvas.Tool != CanvasTool.Rectangle)
+            {
+                SetTool(CanvasTool.Pencil);
+            }
+        }
+
+        private Bitmap PatternFromFile()
+        {
+            using (var dialog = new OpenFileDialog { Filter = CutterImaging.ImageFilter, Title = "Pattern image" })
+            {
+                return dialog.ShowDialog(this) == DialogResult.OK ? CutterImaging.LoadBitmap(dialog.FileName) : null;
+            }
+        }
+
+        #endregion
+
+        #region Palette
+
+        private void RefreshPalette()
+        {
+            _paletteFlow.SuspendLayout();
+            foreach (Control c in _paletteFlow.Controls.Cast<Control>().ToList())
+            {
+                c.Dispose();
+            }
+            _paletteFlow.Controls.Clear();
+            foreach (Color color in _palette.Colors)
+            {
+                Color c = color;
+                var b = new Button { Width = 20, Height = 20, Margin = new Padding(1), FlatStyle = FlatStyle.Flat, BackColor = c, TabStop = false };
+                b.FlatAppearance.BorderColor = Color.Gray;
+                b.MouseUp += (s, e) =>
+                {
+                    if ((ModifierKeys & Keys.Control) == Keys.Control)
+                    {
+                        _palette.Colors.Remove(c);
+                        RefreshPalette();
+                    }
+                    else if (e.Button == MouseButtons.Right)
+                    {
+                        SetSecondary(c);
+                    }
+                    else if (e.Button == MouseButtons.Left)
+                    {
+                        SetPrimary(c);
+                    }
+                };
+                toolTip1.SetToolTip(b, $"{Hex(c)}\nLeft = color 1, right = color 2, Ctrl + click = remove\nDE: Links = Farbe 1, rechts = Farbe 2, Strg + Klick = entfernen");
+                _paletteFlow.Controls.Add(b);
+            }
+            _paletteFlow.ResumeLayout();
+            _lblPalette.Text = $"{_palette.Colors.Count} colors";
+        }
+
+        private void PaletteFromImage()
+        {
+            if (!CheckImage())
+            {
+                return;
+            }
+            foreach (KeyValuePair<int, int> kv in TextureImaging.CountColors(canvas.Image, true).Take(16))
+            {
+                _palette.Add(Color.FromArgb(kv.Key));
+            }
+            RefreshPalette();
+        }
+
+        private void PaletteFromHue()
+        {
+            List<Color> colors = CutterPalette.FromHue((int)_numHue.Value, out string name);
+            if (colors == null)
+            {
+                SetMessage("Hue not found (is hues.mul loaded?).");
+                return;
+            }
+            foreach (Color c in colors)
+            {
+                _palette.Add(c);
+            }
+            RefreshPalette();
+            SetMessage($"Hue {(int)_numHue.Value} \"{name}\": 32 colors added.");
+        }
+
+        private void LoadPalette()
+        {
+            using (var dialog = new OpenFileDialog { Filter = "Palettes|*.pal;*.gpl;*.txt|All files|*.*" })
+            {
+                if (dialog.ShowDialog(this) != DialogResult.OK)
+                {
+                    return;
+                }
+                try
+                {
+                    CutterPalette loaded = CutterPalette.Load(dialog.FileName);
+                    _palette.Colors.Clear();
+                    _palette.Colors.AddRange(loaded.Colors);
+                    RefreshPalette();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(this, "The palette could not be loaded:\n" + ex.Message, "Palette", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+        }
+
+        private void SavePalette()
+        {
+            using (var dialog = new SaveFileDialog { Filter = "JASC palette|*.pal", FileName = "palette.pal" })
+            {
+                if (dialog.ShowDialog(this) != DialogResult.OK)
+                {
+                    return;
+                }
+                try
+                {
+                    _palette.Save(dialog.FileName);
+                    SetMessage("Palette saved: " + dialog.FileName);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(this, "The palette could not be saved:\n" + ex.Message, "Palette", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+        }
+
+        #endregion
+
+        #region Transitions (blend)
+
+        private void SetBlendB(Bitmap bmp, string name)
+        {
+            if (bmp == null)
+            {
+                SetMessage($"No {name} for texture B.");
+                return;
+            }
+            _blendB?.Dispose();
+            _blendB = bmp;
+            _picBlendB.Image?.Dispose();
+            _picBlendB.Image = TextureImaging.Resize(bmp, 64, 64, TextureImaging.ResizeQuality.Smooth);
+            _lblBlendB.Text = $"B: {name} ({bmp.Width}×{bmp.Height})";
+            SchedulePreview(PreviewKind.Transition);
+        }
+
+        private Bitmap MakeTransition(Bitmap a, TransitionShape shape) =>
+            TextureBlend.MakeTransition(a, _blendB, shape, (int)_numSoftness.Value, (int)_numRoughness.Value, (int)_numSeed.Value);
+
+        private void ShowTransitionPreview()
+        {
+            if (!CheckImage())
+            {
+                return;
+            }
+            if (_blendB == null)
+            {
+                SetMessage("Choose texture B first (the edited image is texture A).");
+                return;
+            }
+            SchedulePreview(PreviewKind.Transition);
+        }
+
+        /// <summary>All nine transitions at once: files and / or texmaps.mul.</summary>
+        private void AllTransitions(bool toTexmaps)
+        {
+            if (!CheckImage())
+            {
+                return;
+            }
+            if (_blendB == null)
+            {
+                SetMessage("Choose texture B first.");
+                return;
+            }
+            CommitPreview(false);
+            var pieces = new List<Bitmap>();
+            try
+            {
+                foreach (TransitionShape shape in Enum.GetValues(typeof(TransitionShape)))
+                {
+                    pieces.Add(MakeTransition(_image, shape));
+                }
+                if (!toTexmaps)
+                {
+                    string folder = Path.Combine(OutputDirectory, "Transitions_" + DateTime.Now.ToString("yyyyMMdd_HHmmss"));
+                    Directory.CreateDirectory(folder);
+                    for (int i = 0; i < pieces.Count; i++)
+                    {
+                        string name = ((TransitionShape)i).ToString();
+                        CutterImaging.SaveImage(pieces[i], Path.Combine(folder, $"{i + 1:D2}_{name}{Extension}"), TransparentFill.Keep);
+                    }
+                    SetMessage($"9 transitions saved in {folder}");
+                    if (MessageBox.Show(this, $"9 transitions saved in:\n{folder}\n\nOpen the folder?", "Transitions", MessageBoxButtons.YesNo, MessageBoxIcon.Information) == DialogResult.Yes)
+                    {
+                        OpenFolder(folder);
+                    }
+                    return;
+                }
+                if (!TextureMul.IsAvailable || !TextureMul.IsValidSize(_image.Size))
+                {
+                    MessageBox.Show(this, "texmaps.mul must be loaded and texture A must be 64 × 64 or 128 × 128.", "Transitions", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
+                }
+                if (!CutterImaging.TryParseId(_txtBlendTexId.Text, out int start))
+                {
+                    MessageBox.Show(this, "Enter the first texture ID.", "Transitions", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
+                }
+                if (MessageBox.Show(this, $"Write 9 transitions into texmaps.mul from 0x{start:X4} on (used IDs are skipped)?", "Transitions", MessageBoxButtons.OKCancel, MessageBoxIcon.Question) != DialogResult.OK)
+                {
+                    return;
+                }
+                List<int> ids = TextureMul.WriteMany(start, pieces, true, this);
+                MarkTexturesUsed(ids);
+                SetMessage($"{ids.Count} transitions written to texmaps ({string.Join(", ", ids.Select(i => $"0x{i:X4}"))}). Save texmaps.mul to keep them.");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(this, "Creating the transitions failed:\n" + ex.Message, "Transitions", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            finally
+            {
+                pieces.ForEach(p => p.Dispose());
+            }
+        }
+
+        #endregion
+
+        #region Batch and terrain preview
+
+        private void OpenBatch()
+        {
+            CommitPreview(false);
+            using (var dialog = new BatchDialog(OutputDirectory) { TopMost = TopMost })
+            {
+                dialog.ShowDialog(this);
+                if (dialog.WrittenTextures.Count > 0)
+                {
+                    MarkTexturesUsed(dialog.WrittenTextures);
+                }
+            }
+        }
+
+        private void OpenTerrainPreview()
+        {
+            if (_terrain == null || _terrain.IsDisposed)
+            {
+                _terrain = new TerrainPreviewForm(Output) { TopMost = TopMost };
+                _terrain.FormClosed += (s, e) => _terrain = null;
+                _terrain.Show(this);
+            }
+            else
+            {
+                _terrain.Activate();
+            }
+        }
+
+        /// <summary>Tells the terrain preview that the image changed.</summary>
+        private void NotifyTerrain()
+        {
+            if (_terrain != null && !_terrain.IsDisposed)
+            {
+                _terrain.EditorImageChanged();
+            }
+        }
+
+        #endregion
+
+        #region texmaps
+
+        private void ReloadTextures()
+        {
+            _texLoaded = true;
+            if (!TextureMul.IsAvailable)
+            {
+                _usedTextures = null;
+                _gridTex.Items = Array.Empty<int>();
+                _lblTexInfo.Text = "texmaps.mul is not loaded.";
+                return;
+            }
+            Cursor.Current = Cursors.WaitCursor;
+            _usedTextures = TextureMul.ScanUsed();
+            Cursor.Current = Cursors.Default;
+            RebuildTextureList();
+        }
+
+        private void RebuildTextureList()
+        {
+            if (_usedTextures == null)
+            {
+                return;
+            }
+            int keep = _gridTex.SelectedItem;
+            var list = new List<int>();
+            for (int i = 0; i < _usedTextures.Length; i++)
+            {
+                if (_comboTexFilter.SelectedIndex == 0 || (_comboTexFilter.SelectedIndex == 1 && _usedTextures[i]) || (_comboTexFilter.SelectedIndex == 2 && !_usedTextures[i]))
+                {
+                    list.Add(i);
+                }
+            }
+            _gridTex.Items = list;
+            if (keep >= 0)
+            {
+                _gridTex.SelectItem(keep);
+            }
+            UpdateTexturePreview();
+        }
+
+        private void SelectTexture(int id)
+        {
+            if (!_texLoaded)
+            {
+                ReloadTextures();
+            }
+            if (!_gridTex.Items.Contains(id))
+            {
+                _comboTexFilter.SelectedIndex = 0;
+            }
+            _gridTex.SelectItem(id);
+        }
+
+        private void MarkTexturesUsed(IEnumerable<int> ids, bool used = true)
+        {
+            if (_usedTextures != null)
+            {
+                foreach (int id in ids)
+                {
+                    if (id >= 0 && id < _usedTextures.Length)
+                    {
+                        _usedTextures[id] = used;
+                    }
+                }
+            }
+            _gridTex.Invalidate();
+            UpdateTexturePreview();
+        }
+
+        private void GoToTexture()
+        {
+            if (!CutterImaging.TryParseId(_txtTexId.Text, out int id) || id < 0 || id > TextureMul.MaxId)
+            {
+                SetMessage("Invalid texture ID (0 – 0x3FFF).");
+                return;
+            }
+            SelectTexture(id);
+            _gridTex.Focus();
+        }
+
+        private void NextFreeTexture()
+        {
+            int id = TextureMul.FindFree(Math.Max(0, _gridTex.SelectedItem + 1));
+            if (id < 0)
+            {
+                SetMessage("No free texture ID found.");
+                return;
+            }
+            SelectTexture(id);
+            _gridTex.Focus();
+        }
+
+        private void UpdateTexturePreview()
+        {
+            int id = _gridTex.SelectedItem;
+            if (id < 0)
+            {
+                _lblTexInfo.Text = _usedTextures != null ? $"{_gridTex.Items.Count} entries" : _lblTexInfo.Text;
+            }
+            else
+            {
+                Bitmap bmp = TextureMul.GetShared(id);
+                string state = bmp == null ? "free" : $"{bmp.Width}×{bmp.Height}";
+                string land = string.Empty;
+                if (bmp != null)
+                {
+                    List<int> lands = TextureMul.LandTilesUsing(id);
+                    land = lands.Count == 0 ? "\nno land tile uses it (tiledata)"
+                        : $"\nused by {lands.Count} land tiles: " + string.Join(", ", lands.Take(4).Select(l => $"0x{l:X4}")) + (lands.Count > 4 ? " …" : string.Empty);
+                }
+                _lblTexInfo.Text = $"Texture {CutterImaging.IdText(id)} – {state}{land}";
+                _txtTexId.Text = $"0x{id:X4}";
+            }
+            _panelTexPreview.Invalidate();
+        }
+
+        private void PanelTexPreview_Paint(object sender, PaintEventArgs e)
+        {
+            int id = _gridTex.SelectedItem;
+            Bitmap bmp = id >= 0 ? TextureMul.GetShared(id) : null;
+            if (bmp == null)
+            {
+                if (id >= 0)
+                {
+                    TextRenderer.DrawText(e.Graphics, "free / frei", Font, _panelTexPreview.ClientRectangle, Color.IndianRed,
+                        TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
+                }
+                return;
+            }
+            Rectangle box = Rectangle.Inflate(_panelTexPreview.ClientRectangle, -4, -4);
+            try
+            {
+                // texture and the land tile made from it, side by side
+                int s = Math.Min(box.Height, (box.Width - 10) / 2);
+                var left = new Rectangle(box.X, box.Y + (box.Height - s) / 2, s, s);
+                CutterImaging.DrawChecker(e.Graphics, left);
+                CutterImaging.DrawFitted(e.Graphics, bmp, left, true);
+                Bitmap copy;
+                lock (Class.AnimEdit.SdkSync.Lock)
+                {
+                    copy = CutterImaging.To32Bpp(bmp);
+                }
+                using (copy)
+                using (Bitmap tile = TextureImaging.TextureToLandTile(copy, false))
+                {
+                    var right = new Rectangle(left.Right + 10, left.Y, s, s);
+                    CutterImaging.DrawFitted(e.Graphics, tile, right, true);
+                }
+            }
+            catch (Exception)
+            {
+                // bitmap in use – skip this paint
+            }
+        }
+
+        private bool CheckTexSelection(bool needUsed)
+        {
+            if (!TextureMul.IsAvailable)
+            {
+                MessageBox.Show(this, "texmaps.mul is not loaded. Load the client files in UoFiddler first.", "texmaps", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return false;
+            }
+            int id = _gridTex.SelectedItem;
+            if (id < 0)
+            {
+                MessageBox.Show(this, "Select a texture ID first.", "texmaps", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return false;
+            }
+            if (needUsed && !TextureMul.IsValid(id))
+            {
+                MessageBox.Show(this, $"Texture 0x{id:X4} is empty.", "texmaps", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return false;
+            }
+            return true;
+        }
+
+        private void TextureToEditor()
+        {
+            if (!CheckTexSelection(true))
+            {
+                return;
+            }
+            int id = _gridTex.SelectedItem;
+            Bitmap bmp = TextureMul.GetCopy(id);
+            if (bmp != null)
+            {
+                LoadImage(bmp, $"texture 0x{id:X4}");
+                _txtTexStart.Text = $"0x{id:X4}";
+            }
+        }
+
+        private void CopyTexture()
+        {
+            if (!CheckTexSelection(true))
+            {
+                return;
+            }
+            using (Bitmap bmp = TextureMul.GetCopy(_gridTex.SelectedItem))
+            {
+                if (bmp != null)
+                {
+                    CutterImaging.CopyToClipboard(bmp);
+                    SetMessage($"Texture 0x{_gridTex.SelectedItem:X4} copied.");
+                }
+            }
+        }
+
+        private void ImageToTexture()
+        {
+            if (!CheckImage() || !CheckTexSelection(false))
+            {
+                return;
+            }
+            CommitPreview(false);
+            int id = _gridTex.SelectedItem;
+            Bitmap output = Output();
+            Bitmap toWrite = output;
+            Bitmap scaled = null;
+            if (!TextureMul.IsValidSize(output.Size))
+            {
+                DialogResult answer = MessageBox.Show(this,
+                    $"Textures must be 64 × 64 or 128 × 128. The image is {output.Width} × {output.Height}.\n\nYes = scale to 64 × 64\nNo = scale to 128 × 128\nCancel = do nothing",
+                    "Image → texture", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
+                if (answer == DialogResult.Cancel)
+                {
+                    output.Dispose();
+                    return;
+                }
+                int size = answer == DialogResult.Yes ? 64 : 128;
+                scaled = TextureImaging.Resize(output, size, size, TextureImaging.ResizeQuality.Smooth);
+                toWrite = scaled;
+            }
+            try
+            {
+                if (TextureMul.IsValid(id) &&
+                    MessageBox.Show(this, $"Texture 0x{id:X4} already exists. Replace it?", "Image → texture", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) != DialogResult.Yes)
+                {
+                    return;
+                }
+                TextureMul.Write(id, toWrite, this);
+                MarkTexturesUsed(new[] { id });
+                SetMessage($"Written to texture 0x{id:X4} ({toWrite.Width}×{toWrite.Height}). Save texmaps.mul to keep it.");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(this, "Writing failed:\n" + ex.Message, "texmaps", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            finally
+            {
+                scaled?.Dispose();
+                output.Dispose();
+            }
+        }
+
+        /// <summary>Image → 44 × 44 land tile → every land tile that uses the selected texture (tiledata).</summary>
+        private void ImageToLandTilesOfTexture()
+        {
+            if (!CheckImage() || !CheckTexSelection(false))
+            {
+                return;
+            }
+            if (!CutterArt.IsAvailable)
+            {
+                MessageBox.Show(this, "art.mul is not loaded.", "Land tiles", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+            int texId = _gridTex.SelectedItem;
+            List<int> lands = TextureMul.LandTilesUsing(texId);
+            if (lands.Count == 0)
+            {
+                MessageBox.Show(this, $"No land tile uses texture 0x{texId:X4} (tiledata.mul).", "Land tiles", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+            CommitPreview(false);
+            using (Bitmap output = Output())
+            {
+                bool isTile = output.Width == CutterArt.LandSize && output.Height == CutterArt.LandSize;
+                string list = string.Join(", ", lands.Take(12).Select(l => $"0x{l:X4}")) + (lands.Count > 12 ? " …" : string.Empty);
+                if (MessageBox.Show(this, $"Write the image as land tile into {lands.Count} land tiles that use texture 0x{texId:X4}?\n{list}\n\n"
+                        + (isTile ? "The image is already a 44 × 44 land tile." : "The image is turned into a 44 × 44 land tile first (black outside)."),
+                        "Land tiles", MessageBoxButtons.OKCancel, MessageBoxIcon.Question) != DialogResult.OK)
+                {
+                    return;
+                }
+                using (Bitmap tile = isTile ? CutterImaging.To32Bpp(output) : TextureImaging.TextureToLandTile(output, true))
+                {
                     try
                     {
-                        // Improve the image using a super-resolution algorithm.
-                        Image improvedImage = ImproveImageUsingSuperResolution(originalImage);
-
-                        // Convert the improved image to a bitmap format.
-                        Bitmap improvedBitmap = improvedImage as Bitmap;
-
-                        // Resize the improved image to the target size.
-                        Bitmap resizedImage = new Bitmap(improvedBitmap, targetSize.Width, targetSize.Height);
-
-                        // Remove the current image from the PictureBox and set the improved image.
-                        pictureBox1.Image = null;
-                        pictureBox1.Image = resizedImage;
-
-                        // Update the display.
-                        Size imageSize = resizedImage.Size;
-                        labelImageSize.Text = $"Image size.: {imageSize.Width} x {imageSize.Height} Pixel";
+                        foreach (int land in lands)
+                        {
+                            CutterArt.Write(ArtKind.Land, land, tile, this);
+                        }
+                        SetMessage($"{lands.Count} land tiles written ({list}). Save art.mul in UoFiddler (Land tiles tab) to keep them.");
                     }
                     catch (Exception ex)
                     {
-                        // An error has occurred - display an error message and proceed to the next step.
-                        MessageBox.Show($"Error occurred while improving the image: {ex.Message}");
+                        MessageBox.Show(this, "Writing failed:\n" + ex.Message, "Land tiles", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
                 }
             }
         }
 
-        private Image ImproveImageUsingSuperResolution(Image image)
+        private void RemoveTexture()
         {
+            if (!CheckTexSelection(true))
+            {
+                return;
+            }
+            int id = _gridTex.SelectedItem;
+            if (MessageBox.Show(this, $"Remove texture 0x{id:X4}?", "texmaps", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) != DialogResult.Yes)
+            {
+                return;
+            }
             try
             {
-                // Set the new width and height of the image.
-                int newWidth = image.Width * 2;
-                int newHeight = image.Height * 2;
-
-                // Create a new bitmap with the new size.
-                Bitmap result = new Bitmap(newWidth, newHeight);
-
-                // Draw the original image onto the new bitmap with bicubic interpolation.
-                using (Graphics graphics = Graphics.FromImage(result))
-                {
-                    graphics.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.Bicubic;
-                    graphics.DrawImage(image, 0, 0, newWidth, newHeight);
-                }
-
-                // Return the improved image.
-                return result;
+                TextureMul.Remove(id, this);
+                MarkTexturesUsed(new[] { id }, false);
+                SetMessage($"Texture 0x{id:X4} removed. Save texmaps.mul to keep it.");
             }
             catch (Exception ex)
             {
-                // Log the error message and return the original image.
-                Console.WriteLine($"Error occurred while improving the image: {ex.Message}");
-                return image;
+                MessageBox.Show(this, "Removing failed:\n" + ex.Message, "texmaps", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
-        #endregion
 
-        #region Sharp
-        private Bitmap SharpenImage(Bitmap image, double sharpenValue)
+        private void SaveTexmaps()
         {
-            // Make a copy of the image.
-            Bitmap sharpenedImage = (Bitmap)image.Clone();
-
-            // Create a sharpening matrix based on the sharpness value.
-            double[,] sharpenMatrix = new double[,]
+            if (!TextureMul.IsAvailable)
             {
-        { -sharpenValue, -sharpenValue, -sharpenValue },
-        { -sharpenValue, 1 + (8 * sharpenValue), -sharpenValue },
-        { -sharpenValue, -sharpenValue, -sharpenValue }
-            };
-
-            // Apply the sharpening matrix to the image.
-            for (int x = 1; x < image.Width - 1; x++)
-            {
-                for (int y = 1; y < image.Height - 1; y++)
-                {
-                    Color pixel = image.GetPixel(x, y);
-
-                    // Skip the white and black pixel sharpening process.
-                    if (pixel.ToArgb() == Color.White.ToArgb() || pixel.ToArgb() == Color.Black.ToArgb())
-                    {
-                        continue;
-                    }
-
-                    // Apply the sharpening process.
-                    ApplySharpening(sharpenedImage, x, y, pixel, sharpenMatrix);
-                }
-            }
-
-            // Return the sharpened image.
-            return sharpenedImage;
-        }
-        private void ApplySharpening(Bitmap image, int x, int y, Color pixel, double[,] matrix)
-        {
-            double r = 0;
-            double g = 0;
-            double b = 0;
-
-            for (int i = 0; i < 3; i++)
-            {
-                for (int j = 0; j < 3; j++)
-                {
-                    int offsetX = x + i - 1;
-                    int offsetY = y + j - 1;
-
-                    Color neighborPixel = image.GetPixel(offsetX, offsetY);
-
-                    r += neighborPixel.R * matrix[i, j];
-                    g += neighborPixel.G * matrix[i, j];
-                    b += neighborPixel.B * matrix[i, j];
-                }
-            }
-
-            r = Math.Max(0, Math.Min(255, r));
-            g = Math.Max(0, Math.Min(255, g));
-            b = Math.Max(0, Math.Min(255, b));
-
-            Color newPixel = Color.FromArgb((int)r, (int)g, (int)b);
-            image.SetPixel(x, y, newPixel);
-        }
-
-        private void Buttonsharp_Click(object sender, EventArgs e)
-        {
-            // Check if an image is loaded in the PictureBox.
-            if (pictureBox1.Image == null)
-            {
-                // Display a message and exit the method.
-                MessageBox.Show("Es wurde kein Bild geladen.");
+                MessageBox.Show(this, "texmaps.mul is not loaded.", "Save texmaps.mul", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
-
-            // Copy the original graphic.
-            Bitmap originalImage = new Bitmap(pictureBox1.Image);
-
+            if (MessageBox.Show(this, $"Save texidx.mul and texmaps.mul into:\n{UoFiddler.Controls.Classes.Options.OutputPath}", "Save texmaps.mul",
+                    MessageBoxButtons.OKCancel, MessageBoxIcon.Question) != DialogResult.OK)
+            {
+                return;
+            }
             try
             {
-                // Initialize the sharpened image variable.
-                Bitmap sharpenedImage;
-
-                // Read the value of the slider.
-                double sharpenValue = trackBarSharpness.Value / 100.0;
-
-                // Sharpen the image based on the value of the slider.
-                sharpenedImage = SharpenImage(originalImage, sharpenValue);
-
-                // Remove the current image from the PictureBox and insert the sharpened image.
-                pictureBox1.Image = null;
-                pictureBox1.Image = sharpenedImage;
-
-                // Refresh the display.
-                Size imageSize = sharpenedImage.Size;
-                labelImageSize.Text = $"Image size: {imageSize.Width} x {imageSize.Height} Pixel";
+                Cursor.Current = Cursors.WaitCursor;
+                SetMessage("texmaps.mul saved in " + TextureMul.Save());
             }
             catch (Exception ex)
             {
-                // An error occurred - display an error message and go to the next step.
-                MessageBox.Show($"An error occurred while sharpening the image.: {ex.Message}");
+                MessageBox.Show(this, "Saving failed:\n" + ex.Message, "Save texmaps.mul", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
-        }
-        private void UpdateSharpnessLabel()
-        {
-            // Update the label with the current value of the TrackBar.
-            labelSharpnessValue.Text = $"Level of spiciness: {trackBarSharpness.Value}%";
-        }
-
-        private void TrackBarSharpness_Scroll(object sender, EventArgs e)
-        {
-            // Update the label when the user moves the slider.
-            UpdateSharpnessLabel();
-        }
-        #endregion
-        private void ButtonSaveImage_Click(object sender, EventArgs e)
-        {
-            if (pictureBox1.Image == null)
+            finally
             {
-                MessageBox.Show("No image has been loaded..");
-                return;
-            }
-
-            // Create the filename with the current time.
-            string timestamp = DateTime.Now.ToString("yyyyMMddHHmmss");
-            string fileName = $"TextureSingleImage_{timestamp}.bmp";
-
-            string directory = Path.Combine(Application.StartupPath, "tempGrafic");
-            Directory.CreateDirectory(directory);
-            string filePath = Path.Combine(directory, fileName);
-
-            // Save the image to the specified path
-            pictureBox1.Image.Save(filePath, ImageFormat.Bmp);
-
-            MessageBox.Show("The graphic was saved successfully.");
-        }
-        private Bitmap ResizeImageWithFixedBorder(Bitmap image, int borderWidth)
-        {
-            // Calculate the new width and height of the inner part of the image
-            int newInnerWidth = (image.Width - borderWidth * 2) * 2;
-            int newInnerHeight = (image.Height - borderWidth * 2) * 2;
-
-            // Calculate the new overall width and height of the image
-            int newWidth = newInnerWidth + borderWidth * 2;
-            int newHeight = newInnerHeight + borderWidth * 2;
-
-            // Create a new bitmap with the new size
-            Bitmap result = new Bitmap(newWidth, newHeight);
-
-            // Draw the border of the original image onto the new bitmap
-            using (Graphics graphics = Graphics.FromImage(result))
-            {
-                // Draw the top border
-                graphics.DrawImage(image, 0, 0, new Rectangle(0, 0, image.Width, borderWidth), GraphicsUnit.Pixel);
-
-                // Draw the bottom edge
-                graphics.DrawImage(image, 0, newHeight - borderWidth, new Rectangle(0, image.Height - borderWidth, image.Width, borderWidth), GraphicsUnit.Pixel);
-
-                // Draw the left border
-                graphics.DrawImage(image, 0, borderWidth, new Rectangle(0, borderWidth, borderWidth, image.Height - borderWidth * 2), GraphicsUnit.Pixel);
-
-                // Draw the right edge
-                graphics.DrawImage(image, newWidth - borderWidth, borderWidth, new Rectangle(image.Width - borderWidth, borderWidth, borderWidth, image.Height - borderWidth * 2), GraphicsUnit.Pixel);
-            }
-
-            // Cut out the inner part of the picture
-            Rectangle innerRect = new Rectangle(borderWidth, borderWidth, image.Width - borderWidth * 2, image.Height - borderWidth * 2);
-            Bitmap innerImage = image.Clone(innerRect, image.PixelFormat);
-
-            // Resize the inner part of the image with Bicubic Interpolation
-            Bitmap resizedInnerImage = new Bitmap(newInnerWidth, newInnerHeight);
-            using (Graphics graphics = Graphics.FromImage(resizedInnerImage))
-            {
-                graphics.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.Bicubic;
-                graphics.DrawImage(innerImage, 0, 0, newInnerWidth, newInnerHeight);
-            }
-
-            // Draw the enlarged inner part of the image onto the new bitmap
-            using (Graphics graphics = Graphics.FromImage(result))
-            {
-                graphics.DrawImage(resizedInnerImage, borderWidth, borderWidth);
-            }
-
-            // Return the resulting image
-            return result;
-        }
-        #region Optimize
-        private void ButtonOptimize_Click(object sender, EventArgs e)
-        {
-            // Save the current image as the new original image
-            _originalImage = new Bitmap(pictureBox1.Image);
-
-            // Set the TrackBar control back to the center
-            trackBarTolerance.Value = trackBarTolerance.Maximum / 2;
-
-            // Update the label with the current value of the TrackBar control
-            labelTolerance.Text = trackBarTolerance.Value.ToString();
-
-            // Set focus to trackBarTolerance
-            trackBarTolerance.Focus();
-        }
-
-        private void TrackBarTolerance_Scroll(object sender, EventArgs e)
-        {
-            // Update the label with the current value of the TrackBar control
-            labelTolerance.Text = trackBarTolerance.Value.ToString();
-
-            // Check if an image is loaded in the PictureBox
-            if (pictureBox1.Image == null)
-            {
-                MessageBox.Show("No image was loaded.");
-                return;
-            }
-
-            // Optimize the image using the tolerance from the TrackBar
-            Bitmap optimizedImage = OptimizeImage(_originalImage, trackBarTolerance.Value);
-
-            // If the RGB checkbox is checked, optimize the colors
-            if (checkBoxRGB.Checked)
-            {
-                optimizedImage = OptimizeColors(optimizedImage, trackBarTolerance.Value);
-            }
-
-            // Remove the current image in the PictureBox and put the optimized image
-            pictureBox1.Image = null;
-            pictureBox1.Image = optimizedImage;
-            // textBoxTrackBarTolerance.Text = trackBarTolerance.Value.ToString();
-        }
-        private Bitmap OptimizeImage(Bitmap originalImage, int tolerance)
-        {
-            // Make a copy of the original image
-            Bitmap optimizedImage = new Bitmap(originalImage);
-
-            // Set values ​​for brightness, contrast and gamma
-            float brightness = 1.0f; // no change in brightness
-            float contrast = 1.0f; // no contrast
-            float gamma = 1.0f; // no change in gamma
-
-            // Adjust brightness, contrast and gamma based on tolerance
-            brightness += (tolerance - 5) / 100.0f;
-            contrast += (tolerance - 5) / 100.0f;
-            gamma += (tolerance - 5) / 100.0f;
-
-            float adjustedBrightness = brightness - 1.0f;
-
-            // Create a matrix that brightens the image and increases contrast
-            float[][] ptsArray =
-            {
-        new float[] {contrast, 0, 0, 0, adjustedBrightness}, // Scale and lighten red
-        new float[] {0, contrast, 0, 0, adjustedBrightness}, // Scale and lighten green
-        new float[] {0, 0, contrast, 0, adjustedBrightness}, // Scale and lighten blue
-        new float[] {0, 0, 0, gamma, 0}, // Adjust gamma
-        new float[] {adjustedBrightness, adjustedBrightness, adjustedBrightness, 0, brightness} // Adjust brightness
-    };
-
-            ImageAttributes imageAttributes = new ImageAttributes();
-            imageAttributes.ClearColorMatrix();
-            imageAttributes.SetColorMatrix(new ColorMatrix(ptsArray), ColorMatrixFlag.Default,
-                ColorAdjustType.Bitmap);
-
-            using (Graphics g = Graphics.FromImage(optimizedImage))
-            {
-                for (int y = 0; y < optimizedImage.Height; y++)
-                {
-                    for (int x = 0; x < optimizedImage.Width; x++)
-                    {
-                        Color pixelColor = originalImage.GetPixel(x, y);
-
-                        // Check that the color is not #ffffff or #000000
-                        if (pixelColor.ToArgb() != Color.White.ToArgb() && pixelColor.ToArgb() != Color.Black.ToArgb())
-                        {
-                            // Draw the optimized pixel on the optimized image
-                            g.DrawImage(originalImage,
-                                new Rectangle(x, y, 1, 1),
-                                x,
-                                y,
-                                1,
-                                1,
-                                GraphicsUnit.Pixel,
-                                imageAttributes);
-                        }
-                    }
-                }
-            }
-
-            return optimizedImage;
-        }
-        private Bitmap OptimizeColors(Bitmap originalImage, int tolerance)
-        {
-            // Make a copy of the original image
-            Bitmap optimizedImage = new Bitmap(originalImage);
-
-            // Adjust color based on tolerance
-            float colorAdjustment = (tolerance - 5) / 100.0f;
-
-            using (Graphics g1 = Graphics.FromImage(optimizedImage))
-            {
-                for (int y = 0; y < optimizedImage.Height; y++)
-                {
-                    for (int x = 0; x < optimizedImage.Width; x++)
-                    {
-                        Color pixelColor = originalImage.GetPixel(x, y);
-
-                        // Check that the color is not #ffffff or #000000
-                        if (pixelColor.ToArgb() != Color.White.ToArgb() && pixelColor.ToArgb() != Color.Black.ToArgb())
-                        {
-                            // Adjust the RGB values of the pixel
-                            int r = Math.Min(Math.Max((int)(pixelColor.R + colorAdjustment * 255), 0), 255);
-                            int g = Math.Min(Math.Max((int)(pixelColor.G + colorAdjustment * 255), 0), 255);
-                            int b = Math.Min(Math.Max((int)(pixelColor.B + colorAdjustment * 255), 0), 255);
-
-                            Color optimizedColor = Color.FromArgb(r, g, b);
-
-                            // Set the optimized pixel on the optimized image
-                            optimizedImage.SetPixel(x, y, optimizedColor);
-                        }
-                    }
-                }
-            }
-
-            return optimizedImage;
-        }
-        #endregion
-        #region Rotate
-        private void ButtonRotateTexture_Click(object sender, EventArgs e)
-        {
-            // Check if an image is loaded in the PictureBox
-            if (pictureBox1.Image == null)
-            {
-                MessageBox.Show("No image was loaded.");
-                return;
-            }
-
-            // Enhance image automatically
-            Image enhancedImage = RotateeImage(pictureBox1.Image);
-
-            // Replace the current image in the PictureBox with the improved image
-            pictureBox1.Image = enhancedImage;
-
-            // update display
-            Size imageSize = enhancedImage.Size;
-            labelImageSize.Text = $"image size: {imageSize.Width} x {imageSize.Height} Pixel";
-        }
-
-        private Image RotateeImage(Image image)
-        {
-            // Example: Only the image is rotated here
-            Bitmap enhancedImage = new Bitmap(image);
-            enhancedImage.RotateFlip(RotateFlipType.Rotate90FlipNone);
-            return enhancedImage;
-        }
-        #endregion
-        #region AutoTexture
-        private void ButtonAutoTexture_Click(object sender, EventArgs e)
-        {
-            // Check if an image is loaded in the PictureBox
-            if (pictureBox1.Image == null)
-            {
-                MessageBox.Show("No image was loaded.");
-                return;
-            }
-
-            // Enhance image automatically
-            Image enhancedImage = AutoEnhanceImage(pictureBox1.Image);
-
-            // Replace the current image in the PictureBox with the improved image
-            pictureBox1.Image = enhancedImage;
-
-            // update display
-            Size imageSize = enhancedImage.Size;
-            labelImageSize.Text = $"image size: {imageSize.Width} x {imageSize.Height} Pixel";
-
-        }
-
-        private Image AutoEnhanceImage(Image image)
-        {
-            // color enhancement
-            Bitmap enhancedImage = AdjustColors(image);
-
-            return enhancedImage;
-        }
-
-        private Bitmap AdjustColors(Image image)
-        {
-            Bitmap bitmap = new Bitmap(image);
-
-            // Implement color enhancement algorithm here
-
-            // Example: Increase color saturation by 20%
-            float saturationFactor = 1.2f;
-            ImageAttributes attributes = new ImageAttributes();
-            ColorMatrix colorMatrix = new ColorMatrix(new float[][] {
-        new float[] { saturationFactor, 0, 0, 0, 0 },
-        new float[] { 0, saturationFactor, 0, 0, 0 },
-        new float[] { 0, 0, saturationFactor, 0, 0 },
-        new float[] { 0, 0, 0, 1, 0 },
-        new float[] { 0, 0, 0, 0, 1 }
-    });
-            attributes.SetColorMatrix(colorMatrix);
-            Graphics graphics = Graphics.FromImage(bitmap);
-            graphics.DrawImage(image, new Rectangle(0, 0, bitmap.Width, bitmap.Height), 0, 0, bitmap.Width, bitmap.Height, GraphicsUnit.Pixel, attributes);
-
-            return bitmap;
-        }
-        #endregion
-        #region WhiteBalace
-        private void ButtonWhite_Click(object sender, EventArgs e)
-        {
-            // Check if an image is loaded in the PictureBox
-            if (pictureBox1.Image == null)
-            {
-                MessageBox.Show("No image was loaded.");
-                return;
-            }
-
-            // Enhance image automatically
-            Bitmap image = new Bitmap(pictureBox1.Image);
-            WhiteBalance(image);
-
-            // Display the enhanced image in the PictureBox
-            pictureBox1.Image = image;
-            pictureBox1.Refresh();  // Refresh the PictureBox
-
-            // update display
-            Size imageSize = image.Size;
-            labelImageSize.Text = $"Image Size: {imageSize.Width} x {imageSize.Height} Pixel";
-        }
-
-        private void WhiteBalance(Bitmap bitmap)
-        {
-            // White balance calculation code here
-
-            // Example: white balance with dynamic values
-            int red = CalculateMaxRedValue(bitmap); // valid value between 0 and 255
-            int green = CalculateMaxGreenValue(bitmap); // valid value between 0 and 255
-            int blue = CalculateMaxBlueValue(bitmap); // valid value between 0 and 255
-
-            for (int y = 0; y < bitmap.Height; y++)
-            {
-                for (int x = 0; x < bitmap.Width; x++)
-                {
-                    Color pixelColor = bitmap.GetPixel(x, y);
-
-                    // Skip white and black pixels
-                    if (pixelColor.R == 255 && pixelColor.G == 255 && pixelColor.B == 255)
-                        continue; // Skip white pixels
-
-                    if (pixelColor.R == 0 && pixelColor.G == 0 && pixelColor.B == 0)
-                        continue; // Skip black pixels
-
-                    // Calculate new RGB values ​​after white balance
-                    int newRed, newGreen, newBlue;
-                    if (checkboxDarken.Checked)
-                    {
-                        newRed = pixelColor.R - ((red - pixelColor.R) * TrackbarWhiteBalance.Value / 100);
-                        newRed = Math.Max(newRed, 0);  // Ensure the value is not less than 0
-
-                        newGreen = pixelColor.G - ((green - pixelColor.G) * TrackbarWhiteBalance.Value / 100);
-                        newGreen = Math.Max(newGreen, 0);  // Ensure the value is not less than 0
-
-                        newBlue = pixelColor.B - ((blue - pixelColor.B) * TrackbarWhiteBalance.Value / 100);
-                        newBlue = Math.Max(newBlue, 0);  // Ensure the value is not less than 0
-                    }
-                    else
-                    {
-                        newRed = pixelColor.R + ((red - pixelColor.R) * TrackbarWhiteBalance.Value / 100);
-                        newGreen = pixelColor.G + ((green - pixelColor.G) * TrackbarWhiteBalance.Value / 100);
-                        newBlue = pixelColor.B + ((blue - pixelColor.B) * TrackbarWhiteBalance.Value / 100);
-                    }
-
-                    // Update pixels with the new RGB values
-                    bitmap.SetPixel(x, y, Color.FromArgb(newRed, newGreen, newBlue));
-                }
+                Cursor.Current = Cursors.Default;
             }
         }
 
-        // Method to calculate the max red value based on the properties of the image.
-        private int CalculateMaxRedValue(Bitmap bitmap)
-        {
-            int max = 0;
-
-            for (int y = 0; y < bitmap.Height; y++)
-            {
-                for (int x = 0; x < bitmap.Width; x++)
-                {
-                    Color pixelColor = bitmap.GetPixel(x, y);
-                    if (pixelColor.R > max)
-                    {
-                        max = pixelColor.R;
-                    }
-                }
-            }
-
-            return max;
-        }
-
-        // Method to calculate the max green value based on the properties of the image.
-        private int CalculateMaxGreenValue(Bitmap bitmap)
-        {
-            int max = 0;
-
-            for (int y = 0; y < bitmap.Height; y++)
-            {
-                for (int x = 0; x < bitmap.Width; x++)
-                {
-                    Color pixelColor = bitmap.GetPixel(x, y);
-                    if (pixelColor.G > max)
-                    {
-                        max = pixelColor.G;
-                    }
-                }
-            }
-
-            return max;
-        }
-
-        // Method to calculate the max blue value based on the properties of the image.
-        private int CalculateMaxBlueValue(Bitmap bitmap)
-        {
-            int max = 0;
-
-            for (int y = 0; y < bitmap.Height; y++)
-            {
-                for (int x = 0; x < bitmap.Width; x++)
-                {
-                    Color pixelColor = bitmap.GetPixel(x, y);
-                    if (pixelColor.B > max)
-                    {
-                        max = pixelColor.B;
-                    }
-                }
-            }
-
-            return max;
-        }
-
-        private void TrackbarWhiteBalance_ValueChanged(object sender, EventArgs e)
-        {
-            LabelWhiteBalance.Text = $"change: {TrackbarWhiteBalance.Value}%";
-        }
-        #endregion
-        #region Rotate 45 Degress
-        private void Button45Degrees_Click(object sender, EventArgs e)
-        {
-            // Check if an image is loaded in the PictureBox
-            if (pictureBox1.Image == null)
-            {
-                MessageBox.Show("No image was loaded.");
-                return;
-            }
-
-            // Resize the image to 33x33 pixels if it hasn't been resized yet
-            if (_resizedImage == null)
-            {
-                _resizedImage = new Bitmap(pictureBox1.Image, new Size(33, 33));
-            }
-
-            // Rotate the resized image by -45 degrees
-            Image rotatedImage = RotateImageByAngle(_resizedImage, -45);
-
-            // Create a new Bitmap with size 44x44 and black background
-            Bitmap newBackground = new Bitmap(44, 44);
-            using (Graphics graphics = Graphics.FromImage(newBackground))
-            {
-                graphics.Clear(Color.Black);
-
-                // Calculate the coordinates to center the rotated image within the 44x44 frame
-                int x = (newBackground.Width - rotatedImage.Width) / 2;
-                int y = (newBackground.Height - rotatedImage.Height) / 2;
-
-                // Draw the rotated image onto the new background graphic
-                graphics.DrawImage(rotatedImage, x, y);
-            }
-
-            // Display the new image in the PictureBox
-            pictureBox1.Image = newBackground;
-
-            // Free the previous image (optional to free up memory)
-            _resizedImage.Dispose();
-
-            // Reset the resized image as a new image has now been loaded
-            _resizedImage = null;
-
-            // Refresh the display
-            Size imageSize = newBackground.Size;
-            labelImageSize.Text = $"image size: {imageSize.Width} x {imageSize.Height} Pixel";
-        }
-        private Image RotateImageByAngle(Image image, float angle)
-        {
-            // Calculate the size of the new Bitmap
-            int bitmapSize = (int)Math.Ceiling(Math.Sqrt(image.Width * image.Width + image.Height * image.Height));
-
-            // Create a new Bitmap with the calculated size
-            Bitmap rotatedImage = new Bitmap(bitmapSize, bitmapSize);
-
-            // Create a Graphics instance to draw the image
-            using (Graphics graphics = Graphics.FromImage(rotatedImage))
-            {
-                // Set the rotation
-                graphics.TranslateTransform(rotatedImage.Width / 2, rotatedImage.Height / 2);
-                graphics.RotateTransform(angle);
-                graphics.TranslateTransform(-rotatedImage.Width / 2, -rotatedImage.Height / 2);
-
-                // Draw the image centered within the Bitmap
-                graphics.DrawImage(image, (bitmapSize - image.Width) / 2, (bitmapSize - image.Height) / 2);
-            }
-
-            return rotatedImage;
-        }
-        #endregion
-        #region Copy to Clipbord Image        
-
-        private void CopyClipboardToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            if (pictureBox1.Image != null)
-            {
-                // Make a copy of the picture in pictureBox1
-                Bitmap image = new Bitmap(pictureBox1.Image);
-
-                // Verify that valid color values ​​were entered in the textBoxColorAdress and textBoxColorToAdress
-                if (IsValidColor(textBoxColorAdress.Text) && IsValidColor(textBoxColorToAdress.Text))
-                {
-                    // Add the # to the color code if it's not already there
-                    string fromColorCode = textBoxColorAdress.Text;
-                    if (!fromColorCode.StartsWith("#"))
-                    {
-                        fromColorCode = "#" + fromColorCode;
-                    }
-
-                    string toColorCode = textBoxColorToAdress.Text;
-                    if (!toColorCode.StartsWith("#"))
-                    {
-                        toColorCode = "#" + toColorCode;
-                    }
-
-                    // Convert the entered color values ​​into Color objects
-                    Color fromColor = ColorTranslator.FromHtml(fromColorCode);
-                    Color toColor = ColorTranslator.FromHtml(toColorCode);
-
-                    // Replace the color value in the image
-                    ReplaceColor(image, fromColor, toColor);
-                }
-
-                // Verify that a valid color value was entered in the textBoxColorErase
-                if (IsValidColor(textBoxColorErase.Text))
-                {
-                    // Add the # to the color code if it's not already there
-                    string eraseColorCode = textBoxColorErase.Text;
-                    if (!eraseColorCode.StartsWith("#"))
-                    {
-                        eraseColorCode = "#" + eraseColorCode;
-                    }
-
-                    // Convert the entered color value to a Color object
-                    Color eraseColor = ColorTranslator.FromHtml(eraseColorCode);
-
-                    // Replace the color value in the image with white
-                    ReplaceWithWhite(image, eraseColor);
-                }
-
-                // Copy the image to the clipboard
-                Clipboard.SetImage(image);
-            }
-        }
-        private void ImportClipbordToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            // Check if there is an image on the clipboard
-            if (Clipboard.ContainsImage())
-            {
-                // Paste the image from the clipboard into the PictureBox
-                Image image = Clipboard.GetImage();
-                pictureBox1.Image = image;
-
-                // Adjust the size of the PictureBox to the size of the image
-                pictureBox1.Size = image.Size;
-
-                // Set the SizeMode property to Normal to maintain the original size of the image
-                pictureBox1.SizeMode = PictureBoxSizeMode.Normal; // This line has been added
-
-                // Save the original image and its size
-                _originalImage = new Bitmap(pictureBox1.Image);
-                _originalSize = pictureBox1.Image.Size;
-
-                // Set the text of the label to the size of the image
-                labelImageSize.Text = "Image Size: " + image.Width + " x " + image.Height;
-            }
-        }
-
-        //Old function that sets to transparent not active
-        private void MakeTransparent(Bitmap image, Color color)
-        {
-            // Loop through each pixel in the image
-            for (int x = 0; x < image.Width; x++)
-            {
-                for (int y = 0; y < image.Height; y++)
-                {
-                    // Check if the pixel is the color you want to erase
-                    if (image.GetPixel(x, y) == color)
-                    {
-                        // Set the pixel to transparent
-                        image.SetPixel(x, y, Color.Transparent);
-                    }
-                }
-            }
-        }
-        //replaces the color with the given one
-        private void ReplaceColor(Bitmap image, Color fromColor, Color toColor)
-        {
-            // Loop through each pixel in the image
-            for (int x = 0; x < image.Width; x++)
-            {
-                for (int y = 0; y < image.Height; y++)
-                {
-                    // Verify that the pixel is the color to be replaced
-                    if (image.GetPixel(x, y) == fromColor)
-                    {
-                        // Set the pixel to the new color
-                        image.SetPixel(x, y, toColor);
-                    }
-                }
-            }
-        }
-
-        //Replaces the color with ffffff
-        private void ReplaceWithWhite(Bitmap image, Color color)
-        {
-            // Loop through each pixel in the image
-            for (int x = 0; x < image.Width; x++)
-            {
-                for (int y = 0; y < image.Height; y++)
-                {
-                    // Verify that the pixel is the color to be replaced
-                    if (image.GetPixel(x, y) == color)
-                    {
-                        // Set the pixel to white
-                        image.SetPixel(x, y, Color.White);
-                    }
-                }
-            }
-        }
         #endregion
 
-        #region Textbox Color
+        #region Help, window, keyboard
 
-        private void TextBoxColorAdress_TextChanged(object sender, EventArgs e)
-        {
-            // Verify that the text you entered is a valid color value
-            if (textBoxColorAdress.Text.Length == 7 && !IsValidColor(textBoxColorAdress.Text))
-            {
-                // The text you entered is not a valid color value - display an error message
-                MessageBox.Show("Please enter a valid color value.");
-            }
-            else
-            {
-                // Check if the text in the TextBox is a valid color code
-                try
-                {
-                    if (ColorTranslator.FromHtml(textBoxColorAdress.Text) is Color color)
-                    {
-                        // Set the background color of panelIsPickingColor to the color value
-                        panelIsPickingColor.BackColor = color;
-                    }
-                }
-                catch (Exception)
-                {
-                    MessageBox.Show("Please enter a valid color value.");
-                }
-            }
-            // Wenn die Checkbox aktiviert ist, kopieren Sie den Text aus textBoxColorAdress in textBoxColorToAdress
-            if (checkBoxToTextboxColor.Checked)
-            {
-                textBoxColorToAdress.Text = textBoxColorAdress.Text;
-            }
-        }
+        private void ShowHelp(bool german) => TextureCutterHelp.Show(this, german);
 
-        private void CheckBoxToTextboxColor_CheckedChanged(object sender, EventArgs e)
-        {
-            // Wenn die Checkbox aktiviert ist, kopieren Sie den Text aus textBoxColorAdress in textBoxColorToAdress
-            if (checkBoxToTextboxColor.Checked)
-            {
-                textBoxColorToAdress.Text = textBoxColorAdress.Text;
-            }
-        }
-
-        private void TextBoxColorToAdress_TextChanged(object sender, EventArgs e)
-        {
-            // Verify that the text you entered is a valid color value
-            if (textBoxColorToAdress.Text.Length == 7 && !IsValidColor(textBoxColorToAdress.Text))
-            {
-                // The text you entered is not a valid color value - display an error message
-                MessageBox.Show("Please enter a valid color value.");
-            }
-
-            // Wenn die Checkbox aktiviert ist, kopieren Sie den Text aus textBoxColorAdress in textBoxColorToAdress
-            if (checkBoxToTextboxColor.Checked)
-            {
-                textBoxColorToAdress.Text = textBoxColorAdress.Text;
-            }
-        }
-
-        private void TextBoxColorErase_TextChanged(object sender, EventArgs e)
-        {
-            // Verify that the text you entered is a valid color value
-            if (textBoxColorErase.Text.Length == 7 && !IsValidColor(textBoxColorErase.Text))
-            {
-                // The text you entered is not a valid color value - display an error message
-                MessageBox.Show("Please enter a valid color value.");
-            }
-        }
-        private bool IsValidColor(string color)
-        {
-            // Check if the color value starts with a #
-            if (color.StartsWith("#"))
-            {
-                // Remove the # from the beginning of the color value
-                color = color.Substring(1);
-            }
-
-            // Verify that the color value is 6 characters long
-            if (color.Length == 6)
-            {
-                // Verify that all characters are valid hexadecimal characters
-                for (int i = 0; i < color.Length; i++)
-                {
-                    if (!IsHexChar(color[i]))
-                    {
-                        return false;
-                    }
-                }
-
-                // The color value is valid
-                return true;
-            }
-
-            // The color value is invalid
-            return false;
-        }
-        private bool IsHexChar(char c)
-        {
-            return (c >= '0' && c <= '9') || (c >= 'A' && c <= 'F') || (c >= 'a' && c <= 'f');
-        }
-        #endregion
-
-        #region Checkbox
-        private void CheckBoxChange_CheckedChanged(object sender, EventArgs e)
-        {
-            // Check if the checkBoxChange is checked
-            if (checkBoxChange.Checked)
-            {
-                // Transfer the value of comboBoxColorValue to textBoxColorToAdress
-                textBoxColorToAdress.Text = comboBoxColorValue.Text;
-            }
-        }
-        private void ComboBoxColorValue_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            // Check if the checkBoxChange is checked
-            if (checkBoxChange.Checked)
-            {
-                // Transfer the value of comboBoxColorValue to textBoxColorToAdress
-                textBoxColorToAdress.Text = comboBoxColorValue.Text;
-            }
-
-            // Check if the checkBoxChange is checked
-            if (checkBoxDelete.Checked)
-            {
-                // Transfer the value of comboBoxColorValue to textBoxColorToAdress
-                textBoxColorErase.Text = comboBoxColorValue.Text;
-            }
-        }
-        #endregion
-
-        #region To Update
-        private void BtToUpdate_Click(object sender, EventArgs e)
-        {
-            if (pictureBox1.Image != null)
-            {
-                // Create a copy of the image in pictureBox1.
-                Bitmap image = new Bitmap(pictureBox1.Image);
-
-                // Check if valid color values have been entered in both textBoxColorAdress and textBoxColorToAdress.
-                if (IsValidColor(textBoxColorAdress.Text) && IsValidColor(textBoxColorToAdress.Text))
-                {
-                    // Add the "#" symbol to the color code if it's not already present.
-                    string fromColorCode = textBoxColorAdress.Text;
-                    if (!fromColorCode.StartsWith("#"))
-                    {
-                        fromColorCode = "#" + fromColorCode;
-                    }
-
-                    string toColorCode = textBoxColorToAdress.Text;
-                    if (!toColorCode.StartsWith("#"))
-                    {
-                        toColorCode = "#" + toColorCode;
-                    }
-
-                    // Convert the entered color values into Color objects.
-                    Color fromColor = ColorTranslator.FromHtml(fromColorCode);
-                    Color toColor = ColorTranslator.FromHtml(toColorCode);
-
-
-                    int tolerance = 0;
-                    if (checkBoxtoleranz5.Checked) tolerance = 13; // 5% von 255
-                    else if (checkBoxtoleranz10.Checked) tolerance = 26; // 10% von 255
-                    else if (checkBoxtoleranz15.Checked) tolerance = 38; // 15% von 255
-                    else if (checkBoxtoleranz25.Checked) tolerance = 64; // 25% von 255
-                    else if (checkBoxtoleranz30.Checked) tolerance = 77; // 30% von 255
-                    else if (checkBoxtoleranz35.Checked) tolerance = 89; // 35% von 255
-                    else if (checkBoxtoleranz50.Checked) tolerance = 127; // 50% von 255
-                    else if (checkBoxtoleranz75.Checked) tolerance = 191; // 75% von 255
-                    else if (checkBoxtoleranz100.Checked) tolerance = 255; // 100% von 255
-                    // Replace the color value in the image.
-                    ReplaceColorWithTolerance(image, fromColor, toColor, tolerance);
-                }
-
-                // Check if a valid color value has been entered in the textBoxColorErase.
-                if (IsValidColor(textBoxColorErase.Text))
-                {
-                    // Add the "#" symbol to the color code if it's not already present.
-                    string eraseColorCode = textBoxColorErase.Text;
-                    if (!eraseColorCode.StartsWith("#"))
-                    {
-                        eraseColorCode = "#" + eraseColorCode;
-                    }
-
-                    // Convert the entered color value into a Color object.
-                    Color eraseColor = ColorTranslator.FromHtml(eraseColorCode);
-
-                    // Replace the color value in the image with white.
-                    ReplaceWithWhite(image, eraseColor);
-                }
-
-                // Update the image in pictureBox1.
-                pictureBox1.Image = image;
-
-                // Update the originalImage object
-                _originalImage = new Bitmap(image);
-            }
-        }
-        #endregion
-
-        #region Keydown
-        private void Form1_KeyDown(object sender, KeyEventArgs e)
-        {
-            // Check if Ctrl+V was pressed.
-            if (e.Control && e.KeyCode == Keys.X)
-            {
-                // Invoke the copyClipboardToolStripMenuItem_Click method.
-                CopyClipboardToolStripMenuItem_Click(sender, e);
-            }
-            if (e.Control && e.KeyCode == Keys.V)
-            {
-                // Invoke the importClipbordToolStripMenuItem_Click method.
-                ImportClipbordToolStripMenuItem_Click(sender, e);
-            }
-        }
-        #endregion
-
-        #region Pipette
-        private void PictureBox1_MouseClick(object sender, MouseEventArgs e)
-        {
-            // Check if the dropper mode is activated.
-            if (_isPickingColor)
-            {
-                // Check if there is an image in pictureBox1.
-                if (pictureBox1.Image != null)
-                {
-                    // Convert the mouse coordinates to image coordinates.
-                    int x = e.X * pictureBox1.Image.Width / pictureBox1.Width;
-                    int y = e.Y * pictureBox1.Image.Height / pictureBox1.Height;
-
-                    // Create a copy of the image in pictureBox1.
-                    Bitmap image = new Bitmap(pictureBox1.Image);
-
-                    // Check if the coordinates are within the image bounds.
-                    if (x >= 0 && x < image.Width && y >= 0 && y < image.Height)
-                    {
-                        // Retrieve the color value of the pixel at the specified coordinates.
-                        Color color = image.GetPixel(x, y);
-
-                        // Convert the color value to a hexadecimal code.
-                        string colorCode = "#" + color.R.ToString("X2") + color.G.ToString("X2") + color.B.ToString("X2");
-
-                        // Set the color code in the textBoxColorAdress.
-                        textBoxColorAdress.Text = colorCode;
-                    }
-                }
-
-                // Disable eyedropper mode
-                _isPickingColor = false;
-            }
-        }
-
-        private void BtPickColor_Click(object sender, EventArgs e)
-        {
-            // Activate eyedropper mode
-            _isPickingColor = true;
-        }
-        #endregion
-        #region Mirror
-        private void BtMirroImage_Click(object sender, EventArgs e)
-        {
-            // Check if there is an image in pictureBox1.
-            if (pictureBox1.Image != null)
-            {
-                // Create a copy of the image in pictureBox1.
-                Bitmap image = new Bitmap(pictureBox1.Image);
-
-                // Mirror the image horizontally.
-                image.RotateFlip(RotateFlipType.RotateNoneFlipX);
-
-                // Update the image in pictureBox1.
-                pictureBox1.Image = image;
-            }
-        }
-        #endregion
-
-        #region Zoom
-        private void ZoomImage(int change)
-        {
-            // Calculate the new size based on the current image size
-            int newWidth = pictureBox1.Image.Width + change;
-            int newHeight = pictureBox1.Image.Height + change;
-
-            // If the new size is less than half of the original size or greater than the size of the PictureBox,
-            // adjust it to be within these bounds
-            newWidth = Math.Max(Math.Min(newWidth, panel1.Width), _originalImage.Width / 2);
-            newHeight = Math.Max(Math.Min(newHeight, panel1.Height), _originalImage.Height / 2);
-
-            // Calculate the zoom percentage
-            double zoomPercentage = (double)newWidth / _originalImage.Width * 100;
-
-            // If the zoom percentage is close to 100%, restore the original image
-            if (zoomPercentage >= 98.8 && zoomPercentage <= 102.7)
-            {
-                pictureBox1.Image = new Bitmap(_originalImage);
-                zoomLabel.Text = "Original size reached";
-                return;
-            }
-
-            // Create a new Bitmap object with the new size
-            Bitmap newImage = new Bitmap(_originalImage, new Size(newWidth, newHeight));
-
-            // Dispose of the old image to free up memory
-            pictureBox1.Image.Dispose();
-
-            // Assign the new image to the PictureBox
-            pictureBox1.Image = newImage;
-
-            // Update the zoom label
-            zoomLabel.Text = $"Zoom: {Math.Round(zoomPercentage, 1)}%";
-        }
-        private void ZoomInButton_Click(object sender, EventArgs e)
-        {
-            // Check that the Image object is not null
-            if (pictureBox1.Image != null)
-            {
-                // Enlarge
-                ZoomImage(10);
-            }
-        }
-        private void ZoomOutButton_Click(object sender, EventArgs e)
-        {
-            // Check that the Image object is not null and the new size is greater than half of the original size
-            if (pictureBox1.Image != null && pictureBox1.Image.Width > _originalImage.Width / 2 && pictureBox1.Image.Height > _originalImage.Height / 2)
-            {
-                // Shrink
-                ZoomImage(-10);
-            }
-        }
-
-        private void PictureBox1_MouseWheel(object sender, MouseEventArgs e)
-        {
-            // Check whether the mouse wheel has been rotated up or down
-            /*if (e.Delta > 0)
-            {
-                // Check that the Image object is not null
-                if (pictureBox1.Image != null)
-                {
-                    // Enlarge
-                    ZoomImage(10);
-                }
-            }
-            else
-            {
-                // Check that the Image object is not null and the new size is greater than half of the original size
-                if (pictureBox1.Image != null && pictureBox1.Image.Width > originalImage.Width / 2 && pictureBox1.Image.Height > originalImage.Height / 2)
-                {
-                    // Shrink
-                    ZoomImage(-10);
-                }
-            }*/
-        }
-        private void ResetButton_Click(object sender, EventArgs e)
-        {
-            // Resize the image in the PictureBox to its original size
-            pictureBox1.Image = new Bitmap(_originalImage, _originalSize);
-        }
-        #endregion
-
-        #region Color Dialog
-        private void SelectColorButton_Click(object sender, EventArgs e)
-        {
-            // Create a new ColorDialog object
-            ColorDialog colorDialog = new ColorDialog();
-
-            // Restore the custom colors, if any
-            if (_customColors != null)
-            {
-                colorDialog.CustomColors = _customColors;
-            }
-
-            // Display the ColorDialog and verify that the user clicked OK
-            if (colorDialog.ShowDialog() == DialogResult.OK)
-            {
-                // Convert the selected color to a hexadecimal code
-                string colorCode = "#" + colorDialog.Color.R.ToString("X2") + colorDialog.Color.G.ToString("X2") + colorDialog.Color.B.ToString("X2");
-
-                // Put the color code in the textBoxColorToAdress
-                textBoxColorToAdress.Text = colorCode;
-
-                // Save the custom colors
-                _customColors = colorDialog.CustomColors;
-            }
-        }
-
-        private void SelectColorButton2_Click(object sender, EventArgs e)
-        {
-            // Create a new ColorDialog object
-            ColorDialog colorDialog = new ColorDialog();
-
-            // Restore the custom colors, if any
-            if (_customColors != null)
-            {
-                colorDialog.CustomColors = _customColors;
-            }
-
-            // Display the ColorDialog and verify that the user clicked OK
-            if (colorDialog.ShowDialog() == DialogResult.OK)
-            {
-                // Convert the selected color to a hexadecimal code
-                string colorCode = "#" + colorDialog.Color.R.ToString("X2") + colorDialog.Color.G.ToString("X2") + colorDialog.Color.B.ToString("X2");
-
-                // Put the color code in the textBoxColorToAdress
-                textBoxColorToAdress2.Text = colorCode;
-
-                // Save the custom colors
-                _customColors = colorDialog.CustomColors;
-            }
-        }
-        #endregion
-        #region Coordinates of the mouse cursor.        
-
-        private void PictureBox1_MouseMove(object sender, MouseEventArgs e)
-        {
-            if (pictureBox1.Image != null)
-            {
-                // Converting the mouse coordinates to image coordinates.
-                // int x = e.X * pictureBox1.Image.Width / pictureBox1.Width;
-                // int y = e.Y * pictureBox1.Image.Height / pictureBox1.Height;
-
-                // Adjust the mouse coordinates for the zoom factor
-                int zoomFactor = (int)Math.Pow(2, _zoomCounter);
-                int x = (e.X * pictureBox1.Image.Width / pictureBox1.Width) / zoomFactor;
-                int y = (e.Y * pictureBox1.Image.Height / pictureBox1.Height) / zoomFactor;
-
-                // Checking if the coordinates are within the image boundaries.
-                if (x >= 0 && x < pictureBox1.Image.Width && y >= 0 && y < pictureBox1.Image.Height)
-                {
-                    // Creating a copy of the image in pictureBox1.
-                    Bitmap image = new Bitmap(pictureBox1.Image);
-
-                    // Adjust the coordinates for the zoom factor
-                    int adjustedX = x * zoomFactor;
-                    int adjustedY = y * zoomFactor;
-
-                    // Retrieving the color value of the pixel at the adjusted coordinates.
-                    Color color = image.GetPixel(adjustedX, adjustedY);
-
-                    // Converting the color value to a hexadecimal code.
-                    string colorCode = "#" + color.R.ToString("X2") + color.G.ToString("X2") + color.B.ToString("X2");
-
-                    // Setting the color code in the label control.
-                    colorLabel.Text = colorCode;
-
-                    // Displaying the coordinates of the mouse cursor in the label.
-                    coordinatesLabel.Text = $"X: {adjustedX}, Y: {adjustedY}";
-
-                    // Set the background color of the color display panel to the retrieved color value.
-                    panelColorHex.BackColor = color;
-                }
-                else
-                {
-                    // Mouse is outside of the image, no color display
-                    colorLabel.Text = "";
-                    coordinatesLabel.Text = "";
-                    panelColorHex.BackColor = Color.Transparent;
-                }
-            }
-            else
-            {
-                // PictureBox is empty, no color display
-                colorLabel.Text = "";
-                coordinatesLabel.Text = "";
-            }
-
-            // Check if erasing mode is enabled and if left mouse button is pressed
-            if (_isErasing && e.Button == MouseButtons.Left)
-            {
-                // Check if pictureBox1.Image is not null
-                if (pictureBox1.Image != null)
-                {
-                    // Create a copy of the image in pictureBox1
-                    Bitmap image = new Bitmap(pictureBox1.Image);
-
-                    // Create a Graphics object from the image
-                    using (Graphics g = Graphics.FromImage(image))
-                    {
-                        // Erase an area around the current mouse position
-                        g.FillEllipse(Brushes.White, e.X - 5, e.Y - 5, 10, 10);
-                    }
-
-                    // Update the image in pictureBox1
-                    pictureBox1.Image = image;
-                }
-            }
-            else if (_isDrawing && e.Button == MouseButtons.Left)
-            {
-                // Check if pictureBox1.Image is not null
-                if (pictureBox1.Image != null)
-                {
-                    // Create a copy of the image in pictureBox1
-                    Bitmap image = new Bitmap(pictureBox1.Image);
-
-                    // Create a Graphics object from the image
-                    using (Graphics g = Graphics.FromImage(image))
-                    {
-                        // Check if textBoxColorToAdress is not empty
-                        if (!string.IsNullOrEmpty(textBoxColorToAdress.Text))
-                        {
-                            // Convert the text in textBoxColorToAdress into a color value
-                            string colorCode = textBoxColorToAdress.Text;
-                            if (!colorCode.StartsWith("#"))
-                            {
-                                colorCode = "#" + colorCode;
-                            }
-                            Color penColor = ColorTranslator.FromHtml(colorCode);
-
-                            // Create a pen with the specified color
-                            Pen pen = new Pen(penColor);
-
-                            // Adjust the mouse coordinates for the zoom factor
-                            int zoomFactor = (int)Math.Pow(2, _zoomCounter);
-                            Point adjustedLastPoint = new Point(_lastPoint.X / zoomFactor, _lastPoint.Y / zoomFactor);
-                            Point adjustedCurrentPoint = new Point(e.X / zoomFactor, e.Y / zoomFactor);
-
-                            // Draw a line from the adjusted last position to the adjusted current position
-                            g.DrawLine(pen, adjustedLastPoint.X, adjustedLastPoint.Y, adjustedCurrentPoint.X, adjustedCurrentPoint.Y);
-
-                            if (checkBox2Colors.Checked && !string.IsNullOrEmpty(textBoxColorToAdress2.Text))
-                            {
-                                string colorCode2 = textBoxColorToAdress2.Text;
-                                if (!colorCode2.StartsWith("#")) { colorCode2 = "#" + colorCode2; }
-                                Color penColor2;
-                                try { penColor2 = ColorTranslator.FromHtml(colorCode2); }
-                                catch { penColor2 = Color.Black; }  // Default to black if the color code is invalid
-
-                                Pen pen2 = new Pen(penColor2);
-
-                                // Adjust the coordinates for the second color
-                                Point adjustedCurrentPoint2 = new Point((e.X + 1) / zoomFactor, e.Y / zoomFactor);
-
-                                g.DrawRectangle(pen2, adjustedCurrentPoint2.X, adjustedCurrentPoint2.Y, 1, 1);
-                            }
-
-                        }
-                    }
-
-                    // Update the image in pictureBox1
-                    pictureBox1.Image = image;
-
-                    // Set the last point to the current position
-                    _lastPoint = e.Location;
-                }
-            }
-
-            else if (checkBoxFreehand.Checked && e.Button == MouseButtons.Left)
-            {
-                _points.Add(e.Location);
-                pictureBox1.Invalidate();
-            }
-            else if (e.Button == MouseButtons.Left && _isDragging)
-            {
-                int width = e.X - _startPoint.X;
-                int height = e.Y - _startPoint.Y;
-                _cropArea = new Rectangle(_startPoint.X, _startPoint.Y, width, height);
-                pictureBox1.Invalidate();
-            }
-            else if (e.Button == MouseButtons.None)
-            {
-                // Set the last point to the current position
-                _lastPoint = e.Location;
-            }
-
-            if (pictureBox1.Image != null && checkBoxLines.Checked && e.Button == MouseButtons.Left)
-            {
-                _points.Add(e.Location);
-                pictureBox1.Invalidate();
-            }
-        }
-        #endregion
-
-        #region indexed colors
-        private void ConvertToIndexedButton_Click(object sender, EventArgs e)
-        {
-            // Check if there is an image on the clipboard
-            if (Clipboard.ContainsImage())
-            {
-                // Paste the image from the clipboard into the PictureBox
-                Bitmap source = new Bitmap(Clipboard.GetImage());
-                pictureBox1.Image = source;
-
-                // Convert the image to indexed colors
-                Bitmap result = source.Clone(new Rectangle(0, 0, source.Width, source.Height), PixelFormat.Format8bppIndexed);
-
-                // Update the image in the PictureBox
-                pictureBox1.Image = result;
-            }
-        }
-
-        private ToolTip _toolTip = new ToolTip();
-        private void DrawButton_Click(object sender, EventArgs e)
-        {
-            if (_isDrawing)
-            {
-                // Switch off drawing mode
-                _isDrawing = false;
-                DrawButton.FlatAppearance.MouseDownBackColor = Color.FromName("Control"); // Reset the button color
-                _toolTip.SetToolTip(DrawButton, "Draw mode is deactivated");
-            }
-            else
-            {
-                // Switch to drawing mode
-                _isDrawing = true;
-
-                // Disable delete mode
-                _isErasing = false;
-
-                DrawButton.FlatAppearance.MouseDownBackColor = Color.Red;
-                _toolTip.SetToolTip(DrawButton, "Draw mode is activated");
-            }
-        }
-        private void PictureBox1_MouseDown(object sender, MouseEventArgs e)
-        {
-            // Check whether drawing mode is activated
-            if (_isDrawing)
-            {
-                // Set the last point to the current mouse position
-                _lastPoint = e.Location;
-            }
-        }
-        private void EraseButton_Click(object sender, EventArgs e)
-        {
-            if (_isErasing)
-            {
-                // Switch off erase mode
-                _isErasing = false;
-                EraseButton.FlatAppearance.MouseDownBackColor = Color.FromName("Control"); // Reset the button color
-                _toolTip.SetToolTip(EraseButton, "Erase mode is deactivated");
-            }
-            else
-            {
-                // Enter erase mode
-                _isErasing = true;
-
-                // Disable drawing mode
-                _isDrawing = false;
-
-                EraseButton.FlatAppearance.MouseDownBackColor = Color.Red;
-                _toolTip.SetToolTip(EraseButton, "Erase mode is activated");
-            }
-        }
-        #endregion
-
-        #region ColorWithTolerance
-        private void ReplaceColorWithTolerance(Bitmap image, Color fromColor, Color toColor, int tolerance)
-        {
-            // Loop through every pixel in the image
-            for (int x = 0; x < image.Width; x++)
-            {
-                for (int y = 0; y < image.Height; y++)
-                {
-                    // Check whether the pixel is within the tolerance range of the color to be replaced
-                    Color pixelColor = image.GetPixel(x, y);
-                    if (IsWithinTolerance(pixelColor, fromColor, tolerance))
-                    {
-                        // Set the pixel to the new color
-                        image.SetPixel(x, y, toColor);
-                    }
-                }
-            }
-        }
-
-        private bool IsWithinTolerance(Color color1, Color color2, int tolerance)
-        {
-            int rDiff = Math.Abs(color1.R - color2.R);
-            int gDiff = Math.Abs(color1.G - color2.G);
-            int bDiff = Math.Abs(color1.B - color2.B);
-
-            // Check whether the difference in each color channel is within tolerance
-            return rDiff <= tolerance && gDiff <= tolerance && bDiff <= tolerance;
-        }
-        #endregion
-
-        #region Color Evaluate
-        private Form _colorForm = null;
-        private Label _mostCommonColorLabel = null;
-
-        private void BtEvaluateColor_Click(object sender, EventArgs e)
-        {
-            if (_colorForm != null && !_colorForm.IsDisposed)
-            {
-                _colorForm.Close();
-            }
-
-            if (pictureBox1.Image != null)
-            {
-                Bitmap image = new Bitmap(pictureBox1.Image);
-                Dictionary<string, int> colors = new Dictionary<string, int>();
-                for (int x = 0; x < image.Width; x++)
-                {
-                    for (int y = 0; y < image.Height; y++)
-                    {
-                        Color color = image.GetPixel(x, y);
-                        string colorCode = "#" + color.R.ToString("X2") + color.G.ToString("X2") + color.B.ToString("X2");
-                        if (colorCode == "#FFFFFF" || colorCode == "#000000") continue;
-                        if (colors.ContainsKey(colorCode))
-                        {
-                            colors[colorCode]++;
-                        }
-                        else
-                        {
-                            colors.Add(colorCode, 1);
-                        }
-                    }
-                }
-                var sortedColors = from pair in colors orderby pair.Value descending select pair;
-                int totalPixels = image.Width * image.Height;
-                _colorForm = new Form();
-                _colorForm.Text = "Evaluate Color";
-
-                _colorForm.ShowIcon = false;
-
-                _mostCommonColorLabel = new Label();
-                _mostCommonColorLabel.Dock = DockStyle.Top;
-
-                Button refreshButton = new Button();
-                refreshButton.Text = "Refresh";
-                refreshButton.Dock = DockStyle.Top;
-                refreshButton.Click += BtEvaluateColor_Click;
-
-                TreeView treeView = new TreeView();
-                treeView.Dock = DockStyle.Fill;
-
-                // Setzen Sie DrawMode auf OwnerDrawAll
-                treeView.DrawMode = TreeViewDrawMode.OwnerDrawAll;
-
-                treeView.DrawNode += (s, evt) =>
-                {
-                    evt.DrawDefault = false;
-                    using (var brush = new SolidBrush(ColorTranslator.FromHtml(evt.Node.Text.Split(' ')[0])))
-                    {
-                        var rect = new Rectangle(evt.Bounds.Left + 2, evt.Bounds.Top + 2, evt.Bounds.Height - 4, evt.Bounds.Height - 4);
-                        evt.Graphics.FillRectangle(brush, rect);
-                    }
-
-                    // Set DrawMode to OwnerDrawAll
-                    Color textColor = Color.Black;
-
-                    // With the node selected, change the background color
-                    if ((evt.State & TreeNodeStates.Selected) != 0)
-                    {
-                        using (var brush = new SolidBrush(Color.FromArgb(128, Color.LightBlue))) // Change this to the highlight color you want
-                        {
-                            evt.Graphics.FillRectangle(brush, new Rectangle(0, evt.Node.Bounds.Top, treeView.Width, evt.Node.Bounds.Height));
-                        }
-                    }
-
-                    TextRenderer.DrawText(evt.Graphics, evt.Node.Text, evt.Node.TreeView.Font,
-                        new Rectangle(evt.Bounds.Left + evt.Bounds.Height, evt.Bounds.Top, evt.Bounds.Width - evt.Bounds.Height, evt.Bounds.Height),
-                        textColor);
-                };
-
-
-                treeView.NodeMouseClick += (s, evt) =>
-                {
-                    string hexCode = evt.Node.Text.Split(' ')[0];
-                    textBoxColorAdress.Text = hexCode;
-                    Clipboard.SetText(hexCode);
-                };
-
-                int count = 0;
-                foreach (KeyValuePair<string, int> pair in sortedColors)
-                {
-                    if (count >= 20) break;
-                    double percentage = (double)pair.Value / totalPixels * 100;
-                    string nodeText = pair.Key + " - " + percentage.ToString("F2") + "%";
-                    TreeNode colorNode = new TreeNode(nodeText);
-                    treeView.Nodes.Add(colorNode);
-
-                    if (count == 0)
-                    {
-                        _mostCommonColorLabel.Text = "Most common color: " + pair.Key;
-                    }
-
-                    count++;
-                }
-
-                _colorForm.Controls.Add(treeView);
-                _colorForm.Controls.Add(refreshButton);
-                _colorForm.Controls.Add(_mostCommonColorLabel);
-
-                _colorForm.Show();
-            }
-        }
-        #endregion
-        #region Color List
-        // Global variable to store the form
-        Form _colorListForm = null;
-
-        private void Btcolorlistimage_Click(object sender, EventArgs e)
-        {
-            // Check if the form is already open
-            if (_colorListForm != null)
-            {
-                // The form is already open, so just return
-                return;
-            }
-
-            // Check whether an image has been loaded in the PictureBox
-            if (pictureBox1.Image != null)
-            {
-                // Create a new shape
-                _colorListForm = new Form();
-                _colorListForm.Text = "Color List";
-                _colorListForm.FormClosed += (s, e) => { _colorListForm = null; };
-
-                // Create a TreeView and add it to the shape
-                TreeView treeView = new TreeView();
-                treeView.Dock = DockStyle.Fill;
-                _colorListForm.Controls.Add(treeView);
-
-                // Create a label to display the total number of colors
-                Label label = new Label();
-                label.Dock = DockStyle.Top;
-                _colorListForm.Controls.Add(label);
-
-                // Function to load the colors from the image
-                Action loadColors = () =>
-                {
-                    // Delete all existing nodes in the TreeView
-                    treeView.Nodes.Clear();
-
-                    // Make a copy of the image in pictureBox1
-                    Bitmap image = new Bitmap(pictureBox1.Image);
-
-                    // Create a HashSet to store the unique colors in the image
-                    HashSet<string> uniqueColors = new HashSet<string>();
-
-                    // Create a list to store the colors and their brightness values
-                    List<Tuple<string, float>> colors = new List<Tuple<string, float>>();
-
-                    // Loop through every pixel in the image
-                    for (int x = 0; x < image.Width; x++)
-                    {
-                        for (int y = 0; y < image.Height; y++)
-                        {
-                            // Get the color value of the pixel at the specified coordinates
-                            Color color = image.GetPixel(x, y);
-
-                            // Convert the color value to a hexadecimal code
-                            string colorCode = "#" + color.R.ToString("X2") + color.G.ToString("X2") + color.B.ToString("X2");
-
-                            // Check if the color code already exists in the HashSet
-                            if (!uniqueColors.Contains(colorCode))
-                            {
-                                // If not, add it to the HashSet and List
-                                uniqueColors.Add(colorCode);
-
-                                // Convert the RGB color value to an HSL value and get the brightness
-                                float brightness = color.GetBrightness();
-
-                                // Add the color code and brightness to the list
-                                colors.Add(new Tuple<string, float>(colorCode, brightness));
-                            }
-                        }
-                    }
-
-                    // Sort the list by the brightness of the colors in reverse order
-                    colors.Sort((a, b) => b.Item2.CompareTo(a.Item2));
-
-                    // Add all color codes to the TreeView
-                    foreach (var color in colors)
-                    {
-                        TreeNode node = new TreeNode();
-                        node.Text = color.Item1;
-                        node.BackColor = ColorTranslator.FromHtml(color.Item1);
-                        treeView.Nodes.Add(node);
-                    }
-
-                    // Update the label with the total number of colors
-                    label.Text = "Total unique colors: " + colors.Count;
-                };
-
-                // Load the colors when you first open the form
-                loadColors();
-
-                // Highlight the node when hovering over it with the mouse
-                treeView.NodeMouseHover += (s, e) =>
-                {
-                    treeView.SelectedNode = e.Node;
-                };
-
-                // Create a button and add it to the shape
-                Button buttonSendToTextBoxColorAdress = new Button();
-                buttonSendToTextBoxColorAdress.Text = "Send ColorAdress";
-                buttonSendToTextBoxColorAdress.Dock = DockStyle.Bottom;
-
-                buttonSendToTextBoxColorAdress.Click += (s, e) =>
-                {
-                    // Check if an item is selected
-                    if (treeView.SelectedNode != null)
-                    {
-                        // Take the selected text from the TreeView
-                        string selectedColor = treeView.SelectedNode.Text;
-
-                        // Put the text in textBoxColorAdress
-                        textBoxColorAdress.Text = selectedColor;
-                    }
-                };
-
-                _colorListForm.Controls.Add(buttonSendToTextBoxColorAdress);
-
-                // Create a btToUpdate button and add it to the shape
-                Button buttonBtToUpdate = new Button();
-                buttonBtToUpdate.Text = "Update";
-                buttonBtToUpdate.Dock = DockStyle.Bottom;
-
-                buttonBtToUpdate.Click += BtToUpdate_Click;
-
-                _colorListForm.Controls.Add(buttonBtToUpdate);
-
-                // Create an update button and add it to the shape
-                Button buttonRefresh = new Button();
-                buttonRefresh.Text = "Refresh List";
-                buttonRefresh.Dock = DockStyle.Bottom;
-
-                buttonRefresh.Click += (s, e) =>
-                {
-                    loadColors();
-                };
-
-                _colorListForm.Controls.Add(buttonRefresh);
-
-                // Display the shape
-                _colorListForm.Show();
-            }
-        }
-        #endregion
-        #region Modus
-
-        private Form _colorChangeForm; // Instance variable for the shape
-        private void BtModusColorChange_Click(object sender, EventArgs e)
-        {
-            // Check if the shape already exists
-            if (_colorChangeForm != null && _colorChangeForm.Visible)
-            {
-                // The shape is already open, so bring it to the foreground
-                _colorChangeForm.BringToFront();
-            }
-            else
-            {
-                // The form does not exist or has been closed, so create a new one
-                _colorChangeForm = new Form();
-
-                _colorChangeForm.Size = new Size(250, 400); // Default is 800 pixels wide and 600 pixels high
-
-                // Set the title of the form
-                _colorChangeForm.Text = "Modus";
-
-                // Remove the icon
-                _colorChangeForm.ShowIcon = false;
-
-                // Add the FormClosing event handler
-                _colorChangeForm.FormClosing += (s, e) =>
-                {
-                    e.Cancel = true;  // Prevents the mold from closing
-                    _colorChangeForm.Hide();  // Instead, hides the shape
-                };
-
-                // Create the checkbox
-                RadioButton grayscaleCheckbox = new RadioButton();
-                grayscaleCheckbox.Text = "Grayscale";
-                grayscaleCheckbox.Location = new Point(10, 10); // Set position
-
-                // Create the checkbox
-                CheckBox protectColorsCheckbox = new CheckBox();
-                protectColorsCheckbox.Text = "Protect Colors";
-                protectColorsCheckbox.Location = new Point(120, 10); // Set the position
-                protectColorsCheckbox.Checked = false;
-
-                // Create the TrackBar to change brightness
-                TrackBar brightnessTrackBar = new TrackBar();
-                brightnessTrackBar.Location = new Point(10, 40); // Set position
-                brightnessTrackBar.Minimum = -40;
-                brightnessTrackBar.Maximum = 40;
-
-                // Create the TrackBar to change contrast
-                TrackBar contrastTrackBar = new TrackBar();
-                contrastTrackBar.Location = new Point(10, 85); // Set position
-                contrastTrackBar.Minimum = -100;
-                contrastTrackBar.Maximum = 100;
-                contrastTrackBar.Value = 0; // Set the initial value to 0
-
-                // Create the TrackBar for gamma correction
-                TrackBar gammaTrackBar = new TrackBar();
-                gammaTrackBar.Location = new Point(10, 130); // Set position
-                gammaTrackBar.Minimum = -97;
-                gammaTrackBar.Maximum = 400;
-                gammaTrackBar.Value = 0; // Set the initial value to 0
-
-                // Create the Saturation TrackBar
-                TrackBar saturationTrackBar = new TrackBar();
-                saturationTrackBar.Location = new Point(10, 175); // Set position
-                saturationTrackBar.Minimum = -100;
-                saturationTrackBar.Maximum = 100;
-                saturationTrackBar.Value = 0; // Set the initial value to 0
-
-                // Create the TrackBar for color change
-                TrackBar colorTrackBar = new TrackBar();
-                colorTrackBar.Location = new Point(10, 220); // Set position
-                colorTrackBar.Minimum = -180;
-                colorTrackBar.Maximum = 180;
-                colorTrackBar.Value = 0; // Set the initial value to 0
-
-                // Create the label
-                Label updateLabel = new Label();
-                updateLabel.Location = new Point(10, 280); // Set the position
-                updateLabel.Text = ""; // Put the initial text
-
-                // Create the label to display the current value of the TrackBar
-                Label brightnessLabel = new Label();
-                brightnessLabel.Location = new Point(120, 40); // Set position 40 is height 120 from the right
-
-                // Create the label to display the current value of the TrackBar
-                Label contrastLabel = new Label();
-                contrastLabel.Location = new Point(120, 85); // Set position
-
-                // Create the label to display the current value of the TrackBar
-                Label gammaLabel = new Label();
-                gammaLabel.Location = new Point(120, 130); // Set position
-
-                // Create the label to display the current value of the TrackBar
-                Label saturationLabel = new Label();
-                saturationLabel.Location = new Point(120, 175); // Set position
-
-                // Create the label to display the current value of the TrackBar
-                Label colorLabel = new Label();
-                colorLabel.Location = new Point(120, 220); // Set position
-
-                // Add an event handler to change brightness in real time
-
-                // Add an event handler to change brightness in real time
-                brightnessTrackBar.Scroll += (s, e) =>
-                {
-                    if (_originalImage != null)
-                    {
-                        Bitmap image = new Bitmap(_originalImage);
-
-                        // Change the brightness of the image
-                        float brightness = brightnessTrackBar.Value * 0.01f; //Increases the gradual brightness factor example 0.001f
-                        float[][] ptsArray ={
-                            new float[] {1, 0, 0, 0, 0},
-                            new float[] {0, 1, 0, 0, 0},
-                            new float[] {0, 0, 1, 0, 0},
-                            new float[] {0, 0, 0, 1.0f, 0},
-                            new float[] {brightness, brightness, brightness, 1.0f, 1}
-                        };
-                        ImageAttributes attributes = new ImageAttributes();
-                        attributes.ClearColorMatrix();
-                        attributes.SetColorMatrix(new ColorMatrix(ptsArray), ColorMatrixFlag.Default, ColorAdjustType.Bitmap);
-                        Graphics g = Graphics.FromImage(image);
-                        g.DrawImage(image,
-                            new Rectangle(0, 0, image.Width, image.Height),
-                            0,
-                            0,
-                            image.Width,
-                            image.Height,
-                            GraphicsUnit.Pixel,
-                            attributes);
-
-                        pictureBox1.Image = image;
-
-                        // Update the label with the current value of the TrackBar
-                        brightnessLabel.Text = "Brightness: " + brightnessTrackBar.Value.ToString();
-                    }
-                };
-
-                // Add an event handler to change the contrast in real time
-                contrastTrackBar.Scroll += (s, e) =>
-                {
-                    if (_originalImage != null)
-                    {
-                        Bitmap image = new Bitmap(_originalImage);
-                        // Change the contrast of the image
-                        float contrast = (contrastTrackBar.Value + 100) * 0.01f;
-                        float[][] ptsArray ={
-                    new float[] {contrast, 0, 0, 0, 0},
-                    new float[] {0, contrast, 0, 0, 0},
-                    new float[] {0, 0, contrast, 0, 0},
-                    new float[] {0, 0, 0, 1.0f, 0},
-                    new float[] {0.001f, 0.001f, 0.001f, 1.0f, 1}
-                };
-                        ImageAttributes attributes = new ImageAttributes();
-                        attributes.ClearColorMatrix();
-                        attributes.SetColorMatrix(new ColorMatrix(ptsArray), ColorMatrixFlag.Default, ColorAdjustType.Bitmap);
-                        Graphics g = Graphics.FromImage(image);
-                        g.DrawImage(image, new Rectangle(0, 0, image.Width, image.Height), 0, 0,
-                            image.Width, image.Height,
-                            GraphicsUnit.Pixel,
-                            attributes);
-                        pictureBox1.Image = image;
-
-                        // Update the label with the current value of the TrackBar
-                        contrastLabel.Text = "Contrast: " + contrastTrackBar.Value.ToString();
-
-                    }
-                };
-
-                // Method of adjusting the gamma value of an image
-                Bitmap AdjustGamma(Image image, float gamma)
-                {
-                    Bitmap adjustedImage = new Bitmap(image.Width, image.Height);
-                    Graphics g = Graphics.FromImage(adjustedImage);
-                    ImageAttributes attributes = new ImageAttributes();
-                    attributes.SetGamma(gamma);
-                    g.DrawImage(image, new Rectangle(0, 0, image.Width, image.Height),
-                                0, 0, image.Width, image.Height,
-                                GraphicsUnit.Pixel, attributes);
-                    return adjustedImage;
-                }
-
-                // Add an event handler to change gamma correction in real time
-                gammaTrackBar.Scroll += (s, e) =>
-                {
-                    if (_originalImage != null)
-                    {
-                        Bitmap image = new Bitmap(_originalImage);
-                        // Change the gamma of the image
-                        float gamma = 1.0f + gammaTrackBar.Value * 0.01f; // Adjust gamma value
-                        Bitmap adjustedImage = AdjustGamma(image, gamma);
-                        pictureBox1.Image = adjustedImage;
-                        // Update the label with the current value of the TrackBar
-                        gammaLabel.Text = "Gamma: " + gammaTrackBar.Value.ToString();
-                    }
-                };
-
-                // Add an event handler to change saturation in real time
-                saturationTrackBar.Scroll += (s, e) =>
-                {
-                    if (_originalImage != null)
-                    {
-                        Bitmap image = new Bitmap(_originalImage);
-                        // Change the saturation of the image
-                        float saturation = 1.0f + saturationTrackBar.Value * 0.01f; // Adjust saturation value
-                        for (int y = 0; y < image.Height; y++)
-                        {
-                            for (int x = 0; x < image.Width; x++)
-                            {
-                                Color originalColor = image.GetPixel(x, y);
-                                float grayScale = (originalColor.R * 0.3f) + (originalColor.G * 0.59f) + (originalColor.B * 0.11f);
-                                int r = Clamp((int)(grayScale + saturation * (originalColor.R - grayScale)));
-                                int g = Clamp((int)(grayScale + saturation * (originalColor.G - grayScale)));
-                                int b = Clamp((int)(grayScale + saturation * (originalColor.B - grayScale)));
-                                Color newColor = Color.FromArgb(r, g, b);
-                                image.SetPixel(x, y, newColor);
-                            }
-                        }
-                        pictureBox1.Image = image;
-                        // Update the label with the current value of the TrackBar
-                        saturationLabel.Text = "Saturation: " + saturationTrackBar.Value.ToString();
-                    }
-
-                    // Method for limiting values ​​between 0 and 255
-                    int Clamp(int value)
-                    {
-                        if (value < 0) return 0;
-                        if (value > 255) return 255;
-                        return value;
-                    }
-                };
-
-                // Add an event handler to change the color in real time
-                colorTrackBar.Scroll += (sender, eventArgs) =>
-                {
-                    if (_originalImage != null)
-                    {
-                        Bitmap image = new Bitmap(_originalImage);
-                        // Change the color of the image
-                        float hueChange = colorTrackBar.Value / 360.0f; // Adjust hue change value
-
-                        // Local function to limit values ​​between 0 and 255
-                        int Clamp(int value)
-                        {
-                            if (value < 0) return 0;
-                            if (value > 255) return 255;
-                            return value;
-                        }
-
-                        // Local function to convert RGB to HSL
-                        void RgbToHsl(int r, int g, int b, out double h, out double s, out double l)
-                        {
-                            double r_ = r / 255.0;
-                            double g_ = g / 255.0;
-                            double b_ = b / 255.0;
-
-                            double max = Math.Max(r_, Math.Max(g_, b_));
-                            double min = Math.Min(r_, Math.Min(g_, b_));
-
-                            h = (max + min) / 2.0;
-                            l = h;
-                            s = h;
-
-                            if (max == min)
-                            {
-                                h = s = 0; // achromatic
-                            }
-                            else
-                            {
-                                double d = max - min;
-                                s = l > 0.5 ? d / (2.0 - max - min) : d / (max + min);
-                                if (max == r_)
-                                {
-                                    h = (g_ - b_) / d + (g_ < b_ ? 6 : 0);
-                                }
-                                else if (max == g_)
-                                {
-                                    h = (b_ - r_) / d + 2;
-                                }
-                                else if (max == b_)
-                                {
-                                    h = (r_ - g_) / d + 4;
-                                }
-                                h /= 6;
-                            }
-                        }
-
-                        // Local function to convert HSL to RGB
-                        void HslToRgb(double h, double s, double l, out int r, out int g, out int b)
-                        {
-                            double r_, g_, b_;
-
-                            if (s == 0)
-                            {
-                                r_ = g_ = b_ = l; // achromatic
-                            }
-                            else
-                            {
-                                Func<double, double, double, double> hue2rgb = (p, q, t) =>
-                                {
-                                    if (t < 0) t += 1;
-                                    if (t > 1) t -= 1;
-                                    if (t < 1 / 6.0) return p + (q - p) * 6 * t;
-                                    if (t < 1 / 2.0) return q;
-                                    if (t < 2 / 3.0) return p + (q - p) * (2 / 3.0 - t) * 6;
-                                    return p;
-                                };
-
-                                var q = l < 0.5 ? l * (1 + s) : l + s - l * s;
-                                var p = 2 * l - q;
-                                r_ = hue2rgb(p, q, h + hueChange);
-                                g_ = hue2rgb(p, q, h);
-                                b_ = hue2rgb(p, q, h - hueChange);
-                            }
-
-                            r = Clamp((int)(r_ * 255.0));
-                            g = Clamp((int)(g_ * 255.0));
-                            b = Clamp((int)(b_ * 255.0));
-                        }
-
-                        for (int y = 0; y < image.Height; y++)
-                        {
-                            for (int x = 0; x < image.Width; x++)
-                            {
-                                Color originalColor = image.GetPixel(x, y);
-                                // Convert the color to HSL color space
-                                double h;
-                                double s;
-                                double l;
-                                RgbToHsl(originalColor.R, originalColor.G, originalColor.B, out h, out s, out l);
-
-                                // Convert the color back to the RGB color space
-                                int r;
-                                int g;
-                                int b;
-                                HslToRgb(h, s, l, out r, out g, out b);
-
-                                Color newColor = Color.FromArgb(r, g, b);
-                                image.SetPixel(x, y, newColor);
-                            }
-                        }
-                        pictureBox1.Image = image;
-                        // Update the label with the current value of the TrackBar
-                        pictureBox1.Refresh();  // Update the PictureBox
-                        colorLabel.Text = "Color: " + colorTrackBar.Value.ToString();
-                    }
-                };
-                // Colors except 000000 or ffffff
-                // Add the event handler
-                protectColorsCheckbox.CheckedChanged += (s, e) =>
-                {
-                    // Check whether the checkbox is activated
-                    if (protectColorsCheckbox.Checked)
-                    {
-                        // Change the brightness change function
-                        brightnessTrackBar.Scroll += (senderBrightness, e) =>
-                        {
-                            if (_originalImage != null)
-                            {
-                                Bitmap image = new Bitmap(_originalImage);
-                                float brightness = brightnessTrackBar.Value * 0.01f; // Scale the value so that it is between -1 and 1
-                                for (int y = 0; y < image.Height; y++)
-                                {
-                                    for (int x = 0; x < image.Width; x++)
-                                    {
-                                        Color originalColor = image.GetPixel(x, y);
-                                        // Check if the color is 000000 or ffffff
-                                        if (originalColor.ToArgb() != Color.Black.ToArgb() && originalColor.ToArgb() != Color.White.ToArgb())
-                                        {
-                                            // Change the brightness of the color
-                                            int r = Clamp((int)(originalColor.R + brightness * 255)); // Brightness range adjustment
-                                            int g = Clamp((int)(originalColor.G + brightness * 255)); // Brightness range adjustment
-                                            int b = Clamp((int)(originalColor.B + brightness * 255)); // Brightness range adjustment
-                                            Color newColor = Color.FromArgb(r, g, b);
-                                            image.SetPixel(x, y, newColor);
-                                        }
-                                    }
-                                }
-                                pictureBox1.Image = image;
-                                brightnessLabel.Text = "Brightness: " + brightnessTrackBar.Value.ToString();
-                            }
-                        };
-
-                        // Change the contrast change function
-                        contrastTrackBar.Scroll += (s, e) =>
-                        {
-                            if (_originalImage != null)
-                            {
-                                Bitmap image = new Bitmap(_originalImage);
-                                float contrast = (contrastTrackBar.Value + 100) * 0.01f;
-                                for (int y = 0; y < image.Height; y++)
-                                {
-                                    for (int x = 0; x < image.Width; x++)
-                                    {
-                                        Color originalColor = image.GetPixel(x, y);
-                                        // Check if the color is 000000 or ffffff
-                                        if (originalColor.ToArgb() != Color.Black.ToArgb() && originalColor.ToArgb() != Color.White.ToArgb())
-                                        {
-                                            // Change the contrast of the color
-                                            int r = Clamp((int)(originalColor.R * contrast));
-                                            int g = Clamp((int)(originalColor.G * contrast));
-                                            int b = Clamp((int)(originalColor.B * contrast));
-                                            Color newColor = Color.FromArgb(r, g, b);
-                                            image.SetPixel(x, y, newColor);
-                                        }
-                                    }
-                                }
-                                pictureBox1.Image = image;
-                                contrastLabel.Text = "Contrast: " + contrastTrackBar.Value.ToString();
-                            }
-                        };
-
-                        // Change the gamma correction function
-                        gammaTrackBar.Scroll += (s, e) =>
-                        {
-                            if (_originalImage != null)
-                            {
-                                Bitmap image = new Bitmap(_originalImage);
-                                float gamma = 1.0f + gammaTrackBar.Value * 0.01f;
-                                for (int y = 0; y < image.Height; y++)
-                                {
-                                    for (int x = 0; x < image.Width; x++)
-                                    {
-                                        Color originalColor = image.GetPixel(x, y);
-                                        // Check if the color is 000000 or ffffff
-                                        if (originalColor.ToArgb() != Color.Black.ToArgb() && originalColor.ToArgb() != Color.White.ToArgb())
-                                        {
-                                            // Change the gamma of the color
-                                            int r = Clamp((int)(Math.Pow(originalColor.R / 255.0, gamma) * 255));
-                                            int g = Clamp((int)(Math.Pow(originalColor.G / 255.0, gamma) * 255));
-                                            int b = Clamp((int)(Math.Pow(originalColor.B / 255.0, gamma) * 255));
-                                            Color newColor = Color.FromArgb(r, g, b);
-                                            image.SetPixel(x, y, newColor);
-                                        }
-                                    }
-                                }
-                                pictureBox1.Image = image;
-                                gammaLabel.Text = "Gamma: " + gammaTrackBar.Value.ToString();
-                            }
-                        };
-
-                        // Change the saturation change function
-                        saturationTrackBar.Scroll += (s, e) =>
-                        {
-                            if (_originalImage != null)
-                            {
-                                Bitmap image = new Bitmap(_originalImage);
-                                float saturation = 1.0f + saturationTrackBar.Value * 0.01f;
-                                for (int y = 0; y < image.Height; y++)
-                                {
-                                    for (int x = 0; x < image.Width; x++)
-                                    {
-                                        Color originalColor = image.GetPixel(x, y);
-                                        // Check if the color is 000000 or ffffff
-                                        if (originalColor.ToArgb() != Color.Black.ToArgb() && originalColor.ToArgb() != Color.White.ToArgb())
-                                        {
-                                            // Change the saturation of the color
-                                            float grayScale = (originalColor.R * 0.3f) + (originalColor.G * 0.59f) + (originalColor.B * 0.11f);
-                                            int r = Clamp((int)(grayScale + saturation * (originalColor.R - grayScale)));
-                                            int g = Clamp((int)(grayScale + saturation * (originalColor.G - grayScale)));
-                                            int b = Clamp((int)(grayScale + saturation * (originalColor.B - grayScale)));
-                                            Color newColor = Color.FromArgb(r, g, b);
-                                            image.SetPixel(x, y, newColor);
-                                        }
-                                    }
-                                }
-                                pictureBox1.Image = image;
-                                saturationLabel.Text = "Saturation: " + saturationTrackBar.Value.ToString();
-                            }
-                        };
-
-                        int Clamp(int value, int min = 0, int max = 255)
-                        {
-                            if (value < min) return min;
-                            if (value > max) return max;
-                            return value;
-                        }
-
-                        void RgbToHsl(int r, int g, int b, out double h, out double s, out double l)
-                        {
-                            double r_ = r / 255.0;
-                            double g_ = g / 255.0;
-                            double b_ = b / 255.0;
-
-                            double max = Math.Max(r_, Math.Max(g_, b_));
-                            double min = Math.Min(r_, Math.Min(g_, b_));
-
-                            h = (max + min) / 2.0;
-                            l = h;
-                            s = h;
-
-                            if (max == min)
-                            {
-                                h = s = 0; // achromatic
-                            }
-                            else
-                            {
-                                double d = max - min;
-                                s = l > 0.5 ? d / (2.0 - max - min) : d / (max + min);
-                                if (max == r_)
-                                {
-                                    h = (g_ - b_) / d + (g_ < b_ ? 6 : 0);
-                                }
-                                else if (max == g_)
-                                {
-                                    h = (b_ - r_) / d + 2;
-                                }
-                                else if (max == b_)
-                                {
-                                    h = (r_ - g_) / d + 4;
-                                }
-                                h /= 6;
-                            }
-                        }
-
-                        void HslToRgb(double h, double s, double l, out int r, out int g, out int b)
-                        {
-                            double r_, g_, b_;
-
-                            if (s == 0)
-                            {
-                                r_ = g_ = b_ = l; // achromatic
-                            }
-                            else
-                            {
-                                Func<double, double, double, double> hue2rgb = (p, q, t) =>
-                                {
-                                    if (t < 0) t += 1;
-                                    if (t > 1) t -= 1;
-                                    if (t < 1 / 6.0) return p + (q - p) * 6 * t;
-                                    if (t < 1 / 2.0) return q;
-                                    if (t < 2 / 3.0) return p + (q - p) * (2 / 3.0 - t) * 6;
-                                    return p;
-                                };
-
-                                var q = l < 0.5 ? l * (1 + s) : l + s - l * s;
-                                var p = 2 * l - q;
-
-                                r_ = hue2rgb(p, q, h + 1 / 3.0);
-                                g_ = hue2rgb(p, q, h);
-                                b_ = hue2rgb(p, q, h - 1 / 3.0);
-                            }
-
-                            r = (int)(r_ * 255.0);
-                            g = (int)(g_ * 255.0);
-                            b = (int)(b_ * 255.0);
-                        }
-
-                        // Change color change function
-                        colorTrackBar.Scroll += (s, e) =>
-                        {
-                            if (_originalImage != null)
-                            {
-                                Bitmap image = new Bitmap(_originalImage);
-                                float hueChange = colorTrackBar.Value / 360.0f;
-                                for (int y = 0; y < image.Height; y++)
-                                {
-                                    for (int x = 0; x < image.Width; x++)
-                                    {
-                                        Color originalColor = image.GetPixel(x, y);
-                                        // Check if the color is 000000 or ffffff
-                                        if (originalColor.ToArgb() != Color.Black.ToArgb() && originalColor.ToArgb() != Color.White.ToArgb())
-                                        {
-                                            // Change the hue of the paint
-                                            double h;
-                                            double saturation;
-                                            double l;
-                                            RgbToHsl(originalColor.R, originalColor.G, originalColor.B, out h, out saturation, out l);
-                                            int r;
-                                            int g;
-                                            int b;
-                                            HslToRgb(h + hueChange, saturation, l, out r, out g, out b);
-                                            Color newColor = Color.FromArgb(r, g, b);
-                                            image.SetPixel(x, y, newColor);
-                                        }
-                                    }
-                                }
-                                pictureBox1.Image = image;
-                                colorLabel.Text = "Color: " + colorTrackBar.Value.ToString();
-                            }
-                        };
-                    }
-                };
-
-                // Create the button to apply the grayscale changes
-                Button applyButton = new Button();
-                applyButton.Text = "Apply";
-                applyButton.Location = new Point(10, 320); // Set position
-                applyButton.Click += (s, e) =>
-                {
-                    if (pictureBox1.Image != null)
-                    {
-                        Bitmap image = new Bitmap(pictureBox1.Image); // Zugriff auf das Bild in der PictureBox
-
-                        // Convert the image to grayscale only if grayscaleCheckbox is checked
-                        if (grayscaleCheckbox.Checked)
-                        {
-                            for (int y = 0; y < image.Height; y++)
-                            {
-                                for (int x = 0; x < image.Width; x++)
-                                {
-                                    Color originalColor = image.GetPixel(x, y);
-                                    int grayScale = (int)((originalColor.R * .3) + (originalColor.G * .59) + (originalColor.B * .11));
-                                    Color newColor = Color.FromArgb(grayScale, grayScale, grayScale);
-                                    image.SetPixel(x, y, newColor);
-                                }
-                            }
-                        }
-
-                        pictureBox1.Image = image; // Update the image in the PictureBox
-                        pictureBox1.Refresh();  // Refresh the PictureBox
-
-                        // Update the text of the label
-                        updateLabel.Text = "Image updated.";
-                    }
-                };
-
-                // Create the button
-                Button resetButton = new Button();
-                resetButton.Text = "Reset";
-                resetButton.Location = new Point(80, 320); // Set the position
-
-                // Add the event handler
-                resetButton.Click += (s, e) =>
-                {
-                    // Reset the values ​​of all TrackBars to 0
-                    brightnessTrackBar.Value = 0;
-                    contrastTrackBar.Value = 0;
-                    gammaTrackBar.Value = 0;
-                    saturationTrackBar.Value = 0;
-                    colorTrackBar.Value = 0;
-
-                    // Update the labels
-                    brightnessLabel.Text = "Brightness: 0";
-                    contrastLabel.Text = "Contrast: 0";
-                    gammaLabel.Text = "Gamma: 0";
-                    saturationLabel.Text = "Saturation: 0";
-                    colorLabel.Text = "Color: 0";
-                };
-
-                // Add the checkbox and button to the shape
-                _colorChangeForm.Controls.Add(grayscaleCheckbox);
-                _colorChangeForm.Controls.Add(brightnessTrackBar);
-                _colorChangeForm.Controls.Add(brightnessLabel);
-                _colorChangeForm.Controls.Add(applyButton);
-                // Add the new TrackBar and Label to the shape
-                _colorChangeForm.Controls.Add(contrastTrackBar);
-                _colorChangeForm.Controls.Add(contrastLabel);
-                // Add the new TrackBar and Label to the shape
-                _colorChangeForm.Controls.Add(gammaTrackBar);
-                _colorChangeForm.Controls.Add(gammaLabel);
-                // Add the new TrackBar and Label to the shape
-                _colorChangeForm.Controls.Add(saturationTrackBar);
-                _colorChangeForm.Controls.Add(saturationLabel);
-                // Add the new TrackBar and Label to the shape
-                _colorChangeForm.Controls.Add(colorTrackBar);
-                _colorChangeForm.Controls.Add(colorLabel);
-                // Add the checkbox to the form
-                _colorChangeForm.Controls.Add(protectColorsCheckbox);
-                // Add the button to the form
-                _colorChangeForm.Controls.Add(resetButton);
-                // Add the label to the shape
-                _colorChangeForm.Controls.Add(updateLabel);
-
-                // Display the shape
-                _colorChangeForm.Show();
-            }
-        }
-        #endregion
-        #region FillTeture
-        private void FillTextureToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            if (pictureBox1.Image == null)
-            {
-                MessageBox.Show("No image has been loaded.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
-
-            if ((_cropArea.Width <= 0 || _cropArea.Height <= 0) && !checkBoxFreehand.Checked)
-            {
-                MessageBox.Show("No area has been selected.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
-
-            using (System.Windows.Forms.OpenFileDialog openFileDialog2 = new System.Windows.Forms.OpenFileDialog())
-            {
-                openFileDialog2.Filter = "Image files|*.bmp;*.jpg;*.jpeg;*.png";
-
-                if (openFileDialog2.ShowDialog() == DialogResult.OK)
-                {
-                    Bitmap newTexture = new Bitmap(openFileDialog2.FileName);
-                    Bitmap imageCopy = (Bitmap)pictureBox1.Image.Clone();
-
-                    using (Graphics g = Graphics.FromImage(imageCopy))
-                    {
-                        // Adjust cropArea and points based on zoom level
-                        Rectangle adjustedCropArea = new Rectangle(_cropArea.X / (int)Math.Pow(2, _zoomCounter), _cropArea.Y / (int)Math.Pow(2, _zoomCounter), _cropArea.Width / (int)Math.Pow(2, _zoomCounter), _cropArea.Height / (int)Math.Pow(2, _zoomCounter));
-                        List<Point> adjustedPoints = _points.Select(p => new Point(p.X / (int)Math.Pow(2, _zoomCounter), p.Y / (int)Math.Pow(2, _zoomCounter))).ToList();
-
-                        if (checkBoxCircle.Checked)
-                        {
-                            // Create a mask for the circle area
-                            using (Bitmap mask = new Bitmap(adjustedCropArea.Width, adjustedCropArea.Height))
-                            {
-                                using (Graphics maskGraphics = Graphics.FromImage(mask))
-                                {
-                                    maskGraphics.Clear(Color.White);
-                                    maskGraphics.FillEllipse(Brushes.Black, 0, 0, adjustedCropArea.Width, adjustedCropArea.Height);
-                                }
-
-                                // Scale the texture to the size of the mask
-                                newTexture = new Bitmap(newTexture, mask.Size);
-
-                                // Apply the mask to the new texture image
-                                for (int x = 0; x < mask.Width; x++)
-                                {
-                                    for (int y = 0; y < mask.Height; y++)
-                                    {
-                                        if (mask.GetPixel(x, y).R != 0)
-                                        {
-                                            newTexture.SetPixel(x, y, Color.Transparent);
-                                        }
-                                    }
-                                }
-                            }
-
-                            // Draw the texture on the image inside the circle
-                            g.CompositingMode = System.Drawing.Drawing2D.CompositingMode.SourceOver;
-                            g.DrawImage(newTexture, adjustedCropArea);
-                        }
-                        else if (checkBoxFreehand.Checked && adjustedPoints.Count > 1)
-                        {
-                            // Create a mask for the freehand area
-                            using (Bitmap mask = new Bitmap(imageCopy.Width, imageCopy.Height))
-                            {
-                                using (Graphics maskGraphics = Graphics.FromImage(mask))
-                                {
-                                    maskGraphics.Clear(Color.White);
-                                    maskGraphics.FillPolygon(Brushes.Black, adjustedPoints.ToArray());
-                                }
-
-                                // Scale the texture to the size of the mask
-                                newTexture = new Bitmap(newTexture, mask.Size);
-
-                                // Apply the mask to the new texture image
-                                for (int x = 0; x < mask.Width; x++)
-                                {
-                                    for (int y = 0; y < mask.Height; y++)
-                                    {
-                                        if (mask.GetPixel(x, y).R != 0)
-                                        {
-                                            newTexture.SetPixel(x, y, Color.Transparent);
-                                        }
-                                    }
-                                }
-                            }
-
-                            // Draw the texture onto the image inside the freehand shape
-                            g.CompositingMode = System.Drawing.Drawing2D.CompositingMode.SourceOver;
-                            g.DrawImage(newTexture, new Rectangle(0, 0, imageCopy.Width, imageCopy.Height));
-                        }
-                        else if (checkBoxLines.Checked && adjustedPoints.Count > 1)
-                        {
-                            // Create a mask for the line area
-                            using (Bitmap mask = new Bitmap(imageCopy.Width, imageCopy.Height))
-                            {
-                                using (Graphics maskGraphics = Graphics.FromImage(mask))
-                                {
-                                    maskGraphics.Clear(Color.White);
-                                    maskGraphics.FillPolygon(Brushes.Black, adjustedPoints.ToArray());
-                                }
-
-                                // Scale the texture to the size of the mask
-                                newTexture = new Bitmap(newTexture, mask.Size);
-
-                                // Apply the mask to the new texture image
-                                for (int x = 0; x < mask.Width; x++)
-                                {
-                                    for (int y = 0; y < mask.Height; y++)
-                                    {
-                                        if (mask.GetPixel(x, y).R != 0)
-                                        {
-                                            newTexture.SetPixel(x, y, Color.Transparent);
-                                        }
-                                    }
-                                }
-                            }
-
-                            // Draw the texture onto the image inside the line
-                            g.CompositingMode = System.Drawing.Drawing2D.CompositingMode.SourceOver;
-                            g.DrawImage(newTexture, new Rectangle(0, 0, imageCopy.Width, imageCopy.Height));
-                        }
-                        else
-                        {
-                            // Draw the texture on the image
-                            g.DrawImage(newTexture, adjustedCropArea);
-                        }
-
-                    }
-
-                    pictureBox1.Image = imageCopy;
-                    pictureBox1.Refresh();
-                }
-            }
-        }
-
-        //private bool _shouldDrawRectangle = false; //??        
-
-        private void PictureBox1_MouseDown2(object sender, MouseEventArgs e)
-        {
-            if (checkBoxFreehand.Checked && e.Button == MouseButtons.Left)
-            {
-                _points.Clear();
-                _points.Add(e.Location);
-            }
-            else if (e.Button == MouseButtons.Left)
-            {
-                _startPoint = e.Location;
-                _isDragging = true;
-                _cropArea = new Rectangle(_startPoint.X, _startPoint.Y, 0, 0);
-
-                if (checkBox2Colors.Checked)
-                {
-                    // Create a copy of the image in pictureBox1
-                    Bitmap image = new Bitmap(pictureBox1.Image);
-
-                    // Create a Graphics object from the image
-                    using (Graphics g = Graphics.FromImage(image))
-                    {
-                        // Convert the text in textBoxColorToAdress and textBoxColorToAdress2 into color values
-                        string colorCode1 = textBoxColorToAdress.Text;
-                        if (!colorCode1.StartsWith("#")) { colorCode1 = "#" + colorCode1; }
-                        Color penColor1;
-                        try { penColor1 = ColorTranslator.FromHtml(colorCode1); }
-                        catch { penColor1 = Color.Black; }  // Default to black if the color code is invalid
-
-                        string colorCode2 = textBoxColorToAdress2.Text;
-                        if (!colorCode2.StartsWith("#")) { colorCode2 = "#" + colorCode2; }
-                        Color penColor2;
-                        try { penColor2 = ColorTranslator.FromHtml(colorCode2); }
-                        catch { penColor2 = Color.Black; }  // Default to black if the color code is invalid
-
-                        // If one of the text boxes is empty, use the color from the other text box
-                        if (string.IsNullOrEmpty(textBoxColorToAdress.Text)) { penColor1 = penColor2; }
-                        if (string.IsNullOrEmpty(textBoxColorToAdress2.Text)) { penColor2 = penColor1; }
-
-                        // Create pens with the specified colors
-                        Pen pen1 = new Pen(penColor1);
-                        Pen pen2 = new Pen(penColor2);
-
-                        // Draw a pixel at the current position with the first color
-                        g.DrawRectangle(pen1, _startPoint.X, _startPoint.Y, 1, 1);
-
-                        // Draw a pixel next to the current position with the second color
-                        g.DrawRectangle(pen2, _startPoint.X + 1, _startPoint.Y, 1, 1);
-                    }
-
-                    // Update the image in pictureBox1
-                    pictureBox1.Image = image;
-                }
-            }
-        }
-
-        private void CheckBox_CheckedChanged(object sender, EventArgs e)
-        {
-            // Cast the sender to a CheckBox
-            CheckBox checkBox = (CheckBox)sender;
-
-            // If the CheckBox is checked, uncheck all other CheckBoxes
-            if (checkBox.Checked)
-            {
-                foreach (Control control in panel3.Controls) // Replace "panel3" with the name of your panel
-                {
-                    if (control is CheckBox && control != checkBox)
-                    {
-                        ((CheckBox)control).Checked = false;
-                    }
-                }
-            }
-        }
-        #endregion
-
-
-        private void PictureBox1_MouseUp(object sender, MouseEventArgs e)
-        {
-            if (checkBoxFreehand.Checked && e.Button == MouseButtons.Left)
-            {
-                _points.Add(_points[0]);  // Connect the end to the beginning
-                pictureBox1.Invalidate();
-            }
-            else if (checkBoxLines.Checked && e.Button == MouseButtons.Left && _points.Count > 0)
-            {
-                // Don't connect the end to the beginning for lines
-                pictureBox1.Invalidate();
-
-                // Calculate the bounding box of the points
-                int minX = _points.Min(p => p.X);
-                int minY = _points.Min(p => p.Y);
-                int maxX = _points.Max(p => p.X);
-                int maxY = _points.Max(p => p.Y);
-
-                // Set the cropArea to the bounding box
-                _cropArea = new Rectangle(minX, minY, maxX - minX, maxY - minY);
-            }
-            else if (e.Button == MouseButtons.Left)
-            {
-                _isDragging = false;
-            }
-        }
-
-
-
-        private void PictureBox1_Paint(object sender, PaintEventArgs e)
-        {
-            using (Pen pen = new Pen(Color.Yellow))
-            {
-                pen.DashStyle = DashStyle.Dash;
-
-                if (checkBoxCircle.Checked)
-                {
-                    // Draw a circle
-                    e.Graphics.DrawEllipse(pen, _cropArea);
-                }
-                else
-                {
-                    // Draw a rectangle
-                    e.Graphics.DrawRectangle(pen, _cropArea);
-                }
-
-                if (checkBoxFreehand.Checked && _points.Count > 1)
-                {
-                    // Draw freehand
-                    e.Graphics.DrawLines(Pens.Yellow, _points.ToArray());
-                }
-
-                if (checkBoxLines.Checked)
-                {
-                    // Draw lines from point to point
-                    DrawLines(e.Graphics, _points);
-                }
-            }
-        }
-        #region Zoom
-        private int _zoomCounter = 0;
-        private void ZoomButton_Click(object sender, EventArgs e)
-        {
-            // Check if the zoom has already been applied twice
-            if (_zoomCounter >= 2)
-            {
-                return;
-            }
-
-            // Set the SizeMode property to Zoom
-            pictureBox1.SizeMode = PictureBoxSizeMode.Zoom;
-
-            // Resize the PictureBox to increase the zoom effect
-            pictureBox1.Width *= 2;
-            pictureBox1.Height *= 2;
-
-            // Increase the zoom counter
-            _zoomCounter++;
-        }
-        #endregion
-        #region Reset
-        private void ResetButton2_Click(object sender, EventArgs e)
-        {
-            // Reset the SizeMode property to Normal
-            pictureBox1.SizeMode = PictureBoxSizeMode.Normal;
-
-            // Reset the size of the PictureBox to its original size
-            pictureBox1.Width /= (int)Math.Pow(2, _zoomCounter);
-            pictureBox1.Height /= (int)Math.Pow(2, _zoomCounter);
-
-            // Reset the zoom counter
-            _zoomCounter = 0;
-
-            // Clear the list of points
-            _points.Clear();
-
-            // Reset the cropArea
-            _cropArea = new Rectangle();
-
-            // Update the PictureBox to reflect the changes
-            pictureBox1.Invalidate();
-        }
-        #endregion
-        # region Normalization
-        private void BtColorNormalization_Click(object sender, EventArgs e)
-        {
-            if (Clipboard.ContainsImage())
-            {
-                Image clipboardImage = Clipboard.GetImage();
-                Bitmap bitmapImage = new Bitmap(clipboardImage);
-                Bitmap normalizedImage = new Bitmap(bitmapImage.Width, bitmapImage.Height);
-
-                int minR = 255, minG = 255, minB = 255;
-                int maxR = 0, maxG = 0, maxB = 0;
-
-                for (int y = 0; y < bitmapImage.Height; y++)
-                {
-                    for (int x = 0; x < bitmapImage.Width; x++)
-                    {
-                        Color pixelColor = bitmapImage.GetPixel(x, y);
-                        minR = Math.Min(minR, pixelColor.R);
-                        minG = Math.Min(minG, pixelColor.G);
-                        minB = Math.Min(minB, pixelColor.B);
-                        maxR = Math.Max(maxR, pixelColor.R);
-                        maxG = Math.Max(maxG, pixelColor.G);
-                        maxB = Math.Max(maxB, pixelColor.B);
-                    }
-                }
-
-                for (int y = 0; y < bitmapImage.Height; y++)
-                {
-                    for (int x = 0; x < bitmapImage.Width; x++)
-                    {
-                        Color oldColor = bitmapImage.GetPixel(x, y);
-                        int newR = ((oldColor.R - minR) * 255) / (maxR - minR);
-                        int newG = ((oldColor.G - minG) * 255) / (maxG - minG);
-                        int newB = ((oldColor.B - minB) * 255) / (maxB - minB);
-
-                        Color newColor = Color.FromArgb(newR, newG, newB);
-                        normalizedImage.SetPixel(x, y, newColor);
-                    }
-                }
-
-                pictureBox1.Image = normalizedImage;
-            }
-            else
-            {
-                MessageBox.Show("The clipboard does not contain an image.");
-            }
-        }
-        #endregion
-
-        #region Color mode
-        private int _colorMode = 0;
-
-        private void ButtonRedToBlueColors_Click(object sender, EventArgs e)
-        {
-            if (Clipboard.ContainsImage())
-            {
-                // Retrieve the image from the clipboard
-                Image clipboardImage = Clipboard.GetImage();
-
-                // Create a bitmap object
-                Bitmap bitmapImage = new Bitmap(clipboardImage);
-
-                // Create a new Bitmap object with the same dimensions as the original image
-                Bitmap newImage = new Bitmap(bitmapImage.Width, bitmapImage.Height);
-
-                // Loop to process each pixel in the image
-                for (int y = 0; y < bitmapImage.Height; y++)
-                {
-                    for (int x = 0; x < bitmapImage.Width; x++)
-                    {
-                        // Get color of current pixel
-                        Color pixelColor = bitmapImage.GetPixel(x, y);
-
-                        // Depending on the color mode, perform the color conversion
-                        Color newColor;
-                        switch (_colorMode)
-                        {
-                            case 0: // Red mode (default)
-                                if (pixelColor.R > pixelColor.G && pixelColor.R > pixelColor.B)
-                                {
-                                    newColor = Color.FromArgb(pixelColor.A, pixelColor.B, pixelColor.G, pixelColor.R);
-                                }
-                                else
-                                {
-                                    newColor = pixelColor;
-                                }
-                                break;
-                            case 1: // Green mode
-                                newColor = Color.FromArgb(pixelColor.A, pixelColor.G, pixelColor.R, pixelColor.B);
-                                break;
-                            case 2: // Yellow mode
-                                newColor = Color.FromArgb(pixelColor.A, pixelColor.G, pixelColor.G, pixelColor.R);
-                                break;
-                            case 3: // Brown mode
-                                newColor = Color.FromArgb(pixelColor.A, pixelColor.R, pixelColor.G / 2, pixelColor.B / 2);
-                                break;
-                            case 4: // Orange
-                                newColor = Color.FromArgb(pixelColor.A, pixelColor.R, pixelColor.G / 2, 0);
-                                break;
-                            case 5: // Violet
-                                newColor = Color.FromArgb(pixelColor.A, pixelColor.R / 2, 0, pixelColor.B);
-                                break;
-                            case 6: // Green
-                                newColor = Color.FromArgb(pixelColor.A, 0, pixelColor.G, 0);
-                                break;
-                            case 7: // Turquoise
-                                newColor = Color.FromArgb(pixelColor.A, 0, pixelColor.G, pixelColor.B);
-                                break;
-                            case 8: // Pink
-                                newColor = Color.FromArgb(pixelColor.A, pixelColor.R, 0, pixelColor.B);
-                                break;
-                            case 9: // Light Blue
-                                newColor = Color.FromArgb(pixelColor.A, 0, pixelColor.G, pixelColor.R);
-                                break;
-                            case 10: // Dark red
-                                newColor = Color.FromArgb(pixelColor.A, pixelColor.R / 2, 0, 0);
-                                break;
-                            case 11: // Purple
-                                newColor = Color.FromArgb(pixelColor.A, pixelColor.R / 2, 0, pixelColor.B / 2);
-                                break;
-                            case 12: // Yellow-green
-                                newColor = Color.FromArgb(pixelColor.A, pixelColor.R / 2, pixelColor.G / 2, 0);
-                                break;
-                            case 13: // magenta
-                                newColor = Color.FromArgb(pixelColor.A, pixelColor.R, 0, pixelColor.B / 2);
-                                break;
-                            case 14: // Cyan
-                                newColor = Color.FromArgb(pixelColor.A, 0, pixelColor.G / 2, pixelColor.B);
-                                break;
-                            case 15: // Dark green
-                                newColor = Color.FromArgb(pixelColor.A, 0, pixelColor.G / 2, 0);
-                                break;
-                            case 16: // olive green
-                                newColor = Color.FromArgb(pixelColor.A, pixelColor.R / 2, pixelColor.G / 2, 0);
-                                break;
-                            case 17: // Pink
-                                newColor = Color.FromArgb(pixelColor.A, pixelColor.R, 0, pixelColor.B / 2);
-                                break;
-                            case 18: // Turquoise blue
-                                newColor = Color.FromArgb(pixelColor.A, 0, pixelColor.G / 2, pixelColor.B / 2);
-                                break;
-                            case 19: // Golden yellow
-                                newColor = Color.FromArgb(pixelColor.A, pixelColor.R / 2, pixelColor.G / 2, 0);
-                                break;
-                            case 20: // Gray
-                                newColor = Color.FromArgb(pixelColor.A, pixelColor.R / 2, pixelColor.G / 2, pixelColor.B / 2);
-                                break;
-                            case 21: // Bright red
-                                newColor = Color.FromArgb(pixelColor.A, pixelColor.R, 0, 0);
-                                break;
-                            case 22: // Light green
-                                newColor = Color.FromArgb(pixelColor.A, 0, pixelColor.G, 0);
-                                break;
-                            case 23: // Light Blue
-                                newColor = Color.FromArgb(pixelColor.A, 0, 0, pixelColor.B);
-                                break;
-                            case 24: // Brown
-                                newColor = Color.FromArgb(pixelColor.A, pixelColor.R / 2, pixelColor.G / 2, pixelColor.B / 2);
-                                break;
-                            case 25: // Dark brown
-                                newColor = Color.FromArgb(pixelColor.A, pixelColor.R / 2, pixelColor.G / 4, pixelColor.B / 4); // Dunkelbraun 
-                                break;
-                            case 26: // Gray
-                                int grayValue = (pixelColor.R + pixelColor.G + pixelColor.B) / 3;
-                                newColor = Color.FromArgb(pixelColor.A, grayValue, grayValue, grayValue);
-                                break;
-                            case 27: // Dark gray
-                                int darkGrayValue = (pixelColor.R + pixelColor.G + pixelColor.B) / 3;
-                                darkGrayValue = Math.Max(0, Math.Min(255, darkGrayValue - 64)); // Dunkelgrau
-                                newColor = Color.FromArgb(pixelColor.A, darkGrayValue, darkGrayValue, darkGrayValue);
-                                break;
-                            case 28: // Light Blue
-                                newColor = Color.FromArgb(pixelColor.A, 0, 0, pixelColor.B); // Hellblau 
-                                break;
-                            case 29: // Green 
-                                newColor = Color.FromArgb(pixelColor.A, 0, pixelColor.G, 0); // Grün 
-                                break;
-                            case 30: // Gold 
-                                newColor = Color.FromArgb(pixelColor.A, pixelColor.R, pixelColor.G / 2, 0); // Gold 
-                                break;
-                            case 31: // Silber 
-                                newColor = Color.FromArgb(pixelColor.A, pixelColor.R / 2, pixelColor.G / 2, pixelColor.B / 2); // Silber 
-                                break;
-                            case 32: // Bronze 
-                                newColor = Color.FromArgb(pixelColor.A, pixelColor.R / 2, pixelColor.G / 4, 0); // Bronze 
-                                break;
-                            case 33: // copper
-                                newColor = Color.FromArgb(pixelColor.A, pixelColor.R, pixelColor.G / 3, 0); // Kupfer 
-                                break;
-                            default: // Default to red mode 
-                                newColor = Color.FromArgb(pixelColor.A, pixelColor.B, pixelColor.G, pixelColor.R);
-                                _colorMode = 0; //Reset the color mode to the default (red).
-                                break;
-                        }
-
-                        // Save the changed pixel in the new image
-                        newImage.SetPixel(x, y, newColor);
-                    }
-                }
-
-                // Show the edited image in the PictureBox
-                pictureBox1.Image = newImage;
-
-                // Increase the color mode for the next click
-                _colorMode++;
-            }
-            else
-            {
-                // Show message if clipboard does not contain image
-                MessageBox.Show("The clipboard does not contain an image.");
-            }
-        }
-        private void BtphotorandomColor_Click(object sender, EventArgs e)
-        {
-            Random rand = new Random();
-
-            if (Clipboard.ContainsImage())
-            {
-                Image clipboardImage = Clipboard.GetImage();
-                Bitmap bitmapImage = new Bitmap(clipboardImage);
-                Bitmap newImage = new Bitmap(bitmapImage.Width, bitmapImage.Height);
-
-                for (int y = 0; y < bitmapImage.Height; y++)
-                {
-                    for (int x = 0; x < bitmapImage.Width; x++)
-                    {
-                        Color pixelColor = bitmapImage.GetPixel(x, y);
-
-                        // Check whether the color of the pixel is black or white
-                        if (pixelColor.R == 0 && pixelColor.G == 0 && pixelColor.B == 0 ||
-                            pixelColor.R == 255 && pixelColor.G == 255 && pixelColor.B == 255)
-                        {
-                            // If the pixel is black or white, skip the color change
-                            newImage.SetPixel(x, y, pixelColor);
-                            continue;
-                        }
-
-                        Color newColor;
-
-                        int maxColorValue = Math.Max(pixelColor.R, Math.Max(pixelColor.G, pixelColor.B));
-                        int minColorValue = Math.Min(pixelColor.R, Math.Min(pixelColor.G, pixelColor.B));
-                        int midColorValue = pixelColor.R + pixelColor.G + pixelColor.B - maxColorValue - minColorValue;
-
-                        switch (_colorMode % 34) // 
-                        {
-                            case 0:
-                                newColor = Color.FromArgb(pixelColor.A, maxColorValue, midColorValue, minColorValue);
-                                break;
-                            case 1:
-                                newColor = Color.FromArgb(pixelColor.A, maxColorValue, minColorValue, midColorValue);
-                                break;
-                            case 2:
-                                newColor = Color.FromArgb(pixelColor.A, midColorValue, maxColorValue, minColorValue);
-                                break;
-                            case 3:
-                                newColor = Color.FromArgb(pixelColor.A, midColorValue, minColorValue, maxColorValue);
-                                break;
-                            case 4:
-                                newColor = Color.FromArgb(pixelColor.A, minColorValue, maxColorValue, midColorValue);
-                                break;
-                            case 5: // Magenta mode
-                                newColor = Color.FromArgb(pixelColor.A, 255, pixelColor.G, 255);
-                                break;
-                            case 6: // Brown mode
-                                newColor = Color.FromArgb(pixelColor.A, pixelColor.R, pixelColor.G / 2, pixelColor.B / 2);
-                                break;
-                            case 7: // Orange Modus
-                                newColor = Color.FromArgb(pixelColor.A, pixelColor.R, pixelColor.G / 2, 0);
-                                break;
-                            case 8: // Violet mode
-                                newColor = Color.FromArgb(pixelColor.A, pixelColor.R / 2, 0, pixelColor.B);
-                                break;
-                            case 9: // Green mode
-                                newColor = Color.FromArgb(pixelColor.A, 0, pixelColor.G, 0);
-                                break;
-                            case 10: // Turquoise mode
-                                newColor = Color.FromArgb(pixelColor.A, 0, pixelColor.G, pixelColor.B);
-                                break;
-                            case 11: // Pink mode
-                                newColor = Color.FromArgb(pixelColor.A, pixelColor.R, 0, pixelColor.B);
-                                break;
-                            case 12: // Light blue mode
-                                newColor = Color.FromArgb(pixelColor.A, 0, pixelColor.G, pixelColor.R);
-                                break;
-                            case 13: // Dark red mode
-                                newColor = Color.FromArgb(pixelColor.A, pixelColor.R / 2, 0, 0);
-                                break;
-                            case 14: // Purple mode
-                                newColor = Color.FromArgb(pixelColor.A, pixelColor.R / 2, 0, pixelColor.B / 2);
-                                break;
-                            case 15: // Yellow-green mode
-                                newColor = Color.FromArgb(pixelColor.A, pixelColor.R / 2, pixelColor.G / 2, 0);
-                                break;
-                            case 16: // Cyan mode
-                                newColor = Color.FromArgb(pixelColor.A, 0, pixelColor.G / 2, pixelColor.B);
-                                break;
-                            case 17: // Dark green mode
-                                newColor = Color.FromArgb(pixelColor.A, 0, pixelColor.G / 2, 0);
-                                break;
-                            case 18: // Olive green mode
-                                newColor = Color.FromArgb(pixelColor.A, pixelColor.R / 2, pixelColor.G / 2, 0);
-                                break;
-                            case 19: // Rose red mode
-                                newColor = Color.FromArgb(pixelColor.A, pixelColor.R, 0, pixelColor.B / 2);
-                                break;
-                            case 20: // Turquoise blue mode
-                                newColor = Color.FromArgb(pixelColor.A, 0, pixelColor.G / 2, pixelColor.B / 2);
-                                break;
-                            case 21: // Golden yellow mode
-                                newColor = Color.FromArgb(pixelColor.A, pixelColor.R / 2, pixelColor.G / 2, 0);
-                                break;
-                            case 22: // Gray mode
-                                int grayValue = (pixelColor.R + pixelColor.G + pixelColor.B) / 3;
-                                newColor = Color.FromArgb(pixelColor.A, grayValue, grayValue, grayValue);
-                                break;
-                            case 23: // Bright red mode
-                                newColor = Color.FromArgb(pixelColor.A, pixelColor.R, 0, 0);
-                                break;
-                            case 24: // Light green mode
-                                newColor = Color.FromArgb(pixelColor.A, 0, pixelColor.G, 0);
-                                break;
-                            case 25: // Light blue mode
-                                newColor = Color.FromArgb(pixelColor.A, 0, 0, pixelColor.B);
-                                break;
-                            case 26: // Light blue mode with variation
-                                int variation = rand.Next(-50, 50); // Generates a random number between -50 and 50
-                                newColor = Color.FromArgb(pixelColor.A,
-                                                          Math.Max(0, Math.Min(255, 0 + variation)),
-                                                          Math.Max(0, Math.Min(255, 0 + variation)),
-                                                          Math.Max(0, Math.Min(255, pixelColor.B + variation)));
-                                break;
-                            case 27: // Brown mode
-                                newColor = Color.FromArgb(pixelColor.A, pixelColor.R / 2, pixelColor.G / 2, pixelColor.B / 2);
-                                break;
-                            case 28: // Dark brown mode
-                                newColor = Color.FromArgb(pixelColor.A, pixelColor.R / 2, pixelColor.G / 4, pixelColor.B / 4);
-                                break;
-                            case 29: // Dark gray mode
-                                int darkGrayValue = (pixelColor.R + pixelColor.G + pixelColor.B) / 3;
-                                darkGrayValue = Math.Max(0, Math.Min(255, darkGrayValue - 64));
-                                newColor = Color.FromArgb(pixelColor.A, darkGrayValue, darkGrayValue, darkGrayValue);
-                                break;
-                            case 30: // Gold mode
-                                newColor = Color.FromArgb(pixelColor.A, pixelColor.R / 2, pixelColor.G / 2, 0);
-                                break;
-                            case 31: // Silver mode
-                                newColor = Color.FromArgb(pixelColor.A, pixelColor.R / 2, pixelColor.G / 2, pixelColor.B / 2);
-                                break;
-                            case 32: // Bronze mode
-                                newColor = Color.FromArgb(pixelColor.A, pixelColor.R / 2, pixelColor.G / 4, 0);
-                                break;
-                            case 33: // Copper mode
-                                newColor = Color.FromArgb(pixelColor.A, pixelColor.R, pixelColor.G / 3, 0);
-                                break;
-                            default:
-                                newColor = Color.FromArgb(pixelColor.A, minColorValue, midColorValue, maxColorValue);
-                                break;
-                        }
-                        newImage.SetPixel(x, y, newColor);
-                    }
-                }
-
-                pictureBox1.Image = newImage;
-                _colorMode++;
-            }
-            else
-            {
-                MessageBox.Show("The clipboard does not contain an image.");
-            }
-            #endregion
-        }
-
-        #region PaintBox and Mirror Drawing and Lines
-        private static Form _paintBoxForm = null;
-
-        private void BtPaintBox_Click(object sender, EventArgs e)
-        {
-            bool isLineDrawingActive = false;
-            bool isDrawingActive = true;
-            Point startPoint = Point.Empty;
-            Point endPoint = Point.Empty; // Add this line at the beginning of your code
-            Point lastPoint = Point.Empty;
-            List<Point> points = new List<Point>();
-            // Declare imageRect outside the event
-            //Rectangle imageRect = new Rectangle();
-            bool drawing = false;
-            bool mirrorDrawing = false;
-            Rectangle imageRect = Rectangle.Empty;
-
-            // Create a bitmap to store the drawing
-            Bitmap bitmap = null;
-
-            Stack<Bitmap> bitmapHistory = new Stack<Bitmap>();
-            // Add the current bitmap to the gradient after you draw
-            if (bitmap != null)
-            {
-                bitmapHistory.Push((Bitmap)bitmap.Clone());
-            }
-
-            // Declare imageRect outside the event
-            if (_paintBoxForm != null)
-            {
-                //MessageBox.Show("The form is already opened.");
-                return;
-            }
-
-            _paintBoxForm = new Form
-            {
-                Text = "Paint Box",
-                Size = new Size(900, 900),
-                KeyPreview = true
-            };
-
-            // Set the icon of the Form
-            if (Properties.Resources.paint_box_colors != null)
-            {
-                using (Bitmap bmp = Properties.Resources.paint_box_colors)
-                {
-                    IntPtr hIcon = bmp.GetHicon(); // Create an icon handle from the bitmap
-                    Icon icon = Icon.FromHandle(hIcon); // Create an Icon from the handle
-                    _paintBoxForm.Icon = icon;
-                }
-            }
-
-            // Create a new picture box
-            PictureBox pictureBox = new PictureBox();
-            pictureBox.Location = new Point(50, 50);
-
-            // Add the picture box to the form
-            _paintBoxForm.Controls.Add(pictureBox);
-
-            // Create a color dialog
-            ColorDialog colorDialog = new ColorDialog();
-
-            // Create a new label
-            Label pixelLabel = new Label();
-            pixelLabel.Text = "Pixel";
-            pixelLabel.Location = new Point(464, 775); // Position it above the TextBox
-
-            // Add the label to the shape
-            _paintBoxForm.Controls.Add(pixelLabel);
-
-            // Create a button to draw on the picture box
-            Button drawButton = new Button();
-            drawButton.Text = "Draw Line";
-            drawButton.Location = new Point(50, 800);
-            drawButton.Click += (s, e) =>
-            // Toggle function for drawing lines
-            drawButton.Click += (s, e) =>
-            {
-                isLineDrawingActive = !isLineDrawingActive;
-                drawButton.Text = isLineDrawingActive ? "Stop Drawing Line" : "Draw Line";
-                drawButton.BackColor = colorDialog.Color; // Sets the background color of the button to the selected color
-
-                // Change the text color of the button to ensure it's readable
-                drawButton.ForeColor = (colorDialog.Color.R * 0.299 + colorDialog.Color.G * 0.587 + colorDialog.Color.B * 0.114) > 186 ? Color.Black : Color.White;
-
-                // Make isDrawingActive always the opposite of isLineDrawingActive
-                isDrawingActive = !isLineDrawingActive;
-            };
-
-            // Create a button to paste an image from the clipboard to the picture box
-            Button pasteButton = new Button();
-            pasteButton.Text = "Paste";
-            pasteButton.Location = new Point(132, 800);
-            pasteButton.Click += (s, e) =>
-            {
-                if (Clipboard.ContainsImage())
-                {
-                    Image img = Clipboard.GetImage();
-                    bitmap = new Bitmap(img);
-                    pictureBox.Size = img.Size;
-
-                    // Update imageRect within the event
-                    imageRect.Size = img.Size;  // Update the size of the imageRect
-
-                    // Update the picture box
-                    pictureBox.Image = bitmap;
-
-                    // Add the inserted bitmap to the gradient
-                    if (bitmap != null)
-                    {
-                        bitmapHistory.Push((Bitmap)bitmap.Clone());
-                    }
-                }
-                else
-                {
-                    MessageBox.Show("No image found on clipboard.");
-                }
-            };
-
-            // Create a button to choose a color
-            Button colorButton = new Button();
-            colorButton.Text = "Choose Color";
-            colorButton.Location = new Point(296, 800);
-            colorButton.Click += (s, e) =>
-            {
-                if (colorDialog.ShowDialog() == DialogResult.OK)
-                {
-                    drawButton.ForeColor = colorDialog.Color;
-                }
-            };
-
-            // Create a button to copy the image to the clipboard
-            Button copyButton = new Button();
-            copyButton.Text = "Copy";
-            copyButton.Location = new Point(214, 800);
-            copyButton.Click += (s, e) =>
-            {
-                if (pictureBox.Image != null)
-                {
-                    Clipboard.SetImage(bitmap);
-                }
-                else
-                {
-                    MessageBox.Show("No image available to copy.");
-                }
-            };
-
-            // Create a button for mirror drawing
-            Button mirrorDrawButton = new Button();
-            mirrorDrawButton.Text = "Mirror Draw";
-            mirrorDrawButton.Location = new Point(378, 800);
-
-            // Create a textbox to set the pen width
-            TextBox penWidthTextBox = new TextBox();
-            penWidthTextBox.Text = "1";
-            penWidthTextBox.Location = new Point(464, 800);
-            penWidthTextBox.Size = new Size(50, penWidthTextBox.Height); // Sets the width to 50 pixels
-
-            // Create an undo button
-            Button undoButton = new Button();
-            undoButton.Text = "Undo";
-            undoButton.Location = new Point(522, 800); // Position it next to the other buttons
-            undoButton.Click += (s, e) =>
-            {
-                if (bitmapHistory.Count > 0)
-                {
-                    bitmap = bitmapHistory.Pop();
-                    pictureBox.Image = bitmap;
-                }
-            };
-
-            // Add the buttons and textbox to the form
-            _paintBoxForm.Controls.Add(drawButton);
-            _paintBoxForm.Controls.Add(pasteButton);
-            _paintBoxForm.Controls.Add(colorButton);
-            _paintBoxForm.Controls.Add(copyButton);
-            _paintBoxForm.Controls.Add(mirrorDrawButton);
-            _paintBoxForm.Controls.Add(penWidthTextBox);
-            _paintBoxForm.Controls.Add(undoButton);
-
-            // Add mouse down event to start drawing
-            pictureBox.MouseDown += (s, e) =>
-            {
-                // Set the starting point by pressing the mouse button                
-                if (isLineDrawingActive && imageRect.Contains(e.Location))
-                {
-                    drawing = true;
-                    startPoint = e.Location;
-                }
-                else if (isDrawingActive)
-                {
-                    // Set the starting point by pressing the mouse button
-                    if (imageRect.Contains(e.Location))
-                    {
-                        drawing = true;
-                    }
-                }
-            };
-
-            // Add mouse up event to stop drawing
-            pictureBox.MouseUp += (s, e) =>
-            {
-                drawing = false;
-
-                if (isLineDrawingActive && bitmap != null && startPoint != Point.Empty)
-                {
-                    drawing = false;
-
-                    // Draw the final line on the original image
-                    Graphics graphics = Graphics.FromImage(bitmap);
-                    float penWidth = float.Parse(penWidthTextBox.Text);
-                    graphics.DrawLine(new Pen(colorDialog.Color, penWidth), startPoint, e.Location);
-
-                    // Update the picture box
-                    pictureBox.Image = bitmap;
-
-                    // Reset the start point
-                    startPoint = Point.Empty;
-
-                    // Add the current bitmap to the gradient after you draw
-                    bitmapHistory.Push((Bitmap)bitmap.Clone());
-                }
-                else if (isDrawingActive && bitmap != null && imageRect.Contains(e.Location))
-                {
-                    // Reset the last point when the mouse is released
-                    lastPoint = Point.Empty;
-                    drawing = false;
-                    bitmapHistory.Push((Bitmap)bitmap.Clone()); // Remove the last image from the history
-                }
-            };
-
-            // Add mouse move event to draw when mouse is down
-            pictureBox.MouseMove += (s, e) =>
-            {
-                //if (isLineDrawingActive && bitmap != null)
-                if (isLineDrawingActive && drawing && imageRect.Contains(e.Location))
-                {
-                    ;
-                    pictureBox.Invalidate();
-
-                    if (startPoint != Point.Empty)
-                    {
-                        // Draw the line on the picture box, not the bitmap
-                        Graphics graphics = pictureBox.CreateGraphics();
-                        float penWidth = float.Parse(penWidthTextBox.Text);
-                        graphics.DrawLine(new Pen(colorDialog.Color, penWidth), startPoint, e.Location);
-                    }
-                }
-                else if (isDrawingActive)
-                {
-                    // Draw image when mouse is down
-                    if (drawing && bitmap != null)
-                    {
-                        Graphics graphics = Graphics.FromImage(bitmap);
-                        float penWidth = float.Parse(penWidthTextBox.Text);
-                        graphics.FillEllipse(new SolidBrush(colorDialog.Color), e.X - penWidth / 2, e.Y - penWidth / 2, penWidth, penWidth);
-
-                        if (mirrorDrawing)
-                        {
-                            int mirrorX = bitmap.Width - e.X;
-                            graphics.FillEllipse(new SolidBrush(colorDialog.Color), mirrorX - penWidth / 2, e.Y - penWidth / 2, penWidth, penWidth);
-                        }
-                        // Aktualisieren Sie den letzten Punkt
-                        lastPoint = e.Location;
-
-                        // Update the picture box
-                        pictureBox.Image = bitmap;
-                    }
-                }
-            };
-
-            mirrorDrawButton.Click += (s, e) =>
-            {
-                mirrorDrawing = !mirrorDrawing;
-                mirrorDrawButton.Text = mirrorDrawing ? "Stop Mirror Draw" : "Mirror Draw";
-                if (bitmap != null)
-                {
-                    bitmapHistory.Push((Bitmap)bitmap.Clone()); // Remove last image from history
-                }
-            };
-
-            // Add keydown event to handle Ctrl+V and Ctrl+X
-            _paintBoxForm.KeyDown += (s, e) =>
-            {
-                if (e.Control && e.KeyCode == Keys.V) // Ctrl+V
-                {
-                    if (Clipboard.ContainsImage())
-                    {
-                        Image img = Clipboard.GetImage();
-                        bitmap = new Bitmap(img);
-                        pictureBox.Size = img.Size;
-                        imageRect.Size = img.Size;
-
-                        // Update the picture box
-                        pictureBox.Image = bitmap;
-
-                        // Fügen Sie das eingefügte Bitmap zum Verlauf hinzu
-                        if (bitmap != null)
-                        {
-                            bitmapHistory.Push((Bitmap)bitmap.Clone());
-                        }
-                    }
-                    else
-                    {
-                        MessageBox.Show("No image found on clipboard.");
-                    }
-                }
-                else if (e.Control && e.KeyCode == Keys.X) // Ctrl+X
-                {
-                    if (pictureBox.Image != null)
-                    {
-                        Clipboard.SetImage(bitmap);
-                        pictureBox.Image = bitmap;
-                    }
-                    else
-                    {
-                        MessageBox.Show("No image found on clipboard..");
-                    }
-                }
-            };
-
-            // Create a timer
-            Timer timer = new Timer();
-            timer.Interval = 100; // Set the interval to 100 milliseconds
-
-            Bitmap tempBitmap = null; // Temporary bitmap for the line preview
-
-            timer.Tick += (s, e) =>
-            {
-                if (isLineDrawingActive && bitmap != null && drawing)
-                {
-                    // Get the current position of the mouse cursor
-                    Point currentPosition = pictureBox.PointToClient(Cursor.Position);
-
-                    // Make a copy of the current image
-                    tempBitmap = new Bitmap(bitmap);
-
-                    // Draw on the temporary image
-                    Graphics graphics = Graphics.FromImage(tempBitmap);
-                    float penWidth = float.Parse(penWidthTextBox.Text);
-                    graphics.DrawLine(new Pen(colorDialog.Color, penWidth), startPoint, currentPosition);
-
-                    // Update the PictureBox with the temporary image
-                    pictureBox.Image = tempBitmap;
-                }
-            };
-
-            // Start the timer
-            timer.Start();
-
-            // Add an event to reset the static variable when the form closes
-            _paintBoxForm.FormClosed += (s, e) => { _paintBoxForm = null; };
-
-            // Show the form
-            _paintBoxForm.Show();
-        }
-        #endregion
-
-
-        //Saves the position.
+        // Saves the position.
         private void TextureCutter_FormClosed(object sender, FormClosedEventArgs e)
         {
-            Properties.Settings.Default.FormTextureCutter = this.Location;
+            previewTimer.Stop();
+            Properties.Settings.Default.FormTextureCutter = Location;
             Properties.Settings.Default.Save();
+
+            try
+            {
+                _palette.Save(CutterPalette.DefaultFile);
+            }
+            catch (Exception)
+            {
+                // palette could not be saved – not important
+            }
+            if (_terrain != null && !_terrain.IsDisposed)
+            {
+                _terrain.Close();
+            }
+            _image?.Dispose();
+            _previewImage?.Dispose();
+            _pattern?.Dispose();
+            _blendB?.Dispose();
+            canvas.Layers.ForEach(l => l.Dispose());
+            canvas.Layers.Clear();
+            _undo.ForEach(b => b.Dispose());
+            _redo.ForEach(b => b.Dispose());
         }
 
-        //Load position.
+        // Loads the position – only if it is still on a screen.
         private void TextureCutterForm_Load(object sender, EventArgs e)
         {
-            if (Properties.Settings.Default.FormTextureCutter != Point.Empty)
+            Point saved = Properties.Settings.Default.FormTextureCutter;
+            if (saved != Point.Empty && Screen.AllScreens.Any(s => s.WorkingArea.Contains(new Point(saved.X + 50, saved.Y + 20))))
             {
-                this.Location = Properties.Settings.Default.FormTextureCutter;
+                StartPosition = FormStartPosition.Manual;
+                Location = saved;
             }
         }
 
-        #region Lines
-        private void DrawLines(Graphics g, List<Point> points)
+        protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
         {
-            if (points.Count > 1)
+            Keys key = keyData & Keys.KeyCode;
+            bool ctrl = (keyData & Keys.Control) == Keys.Control;
+            bool shift = (keyData & Keys.Shift) == Keys.Shift;
+            bool alt = (keyData & Keys.Alt) == Keys.Alt;
+            bool textFocus = IsTextInputFocused();
+
+            if (alt)
             {
-                g.DrawLines(Pens.Yellow, points.ToArray());
+                return base.ProcessCmdKey(ref msg, keyData);
             }
-        }
-        private Point _lastPointLines = Point.Empty; // Add this field to keep track of the last point
-
-        private void PictureBox1_MouseDownLines(object sender, MouseEventArgs e)
-        {
-            if (checkBoxLines.Checked && e.Button == MouseButtons.Left)
+            if (key == Keys.F1)
             {
-                if (_lastPointLines.IsEmpty) // If this is the first point
-                {
-                    _points.Clear();
-                    _points.Add(e.Location);
-                    _lastPointLines = e.Location;
-                }
-                else // If this is not the first point
-                {
-                    _points.Add(e.Location);
-                }
+                ShowHelp(CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "de");
+                return true;
             }
-        }
-
-        #endregion
-
-        #region ParticelGreyHue
-
-        private void CheckBoxParticelGreyHue_CheckedChanged(object sender, EventArgs e)
-        {
-
-            if (checkBoxParticelGreyHue.Checked)
+            if (ctrl)
             {
-                checkBoxParticelGreyHueShadow.Checked = false;
-            }
-
-            // Make a list of colors to change
-            List<string> colorsToChange = new List<string>
-            {
-                // Add any other colors here...
-                "030303", "040404", "050505", "060606", "070707", "080808", "090909", "0A0A0A", "0B0B0B", "0C0C0C", "0D0D0D", "0E0E0E", "0F0F0F",
-                "101010", "111111", "121212", "131313", "141414", "151515", "161616", "171717", "181818", "191919", "1A1A1A", "1B1B1B", "1C1C1C",
-                "1D1D1D", "1E1E1E", "1F1F1F", "202020", "212121", "222222", "232323", "242424", "252525", "262626", "272727", "282828", "292929",
-                "2A2A2A", "2B2B2B", "2C2C2C", "2D2D2D", "2E2E2E", "2F2F2F", "303030", "313131", "323232", "333333", "343434", "353535", "363636",
-                "373737", "383838", "393939", "3A3A3A", "3B3B3B", "3C3C3C", "3D3D3D", "3E3E3E", "3F3F3F", "404040", "414141", "424242", "434343",
-                "444444", "454545", "464646", "474747", "484848", "494949", "4A4A4A", "4B4B4B", "4C4C4C", "4D4D4D", "4E4E4E", "4F4F4F", "505050",
-                "515151", "525252", "535353", "545454", "555555", "565656", "575757", "585858", "595959", "5A5A5A", "5B5B5B", "5C5C5C", "5D5D5D",
-                "5E5E5E", "5F5F5F", "606060", "616161", "626262", "636363", "646464", "656565", "666666", "676767", "686868", "696969", "6A6A6A",
-                "6B6B6B", "6C6C6C", "6D6D6D", "6E6E6E", "6F6F6F", "707070", "717171", "727272", "737373", "747474", "757575", "767676", "777777",
-                "787878", "797979", "7A7A7A", "7B7B7B", "7C7C7C", "7D7D7D", "7E7E7E", "7F7F7F", "808080", "818181", "828282", "838383", "848484",
-                "858585", "868686", "878787", "888888", "898989", "8A8A8A", "8B8B8B", "8C8C8C", "8D8D8D", "8E8E8E", "8F8F8F", "909090", "919191",
-                "929292", "939393", "949494", "959595", "969696", "979797", "989898", "999999", "9A9A9A", "9B9B9B", "9C9C9C", "9D9D9D", "9E9E9E",
-                "9F9F9F", "A0A0A0", "A1A1A1", "A2A2A2", "A3A3A3", "A4A4A4", "A5A5A5", "A6A6A6", "A7A7A7", "A8A8A8", "A9A9A9", "AAAAAA", "ABABAB",
-                "ACACAC", "ADADAD", "AEAEAE", "AFAFAF", "B0B0B0", "B1B1B1", "B2B2B2", "B3B3B3", "B4B4B4", "B5B5B5", "B6B6B6", "B7B7B7", "B8B8B8",
-                "B9B9B9", "BABABA", "BBBBBB", "BCBCBC", "BDBDBD", "BEBEBE", "BFBFBF", "C0C0C0", "C1C1C1", "C2C2C2", "C3C3C3", "C4C4C4", "C5C5C5",
-                "C6C6C6", "C7C7C7", "C8C8C8", "C9C9C9", "CACACA", "CBCBCB", "CCCCCC", "CDCDCD", "CECECE", "CFCFCF", "D0D0D0", "D1D1D1", "D2D2D2",
-                "D3D3D3", "D4D4D4", "D5D5D5", "D6D6D6", "D7D7D7", "D8D8D8", "D9D9D9", "DADADA", "DBDBDB", "DCDCDC", "DDDDDD", "DEDEDE", "DFDFDF",
-                "E0E0E0", "E1E1E1", "E2E2E2", "E3E3E3", "E4E4E4", "E5E5E5", "E6E6E6", "E7E7E7", "E8E8E8", "E9E9E9", "EAEAEA", "EBEBEB", "ECECEC",
-                "EDEDED", "EEEEEE", "EFEFEF", "F0F0F0", "F1F1F1", "F2F2F2", "F3F3F3", "F4F4F4", "F5F5F5", "F6F6F6", "F7F7F7", "F8F8F8", "F9F9F9",
-                "FAFAFA", "FBFBFB"
-            };
-
-            // Convert the list to a HashSet for more efficient searching
-            HashSet<string> colorsSet = new HashSet<string>(colorsToChange);
-
-            if (_originalImage != null && checkBoxParticelGreyHue.Checked)
-            {
-                Bitmap image = new Bitmap(_originalImage);
-
-                // Convert the text in textBoxColorToAdress to a color value
-                string newColorCode = textBoxColorToAdress.Text;
-                if (!newColorCode.StartsWith("#"))
+                switch (key)
                 {
-                    newColorCode = "#" + newColorCode;
+                    case Keys.O: OpenImage(); return true;
+                    case Keys.S: if (shift) SaveAs(); else QuickSave(); return true;
+                    case Keys.G: ToggleGrid(); return true;
+                    case Keys.T: ToggleTiled(); return true;
+                    case Keys.F: FitZoom(); return true;
+                    case Keys.P: OpenTerrainPreview(); return true;
+                    case Keys.B: OpenBatch(); return true;
+                    case Keys.D0: case Keys.NumPad0: SetZoom(1); return true;
+                    case Keys.Oemplus: case Keys.Add: SetZoom(canvas.Zoom + 1); return true;
+                    case Keys.OemMinus: case Keys.Subtract: SetZoom(canvas.Zoom - 1); return true;
                 }
-                Color newColor;
-                try
+                if (!textFocus)
                 {
-                    newColor = ColorTranslator.FromHtml(newColorCode);
-                }
-                catch
-                {
-                    newColor = Color.Black; // Defaults to black if the color code is invalid
-                }
-
-                for (int y = 0; y < image.Height; y++)
-                {
-                    for (int x = 0; x < image.Width; x++)
+                    switch (key)
                     {
-                        Color originalColor = image.GetPixel(x, y);
-
-                        // Convert the color to a hexadecimal code
-                        string colorCode = originalColor.R.ToString("X2") + originalColor.G.ToString("X2") + originalColor.B.ToString("X2");
-
-                        // Check if the color is in the list of colors to change
-                        if (colorsSet.Contains(colorCode))
-                        {
-                            // Replace the color with the new color
-                            image.SetPixel(x, y, newColor);
-                        }
+                        case Keys.V: PasteImage(); return true;
+                        case Keys.C:
+                        case Keys.X: // Ctrl+X was the old copy shortcut.
+                            if (shift) CopySelection(); else CopyImage();
+                            return true;
+                        case Keys.Z: if (shift) Redo(); else Undo(); return true;
+                        case Keys.Y: Redo(); return true;
+                        case Keys.A: canvas.SelectAll(); return true;
                     }
                 }
-
-                pictureBox1.Image = image;
+                return base.ProcessCmdKey(ref msg, keyData);
             }
-        }
-        #endregion
-
-        #region ParticelGreyHueShadow
-        private void CheckBoxParticelGreyHueShadow_CheckedChanged(object sender, EventArgs e)
-        {
-            if (checkBoxParticelGreyHueShadow.Checked)
+            if (textFocus)
             {
-                checkBoxParticelGreyHue.Checked = false;
+                return base.ProcessCmdKey(ref msg, keyData);
             }
 
-            // Make a list of colors to change
-            List<string> colorsToChange = new List<string>
+            switch (key)
             {
-                // Add any other colors here...
-                "030303", "040404", "050505", "060606", "070707", "080808", "090909", "0A0A0A", "0B0B0B", "0C0C0C", "0D0D0D", "0E0E0E", "0F0F0F",
-                "101010", "111111", "121212", "131313", "141414", "151515", "161616", "171717", "181818", "191919", "1A1A1A", "1B1B1B", "1C1C1C",
-                "1D1D1D", "1E1E1E", "1F1F1F", "202020", "212121", "222222", "232323", "242424", "252525", "262626", "272727", "282828", "292929",
-                "2A2A2A", "2B2B2B", "2C2C2C", "2D2D2D", "2E2E2E", "2F2F2F", "303030", "313131", "323232", "333333", "343434", "353535", "363636",
-                "373737", "383838", "393939", "3A3A3A", "3B3B3B", "3C3C3C", "3D3D3D", "3E3E3E", "3F3F3F", "404040", "414141", "424242", "434343",
-                "444444", "454545", "464646", "474747", "484848", "494949", "4A4A4A", "4B4B4B", "4C4C4C", "4D4D4D", "4E4E4E", "4F4F4F", "505050",
-                "515151", "525252", "535353", "545454", "555555", "565656", "575757", "585858", "595959", "5A5A5A", "5B5B5B", "5C5C5C", "5D5D5D",
-                "5E5E5E", "5F5F5F", "606060", "616161", "626262", "636363", "646464", "656565", "666666", "676767", "686868", "696969", "6A6A6A",
-                "6B6B6B", "6C6C6C", "6D6D6D", "6E6E6E", "6F6F6F", "707070", "717171", "727272", "737373", "747474", "757575", "767676", "777777",
-                "787878", "797979", "7A7A7A", "7B7B7B", "7C7C7C", "7D7D7D", "7E7E7E", "7F7F7F", "808080", "818181", "828282", "838383", "848484",
-                "858585", "868686", "878787", "888888", "898989", "8A8A8A", "8B8B8B", "8C8C8C", "8D8D8D", "8E8E8E", "8F8F8F", "909090", "919191",
-                "929292", "939393", "949494", "959595", "969696", "979797", "989898", "999999", "9A9A9A", "9B9B9B", "9C9C9C", "9D9D9D", "9E9E9E",
-                "9F9F9F", "A0A0A0", "A1A1A1", "A2A2A2", "A3A3A3", "A4A4A4", "A5A5A5", "A6A6A6", "A7A7A7", "A8A8A8", "A9A9A9", "AAAAAA", "ABABAB",
-                "ACACAC", "ADADAD", "AEAEAE", "AFAFAF", "B0B0B0", "B1B1B1", "B2B2B2", "B3B3B3", "B4B4B4", "B5B5B5", "B6B6B6", "B7B7B7", "B8B8B8",
-                "B9B9B9", "BABABA", "BBBBBB", "BCBCBC", "BDBDBD", "BEBEBE", "BFBFBF", "C0C0C0", "C1C1C1", "C2C2C2", "C3C3C3", "C4C4C4", "C5C5C5",
-                "C6C6C6", "C7C7C7", "C8C8C8", "C9C9C9", "CACACA", "CBCBCB", "CCCCCC", "CDCDCD", "CECECE", "CFCFCF", "D0D0D0", "D1D1D1", "D2D2D2",
-                "D3D3D3", "D4D4D4", "D5D5D5", "D6D6D6", "D7D7D7", "D8D8D8", "D9D9D9", "DADADA", "DBDBDB", "DCDCDC", "DDDDDD", "DEDEDE", "DFDFDF",
-                "E0E0E0", "E1E1E1", "E2E2E2", "E3E3E3", "E4E4E4", "E5E5E5", "E6E6E6", "E7E7E7", "E8E8E8", "E9E9E9", "EAEAEA", "EBEBEB", "ECECEC",
-                "EDEDED", "EEEEEE", "EFEFEF", "F0F0F0", "F1F1F1", "F2F2F2", "F3F3F3", "F4F4F4", "F5F5F5", "F6F6F6", "F7F7F7", "F8F8F8", "F9F9F9",
-                "FAFAFA", "FBFBFB"
-            };
-
-            // Convert the list to a HashSet for more efficient searching
-            HashSet<string> colorsSet = new HashSet<string>(colorsToChange);
-
-            if (_originalImage != null && checkBoxParticelGreyHueShadow.Checked)
-            {
-                Bitmap image = new Bitmap(_originalImage);
-
-                // Convert the text in textBoxColorToAdress to a color value
-                string newColorCode = textBoxColorToAdress.Text;
-                if (!newColorCode.StartsWith("#"))
-                {
-                    newColorCode = "#" + newColorCode;
-                }
-                Color newColor;
-                try
-                {
-                    newColor = ColorTranslator.FromHtml(newColorCode);
-                }
-                catch
-                {
-                    newColor = Color.Black; // Defaults to black if the color code is invalid
-                }
-
-                for (int y = 0; y < image.Height; y++)
-                {
-                    for (int x = 0; x < image.Width; x++)
+                case Keys.Escape:
+                    if (canvas.Tool == CanvasTool.Pipette && _pickTarget != PickTarget.Paint)
                     {
-                        Color originalColor = image.GetPixel(x, y);
-                        string colorCode = originalColor.R.ToString("X2") + originalColor.G.ToString("X2") + originalColor.B.ToString("X2");
-
-                        if (colorsSet.Contains(colorCode))
-                        {
-                            float brightness = originalColor.GetBrightness(); // Get the brightness of the original color (0-1)
-                            int newR = (int)(newColor.R * brightness);
-                            int newG = (int)(newColor.G * brightness);
-                            int newB = (int)(newColor.B * brightness);
-
-                            Color newShadedColor = Color.FromArgb(newR, newG, newB); // Create a new color that is the original color adjusted by brightness
-                            image.SetPixel(x, y, newShadedColor);
-                        }
+                        SetTool(_toolBeforePick);
                     }
-                }
-
-                pictureBox1.Image = image;
+                    else if (_previewImage != null)
+                    {
+                        CancelPreview();
+                    }
+                    else
+                    {
+                        canvas.ClearSelection();
+                    }
+                    return true;
+                case Keys.Enter:
+                    if (_previewImage != null)
+                    {
+                        CommitPreview(true);
+                        return true;
+                    }
+                    break;
+                case Keys.Delete:
+                    DeleteSelection();
+                    return true;
+                case Keys.M: SetTool(CanvasTool.Select); return true;
+                case Keys.B: SetTool(CanvasTool.Pencil); return true;
+                case Keys.E: SetTool(CanvasTool.Eraser); return true;
+                case Keys.L: SetTool(CanvasTool.Line); return true;
+                case Keys.R: SetTool(CanvasTool.Rectangle); return true;
+                case Keys.G: SetTool(CanvasTool.Fill); return true;
+                case Keys.I: SetTool(CanvasTool.Pipette); return true;
+                case Keys.O: SetTool(CanvasTool.Overlay); return true;
+                case Keys.X: SwapColors(); return true;
+                case Keys.Up:
+                case Keys.Down:
+                case Keys.Left:
+                case Keys.Right:
+                    if (canvas.ActiveLayer != null)
+                    {
+                        int step = shift ? 10 : 1;
+                        Point p = canvas.ActiveLayer.Position;
+                        p.Offset(key == Keys.Left ? -step : key == Keys.Right ? step : 0, key == Keys.Up ? -step : key == Keys.Down ? step : 0);
+                        canvas.ActiveLayer.Position = p;
+                        canvas.Invalidate();
+                        Canvas_LayerMoved(this, EventArgs.Empty);
+                        return true;
+                    }
+                    break;
             }
+            return base.ProcessCmdKey(ref msg, keyData);
         }
+
         #endregion
     }
 }

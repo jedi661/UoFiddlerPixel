@@ -6,6 +6,27 @@ UOFiddler based on Ultima SDK it's a tool to view and alter almost every UO 2D c
 This is an extended version of UoFiddler that has more maps and more tools, as well as Map Edit, and will be expanded over time to support the Ultima standard 
 version more than the original version. Also, some source codes from older and New projects that are no longer supported have been integrated.
 
+Version 4.12.25
+
+### English
+The transition tool was rebuilt. It creates the 12 transition pieces between two textures (e.g. meadow → road, grass → cobblestone).
+
+**Bug fixes**
+- XML: name and brush ID were swapped – the TilesBrush.xml is now correct.
+- "Transition blur" had no effect and "Contrast" turned the mask almost black – both work now.
+- Crashes without loaded textures, with different image sizes or a missing Sound.wav are fixed.
+- The rotated land tile is now a real 44 × 44 diamond (was 46 × 45).
+- Results are no longer cleared after generating; files are no longer locked.
+
+**New**
+- 12 pieces (A_/B_ × DR, DL, UU, LL, UR, UL) shown as texture, land tile or mask.
+- Assembled preview: the pieces are put together (lake, road, curve, islands), in 3D or 2D – every seam is visible.
+- Mask generator: soft edge, irregular edge, pattern, border shift, corner shape. All pieces fit together without seams.
+- Learn from UO: browse land tiles with their tiledata name and texture, take an existing transition and extract the mask Origin used.
+- Pattern library: save mask sets in categories with preview and load them again.
+- Output: files (textures, land tiles, masks, transition.xml), directly into texmaps.mul / art.mul from a chosen ID, optional tiledata link.
+- Help in English and German (F1).
+
 Version 4.12.24
 
 **CompareItemControl: Rework**
