@@ -1,14 +1,3 @@
-﻿// /***************************************************************************
-//  *
-//  * $Author: Turley
-//  * 
-//  * "THE BEER-WARE LICENSE"
-//  * As long as you retain this notice you can do whatever you want with 
-//  * this stuff. If we meet some day, and you think this stuff is worth it,
-//  * you can buy me a beer in return.
-//  *
-//  ***************************************************************************/
-
 namespace UoFiddler.Plugin.ConverterMultiTextPlugin
 {
     partial class AltitudeToolForm
@@ -39,166 +28,162 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin
         /// </summary>
         private void InitializeComponent()
         {
+            components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(AltitudeToolForm));
-            folderBrowserDialog1 = new System.Windows.Forms.FolderBrowserDialog();
-            comboBoxCommand = new System.Windows.Forms.ComboBox();
-            textBoxOutput = new System.Windows.Forms.TextBox();
-            labelDir = new System.Windows.Forms.Label();
-            button1 = new System.Windows.Forms.Button();
-            button2 = new System.Windows.Forms.Button();
-            textBoxManuel = new System.Windows.Forms.TextBox();
-            btCopyMul = new System.Windows.Forms.Button();
-            openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
-            lbTxt = new System.Windows.Forms.Label();
-            checkBoxCopyText = new System.Windows.Forms.CheckBox();
-            buttonHelp = new System.Windows.Forms.Button();
-            lbinfo = new System.Windows.Forms.Label();
+            toolTip1 = new System.Windows.Forms.ToolTip(components);
+            toolStrip1 = new System.Windows.Forms.ToolStrip();
+            statusStrip1 = new System.Windows.Forms.StatusStrip();
+            statusPos = new System.Windows.Forms.ToolStripStatusLabel();
+            statusInfo = new System.Windows.Forms.ToolStripStatusLabel();
+            statusProgress = new System.Windows.Forms.ToolStripProgressBar();
+            statusCancel = new System.Windows.Forms.ToolStripDropDownButton();
+            statusMessage = new System.Windows.Forms.ToolStripStatusLabel();
+            splitContainer1 = new System.Windows.Forms.SplitContainer();
+            tabControl1 = new System.Windows.Forms.TabControl();
+            tabSource = new System.Windows.Forms.TabPage();
+            tabExport = new System.Windows.Forms.TabPage();
+            tabImport = new System.Windows.Forms.TabPage();
+            tabEdit = new System.Windows.Forms.TabPage();
+            tabInfo = new System.Windows.Forms.TabPage();
+            statusStrip1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
+            splitContainer1.Panel2.SuspendLayout();
+            splitContainer1.SuspendLayout();
+            tabControl1.SuspendLayout();
             SuspendLayout();
-            // 
-            // comboBoxCommand
-            // 
-            comboBoxCommand.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            comboBoxCommand.FormattingEnabled = true;
-            comboBoxCommand.Items.AddRange(new object[] { "extract map0.mul 512 map0.bmp", "modify map0.mul 512 map0.bmp" });
-            comboBoxCommand.Location = new System.Drawing.Point(25, 14);
-            comboBoxCommand.Name = "comboBoxCommand";
-            comboBoxCommand.Size = new System.Drawing.Size(294, 23);
-            comboBoxCommand.TabIndex = 0;
-            // 
-            // textBoxOutput
-            // 
-            textBoxOutput.Location = new System.Drawing.Point(25, 139);
-            textBoxOutput.Multiline = true;
-            textBoxOutput.Name = "textBoxOutput";
-            textBoxOutput.Size = new System.Drawing.Size(505, 265);
-            textBoxOutput.TabIndex = 1;
-            // 
-            // labelDir
-            // 
-            labelDir.AutoSize = true;
-            labelDir.Location = new System.Drawing.Point(25, 108);
-            labelDir.Name = "labelDir";
-            labelDir.Size = new System.Drawing.Size(22, 15);
-            labelDir.TabIndex = 2;
-            labelDir.Text = "Dir";
-            // 
-            // button1
-            // 
-            button1.Location = new System.Drawing.Point(456, 13);
-            button1.Name = "button1";
-            button1.Size = new System.Drawing.Size(74, 23);
-            button1.TabIndex = 3;
-            button1.Text = "Start";
-            button1.UseVisualStyleBackColor = true;
-            button1.Click += BtStartCommand_Click;
-            // 
-            // button2
-            // 
-            button2.Location = new System.Drawing.Point(325, 14);
-            button2.Name = "button2";
-            button2.Size = new System.Drawing.Size(103, 23);
-            button2.TabIndex = 4;
-            button2.Text = "Dir Altitude Tool";
-            button2.UseVisualStyleBackColor = true;
-            button2.Click += BtSelectDirectory_Click;
-            // 
-            // textBoxManuel
-            // 
-            textBoxManuel.Location = new System.Drawing.Point(25, 72);
-            textBoxManuel.Name = "textBoxManuel";
-            textBoxManuel.Size = new System.Drawing.Size(294, 23);
-            textBoxManuel.TabIndex = 5;
-            // 
-            // btCopyMul
-            // 
-            btCopyMul.Location = new System.Drawing.Point(456, 42);
-            btCopyMul.Name = "btCopyMul";
-            btCopyMul.Size = new System.Drawing.Size(74, 23);
-            btCopyMul.TabIndex = 6;
-            btCopyMul.Text = "Copy File";
-            btCopyMul.UseVisualStyleBackColor = true;
-            btCopyMul.Click += btCopyMul_Click;
-            // 
-            // openFileDialog1
-            // 
-            openFileDialog1.FileName = "openFileDialog1";
-            // 
-            // lbTxt
-            // 
-            lbTxt.AutoSize = true;
-            lbTxt.Location = new System.Drawing.Point(25, 54);
-            lbTxt.Name = "lbTxt";
-            lbTxt.Size = new System.Drawing.Size(160, 15);
-            lbTxt.TabIndex = 7;
-            lbTxt.Text = "Manual entry of commands :";
-            // 
-            // checkBoxCopyText
-            // 
-            checkBoxCopyText.AutoSize = true;
-            checkBoxCopyText.Location = new System.Drawing.Point(325, 74);
-            checkBoxCopyText.Name = "checkBoxCopyText";
-            checkBoxCopyText.Size = new System.Drawing.Size(78, 19);
-            checkBoxCopyText.TabIndex = 8;
-            checkBoxCopyText.Text = "Copy Text";
-            checkBoxCopyText.UseVisualStyleBackColor = true;
-            checkBoxCopyText.CheckedChanged += checkBoxCopyText_CheckedChanged;
-            // 
-            // buttonHelp
-            // 
-            buttonHelp.Location = new System.Drawing.Point(536, 13);
-            buttonHelp.Name = "buttonHelp";
-            buttonHelp.Size = new System.Drawing.Size(41, 23);
-            buttonHelp.TabIndex = 9;
-            buttonHelp.Text = "Help";
-            buttonHelp.UseVisualStyleBackColor = true;
-            buttonHelp.Click += buttonHelp_Click;
-            // 
-            // lbinfo
-            // 
-            lbinfo.AutoSize = true;
-            lbinfo.Location = new System.Drawing.Point(278, 121);
-            lbinfo.Name = "lbinfo";
-            lbinfo.Size = new System.Drawing.Size(252, 15);
-            lbinfo.TabIndex = 10;
-            lbinfo.Text = "Info: Select the directory where the map.mul is";
-            // 
+            //
+            // toolStrip1
+            //
+            toolStrip1.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
+            toolStrip1.Location = new System.Drawing.Point(0, 0);
+            toolStrip1.Name = "toolStrip1";
+            toolStrip1.Size = new System.Drawing.Size(1280, 25);
+            toolStrip1.TabIndex = 0;
+            //
+            // statusStrip1
+            //
+            statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { statusPos, statusInfo, statusProgress, statusCancel, statusMessage });
+            statusStrip1.Location = new System.Drawing.Point(0, 778);
+            statusStrip1.Name = "statusStrip1";
+            statusStrip1.Size = new System.Drawing.Size(1280, 22);
+            statusStrip1.TabIndex = 2;
+            //
+            // statusPos
+            //
+            statusPos.AutoSize = false;
+            statusPos.Name = "statusPos";
+            statusPos.Size = new System.Drawing.Size(190, 17);
+            statusPos.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            //
+            // statusInfo
+            //
+            statusInfo.Name = "statusInfo";
+            statusInfo.Size = new System.Drawing.Size(0, 17);
+            //
+            // statusProgress
+            //
+            statusProgress.Name = "statusProgress";
+            statusProgress.Size = new System.Drawing.Size(150, 16);
+            statusProgress.Visible = false;
+            //
+            // statusCancel
+            //
+            statusCancel.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            statusCancel.Name = "statusCancel";
+            statusCancel.ShowDropDownArrow = false;
+            statusCancel.Text = "Cancel";
+            statusCancel.Visible = false;
+            //
+            // statusMessage
+            //
+            statusMessage.Name = "statusMessage";
+            statusMessage.Spring = true;
+            statusMessage.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            //
+            // splitContainer1
+            //
+            splitContainer1.Dock = System.Windows.Forms.DockStyle.Fill;
+            splitContainer1.FixedPanel = System.Windows.Forms.FixedPanel.Panel2;
+            splitContainer1.Location = new System.Drawing.Point(0, 25);
+            splitContainer1.Name = "splitContainer1";
+            splitContainer1.Panel2.Controls.Add(tabControl1);
+            splitContainer1.Panel2MinSize = 340;
+            splitContainer1.Size = new System.Drawing.Size(1280, 753);
+            splitContainer1.SplitterDistance = 890;
+            splitContainer1.TabIndex = 1;
+            //
+            // tabControl1
+            //
+            tabControl1.Controls.Add(tabSource);
+            tabControl1.Controls.Add(tabExport);
+            tabControl1.Controls.Add(tabImport);
+            tabControl1.Controls.Add(tabEdit);
+            tabControl1.Controls.Add(tabInfo);
+            tabControl1.Dock = System.Windows.Forms.DockStyle.Fill;
+            tabControl1.Location = new System.Drawing.Point(0, 0);
+            tabControl1.Name = "tabControl1";
+            tabControl1.SelectedIndex = 0;
+            tabControl1.Size = new System.Drawing.Size(386, 753);
+            tabControl1.TabIndex = 0;
+            //
+            // tab pages
+            //
+            tabSource.Name = "tabSource";
+            tabSource.Text = "Map";
+            tabSource.UseVisualStyleBackColor = true;
+            tabExport.Name = "tabExport";
+            tabExport.Text = "Extract";
+            tabExport.UseVisualStyleBackColor = true;
+            tabImport.Name = "tabImport";
+            tabImport.Text = "Apply";
+            tabImport.UseVisualStyleBackColor = true;
+            tabEdit.Name = "tabEdit";
+            tabEdit.Text = "Modify";
+            tabEdit.UseVisualStyleBackColor = true;
+            tabInfo.Name = "tabInfo";
+            tabInfo.Text = "Info";
+            tabInfo.UseVisualStyleBackColor = true;
+            //
             // AltitudeToolForm
-            // 
+            //
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            ClientSize = new System.Drawing.Size(594, 450);
-            Controls.Add(lbinfo);
-            Controls.Add(buttonHelp);
-            Controls.Add(checkBoxCopyText);
-            Controls.Add(lbTxt);
-            Controls.Add(btCopyMul);
-            Controls.Add(textBoxManuel);
-            Controls.Add(button2);
-            Controls.Add(button1);
-            Controls.Add(labelDir);
-            Controls.Add(textBoxOutput);
-            Controls.Add(comboBoxCommand);
-            FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
+            ClientSize = new System.Drawing.Size(1280, 800);
+            Controls.Add(splitContainer1);
+            Controls.Add(toolStrip1);
+            Controls.Add(statusStrip1);
             Icon = (System.Drawing.Icon)resources.GetObject("$this.Icon");
+            KeyPreview = true;
+            MinimumSize = new System.Drawing.Size(900, 600);
             Name = "AltitudeToolForm";
-            Text = "Altitude Tool";
+            StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
+            Text = "Altitude Tool – map heights ↔ image";
+            statusStrip1.ResumeLayout(false);
+            statusStrip1.PerformLayout();
+            splitContainer1.Panel2.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)splitContainer1).EndInit();
+            splitContainer1.ResumeLayout(false);
+            tabControl1.ResumeLayout(false);
             ResumeLayout(false);
             PerformLayout();
         }
 
         #endregion
-        private System.Windows.Forms.FolderBrowserDialog folderBrowserDialog1;
-        private System.Windows.Forms.ComboBox comboBoxCommand;
-        private System.Windows.Forms.TextBox textBoxOutput;
-        private System.Windows.Forms.Label labelDir;
-        private System.Windows.Forms.Button button1;
-        private System.Windows.Forms.Button button2;
-        private System.Windows.Forms.TextBox textBoxManuel;
-        private System.Windows.Forms.Button btCopyMul;
-        private System.Windows.Forms.OpenFileDialog openFileDialog1;
-        private System.Windows.Forms.Label lbTxt;
-        private System.Windows.Forms.CheckBox checkBoxCopyText;
-        private System.Windows.Forms.Button buttonHelp;
-        private System.Windows.Forms.Label lbinfo;
+
+        private System.Windows.Forms.ToolTip toolTip1;
+        private System.Windows.Forms.ToolStrip toolStrip1;
+        private System.Windows.Forms.StatusStrip statusStrip1;
+        private System.Windows.Forms.ToolStripStatusLabel statusPos;
+        private System.Windows.Forms.ToolStripStatusLabel statusInfo;
+        private System.Windows.Forms.ToolStripProgressBar statusProgress;
+        private System.Windows.Forms.ToolStripDropDownButton statusCancel;
+        private System.Windows.Forms.ToolStripStatusLabel statusMessage;
+        private System.Windows.Forms.SplitContainer splitContainer1;
+        private System.Windows.Forms.TabControl tabControl1;
+        private System.Windows.Forms.TabPage tabSource;
+        private System.Windows.Forms.TabPage tabExport;
+        private System.Windows.Forms.TabPage tabImport;
+        private System.Windows.Forms.TabPage tabEdit;
+        private System.Windows.Forms.TabPage tabInfo;
     }
 }
