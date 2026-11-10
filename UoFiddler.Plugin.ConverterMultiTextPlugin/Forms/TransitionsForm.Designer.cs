@@ -1,10 +1,10 @@
-﻿// /***************************************************************************
+// /***************************************************************************
 //  *
 //  * $Author: Turley
 //  * Advanced Nikodemus
-//  * 
-//  * \"THE BEER-WINE-WARE LICENSE\"
-//  * As long as you retain this notice you can do whatever you want with 
+//  *
+//  * "THE BEER-WINE-WARE LICENSE"
+//  * As long as you retain this notice you can do whatever you want with
 //  * this stuff. If we meet some day, and you think this stuff is worth it,
 //  * you can buy me a beer and Wine in return.
 //  *
@@ -37,522 +37,199 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         /// <summary>
         /// Required method for Designer support - do not modify
         /// the contents of this method with the code editor.
+        /// The contents of the tabs and views are built in TransitionsForm.cs (Build...).
         /// </summary>
         private void InitializeComponent()
         {
+            components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(TransitionsForm));
-            btnSelectTexture1 = new System.Windows.Forms.Button();
-            btnSelectTexture2 = new System.Windows.Forms.Button();
-            btnSelectAlpha = new System.Windows.Forms.Button();
-            lbPreview = new System.Windows.Forms.Label();
-            pictureBoxPreview = new System.Windows.Forms.PictureBox();
-            pictureBoxLandtile = new System.Windows.Forms.PictureBox();
-            lbTransitionBlur = new System.Windows.Forms.Label();
-            trackBarContrast = new System.Windows.Forms.TrackBar();
-            btnGenerateTransition = new System.Windows.Forms.Button();
-            trackBarFlou = new System.Windows.Forms.TrackBar();
-            pictureBoxAlpha1 = new System.Windows.Forms.PictureBox();
-            pictureBoxTexture2 = new System.Windows.Forms.PictureBox();
-            pictureBoxTexture1 = new System.Windows.Forms.PictureBox();
-            flowLayoutPanelTextures2 = new System.Windows.Forms.FlowLayoutPanel();
-            flowLayoutPanelTextures1 = new System.Windows.Forms.FlowLayoutPanel();
-            flowLayoutPanelAlphaImages = new System.Windows.Forms.FlowLayoutPanel();
-            textBoxNameTextureA = new System.Windows.Forms.TextBox();
-            lbName = new System.Windows.Forms.Label();
-            lbName2 = new System.Windows.Forms.Label();
-            textBoxNameTextureB = new System.Windows.Forms.TextBox();
-            lbBrushID = new System.Windows.Forms.Label();
-            textBoxBrushNumberA = new System.Windows.Forms.TextBox();
-            lbBrushID2 = new System.Windows.Forms.Label();
-            textBoxBrushNumberB = new System.Windows.Forms.TextBox();
-            lblAlphaName = new System.Windows.Forms.Label();
-            Compteur = new System.Windows.Forms.Label();
-            btnPrevious = new System.Windows.Forms.Button();
-            btnNext = new System.Windows.Forms.Button();
-            lbStartHexadecimal = new System.Windows.Forms.Label();
-            tbStartHexDec = new System.Windows.Forms.TextBox();
-            checkBoxZoom = new System.Windows.Forms.CheckBox();
-            buttonOpenTempGrafic = new System.Windows.Forms.Button();
-            tbDir = new System.Windows.Forms.TextBox();
-            btDir = new System.Windows.Forms.Button();
-            lbDir = new System.Windows.Forms.Label();
-            labelContrastValue = new System.Windows.Forms.Label();
-            labelFlouValue = new System.Windows.Forms.Label();
-            btEditTransition = new System.Windows.Forms.Button();
-            lbInfo = new System.Windows.Forms.Label();
-            ((System.ComponentModel.ISupportInitialize)pictureBoxPreview).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)pictureBoxLandtile).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)trackBarContrast).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)trackBarFlou).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)pictureBoxAlpha1).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)pictureBoxTexture2).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)pictureBoxTexture1).BeginInit();
+            toolTip1 = new System.Windows.Forms.ToolTip(components);
+            updateTimer = new System.Windows.Forms.Timer(components);
+            statusStrip1 = new System.Windows.Forms.StatusStrip();
+            statusMessage = new System.Windows.Forms.ToolStripStatusLabel();
+            splitMain = new System.Windows.Forms.SplitContainer();
+            tabControl1 = new System.Windows.Forms.TabControl();
+            tabTextures = new System.Windows.Forms.TabPage();
+            tabMasks = new System.Windows.Forms.TabPage();
+            tabLearn = new System.Windows.Forms.TabPage();
+            tabLibrary = new System.Windows.Forms.TabPage();
+            tabOutput = new System.Windows.Forms.TabPage();
+            splitRight = new System.Windows.Forms.SplitContainer();
+            splitTop = new System.Windows.Forms.SplitContainer();
+            statusStrip1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)splitMain).BeginInit();
+            splitMain.Panel1.SuspendLayout();
+            splitMain.Panel2.SuspendLayout();
+            splitMain.SuspendLayout();
+            tabControl1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)splitRight).BeginInit();
+            splitRight.Panel1.SuspendLayout();
+            splitRight.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)splitTop).BeginInit();
+            splitTop.SuspendLayout();
             SuspendLayout();
-            // 
-            // btnSelectTexture1
-            // 
-            btnSelectTexture1.Location = new System.Drawing.Point(12, 445);
-            btnSelectTexture1.Name = "btnSelectTexture1";
-            btnSelectTexture1.Size = new System.Drawing.Size(233, 23);
-            btnSelectTexture1.TabIndex = 1;
-            btnSelectTexture1.Text = "Texture A";
-            btnSelectTexture1.UseVisualStyleBackColor = true;
-            btnSelectTexture1.Click += btnSelectTexture1_Click;
-            // 
-            // btnSelectTexture2
-            // 
-            btnSelectTexture2.Location = new System.Drawing.Point(251, 445);
-            btnSelectTexture2.Name = "btnSelectTexture2";
-            btnSelectTexture2.Size = new System.Drawing.Size(233, 23);
-            btnSelectTexture2.TabIndex = 3;
-            btnSelectTexture2.Text = "Texture B";
-            btnSelectTexture2.UseVisualStyleBackColor = true;
-            btnSelectTexture2.Click += btnSelectTexture2_Click;
-            // 
-            // btnSelectAlpha
-            // 
-            btnSelectAlpha.Location = new System.Drawing.Point(490, 445);
-            btnSelectAlpha.Name = "btnSelectAlpha";
-            btnSelectAlpha.Size = new System.Drawing.Size(233, 23);
-            btnSelectAlpha.TabIndex = 5;
-            btnSelectAlpha.Text = "Selecting alpha (grayscale)";
-            btnSelectAlpha.UseVisualStyleBackColor = true;
-            btnSelectAlpha.Click += btnSelectAlpha_Click;
-            // 
-            // lbPreview
-            // 
-            lbPreview.AutoSize = true;
-            lbPreview.Location = new System.Drawing.Point(729, 12);
-            lbPreview.Name = "lbPreview";
-            lbPreview.Size = new System.Drawing.Size(54, 15);
-            lbPreview.TabIndex = 6;
-            lbPreview.Text = "Preview :";
-            // 
-            // pictureBoxPreview
-            // 
-            pictureBoxPreview.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            pictureBoxPreview.Location = new System.Drawing.Point(729, 30);
-            pictureBoxPreview.Name = "pictureBoxPreview";
-            pictureBoxPreview.Size = new System.Drawing.Size(256, 256);
-            pictureBoxPreview.TabIndex = 7;
-            pictureBoxPreview.TabStop = false;
-            // 
-            // pictureBoxLandtile
-            // 
-            pictureBoxLandtile.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            pictureBoxLandtile.Location = new System.Drawing.Point(729, 292);
-            pictureBoxLandtile.Name = "pictureBoxLandtile";
-            pictureBoxLandtile.Size = new System.Drawing.Size(256, 256);
-            pictureBoxLandtile.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage;
-            pictureBoxLandtile.TabIndex = 8;
-            pictureBoxLandtile.TabStop = false;
-            // 
-            // lbTransitionBlur
-            // 
-            lbTransitionBlur.AutoSize = true;
-            lbTransitionBlur.Location = new System.Drawing.Point(729, 551);
-            lbTransitionBlur.Name = "lbTransitionBlur";
-            lbTransitionBlur.Size = new System.Drawing.Size(88, 15);
-            lbTransitionBlur.TabIndex = 9;
-            lbTransitionBlur.Text = "Transition blur :";
-            // 
-            // trackBarContrast
-            // 
-            trackBarContrast.LargeChange = 1;
-            trackBarContrast.Location = new System.Drawing.Point(729, 569);
-            trackBarContrast.Maximum = 20;
-            trackBarContrast.Minimum = 1;
-            trackBarContrast.Name = "trackBarContrast";
-            trackBarContrast.Size = new System.Drawing.Size(256, 45);
-            trackBarContrast.TabIndex = 7;
-            trackBarContrast.TickFrequency = 2;
-            trackBarContrast.Value = 1;
-            trackBarContrast.Scroll += trackBarContrast_Scroll;
-            // 
-            // btnGenerateTransition
-            // 
-            btnGenerateTransition.Location = new System.Drawing.Point(729, 656);
-            btnGenerateTransition.Name = "btnGenerateTransition";
-            btnGenerateTransition.Size = new System.Drawing.Size(175, 23);
-            btnGenerateTransition.TabIndex = 11;
-            btnGenerateTransition.Text = "Generate transitions";
-            btnGenerateTransition.UseVisualStyleBackColor = true;
-            btnGenerateTransition.Click += btnGenerateTransition_Click;
-            // 
-            // trackBarFlou
-            // 
-            trackBarFlou.Location = new System.Drawing.Point(729, 605);
-            trackBarFlou.Maximum = 100;
-            trackBarFlou.Minimum = 1;
-            trackBarFlou.Name = "trackBarFlou";
-            trackBarFlou.Size = new System.Drawing.Size(256, 45);
-            trackBarFlou.TabIndex = 12;
-            trackBarFlou.TickFrequency = 10;
-            trackBarFlou.Value = 1;
-            trackBarFlou.Scroll += trackBarFlou_Scroll;
-            // 
-            // pictureBoxAlpha1
-            // 
-            pictureBoxAlpha1.Location = new System.Drawing.Point(490, 13);
-            pictureBoxAlpha1.Name = "pictureBoxAlpha1";
-            pictureBoxAlpha1.Size = new System.Drawing.Size(233, 425);
-            pictureBoxAlpha1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
-            pictureBoxAlpha1.TabIndex = 13;
-            pictureBoxAlpha1.TabStop = false;
-            // 
-            // pictureBoxTexture2
-            // 
-            pictureBoxTexture2.Location = new System.Drawing.Point(251, 13);
-            pictureBoxTexture2.Name = "pictureBoxTexture2";
-            pictureBoxTexture2.Size = new System.Drawing.Size(233, 425);
-            pictureBoxTexture2.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
-            pictureBoxTexture2.TabIndex = 14;
-            pictureBoxTexture2.TabStop = false;
-            // 
-            // pictureBoxTexture1
-            // 
-            pictureBoxTexture1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            pictureBoxTexture1.ImeMode = System.Windows.Forms.ImeMode.NoControl;
-            pictureBoxTexture1.Location = new System.Drawing.Point(13, 13);
-            pictureBoxTexture1.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            pictureBoxTexture1.Name = "pictureBoxTexture1";
-            pictureBoxTexture1.Size = new System.Drawing.Size(233, 427);
-            pictureBoxTexture1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
-            pictureBoxTexture1.TabIndex = 15;
-            pictureBoxTexture1.TabStop = false;
-            // 
-            // flowLayoutPanelTextures2
-            // 
-            flowLayoutPanelTextures2.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            flowLayoutPanelTextures2.Location = new System.Drawing.Point(251, 13);
-            flowLayoutPanelTextures2.Name = "flowLayoutPanelTextures2";
-            flowLayoutPanelTextures2.Size = new System.Drawing.Size(233, 427);
-            flowLayoutPanelTextures2.TabIndex = 16;
-            // 
-            // flowLayoutPanelTextures1
-            // 
-            flowLayoutPanelTextures1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            flowLayoutPanelTextures1.Location = new System.Drawing.Point(13, 13);
-            flowLayoutPanelTextures1.Name = "flowLayoutPanelTextures1";
-            flowLayoutPanelTextures1.Size = new System.Drawing.Size(233, 427);
-            flowLayoutPanelTextures1.TabIndex = 17;
-            // 
-            // flowLayoutPanelAlphaImages
-            // 
-            flowLayoutPanelAlphaImages.AutoScroll = true;
-            flowLayoutPanelAlphaImages.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            flowLayoutPanelAlphaImages.Location = new System.Drawing.Point(490, 13);
-            flowLayoutPanelAlphaImages.Name = "flowLayoutPanelAlphaImages";
-            flowLayoutPanelAlphaImages.Size = new System.Drawing.Size(233, 427);
-            flowLayoutPanelAlphaImages.TabIndex = 18;
-            // 
-            // textBoxNameTextureA
-            // 
-            textBoxNameTextureA.Location = new System.Drawing.Point(75, 501);
-            textBoxNameTextureA.Name = "textBoxNameTextureA";
-            textBoxNameTextureA.Size = new System.Drawing.Size(100, 23);
-            textBoxNameTextureA.TabIndex = 19;
-            textBoxNameTextureA.TextChanged += textBoxNameTextureA_TextChanged;
-            // 
-            // lbName
-            // 
-            lbName.AutoSize = true;
-            lbName.Location = new System.Drawing.Point(104, 483);
-            lbName.Name = "lbName";
-            lbName.Size = new System.Drawing.Size(45, 15);
-            lbName.TabIndex = 20;
-            lbName.Text = "Name :";
-            // 
-            // lbName2
-            // 
-            lbName2.AutoSize = true;
-            lbName2.Location = new System.Drawing.Point(343, 483);
-            lbName2.Name = "lbName2";
-            lbName2.Size = new System.Drawing.Size(45, 15);
-            lbName2.TabIndex = 22;
-            lbName2.Text = "Name :";
-            // 
-            // textBoxNameTextureB
-            // 
-            textBoxNameTextureB.Location = new System.Drawing.Point(314, 501);
-            textBoxNameTextureB.Name = "textBoxNameTextureB";
-            textBoxNameTextureB.Size = new System.Drawing.Size(100, 23);
-            textBoxNameTextureB.TabIndex = 21;
-            textBoxNameTextureB.TextChanged += textBoxNameTextureB_TextChanged;
-            // 
-            // lbBrushID
-            // 
-            lbBrushID.AutoSize = true;
-            lbBrushID.Location = new System.Drawing.Point(104, 533);
-            lbBrushID.Name = "lbBrushID";
-            lbBrushID.Size = new System.Drawing.Size(48, 15);
-            lbBrushID.TabIndex = 24;
-            lbBrushID.Text = "BrushID";
-            // 
-            // textBoxBrushNumberA
-            // 
-            textBoxBrushNumberA.Location = new System.Drawing.Point(75, 551);
-            textBoxBrushNumberA.Name = "textBoxBrushNumberA";
-            textBoxBrushNumberA.Size = new System.Drawing.Size(100, 23);
-            textBoxBrushNumberA.TabIndex = 23;
-            textBoxBrushNumberA.TextChanged += textBoxBrushNumberA_TextChanged;
-            // 
-            // lbBrushID2
-            // 
-            lbBrushID2.AutoSize = true;
-            lbBrushID2.Location = new System.Drawing.Point(343, 533);
-            lbBrushID2.Name = "lbBrushID2";
-            lbBrushID2.Size = new System.Drawing.Size(48, 15);
-            lbBrushID2.TabIndex = 26;
-            lbBrushID2.Text = "BrushID";
-            // 
-            // textBoxBrushNumberB
-            // 
-            textBoxBrushNumberB.Location = new System.Drawing.Point(314, 551);
-            textBoxBrushNumberB.Name = "textBoxBrushNumberB";
-            textBoxBrushNumberB.Size = new System.Drawing.Size(100, 23);
-            textBoxBrushNumberB.TabIndex = 25;
-            textBoxBrushNumberB.TextChanged += textBoxBrushNumberB_TextChanged;
-            // 
-            // lblAlphaName
-            // 
-            lblAlphaName.AutoSize = true;
-            lblAlphaName.Location = new System.Drawing.Point(1005, 30);
-            lblAlphaName.Name = "lblAlphaName";
-            lblAlphaName.Size = new System.Drawing.Size(79, 15);
-            lblAlphaName.TabIndex = 27;
-            lblAlphaName.Text = "Alpha Name :";
-            // 
-            // Compteur
-            // 
-            Compteur.AutoSize = true;
-            Compteur.Location = new System.Drawing.Point(1005, 76);
-            Compteur.Name = "Compteur";
-            Compteur.Size = new System.Drawing.Size(56, 15);
-            Compteur.TabIndex = 28;
-            Compteur.Text = "Counter :";
-            // 
-            // btnPrevious
-            // 
-            btnPrevious.Location = new System.Drawing.Point(1005, 119);
-            btnPrevious.Name = "btnPrevious";
-            btnPrevious.Size = new System.Drawing.Size(75, 23);
-            btnPrevious.TabIndex = 29;
-            btnPrevious.Text = "Previous";
-            btnPrevious.UseVisualStyleBackColor = true;
-            btnPrevious.Click += btnPrevious_Click;
-            // 
-            // btnNext
-            // 
-            btnNext.Location = new System.Drawing.Point(1005, 157);
-            btnNext.Name = "btnNext";
-            btnNext.Size = new System.Drawing.Size(75, 23);
-            btnNext.TabIndex = 30;
-            btnNext.Text = "Next";
-            btnNext.UseVisualStyleBackColor = true;
-            btnNext.Click += btnNext_Click;
-            // 
-            // lbStartHexadecimal
-            // 
-            lbStartHexadecimal.AutoSize = true;
-            lbStartHexadecimal.Location = new System.Drawing.Point(1005, 226);
-            lbStartHexadecimal.Name = "lbStartHexadecimal";
-            lbStartHexadecimal.Size = new System.Drawing.Size(133, 15);
-            lbStartHexadecimal.TabIndex = 31;
-            lbStartHexadecimal.Text = "Start Hexadecimal Ox....";
-            // 
-            // tbStartHexDec
-            // 
-            tbStartHexDec.Location = new System.Drawing.Point(1005, 253);
-            tbStartHexDec.Name = "tbStartHexDec";
-            tbStartHexDec.Size = new System.Drawing.Size(100, 23);
-            tbStartHexDec.TabIndex = 32;
-            tbStartHexDec.TextChanged += StartHexDec_TextChanged;
-            // 
-            // checkBoxZoom
-            // 
-            checkBoxZoom.AutoSize = true;
-            checkBoxZoom.Checked = true;
-            checkBoxZoom.CheckState = System.Windows.Forms.CheckState.Checked;
-            checkBoxZoom.Location = new System.Drawing.Point(1005, 195);
-            checkBoxZoom.Name = "checkBoxZoom";
-            checkBoxZoom.Size = new System.Drawing.Size(137, 19);
-            checkBoxZoom.TabIndex = 33;
-            checkBoxZoom.Text = "Zoom / Centerimage";
-            checkBoxZoom.UseVisualStyleBackColor = true;
-            checkBoxZoom.CheckedChanged += checkBoxZoom_CheckedChanged;
-            // 
-            // buttonOpenTempGrafic
-            // 
-            buttonOpenTempGrafic.Location = new System.Drawing.Point(910, 656);
-            buttonOpenTempGrafic.Name = "buttonOpenTempGrafic";
-            buttonOpenTempGrafic.Size = new System.Drawing.Size(75, 23);
-            buttonOpenTempGrafic.TabIndex = 34;
-            buttonOpenTempGrafic.Text = "Open Dir";
-            buttonOpenTempGrafic.UseVisualStyleBackColor = true;
-            buttonOpenTempGrafic.Click += buttonOpenTempGrafic_Click;
-            // 
-            // tbDir
-            // 
-            tbDir.Location = new System.Drawing.Point(343, 656);
-            tbDir.Name = "tbDir";
-            tbDir.Size = new System.Drawing.Size(240, 23);
-            tbDir.TabIndex = 35;
-            // 
-            // btDir
-            // 
-            btDir.Location = new System.Drawing.Point(586, 656);
-            btDir.Name = "btDir";
-            btDir.Size = new System.Drawing.Size(141, 23);
-            btDir.TabIndex = 36;
-            btDir.Text = "Select directory / or not";
-            btDir.UseVisualStyleBackColor = true;
-            btDir.Click += btDir_Click;
-            // 
-            // lbDir
-            // 
-            lbDir.AutoSize = true;
-            lbDir.Location = new System.Drawing.Point(343, 635);
-            lbDir.Name = "lbDir";
-            lbDir.Size = new System.Drawing.Size(224, 15);
-            lbDir.TabIndex = 37;
-            lbDir.Text = "Directory Set otherwise default directory :";
-            // 
-            // labelContrastValue
-            // 
-            labelContrastValue.AutoSize = true;
-            labelContrastValue.Location = new System.Drawing.Point(991, 569);
-            labelContrastValue.Name = "labelContrastValue";
-            labelContrastValue.Size = new System.Drawing.Size(86, 15);
-            labelContrastValue.TabIndex = 38;
-            labelContrastValue.Text = "ContrastValue :";
-            // 
-            // labelFlouValue
-            // 
-            labelFlouValue.AutoSize = true;
-            labelFlouValue.Location = new System.Drawing.Point(991, 605);
-            labelFlouValue.Name = "labelFlouValue";
-            labelFlouValue.Size = new System.Drawing.Size(64, 15);
-            labelFlouValue.TabIndex = 39;
-            labelFlouValue.Text = "FlouValue :";
-            // 
-            // btEditTransition
-            // 
-            btEditTransition.Location = new System.Drawing.Point(991, 656);
-            btEditTransition.Name = "btEditTransition";
-            btEditTransition.Size = new System.Drawing.Size(75, 23);
-            btEditTransition.TabIndex = 40;
-            btEditTransition.Text = "XML Edit";
-            btEditTransition.UseVisualStyleBackColor = true;
-            btEditTransition.Click += btEditTransition_Click;
-            // 
-            // lbInfo
-            // 
-            lbInfo.AutoSize = true;
-            lbInfo.Location = new System.Drawing.Point(490, 499);
-            lbInfo.Name = "lbInfo";
-            lbInfo.Size = new System.Drawing.Size(210, 75);
-            lbInfo.TabIndex = 41;
-            lbInfo.Text = "Dir Data:\r\n\r\nFolder:\r\nTextures = graphics textures\r\nAlpaName = Alpha (Grayscale) Texture";
-            // 
+            //
+            // toolTip1
+            //
+            toolTip1.AutoPopDelay = 15000;
+            toolTip1.InitialDelay = 600;
+            toolTip1.ReshowDelay = 200;
+            //
+            // updateTimer
+            //
+            updateTimer.Interval = 120;
+            updateTimer.Tick += UpdateTimer_Tick;
+            //
+            // statusStrip1
+            //
+            statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { statusMessage });
+            statusStrip1.Location = new System.Drawing.Point(0, 818);
+            statusStrip1.Name = "statusStrip1";
+            statusStrip1.Size = new System.Drawing.Size(1360, 22);
+            statusStrip1.TabIndex = 1;
+            //
+            // statusMessage
+            //
+            statusMessage.Name = "statusMessage";
+            statusMessage.Size = new System.Drawing.Size(1345, 17);
+            statusMessage.Spring = true;
+            statusMessage.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            //
+            // splitMain
+            //
+            splitMain.Dock = System.Windows.Forms.DockStyle.Fill;
+            splitMain.FixedPanel = System.Windows.Forms.FixedPanel.Panel1;
+            splitMain.Location = new System.Drawing.Point(0, 0);
+            splitMain.Name = "splitMain";
+            //
+            // splitMain.Panel1
+            //
+            splitMain.Panel1.Controls.Add(tabControl1);
+            splitMain.Panel1MinSize = 360;
+            //
+            // splitMain.Panel2
+            //
+            splitMain.Panel2.Controls.Add(splitRight);
+            splitMain.Size = new System.Drawing.Size(1360, 818);
+            splitMain.SplitterDistance = 390;
+            splitMain.TabIndex = 0;
+            //
+            // tabControl1
+            //
+            tabControl1.Controls.Add(tabTextures);
+            tabControl1.Controls.Add(tabMasks);
+            tabControl1.Controls.Add(tabLearn);
+            tabControl1.Controls.Add(tabLibrary);
+            tabControl1.Controls.Add(tabOutput);
+            tabControl1.Dock = System.Windows.Forms.DockStyle.Fill;
+            tabControl1.Location = new System.Drawing.Point(0, 0);
+            tabControl1.Name = "tabControl1";
+            tabControl1.SelectedIndex = 0;
+            tabControl1.Size = new System.Drawing.Size(390, 818);
+            tabControl1.TabIndex = 0;
+            //
+            // tabTextures
+            //
+            tabTextures.Name = "tabTextures";
+            tabTextures.Padding = new System.Windows.Forms.Padding(3);
+            tabTextures.Text = "Textures";
+            tabTextures.UseVisualStyleBackColor = true;
+            //
+            // tabMasks
+            //
+            tabMasks.Name = "tabMasks";
+            tabMasks.Padding = new System.Windows.Forms.Padding(3);
+            tabMasks.Text = "Masks";
+            tabMasks.UseVisualStyleBackColor = true;
+            //
+            // tabLearn
+            //
+            tabLearn.Name = "tabLearn";
+            tabLearn.Padding = new System.Windows.Forms.Padding(3);
+            tabLearn.Text = "Learn (UO)";
+            tabLearn.UseVisualStyleBackColor = true;
+            //
+            // tabLibrary
+            //
+            tabLibrary.Name = "tabLibrary";
+            tabLibrary.Padding = new System.Windows.Forms.Padding(3);
+            tabLibrary.Text = "Library";
+            tabLibrary.UseVisualStyleBackColor = true;
+            //
+            // tabOutput
+            //
+            tabOutput.Name = "tabOutput";
+            tabOutput.Padding = new System.Windows.Forms.Padding(3);
+            tabOutput.Text = "Output";
+            tabOutput.UseVisualStyleBackColor = true;
+            //
+            // splitRight
+            //
+            splitRight.Dock = System.Windows.Forms.DockStyle.Fill;
+            splitRight.Location = new System.Drawing.Point(0, 0);
+            splitRight.Name = "splitRight";
+            splitRight.Orientation = System.Windows.Forms.Orientation.Horizontal;
+            //
+            // splitRight.Panel1
+            //
+            splitRight.Panel1.Controls.Add(splitTop);
+            splitRight.Size = new System.Drawing.Size(966, 818);
+            splitRight.SplitterDistance = 380;
+            splitRight.TabIndex = 0;
+            //
+            // splitTop
+            //
+            splitTop.Dock = System.Windows.Forms.DockStyle.Fill;
+            splitTop.FixedPanel = System.Windows.Forms.FixedPanel.Panel2;
+            splitTop.Location = new System.Drawing.Point(0, 0);
+            splitTop.Name = "splitTop";
+            splitTop.Size = new System.Drawing.Size(966, 380);
+            splitTop.SplitterDistance = 640;
+            splitTop.TabIndex = 0;
+            //
             // TransitionsForm
-            // 
+            //
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            ClientSize = new System.Drawing.Size(1178, 691);
-            Controls.Add(lbInfo);
-            Controls.Add(btEditTransition);
-            Controls.Add(labelFlouValue);
-            Controls.Add(labelContrastValue);
-            Controls.Add(lbDir);
-            Controls.Add(btDir);
-            Controls.Add(tbDir);
-            Controls.Add(buttonOpenTempGrafic);
-            Controls.Add(checkBoxZoom);
-            Controls.Add(tbStartHexDec);
-            Controls.Add(lbStartHexadecimal);
-            Controls.Add(btnNext);
-            Controls.Add(btnPrevious);
-            Controls.Add(Compteur);
-            Controls.Add(lblAlphaName);
-            Controls.Add(lbBrushID2);
-            Controls.Add(textBoxBrushNumberB);
-            Controls.Add(lbBrushID);
-            Controls.Add(textBoxBrushNumberA);
-            Controls.Add(lbName2);
-            Controls.Add(textBoxNameTextureB);
-            Controls.Add(lbName);
-            Controls.Add(textBoxNameTextureA);
-            Controls.Add(flowLayoutPanelAlphaImages);
-            Controls.Add(flowLayoutPanelTextures1);
-            Controls.Add(flowLayoutPanelTextures2);
-            Controls.Add(trackBarFlou);
-            Controls.Add(btnGenerateTransition);
-            Controls.Add(trackBarContrast);
-            Controls.Add(lbTransitionBlur);
-            Controls.Add(pictureBoxLandtile);
-            Controls.Add(pictureBoxPreview);
-            Controls.Add(lbPreview);
-            Controls.Add(btnSelectAlpha);
-            Controls.Add(btnSelectTexture2);
-            Controls.Add(btnSelectTexture1);
-            Controls.Add(pictureBoxAlpha1);
-            Controls.Add(pictureBoxTexture2);
-            Controls.Add(pictureBoxTexture1);
-            FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
+            ClientSize = new System.Drawing.Size(1360, 840);
+            Controls.Add(splitMain);
+            Controls.Add(statusStrip1);
             Icon = (System.Drawing.Icon)resources.GetObject("$this.Icon");
+            KeyPreview = true;
+            MinimumSize = new System.Drawing.Size(1000, 680);
             Name = "TransitionsForm";
-            Text = "UO Texture Transition";
-            ((System.ComponentModel.ISupportInitialize)pictureBoxPreview).EndInit();
-            ((System.ComponentModel.ISupportInitialize)pictureBoxLandtile).EndInit();
-            ((System.ComponentModel.ISupportInitialize)trackBarContrast).EndInit();
-            ((System.ComponentModel.ISupportInitialize)trackBarFlou).EndInit();
-            ((System.ComponentModel.ISupportInitialize)pictureBoxAlpha1).EndInit();
-            ((System.ComponentModel.ISupportInitialize)pictureBoxTexture2).EndInit();
-            ((System.ComponentModel.ISupportInitialize)pictureBoxTexture1).EndInit();
+            StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
+            Text = "UO Texture Transitions";
+            statusStrip1.ResumeLayout(false);
+            statusStrip1.PerformLayout();
+            splitMain.Panel1.ResumeLayout(false);
+            splitMain.Panel2.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)splitMain).EndInit();
+            splitMain.ResumeLayout(false);
+            tabControl1.ResumeLayout(false);
+            splitRight.Panel1.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)splitRight).EndInit();
+            splitRight.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)splitTop).EndInit();
+            splitTop.ResumeLayout(false);
             ResumeLayout(false);
             PerformLayout();
         }
 
         #endregion
-        private System.Windows.Forms.Button btnSelectTexture1;
-        private System.Windows.Forms.Button btnSelectTexture2;
-        private System.Windows.Forms.Button btnSelectAlpha;
-        private System.Windows.Forms.Label lbPreview;
-        private System.Windows.Forms.PictureBox pictureBoxPreview;
-        private System.Windows.Forms.PictureBox pictureBoxLandtile;
-        private System.Windows.Forms.Label lbTransitionBlur;
-        private System.Windows.Forms.TrackBar trackBarContrast;
-        private System.Windows.Forms.Button btnGenerateTransition;
-        private System.Windows.Forms.TrackBar trackBarFlou;
-        private System.Windows.Forms.PictureBox pictureBoxAlpha1;
-        private System.Windows.Forms.PictureBox pictureBoxTexture2;
-        private System.Windows.Forms.PictureBox pictureBoxTexture1;
-        private System.Windows.Forms.FlowLayoutPanel flowLayoutPanelTextures2;
-        private System.Windows.Forms.FlowLayoutPanel flowLayoutPanelTextures1;
-        private System.Windows.Forms.FlowLayoutPanel flowLayoutPanelAlphaImages;
-        private System.Windows.Forms.TextBox textBoxNameTextureA;
-        private System.Windows.Forms.Label lbName;
-        private System.Windows.Forms.Label lbName2;
-        private System.Windows.Forms.TextBox textBoxNameTextureB;
-        private System.Windows.Forms.Label lbBrushID;
-        private System.Windows.Forms.TextBox textBoxBrushNumberA;
-        private System.Windows.Forms.Label lbBrushID2;
-        private System.Windows.Forms.TextBox textBoxBrushNumberB;
-        private System.Windows.Forms.Label lblAlphaName;
-        private System.Windows.Forms.Label Compteur;
-        private System.Windows.Forms.Button btnPrevious;
-        private System.Windows.Forms.Button btnNext;
-        private System.Windows.Forms.Label lbStartHexadecimal;
-        private System.Windows.Forms.TextBox tbStartHexDec;
-        private System.Windows.Forms.CheckBox checkBoxZoom;
-        private System.Windows.Forms.Button buttonOpenTempGrafic;
-        private System.Windows.Forms.TextBox tbDir;
-        private System.Windows.Forms.Button btDir;
-        private System.Windows.Forms.Label lbDir;
-        private System.Windows.Forms.Label labelContrastValue;
-        private System.Windows.Forms.Label labelFlouValue;
-        private System.Windows.Forms.Button btEditTransition;
-        private System.Windows.Forms.Label lbInfo;
+
+        private System.Windows.Forms.ToolTip toolTip1;
+        private System.Windows.Forms.Timer updateTimer;
+        private System.Windows.Forms.StatusStrip statusStrip1;
+        private System.Windows.Forms.ToolStripStatusLabel statusMessage;
+        private System.Windows.Forms.SplitContainer splitMain;
+        private System.Windows.Forms.TabControl tabControl1;
+        private System.Windows.Forms.TabPage tabTextures;
+        private System.Windows.Forms.TabPage tabMasks;
+        private System.Windows.Forms.TabPage tabLearn;
+        private System.Windows.Forms.TabPage tabLibrary;
+        private System.Windows.Forms.TabPage tabOutput;
+        private System.Windows.Forms.SplitContainer splitRight;
+        private System.Windows.Forms.SplitContainer splitTop;
     }
 }
