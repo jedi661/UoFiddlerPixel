@@ -59,6 +59,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             tabColors = new System.Windows.Forms.TabPage();
             tabReplace = new System.Windows.Forms.TabPage();
             tabOverlay = new System.Windows.Forms.TabPage();
+            tabBlend = new System.Windows.Forms.TabPage();
             tabTexmaps = new System.Windows.Forms.TabPage();
             statusStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
@@ -149,7 +150,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             splitContainer1.Panel2.Controls.Add(tabControl1);
             splitContainer1.Panel2MinSize = 300;
             splitContainer1.Size = new System.Drawing.Size(1280, 747);
-            splitContainer1.SplitterDistance = 900;
+            splitContainer1.SplitterDistance = 880;
             splitContainer1.TabIndex = 2;
             //
             // panelCanvas
@@ -178,6 +179,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             tabControl1.Controls.Add(tabColors);
             tabControl1.Controls.Add(tabReplace);
             tabControl1.Controls.Add(tabOverlay);
+            tabControl1.Controls.Add(tabBlend);
             tabControl1.Controls.Add(tabTexmaps);
             tabControl1.Dock = System.Windows.Forms.DockStyle.Fill;
             tabControl1.Location = new System.Drawing.Point(0, 0);
@@ -211,8 +213,15 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             //
             tabOverlay.Name = "tabOverlay";
             tabOverlay.Padding = new System.Windows.Forms.Padding(3);
-            tabOverlay.Text = "Overlay";
+            tabOverlay.Text = "Layers";
             tabOverlay.UseVisualStyleBackColor = true;
+            //
+            // tabBlend
+            //
+            tabBlend.Name = "tabBlend";
+            tabBlend.Padding = new System.Windows.Forms.Padding(3);
+            tabBlend.Text = "Blend";
+            tabBlend.UseVisualStyleBackColor = true;
             //
             // tabTexmaps
             //
@@ -271,6 +280,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private System.Windows.Forms.TabPage tabColors;
         private System.Windows.Forms.TabPage tabReplace;
         private System.Windows.Forms.TabPage tabOverlay;
+        private System.Windows.Forms.TabPage tabBlend;
         private System.Windows.Forms.TabPage tabTexmaps;
     }
 }

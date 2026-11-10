@@ -12,6 +12,94 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Class.TextureCutter
 
     internal enum CanvasSelection { Rectangle, Ellipse, Freehand, Polygon }
 
+    /// <summary>An image layer above the base image: can be moved, scaled, faded and burned in later.</summary>
+    internal sealed class CanvasLayer : IDisposable
+    {
+        private bool _blackWhiteTransparent = true;
+
+        public CanvasLayer(Bitmap source, string name)
+        {
+            Source = source;
+            Name = name;
+            Rebuild();
+        }
+
+        public string Name { get; set; }
+
+        /// <summary>The image as loaded (owned).</summary>
+        public Bitmap Source { get; private set; }
+
+        /// <summary>The image as shown (black / white removed if wanted).</summary>
+        public Bitmap Image { get; private set; }
+
+        public Point Position { get; set; }
+
+        public int Scale { get; set; } = 100;
+
+        public int Opacity { get; set; } = 100;
+
+        public bool Visible { get; set; } = true;
+
+        public bool BlackWhiteTransparent
+        {
+            get => _blackWhiteTransparent;
+            set
+            {
+                _blackWhiteTransparent = value;
+                Rebuild();
+            }
+        }
+
+        public Size Size => new Size(Math.Max(1, Image.Width * Scale / 100), Math.Max(1, Image.Height * Scale / 100));
+
+        public Rectangle Bounds => new Rectangle(Position, Size);
+
+        private void Rebuild()
+        {
+            Bitmap img = CutterImaging.To32Bpp(Source);
+            if (_blackWhiteTransparent)
+            {
+                CutterImaging.MakeTransparent(img, 0, new[] { Color.Black, Color.White });
+            }
+            Image?.Dispose();
+            Image = img;
+        }
+
+        /// <summary>Draws the layer (position, scale, opacity) onto a graphics in image pixels.</summary>
+        public void DrawTo(Graphics g, float zoom)
+        {
+            var dest = new Rectangle((int)(Position.X * zoom), (int)(Position.Y * zoom), (int)(Size.Width * zoom), (int)(Size.Height * zoom));
+            using (var attributes = new ImageAttributes())
+            {
+                attributes.SetColorMatrix(new ColorMatrix { Matrix33 = Math.Max(0, Math.Min(100, Opacity)) / 100f });
+                InterpolationMode oldMode = g.InterpolationMode;
+                PixelOffsetMode oldOffset = g.PixelOffsetMode;
+                g.InterpolationMode = InterpolationMode.NearestNeighbor;
+                g.PixelOffsetMode = PixelOffsetMode.Half;
+                g.DrawImage(Image, dest, 0, 0, Image.Width, Image.Height, GraphicsUnit.Pixel, attributes);
+                g.InterpolationMode = oldMode;
+                g.PixelOffsetMode = oldOffset;
+            }
+        }
+
+        public CanvasLayer Clone() => new CanvasLayer(CutterImaging.To32Bpp(Source), Name + " copy")
+        {
+            Position = Position,
+            Scale = Scale,
+            Opacity = Opacity,
+            Visible = Visible,
+            BlackWhiteTransparent = BlackWhiteTransparent
+        };
+
+        public override string ToString() => Name;
+
+        public void Dispose()
+        {
+            Source?.Dispose();
+            Image?.Dispose();
+        }
+    }
+
     /// <summary>
     /// Drawing area of the Texture Cutter: zoom (pixel exact), tile grid, 3 × 3 tiled view, selections,
     /// paint tools and a movable overlay image. The image belongs to the owner; the canvas paints on it
@@ -94,16 +182,17 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Class.TextureCutter
         /// <summary>Points of a freehand or polygon selection, in image pixels.</summary>
         public List<Point> SelectionPoints { get; } = new List<Point>();
 
-        public Bitmap Overlay { get; set; }
+        /// <summary>Layers above the image, bottom first. The owner keeps and disposes them.</summary>
+        public List<CanvasLayer> Layers { get; } = new List<CanvasLayer>();
 
-        public Point OverlayPosition { get; set; }
+        /// <summary>The layer the move tool and the arrow keys work on.</summary>
+        public CanvasLayer ActiveLayer { get; set; }
 
-        public int OverlayOpacity { get; set; } = 100;
+        /// <summary>Pattern for the pattern brush (owned by the owner).</summary>
+        public Bitmap Pattern { get; set; }
 
-        public int OverlayScale { get; set; } = 100;
-
-        public Size OverlaySize => Overlay == null ? Size.Empty
-            : new Size(Math.Max(1, Overlay.Width * OverlayScale / 100), Math.Max(1, Overlay.Height * OverlayScale / 100));
+        /// <summary>Pencil, line, rectangle and fill paint with the pattern instead of a color.</summary>
+        public bool UsePattern { get; set; }
 
         public bool HasSelection =>
             SelectionShape == CanvasSelection.Freehand || SelectionShape == CanvasSelection.Polygon
@@ -129,6 +218,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Class.TextureCutter
         public event EventHandler SelectionChanged;
 
         public event EventHandler OverlayMoved;
+
+        /// <summary>The move tool picked another layer by clicking on it.</summary>
+        public event EventHandler ActiveLayerChanged;
 
         #endregion
 
@@ -244,32 +336,28 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Class.TextureCutter
                 return;
             }
 
-            DrawOverlay(g);
+            DrawLayers(g);
             DrawGrid(g);
             DrawSelection(g);
             DrawToolPreview(g);
         }
 
-        private void DrawOverlay(Graphics g)
+        private void DrawLayers(Graphics g)
         {
-            if (Overlay == null)
+            foreach (CanvasLayer layer in Layers)
             {
-                return;
+                if (layer.Visible)
+                {
+                    layer.DrawTo(g, _zoom);
+                }
             }
-            Size size = OverlaySize;
-            var dest = new Rectangle(OverlayPosition.X * _zoom, OverlayPosition.Y * _zoom, size.Width * _zoom, size.Height * _zoom);
-            using (var attributes = new ImageAttributes())
+            if (ActiveLayer != null && ActiveLayer.Visible)
             {
-                var matrix = new ColorMatrix { Matrix33 = Math.Max(0, Math.Min(100, OverlayOpacity)) / 100f };
-                attributes.SetColorMatrix(matrix);
-                g.InterpolationMode = InterpolationMode.NearestNeighbor;
-                g.PixelOffsetMode = PixelOffsetMode.Half;
-                g.DrawImage(Overlay, dest, 0, 0, Overlay.Width, Overlay.Height, GraphicsUnit.Pixel, attributes);
-                g.PixelOffsetMode = PixelOffsetMode.Default;
-            }
-            using (var pen = new Pen(Color.Magenta) { DashStyle = DashStyle.Dash })
-            {
-                g.DrawRectangle(pen, dest.X, dest.Y, dest.Width - 1, dest.Height - 1);
+                Rectangle b = ActiveLayer.Bounds;
+                using (var pen = new Pen(Color.Magenta) { DashStyle = DashStyle.Dash })
+                {
+                    g.DrawRectangle(pen, b.X * _zoom, b.Y * _zoom, b.Width * _zoom - 1, b.Height * _zoom - 1);
+                }
             }
         }
 
@@ -447,11 +535,24 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Class.TextureCutter
                     return;
 
                 case CanvasTool.Overlay:
-                    if (Overlay != null)
+                    for (int li = Layers.Count - 1; li >= 0; li--)
+                    {
+                        if (Layers[li].Visible && Layers[li].Bounds.Contains(p))
+                        {
+                            if (!ReferenceEquals(ActiveLayer, Layers[li]))
+                            {
+                                ActiveLayer = Layers[li];
+                                ActiveLayerChanged?.Invoke(this, EventArgs.Empty);
+                                Invalidate();
+                            }
+                            break;
+                        }
+                    }
+                    if (ActiveLayer != null)
                     {
                         _mouseDown = true;
                         _overlayDragStart = p;
-                        _overlayStartPos = OverlayPosition;
+                        _overlayStartPos = ActiveLayer.Position;
                         Cursor = Cursors.SizeAll;
                     }
                     return;
@@ -528,7 +629,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Class.TextureCutter
                     break;
 
                 case CanvasTool.Overlay:
-                    OverlayPosition = new Point(_overlayStartPos.X + p.X - _overlayDragStart.X, _overlayStartPos.Y + p.Y - _overlayDragStart.Y);
+                    if (ActiveLayer == null)
+                    {
+                        break;
+                    }
+                    ActiveLayer.Position = new Point(_overlayStartPos.X + p.X - _overlayDragStart.X, _overlayStartPos.Y + p.Y - _overlayDragStart.Y);
                     Invalidate();
                     OverlayMoved?.Invoke(this, EventArgs.Empty);
                     break;
@@ -652,7 +757,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Class.TextureCutter
             g.CompositingMode = replace || color.A == 255 ? CompositingMode.SourceCopy : CompositingMode.SourceOver;
             int size = Math.Max(1, BrushSize);
             int off = (size - 1) / 2;
-            using (var brush = new SolidBrush(color))
+            bool pattern = UsePattern && Pattern != null && !replace;
+            if (pattern)
+            {
+                g.CompositingMode = CompositingMode.SourceOver;
+            }
+            using (Brush brush = pattern ? (Brush)new TextureBrush(Pattern, WrapMode.Tile) : new SolidBrush(color))
             {
                 int dx = Math.Abs(b.X - a.X), sx = a.X < b.X ? 1 : -1;
                 int dy = -Math.Abs(b.Y - a.Y), sy = a.Y < b.Y ? 1 : -1;
@@ -687,7 +797,15 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Class.TextureCutter
             int[] px = CutterImaging.GetPixels(_image);
             int target = px[start.Y * w + start.X];
             int fill = color.ToArgb();
-            if (target == fill)
+            int[] pat = null;
+            int pw = 0, ph = 0;
+            if (UsePattern && Pattern != null)
+            {
+                pat = CutterImaging.GetPixels(Pattern);
+                pw = Pattern.Width;
+                ph = Pattern.Height;
+            }
+            else if (target == fill)
             {
                 return;
             }
@@ -709,8 +827,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Class.TextureCutter
                     continue;
                 }
                 done[i] = true;
-                px[i] = fill;
                 int x = i % w, y = i / w;
+                px[i] = pat == null ? fill : pat[(y % ph) * pw + x % pw];
                 if (x > 0) stack.Push(i - 1);
                 if (x < w - 1) stack.Push(i + 1);
                 if (y > 0) stack.Push(i - w);

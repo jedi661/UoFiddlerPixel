@@ -22,7 +22,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private const int MaxUndo = 30;
         private static readonly string OutputDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "tempGrafic");
 
-        private enum PreviewKind { None, Adjust, Mode, Particle }
+        private enum PreviewKind { None, Adjust, Mode, Particle, Transition }
 
         private enum PickTarget { Paint, From, To }
 
@@ -32,8 +32,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private bool _resettingPreviewControls;
         private readonly List<Bitmap> _undo = new List<Bitmap>();
         private readonly List<Bitmap> _redo = new List<Bitmap>();
-        private Bitmap _overlaySource;         // overlay as loaded
-        private Bitmap _overlay;               // overlay as shown (black / white removed if wanted)
+        private Bitmap _pattern;               // pattern brush (owned)
+        private Bitmap _blendB;                // texture B of a transition (owned)
+        private readonly CutterPalette _palette = new CutterPalette();
+        private TerrainPreviewForm _terrain;
         private PickTarget _pickTarget = PickTarget.Paint;
         private CanvasTool _toolBeforePick = CanvasTool.Select;
         private int[] _customColors;
@@ -56,7 +58,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             canvas.HoverPixel += Canvas_HoverPixel;
             canvas.ColorPicked += Canvas_ColorPicked;
             canvas.SelectionChanged += (s, e) => UpdateStatus();
-            canvas.OverlayMoved += Canvas_OverlayMoved;
+            canvas.OverlayMoved += Canvas_LayerMoved;
+            canvas.ActiveLayerChanged += (s, e) => RefreshLayerList();
+            canvas.ImageEdited += (s, e) => NotifyTerrain();
             canvas.GridSize = new Size(64, 64);
             panelCanvas.MouseWheel += Canvas_MouseWheel;
             canvas.MouseWheel += Canvas_MouseWheel;
@@ -67,6 +71,19 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                     ReloadTextures();
                 }
             };
+
+            try
+            {
+                if (File.Exists(CutterPalette.DefaultFile))
+                {
+                    _palette.Colors.AddRange(CutterPalette.Load(CutterPalette.DefaultFile).Colors);
+                }
+            }
+            catch (Exception)
+            {
+                // a broken palette file is ignored
+            }
+            RefreshPalette();
 
             SetTool(CanvasTool.Select);
             SetPrimary(Color.Black);
@@ -160,7 +177,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             {
                 c = cc.ActiveControl;
             }
-            return c is TextBoxBase || c is UpDownBase || c?.Parent is UpDownBase || c is ComboBox || c is ListView || c is ArtTileGrid || c is TrackBar;
+            return c is TextBoxBase || c is UpDownBase || c?.Parent is UpDownBase || c is ComboBox || c is ListView || c is ListBox || c is ArtTileGrid || c is TrackBar;
         }
 
         #endregion
@@ -171,6 +188,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private ToolStripButton _tsUndo, _tsRedo, _tsMirror, _tsGrid, _tsTiled, _tsOnlySel, _tsProtect, _tsColor1, _tsColor2;
         private ToolStripComboBox _tsFormat, _tsShape, _tsBrush;
         private ToolStripLabel _tsZoom;
+        private ToolStripSplitButton _tsPattern;
         private readonly Dictionary<CanvasTool, ToolStripButton> _toolButtons = new Dictionary<CanvasTool, ToolStripButton>();
 
         private static ToolStripMenuItem Item(string text, EventHandler click, string keys = null, Image image = null)
@@ -190,7 +208,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             {
                 Item("Open image...", (s, e) => OpenImage(), "Ctrl+O", Properties.Resources.Load),
                 Item("Paste image from clipboard", (s, e) => PasteImage(), "Ctrl+V", Properties.Resources.import),
-                Item("Paste clipboard as overlay", (s, e) => OverlayFromClipboard()),
+                Item("Paste clipboard as layer", (s, e) => LayerFromClipboard()),
                 new ToolStripSeparator(),
                 Item("Save (tempGrafic)", (s, e) => QuickSave(), "Ctrl+S", Properties.Resources.Save),
                 Item("Save as...", (s, e) => SaveAs(), "Ctrl+Shift+S"),
@@ -261,7 +279,21 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 Item("Hilfe (Deutsch)", (s, e) => ShowHelp(true))
             });
 
-            menuStrip1.Items.AddRange(new ToolStripItem[] { file, edit, image, view, help });
+            var tools = new ToolStripMenuItem("&Tools");
+            tools.DropDownItems.AddRange(new ToolStripItem[]
+            {
+                Item("Terrain preview (2D / 3D, map)...", (s, e) => OpenTerrainPreview(), "Ctrl+P"),
+                Item("Batch – many images at once...", (s, e) => OpenBatch(), "Ctrl+B"),
+                new ToolStripSeparator(),
+                Item("Pattern brush from selected layer", (s, e) => PatternFrom(() => ActiveLayer == null ? null : CutterImaging.To32Bpp(ActiveLayer.Image), "layer")),
+                Item("Pattern brush from selection", (s, e) => PatternFrom(() => _image == null ? null : ExtractSelection(_image), "selection")),
+                Item("Pattern brush from texture (texmaps)", (s, e) => PatternFrom(() => _gridTex.SelectedItem >= 0 ? TextureMul.GetCopy(_gridTex.SelectedItem) : null, "texture")),
+                Item("Pattern brush from file...", (s, e) => PatternFrom(PatternFromFile, "file")),
+                Item("Pattern brush from clipboard", (s, e) => PatternFrom(ReadClipboard, "clipboard image")),
+                Item("Pattern brush off", (s, e) => SetPattern(null))
+            });
+
+            menuStrip1.Items.AddRange(new ToolStripItem[] { file, edit, image, view, tools, help });
         }
 
         private ToolStripButton TextButton(string text, string tip, EventHandler click, bool bold = false)
@@ -298,12 +330,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             }
             AddTool(CanvasTool.Select, "Select", "Select an area (M). Shape: list on the right.", "Bereich auswählen (M). Form: Liste rechts daneben.");
             AddTool(CanvasTool.Pencil, "Pencil", "Draw (B). Left = color 1, right = color 2.", "Zeichnen (B). Links = Farbe 1, rechts = Farbe 2.");
-            AddTool(CanvasTool.Eraser, "Eraser", "Erase to transparent (E). Option on the Overlay tab: erase to white.", "Radieren zu transparent (E). Option im Overlay-Reiter: zu Weiß radieren.");
+            AddTool(CanvasTool.Eraser, "Eraser", "Erase to transparent (E). Option on the Replace tab: erase to white.", "Radieren zu transparent (E). Option im Reiter Replace: zu Weiß radieren.");
             AddTool(CanvasTool.Line, "Line", "Straight line (L).", "Gerade Linie (L).");
             AddTool(CanvasTool.Rectangle, "Rect", "Rectangle outline (R).", "Rechteck-Rahmen (R).");
             AddTool(CanvasTool.Fill, "Fill", "Fill an area of similar color (G). Tolerance on the Replace tab.", "Fläche ähnlicher Farbe füllen (G). Toleranz im Reiter Replace.");
             AddTool(CanvasTool.Pipette, "Pipette", "Pick a color (I). Left = color 1, right = color 2.", "Farbe aufnehmen (I). Links = Farbe 1, rechts = Farbe 2.");
-            AddTool(CanvasTool.Overlay, "Move overlay", "Drag the overlay image (O). Arrow keys = 1 px, Shift = 10 px.", "Überlagerungsbild ziehen (O). Pfeiltasten = 1 px, Umschalt = 10 px.");
+            AddTool(CanvasTool.Overlay, "Move layer", "Click a layer to select it, drag it (O). Arrow keys = 1 px, Shift = 10 px.", "Ebene anklicken und ziehen (O). Pfeiltasten = 1 px, Umschalt = 10 px.");
 
             _tsShape = new ToolStripComboBox { DropDownStyle = ComboBoxStyle.DropDownList, Size = new Size(85, 23), ToolTipText = Tip("Shape of the selection. Polygon: click points, double / right click closes.", "Form der Auswahl. Polygon: Punkte klicken, Doppel- / Rechtsklick schließt.") };
             _tsShape.Items.AddRange(new object[] { "Rectangle", "Ellipse", "Freehand", "Polygon" });
@@ -329,6 +361,29 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             _tsBrush.SelectedIndex = 0;
             _tsBrush.SelectedIndexChanged += (s, e) => canvas.BrushSize = (int)_tsBrush.SelectedItem;
 
+            _tsPattern = new ToolStripSplitButton("Pattern") { DisplayStyle = ToolStripItemDisplayStyle.Text,
+                ToolTipText = Tip("Pattern brush: pencil, line, rectangle and fill paint with an image. Arrow = choose the pattern.",
+                    "Muster-Pinsel: Stift, Linie, Rechteck und Füllen malen mit einem Bild. Pfeil = Muster wählen.") };
+            _tsPattern.ButtonClick += (s, e) =>
+            {
+                if (_pattern == null)
+                {
+                    _tsPattern.ShowDropDown();
+                    return;
+                }
+                canvas.UsePattern = !canvas.UsePattern;
+                SyncUi();
+            };
+            _tsPattern.DropDownItems.AddRange(new ToolStripItem[]
+            {
+                Item("From selected layer", (s, e) => PatternFrom(() => ActiveLayer == null ? null : CutterImaging.To32Bpp(ActiveLayer.Image), "layer")),
+                Item("From selection", (s, e) => PatternFrom(() => _image == null ? null : ExtractSelection(_image), "selection")),
+                Item("From texture (texmaps)", (s, e) => PatternFrom(() => _gridTex.SelectedItem >= 0 ? TextureMul.GetCopy(_gridTex.SelectedItem) : null, "texture")),
+                Item("From file...", (s, e) => PatternFrom(PatternFromFile, "file")),
+                Item("From clipboard", (s, e) => PatternFrom(ReadClipboard, "clipboard image")),
+                Item("Off", (s, e) => SetPattern(null))
+            });
+
             _tsMirror = TextButton("Mirror draw", Tip("Paint a mirrored copy of every stroke (left / right)", "Jeden Strich gespiegelt mitzeichnen (links / rechts)"),
                 (s, e) => { canvas.MirrorDraw = !canvas.MirrorDraw; SyncUi(); });
             _tsOnlySel = TextButton("Only selection", Tip("Color changes and filters only inside the selection", "Farbänderungen und Filter nur innerhalb der Auswahl"),
@@ -350,12 +405,15 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 new ToolStripSeparator(), _tsUndo, _tsRedo, new ToolStripSeparator(),
                 _toolButtons[CanvasTool.Select], _tsShape, _toolButtons[CanvasTool.Pencil], _toolButtons[CanvasTool.Eraser], _toolButtons[CanvasTool.Line],
                 _toolButtons[CanvasTool.Rectangle], _toolButtons[CanvasTool.Fill], _toolButtons[CanvasTool.Pipette], _toolButtons[CanvasTool.Overlay],
-                new ToolStripSeparator(), _tsColor1, _tsColor2, swap, _tsBrush, _tsMirror,
+                new ToolStripSeparator(), _tsColor1, _tsColor2, swap, _tsBrush, _tsPattern, _tsMirror,
                 new ToolStripSeparator(), _tsOnlySel, _tsProtect,
                 new ToolStripSeparator(),
                 TextButton("–", Tip("Zoom out (Ctrl+-)", "Verkleinern (Strg+-)"), (s, e) => SetZoom(canvas.Zoom - 1), true), _tsZoom,
                 TextButton("+", Tip("Zoom in (Ctrl++ or Ctrl+wheel)", "Vergrößern (Strg++ oder Strg+Mausrad)"), (s, e) => SetZoom(canvas.Zoom + 1), true),
-                _tsGrid, _tsTiled,
+                _tsGrid, _tsTiled, new ToolStripSeparator(),
+                TextButton("Terrain", Tip("Terrain preview: the texture on the ground, 2D / 3D with heights, next to other textures or in a map area (Ctrl+P)",
+                    "Gelände-Vorschau: die Textur auf dem Boden, 2D / 3D mit Höhen, neben anderen Texturen oder in einem Kartenbereich (Strg+P)"), (s, e) => OpenTerrainPreview()),
+                TextButton("Batch", Tip("Process many images at once (Ctrl+B)", "Viele Bilder auf einmal bearbeiten (Strg+B)"), (s, e) => OpenBatch()),
                 TextButton("?", Tip("Help (F1)", "Hilfe (F1)"), (s, e) => ShowHelp(CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "de"), true)
             });
         }
@@ -370,6 +428,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             _tiledMenu.Checked = _tsTiled.Checked = canvas.TiledView;
             _topMostMenu.Checked = TopMost;
             _tsMirror.Checked = canvas.MirrorDraw;
+            _tsPattern.Text = canvas.UsePattern && _pattern != null ? "Pattern ✔" : "Pattern";
             _tsZoom.Text = canvas.Zoom + "x";
             foreach (KeyValuePair<CanvasTool, ToolStripButton> kv in _toolButtons)
             {
@@ -484,13 +543,26 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private Label _lblColorCount;
         private Color _fromColor = Color.White, _toColor = Color.Black;
 
-        // Overlay tab
+        // Layers tab
+        private CheckedListBox _listLayers;
         private TrackBar _tbOpacity;
         private Label _lblOpacity;
         private NumericUpDown _numOvScale, _numOvX, _numOvY;
         private CheckBox _chkOvTransparent;
         private RadioButton _radioOvArtLand, _radioFillTile;
         private TextBox _txtOvArtId;
+
+        // Blend tab
+        private PictureBox _picBlendB;
+        private Label _lblBlendB;
+        private ComboBox _comboShape;
+        private NumericUpDown _numSoftness, _numRoughness, _numSeed;
+        private TextBox _txtBlendTexId;
+
+        // Palette
+        private FlowLayoutPanel _paletteFlow;
+        private Label _lblPalette;
+        private NumericUpDown _numHue;
 
         // texmaps tab
         private ComboBox _comboTexFilter;
@@ -554,6 +626,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             BuildColorsTab();
             BuildReplaceTab();
             BuildOverlayTab();
+            BuildBlendTab();
             BuildTexmapsTab();
         }
 
@@ -841,58 +914,156 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 Row(Btn("Refresh", (s, e) => RefreshColorList()), _chkListSkipBW, _lblColorCount),
                 _listColors);
 
-            FillTab(tabReplace, replace, list);
+            FillTab(tabReplace, BuildPaletteGroup(), replace, list);
         }
 
         private void BuildOverlayTab()
         {
+            _listLayers = new CheckedListBox { Width = 330, Height = 120, CheckOnClick = false, IntegralHeight = false };
+            _listLayers.SelectedIndexChanged += ListLayers_SelectedIndexChanged;
+            _listLayers.ItemCheck += ListLayers_ItemCheck;
+            toolTip1.SetToolTip(_listLayers, Tip("Top layer first. Checkbox = visible. Selected = the layer you move and change.",
+                "Oberste Ebene zuerst. Häkchen = sichtbar. Ausgewählt = die Ebene, die du verschiebst und änderst."));
+
             _radioOvArtLand = new RadioButton { Text = "Land", AutoSize = true, Margin = new Padding(3, 6, 3, 0) };
             var items = new RadioButton { Text = "Item", AutoSize = true, Checked = true, Margin = new Padding(3, 6, 3, 0) };
             _txtOvArtId = new TextBox { Width = 70, Margin = new Padding(3, 4, 3, 0) };
-            _chkOvTransparent = Chk("Black / white transparent", true);
-            _chkOvTransparent.CheckedChanged += (s, e) => RebuildOverlay(false);
-            GroupBox load = Group("Overlay image (graphics on top)",
-                Row(Btn("From file...", (s, e) => OverlayFromFile()), Btn("From clipboard", (s, e) => OverlayFromClipboard())),
-                Row(Btn("From texmaps (selected)", (s, e) => OverlayFromTexture())),
-                Row(Lbl("art.mul:"), items, _radioOvArtLand, _txtOvArtId, Btn("Load", (s, e) => OverlayFromArt())),
-                _chkOvTransparent);
+            GroupBox add = Group("Layers (graphics on top, stay movable)",
+                _listLayers,
+                Row(Btn("+ File...", (s, e) => LayerFromFile()), Btn("+ Clipboard", (s, e) => LayerFromClipboard()), Btn("+ Texture (texmaps)", (s, e) => LayerFromTexture())),
+                Row(Lbl("art.mul:"), items, _radioOvArtLand, _txtOvArtId, Btn("+ Add", (s, e) => LayerFromArt())),
+                Row(Btn("▲", (s, e) => MoveLayer(1), Tip("Layer up", "Ebene nach oben")), Btn("▼", (s, e) => MoveLayer(-1), Tip("Layer down", "Ebene nach unten")),
+                    Btn("Duplicate", (s, e) => DuplicateLayer()), Btn("Remove", (s, e) => RemoveLayer(ActiveLayer))),
+                Row(Btn("Burn in selected", (s, e) => BurnLayers(false), Tip("Draw the selected layer into the image and remove the layer.", "Ausgewählte Ebene ins Bild zeichnen und die Ebene entfernen.")),
+                    Btn("Burn in all", (s, e) => BurnLayers(true))));
 
+            _chkOvTransparent = Chk("Black / white transparent", true);
+            _chkOvTransparent.CheckedChanged += (s, e) =>
+            {
+                if (!_updating && ActiveLayer != null)
+                {
+                    ActiveLayer.BlackWhiteTransparent = _chkOvTransparent.Checked;
+                    canvas.Invalidate();
+                    NotifyTerrain();
+                }
+            };
             _tbOpacity = new TrackBar { Minimum = 0, Maximum = 100, Value = 100, TickStyle = TickStyle.None, Width = 180, AutoSize = false, Height = 26 };
             _lblOpacity = new Label { Text = "Opacity: 100 %", Width = 100, Margin = new Padding(3, 6, 3, 0) };
             _tbOpacity.ValueChanged += (s, e) =>
             {
                 _lblOpacity.Text = $"Opacity: {_tbOpacity.Value} %";
-                canvas.OverlayOpacity = _tbOpacity.Value;
-                canvas.Invalidate();
+                if (!_updating && ActiveLayer != null)
+                {
+                    ActiveLayer.Opacity = _tbOpacity.Value;
+                    canvas.Invalidate();
+                    NotifyTerrain();
+                }
             };
             _numOvScale = Num(5, 1600, 100);
-            _numOvScale.ValueChanged += (s, e) => { canvas.OverlayScale = (int)_numOvScale.Value; canvas.Invalidate(); };
+            _numOvScale.ValueChanged += (s, e) =>
+            {
+                if (!_updating && ActiveLayer != null)
+                {
+                    ActiveLayer.Scale = (int)_numOvScale.Value;
+                    canvas.Invalidate();
+                    NotifyTerrain();
+                }
+            };
             _numOvX = Num(-4096, 4096, 0);
             _numOvY = Num(-4096, 4096, 0);
             EventHandler pos = (s, e) =>
             {
-                if (_updating)
+                if (_updating || ActiveLayer == null)
                 {
                     return;
                 }
-                canvas.OverlayPosition = new Point((int)_numOvX.Value, (int)_numOvY.Value);
+                ActiveLayer.Position = new Point((int)_numOvX.Value, (int)_numOvY.Value);
                 canvas.Invalidate();
+                NotifyTerrain();
             };
             _numOvX.ValueChanged += pos;
             _numOvY.ValueChanged += pos;
-            GroupBox place = Group("Place",
+            GroupBox place = Group("Selected layer",
                 Row(_lblOpacity, _tbOpacity),
-                Row(Lbl("Scale %:", 60), _numOvScale, Btn("Fit", (s, e) => FitOverlay(), Tip("Scale the overlay to the image size.", "Overlay auf Bildgröße skalieren."))),
-                Row(Lbl("X:", 20), _numOvX, Lbl("Y:"), _numOvY, Btn("Center", (s, e) => CenterOverlay())),
-                Row(Btn("Move tool", (s, e) => SetTool(CanvasTool.Overlay)), Btn("Apply (burn in)", (s, e) => BakeOverlay(), null, 110), Btn("Remove", (s, e) => RemoveOverlay())));
+                Row(Lbl("Scale %:", 60), _numOvScale, Btn("Fit", (s, e) => FitLayer(), Tip("Scale the layer to the image size.", "Ebene auf Bildgröße skalieren."))),
+                Row(Lbl("X:", 20), _numOvX, Lbl("Y:"), _numOvY, Btn("Center", (s, e) => CenterLayer())),
+                Row(_chkOvTransparent, Btn("Move tool", (s, e) => SetTool(CanvasTool.Overlay))));
 
             _radioFillTile = new RadioButton { Text = "Repeat (tile)", AutoSize = true, Checked = true, Margin = new Padding(3, 6, 3, 0) };
             var stretch = new RadioButton { Text = "Stretch", AutoSize = true, Margin = new Padding(3, 6, 3, 0) };
             GroupBox fill = Group("Fill the selection (old \"Fill Texture\")",
                 Row(_radioFillTile, stretch),
-                Row(Btn("With image file...", (s, e) => FillSelectionFromFile()), Btn("With overlay", (s, e) => FillSelection(_overlay))));
+                Row(Btn("With image file...", (s, e) => FillSelectionFromFile()), Btn("With selected layer", (s, e) => FillSelection(ActiveLayer?.Image))));
 
-            FillTab(tabOverlay, load, place, fill);
+            FillTab(tabOverlay, add, place, fill);
+            LoadLayerProperties();
+        }
+
+        private void BuildBlendTab()
+        {
+            _picBlendB = new PictureBox { Width = 64, Height = 64, BorderStyle = BorderStyle.FixedSingle, SizeMode = PictureBoxSizeMode.Zoom, Margin = new Padding(3) };
+            _lblBlendB = new Label { Text = "B: none", AutoSize = true, Margin = new Padding(3, 7, 3, 0) };
+            GroupBox source = Group("Texture B (A = the edited image)",
+                Row(_picBlendB, _lblBlendB),
+                Row(Btn("From texmaps (selected)", (s, e) => SetBlendB(_gridTex.SelectedItem >= 0 ? TextureMul.GetCopy(_gridTex.SelectedItem) : null, $"texture 0x{_gridTex.SelectedItem:X4}")),
+                    Btn("From layer", (s, e) => SetBlendB(ActiveLayer == null ? null : CutterImaging.To32Bpp(ActiveLayer.Source), ActiveLayer?.Name ?? "layer"))),
+                Row(Btn("From file...", (s, e) =>
+                    {
+                        using (var d = new OpenFileDialog { Filter = CutterImaging.ImageFilter })
+                        {
+                            if (d.ShowDialog(this) == DialogResult.OK)
+                            {
+                                SetBlendB(CutterImaging.LoadBitmap(d.FileName), Path.GetFileNameWithoutExtension(d.FileName));
+                            }
+                        }
+                    }),
+                    Btn("From clipboard", (s, e) => SetBlendB(ReadClipboard(), "clipboard"))));
+
+            _comboShape = new ComboBox { DropDownStyle = ComboBoxStyle.DropDownList, Width = 170 };
+            _comboShape.Items.AddRange(TextureBlend.ShapeNames);
+            _comboShape.SelectedIndex = 0;
+            _numSoftness = Num(0, 100, 35);
+            _numRoughness = Num(0, 100, 40);
+            _numSeed = Num(0, 99999, 1, 70);
+            EventHandler changed = (s, e) =>
+            {
+                if (_previewKind == PreviewKind.Transition)
+                {
+                    SchedulePreview(PreviewKind.Transition);
+                }
+            };
+            _comboShape.SelectedIndexChanged += changed;
+            _numSoftness.ValueChanged += changed;
+            _numRoughness.ValueChanged += changed;
+            _numSeed.ValueChanged += changed;
+            toolTip1.SetToolTip(_numSoftness, Tip("Width of the soft border (0 = hard edge).", "Breite des weichen Übergangs (0 = harte Kante)."));
+            toolTip1.SetToolTip(_numRoughness, Tip("How much the border wanders (natural, irregular edge).", "Wie stark die Kante wandert (natürlich, unregelmäßig)."));
+            toolTip1.SetToolTip(_numSeed, Tip("Other number = other pattern of the irregular edge.", "Andere Zahl = anderes Muster der unregelmäßigen Kante."));
+            _txtBlendTexId = new TextBox { Width = 80, Margin = new Padding(3, 4, 3, 0) };
+            GroupBox shape = Group("Transition A → B",
+                Row(Lbl("Shape:", 70), _comboShape),
+                Row(Lbl("Softness:", 70), _numSoftness, Lbl("Rough:"), _numRoughness),
+                Row(Lbl("Pattern:", 70), _numSeed, Btn("New", (s, e) => _numSeed.Value = new Random().Next(0, 99999))),
+                Row(Btn("Show preview", (s, e) => ShowTransitionPreview()), Btn("Apply", (s, e) => CommitPreview(true)), Btn("Cancel", (s, e) => CancelPreview())),
+                Row(Btn("All 9 → files", (s, e) => AllTransitions(false), Tip("Saves all nine shapes (edges, diagonals, corners, island).", "Speichert alle neun Formen (Kanten, Diagonalen, Ecken, Insel)."))),
+                Row(Btn("All 9 → texmaps from", (s, e) => AllTransitions(true)), _txtBlendTexId),
+                Row(Btn("Check in terrain preview", (s, e) => OpenTerrainPreview(), Tip("Shows the result on the ground next to other textures.", "Zeigt das Ergebnis auf dem Boden neben anderen Texturen."))));
+
+            FillTab(tabBlend, source, shape);
+        }
+
+        private GroupBox BuildPaletteGroup()
+        {
+            _paletteFlow = new FlowLayoutPanel { Width = 330, Height = 66, AutoScroll = true, BorderStyle = BorderStyle.FixedSingle, Margin = new Padding(3) };
+            _lblPalette = new Label { AutoSize = true, Margin = new Padding(3, 7, 3, 0) };
+            _numHue = Num(1, 3000, 1, 60);
+            toolTip1.SetToolTip(_numHue, Tip("UO hue number from hues.mul (32 colors each).", "UO-Hue-Nummer aus hues.mul (je 32 Farben)."));
+            return Group("Palette",
+                _paletteFlow,
+                Row(Btn("+ Color 1", (s, e) => { _palette.Add(canvas.PrimaryColor); RefreshPalette(); }),
+                    Btn("+ From image", (s, e) => PaletteFromImage(), Tip("The 16 most common colors of the image.", "Die 16 häufigsten Farben des Bildes.")),
+                    Btn("Clear", (s, e) => { _palette.Colors.Clear(); RefreshPalette(); }), _lblPalette),
+                Row(Lbl("UO hue:"), _numHue, Btn("+ Hue", (s, e) => PaletteFromHue()), Btn("Load...", (s, e) => LoadPalette()), Btn("Save...", (s, e) => SavePalette())));
         }
 
         private void BuildTexmapsTab()
@@ -924,10 +1095,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             _panelTexPreview.Paint += PanelTexPreview_Paint;
             _lblTexInfo = new Label { Dock = DockStyle.Top, Height = 34, TextAlign = ContentAlignment.MiddleLeft };
 
-            var buttons = new TableLayoutPanel { Dock = DockStyle.Bottom, ColumnCount = 2, RowCount = 4, Height = 4 * 32 + 4 };
+            var buttons = new TableLayoutPanel { Dock = DockStyle.Bottom, ColumnCount = 2, RowCount = 5, Height = 5 * 32 + 4 };
             buttons.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50));
             buttons.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50));
-            for (int i = 0; i < 4; i++)
+            for (int i = 0; i < 5; i++)
             {
                 buttons.RowStyles.Add(new RowStyle(SizeType.Absolute, 32));
             }
@@ -939,13 +1110,16 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 return b;
             }
             buttons.Controls.Add(B("→ Editor", (s, e) => TextureToEditor(), Tip("Load the texture into the editor (double click).", "Textur in den Editor laden (Doppelklick).")), 0, 0);
-            buttons.Controls.Add(B("→ Overlay", (s, e) => OverlayFromTexture(), Tip("Show the texture over the image (e.g. to compare).", "Textur über dem Bild einblenden (z. B. zum Vergleichen).")), 1, 0);
+            buttons.Controls.Add(B("→ Layer", (s, e) => LayerFromTexture(), Tip("Show the texture as a layer over the image (e.g. to compare).", "Textur als Ebene über dem Bild einblenden (z. B. zum Vergleichen).")), 1, 0);
             buttons.Controls.Add(B("Image → ID", (s, e) => ImageToTexture(), Tip("Write the edited image into the selected ID (64 or 128).", "Bearbeitetes Bild in die gewählte ID schreiben (64 oder 128).")), 0, 1);
             buttons.Controls.Add(B("Remove ID", (s, e) => RemoveTexture(), Tip("Remove the texture of the selected ID.", "Textur der gewählten ID entfernen.")), 1, 1);
             buttons.Controls.Add(B("Copy texture", (s, e) => CopyTexture(), Tip("Copy the selected texture to the clipboard.", "Gewählte Textur in die Zwischenablage kopieren.")), 0, 2);
             buttons.Controls.Add(B("Reload list", (s, e) => ReloadTextures(), Tip("Read the used / free IDs again.", "Belegte / freie IDs neu einlesen.")), 1, 2);
+            buttons.Controls.Add(B("Image → its land tiles", (s, e) => ImageToLandTilesOfTexture(), Tip("Turns the image into a 44 × 44 land tile and writes it into every land tile that uses the selected texture (tiledata).",
+                "Macht aus dem Bild eine 44 × 44 Landkachel und schreibt sie in jede Landkachel, die laut tiledata die gewählte Textur benutzt.")), 0, 3);
+            buttons.Controls.Add(B("Terrain preview", (s, e) => OpenTerrainPreview(), Tip("See the image on the ground (2D / 3D).", "Das Bild auf dem Boden ansehen (2D / 3D).")), 1, 3);
             Button save = B("Save texmaps.mul", (s, e) => SaveTexmaps(), Tip("Save texidx.mul and texmaps.mul into the UoFiddler output folder.", "texidx.mul und texmaps.mul in den UoFiddler-Ausgabeordner speichern."));
-            buttons.Controls.Add(save, 0, 3);
+            buttons.Controls.Add(save, 0, 4);
             buttons.SetColumnSpan(save, 2);
 
             tabTexmaps.Controls.Add(_gridTex);
@@ -1033,6 +1207,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             SyncUi();
             UpdateStatus();
             panelCanvas.Invalidate();
+            NotifyTerrain();
         }
 
         /// <summary>Replaces the image (the old one is kept in the undo list by the caller).</summary>
@@ -1184,6 +1359,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 case PreviewKind.Particle:
                     preview = TextureImaging.ParticleGrey(_image, _particleColor, _radioParticleShaded.Checked);
                     break;
+                case PreviewKind.Transition:
+                    if (_blendB != null)
+                    {
+                        preview = MakeTransition(_image, (TransitionShape)Math.Max(0, _comboShape.SelectedIndex));
+                    }
+                    break;
             }
             if (preview == null)
             {
@@ -1193,6 +1374,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             _previewImage?.Dispose();
             _previewImage = preview;
             canvas.Image = _previewImage;
+            NotifyTerrain();
             _lblPreview.Text = "Preview – not applied yet.";
             _lblPreview.ForeColor = Color.DarkRed;
             UpdateStatus();
@@ -1326,14 +1508,6 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                     break;
             }
             SetMessage($"Picked {Hex(c)}" + (pick.Color.A == 0 ? " (pixel was transparent)." : "."));
-        }
-
-        private void Canvas_OverlayMoved(object sender, EventArgs e)
-        {
-            _updating = true;
-            _numOvX.Value = Math.Max(_numOvX.Minimum, Math.Min(_numOvX.Maximum, canvas.OverlayPosition.X));
-            _numOvY.Value = Math.Max(_numOvY.Minimum, Math.Min(_numOvY.Maximum, canvas.OverlayPosition.Y));
-            _updating = false;
         }
 
         private void Canvas_MouseWheel(object sender, MouseEventArgs e)
@@ -1479,7 +1653,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             {
                 Directory.CreateDirectory(OutputDirectory);
                 string file = Path.Combine(OutputDirectory, "TextureSingleImage_" + DateTime.Now.ToString("yyyyMMdd_HHmmss_fff") + Extension);
-                CutterImaging.SaveImage(_image, file, TransparentFill.Keep);
+                using (Bitmap output = Output())
+                {
+                    CutterImaging.SaveImage(output, file, TransparentFill.Keep);
+                }
                 SetMessage("Saved: " + file);
             }
             catch (Exception ex)
@@ -1507,7 +1684,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 }
                 try
                 {
-                    CutterImaging.SaveImage(_image, dialog.FileName, TransparentFill.Keep);
+                    using (Bitmap output = Output())
+                    {
+                        CutterImaging.SaveImage(output, dialog.FileName, TransparentFill.Keep);
+                    }
                     SetMessage("Saved: " + dialog.FileName);
                 }
                 catch (Exception ex)
@@ -1538,8 +1718,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             }
             try
             {
-                CutterImaging.CopyToClipboard(canvas.Image);
-                SetMessage("Image copied to the clipboard" + (_previewImage != null ? " (with the preview)." : "."));
+                using (Bitmap output = Output())
+                {
+                    CutterImaging.CopyToClipboard(output);
+                }
+                SetMessage("Image copied to the clipboard" + (_previewImage != null ? " (with the preview)" : string.Empty) + (HasVisibleLayers ? " (with the layers)." : "."));
             }
             catch (Exception ex)
             {
@@ -1646,13 +1829,16 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private List<(Bitmap Tile, Point Position)> CutTiles()
         {
             CommitPreview(false);
-            var tiles = TextureImaging.CutTiles(_image, TileSize, new Point((int)_numOffX.Value, (int)_numOffY.Value), _chkPad.Checked, _chkSkipEmpty.Checked);
-            if (tiles.Count == 0)
+            using (Bitmap output = Output())
             {
-                MessageBox.Show(this, "No tile fits into the image. Turn on \"Also cut the incomplete tiles\" or choose a smaller size.",
-                    "Cut tiles", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                var tiles = TextureImaging.CutTiles(output, TileSize, new Point((int)_numOffX.Value, (int)_numOffY.Value), _chkPad.Checked, _chkSkipEmpty.Checked);
+                if (tiles.Count == 0)
+                {
+                    MessageBox.Show(this, "No tile fits into the image. Turn on \"Also cut the incomplete tiles\" or choose a smaller size.",
+                        "Cut tiles", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+                return tiles;
             }
-            return tiles;
         }
 
         private void CutTilesToFiles()
@@ -1880,6 +2066,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 return;
             }
             CommitPreview(false);
+            if (HasVisibleLayers)
+            {
+                SetMessage("Note: the visible layers are written too.");
+            }
             if (_image.Width != CutterArt.LandSize || _image.Height != CutterArt.LandSize)
             {
                 MessageBox.Show(this, "Land tiles must be 44 × 44. Use \"Texture → land tile\" first.", "art.mul", MessageBoxButtons.OK, MessageBoxIcon.Information);
@@ -1897,7 +2087,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             }
             try
             {
-                CutterArt.Write(ArtKind.Land, id, _image, this);
+                using (Bitmap output = Output())
+                {
+                    CutterArt.Write(ArtKind.Land, id, output, this);
+                }
                 SetMessage($"Written to land tile 0x{id:X4}. Save art.mul in UoFiddler (Land tiles tab) to keep it.");
             }
             catch (Exception ex)
@@ -2010,69 +2203,240 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 
         #endregion
 
-        #region Overlay
+        #region Layers
 
-        private void SetOverlay(Bitmap bmp, string name)
+        private CanvasLayer ActiveLayer => canvas.ActiveLayer;
+
+        private void AddLayer(Bitmap bmp, string name)
         {
             if (bmp == null)
             {
                 return;
             }
-            _overlaySource?.Dispose();
-            _overlaySource = bmp;
-            RebuildOverlay(true);
+            var layer = new CanvasLayer(bmp, name) { BlackWhiteTransparent = _chkOvTransparent.Checked };
+            canvas.Layers.Add(layer);
+            canvas.ActiveLayer = layer;
+            CenterLayer();
+            RefreshLayerList();
             SetTool(CanvasTool.Overlay);
             tabControl1.SelectedTab = tabOverlay;
-            SetMessage($"Overlay: {name} ({bmp.Width}×{bmp.Height}). Drag it, then \"Apply\" burns it into the image.");
+            NotifyTerrain();
+            SetMessage($"Layer \"{name}\" ({bmp.Width}×{bmp.Height}) added. Drag it with \"Move layer\"; it stays a layer until you burn it in.");
         }
 
-        private void RebuildOverlay(bool center)
+        private void RefreshLayerList()
         {
-            if (_overlaySource == null)
+            _updating = true;
+            _listLayers.Items.Clear();
+            for (int i = canvas.Layers.Count - 1; i >= 0; i--)
             {
-                return;
+                CanvasLayer layer = canvas.Layers[i];
+                _listLayers.Items.Add(layer, layer.Visible);
+                if (ReferenceEquals(layer, canvas.ActiveLayer))
+                {
+                    _listLayers.SelectedIndex = _listLayers.Items.Count - 1;
+                }
             }
-            Bitmap ov = CutterImaging.To32Bpp(_overlaySource);
-            if (_chkOvTransparent.Checked)
-            {
-                CutterImaging.MakeTransparent(ov, 0, new[] { Color.Black, Color.White });
-            }
-            _overlay?.Dispose();
-            _overlay = ov;
-            canvas.Overlay = _overlay;
-            if (center)
-            {
-                CenterOverlay();
-            }
+            _updating = false;
+            LoadLayerProperties();
             canvas.Invalidate();
         }
 
-        private void CenterOverlay()
+        private void LoadLayerProperties()
         {
-            if (_overlay == null || _image == null)
+            CanvasLayer layer = ActiveLayer;
+            _updating = true;
+            bool has = layer != null;
+            _tbOpacity.Enabled = _numOvScale.Enabled = _numOvX.Enabled = _numOvY.Enabled = has;
+            if (has)
+            {
+                _tbOpacity.Value = Math.Max(0, Math.Min(100, layer.Opacity));
+                _lblOpacity.Text = $"Opacity: {layer.Opacity} %";
+                _numOvScale.Value = Math.Max(_numOvScale.Minimum, Math.Min(_numOvScale.Maximum, layer.Scale));
+                _numOvX.Value = Math.Max(_numOvX.Minimum, Math.Min(_numOvX.Maximum, layer.Position.X));
+                _numOvY.Value = Math.Max(_numOvY.Minimum, Math.Min(_numOvY.Maximum, layer.Position.Y));
+                _chkOvTransparent.Checked = layer.BlackWhiteTransparent;
+            }
+            _updating = false;
+        }
+
+        private void ListLayers_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (_updating)
             {
                 return;
             }
-            Size s = canvas.OverlaySize;
-            canvas.OverlayPosition = new Point((_image.Width - s.Width) / 2, (_image.Height - s.Height) / 2);
-            Canvas_OverlayMoved(this, EventArgs.Empty);
+            canvas.ActiveLayer = _listLayers.SelectedItem as CanvasLayer;
+            LoadLayerProperties();
             canvas.Invalidate();
         }
 
-        private void FitOverlay()
+        private void ListLayers_ItemCheck(object sender, ItemCheckEventArgs e)
         {
-            if (_overlay == null || _image == null)
+            if (_updating || !(_listLayers.Items[e.Index] is CanvasLayer layer))
             {
                 return;
             }
-            int scale = (int)Math.Floor(100.0 * Math.Min((double)_image.Width / _overlay.Width, (double)_image.Height / _overlay.Height));
-            _numOvScale.Value = Math.Max(_numOvScale.Minimum, Math.Min(_numOvScale.Maximum, scale));
-            CenterOverlay();
+            layer.Visible = e.NewValue == CheckState.Checked;
+            canvas.Invalidate();
+            NotifyTerrain();
         }
 
-        private void OverlayFromFile()
+        private void Canvas_LayerMoved(object sender, EventArgs e)
         {
-            using (var dialog = new OpenFileDialog { Filter = CutterImaging.ImageFilter, Title = "Overlay image" })
+            if (ActiveLayer == null)
+            {
+                return;
+            }
+            _updating = true;
+            _numOvX.Value = Math.Max(_numOvX.Minimum, Math.Min(_numOvX.Maximum, ActiveLayer.Position.X));
+            _numOvY.Value = Math.Max(_numOvY.Minimum, Math.Min(_numOvY.Maximum, ActiveLayer.Position.Y));
+            _updating = false;
+            NotifyTerrain();
+        }
+
+        private void CenterLayer()
+        {
+            if (ActiveLayer == null || _image == null)
+            {
+                return;
+            }
+            Size s = ActiveLayer.Size;
+            ActiveLayer.Position = new Point((_image.Width - s.Width) / 2, (_image.Height - s.Height) / 2);
+            Canvas_LayerMoved(this, EventArgs.Empty);
+            canvas.Invalidate();
+        }
+
+        private void FitLayer()
+        {
+            if (ActiveLayer == null || _image == null)
+            {
+                return;
+            }
+            Bitmap img = ActiveLayer.Image;
+            int scale = (int)Math.Floor(100.0 * Math.Min((double)_image.Width / img.Width, (double)_image.Height / img.Height));
+            ActiveLayer.Scale = (int)Math.Max(_numOvScale.Minimum, Math.Min(_numOvScale.Maximum, scale));
+            LoadLayerProperties();
+            CenterLayer();
+        }
+
+        private void MoveLayer(int delta)
+        {
+            CanvasLayer layer = ActiveLayer;
+            if (layer == null)
+            {
+                return;
+            }
+            int i = canvas.Layers.IndexOf(layer);
+            int j = i + delta;
+            if (j < 0 || j >= canvas.Layers.Count)
+            {
+                return;
+            }
+            canvas.Layers.RemoveAt(i);
+            canvas.Layers.Insert(j, layer);
+            RefreshLayerList();
+            NotifyTerrain();
+        }
+
+        private void DuplicateLayer()
+        {
+            if (ActiveLayer == null)
+            {
+                return;
+            }
+            CanvasLayer copy = ActiveLayer.Clone();
+            copy.Position = new Point(copy.Position.X + 4, copy.Position.Y + 4);
+            canvas.Layers.Insert(canvas.Layers.IndexOf(ActiveLayer) + 1, copy);
+            canvas.ActiveLayer = copy;
+            RefreshLayerList();
+        }
+
+        private void RemoveLayer(CanvasLayer layer)
+        {
+            if (layer == null)
+            {
+                return;
+            }
+            int i = canvas.Layers.IndexOf(layer);
+            canvas.Layers.Remove(layer);
+            if (ReferenceEquals(canvas.ActiveLayer, layer))
+            {
+                canvas.ActiveLayer = canvas.Layers.Count == 0 ? null : canvas.Layers[Math.Max(0, Math.Min(canvas.Layers.Count - 1, i - 1))];
+            }
+            if (ReferenceEquals(canvas.Pattern, layer.Image))
+            {
+                SetPattern(null);
+            }
+            layer.Dispose();
+            if (canvas.Layers.Count == 0 && canvas.Tool == CanvasTool.Overlay)
+            {
+                SetTool(CanvasTool.Select);
+            }
+            RefreshLayerList();
+            NotifyTerrain();
+        }
+
+        private static void DrawLayers(Bitmap target, IEnumerable<CanvasLayer> layers)
+        {
+            using (var g = Graphics.FromImage(target))
+            {
+                foreach (CanvasLayer layer in layers)
+                {
+                    layer.DrawTo(g, 1f);
+                }
+            }
+        }
+
+        /// <summary>Burns layers into the image (with undo) and removes them.</summary>
+        private void BurnLayers(bool all)
+        {
+            List<CanvasLayer> layers = all ? canvas.Layers.Where(l => l.Visible).ToList() : (ActiveLayer != null ? new List<CanvasLayer> { ActiveLayer } : new List<CanvasLayer>());
+            if (layers.Count == 0)
+            {
+                SetMessage("There is no (visible) layer to burn in.");
+                return;
+            }
+            if (!CheckImage())
+            {
+                return;
+            }
+            ApplyFilter(layers.Count == 1 ? $"Layer \"{layers[0].Name}\" burned in" : $"{layers.Count} layers burned in", b =>
+            {
+                Bitmap copy = CutterImaging.To32Bpp(b);
+                DrawLayers(copy, layers);
+                return copy;
+            });
+            foreach (CanvasLayer layer in layers)
+            {
+                RemoveLayer(layer);
+            }
+        }
+
+        /// <summary>
+        /// The image as it is seen: base image (or color preview) plus all visible layers.
+        /// Used for saving, copying, tiles, texmaps / art.mul and the terrain preview. The caller disposes it.
+        /// </summary>
+        private Bitmap Output()
+        {
+            Bitmap shown = canvas.Image ?? _image;
+            if (shown == null)
+            {
+                return null;
+            }
+            Bitmap copy = CutterImaging.To32Bpp(shown);
+            if (canvas.Layers.Any(l => l.Visible))
+            {
+                DrawLayers(copy, canvas.Layers.Where(l => l.Visible));
+            }
+            return copy;
+        }
+
+        private bool HasVisibleLayers => canvas.Layers.Any(l => l.Visible);
+
+        private void LayerFromFile()
+        {
+            using (var dialog = new OpenFileDialog { Filter = CutterImaging.ImageFilter, Title = "Image for a new layer" })
             {
                 if (dialog.ShowDialog(this) != DialogResult.OK)
                 {
@@ -2080,25 +2444,25 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 }
                 try
                 {
-                    SetOverlay(CutterImaging.LoadBitmap(dialog.FileName), Path.GetFileName(dialog.FileName));
+                    AddLayer(CutterImaging.LoadBitmap(dialog.FileName), Path.GetFileNameWithoutExtension(dialog.FileName));
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show(this, "The image could not be loaded:\n" + ex.Message, "Overlay", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show(this, "The image could not be loaded:\n" + ex.Message, "Layer", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
         }
 
-        private void OverlayFromClipboard()
+        private void LayerFromClipboard()
         {
             Bitmap bmp = ReadClipboard();
             if (bmp != null)
             {
-                SetOverlay(bmp, "clipboard image");
+                AddLayer(bmp, "clipboard");
             }
         }
 
-        private void OverlayFromTexture()
+        private void LayerFromTexture()
         {
             int id = _gridTex.SelectedItem;
             Bitmap bmp = id >= 0 ? TextureMul.GetCopy(id) : null;
@@ -2107,10 +2471,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 SetMessage("Select a used texture in the texmaps tab first.");
                 return;
             }
-            SetOverlay(bmp, $"texture 0x{id:X4}");
+            AddLayer(bmp, $"texture 0x{id:X4}");
         }
 
-        private void OverlayFromArt()
+        private void LayerFromArt()
         {
             ArtKind kind = _radioOvArtLand.Checked ? ArtKind.Land : ArtKind.Item;
             if (!CutterImaging.TryParseId(_txtOvArtId.Text, out int id))
@@ -2124,52 +2488,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 SetMessage($"{kind} 0x{id:X4} is empty or art.mul is not loaded.");
                 return;
             }
-            SetOverlay(bmp, $"{kind} 0x{id:X4}");
-        }
-
-        private void RemoveOverlay()
-        {
-            canvas.Overlay = null;
-            _overlay?.Dispose();
-            _overlay = null;
-            _overlaySource?.Dispose();
-            _overlaySource = null;
-            if (canvas.Tool == CanvasTool.Overlay)
-            {
-                SetTool(CanvasTool.Select);
-            }
-            canvas.Invalidate();
-        }
-
-        private void BakeOverlay()
-        {
-            if (_overlay == null)
-            {
-                SetMessage("There is no overlay.");
-                return;
-            }
-            if (!CheckImage())
-            {
-                return;
-            }
-            Point pos = canvas.OverlayPosition;
-            Size size = canvas.OverlaySize;
-            float opacity = _tbOpacity.Value / 100f;
-            Bitmap overlay = _overlay;
-            ApplyFilter("Overlay", b =>
-            {
-                Bitmap copy = CutterImaging.To32Bpp(b);
-                using (var g = Graphics.FromImage(copy))
-                using (var attributes = new ImageAttributes())
-                {
-                    attributes.SetColorMatrix(new ColorMatrix { Matrix33 = opacity });
-                    g.InterpolationMode = InterpolationMode.NearestNeighbor;
-                    g.PixelOffsetMode = PixelOffsetMode.Half;
-                    g.DrawImage(overlay, new Rectangle(pos, size), 0, 0, overlay.Width, overlay.Height, GraphicsUnit.Pixel, attributes);
-                }
-                return copy;
-            });
-            RemoveOverlay();
+            AddLayer(bmp, $"{kind.ToString().ToLowerInvariant()} 0x{id:X4}");
         }
 
         private void FillSelectionFromFile()
@@ -2207,7 +2526,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         {
             if (texture == null)
             {
-                SetMessage("Load an overlay first.");
+                SetMessage("Select a layer first.");
                 return;
             }
             if (!CheckImage())
@@ -2244,6 +2563,301 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 }
                 return copy;
             }, true);
+        }
+
+        #endregion
+
+        #region Pattern brush
+
+        private void SetPattern(Bitmap pattern)
+        {
+            Bitmap old = _pattern;
+            _pattern = pattern;
+            canvas.Pattern = pattern;
+            canvas.UsePattern = pattern != null;
+            _tsPattern.Image?.Dispose();
+            _tsPattern.Image = pattern == null ? null : TextureImaging.Resize(pattern, 16, 16, TextureImaging.ResizeQuality.Smooth);
+            _tsPattern.DisplayStyle = pattern == null ? ToolStripItemDisplayStyle.Text : ToolStripItemDisplayStyle.ImageAndText;
+            if (old != null && !ReferenceEquals(old, pattern))
+            {
+                old.Dispose();
+            }
+            SyncUi();
+            SetMessage(pattern == null ? "Pattern brush off." : $"Pattern brush on ({pattern.Width}×{pattern.Height}): pencil, line, rectangle and fill paint with it.");
+        }
+
+        private void PatternFrom(Func<Bitmap> source, string what)
+        {
+            Bitmap bmp = source();
+            if (bmp == null)
+            {
+                SetMessage($"No {what} for the pattern.");
+                return;
+            }
+            SetPattern(bmp);
+            if (canvas.Tool != CanvasTool.Pencil && canvas.Tool != CanvasTool.Fill && canvas.Tool != CanvasTool.Line && canvas.Tool != CanvasTool.Rectangle)
+            {
+                SetTool(CanvasTool.Pencil);
+            }
+        }
+
+        private Bitmap PatternFromFile()
+        {
+            using (var dialog = new OpenFileDialog { Filter = CutterImaging.ImageFilter, Title = "Pattern image" })
+            {
+                return dialog.ShowDialog(this) == DialogResult.OK ? CutterImaging.LoadBitmap(dialog.FileName) : null;
+            }
+        }
+
+        #endregion
+
+        #region Palette
+
+        private void RefreshPalette()
+        {
+            _paletteFlow.SuspendLayout();
+            foreach (Control c in _paletteFlow.Controls.Cast<Control>().ToList())
+            {
+                c.Dispose();
+            }
+            _paletteFlow.Controls.Clear();
+            foreach (Color color in _palette.Colors)
+            {
+                Color c = color;
+                var b = new Button { Width = 20, Height = 20, Margin = new Padding(1), FlatStyle = FlatStyle.Flat, BackColor = c, TabStop = false };
+                b.FlatAppearance.BorderColor = Color.Gray;
+                b.MouseUp += (s, e) =>
+                {
+                    if ((ModifierKeys & Keys.Control) == Keys.Control)
+                    {
+                        _palette.Colors.Remove(c);
+                        RefreshPalette();
+                    }
+                    else if (e.Button == MouseButtons.Right)
+                    {
+                        SetSecondary(c);
+                    }
+                    else if (e.Button == MouseButtons.Left)
+                    {
+                        SetPrimary(c);
+                    }
+                };
+                toolTip1.SetToolTip(b, $"{Hex(c)}\nLeft = color 1, right = color 2, Ctrl + click = remove\nDE: Links = Farbe 1, rechts = Farbe 2, Strg + Klick = entfernen");
+                _paletteFlow.Controls.Add(b);
+            }
+            _paletteFlow.ResumeLayout();
+            _lblPalette.Text = $"{_palette.Colors.Count} colors";
+        }
+
+        private void PaletteFromImage()
+        {
+            if (!CheckImage())
+            {
+                return;
+            }
+            foreach (KeyValuePair<int, int> kv in TextureImaging.CountColors(canvas.Image, true).Take(16))
+            {
+                _palette.Add(Color.FromArgb(kv.Key));
+            }
+            RefreshPalette();
+        }
+
+        private void PaletteFromHue()
+        {
+            List<Color> colors = CutterPalette.FromHue((int)_numHue.Value, out string name);
+            if (colors == null)
+            {
+                SetMessage("Hue not found (is hues.mul loaded?).");
+                return;
+            }
+            foreach (Color c in colors)
+            {
+                _palette.Add(c);
+            }
+            RefreshPalette();
+            SetMessage($"Hue {(int)_numHue.Value} \"{name}\": 32 colors added.");
+        }
+
+        private void LoadPalette()
+        {
+            using (var dialog = new OpenFileDialog { Filter = "Palettes|*.pal;*.gpl;*.txt|All files|*.*" })
+            {
+                if (dialog.ShowDialog(this) != DialogResult.OK)
+                {
+                    return;
+                }
+                try
+                {
+                    CutterPalette loaded = CutterPalette.Load(dialog.FileName);
+                    _palette.Colors.Clear();
+                    _palette.Colors.AddRange(loaded.Colors);
+                    RefreshPalette();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(this, "The palette could not be loaded:\n" + ex.Message, "Palette", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+        }
+
+        private void SavePalette()
+        {
+            using (var dialog = new SaveFileDialog { Filter = "JASC palette|*.pal", FileName = "palette.pal" })
+            {
+                if (dialog.ShowDialog(this) != DialogResult.OK)
+                {
+                    return;
+                }
+                try
+                {
+                    _palette.Save(dialog.FileName);
+                    SetMessage("Palette saved: " + dialog.FileName);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(this, "The palette could not be saved:\n" + ex.Message, "Palette", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+        }
+
+        #endregion
+
+        #region Transitions (blend)
+
+        private void SetBlendB(Bitmap bmp, string name)
+        {
+            if (bmp == null)
+            {
+                SetMessage($"No {name} for texture B.");
+                return;
+            }
+            _blendB?.Dispose();
+            _blendB = bmp;
+            _picBlendB.Image?.Dispose();
+            _picBlendB.Image = TextureImaging.Resize(bmp, 64, 64, TextureImaging.ResizeQuality.Smooth);
+            _lblBlendB.Text = $"B: {name} ({bmp.Width}×{bmp.Height})";
+            SchedulePreview(PreviewKind.Transition);
+        }
+
+        private Bitmap MakeTransition(Bitmap a, TransitionShape shape) =>
+            TextureBlend.MakeTransition(a, _blendB, shape, (int)_numSoftness.Value, (int)_numRoughness.Value, (int)_numSeed.Value);
+
+        private void ShowTransitionPreview()
+        {
+            if (!CheckImage())
+            {
+                return;
+            }
+            if (_blendB == null)
+            {
+                SetMessage("Choose texture B first (the edited image is texture A).");
+                return;
+            }
+            SchedulePreview(PreviewKind.Transition);
+        }
+
+        /// <summary>All nine transitions at once: files and / or texmaps.mul.</summary>
+        private void AllTransitions(bool toTexmaps)
+        {
+            if (!CheckImage())
+            {
+                return;
+            }
+            if (_blendB == null)
+            {
+                SetMessage("Choose texture B first.");
+                return;
+            }
+            CommitPreview(false);
+            var pieces = new List<Bitmap>();
+            try
+            {
+                foreach (TransitionShape shape in Enum.GetValues(typeof(TransitionShape)))
+                {
+                    pieces.Add(MakeTransition(_image, shape));
+                }
+                if (!toTexmaps)
+                {
+                    string folder = Path.Combine(OutputDirectory, "Transitions_" + DateTime.Now.ToString("yyyyMMdd_HHmmss"));
+                    Directory.CreateDirectory(folder);
+                    for (int i = 0; i < pieces.Count; i++)
+                    {
+                        string name = ((TransitionShape)i).ToString();
+                        CutterImaging.SaveImage(pieces[i], Path.Combine(folder, $"{i + 1:D2}_{name}{Extension}"), TransparentFill.Keep);
+                    }
+                    SetMessage($"9 transitions saved in {folder}");
+                    if (MessageBox.Show(this, $"9 transitions saved in:\n{folder}\n\nOpen the folder?", "Transitions", MessageBoxButtons.YesNo, MessageBoxIcon.Information) == DialogResult.Yes)
+                    {
+                        OpenFolder(folder);
+                    }
+                    return;
+                }
+                if (!TextureMul.IsAvailable || !TextureMul.IsValidSize(_image.Size))
+                {
+                    MessageBox.Show(this, "texmaps.mul must be loaded and texture A must be 64 × 64 or 128 × 128.", "Transitions", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
+                }
+                if (!CutterImaging.TryParseId(_txtBlendTexId.Text, out int start))
+                {
+                    MessageBox.Show(this, "Enter the first texture ID.", "Transitions", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
+                }
+                if (MessageBox.Show(this, $"Write 9 transitions into texmaps.mul from 0x{start:X4} on (used IDs are skipped)?", "Transitions", MessageBoxButtons.OKCancel, MessageBoxIcon.Question) != DialogResult.OK)
+                {
+                    return;
+                }
+                List<int> ids = TextureMul.WriteMany(start, pieces, true, this);
+                MarkTexturesUsed(ids);
+                SetMessage($"{ids.Count} transitions written to texmaps ({string.Join(", ", ids.Select(i => $"0x{i:X4}"))}). Save texmaps.mul to keep them.");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(this, "Creating the transitions failed:\n" + ex.Message, "Transitions", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            finally
+            {
+                pieces.ForEach(p => p.Dispose());
+            }
+        }
+
+        #endregion
+
+        #region Batch and terrain preview
+
+        private void OpenBatch()
+        {
+            CommitPreview(false);
+            using (var dialog = new BatchDialog(OutputDirectory) { TopMost = TopMost })
+            {
+                dialog.ShowDialog(this);
+                if (dialog.WrittenTextures.Count > 0)
+                {
+                    MarkTexturesUsed(dialog.WrittenTextures);
+                }
+            }
+        }
+
+        private void OpenTerrainPreview()
+        {
+            if (_terrain == null || _terrain.IsDisposed)
+            {
+                _terrain = new TerrainPreviewForm(Output) { TopMost = TopMost };
+                _terrain.FormClosed += (s, e) => _terrain = null;
+                _terrain.Show(this);
+            }
+            else
+            {
+                _terrain.Activate();
+            }
+        }
+
+        /// <summary>Tells the terrain preview that the image changed.</summary>
+        private void NotifyTerrain()
+        {
+            if (_terrain != null && !_terrain.IsDisposed)
+            {
+                _terrain.EditorImageChanged();
+            }
         }
 
         #endregion
@@ -2464,19 +3078,21 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             }
             CommitPreview(false);
             int id = _gridTex.SelectedItem;
-            Bitmap toWrite = _image;
+            Bitmap output = Output();
+            Bitmap toWrite = output;
             Bitmap scaled = null;
-            if (!TextureMul.IsValidSize(_image.Size))
+            if (!TextureMul.IsValidSize(output.Size))
             {
                 DialogResult answer = MessageBox.Show(this,
-                    $"Textures must be 64 × 64 or 128 × 128. The image is {_image.Width} × {_image.Height}.\n\nYes = scale to 64 × 64\nNo = scale to 128 × 128\nCancel = do nothing",
+                    $"Textures must be 64 × 64 or 128 × 128. The image is {output.Width} × {output.Height}.\n\nYes = scale to 64 × 64\nNo = scale to 128 × 128\nCancel = do nothing",
                     "Image → texture", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
                 if (answer == DialogResult.Cancel)
                 {
+                    output.Dispose();
                     return;
                 }
                 int size = answer == DialogResult.Yes ? 64 : 128;
-                scaled = TextureImaging.Resize(_image, size, size, TextureImaging.ResizeQuality.Smooth);
+                scaled = TextureImaging.Resize(output, size, size, TextureImaging.ResizeQuality.Smooth);
                 toWrite = scaled;
             }
             try
@@ -2497,6 +3113,55 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             finally
             {
                 scaled?.Dispose();
+                output.Dispose();
+            }
+        }
+
+        /// <summary>Image → 44 × 44 land tile → every land tile that uses the selected texture (tiledata).</summary>
+        private void ImageToLandTilesOfTexture()
+        {
+            if (!CheckImage() || !CheckTexSelection(false))
+            {
+                return;
+            }
+            if (!CutterArt.IsAvailable)
+            {
+                MessageBox.Show(this, "art.mul is not loaded.", "Land tiles", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+            int texId = _gridTex.SelectedItem;
+            List<int> lands = TextureMul.LandTilesUsing(texId);
+            if (lands.Count == 0)
+            {
+                MessageBox.Show(this, $"No land tile uses texture 0x{texId:X4} (tiledata.mul).", "Land tiles", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+            CommitPreview(false);
+            using (Bitmap output = Output())
+            {
+                bool isTile = output.Width == CutterArt.LandSize && output.Height == CutterArt.LandSize;
+                string list = string.Join(", ", lands.Take(12).Select(l => $"0x{l:X4}")) + (lands.Count > 12 ? " …" : string.Empty);
+                if (MessageBox.Show(this, $"Write the image as land tile into {lands.Count} land tiles that use texture 0x{texId:X4}?\n{list}\n\n"
+                        + (isTile ? "The image is already a 44 × 44 land tile." : "The image is turned into a 44 × 44 land tile first (black outside)."),
+                        "Land tiles", MessageBoxButtons.OKCancel, MessageBoxIcon.Question) != DialogResult.OK)
+                {
+                    return;
+                }
+                using (Bitmap tile = isTile ? CutterImaging.To32Bpp(output) : TextureImaging.TextureToLandTile(output, true))
+                {
+                    try
+                    {
+                        foreach (int land in lands)
+                        {
+                            CutterArt.Write(ArtKind.Land, land, tile, this);
+                        }
+                        SetMessage($"{lands.Count} land tiles written ({list}). Save art.mul in UoFiddler (Land tiles tab) to keep them.");
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show(this, "Writing failed:\n" + ex.Message, "Land tiles", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
             }
         }
 
@@ -2563,10 +3228,24 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             Properties.Settings.Default.FormTextureCutter = Location;
             Properties.Settings.Default.Save();
 
+            try
+            {
+                _palette.Save(CutterPalette.DefaultFile);
+            }
+            catch (Exception)
+            {
+                // palette could not be saved – not important
+            }
+            if (_terrain != null && !_terrain.IsDisposed)
+            {
+                _terrain.Close();
+            }
             _image?.Dispose();
             _previewImage?.Dispose();
-            _overlay?.Dispose();
-            _overlaySource?.Dispose();
+            _pattern?.Dispose();
+            _blendB?.Dispose();
+            canvas.Layers.ForEach(l => l.Dispose());
+            canvas.Layers.Clear();
             _undo.ForEach(b => b.Dispose());
             _redo.ForEach(b => b.Dispose());
         }
@@ -2608,6 +3287,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                     case Keys.G: ToggleGrid(); return true;
                     case Keys.T: ToggleTiled(); return true;
                     case Keys.F: FitZoom(); return true;
+                    case Keys.P: OpenTerrainPreview(); return true;
+                    case Keys.B: OpenBatch(); return true;
                     case Keys.D0: case Keys.NumPad0: SetZoom(1); return true;
                     case Keys.Oemplus: case Keys.Add: SetZoom(canvas.Zoom + 1); return true;
                     case Keys.OemMinus: case Keys.Subtract: SetZoom(canvas.Zoom - 1); return true;
@@ -2672,14 +3353,14 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 case Keys.Down:
                 case Keys.Left:
                 case Keys.Right:
-                    if (canvas.Overlay != null)
+                    if (canvas.ActiveLayer != null)
                     {
                         int step = shift ? 10 : 1;
-                        Point p = canvas.OverlayPosition;
+                        Point p = canvas.ActiveLayer.Position;
                         p.Offset(key == Keys.Left ? -step : key == Keys.Right ? step : 0, key == Keys.Up ? -step : key == Keys.Down ? step : 0);
-                        canvas.OverlayPosition = p;
+                        canvas.ActiveLayer.Position = p;
                         canvas.Invalidate();
-                        Canvas_OverlayMoved(this, EventArgs.Empty);
+                        Canvas_LayerMoved(this, EventArgs.Empty);
                         return true;
                     }
                     break;
