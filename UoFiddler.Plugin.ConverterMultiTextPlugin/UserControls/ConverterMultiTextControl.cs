@@ -444,7 +444,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             toolTip1.InitialDelay = 1000;
             toolTip1.ReshowDelay = 500;
             toolTip1.ShowAlways = true;
-            toolTip1.SetToolTip(this.BtAltitudeTool, "Altitude Tool Frontend");
+            toolTip1.SetToolTip(this.BtAltitudeTool, "Altitude Tool – map heights ↔ image");
 
             AltitudeToolForm form = new AltitudeToolForm();
             form.FormClosed += AltitudeTool_FormClosed;
