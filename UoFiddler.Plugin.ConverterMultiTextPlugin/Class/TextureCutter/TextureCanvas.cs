@@ -8,7 +8,7 @@ using UoFiddler.Plugin.ConverterMultiTextPlugin.Class.GraphicCutter;
 
 namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Class.TextureCutter
 {
-    internal enum CanvasTool { Select, Pencil, Eraser, Line, Rectangle, Fill, Pipette, Overlay }
+    internal enum CanvasTool { Select, Pencil, Eraser, Line, Rectangle, Fill, Pipette, Overlay, MaskPaint, Wand, Stamp }
 
     internal enum CanvasSelection { Rectangle, Ellipse, Freehand, Polygon }
 
@@ -222,6 +222,245 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Class.TextureCutter
         /// <summary>The move tool picked another layer by clicking on it.</summary>
         public event EventHandler ActiveLayerChanged;
 
+        /// <summary>Raised before the mask changes (push undo here).</summary>
+        public event EventHandler BeginMaskEdit;
+
+        /// <summary>Raised after the mask was changed by a mask tool.</summary>
+        public event EventHandler MaskChanged;
+
+        #region Mask (marked pixels)
+
+        private Bitmap _maskOverlay;
+        private bool _maskEditing;
+
+        /// <summary>Marked pixels (width × height), owned by the owner. Null = no mask.</summary>
+        public bool[] Mask { get; set; }
+
+        public bool ShowMask { get; set; } = true;
+
+        public Color MaskColor { get; set; } = Color.FromArgb(120, 255, 0, 0);
+
+        /// <summary>Mask brush round (true) or square.</summary>
+        public bool RoundBrush { get; set; } = true;
+
+        /// <summary>Shape of the stamp tool (true = marked), centered on the mouse.</summary>
+        public bool[,] StampShape { get; set; }
+
+        /// <summary>Call after the owner changed the mask.</summary>
+        public void InvalidateMask()
+        {
+            _maskOverlay?.Dispose();
+            _maskOverlay = null;
+            Invalidate();
+        }
+
+        private bool MaskReady => _image != null && Mask != null && Mask.Length == _image.Width * _image.Height;
+
+        private void StartMaskEdit()
+        {
+            if (_maskEditing)
+            {
+                return;
+            }
+            _maskEditing = true;
+            BeginMaskEdit?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void EndMaskEdit()
+        {
+            if (!_maskEditing)
+            {
+                return;
+            }
+            _maskEditing = false;
+            InvalidateMask();
+            MaskChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void SetMaskPixel(int x, int y, bool value)
+        {
+            if (x >= 0 && y >= 0 && x < _image.Width && y < _image.Height)
+            {
+                Mask[y * _image.Width + x] = value;
+            }
+        }
+
+        private void MaskDot(Point c, bool value)
+        {
+            int size = Math.Max(1, BrushSize);
+            int off = (size - 1) / 2;
+            double r = size / 2.0;
+            for (int y = 0; y < size; y++)
+            {
+                for (int x = 0; x < size; x++)
+                {
+                    if (RoundBrush && size > 2)
+                    {
+                        double dx = x + 0.5 - r, dy = y + 0.5 - r;
+                        if (dx * dx + dy * dy > r * r)
+                        {
+                            continue;
+                        }
+                    }
+                    SetMaskPixel(c.X - off + x, c.Y - off + y, value);
+                }
+            }
+        }
+
+        private void MaskStroke(Point a, Point b, bool value)
+        {
+            int dx = Math.Abs(b.X - a.X), sx = a.X < b.X ? 1 : -1;
+            int dy = -Math.Abs(b.Y - a.Y), sy = a.Y < b.Y ? 1 : -1;
+            int err = dx + dy, x = a.X, y = a.Y;
+            while (true)
+            {
+                MaskDot(new Point(x, y), value);
+                if (MirrorDraw)
+                {
+                    MaskDot(new Point(_image.Width - 1 - x, y), value);
+                }
+                if (x == b.X && y == b.Y)
+                {
+                    break;
+                }
+                int e2 = 2 * err;
+                if (e2 >= dy) { err += dy; x += sx; }
+                if (e2 <= dx) { err += dx; y += sy; }
+            }
+            _maskOverlay?.Dispose();
+            _maskOverlay = null;
+            Invalidate();
+        }
+
+        /// <summary>Marks (or unmarks) pixels of similar color: connected, or in the whole image.</summary>
+        private void Wand(Point start, bool value, bool wholeImage)
+        {
+            int w = _image.Width, h = _image.Height;
+            int[] px = CutterImaging.GetPixels(_image);
+            int target = px[start.Y * w + start.X];
+            int tol = FillTolerance;
+            bool Match(int p) =>
+                ((p >> 24) == 0) == ((target >> 24) == 0) &&
+                Math.Abs(((p >> 16) & 0xFF) - ((target >> 16) & 0xFF)) <= tol &&
+                Math.Abs(((p >> 8) & 0xFF) - ((target >> 8) & 0xFF)) <= tol &&
+                Math.Abs((p & 0xFF) - (target & 0xFF)) <= tol;
+            if (wholeImage)
+            {
+                for (int i = 0; i < px.Length; i++)
+                {
+                    if (Match(px[i]))
+                    {
+                        Mask[i] = value;
+                    }
+                }
+                return;
+            }
+            var done = new bool[px.Length];
+            var stack = new Stack<int>();
+            stack.Push(start.Y * w + start.X);
+            while (stack.Count > 0)
+            {
+                int i = stack.Pop();
+                if (done[i] || !Match(px[i]))
+                {
+                    continue;
+                }
+                done[i] = true;
+                Mask[i] = value;
+                int x = i % w, y = i / w;
+                if (x > 0) stack.Push(i - 1);
+                if (x < w - 1) stack.Push(i + 1);
+                if (y > 0) stack.Push(i - w);
+                if (y < h - 1) stack.Push(i + w);
+            }
+        }
+
+        private void Stamp(Point c, bool value)
+        {
+            bool[,] shape = StampShape;
+            if (shape == null)
+            {
+                return;
+            }
+            int sw = shape.GetLength(0), sh = shape.GetLength(1);
+            for (int y = 0; y < sh; y++)
+            {
+                for (int x = 0; x < sw; x++)
+                {
+                    if (shape[x, y])
+                    {
+                        SetMaskPixel(c.X - sw / 2 + x, c.Y - sh / 2 + y, value);
+                    }
+                }
+            }
+        }
+
+        private void DrawMask(Graphics g)
+        {
+            if (!ShowMask || !MaskReady)
+            {
+                return;
+            }
+            if (_maskOverlay == null)
+            {
+                int w = _image.Width, h = _image.Height;
+                var px = new int[w * h];
+                int c = MaskColor.ToArgb();
+                bool any = false;
+                for (int i = 0; i < px.Length; i++)
+                {
+                    if (Mask[i])
+                    {
+                        px[i] = c;
+                        any = true;
+                    }
+                }
+                if (!any)
+                {
+                    return;
+                }
+                _maskOverlay = new Bitmap(w, h, PixelFormat.Format32bppArgb);
+                CutterImaging.SetPixels(_maskOverlay, px);
+            }
+            InterpolationMode oldMode = g.InterpolationMode;
+            g.InterpolationMode = InterpolationMode.NearestNeighbor;
+            g.PixelOffsetMode = PixelOffsetMode.Half;
+            g.DrawImage(_maskOverlay, new Rectangle(0, 0, _image.Width * _zoom, _image.Height * _zoom));
+            g.PixelOffsetMode = PixelOffsetMode.Default;
+            g.InterpolationMode = oldMode;
+        }
+
+        private void DrawMaskToolPreview(Graphics g)
+        {
+            if (_image == null || _current.X < 0)
+            {
+                return;
+            }
+            using (var pen = new Pen(Color.Yellow) { DashStyle = DashStyle.Dot })
+            {
+                if (Tool == CanvasTool.Stamp && StampShape != null)
+                {
+                    int sw = StampShape.GetLength(0), sh = StampShape.GetLength(1);
+                    g.DrawRectangle(pen, (_current.X - sw / 2) * _zoom, (_current.Y - sh / 2) * _zoom, sw * _zoom - 1, sh * _zoom - 1);
+                }
+                else if (Tool == CanvasTool.MaskPaint)
+                {
+                    int size = Math.Max(1, BrushSize), off = (size - 1) / 2;
+                    var r = new Rectangle((_current.X - off) * _zoom, (_current.Y - off) * _zoom, size * _zoom - 1, size * _zoom - 1);
+                    if (RoundBrush && size > 2)
+                    {
+                        g.DrawEllipse(pen, r);
+                    }
+                    else
+                    {
+                        g.DrawRectangle(pen, r);
+                    }
+                }
+            }
+        }
+
+        #endregion
+
         #endregion
 
         private int Repeat => TiledView ? 3 : 1;
@@ -339,7 +578,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Class.TextureCutter
             DrawLayers(g);
             DrawGrid(g);
             DrawSelection(g);
+            DrawMask(g);
             DrawToolPreview(g);
+            DrawMaskToolPreview(g);
         }
 
         private void DrawLayers(Graphics g)
@@ -518,6 +759,35 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Class.TextureCutter
                     }
                     break;
 
+                case CanvasTool.MaskPaint:
+                    if (!MaskReady)
+                    {
+                        return;
+                    }
+                    _mouseDown = true;
+                    StartMaskEdit();
+                    MaskStroke(p, p, e.Button == MouseButtons.Left);
+                    return;
+
+                case CanvasTool.Wand:
+                    if (MaskReady && Inside(p))
+                    {
+                        StartMaskEdit();
+                        Wand(p, e.Button == MouseButtons.Left, (ModifierKeys & Keys.Shift) == Keys.Shift);
+                        EndMaskEdit();
+                    }
+                    return;
+
+                case CanvasTool.Stamp:
+                    if (MaskReady)
+                    {
+                        _mouseDown = true;
+                        StartMaskEdit();
+                        Stamp(p, e.Button == MouseButtons.Left);
+                        InvalidateMask();
+                    }
+                    return;
+
                 case CanvasTool.Pipette:
                     if (Inside(p))
                     {
@@ -594,6 +864,22 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Class.TextureCutter
                 Invalidate();
                 return;
             }
+            if ((Tool == CanvasTool.MaskPaint || Tool == CanvasTool.Stamp) && old != p)
+            {
+                if (_mouseDown && Tool == CanvasTool.MaskPaint)
+                {
+                    MaskStroke(old, p, _button == MouseButtons.Left);
+                }
+                else if (_mouseDown && Tool == CanvasTool.Stamp && StampShape != null &&
+                         (Math.Abs(p.X - _last.X) >= StampShape.GetLength(0) || Math.Abs(p.Y - _last.Y) >= StampShape.GetLength(1)))
+                {
+                    Stamp(p, _button == MouseButtons.Left);
+                    _last = p;
+                    InvalidateMask();
+                }
+                Invalidate();
+                return;
+            }
             if (!_mouseDown)
             {
                 return;
@@ -657,6 +943,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Class.TextureCutter
             _mouseDown = false;
             Cursor = Cursors.Cross;
             Color c = _button == MouseButtons.Right ? SecondaryColor : PrimaryColor;
+            if (Tool == CanvasTool.MaskPaint || Tool == CanvasTool.Stamp)
+            {
+                EndMaskEdit();
+                return;
+            }
 
             switch (Tool)
             {
@@ -706,6 +997,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Class.TextureCutter
         {
             base.OnMouseLeave(e);
             HoverPixel?.Invoke(this, new Point(-1, -1));
+            if (Tool == CanvasTool.MaskPaint || Tool == CanvasTool.Stamp)
+            {
+                _current = new Point(-1, -1);
+                Invalidate();
+            }
         }
 
         #endregion
