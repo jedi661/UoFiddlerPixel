@@ -8,7 +8,6 @@ version more than the original version. Also, some source codes from older and N
 
 Version 4.12.25
 
-### English
 The transition tool was rebuilt. It creates the 12 transition pieces between two textures (e.g. meadow → road, grass → cobblestone).
 
 **Bug fixes**
