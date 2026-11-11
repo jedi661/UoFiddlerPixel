@@ -55,6 +55,47 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 
         #region Helpers
 
+        private readonly List<(SplitContainer Split, int Distance)> _splits = new List<(SplitContainer, int)>();
+
+        /// <summary>A split container whose divider is set once the window has its real size (setting it earlier gets clamped).</summary>
+        private SplitContainer Split(int distance, Orientation orientation, bool fixFirst = true)
+        {
+            var split = new SplitContainer { Dock = DockStyle.Fill, Orientation = orientation };
+            if (fixFirst)
+            {
+                split.FixedPanel = FixedPanel.Panel1;
+            }
+            _splits.Add((split, distance));
+            return split;
+        }
+
+        protected override void OnShown(EventArgs e)
+        {
+            base.OnShown(e);
+            ApplySplits();
+            tabControl1.SelectedIndexChanged += (s, a) => ApplySplits();
+        }
+
+        /// <summary>Sets the dividers of the visible split containers (hidden tabs have no size yet – they follow when shown).</summary>
+        private void ApplySplits()
+        {
+            foreach ((SplitContainer split, int distance) in _splits.ToList())
+            {
+                int size = split.Orientation == Orientation.Vertical ? split.Width : split.Height;
+                if (size <= 0 || !split.Visible)
+                {
+                    continue;
+                }
+                int max = size - split.Panel2MinSize - split.SplitterWidth;
+                if (max > split.Panel1MinSize)
+                {
+                    split.SplitterDistance = Math.Max(split.Panel1MinSize, Math.Min(distance, max));
+                }
+                _splits.Remove((split, distance));
+            }
+        }
+
+
         private static string Tip(string en, string de) => en + "\n\nDE: " + de;
 
         private void SetMessage(string text) => statusMessage.Text = text;
@@ -262,10 +303,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             right.Controls.Add(_problems);
             right.Controls.Add(outBar);
 
-            var inner = new SplitContainer { Dock = DockStyle.Fill, SplitterDistance = 500, FixedPanel = FixedPanel.Panel1 };
+            var inner = Split(500, Orientation.Vertical);
             inner.Panel1.Controls.Add(_fieldsHost);
             inner.Panel2.Controls.Add(right);
-            var outer = new SplitContainer { Dock = DockStyle.Fill, SplitterDistance = 250, FixedPanel = FixedPanel.Panel1 };
+            var outer = Split(250, Orientation.Vertical);
             outer.Panel1.Controls.Add(left);
             outer.Panel2.Controls.Add(inner);
             tabGenerator.Controls.Add(outer);
@@ -685,10 +726,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             editor.Controls.Add(_templateInfo);
 
             _templateTest = new RichTextBox { Dock = DockStyle.Fill, ReadOnly = true, Font = new Font("Consolas", 9.5f), WordWrap = false, BackColor = SystemColors.Window };
-            var right = new SplitContainer { Dock = DockStyle.Fill, Orientation = Orientation.Horizontal, SplitterDistance = 430 };
+            var right = Split(430, Orientation.Horizontal, false);
             right.Panel1.Controls.Add(editor);
             right.Panel2.Controls.Add(_templateTest);
-            var split = new SplitContainer { Dock = DockStyle.Fill, SplitterDistance = 250, FixedPanel = FixedPanel.Panel1 };
+            var split = Split(250, Orientation.Vertical);
             split.Panel1.Controls.Add(left);
             split.Panel2.Controls.Add(right);
             tabTemplates.Controls.Add(split);
@@ -971,7 +1012,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             var right = new Panel { Dock = DockStyle.Fill };
             right.Controls.Add(_clientText);
             right.Controls.Add(bar);
-            var split = new SplitContainer { Dock = DockStyle.Fill, SplitterDistance = 260, FixedPanel = FixedPanel.Panel1 };
+            var split = Split(260, Orientation.Vertical);
             split.Panel1.Controls.Add(left);
             split.Panel2.Controls.Add(right);
             tabClientFiles.Controls.Add(split);

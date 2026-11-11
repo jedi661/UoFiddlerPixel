@@ -70,7 +70,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Class.ScriptCreator
             };
 
             _preview = new RichTextBox { Dock = DockStyle.Fill, ReadOnly = true, Font = new Font("Consolas", 9.5f), WordWrap = false, BackColor = SystemColors.Window };
-            var split = new SplitContainer { Dock = DockStyle.Fill, SplitterDistance = 560 };
+            var split = new SplitContainer { Dock = DockStyle.Fill };
+            Shown += (s, e) => { if (split.Width > 600) split.SplitterDistance = Math.Min(560, split.Width - 200); };
             split.Panel1.Controls.Add(_grid);
             split.Panel2.Controls.Add(_preview);
 

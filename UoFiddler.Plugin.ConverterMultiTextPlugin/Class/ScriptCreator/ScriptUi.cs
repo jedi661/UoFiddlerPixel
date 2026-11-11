@@ -227,10 +227,14 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Class.ScriptCreator
                     {
                         Width = 220,
                         DropDownStyle = type == "choice" ? ComboBoxStyle.DropDownList : ComboBoxStyle.DropDown,
-                        AutoCompleteMode = AutoCompleteMode.SuggestAppend,
-                        AutoCompleteSource = AutoCompleteSource.ListItems,
                         Margin = new Padding(3, 2, 3, 0)
                     };
+                    if (type == "combo")
+                    {
+                        // WinForms: the source must be set before the mode, and only editable boxes get suggestions
+                        c.AutoCompleteSource = AutoCompleteSource.ListItems;
+                        c.AutoCompleteMode = AutoCompleteMode.SuggestAppend;
+                    }
                     c.Items.AddRange(ScriptLists.Resolve(field.Options).Cast<object>().ToArray());
                     void SetC(string v)
                     {
