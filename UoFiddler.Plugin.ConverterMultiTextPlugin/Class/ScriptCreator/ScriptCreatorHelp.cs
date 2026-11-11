@@ -20,11 +20,21 @@ TAB GENERATOR
 3. Right: the script, live and colored. Red lines above it = problems (invalid class name, number out of range,
    damage types not 100 % …).
 4. ""Save"" writes it into the scripts folder (e.g. ServUO\Scripts\Custom) with the file name of the template; ""Save as…"" asks.
+• ""…"" next to item ID, hue, body, sound, gump and cliloc fields opens the UO browser – choose with pictures, playing
+  animations and sounds. Book covers have a picture list again.
 • ""Reset values"" = defaults · ""Edit template"" = open it in the Templates tab · ""Values as defaults"" = own copy with your values.
+
+UO BROWSER / OVERVIEW (toolbar)
+Items (art with name, flags, layer, AnimID; filter wearable, weapon, container, light, door …), animations (names from
+Animationlist.xml, animation plays, action and direction, which anim file), sounds (play; creature sound set +0 … +4),
+hues, gumps (interface / containers / paperdoll), cliloc texts (search by text or number) and an overview tab
+""where do I find which ID"". Double click or ""Use"" takes the value; Ctrl+C copies the ID.
 • The values of every template are kept while the window is open.
 
 BUILT-IN TEMPLATES (all old tabs are in them)
-ServUO: ranged weapon (bow, crossbow), melee weapon (sword, axe, staff, mace), armor / shield, clothing, creature / mount,
+ServUO: new ranged / melee weapon TYPE (own class with ammo, effect, abilities, AOS / ML / old speed and damage, sounds –
+old tabs Crossbow and Sword), ranged / melee weapon VARIANT (magic or artifact version of an existing weapon – old tabs Bow,
+Staff, Axe), armor / shield, clothing, creature / mount,
 vendor NPC, chair / furniture, container (gift box, barrel …), commodity deed box, bag with items, decoration item,
 damageable wall, door, book (text is wrapped at whole words, empty line = new page).
 Sphere: ITEMDEF and CHARDEF.
@@ -45,7 +55,8 @@ Header lines, then @template and the script text:
   @file {{ClassName}}.cs                               @description Text
   @field Key | type | Label | default | tooltip
   @check sum:Phys,Fire,Cold=100     (the values / list values must add up to 100)
-Types: class (C# name), string, text (several lines), int:min:max, double, range (min,max), bool, itemid, hue, body, sound,
+Types: class (C# name), string, text (several lines), int:min:max, double, range (min,max), bool, itemid, itemid:0x1,0x2 (with a
+  picture list), hue, body, sound, gump, cliloc (all with the browser button),
   choice:a,b,c (fixed list) or choice:@ListName, combo:… (list + free text), list:@ListName (table name = value),
   pages:lines:chars (book text).
 Lists: AosAttribute, AosWeaponAttribute, AosArmorAttribute, SkillName, LootPack, AIType, FightMode, LootType, ItemLevel, HideType,
@@ -81,11 +92,21 @@ REITER GENERATOR
 3. Rechts: das Skript, live und farbig. Rote Zeilen darüber = Probleme (ungültiger Klassenname, Zahl außerhalb des Bereichs,
    Schadensarten nicht 100 % …).
 4. „Save“ schreibt es mit dem Dateinamen der Vorlage in den Scripts-Ordner (z. B. ServUO\Scripts\Custom); „Save as…“ fragt nach.
+• „…“ neben Item-ID-, Hue-, Body-, Sound-, Gump- und Cliloc-Feldern öffnet den UO-Browser – auswählen mit Bildern, laufenden
+  Animationen und Tönen. Buch-Cover haben wieder eine Bilderliste.
 • „Reset values“ = Vorgaben · „Edit template“ = Vorlage im Reiter Templates öffnen · „Values as defaults“ = eigene Kopie mit deinen Werten.
+
+UO-BROWSER / ÜBERSICHT (Leiste)
+Items (Art mit Name, Flags, Layer, AnimID; Filter tragbar, Waffe, Behälter, Licht, Tür …), Animationen (Namen aus
+Animationlist.xml, Animation läuft, Aktion und Richtung, welche anim-Datei), Sounds (abspielen; Kreatur-Sounds +0 … +4),
+Hues, Gumps (Oberfläche / Behälter / Paperdoll), Cliloc-Texte (Suche nach Text oder Nummer) und ein Reiter
+„wo finde ich welche ID“. Doppelklick oder „Use“ übernimmt den Wert; Strg+C kopiert die ID.
 • Die Werte jeder Vorlage bleiben erhalten, solange das Fenster offen ist.
 
 EINGEBAUTE VORLAGEN (alle alten Reiter stecken darin)
-ServUO: Fernkampfwaffe (Bogen, Armbrust), Nahkampfwaffe (Schwert, Axt, Stab, Keule), Rüstung / Schild, Kleidung, Kreatur / Reittier,
+ServUO: neue Fern- / Nahkampf-WAFFENART (eigene Klasse mit Munition, Effekt, Fähigkeiten, AOS / ML / alter Geschwindigkeit
+und Schaden, Sounds – alte Reiter Crossbow und Sword), Fern- / Nahkampf-VARIANTE (magische oder Artefakt-Version einer vorhandenen
+Waffe – alte Reiter Bow, Staff, Axe), Rüstung / Schild, Kleidung, Kreatur / Reittier,
 Händler-NPC, Stuhl / Möbel, Behälter (Geschenkbox, Fass …), Commodity-Deed-Box, Beutel mit Items, Deko-Item,
 zerstörbare Wand, Tür, Buch (Text wird an ganzen Wörtern umbrochen, Leerzeile = neue Seite).
 Sphere: ITEMDEF und CHARDEF.
@@ -106,7 +127,8 @@ Kopfzeilen, dann @template und der Skripttext:
   @file {{ClassName}}.cs                              @description Text
   @field Key | Typ | Beschriftung | Vorgabe | Tooltip
   @check sum:Phys,Fire,Cold=100     (die Werte / Listenwerte müssen 100 ergeben)
-Typen: class (C#-Name), string, text (mehrzeilig), int:min:max, double, range (min,max), bool, itemid, hue, body, sound,
+Typen: class (C#-Name), string, text (mehrzeilig), int:min:max, double, range (min,max), bool, itemid, itemid:0x1,0x2 (mit
+  Bilderliste), hue, body, sound, gump, cliloc (alle mit Browser-Knopf),
   choice:a,b,c (feste Liste) oder choice:@Listenname, combo:… (Liste + freier Text), list:@Listenname (Tabelle Name = Wert),
   pages:Zeilen:Zeichen (Buchtext).
 Listen: AosAttribute, AosWeaponAttribute, AosArmorAttribute, SkillName, LootPack, AIType, FightMode, LootType, ItemLevel, HideType,

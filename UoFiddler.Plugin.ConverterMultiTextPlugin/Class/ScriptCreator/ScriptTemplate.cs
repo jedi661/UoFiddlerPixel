@@ -11,7 +11,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Class.ScriptCreator
     internal sealed class TemplateField
     {
         public string Key;
-        public string Type = "string";   // class, string, text, int[:min:max], double, range, bool, itemid, hue, body, sound, choice:..., combo:..., list:..., pages[:lines:chars]
+        public string Type = "string";   // class, string, text, int[:min:max], double, range, bool, itemid[:suggested ids], hue, body, sound, gump, cliloc, choice:..., combo:..., list:..., pages[:lines:chars]
         public string Label;
         public string Default = string.Empty;
         public string Tip;
@@ -210,6 +210,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Class.ScriptCreator
                     case "hue":
                     case "body":
                     case "sound":
+                    case "gump":
+                    case "cliloc":
                         if (!TryParseInt(v, out long n))
                         {
                             problems.Add($"{label}: \"{v}\" is not a number.");
@@ -220,6 +222,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Class.ScriptCreator
                         if (f.BaseType == "itemid") { min = 0; max = 0xFFFF; }
                         if (f.BaseType == "hue") { min = 0; max = 0xFFFF; }
                         if (f.BaseType == "body" || f.BaseType == "sound") { min = 0; max = 0xFFFF; }
+                        if (f.BaseType == "gump") { min = 0; max = 0xFFFFF; }
+                        if (f.BaseType == "cliloc") { min = 0; max = 99999999; }
                         if (n < min || n > max)
                         {
                             problems.Add($"{label}: {n} is outside {min} … {max}.");

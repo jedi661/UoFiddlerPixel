@@ -276,17 +276,94 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Class.ScriptCreator
                 case "itemid":
                 case "hue":
                 case "body":
+                case "sound":
+                case "gump":
+                case "cliloc":
                 {
-                    var t = new TextBox { Width = 90, Text = value, Margin = new Padding(3, 2, 3, 0) };
-                    var pic = new Panel { Width = type == "hue" ? 128 : 44, Height = type == "hue" ? 16 : 44, Margin = new Padding(3, 2, 3, 0) };
-                    pic.Paint += (s, e) => PaintSmall(e.Graphics, pic.ClientRectangle, type, t.Text);
-                    t.TextChanged += (s, e) => { pic.Invalidate(); Raise(); };
+                    int[] suggestions = type == "itemid" ? ParseIds(field.Options) : Array.Empty<int>();
+                    Control input;
+                    if (suggestions.Length > 0)
+                    {
+                        // the old book-cover picker: an editable list with pictures
+                        var combo = new ComboBox { Width = 120, DrawMode = DrawMode.OwnerDrawFixed, ItemHeight = 46, DropDownHeight = 46 * 8, Margin = new Padding(3, 2, 3, 0) };
+                        foreach (int id in suggestions)
+                        {
+                            combo.Items.Add($"0x{id:X4}");
+                        }
+                        combo.DrawItem += (s, e) =>
+                        {
+                            e.DrawBackground();
+                            if (e.Index >= 0 && ScriptTemplate.TryParseInt(combo.Items[e.Index].ToString(), out long id))
+                            {
+                                using (Bitmap img = UoPreview.Item((int)id, 0))
+                                {
+                                    if (img != null)
+                                    {
+                                        double sc = Math.Min(1, Math.Min(42.0 / img.Width, 42.0 / img.Height));
+                                        e.Graphics.DrawImage(img, e.Bounds.X + 2, e.Bounds.Y + 2, (int)(img.Width * sc), (int)(img.Height * sc));
+                                    }
+                                }
+                                TextRenderer.DrawText(e.Graphics, combo.Items[e.Index].ToString(), e.Font, new Point(e.Bounds.X + 50, e.Bounds.Y + 15),
+                                    (e.State & DrawItemState.Selected) != 0 ? SystemColors.HighlightText : SystemColors.ControlText);
+                            }
+                            e.DrawFocusRectangle();
+                        };
+                        combo.Text = value;
+                        input = combo;
+                    }
+                    else
+                    {
+                        input = new TextBox { Width = type == "cliloc" ? 110 : 90, Text = value, Margin = new Padding(3, 2, 3, 0) };
+                    }
+                    var pic = new Panel
+                    {
+                        Width = type == "hue" ? 128 : 44,
+                        Height = type == "hue" ? 16 : 44,
+                        Margin = new Padding(3, 2, 3, 0),
+                        Visible = type == "itemid" || type == "hue" || type == "body" || type == "gump"
+                    };
+                    var info = new Label { AutoSize = true, MaximumSize = new Size(170, 0), ForeColor = Color.DimGray, Margin = new Padding(3, 5, 3, 0) };
+                    pic.Paint += (s, e) => PaintSmall(e.Graphics, pic.ClientRectangle, type, input.Text);
+                    input.TextChanged += (s, e) =>
+                    {
+                        pic.Invalidate();
+                        info.Text = Describe(type, input.Text);
+                        Raise();
+                    };
+                    info.Text = Describe(type, value);
+                    var browse = new Button { Text = "…", Width = 28, Height = 24, Margin = new Padding(2, 2, 2, 0) };
+                    tip.SetToolTip(browse, "Choose with pictures / sounds (UO browser)\nMit Bildern / Tönen auswählen (UO-Browser)");
+                    browse.Click += (s, e) =>
+                    {
+                        BrowserTab tab = type switch
+                        {
+                            "hue" => BrowserTab.Hues,
+                            "body" => BrowserTab.Animations,
+                            "sound" => BrowserTab.Sounds,
+                            "gump" => BrowserTab.Gumps,
+                            "cliloc" => BrowserTab.Cliloc,
+                            _ => BrowserTab.Items
+                        };
+                        int current = ScriptTemplate.TryParseInt(input.Text, out long cv) ? (int)cv : -1;
+                        Form owner = browse.FindForm();
+                        using (var b = new UoBrowserForm(tab, current, suggestions) { TopMost = owner?.TopMost ?? false })
+                        {
+                            if (b.ShowDialog(owner) == DialogResult.OK && b.SelectedValue >= 0)
+                            {
+                                input.Text = type == "hue" || type == "cliloc" || type == "sound" && !input.Text.StartsWith("0x", StringComparison.OrdinalIgnoreCase)
+                                    ? b.SelectedValue.ToString(CultureInfo.InvariantCulture)
+                                    : $"0x{b.SelectedValue:X4}";
+                            }
+                        }
+                    };
                     var flow = new FlowLayoutPanel { AutoSize = true, WrapContents = false, Margin = new Padding(0) };
-                    flow.Controls.Add(t);
+                    flow.Controls.Add(input);
+                    flow.Controls.Add(browse);
                     flow.Controls.Add(pic);
+                    flow.Controls.Add(info);
                     Control = flow;
-                    _get = () => t.Text.Trim();
-                    _set = v => t.Text = v;
+                    _get = () => input.Text.Trim();
+                    _set = v => input.Text = v;
                     break;
                 }
                 default:
@@ -302,6 +379,43 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Class.ScriptCreator
             if (!string.IsNullOrEmpty(field.Tip))
             {
                 tip.SetToolTip(Control, field.Tip);
+            }
+        }
+
+        private static int[] ParseIds(string options) =>
+            (options ?? string.Empty).Split(',').Select(o => ScriptTemplate.TryParseInt(o.Trim(), out long v) ? (int)v : -1).Where(v => v >= 0).ToArray();
+
+        /// <summary>Short text next to an ID field: item name, hue name, sound name …</summary>
+        private static string Describe(string type, string text)
+        {
+            if (!ScriptTemplate.TryParseInt(text, out long v) || v < 0)
+            {
+                return string.Empty;
+            }
+            try
+            {
+                switch (type)
+                {
+                    case "itemid":
+                        lock (SdkSync.Lock)
+                        {
+                            return v < Ultima.TileData.ItemTable.Length ? Ultima.TileData.ItemTable[v].Name?.Trim() : string.Empty;
+                        }
+                    case "hue":
+                        UoPreview.HueColors((int)v, out string hueName);
+                        return v == 0 ? "no hue" : hueName;
+                    case "sound":
+                        lock (SdkSync.Lock)
+                        {
+                            return Ultima.Sounds.IsValidSound((int)v, out string soundName, out _) ? soundName : "no sound";
+                        }
+                    default:
+                        return string.Empty;
+                }
+            }
+            catch (Exception)
+            {
+                return string.Empty;
             }
         }
 
@@ -326,6 +440,28 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Class.ScriptCreator
                     {
                         g.FillRectangle(b, i * w, 0, w + 1, r.Height);
                     }
+                }
+                return;
+            }
+            if (type == "gump")
+            {
+                Bitmap gump = null;
+                try
+                {
+                    lock (SdkSync.Lock)
+                    {
+                        gump = Ultima.Gumps.IsValidIndex((int)v) ? Ultima.Gumps.GetGump((int)v) : null;
+                    }
+                }
+                catch (Exception)
+                {
+                    gump = null;
+                }
+                if (gump != null)
+                {
+                    double gs = Math.Min(1, Math.Min(r.Width / (double)gump.Width, r.Height / (double)gump.Height));
+                    g.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                    g.DrawImage(gump, (r.Width - (int)(gump.Width * gs)) / 2, (r.Height - (int)(gump.Height * gs)) / 2, (int)(gump.Width * gs), (int)(gump.Height * gs));
                 }
                 return;
             }

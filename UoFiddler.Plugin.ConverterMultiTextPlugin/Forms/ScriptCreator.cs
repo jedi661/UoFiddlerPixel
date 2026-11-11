@@ -227,6 +227,19 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 TsButton("Import script…", Tip("Turn an existing script (.cs / .scp) into an own template: its values become fields.",
                     "Ein vorhandenes Skript (.cs / .scp) in eine eigene Vorlage umwandeln: seine Werte werden Felder."), (s, e) => ImportScriptFile(), Properties.Resources.Load),
                 TsButton("Import from clipboard", Tip("Same with a script copied to the clipboard.", "Dasselbe mit einem Skript aus der Zwischenablage."), (s, e) => ImportClipboard()),
+                TsButton("New template", Tip("Write a new template from scratch (Templates tab).", "Eine neue Vorlage von Grund auf schreiben (Reiter Templates)."), (s, e) =>
+                {
+                    tabControl1.SelectedTab = tabTemplates;
+                    NewTemplate();
+                }),
+                new ToolStripSeparator(),
+                TsButton("UO browser / overview", Tip(
+                    "Items with pictures, animations (playing), sounds (to listen), hues, gumps, cliloc texts – and an overview where to find which ID.",
+                    "Items mit Bild, Animationen (abspielend), Sounds (anhören), Hues, Gumps, Cliloc-Texte – und eine Übersicht, wo welche ID zu finden ist."), (s, e) =>
+                {
+                    var b = new UoBrowserForm(BrowserTab.Items, -1, null, false) { TopMost = TopMost };
+                    b.Show(this);
+                }),
                 new ToolStripSeparator(),
                 TsButton("Reload templates", Tip("Reads the templates folder again (after editing files by hand).", "Liest den Vorlagenordner neu (nach Bearbeitung von Hand)."), (s, e) => ReloadTemplates(_current?.Name)),
                 TsButton("Templates folder", Tip("Opens ScriptTemplates next to UoFiddler.", "Öffnet ScriptTemplates neben UoFiddler."), (s, e) => OpenFolder(ScriptTemplateLibrary.UserFolder)),
