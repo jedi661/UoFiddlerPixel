@@ -90,6 +90,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             lbScriptCreator = new System.Windows.Forms.Label();
             btScriptCreator = new System.Windows.Forms.Button();
             tabPageTextureConverter = new System.Windows.Forms.TabPage();
+            textConverterPanel = new UoFiddler.Plugin.ConverterMultiTextPlugin.Class.TextConverter.TextConverterPanel();
             menuStrip1 = new System.Windows.Forms.MenuStrip();
             statusStrip1 = new System.Windows.Forms.StatusStrip();
             toolStripStatusLabelTime = new System.Windows.Forms.ToolStripStatusLabel();
@@ -621,6 +622,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             // 
             // tabPageTextureConverter
             // 
+            tabPageTextureConverter.Controls.Add(textConverterPanel);
             tabPageTextureConverter.Location = new System.Drawing.Point(4, 24);
             tabPageTextureConverter.Name = "tabPageTextureConverter";
             tabPageTextureConverter.Padding = new System.Windows.Forms.Padding(3);
@@ -628,6 +630,14 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             tabPageTextureConverter.TabIndex = 1;
             tabPageTextureConverter.Text = "Text Converter";
             tabPageTextureConverter.UseVisualStyleBackColor = true;
+            // 
+            // textConverterPanel
+            // 
+            textConverterPanel.Dock = System.Windows.Forms.DockStyle.Fill;
+            textConverterPanel.Location = new System.Drawing.Point(3, 3);
+            textConverterPanel.Name = "textConverterPanel";
+            textConverterPanel.Size = new System.Drawing.Size(954, 331);
+            textConverterPanel.TabIndex = 0;
             //
             // menuStrip1
             // 
@@ -689,6 +699,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
         private System.Windows.Forms.TabControl TabControl1;
         private System.Windows.Forms.TabPage tabPageMain;
         private System.Windows.Forms.TabPage tabPageTextureConverter;
+        private UoFiddler.Plugin.ConverterMultiTextPlugin.Class.TextConverter.TextConverterPanel textConverterPanel;
         private System.Windows.Forms.MenuStrip menuStrip1;
         private System.Windows.Forms.TabPage tabPageGraphic;
         private System.Windows.Forms.Button ButtonGraficCutterForm;

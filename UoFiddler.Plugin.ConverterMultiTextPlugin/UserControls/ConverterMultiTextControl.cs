@@ -32,8 +32,6 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
         {
             InitializeComponent();
 
-            // Tab "Text Converter": multi formats and other UO conversions (Class/TextConverter)
-            tabPageTextureConverter.Controls.Add(new Class.TextConverter.TextConverterPanel());
 
             _timer.Interval = 1000;
 
