@@ -119,7 +119,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             TabControl1.Location = new System.Drawing.Point(3, 27);
             TabControl1.Name = "TabControl1";
             TabControl1.SelectedIndex = 0;
-            TabControl1.Size = new System.Drawing.Size(968, 365);
+            TabControl1.Size = new System.Drawing.Size(961, 462);
             TabControl1.TabIndex = 15;
             // 
             // tabPageMain
@@ -595,7 +595,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             tabPageScript.Location = new System.Drawing.Point(4, 24);
             tabPageScript.Name = "tabPageScript";
             tabPageScript.Padding = new System.Windows.Forms.Padding(3);
-            tabPageScript.Size = new System.Drawing.Size(960, 337);
+            tabPageScript.Size = new System.Drawing.Size(192, 72);
             tabPageScript.TabIndex = 6;
             tabPageScript.Text = "Scripts";
             tabPageScript.UseVisualStyleBackColor = true;
@@ -626,7 +626,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             tabPageTextureConverter.Location = new System.Drawing.Point(4, 24);
             tabPageTextureConverter.Name = "tabPageTextureConverter";
             tabPageTextureConverter.Padding = new System.Windows.Forms.Padding(3);
-            tabPageTextureConverter.Size = new System.Drawing.Size(960, 337);
+            tabPageTextureConverter.Size = new System.Drawing.Size(953, 434);
             tabPageTextureConverter.TabIndex = 1;
             tabPageTextureConverter.Text = "Text Converter";
             tabPageTextureConverter.UseVisualStyleBackColor = true;
@@ -636,23 +636,23 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             textConverterPanel.Dock = System.Windows.Forms.DockStyle.Fill;
             textConverterPanel.Location = new System.Drawing.Point(3, 3);
             textConverterPanel.Name = "textConverterPanel";
-            textConverterPanel.Size = new System.Drawing.Size(954, 331);
+            textConverterPanel.Size = new System.Drawing.Size(947, 428);
             textConverterPanel.TabIndex = 0;
             // 
             // menuStrip1
             // 
             menuStrip1.Location = new System.Drawing.Point(0, 0);
             menuStrip1.Name = "menuStrip1";
-            menuStrip1.Size = new System.Drawing.Size(974, 24);
+            menuStrip1.Size = new System.Drawing.Size(967, 24);
             menuStrip1.TabIndex = 16;
             menuStrip1.Text = "menuStrip1";
             // 
             // statusStrip1
             // 
             statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { toolStripStatusLabelTime });
-            statusStrip1.Location = new System.Drawing.Point(0, 395);
+            statusStrip1.Location = new System.Drawing.Point(0, 492);
             statusStrip1.Name = "statusStrip1";
-            statusStrip1.Size = new System.Drawing.Size(974, 22);
+            statusStrip1.Size = new System.Drawing.Size(967, 22);
             statusStrip1.TabIndex = 17;
             statusStrip1.Text = "statusStrip1";
             // 
@@ -672,7 +672,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             DoubleBuffered = true;
             Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             Name = "ConverterMultiTextControl";
-            Size = new System.Drawing.Size(974, 417);
+            Size = new System.Drawing.Size(967, 514);
             TabControl1.ResumeLayout(false);
             tabPageMain.ResumeLayout(false);
             tabPageMain.PerformLayout();
