@@ -1,27 +1,9 @@
-﻿// /***************************************************************************
-//  *
-//  * $Author: Turley
-//  * 
-//  * "THE BEER-WARE LICENSE"
-//  * As long as you retain this notice you can do whatever you want with 
-//  * this stuff. If we meet some day, and you think this stuff is worth it,
-//  * you can buy me a beer in return.
-//  *
-//  ***************************************************************************/
-
-namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
+﻿namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 {
     partial class DecriptClientForm
     {
-        /// <summary>
-        /// Required designer variable.
-        /// </summary>
         private System.ComponentModel.IContainer components = null;
 
-        /// <summary>
-        /// Clean up any resources being used.
-        /// </summary>
-        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
         protected override void Dispose(bool disposing)
         {
             if (disposing && (components != null))
@@ -33,109 +15,212 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 
         #region Windows Form Designer generated code
 
-        /// <summary>
-        /// Required method for Designer support - do not modify
-        /// the contents of this method with the code editor.
-        /// </summary>
         private void InitializeComponent()
         {
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(DecriptClientForm));
-            btDecriptClientForm = new System.Windows.Forms.Button();
-            LAB_StatusIS = new System.Windows.Forms.Label();
-            label1 = new System.Windows.Forms.Label();
-            openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
-            lbMessagePos = new System.Windows.Forms.Label();
-            lbMessagePosOld = new System.Windows.Forms.Label();
-            lbMessagePos09 = new System.Windows.Forms.Label();
-            SuspendLayout();
+            this.btnSelectClient = new System.Windows.Forms.Button();
+            this.btnDecrypt = new System.Windows.Forms.Button();
+            this.txtClientPath = new System.Windows.Forms.TextBox();
+            this.lblStatus = new System.Windows.Forms.Label();
+            this.groupPatches = new System.Windows.Forms.GroupBox();
+            this.lblLogin = new System.Windows.Forms.Label();
+            this.lblBlowfish = new System.Windows.Forms.Label();
+            this.lblTwofish = new System.Windows.Forms.Label();
+            this.lblMD5 = new System.Windows.Forms.Label();
+            this.lblMultiClient = new System.Windows.Forms.Label();
+            this.txtLog = new System.Windows.Forms.TextBox();
+            this.lblLog = new System.Windows.Forms.Label();
+            this.progressBar = new System.Windows.Forms.ProgressBar();
+            this.chkAutoOpenFolder = new System.Windows.Forms.CheckBox();
+            this.groupPatches.SuspendLayout();
+            this.SuspendLayout();
             // 
-            // btDecriptClientForm
+            // btnSelectClient
             // 
-            btDecriptClientForm.Location = new System.Drawing.Point(78, 294);
-            btDecriptClientForm.Name = "btDecriptClientForm";
-            btDecriptClientForm.Size = new System.Drawing.Size(100, 23);
-            btDecriptClientForm.TabIndex = 0;
-            btDecriptClientForm.Text = "Decrypt Client.";
-            btDecriptClientForm.UseVisualStyleBackColor = true;
-            btDecriptClientForm.Click += btDecriptClientForm_Click_1;
+            this.btnSelectClient.Location = new System.Drawing.Point(12, 12);
+            this.btnSelectClient.Name = "btnSelectClient";
+            this.btnSelectClient.Size = new System.Drawing.Size(110, 28);
+            this.btnSelectClient.TabIndex = 0;
+            this.btnSelectClient.Text = "Client wählen...";
+            this.btnSelectClient.UseVisualStyleBackColor = true;
+            this.btnSelectClient.Click += new System.EventHandler(this.btnSelectClient_Click);
             // 
-            // LAB_StatusIS
+            // btnDecrypt
             // 
-            LAB_StatusIS.AutoSize = true;
-            LAB_StatusIS.Location = new System.Drawing.Point(3, 272);
-            LAB_StatusIS.Name = "LAB_StatusIS";
-            LAB_StatusIS.Size = new System.Drawing.Size(42, 15);
-            LAB_StatusIS.TabIndex = 1;
-            LAB_StatusIS.Text = "Status:";
+            this.btnDecrypt.Enabled = false;
+            this.btnDecrypt.Location = new System.Drawing.Point(128, 12);
+            this.btnDecrypt.Name = "btnDecrypt";
+            this.btnDecrypt.Size = new System.Drawing.Size(130, 28);
+            this.btnDecrypt.TabIndex = 1;
+            this.btnDecrypt.Text = "Decrypt & Patch";
+            this.btnDecrypt.UseVisualStyleBackColor = true;
+            this.btnDecrypt.Click += new System.EventHandler(this.btnDecrypt_Click);
             // 
-            // label1
+            // txtClientPath
             // 
-            label1.AutoSize = true;
-            label1.Location = new System.Drawing.Point(3, 9);
-            label1.Name = "label1";
-            label1.Size = new System.Drawing.Size(261, 150);
-            label1.TabIndex = 2;
-            label1.Text = resources.GetString("label1.Text");
+            this.txtClientPath.AllowDrop = true;
+            this.txtClientPath.Location = new System.Drawing.Point(12, 48);
+            this.txtClientPath.Name = "txtClientPath";
+            this.txtClientPath.ReadOnly = true;
+            this.txtClientPath.Size = new System.Drawing.Size(560, 23);
+            this.txtClientPath.TabIndex = 2;
+            this.txtClientPath.DragDrop += new System.Windows.Forms.DragEventHandler(this.txtClientPath_DragDrop);
+            this.txtClientPath.DragEnter += new System.Windows.Forms.DragEventHandler(this.txtClientPath_DragEnter);
             // 
-            // openFileDialog1
+            // lblStatus
             // 
-            openFileDialog1.FileName = "openFileDialog1";
+            this.lblStatus.AutoSize = true;
+            this.lblStatus.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            this.lblStatus.Location = new System.Drawing.Point(12, 80);
+            this.lblStatus.Name = "lblStatus";
+            this.lblStatus.Size = new System.Drawing.Size(48, 15);
+            this.lblStatus.TabIndex = 3;
+            this.lblStatus.Text = "Status:";
             // 
-            // lbMessagePos
+            // groupPatches
             // 
-            lbMessagePos.AutoSize = true;
-            lbMessagePos.Location = new System.Drawing.Point(7, 182);
-            lbMessagePos.Name = "lbMessagePos";
-            lbMessagePos.Size = new System.Drawing.Size(72, 15);
-            lbMessagePos.TabIndex = 3;
-            lbMessagePos.Text = "MessagePos";
+            this.groupPatches.Controls.Add(this.lblLogin);
+            this.groupPatches.Controls.Add(this.lblBlowfish);
+            this.groupPatches.Controls.Add(this.lblTwofish);
+            this.groupPatches.Controls.Add(this.lblMD5);
+            this.groupPatches.Controls.Add(this.lblMultiClient);
+            this.groupPatches.Location = new System.Drawing.Point(12, 110);
+            this.groupPatches.Name = "groupPatches";
+            this.groupPatches.Size = new System.Drawing.Size(280, 160);
+            this.groupPatches.TabIndex = 4;
+            this.groupPatches.TabStop = false;
+            this.groupPatches.Text = "Patch Status";
             // 
-            // lbMessagePosOld
+            // lblLogin
             // 
-            lbMessagePosOld.AutoSize = true;
-            lbMessagePosOld.Location = new System.Drawing.Point(7, 209);
-            lbMessagePosOld.Name = "lbMessagePosOld";
-            lbMessagePosOld.Size = new System.Drawing.Size(91, 15);
-            lbMessagePosOld.TabIndex = 4;
-            lbMessagePosOld.Text = "MessagePosOld";
+            this.lblLogin.AutoSize = true;
+            this.lblLogin.Location = new System.Drawing.Point(15, 28);
+            this.lblLogin.Name = "lblLogin";
+            this.lblLogin.Size = new System.Drawing.Size(90, 15);
+            this.lblLogin.TabIndex = 0;
+            this.lblLogin.Text = "Login Encryption: -";
             // 
-            // lbMessagePos09
+            // lblBlowfish
             // 
-            lbMessagePos09.AutoSize = true;
-            lbMessagePos09.Location = new System.Drawing.Point(7, 241);
-            lbMessagePos09.Name = "lbMessagePos09";
-            lbMessagePos09.Size = new System.Drawing.Size(84, 15);
-            lbMessagePos09.TabIndex = 5;
-            lbMessagePos09.Text = "MessagePos09";
+            this.lblBlowfish.AutoSize = true;
+            this.lblBlowfish.Location = new System.Drawing.Point(15, 52);
+            this.lblBlowfish.Name = "lblBlowfish";
+            this.lblBlowfish.Size = new System.Drawing.Size(95, 15);
+            this.lblBlowfish.TabIndex = 1;
+            this.lblBlowfish.Text = "Blowfish: -";
+            // 
+            // lblTwofish
+            // 
+            this.lblTwofish.AutoSize = true;
+            this.lblTwofish.Location = new System.Drawing.Point(15, 76);
+            this.lblTwofish.Name = "lblTwofish";
+            this.lblTwofish.Size = new System.Drawing.Size(90, 15);
+            this.lblTwofish.TabIndex = 2;
+            this.lblTwofish.Text = "Twofish: -";
+            // 
+            // lblMD5
+            // 
+            this.lblMD5.AutoSize = true;
+            this.lblMD5.Location = new System.Drawing.Point(15, 100);
+            this.lblMD5.Name = "lblMD5";
+            this.lblMD5.Size = new System.Drawing.Size(95, 15);
+            this.lblMD5.TabIndex = 3;
+            this.lblMD5.Text = "MD5 Decrypt: -";
+            // 
+            // lblMultiClient
+            // 
+            this.lblMultiClient.AutoSize = true;
+            this.lblMultiClient.Location = new System.Drawing.Point(15, 124);
+            this.lblMultiClient.Name = "lblMultiClient";
+            this.lblMultiClient.Size = new System.Drawing.Size(105, 15);
+            this.lblMultiClient.TabIndex = 4;
+            this.lblMultiClient.Text = "Multi-Client: -";
+            // 
+            // txtLog
+            // 
+            this.txtLog.Font = new System.Drawing.Font("Consolas", 9F);
+            this.txtLog.Location = new System.Drawing.Point(310, 130);
+            this.txtLog.Multiline = true;
+            this.txtLog.Name = "txtLog";
+            this.txtLog.ReadOnly = true;
+            this.txtLog.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
+            this.txtLog.Size = new System.Drawing.Size(262, 250);
+            this.txtLog.TabIndex = 5;
+            // 
+            // lblLog
+            // 
+            this.lblLog.AutoSize = true;
+            this.lblLog.Location = new System.Drawing.Point(310, 110);
+            this.lblLog.Name = "lblLog";
+            this.lblLog.Size = new System.Drawing.Size(28, 15);
+            this.lblLog.TabIndex = 6;
+            this.lblLog.Text = "Log";
+            // 
+            // progressBar
+            // 
+            this.progressBar.Location = new System.Drawing.Point(12, 390);
+            this.progressBar.Name = "progressBar";
+            this.progressBar.Size = new System.Drawing.Size(560, 18);
+            this.progressBar.TabIndex = 7;
+            // 
+            // chkAutoOpenFolder
+            // 
+            this.chkAutoOpenFolder.AutoSize = true;
+            this.chkAutoOpenFolder.Checked = true;
+            this.chkAutoOpenFolder.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.chkAutoOpenFolder.Location = new System.Drawing.Point(12, 280);
+            this.chkAutoOpenFolder.Name = "chkAutoOpenFolder";
+            this.chkAutoOpenFolder.Size = new System.Drawing.Size(220, 19);
+            this.chkAutoOpenFolder.TabIndex = 8;
+            this.chkAutoOpenFolder.Text = "Ordner nach Fertigstellung öffnen";
+            this.chkAutoOpenFolder.UseVisualStyleBackColor = true;
             // 
             // DecriptClientForm
             // 
-            AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
-            AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            ClientSize = new System.Drawing.Size(268, 329);
-            Controls.Add(lbMessagePos09);
-            Controls.Add(lbMessagePosOld);
-            Controls.Add(lbMessagePos);
-            Controls.Add(label1);
-            Controls.Add(LAB_StatusIS);
-            Controls.Add(btDecriptClientForm);
-            FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
-            Icon = (System.Drawing.Icon)resources.GetObject("$this.Icon");
-            Name = "DecriptClientForm";
-            Text = "Decript Client";
-            TopMost = true;
-            ResumeLayout(false);
-            PerformLayout();
+            this.AllowDrop = true;
+            this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.ClientSize = new System.Drawing.Size(584, 421);
+            this.Controls.Add(this.chkAutoOpenFolder);
+            this.Controls.Add(this.progressBar);
+            this.Controls.Add(this.lblLog);
+            this.Controls.Add(this.txtLog);
+            this.Controls.Add(this.groupPatches);
+            this.Controls.Add(this.lblStatus);
+            this.Controls.Add(this.txtClientPath);
+            this.Controls.Add(this.btnDecrypt);
+            this.Controls.Add(this.btnSelectClient);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
+            this.MaximizeBox = false;
+            this.Name = "DecriptClientForm";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
+            this.Text = "UO Client Decryptor & Multi-Client Patcher";
+            this.TopMost = true;
+            this.groupPatches.ResumeLayout(false);
+            this.groupPatches.PerformLayout();
+            this.ResumeLayout(false);
+            this.PerformLayout();
         }
 
         #endregion
 
-        private System.Windows.Forms.Button btDecriptClientForm;
-        private System.Windows.Forms.Label LAB_StatusIS;
-        private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.OpenFileDialog openFileDialog1;
-        private System.Windows.Forms.Label lbMessagePos;
-        private System.Windows.Forms.Label lbMessagePosOld;
-        private System.Windows.Forms.Label lbMessagePos09;
+        private System.Windows.Forms.Button btnSelectClient;
+        private System.Windows.Forms.Button btnDecrypt;
+        private System.Windows.Forms.TextBox txtClientPath;
+        private System.Windows.Forms.Label lblStatus;
+        private System.Windows.Forms.GroupBox groupPatches;
+        private System.Windows.Forms.Label lblLogin;
+        private System.Windows.Forms.Label lblBlowfish;
+        private System.Windows.Forms.Label lblTwofish;
+        private System.Windows.Forms.Label lblMD5;
+        private System.Windows.Forms.Label lblMultiClient;
+        private System.Windows.Forms.TextBox txtLog;
+        private System.Windows.Forms.Label lblLog;
+        private System.Windows.Forms.ProgressBar progressBar;
+        private System.Windows.Forms.CheckBox chkAutoOpenFolder;
+        private System.Windows.Forms.CheckBox chkLogin;
+        private System.Windows.Forms.CheckBox chkBlowfish;
+        private System.Windows.Forms.CheckBox chkTwofish;
+        private System.Windows.Forms.CheckBox chkMD5;
+        private System.Windows.Forms.CheckBox chkMultiClient;
     }
 }
