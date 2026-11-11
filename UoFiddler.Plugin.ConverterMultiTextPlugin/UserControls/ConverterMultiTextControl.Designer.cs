@@ -1,4 +1,4 @@
-﻿/***************************************************************************
+/***************************************************************************
  *
  * $Author: Turley
  * 
@@ -40,20 +40,6 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
         private void InitializeComponent()
         {
             components = new System.ComponentModel.Container();
-            BtnMultiOpen = new System.Windows.Forms.Button();
-            BtnSpeichernTxt = new System.Windows.Forms.Button();
-            BtnUmwandeln = new System.Windows.Forms.Button();
-            btnCopyTBox2 = new System.Windows.Forms.Button();
-            label1 = new System.Windows.Forms.Label();
-            label2 = new System.Windows.Forms.Label();
-            textBox1 = new System.Windows.Forms.TextBox();
-            contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(components);
-            copyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            clearToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            importClipboardToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            textBox2 = new System.Windows.Forms.TextBox();
-            openFileDialog = new System.Windows.Forms.OpenFileDialog();
-            label3 = new System.Windows.Forms.Label();
             TabControl1 = new System.Windows.Forms.TabControl();
             tabPageMain = new System.Windows.Forms.TabPage();
             lbIsoTiloSlicer = new System.Windows.Forms.Label();
@@ -104,23 +90,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             lbScriptCreator = new System.Windows.Forms.Label();
             btScriptCreator = new System.Windows.Forms.Button();
             tabPageTextureConverter = new System.Windows.Forms.TabPage();
-            PanelMinMax = new System.Windows.Forms.Panel();
-            TBMaximum = new System.Windows.Forms.TextBox();
-            LBMaximum = new System.Windows.Forms.Label();
-            TBMinimum = new System.Windows.Forms.TextBox();
-            LBMinimum = new System.Windows.Forms.Label();
-            LBResult = new System.Windows.Forms.Label();
-            BtnGenerate = new System.Windows.Forms.Button();
-            BtTest = new System.Windows.Forms.Button();
-            Btclear = new System.Windows.Forms.Button();
-            BtMorseCode = new System.Windows.Forms.Button();
-            checkBoxASCII = new System.Windows.Forms.CheckBox();
-            BtBinaryCode = new System.Windows.Forms.Button();
             menuStrip1 = new System.Windows.Forms.MenuStrip();
             statusStrip1 = new System.Windows.Forms.StatusStrip();
             toolStripStatusLabelTime = new System.Windows.Forms.ToolStripStatusLabel();
             timer1 = new System.Windows.Forms.Timer(components);
-            contextMenuStrip1.SuspendLayout();
             TabControl1.SuspendLayout();
             tabPageMain.SuspendLayout();
             tabPageAnimation.SuspendLayout();
@@ -129,127 +102,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             tabPageClient.SuspendLayout();
             tabPageScript.SuspendLayout();
             tabPageTextureConverter.SuspendLayout();
-            PanelMinMax.SuspendLayout();
             statusStrip1.SuspendLayout();
             SuspendLayout();
-            // 
-            // BtnMultiOpen
-            // 
-            BtnMultiOpen.Location = new System.Drawing.Point(338, 203);
-            BtnMultiOpen.Name = "BtnMultiOpen";
-            BtnMultiOpen.Size = new System.Drawing.Size(92, 23);
-            BtnMultiOpen.TabIndex = 0;
-            BtnMultiOpen.Text = "Open";
-            BtnMultiOpen.UseVisualStyleBackColor = true;
-            BtnMultiOpen.Click += BtnMultiOpen_Click;
-            // 
-            // BtnSpeichernTxt
-            // 
-            BtnSpeichernTxt.Location = new System.Drawing.Point(338, 174);
-            BtnSpeichernTxt.Name = "BtnSpeichernTxt";
-            BtnSpeichernTxt.Size = new System.Drawing.Size(92, 23);
-            BtnSpeichernTxt.TabIndex = 1;
-            BtnSpeichernTxt.Text = "Save";
-            BtnSpeichernTxt.UseVisualStyleBackColor = true;
-            BtnSpeichernTxt.Click += BtnSpeichernTxt_Click;
-            // 
-            // BtnUmwandeln
-            // 
-            BtnUmwandeln.Location = new System.Drawing.Point(338, 26);
-            BtnUmwandeln.Name = "BtnUmwandeln";
-            BtnUmwandeln.Size = new System.Drawing.Size(92, 23);
-            BtnUmwandeln.TabIndex = 2;
-            BtnUmwandeln.Text = "Convert";
-            BtnUmwandeln.UseVisualStyleBackColor = true;
-            BtnUmwandeln.Click += BtnUmwandeln_Click;
-            // 
-            // btnCopyTBox2
-            // 
-            btnCopyTBox2.Location = new System.Drawing.Point(716, 290);
-            btnCopyTBox2.Name = "btnCopyTBox2";
-            btnCopyTBox2.Size = new System.Drawing.Size(43, 23);
-            btnCopyTBox2.TabIndex = 3;
-            btnCopyTBox2.Text = "Copy";
-            btnCopyTBox2.UseVisualStyleBackColor = true;
-            btnCopyTBox2.Click += BtnCopyTBox2_Click;
-            // 
-            // label1
-            // 
-            label1.AutoSize = true;
-            label1.Location = new System.Drawing.Point(6, 294);
-            label1.Name = "label1";
-            label1.Size = new System.Drawing.Size(38, 15);
-            label1.TabIndex = 4;
-            label1.Text = "label1";
-            // 
-            // label2
-            // 
-            label2.AutoSize = true;
-            label2.Location = new System.Drawing.Point(441, 294);
-            label2.Name = "label2";
-            label2.Size = new System.Drawing.Size(38, 15);
-            label2.TabIndex = 5;
-            label2.Text = "label2";
-            // 
-            // textBox1
-            // 
-            textBox1.ContextMenuStrip = contextMenuStrip1;
-            textBox1.Location = new System.Drawing.Point(6, 6);
-            textBox1.Multiline = true;
-            textBox1.Name = "textBox1";
-            textBox1.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            textBox1.Size = new System.Drawing.Size(318, 267);
-            textBox1.TabIndex = 6;
-            // 
-            // contextMenuStrip1
-            // 
-            contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { copyToolStripMenuItem, clearToolStripMenuItem, importClipboardToolStripMenuItem });
-            contextMenuStrip1.Name = "contextMenuStrip1";
-            contextMenuStrip1.Size = new System.Drawing.Size(166, 70);
-            // 
-            // copyToolStripMenuItem
-            // 
-            copyToolStripMenuItem.Name = "copyToolStripMenuItem";
-            copyToolStripMenuItem.Size = new System.Drawing.Size(165, 22);
-            copyToolStripMenuItem.Text = "Copy";
-            copyToolStripMenuItem.Click += BtnCopyTBox2_Click;
-            // 
-            // clearToolStripMenuItem
-            // 
-            clearToolStripMenuItem.Name = "clearToolStripMenuItem";
-            clearToolStripMenuItem.Size = new System.Drawing.Size(165, 22);
-            clearToolStripMenuItem.Text = "Clear";
-            clearToolStripMenuItem.Click += Btclear_Click;
-            // 
-            // importClipboardToolStripMenuItem
-            // 
-            importClipboardToolStripMenuItem.Name = "importClipboardToolStripMenuItem";
-            importClipboardToolStripMenuItem.Size = new System.Drawing.Size(165, 22);
-            importClipboardToolStripMenuItem.Text = "Import Clipboard";
-            importClipboardToolStripMenuItem.Click += ImportClipboardToolStripMenuItem_Click;
-            // 
-            // textBox2
-            // 
-            textBox2.Location = new System.Drawing.Point(441, 6);
-            textBox2.Multiline = true;
-            textBox2.Name = "textBox2";
-            textBox2.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            textBox2.Size = new System.Drawing.Size(318, 267);
-            textBox2.TabIndex = 7;
-            // 
-            // openFileDialog
-            // 
-            openFileDialog.FileName = "openFileDialog";
-            // 
-            // label3
-            // 
-            label3.AutoSize = true;
-            label3.Location = new System.Drawing.Point(346, 6);
-            label3.Name = "label3";
-            label3.Size = new System.Drawing.Size(76, 15);
-            label3.TabIndex = 8;
-            label3.Text = "to HexCode :";
-            // 
+            //
             // TabControl1
             // 
             TabControl1.Controls.Add(tabPageMain);
@@ -259,6 +114,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             TabControl1.Controls.Add(tabPageClient);
             TabControl1.Controls.Add(tabPageScript);
             TabControl1.Controls.Add(tabPageTextureConverter);
+            TabControl1.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
             TabControl1.Location = new System.Drawing.Point(3, 27);
             TabControl1.Name = "TabControl1";
             TabControl1.SelectedIndex = 0;
@@ -765,22 +621,6 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             // 
             // tabPageTextureConverter
             // 
-            tabPageTextureConverter.Controls.Add(PanelMinMax);
-            tabPageTextureConverter.Controls.Add(BtnGenerate);
-            tabPageTextureConverter.Controls.Add(BtTest);
-            tabPageTextureConverter.Controls.Add(Btclear);
-            tabPageTextureConverter.Controls.Add(BtMorseCode);
-            tabPageTextureConverter.Controls.Add(checkBoxASCII);
-            tabPageTextureConverter.Controls.Add(BtBinaryCode);
-            tabPageTextureConverter.Controls.Add(textBox1);
-            tabPageTextureConverter.Controls.Add(BtnMultiOpen);
-            tabPageTextureConverter.Controls.Add(BtnSpeichernTxt);
-            tabPageTextureConverter.Controls.Add(BtnUmwandeln);
-            tabPageTextureConverter.Controls.Add(btnCopyTBox2);
-            tabPageTextureConverter.Controls.Add(label1);
-            tabPageTextureConverter.Controls.Add(label2);
-            tabPageTextureConverter.Controls.Add(label3);
-            tabPageTextureConverter.Controls.Add(textBox2);
             tabPageTextureConverter.Location = new System.Drawing.Point(4, 24);
             tabPageTextureConverter.Name = "tabPageTextureConverter";
             tabPageTextureConverter.Padding = new System.Windows.Forms.Padding(3);
@@ -788,126 +628,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             tabPageTextureConverter.TabIndex = 1;
             tabPageTextureConverter.Text = "Text Converter";
             tabPageTextureConverter.UseVisualStyleBackColor = true;
-            // 
-            // PanelMinMax
-            // 
-            PanelMinMax.Controls.Add(TBMaximum);
-            PanelMinMax.Controls.Add(LBMaximum);
-            PanelMinMax.Controls.Add(TBMinimum);
-            PanelMinMax.Controls.Add(LBMinimum);
-            PanelMinMax.Controls.Add(LBResult);
-            PanelMinMax.Location = new System.Drawing.Point(767, 6);
-            PanelMinMax.Name = "PanelMinMax";
-            PanelMinMax.Size = new System.Drawing.Size(154, 267);
-            PanelMinMax.TabIndex = 20;
-            // 
-            // TBMaximum
-            // 
-            TBMaximum.Location = new System.Drawing.Point(14, 139);
-            TBMaximum.Name = "TBMaximum";
-            TBMaximum.Size = new System.Drawing.Size(100, 23);
-            TBMaximum.TabIndex = 15;
-            TBMaximum.Text = "100";
-            TBMaximum.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
-            TBMaximum.KeyPress += TB_KeyPress;
-            // 
-            // LBMaximum
-            // 
-            LBMaximum.AutoSize = true;
-            LBMaximum.Location = new System.Drawing.Point(14, 165);
-            LBMaximum.Name = "LBMaximum";
-            LBMaximum.Size = new System.Drawing.Size(62, 15);
-            LBMaximum.TabIndex = 19;
-            LBMaximum.Text = "Maximum";
-            // 
-            // TBMinimum
-            // 
-            TBMinimum.Location = new System.Drawing.Point(14, 78);
-            TBMinimum.Name = "TBMinimum";
-            TBMinimum.Size = new System.Drawing.Size(100, 23);
-            TBMinimum.TabIndex = 14;
-            TBMinimum.Text = "1";
-            TBMinimum.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
-            TBMinimum.KeyPress += TB_KeyPress;
-            // 
-            // LBMinimum
-            // 
-            LBMinimum.AutoSize = true;
-            LBMinimum.Location = new System.Drawing.Point(14, 104);
-            LBMinimum.Name = "LBMinimum";
-            LBMinimum.Size = new System.Drawing.Size(60, 15);
-            LBMinimum.TabIndex = 18;
-            LBMinimum.Text = "Minimum";
-            // 
-            // LBResult
-            // 
-            LBResult.AutoSize = true;
-            LBResult.Location = new System.Drawing.Point(14, 28);
-            LBResult.Name = "LBResult";
-            LBResult.Size = new System.Drawing.Size(39, 15);
-            LBResult.TabIndex = 16;
-            LBResult.Text = "Result";
-            // 
-            // BtnGenerate
-            // 
-            BtnGenerate.Location = new System.Drawing.Point(794, 290);
-            BtnGenerate.Name = "BtnGenerate";
-            BtnGenerate.Size = new System.Drawing.Size(75, 23);
-            BtnGenerate.TabIndex = 17;
-            BtnGenerate.Text = "Generate";
-            BtnGenerate.UseVisualStyleBackColor = true;
-            BtnGenerate.Click += BtnGenerate_Click;
-            // 
-            // BtTest
-            // 
-            BtTest.Location = new System.Drawing.Point(338, 232);
-            BtTest.Name = "BtTest";
-            BtTest.Size = new System.Drawing.Size(92, 23);
-            BtTest.TabIndex = 13;
-            BtTest.Text = "Test";
-            BtTest.UseVisualStyleBackColor = true;
-            BtTest.Click += BtTest_Click;
-            // 
-            // Btclear
-            // 
-            Btclear.Location = new System.Drawing.Point(284, 290);
-            Btclear.Name = "Btclear";
-            Btclear.Size = new System.Drawing.Size(40, 23);
-            Btclear.TabIndex = 12;
-            Btclear.Text = "clear";
-            Btclear.UseVisualStyleBackColor = true;
-            Btclear.Click += Btclear_Click;
-            // 
-            // BtMorseCode
-            // 
-            BtMorseCode.Location = new System.Drawing.Point(338, 84);
-            BtMorseCode.Name = "BtMorseCode";
-            BtMorseCode.Size = new System.Drawing.Size(92, 23);
-            BtMorseCode.TabIndex = 11;
-            BtMorseCode.Text = "Morse code";
-            BtMorseCode.UseVisualStyleBackColor = true;
-            BtMorseCode.Click += BtMorseCode_Click;
-            // 
-            // checkBoxASCII
-            // 
-            checkBoxASCII.AutoSize = true;
-            checkBoxASCII.Location = new System.Drawing.Point(338, 149);
-            checkBoxASCII.Name = "checkBoxASCII";
-            checkBoxASCII.Size = new System.Drawing.Size(94, 19);
-            checkBoxASCII.TabIndex = 10;
-            checkBoxASCII.Text = "back original";
-            checkBoxASCII.UseVisualStyleBackColor = true;
-            // 
-            // BtBinaryCode
-            // 
-            BtBinaryCode.Location = new System.Drawing.Point(338, 55);
-            BtBinaryCode.Name = "BtBinaryCode";
-            BtBinaryCode.Size = new System.Drawing.Size(92, 23);
-            BtBinaryCode.TabIndex = 9;
-            BtBinaryCode.Text = "Binary Code";
-            BtBinaryCode.UseVisualStyleBackColor = true;
-            BtBinaryCode.Click += BtBinaryCode_Click;
-            // 
+            //
             // menuStrip1
             // 
             menuStrip1.Location = new System.Drawing.Point(0, 0);
@@ -942,7 +663,6 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             Name = "ConverterMultiTextControl";
             Size = new System.Drawing.Size(974, 417);
-            contextMenuStrip1.ResumeLayout(false);
             TabControl1.ResumeLayout(false);
             tabPageMain.ResumeLayout(false);
             tabPageMain.PerformLayout();
@@ -958,8 +678,6 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             tabPageScript.PerformLayout();
             tabPageTextureConverter.ResumeLayout(false);
             tabPageTextureConverter.PerformLayout();
-            PanelMinMax.ResumeLayout(false);
-            PanelMinMax.PerformLayout();
             statusStrip1.ResumeLayout(false);
             statusStrip1.PerformLayout();
             ResumeLayout(false);
@@ -968,21 +686,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
 
         #endregion
 
-        private System.Windows.Forms.Button BtnMultiOpen;
-        private System.Windows.Forms.Button BtnSpeichernTxt;
-        private System.Windows.Forms.Button BtnUmwandeln;
-        private System.Windows.Forms.Button btnCopyTBox2;
-        private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.TextBox textBox1;
-        private System.Windows.Forms.TextBox textBox2;
-        private System.Windows.Forms.OpenFileDialog openFileDialog;
-        private System.Windows.Forms.Label label3;
         private System.Windows.Forms.TabControl TabControl1;
         private System.Windows.Forms.TabPage tabPageMain;
         private System.Windows.Forms.TabPage tabPageTextureConverter;
         private System.Windows.Forms.MenuStrip menuStrip1;
-        private System.Windows.Forms.ContextMenuStrip contextMenuStrip1;
         private System.Windows.Forms.TabPage tabPageGraphic;
         private System.Windows.Forms.Button ButtonGraficCutterForm;
         private System.Windows.Forms.Button TextureCutter;
@@ -1008,13 +715,6 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
         private System.Windows.Forms.StatusStrip statusStrip1;
         private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabelTime;
         private System.Windows.Forms.Timer timer1;
-        private System.Windows.Forms.Button BtBinaryCode;
-        private System.Windows.Forms.CheckBox checkBoxASCII;
-        private System.Windows.Forms.Button BtMorseCode;
-        private System.Windows.Forms.Button Btclear;
-        private System.Windows.Forms.ToolStripMenuItem copyToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem clearToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem importClipboardToolStripMenuItem;
         private System.Windows.Forms.TabPage tabPageScript;
         private System.Windows.Forms.Button BtMapReplace;
         private System.Windows.Forms.Label lbCopyMapReplace;
@@ -1036,16 +736,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
         private System.Windows.Forms.Label lbTileArtForm;
         private System.Windows.Forms.Label lbTransitions;
         private System.Windows.Forms.Button BtTransitions;
-        private System.Windows.Forms.Button BtTest;
         private System.Windows.Forms.Label lbConverter;
         private System.Windows.Forms.Button BtConverter;
-        private System.Windows.Forms.Button BtnGenerate;
-        private System.Windows.Forms.Label LBResult;
-        private System.Windows.Forms.TextBox TBMaximum;
-        private System.Windows.Forms.TextBox TBMinimum;
-        private System.Windows.Forms.Label LBMinimum;
-        private System.Windows.Forms.Label LBMaximum;
-        private System.Windows.Forms.Panel PanelMinMax;
         private System.Windows.Forms.Label labelParticleGray;
         private System.Windows.Forms.Button buttonParticleGray;
     }

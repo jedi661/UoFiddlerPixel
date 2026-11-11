@@ -1,4 +1,4 @@
-﻿/***************************************************************************
+/***************************************************************************
  *
  * $Author: Nikodemus
  * 
@@ -25,19 +25,15 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
     {
         readonly Timer _timer = new Timer();
 
-        private string _originalFileName;
-
         //One Form
         private bool _isFormOpen = false;
-
-        private Random _random = new Random();
 
         public ConverterMultiTextControl()
         {
             InitializeComponent();
 
-            label1.Text = "";
-            label2.Text = "";
+            // Tab "Text Converter": multi formats and other UO conversions (Class/TextConverter)
+            tabPageTextureConverter.Controls.Add(new Class.TextConverter.TextConverterPanel());
 
             _timer.Interval = 1000;
 
@@ -53,135 +49,6 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
         {
             // Update the text of the ToolStripStatusLabel with the current time
             toolStripStatusLabelTime.Text = DateTime.Now.ToString("HH:mm:ss") + " Uhr";
-        }
-        #endregion
-
-        #region [ BtnMultiOpen_Click ]
-        private void BtnMultiOpen_Click(object sender, EventArgs e)
-        {
-            OpenFileDialog openFileDialog = new OpenFileDialog();
-            openFileDialog.Filter = "Text Files (*.txt)|*.txt";
-
-            if (openFileDialog.ShowDialog() == DialogResult.OK)
-            {
-                // Save the path and filename of the selected file.
-                string filePath = openFileDialog.FileName;
-                _originalFileName = Path.GetFileNameWithoutExtension(filePath);
-
-                // Read the text file and write it into a TextBox.
-                string fileContent = File.ReadAllText(filePath);
-                string[] lines = fileContent.Split(new string[] { "\r\n", "\r", "\n" }, StringSplitOptions.None);
-
-                StringBuilder sb = new StringBuilder();
-                bool startAppending = false;
-                foreach (string line in lines)
-                {
-                    if (line.Contains("num components"))
-                    {
-                        startAppending = true;
-                        continue;
-                    }
-
-                    if (startAppending)
-                    {
-                        sb.AppendLine(line);
-                    }
-                }
-
-                textBox1.Clear();
-                textBox2.Clear();
-                if (sb.Length > 0)
-                {
-                    textBox1.Text = sb.ToString();
-                }
-                else
-                {
-                    textBox1.Text = fileContent;
-                }
-
-                label1.Text = "The text has been inserted.";
-            }
-        }
-        #endregion
-
-        #region [ BtnSpeichernTxt_Click ]
-        private void BtnSpeichernTxt_Click(object sender, EventArgs e)
-        {
-            // Check if TextBox2 has any content.
-            if (string.IsNullOrEmpty(textBox2.Text))
-            {
-                label2.Text = "There is no text that can be saved.";
-                return;
-            }
-
-            // Verzeichnis erstellen
-            string directoryPath = Path.Combine(Path.GetDirectoryName(openFileDialog.FileName), "OLDScript");
-            Directory.CreateDirectory(directoryPath);
-
-            // Take the filename from the original file name.
-            string fileName = _originalFileName + ".txt";
-            string filePath = Path.Combine(directoryPath, fileName);
-
-            // Write the contents of TextBox1 to a text file.
-            File.WriteAllText(filePath, textBox1.Text);
-
-            SaveFileDialog saveFileDialog = new SaveFileDialog();
-            saveFileDialog.Filter = "Text Files (*.txt)|*.txt";
-            saveFileDialog.InitialDirectory = Path.Combine(Path.GetDirectoryName(openFileDialog.FileName), "Export");
-
-            if (saveFileDialog.ShowDialog() == DialogResult.OK)
-            {
-                // Write the contents of TextBox2 to a text file.
-                File.WriteAllText(saveFileDialog.FileName, textBox2.Text);
-
-                label2.Text = "The text was successfully exported to the file.";
-            }
-        }
-        #endregion
-
-        #region [ BtnUmwandeln_Click ]
-        private void BtnUmwandeln_Click(object sender, EventArgs e)
-        {
-            string inputText = textBox1.Text.Trim(); // Retrieve the text from TextBox1 and remove leading/trailing whitespace.
-            if (string.IsNullOrEmpty(inputText)) // Check if textBox1 is empty.
-            {
-                // Handle the case where textBox1 is empty.                
-                MessageBox.Show("Please enter text into the field.");
-                return; // Exit the method.
-            }
-
-            string[] inputLines = inputText.Split(new string[] { Environment.NewLine }, StringSplitOptions.None); // Split the text into a string array.
-
-            StringBuilder outputText = new StringBuilder(); // Create a StringBuilder object to concatenate the converted lines.
-
-            foreach (string inputLine in inputLines)
-            {
-                string[] inputValues = inputLine.Split(' '); // Split the values in each line by whitespace.
-                int sum = 0; // Initialize the sum of the first few decimal numbers in the line.
-
-                for (int i = 0; i < inputValues.Length; i++)
-                {
-                    if (i == 0) // Select and convert the first decimal number in the line.
-                    {
-                        sum = Convert.ToInt32(inputValues[i]);
-                        outputText.Append("0x" + sum.ToString("X") + " "); // Add the first converted hexadecimal number to the StringBuilder.
-                    }
-                    else // Simply add the remaining values to a StringBuilder.
-                    {
-                        outputText.Append(inputValues[i] + " ");
-                    }
-                }
-                outputText.Append(Environment.NewLine); // Add a line break at the end of each line.
-            }
-
-            textBox2.Text = outputText.ToString(); // Set the result in TextBox2
-        }
-        #endregion
-
-        #region [ BtnCopyTBox2_Click ]
-        private void BtnCopyTBox2_Click(object sender, EventArgs e)
-        {
-            Clipboard.SetText(textBox2.Text);
         }
         #endregion
 
@@ -457,100 +324,6 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
         {
             _isFormOpen = false;
             BtAltitudeTool.Enabled = true;
-        }
-        #endregion
-
-        #region [ Button binary code ]
-        private void BtBinaryCode_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                if (checkBoxASCII.Checked)
-                {
-                    string binary = textBox2.Text;
-                    binary = binary.Replace("\n", "").Replace("\r", "").Replace("\t", "");
-                    List<Byte> byteList = new List<Byte>();
-
-                    foreach (var bin in binary.Split(' '))
-                    {
-                        byteList.Add(Convert.ToByte(bin, 2));
-                    }
-
-                    textBox1.Text = Encoding.UTF8.GetString(byteList.ToArray());
-                }
-                else
-                {
-                    string text = textBox1.Text;
-                    byte[] textBytes = Encoding.UTF8.GetBytes(text);
-                    string binary = String.Join(" ", textBytes.Select(b => Convert.ToString(b, 2).PadLeft(8, '0')));
-                    textBox2.Text = binary;
-                }
-            }
-            catch (FormatException ex)
-            {
-                MessageBox.Show("Error converting string to number: " + ex.Message);
-            }
-        }
-
-        #endregion
-
-        #region [ MorseCode ]
-        private static readonly Dictionary<char, string> _morseCodeDictionary = new Dictionary<char, string>()
-        {
-            {'A', ".-"}, {'B', "-..."}, {'C', "-.-."}, {'D', "-.."}, {'E', "."}, {'F', "..-."},
-            {'G', "--."}, {'H', "...."}, {'I', ".."}, {'J', ".---"}, {'K', "-.-"}, {'L', ".-.."},
-            {'M', "--"}, {'N', "-."}, {'O', "---"}, {'P', ".--."}, {'Q', "--.-"}, {'R', ".-."},
-            {'S', "..."}, {'T', "-"}, {'U', "..-"}, {'V', "...-"}, {'W', ".--"}, {'X', "-..-"},
-            {'Y', "-.--"}, {'Z', "--.."}, {'0', "-----"}, {'1', ".----"}, {'2', "..---"},
-            {'3', "...--"}, {'4', "....-"}, {'5', "....."}, {'6', "-...."}, {'7', "--..."},
-            {'8', "---.."}, {'9', "----."}, {' ', "/"}, {'Ä', ".-.-"}, {'Ö', "---."}, {'Ü', "..--"}
-        };
-
-        private void BtMorseCode_Click(object sender, EventArgs e)
-        {
-            if (checkBoxASCII.Checked)
-            {
-                string morseCode = textBox2.Text;
-                string text = "";
-
-                foreach (var word in morseCode.Split([" / "], StringSplitOptions.None))
-                {
-                    foreach (var letter in word.Split(' '))
-                    {
-                        text += _morseCodeDictionary.FirstOrDefault(x => x.Value == letter).Key;
-                    }
-                    text += " ";
-                }
-
-                textBox1.Text = text.Trim();
-            }
-            else
-            {
-                string text = textBox1.Text.ToUpper();
-                string morseCode = String.Join(" ", text.Select(c => _morseCodeDictionary.TryGetValue(c, out string value) ? value : ""));
-                textBox2.Text = morseCode;
-            }
-        }
-        #endregion
-
-        #region [ Clear ]
-        private void Btclear_Click(object sender, EventArgs e)
-        {
-            textBox1.Text = string.Empty;
-        }
-        #endregion
-
-        #region [ Clipboard Text ]
-        private void ImportClipboardToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            if (Clipboard.ContainsText())
-            {
-                textBox1.Text = Clipboard.GetText();
-            }
-            else
-            {
-                MessageBox.Show("The clipboard contains no text.");
-            }
         }
         #endregion
 
@@ -888,52 +661,6 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
 
         #endregion
 
-        #region [ MultiTileEntry ]
-        public struct MultiTileEntry
-        {
-            public ushort m_ItemID;
-            public short m_OffsetX, m_OffsetY, m_OffsetZ;
-            public int m_Flags;
-            public int m_Unk1;
-        }
-        #endregion
-
-        #region [ BtTest_Click ]
-        private void BtTest_Click(object sender, EventArgs e)
-        {
-            // Get input from textBox1
-            string input = textBox1.Text;
-
-            // split input lines
-            string[] lines = input.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None);
-
-            // List for saving the converted entries
-            List<MultiTileEntry> entries = new List<MultiTileEntry>();
-
-            // Process each line
-            foreach (string line in lines)
-            {
-                // Divide the line into parts
-                string[] parts = line.Split(',');
-
-                // Create new entry and assign values
-                MultiTileEntry entry = new MultiTileEntry();
-                entry.m_ItemID = Convert.ToUInt16(parts[2].Split(':')[1].Trim()); // ID
-                entry.m_OffsetX = (short)(short.Parse(parts[0].Split(':')[1].Trim()) - 1405); // X
-                entry.m_OffsetY = (short)(short.Parse(parts[1].Split(':')[1].Trim()) - 1709); // Y
-                entry.m_OffsetZ = short.Parse(parts[3].Split(':')[1].Trim()); // Z
-                entry.m_Flags = 0;
-                entry.m_Unk1 = 0;
-
-                // Add entry to list
-                entries.Add(entry);
-            }
-
-            // Show converted entries in textBox2
-            textBox2.Text = string.Join("\r\n", entries.Select(x => $"0x{x.m_ItemID.ToString("X4")} {x.m_OffsetX} {x.m_OffsetY} {x.m_OffsetZ} {x.m_Flags} {x.m_Unk1}"));
-        }
-        #endregion
-
         #region [ BtConverter ]
         private bool _isConverterFormOpen = false;
 
@@ -965,46 +692,6 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             {
                 _isConverterFormOpen = false;
                 BtConverter.Enabled = true;
-            }
-        }
-        #endregion
-
-        #region [ TB_KeyPress]
-        private void TB_KeyPress(object sender, KeyPressEventArgs e)
-        {
-            // Allow only digits and control keys (backspace)
-            if (!char.IsDigit(e.KeyChar) && !char.IsControl(e.KeyChar))
-            {
-                e.Handled = true;
-            }
-        }
-        #endregion
-
-        #region [ BtnGenerate_Click ]
-        private void BtnGenerate_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                // Get the minimum and maximum values from the textboxes
-                int minValue = int.Parse(TBMinimum.Text);
-                int maxValue = int.Parse(TBMaximum.Text);
-
-                // Ensure min value is less than or equal to max value
-                if (minValue > maxValue)
-                {
-                    MessageBox.Show("Minimum value must be less than or equal to maximum value.");
-                    return;
-                }
-
-                // Generate a random number between minValue and maxValue (inclusive)
-                int randomNumber = _random.Next(minValue, maxValue + 1);
-
-                // Display the result in the label
-                LBResult.Text = randomNumber.ToString();
-            }
-            catch (FormatException)
-            {
-                MessageBox.Show("Please enter valid numbers.");
             }
         }
         #endregion
