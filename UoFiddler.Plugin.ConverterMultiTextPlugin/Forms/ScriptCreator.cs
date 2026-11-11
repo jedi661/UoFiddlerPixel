@@ -2,9 +2,9 @@
 //  *
 //  * $Author: Turley
 //  * Advanced Nikodemus
-//  * 
-//  * \"THE BEER-WINE-WARE LICENSE\"
-//  * As long as you retain this notice you can do whatever you want with 
+//  *
+//  * "THE BEER-WINE-WARE LICENSE"
+//  * As long as you retain this notice you can do whatever you want with
 //  * this stuff. If we meet some day, and you think this stuff is worth it,
 //  * you can buy me a beer and Wine in return.
 //  *
@@ -12,2601 +12,1239 @@
 
 using System;
 using System.Collections.Generic;
-using System.Data;
+using System.Diagnostics;
 using System.Drawing;
+using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Media;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using System.Xml.Linq;
+using UoFiddler.Plugin.ConverterMultiTextPlugin.Class.ScriptCreator;
 
 namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 {
+    /// <summary>
+    /// Script generator based on templates: pick a template, fill the fields (with lists, item / hue / body previews and checks),
+    /// see the script live and save it. Own templates live in ScriptTemplates (*.uotpl); existing scripts can be imported as templates.
+    /// Third tab: editor for the client text files (walls.txt, doors.txt, bodyconv.def …).
+    /// </summary>
     public partial class ScriptCreator : Form
     {
-        private string currentFilePathWall;  // Saves the path of the last loaded file
-        private string currentFilePathChair;  // Saves the path of the last loaded file
-        private int searchStartIndex = 0;
+        private static string SettingsFile => Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "ScriptCreator.settings.xml");
+
+        private List<ScriptTemplate> _templates = new List<ScriptTemplate>();
+        private ScriptTemplate _current;
+        private readonly List<FieldEditor> _editors = new List<FieldEditor>();
+        private readonly Dictionary<ScriptTemplate, Dictionary<string, string>> _values = new Dictionary<ScriptTemplate, Dictionary<string, string>>();
+        private string _scriptsFolder = string.Empty;
+        private string _lastTemplate;
+        private string _lastOutput = string.Empty;
+
         public ScriptCreator()
         {
             InitializeComponent();
+            LoadSettings();
+            BuildToolbar();
+            BuildGeneratorTab();
+            BuildTemplatesTab();
+            BuildClientFilesTab();
+            ReloadTemplates(_lastTemplate);
+            SetMessage("Choose a template on the left, fill the fields, save the script. Own scripts: \"Import script\". F1 = help.");
+        }
 
-            this.textBoxBookTitle.TextChanged += new System.EventHandler(this.textBoxBookTitle_TextChanged);
-            this.textBoxBookAuthor.TextChanged += new System.EventHandler(this.textBoxBookAuthor_TextChanged);
+        #region Helpers
 
-            // Create an ImageList and add your images
-            ImageList imageList = new ImageList();
-            imageList.Images.Add("0x1C11", Properties.Resources._0x1C11); // 1 Picture
-            imageList.Images.Add("0x1C13", Properties.Resources._0x1C13); // 2 ...
-            imageList.Images.Add("0x1E20", Properties.Resources._0x1E20); // 3 ..
-            imageList.Images.Add("0x2D9D", Properties.Resources._0x2D9D); // 4
-            imageList.Images.Add("0x22C5", Properties.Resources._0x22C5); // 5
-            imageList.Images.Add("0x23A0", Properties.Resources._0x23A0); // 6
-            imageList.Images.Add("0x225A", Properties.Resources._0x225A); // 7
-            imageList.Images.Add("0x238C", Properties.Resources._0x238C); // 8
-            imageList.Images.Add("0x2252", Properties.Resources._0x2252); // 9
-            imageList.Images.Add("0x2253", Properties.Resources._0x2253); // 10
-            imageList.Images.Add("0x2254", Properties.Resources._0x2254); // 11
-            imageList.Images.Add("0x2259", Properties.Resources._0x2259); // 12
-            imageList.Images.Add("0xE3B", Properties.Resources._0xE3B); // 13
-            imageList.Images.Add("0xFBE", Properties.Resources._0xFBE); // 14
-            imageList.Images.Add("0xFEF", Properties.Resources._0xFEF); // 15
-            imageList.Images.Add("0xFF0", Properties.Resources._0xFF0); // 16
-            imageList.Images.Add("0xFF1", Properties.Resources._0xFF1); // 17
-            imageList.Images.Add("0xFF2", Properties.Resources._0xFF2); // 18
-            imageList.Images.Add("0xFF3", Properties.Resources._0xFF3); // 19
-            imageList.Images.Add("0xFF4", Properties.Resources._0xFF4); // 20
+        private static string Tip(string en, string de) => en + "\n\nDE: " + de;
 
+        private void SetMessage(string text) => statusMessage.Text = text;
 
-            // Add more pictures here...
-
-            // Fill the comboBoxBookGrafic with the images
-            foreach (string key in imageList.Images.Keys)
+        private Button Btn(string text, EventHandler click, string tip = null)
+        {
+            var b = new Button { Text = text, AutoSize = true, Height = 26, UseVisualStyleBackColor = true, Margin = new Padding(2) };
+            b.Click += click;
+            if (tip != null)
             {
-                comboBoxBookGrafic.Items.Add(key);
+                toolTip1.SetToolTip(b, tip);
             }
+            return b;
+        }
 
-            // Set the DrawItem event
-            comboBoxBookGrafic.DrawMode = DrawMode.OwnerDrawFixed;
-            comboBoxBookGrafic.DrawItem += (sender, e) =>
-            {
-                e.DrawBackground();
-                e.Graphics.DrawImage(imageList.Images[e.Index], e.Bounds.Left, e.Bounds.Top);
-                e.Graphics.DrawString(comboBoxBookGrafic.Items[e.Index].ToString(), e.Font, new SolidBrush(e.ForeColor), e.Bounds.Left + imageList.ImageSize.Width, e.Bounds.Top);
-                e.DrawFocusRectangle();
-            };
+        private static Label Lbl(string text) => new Label { Text = text, AutoSize = true, Margin = new Padding(3, 7, 3, 0) };
 
-            // Set the SelectedIndexChanged event
-            this.comboBoxBookGrafic.SelectedIndexChanged += new System.EventHandler(this.comboBoxBookGrafic_SelectedIndexChanged);
+        private ToolStripButton TsButton(string text, string tip, EventHandler click, Image image = null)
+        {
+            var b = new ToolStripButton(text, image) { ToolTipText = tip, DisplayStyle = image != null ? ToolStripItemDisplayStyle.ImageAndText : ToolStripItemDisplayStyle.Text };
+            b.Click += click;
+            return b;
+        }
 
-            // Fill the comboBoxEnableAutoformat with the options
-            comboBoxEnableAutoformat.Items.Add("Enable Autoformat");
-            comboBoxEnableAutoformat.Items.Add("Disable Autoformat");
-
-            // Select “Disable Autoformat” by default
-            comboBoxEnableAutoformat.SelectedItem = "Disable Autoformat";
-
-            // Set the SelectedIndexChanged event
-            this.comboBoxEnableAutoformat.SelectedIndexChanged += new System.EventHandler(this.comboBoxEnableAutoformat_SelectedIndexChanged);
-
+        private static void OpenFolder(string folder)
+        {
             try
             {
-                (currentFilePathWall, currentFilePathChair) = LoadPaths();
-                textBoxPfadWall.Text = currentFilePathWall;
-                textBoxPfadChair.Text = currentFilePathChair;
+                Directory.CreateDirectory(folder);
+                Process.Start(new ProcessStartInfo(folder) { UseShellExecute = true });
             }
-            catch (System.IO.FileNotFoundException)
+            catch (Exception)
             {
-                // The XML file doesn't exist yet, so we don't do anything.
+                // no explorer
             }
-            catch (System.IO.DirectoryNotFoundException)
-            {
-                // The directory doesn't exist yet, so we don't do anything.
-            }
-
         }
 
-        #region buttonCreateBookScript_Click
-        private void buttonCreateBookScript_Click(object sender, EventArgs e)
+        private string Prompt(string question, string value)
         {
-            string bookTitle = textBoxBookTitle.Text;
-            string bookAuthor = textBoxBookAuthor.Text;
-            string bookFilename = textBoxBookFilename.Text.Replace(" ", ""); // Removes spaces from the class name
-            string grafikID = textBoxGrafikID.Text;
-            string coverHue = textBoxCoverHue.Text;
-            bool enableAutoFormat = comboBoxEnableAutoformat.SelectedItem != null ? comboBoxEnableAutoformat.SelectedItem.ToString() == "Enable Autoformat" : false;
-            string bookContent = textBoxBookContent.Text;
-
-            // Check that all required fields are filled out
-            if (string.IsNullOrEmpty(textBoxBookTitle.Text) ||
-                string.IsNullOrEmpty(textBoxBookAuthor.Text) ||
-                string.IsNullOrEmpty(textBoxBookFilename.Text) ||
-                string.IsNullOrEmpty(textBoxGrafikID.Text) ||
-                string.IsNullOrEmpty(textBoxCoverHue.Text) ||
-                comboBoxEnableAutoformat.SelectedItem == null)
+            using (var f = new Form { Text = Text, FormBorderStyle = FormBorderStyle.FixedDialog, MinimizeBox = false, MaximizeBox = false, ShowIcon = false,
+                       StartPosition = FormStartPosition.CenterParent, ClientSize = new Size(420, 110), TopMost = TopMost })
             {
-                MessageBox.Show("Please fill out all fields before creating the script.");
+                var label = new Label { Text = question, Left = 10, Top = 10, Width = 400 };
+                var box = new TextBox { Text = value, Left = 10, Top = 34, Width = 400 };
+                var ok = new Button { Text = "OK", Left = 250, Top = 72, Width = 75, DialogResult = DialogResult.OK };
+                var cancel = new Button { Text = "Cancel", Left = 335, Top = 72, Width = 75, DialogResult = DialogResult.Cancel };
+                f.Controls.AddRange(new Control[] { label, box, ok, cancel });
+                f.AcceptButton = ok;
+                f.CancelButton = cancel;
+                return f.ShowDialog(this) == DialogResult.OK ? box.Text : null;
+            }
+        }
+
+        private void Copy(string text)
+        {
+            if (string.IsNullOrEmpty(text))
+            {
                 return;
             }
-
-
-            // Autoformat content if enabled
-            if (enableAutoFormat)
+            try
             {
-                // Replace all line breaks with a space
-                bookContent = bookContent.Replace("\n", " ").Replace("\r", " ");
-
-                // Perform a recursive scan to remove multiple spaces
-                while (bookContent.Contains("  "))
-                {
-                    bookContent = bookContent.Replace("  ", " ");
-                }
-
-                // Remove newlines and spaces at the beginning
-                bookContent = bookContent.TrimStart();
+                Clipboard.SetText(text);
+                SetMessage("Copied to the clipboard.");
             }
-
-            // Division of content into pages
-            List<string> pageContents = SplitContentIntoPages(bookContent, 8); // Say 8 lines per page
-
-            // Splitting content into pages based on characters
-            pageContents = SplitContentIntoPagesByCharacters(bookContent, 90); // Assume 90 characters per page
-
-
-            // Creation of the BookPageInfo objects for each page
-            StringBuilder bookPageInfos = new StringBuilder();
-            foreach (string pageContent in pageContents)
+            catch (Exception ex)
             {
-                List<string> lines = SplitContentIntoLines(pageContent, 30); // Assume 30 characters per line
-                string formattedPageContent = FormatPageContentForBookPageInfo(string.Join(",\n", lines));
-                bookPageInfos.AppendLine(formattedPageContent);
+                SetMessage("Copy failed: " + ex.Message);
             }
-
-
-            // Generation of the script with the BookPageInfo objects
-            string script = GenerateBookScript(bookTitle, bookAuthor, bookFilename, grafikID, coverHue, bookPageInfos.ToString());
-            textBoxScriptResult.Text = script;
         }
+
         #endregion
 
-        #region SplitContentIntoPages
-        private List<string> SplitContentIntoPages(string content, int maxLinesPerPage)
+        #region Settings
+
+        private string _clientFolder = string.Empty;
+
+        private void LoadSettings()
         {
-            string[] lines = content.Split(new string[] { "\r\n", "\n" }, StringSplitOptions.None);
-            List<string> pages = new List<string>();
-            StringBuilder currentPage = new StringBuilder();
-            int lineCount = 0;
-
-            foreach (string line in lines)
+            try
             {
-                currentPage.AppendLine(line);
-                lineCount++;
-
-                if (lineCount == maxLinesPerPage)
+                if (File.Exists(SettingsFile))
                 {
-                    pages.Add(currentPage.ToString());
-                    currentPage.Clear();
-                    lineCount = 0;
+                    XElement root = XDocument.Load(SettingsFile).Root;
+                    _scriptsFolder = (string)root?.Element("ScriptsFolder") ?? string.Empty;
+                    _clientFolder = (string)root?.Element("ClientFolder") ?? string.Empty;
+                    _lastTemplate = (string)root?.Element("LastTemplate");
                 }
             }
-
-            if (currentPage.Length > 0) // Add the last page if there is one
+            catch (Exception)
             {
-                pages.Add(currentPage.ToString());
+                // broken settings are ignored
             }
-
-            return pages;
-        }
-        #endregion
-
-        #region SplitContentIntoPagesByCharacters
-        private List<string> SplitContentIntoPagesByCharacters(string content, int maxCharactersPerPage)
-        {
-            List<string> pages = new List<string>();
-            for (int i = 0; i < content.Length; i += maxCharactersPerPage)
+            if (string.IsNullOrEmpty(_clientFolder))
             {
-                int length = Math.Min(maxCharactersPerPage, content.Length - i);
-                pages.Add(content.Substring(i, length));
-            }
-            return pages;
-        }
-        #endregion
-
-        #region SplitContentIntoLines
-        private List<string> SplitContentIntoLines(string content, int maxCharactersPerLine)
-        {
-            List<string> lines = new List<string>();
-            for (int i = 0; i < content.Length; i += maxCharactersPerLine)
-            {
-                int length = Math.Min(maxCharactersPerLine, content.Length - i);
-                lines.Add(content.Substring(i, length));
-            }
-            return lines;
-        }
-        #endregion
-
-        #region FormatPageContentForBookPageInfo
-        private string FormatPageContentForBookPageInfo(string pageContent)
-        {
-            string[] lines = pageContent.Split(new string[] { "\r\n", "\n" }, StringSplitOptions.RemoveEmptyEntries);
-            string formattedLines = string.Join(",\n                ", lines.Select(line => $"\"{line.Trim()}\""));
-            return $@"new BookPageInfo
-            (
-                {formattedLines}
-            ),";
-        }
-        #endregion
-
-        #region GenerateBookScript
-        private string GenerateBookScript(string title, string author, string filename, string graphicID, string coverHue, string pageInfos)
-        {
-            return $@"
-            using System;
-            using Server;            
-
-            namespace Server.Items
-            {{
-                public class {filename} : BaseBook
-            {{
-                public static readonly BookContent Content = new BookContent
-                (
-                    ""{title}"", ""{author}"",
-                    {pageInfos.TrimEnd(',', '\n', '\r')}
-                );
-
-                public override BookContent DefaultContent{{ get{{ return Content; }} }}
-
-                [Constructable]
-                public {filename}() : base( {graphicID}, false )
-                {{
-                    Hue = {coverHue};
-                }}
-
-                public {filename}(Serial serial) : base(serial)
-                {{
-                }}
-
-                public override void Serialize(GenericWriter writer)
-                {{
-                    base.Serialize(writer);
-                    writer.WriteEncodedInt((int)0);
-                }}
-
-                public override void Deserialize(GenericReader reader)
-                {{
-                    base.Deserialize(reader);
-                    int version = reader.ReadEncodedInt();
-                }}
-            }}
-        }}".Trim();
-        }
-        #endregion
-
-        #region textBoxBookTitle_TextChanged
-        private void textBoxBookTitle_TextChanged(object sender, EventArgs e)
-        {
-            UpdateBookFilename();
-        }
-        #endregion
-
-        #region textBoxBookAuthor_TextChanged
-        private void textBoxBookAuthor_TextChanged(object sender, EventArgs e)
-        {
-            UpdateBookFilename();
-        }
-        #endregion
-
-        #region UpdateBookFilename
-        private void UpdateBookFilename()
-        {
-            string bookTitle = textBoxBookTitle.Text.Replace(" ", "_"); // Replaces spaces with underscores
-            string bookAuthor = textBoxBookAuthor.Text.Replace(" ", "_"); // Replaces spaces with underscores
-
-            // Create the class name based on the book title and author
-            string className = "CBook" + bookTitle + bookAuthor;
-
-            // Update the textBoxBookFilename
-            textBoxBookFilename.Text = className;
-        }
-        #endregion
-
-        #region comboBoxBookGrafic_SelectedIndexChanged
-        private void comboBoxBookGrafic_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            // Set the contents of the textBoxGrafikID to the selected hex address
-            textBoxGrafikID.Text = comboBoxBookGrafic.SelectedItem.ToString();
-        }
-        #endregion
-
-        #region comboBoxEnableAutoformat_SelectedIndexChanged
-        private void comboBoxEnableAutoformat_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            // Check if Autoformat is enabled
-            bool enableAutoFormat = comboBoxEnableAutoformat.SelectedItem.ToString() == "Enable Autoformat" ? true : false;
-
-            if (enableAutoFormat)
-            {
-                // Replace all line breaks with a space
-                textBoxBookContent.Text = textBoxBookContent.Text.Replace("\n", " ").Replace("\r", " ");
-
-                // Perform a recursive scan to remove multiple spaces
-                while (textBoxBookContent.Text.Contains("  "))
+                try
                 {
-                    textBoxBookContent.Text = textBoxBookContent.Text.Replace("  ", " ");
+                    _clientFolder = Ultima.Files.RootDir ?? string.Empty;
                 }
-
-                // Remove newlines and spaces at the beginning
-                textBoxBookContent.Text = textBoxBookContent.Text.TrimStart();
-            }
-        }
-        #endregion
-
-        #region buttonTest_Click
-        private void buttonTest_Click(object sender, EventArgs e)
-        {
-            // Fill the TextBoxes and ComboBoxes with test data
-            textBoxBookTitle.Text = "TestTitle";
-            textBoxBookAuthor.Text = "TestAuthor";
-            textBoxBookFilename.Text = "CBookTestTitleTestAuthor";
-            comboBoxBookGrafic.SelectedIndex = 0; // Select the first item in the ComboBox
-            textBoxGrafikID.Text = "0x1C11";
-            textBoxCoverHue.Text = "684";
-            comboBoxEnableAutoformat.SelectedIndex = 0; // Select the first item in the ComboBox
-            textBoxBookContent.Text = "This is test content.";
-
-            // Create a new SoundPlayer
-            SoundPlayer player = new SoundPlayer();
-
-            // Load the sound file
-            player.SoundLocation = AppDomain.CurrentDomain.BaseDirectory + "\\Sound.wav";
-
-            // Play the sound
-            player.Play();
-        }
-        #endregion
-
-        #region DataGridViewColorCell
-        public class DataGridViewColorCell : DataGridViewTextBoxCell
-        {
-            protected override void Paint(Graphics graphics, Rectangle clipBounds, Rectangle cellBounds, int rowIndex, DataGridViewElementStates cellState, object value, object formattedValue, string errorText, DataGridViewCellStyle cellStyle, DataGridViewAdvancedBorderStyle advancedBorderStyle, DataGridViewPaintParts paintParts)
-            {
-                Color color = Color.White;
-                if (value is Color)
+                catch (Exception)
                 {
-                    color = (Color)value;
-                }
-
-                using (Brush brush = new SolidBrush(color))
-                {
-                    graphics.FillRectangle(brush, cellBounds);
+                    _clientFolder = string.Empty;
                 }
             }
         }
+
+        private void SaveSettings()
+        {
+            try
+            {
+                new XDocument(new XElement("ScriptCreator",
+                    new XElement("ScriptsFolder", _scriptsFolder ?? string.Empty),
+                    new XElement("ClientFolder", _clientFolder ?? string.Empty),
+                    new XElement("LastTemplate", _current?.Name ?? string.Empty))).Save(SettingsFile);
+            }
+            catch (Exception)
+            {
+                // read-only folder
+            }
+        }
+
         #endregion
 
-        #region btColorSet_Click        
-        private void btColorSet_Click(object sender, EventArgs e)
+        #region Toolbar
+
+        private void BuildToolbar()
         {
-            // Create a new form
-            Form colorForm = new Form();
-            colorForm.Text = "Choose a color";
-            colorForm.Size = new Size(1000, 600);  // Set the size of the form
-            colorForm.FormBorderStyle = FormBorderStyle.FixedDialog;  // Disable form resizing
-
-            // Create a new DataGridView
-            DataGridView dgv = new DataGridView();
-            dgv.Dock = DockStyle.Fill;
-            dgv.EnableHeadersVisualStyles = false;  // Add this line
-            dgv.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;  // Adjust the column width to fill the available space
-            colorForm.Controls.Add(dgv);
-
-            // Add columns for the Hue values, colors, and Photoshop color codes
-            dgv.Columns.Add("Hue", "Hue");
-            dgv.Columns.Add("Color", "Color");
-            dgv.Columns.Add("PSColor", "PS Color");
-
-            // Add a color preview column
-            DataGridViewColumn colorPreviewColumn = new DataGridViewColumn(new DataGridViewColorCell());
-            colorPreviewColumn.Name = "ColorPreview";
-            dgv.Columns.Add(colorPreviewColumn);
-
-            // Fill the DataGridView with all colors in the 16-bit 555 color scheme
-            for (int hue = 1; hue <= 32768; hue++)
+            toolStrip1.Items.AddRange(new ToolStripItem[]
             {
-                Color color = HueToRGB555(hue);
-                string psColor = RGBToPhotoshopColorCode(color);
-                dgv.Rows.Add(hue, color.Name, psColor, color);
-            }
+                TsButton("Import script…", Tip("Turn an existing script (.cs / .scp) into an own template: its values become fields.",
+                    "Ein vorhandenes Skript (.cs / .scp) in eine eigene Vorlage umwandeln: seine Werte werden Felder."), (s, e) => ImportScriptFile(), Properties.Resources.Load),
+                TsButton("Import from clipboard", Tip("Same with a script copied to the clipboard.", "Dasselbe mit einem Skript aus der Zwischenablage."), (s, e) => ImportClipboard()),
+                new ToolStripSeparator(),
+                TsButton("Reload templates", Tip("Reads the templates folder again (after editing files by hand).", "Liest den Vorlagenordner neu (nach Bearbeitung von Hand)."), (s, e) => ReloadTemplates(_current?.Name)),
+                TsButton("Templates folder", Tip("Opens ScriptTemplates next to UoFiddler.", "Öffnet ScriptTemplates neben UoFiddler."), (s, e) => OpenFolder(ScriptTemplateLibrary.UserFolder)),
+                new ToolStripSeparator(),
+                TsButton("?", Tip("Help (F1)", "Hilfe (F1)"), (s, e) => ShowHelp())
+            });
+        }
 
-            // When the user clicks on a row, copy the Hue value to the textBoxCoverHue
-            dgv.CellClick += (s, args) =>
+        #endregion
+
+        #region Generator tab
+
+        private TreeView _tree;
+        private TextBox _search;
+        private Panel _fieldsHost;
+        private TableLayoutPanel _fieldsTable;
+        private Label _title, _description, _problems;
+        private RichTextBox _output;
+        private TextBox _txtScriptsFolder;
+        private Panel _bigPreview;
+        private Label _fileLabel;
+
+        private void BuildGeneratorTab()
+        {
+            _search = new TextBox { Dock = DockStyle.Top, PlaceholderText = "Search / Suchen" };
+            _search.TextChanged += (s, e) => FillTree(_current?.Name);
+            _tree = new TreeView { Dock = DockStyle.Fill, HideSelection = false, FullRowSelect = true };
+            _tree.AfterSelect += (s, e) =>
             {
-                if (args.RowIndex >= 0)
+                if (e.Node?.Tag is ScriptTemplate t)
                 {
-                    textBoxCoverHue.Text = dgv.Rows[args.RowIndex].Cells["Hue"].Value.ToString();
-                    int hue = int.Parse(dgv.Rows[args.RowIndex].Cells["Hue"].Value.ToString());
-                    textBoxCoverHue.BackColor = HueToRGB555(hue);
+                    SelectTemplate(t);
                 }
             };
+            var left = new Panel { Dock = DockStyle.Fill };
+            left.Controls.Add(_tree);
+            left.Controls.Add(_search);
 
-            // View the form
-            //colorForm.ShowDialog();
+            _title = new Label { AutoSize = true, Font = new Font(Font.FontFamily, 11f, FontStyle.Bold), Margin = new Padding(3, 3, 3, 0) };
+            _description = new Label { AutoSize = true, MaximumSize = new Size(420, 0), ForeColor = Color.DimGray, Margin = new Padding(3, 2, 3, 6) };
+            _bigPreview = new Panel { Width = 150, Height = 150, Margin = new Padding(3) };
+            _bigPreview.Paint += BigPreview_Paint;
+            _fieldsTable = new TableLayoutPanel { AutoSize = true, ColumnCount = 2, Margin = new Padding(0) };
+            _fieldsTable.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 150));
+            _fieldsTable.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
+            var fieldsFlow = new FlowLayoutPanel { FlowDirection = FlowDirection.TopDown, WrapContents = false, AutoSize = true };
+            var buttons = new FlowLayoutPanel { AutoSize = true, WrapContents = false };
+            buttons.Controls.Add(Btn("Reset values", (s, e) => ResetValues(), Tip("Back to the defaults of the template.", "Zurück zu den Vorgaben der Vorlage.")));
+            buttons.Controls.Add(Btn("Edit template", (s, e) => EditCurrentTemplate(), Tip("Opens the template in the Templates tab.", "Öffnet die Vorlage im Reiter Templates.")));
+            buttons.Controls.Add(Btn("Values as defaults", (s, e) => SaveValuesAsDefaults(), Tip(
+                "Saves the current values as defaults of an own copy of the template.", "Speichert die aktuellen Werte als Vorgaben einer eigenen Kopie der Vorlage.")));
+            fieldsFlow.Controls.AddRange(new Control[] { _title, _description, _bigPreview, _fieldsTable, buttons });
+            _fieldsHost = new Panel { Dock = DockStyle.Fill, AutoScroll = true, Padding = new Padding(4) };
+            _fieldsHost.Controls.Add(fieldsFlow);
 
-            // View the form and bring it to the front
-            colorForm.Show();
-            colorForm.BringToFront();
-        }
-
-        // Convert a .NET Color to a Photoshop color code
-        private string RGBToPhotoshopColorCode(Color color)
-        {
-            // Photoshop uses the hexadecimal RGB color code
-            return color.R.ToString("X2") + color.G.ToString("X2") + color.B.ToString("X2");
-        }
-
-        #endregion
-
-        #region Color HueToRGB555
-        private Color HueToRGB555(int hue)
-        {
-            // Divide the Hue value into three parts
-            int r = (hue >> 10) & 0x1F;
-            int g = (hue >> 5) & 0x1F;
-            int b = hue & 0x1F;
-
-            // Scale the values to the range 0 to 255
-            r = (r * 255) / 31;
-            g = (g * 255) / 31;
-            b = (b * 255) / 31;
-
-            return Color.FromArgb(r, g, b);
-        }
-
-        #endregion
-
-        #region textBoxCoverHue_TextChanged
-        private void textBoxCoverHue_TextChanged(object sender, EventArgs e)
-        {
-            // Check whether textBoxCoverHue.Text contains a value
-            if (!string.IsNullOrEmpty(textBoxCoverHue.Text))
+            _problems = new Label { Dock = DockStyle.Top, AutoSize = true, MaximumSize = new Size(700, 0), ForeColor = Color.Firebrick, Padding = new Padding(4) };
+            _output = new RichTextBox { Dock = DockStyle.Fill, ReadOnly = true, WordWrap = false, Font = new Font("Consolas", 10f), BackColor = SystemColors.Window, DetectUrls = false };
+            _txtScriptsFolder = new TextBox { Width = 300, Text = _scriptsFolder, Margin = new Padding(3, 4, 3, 0) };
+            _txtScriptsFolder.TextChanged += (s, e) => _scriptsFolder = _txtScriptsFolder.Text.Trim();
+            _fileLabel = new Label { AutoSize = true, ForeColor = Color.DimGray, Margin = new Padding(3, 7, 3, 0) };
+            var outBar = new FlowLayoutPanel { Dock = DockStyle.Top, AutoSize = true, WrapContents = true };
+            outBar.Controls.AddRange(new Control[]
             {
-                // Try parsing the value
-                int hue;
-                if (int.TryParse(textBoxCoverHue.Text, out hue))
-                {
-                    // Convert the Hue value to a color
-                    Color color = HueToRGB555(hue);
+                Btn("Copy", (s, e) => Copy(_lastOutput), Tip("Copy the script (Ctrl+C when nothing is selected)", "Skript kopieren")),
+                Btn("Save", (s, e) => SaveScript(false), Tip("Save into the scripts folder (Ctrl+S)", "In den Scripts-Ordner speichern (Strg+S)")),
+                Btn("Save as…", (s, e) => SaveScript(true)),
+                Lbl("Scripts folder:"), _txtScriptsFolder,
+                Btn("…", (s, e) => BrowseScriptsFolder()),
+                Btn("Open", (s, e) => { if (Directory.Exists(_scriptsFolder)) OpenFolder(_scriptsFolder); }),
+                _fileLabel
+            });
+            var right = new Panel { Dock = DockStyle.Fill };
+            right.Controls.Add(_output);
+            right.Controls.Add(_problems);
+            right.Controls.Add(outBar);
 
-                    // Color the background of the textBoxCoverHue accordingly
-                    textBoxCoverHue.BackColor = color;
+            var inner = new SplitContainer { Dock = DockStyle.Fill, SplitterDistance = 500, FixedPanel = FixedPanel.Panel1 };
+            inner.Panel1.Controls.Add(_fieldsHost);
+            inner.Panel2.Controls.Add(right);
+            var outer = new SplitContainer { Dock = DockStyle.Fill, SplitterDistance = 250, FixedPanel = FixedPanel.Panel1 };
+            outer.Panel1.Controls.Add(left);
+            outer.Panel2.Controls.Add(inner);
+            tabGenerator.Controls.Add(outer);
+        }
+
+        private void ReloadTemplates(string select)
+        {
+            var errors = new List<string>();
+            ScriptLists.Reload();
+            Dictionary<string, Dictionary<string, string>> old = _values.ToDictionary(kv => kv.Key.Name, kv => kv.Value);
+            _templates = ScriptTemplateLibrary.LoadAll(errors);
+            _values.Clear();
+            foreach (ScriptTemplate t in _templates)
+            {
+                if (old.TryGetValue(t.Name, out Dictionary<string, string> v))
+                {
+                    _values[t] = v;
+                }
+            }
+            _current = null;
+            FillTree(select);
+            FillTemplateList(select);
+            if (errors.Count > 0)
+            {
+                MessageBox.Show(this, "Some templates could not be read:\n\n" + string.Join("\n", errors), Text, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+            SetMessage($"{_templates.Count} templates ({_templates.Count(t => !t.IsBuiltIn)} own).");
+        }
+
+        private void FillTree(string select)
+        {
+            string f = _search.Text.Trim();
+            _tree.BeginUpdate();
+            _tree.Nodes.Clear();
+            TreeNode toSelect = null;
+            foreach (IGrouping<string, ScriptTemplate> g in _templates
+                         .Where(t => f.Length == 0 || t.Name.IndexOf(f, StringComparison.OrdinalIgnoreCase) >= 0 || t.Group.IndexOf(f, StringComparison.OrdinalIgnoreCase) >= 0
+                                     || t.Description.IndexOf(f, StringComparison.OrdinalIgnoreCase) >= 0)
+                         .GroupBy(t => t.Group).OrderBy(g => g.Key.StartsWith("ServUO", StringComparison.Ordinal) ? 0 : g.Key.StartsWith("Sphere", StringComparison.Ordinal) ? 1 : 2).ThenBy(g => g.Key))
+            {
+                var node = new TreeNode(g.Key);
+                foreach (ScriptTemplate t in g.OrderBy(t => t.Name))
+                {
+                    var n = new TreeNode(t.IsBuiltIn ? t.Name : "★ " + t.Name) { Tag = t, ToolTipText = t.Description };
+                    node.Nodes.Add(n);
+                    if (select != null && t.Name == select)
+                    {
+                        toSelect = n;
+                    }
+                }
+                _tree.Nodes.Add(node);
+            }
+            _tree.ExpandAll();
+            _tree.EndUpdate();
+            _tree.ShowNodeToolTips = true;
+            if (toSelect == null && f.Length == 0 && _tree.Nodes.Count > 0 && _tree.Nodes[0].Nodes.Count > 0)
+            {
+                toSelect = _tree.Nodes[0].Nodes[0];
+            }
+            if (toSelect != null)
+            {
+                _tree.SelectedNode = toSelect;
+                toSelect.EnsureVisible();
+            }
+        }
+
+        private void SelectTemplate(ScriptTemplate t)
+        {
+            StoreValues();
+            _current = t;
+            if (!_values.TryGetValue(t, out Dictionary<string, string> values))
+            {
+                values = t.DefaultValues();
+                _values[t] = values;
+            }
+            _title.Text = t.Name + (t.IsBuiltIn ? string.Empty : "   (own)");
+            _description.Text = t.Description;
+            _fieldsTable.SuspendLayout();
+            _fieldsTable.Controls.Clear();
+            _fieldsTable.RowStyles.Clear();
+            _editors.Clear();
+            _fieldsTable.RowCount = t.Fields.Count;
+            for (int i = 0; i < t.Fields.Count; i++)
+            {
+                TemplateField f = t.Fields[i];
+                values.TryGetValue(f.Key, out string v);
+                var ed = new FieldEditor(f, v ?? f.Default, toolTip1);
+                ed.Changed += (s, e) => SchedulePreview();
+                _editors.Add(ed);
+                var label = new Label { Text = f.Label, AutoSize = false, Width = 146, Height = 22, TextAlign = ContentAlignment.MiddleLeft, Margin = new Padding(3, 3, 3, 0) };
+                toolTip1.SetToolTip(label, $"{{{{{f.Key}}}}}  ({f.Type})" + (string.IsNullOrEmpty(f.Tip) ? string.Empty : "\n" + f.Tip));
+                _fieldsTable.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+                _fieldsTable.Controls.Add(label, 0, i);
+                _fieldsTable.Controls.Add(ed.Control, 1, i);
+            }
+            _fieldsTable.ResumeLayout();
+            _bigPreview.Visible = t.Fields.Any(f => f.BaseType == "itemid" || f.BaseType == "body");
+            UpdatePreview();
+        }
+
+        private void StoreValues()
+        {
+            if (_current == null)
+            {
+                return;
+            }
+            _values[_current] = CurrentValues();
+        }
+
+        private Dictionary<string, string> CurrentValues()
+        {
+            var d = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            foreach (FieldEditor ed in _editors)
+            {
+                d[ed.Field.Key] = ed.Value;
+            }
+            return d;
+        }
+
+        private void ResetValues()
+        {
+            if (_current == null)
+            {
+                return;
+            }
+            foreach (FieldEditor ed in _editors)
+            {
+                ed.Value = ed.Field.Default;
+            }
+            UpdatePreview();
+        }
+
+        private void SchedulePreview()
+        {
+            previewTimer.Stop();
+            previewTimer.Start();
+        }
+
+        private void PreviewTimer_Tick(object sender, EventArgs e)
+        {
+            previewTimer.Stop();
+            UpdatePreview();
+        }
+
+        private void UpdatePreview()
+        {
+            if (_current == null)
+            {
+                return;
+            }
+            Dictionary<string, string> v = CurrentValues();
+            List<string> problems = _current.Validate(v);
+            try
+            {
+                _lastOutput = _current.Render(v).Replace("\r\n", "\n").Replace("\n", "\r\n");
+                CodeHighlighter.Show(_output, _lastOutput, _current.Output);
+                _fileLabel.Text = "→ " + _current.RenderFileName(v);
+            }
+            catch (Exception ex)
+            {
+                _lastOutput = string.Empty;
+                _output.Text = "Template error: " + ex.Message;
+                problems.Insert(0, "The template has an error – fix it in the Templates tab.");
+            }
+            _problems.Text = problems.Count == 0 ? string.Empty : "⚠ " + string.Join("\n⚠ ", problems);
+            _bigPreview.Invalidate();
+        }
+
+        private void BigPreview_Paint(object sender, PaintEventArgs e)
+        {
+            if (_current == null)
+            {
+                return;
+            }
+            FieldEditor id = _editors.FirstOrDefault(x => x.Field.BaseType == "itemid") ?? _editors.FirstOrDefault(x => x.Field.BaseType == "body");
+            FieldEditor hue = _editors.FirstOrDefault(x => x.Field.BaseType == "hue");
+            int hueValue = hue != null && ScriptTemplate.TryParseInt(hue.Value, out long hv) ? (int)hv : 0;
+            Bitmap img = null;
+            string caption = "–";
+            if (id != null && ScriptTemplate.TryParseInt(id.Value, out long v) && v >= 0 && v <= 0xFFFF)
+            {
+                img = id.Field.BaseType == "body" ? UoPreview.Body((int)v, hueValue) : UoPreview.Item((int)v, hueValue);
+                caption = img == null ? "not in the client files" : $"{id.Field.Label} 0x{v:X4}";
+            }
+            UoPreview.Draw(e.Graphics, _bigPreview.ClientRectangle, img, caption, Font);
+            img?.Dispose();
+        }
+
+        private void BrowseScriptsFolder()
+        {
+            using (var d = new FolderBrowserDialog { SelectedPath = Directory.Exists(_scriptsFolder) ? _scriptsFolder : string.Empty, Description = "Scripts folder (e.g. ServUO\\Scripts\\Custom)" })
+            {
+                if (d.ShowDialog(this) == DialogResult.OK)
+                {
+                    _txtScriptsFolder.Text = d.SelectedPath;
+                    SaveSettings();
+                }
+            }
+        }
+
+        private void SaveScript(bool ask)
+        {
+            if (_current == null || string.IsNullOrEmpty(_lastOutput))
+            {
+                return;
+            }
+            Dictionary<string, string> v = CurrentValues();
+            List<string> problems = _current.Validate(v);
+            if (problems.Count > 0 && MessageBox.Show(this, "The values have problems:\n\n" + string.Join("\n", problems) + "\n\nSave anyway?", Text,
+                    MessageBoxButtons.YesNo, MessageBoxIcon.Warning) != DialogResult.Yes)
+            {
+                return;
+            }
+            string fileName = _current.RenderFileName(v);
+            string target;
+            if (ask || !Directory.Exists(_scriptsFolder))
+            {
+                using (var d = new SaveFileDialog { FileName = fileName, Filter = $"{_current.Output} files|*.{_current.Output}|All files|*.*" })
+                {
+                    if (Directory.Exists(_scriptsFolder))
+                    {
+                        d.InitialDirectory = _scriptsFolder;
+                    }
+                    if (d.ShowDialog(this) != DialogResult.OK)
+                    {
+                        return;
+                    }
+                    target = d.FileName;
+                    if (!Directory.Exists(_scriptsFolder))
+                    {
+                        _txtScriptsFolder.Text = Path.GetDirectoryName(target);
+                    }
+                }
+            }
+            else
+            {
+                target = Path.Combine(_scriptsFolder, fileName);
+                if (File.Exists(target) && MessageBox.Show(this, $"{fileName} exists. Replace it?", Text, MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
+                {
+                    return;
+                }
+            }
+            try
+            {
+                File.WriteAllText(target, _lastOutput, new UTF8Encoding(false));
+                SaveSettings();
+                SetMessage("Saved: " + target);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(this, "Saving failed:\n" + ex.Message, Text, MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void SaveValuesAsDefaults()
+        {
+            if (_current == null)
+            {
+                return;
+            }
+            ScriptTemplate copy = ScriptTemplate.Parse(_current.ToText());
+            Dictionary<string, string> v = CurrentValues();
+            foreach (TemplateField f in copy.Fields)
+            {
+                if (v.TryGetValue(f.Key, out string value))
+                {
+                    f.Default = value;
+                }
+            }
+            if (_current.IsBuiltIn)
+            {
+                string name = Prompt("Name of the own template / Name der eigenen Vorlage:", _current.Name + " (" + (v.TryGetValue("ClassName", out string cn) ? cn : "copy") + ")");
+                if (string.IsNullOrWhiteSpace(name))
+                {
+                    return;
+                }
+                copy.Name = name.Trim();
+                copy.Group = "My templates";
+                copy.SourceFile = null;
+            }
+            else
+            {
+                copy.SourceFile = _current.SourceFile;
+            }
+            try
+            {
+                string file = ScriptTemplateLibrary.Save(copy);
+                ReloadTemplates(copy.Name);
+                SetMessage("Template saved: " + file);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(this, "Saving failed:\n" + ex.Message, Text, MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        #endregion
+
+        #region Import
+
+        private void ImportScriptFile()
+        {
+            using (var d = new OpenFileDialog { Filter = "Scripts (*.cs;*.scp)|*.cs;*.scp|All files|*.*", Title = "Script to turn into a template" })
+            {
+                if (Directory.Exists(_scriptsFolder))
+                {
+                    d.InitialDirectory = _scriptsFolder;
+                }
+                if (d.ShowDialog(this) != DialogResult.OK)
+                {
+                    return;
+                }
+                try
+                {
+                    Import(ScriptImportForm.ReadText(d.FileName), d.FileName);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(this, "Reading failed:\n" + ex.Message, Text, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+        }
+
+        private void ImportClipboard()
+        {
+            string text = null;
+            try
+            {
+                text = Clipboard.ContainsText() ? Clipboard.GetText() : null;
+            }
+            catch (Exception)
+            {
+                text = null;
+            }
+            if (string.IsNullOrWhiteSpace(text))
+            {
+                SetMessage("The clipboard contains no text.");
+                return;
+            }
+            Import(text, "Clipboard script");
+        }
+
+        private void Import(string source, string name)
+        {
+            using (var f = new ScriptImportForm(source, name) { TopMost = TopMost })
+            {
+                if (f.ShowDialog(this) == DialogResult.OK && f.Template != null)
+                {
+                    ReloadTemplates(f.Template.Name);
+                    tabControl1.SelectedTab = tabGenerator;
+                    SetMessage($"Template \"{f.Template.Name}\" created with {f.Template.Fields.Count} fields: {f.Template.SourceFile}");
+                }
+            }
+        }
+
+        #endregion
+
+        #region Templates tab
+
+        private ListBox _templateList;
+        private RichTextBox _templateText;
+        private RichTextBox _templateTest;
+        private Label _templateInfo;
+        private ScriptTemplate _editing;
+        private bool _templateDirty;
+
+        private void BuildTemplatesTab()
+        {
+            _templateList = new ListBox { Dock = DockStyle.Fill, IntegralHeight = false };
+            _templateList.SelectedIndexChanged += (s, e) =>
+            {
+                if (_templateList.SelectedItem is TemplateItem ti && ti.Template != _editing)
+                {
+                    if (!ConfirmTemplateDiscard())
+                    {
+                        return;
+                    }
+                    LoadTemplateText(ti.Template);
+                }
+            };
+            var listButtons = new FlowLayoutPanel { Dock = DockStyle.Bottom, AutoSize = true };
+            listButtons.Controls.AddRange(new Control[]
+            {
+                Btn("New", (s, e) => NewTemplate()),
+                Btn("Delete", (s, e) => DeleteTemplate(), Tip("Deletes an own template (built-in ones cannot be deleted).", "Löscht eine eigene Vorlage (eingebaute nicht).")),
+                Btn("Folder", (s, e) => OpenFolder(ScriptTemplateLibrary.UserFolder))
+            });
+            var left = new Panel { Dock = DockStyle.Fill };
+            left.Controls.Add(_templateList);
+            left.Controls.Add(listButtons);
+
+            _templateText = new RichTextBox { Dock = DockStyle.Fill, Font = new Font("Consolas", 10f), WordWrap = false, AcceptsTab = true, DetectUrls = false };
+            _templateText.TextChanged += (s, e) => _templateDirty = true;
+            _templateInfo = new Label { Dock = DockStyle.Top, AutoSize = true, ForeColor = Color.DimGray, Padding = new Padding(4) };
+            var bar = new FlowLayoutPanel { Dock = DockStyle.Top, AutoSize = true };
+            bar.Controls.AddRange(new Control[]
+            {
+                Btn("Test", (s, e) => TestTemplate(), Tip("Builds the script with the default values (F5).", "Baut das Skript mit den Vorgaben (F5).")),
+                Btn("Colors", (s, e) => ColorTemplate()),
+                Btn("Save", (s, e) => SaveTemplate(), Tip("Saves as own template (Ctrl+S). A built-in template is saved as own copy that replaces it.",
+                    "Speichert als eigene Vorlage (Strg+S). Eine eingebaute wird als eigene Kopie gespeichert, die sie ersetzt.")),
+                Btn("Use in generator", (s, e) => { if (_editing != null) { tabControl1.SelectedTab = tabGenerator; FillTree(_editing.Name); } })
+            });
+            var syntax = new Label
+            {
+                Dock = DockStyle.Bottom,
+                AutoSize = true,
+                ForeColor = Color.DimGray,
+                Padding = new Padding(4),
+                Text = "@field Key | type | Label | default | tip   types: class string text int:min:max double range bool itemid hue body sound choice:a,b combo:@List list:@List pages:lines:chars\n" +
+                       "{{Key}}  {{Key|cs}} (escape)  |lower |upper |hex |dec |scp   {{#if Key}}…{{else}}…{{/if}}  {{#if !Key}}   {{#each List}}{{key}} = {{value}} {{value1}} {{value2}} {{sep}}{{/each}}   {{lb}} = \"{{\""
+            };
+            var editor = new Panel { Dock = DockStyle.Fill };
+            editor.Controls.Add(_templateText);
+            editor.Controls.Add(syntax);
+            editor.Controls.Add(bar);
+            editor.Controls.Add(_templateInfo);
+
+            _templateTest = new RichTextBox { Dock = DockStyle.Fill, ReadOnly = true, Font = new Font("Consolas", 9.5f), WordWrap = false, BackColor = SystemColors.Window };
+            var right = new SplitContainer { Dock = DockStyle.Fill, Orientation = Orientation.Horizontal, SplitterDistance = 430 };
+            right.Panel1.Controls.Add(editor);
+            right.Panel2.Controls.Add(_templateTest);
+            var split = new SplitContainer { Dock = DockStyle.Fill, SplitterDistance = 250, FixedPanel = FixedPanel.Panel1 };
+            split.Panel1.Controls.Add(left);
+            split.Panel2.Controls.Add(right);
+            tabTemplates.Controls.Add(split);
+        }
+
+        private sealed class TemplateItem
+        {
+            public ScriptTemplate Template;
+            public override string ToString() => (Template.IsBuiltIn ? string.Empty : "★ ") + Template.Group + " / " + Template.Name;
+        }
+
+        private void FillTemplateList(string select)
+        {
+            _templateList.BeginUpdate();
+            _templateList.Items.Clear();
+            foreach (ScriptTemplate t in _templates.OrderBy(t => t.Group).ThenBy(t => t.Name))
+            {
+                _templateList.Items.Add(new TemplateItem { Template = t });
+            }
+            _templateList.EndUpdate();
+            _editing = null;
+            int i = _templateList.Items.Cast<TemplateItem>().ToList().FindIndex(x => x.Template.Name == select);
+            if (i >= 0)
+            {
+                _templateList.SelectedIndex = i;
+            }
+        }
+
+        private bool ConfirmTemplateDiscard()
+        {
+            return !_templateDirty || _editing == null ||
+                   MessageBox.Show(this, $"\"{_editing.Name}\" has unsaved changes. Discard them?", Text, MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes;
+        }
+
+        private void LoadTemplateText(ScriptTemplate t)
+        {
+            _editing = t;
+            CodeHighlighter.Show(_templateText, t.ToText().Replace("\n", "\r\n"), "tpl");
+            _templateDirty = false;
+            _templateInfo.Text = t.IsBuiltIn ? "Built-in template – \"Save\" creates an own copy with the same name that replaces it."
+                : "Own template: " + t.SourceFile;
+            _templateTest.Clear();
+        }
+
+        private void ColorTemplate()
+        {
+            bool dirty = _templateDirty;
+            CodeHighlighter.Show(_templateText, _templateText.Text, "tpl");
+            _templateDirty = dirty;
+        }
+
+        private ScriptTemplate ParseEditor()
+        {
+            try
+            {
+                return ScriptTemplate.Parse(_templateText.Text);
+            }
+            catch (Exception ex)
+            {
+                _templateTest.Text = "Header error: " + ex.Message;
+                return null;
+            }
+        }
+
+        private void TestTemplate()
+        {
+            ScriptTemplate t = ParseEditor();
+            if (t == null)
+            {
+                return;
+            }
+            Dictionary<string, string> v = t.DefaultValues();
+            try
+            {
+                string result = t.Render(v);
+                List<string> problems = t.Validate(v);
+                string head = $"// {t.Fields.Count} fields · file {t.RenderFileName(v)}" + (problems.Count > 0 ? "\n// ⚠ " + string.Join("\n// ⚠ ", problems) : string.Empty) + "\n\n";
+                CodeHighlighter.Show(_templateTest, (head + result).Replace("\r\n", "\n").Replace("\n", "\r\n"), t.Output);
+                SetMessage(result.Contains("{{?") ? "Test: unknown placeholders are shown as {{?Name}}." : "Test OK.");
+            }
+            catch (Exception ex)
+            {
+                _templateTest.Text = "Template error: " + ex.Message;
+            }
+        }
+
+        private void SaveTemplate()
+        {
+            ScriptTemplate t = ParseEditor();
+            if (t == null)
+            {
+                return;
+            }
+            try
+            {
+                t.Render(t.DefaultValues());
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(this, "The template has an error and was not saved:\n" + ex.Message, Text, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+            if (_editing != null && !_editing.IsBuiltIn && string.Equals(_editing.Name, t.Name, StringComparison.Ordinal))
+            {
+                t.SourceFile = _editing.SourceFile;
+            }
+            try
+            {
+                string file = ScriptTemplateLibrary.Save(t);
+                _templateDirty = false;
+                ReloadTemplates(t.Name);
+                SetMessage("Template saved: " + file);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(this, "Saving failed:\n" + ex.Message, Text, MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void NewTemplate()
+        {
+            if (!ConfirmTemplateDiscard())
+            {
+                return;
+            }
+            var t = ScriptTemplate.Parse("""
+                @name My new template
+                @group My templates
+                @output cs
+                @file {{ClassName}}.cs
+                @description What this template creates.
+                @field ClassName | class | Class name | MyItem
+                @field ItemID | itemid | Item ID | 0x0EED
+                @field Name | string | Name | my item
+                @field Hue | hue | Hue | 0
+                @template
+                using System;
+
+                namespace Server.Items
+                {
+                    public class {{ClassName}} : Item
+                    {
+                        [Constructable]
+                        public {{ClassName}}()
+                            : base({{ItemID}})
+                        {
+                            Name = "{{Name|cs}}";
+                            Hue = {{Hue}};
+                        }
+
+                        public {{ClassName}}(Serial serial)
+                            : base(serial)
+                        {
+                        }
+
+                        public override void Serialize(GenericWriter writer)
+                        {
+                            base.Serialize(writer);
+                            writer.Write((int)0);
+                        }
+
+                        public override void Deserialize(GenericReader reader)
+                        {
+                            base.Deserialize(reader);
+                            int version = reader.ReadInt();
+                        }
+                    }
+                }
+
+                """);
+            _templateList.ClearSelected();
+            LoadTemplateText(t);
+            _editing = null;
+            _templateDirty = true;
+            _templateInfo.Text = "New template – change @name and save.";
+        }
+
+        private void EditCurrentTemplate()
+        {
+            if (_current == null)
+            {
+                return;
+            }
+            tabControl1.SelectedTab = tabTemplates;
+            int i = _templateList.Items.Cast<TemplateItem>().ToList().FindIndex(x => x.Template == _current);
+            if (i >= 0)
+            {
+                _templateList.SelectedIndex = i;
+            }
+        }
+
+        private void DeleteTemplate()
+        {
+            if (!(_templateList.SelectedItem is TemplateItem ti))
+            {
+                return;
+            }
+            if (ti.Template.IsBuiltIn)
+            {
+                SetMessage("Built-in templates cannot be deleted (an own copy with the same name replaces them).");
+                return;
+            }
+            if (MessageBox.Show(this, $"Delete \"{ti.Template.Name}\"?\n{ti.Template.SourceFile}", Text, MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
+            {
+                return;
+            }
+            try
+            {
+                File.Delete(ti.Template.SourceFile);
+                _templateDirty = false;
+                ReloadTemplates(null);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(this, ex.Message, Text, MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        #endregion
+
+        #region Client text files tab
+
+        private TextBox _txtClientFolder, _find, _replace;
+        private ListBox _clientFiles;
+        private RichTextBox _clientText;
+        private CheckBox _matchCase;
+        private Label _clientInfo;
+        private string _clientFile;
+        private bool _clientDirty, _clientLoading;
+
+        private void BuildClientFilesTab()
+        {
+            _txtClientFolder = new TextBox { Dock = DockStyle.Fill, Text = _clientFolder };
+            var folderBar = new TableLayoutPanel { Dock = DockStyle.Top, Height = 30, ColumnCount = 3 };
+            folderBar.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+            folderBar.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
+            folderBar.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
+            folderBar.Controls.Add(_txtClientFolder, 0, 0);
+            folderBar.Controls.Add(Btn("…", (s, e) => BrowseClientFolder()), 1, 0);
+            folderBar.Controls.Add(Btn("List", (s, e) => ListClientFiles()), 2, 0);
+            _clientFiles = new ListBox { Dock = DockStyle.Fill, IntegralHeight = false };
+            _clientFiles.SelectedIndexChanged += (s, e) =>
+            {
+                if (_clientFiles.SelectedItem is string f && !_clientLoading)
+                {
+                    OpenClientFile(Path.Combine(_txtClientFolder.Text.Trim(), f));
+                }
+            };
+            toolTip1.SetToolTip(_clientFiles, Tip("Text files of the client: walls, doors, floors, roofs, stairs, misc (house designer), bodyconv.def, mobtypes.txt …",
+                "Textdateien des Clients: walls, doors, floors, roof, stairs, misc (Hausbau), bodyconv.def, mobtypes.txt …"));
+            var left = new Panel { Dock = DockStyle.Fill };
+            left.Controls.Add(_clientFiles);
+            left.Controls.Add(folderBar);
+
+            _clientText = new RichTextBox { Dock = DockStyle.Fill, Font = new Font("Consolas", 10f), WordWrap = false, AcceptsTab = true, DetectUrls = false };
+            _clientText.TextChanged += (s, e) =>
+            {
+                if (!_clientLoading)
+                {
+                    _clientDirty = true;
+                    UpdateClientInfo();
+                }
+            };
+            _clientText.SelectionChanged += (s, e) => UpdateClientInfo();
+            _find = new TextBox { Width = 170, Margin = new Padding(3, 4, 3, 0) };
+            _find.KeyDown += (s, e) => { if (e.KeyCode == Keys.Enter) { e.SuppressKeyPress = true; FindNext(e.Shift ? -1 : 1); } };
+            _replace = new TextBox { Width = 140, Margin = new Padding(3, 4, 3, 0) };
+            _matchCase = new CheckBox { Text = "Aa", AutoSize = true, Margin = new Padding(3, 6, 3, 0) };
+            toolTip1.SetToolTip(_matchCase, Tip("Match case", "Groß-/Kleinschreibung beachten"));
+            _clientInfo = new Label { AutoSize = true, ForeColor = Color.DimGray, Margin = new Padding(3, 7, 3, 0) };
+            var bar = new FlowLayoutPanel { Dock = DockStyle.Top, AutoSize = true };
+            bar.Controls.AddRange(new Control[]
+            {
+                Btn("Save", (s, e) => SaveClientFile(), Tip("Saves the file; the first time a .bak copy is made (Ctrl+S).", "Speichert die Datei; beim ersten Mal entsteht eine .bak-Kopie (Strg+S).")),
+                Btn("Reload", (s, e) => { if (_clientFile != null && ConfirmClientDiscard()) OpenClientFile(_clientFile, true); }),
+                Lbl("Find:"), _find, Btn("▲", (s, e) => FindNext(-1)), Btn("▼", (s, e) => FindNext(1)), _matchCase,
+                Lbl("Replace:"), _replace, Btn("Replace", (s, e) => ReplaceOne()), Btn("All", (s, e) => ReplaceAll()),
+                _clientInfo
+            });
+            var right = new Panel { Dock = DockStyle.Fill };
+            right.Controls.Add(_clientText);
+            right.Controls.Add(bar);
+            var split = new SplitContainer { Dock = DockStyle.Fill, SplitterDistance = 260, FixedPanel = FixedPanel.Panel1 };
+            split.Panel1.Controls.Add(left);
+            split.Panel2.Controls.Add(right);
+            tabClientFiles.Controls.Add(split);
+            tabControl1.SelectedIndexChanged += (s, e) =>
+            {
+                if (tabControl1.SelectedTab == tabClientFiles && _clientFiles.Items.Count == 0)
+                {
+                    ListClientFiles();
+                }
+            };
+        }
+
+        private void BrowseClientFolder()
+        {
+            using (var d = new FolderBrowserDialog { SelectedPath = Directory.Exists(_txtClientFolder.Text) ? _txtClientFolder.Text : string.Empty, Description = "Ultima Online client folder" })
+            {
+                if (d.ShowDialog(this) == DialogResult.OK)
+                {
+                    _txtClientFolder.Text = d.SelectedPath;
+                    ListClientFiles();
+                }
+            }
+        }
+
+        private void ListClientFiles()
+        {
+            string folder = _txtClientFolder.Text.Trim();
+            _clientLoading = true;
+            _clientFiles.Items.Clear();
+            try
+            {
+                if (Directory.Exists(folder))
+                {
+                    _clientFolder = folder;
+                    SaveSettings();
+                    foreach (string f in Directory.GetFiles(folder)
+                                 .Where(f => new[] { ".txt", ".def", ".cfg", ".csv", ".xml" }.Contains(Path.GetExtension(f).ToLowerInvariant()))
+                                 .OrderBy(f => f, StringComparer.OrdinalIgnoreCase))
+                    {
+                        _clientFiles.Items.Add(Path.GetFileName(f));
+                    }
+                    SetMessage($"{_clientFiles.Items.Count} text files in {folder}.");
                 }
                 else
                 {
-                    // The value could not be parsed
-                    MessageBox.Show("Please enter a valid number.");
+                    SetMessage("Choose the client folder.");
+                }
+            }
+            finally
+            {
+                _clientLoading = false;
+            }
+        }
+
+        private bool ConfirmClientDiscard()
+        {
+            return !_clientDirty || MessageBox.Show(this, $"{Path.GetFileName(_clientFile)} has unsaved changes. Discard them?", Text, MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes;
+        }
+
+        private void OpenClientFile(string file, bool force = false)
+        {
+            if (!force && string.Equals(file, _clientFile, StringComparison.OrdinalIgnoreCase))
+            {
+                return;
+            }
+            if (!force && !ConfirmClientDiscard())
+            {
+                return;
+            }
+            try
+            {
+                _clientLoading = true;
+                // Latin-1 keeps every byte as it is
+                _clientText.Text = File.ReadAllText(file, Encoding.Latin1);
+                _clientFile = file;
+                _clientDirty = false;
+                UpdateClientInfo();
+                SetMessage("Opened " + file);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(this, "Opening failed:\n" + ex.Message, Text, MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            finally
+            {
+                _clientLoading = false;
+            }
+        }
+
+        private void SaveClientFile()
+        {
+            if (_clientFile == null)
+            {
+                SetMessage("No file is open.");
+                return;
+            }
+            try
+            {
+                string bak = _clientFile + ".bak";
+                if (!File.Exists(bak) && File.Exists(_clientFile))
+                {
+                    File.Copy(_clientFile, bak);
+                }
+                File.WriteAllText(_clientFile, _clientText.Text.Replace("\r\n", "\n").Replace("\n", "\r\n"), Encoding.Latin1);
+                _clientDirty = false;
+                UpdateClientInfo();
+                SetMessage("Saved " + _clientFile + (File.Exists(bak) ? " (backup: " + Path.GetFileName(bak) + ")" : string.Empty));
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(this, "Saving failed:\n" + ex.Message, Text, MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void UpdateClientInfo()
+        {
+            if (_clientFile == null)
+            {
+                _clientInfo.Text = string.Empty;
+                return;
+            }
+            int line = _clientText.GetLineFromCharIndex(_clientText.SelectionStart);
+            int col = _clientText.SelectionStart - _clientText.GetFirstCharIndexFromLine(line);
+            _clientInfo.Text = $"{Path.GetFileName(_clientFile)}{(_clientDirty ? " *" : string.Empty)}   line {line + 1}, col {col + 1}   {_clientText.Lines.Length} lines";
+        }
+
+        private StringComparison Comparison => _matchCase.Checked ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase;
+
+        /// <summary>Plain text search (no regex – brackets and + are safe).</summary>
+        private void FindNext(int dir)
+        {
+            string f = _find.Text;
+            if (f.Length == 0)
+            {
+                return;
+            }
+            string t = _clientText.Text;
+            int count = CountMatches(t, f);
+            int index;
+            if (dir > 0)
+            {
+                int start = Math.Min(t.Length, _clientText.SelectionStart + _clientText.SelectionLength);
+                index = t.IndexOf(f, start, Comparison);
+                if (index < 0)
+                {
+                    index = t.IndexOf(f, 0, Comparison);
                 }
             }
             else
             {
-                // textBoxCoverHue.Text is empty
-                textBoxCoverHue.BackColor = SystemColors.Window; // Reset the background to the default color
-            }
-        }
-        #endregion
-
-        #region btClipBoard_Click
-        private void btClipBoard_Click(object sender, EventArgs e)
-        {
-            // Check if textBoxScriptResult.Text has a value
-            if (!string.IsNullOrEmpty(textBoxScriptResult.Text))
-            {
-                // Copy the contents of textBoxScriptResult to the clipboard
-                Clipboard.SetText(textBoxScriptResult.Text);
-            }
-            else
-            {
-                // Show a message if textBoxScriptResult.Text is empty
-                MessageBox.Show("There is no text to copy to the clipboard.");
-            }
-
-            // Create a new SoundPlayer
-            SoundPlayer player = new SoundPlayer();
-
-            // Load the sound file
-            player.SoundLocation = AppDomain.CurrentDomain.BaseDirectory + "\\Sound.wav";
-
-            // Play the sound
-            player.Play();
-        }
-        #endregion
-
-        #region btSaveBookScript_Click
-        private void btSaveBookScript_Click(object sender, EventArgs e)
-        {
-            SaveFileDialog saveFileDialog = new SaveFileDialog();
-            saveFileDialog.Filter = "C# Dateien (*.cs)|*.cs";
-            saveFileDialog.FileName = textBoxBookFilename.Text;
-
-            if (saveFileDialog.ShowDialog() == DialogResult.OK)
-            {
-                System.IO.File.WriteAllText(saveFileDialog.FileName, textBoxScriptResult.Text);
-            }
-        }
-        #endregion
-
-        #region btCreateScriptCrossbow
-        private void btCreateScriptCrossbow_Click(object sender, EventArgs e)
-        {
-            // Name Script
-            string SetNameCrossbow = tbNameCrossbow.Text.Replace(" ", "_");
-            string SetCrossBowItem1 = tbCrossBowItem1.Text; // Item ID
-            string SetCrossBowItem2 = tbCrossBowItem2.Text; // Item ID
-            string SetWeight = tbWeight.Text; // Weight
-            string SetLayer = tbTwoHanded.Text; // Layer
-            string SetBaseRanged = tbBaseRanged.Text; // BaseRanged
-            string SetEffectID = tbEffectID.Text; // EffectID
-            string SetAmmoType = tbAmmoType.Text; // AmmoType
-            string SetWeaponAbility1 = tbWeaponAbility1.Text; // WeaponAbility1
-            string SetWeaponAbility2 = tbWeaponAbility2.Text; // WeaponAbility2
-            string SetAosStrengthReq = tbAosStrengthReq.Text; // AosStrengthReq
-            string SetAosMinDamage = tbAosMinDamage.Text; // AosMinDamage
-            string SetAosMaxDamage1 = tbAosMaxDamage1.Text; // AosMaxDamage
-            string SetAosMaxDamage2 = tbAosMaxDamage2.Text; // AosMaxDamage
-            string SetAosSpeed = tbAosSpeed.Text; // AosSpeed
-            string SetMlSpeed = tbMlSpeed.Text; // MlSpeed
-            string SetOldStrengthReq = tbOldStrengthReq.Text; // OldStrengthReq
-            string SetOldMinDamage = tbOldMinDamage.Text; // OldMinDamage
-            string SetOldMaxDamage = tbOldMaxDamage.Text; // OldMaxDamage
-            string SetOldSpeed = tbOldSpeed.Text; // OldSpeed
-            string SetDefMaxRange = tbDefMaxRange.Text; // DefMaxRange
-            string SetInitMinHits = tbInitMinHits.Text; // InitMinHits
-            string SetInitMaxHits = tbInitMaxHits.Text; // InitMaxHits
-
-            string script = $@"
-    using System;
-    using Server;
-    using Ultima
-
-    namespace Server.Items
-    {{
-        [FlipableAttribute({SetCrossBowItem1}, {SetCrossBowItem2})]
-        public class {SetNameCrossbow} : {SetBaseRanged}
-        {{
-            [Constructable]
-            public {SetNameCrossbow}()
-                : base({SetCrossBowItem1})
-            {{
-                this.Weight = {SetWeight};
-                this.Layer = Layer.{SetLayer};
-            }}
-
-            public {SetNameCrossbow}(Serial serial)
-                : base(serial)
-            {{
-            }}
-
-            public override int EffectID
-            {{
-                get
-                {{
-                    return {SetEffectID};
-                }}
-            }}
-            public override Type AmmoType
-            {{
-                get
-                {{
-                    return typeof({SetAmmoType});
-                }}
-            }}
-            public override Item Ammo
-            {{
-                get
-                {{
-                    return new {SetAmmoType}();
-                }}
-            }}
-            public override WeaponAbility PrimaryAbility
-            {{
-                get
-                {{
-                    return WeaponAbility.{SetWeaponAbility1};
-                }}
-            }}
-            public override WeaponAbility SecondaryAbility
-            {{
-                get
-                {{
-                    return WeaponAbility.{SetWeaponAbility2};
-                }}
-            }}
-            public override int AosStrengthReq
-            {{
-                get
-                {{
-                    return {SetAosStrengthReq};
-                }}
-            }}
-            public override int AosMinDamage
-            {{
-                get
-                {{
-                    return {SetAosMinDamage};
-                }}
-            }}
-            public override int AosMaxDamage
-            {{
-                get
-                {{
-                    return Core.ML ? {SetAosMaxDamage1} : {SetAosMaxDamage2};
-                }}
-            }}
-            public override int AosSpeed
-            {{
-                get
-                {{
-                    return {SetAosSpeed};
-                }}
-            }}
-            public override float MlSpeed
-            {{
-                get
-                {{
-                    return {SetMlSpeed};
-                }}
-            }}
-            public override int OldStrengthReq
-            {{
-                get
-                {{
-                    return {SetOldStrengthReq};
-                }}
-            }}
-            public override int OldMinDamage
-            {{
-                get
-                {{
-                    return {SetOldMinDamage};
-                }}
-            }}
-            public override int OldMaxDamage
-            {{
-                get
-                {{
-                    return {SetOldMaxDamage};
-                }}
-            }}
-            public override int OldSpeed
-            {{
-                get
-                {{
-                    return {SetOldSpeed};
-                }}
-            }}
-            public override int DefMaxRange
-            {{
-                get
-                {{
-                    return {SetDefMaxRange};
-                }}
-            }}
-            public override int InitMinHits
-            {{
-                get
-                {{
-                    return {SetInitMinHits};
-                }}
-            }}
-            public override int InitMaxHits
-            {{
-                get
-                {{
-                    return {SetInitMaxHits};
-                }}
-            }}
-            public override void Serialize(GenericWriter writer)
-            {{
-                base.Serialize(writer);
-
-                writer.Write((int)0); // version
-            }}
-
-            public override void Deserialize(GenericReader reader)
-            {{
-                base.Deserialize(reader);
-
-                int version = reader.ReadInt();
-            }}
-        }}
-    }}";
-
-            richTextBoxScriptEdit.Text = script;
-
-            // Create a new SoundPlayer
-            SoundPlayer player = new SoundPlayer();
-
-            // Load the sound file
-            player.SoundLocation = AppDomain.CurrentDomain.BaseDirectory + "\\Sound.wav";
-
-            // Play the sound
-            player.Play();
-        }
-        #endregion
-
-        #region btCopyToClipboard
-        private void btCopyToClipboard_Click(object sender, EventArgs e)
-        {
-            Clipboard.SetText(richTextBoxScriptEdit.Text);
-
-            // Create a new SoundPlayer
-            SoundPlayer player = new SoundPlayer();
-
-            // Load the sound file
-            player.SoundLocation = AppDomain.CurrentDomain.BaseDirectory + "\\Sound.wav";
-
-            // Play the sound
-            player.Play();
-        }
-        #endregion
-
-        #region btCopyToClipboardAmin
-        private void btCopyToClipboardAmin_Click(object sender, EventArgs e)
-        {
-            Clipboard.SetText(richTextAminBoxEdit.Text);
-
-            // Create a new SoundPlayer
-            SoundPlayer player = new SoundPlayer();
-
-            // Load the sound file
-            player.SoundLocation = AppDomain.CurrentDomain.BaseDirectory + "\\Sound.wav";
-
-            // Play the sound
-            player.Play();
-        }
-        #endregion
-
-        #region btCopyToClipboardWall
-        private void btCopyToClipboardWall_Click(object sender, EventArgs e)
-        {
-            Clipboard.SetText(richTextBoxWallScript.Text);
-
-            // Create a new SoundPlayer
-            SoundPlayer player = new SoundPlayer();
-
-            // Load the sound file
-            player.SoundLocation = AppDomain.CurrentDomain.BaseDirectory + "\\Sound.wav";
-
-            // Play the sound
-            player.Play();
-        }
-        #endregion
-
-        #region btCopyToClipboardChair
-        private void btCopyToClipboardChair_Click(object sender, EventArgs e)
-        {
-            Clipboard.SetText(richTextBoxScriptMiscellaneous.Text);
-
-            // Create a new SoundPlayer
-            SoundPlayer player = new SoundPlayer();
-
-            // Load the sound file
-            player.SoundLocation = AppDomain.CurrentDomain.BaseDirectory + "\\Sound.wav";
-
-            // Play the sound
-            player.Play();
-        }
-        #endregion
-
-        #region btCreateScriptBow_Click
-        private void btCreateScriptBow_Click(object sender, EventArgs e)
-        {
-            string SetNameCrossbow = tbBowName.Text.Replace(" ", "_");
-            string SetBow = tbBow.Text; // Bow Class or Other
-            string SetItemID = tbItemID.Text; // ItemID
-            string SetName = tbName.Text; // Name
-            string SetHue = tbHue.Text; // Hue
-            string SetStrRequirement = tbStrRequirement.Text; // StrRequirement
-            string SetAttributes1 = tbAttributes1.Text; // Attributes
-            string SetSpellChanneling = tbSpellChanneling.Text; // SpellChanneling
-            string SetWeaponAttributes1 = tbWeaponAttributes1.Text; // WeaponAttributes 1
-            string SetHitLightning = tbHitLightning.Text; // tbHitLightning
-            string SetMinDamage = tbMinDamage.Text; // MinDamage
-            string SetMaxDamage = tbMaxDamage.Text; // MaxDamage
-            string SetWeaponAttributes2 = tbWeaponAttributes2.Text; // DurabilityBonus
-            string SetValue1 = tbValue1.Text; // 1000
-            string SetLootType = tbLootType.Text; // LootType
-            string SetWeaponAttributes3 = tbWeaponAttributes3.Text; // WeaponSpeed
-            string SetValue2 = tbValue2.Text; // 20
-            string SetWeaponAttributes4 = tbWeaponAttributes4.Text; // HitLeechHits
-            string SetValue3 = tbValue3.Text; // 5
-            string SetWeaponAttributes5 = tbWeaponAttributes5.Text; // HitHarm
-            string SetValue4 = tbValue4.Text; // 10
-            string SetWeaponAttributes6 = tbWeaponAttributes6.Text; // HitFireball
-            string SetValue5 = tbValue5.Text; // 15
-
-
-            string script = $@"
-using System;
-using Server;
-using Ultima;
-
-namespace Server.Items
-{{
-    public class {SetNameCrossbow} : {SetBow}
-    {{
-        [Constructable]
-        public {SetNameCrossbow}()
-        {{
-            this.ItemID = {SetItemID};
-            Name = ""{SetName}"";
-            Hue = {SetHue};
-            StrRequirement = {SetStrRequirement};
-            Attributes.{SetAttributes1} = {SetSpellChanneling};
-            WeaponAttributes.{SetWeaponAttributes1} = {SetHitLightning};
-            MinDamage = {SetMinDamage};
-            MaxDamage = {SetMaxDamage};
-            WeaponAttributes.{SetWeaponAttributes2} = {SetValue1};
-            LootType = LootType.{SetLootType};
-
-            // Hinzugefügte Attribute
-            Attributes.{SetWeaponAttributes3} = {SetValue2};
-            WeaponAttributes.{SetWeaponAttributes4} = {SetValue3};
-            WeaponAttributes.{SetWeaponAttributes5} = {SetValue4};
-            WeaponAttributes.{SetWeaponAttributes6} = {SetValue5};
-        }}
-
-        public override void GetDamageTypes(Mobile wielder, out int phys, out int fire, out int cold, out int pois, out int nrgy, out int chaos, out int direct)
-        {{
-            phys = fire = pois = cold = chaos = direct = 0;
-            nrgy = 100;
-        }}
-
-        public {SetNameCrossbow}(Serial serial) : base(serial)
-        {{
-        }}
-
-        public override void Serialize(GenericWriter writer)
-        {{
-            base.Serialize(writer);
-            writer.Write((int)0);
-        }}
-
-        public override void Deserialize(GenericReader reader)
-        {{
-            base.Deserialize(reader);
-            int version = reader.ReadInt();
-        }}
-    }}
-}}";
-            richTextBoxScriptEdit.Text = script;
-
-            // Create a new SoundPlayer
-            SoundPlayer player = new SoundPlayer();
-
-            // Load the sound file
-            player.SoundLocation = AppDomain.CurrentDomain.BaseDirectory + "\\Sound.wav";
-
-            // Play the sound
-            player.Play();
-        }
-        #endregion
-
-        #region btCreateSwordScript_Click
-        private void btCreateSwordScript_Click(object sender, EventArgs e)
-        {
-            string SetScriptName = tbScriptName.Text.Replace(" ", "_");
-            string Settypeof1 = tbStypeof1.Text; // DefBlacksmithy
-            string Settypeof2 = tbStypeof2.Text; // DreadSword
-            string SetBaseSword = tbBaseSword.Text; // BaseSword
-            string SetSGraficID1 = tbSGraficID1.Text; // Grafik ID
-            string SetSGraficID2 = tbSGraficID2.Text; // Grafik ID
-            string SetSWeight = tbSWeight.Text; // Weight
-            string SetSWeaponAbility1 = tbSWeaponAbility1.Text; // WeaponAbility
-            string SetSWeaponAbility2 = tbSWeaponAbility2.Text; // WeaponAbility
-            string SetSWeaponAbility3 = tbSWeaponAbility3.Text; // WeaponAbility
-            string SetSWeaponAbility4 = tbSWeaponAbility4.Text; // WeaponAbility
-            string SetSAosStrengthReq = tbSAosStrengthReq.Text; // AosStrengthReq 30
-            string SetSAosMinDamage = tbSAosMinDamage.Text; // AosMinDamage 18
-            string SetSAosMaxDamage = tbSAosMaxDamage.Text; // AosMaxDamage 17
-            string SetSAosSpeed = tbSAosSpeed.Text; // AosSpeed 33
-            string SetSMlSpeed = tbSMlSpeed.Text; // MlSpeed 3.25f
-            string SetSOldStrengthReq = tbSOldStrengthReq.Text; // OldStrengthReq 30
-            string SetSOldMinDamage = tbSOldMinDamage.Text; // OldMinDamage 5
-            string SetSOldMaxDamage = tbSOldMaxDamage.Text; // OldMaxDamage 29
-            string SetSOldSpeed = tbSOldSpeed.Text; // OldSpeed 45
-            string SetSDefHitSound = tbSDefHitSound.Text; // DefHitSound 0x237
-            string SetSDefMissSound = tbSDefMissSound.Text; // DefMissSound 0x23A
-            string SetSInitMinHits = tbSInitMinHits.Text; // InitMinHits 31
-            string SetSInitMaxHits = tbSInitMaxHits.Text; // InitMaxHits 100
-
-            string script = $@"
-using System;
-using Server.Engines.Craft;
-using Server;
-using Ultima
-
-namespace Server.Items
-{{
-    [Alterable(typeof({Settypeof1}), typeof({Settypeof2}))]
-    [FlipableAttribute({SetSGraficID1}, {SetSGraficID2})]
-    public class {SetScriptName} : {SetBaseSword}
-    {{
-        [Constructable]
-        public {SetScriptName}()
-            : base({SetSGraficID1})
-        {{
-            this.Weight = {SetSWeight};
-        }}
-
-        public {SetScriptName}(Serial serial)
-            : base(serial)
-        {{
-        }}
-
-        public override WeaponAbility {SetSWeaponAbility1}
-        {{
-            get
-            {{
-                return WeaponAbility.{SetSWeaponAbility2};
-            }}
-        }}
-        public override WeaponAbility {SetSWeaponAbility3}
-        {{
-            get
-            {{
-                return WeaponAbility.{SetSWeaponAbility4};
-            }}
-        }}
-        public override int AosStrengthReq
-        {{
-            get
-            {{
-                return {SetSAosStrengthReq};
-            }}
-        }}
-        public override int AosMinDamage
-        {{
-            get
-            {{
-                return {SetSAosMinDamage};
-            }}
-        }}
-        public override int AosMaxDamage
-        {{
-            get
-            {{
-                return {SetSAosMaxDamage};
-            }}
-        }}
-        public override int AosSpeed
-        {{
-            get
-            {{
-                return {SetSAosSpeed};
-            }}
-        }}
-        public override float MlSpeed
-        {{
-            get
-            {{
-                return {SetSMlSpeed};
-            }}
-        }}
-        public override int OldStrengthReq
-        {{
-            get
-            {{
-                return {SetSOldStrengthReq};
-            }}
-        }}
-        public override int OldMinDamage
-        {{
-            get
-            {{
-                return {SetSOldMinDamage};
-            }}
-        }}
-        public override int OldMaxDamage
-        {{
-            get
-            {{
-                return {SetSOldMaxDamage};
-            }}
-        }}
-        public override int OldSpeed
-        {{
-            get
-            {{
-                return {SetSOldSpeed};
-            }}
-        }}
-        public override int DefHitSound
-        {{
-            get
-            {{
-                return {SetSDefHitSound};
-            }}
-        }}
-        public override int DefMissSound
-        {{
-            get
-            {{
-                return {SetSDefMissSound};
-            }}
-        }}
-        public override int InitMinHits
-        {{
-            get
-            {{
-                return {SetSInitMinHits};
-            }}
-        }}
-        public override int InitMaxHits
-        {{
-            get
-            {{
-                return {SetSInitMaxHits};
-            }}
-        }}
-        public override void Serialize(GenericWriter writer)
-        {{
-            base.Serialize(writer);
-
-            writer.Write((int)0); // version
-        }}
-
-        public override void Deserialize(GenericReader reader)
-        {{
-            base.Deserialize(reader);
-
-            int version = reader.ReadInt();
-        }}
-    }}
-}}";
-            richTextBoxScriptEdit.Text = script;
-
-            // Create a new SoundPlayer
-            SoundPlayer player = new SoundPlayer();
-
-            // Load the sound file
-            player.SoundLocation = AppDomain.CurrentDomain.BaseDirectory + "\\Sound.wav";
-
-            // Play the sound
-            player.Play();
-        }
-
-        #endregion
-
-        #region btStaffStript_Click
-        private void btStaffStript_Click(object sender, EventArgs e)
-        {
-            string SetStaffscriptName = tbStaffName.Text.Replace(" ", "_");
-            string SetClassNameStaff = tbStaffClassName.Text; // BlackStaff
-            string SetStaffItemID = tbStaffItemID.Text; // StaffItemID 0x0DF1
-            string SetStaffItemName = tbStaffItemName.Text; // Staff Name
-            string SetStaffHue1 = tbStaffHue1.Text; // 0x4F2
-            string SetStaffHue2 = tbStaffHue2.Text; // 0x4EF
-            string SetStaffStrRequirement = tbStaffStrRequirement.Text; // StrRequirement 12
-            string SetStaffAttributes1 = tbStaffAttributes1.Text; // SpellChanneling
-            string SetStaffAttributes2 = tbStaffAttributes2.Text; // 1
-            string SetMageWeapon1 = tbMageWeapon1.Text; // 15
-            string SetSpellDamage1 = tbSpellDamage1.Text; // 5
-            string SetStaffCastRecovery = tbStaffCastRecovery.Text; // 2
-            string SetStaffLowerManaCost = tbStaffLowerManaCost.Text; // 5
-            string SetStaffInitMinHits = tbStaffInitMinHits.Text; // 255
-            string SetStaffInitMaxHits = tbStaffInitMaxHits.Text; // 255
-            string SetStaffLootType = tbStaffLootType.Text; // Blessed true or false
-            string SetStaffWeaponAttributes1 = tbStaffWeaponAttributes1.Text; // HitFireball
-            string SetStaffValue1 = tbStaffValue1.Text; // 20
-            string SetStaffWeaponAttributes2 = tbStaffWeaponAttributes2.Text; // HitHarm
-            string SetStaffValue2 = tbStaffValue2.Text; // 10
-            string SetDurabilityBonus = tbStaffDurabilityBonus.Text; // 1000
-
-            string script = $@"
-using System;
-using Server;
-using Ultima
-
-namespace Server.Items
-{{
-    public class {SetStaffscriptName} : {SetClassNameStaff}
-    {{
-        public override bool IsArtifact {{ get {{ return true; }} }}
-        [Constructable]
-        public {SetStaffscriptName}()
-        {{
-            this.ItemID = {SetStaffItemID};
-            Name = ""{SetStaffItemName}"";
-
-            Hue = Utility.RandomBool() ? {SetStaffHue1} : {SetStaffHue2};
-            StrRequirement = {SetStaffStrRequirement};
-            WeaponAttributes.MageWeapon = {SetMageWeapon1};
-            Attributes.{SetStaffAttributes1} = {SetStaffAttributes2};
-            Attributes.SpellDamage = {SetSpellDamage1};
-            Attributes.CastRecovery = {SetStaffCastRecovery};
-            Attributes.LowerManaCost = {SetStaffLowerManaCost};
-            LootType = LootType.{SetStaffLootType};
-            WeaponAttributes.{SetStaffWeaponAttributes1} = {SetStaffValue1};
-            WeaponAttributes.{SetStaffWeaponAttributes2} = {SetStaffValue2};
-            WeaponAttributes.DurabilityBonus = {SetDurabilityBonus};
-
-        }}
-
-        public {SetStaffscriptName}(Serial serial)
-            : base(serial)
-        {{
-        }}
-
-        public override int LabelNumber
-        {{
-            get
-            {{
-                return 1070692;
-            }}
-        }}
-        public override int InitMinHits
-        {{
-            get
-            {{
-                return {SetStaffInitMinHits};
-            }}
-        }}
-        public override int InitMaxHits
-        {{
-            get
-            {{
-                return {SetStaffInitMaxHits};
-            }}
-        }}
-        public override void Serialize(GenericWriter writer)
-        {{
-            base.Serialize(writer);
-
-            writer.Write((int)0); // version
-        }}
-
-        public override void Deserialize(GenericReader reader)
-        {{
-            base.Deserialize(reader);
-
-            int version = reader.ReadInt();
-        }}
-    }}
-}}";
-            richTextBoxScriptEdit.Text = script;
-
-            // Create a new SoundPlayer
-            SoundPlayer player = new SoundPlayer();
-
-            // Load the sound file
-            player.SoundLocation = AppDomain.CurrentDomain.BaseDirectory + "\\Sound.wav";
-
-            // Play the sound
-            player.Play();
-        }
-        #endregion
-
-        #region btCreateAxeSxript_Click
-        private void btCreateAxeSxript_Click(object sender, EventArgs e)
-        {
-            string SetAxeScriptName = tbAxeName.Text.Replace(" ", "_");
-            string SetAxeClassName = tbAxeClassName.Text; // BattleAxe
-            string SetAxeIdName1 = tbAxeIdName1.Text; // 0xF47
-            string SetAxeIdName2 = tbAxeIdName2.Text; // 0xF47
-            string SetAxeItemName = tbAxeItemName.Text; // AxeOfAbandon
-            string SetAxeLabelNumber = tbAxeLabelNumber.Text; // 1113863
-            string SetIsArtifact = tbAxeIsArtifact.Text; // true or false
-            string SetAxeHue = tbAxeHue.Text; // 556
-            string SetAxeWeaponAttributes1 = tbAxeWeaponAttributes1.Text; // HitLowerDefend
-            string SetAxeWeaponAttributes2 = tbAxeWeaponAttributes2.Text; // BattleLust
-            string SetAxeWeaponAttributes3 = tbAxeWeaponAttributes3.Text; // HitFireball
-            string setAxeValue1 = tbAxeValue1.Text; // 40
-            string setAxeValue2 = tbAxeValue2.Text; // 1
-            string setAxeValue3 = tbAxeValue3.Text; // 15
-            string SetAttackChance = tbAttackChance.Text; // 15 
-            string SetAxeLootType = tbAxeLootType.Text; // true of false
-            string SetDefendChance = tbAxeDefendChance.Text; //10
-            string SetAxeCastSpeed = tbAxeCastSpeed.Text; // 1
-            string SetAxeInitMinHits = tbAxeInitMinHits.Text; // 255
-            string SetAxeInitMaxHits = tbAxeInitMaxHits.Text; // 255
-            string SetAxeWeaponSpeed = tbAxeWeaponSpeed.Text; // 30
-            string SetAxeWeaponDamage = tbAxeWeaponDamage.Text; // 50
-            string SetAxeStrRequirement = tbAxeStrRequirement.Text; // 35
-
-            string script = $@"
-using System;
-using Server;
-using Ultima
-
-namespace Server.Items
-{{
-    [FlipableAttribute({SetAxeIdName1}, {SetAxeIdName2})]
-    public class {SetAxeScriptName} : {SetAxeClassName}
-    {{
-        public override bool IsArtifact {{ get {{ return {SetIsArtifact}; }} }}
-        public override int LabelNumber {{ get {{ return {SetAxeLabelNumber}; }} }} // Axe of Abandon 1113863
-        
-        [Constructable]
-        public {SetAxeScriptName}()
-        {{	
-            Name = ""{SetAxeItemName}"";
-            Hue = {SetAxeHue};		
-            WeaponAttributes.{SetAxeWeaponAttributes1} = {setAxeValue1};
-            WeaponAttributes.{SetAxeWeaponAttributes2} = {setAxeValue2};
-            WeaponAttributes.{SetAxeWeaponAttributes3} = {setAxeValue3};
-            Attributes.AttackChance = {SetAttackChance};
-            Attributes.DefendChance = {SetDefendChance};	
-            Attributes.CastSpeed = {SetAxeCastSpeed};	
-            Attributes.WeaponSpeed = {SetAxeWeaponSpeed};
-            Attributes.WeaponDamage = {SetAxeWeaponDamage};
-            StrRequirement = {SetAxeStrRequirement};
-            LootType = LootType.{SetAxeLootType};
-        }}
-
-        public {SetAxeScriptName}(Serial serial)
-            : base(serial)
-        {{
-        }}
-
-        public override int InitMinHits
-        {{
-            get
-            {{
-                return {SetAxeInitMinHits};
-            }}
-        }}
-        public override int InitMaxHits
-        {{
-            get
-            {{
-                return {SetAxeInitMaxHits};
-            }}
-        }}
-        public override void Serialize(GenericWriter writer)
-        {{
-            base.Serialize(writer);
-
-            writer.Write((int)0); // version
-        }}
-
-        public override void Deserialize(GenericReader reader)
-        {{
-            base.Deserialize(reader);
-
-            int version = reader.ReadInt();
-        }}
-    }}
-}}";
-            richTextBoxScriptEdit.Text = script;
-
-            // Create a new SoundPlayer
-            SoundPlayer player = new SoundPlayer();
-
-            // Load the sound file
-            player.SoundLocation = AppDomain.CurrentDomain.BaseDirectory + "\\Sound.wav";
-
-            // Play the sound
-            player.Play();
-        }
-        #endregion
-
-        #region btCreateScriptAmin
-        private void btCreateScriptAmin_Click(object sender, EventArgs e)
-        {
-            string SetAminScriptName = textBoxBodyAmin.Text.Replace(" ", "_");
-            string SetAminIDbodyValue = tbAminIDbodyValue.Text;
-            string SetAminItemID = tbAminItemID1.Text;
-            string SetAminItemID2 = tbAminItemID2.Text;
-            string SetAminItemID3 = tbAminItemID3.Text;
-            string SetAminBaseSoundID1 = tBBaseSoundID1.Text;
-            string SetAminBaseSoundID2 = tBBaseSoundID2.Text;
-
-
-            //strength
-            string SetAminStrNR1 = tbStr1.Text; // strength
-            string SetAminStrNR2 = tbStr2.Text; // strength
-            // Dex
-            string SetAminDexNR1 = tbDex1.Text; // Dex
-            string SetAminDexNR2 = tbDex2.Text; // Dex
-            // Int
-            string SetAminIntN1 = tbInt1.Text; // Int
-            string SetAminIntN2 = tbInt2.Text; // Int
-            //Hitpoints
-            string SetAminHitp1 = tbSetHits1.Text; // Hitpoints
-            string SetAminHitp2 = tbSetHits2.Text; // Hitpoints
-            // Damage
-            string SetAminDam1 = tbSetHits1.Text; // Damage
-            string SetAminDam2 = tbSetHits2.Text; // Damage
-            // Fame
-            string SetAminFame = tbFame.Text; // Fame
-            // Karma
-            string SetAminKarma = tbKarma.Text; // Karma
-            // Armor
-            string SetAminArmor = tbVirtualArmor.Text; // Armor
-            // Damage Resistance
-            string SetAminPhysical = tbPhysical.Text; // Damage Resistance Physical
-            string SetAminFire = tbFire.Text; // Damage Resistance Fire
-            string SetAminEnergy = tbEnergy.Text; // Damage Resistance Energy
-            // Resistance
-            string SetAminRPhysical1 = tbRPhysical1.Text; // Resistance Physical
-            string SetAminRPhysical2 = tbRPhysical2.Text; // Resistance Physical
-            string SetAminRFire1 = tbRFire1.Text; // Resistance Fire
-            string SetAminRFire2 = tbRFire2.Text; // Resistance Fire
-            string SetAminRCold1 = tbRCold1.Text; // Resistance Cold
-            string SetAminRCold2 = tbRCold2.Text; // Resistance Cold
-            string SetAminRPoison1 = tbRPoison1.Text; // Resistance Poison
-            string SetAminRPoison2 = tbRPoison2.Text; // Resistance Poison
-            string SetAminREnergy1 = tbREnergy1.Text; // Resistance Energy
-            string SetAminREnergy2 = tbREnergy2.Text; // Resistance Energy
-            // Set Skills
-            string SetAminEvalInt1 = tbSEvalInt1.Text; // Set Skill EvalInt
-            string SetAminEvalInt2 = tbSEvalInt2.Text; // Set Skill EvalInt
-            string SetAminMagery1 = tbSetMagery1.Text; // Set Skill Magery
-            string SetAminMagery2 = tbSetMagery2.Text; // Set Skill Magery
-            string SetAminMagicResist1 = tbSMagicResist1.Text; // Set Skill Magery Resist
-            string SetAminMagicResist2 = tbSMagicResist2.Text; // Set Skill Magery Resist
-            string SetAminTactics1 = tbSTactics1.Text; // Set Skill Tactics
-            string SetAminTactics2 = tbSTactics2.Text; // Set Skill Tactics
-            string SetAminWrestling1 = tbSWrestling1.Text; // Set Skill Wrestling
-            string SetAminWrestling2 = tbSWrestling2.Text; // Set Skill Wrestling
-            // Animal
-            string SetAminTamable = tbTamable.Text; // Set True or False
-            string SetAminControlSlots = tbSControlSlots.Text; // Set Controll Slots you need from 1 to 6
-            string SetAminMinTameSkill = tbMinTameSkill.Text; // Set Tame Skill you Need
-
-            string script = $@"
-            using System;
-            using Server;
-            using Server.Items;
-            using Server.Mobiles;
-
-            namespace Server.Mobiles
-            {{
-            [CorpseName(""a {SetAminScriptName} corpse"")]
-            public class {SetAminScriptName} : BaseMount
-            {{
-            
-                [Constructable]
-                public {SetAminScriptName}() : this(""a {SetAminScriptName}"")                
-                {{
-                }}
-            
-            [Constructable]
-            public {SetAminScriptName}(string name) : base(name, 0x74, 0x3EBB, AIType.AI_Mage, FightMode.Closest, 10, 1, 0.2, 0.4)
-            {{
-                BaseSoundID = {SetAminBaseSoundID1};       // Sound ID 1
-                SetStr({SetAminStrNR1}, {SetAminStrNR2});         // strength
-                SetDex({SetAminDexNR1}, {SetAminDexNR2});         // Dex
-                SetInt({SetAminIntN1}, {SetAminIntN2});           // Int
-
-                SetHits({SetAminHitp1}, {SetAminHitp2});          // Hitpoints
-                SetDamage({SetAminDam1}, {SetAminDam2});    // Damage
-
-                // Damage Resistance
-                SetDamageType(ResistanceType.Physical, {SetAminPhysical});
-                SetDamageType(ResistanceType.Fire, {SetAminFire});
-                SetDamageType(ResistanceType.Energy, {SetAminEnergy});
-
-                // Set Resistance
-                SetResistance(ResistanceType.Physical, {SetAminRPhysical1}, {SetAminRPhysical2});
-                SetResistance(ResistanceType.Fire, {SetAminRFire1}, {SetAminRFire2});
-                SetResistance(ResistanceType.Cold, {SetAminRCold1}, {SetAminRCold2});
-                SetResistance(ResistanceType.Poison, {SetAminRPoison1}, {SetAminRPoison2});
-                SetResistance(ResistanceType.Energy, {SetAminREnergy1}, {SetAminREnergy2});
-
-                // Set Skills
-                SetSkill(SkillName.EvalInt, {SetAminEvalInt1}, {SetAminEvalInt2});
-                SetSkill(SkillName.Magery, {SetAminMagery1}, {SetAminMagery2});
-                SetSkill(SkillName.MagicResist, {SetAminMagicResist1}, {SetAminMagicResist2});
-                SetSkill(SkillName.Tactics, {SetAminTactics1}, {SetAminTactics2});
-                SetSkill(SkillName.Wrestling, {SetAminWrestling1}, {SetAminWrestling2});
-
-                Fame = {SetAminFame}; // Fame
-                Karma = {SetAminKarma}; // Karma
-
-                VirtualArmor = {SetAminArmor}; // Armor
-                Tamable = {SetAminTamable}; // Tame false or true
-                ControlSlots = {SetAminControlSlots}; // Control slots you need
-                MinTameSkill = {SetAminMinTameSkill};  //Skill required to tame
-
-                switch (Utility.Random(3))
-                {{
-                    case 0:
-                        {{
-                            BodyValue = {SetAminIDbodyValue}; //Animation BodyID
-                            ItemID = {SetAminItemID}; // Item Slot Id 1
-                            break;
-                        }}
-                    case 1:
-                        {{
-                            BodyValue = {SetAminIDbodyValue}; //Animation BodyID
-                            ItemID = {SetAminItemID2}; // Item Slot Id 2
-                            break;
-                        }}
-                    case 2:
-                        {{
-                            BodyValue = {SetAminIDbodyValue}; //Animation BodyID
-                            ItemID = {SetAminItemID3}; // Item Slot Id 3
-                            break;
-                        }}
-                }}
-
-                PackItem(new SulfurousAsh(Utility.RandomMinMax(3, 5)));
-            }}
-
-            public override void GenerateLoot()
-            {{
-                AddLoot(LootPack.FilthyRich); //Loot Packs
-                AddLoot(LootPack.LowScrolls); //Loot Packs
-                AddLoot(LootPack.Potions); //Loot Packs
-            }}
-
-            public override int Meat {{ get {{ return 5; }} }}
-            public override int Hides {{ get {{ return 10; }} }}
-            public override HideType HideType {{ get {{ return HideType.Barbed; }} }}
-            public override FoodType FavoriteFood {{ get {{ return FoodType.Meat; }} }}
-
-            public {SetAminScriptName}(Serial serial) : base(serial)
-            {{
-            }}
-
-            public override void Serialize(GenericWriter writer)
-            {{
-                base.Serialize(writer);
-                writer.Write((int)0); // version
-            }}
-
-            public override void Deserialize(GenericReader reader)
-            {{
-                base.Deserialize(reader);
-                int version = reader.ReadInt();
-                if (BaseSoundID == {SetAminBaseSoundID2}) // Sound ID 2
-                    BaseSoundID = {SetAminBaseSoundID1}; //Sound ID 1
-            }}
-
-         }}
-    }}";
-            richTextAminBoxEdit.Text = script;
-
-            // Create a new SoundPlayer
-            SoundPlayer player = new SoundPlayer();
-
-            // Load the sound file
-            player.SoundLocation = AppDomain.CurrentDomain.BaseDirectory + "\\Sound.wav";
-
-            // Play the sound
-            player.Play();
-        }
-        #endregion
-
-        #region btSandWallScript_Click
-        private void btSandWallScript_Click(object sender, EventArgs e)
-        {
-            string scriptName = tbSandWallNane1.Text.Replace(" ", "_");
-            string SetDamageableItem1 = tbDamageableItem1.Text; // DamageableItem
-            string SetIDItems1 = tbIDItems1.Text; // 969
-            string SetIDItems2 = tbIDItems2.Text; // 631
-            string SetIDName1 = tbIDName1.Text; // Stone Wall
-            string SetIDHue1 = tbIDHue1.Text; // hue
-            string SetVeryEasy1 = tbItemLevel1.Text; // VeryEasy
-            string SetMovable1 = tbMovable1.Text; // Movable
-
-            string scriptName2 = tbSandWallNane2.Text.Replace(" ", "_");
-            string SetDamageableItem2 = tbDamageableItem2.Text; // DamageableItem
-            string SetIDItems3 = tbIDItems3.Text; // 968
-            string SetIDItems4 = tbIDItems4.Text; // 636
-            string SetIDName2 = tbIDName2.Text; // Stone Wall
-            string SetIDHue2 = tbIDHue2.Text; // hue
-            string SetVeryEasy2 = tbItemLevel2.Text; // VeryEasy
-            string SetMovable2 = tbMovable2.Text; // Movable
-
-            string script = $@"
-using System;
-
-namespace Server.Items
-{{
-    public class {scriptName} : {SetDamageableItem1}
-    {{
-        [Constructable]
-        public {scriptName}()
-            : base({SetIDItems1}, {SetIDItems2})
-        {{
-            this.Name = ""{SetIDName1}"";
-            this.Hue = {SetIDHue1};
-
-            this.Level = ItemLevel.{SetVeryEasy1};
-            this.Movable = {SetMovable1};
-        }}
-
-        public {scriptName}(Serial serial)
-            : base(serial)
-        {{
-        }}
-
-        public override void Serialize(GenericWriter writer)
-        {{
-            base.Serialize(writer);
-
-            writer.Write((int)0); // version
-        }}
-
-        public override void Deserialize(GenericReader reader)
-        {{
-            base.Deserialize(reader);
-
-            int version = reader.ReadInt();
-        }}
-    }}
-
-    public class {scriptName2} : {SetDamageableItem2}
-    {{
-        [Constructable]
-        public {scriptName2}()
-            : base({SetIDItems3}, {SetIDItems4})
-        {{
-            this.Name = ""{SetIDName2}"";
-            this.Hue = {SetIDHue2};
-
-            this.Level = ItemLevel.{SetVeryEasy2};
-            this.Movable = {SetMovable2};
-        }}
-
-        public {scriptName2}(Serial serial)
-            : base(serial)
-        {{
-        }}
-
-        public override void Serialize(GenericWriter writer)
-        {{
-            base.Serialize(writer);
-
-            writer.Write((int)0); // version
-        }}
-
-        public override void Deserialize(GenericReader reader)
-        {{
-            base.Deserialize(reader);
-
-            int version = reader.ReadInt();
-        }}
-    }}
-}}";
-            richTextBoxWallScript.Text = script;
-
-            // Create a new SoundPlayer
-            SoundPlayer player = new SoundPlayer();
-
-            // Load the sound file
-            player.SoundLocation = AppDomain.CurrentDomain.BaseDirectory + "\\Sound.wav";
-
-            // Play the sound
-            player.Play();
-        }
-
-        #endregion
-
-        #region  btCreateScriptChair_Click
-        private void btCreateScriptChair_Click(object sender, EventArgs e)
-        {
-            string SetScriptName1 = tbClassNameChair1.Text.Replace(" ", "_"); // FancyWoodenChairCushion
-            string SetScriptName2 = tbClassNameChair2.Text; // CraftableFurniture
-            string SetItemChair1 = tbItemChair1.Text; // 0xB4F
-            string SetItemChair2 = tbItemChair2.Text; // 0xB4E
-            string SetItemChair3 = tbItemChair3.Text; // 0xB50
-            string SetItemChair4 = tbItemChair4.Text; // 0xB51
-            string SetWeightChair = tbWeightChair.Text; // 20.0
-
-            string script = $@"
-using System;
-
-namespace Server.Items
-{{
-    [Furniture]
-    [Flipable({SetItemChair1}, {SetItemChair2}, {SetItemChair3}, {SetItemChair4})]
-    public class {SetScriptName1} : {SetScriptName2}
-    {{
-        [Constructable]
-        public {SetScriptName1}()
-            : base({SetItemChair1})
-        {{
-            this.Weight = {SetWeightChair};
-        }}
-
-        public {SetScriptName1}(Serial serial)
-            : base(serial)
-        {{
-        }}
-
-        public override void Serialize(GenericWriter writer)
-        {{
-            base.Serialize(writer);
-
-            writer.Write((int)0); // version
-        }}
-
-        public override void Deserialize(GenericReader reader)
-        {{
-            base.Deserialize(reader);
-
-            int version = reader.ReadInt();
-
-            if (this.Weight == 6.0)
-                this.Weight = {SetWeightChair};
-        }}
-    }}
-}}";
-            richTextBoxScriptMiscellaneous.Text = script;
-
-            // Create a new SoundPlayer
-            SoundPlayer player = new SoundPlayer();
-
-            // Load the sound file
-            player.SoundLocation = AppDomain.CurrentDomain.BaseDirectory + "\\Sound.wav";
-
-            // Play the sound
-            player.Play();
-        }
-        #endregion
-
-        #region  ShowFolderBrowserDialog
-        private string ShowFolderBrowserDialog()
-        {
-            using (FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog())
-            {
-                if (folderBrowserDialog.ShowDialog() == DialogResult.OK)
+                int start = _clientText.SelectionStart - 1;
+                index = start >= 0 ? t.LastIndexOf(f, start, Comparison) : -1;
+                if (index < 0)
                 {
-                    return folderBrowserDialog.SelectedPath;
+                    index = t.LastIndexOf(f, Comparison);
                 }
             }
-            return null;
+            if (index < 0)
+            {
+                SetMessage($"\"{f}\" not found.");
+                return;
+            }
+            _clientText.Select(index, f.Length);
+            _clientText.ScrollToCaret();
+            _clientText.Focus();
+            SetMessage($"{count} matches.");
         }
+
+        private int CountMatches(string text, string f)
+        {
+            int n = 0;
+            for (int i = text.IndexOf(f, Comparison); i >= 0; i = text.IndexOf(f, i + f.Length, Comparison))
+            {
+                n++;
+            }
+            return n;
+        }
+
+        private void ReplaceOne()
+        {
+            if (_find.Text.Length > 0 && string.Equals(_clientText.SelectedText, _find.Text, Comparison))
+            {
+                _clientText.SelectedText = _replace.Text;
+            }
+            FindNext(1);
+        }
+
+        private void ReplaceAll()
+        {
+            string f = _find.Text;
+            if (f.Length == 0)
+            {
+                return;
+            }
+            int n = CountMatches(_clientText.Text, f);
+            if (n == 0)
+            {
+                SetMessage($"\"{f}\" not found.");
+                return;
+            }
+            var sb = new StringBuilder();
+            string t = _clientText.Text;
+            int pos = 0;
+            for (int i = t.IndexOf(f, Comparison); i >= 0; i = t.IndexOf(f, i + f.Length, Comparison))
+            {
+                sb.Append(t, pos, i - pos).Append(_replace.Text);
+                pos = i + f.Length;
+            }
+            sb.Append(t, pos, t.Length - pos);
+            _clientText.Text = sb.ToString();
+            SetMessage($"{n} replaced.");
+        }
+
         #endregion
 
-        #region SavePaths
-        // Save the paths in an XML file
-        public void SavePaths(string pathWall, string pathChair)
+        #region Keyboard, help, closing
+
+        private void ShowHelp() => ScriptCreatorHelp.Show(this, CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "de");
+
+        protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
         {
-            string directoryPath = "DirectoryisSettings";
-            if (!System.IO.Directory.Exists(directoryPath))
+            if (keyData == Keys.F1)
             {
-                System.IO.Directory.CreateDirectory(directoryPath);
+                ShowHelp();
+                return true;
             }
-
-            XDocument doc = new XDocument(
-                new XElement("Paths",
-                    new XElement("PathWall", pathWall),
-                    new XElement("PathChair", pathChair)
-                )
-            );
-            doc.Save(System.IO.Path.Combine(directoryPath, "LoadDirXML.xml"));
-        }
-        #endregion
-
-        #region LoadPaths
-        // Loading paths from an XML file
-        public (string, string) LoadPaths()
-        {
-            string directoryPath = "DirectoryisSettings";
-            XDocument doc = XDocument.Load(System.IO.Path.Combine(directoryPath, "LoadDirXML.xml"));
-            string pathWall = doc.Root.Element("PathWall").Value;
-            string pathChair = doc.Root.Element("PathChair").Value;
-            return (pathWall, pathChair);
-        }
-        #endregion
-
-        #region btLoadPfadWall_Click
-        private void btLoadPfadWall_Click(object sender, EventArgs e)
-        {
-            string selectedPath = ShowFolderBrowserDialog();
-            if (selectedPath != null)
+            if (keyData == Keys.F5 && tabControl1.SelectedTab == tabTemplates)
             {
-                textBoxPfadWall.Text = selectedPath;
-                SavePaths(selectedPath, textBoxPfadChair.Text);
+                TestTemplate();
+                return true;
             }
-
-            // Create a new SoundPlayer
-            SoundPlayer player = new SoundPlayer();
-
-            // Load the sound file
-            player.SoundLocation = AppDomain.CurrentDomain.BaseDirectory + "\\Sound.wav";
-
-            // Play the sound
-            player.Play();
-        }
-        #endregion
-
-        #region btLoadPfadChair
-        private void btLoadPfadChair_Click(object sender, EventArgs e)
-        {
-            string selectedPath = ShowFolderBrowserDialog();
-            if (selectedPath != null)
+            if (keyData == (Keys.Control | Keys.S))
             {
-                textBoxPfadChair.Text = selectedPath;
-                SavePaths(textBoxPfadWall.Text, selectedPath);
-            }
-
-            // Create a new SoundPlayer
-            SoundPlayer player = new SoundPlayer();
-
-            // Load the sound file
-            player.SoundLocation = AppDomain.CurrentDomain.BaseDirectory + "\\Sound.wav";
-
-            // Play the sound
-            player.Play();
-        }
-        #endregion
-
-        #region btSaveXML_Click
-        private void btSaveXML_Click(object sender, EventArgs e)
-        {
-            SavePaths(textBoxPfadWall.Text, textBoxPfadChair.Text);
-        }
-        #endregion
-
-        #region btWallTXTLoad_Click
-        private void btWallTXTLoad_Click(object sender, EventArgs e)
-        {
-            string path = Path.Combine(textBoxPfadWall.Text, "walls.txt");
-            if (File.Exists(path))
-            {
-                richTextBoxScriptMiscellaneous.Text = File.ReadAllText(path);
-                currentFilePathWall = path;  // Updates the path of the last loaded file
-                lbFileNameScript.Text = Path.GetFileName(path);  // Displays the file name in lbFileName1
-            }
-            else
-            {
-                MessageBox.Show("The file walls.txt could not be found.");
-            }
-
-            // Create a new SoundPlayer
-            SoundPlayer player = new SoundPlayer();
-
-            // Load the sound file
-            player.SoundLocation = AppDomain.CurrentDomain.BaseDirectory + "\\Sound.wav";
-
-            // Play the sound
-            player.Play();
-        }
-        #endregion
-
-        #region btMiscTXTLoad_Click
-        private void btMiscTXTLoad_Click(object sender, EventArgs e)
-        {
-            string path = Path.Combine(textBoxPfadWall.Text, "misc.txt");
-            if (File.Exists(path))
-            {
-                richTextBoxScriptMiscellaneous.Text = File.ReadAllText(path);
-                currentFilePathWall = path;  // Updates the path of the last loaded file
-                lbFileNameScript2.Text = Path.GetFileName(path);  // Displays the file name in lbFileName2
-            }
-            else
-            {
-                MessageBox.Show("The file walls.txt could not be found.");
-            }
-
-            // Create a new SoundPlayer
-            SoundPlayer player = new SoundPlayer();
-
-            // Load the sound file
-            player.SoundLocation = AppDomain.CurrentDomain.BaseDirectory + "\\Sound.wav";
-
-            // Play the sound
-            player.Play();
-        }
-        #endregion
-
-        #region btProfTXTLoad
-        private void btProfTXTLoad_Click(object sender, EventArgs e)
-        {
-            string path = Path.Combine(textBoxPfadWall.Text, "Prof.txt");
-            if (File.Exists(path))
-            {
-                richTextBoxScriptMiscellaneous.Text = File.ReadAllText(path);
-                currentFilePathWall = path;  // Updates the path of the last loaded file
-                lbFileNameScript2.Text = Path.GetFileName(path);  // Displays the file name in lbFileName2
-            }
-            else
-            {
-                MessageBox.Show("The file walls.txt could not be found.");
-            }
-
-            // Create a new SoundPlayer
-            SoundPlayer player = new SoundPlayer();
-
-            // Load the sound file
-            player.SoundLocation = AppDomain.CurrentDomain.BaseDirectory + "\\Sound.wav";
-
-            // Play the sound
-            player.Play();
-        }
-        #endregion
-
-        #region btroofTXTLoad
-        private void btroofXTLoad_Click(object sender, EventArgs e)
-        {
-            string path = Path.Combine(textBoxPfadWall.Text, "roof.txt");
-            if (File.Exists(path))
-            {
-                richTextBoxScriptMiscellaneous.Text = File.ReadAllText(path);
-                currentFilePathWall = path;  // Updates the path of the last loaded file
-                lbFileNameScript2.Text = Path.GetFileName(path);  // Displays the file name in lbFileName2
-            }
-            else
-            {
-                MessageBox.Show("The file walls.txt could not be found.");
-            }
-
-            // Create a new SoundPlayer
-            SoundPlayer player = new SoundPlayer();
-
-            // Load the sound file
-            player.SoundLocation = AppDomain.CurrentDomain.BaseDirectory + "\\Sound.wav";
-
-            // Play the sound
-            player.Play();
-        }
-        #endregion
-
-        #region btStairsTXTLoad
-        private void btstairsXTLoad_Click(object sender, EventArgs e)
-        {
-            string path = Path.Combine(textBoxPfadWall.Text, "stairs.txt");
-            if (File.Exists(path))
-            {
-                richTextBoxScriptMiscellaneous.Text = File.ReadAllText(path);
-                currentFilePathWall = path;  // Updates the path of the last loaded file
-                lbFileNameScript2.Text = Path.GetFileName(path);  // Displays the file name in lbFileName2
-            }
-            else
-            {
-                MessageBox.Show("The file walls.txt could not be found.");
-            }
-
-            // Create a new SoundPlayer
-            SoundPlayer player = new SoundPlayer();
-
-            // Load the sound file
-            player.SoundLocation = AppDomain.CurrentDomain.BaseDirectory + "\\Sound.wav";
-
-            // Play the sound
-            player.Play();
-        }
-        #endregion
-
-        #region btDoorsTXTLoad
-        private void btDroorsXTLoad_Click(object sender, EventArgs e)
-        {
-            string path = Path.Combine(textBoxPfadWall.Text, "doors.txt");
-            if (File.Exists(path))
-            {
-                richTextBoxScriptMiscellaneous.Text = File.ReadAllText(path);
-                currentFilePathWall = path;  // Updates the path of the last loaded file
-                lbFileNameScript2.Text = Path.GetFileName(path);  // Displays the file name in lbFileName2
-            }
-            else
-            {
-                MessageBox.Show("The file walls.txt could not be found.");
-            }
-
-            // Create a new SoundPlayer
-            SoundPlayer player = new SoundPlayer();
-
-            // Load the sound file
-            player.SoundLocation = AppDomain.CurrentDomain.BaseDirectory + "\\Sound.wav";
-
-            // Play the sound
-            player.Play();
-        }
-        #endregion
-
-        #region btFloorsTXTLoad
-        private void btFloorsXTLoad_Click(object sender, EventArgs e)
-        {
-            string path = Path.Combine(textBoxPfadWall.Text, "floors.txt");
-            if (File.Exists(path))
-            {
-                richTextBoxScriptMiscellaneous.Text = File.ReadAllText(path);
-                currentFilePathWall = path;  // Updates the path of the last loaded file
-                lbFileNameScript2.Text = Path.GetFileName(path);  // Displays the file name in lbFileName2
-            }
-            else
-            {
-                MessageBox.Show("The file walls.txt could not be found.");
-            }
-
-            // Create a new SoundPlayer
-            SoundPlayer player = new SoundPlayer();
-
-            // Load the sound file
-            player.SoundLocation = AppDomain.CurrentDomain.BaseDirectory + "\\Sound.wav";
-
-            // Play the sound
-            player.Play();
-        }
-        #endregion
-
-        #region btKeynamesTXTLoad
-        private void btKeynamesXTLoad_Click(object sender, EventArgs e)
-        {
-            string path = Path.Combine(textBoxPfadWall.Text, "Keynames.txt");
-            if (File.Exists(path))
-            {
-                richTextBoxScriptMiscellaneous.Text = File.ReadAllText(path);
-                currentFilePathWall = path;  // Updates the path of the last loaded file
-                lbFileNameScript2.Text = Path.GetFileName(path);  // Displays the file name in lbFileName2
-            }
-            else
-            {
-                MessageBox.Show("The file walls.txt could not be found.");
-            }
-
-            // Create a new SoundPlayer
-            SoundPlayer player = new SoundPlayer();
-
-            // Load the sound file
-            player.SoundLocation = AppDomain.CurrentDomain.BaseDirectory + "\\Sound.wav";
-
-            // Play the sound
-            player.Play();
-        }
-        #endregion
-
-        #region btMacrosXTLoad
-        private void btMacrosXTLoad_Click(object sender, EventArgs e)
-        {
-            string path = Path.Combine(textBoxPfadWall.Text, "Macros.txt");
-            if (File.Exists(path))
-            {
-                richTextBoxScriptMiscellaneous.Text = File.ReadAllText(path);
-                currentFilePathWall = path;  // Updates the path of the last loaded file
-                lbFileNameScript2.Text = Path.GetFileName(path);  // Displays the file name in lbFileName2
-            }
-            else
-            {
-                MessageBox.Show("The file walls.txt could not be found.");
-            }
-
-            // Create a new SoundPlayer
-            SoundPlayer player = new SoundPlayer();
-
-            // Load the sound file
-            player.SoundLocation = AppDomain.CurrentDomain.BaseDirectory + "\\Sound.wav";
-
-            // Play the sound
-            player.Play();
-        }
-        #endregion
-
-        #region btMacros2DXTLoad
-        private void btMacros2DXTLoad_Click(object sender, EventArgs e)
-        {
-            string path = Path.Combine(textBoxPfadWall.Text, "macros2D.txt");
-            if (File.Exists(path))
-            {
-                richTextBoxScriptMiscellaneous.Text = File.ReadAllText(path);
-                currentFilePathWall = path;  // Updates the path of the last loaded file
-                lbFileNameScript2.Text = Path.GetFileName(path);  // Displays the file name in lbFileName2
-            }
-            else
-            {
-                MessageBox.Show("The file walls.txt could not be found.");
-            }
-
-            // Create a new SoundPlayer
-            SoundPlayer player = new SoundPlayer();
-
-            // Load the sound file
-            player.SoundLocation = AppDomain.CurrentDomain.BaseDirectory + "\\Sound.wav";
-
-            // Play the sound
-            player.Play();
-        }
-        #endregion
-
-        #region btMetricsXTLoad
-        private void btMetricsXTLoad_Click(object sender, EventArgs e)
-        {
-            string path = Path.Combine(textBoxPfadWall.Text, "metrics.txt");
-            if (File.Exists(path))
-            {
-                richTextBoxScriptMiscellaneous.Text = File.ReadAllText(path);
-                currentFilePathWall = path;  // Updates the path of the last loaded file
-                lbFileNameScript2.Text = Path.GetFileName(path);  // Displays the file name in lbFileName2
-            }
-            else
-            {
-                MessageBox.Show("The file walls.txt could not be found.");
-            }
-
-            // Create a new SoundPlayer
-            SoundPlayer player = new SoundPlayer();
-
-            // Load the sound file
-            player.SoundLocation = AppDomain.CurrentDomain.BaseDirectory + "\\Sound.wav";
-
-            // Play the sound
-            player.Play();
-        }
-        #endregion
-
-        #region btMobtypesXTLoad
-        private void btMobtypesXTLoad_Click(object sender, EventArgs e)
-        {
-            string path = Path.Combine(textBoxPfadWall.Text, "mobtypes.txt");
-            if (File.Exists(path))
-            {
-                richTextBoxScriptMiscellaneous.Text = File.ReadAllText(path);
-                currentFilePathWall = path;  // Updates the path of the last loaded file
-                lbFileNameScript2.Text = Path.GetFileName(path);  // Displays the file name in lbFileName2
-            }
-            else
-            {
-                MessageBox.Show("The file walls.txt could not be found.");
-            }
-
-            // Create a new SoundPlayer
-            SoundPlayer player = new SoundPlayer();
-
-            // Load the sound file
-            player.SoundLocation = AppDomain.CurrentDomain.BaseDirectory + "\\Sound.wav";
-
-            // Play the sound
-            player.Play();
-        }
-        #endregion
-
-        #region btSuppinfoXTLoad_Click
-        private void btSuppinfoXTLoad_Click(object sender, EventArgs e)
-        {
-            string path = Path.Combine(textBoxPfadWall.Text, "suppinfo.txt");
-            if (File.Exists(path))
-            {
-                richTextBoxScriptMiscellaneous.Text = File.ReadAllText(path);
-                currentFilePathWall = path;  // Updates the path of the last loaded file
-                lbFileNameScript2.Text = Path.GetFileName(path);  // Displays the file name in lbFileName2
-            }
-            else
-            {
-                MessageBox.Show("The file walls.txt could not be found.");
-            }
-
-            // Create a new SoundPlayer
-            SoundPlayer player = new SoundPlayer();
-
-            // Load the sound file
-            player.SoundLocation = AppDomain.CurrentDomain.BaseDirectory + "\\Sound.wav";
-
-            // Play the sound
-            player.Play();
-        }
-        #endregion
-
-        #region btteleprtsXTLoad_Click
-        private void btteleprtsTLoad_Click(object sender, EventArgs e)
-        {
-            string path = Path.Combine(textBoxPfadWall.Text, "teleprts.txt");
-            if (File.Exists(path))
-            {
-                richTextBoxScriptMiscellaneous.Text = File.ReadAllText(path);
-                currentFilePathWall = path;  // Updates the path of the last loaded file
-                lbFileNameScript2.Text = Path.GetFileName(path);  // Displays the file name in lbFileName2
-            }
-            else
-            {
-                MessageBox.Show("The file walls.txt could not be found.");
-            }
-
-            // Create a new SoundPlayer
-            SoundPlayer player = new SoundPlayer();
-
-            // Load the sound file
-            player.SoundLocation = AppDomain.CurrentDomain.BaseDirectory + "\\Sound.wav";
-
-            // Play the sound
-            player.Play();
-        }
-        #endregion
-
-        #region btTile256XTLoad_Click
-        private void btTile256XTLoad_Click(object sender, EventArgs e)
-        {
-            string path = Path.Combine(textBoxPfadWall.Text, "Tile256.txt");
-            if (File.Exists(path))
-            {
-                richTextBoxScriptMiscellaneous.Text = File.ReadAllText(path);
-                currentFilePathWall = path;  // Updates the path of the last loaded file
-                lbFileNameScript2.Text = Path.GetFileName(path);  // Displays the file name in lbFileName2
-            }
-            else
-            {
-                MessageBox.Show("The file walls.txt could not be found.");
-            }
-
-            // Create a new SoundPlayer
-            SoundPlayer player = new SoundPlayer();
-
-            // Load the sound file
-            player.SoundLocation = AppDomain.CurrentDomain.BaseDirectory + "\\Sound.wav";
-
-            // Play the sound
-            player.Play();
-        }
-        #endregion
-
-        #region btTile1024XTLoad_Click
-        private void btTile1024XTLoad_Click(object sender, EventArgs e)
-        {
-            string path = Path.Combine(textBoxPfadWall.Text, "Tile1024.txt");
-            if (File.Exists(path))
-            {
-                richTextBoxScriptMiscellaneous.Text = File.ReadAllText(path);
-                currentFilePathWall = path;  // Updates the path of the last loaded file
-                lbFileNameScript2.Text = Path.GetFileName(path);  // Displays the file name in lbFileName2
-            }
-            else
-            {
-                MessageBox.Show("The file walls.txt could not be found.");
-            }
-
-            // Create a new SoundPlayer
-            SoundPlayer player = new SoundPlayer();
-
-            // Load the sound file
-            player.SoundLocation = AppDomain.CurrentDomain.BaseDirectory + "\\Sound.wav";
-
-            // Play the sound
-            player.Play();
-        }
-        #endregion
-
-        #region btBodyconvXTLoad_Click
-        private void btBodyconvXTLoad_Click(object sender, EventArgs e)
-        {
-            string path = Path.Combine(textBoxPfadWall.Text, "Bodyconv.def");
-            if (File.Exists(path))
-            {
-                richTextBoxScriptMiscellaneous.Text = File.ReadAllText(path);
-                currentFilePathWall = path;  // Updates the path of the last loaded file
-                lbFileNameScript2.Text = Path.GetFileName(path);  // Displays the file name in lbFileName2
-            }
-            else
-            {
-                MessageBox.Show("The file walls.txt could not be found.");
-            }
-
-            // Create a new SoundPlayer
-            SoundPlayer player = new SoundPlayer();
-
-            // Load the sound file
-            player.SoundLocation = AppDomain.CurrentDomain.BaseDirectory + "\\Sound.wav";
-
-            // Play the sound
-            player.Play();
-        }
-        #endregion
-
-        #region btCorpseXTLoad_Click
-        private void btCorpseXTLoad_Click(object sender, EventArgs e)
-        {
-            string path = Path.Combine(textBoxPfadWall.Text, "Corpse.def");
-            if (File.Exists(path))
-            {
-                richTextBoxScriptMiscellaneous.Text = File.ReadAllText(path);
-                currentFilePathWall = path;  // Updates the path of the last loaded file
-                lbFileNameScript2.Text = Path.GetFileName(path);  // Displays the file name in lbFileName2
-            }
-            else
-            {
-                MessageBox.Show("The file walls.txt could not be found.");
-            }
-
-            // Create a new SoundPlayer
-            SoundPlayer player = new SoundPlayer();
-
-            // Load the sound file
-            player.SoundLocation = AppDomain.CurrentDomain.BaseDirectory + "\\Sound.wav";
-
-            // Play the sound
-            player.Play();
-        }
-        #endregion
-
-        #region btArtXTLoad
-        private void btArtXTLoad_Click(object sender, EventArgs e)
-        {
-            string path = Path.Combine(textBoxPfadWall.Text, "art.def");
-            if (File.Exists(path))
-            {
-                richTextBoxScriptMiscellaneous.Text = File.ReadAllText(path);
-                currentFilePathWall = path;  // Updates the path of the last loaded file
-                lbFileNameScript2.Text = Path.GetFileName(path);  // Displays the file name in lbFileName2
-            }
-            else
-            {
-                MessageBox.Show("The file walls.txt could not be found.");
-            }
-
-            // Create a new SoundPlayer
-            SoundPlayer player = new SoundPlayer();
-
-            // Load the sound file
-            player.SoundLocation = AppDomain.CurrentDomain.BaseDirectory + "\\Sound.wav";
-
-            // Play the sound
-            player.Play();
-        }
-        #endregion
-
-        #region searchToolStripMenuItem
-        private void searchToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            string searchText = toolStripTextBoxSearch.Text;
-            if (!string.IsNullOrEmpty(searchText))
-            {
-                // Counts the number of matches and displays them in lbSearchCount
-                int count = Regex.Matches(richTextBoxScriptMiscellaneous.Text, searchText).Count;
-                lbSearchCount.Text = $"Number of matches: {count}";
-
-                int index = richTextBoxScriptMiscellaneous.Find(searchText, searchStartIndex, RichTextBoxFinds.None);
-                if (index != -1)
+                if (tabControl1.SelectedTab == tabGenerator)
                 {
-                    richTextBoxScriptMiscellaneous.Select(index, searchText.Length);
-                    richTextBoxScriptMiscellaneous.ScrollToCaret();  // Scrolls to the cursor position
-                    richTextBoxScriptMiscellaneous.Focus();  // Sets the focus on the RichTextBox
-                    searchStartIndex = index + searchText.Length;
+                    SaveScript(false);
+                }
+                else if (tabControl1.SelectedTab == tabTemplates)
+                {
+                    SaveTemplate();
                 }
                 else
                 {
-                    MessageBox.Show("No further matches found.");
-                    searchStartIndex = 0;
+                    SaveClientFile();
                 }
+                return true;
             }
-        }
-        #endregion
-
-        #region btSaveFile_Click
-        private void btSaveFile_Click(object sender, EventArgs e)
-        {
-            // Überprüfen, ob eine Datei geladen wurde
-            if (!string.IsNullOrEmpty(currentFilePathWall))
+            if (keyData == (Keys.Control | Keys.F) && tabControl1.SelectedTab == tabClientFiles)
             {
-                // Speichern des Inhalts von richTextBoxScriptMiscellaneous in die Datei
-                File.WriteAllText(currentFilePathWall, richTextBoxScriptMiscellaneous.Text);
-
-                // Erstellen eines neuen SoundPlayers
-                SoundPlayer player = new SoundPlayer();
-
-                // Laden der Sounddatei
-                player.SoundLocation = AppDomain.CurrentDomain.BaseDirectory + "\\Sound.wav";
-
-                // Abspielen des Sounds
-                player.Play();
+                _find.Focus();
+                _find.SelectAll();
+                return true;
             }
-            else
+            return base.ProcessCmdKey(ref msg, keyData);
+        }
+
+        protected override void OnFormClosing(FormClosingEventArgs e)
+        {
+            if (_templateDirty && _editing != null && !ConfirmTemplateDiscard())
             {
-                MessageBox.Show("No file was loaded.");
+                e.Cancel = true;
+                return;
             }
+            if (_clientDirty && !ConfirmClientDiscard())
+            {
+                e.Cancel = true;
+                return;
+            }
+            StoreValues();
+            SaveSettings();
+            base.OnFormClosing(e);
         }
+
         #endregion
-
-        #region btCreateGiftBoxScript
-        private void btCreateGiftBoxScript_Click(object sender, EventArgs e)
-        {
-            string SetclassNameGift = tbGiftBoxClassScriptName.Text.Replace(" ", "_"); // Class Name GiftBox
-            string SetGiftBaseContainer = tbGiftBaseContainer.Text; // BaseContainer
-            string SetGiftLabelNumber = tbGiftLabelNumber.Text; // LabelNumber 1156382
-            string SetGiftFlipable1 = tbGiftFlipable1.Text; // 0x232A
-            string SetGiftFlipable2 = tbGiftFlipable2.Text; // 0x232B
-            string SetGiftWeight = tbGiftWeight.Text; // 2.0
-            string SetGiftBox = tbGiftGiftBox.Text;  // RandomDyedHue
-            string SetGiftHue = tbGiftHue.Text; // hue
-
-            string script = $@"
-            using System;
-
-            namespace Server.Items
-            {{
-                [Furniture]
-                [Flipable({SetGiftFlipable1}, {SetGiftFlipable2})]
-                public class {SetclassNameGift} : {SetGiftBaseContainer}
-                {{
-                    public override int LabelNumber {{ get {{ return {SetGiftLabelNumber}; }} }} // Holiday Giftbox
-
-                    [Constructable]
-                    public {SetclassNameGift}()
-                        : this(Utility.{SetGiftBox}())
-                    {{
-                    }}
-
-                    [Constructable]
-                    public {SetclassNameGift}(int hue)
-                        : base(Utility.Random({SetGiftFlipable1}, 2))
-                    {{
-                        this.Weight = {SetGiftWeight};
-                        this.Hue = {SetGiftHue};
-                    }}
-
-                    public {SetclassNameGift}(Serial serial)
-                        : base(serial)
-                    {{
-                    }}
-
-                    public override void Serialize(GenericWriter writer)
-                    {{
-                        base.Serialize(writer);
-
-                        writer.Write((int)0); // version
-                    }}
-
-                    public override void Deserialize(GenericReader reader)
-                    {{
-                        base.Deserialize(reader);
-
-                        int version = reader.ReadInt();
-                    }}
-                }}
-            }}";
-
-            richTextBoxScriptMiscellaneous.Text = script;
-
-            // Create a new SoundPlayer
-            SoundPlayer player = new SoundPlayer();
-
-            // Load the sound file
-            player.SoundLocation = AppDomain.CurrentDomain.BaseDirectory + "\\Sound.wav";
-
-            // Play the sound
-            player.Play();
-        }
-        #endregion
-
-        #region btCreateClosedBarrelScript
-        private void btCreateClosedBarrelScript_Click(object sender, EventArgs e)
-        {
-            string SetclassNameClosedBarrel = tbClassnameClosedBarrel.Text.Replace(" ", "_"); // ClosedBarrel
-            string SetTrapableContainer = tbTrapableContainer.Text; // TrapableContainer
-            string SetClosedBarrelItemsID = tbClosedBarrelItemsID.Text; // 0x0FAE
-            string SetDefaultGumpID = tbDefaultGumpID.Text; // 0x3e
-
-            string script = $@"
-using System;
-
-namespace Server.Items
-{{
-    class {SetclassNameClosedBarrel} : {SetTrapableContainer}
-    {{ 
-        [Constructable]
-        public {SetclassNameClosedBarrel}()
-            : base({SetClosedBarrelItemsID})
-        {{
-        }}
-
-        public {SetclassNameClosedBarrel}(Serial serial)
-            : base(serial)
-        {{
-        }}
-
-        public override int DefaultGumpID
-        {{
-            get
-            {{
-                return {SetDefaultGumpID};
-            }}
-        }}
-        public override void Serialize(GenericWriter writer)
-        {{
-            base.Serialize(writer);
-
-            writer.Write((int)0); // version
-        }}
-
-        public override void Deserialize(GenericReader reader)
-        {{
-            base.Deserialize(reader);
-
-            int version = reader.ReadInt();
-        }}
-    }}
-}}";
-            richTextBoxScriptMiscellaneous.Text = script;
-
-            // Create a new SoundPlayer
-            SoundPlayer player = new SoundPlayer();
-
-            // Load the sound file
-            player.SoundLocation = AppDomain.CurrentDomain.BaseDirectory + "\\Sound.wav";
-
-            // Play the sound
-            player.Play();
-        }
-        #endregion
-
-        #region btCreateCommodityDeedBoxScript
-        private void btCreateCommodityDeedBoxScript_Click(object sender, EventArgs e)
-        {
-            string SetclassNameCommodityDeedBoxScript = tbClassnameCommodityDeedBox.Text.Replace(" ", "_");
-            string SetBaseContainerCommodityDeedBox = tbBaseContainerCommodityDeedBox.Text; // BaseContainer
-            string SetFlipableID1 = tbFlipableID1.Text; // 0x9AA
-            string SetFlipableID2 = tbFlipableID2.Text; // 0xE7D
-            string SetCommodityDeedBoxHue = tbCommodityDeedBoxHue.Text; // 0x47
-            string SetCommodityDeedBoxWeight = tbCommodityDeedBoxWeight.Text; // 4.0
-            string SetCommodityDeedBoxLabelNumber = tbCommodityDeedBoxLabelNumber.Text; // 1080523
-            string SetCommodityDeedBoxGump = tbCommodityDeedBoxGump.Text; // 0x43
-            string SetCommodityDeedBoxRewardItem = tbCommodityDeedBoxRewardItem.Text; // 1076217
-
-            string script = $@"
-using System;
-using Server.Engines.VeteranRewards;
-
-namespace Server.Items
-{{ 
-    [Furniture]
-    [Flipable({SetFlipableID1}, {SetFlipableID2})]
-    public class {SetclassNameCommodityDeedBoxScript} : {SetBaseContainerCommodityDeedBox}, IRewardItem
-    {{
-        private bool m_IsRewardItem;
-        [Constructable]
-        public {SetclassNameCommodityDeedBoxScript}()
-            : base({SetFlipableID1})
-        {{
-            this.Hue = {SetCommodityDeedBoxHue};
-            this.Weight = {SetCommodityDeedBoxWeight};
-        }}
-
-        public {SetclassNameCommodityDeedBoxScript}(Serial serial)
-            : base(serial)
-        {{
-        }}
-
-        public override int LabelNumber
-        {{
-            get
-            {{
-                return {SetCommodityDeedBoxLabelNumber};
-            }}
-        }}// Commodity Deed Box
-        public override int DefaultGumpID
-        {{
-            get
-            {{
-                return {SetCommodityDeedBoxGump};
-            }}
-        }}
-        [CommandProperty(AccessLevel.GameMaster)]
-        public bool IsRewardItem
-        {{
-            get
-            {{
-                return this.m_IsRewardItem;
-            }}
-            set
-            {{
-                this.m_IsRewardItem = value;
-                this.InvalidateProperties();
-            }}
-        }}
-        public static {SetclassNameCommodityDeedBoxScript} Find(Item deed)
-        {{
-            Item parent = deed;
-
-            while (parent != null && !(parent is {SetclassNameCommodityDeedBoxScript}))
-                parent = parent.Parent as Item;
-
-            return parent as {SetclassNameCommodityDeedBoxScript};
-        }}
-
-        public override void GetProperties(ObjectPropertyList list)
-        {{
-            base.GetProperties(list);
-			
-            if (this.m_IsRewardItem)
-                list.Add({SetCommodityDeedBoxRewardItem}); // 1st Year Veteran Reward		
-        }}
-
-        public override void Serialize(GenericWriter writer)
-        {{
-            base.Serialize(writer);
-
-            writer.WriteEncodedInt(0); // version
-
-            writer.Write((bool)this.m_IsRewardItem);
-        }}
-
-        public override void Deserialize(GenericReader reader)
-        {{
-            base.Deserialize(reader);
-
-            int version = reader.ReadEncodedInt();
-
-            this.m_IsRewardItem = reader.ReadBool();
-        }}
-    }}
-}}";
-            richTextBoxScriptMiscellaneous.Text = script;
-
-            // Create a new SoundPlayer
-            SoundPlayer player = new SoundPlayer();
-
-            // Load the sound file
-            player.SoundLocation = AppDomain.CurrentDomain.BaseDirectory + "\\Sound.wav";
-
-            // Play the sound
-            player.Play();
-        }
-        #endregion
-
-        private void btCreateBagOfReagentsScript_Click(object sender, EventArgs e)
-        {
-            string SetclassNameCreateBagOfReagent = tbCreateBagOfReagentsScript.Text.Replace(" ", "_");
-            string SetCreateBagOfReagentBag = tbBagOfReagentsBag.Text; // Bag
-            string SetBagOfReagentsBagMuch = tbBagOfReagentsBagMuch.Text; // 50
-            string SetBlackPearl = tbBlackPearl.Text; // BlackPearl
-            string SetBloodmoss = tbBloodmoss.Text; // Bloodmoss
-            string SetGarlic = tbGarlic.Text; // Garlic
-            string SetGinseng = tbGinseng.Text; // Ginseng
-            string SetMandrakeRoot = tbMandrakeRoot.Text; // MandrakeRoot
-            string SetNightshade = tbNightshade.Text; // Nightshade
-            string SetSulfurousAsh = tbSulfurousAsh.Text; // SulfurousAsh
-            string SetSpidersSilk = tbSpidersSilk.Text; // SpidersSilk
-
-            string script = $@"
-using System;
-
-namespace Server.Items
-{{
-    public class {SetclassNameCreateBagOfReagent} : {SetCreateBagOfReagentBag}
-    {{
-        [Constructable]
-        public {SetclassNameCreateBagOfReagent}()
-            : this({SetBagOfReagentsBagMuch})
-        {{
-        }}
-
-        [Constructable]
-        public {SetclassNameCreateBagOfReagent}(int amount)
-        {{
-            this.DropItem(new {SetBlackPearl}(amount));
-            this.DropItem(new {SetBloodmoss}(amount));
-            this.DropItem(new {SetGarlic}(amount));
-            this.DropItem(new {SetGinseng}(amount));
-            this.DropItem(new {SetMandrakeRoot}(amount));
-            this.DropItem(new {SetNightshade}(amount));
-            this.DropItem(new {SetSulfurousAsh}(amount));
-            this.DropItem(new {SetSpidersSilk}(amount));
-        }}
-
-        public {SetclassNameCreateBagOfReagent}(Serial serial)
-            : base(serial)
-        {{
-        }}
-
-        public override void Serialize(GenericWriter writer)
-        {{
-            base.Serialize(writer);
-
-            writer.Write((int)0); // version
-        }}
-
-        public override void Deserialize(GenericReader reader)
-        {{
-            base.Deserialize(reader);
-
-            int version = reader.ReadInt();
-        }}
-    }}
-}}";
-            richTextBoxScriptMiscellaneous.Text = script;
-
-            // Create a new SoundPlayer
-            SoundPlayer player = new SoundPlayer();
-
-            // Load the sound file
-            player.SoundLocation = AppDomain.CurrentDomain.BaseDirectory + "\\Sound.wav";
-
-            // Play the sound
-            player.Play();
-        }
     }
 }
