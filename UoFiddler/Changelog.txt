@@ -1,3 +1,15 @@
+Version 4.12.26 #XG1
+
+With Gump Studio, you can design ServUO gumps using the actual graphics from your client. The finished script is generated live beneath the workspace as you build.
+
+Templates: Under Templates (Ctrl+T), you can save entire gumps or selected components into categories. The files are stored in GumpTemplates/<Category>/<Name>.gump.json. You can start a new gump from a template or insert it into the currently open gump.
+
+Import: Existing ServUO scripts can be imported and displayed as gumps, including a preview before they are applied. Variables, loops, and helper methods are evaluated automatically. In-game values are shown as placeholders such as {from.Name}.
+
+Testing: Press F5 to interact with the gump exactly as it works in-game.
+
+Help: Press F1 to open the complete documentation in both German and English.
+
 Version 4.12.25 #XG1
 
 The transition tool was rebuilt. It creates the 12 transition pieces between two textures (e.g. meadow → road, grass → cobblestone) 

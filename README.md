@@ -6,6 +6,63 @@ UOFiddler based on Ultima SDK it's a tool to view and alter almost every UO 2D c
 This is an extended version of UoFiddler that has more maps and more tools, as well as Map Edit, and will be expanded over time to support the Ultima standard 
 version more than the original version. Also, some source codes from older and New projects that are no longer supported have been integrated.
 
+Version 4.12.26
+
+Visual designer for **ServUO / RunUO / ModernUO gumps** inside UoFiddlerPixel.
+You see the gump the way the client draws it, with the graphics of your client files. The finished C# script is written below it while you work.
+
+## Features
+
+**Designer**
+- The work area uses real client graphics: gumps, items, hues and the unicode font.
+- The script is written live below the work area:
+  - a complete ServUO class (constants, command, `OnResponse`)
+  - only the `Add…` lines
+  - a Sphere `[DIALOG]`
+- All elements are supported: background, image, tiled image, alpha region, label, HTML / cliloc, button, item button, check, radio, text entry, item and sprite.
+- There are also ready parts such as OK / Cancel, page buttons, a title bar and a list row.
+- Editing tools:
+  - drag & drop from the gump / item browser
+  - snap grid, resize handles and editing text in place
+  - align / distribute, pages, undo / redo, copy / paste (also as ServUO lines)
+- Test mode (F5): buttons, pages, check boxes, radios and text entries work like in the game. The status line shows what `OnResponse` would receive.
+- Problem list: duplicate IDs, page buttons to empty pages, missing graphics, umlauts in labels and more.
+
+**Template library** (`Templates`, Ctrl+T)
+- Save the whole gump as a template, or only the selected elements as a reusable **building block**.
+- Categories are folders. A `/` in the name makes a sub category, e.g. `Shops/Vendors`.
+- Templates are saved as `GumpTemplates/<Category>/<Name>.gump.json` next to UoFiddler.exe.
+- The library shows thumbnails and a large preview with notes. It also offers search, rename / move (also by dragging onto a category), copy, delete and export.
+- Add files from disk or by dragging them from Explorer: `.gump.json` projects or ServUO `.cs` scripts.
+- **New from template**, or **Insert into current gump**. Inserting moves button, switch and entry IDs behind the ones already used.
+- Your own templates also appear in the `New ▾` menu, grouped by category.
+
+**Script import** (`Import ServUO…`)
+- A preview window shows the gump of each class in the file (page by page) and the hints, before you take it over.
+- The constructor is actually run by a small interpreter. It understands:
+  - variables, `x++` / `y += 25` and arrays
+  - `for` / `foreach` / `while` loops, `if` / `else` and `switch`
+  - helper methods with return values (`Color()`, `Center()` …)
+  - `String.Format` and `$"…"` strings
+  - constants, enums and chained constructors (`: this(…)`)
+- Constants of other classes (e.g. `PropsConfig`) are read from the scripts around the imported file, up to the `Scripts` folder.
+- Values that only exist in the game turn into placeholders:
+  - Texts show the expression, e.g. `{from.Name}`.
+  - Numbers become `0`.
+  - Lists of the game get 3 sample rows.
+  - Width / height parameters become 400 × 300.
+- Tested with stock ServUO gumps: AdminGump, WhoGump, GoGump, PropsGump, ClientGump, WarningGump, AddGump, ResurrectGump and more.
+
+## Usage
+
+1. Open UoFiddler and load your client files.
+2. Open the *Design Studio* tab or the menu entry **Gump Studio**.
+3. Start a gump in one of three ways: pick a template from `New ▾`, open a `.gump.json` project, or import an existing `.cs` script.
+4. Design the gump, press F5 to test it, then copy the script or save it as `.cs`, e.g. into `ServUO/Scripts/Custom`.
+
+Press F1 in the studio for the full help (English / German).
+
+
 Version 4.12.25
 
 The transition tool was rebuilt. It creates the 12 transition pieces between two textures (e.g. meadow → road, grass → cobblestone).

@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
 		<AssemblyName>GumpStudio</AssemblyName>
 		<TargetFramework>net8.0-windows7.0</TargetFramework>
@@ -34,6 +34,30 @@
 		</Compile>
 		<Compile Update="Forms\DesignStudioForm.Designer.cs">
 			<DependentUpon>DesignStudioForm.cs</DependentUpon>
+		</Compile>
+		<Compile Update="GumpStudio\GumpStudioControl.cs">
+			<SubType>UserControl</SubType>
+		</Compile>
+		<Compile Update="GumpStudio\GumpStudioControl.Designer.cs">
+			<DependentUpon>GumpStudioControl.cs</DependentUpon>
+		</Compile>
+		<Compile Update="GumpStudio\GumpImportForm.cs">
+			<SubType>Form</SubType>
+		</Compile>
+		<Compile Update="GumpStudio\GumpImportForm.Designer.cs">
+			<DependentUpon>GumpImportForm.cs</DependentUpon>
+		</Compile>
+		<Compile Update="GumpStudio\GumpTemplateForm.cs">
+			<SubType>Form</SubType>
+		</Compile>
+		<Compile Update="GumpStudio\GumpTemplateForm.Designer.cs">
+			<DependentUpon>GumpTemplateForm.cs</DependentUpon>
+		</Compile>
+		<Compile Update="GumpStudio\GumpTemplateSaveForm.cs">
+			<SubType>Form</SubType>
+		</Compile>
+		<Compile Update="GumpStudio\GumpTemplateSaveForm.Designer.cs">
+			<DependentUpon>GumpTemplateSaveForm.cs</DependentUpon>
 		</Compile>
 		<Compile Update="UserControls\DesignStudioControl.cs">
 			<SubType>UserControl</SubType>
