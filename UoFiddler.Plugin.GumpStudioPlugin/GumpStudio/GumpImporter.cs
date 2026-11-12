@@ -410,6 +410,14 @@ namespace UoFiddler.Plugin.DesignStudio.GumpStudio
             public int Adds = -1;
         }
 
+        /// <summary>An object of a class from the same file (new DoorInfo(typeof(MetalDoor), 0x675)) with its fields.</summary>
+        private sealed class ObjectValue
+        {
+            public string Type;
+            public Dictionary<string, object> Fields = new Dictionary<string, object>(StringComparer.Ordinal);
+            public override string ToString() => "{" + Type + "}";
+        }
+
         private sealed class FlowException : Exception
         {
         }
@@ -474,6 +482,7 @@ namespace UoFiddler.Plugin.DesignStudio.GumpStudio
             public void Run()
             {
                 List<Node> nodes = new Parser(_code).ParseAll();
+                _allNodes = nodes;
                 Match ns = Regex.Match(_code, @"\bnamespace\s+([\w.]+)");
                 if (ns.Success)
                 {
@@ -536,6 +545,70 @@ namespace UoFiddler.Plugin.DesignStudio.GumpStudio
                 RegexOptions.Singleline);
 
             private readonly List<Node> _ctors = new List<Node>();
+            private List<Node> _allNodes;
+
+            /// <summary>
+            /// Creates an object of a class written in the same file: fields with their start values, then the constructor.
+            /// Returns null when the class is not in the file.
+            /// </summary>
+            private ObjectValue CreateObject(string type, List<object> args)
+            {
+                if (_allNodes == null || type == null || _scopes.Count > 40)
+                {
+                    return null;
+                }
+                string name = type.Contains(".") ? type.Substring(type.LastIndexOf('.') + 1) : type;
+                Node cls = FindClass(_allNodes, name);
+                if (cls?.Block == null || name == _className)
+                {
+                    return null;
+                }
+                var obj = new ObjectValue { Type = name };
+                _quiet++;
+                _scopes.Push(obj.Fields);
+                try
+                {
+                    foreach (Node n in cls.Block.Where(b => b.Block == null))
+                    {
+                        string t = StripAttributes(n.Text);
+                        if (!Regex.IsMatch(t, @"\bstatic\b") && !Regex.IsMatch(t, @"\(.*\)\s*$|=>"))
+                        {
+                            ExecSimple(n, t, false);
+                        }
+                    }
+                    Node ctor = cls.Block.FirstOrDefault(b => b.Block != null
+                        && Regex.IsMatch(StripAttributes(b.Text), @"^(?:(?:public|private|protected|internal)\s+)*" + Regex.Escape(name) + @"\s*\(")
+                        && Params(CtorHead(b).Groups[1].Value).Count() == args.Count);
+                    if (ctor != null)
+                    {
+                        var scope = new Dictionary<string, object>(StringComparer.Ordinal);
+                        List<(string Type, string Name, string Default)> ps = Params(CtorHead(ctor).Groups[1].Value).ToList();
+                        for (int k = 0; k < ps.Count; k++)
+                        {
+                            scope[ps[k].Name] = args[k];
+                        }
+                        _scopes.Push(scope);
+                        int line = _line;
+                        try
+                        {
+                            ExecList(ctor.Block);
+                        }
+                        finally
+                        {
+                            _flow = null;
+                            _return = null;
+                            _scopes.Pop();
+                            _line = line;
+                        }
+                    }
+                }
+                finally
+                {
+                    _scopes.Pop();
+                    _quiet--;
+                }
+                return obj;
+            }
 
             /// <summary>Fields, constants and methods of the class (twice, so fields may use constants declared further down).</summary>
             private void LoadMembers(Node cls)
@@ -2222,6 +2295,11 @@ namespace UoFiddler.Plugin.DesignStudio.GumpStudio
                     {
                         return Initializer();
                     }
+                    ObjectValue created = CreateObject(type, args);
+                    if (created != null)
+                    {
+                        return created;
+                    }
                     // new List<Mobile>() is filled in the game: unknown (its Count becomes a sample size)
                     return new Unknown(Span(from));
                 }
@@ -2255,6 +2333,10 @@ namespace UoFiddler.Plugin.DesignStudio.GumpStudio
 
             private object Member(object v, string path, string member, int from)
             {
+                if (v is ObjectValue ov)
+                {
+                    return ov.Fields.TryGetValue(member, out object fv0) ? fv0 : new Unknown(Span(from));
+                }
                 switch (v)
                 {
                     case object[] arr when member == "Length" || member == "Count":
