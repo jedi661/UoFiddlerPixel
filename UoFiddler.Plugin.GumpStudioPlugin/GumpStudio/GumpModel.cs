@@ -300,6 +300,9 @@ namespace UoFiddler.Plugin.DesignStudio.GumpStudio
         [Category("3 Designer"), Description("Size of the work area.")]
         public int CanvasHeight { get; set; } = 480;
 
+        [Category("3 Designer"), Description("Note for the template library (what the gump is for). / Notiz für die Vorlagen-Bibliothek.")]
+        public string Description { get; set; } = string.Empty;
+
         [Browsable(false)]
         public List<GumpElement> Elements { get; set; } = new List<GumpElement>();
 

@@ -14,9 +14,34 @@ Design ServUO / RunUO gumps (the dialog windows of the game) with the real graph
 script. Above: the gump as the client shows it. Below: the script, written live. Right: properties, element list, gump browser.
 
 START
-• New ▾: a template (empty window, yes / no question, text input form, teleporter menu with pages, choice list, info text).
+• New ▾: a built-in template (empty window, yes / no question, text input form, teleporter menu with pages, choice list, info text)
+  or one of your own templates (sub menu per category).
 • Open / Save: the project as *.gump.json (everything, can be edited again later).
-• Import ServUO…: read an existing gump script (.cs) – its Add… lines become elements. Lines with variables are listed below the script.
+• Import ServUO…: read an existing gump script (.cs) – see IMPORT.
+
+TEMPLATES (Templates ▾, Ctrl+T)
+• ""Save gump as template…"": name, category and a note – saved as GumpTemplates\<Category>\<Name>.gump.json next to UoFiddler.
+  ""/"" in the category makes sub categories (e.g. Shops/Vendors).
+• ""Save selection as building block…"": only the selected elements (e.g. title bar, input field with frame, list row).
+• Template library: categories left, pictures in the middle, big picture and note right.
+  - ""New gump from it"" (double click) starts a new gump, ""Insert into current gump"" adds the elements to the open gump
+    (same position, button / switch / entry IDs are moved behind the used ones, radio groups stay apart).
+  - + Category / – Category (only empty ones), click a selected category again or F2 = rename it.
+  - Rename / move (F2), Copy (also of built-in templates, to change them), Delete (Del), Export, search over all categories.
+  - Drag a template onto a category = move it. ""Add files…"" or drag files from Explorer onto the list:
+    Gump Studio projects or ServUO scripts (.cs – every gump class of the file becomes a template).
+  - The folder can be copied to other PCs or shared with your team.
+
+IMPORT (ServUO / RunUO / ModernUO scripts)
+• The import window shows the gump before it is taken: gump classes of the file (left), picture per page, hints.
+• The constructor is really run: variables (int y = 50; y += 25; line++), arrays, for / foreach / while loops, if / else, switch,
+  helper methods of the class (also with return value, e.g. Color() / Center()), String.Format, $""…"" strings, constants, enums,
+  constructors that call each other (: this(…)).
+• Values of other classes (e.g. PropsConfig.EntryHeight) are read from the scripts around the file (its folder up to the
+  Scripts folder) – switch it off with the check box.
+• What only exists in the game becomes a placeholder: texts {from.Name}, numbers 0. Lists of the game (list.Count) get 3 sample
+  rows, sizes from parameters (width / height) 400 × 300. if (…) that only the game knows: the ""if"" part is shown;
+  guard clauses like if (state == null) return; are skipped. Everything is listed as hint below the script.
 
 ADDING ELEMENTS
 • Toolbox left: background (9 part frame), image, image tiled, alpha region, label, label cropped, HTML, HTML cliloc, button,
@@ -53,7 +78,7 @@ SCRIPT
 • Copy script / Save .cs (e.g. into ServUO\Scripts\Custom). PNG saves a picture of the page.
 
 KEYS
-Ctrl+O open · Ctrl+S save · Ctrl+Z / Y undo / redo · Ctrl+C / V / D copy / paste / duplicate · Del delete · Ctrl+A all ·
+Ctrl+O open · Ctrl+S save · Ctrl+T template library · Ctrl+Z / Y undo / redo · Ctrl+C / V / D copy / paste / duplicate · Del delete · Ctrl+A all ·
 Esc nothing selected · arrows move · PageUp / PageDown pages · Ctrl + mouse wheel zoom · F5 test · F1 help";
 
         public const string German =
@@ -64,9 +89,34 @@ ServUO- / RunUO-Gumps (die Dialogfenster im Spiel) mit den echten Grafiken deine
 Oben: das Gump, wie der Client es zeigt. Unten: das Skript, live geschrieben. Rechts: Eigenschaften, Elementliste, Gump-Browser.
 
 START
-• New ▾: eine Vorlage (leeres Fenster, Ja / Nein-Frage, Eingabeformular, Teleporter-Menü mit Seiten, Auswahlliste, Infotext).
+• New ▾: eine mitgelieferte Vorlage (leeres Fenster, Ja / Nein-Frage, Eingabeformular, Teleporter-Menü mit Seiten, Auswahlliste, Infotext)
+  oder eine deiner eigenen Vorlagen (Untermenü pro Kategorie).
 • Open / Save: das Projekt als *.gump.json (alles, später weiter bearbeitbar).
-• Import ServUO…: ein vorhandenes Gump-Skript (.cs) einlesen – seine Add…-Zeilen werden Elemente. Zeilen mit Variablen stehen unter dem Skript.
+• Import ServUO…: ein vorhandenes Gump-Skript (.cs) einlesen – siehe EINLESEN.
+
+VORLAGEN (Templates ▾, Strg+T)
+• „Save gump as template…“: Name, Kategorie und Notiz – gespeichert als GumpTemplates\<Kategorie>\<Name>.gump.json neben UoFiddler.
+  „/“ in der Kategorie macht Unterkategorien (z. B. Shops/Händler).
+• „Save selection as building block…“: nur die gewählten Elemente (z. B. Titelleiste, Eingabefeld mit Rahmen, Listenzeile).
+• Vorlagen-Bibliothek: links Kategorien, in der Mitte Bilder, rechts großes Bild und Notiz.
+  - „New gump from it“ (Doppelklick) beginnt ein neues Gump, „Insert into current gump“ fügt die Elemente in das offene Gump ein
+    (gleiche Position, Button- / Schalter- / Eingabe-IDs werden hinter die benutzten gesetzt, Radio-Gruppen bleiben getrennt).
+  - + Category / – Category (nur leere), gewählte Kategorie nochmals anklicken oder F2 = umbenennen.
+  - Umbenennen / verschieben (F2), Kopieren (auch mitgelieferte Vorlagen, um sie zu ändern), Löschen (Entf), Export, Suche über alle Kategorien.
+  - Vorlage auf eine Kategorie ziehen = verschieben. „Add files…“ oder Dateien aus dem Explorer auf die Liste ziehen:
+    Gump-Studio-Projekte oder ServUO-Skripte (.cs – jede Gump-Klasse der Datei wird eine Vorlage).
+  - Den Ordner kannst du auf andere PCs kopieren oder mit deinem Team teilen.
+
+EINLESEN (ServUO- / RunUO- / ModernUO-Skripte)
+• Das Import-Fenster zeigt das Gump, bevor es übernommen wird: Gump-Klassen der Datei (links), Bild pro Seite, Hinweise.
+• Der Konstruktor wird wirklich ausgeführt: Variablen (int y = 50; y += 25; line++), Arrays, for- / foreach- / while-Schleifen, if / else,
+  switch, Hilfsmethoden der Klasse (auch mit Rückgabewert, z. B. Color() / Center()), String.Format, $""…""-Texte, Konstanten, Enums,
+  Konstruktoren, die sich gegenseitig aufrufen (: this(…)).
+• Werte anderer Klassen (z. B. PropsConfig.EntryHeight) werden aus den Skripten rund um die Datei gelesen (ihr Ordner bis hoch zum
+  Scripts-Ordner) – mit dem Häkchen abschaltbar.
+• Was es nur im Spiel gibt, wird ein Platzhalter: Texte {from.Name}, Zahlen 0. Listen des Spiels (list.Count) bekommen 3 Beispielzeilen,
+  Größen aus Parametern (width / height) 400 × 300. if (…), das nur das Spiel kennt: der „if“-Teil wird gezeigt; Schutzabfragen wie
+  if (state == null) return; werden übersprungen. Alles steht als Hinweis unter dem Skript.
 
 ELEMENTE HINZUFÜGEN
 • Werkzeugkasten links: Hintergrund (9-teiliger Rahmen), Bild, gekacheltes Bild, Alpha-Bereich, Label, abgeschnittenes Label, HTML,
@@ -104,7 +154,7 @@ SKRIPT
 • Skript kopieren / als .cs speichern (z. B. in ServUO\Scripts\Custom). PNG speichert ein Bild der Seite.
 
 TASTEN
-Strg+O öffnen · Strg+S speichern · Strg+Z / Y rückgängig / wiederholen · Strg+C / V / D kopieren / einfügen / duplizieren · Entf löschen ·
+Strg+O öffnen · Strg+S speichern · Strg+T Vorlagen-Bibliothek · Strg+Z / Y rückgängig / wiederholen · Strg+C / V / D kopieren / einfügen / duplizieren · Entf löschen ·
 Strg+A alles · Esc nichts gewählt · Pfeile verschieben · Bild↑ / Bild↓ Seiten · Strg + Mausrad Zoom · F5 Test · F1 Hilfe";
 
         public static void Show(IWin32Window owner, bool german)

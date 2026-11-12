@@ -52,12 +52,7 @@ namespace UoFiddler.Plugin.DesignStudio.GumpStudio
             listElements.Columns.Add("Page", 40);
             listElements.Columns.Add("X, Y", 70);
             listElements.Columns.Add("ID", 80);
-            foreach ((string name, Func<GumpDesign> create) in GumpTemplates.All)
-            {
-                var item = new ToolStripMenuItem(name) { Tag = create };
-                item.Click += (s, e) => NewDesign(((Func<GumpDesign>)((ToolStripMenuItem)s).Tag)(), name);
-                tsNew.DropDownItems.Add(item);
-            }
+            BuildNewMenu();
             _codeTimer.Tick += (s, e) =>
             {
                 _codeTimer.Stop();
@@ -377,29 +372,185 @@ namespace UoFiddler.Plugin.DesignStudio.GumpStudio
                 {
                     return;
                 }
-                try
+                ImportScript(d.FileName);
+            }
+        }
+
+        /// <summary>Reads a ServUO script: preview window (class, picture, hints), then the gump becomes the new design.</summary>
+        private void ImportScript(string file)
+        {
+            try
+            {
+                string code = File.ReadAllText(file);
+                using (var f = new GumpImportForm(file, code))
                 {
-                    var warnings = new List<string>();
-                    GumpDesign design = GumpImporter.Import(File.ReadAllText(d.FileName), warnings);
-                    if (design.Elements.Count == 0)
+                    if (f.ShowDialog(this) != DialogResult.OK || f.Result == null)
                     {
-                        MessageBox.Show(this, "No Add… lines found in this file.", "Gump Studio", MessageBoxButtons.OK, MessageBoxIcon.Information);
                         return;
                     }
                     _dirty = false;
-                    NewDesign(design, Path.GetFileName(d.FileName), true);
-                    SetMessage($"Imported {design.Elements.Count} elements from {Path.GetFileName(d.FileName)}" + (warnings.Count > 0 ? $" – {warnings.Count} lines skipped (see the list below the script)." : "."));
-                    foreach (string w in warnings.Take(50))
+                    NewDesign(f.Result, Path.GetFileName(file), true);
+                    SetMessage($"Imported {f.Result.Elements.Count} elements of {f.Result.ClassName} from {Path.GetFileName(file)}"
+                               + (f.Hints.Count > 0 ? $" – {f.Hints.Count} hint(s) below the script." : "."));
+                    foreach (string w in f.Hints.Take(100))
                     {
                         listProblems.Items.Add("Import: " + w);
                     }
                 }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(this, "Import failed:\n" + ex.Message, "Gump Studio", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        #region Templates
+
+        /// <summary>New ▾: built-in templates, then your own templates per category, then the library.</summary>
+        private void BuildNewMenu()
+        {
+            foreach (ToolStripItem old in tsNew.DropDownItems.Cast<ToolStripItem>().ToList())
+            {
+                old.Dispose();
+            }
+            tsNew.DropDownItems.Clear();
+            foreach (GumpTemplateEntry entry in GumpTemplateLibrary.BuiltIn())
+            {
+                tsNew.DropDownItems.Add(TemplateItem(entry, entry.Name));
+            }
+            List<GumpTemplateEntry> user;
+            try
+            {
+                user = GumpTemplateLibrary.LoadUser(null);
+            }
+            catch (Exception)
+            {
+                user = new List<GumpTemplateEntry>();
+            }
+            if (user.Count > 0)
+            {
+                tsNew.DropDownItems.Add(new ToolStripSeparator());
+                foreach (IGrouping<string, GumpTemplateEntry> group in user.GroupBy(u => u.Category, StringComparer.OrdinalIgnoreCase))
+                {
+                    var sub = new ToolStripMenuItem(group.Key);
+                    foreach (GumpTemplateEntry entry in group)
+                    {
+                        sub.DropDownItems.Add(TemplateItem(entry, entry.Name));
+                    }
+                    tsNew.DropDownItems.Add(sub);
+                }
+            }
+            tsNew.DropDownItems.Add(new ToolStripSeparator());
+            var library = new ToolStripMenuItem("Template library…") { ShortcutKeyDisplayString = "Ctrl+T" };
+            library.Click += MiTemplateLibrary_Click;
+            tsNew.DropDownItems.Add(library);
+        }
+
+        private ToolStripMenuItem TemplateItem(GumpTemplateEntry entry, string text)
+        {
+            var item = new ToolStripMenuItem(text) { Tag = entry, ToolTipText = entry.Description };
+            item.Click += TemplateItem_Click;
+            return item;
+        }
+
+        private void TemplateItem_Click(object sender, EventArgs e)
+        {
+            if (((ToolStripItem)sender).Tag is GumpTemplateEntry entry)
+            {
+                try
+                {
+                    NewDesign(entry.Load(), entry.Name);
+                }
                 catch (Exception ex)
                 {
-                    MessageBox.Show(this, "Import failed:\n" + ex.Message, "Gump Studio", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show(this, "The template could not be read:\n" + ex.Message, "Gump Studio", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
         }
+
+        private void TsNew_DropDownOpening(object sender, EventArgs e) => BuildNewMenu();
+
+        private void TsTemplates_DropDownOpening(object sender, EventArgs e)
+        {
+            miTemplateSaveSelection.Enabled = Selected.Count > 0;
+        }
+
+        private void MiTemplateLibrary_Click(object sender, EventArgs e)
+        {
+            using (var f = new GumpTemplateForm(true))
+            {
+                if (f.ShowDialog(this) != DialogResult.OK || f.SelectedDesign == null)
+                {
+                    return;
+                }
+                if (f.Action == TemplateAction.Open)
+                {
+                    NewDesign(f.SelectedDesign, f.SelectedEntry?.Name ?? "template");
+                }
+                else if (f.Action == TemplateAction.Insert)
+                {
+                    InsertTemplate(f.SelectedDesign, f.SelectedEntry?.Name ?? "template");
+                }
+            }
+        }
+
+        /// <summary>Adds the elements of a template / building block to the gump (same position, IDs behind the used ones).</summary>
+        private void InsertTemplate(GumpDesign template, string name)
+        {
+            if (template.Elements.Count == 0)
+            {
+                SetMessage($"\"{name}\" has no elements.");
+                return;
+            }
+            int x = template.Elements.Min(el => el.X), y = template.Elements.Min(el => el.Y);
+            List<GumpElement> list = GumpTemplateLibrary.ForInsert(template, Design, x, y, NewElementPage);
+            Design.Elements.AddRange(list);
+            gumpCanvas.Select(list);
+            Commit($"\"{name}\" inserted: {list.Count} element(s) – drag them where you want them.");
+        }
+
+        private void MiTemplateSave_Click(object sender, EventArgs e) => SaveAsTemplate(false);
+
+        private void MiTemplateSaveSelection_Click(object sender, EventArgs e) => SaveAsTemplate(true);
+
+        private void SaveAsTemplate(bool selection)
+        {
+            GumpDesign block = null;
+            if (Selected.Count > 0)
+            {
+                block = Design.Clone();
+                block.Elements = GumpDesign.ElementsFromJson(GumpDesign.ElementsToJson(Selected));
+            }
+            string name = selection ? "Building block" : Design.ClassName;
+            using (var f = new GumpTemplateSaveForm(Design, block, name, null, Design.Description))
+            {
+                if (selection && block != null)
+                {
+                    f.Shown += SaveForm_SelectBlock;
+                }
+                if (f.ShowDialog(this) != DialogResult.OK)
+                {
+                    return;
+                }
+                try
+                {
+                    string file = GumpTemplateLibrary.Save(f.Result, f.TemplateName, f.Category, f.Description);
+                    SetMessage($"Template \"{f.TemplateName}\" saved in {f.Category} ({file}).");
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(this, "The template could not be saved:\n" + ex.Message, "Gump Studio", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+        }
+
+        private static void SaveForm_SelectBlock(object sender, EventArgs e)
+        {
+            var f = (GumpTemplateSaveForm)sender;
+            f.SelectBuildingBlock();
+        }
+
+        #endregion
 
         private void TsExportPng_Click(object sender, EventArgs e)
         {
@@ -1044,6 +1195,7 @@ namespace UoFiddler.Plugin.DesignStudio.GumpStudio
                 case Keys.F5: tsTest.Checked = !tsTest.Checked; TsTest_Click(this, EventArgs.Empty); return true;
                 case Keys.Control | Keys.S: TsSave_Click(this, EventArgs.Empty); return true;
                 case Keys.Control | Keys.O: TsOpen_Click(this, EventArgs.Empty); return true;
+                case Keys.Control | Keys.T: MiTemplateLibrary_Click(this, EventArgs.Empty); return true;
             }
             if (!TextInputFocused())
             {

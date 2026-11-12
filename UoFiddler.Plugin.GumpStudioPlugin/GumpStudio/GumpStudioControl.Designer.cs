@@ -35,6 +35,10 @@ namespace UoFiddler.Plugin.DesignStudio.GumpStudio
             tsSave = new System.Windows.Forms.ToolStripButton();
             tsSaveAs = new System.Windows.Forms.ToolStripButton();
             tsImport = new System.Windows.Forms.ToolStripButton();
+            tsTemplates = new System.Windows.Forms.ToolStripDropDownButton();
+            miTemplateLibrary = new System.Windows.Forms.ToolStripMenuItem();
+            miTemplateSave = new System.Windows.Forms.ToolStripMenuItem();
+            miTemplateSaveSelection = new System.Windows.Forms.ToolStripMenuItem();
             tsExportPng = new System.Windows.Forms.ToolStripButton();
             tsSep1 = new System.Windows.Forms.ToolStripSeparator();
             tsUndo = new System.Windows.Forms.ToolStripButton();
@@ -166,7 +170,7 @@ namespace UoFiddler.Plugin.DesignStudio.GumpStudio
             //
             // toolStrip1
             //
-            toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { tsNew, tsOpen, tsSave, tsSaveAs, tsImport, tsExportPng, tsSep1, tsUndo, tsRedo, tsSep2, tsCopy, tsPaste, tsDuplicate, tsDelete, tsArrange, tsSep3, tsGrid, tsSnap, tsGridSize, tsZoom, tsSep4, tsPageLabel, tsPagePrev, tsPageNext, tsPageAdd, tsSep5, tsTest, tsHelp });
+            toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { tsNew, tsOpen, tsSave, tsSaveAs, tsImport, tsTemplates, tsExportPng, tsSep1, tsUndo, tsRedo, tsSep2, tsCopy, tsPaste, tsDuplicate, tsDelete, tsArrange, tsSep3, tsGrid, tsSnap, tsGridSize, tsZoom, tsSep4, tsPageLabel, tsPagePrev, tsPageNext, tsPageAdd, tsSep5, tsTest, tsHelp });
             toolStrip1.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
             toolStrip1.Name = "toolStrip1";
             toolStrip1.TabIndex = 0;
@@ -176,6 +180,7 @@ namespace UoFiddler.Plugin.DesignStudio.GumpStudio
             tsNew.Text = "New";
             tsNew.ToolTipText = "New gump from a template\n\nDE: Neues Gump aus einer Vorlage";
             tsNew.Name = "tsNew";
+            tsNew.DropDownOpening += TsNew_DropDownOpening;
             //
             // tsOpen
             //
@@ -208,6 +213,37 @@ namespace UoFiddler.Plugin.DesignStudio.GumpStudio
             tsImport.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             tsImport.Name = "tsImport";
             tsImport.Click += TsImport_Click;
+            //
+            // tsTemplates
+            //
+            tsTemplates.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            tsTemplates.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { miTemplateLibrary, miTemplateSave, miTemplateSaveSelection });
+            tsTemplates.Name = "tsTemplates";
+            tsTemplates.Text = "Templates";
+            tsTemplates.ToolTipText = "Your own templates and building blocks, sorted in categories\n\nDE: Eigene Vorlagen und Bausteine, in Kategorien sortiert";
+            tsTemplates.DropDownOpening += TsTemplates_DropDownOpening;
+            //
+            // miTemplateLibrary
+            //
+            miTemplateLibrary.Name = "miTemplateLibrary";
+            miTemplateLibrary.ShortcutKeyDisplayString = "Ctrl+T";
+            miTemplateLibrary.Text = "Template library…";
+            miTemplateLibrary.ToolTipText = "Browse, open, insert and sort templates\n\nDE: Vorlagen ansehen, öffnen, einfügen und sortieren";
+            miTemplateLibrary.Click += MiTemplateLibrary_Click;
+            //
+            // miTemplateSave
+            //
+            miTemplateSave.Name = "miTemplateSave";
+            miTemplateSave.Text = "Save gump as template…";
+            miTemplateSave.ToolTipText = "Saves the whole gump into a category of the library\n\nDE: Speichert das ganze Gump in eine Kategorie der Bibliothek";
+            miTemplateSave.Click += MiTemplateSave_Click;
+            //
+            // miTemplateSaveSelection
+            //
+            miTemplateSaveSelection.Name = "miTemplateSaveSelection";
+            miTemplateSaveSelection.Text = "Save selection as building block…";
+            miTemplateSaveSelection.ToolTipText = "Saves only the selected elements (e.g. a title bar) – insert them later into any gump\n\nDE: Speichert nur die gewählten Elemente (z. B. eine Titelleiste) – später in jedes Gump einfügen";
+            miTemplateSaveSelection.Click += MiTemplateSaveSelection_Click;
             //
             // tsExportPng
             //
@@ -1239,6 +1275,10 @@ namespace UoFiddler.Plugin.DesignStudio.GumpStudio
         private System.Windows.Forms.ToolStripButton tsSave;
         private System.Windows.Forms.ToolStripButton tsSaveAs;
         private System.Windows.Forms.ToolStripButton tsImport;
+        private System.Windows.Forms.ToolStripDropDownButton tsTemplates;
+        private System.Windows.Forms.ToolStripMenuItem miTemplateLibrary;
+        private System.Windows.Forms.ToolStripMenuItem miTemplateSave;
+        private System.Windows.Forms.ToolStripMenuItem miTemplateSaveSelection;
         private System.Windows.Forms.ToolStripButton tsExportPng;
         private System.Windows.Forms.ToolStripSeparator tsSep1;
         private System.Windows.Forms.ToolStripButton tsUndo;
