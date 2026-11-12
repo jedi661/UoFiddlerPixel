@@ -1,4 +1,4 @@
-﻿/***************************************************************************
+/***************************************************************************
  *
  * $Author: Turley
  * 
@@ -39,7 +39,16 @@ namespace UoFiddler.Plugin.DesignStudio.UserControls
         /// </summary>
         private void InitializeComponent()
         {
+            gumpStudio = new UoFiddler.Plugin.DesignStudio.GumpStudio.GumpStudioControl();
             SuspendLayout();
+            // 
+            // gumpStudio
+            // 
+            gumpStudio.Dock = System.Windows.Forms.DockStyle.Fill;
+            gumpStudio.Location = new System.Drawing.Point(0, 0);
+            gumpStudio.Name = "gumpStudio";
+            gumpStudio.Size = new System.Drawing.Size(854, 675);
+            gumpStudio.TabIndex = 0;
             // 
             // DesignStudioControl
             // 
@@ -47,11 +56,14 @@ namespace UoFiddler.Plugin.DesignStudio.UserControls
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             DoubleBuffered = true;
             Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            Controls.Add(gumpStudio);
             Name = "DesignStudioControl";
             Size = new System.Drawing.Size(854, 675);
             ResumeLayout(false);
         }
 
         #endregion
+
+        private UoFiddler.Plugin.DesignStudio.GumpStudio.GumpStudioControl gumpStudio;
     }
 }

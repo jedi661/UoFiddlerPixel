@@ -1,4 +1,4 @@
-﻿/***************************************************************************
+/***************************************************************************
  *
  * $Author: Turley
  * 
@@ -39,21 +39,35 @@ namespace UoFiddler.Plugin.DesignStudio.Forms
         /// </summary>
         private void InitializeComponent()
         {
+            this.gumpStudio = new UoFiddler.Plugin.DesignStudio.GumpStudio.GumpStudioControl();
             this.SuspendLayout();
+            // 
+            // gumpStudio
+            // 
+            this.gumpStudio.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.gumpStudio.Location = new System.Drawing.Point(0, 0);
+            this.gumpStudio.Name = "gumpStudio";
+            this.gumpStudio.Size = new System.Drawing.Size(1300, 820);
+            this.gumpStudio.TabIndex = 0;
             // 
             // DesignStudioForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(384, 285);
+            this.ClientSize = new System.Drawing.Size(1300, 820);
+            this.Controls.Add(this.gumpStudio);
+            this.MinimumSize = new System.Drawing.Size(1000, 650);
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.DoubleBuffered = true;
             this.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.Name = "DesignStudioForm";
-            this.Text = "DesignStudio";
+            this.Text = "Gump Studio";
             this.ResumeLayout(false);
 
         }
 
         #endregion
+
+        private UoFiddler.Plugin.DesignStudio.GumpStudio.GumpStudioControl gumpStudio;
     }
 }

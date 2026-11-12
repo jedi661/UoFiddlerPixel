@@ -1,4 +1,4 @@
-﻿/***************************************************************************
+/***************************************************************************
  *
  * $Author: Turley
  * 
@@ -75,7 +75,7 @@ namespace UoFiddler.Plugin.DesignStudio
                 Tag = tabControl.TabCount + 1, // at end used for undock/dock feature to define the order
                 Text = "DesignStudio"
             };
-            page.Controls.Add(new DesignStudioControl());
+            page.Controls.Add(new DesignStudioControl { Dock = DockStyle.Fill });
             tabControl.TabPages.Add(page);
         }
 
@@ -83,7 +83,7 @@ namespace UoFiddler.Plugin.DesignStudio
         {
             ToolStripMenuItem item = new ToolStripMenuItem
             {
-                Text = "DesignStudio"
+                Text = "Gump Studio"
             };
             item.Click += ItemClick;
             toolStrip.DropDownItems.Add(item);
