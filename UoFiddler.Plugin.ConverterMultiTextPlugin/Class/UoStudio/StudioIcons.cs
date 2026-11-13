@@ -13,7 +13,7 @@ using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 
-namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UoStudio
+namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Class.UoStudio
 {
     /// <summary>
     /// Button icons for the UO Studio tools, drawn at runtime (no resource files needed).

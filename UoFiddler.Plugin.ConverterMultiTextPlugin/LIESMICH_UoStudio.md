@@ -4,13 +4,24 @@ Alle Werkzeuge starten über Buttons im Tab **Tool Box** (Plugin ConverterMultiT
 Jedes Fenster öffnet sich nur einmal; ein zweiter Klick holt es nach vorne.
 Gespeichert wird immer in den **Output-Pfad** von UO Fiddler (Optionen), ersatzweise auf den Desktop.
 
-| Tab        | Button                | Klasse                    |
+| Tab        | Button                | Form (Ordner `Forms/`)    |
 |------------|-----------------------|---------------------------|
 | Graphic    | Pixel-Art Konverter   | `PixelArtConverterForm`   |
 | Graphic    | Ausrüstungs-Generator | `EquipmentGeneratorForm`  |
-| Animation  | Animations-Studio     | `AnimationStudioForm`     |
-| Animation  | Spell / Effekt Editor | `SpellEffectEditorForm`   |
+| Animation  | Animations-Studio     | `AnimationStudioForm` (+ Dialog `AnimationSheetImportForm`) |
+| Animation  | Spell / Effekt Editor | `SpellEffectEditorForm` (+ Dialog `EffectSheetSplitForm`)   |
 | Sound (neu)| Sound-Studio          | `SoundStudioForm`         |
+
+### Ordnerstruktur
+
+- `Forms/` – jede Form als `Name.cs` (Logik), `Name.Designer.cs` (Oberfläche, im Visual-Studio-Designer bearbeitbar) und `Name.resx`.
+- `Class/UoStudio/` – Hilfsklassen und eigene Controls (Namespace `...Class.UoStudio`):
+  - `StudioImaging.cs` – Bildfunktionen (Palette, Isometrie, Outline, Hue, UO-Farben, ARGB1555)
+  - `StudioAudio.cs` – WAV/MP3 lesen, Resampling, Normalisieren, UO-Soundformat
+  - `StudioUi.cs` – Meldungen, Output-Pfad, Hue-Zugriff, ID-Parser
+  - `StudioIcons.cs` – Button-Icons (zur Laufzeit gezeichnet)
+  - `NaturalStringComparer.cs` – sortiert frame2 vor frame10
+  - Controls für die Toolbox im Designer: `PixelView` (Pixel-Zoom mit Schachbrett), `WaveformView` (Wellenform mit Auswahl), `LevelMeter` (Pegelanzeige)
 
 ## Pixel-Art-Konverter
 Bild/Foto laden (Datei, Drag & Drop oder Zwischenablage) → Vorlage wählen

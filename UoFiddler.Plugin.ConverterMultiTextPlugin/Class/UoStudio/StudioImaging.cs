@@ -18,7 +18,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 
-namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UoStudio
+namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Class.UoStudio
 {
     /// <summary>
     /// Isometric projection modes of the pixel art converter.

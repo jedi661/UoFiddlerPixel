@@ -18,15 +18,16 @@ using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 using Ultima;
+using UoFiddler.Plugin.ConverterMultiTextPlugin.Class.UoStudio;
 
-namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UoStudio
+namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 {
     /// <summary>
     /// Animations-Studio: baut neue Mobile-Animationen aus Einzelbildern oder Sprite-Sheets.
     /// UO speichert 5 Richtungen (0 = unten, 1 = unten-links, 2 = links, 3 = oben-links, 4 = oben),
     /// die 3 rechten Richtungen erzeugt der Client durch Spiegeln. Die Vorschau zeigt alle 8 Richtungen.
     /// </summary>
-    public class AnimationStudioForm : Form
+    public partial class AnimationStudioForm : Form
     {
         private const int DirCount = 5;
 
@@ -39,187 +40,106 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UoStudio
             "4  ↑  oben (Nord-West)"
         };
 
-        private readonly List<Bitmap>[] _dirs = Enumerable.Range(0, DirCount).Select(_ => new List<Bitmap>()).ToArray();
-        private readonly Timer _timer = new Timer { Interval = 120 };
-        private int _frameIndex;
-
-        private ListBox _lbDirs;
-        private ListView _lvFrames;
-        private readonly ImageList _thumbs = new ImageList { ImageSize = new Size(48, 48), ColorDepth = ColorDepth.Depth32Bit };
-        private NumericUpDown _numDelay, _numZoom, _numCenterX, _numCenterY;
-        private CheckBox _chkPlay, _chkCrosshair;
-        private ComboBox _cbFileType;
-        private NumericUpDown _numBody, _numAction, _numColors;
-        private readonly PixelView[] _compass = new PixelView[9];
-        private readonly ToolStripStatusLabel _status = new ToolStripStatusLabel("Bilder oder ein Sprite-Sheet importieren.");
-
-        // compass cell -> (anim direction, mirrored); index 4 = big preview of selected direction
-        private static readonly (int Dir, bool Mirror, string Name)[] _cells =
+        // compass cell -> (anim direction, mirrored); index 4 = big preview of the selected direction
+        private static readonly (int Dir, bool Mirror)[] _cells =
         {
-            (3, false, "↖ 3"), (4, false, "↑ 4"), (3, true, "↗ 3 gespiegelt"),
-            (2, false, "← 2"), (-1, false, "Auswahl"), (2, true, "→ 2 gespiegelt"),
-            (1, false, "↙ 1"), (0, false, "↓ 0"), (1, true, "↘ 1 gespiegelt")
+            (3, false), (4, false), (3, true),
+            (2, false), (-1, false), (2, true),
+            (1, false), (0, false), (1, true)
         };
+
+        private readonly List<Bitmap>[] _dirs = Enumerable.Range(0, DirCount).Select(_ => new List<Bitmap>()).ToArray();
+        private readonly PixelView[] _compass;
+        private int _frameIndex;
 
         public AnimationStudioForm()
         {
-            Text = "Animations-Studio (Mobile-Animationen, 5 Richtungen + Spiegeln)";
-            Size = new Size(1240, 800);
-            MinimumSize = new Size(1000, 650);
-            StartPosition = FormStartPosition.CenterScreen;
+            InitializeComponent();
 
-            BuildUi();
-            _timer.Tick += (s, e) =>
+            _compass = new[]
             {
-                _frameIndex++;
-                RefreshPreview();
+                viewUpLeft, viewUp, viewUpRight,
+                viewLeft, viewSelected, viewRight,
+                viewDownLeft, viewDown, viewDownRight
             };
-            _timer.Start();
-            _lbDirs.SelectedIndex = 0;
-        }
-
-        private int CurrentDir => Math.Max(0, _lbDirs.SelectedIndex);
-
-        #region UI
-
-        private void BuildUi()
-        {
-            var left = new Panel { Dock = DockStyle.Left, Width = 380, AutoScroll = true };
-            int y = 6;
-
-            left.Controls.Add(StudioUi.Label("Richtungen (so speichert UO sie):", 6, y));
-            y += 22;
-            _lbDirs = new ListBox { Left = 6, Top = y, Width = 360, Height = 84, IntegralHeight = false };
-            _lbDirs.SelectedIndexChanged += (s, e) => RefreshFrameList();
-            left.Controls.Add(_lbDirs);
-            y += 90;
-
-            left.Controls.Add(StudioUi.Button("Bilder hinzufügen...", 6, y, 176, (s, e) => AddImages()));
-            left.Controls.Add(StudioUi.Button("Sprite-Sheet importieren...", 188, y, 178, (s, e) => ImportSheet()));
-            y += 30;
-            left.Controls.Add(StudioUi.Button("Aus MUL laden", 6, y, 116, (s, e) => LoadFromMul()));
-            left.Controls.Add(StudioUi.Button("Richtung spiegeln", 126, y, 118, (s, e) => MirrorDirection()));
-            left.Controls.Add(StudioUi.Button("Leere auffüllen", 248, y, 118, (s, e) => FillEmptyDirections()));
-            y += 30;
-            left.Controls.Add(StudioUi.Button("◀ Frame", 6, y, 70, (s, e) => MoveFrame(-1)));
-            left.Controls.Add(StudioUi.Button("Frame ▶", 80, y, 70, (s, e) => MoveFrame(1)));
-            left.Controls.Add(StudioUi.Button("Entfernen", 154, y, 80, (s, e) => RemoveFrames()));
-            left.Controls.Add(StudioUi.Button("Richtung leeren", 238, y, 128, (s, e) => ClearDirection()));
-            y += 32;
-
-            _lvFrames = new ListView
-            {
-                Left = 6,
-                Top = y,
-                Width = 360,
-                Height = 150,
-                LargeImageList = _thumbs,
-                View = View.LargeIcon,
-                MultiSelect = true,
-                HideSelection = false
-            };
-            left.Controls.Add(_lvFrames);
-            y += 156;
-
-            var grpPlay = new GroupBox { Text = "Vorschau", Left = 4, Top = y, Width = 362, Height = 76 };
-            grpPlay.Controls.Add(StudioUi.Label("ms/Frame:", 8, 20));
-            _numDelay = StudioUi.Number(76, 20, 60, 20, 2000, 120);
-            _numDelay.ValueChanged += (s, e) => _timer.Interval = (int)_numDelay.Value;
-            grpPlay.Controls.Add(_numDelay);
-            grpPlay.Controls.Add(StudioUi.Label("Zoom:", 144, 20));
-            _numZoom = StudioUi.Number(186, 20, 50, 1, 8, 1);
-            _numZoom.ValueChanged += (s, e) => ApplyZoom();
-            grpPlay.Controls.Add(_numZoom);
-            _chkPlay = StudioUi.Check("Abspielen", 248, 22, true);
-            _chkPlay.CheckedChanged += (s, e) => _timer.Enabled = _chkPlay.Checked;
-            grpPlay.Controls.Add(_chkPlay);
-            _chkCrosshair = StudioUi.Check("Fußpunkt anzeigen", 8, 48, true);
-            _chkCrosshair.CheckedChanged += (s, e) => RefreshPreview();
-            grpPlay.Controls.Add(_chkCrosshair);
-            left.Controls.Add(grpPlay);
-            y += 82;
-
-            var grpCenter = new GroupBox { Text = "Fußpunkt (Center) relativ zu unten-Mitte", Left = 4, Top = y, Width = 362, Height = 52 };
-            grpCenter.Controls.Add(StudioUi.Label("X:", 8, 20));
-            _numCenterX = StudioUi.Number(28, 20, 60, -200, 200, 0);
-            _numCenterX.ValueChanged += (s, e) => RefreshPreview();
-            grpCenter.Controls.Add(_numCenterX);
-            grpCenter.Controls.Add(StudioUi.Label("Y:", 100, 20));
-            _numCenterY = StudioUi.Number(120, 20, 60, -200, 200, 0);
-            _numCenterY.ValueChanged += (s, e) => RefreshPreview();
-            grpCenter.Controls.Add(_numCenterY);
-            grpCenter.Controls.Add(StudioUi.Label("(Y positiv = höher)", 190, 20));
-            left.Controls.Add(grpCenter);
-            y += 58;
-
-            var grpExport = new GroupBox { Text = "Export in Anim-MUL", Left = 4, Top = y, Width = 362, Height = 170 };
-            grpExport.Controls.Add(StudioUi.Label("Datei:", 8, 22));
-            _cbFileType = StudioUi.Combo(60, 22, 110, "anim.mul", "anim2.mul", "anim3.mul", "anim4.mul", "anim5.mul");
-            grpExport.Controls.Add(_cbFileType);
-            grpExport.Controls.Add(StudioUi.Label("Farben:", 180, 22));
-            _numColors = StudioUi.Number(240, 22, 60, 8, 256, 256);
-            grpExport.Controls.Add(_numColors);
-            grpExport.Controls.Add(StudioUi.Label("Body:", 8, 52));
-            _numBody = StudioUi.Number(60, 52, 70, 0, 5000, 400);
-            grpExport.Controls.Add(_numBody);
-            grpExport.Controls.Add(StudioUi.Label("Action:", 140, 52));
-            _numAction = StudioUi.Number(190, 52, 50, 0, 80, 0);
-            grpExport.Controls.Add(_numAction);
-            grpExport.Controls.Add(StudioUi.Label("0 Walk, 1 Run/Stand, 2 Idle…", 244, 52));
-            grpExport.Controls.Add(StudioUi.Button("In Animation schreiben", 8, 82, 170, (s, e) => ExportToMul()));
-            grpExport.Controls.Add(StudioUi.Button("Anim-MUL speichern", 184, 82, 170, (s, e) => SaveMul()));
-            grpExport.Controls.Add(StudioUi.Button("Frames als PNG...", 8, 112, 170, (s, e) => ExportPngFrames()));
-            grpExport.Controls.Add(StudioUi.Button("Sprite-Sheet als PNG...", 184, 112, 170, (s, e) => ExportSheet()));
-            grpExport.Controls.Add(StudioUi.Label("anim.mul: Body <200 Monster (22 Actions), <400 Tiere (13), ab 400 Menschen (35)", 8, 142));
-            left.Controls.Add(grpExport);
-
-            var grid = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 3, RowCount = 3 };
-            for (int i = 0; i < 3; i++)
-            {
-                grid.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.33f));
-                grid.RowStyles.Add(new RowStyle(SizeType.Percent, 33.33f));
-            }
-            for (int i = 0; i < 9; i++)
-            {
-                var v = new PixelView { Dock = DockStyle.Fill, Caption = _cells[i].Name, Zoom = 1, Margin = new Padding(2) };
-                int cell = i;
-                if (i == 4)
-                {
-                    v.PaintOverlay += DrawCrosshair;
-                    v.BorderStyle = BorderStyle.Fixed3D;
-                }
-                else
-                {
-                    v.Cursor = Cursors.Hand;
-                    v.Click += (s, e) =>
-                    {
-                        if (_cells[cell].Dir >= 0)
-                        {
-                            _lbDirs.SelectedIndex = _cells[cell].Dir;
-                        }
-                    };
-                }
-                _compass[i] = v;
-                grid.Controls.Add(v, i % 3, i / 3);
-            }
-
-            var status = new StatusStrip();
-            status.Items.Add(_status);
-
-            Controls.Add(grid);
-            Controls.Add(left);
-            Controls.Add(status);
+            viewSelected.PaintOverlay += DrawCrosshair;
+            lvFrames.LargeImageList = imageListThumbs;
+            cbFileType.SelectedIndex = 0;
 
             RefreshDirList();
+            lbDirections.SelectedIndex = 0;
+            timerPlay.Start();
         }
 
-        private void ApplyZoom()
+        private int CurrentDir => Math.Max(0, lbDirections.SelectedIndex);
+
+        #region Button events
+
+        private void BtnAddImages_Click(object sender, EventArgs e) => AddImages();
+
+        private void BtnImportSheet_Click(object sender, EventArgs e) => ImportSheet();
+
+        private void BtnLoadMul_Click(object sender, EventArgs e) => LoadFromMul();
+
+        private void BtnMirror_Click(object sender, EventArgs e) => MirrorDirection();
+
+        private void BtnFillEmpty_Click(object sender, EventArgs e) => FillEmptyDirections();
+
+        private void BtnFrameLeft_Click(object sender, EventArgs e) => MoveFrame(-1);
+
+        private void BtnFrameRight_Click(object sender, EventArgs e) => MoveFrame(1);
+
+        private void BtnRemoveFrames_Click(object sender, EventArgs e) => RemoveFrames();
+
+        private void BtnClearDirection_Click(object sender, EventArgs e) => ClearDirection();
+
+        private void BtnExportMul_Click(object sender, EventArgs e) => ExportToMul();
+
+        private void BtnSaveMul_Click(object sender, EventArgs e) => SaveMul();
+
+        private void BtnExportPng_Click(object sender, EventArgs e) => ExportPngFrames();
+
+        private void BtnExportSheet_Click(object sender, EventArgs e) => ExportSheet();
+
+        private void LbDirections_SelectedIndexChanged(object sender, EventArgs e) => RefreshFrameList();
+
+        private void TimerPlay_Tick(object sender, EventArgs e)
+        {
+            _frameIndex++;
+            RefreshPreview();
+        }
+
+        private void NumDelay_ValueChanged(object sender, EventArgs e)
+        {
+            timerPlay.Interval = (int)numDelay.Value;
+        }
+
+        private void NumZoom_ValueChanged(object sender, EventArgs e)
         {
             foreach (PixelView v in _compass)
             {
-                v.Zoom = (int)_numZoom.Value;
+                v.Zoom = (int)numZoom.Value;
             }
-            _compass[4].Zoom = (int)_numZoom.Value * 2;
+            viewSelected.Zoom = (int)numZoom.Value * 2;
+        }
+
+        private void ChkPlay_CheckedChanged(object sender, EventArgs e)
+        {
+            timerPlay.Enabled = chkPlay.Checked;
+        }
+
+        private void PreviewSetting_Changed(object sender, EventArgs e)
+        {
+            RefreshPreview();
+        }
+
+        private void CompassView_Click(object sender, EventArgs e)
+        {
+            int cell = Array.IndexOf(_compass, sender);
+            if (cell >= 0 && _cells[cell].Dir >= 0)
+            {
+                lbDirections.SelectedIndex = _cells[cell].Dir;
+            }
         }
 
         #endregion
@@ -228,34 +148,34 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UoStudio
 
         private void RefreshDirList()
         {
-            int sel = _lbDirs.SelectedIndex;
-            _lbDirs.BeginUpdate();
-            _lbDirs.Items.Clear();
+            int sel = lbDirections.SelectedIndex;
+            lbDirections.BeginUpdate();
+            lbDirections.Items.Clear();
             for (int i = 0; i < DirCount; i++)
             {
-                _lbDirs.Items.Add($"{_dirNames[i]}   [{_dirs[i].Count} Frames]");
+                lbDirections.Items.Add($"{_dirNames[i]}   [{_dirs[i].Count} Frames]");
             }
-            _lbDirs.EndUpdate();
-            _lbDirs.SelectedIndex = sel < 0 ? 0 : sel;
+            lbDirections.EndUpdate();
+            lbDirections.SelectedIndex = sel < 0 ? 0 : sel;
         }
 
         private void RefreshFrameList()
         {
-            _lvFrames.BeginUpdate();
-            _lvFrames.Items.Clear();
-            foreach (Image img in _thumbs.Images)
+            lvFrames.BeginUpdate();
+            lvFrames.Items.Clear();
+            foreach (Image img in imageListThumbs.Images)
             {
                 img.Dispose();
             }
-            _thumbs.Images.Clear();
+            imageListThumbs.Images.Clear();
 
             List<Bitmap> frames = _dirs[CurrentDir];
             for (int i = 0; i < frames.Count; i++)
             {
-                _thumbs.Images.Add(MakeThumb(frames[i]));
-                _lvFrames.Items.Add(new ListViewItem($"{i}  ({frames[i].Width}x{frames[i].Height})", i) { Tag = i });
+                imageListThumbs.Images.Add(MakeThumb(frames[i]));
+                lvFrames.Items.Add(new ListViewItem($"{i}  ({frames[i].Width}x{frames[i].Height})", i) { Tag = i });
             }
-            _lvFrames.EndUpdate();
+            lvFrames.EndUpdate();
             RefreshPreview();
         }
 
@@ -273,9 +193,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UoStudio
 
         private void Changed()
         {
-            int sel = _lbDirs.SelectedIndex;
+            int sel = lbDirections.SelectedIndex;
             RefreshDirList();
-            if (sel == _lbDirs.SelectedIndex)
+            if (sel == lbDirections.SelectedIndex)
             {
                 RefreshFrameList();
             }
@@ -312,16 +232,16 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UoStudio
 
         private void DrawCrosshair(Graphics g, Rectangle r)
         {
-            if (!_chkCrosshair.Checked || _compass[4].Image == null)
+            if (!chkCrosshair.Checked || viewSelected.Image == null)
             {
                 return;
             }
-            int zoom = _compass[4].Zoom;
-            int w = _compass[4].Image.Width;
-            int h = _compass[4].Image.Height;
+            int zoom = viewSelected.Zoom;
+            int w = viewSelected.Image.Width;
+            int h = viewSelected.Image.Height;
             // UO: frame is drawn at (x - centerX, y - centerY - height) -> foot point
-            int fx = r.X + (((w / 2) + (int)_numCenterX.Value) * zoom);
-            int fy = r.Y + ((h + (int)_numCenterY.Value) * zoom);
+            int fx = r.X + (((w / 2) + (int)numCenterX.Value) * zoom);
+            int fy = r.Y + ((h + (int)numCenterY.Value) * zoom);
             using var pen = new Pen(Color.Red, 1);
             g.DrawLine(pen, fx - 12, fy, fx + 12, fy);
             g.DrawLine(pen, fx, fy - 12, fx, fy + 12);
@@ -348,7 +268,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UoStudio
                     _dirs[CurrentDir].AddRange(StudioImaging.LoadFrames(file));
                 }
                 Changed();
-                _status.Text = $"{dlg.FileNames.Length} Datei(en) zu Richtung {CurrentDir} hinzugefügt.";
+                lblStatus.Text = $"{dlg.FileNames.Length} Datei(en) zu Richtung {CurrentDir} hinzugefügt.";
             }
             catch (Exception ex)
             {
@@ -376,7 +296,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UoStudio
             }
 
             using (sheet)
-            using (var dlg = new SheetImportDialog(sheet))
+            using (var dlg = new AnimationSheetImportForm(sheet))
             {
                 if (dlg.ShowDialog(this) != DialogResult.OK)
                 {
@@ -460,7 +380,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UoStudio
             }
 
             Changed();
-            _status.Text = "Sprite-Sheet importiert.";
+            lblStatus.Text = "Sprite-Sheet importiert.";
         }
 
         private void Replace(int dir, List<Bitmap> frames, bool mirror)
@@ -533,8 +453,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UoStudio
         {
             try
             {
-                int fileType = _cbFileType.SelectedIndex + 1;
-                int body = (int)_numBody.Value, action = (int)_numAction.Value;
+                int fileType = cbFileType.SelectedIndex + 1;
+                int body = (int)numBody.Value, action = (int)numAction.Value;
                 int loaded = 0;
                 for (int d = 0; d < DirCount; d++)
                 {
@@ -559,7 +479,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UoStudio
                     loaded += _dirs[d].Count;
                 }
                 Changed();
-                _status.Text = $"Body {body}, Action {action} aus {_cbFileType.Text} geladen ({loaded} Frames).";
+                lblStatus.Text = $"Body {body}, Action {action} aus {cbFileType.Text} geladen ({loaded} Frames).";
             }
             catch (Exception ex)
             {
@@ -606,17 +526,17 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UoStudio
                 }
             }
             Changed();
-            _status.Text = filled == 0 ? "Keine leeren Richtungen." : $"{filled} leere Richtung(en) aufgefüllt (Kopie der Nachbarrichtung).";
+            lblStatus.Text = filled == 0 ? "Keine leeren Richtungen." : $"{filled} leere Richtung(en) aufgefüllt (Kopie der Nachbarrichtung).";
         }
 
         private void MoveFrame(int delta)
         {
-            if (_lvFrames.SelectedItems.Count != 1)
+            if (lvFrames.SelectedItems.Count != 1)
             {
                 return;
             }
             List<Bitmap> frames = _dirs[CurrentDir];
-            int i = (int)_lvFrames.SelectedItems[0].Tag;
+            int i = (int)lvFrames.SelectedItems[0].Tag;
             int j = i + delta;
             if (j < 0 || j >= frames.Count)
             {
@@ -624,13 +544,13 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UoStudio
             }
             (frames[i], frames[j]) = (frames[j], frames[i]);
             RefreshFrameList();
-            _lvFrames.Items[j].Selected = true;
+            lvFrames.Items[j].Selected = true;
         }
 
         private void RemoveFrames()
         {
             List<Bitmap> frames = _dirs[CurrentDir];
-            foreach (int i in _lvFrames.SelectedItems.Cast<ListViewItem>().Select(it => (int)it.Tag).OrderByDescending(i => i))
+            foreach (int i in lvFrames.SelectedItems.Cast<ListViewItem>().Select(it => (int)it.Tag).OrderByDescending(i => i))
             {
                 frames[i].Dispose();
                 frames.RemoveAt(i);
@@ -661,8 +581,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UoStudio
                 return;
             }
 
-            int fileType = _cbFileType.SelectedIndex + 1;
-            int body = (int)_numBody.Value, action = (int)_numAction.Value;
+            int fileType = cbFileType.SelectedIndex + 1;
+            int body = (int)numBody.Value, action = (int)numAction.Value;
 
             if (fileType == 1)
             {
@@ -682,7 +602,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UoStudio
                     AnimIdx edit = AnimationEdit.GetAnimation(fileType, body, action, d);
                     if (edit == null)
                     {
-                        StudioUi.Error(this, $"Body {body} / Action {action} / Richtung {d} existiert in {_cbFileType.Text} nicht (Index außerhalb der Datei).");
+                        StudioUi.Error(this, $"Body {body} / Action {action} / Richtung {d} existiert in {cbFileType.Text} nicht (Index außerhalb der Datei).");
                         return;
                     }
 
@@ -694,18 +614,18 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UoStudio
                     }
 
                     // palette with max. 256 colours shared by all frames of this direction
-                    List<Bitmap> uoFrames = BuildUoFrames(frames, (int)_numColors.Value, out ushort[] palette);
+                    List<Bitmap> uoFrames = BuildUoFrames(frames, (int)numColors.Value, out ushort[] palette);
                     edit.ReplacePalette(palette);
                     foreach (Bitmap f in uoFrames)
                     {
-                        int cx = (f.Width / 2) + (int)_numCenterX.Value;
-                        int cy = (int)_numCenterY.Value;
+                        int cx = (f.Width / 2) + (int)numCenterX.Value;
+                        int cy = (int)numCenterY.Value;
                         edit.AddFrame(f, cx, cy);
                         f.Dispose();
                     }
                 }
                 StudioUi.MarkChanged("Animations");
-                _status.Text = $"Body {body}, Action {action} in {_cbFileType.Text} geschrieben. Mit \"Anim-MUL speichern\" in {StudioUi.OutputPath} sichern.";
+                lblStatus.Text = $"Body {body}, Action {action} in {cbFileType.Text} geschrieben. Mit \"Anim-MUL speichern\" in {StudioUi.OutputPath} sichern.";
             }
             catch (Exception ex)
             {
@@ -773,13 +693,13 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UoStudio
 
         private void SaveMul()
         {
-            int fileType = _cbFileType.SelectedIndex + 1;
+            int fileType = cbFileType.SelectedIndex + 1;
             try
             {
                 Cursor = Cursors.WaitCursor;
                 AnimationEdit.Save(fileType, StudioUi.OutputPath);
                 StudioUi.ResetChanged("Animations");
-                StudioUi.Info(this, $"{_cbFileType.Text} gespeichert in:\n{StudioUi.OutputPath}");
+                StudioUi.Info(this, $"{cbFileType.Text} gespeichert in:\n{StudioUi.OutputPath}");
             }
             catch (Exception ex)
             {
@@ -807,7 +727,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UoStudio
                     n++;
                 }
             }
-            _status.Text = $"{n} Frames gespeichert in {dlg.SelectedPath}";
+            lblStatus.Text = $"{n} Frames gespeichert in {dlg.SelectedPath}";
         }
 
         private void ExportSheet()
@@ -837,7 +757,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UoStudio
             if (sfd.ShowDialog(this) == DialogResult.OK)
             {
                 sheet.Save(sfd.FileName, ImageFormat.Png);
-                _status.Text = $"Sprite-Sheet ({cols} Spalten x 5 Reihen, UO-Reihenfolge) gespeichert.";
+                lblStatus.Text = $"Sprite-Sheet ({cols} Spalten x 5 Reihen, UO-Reihenfolge) gespeichert.";
             }
         }
 
@@ -845,7 +765,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UoStudio
 
         protected override void OnFormClosed(FormClosedEventArgs e)
         {
-            _timer.Dispose();
+            timerPlay.Stop();
             foreach (Bitmap b in _dirs.SelectMany(d => d))
             {
                 b.Dispose();
@@ -854,94 +774,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UoStudio
             {
                 v.Image?.Dispose();
             }
-            _thumbs.Dispose();
             base.OnFormClosed(e);
-        }
-
-        /// <summary>Dialog for slicing a sprite sheet (columns / rows / row order).</summary>
-        private sealed class SheetImportDialog : Form
-        {
-            private readonly NumericUpDown _cols, _rows;
-            private readonly ComboBox _mapping;
-            private readonly CheckBox _crop, _removeBg;
-            private readonly PixelView _view;
-
-            public SheetImportDialog(Bitmap sheet)
-            {
-                Text = "Sprite-Sheet aufteilen";
-                Size = new Size(820, 600);
-                StartPosition = FormStartPosition.CenterParent;
-                MinimizeBox = false;
-
-                var top = new Panel { Dock = DockStyle.Top, Height = 92 };
-                top.Controls.Add(StudioUi.Label("Spalten (Frames):", 8, 8));
-                _cols = StudioUi.Number(120, 8, 60, 1, 200, 8);
-                top.Controls.Add(_cols);
-                top.Controls.Add(StudioUi.Label("Reihen:", 190, 8));
-                _rows = StudioUi.Number(240, 8, 60, 1, 64, 5);
-                top.Controls.Add(_rows);
-                top.Controls.Add(StudioUi.Label("Reihenfolge:", 8, 38));
-                _mapping = StudioUi.Combo(120, 38, 460,
-                    "5 Reihen in UO-Reihenfolge (↓, ↙, ←, ↖, ↑)",
-                    "5 Reihen rechte Seite (↑, ↗, →, ↘, ↓) – wird automatisch gespiegelt",
-                    "8 Reihen Spielrichtung (↗ N, → NO, ↘ O, ↓ SO, ↙ S, ← SW, ↖ W, ↑ NW)",
-                    "8 Reihen ab unten im Uhrzeigersinn (↓, ↙, ←, ↖, ↑, ↗, →, ↘)",
-                    "Alle Zellen → aktuell gewählte Richtung");
-                top.Controls.Add(_mapping);
-                _crop = StudioUi.Check("Gemeinsam zuschneiden", 320, 10, true);
-                top.Controls.Add(_crop);
-                _removeBg = StudioUi.Check("Hintergrund (Farbe oben links) entfernen", 8, 66, false);
-                top.Controls.Add(_removeBg);
-                var ok = new Button { Text = "Importieren", Left = 600, Top = 36, Width = 100, DialogResult = DialogResult.OK };
-                var cancel = new Button { Text = "Abbrechen", Left = 706, Top = 36, Width = 90, DialogResult = DialogResult.Cancel };
-                top.Controls.Add(ok);
-                top.Controls.Add(cancel);
-                AcceptButton = ok;
-                CancelButton = cancel;
-
-                // guess rows/cols: square cells
-                int guessRows = sheet.Height >= sheet.Width / 2 ? 5 : 1;
-                _rows.Value = guessRows;
-                int cell = Math.Max(1, sheet.Height / guessRows);
-                _cols.Value = Math.Max(1, Math.Min(200, sheet.Width / cell));
-
-                _view = new PixelView { Dock = DockStyle.Fill, Image = sheet, Zoom = Math.Max(1, 700 / Math.Max(1, sheet.Width)) };
-                _view.PaintOverlay += (g, r) =>
-                {
-                    using var pen = new Pen(Color.FromArgb(180, Color.Red));
-                    float cw = r.Width / (float)_cols.Value, ch = r.Height / (float)_rows.Value;
-                    for (int i = 1; i < _cols.Value; i++)
-                    {
-                        g.DrawLine(pen, r.X + (i * cw), r.Y, r.X + (i * cw), r.Bottom);
-                    }
-                    for (int i = 1; i < _rows.Value; i++)
-                    {
-                        g.DrawLine(pen, r.X, r.Y + (i * ch), r.Right, r.Y + (i * ch));
-                    }
-                };
-                _cols.ValueChanged += (s, e) => _view.Invalidate();
-                _rows.ValueChanged += (s, e) => _view.Invalidate();
-                _mapping.SelectedIndexChanged += (s, e) =>
-                {
-                    if (_mapping.SelectedIndex is 2 or 3)
-                    {
-                        _rows.Value = 8;
-                    }
-                    else if (_mapping.SelectedIndex is 0 or 1)
-                    {
-                        _rows.Value = 5;
-                    }
-                };
-
-                Controls.Add(_view);
-                Controls.Add(top);
-            }
-
-            public int Columns => (int)_cols.Value;
-            public int Rows => (int)_rows.Value;
-            public int Mapping => _mapping.SelectedIndex;
-            public bool CropUnion => _crop.Checked;
-            public bool RemoveBackground => _removeBg.Checked;
         }
     }
 }

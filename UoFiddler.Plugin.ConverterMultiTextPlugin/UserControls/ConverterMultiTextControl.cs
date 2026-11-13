@@ -18,7 +18,7 @@ using System.Windows.Forms;
 using Ultima;
 using UoFiddler.Controls.Forms;
 using UoFiddler.Plugin.ConverterMultiTextPlugin.Forms;
-using UoFiddler.Plugin.ConverterMultiTextPlugin.UoStudio;
+using UoFiddler.Plugin.ConverterMultiTextPlugin.Class.UoStudio;
 
 namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
 {

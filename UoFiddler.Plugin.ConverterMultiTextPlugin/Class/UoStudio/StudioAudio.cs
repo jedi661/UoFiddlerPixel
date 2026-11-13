@@ -14,7 +14,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
-namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UoStudio
+namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Class.UoStudio
 {
     /// <summary>Mono audio clip as float samples (-1..1).</summary>
     public sealed class AudioClip
