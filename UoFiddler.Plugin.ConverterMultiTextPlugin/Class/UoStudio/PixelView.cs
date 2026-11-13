@@ -83,9 +83,34 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Class.UoStudio
         /// <summary>Optional extra painting on top of the image (in image coordinates * zoom).</summary>
         public event Action<Graphics, Rectangle> PaintOverlay;
 
+        /// <summary>
+        /// Size of the image, or empty if there is none or it was already disposed
+        /// (a disposed GDI+ image throws "Parameter is not valid" on Width/Height).
+        /// </summary>
+        private Size ImageSize
+        {
+            get
+            {
+                if (_image == null)
+                {
+                    return Size.Empty;
+                }
+                try
+                {
+                    return _image.Size;
+                }
+                catch (ArgumentException)
+                {
+                    _image = null;
+                    return Size.Empty;
+                }
+            }
+        }
+
         private void UpdateScrollSize()
         {
-            AutoScrollMinSize = _image == null ? Size.Empty : new Size(_image.Width * _zoom, _image.Height * _zoom);
+            Size s = ImageSize;
+            AutoScrollMinSize = s.IsEmpty ? Size.Empty : new Size(s.Width * _zoom, s.Height * _zoom);
         }
 
         [Browsable(false)]
@@ -93,11 +118,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Class.UoStudio
         {
             get
             {
-                if (_image == null)
+                Size s = ImageSize;
+                if (s.IsEmpty)
                 {
                     return Rectangle.Empty;
                 }
-                int w = _image.Width * _zoom, h = _image.Height * _zoom;
+                int w = s.Width * _zoom, h = s.Height * _zoom;
                 int x = Math.Max(0, (ClientSize.Width - w) / 2) + AutoScrollPosition.X;
                 int y = Math.Max(0, (ClientSize.Height - h) / 2) + AutoScrollPosition.Y;
                 return new Rectangle(x, y, w, h);
@@ -117,7 +143,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Class.UoStudio
                 StudioImaging.DrawChecker(g, ClientRectangle, 10);
             }
 
-            if (_image != null)
+            if (!ImageSize.IsEmpty)
             {
                 Rectangle r = ImageRectangle;
                 g.InterpolationMode = InterpolationMode.NearestNeighbor;

@@ -203,6 +203,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 
         private void SetSource(Bitmap bmp)
         {
+            // detach the view first, then free the old image
+            viewSource.Image = null;
             _source?.Dispose();
             _source = bmp;
             // background colour guess: upper left pixel
@@ -299,9 +301,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                     img = Step(img, b => StudioImaging.ApplyHue(b, hue, !chkGray.Checked));
                 }
 
-                _result?.Dispose();
+                Bitmap oldResult = _result;
                 _result = img;
                 viewResult.Image = _result;
+                oldResult?.Dispose();
                 lblStatus.Text = $"Ergebnis: {_result.Width}x{_result.Height} Pixel, {StudioImaging.CountColors(_result)} Farben" +
                                  (hueId > 0 ? $" (Hue {hueId} nur Vorschau)" : string.Empty);
             }
@@ -538,6 +541,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         protected override void OnFormClosed(FormClosedEventArgs e)
         {
             timerDebounce.Stop();
+            viewSource.Image = null;
+            viewResult.Image = null;
             _source?.Dispose();
             _result?.Dispose();
             base.OnFormClosed(e);

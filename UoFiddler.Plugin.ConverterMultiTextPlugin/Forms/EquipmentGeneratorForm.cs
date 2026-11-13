@@ -46,6 +46,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private Point _dragOffset;
         private bool _dragging;
         private bool _initialized;
+        private bool _placing;
 
         public EquipmentGeneratorForm()
         {
@@ -61,7 +62,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 
         private void Compose_Changed(object sender, EventArgs e)
         {
-            if (_initialized)
+            if (_initialized && !_placing)
             {
                 Compose();
             }
@@ -100,6 +101,24 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private void ViewPaperdoll_MouseUp(object sender, MouseEventArgs e)
         {
             _dragging = false;
+        }
+
+        private void BtnAutoPlace_Click(object sender, EventArgs e)
+        {
+            if (_item == null)
+            {
+                StudioUi.Info(this, "Bitte zuerst ein Item-Bild laden.");
+                return;
+            }
+            AutoPlace();
+        }
+
+        private void CbLayer_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (_initialized && chkAutoPlace.Checked && _item != null)
+            {
+                AutoPlace();
+            }
         }
 
         private void BtnLoadImage_Click(object sender, EventArgs e) => LoadItemFile();
@@ -145,7 +164,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 int id = (int)numBodyGump.Value;
                 if (Gumps.IsValidIndex(id))
                 {
-                    using Bitmap g = Gumps.GetGump(id);
+                    Bitmap g = Gumps.GetGump(id);
                     _body = StudioImaging.To32(g);
                 }
             }
@@ -167,7 +186,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             {
                 using Bitmap b = StudioImaging.LoadImage(dlg.FileName);
                 SetItem(StudioImaging.AutoCrop(b));
-                lblStatus.Text = "Bild geladen: " + dlg.FileName;
+                AutoPlace();
+                lblStatus.Text = "Bild geladen und nach Layer platziert: " + dlg.FileName;
             }
             catch (Exception ex)
             {
@@ -189,13 +209,13 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                     StudioUi.Error(this, $"Art-Item 0x{id:X4} existiert nicht.");
                     return;
                 }
-                using Bitmap a = Art.GetStatic(id);
+                Bitmap a = Art.GetStatic(id);
                 using Bitmap b = StudioImaging.To32(a);
                 SetItem(StudioImaging.AutoCrop(b));
                 txtItemId.Text = $"0x{id:X4}";
                 ReadTileData();
-                numScale.Value = 150;
-                lblStatus.Text = $"Art 0x{id:X4} geladen. Tipp: Größe und Drehung an die Figur anpassen.";
+                AutoPlace();
+                lblStatus.Text = $"Art 0x{id:X4} geladen und nach Layer \"{cbLayer.Text}\" platziert. Mit Maus / X / Y / Größe feinjustieren.";
             }
             catch (Exception ex)
             {
@@ -213,7 +233,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                     StudioUi.Info(this, $"Gump {gid} existiert nicht.");
                     return;
                 }
-                using Bitmap g = Gumps.GetGump(gid);
+                Bitmap g = Gumps.GetGump(gid);
                 using Bitmap b = StudioImaging.To32(g);
                 // gump is positioned at 0/0 relative to the body -> crop and remember offset
                 Rectangle r = OpaqueBounds(b);
@@ -289,6 +309,85 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             {
                 // tiledata not loaded
             }
+        }
+
+        #endregion
+
+        #region Auto placement
+
+        /// <summary>
+        /// Target area of each layer on the paperdoll body, as fractions of the visible body
+        /// (left, top, right, bottom). 0/0 = top left of the figure, 1/1 = bottom right.
+        /// </summary>
+        private static RectangleF LayerArea(int layer)
+        {
+            switch (layer)
+            {
+                case 1: return RectangleF.FromLTRB(-0.05f, 0.25f, 0.38f, 0.70f);   // one handed weapon (right hand = left side)
+                case 2: return RectangleF.FromLTRB(0.60f, 0.25f, 1.05f, 0.65f);    // two handed / shield (left hand)
+                case 3: return RectangleF.FromLTRB(0.28f, 0.86f, 0.72f, 1.00f);    // shoes
+                case 4:
+                case 24: return RectangleF.FromLTRB(0.28f, 0.44f, 0.72f, 0.90f);   // pants / inner legs
+                case 23: return RectangleF.FromLTRB(0.24f, 0.42f, 0.76f, 0.88f);   // outer legs (skirt)
+                case 5:
+                case 13:
+                case 17: return RectangleF.FromLTRB(0.22f, 0.13f, 0.78f, 0.47f);   // shirt / chest / tunic
+                case 22: return RectangleF.FromLTRB(0.15f, 0.12f, 0.85f, 0.95f);   // robe
+                case 20: return RectangleF.FromLTRB(0.12f, 0.10f, 0.88f, 0.90f);   // cloak
+                case 19: return RectangleF.FromLTRB(0.10f, 0.14f, 0.90f, 0.42f);   // arms
+                case 7: return RectangleF.FromLTRB(0.02f, 0.38f, 0.98f, 0.52f);    // gloves
+                case 6:
+                case 11: return RectangleF.FromLTRB(0.30f, -0.02f, 0.70f, 0.12f);  // helm / hair
+                case 16: return RectangleF.FromLTRB(0.38f, 0.07f, 0.62f, 0.15f);   // beard
+                case 15:
+                case 18: return RectangleF.FromLTRB(0.40f, 0.04f, 0.60f, 0.10f);   // face / earrings
+                case 10: return RectangleF.FromLTRB(0.38f, 0.10f, 0.62f, 0.18f);   // necklace
+                case 12: return RectangleF.FromLTRB(0.30f, 0.40f, 0.70f, 0.50f);   // belt / apron
+                case 8:
+                case 14: return RectangleF.FromLTRB(0.04f, 0.42f, 0.20f, 0.50f);   // ring / bracelet
+                case 9: return RectangleF.FromLTRB(0.65f, 0.30f, 0.85f, 0.45f);    // talisman
+                case 21: return RectangleF.FromLTRB(0.55f, 0.15f, 0.95f, 0.45f);   // backpack
+                default: return RectangleF.FromLTRB(0.22f, 0.13f, 0.78f, 0.47f);
+            }
+        }
+
+        /// <summary>
+        /// Scales and moves the item into the area of the selected layer on the body
+        /// (rotation and mirroring stay as they are).
+        /// </summary>
+        private void AutoPlace()
+        {
+            if (_item == null)
+            {
+                return;
+            }
+
+            // visible bounds of the body gump (fallback: typical paperdoll size)
+            Rectangle body = _body != null ? OpaqueBounds(_body) : new Rectangle(20, 10, 180, 230);
+            RectangleF f = LayerArea(cbLayer.SelectedIndex);
+            var area = new RectangleF(body.X + (f.X * body.Width), body.Y + (f.Y * body.Height), f.Width * body.Width, f.Height * body.Height);
+
+            float scale = Math.Min(area.Width / _item.Width, area.Height / _item.Height);
+            scale = Math.Max(0.1f, Math.Min(8f, scale));
+
+            _placing = true;
+            try
+            {
+                numScale.Value = Math.Max(numScale.Minimum, Math.Min(numScale.Maximum, (decimal)Math.Round(scale * 100)));
+                // size after scaling (rotation is applied around the centre)
+                using (Bitmap t = TransformItem())
+                {
+                    int ox = (int)Math.Round(area.X + ((area.Width - t.Width) / 2f));
+                    int oy = (int)Math.Round(area.Y + ((area.Height - t.Height) / 2f));
+                    numOffX.Value = Math.Max(numOffX.Minimum, Math.Min(numOffX.Maximum, ox));
+                    numOffY.Value = Math.Max(numOffY.Minimum, Math.Min(numOffY.Maximum, oy));
+                }
+            }
+            finally
+            {
+                _placing = false;
+            }
+            Compose();
         }
 
         #endregion

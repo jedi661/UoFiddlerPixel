@@ -132,7 +132,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 int id = (int)numGroundId.Value;
                 if (Art.IsValidLand(id))
                 {
-                    using Bitmap land = Art.GetLand(id);
+                    Bitmap land = Art.GetLand(id);
                     _ground = StudioImaging.To32(land);
                 }
             }
@@ -218,7 +218,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 {
                     if (Art.IsValidStatic(a))
                     {
-                        using Bitmap b = Art.GetStatic(a);
+                        Bitmap b = Art.GetStatic(a);
                         _raw.Add(StudioImaging.To32(b));
                     }
                 }
