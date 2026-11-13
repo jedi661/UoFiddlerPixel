@@ -52,6 +52,9 @@ namespace UoFiddler.Plugin.DesignStudio.GumpStudio
             listElements.Columns.Add("Page", 40);
             listElements.Columns.Add("X, Y", 70);
             listElements.Columns.Add("ID", 80);
+            listElements.Columns.Add("Group / list", 90);
+            tsRefOpacity.SelectedIndex = 1;
+            tsLanguage.SelectedIndex = 0;
             BuildNewMenu();
             _codeTimer.Tick += (s, e) =>
             {
@@ -75,6 +78,12 @@ namespace UoFiddler.Plugin.DesignStudio.GumpStudio
         /// <summary>Takes the current state into the undo history (call after every change).</summary>
         private void Commit(string what = null)
         {
+            // rows of lists follow their template row
+            GumpLists.Rebuild(Design);
+            if (Selected.Any(x => !Design.Elements.Contains(x)))
+            {
+                gumpCanvas.Select(Selected.Where(Design.Elements.Contains).ToList());
+            }
             string now = Json();
             if (now == _committed)
             {
@@ -139,8 +148,19 @@ namespace UoFiddler.Plugin.DesignStudio.GumpStudio
             {
                 return;
             }
+            GumpLists.Rebuild(d);
             gumpCanvas.Design = d;
             gumpCanvas.Page = 1;
+            gumpCanvas.ReferenceDesign = null;
+            gumpCanvas.ReferenceImage = null;
+            _imported = null;
+            listTestLog.Items.Clear();
+            foreach (string t in d.TestLog ?? new List<string>())
+            {
+                listTestLog.Items.Add(t);
+            }
+            chkTestLogInScript.Checked = d.IncludeTestLog;
+            tsWriteBack.Enabled = !string.IsNullOrEmpty(d.SourceFile) && File.Exists(d.SourceFile);
             _undo.Clear();
             _redo.Clear();
             _committed = Json();
@@ -389,7 +409,11 @@ namespace UoFiddler.Plugin.DesignStudio.GumpStudio
                         return;
                     }
                     _dirty = false;
+                    f.Result.SourceFile = file;
+                    f.Result.SourceHash = GumpScriptWriter.Hash(code);
+                    f.Result.SourceResolve = f.Resolved;
                     NewDesign(f.Result, Path.GetFileName(file), true);
+                    _imported = f.Result.Clone();
                     SetMessage($"Imported {f.Result.Elements.Count} elements of {f.Result.ClassName} from {Path.GetFileName(file)}"
                                + (f.Hints.Count > 0 ? $" – {f.Hints.Count} hint(s) below the script." : "."));
                     foreach (string w in f.Hints.Take(100))
@@ -504,6 +528,7 @@ namespace UoFiddler.Plugin.DesignStudio.GumpStudio
             }
             int x = template.Elements.Min(el => el.X), y = template.Elements.Min(el => el.Y);
             List<GumpElement> list = GumpTemplateLibrary.ForInsert(template, Design, x, y, NewElementPage);
+            Detach(list);
             Design.Elements.AddRange(list);
             gumpCanvas.Select(list);
             Commit($"\"{name}\" inserted: {list.Count} element(s) – drag them where you want them.");
@@ -653,6 +678,7 @@ namespace UoFiddler.Plugin.DesignStudio.GumpStudio
                     SetMessage("Nothing to paste.");
                     return;
                 }
+                Detach(list);
                 foreach (GumpElement el in list)
                 {
                     el.X += 10;
@@ -685,6 +711,7 @@ namespace UoFiddler.Plugin.DesignStudio.GumpStudio
                 c.Y += 10;
                 return c;
             }).ToList();
+            Detach(copies);
             Design.Elements.AddRange(copies);
             gumpCanvas.Select(copies);
             Commit($"{copies.Count} element(s) duplicated (IDs stay – change them or use \"Renumber IDs\").");
@@ -970,7 +997,9 @@ namespace UoFiddler.Plugin.DesignStudio.GumpStudio
                     ElementType.AlphaRegion or ElementType.Html => string.Empty,
                     _ => el.GumpId.ToString(CultureInfo.InvariantCulture)
                 };
-                var item = new ListViewItem(new[] { i.ToString(CultureInfo.InvariantCulture), el.Type.ToString(), el.Name, el.Page.ToString(CultureInfo.InvariantCulture), $"{el.X}, {el.Y}", id }) { Tag = el };
+                GumpListSpec spec = GumpLists.SpecOf(Design, el);
+                string group = spec != null ? $"{spec.Name} row {(el.ListRow < 0 ? "–" : (el.ListRow + 1).ToString(CultureInfo.InvariantCulture))}" : el.DesignGroup;
+                var item = new ListViewItem(new[] { i.ToString(CultureInfo.InvariantCulture), el.Type.ToString(), el.Name, el.Page.ToString(CultureInfo.InvariantCulture), $"{el.X}, {el.Y}", id, group }) { Tag = el };
                 if (el.Hidden)
                 {
                     item.ForeColor = Color.Gray;
@@ -1187,6 +1216,379 @@ namespace UoFiddler.Plugin.DesignStudio.GumpStudio
             return c is TextBoxBase || c is ComboBox || c is UpDownBase || c?.Parent is PropertyGrid || c?.GetType().Name.Contains("GridView") == true || c?.Parent is GumpCanvas;
         }
 
+        #region Gallery, write back, lists, themes, graphics, compare, language, groups, test log
+
+        private GumpDesign _imported;
+
+        /// <summary>Copies / pasted elements are free elements: no script position, no list, own groups.</summary>
+        private static void Detach(List<GumpElement> list)
+        {
+            var groups = new Dictionary<string, string>();
+            foreach (GumpElement el in list)
+            {
+                el.Source = string.Empty;
+                if (!string.IsNullOrEmpty(el.ListId))
+                {
+                    el.ListId = string.Empty;
+                    el.ListRow = 0;
+                    el.ListColumn = -1;
+                    el.ListSlot = 0;
+                    el.Locked = false;
+                }
+                if (!string.IsNullOrEmpty(el.DesignGroup))
+                {
+                    if (!groups.TryGetValue(el.DesignGroup, out string g))
+                    {
+                        groups[el.DesignGroup] = g = "Group" + Guid.NewGuid().ToString("N").Substring(0, 4);
+                    }
+                    el.DesignGroup = g;
+                }
+            }
+        }
+
+        private void TsGallery_Click(object sender, EventArgs e)
+        {
+            using (var f = new GumpGalleryForm())
+            {
+                if (f.ShowDialog(this) != DialogResult.OK || f.Chosen == null || !ConfirmDiscard())
+                {
+                    return;
+                }
+                GalleryEntry entry = f.Chosen;
+                GumpDesign d = entry.Design;
+                d.SourceFile = entry.File;
+                d.SourceHash = GumpScriptWriter.Hash(entry.Code);
+                d.SourceResolve = entry.Resolve;
+                _dirty = false;
+                NewDesign(d, entry.ClassName, true);
+                _imported = d.Clone();
+                SetMessage($"{entry.ClassName} from {entry.File} – change it and use \"Write back…\" to put the changes into the script.");
+                foreach (string w in entry.Hints.Take(100))
+                {
+                    listProblems.Items.Add("Import: " + w);
+                }
+            }
+        }
+
+        private void TsWriteBack_Click(object sender, EventArgs e)
+        {
+            string file = Design.SourceFile;
+            if (string.IsNullOrEmpty(file) || !File.Exists(file))
+            {
+                MessageBox.Show(this, "This gump was not imported from a script (or the file is gone). Use \"Import ServUO…\" or the script gallery first.\n\n"
+                                      + "DE: Dieses Gump wurde nicht aus einem Skript eingelesen.", "Gump Studio", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+            try
+            {
+                string code = File.ReadAllText(file);
+                ScriptWritePlan plan = GumpScriptWriter.Plan(Design, code, GumpImporter.FolderResolver(file));
+                using (var f = new GumpWriteBackForm(plan, file))
+                {
+                    if (f.ShowDialog(this) != DialogResult.OK)
+                    {
+                        return;
+                    }
+                    SetMessage($"{plan.Changes.Count} line(s) written into {Path.GetFileName(file)}" + (plan.Problems.Count > 0 ? $" – {plan.Problems.Count} thing(s) to change by hand." : "."));
+                    if (f.Reimport)
+                    {
+                        string newCode = File.ReadAllText(file);
+                        GumpDesign d = GumpImporter.Import(newCode, null, Design.ClassName, Design.SourceResolve ? GumpImporter.FolderResolver(file) : null);
+                        d.SourceFile = file;
+                        d.SourceHash = GumpScriptWriter.Hash(newCode);
+                        d.SourceResolve = Design.SourceResolve;
+                        _dirty = false;
+                        NewDesign(d, Path.GetFileName(file), true);
+                        _imported = d.Clone();
+                    }
+                    else
+                    {
+                        tsWriteBack.Enabled = false;
+                        Design.SourceHash = "changed";
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(this, "Write back failed:\n" + ex.Message, "Gump Studio", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void TsList_Click(object sender, EventArgs e)
+        {
+            GumpListSpec edit = Selected.Select(x => GumpLists.SpecOf(Design, x)).FirstOrDefault(x => x != null);
+            using (var f = new GumpListForm(Design, edit, Math.Max(1, gumpCanvas.Page)))
+            {
+                if (f.ShowDialog(this) != DialogResult.OK || f.Result == null)
+                {
+                    return;
+                }
+                GumpListSpec spec = f.Result;
+                if (edit != null && edit.Columns.Count == spec.Columns.Count && edit.SelectButton == spec.SelectButton)
+                {
+                    // keep the template row (you may have moved / changed it), take the new settings and texts
+                    int dx = spec.X - edit.X, dy = spec.Y - edit.Y;
+                    foreach (GumpElement t in GumpLists.Template(Design, edit))
+                    {
+                        t.X += dx;
+                        t.Y += dy;
+                    }
+                    edit.Name = spec.Name;
+                    edit.Rows = spec.Rows;
+                    edit.RowsPerPage = spec.RowsPerPage;
+                    edit.RowHeight = spec.RowHeight;
+                    edit.FirstPage = spec.FirstPage;
+                    edit.ButtonBase = edit.SwitchBase = edit.EntryBase = spec.ButtonBase;
+                    edit.NavY = spec.NavY;
+                    edit.NavBackX = spec.NavBackX;
+                    edit.NavNextX = spec.NavNextX;
+                    for (int c = 0; c < spec.Columns.Count; c++)
+                    {
+                        edit.Columns[c].Texts = spec.Columns[c].Texts;
+                        edit.Columns[c].Header = spec.Columns[c].Header;
+                    }
+                    Commit($"List \"{edit.Name}\" changed: {edit.Rows} rows.");
+                    return;
+                }
+                if (edit != null)
+                {
+                    GumpLists.Remove(Design, edit);
+                }
+                GumpLists.Create(Design, spec);
+                gumpCanvas.Page = Math.Max(1, spec.FirstPage);
+                gumpCanvas.Select(GumpLists.Template(Design, spec));
+                Commit($"List \"{spec.Name}\": {spec.Rows} rows, {spec.PageCount} page(s). Move / change row 1 – all rows follow; the script gets a for loop.");
+            }
+        }
+
+        private void TsThemes_Click(object sender, EventArgs e)
+        {
+            using (var f = new GumpThemeForm(Design))
+            {
+                if (f.ShowDialog(this) != DialogResult.OK || f.Theme == null)
+                {
+                    return;
+                }
+                int n = GumpThemes.Apply(Design, f.Theme, f.Frames, f.Buttons, f.Switches, f.Texts);
+                Commit($"Theme \"{f.Theme.Name}\": {n} element(s) changed.");
+            }
+        }
+
+        private void TsArt_Click(object sender, EventArgs e)
+        {
+            using (var f = new GumpArtForm())
+            {
+                if (f.ShowDialog(this) != DialogResult.OK || f.InsertedId < 0)
+                {
+                    return;
+                }
+                GumpElement el = f.InsertedFrame
+                    ? GumpDesign.Create(ElementType.Background, 20, 20)
+                    : GumpDesign.Create(ElementType.Image, 20, 20);
+                el.GumpId = f.InsertedId;
+                el.Page = NewElementPage;
+                Design.Elements.Add(el);
+                gumpCanvas.Select(new[] { el });
+                FillBrowser();
+                Commit(f.InsertedFrame ? $"Own frame 0x{f.InsertedId:X} added as background." : $"Own picture 0x{f.InsertedId:X} added as image.");
+            }
+        }
+
+        private void TsReference_DropDownOpening(object sender, EventArgs e)
+        {
+            miRefImported.Enabled = _imported != null;
+            miRefClear.Enabled = gumpCanvas.HasReference;
+            miRefTint.Checked = gumpCanvas.ReferenceTint;
+        }
+
+        private void MiRefCurrent_Click(object sender, EventArgs e)
+        {
+            gumpCanvas.ReferenceImage = null;
+            gumpCanvas.ReferenceDesign = Design.Clone();
+            SetMessage("The current state is shown as reference – change the gump and compare (Compare ▾ → Remove reference).");
+        }
+
+        private void MiRefImported_Click(object sender, EventArgs e)
+        {
+            if (_imported != null)
+            {
+                gumpCanvas.ReferenceImage = null;
+                gumpCanvas.ReferenceDesign = _imported.Clone();
+                SetMessage("The imported original is shown as reference.");
+            }
+        }
+
+        private void MiRefPicture_Click(object sender, EventArgs e)
+        {
+            using (var d = new OpenFileDialog { Filter = "Pictures (*.png;*.bmp;*.jpg;*.gif)|*.png;*.bmp;*.jpg;*.jpeg;*.gif|All files|*.*" })
+            {
+                if (d.ShowDialog(this) == DialogResult.OK)
+                {
+                    LoadReferencePicture(d.FileName);
+                }
+            }
+        }
+
+        private void LoadReferencePicture(string file)
+        {
+            try
+            {
+                using (var b = new Bitmap(file))
+                {
+                    gumpCanvas.ReferenceDesign = null;
+                    gumpCanvas.ReferenceImage = new Bitmap(b);
+                }
+                SetMessage("Picture shown as reference – rebuild the gump on top of it (e.g. from a screenshot).");
+            }
+            catch (Exception ex)
+            {
+                SetMessage("Picture not loaded: " + ex.Message);
+            }
+        }
+
+        private void MiRefTint_Click(object sender, EventArgs e)
+        {
+            gumpCanvas.ReferenceTint = miRefTint.Checked;
+            gumpCanvas.Invalidate();
+        }
+
+        private void MiRefClear_Click(object sender, EventArgs e)
+        {
+            gumpCanvas.ReferenceDesign = null;
+            gumpCanvas.ReferenceImage = null;
+        }
+
+        private void TsRefOpacity_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            gumpCanvas.ReferenceOpacity = new[] { 25, 50, 75, 100 }[Math.Max(0, tsRefOpacity.SelectedIndex)];
+            gumpCanvas.Invalidate();
+        }
+
+        private void TsLanguage_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            GumpRenderer.SecondLanguage = tsLanguage.SelectedIndex == 1;
+            gumpCanvas.Invalidate();
+            if (GumpRenderer.SecondLanguage)
+            {
+                SetMessage($"Second language ({Design.SecondLanguage}): the work area shows and edits TextDe – empty TextDe shows Text.");
+            }
+        }
+
+        private void TsGuides_Click(object sender, EventArgs e) => gumpCanvas.Guides = tsGuides.Checked;
+
+        private void MiGroup_Click(object sender, EventArgs e)
+        {
+            if (Selected.Count < 2)
+            {
+                SetMessage("Select two or more elements to group them.");
+                return;
+            }
+            int n = 1;
+            while (Design.Elements.Any(x => x.DesignGroup == "Group" + n))
+            {
+                n++;
+            }
+            foreach (GumpElement el in Selected)
+            {
+                el.DesignGroup = "Group" + n;
+            }
+            Commit($"Group{n}: {Selected.Count} elements – a click selects all, Alt + click one.");
+        }
+
+        private void MiUngroup_Click(object sender, EventArgs e)
+        {
+            if (Selected.All(x => string.IsNullOrEmpty(x.DesignGroup)))
+            {
+                return;
+            }
+            foreach (GumpElement el in Selected)
+            {
+                el.DesignGroup = string.Empty;
+            }
+            Commit("Group removed.");
+        }
+
+        private void GumpCanvas_TestLogged(object sender, string line)
+        {
+            Design.TestLog ??= new List<string>();
+            Design.TestLog.Add(line);
+            if (Design.TestLog.Count > 200)
+            {
+                Design.TestLog.RemoveAt(0);
+            }
+            listTestLog.Items.Add(line);
+            listTestLog.TopIndex = Math.Max(0, listTestLog.Items.Count - 1);
+            if (Design.IncludeTestLog)
+            {
+                _codeTimer.Stop();
+                _codeTimer.Start();
+            }
+        }
+
+        private void BtnClearTestLog_Click(object sender, EventArgs e)
+        {
+            Design.TestLog?.Clear();
+            listTestLog.Items.Clear();
+            _codeTimer.Stop();
+            _codeTimer.Start();
+        }
+
+        private void ChkTestLogInScript_CheckedChanged(object sender, EventArgs e)
+        {
+            if (Design.IncludeTestLog != chkTestLogInScript.Checked)
+            {
+                Design.IncludeTestLog = chkTestLogInScript.Checked;
+                Commit();
+            }
+        }
+
+        /// <summary>Files dropped on the work area: .cs = import, .gump.json = open, pictures = reference.</summary>
+        private void GumpCanvas_FilesDropped(object sender, string[] files)
+        {
+            string file = files.FirstOrDefault();
+            if (file == null)
+            {
+                return;
+            }
+            string ext = Path.GetExtension(file).ToLowerInvariant();
+            if (ext == ".cs")
+            {
+                if (ConfirmDiscard())
+                {
+                    ImportScript(file);
+                }
+            }
+            else if (ext == ".json")
+            {
+                if (!ConfirmDiscard())
+                {
+                    return;
+                }
+                try
+                {
+                    GumpDesign design = GumpDesign.FromJson(File.ReadAllText(file));
+                    _dirty = false;
+                    NewDesign(design, Path.GetFileName(file), true);
+                    _file = file;
+                    UpdateTitle();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(this, "The project could not be read:\n" + ex.Message, "Gump Studio", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+            else if (ext == ".png" || ext == ".bmp" || ext == ".jpg" || ext == ".jpeg" || ext == ".gif")
+            {
+                LoadReferencePicture(file);
+            }
+            else
+            {
+                SetMessage("Drop .cs scripts, .gump.json projects or pictures (as reference).");
+            }
+        }
+
+        #endregion
+
         protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
         {
             switch (keyData)
@@ -1196,6 +1598,14 @@ namespace UoFiddler.Plugin.DesignStudio.GumpStudio
                 case Keys.Control | Keys.S: TsSave_Click(this, EventArgs.Empty); return true;
                 case Keys.Control | Keys.O: TsOpen_Click(this, EventArgs.Empty); return true;
                 case Keys.Control | Keys.T: MiTemplateLibrary_Click(this, EventArgs.Empty); return true;
+            }
+            if (!TextInputFocused())
+            {
+                switch (keyData)
+                {
+                    case Keys.Control | Keys.G: MiGroup_Click(this, EventArgs.Empty); return true;
+                    case Keys.Control | Keys.Shift | Keys.G: MiUngroup_Click(this, EventArgs.Empty); return true;
+                }
             }
             if (!TextInputFocused())
             {

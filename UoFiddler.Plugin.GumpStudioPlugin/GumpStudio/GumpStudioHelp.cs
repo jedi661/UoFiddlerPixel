@@ -32,6 +32,58 @@ TEMPLATES (Templates ▾, Ctrl+T)
     Gump Studio projects or ServUO scripts (.cs – every gump class of the file becomes a template).
   - The folder can be copied to other PCs or shared with your team.
 
+SCRIPT GALLERY (second tool bar)
+• Choose your Scripts folder → Scan: every gump class gets a picture. Search by class, command or file.
+• Open in the studio (double click) – or select several and ""Add to templates"" (category).
+
+WRITE BACK
+• After an import (or from the gallery) change the gump, then ""Write back…"": only the changed numbers / texts of the Add… calls are
+  replaced in the original script – logic, comments, formatting stay. Values from code are adjusted (x + 20 → x + 25), a loop moved as a
+  whole changes its numbers once, deleted elements are commented out, new elements are added after the last Add… call of their page.
+• You see every changed line (old / new) before writing; a .bak copy is made. What cannot be written is listed (e.g. texts from code).
+• ""Compare ▾ → Imported original"" shows the original half transparent over your changes.
+
+LISTS / TABLES (List / table…)
+• Columns (Header|width|hue), rows (one per line, columns with ; or Tab – paste from Excel), rows per page, button per row.
+• Row 1 is the template: move or change it – all rows and the page buttons follow. The script gets a for loop with string arrays,
+  OnResponse gets the row (ButtonID − base). Select an element of the list and press ""List / table…"" again to change it.
+
+THEMES (Themes…)
+• Built-in looks (gray, dark stone, marble, parchment, golden, black glass) or your own (GumpThemes folder). Preview shows YOUR gump.
+• Changes frames, button set (OK / cancel / next / back), check boxes / radios, text and HTML colors. ""From gump"" makes a theme of your gump.
+
+OWN GRAPHICS (Own graphics…)
+• Picture → gump: a PNG / BMP becomes a gump ID (next free ID is found), black = transparent.
+• Frame generator: a picture of a box is cut into the 9 parts of AddBackground (margins with lines, preview in any size).
+• Both are written into the gump file in memory – save it in UoFiddler (Gumps tab) to keep them. The new graphic is added to the gump.
+
+COMPARE (Compare ▾)
+• Current state / imported original / a picture (e.g. a screenshot of a gump to rebuild) half transparent over the work area,
+  red tint, opacity 25 … 100 %. Pictures can also be dropped on the work area.
+
+BUTTON ACTIONS (property ""Action"" of a reply button)
+• Close, Reopen, OpenGump (class), Teleport (""x y z map""), GiveItem (e.g. Gold(100)), RunCommand, Message, CustomCode
+  (+ ""Action reopen""). The script gets the code in its case of OnResponse.
+
+TWO LANGUAGES
+• TextDe of labels / HTML / text entries = text for players with client language DEU (gump setting ""SecondLanguage"").
+  The script chooses with bool de = from.Language == ""DEU"". Tool bar ""Language"" shows and edits the second texts.
+
+GROUPS AND GUIDES
+• Arrange ▾ → Group (Ctrl+G): a click selects the whole group, Alt + click one element. Ungroup: Ctrl+Shift+G.
+• Guides: while dragging, edges and centers snap to other elements (magenta lines), distances to the neighbours are shown. Alt = off.
+
+TEST LOG
+• Every click in the test (F5) is listed in the tab ""Test log""; ""Write into the script"" puts it as comment above OnResponse.
+
+MODERNUO
+• Script target ""ModernUO – DynamicGump"": BuildLayout(ref DynamicGumpBuilder builder) with builder.Add…, Configure() for the command,
+  Singleton, SetNoClose …, OnResponse(NetState, in RelayInfo). ModernUO scripts (builder.Add…, tuples, primary constructors) can be imported.
+
+CHECKS (below the script)
+• Besides wrong IDs also: labels that run over their background, HTML that does not fit (no scrollbar), text entries without length
+  limit, gumps bigger than 800 × 600, item art above 0x3FFF, features only newer clients show, button actions without target.
+
 IMPORT (ServUO / RunUO / ModernUO scripts)
 • The import window shows the gump before it is taken: gump classes of the file (left), picture per page, hints.
 • The constructor is really run: variables (int y = 50; y += 25; line++), arrays, for / foreach / while loops, if / else, switch,
@@ -78,7 +130,7 @@ SCRIPT
 • Copy script / Save .cs (e.g. into ServUO\Scripts\Custom). PNG saves a picture of the page.
 
 KEYS
-Ctrl+O open · Ctrl+S save · Ctrl+T template library · Ctrl+Z / Y undo / redo · Ctrl+C / V / D copy / paste / duplicate · Del delete · Ctrl+A all ·
+Ctrl+O open · Ctrl+S save · Ctrl+T template library · Ctrl+G / Ctrl+Shift+G group / ungroup · Ctrl+Z / Y undo / redo · Ctrl+C / V / D copy / paste / duplicate · Del delete · Ctrl+A all ·
 Esc nothing selected · arrows move · PageUp / PageDown pages · Ctrl + mouse wheel zoom · F5 test · F1 help";
 
         public const string German =
@@ -106,6 +158,58 @@ VORLAGEN (Templates ▾, Strg+T)
   - Vorlage auf eine Kategorie ziehen = verschieben. „Add files…“ oder Dateien aus dem Explorer auf die Liste ziehen:
     Gump-Studio-Projekte oder ServUO-Skripte (.cs – jede Gump-Klasse der Datei wird eine Vorlage).
   - Den Ordner kannst du auf andere PCs kopieren oder mit deinem Team teilen.
+
+SKRIPT-GALERIE (zweite Werkzeugleiste)
+• Scripts-Ordner wählen → Scan: jede Gump-Klasse bekommt ein Bild. Suche nach Klasse, Befehl oder Datei.
+• Im Studio öffnen (Doppelklick) – oder mehrere wählen und „Add to templates“ (Kategorie).
+
+ZURÜCKSCHREIBEN (Write back…)
+• Nach dem Einlesen (oder aus der Galerie) das Gump ändern, dann „Write back…“: nur die geänderten Zahlen / Texte der Add…-Aufrufe werden
+  im Original-Skript ersetzt – Logik, Kommentare, Formatierung bleiben. Werte aus Code werden angepasst (x + 20 → x + 25), eine als Ganzes
+  verschobene Schleife ändert ihre Zahlen einmal, gelöschte Elemente werden auskommentiert, neue nach dem letzten Add… ihrer Seite eingefügt.
+• Vor dem Schreiben siehst du jede geänderte Zeile (alt / neu); eine .bak-Kopie wird angelegt. Was nicht geht, steht in der Liste (z. B. Texte aus Code).
+• „Compare ▾ → Imported original“ zeigt das Original halb durchsichtig über deinen Änderungen.
+
+LISTEN / TABELLEN (List / table…)
+• Spalten (Überschrift|Breite|Farbe), Zeilen (eine pro Zeile, Spalten mit ; oder Tab – Einfügen aus Excel geht), Zeilen pro Seite, Button pro Zeile.
+• Zeile 1 ist die Vorlage: verschieben oder ändern – alle Zeilen und die Blätter-Buttons folgen. Das Skript bekommt eine for-Schleife mit
+  String-Arrays, OnResponse die Zeile (ButtonID − Basis). Ein Element der Liste wählen und erneut „List / table…“ = Liste ändern.
+
+THEMEN (Themes…)
+• Mitgelieferte Looks (grau, dunkler Stein, Marmor, Pergament, golden, schwarzes Glas) oder eigene (Ordner GumpThemes). Die Vorschau zeigt DEIN Gump.
+• Ändert Rahmen, Button-Satz (OK / Abbrechen / weiter / zurück), Checkboxen / Radios, Text- und HTML-Farben. „From gump“ macht ein Thema aus deinem Gump.
+
+EIGENE GRAFIKEN (Own graphics…)
+• Bild → Gump: ein PNG / BMP wird eine Gump-ID (nächste freie ID wird gesucht), Schwarz = durchsichtig.
+• Rahmen-Generator: ein Bild eines Kastens wird in die 9 Teile von AddBackground geschnitten (Ränder mit Linien, Vorschau in jeder Größe).
+• Beides wird in die Gump-Datei im Speicher geschrieben – in UoFiddler (Reiter Gumps) speichern, um es zu behalten. Die Grafik kommt ins Gump.
+
+VERGLEICHEN (Compare ▾)
+• Aktueller Stand / eingelesenes Original / ein Bild (z. B. Screenshot eines Gumps zum Nachbauen) halb durchsichtig über der Arbeitsfläche,
+  rot eingefärbt, Deckkraft 25 … 100 %. Bilder kann man auch auf die Arbeitsfläche ziehen.
+
+BUTTON-AKTIONEN (Eigenschaft „Action“ eines Reply-Buttons)
+• Close, Reopen, OpenGump (Klasse), Teleport („x y z map“), GiveItem (z. B. Gold(100)), RunCommand, Message, CustomCode
+  (+ „Action reopen“). Das Skript bekommt den Code im case von OnResponse.
+
+ZWEI SPRACHEN
+• TextDe von Labels / HTML / Eingabefeldern = Text für Spieler mit Client-Sprache DEU (Gump-Einstellung „SecondLanguage“).
+  Das Skript wählt mit bool de = from.Language == ""DEU"". Werkzeugleiste „Language“ zeigt und bearbeitet die zweiten Texte.
+
+GRUPPEN UND HILFSLINIEN
+• Arrange ▾ → Group (Strg+G): ein Klick wählt die ganze Gruppe, Alt + Klick ein Element. Gruppe lösen: Strg+Umschalt+G.
+• Guides: beim Ziehen rasten Kanten und Mitten an anderen Elementen ein (magenta Linien), Abstände zu den Nachbarn werden gezeigt. Alt = aus.
+
+TEST-PROTOKOLL
+• Jeder Klick im Test (F5) steht im Reiter „Test log“; „Write into the script“ setzt ihn als Kommentar über OnResponse.
+
+MODERNUO
+• Skript-Ziel „ModernUO – DynamicGump“: BuildLayout(ref DynamicGumpBuilder builder) mit builder.Add…, Configure() für den Befehl,
+  Singleton, SetNoClose …, OnResponse(NetState, in RelayInfo). ModernUO-Skripte (builder.Add…, Tupel, Primärkonstruktoren) lassen sich einlesen.
+
+PRÜFUNGEN (unter dem Skript)
+• Neben falschen IDs auch: Labels, die über ihren Hintergrund laufen, HTML, das nicht passt (ohne Scrollbar), Eingabefelder ohne Längengrenze,
+  Gumps größer als 800 × 600, Item-Grafiken über 0x3FFF, Dinge, die nur neuere Clients zeigen, Button-Aktionen ohne Ziel.
 
 EINLESEN (ServUO- / RunUO- / ModernUO-Skripte)
 • Das Import-Fenster zeigt das Gump, bevor es übernommen wird: Gump-Klassen der Datei (links), Bild pro Seite, Hinweise.
@@ -154,7 +258,7 @@ SKRIPT
 • Skript kopieren / als .cs speichern (z. B. in ServUO\Scripts\Custom). PNG speichert ein Bild der Seite.
 
 TASTEN
-Strg+O öffnen · Strg+S speichern · Strg+T Vorlagen-Bibliothek · Strg+Z / Y rückgängig / wiederholen · Strg+C / V / D kopieren / einfügen / duplizieren · Entf löschen ·
+Strg+O öffnen · Strg+S speichern · Strg+T Vorlagen-Bibliothek · Strg+G / Strg+Umschalt+G Gruppe / lösen · Strg+Z / Y rückgängig / wiederholen · Strg+C / V / D kopieren / einfügen / duplizieren · Entf löschen ·
 Strg+A alles · Esc nichts gewählt · Pfeile verschieben · Bild↑ / Bild↓ Seiten · Strg + Mausrad Zoom · F5 Test · F1 Hilfe";
 
         public static void Show(IWin32Window owner, bool german)

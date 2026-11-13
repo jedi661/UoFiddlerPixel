@@ -59,6 +59,36 @@
 		<Compile Update="GumpStudio\GumpTemplateSaveForm.Designer.cs">
 			<DependentUpon>GumpTemplateSaveForm.cs</DependentUpon>
 		</Compile>
+		<Compile Update="GumpStudio\GumpWriteBackForm.cs">
+			<SubType>Form</SubType>
+		</Compile>
+		<Compile Update="GumpStudio\GumpWriteBackForm.Designer.cs">
+			<DependentUpon>GumpWriteBackForm.cs</DependentUpon>
+		</Compile>
+		<Compile Update="GumpStudio\GumpGalleryForm.cs">
+			<SubType>Form</SubType>
+		</Compile>
+		<Compile Update="GumpStudio\GumpGalleryForm.Designer.cs">
+			<DependentUpon>GumpGalleryForm.cs</DependentUpon>
+		</Compile>
+		<Compile Update="GumpStudio\GumpListForm.cs">
+			<SubType>Form</SubType>
+		</Compile>
+		<Compile Update="GumpStudio\GumpListForm.Designer.cs">
+			<DependentUpon>GumpListForm.cs</DependentUpon>
+		</Compile>
+		<Compile Update="GumpStudio\GumpThemeForm.cs">
+			<SubType>Form</SubType>
+		</Compile>
+		<Compile Update="GumpStudio\GumpThemeForm.Designer.cs">
+			<DependentUpon>GumpThemeForm.cs</DependentUpon>
+		</Compile>
+		<Compile Update="GumpStudio\GumpArtForm.cs">
+			<SubType>Form</SubType>
+		</Compile>
+		<Compile Update="GumpStudio\GumpArtForm.Designer.cs">
+			<DependentUpon>GumpArtForm.cs</DependentUpon>
+		</Compile>
 		<Compile Update="UserControls\DesignStudioControl.cs">
 			<SubType>UserControl</SubType>
 		</Compile>

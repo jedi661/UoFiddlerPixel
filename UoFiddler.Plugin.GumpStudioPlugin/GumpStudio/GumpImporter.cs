@@ -104,6 +104,46 @@ namespace UoFiddler.Plugin.DesignStudio.GumpStudio
             };
         }
 
+        /// <summary>Finds classes in all scripts below a folder (one index for many imports, e.g. the gump gallery).</summary>
+        public static Func<string, string> RootResolver(string folder)
+        {
+            Dictionary<string, string> index = null;
+            object sync = new object();
+            return name =>
+            {
+                lock (sync)
+                {
+                    if (index == null)
+                    {
+                        index = new Dictionary<string, string>(StringComparer.Ordinal);
+                        int count = 0;
+                        foreach (string f in System.IO.Directory.EnumerateFiles(folder, "*.cs", System.IO.SearchOption.AllDirectories))
+                        {
+                            if (++count > 30000)
+                            {
+                                break;
+                            }
+                            try
+                            {
+                                foreach (Match m in Regex.Matches(System.IO.File.ReadAllText(f), @"\b(?:class|struct|enum)\s+(\w+)"))
+                                {
+                                    if (!index.ContainsKey(m.Groups[1].Value))
+                                    {
+                                        index[m.Groups[1].Value] = f;
+                                    }
+                                }
+                            }
+                            catch (Exception)
+                            {
+                                // unreadable file
+                            }
+                        }
+                    }
+                    return index.TryGetValue(name, out string path) ? System.IO.File.ReadAllText(path) : null;
+                }
+            };
+        }
+
         /// <summary>Removes /* */ comments and #region / #if lines (line comments stay, they name elements).</summary>
         private static string StripComments(string code)
         {
@@ -130,15 +170,17 @@ namespace UoFiddler.Plugin.DesignStudio.GumpStudio
                 {
                     int end = code.IndexOf("*/", i + 2, StringComparison.Ordinal);
                     end = end < 0 ? code.Length : end + 2;
-                    // keep the line numbers
-                    sb.Append('\n', code.Substring(i, end - i).Count(x => x == '\n'));
-                    sb.Append(' ');
+                    // same length: positions stay the same as in the file (needed to write changes back)
+                    foreach (char x in code.Substring(i, end - i))
+                    {
+                        sb.Append(x == '\n' || x == '\r' ? x : ' ');
+                    }
                     i = end - 1;
                     continue;
                 }
                 sb.Append(c);
             }
-            return Regex.Replace(sb.ToString(), @"^[ \t]*#[^\r\n]*", string.Empty, RegexOptions.Multiline);
+            return Regex.Replace(sb.ToString(), @"^[ \t]*#[^\r\n]*", m => new string(' ', m.Length), RegexOptions.Multiline);
         }
 
         /// <summary>Index after the string / char literal that starts at i (handles @"", $"", $@"" and escapes).</summary>
@@ -189,6 +231,7 @@ namespace UoFiddler.Plugin.DesignStudio.GumpStudio
         private sealed class Node
         {
             public string Text = string.Empty;   // statement without ';' or the header before '{'
+            public int Start = -1;                // position of Text in the file (-1 = made up)
             public List<Node> Block;             // body in { } (null = simple statement)
             public int Line;
             public string Comment;               // // comment at the end of the line
@@ -262,8 +305,9 @@ namespace UoFiddler.Plugin.DesignStudio.GumpStudio
                         if (c == '/' && _p + 1 < _s.Length && _s[_p + 1] == '/')
                         {
                             int end = _s.IndexOf('\n', _p);
-                            _p = end < 0 ? _s.Length : end;
-                            text.Append(' ');
+                            end = end < 0 ? _s.Length : end;
+                            text.Append(' ', end - _p);   // same length: positions stay right
+                            _p = end;
                             continue;
                         }
                         if (c == '(' || c == '[')
@@ -277,7 +321,7 @@ namespace UoFiddler.Plugin.DesignStudio.GumpStudio
                         else if (depth <= 0 && c == ';')
                         {
                             _p++;
-                            var node = new Node { Text = text.ToString().Trim(), Line = LineAt(start) };
+                            var node = new Node { Text = text.ToString().Trim(), Line = LineAt(start), Start = start };
                             node.Comment = TrailingComment();
                             list.Add(node);
                             done = true;
@@ -288,7 +332,7 @@ namespace UoFiddler.Plugin.DesignStudio.GumpStudio
                             // statement without ';' before the closing brace
                             if (text.ToString().Trim().Length > 0)
                             {
-                                list.Add(new Node { Text = text.ToString().Trim(), Line = LineAt(start) });
+                                list.Add(new Node { Text = text.ToString().Trim(), Line = LineAt(start), Start = start });
                             }
                             done = true;
                             continue;
@@ -305,7 +349,7 @@ namespace UoFiddler.Plugin.DesignStudio.GumpStudio
                                 continue;
                             }
                             _p++;
-                            var node = new Node { Text = head, Line = LineAt(start) };
+                            var node = new Node { Text = head, Line = LineAt(start), Start = start };
                             node.Block = ParseBlock();
                             list.Add(node);
                             done = true;
@@ -316,7 +360,7 @@ namespace UoFiddler.Plugin.DesignStudio.GumpStudio
                     }
                     if (!done && text.ToString().Trim().Length > 0)
                     {
-                        list.Add(new Node { Text = text.ToString().Trim(), Line = LineAt(start) });
+                        list.Add(new Node { Text = text.ToString().Trim(), Line = LineAt(start), Start = start });
                     }
                 }
                 return list;
@@ -430,6 +474,8 @@ namespace UoFiddler.Plugin.DesignStudio.GumpStudio
             private const int MaxLoop = 2000;
             private const int MaxElements = 5000;
             private const int SampleCount = 3;
+            private readonly Dictionary<int, int> _sourceCount = new Dictionary<int, int>();
+            private int _helperDepth;
             private int _quiet;
 
             private readonly string _code;
@@ -493,6 +539,7 @@ namespace UoFiddler.Plugin.DesignStudio.GumpStudio
                     Design.ClassName = _className;
                 }
                 Match cmd = Regex.Match(_code, @"CommandSystem\.Register\s*\(\s*""(\w+)""\s*,\s*AccessLevel\.(\w+)");
+                Design.CloseExisting = Regex.IsMatch(_code, @"\bSingleton\s*=>\s*true") || Regex.IsMatch(_code, @"CloseGump\s*\(\s*typeof\s*\(\s*" + Regex.Escape(_className ?? "\u0001") + @"\s*\)");
                 if (cmd.Success)
                 {
                     Design.Command = cmd.Groups[1].Value;
@@ -632,6 +679,24 @@ namespace UoFiddler.Plugin.DesignStudio.GumpStudio
                             }
                             continue;
                         }
+                        if (ctor.Success && n.Block == null && t.Contains("=>"))
+                        {
+                            // expression bodied constructor: MyGump(Account a) : base(30, 30) => _acct = a;
+                            if (pass == 0)
+                            {
+                                int close = MatchParen(t, t.IndexOf('('));
+                                int arrow = close < 0 ? -1 : t.IndexOf("=>", close, StringComparison.Ordinal);
+                                if (arrow > 0)
+                                {
+                                    _ctors.Add(new Node
+                                    {
+                                        Text = t.Substring(0, arrow).Trim(), Line = n.Line,
+                                        Block = new List<Node> { new Node { Text = t.Substring(arrow + 2).Trim(), Line = n.Line } }
+                                    });
+                                }
+                            }
+                            continue;
+                        }
                         if (Regex.IsMatch(t, @"\b(class|struct|enum|interface|delegate)\b"))
                         {
                             continue;
@@ -716,8 +781,28 @@ namespace UoFiddler.Plugin.DesignStudio.GumpStudio
             private void RunClass(Node cls)
             {
                 LoadMembers(cls);
+                bool primary = false;
                 if (_ctors.Count == 0)
                 {
+                    // C# 12 primary constructor: class MyGump(Mobile from) : Gump(50, 50)
+                    Match pc = Regex.Match(StripAttributes(cls.Text), @"\bclass\s+" + Regex.Escape(_className) + @"\s*\(([^)]*)\)\s*:\s*[\w.<>]+\s*(?:\((.*)\))?", RegexOptions.Singleline);
+                    if (pc.Success)
+                    {
+                        _ctors.Add(new Node
+                        {
+                            Text = $"{_className}({pc.Groups[1].Value})" + (pc.Groups[2].Success ? $" : base({pc.Groups[2].Value})" : string.Empty),
+                            Line = cls.Line, Block = new List<Node>()
+                        });
+                        primary = true;
+                    }
+                }
+                if (_ctors.Count == 0)
+                {
+                    if (_methods.ContainsKey("BuildLayout"))
+                    {
+                        Call("BuildLayout", new List<object> { new Unknown("builder") });
+                        return;
+                    }
                     Warn($"No constructor of {_className} found.", "noctor");
                     return;
                 }
@@ -742,10 +827,16 @@ namespace UoFiddler.Plugin.DesignStudio.GumpStudio
                         break;
                     }
                 }
-                RunCtor(best, callArgs, 0);
+                RunCtor(best, callArgs, 0, primary);
+                // ModernUO: the layout is built in BuildLayout(ref DynamicGumpBuilder builder)
+                if (_methods.ContainsKey("BuildLayout"))
+                {
+                    _line = best.Line;
+                    Call("BuildLayout", new List<object> { new Unknown("builder") });
+                }
             }
 
-            private void RunCtor(Node ctor, List<object> args, int depth)
+            private void RunCtor(Node ctor, List<object> args, int depth, bool keepParameters = false)
             {
                 var scope = new Dictionary<string, object>(StringComparer.Ordinal);
                 Match head = CtorHead(ctor);
@@ -782,6 +873,14 @@ namespace UoFiddler.Plugin.DesignStudio.GumpStudio
                 ExecList(ctor.Block);
                 _flow = null;
                 _scopes.Pop();
+                if (keepParameters)
+                {
+                    // parameters of a primary constructor are visible in the whole class
+                    foreach (KeyValuePair<string, object> kv in scope)
+                    {
+                        _globals[kv.Key] = kv.Value;
+                    }
+                }
             }
 
             /// <summary>Value for a constructor parameter that is only known in the game (sizes get a usable default).</summary>
@@ -979,7 +1078,14 @@ namespace UoFiddler.Plugin.DesignStudio.GumpStudio
             {
                 if (!string.IsNullOrWhiteSpace(rest))
                 {
-                    var single = new List<Node> { new Node { Text = rest, Block = block, Line = origin.Line, Comment = origin.Comment } };
+                    var single = new List<Node>
+                    {
+                        new Node
+                        {
+                            Text = rest, Block = block, Line = origin.Line, Comment = origin.Comment,
+                            Start = origin.Start >= 0 && origin.Text.EndsWith(rest, StringComparison.Ordinal) ? origin.Start + origin.Text.Length - rest.Length : -1
+                        }
+                    };
                     int j = 0;
                     Exec(single, ref j, rest, block);
                 }
@@ -1301,6 +1407,16 @@ namespace UoFiddler.Plugin.DesignStudio.GumpStudio
                     return;
                 }
                 // declaration: [modifiers] type name [= expr][, name2 = expr2]
+                // declaration with a tuple type: (Type Type, int BaseID)[][] _types = …;
+                Match tdecl = Regex.Match(text, @"^((?:(?:static|readonly|private|public|protected|internal)\s+)*)\(((?:[^()]|\([^()]*\))*)\)((?:\s*\[[\s,]*\])*)\??\s+(\w+)\s*(?:=(?!=)\s*(.+))?$", RegexOptions.Singleline);
+                if (tdecl.Success)
+                {
+                    List<string> names = SplitArgs(tdecl.Groups[2].Value).Select(x => Regex.Match(x.Trim(), @"\s(\w+)$") is Match nm && nm.Success ? nm.Groups[1].Value : null).ToList();
+                    object value = tdecl.Groups[5].Success ? Eval(tdecl.Groups[5].Value) : null;
+                    NameTuples(value, names);
+                    (classLevel ? _globals : Scope)[tdecl.Groups[4].Value] = value;
+                    return;
+                }
                 Match decl = Regex.Match(text, @"^((?:(?:const|static|readonly|private|public|protected|internal|volatile|new)\s+)*)((?:[\w.]+)(?:<[^=]*?>)?\??(?:\s*\[[\s,]*\])*)\s+(\w+)\s*(=(?!=)|,|$)", RegexOptions.Singleline);
                 if (decl.Success && decl.Groups[2].Value != "return" && decl.Groups[2].Value != "new" && decl.Groups[2].Value != "await")
                 {
@@ -1348,15 +1464,32 @@ namespace UoFiddler.Plugin.DesignStudio.GumpStudio
                     return;
                 }
                 // call
-                Match call = Regex.Match(text, @"^(?:this\.|base\.)?(\w+)\s*(?:<[^>]*>)?\s*\(", RegexOptions.Singleline);
+                Match call = Regex.Match(text, @"^(?:(this|base|\w+)\.)?(\w+)\s*(?:<[^>]*>)?\s*\(", RegexOptions.Singleline);
                 if (call.Success)
                 {
-                    int open = text.IndexOf('(', call.Index + call.Groups[1].Length);
+                    int open = text.IndexOf('(', call.Groups[2].Index + call.Groups[2].Length);
                     int close = MatchParen(text, open);
+                    string owner = call.Groups[1].Success ? call.Groups[1].Value : null;
+                    string name = call.Groups[2].Value;
+                    if (owner != null && owner != "this" && owner != "base" && !GumpMethods.Contains(name))
+                    {
+                        // from.SendGump(…), list.Add(…): not a gump part (ModernUO: builder.AddButton(…) is one)
+                        return;
+                    }
                     if (close == text.Length - 1)
                     {
-                        string name = call.Groups[1].Value;
                         List<string> args = SplitArgs(text.Substring(open + 1, close - open - 1));
+                        if (name.StartsWith("SetNo", StringComparison.Ordinal))
+                        {
+                            // ModernUO builder.SetNoClose() …
+                            switch (name)
+                            {
+                                case "SetNoClose": Design.Closable = false; break;
+                                case "SetNoMove": Design.Dragable = false; break;
+                                case "SetNoDispose": Design.Disposable = false; break;
+                            }
+                            return;
+                        }
                         if (name.StartsWith("Add", StringComparison.Ordinal) && !_methods.ContainsKey(name))
                         {
                             AddElement(n, name, args, text);
@@ -1478,6 +1611,11 @@ namespace UoFiddler.Plugin.DesignStudio.GumpStudio
                     m.Adds = AddsWithCalls(m.Body, new HashSet<string>()) + (m.ExpressionBody != null ? Regex.Matches(m.ExpressionBody, @"\bAdd\w+\s*\(").Count : 0);
                 }
                 bool quiet = m.Adds == 0;   // helpers without gump parts (BuildList …) give no hints
+                bool helper = name != "BuildLayout";
+                if (helper)
+                {
+                    _helperDepth++;
+                }
                 _scopes.Push(scope);
                 int line = _line;
                 object result = null;
@@ -1509,6 +1647,10 @@ namespace UoFiddler.Plugin.DesignStudio.GumpStudio
                     if (quiet)
                     {
                         _quiet--;
+                    }
+                    if (helper)
+                    {
+                        _helperDepth--;
                     }
                     _scopes.Pop();
                     _flow = null;
@@ -1550,8 +1692,65 @@ namespace UoFiddler.Plugin.DesignStudio.GumpStudio
 
             private static string A(List<string> a, int i, string def) => i < a.Count ? a[i] : def;
 
+            private static readonly HashSet<string> GumpMethods = new HashSet<string>
+            {
+                "AddPage", "AddGroup", "AddTooltip", "AddBackground", "AddImage", "AddImageTiled", "AddSpriteImage", "AddAlphaRegion", "AddLabel",
+                "AddLabelCropped", "AddHtml", "AddHtmlLocalized", "AddButton", "AddImageTiledButton", "AddCheck", "AddCheckbox", "AddRadio",
+                "AddTextEntry", "AddTextEntryLimited", "AddItem", "AddItemProperty", "AddGumpIdOverride", "AddMasterGump",
+                "SetNoClose", "SetNoMove", "SetNoDispose", "SetNoResize"
+            };
+
+            /// <summary>Named arguments (background: true) to their place; unknown names are dropped.</summary>
+            private static List<string> Positional(string name, List<string> a)
+            {
+                if (!a.Any(x => Regex.IsMatch(x, @"^\w+\s*:(?!:)")))
+                {
+                    return a;
+                }
+                var pos = a.Where(x => !Regex.IsMatch(x, @"^\w+\s*:(?!:)")).ToList();
+                foreach (string x in a.Where(x => Regex.IsMatch(x, @"^\w+\s*:(?!:)")))
+                {
+                    Match m = Regex.Match(x, @"^(\w+)\s*:\s*(.*)$", RegexOptions.Singleline);
+                    int index = -1;
+                    switch (m.Groups[1].Value)
+                    {
+                        case "background": index = name == "AddHtml" ? 5 : pos.Count >= 6 && name == "AddHtmlLocalized" ? pos.Count : 5; break;
+                        case "scrollbar": index = name == "AddHtml" ? 6 : pos.Count; break;
+                        case "hue": index = 3; break;
+                        case "type": index = 5; break;
+                        case "param": index = 6; break;
+                    }
+                    if (index < 0)
+                    {
+                        continue;
+                    }
+                    while (pos.Count < index)
+                    {
+                        pos.Add(index - pos.Count == 1 && (name == "AddButton" && index == 6) ? "0" : name == "AddButton" && pos.Count == 5 ? "GumpButtonType.Reply" : "false");
+                    }
+                    if (pos.Count == index)
+                    {
+                        pos.Add(m.Groups[2].Value);
+                    }
+                    else
+                    {
+                        pos[index] = m.Groups[2].Value;
+                    }
+                }
+                return pos;
+            }
+
             private void AddElement(Node n, string name, List<string> a, string text)
             {
+                a = Positional(name, a);
+                if (name == "AddCheckbox")
+                {
+                    name = "AddCheck";
+                }
+                if (name == "AddItemProperty" || name == "AddGumpIdOverride" || name == "AddMasterGump")
+                {
+                    return;
+                }
                 GumpElement e;
                 switch (name)
                 {
@@ -1620,6 +1819,14 @@ namespace UoFiddler.Plugin.DesignStudio.GumpStudio
                         return;
                 }
                 e.Page = _page;
+                if (n.Start >= 0 && n.Text.EndsWith(text, StringComparison.Ordinal))
+                {
+                    int at = n.Start + n.Text.Length - text.Length;
+                    _sourceCount.TryGetValue(at, out int occurrence);
+                    _sourceCount[at] = occurrence + 1;
+                    // #h = made inside a helper method (new elements are not written there)
+                    e.Source = at.ToString(CultureInfo.InvariantCulture) + "#" + occurrence.ToString(CultureInfo.InvariantCulture) + (_helperDepth > 0 ? "#h" : string.Empty);
+                }
                 // a named ID (const int ButtonOkay = 1) names the element
                 int idArg = name == "AddButton" || name == "AddImageTiledButton" ? 4 : name == "AddCheck" || name == "AddRadio" || name.StartsWith("AddTextEntry", StringComparison.Ordinal) ? 5 : -1;
                 string constant = idArg >= 0 && idArg < a.Count && _constNames.Contains(a[idArg].Trim()) ? a[idArg].Trim() : null;
@@ -2173,17 +2380,31 @@ namespace UoFiddler.Plugin.DesignStudio.GumpStudio
                         if (t.Text == "(")
                         {
                             _i++;
+                            string firstName = TupleName();
                             object v = Ternary();
                             if (Accept(","))
                             {
-                                // tuple
+                                // tuple (a, b) or (Name: a, Id: b): fields Item1 … and the names
+                                var tuple = new ObjectValue { Type = "tuple" };
+                                tuple.Fields["Item1"] = v;
+                                if (firstName != null)
+                                {
+                                    tuple.Fields[firstName] = v;
+                                }
+                                int k = 2;
                                 do
                                 {
-                                    Ternary();
+                                    string nm = TupleName();
+                                    object x = Ternary();
+                                    tuple.Fields["Item" + k++] = x;
+                                    if (nm != null)
+                                    {
+                                        tuple.Fields[nm] = x;
+                                    }
                                 }
                                 while (Accept(","));
                                 Expect(")");
-                                return new Unknown(Span(from));
+                                return tuple;
                             }
                             Expect(")");
                             return v;
@@ -2201,6 +2422,10 @@ namespace UoFiddler.Plugin.DesignStudio.GumpStudio
                             {
                                 do
                                 {
+                                    if (IsOp("]"))
+                                    {
+                                        break;   // trailing comma
+                                    }
                                     items.Add(Ternary());
                                 }
                                 while (Accept(","));
@@ -2262,6 +2487,39 @@ namespace UoFiddler.Plugin.DesignStudio.GumpStudio
                     return g;
                 }
                 return new Unknown(t.Text);
+            }
+
+            private string TupleName()
+            {
+                if (Peek() is Tok t && t.Kind == 'i' && IsOp(":", 1))
+                {
+                    _i += 2;
+                    return t.Text;
+                }
+                return null;
+            }
+
+            /// <summary>Gives tuples the names of their declared type: (Type Type, int BaseID)[] → .BaseID works.</summary>
+            private static void NameTuples(object value, List<string> names)
+            {
+                switch (value)
+                {
+                    case object[] arr:
+                        foreach (object o in arr)
+                        {
+                            NameTuples(o, names);
+                        }
+                        break;
+                    case ObjectValue ov when ov.Type == "tuple":
+                        for (int i = 0; i < names.Count; i++)
+                        {
+                            if (names[i] != null && ov.Fields.TryGetValue("Item" + (i + 1), out object item))
+                            {
+                                ov.Fields[names[i]] = item;
+                            }
+                        }
+                        break;
+                }
             }
 
             private object New(int from)
@@ -2419,6 +2677,8 @@ namespace UoFiddler.Plugin.DesignStudio.GumpStudio
                         return args.Count == 2 && args[0] is int a2 && args[1] is int b2 ? Math.Min(a2, b2) : Num(args.ElementAtOrDefault(0)) is double x2 && Num(args.ElementAtOrDefault(1)) is double y2 ? (object)Math.Min(x2, y2) : new Unknown(Span(from));
                     case "Math.Abs":
                         return args.Count == 1 && args[0] is int a3 ? Math.Abs(a3) : args.Count == 1 && args[0] is double d3 ? (object)Math.Abs(d3) : new Unknown(Span(from));
+                    case "Math.Clamp":
+                        return args.Count == 3 && args[0] is int cv && args[1] is int cmin && args[2] is int cmax ? Math.Max(cmin, Math.Min(cmax, cv)) : (object)new Unknown(Span(from));
                     case "Math.Ceiling":
                         return Num(args.ElementAtOrDefault(0)) is double c ? (object)Math.Ceiling(c) : new Unknown(Span(from));
                     case "Math.Floor":
