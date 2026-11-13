@@ -132,8 +132,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 int id = (int)numGroundId.Value;
                 if (Art.IsValidLand(id))
                 {
-                    Bitmap land = Art.GetLand(id);
-                    _ground = StudioImaging.To32(land);
+                    _ground = UltimaImages.CopyLand(id);
                 }
             }
             catch
@@ -216,10 +215,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 ClearAll();
                 foreach (int a in ids)
                 {
-                    if (Art.IsValidStatic(a))
+                    Bitmap b = UltimaImages.CopyStatic(a);
+                    if (b != null)
                     {
-                        Bitmap b = Art.GetStatic(a);
-                        _raw.Add(StudioImaging.To32(b));
+                        _raw.Add(b);
                     }
                 }
                 chkBlack.Checked = false;
@@ -234,9 +233,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 
         private void RemoveSelected()
         {
-            foreach (int i in lvFrames.SelectedIndices.Cast<int>().OrderByDescending(i => i))
+            // with ping-pong two list entries can point to the same source frame -> distinct
+            foreach (int rawIndex in lvFrames.SelectedIndices.Cast<int>().Select(RawIndexOf).Distinct().OrderByDescending(i => i))
             {
-                int rawIndex = RawIndexOf(i);
                 if (rawIndex >= 0 && rawIndex < _raw.Count)
                 {
                     _raw[rawIndex].Dispose();
@@ -618,6 +617,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 else
                 {
                     TileData.SaveTileData(Path.Combine(path, "tiledata.mul"));
+                    if (Animdata.AnimData == null || Files.GetFilePath("animdata.mul") == null)
+                    {
+                        StudioUi.Error(this, "animdata.mul ist nicht geladen – tiledata.mul wurde gespeichert, animdata.mul nicht.");
+                        return;
+                    }
                     Animdata.Save(path);
                     StudioUi.ResetChanged("TileData");
                     StudioUi.ResetChanged("Animdata");

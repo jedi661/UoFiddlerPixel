@@ -164,8 +164,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 int id = (int)numBodyGump.Value;
                 if (Gumps.IsValidIndex(id))
                 {
-                    Bitmap g = Gumps.GetGump(id);
-                    _body = StudioImaging.To32(g);
+                    _body = UltimaImages.CopyGump(id);
                 }
             }
             catch
@@ -209,8 +208,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                     StudioUi.Error(this, $"Art-Item 0x{id:X4} existiert nicht.");
                     return;
                 }
-                Bitmap a = Art.GetStatic(id);
-                using Bitmap b = StudioImaging.To32(a);
+                using Bitmap b = UltimaImages.CopyStatic(id);
                 SetItem(StudioImaging.AutoCrop(b));
                 txtItemId.Text = $"0x{id:X4}";
                 ReadTileData();
@@ -233,8 +231,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                     StudioUi.Info(this, $"Gump {gid} existiert nicht.");
                     return;
                 }
-                Bitmap g = Gumps.GetGump(gid);
-                using Bitmap b = StudioImaging.To32(g);
+                using Bitmap b = UltimaImages.CopyGump(gid);
                 // gump is positioned at 0/0 relative to the body -> crop and remember offset
                 Rectangle r = OpaqueBounds(b);
                 SetItem(StudioImaging.Crop(b, r));
