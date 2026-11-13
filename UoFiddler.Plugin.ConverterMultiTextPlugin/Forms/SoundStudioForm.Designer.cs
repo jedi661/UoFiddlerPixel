@@ -81,6 +81,34 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             btnSetUo = new System.Windows.Forms.Button();
             btnSaveMul = new System.Windows.Forms.Button();
             btnSaveWav = new System.Windows.Forms.Button();
+            grpView = new System.Windows.Forms.GroupBox();
+            btnZoomIn = new System.Windows.Forms.Button();
+            btnZoomOut = new System.Windows.Forms.Button();
+            btnZoomFit = new System.Windows.Forms.Button();
+            btnZoomSel = new System.Windows.Forms.Button();
+            lblViewHint = new System.Windows.Forms.Label();
+            grpEffects = new System.Windows.Forms.GroupBox();
+            lblRoom = new System.Windows.Forms.Label();
+            numRoom = new System.Windows.Forms.NumericUpDown();
+            lblWet = new System.Windows.Forms.Label();
+            numWet = new System.Windows.Forms.NumericUpDown();
+            btnReverb = new System.Windows.Forms.Button();
+            lblGate = new System.Windows.Forms.Label();
+            numGate = new System.Windows.Forms.NumericUpDown();
+            btnGate = new System.Windows.Forms.Button();
+            lblTempo = new System.Windows.Forms.Label();
+            numTempo = new System.Windows.Forms.NumericUpDown();
+            btnTempo = new System.Windows.Forms.Button();
+            lblPitch = new System.Windows.Forms.Label();
+            numPitch = new System.Windows.Forms.NumericUpDown();
+            btnPitch = new System.Windows.Forms.Button();
+            btnSpeed = new System.Windows.Forms.Button();
+            lblEffectsHint = new System.Windows.Forms.Label();
+            grpBatch = new System.Windows.Forms.GroupBox();
+            lblTargetRms = new System.Windows.Forms.Label();
+            numTargetRms = new System.Windows.Forms.NumericUpDown();
+            btnBatch = new System.Windows.Forms.Button();
+            btnDefScript = new System.Windows.Forms.Button();
             statusStrip = new System.Windows.Forms.StatusStrip();
             lblStatus = new System.Windows.Forms.ToolStripStatusLabel();
             lblInfo = new System.Windows.Forms.ToolStripStatusLabel();
@@ -96,14 +124,23 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             ((System.ComponentModel.ISupportInitialize)numGain).BeginInit();
             grpPlay.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)numPreviewVol).BeginInit();
+            grpView.SuspendLayout();
+            grpEffects.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)numRoom).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)numWet).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)numGate).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)numTempo).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)numPitch).BeginInit();
+            grpBatch.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)numTargetRms).BeginInit();
             statusStrip.SuspendLayout();
             SuspendLayout();
             // 
             // waveform
             // 
             waveform.Dock = System.Windows.Forms.DockStyle.Fill;
-            waveform.Location = new System.Drawing.Point(0, 178);
-            waveform.Size = new System.Drawing.Size(1014, 401);
+            waveform.Location = new System.Drawing.Point(0, 290);
+            waveform.Size = new System.Drawing.Size(1014, 389);
             waveform.Name = "waveform";
             waveform.TabIndex = 0;
             waveform.SelectionChanged += Waveform_SelectionChanged;
@@ -111,8 +148,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // levelMeter
             // 
             levelMeter.Dock = System.Windows.Forms.DockStyle.Right;
-            levelMeter.Location = new System.Drawing.Point(1014, 178);
-            levelMeter.Size = new System.Drawing.Size(70, 401);
+            levelMeter.Location = new System.Drawing.Point(1014, 290);
+            levelMeter.Size = new System.Drawing.Size(70, 389);
             levelMeter.Name = "levelMeter";
             levelMeter.TabIndex = 1;
             // 
@@ -122,9 +159,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             pnlTop.Controls.Add(grpEdit);
             pnlTop.Controls.Add(grpLevel);
             pnlTop.Controls.Add(grpPlay);
+            pnlTop.Controls.Add(grpView);
+            pnlTop.Controls.Add(grpEffects);
+            pnlTop.Controls.Add(grpBatch);
             pnlTop.Dock = System.Windows.Forms.DockStyle.Top;
             pnlTop.Location = new System.Drawing.Point(0, 0);
-            pnlTop.Size = new System.Drawing.Size(1084, 178);
+            pnlTop.Size = new System.Drawing.Size(1084, 290);
             pnlTop.Name = "pnlTop";
             pnlTop.TabIndex = 2;
             // 
@@ -519,11 +559,289 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             btnSaveWav.TabIndex = 33;
             btnSaveWav.Click += BtnSaveWav_Click;
             // 
+            // grpView
+            // 
+            grpView.Controls.Add(btnZoomIn);
+            grpView.Controls.Add(btnZoomOut);
+            grpView.Controls.Add(btnZoomFit);
+            grpView.Controls.Add(btnZoomSel);
+            grpView.Controls.Add(lblViewHint);
+            grpView.Location = new System.Drawing.Point(6, 176);
+            grpView.Size = new System.Drawing.Size(220, 108);
+            grpView.TabStop = false;
+            grpView.Text = "Ansicht";
+            grpView.Name = "grpView";
+            grpView.TabIndex = 34;
+            // 
+            // btnZoomIn
+            // 
+            btnZoomIn.Location = new System.Drawing.Point(8, 20);
+            btnZoomIn.Size = new System.Drawing.Size(98, 26);
+            btnZoomIn.Text = "Zoom +";
+            btnZoomIn.UseVisualStyleBackColor = true;
+            btnZoomIn.Name = "btnZoomIn";
+            btnZoomIn.TabIndex = 35;
+            btnZoomIn.Click += BtnZoomIn_Click;
+            // 
+            // btnZoomOut
+            // 
+            btnZoomOut.Location = new System.Drawing.Point(110, 20);
+            btnZoomOut.Size = new System.Drawing.Size(98, 26);
+            btnZoomOut.Text = "Zoom −";
+            btnZoomOut.UseVisualStyleBackColor = true;
+            btnZoomOut.Name = "btnZoomOut";
+            btnZoomOut.TabIndex = 36;
+            btnZoomOut.Click += BtnZoomOut_Click;
+            // 
+            // btnZoomFit
+            // 
+            btnZoomFit.Location = new System.Drawing.Point(8, 50);
+            btnZoomFit.Size = new System.Drawing.Size(98, 26);
+            btnZoomFit.Text = "Alles";
+            btnZoomFit.UseVisualStyleBackColor = true;
+            btnZoomFit.Name = "btnZoomFit";
+            btnZoomFit.TabIndex = 37;
+            btnZoomFit.Click += BtnZoomFit_Click;
+            // 
+            // btnZoomSel
+            // 
+            btnZoomSel.Location = new System.Drawing.Point(110, 50);
+            btnZoomSel.Size = new System.Drawing.Size(98, 26);
+            btnZoomSel.Text = "Auswahl";
+            btnZoomSel.UseVisualStyleBackColor = true;
+            btnZoomSel.Name = "btnZoomSel";
+            btnZoomSel.TabIndex = 38;
+            btnZoomSel.Click += BtnZoomSel_Click;
+            // 
+            // lblViewHint
+            // 
+            lblViewHint.AutoSize = true;
+            lblViewHint.Location = new System.Drawing.Point(8, 83);
+            lblViewHint.Text = "Rad = Zoom, Shift+Rad = Scrollen";
+            lblViewHint.Name = "lblViewHint";
+            // 
+            // grpEffects
+            // 
+            grpEffects.Controls.Add(lblRoom);
+            grpEffects.Controls.Add(numRoom);
+            grpEffects.Controls.Add(lblWet);
+            grpEffects.Controls.Add(numWet);
+            grpEffects.Controls.Add(btnReverb);
+            grpEffects.Controls.Add(lblGate);
+            grpEffects.Controls.Add(numGate);
+            grpEffects.Controls.Add(btnGate);
+            grpEffects.Controls.Add(lblTempo);
+            grpEffects.Controls.Add(numTempo);
+            grpEffects.Controls.Add(btnTempo);
+            grpEffects.Controls.Add(lblPitch);
+            grpEffects.Controls.Add(numPitch);
+            grpEffects.Controls.Add(btnPitch);
+            grpEffects.Controls.Add(btnSpeed);
+            grpEffects.Controls.Add(lblEffectsHint);
+            grpEffects.Location = new System.Drawing.Point(232, 176);
+            grpEffects.Size = new System.Drawing.Size(556, 108);
+            grpEffects.TabStop = false;
+            grpEffects.Text = "Effekte (auf Auswahl bzw. ganzen Sound)";
+            grpEffects.Name = "grpEffects";
+            grpEffects.TabIndex = 39;
+            // 
+            // lblRoom
+            // 
+            lblRoom.AutoSize = true;
+            lblRoom.Location = new System.Drawing.Point(8, 23);
+            lblRoom.Text = "Hall Raum %:";
+            lblRoom.Name = "lblRoom";
+            // 
+            // numRoom
+            // 
+            numRoom.Location = new System.Drawing.Point(92, 20);
+            numRoom.Size = new System.Drawing.Size(50, 23);
+            numRoom.Maximum = new decimal(new int[] { 100, 0, 0, 0 });
+            numRoom.Minimum = new decimal(new int[] { 0, 0, 0, 0 });
+            numRoom.Value = new decimal(new int[] { 50, 0, 0, 0 });
+            numRoom.Name = "numRoom";
+            numRoom.TabIndex = 40;
+            // 
+            // lblWet
+            // 
+            lblWet.AutoSize = true;
+            lblWet.Location = new System.Drawing.Point(148, 23);
+            lblWet.Text = "Anteil %:";
+            lblWet.Name = "lblWet";
+            // 
+            // numWet
+            // 
+            numWet.Location = new System.Drawing.Point(206, 20);
+            numWet.Size = new System.Drawing.Size(50, 23);
+            numWet.Maximum = new decimal(new int[] { 100, 0, 0, 0 });
+            numWet.Minimum = new decimal(new int[] { 0, 0, 0, 0 });
+            numWet.Value = new decimal(new int[] { 30, 0, 0, 0 });
+            numWet.Name = "numWet";
+            numWet.TabIndex = 41;
+            // 
+            // btnReverb
+            // 
+            btnReverb.Location = new System.Drawing.Point(262, 18);
+            btnReverb.Size = new System.Drawing.Size(70, 26);
+            btnReverb.Text = "Hall";
+            btnReverb.UseVisualStyleBackColor = true;
+            btnReverb.Name = "btnReverb";
+            btnReverb.TabIndex = 42;
+            btnReverb.Click += BtnReverb_Click;
+            // 
+            // lblGate
+            // 
+            lblGate.AutoSize = true;
+            lblGate.Location = new System.Drawing.Point(342, 23);
+            lblGate.Text = "Gate dB:";
+            lblGate.Name = "lblGate";
+            // 
+            // numGate
+            // 
+            numGate.Location = new System.Drawing.Point(400, 20);
+            numGate.Size = new System.Drawing.Size(56, 23);
+            numGate.Maximum = new decimal(new int[] { 0, 0, 0, 0 });
+            numGate.Minimum = new decimal(new int[] { 80, 0, 0, -2147483648 });
+            numGate.Value = new decimal(new int[] { 45, 0, 0, -2147483648 });
+            numGate.Name = "numGate";
+            numGate.TabIndex = 43;
+            // 
+            // btnGate
+            // 
+            btnGate.Location = new System.Drawing.Point(462, 18);
+            btnGate.Size = new System.Drawing.Size(86, 26);
+            btnGate.Text = "Rausch-Gate";
+            btnGate.UseVisualStyleBackColor = true;
+            btnGate.Name = "btnGate";
+            btnGate.TabIndex = 44;
+            btnGate.Click += BtnGate_Click;
+            // 
+            // lblTempo
+            // 
+            lblTempo.AutoSize = true;
+            lblTempo.Location = new System.Drawing.Point(8, 55);
+            lblTempo.Text = "Tempo %:";
+            lblTempo.Name = "lblTempo";
+            // 
+            // numTempo
+            // 
+            numTempo.Location = new System.Drawing.Point(92, 52);
+            numTempo.Size = new System.Drawing.Size(50, 23);
+            numTempo.Maximum = new decimal(new int[] { 400, 0, 0, 0 });
+            numTempo.Minimum = new decimal(new int[] { 25, 0, 0, 0 });
+            numTempo.Value = new decimal(new int[] { 100, 0, 0, 0 });
+            numTempo.Name = "numTempo";
+            numTempo.TabIndex = 45;
+            // 
+            // btnTempo
+            // 
+            btnTempo.Location = new System.Drawing.Point(148, 50);
+            btnTempo.Size = new System.Drawing.Size(70, 26);
+            btnTempo.Text = "Tempo";
+            btnTempo.UseVisualStyleBackColor = true;
+            btnTempo.Name = "btnTempo";
+            btnTempo.TabIndex = 46;
+            btnTempo.Click += BtnTempo_Click;
+            // 
+            // lblPitch
+            // 
+            lblPitch.AutoSize = true;
+            lblPitch.Location = new System.Drawing.Point(226, 55);
+            lblPitch.Text = "Tonhöhe HT:";
+            lblPitch.Name = "lblPitch";
+            // 
+            // numPitch
+            // 
+            numPitch.Location = new System.Drawing.Point(304, 52);
+            numPitch.Size = new System.Drawing.Size(50, 23);
+            numPitch.Maximum = new decimal(new int[] { 24, 0, 0, 0 });
+            numPitch.Minimum = new decimal(new int[] { 24, 0, 0, -2147483648 });
+            numPitch.Value = new decimal(new int[] { 0, 0, 0, 0 });
+            numPitch.Name = "numPitch";
+            numPitch.TabIndex = 47;
+            // 
+            // btnPitch
+            // 
+            btnPitch.Location = new System.Drawing.Point(360, 50);
+            btnPitch.Size = new System.Drawing.Size(80, 26);
+            btnPitch.Text = "Tonhöhe";
+            btnPitch.UseVisualStyleBackColor = true;
+            btnPitch.Name = "btnPitch";
+            btnPitch.TabIndex = 48;
+            btnPitch.Click += BtnPitch_Click;
+            // 
+            // btnSpeed
+            // 
+            btnSpeed.Location = new System.Drawing.Point(446, 50);
+            btnSpeed.Size = new System.Drawing.Size(102, 26);
+            btnSpeed.Text = "Beides (Geschw.)";
+            btnSpeed.UseVisualStyleBackColor = true;
+            btnSpeed.Name = "btnSpeed";
+            btnSpeed.TabIndex = 49;
+            btnSpeed.Click += BtnSpeed_Click;
+            // 
+            // lblEffectsHint
+            // 
+            lblEffectsHint.AutoSize = true;
+            lblEffectsHint.Location = new System.Drawing.Point(8, 83);
+            lblEffectsHint.Text = "Tempo: Länge ohne Tonhöhe · Tonhöhe: ohne Länge · Beides: wie schneller abspielen";
+            lblEffectsHint.Name = "lblEffectsHint";
+            // 
+            // grpBatch
+            // 
+            grpBatch.Controls.Add(lblTargetRms);
+            grpBatch.Controls.Add(numTargetRms);
+            grpBatch.Controls.Add(btnBatch);
+            grpBatch.Controls.Add(btnDefScript);
+            grpBatch.Location = new System.Drawing.Point(794, 176);
+            grpBatch.Size = new System.Drawing.Size(280, 108);
+            grpBatch.TabStop = false;
+            grpBatch.Text = "Stapel & Einträge";
+            grpBatch.Name = "grpBatch";
+            grpBatch.TabIndex = 50;
+            // 
+            // lblTargetRms
+            // 
+            lblTargetRms.AutoSize = true;
+            lblTargetRms.Location = new System.Drawing.Point(8, 23);
+            lblTargetRms.Text = "Ziel-Lautheit RMS dB:";
+            lblTargetRms.Name = "lblTargetRms";
+            // 
+            // numTargetRms
+            // 
+            numTargetRms.Location = new System.Drawing.Point(150, 20);
+            numTargetRms.Size = new System.Drawing.Size(60, 23);
+            numTargetRms.Maximum = new decimal(new int[] { 3, 0, 0, -2147483648 });
+            numTargetRms.Minimum = new decimal(new int[] { 40, 0, 0, -2147483648 });
+            numTargetRms.Value = new decimal(new int[] { 18, 0, 0, -2147483648 });
+            numTargetRms.Name = "numTargetRms";
+            numTargetRms.TabIndex = 51;
+            // 
+            // btnBatch
+            // 
+            btnBatch.Location = new System.Drawing.Point(8, 48);
+            btnBatch.Size = new System.Drawing.Size(262, 26);
+            btnBatch.Text = "Stapel: Lautheit angleichen...";
+            btnBatch.UseVisualStyleBackColor = true;
+            btnBatch.Name = "btnBatch";
+            btnBatch.TabIndex = 52;
+            btnBatch.Click += BtnBatch_Click;
+            // 
+            // btnDefScript
+            // 
+            btnDefScript.Location = new System.Drawing.Point(8, 76);
+            btnDefScript.Size = new System.Drawing.Size(262, 26);
+            btnDefScript.Text = "Sound.def / Script-Einträge...";
+            btnDefScript.UseVisualStyleBackColor = true;
+            btnDefScript.Name = "btnDefScript";
+            btnDefScript.TabIndex = 53;
+            btnDefScript.Click += BtnDefScript_Click;
+            // 
             // statusStrip
             // 
             statusStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { lblStatus, lblInfo });
             statusStrip.Name = "statusStrip";
-            statusStrip.TabIndex = 34;
+            statusStrip.TabIndex = 54;
             // 
             // lblStatus
             // 
@@ -545,12 +863,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            ClientSize = new System.Drawing.Size(1084, 601);
+            ClientSize = new System.Drawing.Size(1084, 701);
             Controls.Add(waveform);
             Controls.Add(levelMeter);
             Controls.Add(pnlTop);
             Controls.Add(statusStrip);
-            MinimumSize = new System.Drawing.Size(900, 520);
+            MinimumSize = new System.Drawing.Size(1000, 600);
             Name = "SoundStudioForm";
             StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             Text = "Sound-Studio (WAV / MP3 → UO-Sound)";
@@ -558,6 +876,18 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             KeyDown += SoundStudioForm_KeyDown;
             statusStrip.ResumeLayout(false);
             statusStrip.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)numTargetRms).EndInit();
+            grpBatch.ResumeLayout(false);
+            grpBatch.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)numPitch).EndInit();
+            ((System.ComponentModel.ISupportInitialize)numTempo).EndInit();
+            ((System.ComponentModel.ISupportInitialize)numGate).EndInit();
+            ((System.ComponentModel.ISupportInitialize)numWet).EndInit();
+            ((System.ComponentModel.ISupportInitialize)numRoom).EndInit();
+            grpEffects.ResumeLayout(false);
+            grpEffects.PerformLayout();
+            grpView.ResumeLayout(false);
+            grpView.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)numPreviewVol).EndInit();
             grpPlay.ResumeLayout(false);
             grpPlay.PerformLayout();
@@ -621,6 +951,34 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private System.Windows.Forms.Button btnSetUo;
         private System.Windows.Forms.Button btnSaveMul;
         private System.Windows.Forms.Button btnSaveWav;
+        private System.Windows.Forms.GroupBox grpView;
+        private System.Windows.Forms.Button btnZoomIn;
+        private System.Windows.Forms.Button btnZoomOut;
+        private System.Windows.Forms.Button btnZoomFit;
+        private System.Windows.Forms.Button btnZoomSel;
+        private System.Windows.Forms.Label lblViewHint;
+        private System.Windows.Forms.GroupBox grpEffects;
+        private System.Windows.Forms.Label lblRoom;
+        private System.Windows.Forms.NumericUpDown numRoom;
+        private System.Windows.Forms.Label lblWet;
+        private System.Windows.Forms.NumericUpDown numWet;
+        private System.Windows.Forms.Button btnReverb;
+        private System.Windows.Forms.Label lblGate;
+        private System.Windows.Forms.NumericUpDown numGate;
+        private System.Windows.Forms.Button btnGate;
+        private System.Windows.Forms.Label lblTempo;
+        private System.Windows.Forms.NumericUpDown numTempo;
+        private System.Windows.Forms.Button btnTempo;
+        private System.Windows.Forms.Label lblPitch;
+        private System.Windows.Forms.NumericUpDown numPitch;
+        private System.Windows.Forms.Button btnPitch;
+        private System.Windows.Forms.Button btnSpeed;
+        private System.Windows.Forms.Label lblEffectsHint;
+        private System.Windows.Forms.GroupBox grpBatch;
+        private System.Windows.Forms.Label lblTargetRms;
+        private System.Windows.Forms.NumericUpDown numTargetRms;
+        private System.Windows.Forms.Button btnBatch;
+        private System.Windows.Forms.Button btnDefScript;
         private System.Windows.Forms.StatusStrip statusStrip;
         private System.Windows.Forms.ToolStripStatusLabel lblStatus;
         private System.Windows.Forms.ToolStripStatusLabel lblInfo;

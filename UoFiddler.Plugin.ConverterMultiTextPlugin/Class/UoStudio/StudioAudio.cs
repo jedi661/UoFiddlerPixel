@@ -211,6 +211,217 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Class.UoStudio
 
         #endregion
 
+        #region Effects
+
+        /// <summary>Changes speed and pitch together (factor 2 = one octave higher and half as long).</summary>
+        public static float[] ChangeSpeed(float[] s, double factor)
+        {
+            if (s.Length == 0 || factor <= 0)
+            {
+                return (float[])s.Clone();
+            }
+            int len = Math.Max(1, (int)(s.Length / factor));
+            var d = new float[len];
+            for (int i = 0; i < len; i++)
+            {
+                double pos = i * factor;
+                int p0 = Math.Min(s.Length - 1, (int)pos);
+                int p1 = Math.Min(s.Length - 1, p0 + 1);
+                double t = pos - p0;
+                d[i] = (float)((s[p0] * (1 - t)) + (s[p1] * t));
+            }
+            return d;
+        }
+
+        /// <summary>
+        /// Changes the tempo without changing the pitch (overlap-add with a small similarity search, WSOLA).
+        /// tempo 2 = twice as fast (half as long).
+        /// </summary>
+        public static float[] TimeStretch(float[] s, int rate, double tempo)
+        {
+            if (s.Length == 0 || tempo <= 0 || Math.Abs(tempo - 1) < 0.001)
+            {
+                return (float[])s.Clone();
+            }
+            int frame = Math.Max(64, rate * 40 / 1000);      // 40 ms
+            int hop = frame / 2;                              // synthesis hop
+            int search = Math.Max(16, rate * 10 / 1000);      // +-10 ms
+            int outLen = Math.Max(1, (int)(s.Length / tempo));
+            var output = new double[outLen + frame];
+            var norm = new double[outLen + frame];
+            var window = new double[frame];
+            for (int i = 0; i < frame; i++)
+            {
+                window[i] = 0.5 - (0.5 * Math.Cos(2 * Math.PI * i / (frame - 1)));
+            }
+
+            int prevIn = 0;
+            for (int outPos = 0; outPos < outLen; outPos += hop)
+            {
+                int nominal = (int)(outPos * tempo);
+                int best = nominal;
+                if (outPos > 0)
+                {
+                    // find the input position that continues the previous frame best
+                    double bestCorr = double.MinValue;
+                    int natural = prevIn + hop;
+                    for (int off = -search; off <= search; off += 2)
+                    {
+                        int cand = nominal + off;
+                        if (cand < 0 || cand + frame >= s.Length)
+                        {
+                            continue;
+                        }
+                        double corr = 0;
+                        for (int k = 0; k < hop; k += 4)
+                        {
+                            int a = natural + k, b = cand + k;
+                            if (a < s.Length && b < s.Length)
+                            {
+                                corr += s[a] * s[b];
+                            }
+                        }
+                        if (corr > bestCorr)
+                        {
+                            bestCorr = corr;
+                            best = cand;
+                        }
+                    }
+                }
+                best = Math.Max(0, Math.Min(Math.Max(0, s.Length - 1), best));
+                for (int k = 0; k < frame; k++)
+                {
+                    int src = best + k;
+                    if (src >= s.Length || outPos + k >= output.Length)
+                    {
+                        break;
+                    }
+                    output[outPos + k] += s[src] * window[k];
+                    norm[outPos + k] += window[k];
+                }
+                prevIn = best;
+            }
+
+            var d = new float[outLen];
+            for (int i = 0; i < outLen; i++)
+            {
+                d[i] = norm[i] > 0.0001 ? (float)(output[i] / norm[i]) : 0f;
+            }
+            return d;
+        }
+
+        /// <summary>Pitch shift in semitones, length stays the same.</summary>
+        public static float[] PitchShift(float[] s, int rate, double semitones)
+        {
+            if (Math.Abs(semitones) < 0.01)
+            {
+                return (float[])s.Clone();
+            }
+            double factor = Math.Pow(2, semitones / 12.0);
+            // stretch first (longer for higher pitch), then resample back to the original length
+            float[] stretched = TimeStretch(s, rate, 1.0 / factor);
+            float[] result = ChangeSpeed(stretched, factor);
+            if (result.Length != s.Length)
+            {
+                Array.Resize(ref result, s.Length);
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// Simple Schroeder reverb (4 comb + 2 allpass filters). room 0..1 (size / decay), wet 0..1.
+        /// withTail = the sound gets longer by the reverb tail.
+        /// </summary>
+        public static float[] Reverb(float[] s, int rate, double room, double wet, bool withTail)
+        {
+            int tail = withTail ? (int)(rate * (0.3 + (room * 1.7))) : 0;
+            var input = new float[s.Length + tail];
+            Array.Copy(s, input, s.Length);
+
+            double scale = rate / 44100.0;
+            int[] combDelays = { 1116, 1188, 1277, 1356 };
+            int[] allDelays = { 556, 441 };
+            double feedback = 0.70 + (room * 0.28);
+            double damp = 0.2;
+
+            var wetSig = new double[input.Length];
+            foreach (int cd in combDelays)
+            {
+                int delay = Math.Max(1, (int)(cd * scale));
+                var buf = new double[delay];
+                int idx = 0;
+                double filter = 0;
+                for (int i = 0; i < input.Length; i++)
+                {
+                    double outv = buf[idx];
+                    filter = (outv * (1 - damp)) + (filter * damp);
+                    buf[idx] = input[i] + (filter * feedback);
+                    idx = (idx + 1) % delay;
+                    wetSig[i] += outv;
+                }
+            }
+            foreach (int ad in allDelays)
+            {
+                int delay = Math.Max(1, (int)(ad * scale));
+                var buf = new double[delay];
+                int idx = 0;
+                for (int i = 0; i < wetSig.Length; i++)
+                {
+                    double bufout = buf[idx];
+                    double outv = -wetSig[i] + bufout;
+                    buf[idx] = wetSig[i] + (bufout * 0.5);
+                    idx = (idx + 1) % delay;
+                    wetSig[i] = outv;
+                }
+            }
+
+            var d = new float[input.Length];
+            for (int i = 0; i < d.Length; i++)
+            {
+                double v = (input[i] * (1 - (wet * 0.5))) + (wetSig[i] * wet * 0.25);
+                d[i] = (float)Math.Max(-1, Math.Min(1, v));
+            }
+            return d;
+        }
+
+        /// <summary>Noise gate: everything below the threshold (dBFS) is faded out smoothly.</summary>
+        public static void NoiseGate(float[] s, int start, int end, int rate, double thresholdDb)
+        {
+            start = Math.Max(0, start);
+            end = Math.Min(s.Length, end);
+            double thr = Math.Pow(10, thresholdDb / 20.0);
+            double attack = Math.Exp(-1.0 / (rate * 0.002));   // 2 ms
+            double release = Math.Exp(-1.0 / (rate * 0.080));  // 80 ms
+            double env = 0, gain = 0;
+            for (int i = start; i < end; i++)
+            {
+                double a = Math.Abs(s[i]);
+                env = a > env ? a : (env * 0.999) + (a * 0.001);
+                double target = env >= thr ? 1 : 0;
+                gain = target > gain ? (gain * attack) + (target * (1 - attack)) : (gain * release) + (target * (1 - release));
+                s[i] = (float)(s[i] * gain);
+            }
+        }
+
+        /// <summary>Brings the clip to the target loudness (RMS in dBFS) without exceeding peakLimit.</summary>
+        public static void NormalizeRms(float[] s, double targetDb, float peakLimit)
+        {
+            double rms = Rms(s, 0, s.Length);
+            if (rms < 0.00001)
+            {
+                return;
+            }
+            double factor = Math.Pow(10, targetDb / 20.0) / rms;
+            float peak = Peak(s, 0, s.Length);
+            if (peak * factor > peakLimit)
+            {
+                factor = peakLimit / peak;
+            }
+            Gain(s, 0, s.Length, (float)factor);
+        }
+
+        #endregion
+
         #region Processing
 
         /// <summary>Linear interpolation resampler with a simple low pass when down sampling.</summary>

@@ -9,11 +9,12 @@ Gespeichert wird immer in den **Output-Pfad** von UO Fiddler (Optionen), ersatzw
 | Graphic    | Pixel-Art Konverter   | `PixelArtConverterForm`   |
 | Graphic    | Ausrüstungs-Generator | `EquipmentGeneratorForm`  |
 | Animation  | Animations-Studio     | `AnimationStudioForm` (+ Dialog `AnimationSheetImportForm`) |
-| Animation  | Spell / Effekt Editor | `SpellEffectEditorForm` (+ Dialog `EffectSheetSplitForm`)   |
+| Animation  | Spell / Effekt Editor | `SpellEffectEditorForm` (+ Dialoge `EffectSheetSplitForm`, `EffectParticleForm`) |
 | Sound (neu)| Sound-Studio          | `SoundStudioForm`         |
 
 ### Ordnerstruktur
 
+- `Forms/StudioTextForm` – Textfenster für erzeugte Def-Einträge / Scripte (kopieren, speichern, an Datei anhängen)
 - `Forms/` – jede Form als `Name.cs` (Logik), `Name.Designer.cs` (Oberfläche, im Visual-Studio-Designer bearbeitbar) und `Name.resx`.
 - `Class/UoStudio/` – Hilfsklassen und eigene Controls (Namespace `...Class.UoStudio`):
   - `StudioImaging.cs` – Bildfunktionen (Palette, Isometrie, Outline, Hue, UO-Farben, ARGB1555)
@@ -21,6 +22,8 @@ Gespeichert wird immer in den **Output-Pfad** von UO Fiddler (Optionen), ersatzw
   - `StudioUi.cs` – Meldungen, Output-Pfad, Hue-Zugriff, ID-Parser
   - `StudioIcons.cs` – Button-Icons (zur Laufzeit gezeichnet)
   - `NaturalStringComparer.cs` – sortiert frame2 vor frame10
+  - `UltimaImages.cs` – sichere Kopien von Art/Land/Gump (repariert beschädigte Cache-Einträge)
+  - `ParticleGenerator.cs` – Funken, Feuer, Rauch, Blitz, Magie-Ring, Explosion, Heilung
   - Controls für die Toolbox im Designer: `PixelView` (Pixel-Zoom mit Schachbrett), `WaveformView` (Wellenform mit Auswahl), `LevelMeter` (Pegelanzeige)
 
 ## Pixel-Art-Konverter
@@ -60,3 +63,27 @@ animierten Effekt aus Art/Animdata laden. Schwarz → transparent (für leuchten
 Vorschau additiv auf dunklem Grund oder auf einem Bodentile, mit Hue (auch nur Grautöne).
 Export: Frames als aufeinanderfolgende Art-Items ab Start-ID, Tiledata (Animation-Flag auf Frame 0),
 Animdata-Eintrag (max. 64 Frames, Intervall ≈ ms/100). Script-Snippet für `Effects.Send…Effect`.
+
+## Erweiterungen (Version 5)
+
+**Pixel-Art-Konverter:** Vorher/Nachher-Schieberegler · Palette aus einem Art-Item oder Palettenbild
+(neue Items passen farblich zum Client) · Stapel-Umwandlung vieler Bilder an fortlaufende IDs oder als PNG ·
+Schatten (gerastert oder voll, Versatz X/Y).
+
+**Animations-Studio:** Vorschau am Fußpunkt ausgerichtet (wie im Client) · Zwiebelschicht ·
+Fußpunkt pro Frame (Zahlen oder Klick in die große Ansicht, „Auf alle Frames“) · beim Laden aus der MUL
+werden die Fußpunkte übernommen · Hue-Vorschau · Overlay-Body (z. B. Ausrüstungs-Animation über der Figur) ·
+Export des Bodys als VD-Datei · Def-Einträge (mobtypes.txt, bodyconv.def, Body.def).
+UOP wird nicht direkt geschrieben – die VD-Datei lässt sich mit den vorhandenen VD-Tools weiterverarbeiten.
+
+**Ausrüstungs-Generator:** Item-Bild zusätzlich als Art-Item an die Item-ID · vorhandene Paperdoll-Gumps
+auf der Figur einblenden · weibliche Variante getrennt platzieren · Animations-Studio für die
+Mobile-Animation des Kleidungsstücks öffnen (Body = Animation, Typ EQUIPMENT).
+
+**Sound-Studio:** Zoom (Buttons, Mausrad, Shift+Rad = Scrollen), Klick setzt den Abspiel-Cursor ·
+Hall, Tempo (ohne Tonhöhe), Tonhöhe (ohne Länge), Geschwindigkeit, Rausch-Gate · Stapel: viele Dateien auf
+gleiche Lautheit (RMS) bringen und als UO-Sounds ab einer ID oder als WAV speichern · Sound.def/Script-Einträge.
+
+**Spell-/Effekt-Editor:** Partikel-Generator · Glow (Weichzeichnen + additiv) · Versatz und Dauer pro Frame ·
+Ping-Pong und Dauer laufen über die Animdata-Sequenz (keine doppelten Art-Items, max. 64 Einträge) ·
+Vorschau freistehend, auf Bodentile, auf einer Figur oder als Projektil von A nach B.

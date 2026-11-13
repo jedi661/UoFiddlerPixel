@@ -57,6 +57,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             chkShowBody = new System.Windows.Forms.CheckBox();
             lblZoom = new System.Windows.Forms.Label();
             numZoom = new System.Windows.Forms.NumericUpDown();
+            lblOverlayGumps = new System.Windows.Forms.Label();
+            txtOverlayGumps = new System.Windows.Forms.TextBox();
             grpTransform = new System.Windows.Forms.GroupBox();
             lblOffX = new System.Windows.Forms.Label();
             numOffX = new System.Windows.Forms.NumericUpDown();
@@ -70,6 +72,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             chkGray = new System.Windows.Forms.CheckBox();
             lblHue = new System.Windows.Forms.Label();
             numHue = new System.Windows.Forms.NumericUpDown();
+            chkFemaleSeparate = new System.Windows.Forms.CheckBox();
             btnAutoPlace = new System.Windows.Forms.Button();
             chkAutoPlace = new System.Windows.Forms.CheckBox();
             grpTileData = new System.Windows.Forms.GroupBox();
@@ -100,6 +103,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             btnSaveTileData = new System.Windows.Forms.Button();
             btnSaveGumpPng = new System.Windows.Forms.Button();
             btnCopyScript = new System.Windows.Forms.Button();
+            chkWriteArt = new System.Windows.Forms.CheckBox();
+            numArtMax = new System.Windows.Forms.NumericUpDown();
+            btnApplyArt = new System.Windows.Forms.Button();
+            btnSaveArt = new System.Windows.Forms.Button();
+            btnAnimStudio = new System.Windows.Forms.Button();
             lblHelp = new System.Windows.Forms.Label();
             statusStrip = new System.Windows.Forms.StatusStrip();
             lblStatus = new System.Windows.Forms.ToolStripStatusLabel();
@@ -123,6 +131,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             ((System.ComponentModel.ISupportInitialize)numTileHue).BeginInit();
             ((System.ComponentModel.ISupportInitialize)numHeight).BeginInit();
             grpExport.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)numArtMax).BeginInit();
             statusStrip.SuspendLayout();
             SuspendLayout();
             // 
@@ -240,8 +249,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             grpFigure.Controls.Add(chkShowBody);
             grpFigure.Controls.Add(lblZoom);
             grpFigure.Controls.Add(numZoom);
+            grpFigure.Controls.Add(lblOverlayGumps);
+            grpFigure.Controls.Add(txtOverlayGumps);
             grpFigure.Location = new System.Drawing.Point(4, 96);
-            grpFigure.Size = new System.Drawing.Size(326, 80);
+            grpFigure.Size = new System.Drawing.Size(326, 108);
             grpFigure.TabStop = false;
             grpFigure.Text = "Figur";
             grpFigure.Name = "grpFigure";
@@ -306,6 +317,22 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             numZoom.TabIndex = 13;
             numZoom.ValueChanged += NumZoom_ValueChanged;
             // 
+            // lblOverlayGumps
+            // 
+            lblOverlayGumps.AutoSize = true;
+            lblOverlayGumps.Location = new System.Drawing.Point(8, 81);
+            lblOverlayGumps.Text = "Weitere Gumps:";
+            lblOverlayGumps.Name = "lblOverlayGumps";
+            // 
+            // txtOverlayGumps
+            // 
+            txtOverlayGumps.Location = new System.Drawing.Point(110, 78);
+            txtOverlayGumps.Size = new System.Drawing.Size(206, 23);
+            txtOverlayGumps.PlaceholderText = "z.B. 50422, 0xC4F3";
+            txtOverlayGumps.Name = "txtOverlayGumps";
+            txtOverlayGumps.TabIndex = 14;
+            txtOverlayGumps.TextChanged += Compose_Changed;
+            // 
             // grpTransform
             // 
             grpTransform.Controls.Add(lblOffX);
@@ -320,14 +347,15 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             grpTransform.Controls.Add(chkGray);
             grpTransform.Controls.Add(lblHue);
             grpTransform.Controls.Add(numHue);
+            grpTransform.Controls.Add(chkFemaleSeparate);
             grpTransform.Controls.Add(btnAutoPlace);
             grpTransform.Controls.Add(chkAutoPlace);
-            grpTransform.Location = new System.Drawing.Point(4, 182);
+            grpTransform.Location = new System.Drawing.Point(4, 210);
             grpTransform.Size = new System.Drawing.Size(326, 170);
             grpTransform.TabStop = false;
             grpTransform.Text = "Position & Form";
             grpTransform.Name = "grpTransform";
-            grpTransform.TabIndex = 14;
+            grpTransform.TabIndex = 15;
             // 
             // lblOffX
             // 
@@ -344,7 +372,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             numOffX.Minimum = new decimal(new int[] { 500, 0, 0, -2147483648 });
             numOffX.Value = new decimal(new int[] { 60, 0, 0, 0 });
             numOffX.Name = "numOffX";
-            numOffX.TabIndex = 15;
+            numOffX.TabIndex = 16;
             numOffX.ValueChanged += Compose_Changed;
             // 
             // lblOffY
@@ -362,7 +390,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             numOffY.Minimum = new decimal(new int[] { 500, 0, 0, -2147483648 });
             numOffY.Value = new decimal(new int[] { 90, 0, 0, 0 });
             numOffY.Name = "numOffY";
-            numOffY.TabIndex = 16;
+            numOffY.TabIndex = 17;
             numOffY.ValueChanged += Compose_Changed;
             // 
             // lblScale
@@ -380,7 +408,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             numScale.Minimum = new decimal(new int[] { 10, 0, 0, 0 });
             numScale.Value = new decimal(new int[] { 100, 0, 0, 0 });
             numScale.Name = "numScale";
-            numScale.TabIndex = 17;
+            numScale.TabIndex = 18;
             numScale.ValueChanged += Compose_Changed;
             // 
             // lblRotate
@@ -398,7 +426,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             numRotate.Minimum = new decimal(new int[] { 180, 0, 0, -2147483648 });
             numRotate.Value = new decimal(new int[] { 0, 0, 0, 0 });
             numRotate.Name = "numRotate";
-            numRotate.TabIndex = 18;
+            numRotate.TabIndex = 19;
             numRotate.ValueChanged += Compose_Changed;
             // 
             // chkFlip
@@ -408,7 +436,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             chkFlip.Text = "Spiegeln";
             chkFlip.UseVisualStyleBackColor = true;
             chkFlip.Name = "chkFlip";
-            chkFlip.TabIndex = 19;
+            chkFlip.TabIndex = 20;
             chkFlip.CheckedChanged += Compose_Changed;
             // 
             // chkGray
@@ -418,7 +446,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             chkGray.Text = "Graustufen (färbbar)";
             chkGray.UseVisualStyleBackColor = true;
             chkGray.Name = "chkGray";
-            chkGray.TabIndex = 20;
+            chkGray.TabIndex = 21;
             chkGray.CheckedChanged += Compose_Changed;
             // 
             // lblHue
@@ -436,8 +464,18 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             numHue.Minimum = new decimal(new int[] { 0, 0, 0, 0 });
             numHue.Value = new decimal(new int[] { 0, 0, 0, 0 });
             numHue.Name = "numHue";
-            numHue.TabIndex = 21;
+            numHue.TabIndex = 22;
             numHue.ValueChanged += Compose_Changed;
+            // 
+            // chkFemaleSeparate
+            // 
+            chkFemaleSeparate.AutoSize = true;
+            chkFemaleSeparate.Location = new System.Drawing.Point(180, 110);
+            chkFemaleSeparate.Text = "weiblich separat";
+            chkFemaleSeparate.UseVisualStyleBackColor = true;
+            chkFemaleSeparate.Name = "chkFemaleSeparate";
+            chkFemaleSeparate.TabIndex = 23;
+            chkFemaleSeparate.CheckedChanged += ChkFemaleSeparate_CheckedChanged;
             // 
             // btnAutoPlace
             // 
@@ -446,7 +484,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             btnAutoPlace.Text = "Auto-Platzieren (nach Layer)";
             btnAutoPlace.UseVisualStyleBackColor = true;
             btnAutoPlace.Name = "btnAutoPlace";
-            btnAutoPlace.TabIndex = 22;
+            btnAutoPlace.TabIndex = 24;
             btnAutoPlace.Click += BtnAutoPlace_Click;
             // 
             // chkAutoPlace
@@ -458,7 +496,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             chkAutoPlace.Text = "automatisch";
             chkAutoPlace.UseVisualStyleBackColor = true;
             chkAutoPlace.Name = "chkAutoPlace";
-            chkAutoPlace.TabIndex = 23;
+            chkAutoPlace.TabIndex = 25;
             // 
             // grpTileData
             // 
@@ -481,12 +519,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             grpTileData.Controls.Add(numHeight);
             grpTileData.Controls.Add(chkPartialHue);
             grpTileData.Controls.Add(chkFemale);
-            grpTileData.Location = new System.Drawing.Point(4, 358);
+            grpTileData.Location = new System.Drawing.Point(4, 386);
             grpTileData.Size = new System.Drawing.Size(326, 222);
             grpTileData.TabStop = false;
             grpTileData.Text = "Tiledata-Eintrag";
             grpTileData.Name = "grpTileData";
-            grpTileData.TabIndex = 24;
+            grpTileData.TabIndex = 26;
             // 
             // lblItemId
             // 
@@ -501,7 +539,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             txtItemId.Size = new System.Drawing.Size(80, 23);
             txtItemId.Text = "0x1415";
             txtItemId.Name = "txtItemId";
-            txtItemId.TabIndex = 25;
+            txtItemId.TabIndex = 27;
             // 
             // btnReadTileData
             // 
@@ -510,7 +548,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             btnReadTileData.Text = "Lesen";
             btnReadTileData.UseVisualStyleBackColor = true;
             btnReadTileData.Name = "btnReadTileData";
-            btnReadTileData.TabIndex = 26;
+            btnReadTileData.TabIndex = 28;
             btnReadTileData.Click += BtnReadTileData_Click;
             // 
             // lblName
@@ -527,7 +565,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             txtName.Text = "new armor";
             txtName.MaxLength = 20;
             txtName.Name = "txtName";
-            txtName.TabIndex = 27;
+            txtName.TabIndex = 29;
             // 
             // lblLayer
             // 
@@ -544,7 +582,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             cbLayer.Location = new System.Drawing.Point(90, 76);
             cbLayer.Size = new System.Drawing.Size(226, 23);
             cbLayer.Name = "cbLayer";
-            cbLayer.TabIndex = 28;
+            cbLayer.TabIndex = 30;
             cbLayer.SelectedIndexChanged += CbLayer_SelectedIndexChanged;
             // 
             // lblAnim
@@ -562,7 +600,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             numAnim.Minimum = new decimal(new int[] { 0, 0, 0, 0 });
             numAnim.Value = new decimal(new int[] { 1000, 0, 0, 0 });
             numAnim.Name = "numAnim";
-            numAnim.TabIndex = 29;
+            numAnim.TabIndex = 31;
             numAnim.ValueChanged += NumAnim_ValueChanged;
             // 
             // btnFreeAnim
@@ -572,7 +610,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             btnFreeAnim.Text = "Freie suchen";
             btnFreeAnim.UseVisualStyleBackColor = true;
             btnFreeAnim.Name = "btnFreeAnim";
-            btnFreeAnim.TabIndex = 30;
+            btnFreeAnim.TabIndex = 32;
             btnFreeAnim.Click += BtnFreeAnim_Click;
             // 
             // lblGumpIds
@@ -597,7 +635,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             numWeight.Minimum = new decimal(new int[] { 0, 0, 0, 0 });
             numWeight.Value = new decimal(new int[] { 5, 0, 0, 0 });
             numWeight.Name = "numWeight";
-            numWeight.TabIndex = 31;
+            numWeight.TabIndex = 33;
             // 
             // lblTileHue
             // 
@@ -614,7 +652,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             numTileHue.Minimum = new decimal(new int[] { 0, 0, 0, 0 });
             numTileHue.Value = new decimal(new int[] { 0, 0, 0, 0 });
             numTileHue.Name = "numTileHue";
-            numTileHue.TabIndex = 32;
+            numTileHue.TabIndex = 34;
             // 
             // lblHeight
             // 
@@ -631,7 +669,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             numHeight.Minimum = new decimal(new int[] { 0, 0, 0, 0 });
             numHeight.Value = new decimal(new int[] { 1, 0, 0, 0 });
             numHeight.Name = "numHeight";
-            numHeight.TabIndex = 33;
+            numHeight.TabIndex = 35;
             // 
             // chkPartialHue
             // 
@@ -642,7 +680,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             chkPartialHue.Text = "PartialHue";
             chkPartialHue.UseVisualStyleBackColor = true;
             chkPartialHue.Name = "chkPartialHue";
-            chkPartialHue.TabIndex = 34;
+            chkPartialHue.TabIndex = 36;
             chkPartialHue.CheckedChanged += Compose_Changed;
             // 
             // chkFemale
@@ -654,7 +692,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             chkFemale.Text = "auch weibliches Gump";
             chkFemale.UseVisualStyleBackColor = true;
             chkFemale.Name = "chkFemale";
-            chkFemale.TabIndex = 35;
+            chkFemale.TabIndex = 37;
             // 
             // grpExport
             // 
@@ -665,12 +703,17 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             grpExport.Controls.Add(btnSaveTileData);
             grpExport.Controls.Add(btnSaveGumpPng);
             grpExport.Controls.Add(btnCopyScript);
-            grpExport.Location = new System.Drawing.Point(4, 586);
-            grpExport.Size = new System.Drawing.Size(326, 150);
+            grpExport.Controls.Add(chkWriteArt);
+            grpExport.Controls.Add(numArtMax);
+            grpExport.Controls.Add(btnApplyArt);
+            grpExport.Controls.Add(btnSaveArt);
+            grpExport.Controls.Add(btnAnimStudio);
+            grpExport.Location = new System.Drawing.Point(4, 614);
+            grpExport.Size = new System.Drawing.Size(326, 232);
             grpExport.TabStop = false;
             grpExport.Text = "Export";
             grpExport.Name = "grpExport";
-            grpExport.TabIndex = 36;
+            grpExport.TabIndex = 38;
             // 
             // btnApplyAll
             // 
@@ -679,7 +722,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             btnApplyAll.Text = "Alles setzen (Gump + Tiledata)";
             btnApplyAll.UseVisualStyleBackColor = true;
             btnApplyAll.Name = "btnApplyAll";
-            btnApplyAll.TabIndex = 37;
+            btnApplyAll.TabIndex = 39;
             btnApplyAll.Click += BtnApplyAll_Click;
             // 
             // btnApplyGumps
@@ -689,7 +732,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             btnApplyGumps.Text = "Nur Gump(s) setzen";
             btnApplyGumps.UseVisualStyleBackColor = true;
             btnApplyGumps.Name = "btnApplyGumps";
-            btnApplyGumps.TabIndex = 38;
+            btnApplyGumps.TabIndex = 40;
             btnApplyGumps.Click += BtnApplyGumps_Click;
             // 
             // btnApplyTileData
@@ -699,7 +742,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             btnApplyTileData.Text = "Nur Tiledata setzen";
             btnApplyTileData.UseVisualStyleBackColor = true;
             btnApplyTileData.Name = "btnApplyTileData";
-            btnApplyTileData.TabIndex = 39;
+            btnApplyTileData.TabIndex = 41;
             btnApplyTileData.Click += BtnApplyTileData_Click;
             // 
             // btnSaveGumps
@@ -709,7 +752,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             btnSaveGumps.Text = "Gump-MUL speichern";
             btnSaveGumps.UseVisualStyleBackColor = true;
             btnSaveGumps.Name = "btnSaveGumps";
-            btnSaveGumps.TabIndex = 40;
+            btnSaveGumps.TabIndex = 42;
             btnSaveGumps.Click += BtnSaveGumps_Click;
             // 
             // btnSaveTileData
@@ -719,7 +762,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             btnSaveTileData.Text = "tiledata.mul speichern";
             btnSaveTileData.UseVisualStyleBackColor = true;
             btnSaveTileData.Name = "btnSaveTileData";
-            btnSaveTileData.TabIndex = 41;
+            btnSaveTileData.TabIndex = 43;
             btnSaveTileData.Click += BtnSaveTileData_Click;
             // 
             // btnSaveGumpPng
@@ -729,7 +772,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             btnSaveGumpPng.Text = "Gump als PNG...";
             btnSaveGumpPng.UseVisualStyleBackColor = true;
             btnSaveGumpPng.Name = "btnSaveGumpPng";
-            btnSaveGumpPng.TabIndex = 42;
+            btnSaveGumpPng.TabIndex = 44;
             btnSaveGumpPng.Click += BtnSaveGumpPng_Click;
             // 
             // btnCopyScript
@@ -739,22 +782,73 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             btnCopyScript.Text = "Script-Snippet kopieren";
             btnCopyScript.UseVisualStyleBackColor = true;
             btnCopyScript.Name = "btnCopyScript";
-            btnCopyScript.TabIndex = 43;
+            btnCopyScript.TabIndex = 45;
             btnCopyScript.Click += BtnCopyScript_Click;
+            // 
+            // chkWriteArt
+            // 
+            chkWriteArt.Checked = true;
+            chkWriteArt.CheckState = System.Windows.Forms.CheckState.Checked;
+            chkWriteArt.AutoSize = true;
+            chkWriteArt.Location = new System.Drawing.Point(8, 142);
+            chkWriteArt.Text = "Item-Bild als Art an Item-ID, max. px:";
+            chkWriteArt.UseVisualStyleBackColor = true;
+            chkWriteArt.Name = "chkWriteArt";
+            chkWriteArt.TabIndex = 46;
+            // 
+            // numArtMax
+            // 
+            numArtMax.Location = new System.Drawing.Point(256, 140);
+            numArtMax.Size = new System.Drawing.Size(60, 23);
+            numArtMax.Maximum = new decimal(new int[] { 256, 0, 0, 0 });
+            numArtMax.Minimum = new decimal(new int[] { 16, 0, 0, 0 });
+            numArtMax.Value = new decimal(new int[] { 64, 0, 0, 0 });
+            numArtMax.Name = "numArtMax";
+            numArtMax.TabIndex = 47;
+            // 
+            // btnApplyArt
+            // 
+            btnApplyArt.Location = new System.Drawing.Point(8, 168);
+            btnApplyArt.Size = new System.Drawing.Size(150, 26);
+            btnApplyArt.Text = "Nur Art setzen";
+            btnApplyArt.UseVisualStyleBackColor = true;
+            btnApplyArt.Name = "btnApplyArt";
+            btnApplyArt.TabIndex = 48;
+            btnApplyArt.Click += BtnApplyArt_Click;
+            // 
+            // btnSaveArt
+            // 
+            btnSaveArt.Location = new System.Drawing.Point(166, 168);
+            btnSaveArt.Size = new System.Drawing.Size(150, 26);
+            btnSaveArt.Text = "Art-MUL speichern";
+            btnSaveArt.UseVisualStyleBackColor = true;
+            btnSaveArt.Name = "btnSaveArt";
+            btnSaveArt.TabIndex = 49;
+            btnSaveArt.Click += BtnSaveArt_Click;
+            // 
+            // btnAnimStudio
+            // 
+            btnAnimStudio.Location = new System.Drawing.Point(8, 198);
+            btnAnimStudio.Size = new System.Drawing.Size(308, 26);
+            btnAnimStudio.Text = "Mobile-Animation im Animations-Studio...";
+            btnAnimStudio.UseVisualStyleBackColor = true;
+            btnAnimStudio.Name = "btnAnimStudio";
+            btnAnimStudio.TabIndex = 50;
+            btnAnimStudio.Click += BtnAnimStudio_Click;
             // 
             // lblHelp
             // 
             lblHelp.AutoSize = true;
-            lblHelp.Location = new System.Drawing.Point(6, 744);
+            lblHelp.Location = new System.Drawing.Point(6, 852);
             lblHelp.MaximumSize = new System.Drawing.Size(320, 0);
-            lblHelp.Text = "So funktioniert es:\r\n1. Item-Bild laden (Datei oder Art-ID).\r\n2. Layer wählen – das Bild wird automatisch an die passende Stelle der Figur gesetzt und skaliert.\r\n3. Mit Maus / X / Y / Größe / Drehen feinjustieren.\r\n4. Item-ID, Name und Animation eintragen (\u201eFreie suchen\u201c).\r\n5. \u201eAlles setzen\u201c erzeugt das Paperdoll-Gump (50000/60000 + Animation) und den Tiledata-Eintrag.\r\n6. Gump-MUL und tiledata.mul speichern.";
+            lblHelp.Text = "So funktioniert es:\r\n1. Item-Bild laden (Datei oder Art-ID).\r\n2. Layer wählen – das Bild wird automatisch an die passende Stelle der Figur gesetzt und skaliert.\r\n3. Mit Maus / X / Y / Größe / Drehen feinjustieren.\r\n4. Item-ID, Name und Animation eintragen (\u201eFreie suchen\u201c).\r\n5. \u201eAlles setzen\u201c erzeugt das Paperdoll-Gump (50000/60000 + Animation) den Tiledata-Eintrag und (optional) das Art-Item.\r\n6. Gump-MUL, tiledata.mul und ggf. Art-MUL speichern.\r\n7. Optional: \u201eweiblich separat\u201c – Figur auf Weiblich stellen und die zweite Variante eigens platzieren.";
             lblHelp.Name = "lblHelp";
             // 
             // statusStrip
             // 
             statusStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { lblStatus });
             statusStrip.Name = "statusStrip";
-            statusStrip.TabIndex = 44;
+            statusStrip.TabIndex = 51;
             // 
             // lblStatus
             // 
@@ -775,6 +869,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             Text = "Ausrüstungs-Generator (Item → Paperdoll-Gump + Tiledata)";
             statusStrip.ResumeLayout(false);
             statusStrip.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)numArtMax).EndInit();
             grpExport.ResumeLayout(false);
             grpExport.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)numHeight).EndInit();
@@ -825,6 +920,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private System.Windows.Forms.CheckBox chkShowBody;
         private System.Windows.Forms.Label lblZoom;
         private System.Windows.Forms.NumericUpDown numZoom;
+        private System.Windows.Forms.Label lblOverlayGumps;
+        private System.Windows.Forms.TextBox txtOverlayGumps;
         private System.Windows.Forms.GroupBox grpTransform;
         private System.Windows.Forms.Label lblOffX;
         private System.Windows.Forms.NumericUpDown numOffX;
@@ -838,6 +935,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private System.Windows.Forms.CheckBox chkGray;
         private System.Windows.Forms.Label lblHue;
         private System.Windows.Forms.NumericUpDown numHue;
+        private System.Windows.Forms.CheckBox chkFemaleSeparate;
         private System.Windows.Forms.Button btnAutoPlace;
         private System.Windows.Forms.CheckBox chkAutoPlace;
         private System.Windows.Forms.GroupBox grpTileData;
@@ -868,6 +966,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private System.Windows.Forms.Button btnSaveTileData;
         private System.Windows.Forms.Button btnSaveGumpPng;
         private System.Windows.Forms.Button btnCopyScript;
+        private System.Windows.Forms.CheckBox chkWriteArt;
+        private System.Windows.Forms.NumericUpDown numArtMax;
+        private System.Windows.Forms.Button btnApplyArt;
+        private System.Windows.Forms.Button btnSaveArt;
+        private System.Windows.Forms.Button btnAnimStudio;
         private System.Windows.Forms.Label lblHelp;
         private System.Windows.Forms.StatusStrip statusStrip;
         private System.Windows.Forms.ToolStripStatusLabel lblStatus;

@@ -88,6 +88,19 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             cbOutline = new System.Windows.Forms.ComboBox();
             pnlOutlineColor = new System.Windows.Forms.Panel();
             chkOutlineDiagonal = new System.Windows.Forms.CheckBox();
+            grpExtra = new System.Windows.Forms.GroupBox();
+            lblPaletteSource = new System.Windows.Forms.Label();
+            cbPaletteSource = new System.Windows.Forms.ComboBox();
+            txtPaletteId = new System.Windows.Forms.TextBox();
+            btnPaletteFile = new System.Windows.Forms.Button();
+            lblPaletteInfo = new System.Windows.Forms.Label();
+            chkShadow = new System.Windows.Forms.CheckBox();
+            lblShadow = new System.Windows.Forms.Label();
+            numShadowX = new System.Windows.Forms.NumericUpDown();
+            numShadowY = new System.Windows.Forms.NumericUpDown();
+            chkShadowDither = new System.Windows.Forms.CheckBox();
+            chkCompare = new System.Windows.Forms.CheckBox();
+            trackCompare = new System.Windows.Forms.TrackBar();
             grpExport = new System.Windows.Forms.GroupBox();
             lblId = new System.Windows.Forms.Label();
             txtId = new System.Windows.Forms.TextBox();
@@ -99,6 +112,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             btnSaveArt = new System.Windows.Forms.Button();
             btnSaveGump = new System.Windows.Forms.Button();
             btnCopyResult = new System.Windows.Forms.Button();
+            btnBatch = new System.Windows.Forms.Button();
             lblZoom = new System.Windows.Forms.Label();
             numZoom = new System.Windows.Forms.NumericUpDown();
             statusStrip = new System.Windows.Forms.StatusStrip();
@@ -124,6 +138,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             ((System.ComponentModel.ISupportInitialize)numColors).BeginInit();
             ((System.ComponentModel.ISupportInitialize)numSharpen).BeginInit();
             pnlOutlineColor.SuspendLayout();
+            grpExtra.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)numShadowX).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)numShadowY).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)trackCompare).BeginInit();
             grpExport.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)numZoom).BeginInit();
             statusStrip.SuspendLayout();
@@ -171,6 +189,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             pnlSettings.Controls.Add(grpColors);
             pnlSettings.Controls.Add(grpSize);
             pnlSettings.Controls.Add(grpPalette);
+            pnlSettings.Controls.Add(grpExtra);
             pnlSettings.Controls.Add(grpExport);
             pnlSettings.Controls.Add(lblZoom);
             pnlSettings.Controls.Add(numZoom);
@@ -626,6 +645,143 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             chkOutlineDiagonal.TabIndex = 31;
             chkOutlineDiagonal.CheckedChanged += Settings_Changed;
             // 
+            // grpExtra
+            // 
+            grpExtra.Controls.Add(lblPaletteSource);
+            grpExtra.Controls.Add(cbPaletteSource);
+            grpExtra.Controls.Add(txtPaletteId);
+            grpExtra.Controls.Add(btnPaletteFile);
+            grpExtra.Controls.Add(lblPaletteInfo);
+            grpExtra.Controls.Add(chkShadow);
+            grpExtra.Controls.Add(lblShadow);
+            grpExtra.Controls.Add(numShadowX);
+            grpExtra.Controls.Add(numShadowY);
+            grpExtra.Controls.Add(chkShadowDither);
+            grpExtra.Controls.Add(chkCompare);
+            grpExtra.Controls.Add(trackCompare);
+            grpExtra.Location = new System.Drawing.Point(4, 540);
+            grpExtra.Size = new System.Drawing.Size(306, 140);
+            grpExtra.TabStop = false;
+            grpExtra.Text = "Palette-Quelle, Schatten & Vergleich";
+            grpExtra.Name = "grpExtra";
+            grpExtra.TabIndex = 32;
+            // 
+            // lblPaletteSource
+            // 
+            lblPaletteSource.AutoSize = true;
+            lblPaletteSource.Location = new System.Drawing.Point(8, 23);
+            lblPaletteSource.Text = "Palette:";
+            lblPaletteSource.Name = "lblPaletteSource";
+            // 
+            // cbPaletteSource
+            // 
+            cbPaletteSource.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            cbPaletteSource.FormattingEnabled = true;
+            cbPaletteSource.Items.AddRange(new object[] { "Optimiert (aus Bild)", "Aus Art-Item (ID)", "Aus Bilddatei" });
+            cbPaletteSource.Location = new System.Drawing.Point(70, 20);
+            cbPaletteSource.Size = new System.Drawing.Size(140, 23);
+            cbPaletteSource.Name = "cbPaletteSource";
+            cbPaletteSource.TabIndex = 33;
+            cbPaletteSource.SelectedIndexChanged += Settings_Changed;
+            // 
+            // txtPaletteId
+            // 
+            txtPaletteId.Location = new System.Drawing.Point(216, 20);
+            txtPaletteId.Size = new System.Drawing.Size(80, 23);
+            txtPaletteId.Text = "0x0EED";
+            txtPaletteId.Name = "txtPaletteId";
+            txtPaletteId.TabIndex = 34;
+            // 
+            // btnPaletteFile
+            // 
+            btnPaletteFile.Location = new System.Drawing.Point(8, 48);
+            btnPaletteFile.Size = new System.Drawing.Size(110, 26);
+            btnPaletteFile.Text = "Palettenbild...";
+            btnPaletteFile.UseVisualStyleBackColor = true;
+            btnPaletteFile.Name = "btnPaletteFile";
+            btnPaletteFile.TabIndex = 35;
+            btnPaletteFile.Click += BtnPaletteFile_Click;
+            // 
+            // lblPaletteInfo
+            // 
+            lblPaletteInfo.AutoSize = true;
+            lblPaletteInfo.Location = new System.Drawing.Point(124, 53);
+            lblPaletteInfo.Text = "";
+            lblPaletteInfo.Name = "lblPaletteInfo";
+            // 
+            // chkShadow
+            // 
+            chkShadow.AutoSize = true;
+            chkShadow.Location = new System.Drawing.Point(8, 80);
+            chkShadow.Text = "Schatten";
+            chkShadow.UseVisualStyleBackColor = true;
+            chkShadow.Name = "chkShadow";
+            chkShadow.TabIndex = 36;
+            chkShadow.CheckedChanged += Settings_Changed;
+            // 
+            // lblShadow
+            // 
+            lblShadow.AutoSize = true;
+            lblShadow.Location = new System.Drawing.Point(88, 81);
+            lblShadow.Text = "X/Y:";
+            lblShadow.Name = "lblShadow";
+            // 
+            // numShadowX
+            // 
+            numShadowX.Location = new System.Drawing.Point(120, 78);
+            numShadowX.Size = new System.Drawing.Size(44, 23);
+            numShadowX.Maximum = new decimal(new int[] { 20, 0, 0, 0 });
+            numShadowX.Minimum = new decimal(new int[] { 20, 0, 0, -2147483648 });
+            numShadowX.Value = new decimal(new int[] { 4, 0, 0, 0 });
+            numShadowX.Name = "numShadowX";
+            numShadowX.TabIndex = 37;
+            numShadowX.ValueChanged += Settings_Changed;
+            // 
+            // numShadowY
+            // 
+            numShadowY.Location = new System.Drawing.Point(168, 78);
+            numShadowY.Size = new System.Drawing.Size(44, 23);
+            numShadowY.Maximum = new decimal(new int[] { 20, 0, 0, 0 });
+            numShadowY.Minimum = new decimal(new int[] { 20, 0, 0, -2147483648 });
+            numShadowY.Value = new decimal(new int[] { 2, 0, 0, 0 });
+            numShadowY.Name = "numShadowY";
+            numShadowY.TabIndex = 38;
+            numShadowY.ValueChanged += Settings_Changed;
+            // 
+            // chkShadowDither
+            // 
+            chkShadowDither.Checked = true;
+            chkShadowDither.CheckState = System.Windows.Forms.CheckState.Checked;
+            chkShadowDither.AutoSize = true;
+            chkShadowDither.Location = new System.Drawing.Point(220, 80);
+            chkShadowDither.Text = "gerastert";
+            chkShadowDither.UseVisualStyleBackColor = true;
+            chkShadowDither.Name = "chkShadowDither";
+            chkShadowDither.TabIndex = 39;
+            chkShadowDither.CheckedChanged += Settings_Changed;
+            // 
+            // chkCompare
+            // 
+            chkCompare.AutoSize = true;
+            chkCompare.Location = new System.Drawing.Point(8, 110);
+            chkCompare.Text = "Vorher/Nachher";
+            chkCompare.UseVisualStyleBackColor = true;
+            chkCompare.Name = "chkCompare";
+            chkCompare.TabIndex = 40;
+            chkCompare.CheckedChanged += Compare_Changed;
+            // 
+            // trackCompare
+            // 
+            trackCompare.AutoSize = false;
+            trackCompare.Location = new System.Drawing.Point(120, 106);
+            trackCompare.Maximum = 100;
+            trackCompare.Size = new System.Drawing.Size(180, 28);
+            trackCompare.TickFrequency = 10;
+            trackCompare.Value = 50;
+            trackCompare.Name = "trackCompare";
+            trackCompare.TabIndex = 41;
+            trackCompare.Scroll += Compare_Changed;
+            // 
             // grpExport
             // 
             grpExport.Controls.Add(lblId);
@@ -638,12 +794,13 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             grpExport.Controls.Add(btnSaveArt);
             grpExport.Controls.Add(btnSaveGump);
             grpExport.Controls.Add(btnCopyResult);
-            grpExport.Location = new System.Drawing.Point(4, 540);
+            grpExport.Controls.Add(btnBatch);
+            grpExport.Location = new System.Drawing.Point(4, 686);
             grpExport.Size = new System.Drawing.Size(306, 170);
             grpExport.TabStop = false;
             grpExport.Text = "Export";
             grpExport.Name = "grpExport";
-            grpExport.TabIndex = 32;
+            grpExport.TabIndex = 42;
             // 
             // lblId
             // 
@@ -658,7 +815,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             txtId.Size = new System.Drawing.Size(90, 23);
             txtId.Text = "0x0";
             txtId.Name = "txtId";
-            txtId.TabIndex = 33;
+            txtId.TabIndex = 43;
             // 
             // btnFreeId
             // 
@@ -667,7 +824,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             btnFreeId.Text = "Freie ID";
             btnFreeId.UseVisualStyleBackColor = true;
             btnFreeId.Name = "btnFreeId";
-            btnFreeId.TabIndex = 34;
+            btnFreeId.TabIndex = 44;
             btnFreeId.Click += BtnFreeId_Click;
             // 
             // btnSetArt
@@ -677,7 +834,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             btnSetArt.Text = "Als Art-Item setzen";
             btnSetArt.UseVisualStyleBackColor = true;
             btnSetArt.Name = "btnSetArt";
-            btnSetArt.TabIndex = 35;
+            btnSetArt.TabIndex = 45;
             btnSetArt.Click += BtnSetArt_Click;
             // 
             // btnSetLand
@@ -687,7 +844,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             btnSetLand.Text = "Als Bodentile setzen";
             btnSetLand.UseVisualStyleBackColor = true;
             btnSetLand.Name = "btnSetLand";
-            btnSetLand.TabIndex = 36;
+            btnSetLand.TabIndex = 46;
             btnSetLand.Click += BtnSetLand_Click;
             // 
             // btnSetGump
@@ -697,7 +854,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             btnSetGump.Text = "Als Gump setzen";
             btnSetGump.UseVisualStyleBackColor = true;
             btnSetGump.Name = "btnSetGump";
-            btnSetGump.TabIndex = 37;
+            btnSetGump.TabIndex = 47;
             btnSetGump.Click += BtnSetGump_Click;
             // 
             // btnSavePng
@@ -707,7 +864,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             btnSavePng.Text = "PNG speichern...";
             btnSavePng.UseVisualStyleBackColor = true;
             btnSavePng.Name = "btnSavePng";
-            btnSavePng.TabIndex = 38;
+            btnSavePng.TabIndex = 48;
             btnSavePng.Click += BtnSavePng_Click;
             // 
             // btnSaveArt
@@ -717,7 +874,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             btnSaveArt.Text = "Art-MUL speichern";
             btnSaveArt.UseVisualStyleBackColor = true;
             btnSaveArt.Name = "btnSaveArt";
-            btnSaveArt.TabIndex = 39;
+            btnSaveArt.TabIndex = 49;
             btnSaveArt.Click += BtnSaveArt_Click;
             // 
             // btnSaveGump
@@ -727,7 +884,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             btnSaveGump.Text = "Gump-MUL speichern";
             btnSaveGump.UseVisualStyleBackColor = true;
             btnSaveGump.Name = "btnSaveGump";
-            btnSaveGump.TabIndex = 40;
+            btnSaveGump.TabIndex = 50;
             btnSaveGump.Click += BtnSaveGump_Click;
             // 
             // btnCopyResult
@@ -737,32 +894,42 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             btnCopyResult.Text = "Ergebnis kopieren";
             btnCopyResult.UseVisualStyleBackColor = true;
             btnCopyResult.Name = "btnCopyResult";
-            btnCopyResult.TabIndex = 41;
+            btnCopyResult.TabIndex = 51;
             btnCopyResult.Click += BtnCopyResult_Click;
+            // 
+            // btnBatch
+            // 
+            btnBatch.Location = new System.Drawing.Point(152, 140);
+            btnBatch.Size = new System.Drawing.Size(144, 26);
+            btnBatch.Text = "Stapel umwandeln...";
+            btnBatch.UseVisualStyleBackColor = true;
+            btnBatch.Name = "btnBatch";
+            btnBatch.TabIndex = 52;
+            btnBatch.Click += BtnBatch_Click;
             // 
             // lblZoom
             // 
             lblZoom.AutoSize = true;
-            lblZoom.Location = new System.Drawing.Point(6, 719);
+            lblZoom.Location = new System.Drawing.Point(6, 865);
             lblZoom.Text = "Zoom Ergebnis:";
             lblZoom.Name = "lblZoom";
             // 
             // numZoom
             // 
-            numZoom.Location = new System.Drawing.Point(110, 716);
+            numZoom.Location = new System.Drawing.Point(110, 862);
             numZoom.Size = new System.Drawing.Size(60, 23);
             numZoom.Maximum = new decimal(new int[] { 16, 0, 0, 0 });
             numZoom.Minimum = new decimal(new int[] { 1, 0, 0, 0 });
             numZoom.Value = new decimal(new int[] { 3, 0, 0, 0 });
             numZoom.Name = "numZoom";
-            numZoom.TabIndex = 42;
+            numZoom.TabIndex = 53;
             numZoom.ValueChanged += NumZoom_ValueChanged;
             // 
             // statusStrip
             // 
             statusStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { lblStatus });
             statusStrip.Name = "statusStrip";
-            statusStrip.TabIndex = 43;
+            statusStrip.TabIndex = 54;
             // 
             // lblStatus
             // 
@@ -795,6 +962,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             ((System.ComponentModel.ISupportInitialize)numZoom).EndInit();
             grpExport.ResumeLayout(false);
             grpExport.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)trackCompare).EndInit();
+            ((System.ComponentModel.ISupportInitialize)numShadowY).EndInit();
+            ((System.ComponentModel.ISupportInitialize)numShadowX).EndInit();
+            grpExtra.ResumeLayout(false);
+            grpExtra.PerformLayout();
             pnlOutlineColor.ResumeLayout(false);
             pnlOutlineColor.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)numSharpen).EndInit();
@@ -877,6 +1049,19 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private System.Windows.Forms.ComboBox cbOutline;
         private System.Windows.Forms.Panel pnlOutlineColor;
         private System.Windows.Forms.CheckBox chkOutlineDiagonal;
+        private System.Windows.Forms.GroupBox grpExtra;
+        private System.Windows.Forms.Label lblPaletteSource;
+        private System.Windows.Forms.ComboBox cbPaletteSource;
+        private System.Windows.Forms.TextBox txtPaletteId;
+        private System.Windows.Forms.Button btnPaletteFile;
+        private System.Windows.Forms.Label lblPaletteInfo;
+        private System.Windows.Forms.CheckBox chkShadow;
+        private System.Windows.Forms.Label lblShadow;
+        private System.Windows.Forms.NumericUpDown numShadowX;
+        private System.Windows.Forms.NumericUpDown numShadowY;
+        private System.Windows.Forms.CheckBox chkShadowDither;
+        private System.Windows.Forms.CheckBox chkCompare;
+        private System.Windows.Forms.TrackBar trackCompare;
         private System.Windows.Forms.GroupBox grpExport;
         private System.Windows.Forms.Label lblId;
         private System.Windows.Forms.TextBox txtId;
@@ -888,6 +1073,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private System.Windows.Forms.Button btnSaveArt;
         private System.Windows.Forms.Button btnSaveGump;
         private System.Windows.Forms.Button btnCopyResult;
+        private System.Windows.Forms.Button btnBatch;
         private System.Windows.Forms.Label lblZoom;
         private System.Windows.Forms.NumericUpDown numZoom;
         private System.Windows.Forms.StatusStrip statusStrip;

@@ -71,12 +71,25 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             numZoom = new System.Windows.Forms.NumericUpDown();
             chkPlay = new System.Windows.Forms.CheckBox();
             chkCrosshair = new System.Windows.Forms.CheckBox();
+            chkOnion = new System.Windows.Forms.CheckBox();
+            lblHue = new System.Windows.Forms.Label();
+            numHue = new System.Windows.Forms.NumericUpDown();
+            chkPartialHue = new System.Windows.Forms.CheckBox();
+            chkOverlay = new System.Windows.Forms.CheckBox();
+            numOverlayBody = new System.Windows.Forms.NumericUpDown();
+            cbOverlayFile = new System.Windows.Forms.ComboBox();
+            lblOverlayHint = new System.Windows.Forms.Label();
             grpCenter = new System.Windows.Forms.GroupBox();
             lblCenterX = new System.Windows.Forms.Label();
             numCenterX = new System.Windows.Forms.NumericUpDown();
             lblCenterY = new System.Windows.Forms.Label();
             numCenterY = new System.Windows.Forms.NumericUpDown();
             lblCenterHint = new System.Windows.Forms.Label();
+            lblFrameOffset = new System.Windows.Forms.Label();
+            numFrameOffX = new System.Windows.Forms.NumericUpDown();
+            numFrameOffY = new System.Windows.Forms.NumericUpDown();
+            btnFootAll = new System.Windows.Forms.Button();
+            chkSetFoot = new System.Windows.Forms.CheckBox();
             grpExport = new System.Windows.Forms.GroupBox();
             lblFileType = new System.Windows.Forms.Label();
             cbFileType = new System.Windows.Forms.ComboBox();
@@ -92,6 +105,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             btnExportPng = new System.Windows.Forms.Button();
             btnExportSheet = new System.Windows.Forms.Button();
             lblBodyHint = new System.Windows.Forms.Label();
+            lblMobType = new System.Windows.Forms.Label();
+            cbMobType = new System.Windows.Forms.ComboBox();
+            btnDefEntries = new System.Windows.Forms.Button();
+            btnExportVd = new System.Windows.Forms.Button();
             statusStrip = new System.Windows.Forms.StatusStrip();
             lblStatus = new System.Windows.Forms.ToolStripStatusLabel();
             timerPlay = new System.Windows.Forms.Timer(components);
@@ -100,9 +117,13 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             grpPreview.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)numDelay).BeginInit();
             ((System.ComponentModel.ISupportInitialize)numZoom).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)numHue).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)numOverlayBody).BeginInit();
             grpCenter.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)numCenterX).BeginInit();
             ((System.ComponentModel.ISupportInitialize)numCenterY).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)numFrameOffX).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)numFrameOffY).BeginInit();
             grpExport.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)numColors).BeginInit();
             ((System.ComponentModel.ISupportInitialize)numBody).BeginInit();
@@ -195,6 +216,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             viewSelected.Size = new System.Drawing.Size(277, 242);
             viewSelected.Name = "viewSelected";
             viewSelected.TabIndex = 5;
+            viewSelected.MouseClick += ViewSelected_MouseClick;
             // 
             // viewRight
             // 
@@ -381,6 +403,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             lvFrames.UseCompatibleStateImageBehavior = false;
             lvFrames.Name = "lvFrames";
             lvFrames.TabIndex = 21;
+            lvFrames.SelectedIndexChanged += LvFrames_SelectedIndexChanged;
             // 
             // grpPreview
             // 
@@ -390,8 +413,16 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             grpPreview.Controls.Add(numZoom);
             grpPreview.Controls.Add(chkPlay);
             grpPreview.Controls.Add(chkCrosshair);
+            grpPreview.Controls.Add(chkOnion);
+            grpPreview.Controls.Add(lblHue);
+            grpPreview.Controls.Add(numHue);
+            grpPreview.Controls.Add(chkPartialHue);
+            grpPreview.Controls.Add(chkOverlay);
+            grpPreview.Controls.Add(numOverlayBody);
+            grpPreview.Controls.Add(cbOverlayFile);
+            grpPreview.Controls.Add(lblOverlayHint);
             grpPreview.Location = new System.Drawing.Point(4, 366);
-            grpPreview.Size = new System.Drawing.Size(362, 76);
+            grpPreview.Size = new System.Drawing.Size(362, 134);
             grpPreview.TabStop = false;
             grpPreview.Text = "Vorschau";
             grpPreview.Name = "grpPreview";
@@ -450,12 +481,89 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             chkCrosshair.Checked = true;
             chkCrosshair.CheckState = System.Windows.Forms.CheckState.Checked;
             chkCrosshair.AutoSize = true;
-            chkCrosshair.Location = new System.Drawing.Point(8, 48);
+            chkCrosshair.Location = new System.Drawing.Point(8, 50);
             chkCrosshair.Text = "Fußpunkt anzeigen";
             chkCrosshair.UseVisualStyleBackColor = true;
             chkCrosshair.Name = "chkCrosshair";
             chkCrosshair.TabIndex = 26;
             chkCrosshair.CheckedChanged += PreviewSetting_Changed;
+            // 
+            // chkOnion
+            // 
+            chkOnion.AutoSize = true;
+            chkOnion.Location = new System.Drawing.Point(140, 50);
+            chkOnion.Text = "Zwiebelschicht (vorheriger Frame)";
+            chkOnion.UseVisualStyleBackColor = true;
+            chkOnion.Name = "chkOnion";
+            chkOnion.TabIndex = 27;
+            chkOnion.CheckedChanged += PreviewSetting_Changed;
+            // 
+            // lblHue
+            // 
+            lblHue.AutoSize = true;
+            lblHue.Location = new System.Drawing.Point(8, 79);
+            lblHue.Text = "Hue:";
+            lblHue.Name = "lblHue";
+            // 
+            // numHue
+            // 
+            numHue.Location = new System.Drawing.Point(50, 76);
+            numHue.Size = new System.Drawing.Size(70, 23);
+            numHue.Maximum = new decimal(new int[] { 3000, 0, 0, 0 });
+            numHue.Minimum = new decimal(new int[] { 0, 0, 0, 0 });
+            numHue.Value = new decimal(new int[] { 0, 0, 0, 0 });
+            numHue.Name = "numHue";
+            numHue.TabIndex = 28;
+            numHue.ValueChanged += PreviewSetting_Changed;
+            // 
+            // chkPartialHue
+            // 
+            chkPartialHue.AutoSize = true;
+            chkPartialHue.Location = new System.Drawing.Point(130, 78);
+            chkPartialHue.Text = "nur Grautöne (PartialHue)";
+            chkPartialHue.UseVisualStyleBackColor = true;
+            chkPartialHue.Name = "chkPartialHue";
+            chkPartialHue.TabIndex = 29;
+            chkPartialHue.CheckedChanged += PreviewSetting_Changed;
+            // 
+            // chkOverlay
+            // 
+            chkOverlay.AutoSize = true;
+            chkOverlay.Location = new System.Drawing.Point(8, 106);
+            chkOverlay.Text = "Overlay-Body:";
+            chkOverlay.UseVisualStyleBackColor = true;
+            chkOverlay.Name = "chkOverlay";
+            chkOverlay.TabIndex = 30;
+            chkOverlay.CheckedChanged += Overlay_Changed;
+            // 
+            // numOverlayBody
+            // 
+            numOverlayBody.Location = new System.Drawing.Point(112, 104);
+            numOverlayBody.Size = new System.Drawing.Size(60, 23);
+            numOverlayBody.Maximum = new decimal(new int[] { 5000, 0, 0, 0 });
+            numOverlayBody.Minimum = new decimal(new int[] { 0, 0, 0, 0 });
+            numOverlayBody.Value = new decimal(new int[] { 400, 0, 0, 0 });
+            numOverlayBody.Name = "numOverlayBody";
+            numOverlayBody.TabIndex = 31;
+            numOverlayBody.ValueChanged += Overlay_Changed;
+            // 
+            // cbOverlayFile
+            // 
+            cbOverlayFile.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            cbOverlayFile.FormattingEnabled = true;
+            cbOverlayFile.Items.AddRange(new object[] { "anim.mul", "anim2.mul", "anim3.mul", "anim4.mul", "anim5.mul" });
+            cbOverlayFile.Location = new System.Drawing.Point(178, 104);
+            cbOverlayFile.Size = new System.Drawing.Size(90, 23);
+            cbOverlayFile.Name = "cbOverlayFile";
+            cbOverlayFile.TabIndex = 32;
+            cbOverlayFile.SelectedIndexChanged += Overlay_Changed;
+            // 
+            // lblOverlayHint
+            // 
+            lblOverlayHint.AutoSize = true;
+            lblOverlayHint.Location = new System.Drawing.Point(272, 107);
+            lblOverlayHint.Text = "(Ausrüstung)";
+            lblOverlayHint.Name = "lblOverlayHint";
             // 
             // grpCenter
             // 
@@ -464,55 +572,109 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             grpCenter.Controls.Add(lblCenterY);
             grpCenter.Controls.Add(numCenterY);
             grpCenter.Controls.Add(lblCenterHint);
-            grpCenter.Location = new System.Drawing.Point(4, 448);
-            grpCenter.Size = new System.Drawing.Size(362, 52);
+            grpCenter.Controls.Add(lblFrameOffset);
+            grpCenter.Controls.Add(numFrameOffX);
+            grpCenter.Controls.Add(numFrameOffY);
+            grpCenter.Controls.Add(btnFootAll);
+            grpCenter.Controls.Add(chkSetFoot);
+            grpCenter.Location = new System.Drawing.Point(4, 506);
+            grpCenter.Size = new System.Drawing.Size(362, 108);
             grpCenter.TabStop = false;
-            grpCenter.Text = "Fußpunkt (Center) relativ zu unten-Mitte";
+            grpCenter.Text = "Fußpunkt (Center)";
             grpCenter.Name = "grpCenter";
-            grpCenter.TabIndex = 27;
+            grpCenter.TabIndex = 33;
             // 
             // lblCenterX
             // 
             lblCenterX.AutoSize = true;
             lblCenterX.Location = new System.Drawing.Point(8, 23);
-            lblCenterX.Text = "X:";
+            lblCenterX.Text = "Alle X:";
             lblCenterX.Name = "lblCenterX";
             // 
             // numCenterX
             // 
-            numCenterX.Location = new System.Drawing.Point(28, 20);
+            numCenterX.Location = new System.Drawing.Point(56, 20);
             numCenterX.Size = new System.Drawing.Size(60, 23);
             numCenterX.Maximum = new decimal(new int[] { 200, 0, 0, 0 });
             numCenterX.Minimum = new decimal(new int[] { 200, 0, 0, -2147483648 });
             numCenterX.Value = new decimal(new int[] { 0, 0, 0, 0 });
             numCenterX.Name = "numCenterX";
-            numCenterX.TabIndex = 28;
+            numCenterX.TabIndex = 34;
             numCenterX.ValueChanged += PreviewSetting_Changed;
             // 
             // lblCenterY
             // 
             lblCenterY.AutoSize = true;
-            lblCenterY.Location = new System.Drawing.Point(100, 23);
+            lblCenterY.Location = new System.Drawing.Point(124, 23);
             lblCenterY.Text = "Y:";
             lblCenterY.Name = "lblCenterY";
             // 
             // numCenterY
             // 
-            numCenterY.Location = new System.Drawing.Point(120, 20);
+            numCenterY.Location = new System.Drawing.Point(144, 20);
             numCenterY.Size = new System.Drawing.Size(60, 23);
             numCenterY.Maximum = new decimal(new int[] { 200, 0, 0, 0 });
             numCenterY.Minimum = new decimal(new int[] { 200, 0, 0, -2147483648 });
             numCenterY.Value = new decimal(new int[] { 0, 0, 0, 0 });
             numCenterY.Name = "numCenterY";
-            numCenterY.TabIndex = 29;
+            numCenterY.TabIndex = 35;
             numCenterY.ValueChanged += PreviewSetting_Changed;
             // 
             // lblCenterHint
             // 
             lblCenterHint.AutoSize = true;
-            lblCenterHint.Location = new System.Drawing.Point(190, 23);
+            lblCenterHint.Location = new System.Drawing.Point(210, 23);
             lblCenterHint.Text = "(Y positiv = höher)";
             lblCenterHint.Name = "lblCenterHint";
+            // 
+            // lblFrameOffset
+            // 
+            lblFrameOffset.AutoSize = true;
+            lblFrameOffset.Location = new System.Drawing.Point(8, 51);
+            lblFrameOffset.Text = "Frame X/Y:";
+            lblFrameOffset.Name = "lblFrameOffset";
+            // 
+            // numFrameOffX
+            // 
+            numFrameOffX.Location = new System.Drawing.Point(76, 48);
+            numFrameOffX.Size = new System.Drawing.Size(56, 23);
+            numFrameOffX.Maximum = new decimal(new int[] { 300, 0, 0, 0 });
+            numFrameOffX.Minimum = new decimal(new int[] { 300, 0, 0, -2147483648 });
+            numFrameOffX.Value = new decimal(new int[] { 0, 0, 0, 0 });
+            numFrameOffX.Name = "numFrameOffX";
+            numFrameOffX.TabIndex = 36;
+            numFrameOffX.ValueChanged += FrameOffset_Changed;
+            // 
+            // numFrameOffY
+            // 
+            numFrameOffY.Location = new System.Drawing.Point(136, 48);
+            numFrameOffY.Size = new System.Drawing.Size(56, 23);
+            numFrameOffY.Maximum = new decimal(new int[] { 300, 0, 0, 0 });
+            numFrameOffY.Minimum = new decimal(new int[] { 300, 0, 0, -2147483648 });
+            numFrameOffY.Value = new decimal(new int[] { 0, 0, 0, 0 });
+            numFrameOffY.Name = "numFrameOffY";
+            numFrameOffY.TabIndex = 37;
+            numFrameOffY.ValueChanged += FrameOffset_Changed;
+            // 
+            // btnFootAll
+            // 
+            btnFootAll.Location = new System.Drawing.Point(200, 46);
+            btnFootAll.Size = new System.Drawing.Size(152, 26);
+            btnFootAll.Text = "Auf alle Frames";
+            btnFootAll.UseVisualStyleBackColor = true;
+            btnFootAll.Name = "btnFootAll";
+            btnFootAll.TabIndex = 38;
+            btnFootAll.Click += BtnFootAll_Click;
+            // 
+            // chkSetFoot
+            // 
+            chkSetFoot.AutoSize = true;
+            chkSetFoot.Location = new System.Drawing.Point(8, 80);
+            chkSetFoot.Text = "Fußpunkt per Klick in die Auswahl-Ansicht setzen (pausiert)";
+            chkSetFoot.UseVisualStyleBackColor = true;
+            chkSetFoot.Name = "chkSetFoot";
+            chkSetFoot.TabIndex = 39;
+            chkSetFoot.CheckedChanged += ChkSetFoot_CheckedChanged;
             // 
             // grpExport
             // 
@@ -530,12 +692,16 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             grpExport.Controls.Add(btnExportPng);
             grpExport.Controls.Add(btnExportSheet);
             grpExport.Controls.Add(lblBodyHint);
-            grpExport.Location = new System.Drawing.Point(4, 506);
-            grpExport.Size = new System.Drawing.Size(362, 170);
+            grpExport.Controls.Add(lblMobType);
+            grpExport.Controls.Add(cbMobType);
+            grpExport.Controls.Add(btnDefEntries);
+            grpExport.Controls.Add(btnExportVd);
+            grpExport.Location = new System.Drawing.Point(4, 620);
+            grpExport.Size = new System.Drawing.Size(362, 232);
             grpExport.TabStop = false;
-            grpExport.Text = "Export in Anim-MUL";
+            grpExport.Text = "Export";
             grpExport.Name = "grpExport";
-            grpExport.TabIndex = 30;
+            grpExport.TabIndex = 40;
             // 
             // lblFileType
             // 
@@ -552,7 +718,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             cbFileType.Location = new System.Drawing.Point(60, 22);
             cbFileType.Size = new System.Drawing.Size(110, 23);
             cbFileType.Name = "cbFileType";
-            cbFileType.TabIndex = 31;
+            cbFileType.TabIndex = 41;
+            cbFileType.SelectedIndexChanged += Overlay_Changed;
             // 
             // lblColors
             // 
@@ -569,7 +736,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             numColors.Minimum = new decimal(new int[] { 8, 0, 0, 0 });
             numColors.Value = new decimal(new int[] { 256, 0, 0, 0 });
             numColors.Name = "numColors";
-            numColors.TabIndex = 32;
+            numColors.TabIndex = 42;
             // 
             // lblBody
             // 
@@ -586,7 +753,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             numBody.Minimum = new decimal(new int[] { 0, 0, 0, 0 });
             numBody.Value = new decimal(new int[] { 400, 0, 0, 0 });
             numBody.Name = "numBody";
-            numBody.TabIndex = 33;
+            numBody.TabIndex = 43;
             // 
             // lblAction
             // 
@@ -603,7 +770,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             numAction.Minimum = new decimal(new int[] { 0, 0, 0, 0 });
             numAction.Value = new decimal(new int[] { 0, 0, 0, 0 });
             numAction.Name = "numAction";
-            numAction.TabIndex = 34;
+            numAction.TabIndex = 44;
+            numAction.ValueChanged += Overlay_Changed;
             // 
             // lblActionHint
             // 
@@ -619,7 +787,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             btnExportMul.Text = "In Animation schreiben";
             btnExportMul.UseVisualStyleBackColor = true;
             btnExportMul.Name = "btnExportMul";
-            btnExportMul.TabIndex = 35;
+            btnExportMul.TabIndex = 45;
             btnExportMul.Click += BtnExportMul_Click;
             // 
             // btnSaveMul
@@ -629,7 +797,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             btnSaveMul.Text = "Anim-MUL speichern";
             btnSaveMul.UseVisualStyleBackColor = true;
             btnSaveMul.Name = "btnSaveMul";
-            btnSaveMul.TabIndex = 36;
+            btnSaveMul.TabIndex = 46;
             btnSaveMul.Click += BtnSaveMul_Click;
             // 
             // btnExportPng
@@ -639,7 +807,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             btnExportPng.Text = "Frames als PNG...";
             btnExportPng.UseVisualStyleBackColor = true;
             btnExportPng.Name = "btnExportPng";
-            btnExportPng.TabIndex = 37;
+            btnExportPng.TabIndex = 47;
             btnExportPng.Click += BtnExportPng_Click;
             // 
             // btnExportSheet
@@ -649,7 +817,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             btnExportSheet.Text = "Sprite-Sheet als PNG...";
             btnExportSheet.UseVisualStyleBackColor = true;
             btnExportSheet.Name = "btnExportSheet";
-            btnExportSheet.TabIndex = 38;
+            btnExportSheet.TabIndex = 48;
             btnExportSheet.Click += BtnExportSheet_Click;
             // 
             // lblBodyHint
@@ -659,11 +827,48 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             lblBodyHint.Text = "anim.mul: Body <200 Monster (22 Actions), <400 Tiere (13), ab 400 Menschen (35)";
             lblBodyHint.Name = "lblBodyHint";
             // 
+            // lblMobType
+            // 
+            lblMobType.AutoSize = true;
+            lblMobType.Location = new System.Drawing.Point(8, 175);
+            lblMobType.Text = "Typ:";
+            lblMobType.Name = "lblMobType";
+            // 
+            // cbMobType
+            // 
+            cbMobType.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            cbMobType.FormattingEnabled = true;
+            cbMobType.Items.AddRange(new object[] { "MONSTER", "SEA_MONSTER", "ANIMAL", "HUMAN", "EQUIPMENT" });
+            cbMobType.Location = new System.Drawing.Point(44, 172);
+            cbMobType.Size = new System.Drawing.Size(130, 23);
+            cbMobType.Name = "cbMobType";
+            cbMobType.TabIndex = 49;
+            // 
+            // btnDefEntries
+            // 
+            btnDefEntries.Location = new System.Drawing.Point(184, 170);
+            btnDefEntries.Size = new System.Drawing.Size(170, 26);
+            btnDefEntries.Text = "Def-Einträge erzeugen...";
+            btnDefEntries.UseVisualStyleBackColor = true;
+            btnDefEntries.Name = "btnDefEntries";
+            btnDefEntries.TabIndex = 50;
+            btnDefEntries.Click += BtnDefEntries_Click;
+            // 
+            // btnExportVd
+            // 
+            btnExportVd.Location = new System.Drawing.Point(8, 200);
+            btnExportVd.Size = new System.Drawing.Size(346, 26);
+            btnExportVd.Text = "Body als VD-Datei exportieren...";
+            btnExportVd.UseVisualStyleBackColor = true;
+            btnExportVd.Name = "btnExportVd";
+            btnExportVd.TabIndex = 51;
+            btnExportVd.Click += BtnExportVd_Click;
+            // 
             // statusStrip
             // 
             statusStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { lblStatus });
             statusStrip.Name = "statusStrip";
-            statusStrip.TabIndex = 39;
+            statusStrip.TabIndex = 52;
             // 
             // lblStatus
             // 
@@ -694,10 +899,14 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             ((System.ComponentModel.ISupportInitialize)numColors).EndInit();
             grpExport.ResumeLayout(false);
             grpExport.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)numFrameOffY).EndInit();
+            ((System.ComponentModel.ISupportInitialize)numFrameOffX).EndInit();
             ((System.ComponentModel.ISupportInitialize)numCenterY).EndInit();
             ((System.ComponentModel.ISupportInitialize)numCenterX).EndInit();
             grpCenter.ResumeLayout(false);
             grpCenter.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)numOverlayBody).EndInit();
+            ((System.ComponentModel.ISupportInitialize)numHue).EndInit();
             ((System.ComponentModel.ISupportInitialize)numZoom).EndInit();
             ((System.ComponentModel.ISupportInitialize)numDelay).EndInit();
             grpPreview.ResumeLayout(false);
@@ -743,12 +952,25 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private System.Windows.Forms.NumericUpDown numZoom;
         private System.Windows.Forms.CheckBox chkPlay;
         private System.Windows.Forms.CheckBox chkCrosshair;
+        private System.Windows.Forms.CheckBox chkOnion;
+        private System.Windows.Forms.Label lblHue;
+        private System.Windows.Forms.NumericUpDown numHue;
+        private System.Windows.Forms.CheckBox chkPartialHue;
+        private System.Windows.Forms.CheckBox chkOverlay;
+        private System.Windows.Forms.NumericUpDown numOverlayBody;
+        private System.Windows.Forms.ComboBox cbOverlayFile;
+        private System.Windows.Forms.Label lblOverlayHint;
         private System.Windows.Forms.GroupBox grpCenter;
         private System.Windows.Forms.Label lblCenterX;
         private System.Windows.Forms.NumericUpDown numCenterX;
         private System.Windows.Forms.Label lblCenterY;
         private System.Windows.Forms.NumericUpDown numCenterY;
         private System.Windows.Forms.Label lblCenterHint;
+        private System.Windows.Forms.Label lblFrameOffset;
+        private System.Windows.Forms.NumericUpDown numFrameOffX;
+        private System.Windows.Forms.NumericUpDown numFrameOffY;
+        private System.Windows.Forms.Button btnFootAll;
+        private System.Windows.Forms.CheckBox chkSetFoot;
         private System.Windows.Forms.GroupBox grpExport;
         private System.Windows.Forms.Label lblFileType;
         private System.Windows.Forms.ComboBox cbFileType;
@@ -764,6 +986,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private System.Windows.Forms.Button btnExportPng;
         private System.Windows.Forms.Button btnExportSheet;
         private System.Windows.Forms.Label lblBodyHint;
+        private System.Windows.Forms.Label lblMobType;
+        private System.Windows.Forms.ComboBox cbMobType;
+        private System.Windows.Forms.Button btnDefEntries;
+        private System.Windows.Forms.Button btnExportVd;
         private System.Windows.Forms.StatusStrip statusStrip;
         private System.Windows.Forms.ToolStripStatusLabel lblStatus;
         private System.Windows.Forms.Timer timerPlay;

@@ -30,6 +30,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
     {
         private Bitmap _source;
         private Bitmap _result;
+        private Bitmap _paletteImage;   // image for the palette source "Aus Bilddatei"
         private bool _loadingPreset;
 
         public PixelArtConverterForm()
@@ -42,6 +43,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             cbScale.SelectedIndex = 0;
             cbIso.SelectedIndex = 0;
             cbOutline.SelectedIndex = 2;
+            cbPaletteSource.SelectedIndex = 0;
             cbPreset.SelectedIndex = 0;
             _loadingPreset = false;
             ApplyPreset();
@@ -229,82 +231,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             Cursor = Cursors.WaitCursor;
             try
             {
-                Bitmap img = new Bitmap(_source);
-
-                img = Step(img, b => cbBackground.SelectedIndex switch
-                {
-                    1 => StudioImaging.RemoveBackgroundFromEdges(b, pnlKeyColor.BackColor, (int)numTolerance.Value),
-                    2 => StudioImaging.RemoveBackground(b, pnlKeyColor.BackColor, (int)numTolerance.Value),
-                    _ => new Bitmap(b)
-                });
-
-                if (chkAutoCrop.Checked)
-                {
-                    img = Step(img, b => StudioImaging.AutoCrop(b));
-                }
-
-                img = Step(img, b => StudioImaging.AdjustColors(b, (int)numBrightness.Value, (int)numContrast.Value, (int)numSaturation.Value));
-
-                if (chkGray.Checked)
-                {
-                    img = Step(img, StudioImaging.ToGray);
-                }
-
-                var iso = (IsoMode)Math.Max(0, cbIso.SelectedIndex);
-                InterpolationMode mode = cbScale.SelectedIndex switch
-                {
-                    1 => InterpolationMode.NearestNeighbor,
-                    2 => InterpolationMode.HighQualityBilinear,
-                    _ => InterpolationMode.HighQualityBicubic
-                };
-
-                if (iso == IsoMode.None)
-                {
-                    img = Step(img, b => StudioImaging.ResizeFit(b, (int)numMaxW.Value, (int)numMaxH.Value, mode, chkUpscale.Checked));
-                }
-                else
-                {
-                    int iw = (int)numIsoWidth.Value;
-                    if (iso == IsoMode.Floor)
-                    {
-                        img = Step(img, b => StudioImaging.Resize(b, iw, iw, mode));
-                    }
-                    img = Step(img, b => StudioImaging.IsoProject(b, iso, iw));
-                }
-
-                if (numSharpen.Value > 0)
-                {
-                    img = Step(img, b => StudioImaging.Sharpen(b, (double)numSharpen.Value));
-                }
-
-                img = Step(img, b => StudioImaging.HardAlpha(b, 128));
-
-                List<Color> palette = StudioImaging.BuildPalette(new[] { img }, Math.Max(2, (int)numColors.Value - (cbOutline.SelectedIndex > 0 ? 1 : 0)));
-                img = Step(img, b => StudioImaging.ApplyPalette(b, palette, chkDither.Checked));
-
-                if (cbOutline.SelectedIndex > 0)
-                {
-                    img = Step(img, b => StudioImaging.Outline(b, pnlOutlineColor.BackColor, cbOutline.SelectedIndex == 1, chkOutlineDiagonal.Checked));
-                }
-
-                if (iso == IsoMode.Floor && cbPreset.SelectedIndex == 2 && (img.Width != 44 || img.Height != 44))
-                {
-                    img = Step(img, b => StudioImaging.Resize(b, 44, 44, InterpolationMode.NearestNeighbor));
-                }
-
-                img = Step(img, StudioImaging.ToUoColors);
-
-                int hueId = (int)numHuePreview.Value;
-                if (hueId > 0)
-                {
-                    Hue hue = StudioUi.GetHue(hueId);
-                    img = Step(img, b => StudioImaging.ApplyHue(b, hue, !chkGray.Checked));
-                }
-
+                Bitmap img = Convert(_source, true);
                 Bitmap oldResult = _result;
                 _result = img;
-                viewResult.Image = _result;
+                UpdateDisplay();
                 oldResult?.Dispose();
+                int hueId = (int)numHuePreview.Value;
                 lblStatus.Text = $"Ergebnis: {_result.Width}x{_result.Height} Pixel, {StudioImaging.CountColors(_result)} Farben" +
                                  (hueId > 0 ? $" (Hue {hueId} nur Vorschau)" : string.Empty);
             }
@@ -316,6 +248,272 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             {
                 Cursor = Cursors.Default;
             }
+        }
+
+        /// <summary>Shows the result, or the before/after comparison.</summary>
+        private void UpdateDisplay()
+        {
+            Image old = viewResult.Image;
+            if (_result == null)
+            {
+                viewResult.Image = null;
+            }
+            else if (chkCompare.Checked && _source != null)
+            {
+                viewResult.Image = StudioImaging.CompareSplit(_source, _result, trackCompare.Value / 100.0);
+            }
+            else
+            {
+                viewResult.Image = _result;
+            }
+            if (old != null && !ReferenceEquals(old, _result) && !ReferenceEquals(old, viewResult.Image))
+            {
+                old.Dispose();
+            }
+        }
+
+        private void Compare_Changed(object sender, EventArgs e)
+        {
+            UpdateDisplay();
+        }
+
+        /// <summary>
+        /// Runs the whole conversion with the current settings on any source image
+        /// (used for the preview and for the batch conversion).
+        /// </summary>
+        private Bitmap Convert(Bitmap source, bool withHuePreview)
+        {
+            Bitmap img = new Bitmap(source);
+
+            Color key = pnlKeyColor.BackColor;
+            img = Step(img, b => cbBackground.SelectedIndex switch
+            {
+                1 => StudioImaging.RemoveBackgroundFromEdges(b, key, (int)numTolerance.Value),
+                2 => StudioImaging.RemoveBackground(b, key, (int)numTolerance.Value),
+                _ => new Bitmap(b)
+            });
+
+            if (chkAutoCrop.Checked)
+            {
+                img = Step(img, b => StudioImaging.AutoCrop(b));
+            }
+
+            img = Step(img, b => StudioImaging.AdjustColors(b, (int)numBrightness.Value, (int)numContrast.Value, (int)numSaturation.Value));
+
+            if (chkGray.Checked)
+            {
+                img = Step(img, StudioImaging.ToGray);
+            }
+
+            var iso = (IsoMode)Math.Max(0, cbIso.SelectedIndex);
+            InterpolationMode mode = cbScale.SelectedIndex switch
+            {
+                1 => InterpolationMode.NearestNeighbor,
+                2 => InterpolationMode.HighQualityBilinear,
+                _ => InterpolationMode.HighQualityBicubic
+            };
+
+            if (iso == IsoMode.None)
+            {
+                img = Step(img, b => StudioImaging.ResizeFit(b, (int)numMaxW.Value, (int)numMaxH.Value, mode, chkUpscale.Checked));
+            }
+            else
+            {
+                int iw = (int)numIsoWidth.Value;
+                if (iso == IsoMode.Floor)
+                {
+                    img = Step(img, b => StudioImaging.Resize(b, iw, iw, mode));
+                }
+                img = Step(img, b => StudioImaging.IsoProject(b, iso, iw));
+            }
+
+            if (numSharpen.Value > 0)
+            {
+                img = Step(img, b => StudioImaging.Sharpen(b, (double)numSharpen.Value));
+            }
+
+            img = Step(img, b => StudioImaging.HardAlpha(b, 128));
+
+            List<Color> palette = BuildPalette(img);
+            img = Step(img, b => StudioImaging.ApplyPalette(b, palette, chkDither.Checked));
+
+            if (cbOutline.SelectedIndex > 0)
+            {
+                img = Step(img, b => StudioImaging.Outline(b, pnlOutlineColor.BackColor, cbOutline.SelectedIndex == 1, chkOutlineDiagonal.Checked));
+            }
+
+            if (chkShadow.Checked && iso != IsoMode.Floor)
+            {
+                img = Step(img, b => StudioImaging.AddShadow(b, (int)numShadowX.Value, (int)numShadowY.Value, Color.FromArgb(24, 22, 20), chkShadowDither.Checked));
+            }
+
+            if (iso == IsoMode.Floor && cbPreset.SelectedIndex == 2 && (img.Width != 44 || img.Height != 44))
+            {
+                img = Step(img, b => StudioImaging.Resize(b, 44, 44, InterpolationMode.NearestNeighbor));
+            }
+
+            img = Step(img, StudioImaging.ToUoColors);
+
+            int hueId = (int)numHuePreview.Value;
+            if (withHuePreview && hueId > 0)
+            {
+                Hue hue = StudioUi.GetHue(hueId);
+                img = Step(img, b => StudioImaging.ApplyHue(b, hue, !chkGray.Checked));
+            }
+            return img;
+        }
+
+        /// <summary>Palette: optimised from the image, or taken from an art item / a palette image.</summary>
+        private List<Color> BuildPalette(Bitmap img)
+        {
+            int colors = Math.Max(2, (int)numColors.Value - (cbOutline.SelectedIndex > 0 ? 1 : 0));
+            switch (cbPaletteSource.SelectedIndex)
+            {
+                case 1:
+                    if (StudioUi.TryParseId(txtPaletteId.Text, out int artId))
+                    {
+                        using Bitmap art = UltimaImages.CopyStatic(artId);
+                        if (art != null)
+                        {
+                            lblPaletteInfo.Text = $"Art 0x{artId:X4}";
+                            return StudioImaging.BuildPalette(new[] { art }, colors);
+                        }
+                    }
+                    lblPaletteInfo.Text = "Art-ID ungültig";
+                    break;
+                case 2:
+                    if (_paletteImage != null)
+                    {
+                        return StudioImaging.BuildPalette(new[] { _paletteImage }, colors);
+                    }
+                    lblPaletteInfo.Text = "kein Palettenbild";
+                    break;
+            }
+            return StudioImaging.BuildPalette(new[] { img }, colors);
+        }
+
+        private void BtnPaletteFile_Click(object sender, EventArgs e)
+        {
+            using var dlg = new OpenFileDialog { Filter = StudioUi.ImageFilter, Title = "Bild, dessen Farben als Palette dienen" };
+            if (dlg.ShowDialog(this) != DialogResult.OK)
+            {
+                return;
+            }
+            try
+            {
+                _paletteImage?.Dispose();
+                _paletteImage = StudioImaging.LoadImage(dlg.FileName);
+                lblPaletteInfo.Text = Path.GetFileName(dlg.FileName);
+                cbPaletteSource.SelectedIndex = 2;
+                Settings_Changed(sender, e);
+            }
+            catch (Exception ex)
+            {
+                StudioUi.Error(this, ex.Message);
+            }
+        }
+
+        private void BtnBatch_Click(object sender, EventArgs e)
+        {
+            using var ofd = new OpenFileDialog { Filter = StudioUi.ImageFilter, Multiselect = true, Title = "Bilder für die Stapel-Umwandlung" };
+            if (ofd.ShowDialog(this) != DialogResult.OK)
+            {
+                return;
+            }
+            string[] files = ofd.FileNames;
+            Array.Sort(files, new NaturalStringComparer());
+
+            bool gump = cbPreset.SelectedIndex >= 5;
+            bool land = cbPreset.SelectedIndex == 2;
+            string kind = gump ? "Gumps" : land ? "Bodentiles" : "Art-Items";
+            DialogResult answer = MessageBox.Show(this,
+                $"{files.Length} Bilder mit den aktuellen Einstellungen umwandeln.\n\n" +
+                $"Ja = als {kind} an fortlaufende IDs ab {txtId.Text} setzen\n" +
+                "Nein = nur als PNG in einen Ordner speichern",
+                "Stapel umwandeln", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
+            if (answer == DialogResult.Cancel)
+            {
+                return;
+            }
+
+            string folder = null;
+            int startId = 0;
+            if (answer == DialogResult.No)
+            {
+                using var fbd = new FolderBrowserDialog { Description = "Zielordner für die PNG-Dateien", SelectedPath = StudioUi.OutputPath };
+                if (fbd.ShowDialog(this) != DialogResult.OK)
+                {
+                    return;
+                }
+                folder = fbd.SelectedPath;
+            }
+            else if (!GetId(out startId))
+            {
+                return;
+            }
+
+            int done = 0, skipped = 0;
+            Cursor = Cursors.WaitCursor;
+            try
+            {
+                for (int i = 0; i < files.Length; i++)
+                {
+                    using Bitmap src = StudioImaging.LoadImage(files[i]);
+                    using Bitmap result = Convert(src, false);
+                    if (folder != null)
+                    {
+                        result.Save(Path.Combine(folder, Path.GetFileNameWithoutExtension(files[i]) + "_uo.png"), ImageFormat.Png);
+                        done++;
+                        continue;
+                    }
+
+                    int id = startId + i;
+                    if (gump)
+                    {
+                        if (id >= Gumps.GetCount())
+                        {
+                            skipped++;
+                            continue;
+                        }
+                        Gumps.ReplaceGump(id, StudioImaging.To1555(result));
+                    }
+                    else if (land)
+                    {
+                        if (result.Width != 44 || result.Height != 44)
+                        {
+                            skipped++;
+                            continue;
+                        }
+                        Art.ReplaceLand(id, StudioImaging.To1555(result));
+                    }
+                    else
+                    {
+                        if (id > Art.GetMaxItemId())
+                        {
+                            skipped++;
+                            continue;
+                        }
+                        Art.ReplaceStatic(id, StudioImaging.To1555(result));
+                    }
+                    done++;
+                }
+            }
+            catch (Exception ex)
+            {
+                StudioUi.Error(this, ex.Message);
+            }
+            finally
+            {
+                Cursor = Cursors.Default;
+            }
+
+            if (folder == null && done > 0)
+            {
+                StudioUi.MarkChanged(gump ? "Gumps" : "Art");
+            }
+            string where = folder ?? $"{kind} 0x{startId:X4} – 0x{startId + files.Length - 1:X4}";
+            lblStatus.Text = $"Stapel: {done} umgewandelt, {skipped} übersprungen → {where}";
+            StudioUi.Info(this, lblStatus.Text + (folder == null ? "\nZum Sichern noch die MUL speichern." : string.Empty));
         }
 
         private static Bitmap Step(Bitmap input, Func<Bitmap, Bitmap> f)
@@ -331,22 +529,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         /// <summary>The result without the hue preview (hue preview is not exported).</summary>
         private Bitmap ExportBitmap()
         {
-            if (_result == null)
+            if (_result == null || _source == null)
             {
                 StudioUi.Info(this, "Noch kein Ergebnis vorhanden. Bitte zuerst ein Bild laden.");
                 return null;
             }
-            if (numHuePreview.Value > 0)
-            {
-                decimal old = numHuePreview.Value;
-                numHuePreview.Value = 0;
-                Process();
-                Bitmap b = new Bitmap(_result);
-                numHuePreview.Value = old;
-                Process();
-                return b;
-            }
-            return new Bitmap(_result);
+            return numHuePreview.Value > 0 ? Convert(_source, false) : new Bitmap(_result);
         }
 
         #endregion
@@ -541,10 +729,16 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         protected override void OnFormClosed(FormClosedEventArgs e)
         {
             timerDebounce.Stop();
+            Image shown = viewResult.Image;
             viewSource.Image = null;
             viewResult.Image = null;
+            if (shown != null && !ReferenceEquals(shown, _result))
+            {
+                shown.Dispose();
+            }
             _source?.Dispose();
             _result?.Dispose();
+            _paletteImage?.Dispose();
             base.OnFormClosed(e);
         }
     }

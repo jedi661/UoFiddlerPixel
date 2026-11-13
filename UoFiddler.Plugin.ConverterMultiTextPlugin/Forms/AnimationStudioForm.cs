@@ -16,6 +16,7 @@ using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Windows.Forms;
 using Ultima;
 using UoFiddler.Plugin.ConverterMultiTextPlugin.Class.UoStudio;
@@ -25,11 +26,13 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
     /// <summary>
     /// Animations-Studio: baut neue Mobile-Animationen aus Einzelbildern oder Sprite-Sheets.
     /// UO speichert 5 Richtungen (0 = unten, 1 = unten-links, 2 = links, 3 = oben-links, 4 = oben),
-    /// die 3 rechten Richtungen erzeugt der Client durch Spiegeln. Die Vorschau zeigt alle 8 Richtungen.
+    /// die 3 rechten Richtungen erzeugt der Client durch Spiegeln. Die Vorschau zeigt alle 8 Richtungen,
+    /// am Fusspunkt ausgerichtet wie im Client, optional mit Zwiebelschicht, Hue und Ausruestungs-Overlay.
     /// </summary>
     public partial class AnimationStudioForm : Form
     {
         private const int DirCount = 5;
+        private const int Pad = 8;
 
         private static readonly string[] _dirNames =
         {
@@ -48,9 +51,38 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             (1, false), (0, false), (1, true)
         };
 
-        private readonly List<Bitmap>[] _dirs = Enumerable.Range(0, DirCount).Select(_ => new List<Bitmap>()).ToArray();
+        /// <summary>One frame: image plus the individual foot point offset.</summary>
+        private sealed class AnimFrame
+        {
+            public AnimFrame(Bitmap image, Point offset)
+            {
+                Image = image;
+                Offset = offset;
+            }
+
+            public Bitmap Image { get; set; }
+
+            /// <summary>Foot point offset relative to the default foot point (bottom centre + global X/Y).</summary>
+            public Point Offset { get; set; }
+
+            public AnimFrame Clone(bool mirror) =>
+                new AnimFrame(mirror ? StudioImaging.FlipHorizontal(Image) : new Bitmap(Image), mirror ? new Point(-Offset.X, Offset.Y) : Offset);
+        }
+
+        /// <summary>Frame of the overlay animation (taken from a MUL, with its own centre).</summary>
+        private sealed class OverlayFrame
+        {
+            public Bitmap Image;
+            public Point Center;
+        }
+
+        private readonly List<AnimFrame>[] _dirs = Enumerable.Range(0, DirCount).Select(_ => new List<AnimFrame>()).ToArray();
+        private readonly List<OverlayFrame>[] _overlay = Enumerable.Range(0, DirCount).Select(_ => new List<OverlayFrame>()).ToArray();
         private readonly PixelView[] _compass;
         private int _frameIndex;
+        private Point _selectedFoot;          // foot point of the selected view in canvas coordinates
+        private Rectangle _selectedFrameRect; // where the current frame was drawn in the selected view
+        private bool _updatingOffset;
 
         public AnimationStudioForm()
         {
@@ -65,15 +97,26 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             viewSelected.PaintOverlay += DrawCrosshair;
             lvFrames.LargeImageList = imageListThumbs;
             cbFileType.SelectedIndex = 0;
+            cbOverlayFile.SelectedIndex = 0;
+            cbMobType.SelectedIndex = 3;
 
             RefreshDirList();
             lbDirections.SelectedIndex = 0;
             timerPlay.Start();
         }
 
+        /// <summary>Pre-selects file type, body and action (used by the equipment generator).</summary>
+        public void SetTarget(int fileType, int body, int action, int mobType)
+        {
+            cbFileType.SelectedIndex = Math.Max(0, Math.Min(4, fileType - 1));
+            numBody.Value = Math.Max(numBody.Minimum, Math.Min(numBody.Maximum, body));
+            numAction.Value = Math.Max(numAction.Minimum, Math.Min(numAction.Maximum, action));
+            cbMobType.SelectedIndex = Math.Max(0, Math.Min(cbMobType.Items.Count - 1, mobType));
+        }
+
         private int CurrentDir => Math.Max(0, lbDirections.SelectedIndex);
 
-        #region Button events
+        #region Events
 
         private void BtnAddImages_Click(object sender, EventArgs e) => AddImages();
 
@@ -93,13 +136,17 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 
         private void BtnClearDirection_Click(object sender, EventArgs e) => ClearDirection();
 
-        private void BtnExportMul_Click(object sender, EventArgs e) => ExportToMul();
+        private void BtnExportMul_Click(object sender, EventArgs e) => ExportToMul(true);
 
         private void BtnSaveMul_Click(object sender, EventArgs e) => SaveMul();
 
         private void BtnExportPng_Click(object sender, EventArgs e) => ExportPngFrames();
 
         private void BtnExportSheet_Click(object sender, EventArgs e) => ExportSheet();
+
+        private void BtnExportVd_Click(object sender, EventArgs e) => ExportVd();
+
+        private void BtnDefEntries_Click(object sender, EventArgs e) => ShowDefEntries();
 
         private void LbDirections_SelectedIndexChanged(object sender, EventArgs e) => RefreshFrameList();
 
@@ -133,6 +180,26 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             RefreshPreview();
         }
 
+        private void Overlay_Changed(object sender, EventArgs e)
+        {
+            LoadOverlay();
+            RefreshPreview();
+        }
+
+        private void ChkSetFoot_CheckedChanged(object sender, EventArgs e)
+        {
+            if (chkSetFoot.Checked)
+            {
+                chkPlay.Checked = false;
+                viewSelected.Cursor = Cursors.Cross;
+                lblStatus.Text = "Frame in der Liste wählen und in der großen Ansicht auf die Füße der Figur klicken.";
+            }
+            else
+            {
+                viewSelected.Cursor = Cursors.Default;
+            }
+        }
+
         private void CompassView_Click(object sender, EventArgs e)
         {
             int cell = Array.IndexOf(_compass, sender);
@@ -141,6 +208,93 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 lbDirections.SelectedIndex = _cells[cell].Dir;
             }
         }
+
+        private void LvFrames_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (lvFrames.SelectedIndices.Count != 1)
+            {
+                return;
+            }
+            int i = lvFrames.SelectedIndices[0];
+            if (!chkPlay.Checked)
+            {
+                _frameIndex = i;
+                RefreshPreview();
+            }
+            AnimFrame f = _dirs[CurrentDir][i];
+            _updatingOffset = true;
+            numFrameOffX.Value = Clamp(numFrameOffX, f.Offset.X);
+            numFrameOffY.Value = Clamp(numFrameOffY, f.Offset.Y);
+            _updatingOffset = false;
+        }
+
+        private void FrameOffset_Changed(object sender, EventArgs e)
+        {
+            if (_updatingOffset || lvFrames.SelectedIndices.Count == 0)
+            {
+                return;
+            }
+            foreach (int i in lvFrames.SelectedIndices)
+            {
+                _dirs[CurrentDir][i].Offset = new Point((int)numFrameOffX.Value, (int)numFrameOffY.Value);
+            }
+            RefreshPreview();
+        }
+
+        private void BtnFootAll_Click(object sender, EventArgs e)
+        {
+            var off = new Point((int)numFrameOffX.Value, (int)numFrameOffY.Value);
+            foreach (AnimFrame f in _dirs[CurrentDir])
+            {
+                f.Offset = off;
+            }
+            RefreshPreview();
+            lblStatus.Text = $"Frame-Versatz {off.X}/{off.Y} auf alle Frames der Richtung {CurrentDir} übernommen.";
+        }
+
+        /// <summary>Click in the big view = new foot point of the current frame.</summary>
+        private void ViewSelected_MouseClick(object sender, MouseEventArgs e)
+        {
+            List<AnimFrame> frames = _dirs[CurrentDir];
+            if (!chkSetFoot.Checked || frames.Count == 0 || e.Button != MouseButtons.Left)
+            {
+                return;
+            }
+            Rectangle r = viewSelected.ImageRectangle;
+            if (r.IsEmpty)
+            {
+                return;
+            }
+            int zoom = viewSelected.Zoom;
+            int cx = (e.X - r.X) / zoom, cy = (e.Y - r.Y) / zoom;
+            int index = _frameIndex % frames.Count;
+            AnimFrame f = frames[index];
+
+            // new foot point inside the frame image
+            int fx = cx - _selectedFrameRect.X;
+            int fy = cy - _selectedFrameRect.Y;
+            f.Offset = new Point(fx - DefaultFootX(f.Image), fy - DefaultFootY(f.Image));
+
+            _updatingOffset = true;
+            numFrameOffX.Value = Clamp(numFrameOffX, f.Offset.X);
+            numFrameOffY.Value = Clamp(numFrameOffY, f.Offset.Y);
+            _updatingOffset = false;
+            RefreshPreview();
+            lblStatus.Text = $"Fußpunkt von Frame {index} (Richtung {CurrentDir}) gesetzt: Versatz {f.Offset.X}/{f.Offset.Y}.";
+        }
+
+        private static decimal Clamp(NumericUpDown n, int v) => Math.Max(n.Minimum, Math.Min(n.Maximum, v));
+
+        #endregion
+
+        #region Foot point helpers
+
+        private int DefaultFootX(Bitmap img) => (img.Width / 2) + (int)numCenterX.Value;
+
+        private int DefaultFootY(Bitmap img) => img.Height + (int)numCenterY.Value;
+
+        /// <summary>Foot point of a frame inside its image.</summary>
+        private Point Foot(AnimFrame f) => new Point(DefaultFootX(f.Image) + f.Offset.X, DefaultFootY(f.Image) + f.Offset.Y);
 
         #endregion
 
@@ -163,17 +317,14 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         {
             lvFrames.BeginUpdate();
             lvFrames.Items.Clear();
-            foreach (Image img in imageListThumbs.Images)
-            {
-                img.Dispose();
-            }
             imageListThumbs.Images.Clear();
 
-            List<Bitmap> frames = _dirs[CurrentDir];
+            List<AnimFrame> frames = _dirs[CurrentDir];
             for (int i = 0; i < frames.Count; i++)
             {
-                imageListThumbs.Images.Add(MakeThumb(frames[i]));
-                lvFrames.Items.Add(new ListViewItem($"{i}  ({frames[i].Width}x{frames[i].Height})", i) { Tag = i });
+                using Bitmap thumb = MakeThumb(frames[i].Image);
+                imageListThumbs.Images.Add(thumb);
+                lvFrames.Items.Add(new ListViewItem($"{i}  ({frames[i].Image.Width}x{frames[i].Image.Height})", i) { Tag = i });
             }
             lvFrames.EndUpdate();
             RefreshPreview();
@@ -185,7 +336,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             using Graphics g = Graphics.FromImage(bmp);
             g.Clear(Color.FromArgb(230, 230, 230));
             float f = Math.Min(1f, Math.Min(46f / src.Width, 46f / src.Height));
-            int w = (int)(src.Width * f), h = (int)(src.Height * f);
+            int w = Math.Max(1, (int)(src.Width * f)), h = Math.Max(1, (int)(src.Height * f));
             g.InterpolationMode = InterpolationMode.NearestNeighbor;
             g.DrawImage(src, (48 - w) / 2, (48 - h) / 2, w, h);
             return bmp;
@@ -207,27 +358,115 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 
         private void RefreshPreview()
         {
+            Hue hue = StudioUi.GetHue((int)numHue.Value);
             for (int i = 0; i < 9; i++)
             {
                 int dir = _cells[i].Dir < 0 ? CurrentDir : _cells[i].Dir;
-                List<Bitmap> frames = _dirs[dir];
+                bool selected = i == 4;
+                Bitmap scene = RenderDirection(dir, _cells[i].Mirror, selected && chkOnion.Checked, hue, selected);
                 PixelView v = _compass[i];
                 Image old = v.Image;
-                if (frames.Count == 0)
-                {
-                    v.Image = null;
-                }
-                else
-                {
-                    Bitmap f = frames[_frameIndex % frames.Count];
-                    v.Image = _cells[i].Mirror ? StudioImaging.FlipHorizontal(f) : new Bitmap(f);
-                }
+                v.Image = scene;
                 old?.Dispose();
-                if (i == 4)
+                if (selected)
                 {
-                    v.Caption = $"Auswahl: {_dirNames[dir]}  Frame {(frames.Count == 0 ? 0 : (_frameIndex % frames.Count) + 1)}/{frames.Count}";
+                    int count = _dirs[dir].Count;
+                    v.Caption = $"Auswahl: {_dirNames[dir]}  Frame {(count == 0 ? 0 : (_frameIndex % count) + 1)}/{count}";
                 }
             }
+        }
+
+        /// <summary>
+        /// Draws the current frame of a direction on a canvas that is the same for all frames,
+        /// aligned at the foot point (like the client). Mirrored directions are flipped as a whole.
+        /// </summary>
+        private Bitmap RenderDirection(int dir, bool mirror, bool onion, Hue hue, bool remember)
+        {
+            List<AnimFrame> frames = _dirs[dir];
+            List<OverlayFrame> overlay = chkOverlay.Checked ? _overlay[dir] : null;
+            if (frames.Count == 0 && (overlay == null || overlay.Count == 0))
+            {
+                return null;
+            }
+
+            // canvas bounds relative to the foot point
+            int minX = 0, minY = 0, maxX = 1, maxY = 1;
+            foreach (AnimFrame f in frames)
+            {
+                Point ft = Foot(f);
+                minX = Math.Min(minX, -ft.X);
+                minY = Math.Min(minY, -ft.Y);
+                maxX = Math.Max(maxX, f.Image.Width - ft.X);
+                maxY = Math.Max(maxY, f.Image.Height - ft.Y);
+            }
+            if (overlay != null)
+            {
+                foreach (OverlayFrame o in overlay)
+                {
+                    // UO: image top-left = foot - (centerX, centerY + height)
+                    minX = Math.Min(minX, -o.Center.X);
+                    minY = Math.Min(minY, -(o.Center.Y + o.Image.Height));
+                    maxX = Math.Max(maxX, o.Image.Width - o.Center.X);
+                    maxY = Math.Max(maxY, -o.Center.Y);
+                }
+            }
+
+            int w = maxX - minX + (Pad * 2), h = maxY - minY + (Pad * 2);
+            var foot = new Point(Pad - minX, Pad - minY);
+            var scene = new Bitmap(w, h, PixelFormat.Format32bppArgb);
+            using (Graphics g = Graphics.FromImage(scene))
+            {
+                g.Clear(Color.Transparent);
+                g.InterpolationMode = InterpolationMode.NearestNeighbor;
+
+                if (frames.Count > 0)
+                {
+                    int index = _frameIndex % frames.Count;
+                    if (onion && frames.Count > 1)
+                    {
+                        AnimFrame prev = frames[(index + frames.Count - 1) % frames.Count];
+                        Point pf = Foot(prev);
+                        using var attr = new ImageAttributes();
+                        attr.SetColorMatrix(new ColorMatrix { Matrix33 = 0.35f });
+                        g.DrawImage(prev.Image, new Rectangle(foot.X - pf.X, foot.Y - pf.Y, prev.Image.Width, prev.Image.Height),
+                                    0, 0, prev.Image.Width, prev.Image.Height, GraphicsUnit.Pixel, attr);
+                    }
+
+                    AnimFrame cur = frames[index];
+                    Point cf = Foot(cur);
+                    var rect = new Rectangle(foot.X - cf.X, foot.Y - cf.Y, cur.Image.Width, cur.Image.Height);
+                    if (hue != null)
+                    {
+                        using Bitmap hued = StudioImaging.ApplyHue(cur.Image, hue, chkPartialHue.Checked);
+                        g.DrawImageUnscaled(hued, rect.X, rect.Y);
+                    }
+                    else
+                    {
+                        g.DrawImageUnscaled(cur.Image, rect.X, rect.Y);
+                    }
+                    if (remember)
+                    {
+                        _selectedFrameRect = rect;
+                    }
+                }
+
+                if (overlay != null && overlay.Count > 0)
+                {
+                    OverlayFrame o = overlay[_frameIndex % overlay.Count];
+                    g.DrawImageUnscaled(o.Image, foot.X - o.Center.X, foot.Y - o.Center.Y - o.Image.Height);
+                }
+            }
+
+            if (remember)
+            {
+                _selectedFoot = foot;
+            }
+
+            if (mirror)
+            {
+                scene.RotateFlip(RotateFlipType.RotateNoneFlipX);
+            }
+            return scene;
         }
 
         private void DrawCrosshair(Graphics g, Rectangle r)
@@ -237,17 +476,62 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 return;
             }
             int zoom = viewSelected.Zoom;
-            int w = viewSelected.Image.Width;
-            int h = viewSelected.Image.Height;
-            // UO: frame is drawn at (x - centerX, y - centerY - height) -> foot point
-            int fx = r.X + (((w / 2) + (int)numCenterX.Value) * zoom);
-            int fy = r.Y + ((h + (int)numCenterY.Value) * zoom);
+            int fx = r.X + (_selectedFoot.X * zoom);
+            int fy = r.Y + (_selectedFoot.Y * zoom);
             using var pen = new Pen(Color.Red, 1);
             g.DrawLine(pen, fx - 12, fy, fx + 12, fy);
             g.DrawLine(pen, fx, fy - 12, fx, fy + 12);
             using var dia = new Pen(Color.FromArgb(140, Color.Blue));
             int t = 22 * zoom;
             g.DrawPolygon(dia, new[] { new Point(fx, fy - t), new Point(fx + t, fy), new Point(fx, fy + t), new Point(fx - t, fy) });
+        }
+
+        /// <summary>Loads the overlay animation (e.g. equipment) for the same action.</summary>
+        private void LoadOverlay()
+        {
+            foreach (List<OverlayFrame> list in _overlay)
+            {
+                foreach (OverlayFrame o in list)
+                {
+                    o.Image.Dispose();
+                }
+                list.Clear();
+            }
+            if (!chkOverlay.Checked)
+            {
+                return;
+            }
+            try
+            {
+                int fileType = cbOverlayFile.SelectedIndex + 1;
+                int body = (int)numOverlayBody.Value, action = (int)numAction.Value;
+                for (int d = 0; d < DirCount; d++)
+                {
+                    AnimIdx idx = AnimationEdit.GetAnimation(fileType, body, action, d);
+                    Bitmap[] bits = idx?.GetFrames();
+                    if (bits == null || idx.Frames == null)
+                    {
+                        continue;
+                    }
+                    for (int i = 0; i < bits.Length && i < idx.Frames.Count; i++)
+                    {
+                        if (bits[i] == null)
+                        {
+                            continue;
+                        }
+                        _overlay[d].Add(new OverlayFrame { Image = StudioImaging.To32(bits[i]), Center = idx.Frames[i].Center });
+                        bits[i].Dispose();
+                    }
+                }
+                int total = _overlay.Sum(l => l.Count);
+                lblStatus.Text = total == 0
+                    ? $"Overlay: Body {body} / Action {action} hat in {cbOverlayFile.Text} keine Frames."
+                    : $"Overlay: Body {body} / Action {action} geladen ({total} Frames).";
+            }
+            catch (Exception ex)
+            {
+                lblStatus.Text = "Overlay konnte nicht geladen werden: " + ex.Message;
+            }
         }
 
         #endregion
@@ -263,9 +547,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             }
             try
             {
-                foreach (string file in dlg.FileNames.OrderBy(f => f, StringComparer.OrdinalIgnoreCase))
+                foreach (string file in dlg.FileNames.OrderBy(f => f, new NaturalStringComparer()))
                 {
-                    _dirs[CurrentDir].AddRange(StudioImaging.LoadFrames(file));
+                    foreach (Bitmap b in StudioImaging.LoadFrames(file))
+                    {
+                        _dirs[CurrentDir].Add(new AnimFrame(b, Point.Empty));
+                    }
                 }
                 Changed();
                 lblStatus.Text = $"{dlg.FileNames.Length} Datei(en) zu Richtung {CurrentDir} hinzugefügt.";
@@ -318,7 +605,6 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                     }
                 }
 
-                // rows -> anim directions
                 switch (dlg.Mapping)
                 {
                     case 0: // 5 rows UO order
@@ -347,7 +633,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                             Replace(4, rows[7], false);
                         }
                         break;
-                    case 3: // 8 rows clockwise from down: S(↓), SW(↙), W(←), NW(↖), N(↑), NE, E, SE
+                    case 3: // 8 rows clockwise from down
                         if (rows.Count >= 5)
                         {
                             for (int d = 0; d < DirCount; d++)
@@ -356,7 +642,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                             }
                         }
                         break;
-                    default: // all rows into the current direction
+                    default: // all cells into the current direction
                         Replace(CurrentDir, rows.SelectMany(r => r).ToList(), false);
                         break;
                 }
@@ -369,13 +655,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                     }
                 }
 
-                // dispose unused rows
                 foreach (Bitmap b in rows.SelectMany(r => r))
                 {
-                    if (!_dirs.Any(list => list.Contains(b)))
-                    {
-                        b.Dispose();
-                    }
+                    b.Dispose();
                 }
             }
 
@@ -383,30 +665,37 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             lblStatus.Text = "Sprite-Sheet importiert.";
         }
 
+        /// <summary>Replaces the frames of a direction with copies of the given bitmaps.</summary>
         private void Replace(int dir, List<Bitmap> frames, bool mirror)
         {
-            foreach (Bitmap b in _dirs[dir])
-            {
-                b.Dispose();
-            }
-            _dirs[dir].Clear();
+            ClearFrames(_dirs[dir]);
             foreach (Bitmap f in frames)
             {
-                _dirs[dir].Add(mirror ? StudioImaging.FlipHorizontal(f) : new Bitmap(f));
+                _dirs[dir].Add(new AnimFrame(mirror ? StudioImaging.FlipHorizontal(f) : new Bitmap(f), Point.Empty));
             }
         }
 
+        private static void ClearFrames(List<AnimFrame> list)
+        {
+            foreach (AnimFrame f in list)
+            {
+                f.Image.Dispose();
+            }
+            list.Clear();
+        }
+
         /// <summary>Crops all frames of one direction to the common opaque bounding box (keeps alignment).</summary>
-        private static void CropToUnion(List<Bitmap> frames)
+        private static void CropToUnion(List<AnimFrame> frames)
         {
             if (frames.Count == 0)
             {
                 return;
             }
-            int w = frames.Max(f => f.Width), h = frames.Max(f => f.Height);
+            int w = frames.Max(f => f.Image.Width), h = frames.Max(f => f.Image.Height);
             int minX = w, minY = h, maxX = -1, maxY = -1;
-            foreach (Bitmap f in frames)
+            foreach (AnimFrame af in frames)
             {
+                Bitmap f = af.Image;
                 int[] p = StudioImaging.GetPixels(f);
                 for (int y = 0; y < f.Height; y++)
                 {
@@ -430,25 +719,20 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             int cx = w / 2;
             int half = Math.Max(cx - minX, maxX - cx) + 1;
             var rect = new Rectangle(cx - half, minY, half * 2, maxY - minY + 1);
-            for (int i = 0; i < frames.Count; i++)
+            foreach (AnimFrame af in frames)
             {
-                using Bitmap padded = new Bitmap(w, h, PixelFormat.Format32bppArgb);
-                using (Graphics g = Graphics.FromImage(padded))
-                {
-                    g.Clear(Color.Transparent);
-                    g.DrawImageUnscaled(frames[i], 0, 0);
-                }
-                Bitmap c = new Bitmap(rect.Width, rect.Height, PixelFormat.Format32bppArgb);
+                var c = new Bitmap(rect.Width, rect.Height, PixelFormat.Format32bppArgb);
                 using (Graphics g = Graphics.FromImage(c))
                 {
                     g.Clear(Color.Transparent);
-                    g.DrawImage(padded, new Rectangle(0, 0, rect.Width, rect.Height), rect, GraphicsUnit.Pixel);
+                    g.DrawImageUnscaled(af.Image, -rect.X, -rect.Y);
                 }
-                frames[i].Dispose();
-                frames[i] = c;
+                af.Image.Dispose();
+                af.Image = c;
             }
         }
 
+        /// <summary>Loads all 5 directions of body/action from the MUL, including the frame centres.</summary>
         private void LoadFromMul()
         {
             try
@@ -456,30 +740,33 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 int fileType = cbFileType.SelectedIndex + 1;
                 int body = (int)numBody.Value, action = (int)numAction.Value;
                 int loaded = 0;
+                numCenterX.Value = 0;
+                numCenterY.Value = 0;
                 for (int d = 0; d < DirCount; d++)
                 {
+                    ClearFrames(_dirs[d]);
                     AnimIdx edit = AnimationEdit.GetAnimation(fileType, body, action, d);
-                    Bitmap[] frames = edit?.GetFrames();
-                    var list = new List<Bitmap>();
-                    if (frames != null)
+                    Bitmap[] bits = edit?.GetFrames();
+                    if (bits == null || edit.Frames == null)
                     {
-                        foreach (Bitmap f in frames)
+                        continue;
+                    }
+                    for (int i = 0; i < bits.Length && i < edit.Frames.Count; i++)
+                    {
+                        if (bits[i] == null)
                         {
-                            if (f != null)
-                            {
-                                list.Add(StudioImaging.To32(f));
-                            }
+                            continue;
                         }
+                        Bitmap img = StudioImaging.To32(bits[i]);
+                        bits[i].Dispose();
+                        Point c = edit.Frames[i].Center;
+                        // UO centre -> offset relative to the default foot point (bottom centre)
+                        _dirs[d].Add(new AnimFrame(img, new Point(c.X - (img.Width / 2), c.Y)));
+                        loaded++;
                     }
-                    Replace(d, list, false);
-                    foreach (Bitmap b in list)
-                    {
-                        b.Dispose();
-                    }
-                    loaded += _dirs[d].Count;
                 }
                 Changed();
-                lblStatus.Text = $"Body {body}, Action {action} aus {cbFileType.Text} geladen ({loaded} Frames).";
+                lblStatus.Text = $"Body {body}, Action {action} aus {cbFileType.Text} geladen ({loaded} Frames, Fußpunkte übernommen).";
             }
             catch (Exception ex)
             {
@@ -493,11 +780,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 
         private void MirrorDirection()
         {
-            List<Bitmap> frames = _dirs[CurrentDir];
+            List<AnimFrame> frames = _dirs[CurrentDir];
             for (int i = 0; i < frames.Count; i++)
             {
-                Bitmap m = StudioImaging.FlipHorizontal(frames[i]);
-                frames[i].Dispose();
+                AnimFrame m = frames[i].Clone(true);
+                frames[i].Image.Dispose();
                 frames[i] = m;
             }
             Changed();
@@ -519,7 +806,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                               d + dist < DirCount && _dirs[d + dist].Count > 0 ? d + dist : -1;
                     if (src >= 0)
                     {
-                        Replace(d, _dirs[src], false);
+                        _dirs[d].AddRange(_dirs[src].Select(f => f.Clone(false)));
                         filled++;
                         break;
                     }
@@ -535,7 +822,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             {
                 return;
             }
-            List<Bitmap> frames = _dirs[CurrentDir];
+            List<AnimFrame> frames = _dirs[CurrentDir];
             int i = (int)lvFrames.SelectedItems[0].Tag;
             int j = i + delta;
             if (j < 0 || j >= frames.Count)
@@ -549,10 +836,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 
         private void RemoveFrames()
         {
-            List<Bitmap> frames = _dirs[CurrentDir];
+            List<AnimFrame> frames = _dirs[CurrentDir];
             foreach (int i in lvFrames.SelectedItems.Cast<ListViewItem>().Select(it => (int)it.Tag).OrderByDescending(i => i))
             {
-                frames[i].Dispose();
+                frames[i].Image.Dispose();
                 frames.RemoveAt(i);
             }
             Changed();
@@ -560,7 +847,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 
         private void ClearDirection()
         {
-            Replace(CurrentDir, new List<Bitmap>(), false);
+            ClearFrames(_dirs[CurrentDir]);
             Changed();
         }
 
@@ -568,17 +855,17 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 
         #region Export
 
-        private void ExportToMul()
+        private bool ExportToMul(bool interactive)
         {
             if (_dirs.All(d => d.Count == 0))
             {
                 StudioUi.Info(this, "Keine Frames vorhanden.");
-                return;
+                return false;
             }
-            if (_dirs.Any(d => d.Count == 0) &&
+            if (interactive && _dirs.Any(d => d.Count == 0) &&
                 !StudioUi.Ask(this, "Nicht alle 5 Richtungen haben Frames. Leere Richtungen werden in der MUL geleert.\nTrotzdem fortfahren? (Tipp: \"Leere auffüllen\")"))
             {
-                return;
+                return false;
             }
 
             int fileType = cbFileType.SelectedIndex + 1;
@@ -590,7 +877,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 if (action >= maxActions)
                 {
                     StudioUi.Error(this, $"Body {body} hat in anim.mul nur {maxActions} Actions (0–{maxActions - 1}).");
-                    return;
+                    return false;
                 }
             }
 
@@ -603,10 +890,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                     if (edit == null)
                     {
                         StudioUi.Error(this, $"Body {body} / Action {action} / Richtung {d} existiert in {cbFileType.Text} nicht (Index außerhalb der Datei).");
-                        return;
+                        return false;
                     }
 
-                    List<Bitmap> frames = _dirs[d];
+                    List<AnimFrame> frames = _dirs[d];
                     edit.ClearFrames();
                     if (frames.Count == 0)
                     {
@@ -614,22 +901,27 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                     }
 
                     // palette with max. 256 colours shared by all frames of this direction
-                    List<Bitmap> uoFrames = BuildUoFrames(frames, (int)numColors.Value, out ushort[] palette);
+                    List<Bitmap> uoFrames = BuildUoFrames(frames.Select(f => f.Image).ToList(), (int)numColors.Value, out ushort[] palette);
                     edit.ReplacePalette(palette);
-                    foreach (Bitmap f in uoFrames)
+                    for (int i = 0; i < uoFrames.Count; i++)
                     {
-                        int cx = (f.Width / 2) + (int)numCenterX.Value;
-                        int cy = (int)numCenterY.Value;
+                        Bitmap f = uoFrames[i];
+                        Point foot = Foot(frames[i]);
+                        // UO: frame drawn at (footX - centerX, footY - centerY - height)
+                        int cx = foot.X;
+                        int cy = foot.Y - f.Height;
                         edit.AddFrame(f, cx, cy);
                         f.Dispose();
                     }
                 }
                 StudioUi.MarkChanged("Animations");
                 lblStatus.Text = $"Body {body}, Action {action} in {cbFileType.Text} geschrieben. Mit \"Anim-MUL speichern\" in {StudioUi.OutputPath} sichern.";
+                return true;
             }
             catch (Exception ex)
             {
                 StudioUi.Error(this, ex.Message);
+                return false;
             }
             finally
             {
@@ -711,6 +1003,70 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             }
         }
 
+        /// <summary>Exports the whole body (all actions) as VD file – importable in UO Fiddler and the VD tools.</summary>
+        private void ExportVd()
+        {
+            int fileType = cbFileType.SelectedIndex + 1;
+            int body = (int)numBody.Value;
+            if (_dirs.Any(d => d.Count > 0) &&
+                StudioUi.Ask(this, "Die aktuellen Frames zuerst in die Animation schreiben?\n(Sonst wird nur exportiert, was bereits in der MUL steht.)") &&
+                !ExportToMul(false))
+            {
+                return;
+            }
+            using var dlg = new SaveFileDialog { Filter = "VD-Datei|*.vd", FileName = $"body_{body}.vd", InitialDirectory = StudioUi.OutputPath };
+            if (dlg.ShowDialog(this) != DialogResult.OK)
+            {
+                return;
+            }
+            try
+            {
+                Cursor = Cursors.WaitCursor;
+                AnimationEdit.ExportToVD(fileType, body, dlg.FileName);
+                lblStatus.Text = "VD exportiert: " + dlg.FileName;
+                StudioUi.Info(this, $"Body {body} als VD exportiert:\n{dlg.FileName}\n\nDie VD-Datei kann im Animation-Editor von UO Fiddler oder mit \"Animation VD\" / \"VD Editor (UOEC)\" weiterverarbeitet werden.");
+            }
+            catch (Exception ex)
+            {
+                StudioUi.Error(this, ex.Message);
+            }
+            finally
+            {
+                Cursor = Cursors.Default;
+            }
+        }
+
+        /// <summary>Text for mobtypes.txt, bodyconv.def and Body.def.</summary>
+        private void ShowDefEntries()
+        {
+            int fileType = cbFileType.SelectedIndex + 1;
+            int body = (int)numBody.Value;
+            string type = cbMobType.Text;
+            var sb = new StringBuilder();
+            sb.AppendLine("# ---- mobtypes.txt -------------------------------------------");
+            sb.AppendLine("# BODY   TYPE         FLAGS");
+            sb.AppendLine($"{body}\t{type}\t0");
+            sb.AppendLine();
+            if (fileType > 1)
+            {
+                sb.AppendLine("# ---- bodyconv.def ---------------------------------------------");
+                sb.AppendLine("# Spiel-Body  anim2  anim3  anim4  anim5  (-1 = nicht verwendet)");
+                string[] cols = { "-1", "-1", "-1", "-1" };
+                cols[fileType - 2] = body.ToString();
+                sb.AppendLine($"{body}\t{string.Join("\t", cols)}");
+                sb.AppendLine("# Hinweis: Spiel-Body links anpassen, wenn er sich von der Position in der Datei unterscheidet.");
+                sb.AppendLine();
+            }
+            sb.AppendLine("# ---- Body.def (optional) ---------------------------------------");
+            sb.AppendLine("# Nur nötig, um einen NEUEN Body auf diese Animation umzuleiten:");
+            sb.AppendLine("# NEUER_BODY {BASIS_BODY} HUE");
+            sb.AppendLine($"# 2000 {{{body}}} 0");
+            sb.AppendLine();
+            sb.AppendLine("# ---- ServUO / RunUO ---------------------------------------------");
+            sb.AppendLine($"// Body = {body};   // {type}");
+            StudioTextForm.ShowText(this, $"Def-Einträge für Body {body}", sb.ToString(), "mobtypes.txt");
+        }
+
         private void ExportPngFrames()
         {
             using var dlg = new FolderBrowserDialog { Description = "Zielordner für die Frames", SelectedPath = StudioUi.OutputPath };
@@ -723,13 +1079,14 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             {
                 for (int i = 0; i < _dirs[d].Count; i++)
                 {
-                    _dirs[d][i].Save(Path.Combine(dlg.SelectedPath, $"anim_dir{d}_frame{i:D2}.png"), ImageFormat.Png);
+                    _dirs[d][i].Image.Save(Path.Combine(dlg.SelectedPath, $"anim_dir{d}_frame{i:D2}.png"), ImageFormat.Png);
                     n++;
                 }
             }
             lblStatus.Text = $"{n} Frames gespeichert in {dlg.SelectedPath}";
         }
 
+        /// <summary>Sprite sheet (5 rows, UO order), every cell aligned at the foot point.</summary>
         private void ExportSheet()
         {
             int cols = _dirs.Max(d => d.Count);
@@ -737,8 +1094,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             {
                 return;
             }
-            int cw = _dirs.SelectMany(d => d).Max(b => b.Width);
-            int ch = _dirs.SelectMany(d => d).Max(b => b.Height);
+            var all = _dirs.SelectMany(d => d).ToList();
+            int left = all.Max(f => Foot(f).X), right = all.Max(f => f.Image.Width - Foot(f).X);
+            int top = all.Max(f => Foot(f).Y), bottom = Math.Max(0, all.Max(f => f.Image.Height - Foot(f).Y));
+            int cw = left + right, ch = top + bottom;
             using var sheet = new Bitmap(cw * cols, ch * DirCount, PixelFormat.Format32bppArgb);
             using (Graphics g = Graphics.FromImage(sheet))
             {
@@ -747,9 +1106,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 {
                     for (int i = 0; i < _dirs[d].Count; i++)
                     {
-                        Bitmap f = _dirs[d][i];
-                        // bottom centre alignment like in game
-                        g.DrawImageUnscaled(f, (i * cw) + ((cw - f.Width) / 2), (d * ch) + (ch - f.Height));
+                        AnimFrame f = _dirs[d][i];
+                        Point ft = Foot(f);
+                        g.DrawImageUnscaled(f.Image, (i * cw) + left - ft.X, (d * ch) + top - ft.Y);
                     }
                 }
             }
@@ -757,7 +1116,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             if (sfd.ShowDialog(this) == DialogResult.OK)
             {
                 sheet.Save(sfd.FileName, ImageFormat.Png);
-                lblStatus.Text = $"Sprite-Sheet ({cols} Spalten x 5 Reihen, UO-Reihenfolge) gespeichert.";
+                lblStatus.Text = $"Sprite-Sheet ({cols} Spalten x 5 Reihen, UO-Reihenfolge, am Fußpunkt ausgerichtet) gespeichert.";
             }
         }
 
@@ -766,13 +1125,19 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         protected override void OnFormClosed(FormClosedEventArgs e)
         {
             timerPlay.Stop();
-            foreach (Bitmap b in _dirs.SelectMany(d => d))
+            foreach (List<AnimFrame> list in _dirs)
             {
-                b.Dispose();
+                ClearFrames(list);
+            }
+            foreach (OverlayFrame o in _overlay.SelectMany(l => l))
+            {
+                o.Image.Dispose();
             }
             foreach (PixelView v in _compass)
             {
-                v.Image?.Dispose();
+                Image img = v.Image;
+                v.Image = null;
+                img?.Dispose();
             }
             base.OnFormClosed(e);
         }

@@ -787,6 +787,214 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Class.UoStudio
 
         #endregion
 
+        #region Effects (shadow, glow, shift, compare)
+
+        /// <summary>
+        /// Adds a drop shadow (silhouette moved by dx/dy) behind the opaque pixels. UO has no
+        /// alpha, so the shadow is either solid or dithered (every second pixel, looks 50 % transparent).
+        /// </summary>
+        public static Bitmap AddShadow(Bitmap src, int dx, int dy, Color color, bool dither)
+        {
+            int[] p = GetPixels(src);
+            int sw = src.Width, sh = src.Height;
+            int left = Math.Max(0, -dx), top = Math.Max(0, -dy);
+            int w = sw + Math.Abs(dx), h = sh + Math.Abs(dy);
+            var d = new int[w * h];
+            int col = color.ToArgb() | unchecked((int)0xFF000000);
+
+            // shadow first
+            for (int y = 0; y < sh; y++)
+            {
+                for (int x = 0; x < sw; x++)
+                {
+                    if (((p[(y * sw) + x] >> 24) & 0xFF) == 0)
+                    {
+                        continue;
+                    }
+                    int tx = x + left + dx, ty = y + top + dy;
+                    if (dither && ((tx + ty) & 1) == 1)
+                    {
+                        continue;
+                    }
+                    d[(ty * w) + tx] = col;
+                }
+            }
+            // image on top
+            for (int y = 0; y < sh; y++)
+            {
+                for (int x = 0; x < sw; x++)
+                {
+                    int c = p[(y * sw) + x];
+                    if (((c >> 24) & 0xFF) != 0)
+                    {
+                        d[((y + top) * w) + x + left] = c;
+                    }
+                }
+            }
+            return FromPixels(d, w, h);
+        }
+
+        /// <summary>Box blur (radius in pixels, 2 passes ~ gaussian). Works on premultiplied RGB + alpha.</summary>
+        public static Bitmap Blur(Bitmap src, int radius)
+        {
+            if (radius <= 0)
+            {
+                return new Bitmap(src);
+            }
+            int[] p = GetPixels(src);
+            int w = src.Width, h = src.Height;
+            var a = new double[p.Length];
+            var r = new double[p.Length];
+            var g = new double[p.Length];
+            var b = new double[p.Length];
+            for (int i = 0; i < p.Length; i++)
+            {
+                double al = ((p[i] >> 24) & 0xFF) / 255.0;
+                a[i] = al;
+                r[i] = ((p[i] >> 16) & 0xFF) * al;
+                g[i] = ((p[i] >> 8) & 0xFF) * al;
+                b[i] = (p[i] & 0xFF) * al;
+            }
+            for (int pass = 0; pass < 2; pass++)
+            {
+                foreach (double[] ch in new[] { a, r, g, b })
+                {
+                    BoxBlur(ch, w, h, radius);
+                }
+            }
+            for (int i = 0; i < p.Length; i++)
+            {
+                if (a[i] <= 0.001)
+                {
+                    p[i] = 0;
+                    continue;
+                }
+                int al = Clamp(a[i] * 255);
+                p[i] = (al << 24) | (Clamp(r[i] / a[i]) << 16) | (Clamp(g[i] / a[i]) << 8) | Clamp(b[i] / a[i]);
+            }
+            return FromPixels(p, w, h);
+        }
+
+        private static void BoxBlur(double[] d, int w, int h, int radius)
+        {
+            var tmp = new double[d.Length];
+            for (int y = 0; y < h; y++)
+            {
+                double acc = 0;
+                int n = 0;
+                for (int x = -radius; x < w; x++)
+                {
+                    int add = x + radius;
+                    if (add < w)
+                    {
+                        acc += d[(y * w) + add];
+                        n++;
+                    }
+                    if (x - radius - 1 >= 0)
+                    {
+                        acc -= d[(y * w) + x - radius - 1];
+                        n--;
+                    }
+                    if (x >= 0)
+                    {
+                        tmp[(y * w) + x] = acc / Math.Max(1, n);
+                    }
+                }
+            }
+            for (int x = 0; x < w; x++)
+            {
+                double acc = 0;
+                int n = 0;
+                for (int y = -radius; y < h; y++)
+                {
+                    int add = y + radius;
+                    if (add < h)
+                    {
+                        acc += tmp[(add * w) + x];
+                        n++;
+                    }
+                    if (y - radius - 1 >= 0)
+                    {
+                        acc -= tmp[((y - radius - 1) * w) + x];
+                        n--;
+                    }
+                    if (y >= 0)
+                    {
+                        d[(y * w) + x] = acc / Math.Max(1, n);
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Glow for (additive) effects: the blurred image is added under the original.
+        /// The canvas grows by the radius on every side. strength 0..3.
+        /// </summary>
+        public static Bitmap Glow(Bitmap src, int radius, double strength)
+        {
+            if (radius <= 0 || strength <= 0)
+            {
+                return new Bitmap(src);
+            }
+            int w = src.Width + (radius * 2), h = src.Height + (radius * 2);
+            using var padded = new Bitmap(w, h, PixelFormat.Format32bppArgb);
+            using (Graphics gr = Graphics.FromImage(padded))
+            {
+                gr.Clear(Color.Transparent);
+                gr.DrawImageUnscaled(src, radius, radius);
+            }
+            using Bitmap blurred = Blur(padded, radius);
+            int[] o = GetPixels(padded);
+            int[] bl = GetPixels(blurred);
+            for (int i = 0; i < o.Length; i++)
+            {
+                double ba = ((bl[i] >> 24) & 0xFF) / 255.0 * strength;
+                int r = Clamp((((o[i] >> 16) & 0xFF) * (((o[i] >> 24) & 0xFF) / 255.0)) + (((bl[i] >> 16) & 0xFF) * ba));
+                int g = Clamp((((o[i] >> 8) & 0xFF) * (((o[i] >> 24) & 0xFF) / 255.0)) + (((bl[i] >> 8) & 0xFF) * ba));
+                int b = Clamp(((o[i] & 0xFF) * (((o[i] >> 24) & 0xFF) / 255.0)) + ((bl[i] & 0xFF) * ba));
+                // brightness decides visibility: dark pixels stay transparent (additive effects)
+                int a = Math.Max(r, Math.Max(g, b)) > 6 ? 255 : 0;
+                o[i] = (a << 24) | (r << 16) | (g << 8) | b;
+            }
+            return FromPixels(o, w, h);
+        }
+
+        /// <summary>Moves the image content inside the same canvas size.</summary>
+        public static Bitmap Shift(Bitmap src, int dx, int dy)
+        {
+            var bmp = new Bitmap(src.Width, src.Height, PixelFormat.Format32bppArgb);
+            using Graphics g = Graphics.FromImage(bmp);
+            g.Clear(Color.Transparent);
+            g.DrawImageUnscaled(src, dx, dy);
+            return bmp;
+        }
+
+        /// <summary>
+        /// Before/after picture: left of the split (0..1) the "before" image, right the "after" image,
+        /// both drawn at the size of "after" (nearest neighbour), separated by a red line.
+        /// </summary>
+        public static Bitmap CompareSplit(Bitmap before, Bitmap after, double split)
+        {
+            int w = after.Width, h = after.Height;
+            var bmp = new Bitmap(w, h, PixelFormat.Format32bppArgb);
+            int sx = (int)Math.Round(w * Math.Max(0, Math.Min(1, split)));
+            using Graphics g = Graphics.FromImage(bmp);
+            g.Clear(Color.Transparent);
+            g.InterpolationMode = InterpolationMode.HighQualityBicubic;
+            g.SetClip(new Rectangle(0, 0, sx, h));
+            g.DrawImage(before, new Rectangle(0, 0, w, h));
+            g.SetClip(new Rectangle(sx, 0, w - sx, h));
+            g.DrawImageUnscaled(after, 0, 0);
+            g.ResetClip();
+            if (sx > 0 && sx < w)
+            {
+                g.DrawLine(Pens.Red, sx, 0, sx, h);
+            }
+            return bmp;
+        }
+
+        #endregion
+
         #region UO specific
 
         /// <summary>

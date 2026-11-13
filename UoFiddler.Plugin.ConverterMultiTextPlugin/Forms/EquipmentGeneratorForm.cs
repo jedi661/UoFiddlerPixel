@@ -48,6 +48,18 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private bool _initialized;
         private bool _placing;
 
+        /// <summary>Position / form of the item for one figure (male or female).</summary>
+        private struct Placement
+        {
+            public int OffX, OffY, Scale, Rotate;
+            public bool Flip;
+        }
+
+        private Placement _male = new Placement { OffX = 60, OffY = 90, Scale = 100 };
+        private Placement _female = new Placement { OffX = 60, OffY = 90, Scale = 100 };
+        private bool _editingFemale;
+        private readonly System.Collections.Generic.Dictionary<int, Bitmap> _overlayCache = new System.Collections.Generic.Dictionary<int, Bitmap>();
+
         public EquipmentGeneratorForm()
         {
             InitializeComponent();
@@ -70,6 +82,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 
         private void CbGender_SelectedIndexChanged(object sender, EventArgs e)
         {
+            SaveCurrentPlacement();
+            _editingFemale = cbGender.SelectedIndex == 1;
+            if (chkFemaleSeparate.Checked)
+            {
+                ApplyPlacement(_editingFemale ? _female : _male);
+            }
             if (cbGender.SelectedIndex < 2)
             {
                 numBodyGump.Value = cbGender.SelectedIndex == 0 ? 0x0C : 0x0D;
@@ -78,6 +96,52 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             {
                 LoadBody();
             }
+        }
+
+        private void ChkFemaleSeparate_CheckedChanged(object sender, EventArgs e)
+        {
+            if (chkFemaleSeparate.Checked)
+            {
+                // start the female variant with the current placement
+                Placement p = CurrentPlacement();
+                _male = p;
+                _female = p;
+                lblStatus.Text = "Weibliche Variante separat: Figur oben auf \"Weiblich\" stellen und dort platzieren.";
+            }
+            else
+            {
+                SaveCurrentPlacement();
+            }
+        }
+
+        private void BtnApplyArt_Click(object sender, EventArgs e) => ApplyArt(true);
+
+        private void BtnSaveArt_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                Cursor = Cursors.WaitCursor;
+                Art.Save(StudioUi.OutputPath);
+                StudioUi.ResetChanged("Art");
+                StudioUi.Info(this, $"art.mul / artidx.mul gespeichert in:\n{StudioUi.OutputPath}");
+            }
+            catch (Exception ex)
+            {
+                StudioUi.Error(this, ex.Message);
+            }
+            finally
+            {
+                Cursor = Cursors.Default;
+            }
+        }
+
+        private void BtnAnimStudio_Click(object sender, EventArgs e)
+        {
+            // equipment animations live in anim.mul under the body = tiledata "Animation" value
+            var form = new AnimationStudioForm();
+            form.SetTarget(1, (int)numAnim.Value, 0, 4);
+            form.Show();
+            lblStatus.Text = $"Animations-Studio für Body {(int)numAnim.Value} (Typ EQUIPMENT) geöffnet.";
         }
 
         private void NumBodyGump_ValueChanged(object sender, EventArgs e)
@@ -389,6 +453,89 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 
         #endregion
 
+        #region Placement (male / female)
+
+        private Placement CurrentPlacement() => new Placement
+        {
+            OffX = (int)numOffX.Value,
+            OffY = (int)numOffY.Value,
+            Scale = (int)numScale.Value,
+            Rotate = (int)numRotate.Value,
+            Flip = chkFlip.Checked
+        };
+
+        private void ApplyPlacement(Placement p)
+        {
+            _placing = true;
+            try
+            {
+                numOffX.Value = Math.Max(numOffX.Minimum, Math.Min(numOffX.Maximum, p.OffX));
+                numOffY.Value = Math.Max(numOffY.Minimum, Math.Min(numOffY.Maximum, p.OffY));
+                numScale.Value = Math.Max(numScale.Minimum, Math.Min(numScale.Maximum, p.Scale));
+                numRotate.Value = Math.Max(numRotate.Minimum, Math.Min(numRotate.Maximum, p.Rotate));
+                chkFlip.Checked = p.Flip;
+            }
+            finally
+            {
+                _placing = false;
+            }
+        }
+
+        /// <summary>Stores the values of the controls in the set that is currently edited.</summary>
+        private void SaveCurrentPlacement()
+        {
+            if (!_initialized)
+            {
+                return;
+            }
+            Placement p = CurrentPlacement();
+            if (!chkFemaleSeparate.Checked)
+            {
+                _male = p;
+                _female = p;
+            }
+            else if (_editingFemale)
+            {
+                _female = p;
+            }
+            else
+            {
+                _male = p;
+            }
+        }
+
+        /// <summary>Additional gumps from the text box (dec or 0x hex, separated by comma / space).</summary>
+        private System.Collections.Generic.List<Bitmap> OverlayGumps()
+        {
+            var list = new System.Collections.Generic.List<Bitmap>();
+            foreach (string part in txtOverlayGumps.Text.Split(new[] { ',', ';', ' ' }, StringSplitOptions.RemoveEmptyEntries))
+            {
+                if (!StudioUi.TryParseId(part, out int id))
+                {
+                    continue;
+                }
+                if (!_overlayCache.TryGetValue(id, out Bitmap bmp))
+                {
+                    try
+                    {
+                        bmp = UltimaImages.CopyGump(id);
+                    }
+                    catch
+                    {
+                        bmp = null;
+                    }
+                    _overlayCache[id] = bmp;
+                }
+                if (bmp != null)
+                {
+                    list.Add(bmp);
+                }
+            }
+            return list;
+        }
+
+        #endregion
+
         #region Compose
 
         /// <summary>Builds the transformed item gump and the paperdoll preview.</summary>
@@ -396,29 +543,23 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         {
             _gump?.Dispose();
             _gump = null;
+            SaveCurrentPlacement();
 
             int canvasW = _body?.Width ?? 260;
             int canvasH = _body?.Height ?? 237;
 
             if (_item != null)
             {
-                Bitmap item = TransformItem();
-                int ox = (int)numOffX.Value, oy = (int)numOffY.Value;
+                _gump = BuildGump(CurrentPlacement());
+                canvasW = Math.Max(canvasW, _gump.Width);
+                canvasH = Math.Max(canvasH, _gump.Height);
+            }
 
-                // gump = item drawn at its offset relative to the body origin (0/0), trimmed right/bottom
-                int gw = Math.Max(1, ox + item.Width), gh = Math.Max(1, oy + item.Height);
-                var gump = new Bitmap(gw, gh, PixelFormat.Format32bppArgb);
-                using (Graphics g = Graphics.FromImage(gump))
-                {
-                    g.Clear(Color.Transparent);
-                    g.DrawImageUnscaled(item, ox, oy);
-                }
-                item.Dispose();
-                Bitmap uo = StudioImaging.ToUoColors(gump);
-                gump.Dispose();
-                _gump = uo;
-                canvasW = Math.Max(canvasW, gw);
-                canvasH = Math.Max(canvasH, gh);
+            System.Collections.Generic.List<Bitmap> overlays = OverlayGumps();
+            foreach (Bitmap o in overlays)
+            {
+                canvasW = Math.Max(canvasW, o.Width);
+                canvasH = Math.Max(canvasH, o.Height);
             }
 
             var preview = new Bitmap(canvasW, canvasH, PixelFormat.Format32bppArgb);
@@ -428,6 +569,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 if (_body != null && chkShowBody.Checked)
                 {
                     g.DrawImageUnscaled(_body, 0, 0);
+                }
+                // existing equipment (all paperdoll gumps share the body origin 0/0)
+                foreach (Bitmap o in overlays)
+                {
+                    g.DrawImageUnscaled(o, 0, 0);
                 }
                 if (_gump != null)
                 {
@@ -458,14 +604,30 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             }
         }
 
-        private Bitmap TransformItem()
+        /// <summary>Gump = item drawn at its offset relative to the body origin (0/0), trimmed right/bottom.</summary>
+        private Bitmap BuildGump(Placement p)
         {
-            float scale = (float)numScale.Value / 100f;
+            using Bitmap item = TransformItem(p);
+            int gw = Math.Max(1, p.OffX + item.Width), gh = Math.Max(1, p.OffY + item.Height);
+            using var gump = new Bitmap(gw, gh, PixelFormat.Format32bppArgb);
+            using (Graphics g = Graphics.FromImage(gump))
+            {
+                g.Clear(Color.Transparent);
+                g.DrawImageUnscaled(item, p.OffX, p.OffY);
+            }
+            return StudioImaging.ToUoColors(gump);
+        }
+
+        private Bitmap TransformItem() => TransformItem(CurrentPlacement());
+
+        private Bitmap TransformItem(Placement p)
+        {
+            float scale = p.Scale / 100f;
             int w = Math.Max(1, (int)Math.Round(_item.Width * scale));
             int h = Math.Max(1, (int)Math.Round(_item.Height * scale));
             Bitmap scaled = StudioImaging.Resize(_item, w, h, scale >= 1.5f ? InterpolationMode.NearestNeighbor : InterpolationMode.HighQualityBicubic);
 
-            float angle = (float)numRotate.Value;
+            float angle = p.Rotate;
             if (Math.Abs(angle) > 0.01f)
             {
                 double rad = angle * Math.PI / 180.0;
@@ -484,7 +646,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 scaled = rot;
             }
 
-            if (chkFlip.Checked)
+            if (p.Flip)
             {
                 scaled.RotateFlip(RotateFlipType.RotateNoneFlipX);
             }
@@ -558,10 +720,58 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 
         private void ApplyAll()
         {
-            if (ApplyGumps(false) && ApplyTileData(false))
+            if (!ApplyGumps(false) || !ApplyTileData(false))
             {
-                lblStatus.Text = "Gump(s) und Tiledata gesetzt. Jetzt Gump-MUL und tiledata.mul speichern.";
-                StudioUi.Info(this, "Gump(s) und Tiledata wurden gesetzt.\nBitte \"Gump-MUL speichern\" und \"tiledata.mul speichern\" ausführen.");
+                return;
+            }
+            bool art = chkWriteArt.Checked && ApplyArt(false);
+            string files = art ? "Gump-MUL, tiledata.mul und Art-MUL" : "Gump-MUL und tiledata.mul";
+            lblStatus.Text = $"Gump(s), Tiledata{(art ? " und Art-Item" : string.Empty)} gesetzt. Jetzt {files} speichern.";
+            StudioUi.Info(this, lblStatus.Text);
+        }
+
+        /// <summary>Writes the (untransformed) item picture as art static at the item ID.</summary>
+        private bool ApplyArt(bool message)
+        {
+            if (_item == null)
+            {
+                StudioUi.Info(this, "Bitte zuerst ein Item-Bild laden.");
+                return false;
+            }
+            if (!StudioUi.TryParseId(txtItemId.Text, out int id) || id < 0)
+            {
+                StudioUi.Error(this, "Ungültige Item-ID.");
+                return false;
+            }
+            try
+            {
+                if (id > Art.GetMaxItemId())
+                {
+                    StudioUi.Error(this, $"Item-ID 0x{id:X4} liegt über der maximalen Art-ID 0x{Art.GetMaxItemId():X4}.");
+                    return false;
+                }
+                if (Art.IsValidStatic(id) && !StudioUi.Ask(this, $"Art-Item 0x{id:X4} existiert bereits. Mit dem Item-Bild überschreiben?"))
+                {
+                    return false;
+                }
+                int max = (int)numArtMax.Value;
+                using Bitmap fit = StudioImaging.ResizeFit(_item, max, max, InterpolationMode.HighQualityBicubic);
+                using Bitmap hard = StudioImaging.HardAlpha(fit, 110);
+                using Bitmap col = chkGray.Checked ? StudioImaging.ToGray(hard) : new Bitmap(hard);
+                using Bitmap uo = StudioImaging.ToUoColors(col);
+                Art.ReplaceStatic(id, StudioImaging.To1555(uo));
+                StudioUi.MarkChanged("Art");
+                lblStatus.Text = $"Art-Item 0x{id:X4} gesetzt ({uo.Width}x{uo.Height}).";
+                if (message)
+                {
+                    StudioUi.Info(this, lblStatus.Text + "\nMit \"Art-MUL speichern\" sichern.");
+                }
+                return true;
+            }
+            catch (Exception ex)
+            {
+                StudioUi.Error(this, ex.Message);
+                return false;
             }
         }
 
@@ -586,12 +796,17 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
                 {
                     return false;
                 }
-                Gumps.ReplaceGump(male, StudioImaging.To1555(_gump));
+                SaveCurrentPlacement();
+                using (Bitmap maleGump = BuildGump(_male))
+                {
+                    Gumps.ReplaceGump(male, StudioImaging.To1555(maleGump));
+                }
                 string info = $"Gump {male}";
                 if (chkFemale.Checked && female < count)
                 {
-                    Gumps.ReplaceGump(female, StudioImaging.To1555(_gump));
-                    info += $" und {female}";
+                    using Bitmap femaleGump = BuildGump(chkFemaleSeparate.Checked ? _female : _male);
+                    Gumps.ReplaceGump(female, StudioImaging.To1555(femaleGump));
+                    info += $" und {female}" + (chkFemaleSeparate.Checked ? " (separat platziert)" : string.Empty);
                 }
                 StudioUi.MarkChanged("Gumps");
                 lblStatus.Text = info + " gesetzt.";
@@ -769,6 +984,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             _item?.Dispose();
             _gump?.Dispose();
             _body?.Dispose();
+            foreach (Bitmap b in _overlayCache.Values)
+            {
+                b?.Dispose();
+            }
             viewPaperdoll.Image?.Dispose();
             viewGump.Image?.Dispose();
             base.OnFormClosed(e);

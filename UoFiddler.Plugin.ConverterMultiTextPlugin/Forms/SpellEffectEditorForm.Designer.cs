@@ -51,6 +51,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             btnLoadArt = new System.Windows.Forms.Button();
             btnRemove = new System.Windows.Forms.Button();
             btnClear = new System.Windows.Forms.Button();
+            btnParticles = new System.Windows.Forms.Button();
             grpProcess = new System.Windows.Forms.GroupBox();
             chkBlack = new System.Windows.Forms.CheckBox();
             numBlack = new System.Windows.Forms.NumericUpDown();
@@ -62,7 +63,18 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             lblMaxSize = new System.Windows.Forms.Label();
             numMaxSize = new System.Windows.Forms.NumericUpDown();
             chkCrop = new System.Windows.Forms.CheckBox();
+            lblGlow = new System.Windows.Forms.Label();
+            numGlow = new System.Windows.Forms.NumericUpDown();
+            lblGlowStrength = new System.Windows.Forms.Label();
+            numGlowStrength = new System.Windows.Forms.NumericUpDown();
             chkPingPong = new System.Windows.Forms.CheckBox();
+            grpFrame = new System.Windows.Forms.GroupBox();
+            lblFrameOffset = new System.Windows.Forms.Label();
+            numFrameDx = new System.Windows.Forms.NumericUpDown();
+            numFrameDy = new System.Windows.Forms.NumericUpDown();
+            lblRepeat = new System.Windows.Forms.Label();
+            numRepeat = new System.Windows.Forms.NumericUpDown();
+            lblSequence = new System.Windows.Forms.Label();
             grpPreview = new System.Windows.Forms.GroupBox();
             lblMs = new System.Windows.Forms.Label();
             numMs = new System.Windows.Forms.NumericUpDown();
@@ -70,7 +82,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             lblZoom = new System.Windows.Forms.Label();
             numZoom = new System.Windows.Forms.NumericUpDown();
             chkAdditive = new System.Windows.Forms.CheckBox();
-            chkGround = new System.Windows.Forms.CheckBox();
+            lblPreviewMode = new System.Windows.Forms.Label();
+            cbPreviewMode = new System.Windows.Forms.ComboBox();
+            lblGround = new System.Windows.Forms.Label();
             numGroundId = new System.Windows.Forms.NumericUpDown();
             lblHue = new System.Windows.Forms.Label();
             numHue = new System.Windows.Forms.NumericUpDown();
@@ -100,6 +114,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             ((System.ComponentModel.ISupportInitialize)numBrightness).BeginInit();
             ((System.ComponentModel.ISupportInitialize)numScale).BeginInit();
             ((System.ComponentModel.ISupportInitialize)numMaxSize).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)numGlow).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)numGlowStrength).BeginInit();
+            grpFrame.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)numFrameDx).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)numFrameDy).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)numRepeat).BeginInit();
             grpPreview.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)numMs).BeginInit();
             ((System.ComponentModel.ISupportInitialize)numZoom).BeginInit();
@@ -151,6 +171,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // 
             pnlLeft.Controls.Add(grpImport);
             pnlLeft.Controls.Add(grpProcess);
+            pnlLeft.Controls.Add(grpFrame);
             pnlLeft.Controls.Add(grpPreview);
             pnlLeft.Controls.Add(grpExport);
             pnlLeft.AutoScroll = true;
@@ -167,8 +188,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             grpImport.Controls.Add(btnLoadArt);
             grpImport.Controls.Add(btnRemove);
             grpImport.Controls.Add(btnClear);
+            grpImport.Controls.Add(btnParticles);
             grpImport.Location = new System.Drawing.Point(4, 6);
-            grpImport.Size = new System.Drawing.Size(316, 84);
+            grpImport.Size = new System.Drawing.Size(316, 112);
             grpImport.TabStop = false;
             grpImport.Text = "Import";
             grpImport.Name = "grpImport";
@@ -224,6 +246,16 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             btnClear.TabIndex = 9;
             btnClear.Click += BtnClear_Click;
             // 
+            // btnParticles
+            // 
+            btnParticles.Location = new System.Drawing.Point(8, 80);
+            btnParticles.Size = new System.Drawing.Size(300, 26);
+            btnParticles.Text = "Partikel-Generator (Funken, Feuer, Blitz ...)...";
+            btnParticles.UseVisualStyleBackColor = true;
+            btnParticles.Name = "btnParticles";
+            btnParticles.TabIndex = 10;
+            btnParticles.Click += BtnParticles_Click;
+            // 
             // grpProcess
             // 
             grpProcess.Controls.Add(chkBlack);
@@ -236,13 +268,17 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             grpProcess.Controls.Add(lblMaxSize);
             grpProcess.Controls.Add(numMaxSize);
             grpProcess.Controls.Add(chkCrop);
+            grpProcess.Controls.Add(lblGlow);
+            grpProcess.Controls.Add(numGlow);
+            grpProcess.Controls.Add(lblGlowStrength);
+            grpProcess.Controls.Add(numGlowStrength);
             grpProcess.Controls.Add(chkPingPong);
-            grpProcess.Location = new System.Drawing.Point(4, 96);
-            grpProcess.Size = new System.Drawing.Size(316, 170);
+            grpProcess.Location = new System.Drawing.Point(4, 124);
+            grpProcess.Size = new System.Drawing.Size(316, 190);
             grpProcess.TabStop = false;
             grpProcess.Text = "Bearbeitung";
             grpProcess.Name = "grpProcess";
-            grpProcess.TabIndex = 10;
+            grpProcess.TabIndex = 11;
             // 
             // chkBlack
             // 
@@ -253,7 +289,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             chkBlack.Text = "Schwarz → transparent, Schwelle:";
             chkBlack.UseVisualStyleBackColor = true;
             chkBlack.Name = "chkBlack";
-            chkBlack.TabIndex = 11;
+            chkBlack.TabIndex = 12;
             chkBlack.CheckedChanged += Process_Changed;
             // 
             // numBlack
@@ -264,7 +300,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             numBlack.Minimum = new decimal(new int[] { 0, 0, 0, 0 });
             numBlack.Value = new decimal(new int[] { 16, 0, 0, 0 });
             numBlack.Name = "numBlack";
-            numBlack.TabIndex = 12;
+            numBlack.TabIndex = 13;
             numBlack.ValueChanged += Process_Changed;
             // 
             // chkGray
@@ -274,7 +310,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             chkGray.Text = "Graustufen (voll färbbar per Hue)";
             chkGray.UseVisualStyleBackColor = true;
             chkGray.Name = "chkGray";
-            chkGray.TabIndex = 13;
+            chkGray.TabIndex = 14;
             chkGray.CheckedChanged += Process_Changed;
             // 
             // lblBrightness
@@ -292,7 +328,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             numBrightness.Minimum = new decimal(new int[] { 100, 0, 0, -2147483648 });
             numBrightness.Value = new decimal(new int[] { 0, 0, 0, 0 });
             numBrightness.Name = "numBrightness";
-            numBrightness.TabIndex = 14;
+            numBrightness.TabIndex = 15;
             numBrightness.ValueChanged += Process_Changed;
             // 
             // lblScale
@@ -310,7 +346,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             numScale.Minimum = new decimal(new int[] { 5, 0, 0, 0 });
             numScale.Value = new decimal(new int[] { 100, 0, 0, 0 });
             numScale.Name = "numScale";
-            numScale.TabIndex = 15;
+            numScale.TabIndex = 16;
             numScale.ValueChanged += Process_Changed;
             // 
             // lblMaxSize
@@ -328,7 +364,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             numMaxSize.Minimum = new decimal(new int[] { 8, 0, 0, 0 });
             numMaxSize.Value = new decimal(new int[] { 160, 0, 0, 0 });
             numMaxSize.Name = "numMaxSize";
-            numMaxSize.TabIndex = 16;
+            numMaxSize.TabIndex = 17;
             numMaxSize.ValueChanged += Process_Changed;
             // 
             // chkCrop
@@ -340,18 +376,125 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             chkCrop.Text = "Gemeinsam zuschneiden";
             chkCrop.UseVisualStyleBackColor = true;
             chkCrop.Name = "chkCrop";
-            chkCrop.TabIndex = 17;
+            chkCrop.TabIndex = 18;
             chkCrop.CheckedChanged += Process_Changed;
+            // 
+            // lblGlow
+            // 
+            lblGlow.AutoSize = true;
+            lblGlow.Location = new System.Drawing.Point(8, 131);
+            lblGlow.Text = "Glow px:";
+            lblGlow.Name = "lblGlow";
+            // 
+            // numGlow
+            // 
+            numGlow.Location = new System.Drawing.Point(80, 128);
+            numGlow.Size = new System.Drawing.Size(50, 23);
+            numGlow.Maximum = new decimal(new int[] { 16, 0, 0, 0 });
+            numGlow.Minimum = new decimal(new int[] { 0, 0, 0, 0 });
+            numGlow.Value = new decimal(new int[] { 0, 0, 0, 0 });
+            numGlow.Name = "numGlow";
+            numGlow.TabIndex = 19;
+            numGlow.ValueChanged += Process_Changed;
+            // 
+            // lblGlowStrength
+            // 
+            lblGlowStrength.AutoSize = true;
+            lblGlowStrength.Location = new System.Drawing.Point(140, 131);
+            lblGlowStrength.Text = "Stärke:";
+            lblGlowStrength.Name = "lblGlowStrength";
+            // 
+            // numGlowStrength
+            // 
+            numGlowStrength.Location = new System.Drawing.Point(190, 128);
+            numGlowStrength.Size = new System.Drawing.Size(56, 23);
+            numGlowStrength.DecimalPlaces = 1;
+            numGlowStrength.Increment = new decimal(new int[] { 1, 0, 0, 65536 });
+            numGlowStrength.Maximum = new decimal(new int[] { 3, 0, 0, 0 });
+            numGlowStrength.Minimum = new decimal(new int[] { 0, 0, 0, 0 });
+            numGlowStrength.Value = new decimal(new int[] { 1, 0, 0, 0 });
+            numGlowStrength.Name = "numGlowStrength";
+            numGlowStrength.TabIndex = 20;
+            numGlowStrength.ValueChanged += Process_Changed;
             // 
             // chkPingPong
             // 
             chkPingPong.AutoSize = true;
-            chkPingPong.Location = new System.Drawing.Point(8, 130);
-            chkPingPong.Text = "Ping-Pong (vor und zurück)";
+            chkPingPong.Location = new System.Drawing.Point(8, 160);
+            chkPingPong.Text = "Ping-Pong (vor und zurück, ohne extra Art)";
             chkPingPong.UseVisualStyleBackColor = true;
             chkPingPong.Name = "chkPingPong";
-            chkPingPong.TabIndex = 18;
+            chkPingPong.TabIndex = 21;
             chkPingPong.CheckedChanged += Process_Changed;
+            // 
+            // grpFrame
+            // 
+            grpFrame.Controls.Add(lblFrameOffset);
+            grpFrame.Controls.Add(numFrameDx);
+            grpFrame.Controls.Add(numFrameDy);
+            grpFrame.Controls.Add(lblRepeat);
+            grpFrame.Controls.Add(numRepeat);
+            grpFrame.Controls.Add(lblSequence);
+            grpFrame.Location = new System.Drawing.Point(4, 320);
+            grpFrame.Size = new System.Drawing.Size(316, 80);
+            grpFrame.TabStop = false;
+            grpFrame.Text = "Ausgewählte Frames";
+            grpFrame.Name = "grpFrame";
+            grpFrame.TabIndex = 22;
+            // 
+            // lblFrameOffset
+            // 
+            lblFrameOffset.AutoSize = true;
+            lblFrameOffset.Location = new System.Drawing.Point(8, 23);
+            lblFrameOffset.Text = "Versatz X/Y:";
+            lblFrameOffset.Name = "lblFrameOffset";
+            // 
+            // numFrameDx
+            // 
+            numFrameDx.Location = new System.Drawing.Point(90, 20);
+            numFrameDx.Size = new System.Drawing.Size(56, 23);
+            numFrameDx.Maximum = new decimal(new int[] { 200, 0, 0, 0 });
+            numFrameDx.Minimum = new decimal(new int[] { 200, 0, 0, -2147483648 });
+            numFrameDx.Value = new decimal(new int[] { 0, 0, 0, 0 });
+            numFrameDx.Name = "numFrameDx";
+            numFrameDx.TabIndex = 23;
+            numFrameDx.ValueChanged += FrameSetting_Changed;
+            // 
+            // numFrameDy
+            // 
+            numFrameDy.Location = new System.Drawing.Point(150, 20);
+            numFrameDy.Size = new System.Drawing.Size(56, 23);
+            numFrameDy.Maximum = new decimal(new int[] { 200, 0, 0, 0 });
+            numFrameDy.Minimum = new decimal(new int[] { 200, 0, 0, -2147483648 });
+            numFrameDy.Value = new decimal(new int[] { 0, 0, 0, 0 });
+            numFrameDy.Name = "numFrameDy";
+            numFrameDy.TabIndex = 24;
+            numFrameDy.ValueChanged += FrameSetting_Changed;
+            // 
+            // lblRepeat
+            // 
+            lblRepeat.AutoSize = true;
+            lblRepeat.Location = new System.Drawing.Point(212, 23);
+            lblRepeat.Text = "Dauer x:";
+            lblRepeat.Name = "lblRepeat";
+            // 
+            // numRepeat
+            // 
+            numRepeat.Location = new System.Drawing.Point(264, 20);
+            numRepeat.Size = new System.Drawing.Size(44, 23);
+            numRepeat.Maximum = new decimal(new int[] { 16, 0, 0, 0 });
+            numRepeat.Minimum = new decimal(new int[] { 1, 0, 0, 0 });
+            numRepeat.Value = new decimal(new int[] { 1, 0, 0, 0 });
+            numRepeat.Name = "numRepeat";
+            numRepeat.TabIndex = 25;
+            numRepeat.ValueChanged += FrameSetting_Changed;
+            // 
+            // lblSequence
+            // 
+            lblSequence.AutoSize = true;
+            lblSequence.Location = new System.Drawing.Point(8, 55);
+            lblSequence.Text = "Sequenz: 0 / 64 Einträge";
+            lblSequence.Name = "lblSequence";
             // 
             // grpPreview
             // 
@@ -361,18 +504,20 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             grpPreview.Controls.Add(lblZoom);
             grpPreview.Controls.Add(numZoom);
             grpPreview.Controls.Add(chkAdditive);
-            grpPreview.Controls.Add(chkGround);
+            grpPreview.Controls.Add(lblPreviewMode);
+            grpPreview.Controls.Add(cbPreviewMode);
+            grpPreview.Controls.Add(lblGround);
             grpPreview.Controls.Add(numGroundId);
             grpPreview.Controls.Add(lblHue);
             grpPreview.Controls.Add(numHue);
             grpPreview.Controls.Add(chkPartialHue);
             grpPreview.Controls.Add(picHueStrip);
-            grpPreview.Location = new System.Drawing.Point(4, 272);
+            grpPreview.Location = new System.Drawing.Point(4, 406);
             grpPreview.Size = new System.Drawing.Size(316, 170);
             grpPreview.TabStop = false;
             grpPreview.Text = "Vorschau";
             grpPreview.Name = "grpPreview";
-            grpPreview.TabIndex = 19;
+            grpPreview.TabIndex = 26;
             // 
             // lblMs
             // 
@@ -389,7 +534,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             numMs.Minimum = new decimal(new int[] { 20, 0, 0, 0 });
             numMs.Value = new decimal(new int[] { 100, 0, 0, 0 });
             numMs.Name = "numMs";
-            numMs.TabIndex = 20;
+            numMs.TabIndex = 27;
             numMs.ValueChanged += NumMs_ValueChanged;
             // 
             // chkPlay
@@ -401,7 +546,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             chkPlay.Text = "Abspielen";
             chkPlay.UseVisualStyleBackColor = true;
             chkPlay.Name = "chkPlay";
-            chkPlay.TabIndex = 21;
+            chkPlay.TabIndex = 28;
             chkPlay.CheckedChanged += ChkPlay_CheckedChanged;
             // 
             // lblZoom
@@ -419,7 +564,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             numZoom.Minimum = new decimal(new int[] { 1, 0, 0, 0 });
             numZoom.Value = new decimal(new int[] { 2, 0, 0, 0 });
             numZoom.Name = "numZoom";
-            numZoom.TabIndex = 22;
+            numZoom.TabIndex = 29;
             numZoom.ValueChanged += NumZoom_ValueChanged;
             // 
             // chkAdditive
@@ -431,66 +576,81 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             chkAdditive.Text = "Additiv (wie leuchtende Client-Effekte)";
             chkAdditive.UseVisualStyleBackColor = true;
             chkAdditive.Name = "chkAdditive";
-            chkAdditive.TabIndex = 23;
+            chkAdditive.TabIndex = 30;
             chkAdditive.CheckedChanged += Preview_Changed;
             // 
-            // chkGround
+            // lblPreviewMode
             // 
-            chkGround.AutoSize = true;
-            chkGround.Location = new System.Drawing.Point(8, 74);
-            chkGround.Text = "Auf Bodentile, Land-ID:";
-            chkGround.UseVisualStyleBackColor = true;
-            chkGround.Name = "chkGround";
-            chkGround.TabIndex = 24;
-            chkGround.CheckedChanged += Ground_Changed;
+            lblPreviewMode.AutoSize = true;
+            lblPreviewMode.Location = new System.Drawing.Point(8, 77);
+            lblPreviewMode.Text = "Ansicht:";
+            lblPreviewMode.Name = "lblPreviewMode";
+            // 
+            // cbPreviewMode
+            // 
+            cbPreviewMode.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            cbPreviewMode.FormattingEnabled = true;
+            cbPreviewMode.Items.AddRange(new object[] { "Freistehend", "Auf Bodentile", "Auf Figur", "Projektil (A → B)" });
+            cbPreviewMode.Location = new System.Drawing.Point(70, 74);
+            cbPreviewMode.Size = new System.Drawing.Size(140, 23);
+            cbPreviewMode.Name = "cbPreviewMode";
+            cbPreviewMode.TabIndex = 31;
+            cbPreviewMode.SelectedIndexChanged += PreviewMode_Changed;
+            // 
+            // lblGround
+            // 
+            lblGround.AutoSize = true;
+            lblGround.Location = new System.Drawing.Point(214, 77);
+            lblGround.Text = "Land:";
+            lblGround.Name = "lblGround";
             // 
             // numGroundId
             // 
-            numGroundId.Location = new System.Drawing.Point(170, 72);
-            numGroundId.Size = new System.Drawing.Size(70, 23);
+            numGroundId.Location = new System.Drawing.Point(250, 74);
+            numGroundId.Size = new System.Drawing.Size(58, 23);
             numGroundId.Maximum = new decimal(new int[] { 16383, 0, 0, 0 });
             numGroundId.Minimum = new decimal(new int[] { 0, 0, 0, 0 });
             numGroundId.Value = new decimal(new int[] { 3, 0, 0, 0 });
             numGroundId.Name = "numGroundId";
-            numGroundId.TabIndex = 25;
-            numGroundId.ValueChanged += Ground_Changed;
+            numGroundId.TabIndex = 32;
+            numGroundId.ValueChanged += PreviewMode_Changed;
             // 
             // lblHue
             // 
             lblHue.AutoSize = true;
-            lblHue.Location = new System.Drawing.Point(8, 103);
+            lblHue.Location = new System.Drawing.Point(8, 105);
             lblHue.Text = "Hue:";
             lblHue.Name = "lblHue";
             // 
             // numHue
             // 
-            numHue.Location = new System.Drawing.Point(50, 100);
+            numHue.Location = new System.Drawing.Point(50, 102);
             numHue.Size = new System.Drawing.Size(70, 23);
             numHue.Maximum = new decimal(new int[] { 3000, 0, 0, 0 });
             numHue.Minimum = new decimal(new int[] { 0, 0, 0, 0 });
             numHue.Value = new decimal(new int[] { 0, 0, 0, 0 });
             numHue.Name = "numHue";
-            numHue.TabIndex = 26;
+            numHue.TabIndex = 33;
             numHue.ValueChanged += NumHue_ValueChanged;
             // 
             // chkPartialHue
             // 
             chkPartialHue.AutoSize = true;
-            chkPartialHue.Location = new System.Drawing.Point(128, 102);
+            chkPartialHue.Location = new System.Drawing.Point(128, 104);
             chkPartialHue.Text = "nur Grautöne (PartialHue)";
             chkPartialHue.UseVisualStyleBackColor = true;
             chkPartialHue.Name = "chkPartialHue";
-            chkPartialHue.TabIndex = 27;
+            chkPartialHue.TabIndex = 34;
             chkPartialHue.CheckedChanged += Preview_Changed;
             // 
             // picHueStrip
             // 
             picHueStrip.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            picHueStrip.Location = new System.Drawing.Point(8, 132);
+            picHueStrip.Location = new System.Drawing.Point(8, 134);
             picHueStrip.Size = new System.Drawing.Size(300, 14);
             picHueStrip.TabStop = false;
             picHueStrip.Name = "picHueStrip";
-            picHueStrip.TabIndex = 28;
+            picHueStrip.TabIndex = 35;
             // 
             // grpExport
             // 
@@ -506,12 +666,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             grpExport.Controls.Add(btnExportPng);
             grpExport.Controls.Add(btnCopyScript);
             grpExport.Controls.Add(lblExportHint);
-            grpExport.Location = new System.Drawing.Point(4, 448);
+            grpExport.Location = new System.Drawing.Point(4, 582);
             grpExport.Size = new System.Drawing.Size(316, 228);
             grpExport.TabStop = false;
             grpExport.Text = "Export (Art + Tiledata + Animdata)";
             grpExport.Name = "grpExport";
-            grpExport.TabIndex = 29;
+            grpExport.TabIndex = 36;
             // 
             // lblStartId
             // 
@@ -526,7 +686,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             txtStartId.Size = new System.Drawing.Size(80, 23);
             txtStartId.Text = "0x3E00";
             txtStartId.Name = "txtStartId";
-            txtStartId.TabIndex = 30;
+            txtStartId.TabIndex = 37;
             // 
             // btnFreeBlock
             // 
@@ -535,7 +695,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             btnFreeBlock.Text = "Freien Block";
             btnFreeBlock.UseVisualStyleBackColor = true;
             btnFreeBlock.Name = "btnFreeBlock";
-            btnFreeBlock.TabIndex = 31;
+            btnFreeBlock.TabIndex = 38;
             btnFreeBlock.Click += BtnFreeBlock_Click;
             // 
             // lblName
@@ -552,7 +712,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             txtName.Text = "magic effect";
             txtName.MaxLength = 20;
             txtName.Name = "txtName";
-            txtName.TabIndex = 32;
+            txtName.TabIndex = 39;
             // 
             // chkTranslucent
             // 
@@ -561,7 +721,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             chkTranslucent.Text = "Translucent-Flag";
             chkTranslucent.UseVisualStyleBackColor = true;
             chkTranslucent.Name = "chkTranslucent";
-            chkTranslucent.TabIndex = 33;
+            chkTranslucent.TabIndex = 40;
             // 
             // btnExport
             // 
@@ -570,7 +730,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             btnExport.Text = "In Art / Tiledata / Animdata schreiben";
             btnExport.UseVisualStyleBackColor = true;
             btnExport.Name = "btnExport";
-            btnExport.TabIndex = 34;
+            btnExport.TabIndex = 41;
             btnExport.Click += BtnExport_Click;
             // 
             // btnSaveArt
@@ -580,7 +740,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             btnSaveArt.Text = "Art-MUL speichern";
             btnSaveArt.UseVisualStyleBackColor = true;
             btnSaveArt.Name = "btnSaveArt";
-            btnSaveArt.TabIndex = 35;
+            btnSaveArt.TabIndex = 42;
             btnSaveArt.Click += BtnSaveArt_Click;
             // 
             // btnSaveTileData
@@ -590,7 +750,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             btnSaveTileData.Text = "tiledata + animdata";
             btnSaveTileData.UseVisualStyleBackColor = true;
             btnSaveTileData.Name = "btnSaveTileData";
-            btnSaveTileData.TabIndex = 36;
+            btnSaveTileData.TabIndex = 43;
             btnSaveTileData.Click += BtnSaveTileData_Click;
             // 
             // btnExportPng
@@ -600,7 +760,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             btnExportPng.Text = "Frames als PNG...";
             btnExportPng.UseVisualStyleBackColor = true;
             btnExportPng.Name = "btnExportPng";
-            btnExportPng.TabIndex = 37;
+            btnExportPng.TabIndex = 44;
             btnExportPng.Click += BtnExportPng_Click;
             // 
             // btnCopyScript
@@ -610,7 +770,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             btnCopyScript.Text = "Script-Snippet kopieren";
             btnCopyScript.UseVisualStyleBackColor = true;
             btnCopyScript.Name = "btnCopyScript";
-            btnCopyScript.TabIndex = 38;
+            btnCopyScript.TabIndex = 45;
             btnCopyScript.Click += BtnCopyScript_Click;
             // 
             // lblExportHint
@@ -624,7 +784,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // 
             statusStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { lblStatus });
             statusStrip.Name = "statusStrip";
-            statusStrip.TabIndex = 39;
+            statusStrip.TabIndex = 46;
             // 
             // lblStatus
             // 
@@ -659,6 +819,13 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             ((System.ComponentModel.ISupportInitialize)numMs).EndInit();
             grpPreview.ResumeLayout(false);
             grpPreview.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)numRepeat).EndInit();
+            ((System.ComponentModel.ISupportInitialize)numFrameDy).EndInit();
+            ((System.ComponentModel.ISupportInitialize)numFrameDx).EndInit();
+            grpFrame.ResumeLayout(false);
+            grpFrame.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)numGlowStrength).EndInit();
+            ((System.ComponentModel.ISupportInitialize)numGlow).EndInit();
             ((System.ComponentModel.ISupportInitialize)numMaxSize).EndInit();
             ((System.ComponentModel.ISupportInitialize)numScale).EndInit();
             ((System.ComponentModel.ISupportInitialize)numBrightness).EndInit();
@@ -688,6 +855,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private System.Windows.Forms.Button btnLoadArt;
         private System.Windows.Forms.Button btnRemove;
         private System.Windows.Forms.Button btnClear;
+        private System.Windows.Forms.Button btnParticles;
         private System.Windows.Forms.GroupBox grpProcess;
         private System.Windows.Forms.CheckBox chkBlack;
         private System.Windows.Forms.NumericUpDown numBlack;
@@ -699,7 +867,18 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private System.Windows.Forms.Label lblMaxSize;
         private System.Windows.Forms.NumericUpDown numMaxSize;
         private System.Windows.Forms.CheckBox chkCrop;
+        private System.Windows.Forms.Label lblGlow;
+        private System.Windows.Forms.NumericUpDown numGlow;
+        private System.Windows.Forms.Label lblGlowStrength;
+        private System.Windows.Forms.NumericUpDown numGlowStrength;
         private System.Windows.Forms.CheckBox chkPingPong;
+        private System.Windows.Forms.GroupBox grpFrame;
+        private System.Windows.Forms.Label lblFrameOffset;
+        private System.Windows.Forms.NumericUpDown numFrameDx;
+        private System.Windows.Forms.NumericUpDown numFrameDy;
+        private System.Windows.Forms.Label lblRepeat;
+        private System.Windows.Forms.NumericUpDown numRepeat;
+        private System.Windows.Forms.Label lblSequence;
         private System.Windows.Forms.GroupBox grpPreview;
         private System.Windows.Forms.Label lblMs;
         private System.Windows.Forms.NumericUpDown numMs;
@@ -707,7 +886,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         private System.Windows.Forms.Label lblZoom;
         private System.Windows.Forms.NumericUpDown numZoom;
         private System.Windows.Forms.CheckBox chkAdditive;
-        private System.Windows.Forms.CheckBox chkGround;
+        private System.Windows.Forms.Label lblPreviewMode;
+        private System.Windows.Forms.ComboBox cbPreviewMode;
+        private System.Windows.Forms.Label lblGround;
         private System.Windows.Forms.NumericUpDown numGroundId;
         private System.Windows.Forms.Label lblHue;
         private System.Windows.Forms.NumericUpDown numHue;

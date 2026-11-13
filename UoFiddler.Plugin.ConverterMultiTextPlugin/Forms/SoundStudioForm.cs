@@ -109,6 +109,181 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 
         private void BtnSaveWav_Click(object sender, EventArgs e) => SaveWav();
 
+        private void BtnZoomIn_Click(object sender, EventArgs e) => waveform.ZoomIn();
+
+        private void BtnZoomOut_Click(object sender, EventArgs e) => waveform.ZoomOut();
+
+        private void BtnZoomFit_Click(object sender, EventArgs e) => waveform.ZoomFit();
+
+        private void BtnZoomSel_Click(object sender, EventArgs e) => waveform.ZoomSelection();
+
+        private void BtnReverb_Click(object sender, EventArgs e)
+        {
+            ApplyEffect("Hall", (part, isWhole) => StudioAudio.Reverb(part, _rate, (double)numRoom.Value / 100.0, (double)numWet.Value / 100.0, isWhole));
+        }
+
+        private void BtnGate_Click(object sender, EventArgs e)
+        {
+            ApplyEffect("Rausch-Gate", (part, _) =>
+            {
+                float[] copy = (float[])part.Clone();
+                StudioAudio.NoiseGate(copy, 0, copy.Length, _rate, (double)numGate.Value);
+                return copy;
+            });
+        }
+
+        private void BtnTempo_Click(object sender, EventArgs e)
+        {
+            double tempo = (double)numTempo.Value / 100.0;
+            ApplyEffect($"Tempo {numTempo.Value}%", (part, _) => StudioAudio.TimeStretch(part, _rate, tempo));
+        }
+
+        private void BtnPitch_Click(object sender, EventArgs e)
+        {
+            double st = (double)numPitch.Value;
+            ApplyEffect($"Tonhöhe {st:+0;-0;0} Halbtöne", (part, _) => StudioAudio.PitchShift(part, _rate, st));
+        }
+
+        private void BtnSpeed_Click(object sender, EventArgs e)
+        {
+            double factor = (double)numTempo.Value / 100.0;
+            ApplyEffect($"Geschwindigkeit {numTempo.Value}%", (part, _) => StudioAudio.ChangeSpeed(part, factor));
+        }
+
+        /// <summary>Runs an effect on the selection (or the whole sound); the result may change the length.</summary>
+        private void ApplyEffect(string name, Func<float[], bool, float[]> effect)
+        {
+            if (!HasAudio())
+            {
+                return;
+            }
+            Cursor = Cursors.WaitCursor;
+            try
+            {
+                PushUndo();
+                var (a, b) = Range();
+                bool whole = a == 0 && b == _samples.Length;
+                var part = new float[b - a];
+                Array.Copy(_samples, a, part, 0, part.Length);
+                float[] processed = effect(part, whole);
+                var result = new float[_samples.Length - part.Length + processed.Length];
+                Array.Copy(_samples, 0, result, 0, a);
+                Array.Copy(processed, 0, result, a, processed.Length);
+                Array.Copy(_samples, b, result, a + processed.Length, _samples.Length - b);
+                SetData(result, _rate, $"{name} angewendet ({(whole ? "ganzer Sound" : "Auswahl")}).");
+            }
+            catch (Exception ex)
+            {
+                StudioUi.Error(this, ex.Message);
+            }
+            finally
+            {
+                Cursor = Cursors.Default;
+            }
+        }
+
+        /// <summary>Loads several files, brings them to the same loudness and saves them / sets them as UO sounds.</summary>
+        private void BtnBatch_Click(object sender, EventArgs e)
+        {
+            using var ofd = new OpenFileDialog { Filter = "Audio|*.wav;*.mp3|Alle Dateien|*.*", Multiselect = true, Title = "Sounds für die Stapel-Verarbeitung" };
+            if (ofd.ShowDialog(this) != DialogResult.OK)
+            {
+                return;
+            }
+            string[] files = ofd.FileNames;
+            Array.Sort(files, new NaturalStringComparer());
+            int startId = (int)numSoundId.Value;
+            DialogResult answer = MessageBox.Show(this,
+                $"{files.Length} Dateien auf {numTargetRms.Value} dB RMS angleichen und ins UO-Format (22050 Hz, 16 Bit, Mono) wandeln.\n\n" +
+                $"Ja = als UO-Sounds ab ID {startId} (0x{startId:X3}) setzen\nNein = nur als WAV in einen Ordner speichern",
+                "Stapel: Lautheit angleichen", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
+            if (answer == DialogResult.Cancel)
+            {
+                return;
+            }
+            string folder = null;
+            if (answer == DialogResult.No)
+            {
+                using var fbd = new FolderBrowserDialog { Description = "Zielordner für die WAV-Dateien", SelectedPath = StudioUi.OutputPath };
+                if (fbd.ShowDialog(this) != DialogResult.OK)
+                {
+                    return;
+                }
+                folder = fbd.SelectedPath;
+            }
+
+            int done = 0;
+            var errors = new List<string>();
+            Cursor = Cursors.WaitCursor;
+            try
+            {
+                for (int i = 0; i < files.Length; i++)
+                {
+                    try
+                    {
+                        AudioClip clip = StudioAudio.Load(files[i]);
+                        float[] s = StudioAudio.Resample(clip.Samples, clip.SampleRate, StudioAudio.UoSampleRate);
+                        StudioAudio.RemoveDc(s);
+                        StudioAudio.NormalizeRms(s, (double)numTargetRms.Value, 0.98f);
+                        byte[] wav = StudioAudio.ToWav16(s, StudioAudio.UoSampleRate);
+                        string baseName = Path.GetFileNameWithoutExtension(files[i]);
+                        if (folder != null)
+                        {
+                            File.WriteAllBytes(Path.Combine(folder, baseName + ".wav"), wav);
+                        }
+                        else
+                        {
+                            int id = startId + i;
+                            if (id >= 0xFFF)
+                            {
+                                errors.Add($"{baseName}: ID {id} zu groß");
+                                continue;
+                            }
+                            string tmp = Path.Combine(Path.GetTempPath(), $"uostudio_batch_{id}.wav");
+                            File.WriteAllBytes(tmp, wav);
+                            Sounds.Add(id, Truncate(baseName + ".wav", 31), tmp);
+                            File.Delete(tmp);
+                        }
+                        done++;
+                    }
+                    catch (Exception ex)
+                    {
+                        errors.Add($"{Path.GetFileName(files[i])}: {ex.Message}");
+                    }
+                }
+            }
+            finally
+            {
+                Cursor = Cursors.Default;
+            }
+            if (folder == null && done > 0)
+            {
+                StudioUi.MarkChanged("Sound");
+            }
+            lblStatus.Text = $"Stapel: {done} von {files.Length} verarbeitet." + (folder == null ? " Mit \"sound.mul speichern\" sichern." : $" Ordner: {folder}");
+            StudioUi.Info(this, lblStatus.Text + (errors.Count > 0 ? "\n\nFehler:\n" + string.Join("\n", errors) : string.Empty));
+        }
+
+        private void BtnDefScript_Click(object sender, EventArgs e)
+        {
+            int id = (int)numSoundId.Value;
+            string name = txtName.Text;
+            var sb = new System.Text.StringBuilder();
+            sb.AppendLine($"# Sound {id} (0x{id:X3}) \"{name}\"");
+            sb.AppendLine();
+            sb.AppendLine("# ---- Sound.def (optional) --------------------------------------");
+            sb.AppendLine("# Leitet eine (leere) Sound-ID auf einen vorhandenen Sound um:");
+            sb.AppendLine("# NEUE_ID {VORHANDENE_ID} 0");
+            sb.AppendLine($"# 4000 {{{id}}} 0");
+            sb.AppendLine();
+            sb.AppendLine("// ---- ServUO / RunUO --------------------------------------------");
+            sb.AppendLine($"from.PlaySound(0x{id:X});");
+            sb.AppendLine($"Effects.PlaySound(from.Location, from.Map, 0x{id:X});");
+            sb.AppendLine($"// in einer BaseCreature:  public override int GetIdleSound() => 0x{id:X};");
+            sb.AppendLine($"// in einem Spell:         public override int CastSound => 0x{id:X};");
+            StudioTextForm.ShowText(this, $"Sound-Einträge für {id}", sb.ToString(), "Sound.def");
+        }
+
         #endregion
 
         #region Data helpers
@@ -389,6 +564,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             StopPlay();
 
             var (a, b) = Range();
+            if (!waveform.HasSelection && waveform.CursorPosition >= 0 && waveform.CursorPosition < _samples.Length)
+            {
+                // no selection: play from the cursor to the end
+                a = waveform.CursorPosition;
+            }
             _playStart = a;
             _playEnd = b;
             var part = new float[b - a];
