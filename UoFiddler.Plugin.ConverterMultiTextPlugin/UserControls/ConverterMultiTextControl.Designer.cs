@@ -47,6 +47,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             lbAltitudeTool = new System.Windows.Forms.Label();
             BtAltitudeTool = new System.Windows.Forms.Button();
             tabPageAnimation = new System.Windows.Forms.TabPage();
+            lbSpellEffectEditor = new System.Windows.Forms.Label();
+            BtSpellEffectEditor = new System.Windows.Forms.Button();
+            lbAnimationStudio = new System.Windows.Forms.Label();
+            BtAnimationStudio = new System.Windows.Forms.Button();
             lbAnimationVDEditor = new System.Windows.Forms.Label();
             BtAnimationVDEditorForm = new System.Windows.Forms.Button();
             lbAnimationVD = new System.Windows.Forms.Label();
@@ -54,6 +58,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             BtAnimationVDForm = new System.Windows.Forms.Button();
             BtAnimationEditFormButton = new System.Windows.Forms.Button();
             tabPageGraphic = new System.Windows.Forms.TabPage();
+            lbEquipmentGenerator = new System.Windows.Forms.Label();
+            BtEquipmentGenerator = new System.Windows.Forms.Button();
+            lbPixelArtConverter = new System.Windows.Forms.Label();
+            BtPixelArtConverter = new System.Windows.Forms.Button();
             labelParticleGray = new System.Windows.Forms.Label();
             buttonParticleGray = new System.Windows.Forms.Button();
             lbConverter = new System.Windows.Forms.Label();
@@ -89,23 +97,15 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             tabPageScript = new System.Windows.Forms.TabPage();
             lbScriptCreator = new System.Windows.Forms.Label();
             btScriptCreator = new System.Windows.Forms.Button();
+            tabPageSound = new System.Windows.Forms.TabPage();
+            lbSoundStudio = new System.Windows.Forms.Label();
+            BtSoundStudio = new System.Windows.Forms.Button();
             tabPageTextureConverter = new System.Windows.Forms.TabPage();
             textConverterPanel = new UoFiddler.Plugin.ConverterMultiTextPlugin.Class.TextConverter.TextConverterPanel();
             menuStrip1 = new System.Windows.Forms.MenuStrip();
             statusStrip1 = new System.Windows.Forms.StatusStrip();
             toolStripStatusLabelTime = new System.Windows.Forms.ToolStripStatusLabel();
             timer1 = new System.Windows.Forms.Timer(components);
-            tabPageSound = new System.Windows.Forms.TabPage();
-            BtPixelArtConverter = new System.Windows.Forms.Button();
-            lbPixelArtConverter = new System.Windows.Forms.Label();
-            BtEquipmentGenerator = new System.Windows.Forms.Button();
-            lbEquipmentGenerator = new System.Windows.Forms.Label();
-            BtAnimationStudio = new System.Windows.Forms.Button();
-            lbAnimationStudio = new System.Windows.Forms.Label();
-            BtSpellEffectEditor = new System.Windows.Forms.Button();
-            lbSpellEffectEditor = new System.Windows.Forms.Label();
-            BtSoundStudio = new System.Windows.Forms.Button();
-            lbSoundStudio = new System.Windows.Forms.Label();
             TabControl1.SuspendLayout();
             tabPageMain.SuspendLayout();
             tabPageAnimation.SuspendLayout();
@@ -113,8 +113,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             tabPageMap.SuspendLayout();
             tabPageClient.SuspendLayout();
             tabPageScript.SuspendLayout();
-            tabPageTextureConverter.SuspendLayout();
             tabPageSound.SuspendLayout();
+            tabPageTextureConverter.SuspendLayout();
             statusStrip1.SuspendLayout();
             SuspendLayout();
             // 
@@ -144,7 +144,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             tabPageMain.Location = new System.Drawing.Point(4, 24);
             tabPageMain.Name = "tabPageMain";
             tabPageMain.Padding = new System.Windows.Forms.Padding(3);
-            tabPageMain.Size = new System.Drawing.Size(960, 337);
+            tabPageMain.Size = new System.Drawing.Size(953, 434);
             tabPageMain.TabIndex = 0;
             tabPageMain.Text = "Main";
             tabPageMain.UseVisualStyleBackColor = true;
@@ -201,10 +201,46 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             tabPageAnimation.Controls.Add(BtAnimationEditFormButton);
             tabPageAnimation.Location = new System.Drawing.Point(4, 24);
             tabPageAnimation.Name = "tabPageAnimation";
-            tabPageAnimation.Size = new System.Drawing.Size(192, 72);
+            tabPageAnimation.Size = new System.Drawing.Size(953, 434);
             tabPageAnimation.TabIndex = 3;
             tabPageAnimation.Text = "Animation";
             tabPageAnimation.UseVisualStyleBackColor = true;
+            // 
+            // lbSpellEffectEditor
+            // 
+            lbSpellEffectEditor.AutoSize = true;
+            lbSpellEffectEditor.Location = new System.Drawing.Point(130, 153);
+            lbSpellEffectEditor.Name = "lbSpellEffectEditor";
+            lbSpellEffectEditor.Size = new System.Drawing.Size(107, 15);
+            lbSpellEffectEditor.TabIndex = 24;
+            lbSpellEffectEditor.Text = "Spell / Effekt Editor";
+            // 
+            // BtSpellEffectEditor
+            // 
+            BtSpellEffectEditor.Location = new System.Drawing.Point(130, 94);
+            BtSpellEffectEditor.Name = "BtSpellEffectEditor";
+            BtSpellEffectEditor.Size = new System.Drawing.Size(59, 59);
+            BtSpellEffectEditor.TabIndex = 23;
+            BtSpellEffectEditor.UseVisualStyleBackColor = true;
+            BtSpellEffectEditor.Click += BtSpellEffectEditor_Click;
+            // 
+            // lbAnimationStudio
+            // 
+            lbAnimationStudio.AutoSize = true;
+            lbAnimationStudio.Location = new System.Drawing.Point(130, 71);
+            lbAnimationStudio.Name = "lbAnimationStudio";
+            lbAnimationStudio.Size = new System.Drawing.Size(107, 15);
+            lbAnimationStudio.TabIndex = 22;
+            lbAnimationStudio.Text = "Animations-Studio";
+            // 
+            // BtAnimationStudio
+            // 
+            BtAnimationStudio.Location = new System.Drawing.Point(130, 12);
+            BtAnimationStudio.Name = "BtAnimationStudio";
+            BtAnimationStudio.Size = new System.Drawing.Size(59, 59);
+            BtAnimationStudio.TabIndex = 21;
+            BtAnimationStudio.UseVisualStyleBackColor = true;
+            BtAnimationStudio.Click += BtAnimationStudio_Click;
             // 
             // lbAnimationVDEditor
             // 
@@ -289,10 +325,46 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             tabPageGraphic.Controls.Add(TextureCutter);
             tabPageGraphic.Location = new System.Drawing.Point(4, 24);
             tabPageGraphic.Name = "tabPageGraphic";
-            tabPageGraphic.Size = new System.Drawing.Size(192, 72);
+            tabPageGraphic.Size = new System.Drawing.Size(953, 434);
             tabPageGraphic.TabIndex = 2;
             tabPageGraphic.Text = "Graphic";
             tabPageGraphic.UseVisualStyleBackColor = true;
+            // 
+            // lbEquipmentGenerator
+            // 
+            lbEquipmentGenerator.AutoSize = true;
+            lbEquipmentGenerator.Location = new System.Drawing.Point(312, 173);
+            lbEquipmentGenerator.Name = "lbEquipmentGenerator";
+            lbEquipmentGenerator.Size = new System.Drawing.Size(130, 15);
+            lbEquipmentGenerator.TabIndex = 32;
+            lbEquipmentGenerator.Text = "Ausrüstungs-Generator";
+            // 
+            // BtEquipmentGenerator
+            // 
+            BtEquipmentGenerator.Location = new System.Drawing.Point(312, 104);
+            BtEquipmentGenerator.Name = "BtEquipmentGenerator";
+            BtEquipmentGenerator.Size = new System.Drawing.Size(59, 59);
+            BtEquipmentGenerator.TabIndex = 31;
+            BtEquipmentGenerator.UseVisualStyleBackColor = true;
+            BtEquipmentGenerator.Click += BtEquipmentGenerator_Click;
+            // 
+            // lbPixelArtConverter
+            // 
+            lbPixelArtConverter.AutoSize = true;
+            lbPixelArtConverter.Location = new System.Drawing.Point(312, 86);
+            lbPixelArtConverter.Name = "lbPixelArtConverter";
+            lbPixelArtConverter.Size = new System.Drawing.Size(107, 15);
+            lbPixelArtConverter.TabIndex = 30;
+            lbPixelArtConverter.Text = "Pixel-Art Konverter";
+            // 
+            // BtPixelArtConverter
+            // 
+            BtPixelArtConverter.Location = new System.Drawing.Point(312, 19);
+            BtPixelArtConverter.Name = "BtPixelArtConverter";
+            BtPixelArtConverter.Size = new System.Drawing.Size(59, 59);
+            BtPixelArtConverter.TabIndex = 29;
+            BtPixelArtConverter.UseVisualStyleBackColor = true;
+            BtPixelArtConverter.Click += BtPixelArtConverter_Click;
             // 
             // labelParticleGray
             // 
@@ -477,7 +549,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             tabPageMap.Controls.Add(BtMapMaker);
             tabPageMap.Location = new System.Drawing.Point(4, 24);
             tabPageMap.Name = "tabPageMap";
-            tabPageMap.Size = new System.Drawing.Size(192, 72);
+            tabPageMap.Size = new System.Drawing.Size(953, 434);
             tabPageMap.TabIndex = 4;
             tabPageMap.Text = "Map";
             tabPageMap.UseVisualStyleBackColor = true;
@@ -566,7 +638,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             tabPageClient.Controls.Add(BtDecriptClient);
             tabPageClient.Location = new System.Drawing.Point(4, 24);
             tabPageClient.Name = "tabPageClient";
-            tabPageClient.Size = new System.Drawing.Size(192, 72);
+            tabPageClient.Size = new System.Drawing.Size(953, 434);
             tabPageClient.TabIndex = 5;
             tabPageClient.Text = "Client";
             tabPageClient.UseVisualStyleBackColor = true;
@@ -616,7 +688,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             tabPageScript.Location = new System.Drawing.Point(4, 24);
             tabPageScript.Name = "tabPageScript";
             tabPageScript.Padding = new System.Windows.Forms.Padding(3);
-            tabPageScript.Size = new System.Drawing.Size(192, 72);
+            tabPageScript.Size = new System.Drawing.Size(953, 434);
             tabPageScript.TabIndex = 6;
             tabPageScript.Text = "Scripts";
             tabPageScript.UseVisualStyleBackColor = true;
@@ -641,6 +713,36 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             btScriptCreator.UseVisualStyleBackColor = false;
             btScriptCreator.Click += BtScriptCreator_Click;
             // 
+            // tabPageSound
+            // 
+            tabPageSound.Controls.Add(lbSoundStudio);
+            tabPageSound.Controls.Add(BtSoundStudio);
+            tabPageSound.Location = new System.Drawing.Point(4, 24);
+            tabPageSound.Name = "tabPageSound";
+            tabPageSound.Padding = new System.Windows.Forms.Padding(3);
+            tabPageSound.Size = new System.Drawing.Size(953, 434);
+            tabPageSound.TabIndex = 7;
+            tabPageSound.Text = "Sound";
+            tabPageSound.UseVisualStyleBackColor = true;
+            // 
+            // lbSoundStudio
+            // 
+            lbSoundStudio.AutoSize = true;
+            lbSoundStudio.Location = new System.Drawing.Point(6, 75);
+            lbSoundStudio.Name = "lbSoundStudio";
+            lbSoundStudio.Size = new System.Drawing.Size(80, 15);
+            lbSoundStudio.TabIndex = 1;
+            lbSoundStudio.Text = "Sound-Studio";
+            // 
+            // BtSoundStudio
+            // 
+            BtSoundStudio.Location = new System.Drawing.Point(6, 6);
+            BtSoundStudio.Name = "BtSoundStudio";
+            BtSoundStudio.Size = new System.Drawing.Size(59, 59);
+            BtSoundStudio.TabIndex = 0;
+            BtSoundStudio.UseVisualStyleBackColor = true;
+            BtSoundStudio.Click += BtSoundStudio_Click;
+            // 
             // tabPageTextureConverter
             // 
             tabPageTextureConverter.Controls.Add(textConverterPanel);
@@ -659,103 +761,6 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             textConverterPanel.Name = "textConverterPanel";
             textConverterPanel.Size = new System.Drawing.Size(947, 428);
             textConverterPanel.TabIndex = 0;
-            // 
-            // tabPageSound
-            // 
-            tabPageSound.Controls.Add(lbSoundStudio);
-            tabPageSound.Controls.Add(BtSoundStudio);
-            tabPageSound.Location = new System.Drawing.Point(4, 24);
-            tabPageSound.Name = "tabPageSound";
-            tabPageSound.Padding = new System.Windows.Forms.Padding(3);
-            tabPageSound.Size = new System.Drawing.Size(953, 434);
-            tabPageSound.TabIndex = 7;
-            tabPageSound.Text = "Sound";
-            tabPageSound.UseVisualStyleBackColor = true;
-            // 
-            // BtPixelArtConverter
-            // 
-            BtPixelArtConverter.Location = new System.Drawing.Point(312, 19);
-            BtPixelArtConverter.Name = "BtPixelArtConverter";
-            BtPixelArtConverter.Size = new System.Drawing.Size(59, 59);
-            BtPixelArtConverter.TabIndex = 29;
-            BtPixelArtConverter.UseVisualStyleBackColor = true;
-            BtPixelArtConverter.Click += BtPixelArtConverter_Click;
-            // 
-            // lbPixelArtConverter
-            // 
-            lbPixelArtConverter.AutoSize = true;
-            lbPixelArtConverter.Location = new System.Drawing.Point(312, 86);
-            lbPixelArtConverter.Name = "lbPixelArtConverter";
-            lbPixelArtConverter.TabIndex = 30;
-            lbPixelArtConverter.Text = "Pixel-Art Konverter";
-            // 
-            // BtEquipmentGenerator
-            // 
-            BtEquipmentGenerator.Location = new System.Drawing.Point(312, 104);
-            BtEquipmentGenerator.Name = "BtEquipmentGenerator";
-            BtEquipmentGenerator.Size = new System.Drawing.Size(59, 59);
-            BtEquipmentGenerator.TabIndex = 31;
-            BtEquipmentGenerator.UseVisualStyleBackColor = true;
-            BtEquipmentGenerator.Click += BtEquipmentGenerator_Click;
-            // 
-            // lbEquipmentGenerator
-            // 
-            lbEquipmentGenerator.AutoSize = true;
-            lbEquipmentGenerator.Location = new System.Drawing.Point(312, 173);
-            lbEquipmentGenerator.Name = "lbEquipmentGenerator";
-            lbEquipmentGenerator.TabIndex = 32;
-            lbEquipmentGenerator.Text = "Ausrüstungs-Generator";
-            // 
-            // BtAnimationStudio
-            // 
-            BtAnimationStudio.Location = new System.Drawing.Point(130, 12);
-            BtAnimationStudio.Name = "BtAnimationStudio";
-            BtAnimationStudio.Size = new System.Drawing.Size(59, 59);
-            BtAnimationStudio.TabIndex = 21;
-            BtAnimationStudio.UseVisualStyleBackColor = true;
-            BtAnimationStudio.Click += BtAnimationStudio_Click;
-            // 
-            // lbAnimationStudio
-            // 
-            lbAnimationStudio.AutoSize = true;
-            lbAnimationStudio.Location = new System.Drawing.Point(130, 71);
-            lbAnimationStudio.Name = "lbAnimationStudio";
-            lbAnimationStudio.TabIndex = 22;
-            lbAnimationStudio.Text = "Animations-Studio";
-            // 
-            // BtSpellEffectEditor
-            // 
-            BtSpellEffectEditor.Location = new System.Drawing.Point(130, 94);
-            BtSpellEffectEditor.Name = "BtSpellEffectEditor";
-            BtSpellEffectEditor.Size = new System.Drawing.Size(59, 59);
-            BtSpellEffectEditor.TabIndex = 23;
-            BtSpellEffectEditor.UseVisualStyleBackColor = true;
-            BtSpellEffectEditor.Click += BtSpellEffectEditor_Click;
-            // 
-            // lbSpellEffectEditor
-            // 
-            lbSpellEffectEditor.AutoSize = true;
-            lbSpellEffectEditor.Location = new System.Drawing.Point(130, 153);
-            lbSpellEffectEditor.Name = "lbSpellEffectEditor";
-            lbSpellEffectEditor.TabIndex = 24;
-            lbSpellEffectEditor.Text = "Spell / Effekt Editor";
-            // 
-            // BtSoundStudio
-            // 
-            BtSoundStudio.Location = new System.Drawing.Point(6, 6);
-            BtSoundStudio.Name = "BtSoundStudio";
-            BtSoundStudio.Size = new System.Drawing.Size(59, 59);
-            BtSoundStudio.TabIndex = 0;
-            BtSoundStudio.UseVisualStyleBackColor = true;
-            BtSoundStudio.Click += BtSoundStudio_Click;
-            // 
-            // lbSoundStudio
-            // 
-            lbSoundStudio.AutoSize = true;
-            lbSoundStudio.Location = new System.Drawing.Point(6, 75);
-            lbSoundStudio.Name = "lbSoundStudio";
-            lbSoundStudio.TabIndex = 1;
-            lbSoundStudio.Text = "Sound-Studio";
             // 
             // menuStrip1
             // 
@@ -804,9 +809,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             tabPageClient.PerformLayout();
             tabPageScript.ResumeLayout(false);
             tabPageScript.PerformLayout();
-            tabPageTextureConverter.ResumeLayout(false);
             tabPageSound.ResumeLayout(false);
             tabPageSound.PerformLayout();
+            tabPageTextureConverter.ResumeLayout(false);
             statusStrip1.ResumeLayout(false);
             statusStrip1.PerformLayout();
             ResumeLayout(false);
