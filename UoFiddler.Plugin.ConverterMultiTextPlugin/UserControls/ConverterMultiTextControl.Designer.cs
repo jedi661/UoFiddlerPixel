@@ -95,6 +95,17 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             statusStrip1 = new System.Windows.Forms.StatusStrip();
             toolStripStatusLabelTime = new System.Windows.Forms.ToolStripStatusLabel();
             timer1 = new System.Windows.Forms.Timer(components);
+            tabPageSound = new System.Windows.Forms.TabPage();
+            BtPixelArtConverter = new System.Windows.Forms.Button();
+            lbPixelArtConverter = new System.Windows.Forms.Label();
+            BtEquipmentGenerator = new System.Windows.Forms.Button();
+            lbEquipmentGenerator = new System.Windows.Forms.Label();
+            BtAnimationStudio = new System.Windows.Forms.Button();
+            lbAnimationStudio = new System.Windows.Forms.Label();
+            BtSpellEffectEditor = new System.Windows.Forms.Button();
+            lbSpellEffectEditor = new System.Windows.Forms.Label();
+            BtSoundStudio = new System.Windows.Forms.Button();
+            lbSoundStudio = new System.Windows.Forms.Label();
             TabControl1.SuspendLayout();
             tabPageMain.SuspendLayout();
             tabPageAnimation.SuspendLayout();
@@ -103,6 +114,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             tabPageClient.SuspendLayout();
             tabPageScript.SuspendLayout();
             tabPageTextureConverter.SuspendLayout();
+            tabPageSound.SuspendLayout();
             statusStrip1.SuspendLayout();
             SuspendLayout();
             // 
@@ -115,6 +127,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             TabControl1.Controls.Add(tabPageMap);
             TabControl1.Controls.Add(tabPageClient);
             TabControl1.Controls.Add(tabPageScript);
+            TabControl1.Controls.Add(tabPageSound);
             TabControl1.Controls.Add(tabPageTextureConverter);
             TabControl1.Location = new System.Drawing.Point(3, 27);
             TabControl1.Name = "TabControl1";
@@ -176,6 +189,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             // 
             // tabPageAnimation
             // 
+            tabPageAnimation.Controls.Add(lbSpellEffectEditor);
+            tabPageAnimation.Controls.Add(BtSpellEffectEditor);
+            tabPageAnimation.Controls.Add(lbAnimationStudio);
+            tabPageAnimation.Controls.Add(BtAnimationStudio);
             tabPageAnimation.Controls.Add(lbAnimationVDEditor);
             tabPageAnimation.Controls.Add(BtAnimationVDEditorForm);
             tabPageAnimation.Controls.Add(lbAnimationVD);
@@ -248,6 +265,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             // 
             // tabPageGraphic
             // 
+            tabPageGraphic.Controls.Add(lbEquipmentGenerator);
+            tabPageGraphic.Controls.Add(BtEquipmentGenerator);
+            tabPageGraphic.Controls.Add(lbPixelArtConverter);
+            tabPageGraphic.Controls.Add(BtPixelArtConverter);
             tabPageGraphic.Controls.Add(labelParticleGray);
             tabPageGraphic.Controls.Add(buttonParticleGray);
             tabPageGraphic.Controls.Add(lbConverter);
@@ -639,6 +660,103 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             textConverterPanel.Size = new System.Drawing.Size(947, 428);
             textConverterPanel.TabIndex = 0;
             // 
+            // tabPageSound
+            // 
+            tabPageSound.Controls.Add(lbSoundStudio);
+            tabPageSound.Controls.Add(BtSoundStudio);
+            tabPageSound.Location = new System.Drawing.Point(4, 24);
+            tabPageSound.Name = "tabPageSound";
+            tabPageSound.Padding = new System.Windows.Forms.Padding(3);
+            tabPageSound.Size = new System.Drawing.Size(953, 434);
+            tabPageSound.TabIndex = 7;
+            tabPageSound.Text = "Sound";
+            tabPageSound.UseVisualStyleBackColor = true;
+            // 
+            // BtPixelArtConverter
+            // 
+            BtPixelArtConverter.Location = new System.Drawing.Point(312, 19);
+            BtPixelArtConverter.Name = "BtPixelArtConverter";
+            BtPixelArtConverter.Size = new System.Drawing.Size(59, 59);
+            BtPixelArtConverter.TabIndex = 29;
+            BtPixelArtConverter.UseVisualStyleBackColor = true;
+            BtPixelArtConverter.Click += BtPixelArtConverter_Click;
+            // 
+            // lbPixelArtConverter
+            // 
+            lbPixelArtConverter.AutoSize = true;
+            lbPixelArtConverter.Location = new System.Drawing.Point(312, 86);
+            lbPixelArtConverter.Name = "lbPixelArtConverter";
+            lbPixelArtConverter.TabIndex = 30;
+            lbPixelArtConverter.Text = "Pixel-Art Konverter";
+            // 
+            // BtEquipmentGenerator
+            // 
+            BtEquipmentGenerator.Location = new System.Drawing.Point(312, 104);
+            BtEquipmentGenerator.Name = "BtEquipmentGenerator";
+            BtEquipmentGenerator.Size = new System.Drawing.Size(59, 59);
+            BtEquipmentGenerator.TabIndex = 31;
+            BtEquipmentGenerator.UseVisualStyleBackColor = true;
+            BtEquipmentGenerator.Click += BtEquipmentGenerator_Click;
+            // 
+            // lbEquipmentGenerator
+            // 
+            lbEquipmentGenerator.AutoSize = true;
+            lbEquipmentGenerator.Location = new System.Drawing.Point(312, 173);
+            lbEquipmentGenerator.Name = "lbEquipmentGenerator";
+            lbEquipmentGenerator.TabIndex = 32;
+            lbEquipmentGenerator.Text = "Ausrüstungs-Generator";
+            // 
+            // BtAnimationStudio
+            // 
+            BtAnimationStudio.Location = new System.Drawing.Point(130, 12);
+            BtAnimationStudio.Name = "BtAnimationStudio";
+            BtAnimationStudio.Size = new System.Drawing.Size(59, 59);
+            BtAnimationStudio.TabIndex = 21;
+            BtAnimationStudio.UseVisualStyleBackColor = true;
+            BtAnimationStudio.Click += BtAnimationStudio_Click;
+            // 
+            // lbAnimationStudio
+            // 
+            lbAnimationStudio.AutoSize = true;
+            lbAnimationStudio.Location = new System.Drawing.Point(130, 71);
+            lbAnimationStudio.Name = "lbAnimationStudio";
+            lbAnimationStudio.TabIndex = 22;
+            lbAnimationStudio.Text = "Animations-Studio";
+            // 
+            // BtSpellEffectEditor
+            // 
+            BtSpellEffectEditor.Location = new System.Drawing.Point(130, 94);
+            BtSpellEffectEditor.Name = "BtSpellEffectEditor";
+            BtSpellEffectEditor.Size = new System.Drawing.Size(59, 59);
+            BtSpellEffectEditor.TabIndex = 23;
+            BtSpellEffectEditor.UseVisualStyleBackColor = true;
+            BtSpellEffectEditor.Click += BtSpellEffectEditor_Click;
+            // 
+            // lbSpellEffectEditor
+            // 
+            lbSpellEffectEditor.AutoSize = true;
+            lbSpellEffectEditor.Location = new System.Drawing.Point(130, 153);
+            lbSpellEffectEditor.Name = "lbSpellEffectEditor";
+            lbSpellEffectEditor.TabIndex = 24;
+            lbSpellEffectEditor.Text = "Spell / Effekt Editor";
+            // 
+            // BtSoundStudio
+            // 
+            BtSoundStudio.Location = new System.Drawing.Point(6, 6);
+            BtSoundStudio.Name = "BtSoundStudio";
+            BtSoundStudio.Size = new System.Drawing.Size(59, 59);
+            BtSoundStudio.TabIndex = 0;
+            BtSoundStudio.UseVisualStyleBackColor = true;
+            BtSoundStudio.Click += BtSoundStudio_Click;
+            // 
+            // lbSoundStudio
+            // 
+            lbSoundStudio.AutoSize = true;
+            lbSoundStudio.Location = new System.Drawing.Point(6, 75);
+            lbSoundStudio.Name = "lbSoundStudio";
+            lbSoundStudio.TabIndex = 1;
+            lbSoundStudio.Text = "Sound-Studio";
+            // 
             // menuStrip1
             // 
             menuStrip1.Location = new System.Drawing.Point(0, 0);
@@ -687,6 +805,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
             tabPageScript.ResumeLayout(false);
             tabPageScript.PerformLayout();
             tabPageTextureConverter.ResumeLayout(false);
+            tabPageSound.ResumeLayout(false);
+            tabPageSound.PerformLayout();
             statusStrip1.ResumeLayout(false);
             statusStrip1.PerformLayout();
             ResumeLayout(false);
@@ -750,5 +870,16 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
         private System.Windows.Forms.Button BtConverter;
         private System.Windows.Forms.Label labelParticleGray;
         private System.Windows.Forms.Button buttonParticleGray;
+        private System.Windows.Forms.TabPage tabPageSound;
+        private System.Windows.Forms.Button BtPixelArtConverter;
+        private System.Windows.Forms.Label lbPixelArtConverter;
+        private System.Windows.Forms.Button BtEquipmentGenerator;
+        private System.Windows.Forms.Label lbEquipmentGenerator;
+        private System.Windows.Forms.Button BtAnimationStudio;
+        private System.Windows.Forms.Label lbAnimationStudio;
+        private System.Windows.Forms.Button BtSpellEffectEditor;
+        private System.Windows.Forms.Label lbSpellEffectEditor;
+        private System.Windows.Forms.Button BtSoundStudio;
+        private System.Windows.Forms.Label lbSoundStudio;
     }
 }

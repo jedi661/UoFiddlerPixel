@@ -18,6 +18,7 @@ using System.Windows.Forms;
 using Ultima;
 using UoFiddler.Controls.Forms;
 using UoFiddler.Plugin.ConverterMultiTextPlugin.Forms;
+using UoFiddler.Plugin.ConverterMultiTextPlugin.UoStudio;
 
 namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
 {
@@ -31,6 +32,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
         public ConverterMultiTextControl()
         {
             InitializeComponent();
+
+            InitUoStudioButtons();
 
 
             _timer.Interval = 1000;
@@ -728,6 +731,79 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.UserControls
                 buttonParticleGray.Enabled = true;
                 particleGrayFormInstance = null;
             }
+        }
+        #endregion
+
+        #region [ UO Studio (Pixel-Art, Animation, Ausruestung, Sound, Effekte) ]
+        private PixelArtConverterForm _pixelArtConverterForm;
+        private AnimationStudioForm _animationStudioForm;
+        private EquipmentGeneratorForm _equipmentGeneratorForm;
+        private SoundStudioForm _soundStudioForm;
+        private SpellEffectEditorForm _spellEffectEditorForm;
+
+        private void InitUoStudioButtons()
+        {
+            BtPixelArtConverter.Image = StudioIcons.PixelArt();
+            BtAnimationStudio.Image = StudioIcons.Animation();
+            BtEquipmentGenerator.Image = StudioIcons.Equipment();
+            BtSoundStudio.Image = StudioIcons.Sound();
+            BtSpellEffectEditor.Image = StudioIcons.Effect();
+
+            ToolTip toolTip = new ToolTip
+            {
+                AutoPopDelay = 5000,
+                InitialDelay = 1000,
+                ReshowDelay = 500,
+                ShowAlways = true
+            };
+            toolTip.SetToolTip(BtPixelArtConverter, "Pixel-Art-Konverter – Bild/Foto in UO Item, Bodentile, Wand oder Gump umwandeln");
+            toolTip.SetToolTip(BtAnimationStudio, "Animations-Studio – Mobile-Animationen aus Einzelbildern / Sprite-Sheet (5 Richtungen + Spiegeln)");
+            toolTip.SetToolTip(BtEquipmentGenerator, "Ausrüstungs-Generator – Item-Bild zu Paperdoll-Gump + Tiledata");
+            toolTip.SetToolTip(BtSoundStudio, "Sound-Studio – WAV/MP3 schneiden, normalisieren, als UO-Sound speichern");
+            toolTip.SetToolTip(BtSpellEffectEditor, "Spell- & Effekt-Editor – Partikel- und Zaubereffekte aus Bildfolgen");
+        }
+
+        /// <summary>Opens the form only once; a second click brings the open window to the front.</summary>
+        private static void ShowSingle<T>(ref T form) where T : Form, new()
+        {
+            if (form != null && !form.IsDisposed)
+            {
+                if (form.WindowState == FormWindowState.Minimized)
+                {
+                    form.WindowState = FormWindowState.Normal;
+                }
+                form.BringToFront();
+                form.Activate();
+                return;
+            }
+
+            form = new T();
+            form.Show();
+        }
+
+        private void BtPixelArtConverter_Click(object sender, EventArgs e)
+        {
+            ShowSingle(ref _pixelArtConverterForm);
+        }
+
+        private void BtAnimationStudio_Click(object sender, EventArgs e)
+        {
+            ShowSingle(ref _animationStudioForm);
+        }
+
+        private void BtEquipmentGenerator_Click(object sender, EventArgs e)
+        {
+            ShowSingle(ref _equipmentGeneratorForm);
+        }
+
+        private void BtSoundStudio_Click(object sender, EventArgs e)
+        {
+            ShowSingle(ref _soundStudioForm);
+        }
+
+        private void BtSpellEffectEditor_Click(object sender, EventArgs e)
+        {
+            ShowSingle(ref _spellEffectEditorForm);
         }
         #endregion
     }
