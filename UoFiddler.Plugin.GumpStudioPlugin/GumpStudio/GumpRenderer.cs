@@ -32,6 +32,11 @@ namespace UoFiddler.Plugin.DesignStudio.GumpStudio
         private static StringList _cliloc;
         public static readonly object Lock = new object();
 
+        /// <summary>Show the texts of the second language (TextDe) where an element has one.</summary>
+        public static bool SecondLanguage { get; set; }
+
+        private static string TextOf(GumpElement e) => SecondLanguage && !string.IsNullOrEmpty(e.TextDe) ? e.TextDe : e.Text;
+
         public static void ClearCache()
         {
             lock (Lock)
@@ -593,7 +598,7 @@ namespace UoFiddler.Plugin.DesignStudio.GumpStudio
                 }
                 case ElementType.Label:
                 {
-                    Bitmap t = Text(string.IsNullOrEmpty(e.Text) ? " " : e.Text, HueColor(e.Hue));
+                    Bitmap t = Text(string.IsNullOrEmpty(TextOf(e)) ? " " : TextOf(e), HueColor(e.Hue));
                     return new Rectangle(e.X, e.Y, Math.Max(8, t.Width), Math.Max(14, t.Height));
                 }
                 case ElementType.Item:
@@ -651,13 +656,13 @@ namespace UoFiddler.Plugin.DesignStudio.GumpStudio
                     }
                     break;
                 case ElementType.Label:
-                    g.DrawImageUnscaled(Text(e.Text ?? string.Empty, HueColor(e.Hue)), e.X, e.Y);
+                    g.DrawImageUnscaled(Text(TextOf(e) ?? string.Empty, HueColor(e.Hue)), e.X, e.Y);
                     break;
                 case ElementType.LabelCropped:
                 {
                     GraphicsState st = g.Save();
                     g.SetClip(r, CombineMode.Intersect);
-                    g.DrawImageUnscaled(Text(e.Text ?? string.Empty, HueColor(e.Hue)), e.X, e.Y);
+                    g.DrawImageUnscaled(Text(TextOf(e) ?? string.Empty, HueColor(e.Hue)), e.X, e.Y);
                     g.Restore(st);
                     break;
                 }
@@ -678,7 +683,7 @@ namespace UoFiddler.Plugin.DesignStudio.GumpStudio
                         }
                         g.DrawRectangle(Pens.DimGray, r.Right - 15, r.Y, 14, r.Height - 1);
                     }
-                    string html = e.Type == ElementType.Html ? e.Text : ClilocText(e.Cliloc);
+                    string html = e.Type == ElementType.Html ? TextOf(e) : ClilocText(e.Cliloc);
                     Color baseColor = e.Type == ElementType.HtmlLocalized ? Color555(e.Hue) : Color.FromArgb(20, 20, 20);
                     DrawHtml(g, textArea, html, baseColor);
                     if (designer)
@@ -721,7 +726,7 @@ namespace UoFiddler.Plugin.DesignStudio.GumpStudio
                 }
                 case ElementType.TextEntry:
                 {
-                    string text = state?.TextOf(e) ?? e.Text;
+                    string text = state != null ? state.TextOf(e) : TextOf(e);
                     GraphicsState st = g.Save();
                     g.SetClip(r, CombineMode.Intersect);
                     g.DrawImageUnscaled(Text(text ?? string.Empty, HueColor(e.Hue)), e.X, e.Y);

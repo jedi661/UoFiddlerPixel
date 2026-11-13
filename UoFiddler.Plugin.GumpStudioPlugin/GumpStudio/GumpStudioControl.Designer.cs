@@ -142,7 +142,36 @@ namespace UoFiddler.Plugin.DesignStudio.GumpStudio
             txtBrowserSearch = new System.Windows.Forms.TextBox();
             lblBrowserInfo = new System.Windows.Forms.Label();
             toolTip1 = new System.Windows.Forms.ToolTip(components);
+            toolStrip2 = new System.Windows.Forms.ToolStrip();
+            tsGallery = new System.Windows.Forms.ToolStripButton();
+            tsWriteBack = new System.Windows.Forms.ToolStripButton();
+            tsSep6 = new System.Windows.Forms.ToolStripSeparator();
+            tsList = new System.Windows.Forms.ToolStripButton();
+            tsThemes = new System.Windows.Forms.ToolStripButton();
+            tsArt = new System.Windows.Forms.ToolStripButton();
+            tsSep7 = new System.Windows.Forms.ToolStripSeparator();
+            tsReference = new System.Windows.Forms.ToolStripDropDownButton();
+            miRefCurrent = new System.Windows.Forms.ToolStripMenuItem();
+            miRefImported = new System.Windows.Forms.ToolStripMenuItem();
+            miRefPicture = new System.Windows.Forms.ToolStripMenuItem();
+            miRefSep = new System.Windows.Forms.ToolStripSeparator();
+            miRefTint = new System.Windows.Forms.ToolStripMenuItem();
+            miRefClear = new System.Windows.Forms.ToolStripMenuItem();
+            tsRefOpacity = new System.Windows.Forms.ToolStripComboBox();
+            tsSep8 = new System.Windows.Forms.ToolStripSeparator();
+            tsLanguageLabel = new System.Windows.Forms.ToolStripLabel();
+            tsLanguage = new System.Windows.Forms.ToolStripComboBox();
+            tsGuides = new System.Windows.Forms.ToolStripButton();
+            miGroupSep = new System.Windows.Forms.ToolStripSeparator();
+            miGroup = new System.Windows.Forms.ToolStripMenuItem();
+            miUngroup = new System.Windows.Forms.ToolStripMenuItem();
+            tabTestLog = new System.Windows.Forms.TabPage();
+            listTestLog = new System.Windows.Forms.ListBox();
+            flowTestLogBar = new System.Windows.Forms.FlowLayoutPanel();
+            btnClearTestLog = new System.Windows.Forms.Button();
+            chkTestLogInScript = new System.Windows.Forms.CheckBox();
             toolStrip1.SuspendLayout();
+            toolStrip2.SuspendLayout();
             statusStrip1.SuspendLayout();
             flowToolbox.SuspendLayout();
             panelCanvasHost.SuspendLayout();
@@ -313,7 +342,7 @@ namespace UoFiddler.Plugin.DesignStudio.GumpStudio
             //
             // tsArrange
             //
-            tsArrange.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { miAlignLeft, miAlignCenter, miAlignRight, miAlignTop, miAlignMiddle, miAlignBottom, miSameWidth, miSameHeight, miDistributeH, miDistributeV, miToFront, miForward, miBackward, miToBack, miCenterInGump });
+            tsArrange.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { miAlignLeft, miAlignCenter, miAlignRight, miAlignTop, miAlignMiddle, miAlignBottom, miSameWidth, miSameHeight, miDistributeH, miDistributeV, miToFront, miForward, miBackward, miToBack, miCenterInGump, miGroupSep, miGroup, miUngroup });
             tsArrange.Text = "Arrange";
             tsArrange.ToolTipText = "Align, same size, distribute, order\n\nDE: Ausrichten, gleiche Größe, verteilen, Reihenfolge";
             tsArrange.Name = "tsArrange";
@@ -407,6 +436,165 @@ namespace UoFiddler.Plugin.DesignStudio.GumpStudio
             miCenterInGump.Text = "Center in the background";
             miCenterInGump.Name = "miCenterInGump";
             miCenterInGump.Click += Arrange_Click;
+            //
+            // miGroupSep
+            //
+            miGroupSep.Name = "miGroupSep";
+            //
+            // miGroup
+            //
+            miGroup.Name = "miGroup";
+            miGroup.ShortcutKeyDisplayString = "Ctrl+G";
+            miGroup.Text = "Group";
+            miGroup.ToolTipText = "Selected elements become a group: a click selects all of them, Alt + click only one\n\nDE: Gewählte Elemente werden eine Gruppe: ein Klick wählt alle, Alt + Klick nur eines";
+            miGroup.Click += MiGroup_Click;
+            //
+            // miUngroup
+            //
+            miUngroup.Name = "miUngroup";
+            miUngroup.ShortcutKeyDisplayString = "Ctrl+Shift+G";
+            miUngroup.Text = "Ungroup";
+            miUngroup.Click += MiUngroup_Click;
+            //
+            // toolStrip2
+            //
+            toolStrip2.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
+            toolStrip2.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { tsGallery, tsWriteBack, tsSep6, tsList, tsThemes, tsArt, tsSep7, tsReference, tsRefOpacity, tsSep8, tsLanguageLabel, tsLanguage, tsGuides });
+            toolStrip2.Name = "toolStrip2";
+            toolStrip2.TabIndex = 1;
+            //
+            // tsGallery
+            //
+            tsGallery.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            tsGallery.Name = "tsGallery";
+            tsGallery.Text = "Script gallery…";
+            tsGallery.ToolTipText = "Pictures of all gumps of a ServUO / ModernUO scripts folder – open one or add them to the templates\n\nDE: Bilder aller Gumps eines Skript-Ordners – eines öffnen oder als Vorlagen übernehmen";
+            tsGallery.Click += TsGallery_Click;
+            //
+            // tsWriteBack
+            //
+            tsWriteBack.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            tsWriteBack.Enabled = false;
+            tsWriteBack.Name = "tsWriteBack";
+            tsWriteBack.Text = "Write back…";
+            tsWriteBack.ToolTipText = "Writes your changes into the imported script: only the changed numbers / texts, the rest of the script stays\n\nDE: Schreibt deine Änderungen ins eingelesene Skript: nur geänderte Zahlen / Texte, der Rest bleibt";
+            tsWriteBack.Click += TsWriteBack_Click;
+            //
+            // tsSep6
+            //
+            tsSep6.Name = "tsSep6";
+            //
+            // tsList
+            //
+            tsList.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            tsList.Name = "tsList";
+            tsList.Text = "List / table…";
+            tsList.ToolTipText = "Makes a list / table with rows, columns and pages – the script gets a for loop. Select a list element to change the list.\n\nDE: Erstellt eine Liste / Tabelle mit Zeilen, Spalten und Seiten – im Skript eine for-Schleife. Listen-Element wählen = Liste ändern.";
+            tsList.Click += TsList_Click;
+            //
+            // tsThemes
+            //
+            tsThemes.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            tsThemes.Name = "tsThemes";
+            tsThemes.Text = "Themes…";
+            tsThemes.ToolTipText = "Change frames, buttons, check boxes and text colors of the whole gump at once\n\nDE: Rahmen, Buttons, Checkboxen und Textfarben des ganzen Gumps auf einmal ändern";
+            tsThemes.Click += TsThemes_Click;
+            //
+            // tsArt
+            //
+            tsArt.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            tsArt.Name = "tsArt";
+            tsArt.Text = "Own graphics…";
+            tsArt.ToolTipText = "Put your own picture into the gump file, or cut a picture into a 9 part frame for AddBackground\n\nDE: Eigenes Bild in die Gump-Datei, oder ein Bild in einen 9-teiligen Rahmen für AddBackground schneiden";
+            tsArt.Click += TsArt_Click;
+            //
+            // tsSep7
+            //
+            tsSep7.Name = "tsSep7";
+            //
+            // tsReference
+            //
+            tsReference.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            tsReference.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { miRefCurrent, miRefImported, miRefPicture, miRefSep, miRefTint, miRefClear });
+            tsReference.Name = "tsReference";
+            tsReference.Text = "Compare";
+            tsReference.ToolTipText = "Shows a gump or picture half transparent over the work area to compare\n\nDE: Zeigt ein Gump oder Bild halb durchsichtig über der Arbeitsfläche zum Vergleichen";
+            tsReference.DropDownOpening += TsReference_DropDownOpening;
+            //
+            // miRefCurrent
+            //
+            miRefCurrent.Name = "miRefCurrent";
+            miRefCurrent.Text = "Current state as reference";
+            miRefCurrent.Click += MiRefCurrent_Click;
+            //
+            // miRefImported
+            //
+            miRefImported.Name = "miRefImported";
+            miRefImported.Text = "Imported original as reference";
+            miRefImported.Click += MiRefImported_Click;
+            //
+            // miRefPicture
+            //
+            miRefPicture.Name = "miRefPicture";
+            miRefPicture.Text = "Picture as reference (e.g. screenshot)…";
+            miRefPicture.Click += MiRefPicture_Click;
+            //
+            // miRefSep
+            //
+            miRefSep.Name = "miRefSep";
+            //
+            // miRefTint
+            //
+            miRefTint.Checked = true;
+            miRefTint.CheckOnClick = true;
+            miRefTint.CheckState = System.Windows.Forms.CheckState.Checked;
+            miRefTint.Name = "miRefTint";
+            miRefTint.Text = "Red tint";
+            miRefTint.Click += MiRefTint_Click;
+            //
+            // miRefClear
+            //
+            miRefClear.Name = "miRefClear";
+            miRefClear.Text = "Remove reference";
+            miRefClear.Click += MiRefClear_Click;
+            //
+            // tsRefOpacity
+            //
+            tsRefOpacity.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            tsRefOpacity.Items.AddRange(new object[] { "25%", "50%", "75%", "100%" });
+            tsRefOpacity.Name = "tsRefOpacity";
+            tsRefOpacity.Size = new System.Drawing.Size(60, 25);
+            tsRefOpacity.ToolTipText = "Opacity of the reference\n\nDE: Deckkraft der Referenz";
+            tsRefOpacity.SelectedIndexChanged += TsRefOpacity_SelectedIndexChanged;
+            //
+            // tsSep8
+            //
+            tsSep8.Name = "tsSep8";
+            //
+            // tsLanguageLabel
+            //
+            tsLanguageLabel.Name = "tsLanguageLabel";
+            tsLanguageLabel.Text = "Language:";
+            //
+            // tsLanguage
+            //
+            tsLanguage.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            tsLanguage.Items.AddRange(new object[] { "First (Text)", "Second (TextDe)" });
+            tsLanguage.Name = "tsLanguage";
+            tsLanguage.Size = new System.Drawing.Size(120, 25);
+            tsLanguage.ToolTipText = "Which texts the work area shows and edits. Second = TextDe, for players with client language DEU (setting \"SecondLanguage\")\n\nDE: Welche Texte die Arbeitsfläche zeigt und bearbeitet. Zweite = TextDe, für Spieler mit Client-Sprache DEU";
+            tsLanguage.SelectedIndexChanged += TsLanguage_SelectedIndexChanged;
+            //
+            // tsGuides
+            //
+            tsGuides.Checked = true;
+            tsGuides.CheckOnClick = true;
+            tsGuides.CheckState = System.Windows.Forms.CheckState.Checked;
+            tsGuides.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            tsGuides.Name = "tsGuides";
+            tsGuides.Text = "Guides";
+            tsGuides.ToolTipText = "Smart guides: edges and centers snap to other elements, distances are shown (Alt = off)\n\nDE: Hilfslinien: Kanten und Mitten rasten an anderen Elementen ein, Abstände werden gezeigt (Alt = aus)";
+            tsGuides.Click += TsGuides_Click;
             //
             // tsSep3
             //
@@ -924,6 +1112,8 @@ namespace UoFiddler.Plugin.DesignStudio.GumpStudio
             gumpCanvas.StatusText += GumpCanvas_StatusText;
             gumpCanvas.PreviewReply += GumpCanvas_PreviewReply;
             gumpCanvas.PageChanged += GumpCanvas_PageChanged;
+            gumpCanvas.FilesDropped += GumpCanvas_FilesDropped;
+            gumpCanvas.TestLogged += GumpCanvas_TestLogged;
             //
             // codeBox
             //
@@ -973,7 +1163,7 @@ namespace UoFiddler.Plugin.DesignStudio.GumpStudio
             // comboTarget
             //
             comboTarget.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            comboTarget.Items.AddRange(new object[] { "ServUO / RunUO – complete gump class", "ServUO – only the Add… lines", "Sphere – [DIALOG] script" });
+            comboTarget.Items.AddRange(new object[] { "ServUO / RunUO – complete gump class", "ServUO – only the Add… lines", "Sphere – [DIALOG] script", "ModernUO – DynamicGump class" });
             comboTarget.Margin = new System.Windows.Forms.Padding(3, 3, 3, 0);
             comboTarget.Size = new System.Drawing.Size(250, 23);
             comboTarget.Name = "comboTarget";
@@ -1016,6 +1206,7 @@ namespace UoFiddler.Plugin.DesignStudio.GumpStudio
             tabRight.Controls.Add(tabProperties);
             tabRight.Controls.Add(tabElements);
             tabRight.Controls.Add(tabBrowser);
+            tabRight.Controls.Add(tabTestLog);
             tabRight.Dock = System.Windows.Forms.DockStyle.Fill;
             tabRight.Name = "tabRight";
             tabRight.TabIndex = 43;
@@ -1156,6 +1347,50 @@ namespace UoFiddler.Plugin.DesignStudio.GumpStudio
             toolTip1.SetToolTip(btnRenumber, "Gives buttons, switches and text entries IDs 1, 2, 3 … in list order\n\nDE: Vergibt Buttons, Schaltern und Eingabefeldern die IDs 1, 2, 3 … in Listenreihenfolge");
             btnRenumber.Click += BtnRenumber_Click;
             //
+            // tabTestLog
+            //
+            tabTestLog.Controls.Add(listTestLog);
+            tabTestLog.Controls.Add(flowTestLogBar);
+            tabTestLog.Name = "tabTestLog";
+            tabTestLog.Text = "Test log";
+            tabTestLog.UseVisualStyleBackColor = true;
+            //
+            // listTestLog
+            //
+            listTestLog.Dock = System.Windows.Forms.DockStyle.Fill;
+            listTestLog.HorizontalScrollbar = true;
+            listTestLog.IntegralHeight = false;
+            listTestLog.Name = "listTestLog";
+            listTestLog.TabIndex = 0;
+            //
+            // flowTestLogBar
+            //
+            flowTestLogBar.AutoSize = true;
+            flowTestLogBar.Controls.Add(btnClearTestLog);
+            flowTestLogBar.Controls.Add(chkTestLogInScript);
+            flowTestLogBar.Dock = System.Windows.Forms.DockStyle.Top;
+            flowTestLogBar.Name = "flowTestLogBar";
+            flowTestLogBar.TabIndex = 1;
+            //
+            // btnClearTestLog
+            //
+            btnClearTestLog.AutoSize = true;
+            btnClearTestLog.Name = "btnClearTestLog";
+            btnClearTestLog.TabIndex = 0;
+            btnClearTestLog.Text = "Clear";
+            btnClearTestLog.UseVisualStyleBackColor = true;
+            btnClearTestLog.Click += BtnClearTestLog_Click;
+            //
+            // chkTestLogInScript
+            //
+            chkTestLogInScript.Anchor = System.Windows.Forms.AnchorStyles.Left;
+            chkTestLogInScript.AutoSize = true;
+            chkTestLogInScript.Name = "chkTestLogInScript";
+            chkTestLogInScript.TabIndex = 1;
+            chkTestLogInScript.Text = "Write into the script as comment";
+            toolTip1.SetToolTip(chkTestLogInScript, "The test results (F5) are written above OnResponse as comment\n\nDE: Die Test-Ergebnisse (F5) stehen als Kommentar über OnResponse");
+            chkTestLogInScript.CheckedChanged += ChkTestLogInScript_CheckedChanged;
+            //
             // tabBrowser
             //
             tabBrowser.Controls.Add(gumpBrowser);
@@ -1223,6 +1458,7 @@ namespace UoFiddler.Plugin.DesignStudio.GumpStudio
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             Controls.Add(splitOuter);
+            Controls.Add(toolStrip2);
             Controls.Add(toolStrip1);
             Controls.Add(statusStrip1);
             Name = "GumpStudioControl";
@@ -1250,6 +1486,8 @@ namespace UoFiddler.Plugin.DesignStudio.GumpStudio
             statusStrip1.ResumeLayout(false);
             statusStrip1.PerformLayout();
             toolStrip1.ResumeLayout(false);
+            toolStrip2.ResumeLayout(false);
+            toolStrip2.PerformLayout();
             toolStrip1.PerformLayout();
             splitWork.Panel1.ResumeLayout(false);
             splitWork.Panel2.ResumeLayout(false);
@@ -1382,6 +1620,34 @@ namespace UoFiddler.Plugin.DesignStudio.GumpStudio
         private System.Windows.Forms.TextBox txtBrowserSearch;
         private System.Windows.Forms.Label lblBrowserInfo;
         private System.Windows.Forms.ToolTip toolTip1;
+        private System.Windows.Forms.ToolStrip toolStrip2;
+        private System.Windows.Forms.ToolStripButton tsGallery;
+        private System.Windows.Forms.ToolStripButton tsWriteBack;
+        private System.Windows.Forms.ToolStripSeparator tsSep6;
+        private System.Windows.Forms.ToolStripButton tsList;
+        private System.Windows.Forms.ToolStripButton tsThemes;
+        private System.Windows.Forms.ToolStripButton tsArt;
+        private System.Windows.Forms.ToolStripSeparator tsSep7;
+        private System.Windows.Forms.ToolStripDropDownButton tsReference;
+        private System.Windows.Forms.ToolStripMenuItem miRefCurrent;
+        private System.Windows.Forms.ToolStripMenuItem miRefImported;
+        private System.Windows.Forms.ToolStripMenuItem miRefPicture;
+        private System.Windows.Forms.ToolStripSeparator miRefSep;
+        private System.Windows.Forms.ToolStripMenuItem miRefTint;
+        private System.Windows.Forms.ToolStripMenuItem miRefClear;
+        private System.Windows.Forms.ToolStripComboBox tsRefOpacity;
+        private System.Windows.Forms.ToolStripSeparator tsSep8;
+        private System.Windows.Forms.ToolStripLabel tsLanguageLabel;
+        private System.Windows.Forms.ToolStripComboBox tsLanguage;
+        private System.Windows.Forms.ToolStripButton tsGuides;
+        private System.Windows.Forms.ToolStripSeparator miGroupSep;
+        private System.Windows.Forms.ToolStripMenuItem miGroup;
+        private System.Windows.Forms.ToolStripMenuItem miUngroup;
+        private System.Windows.Forms.TabPage tabTestLog;
+        private System.Windows.Forms.ListBox listTestLog;
+        private System.Windows.Forms.FlowLayoutPanel flowTestLogBar;
+        private System.Windows.Forms.Button btnClearTestLog;
+        private System.Windows.Forms.CheckBox chkTestLogInScript;
     }
 }
 

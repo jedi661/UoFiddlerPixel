@@ -35,6 +35,20 @@ namespace UoFiddler.Plugin.DesignStudio.GumpStudio
         Page = 0
     }
 
+    /// <summary>What a reply button does in OnResponse (the script is written for it).</summary>
+    public enum ButtonAction
+    {
+        None,           // only a message, you write the code
+        Close,          // nothing – the gump is closed
+        Reopen,         // open the same gump again
+        OpenGump,       // open another gump (Action target = class name)
+        Teleport,       // move the player (Action location = "x y z map")
+        GiveItem,       // put an item in the backpack (Action target = item type, e.g. Gold or "Gold(100)")
+        RunCommand,     // run a command as the player (Action target = e.g. "Where")
+        Message,        // send a message (Action target = text)
+        CustomCode      // Action target = your own C# lines
+    }
+
     /// <summary>Marks a property as used only by some element types (the property grid hides it for the others).</summary>
     [AttributeUsage(AttributeTargets.Property)]
     public sealed class AppliesToAttribute : Attribute
@@ -158,6 +172,47 @@ namespace UoFiddler.Plugin.DesignStudio.GumpStudio
         [Category("5 Action"), Description("Text entry ID – read with info.GetTextEntry(id).")]
         [AppliesTo(ElementType.TextEntry)]
         public int EntryId { get; set; } = 1;
+
+        [Category("5 Action"), Description("What the button does in OnResponse – the script is written for it. / Was der Button in OnResponse tut.")]
+        [AppliesTo(ElementType.Button, ElementType.ItemButton)]
+        public ButtonAction Action { get; set; }
+
+        [Category("5 Action"), Description("Open gump: class name · Give item: item type, e.g. Gold or Gold(100) · Command: e.g. Where · Message: the text · Custom code: C# lines (\\n = new line).")]
+        [AppliesTo(ElementType.Button, ElementType.ItemButton)]
+        public string ActionTarget { get; set; } = string.Empty;
+
+        [Category("5 Action"), Description("Teleport: \"x y z map\", e.g. \"1434 1699 2 Felucca\".")]
+        [AppliesTo(ElementType.Button, ElementType.ItemButton)]
+        public string ActionLocation { get; set; } = string.Empty;
+
+        [Category("5 Action"), Description("Open this gump again after the action.")]
+        [AppliesTo(ElementType.Button, ElementType.ItemButton)]
+        public bool ActionReopen { get; set; }
+
+        [Category("4 Text"), Description("Text in the second language (German, for players with client language DEU). Empty = same as Text. / Text in der zweiten Sprache.")]
+        [Editor("System.ComponentModel.Design.MultilineStringEditor, System.Design", typeof(UITypeEditor))]
+        [AppliesTo(ElementType.Label, ElementType.LabelCropped, ElementType.Html, ElementType.TextEntry)]
+        public string TextDe { get; set; } = string.Empty;
+
+        [Category("6 Extra"), Description("Designer group: elements of a group are selected and moved together (Ctrl+G / Ctrl+Shift+G).")]
+        public string DesignGroup { get; set; } = string.Empty;
+
+        [Category("6 Extra"), Description("List this element belongs to (List / table generator). Rows are made from row 1.")]
+        [ReadOnly(true)]
+        public string ListId { get; set; } = string.Empty;
+
+        [Browsable(false)]
+        public int ListRow { get; set; }
+
+        [Browsable(false)]
+        public int ListSlot { get; set; }
+
+        [Browsable(false)]
+        public int ListColumn { get; set; } = -1;
+
+        /// <summary>Where the element came from in the imported script (for writing back): "offset#occurrence".</summary>
+        [Browsable(false)]
+        public string Source { get; set; } = string.Empty;
 
         [Category("6 Extra"), Description("Tooltip as cliloc number (0 = none) – AddTooltip after this entry.")]
         public int TooltipCliloc { get; set; }
@@ -299,6 +354,30 @@ namespace UoFiddler.Plugin.DesignStudio.GumpStudio
 
         [Category("3 Designer"), Description("Size of the work area.")]
         public int CanvasHeight { get; set; } = 480;
+
+        [Category("1 Script"), Description("Second language for players whose client language is this code (DEU = German). Texts come from \"TextDe\" of the elements.")]
+        public string SecondLanguage { get; set; } = "DEU";
+
+        [Category("1 Script"), Description("Write the actions of the test mode (F5) as comment into the script.")]
+        public bool IncludeTestLog { get; set; }
+
+        [Category("3 Designer"), Description("Script the gump was imported from (Write back changes the numbers there).")]
+        [ReadOnly(true)]
+        public string SourceFile { get; set; } = string.Empty;
+
+        /// <summary>The import read values of other classes from the scripts around the file (needed to compare when writing back).</summary>
+        [Browsable(false)]
+        public bool SourceResolve { get; set; }
+
+        /// <summary>Check sum of the script when it was imported – writing back needs the same file.</summary>
+        [Browsable(false)]
+        public string SourceHash { get; set; } = string.Empty;
+
+        [Browsable(false)]
+        public List<GumpListSpec> Lists { get; set; } = new List<GumpListSpec>();
+
+        [Browsable(false)]
+        public List<string> TestLog { get; set; } = new List<string>();
 
         [Category("3 Designer"), Description("Note for the template library (what the gump is for). / Notiz für die Vorlagen-Bibliothek.")]
         public string Description { get; set; } = string.Empty;

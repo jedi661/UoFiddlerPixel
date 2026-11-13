@@ -39,6 +39,9 @@ namespace UoFiddler.Plugin.DesignStudio.GumpStudio
 
         public List<string> Hints { get; private set; } = new List<string>();
 
+        /// <summary>Values of other classes were read from the scripts around the file.</summary>
+        public bool Resolved => chkResolve.Checked;
+
         protected override void OnShown(EventArgs e)
         {
             base.OnShown(e);
