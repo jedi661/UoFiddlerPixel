@@ -11,6 +11,7 @@
 
 using System;
 using System.Drawing;
+using System.Linq;
 using System.Windows.Forms;
 using Ultima;
 using Ultima.Helpers;
@@ -56,7 +57,7 @@ namespace UoFiddler.Controls.Forms
             InitializeComponent();
             Icon = Options.GetFiddlerIcon();
 
-            Text = $"HueEdit {index} / 0x{index:X}";
+            Text = $"HueEdit – hue {index + 1} / 0x{index + 1:X} (file index {index})";
 
             _hue = Hues.GetHue(index);
             _colors = new ushort[32];
@@ -137,12 +138,16 @@ namespace UoFiddler.Controls.Forms
 
         private void OnClickSave(object sender, EventArgs e)
         {
-            _colors.CopyTo(_hue.Colors, 0);
-            _hue.Name = textBoxName.Text;
-            _hue.TableStart = (ushort)_colors[0];
-            _hue.TableEnd = (ushort)(_colors[_hue.Colors.Length - 1] + 1057);
-            ControlEvents.FireHueChangeEvent();
-            Options.ChangedUltimaClass["Hues"] = true;
+            // through the undo history of the hues tab (Ctrl+Z there); the name is cut to 20 ASCII characters (file format)
+            string name = new string((textBoxName.Text ?? string.Empty).Trim().Where(c => c >= 32 && c < 127).Take(20).ToArray());
+            HueHistory.Main.Record($"Edit hue {_hue.Index + 1}", new[] { _hue.Index }, () =>
+            {
+                _colors.CopyTo(_hue.Colors, 0);
+                _hue.Name = name;
+                _hue.TableStart = (ushort)_colors[0];
+                _hue.TableEnd = (ushort)(_colors[_hue.Colors.Length - 1] + 1057);
+            });
+            textBoxName.Text = name;
         }
 
         private void OnClickSpread(object sender, EventArgs e)
