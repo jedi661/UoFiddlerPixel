@@ -215,6 +215,12 @@
 		<Compile Update="UserControls\AnimationListControl.Designer.cs">
 			<DependentUpon>AnimationListControl.cs</DependentUpon>
 		</Compile>
+		<Compile Update="UserControls\AnimationListControl.Extensions.cs">
+			<DependentUpon>AnimationListControl.cs</DependentUpon>
+		</Compile>
+		<Compile Update="Forms\AnimationEditForm.AnimationList.cs">
+			<DependentUpon>AnimationEditForm.cs</DependentUpon>
+		</Compile>
 		<Compile Update="Forms\MapMarkerForm.cs" />
 		<Compile Update="Forms\MapMarkerForm.Designer.cs">
 			<DependentUpon>MapMarkerForm.cs</DependentUpon>
