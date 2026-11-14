@@ -118,6 +118,17 @@ namespace UoFiddler.Controls.MapViewer
             Area = area;
         }
 
+        /// <summary>
+        /// Region of a map instance that is not part of the map list (e.g. the second map of the compare plugin).
+        /// <see cref="Definition"/> is null then.
+        /// </summary>
+        public RegionData(Map map, Rectangle area)
+        {
+            Map = map ?? throw new ArgumentNullException(nameof(map));
+            area.Intersect(new Rectangle(0, 0, Map.Width, Map.Height));
+            Area = area;
+        }
+
         public MapDefinition Definition { get; }
         public Map Map { get; }
 
