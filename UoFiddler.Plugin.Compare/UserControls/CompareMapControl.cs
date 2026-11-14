@@ -68,6 +68,7 @@ namespace UoFiddler.Plugin.Compare.UserControls
                 true);
 
             pictureBox.MouseWheel += PictureBox_MouseWheel;
+            InitCgiCompare();
         }
 
         // ─────────────────────────────────────────────────────────────────
@@ -157,6 +158,14 @@ namespace UoFiddler.Plugin.Compare.UserControls
         // ─────────────────────────────────────────────────────────────────
         private void OnMouseDown(object sender, MouseEventArgs e)
         {
+            // area selection (button "Bereich markieren" or Shift + drag) for the CGI compare
+            if (WantsSelection(e))
+            {
+                _moving = false;
+                BeginSelection(e.Location);
+                return;
+            }
+
             if (e.Button == MouseButtons.Left)
             {
                 _moving = true;
@@ -179,6 +188,12 @@ namespace UoFiddler.Plugin.Compare.UserControls
             int worldY = Math.Min(_originalMap.Height - 1, (int)(e.Y / _zoom) + Round(vScrollBar.Value));
 
             CoordsLabel.Text = $"Coords: {worldX}, {worldY}";
+
+            if (_selecting)
+            {
+                UpdateSelection(e.Location);
+                return;
+            }
 
             if (_moving)
             {
@@ -303,6 +318,12 @@ namespace UoFiddler.Plugin.Compare.UserControls
 
         private void OnMouseUp(object sender, MouseEventArgs e)
         {
+            if (_selecting)
+            {
+                EndSelection();
+                return;
+            }
+
             _moving = false;
             Cursor = Cursors.Default;
         }
@@ -439,6 +460,9 @@ namespace UoFiddler.Plugin.Compare.UserControls
             oldMap?.Dispose();
 
             e.Graphics.DrawImageUnscaledAndClipped(_map, e.ClipRectangle);
+
+            // marked area for the CGI compare
+            DrawSelection(e.Graphics);
         }
 
 
@@ -571,10 +595,18 @@ namespace UoFiddler.Plugin.Compare.UserControls
             }
         }
 
-        private void OnClickLoad(object sender, EventArgs e) => ChangeMap();
+        private void OnClickLoad(object sender, EventArgs e)
+        {
+            if (ConfirmDiscardEdits())
+            {
+                ChangeMap();
+            }
+        }
 
         private void ChangeMap()
         {
+            // the maps are created again: changes in memory of the CGI compare do not fit anymore
+            DiscardEditSessions();
             SetScrollBarValues();
             string path = toolStripTextBox1.Text;
 
@@ -611,54 +643,21 @@ namespace UoFiddler.Plugin.Compare.UserControls
             terMurToolStripMenuItem.Checked = false;
         }
 
-        private void OnClickChangeFelucca(object sender, EventArgs e)
+        private void SwitchOriginalMap(ToolStripMenuItem item, Map map, int mapId)
         {
-            if (feluccaToolStripMenuItem.Checked) { return; }
+            if (item.Checked || !ConfirmDiscardEdits()) { return; }
             ResetCheckedMap();
-            feluccaToolStripMenuItem.Checked = true;
-            _originalMap = Map.Felucca; _currentMapId = 0;
+            item.Checked = true;
+            _originalMap = map; _currentMapId = mapId;
             ChangeMap();
         }
-        private void OnClickChangeTrammel(object sender, EventArgs e)
-        {
-            if (trammelToolStripMenuItem.Checked) { return; }
-            ResetCheckedMap();
-            trammelToolStripMenuItem.Checked = true;
-            _originalMap = Map.Trammel; _currentMapId = 1;
-            ChangeMap();
-        }
-        private void OnClickChangeIlshenar(object sender, EventArgs e)
-        {
-            if (ilshenarToolStripMenuItem.Checked) { return; }
-            ResetCheckedMap();
-            ilshenarToolStripMenuItem.Checked = true;
-            _originalMap = Map.Ilshenar; _currentMapId = 2;
-            ChangeMap();
-        }
-        private void OnClickChangeMalas(object sender, EventArgs e)
-        {
-            if (malasToolStripMenuItem.Checked) { return; }
-            ResetCheckedMap();
-            malasToolStripMenuItem.Checked = true;
-            _originalMap = Map.Malas; _currentMapId = 3;
-            ChangeMap();
-        }
-        private void OnClickChangeTokuno(object sender, EventArgs e)
-        {
-            if (tokunoToolStripMenuItem.Checked) { return; }
-            ResetCheckedMap();
-            tokunoToolStripMenuItem.Checked = true;
-            _originalMap = Map.Tokuno; _currentMapId = 4;
-            ChangeMap();
-        }
-        private void OnClickChangeTerMur(object sender, EventArgs e)
-        {
-            if (terMurToolStripMenuItem.Checked) { return; }
-            ResetCheckedMap();
-            terMurToolStripMenuItem.Checked = true;
-            _originalMap = Map.TerMur; _currentMapId = 5;
-            ChangeMap();
-        }
+
+        private void OnClickChangeFelucca(object sender, EventArgs e) => SwitchOriginalMap(feluccaToolStripMenuItem, Map.Felucca, 0);
+        private void OnClickChangeTrammel(object sender, EventArgs e) => SwitchOriginalMap(trammelToolStripMenuItem, Map.Trammel, 1);
+        private void OnClickChangeIlshenar(object sender, EventArgs e) => SwitchOriginalMap(ilshenarToolStripMenuItem, Map.Ilshenar, 2);
+        private void OnClickChangeMalas(object sender, EventArgs e) => SwitchOriginalMap(malasToolStripMenuItem, Map.Malas, 3);
+        private void OnClickChangeTokuno(object sender, EventArgs e) => SwitchOriginalMap(tokunoToolStripMenuItem, Map.Tokuno, 4);
+        private void OnClickChangeTerMur(object sender, EventArgs e) => SwitchOriginalMap(terMurToolStripMenuItem, Map.TerMur, 5);
 
         private void OnClickShowDiff(object sender, EventArgs e) => pictureBox.Invalidate();
         private void OnClickShowMap2(object sender, EventArgs e)
@@ -723,50 +722,7 @@ namespace UoFiddler.Plugin.Compare.UserControls
                     {
                         for (int y = 0; y < height; y++)
                         {
-                            Tile[] customTiles = curMap.Tiles.GetLandBlock(x, y);
-                            Tile[] origTiles = origMap.Tiles.GetLandBlock(x, y);
-                            HuedTile[][][] customStatics = curMap.Tiles.GetStaticBlock(x, y);
-                            HuedTile[][][] origStatics = origMap.Tiles.GetStaticBlock(x, y);
-
-                            bool blockDiffers = false;
-
-                            for (int xb = 0; xb < 8; xb++)
-                            {
-                                for (int yb = 0; yb < 8; yb++)
-                                {
-                                    int idx = ((yb & 7) << 3) + (xb & 7);
-                                    bool tileDiffers = false;
-
-                                    if (customTiles[idx].Id != origTiles[idx].Id
-                                     || customTiles[idx].Z != origTiles[idx].Z)
-                                    {
-                                        tileDiffers = true;
-                                    }
-                                    else if (customStatics[xb][yb].Length != origStatics[xb][yb].Length)
-                                    {
-                                        tileDiffers = true;
-                                    }
-                                    else
-                                    {
-                                        for (int i = 0; i < customStatics[xb][yb].Length; i++)
-                                        {
-                                            if (customStatics[xb][yb][i].Id != origStatics[xb][yb][i].Id
-                                             || customStatics[xb][yb][i].Z != origStatics[xb][yb][i].Z
-                                             || customStatics[xb][yb][i].Hue != origStatics[xb][yb][i].Hue)
-                                            {
-                                                tileDiffers = true;
-                                                break;
-                                            }
-                                        }
-                                    }
-
-                                    if (tileDiffers)
-                                    {
-                                        tileSet.Add(new Point(x * 8 + xb, y * 8 + yb));
-                                        blockDiffers = true;
-                                    }
-                                }
-                            }
+                            bool blockDiffers = CompareBlock(curMap, origMap, x, y, tileSet);
 
                             if (blockDiffers)
                             {

@@ -62,6 +62,9 @@
 		<Compile Update="UserControls\CompareMapControl.Designer.cs">
 			<DependentUpon>CompareMapControl.cs</DependentUpon>
 		</Compile>
+		<Compile Update="UserControls\CompareMapControl.Cgi.cs">
+			<DependentUpon>CompareMapControl.cs</DependentUpon>
+		</Compile>
 		<Compile Update="UserControls\CompareTextureControl.cs">
 			<SubType>UserControl</SubType>
 		</Compile>

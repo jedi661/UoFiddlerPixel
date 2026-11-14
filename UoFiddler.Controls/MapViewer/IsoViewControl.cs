@@ -178,6 +178,14 @@ namespace UoFiddler.Controls.MapViewer
         public event EventHandler RenderProgress;
         public event EventHandler AreaSelected;
 
+        /// <summary>The visible part changed (moved or zoomed); used to keep two views in sync</summary>
+        public event EventHandler ViewChanged;
+
+        /// <summary>Canvas position of the upper left corner of the control</summary>
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public PointF ViewOffset => _offset;
+
         #endregion
 
         #region View
@@ -191,6 +199,25 @@ namespace UoFiddler.Controls.MapViewer
             _offset = new PointF(canvas.X - (float)(a.X / _zoom), canvas.Y - (float)(a.Y / _zoom));
             ClampOffset();
             ZoomChanged?.Invoke(this, EventArgs.Empty);
+            Invalidate();
+            ViewChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        /// <summary>
+        /// Sets zoom and position directly (e.g. to follow another view). Does not raise <see cref="ViewChanged"/>.
+        /// </summary>
+        public void SetView(double zoom, PointF offset)
+        {
+            zoom = Math.Max(ZoomLevels[0], Math.Min(ZoomLevels[ZoomLevels.Length - 1], zoom));
+            bool zoomChanged = Math.Abs(zoom - _zoom) > 0.00001;
+            _zoom = zoom;
+            _offset = offset;
+            ClampOffset();
+            if (zoomChanged)
+            {
+                ZoomChanged?.Invoke(this, EventArgs.Empty);
+            }
+
             Invalidate();
         }
 
@@ -240,6 +267,7 @@ namespace UoFiddler.Controls.MapViewer
             _offset = new PointF(canvas.X - (float)(ClientSize.Width / 2.0 / _zoom), canvas.Y - (float)(ClientSize.Height / 2.0 / _zoom));
             ClampOffset();
             Invalidate();
+            ViewChanged?.Invoke(this, EventArgs.Empty);
         }
 
         private void ClampOffset()
@@ -698,6 +726,7 @@ namespace UoFiddler.Controls.MapViewer
                     ClampOffset();
                     _lastMouse = e.Location;
                     Invalidate();
+                    ViewChanged?.Invoke(this, EventArgs.Empty);
                     return;
                 }
             }
@@ -852,6 +881,7 @@ namespace UoFiddler.Controls.MapViewer
 
             ClampOffset();
             Invalidate();
+            ViewChanged?.Invoke(this, EventArgs.Empty);
         }
 
         protected override void OnResize(EventArgs e)
