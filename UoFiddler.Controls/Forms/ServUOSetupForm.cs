@@ -152,7 +152,10 @@ namespace UoFiddler.Controls.Forms
             Row(grid, "Animation type:", _cmbType);
 
             _txtHue = Text1("0");
-            Row(grid, "Hue:", _txtHue);
+            _tip.SetToolTip(_txtHue, "Hue number of the game (decimal or 0x..), 0 = no hue");
+            var btnHue = new Button { Text = "Pick…", AutoSize = true };
+            btnHue.Click += (s, e) => PickHue();
+            Row(grid, "Hue:", _txtHue, btnHue);
             _txtSound = Text1("-1");
             _tip.SetToolTip(_txtSound, "BaseSoundID (decimal or 0x..), -1 = none");
             Row(grid, "Sound id:", _txtSound);
@@ -728,6 +731,18 @@ namespace UoFiddler.Controls.Forms
                     SaveServUoPath(dlg.SelectedPath);
                 }
             }
+        }
+
+        /// <summary>Hue selection with the list of the hues tab (the pop up returns the file index, the game hue is index + 1)</summary>
+        private void PickHue()
+        {
+            int current = ParseInt(_txtHue.Text, 0);
+            var popup = new HuePopUpForm(selected =>
+            {
+                int hue = selected < 0 ? 0 : (selected & 0x7FFF) + 1;
+                _txtHue.Text = hue == 0 ? "0" : $"0x{hue:X}";
+            }, Math.Max(0, current - 1));
+            popup.Show(this);
         }
 
         private static string LoadServUoPath()

@@ -151,6 +151,9 @@
 		<Compile Update="UserControls\HuesControl.Designer.cs">
 			<DependentUpon>HuesControl.cs</DependentUpon>
 		</Compile>
+		<Compile Update="UserControls\HuesControl.Extended.cs">
+			<DependentUpon>HuesControl.cs</DependentUpon>
+		</Compile>
 		<Compile Update="Forms\ItemDetailForm.cs">
 			<SubType>Form</SubType>
 		</Compile>
