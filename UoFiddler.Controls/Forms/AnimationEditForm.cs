@@ -228,6 +228,7 @@ namespace UoFiddler.Controls.Forms
             _loaded = false;
 
             InitializeSequenceTab();
+            InitAnimationListIntegration();
         }
 
         private readonly string[][] _animNames =
@@ -1032,7 +1033,7 @@ namespace UoFiddler.Controls.Forms
                     }
                 }
             }
-            Options.ChangedUltimaClass["Animations"] = true;
+            MarkAnimationChanged();
             AnimationPictureBox.Invalidate();
         }
 
@@ -2106,7 +2107,7 @@ namespace UoFiddler.Controls.Forms
                         AnimationListTreeView.SelectedNode.Parent.Remove();
                 }
 
-                Options.ChangedUltimaClass["Animations"] = true;
+                MarkAnimationChanged();
                 AfterSelectTreeView(this, null);
                 return;
             }
@@ -2136,7 +2137,7 @@ namespace UoFiddler.Controls.Forms
                     AnimationListTreeView.SelectedNode.Remove();
                 }
 
-                Options.ChangedUltimaClass["Animations"] = true;
+                MarkAnimationChanged();
                 AfterSelectTreeView(this, null);
             }
             else
@@ -2179,7 +2180,7 @@ namespace UoFiddler.Controls.Forms
                     }
                 }
 
-                Options.ChangedUltimaClass["Animations"] = true;
+                MarkAnimationChanged();
                 AfterSelectTreeView(this, null);
             }
         }
@@ -2189,6 +2190,7 @@ namespace UoFiddler.Controls.Forms
             if (_fileType == 6)
             {
                 SaveUopAnimation();
+                OfferEditedAnimationsForList();
                 return;
             }
 
@@ -2202,6 +2204,7 @@ namespace UoFiddler.Controls.Forms
 
             MessageBox.Show($"AnimationFile saved to {Options.OutputPath}", "Saved", MessageBoxButtons.OK,
                 MessageBoxIcon.Information, MessageBoxDefaultButton.Button1);
+            OfferEditedAnimationsForList();
         }
 
         //My Soulblighter Modification
@@ -2238,7 +2241,7 @@ namespace UoFiddler.Controls.Forms
                 FramesListView.Items.RemoveAt(FramesListView.Items.Count - 1);
                 FramesTrackBar.Maximum = edit.Frames.Count != 0 ? edit.Frames.Count - 1 : 0;
                 FramesListView.Invalidate();
-                Options.ChangedUltimaClass["Animations"] = true;
+                MarkAnimationChanged();
             }
         }
         //End of Soulblighter Modification
@@ -2290,7 +2293,7 @@ namespace UoFiddler.Controls.Forms
                             uopAnim.IsModified = true;
 
                             FramesListView.Invalidate();
-                            Options.ChangedUltimaClass["Animations"] = true;
+                            MarkAnimationChanged();
                         }
                     }
                     else
@@ -2312,7 +2315,7 @@ namespace UoFiddler.Controls.Forms
 
                         FramesListView.Invalidate();
 
-                        Options.ChangedUltimaClass["Animations"] = true;
+                        MarkAnimationChanged();
                     }
                 }
             }
@@ -2397,7 +2400,7 @@ namespace UoFiddler.Controls.Forms
                                         }
                                         _updatingUi = false;
 
-                                        Options.ChangedUltimaClass["Animations"] = true;
+                                        MarkAnimationChanged();
                                     }
                                     //End of Soulblighter Modifications
                                     else
@@ -2447,7 +2450,7 @@ namespace UoFiddler.Controls.Forms
                                         }
                                         _updatingUi = false;
 
-                                        Options.ChangedUltimaClass["Animations"] = true;
+                                        MarkAnimationChanged();
                                     }
                                 }
                             }
@@ -2503,7 +2506,7 @@ namespace UoFiddler.Controls.Forms
 
                 FramesListView.TileSize = new Size(width + 5, height + 5);
                 FramesTrackBar.Maximum = i;
-                Options.ChangedUltimaClass["Animations"] = true;
+                MarkAnimationChanged();
                 if (ProgressBar.Value < ProgressBar.Maximum)
                 {
                     ProgressBar.Value++;
@@ -2604,7 +2607,7 @@ namespace UoFiddler.Controls.Forms
 
                 FramesListView.Invalidate();
 
-                Options.ChangedUltimaClass["Animations"] = true;
+                MarkAnimationChanged();
             }
         }
 
@@ -2670,7 +2673,7 @@ namespace UoFiddler.Controls.Forms
 
                             _uopManager.ClearCache();
                             LoadUopAnimations();
-                            Options.ChangedUltimaClass["Animations"] = true;
+                            MarkAnimationChanged();
                         }
                     }
                     catch (Exception ex)
@@ -2788,7 +2791,7 @@ namespace UoFiddler.Controls.Forms
 
                 toolStripStatusLabelVDAminInfo.Text += $" - Successfully imported into slot {_currentBody}";
 
-                Options.ChangedUltimaClass["Animations"] = true;
+                MarkAnimationChanged();
                 AfterSelectTreeView(this, null);
 
                 MessageBox.Show("Successfully imported animation to the slot", "Import",
@@ -3474,7 +3477,7 @@ namespace UoFiddler.Controls.Forms
                             }
                         }
                     }
-                    Options.ChangedUltimaClass["Animations"] = true;
+                    MarkAnimationChanged();
                     AnimationPictureBox.Invalidate();
                     return;
                 }
@@ -3486,7 +3489,7 @@ namespace UoFiddler.Controls.Forms
                     int newCenterY = (int)CenterYNumericUpDown.Value;
 
                     UpdateUopData(newCenterX: newCenterX, newCenterY: newCenterY, applyToAllFrames: true);
-                    Options.ChangedUltimaClass["Animations"] = true;
+                    MarkAnimationChanged();
                     AnimationPictureBox.Invalidate();
                     return;
                 }
@@ -3502,7 +3505,7 @@ namespace UoFiddler.Controls.Forms
                 {
                     frame[index] = edit2.Frames[index];
                     frame[index].ChangeCenter((int)CenterXNumericUpDown.Value, (int)CenterYNumericUpDown.Value);
-                    Options.ChangedUltimaClass["Animations"] = true;
+                    MarkAnimationChanged();
                     AnimationPictureBox.Invalidate();
                 }
             }
@@ -3547,7 +3550,7 @@ namespace UoFiddler.Controls.Forms
                 UpdateGifPalette(bit, edit);
                 SetPaletteBox();
                 FramesListView.Invalidate();
-                Options.ChangedUltimaClass["Animations"] = true;
+                MarkAnimationChanged();
             }
         }
 
@@ -4321,7 +4324,7 @@ namespace UoFiddler.Controls.Forms
             ProgressBar.Value = 0;
             ProgressBar.Invalidate();
             FramesListView.Invalidate();
-            Options.ChangedUltimaClass["Animations"] = true;
+            MarkAnimationChanged();
         }
 
         private void ApplyTransparency(Bitmap bmp, Color keyColor)
@@ -4712,7 +4715,7 @@ namespace UoFiddler.Controls.Forms
 
                 FramesListView.TileSize = new Size(width + 5, height + 5);
                 FramesTrackBar.Maximum = i;
-                Options.ChangedUltimaClass["Animations"] = true;
+                MarkAnimationChanged();
                 if (ProgressBar.Value < ProgressBar.Maximum)
                 {
                     ProgressBar.Value++;
@@ -4738,7 +4741,7 @@ namespace UoFiddler.Controls.Forms
             }
             _updatingUi = false;
 
-            Options.ChangedUltimaClass["Animations"] = true;
+            MarkAnimationChanged();
         }
 
         //Add with Canvas
@@ -4818,7 +4821,7 @@ namespace UoFiddler.Controls.Forms
                     }
                     SetPaletteBox();
                     FramesListView.Invalidate();
-                    Options.ChangedUltimaClass["Animations"] = true;
+                    MarkAnimationChanged();
                     SetPaletteBox();
                 }
             }
@@ -4977,7 +4980,7 @@ namespace UoFiddler.Controls.Forms
                         }
 
                         uopAnim.IsModified = true;
-                        Options.ChangedUltimaClass["Animations"] = true;
+                        MarkAnimationChanged();
                         AnimationPictureBox.Invalidate();
                     }
                     else
@@ -4992,7 +4995,7 @@ namespace UoFiddler.Controls.Forms
                             editFrame.ChangeCenter(_animCx[i], _animCy[i]);
                         }
 
-                        Options.ChangedUltimaClass["Animations"] = true;
+                        MarkAnimationChanged();
                         AnimationPictureBox.Invalidate();
                     }
                 }
@@ -5348,7 +5351,7 @@ namespace UoFiddler.Controls.Forms
                                         CenterXNumericUpDown.Value = edit.Frames[FramesTrackBar.Value].Center.X;
                                         CenterYNumericUpDown.Value = edit.Frames[FramesTrackBar.Value].Center.Y;
 
-                                        Options.ChangedUltimaClass["Animations"] = true;
+                                        MarkAnimationChanged();
                                     }
                                 }
                             }
@@ -5405,7 +5408,7 @@ namespace UoFiddler.Controls.Forms
 
                 FramesListView.TileSize = new Size(width + 5, height + 5);
                 FramesTrackBar.Maximum = i;
-                Options.ChangedUltimaClass["Animations"] = true;
+                MarkAnimationChanged();
                 if (ProgressBar.Value < ProgressBar.Maximum)
                 {
                     ProgressBar.Value++;
@@ -5455,7 +5458,7 @@ namespace UoFiddler.Controls.Forms
 
                 FramesListView.TileSize = new Size(width + 5, height + 5);
                 FramesTrackBar.Maximum = i;
-                Options.ChangedUltimaClass["Animations"] = true;
+                MarkAnimationChanged();
                 if (ProgressBar.Value < ProgressBar.Maximum)
                 {
                     ProgressBar.Value++;
@@ -5505,7 +5508,7 @@ namespace UoFiddler.Controls.Forms
 
                 FramesListView.TileSize = new Size(width + 5, height + 5);
                 FramesTrackBar.Maximum = i;
-                Options.ChangedUltimaClass["Animations"] = true;
+                MarkAnimationChanged();
                 if (ProgressBar.Value < ProgressBar.Maximum)
                 {
                     ProgressBar.Value++;
@@ -5555,7 +5558,7 @@ namespace UoFiddler.Controls.Forms
 
                 FramesListView.TileSize = new Size(width + 5, height + 5);
                 FramesTrackBar.Maximum = i;
-                Options.ChangedUltimaClass["Animations"] = true;
+                MarkAnimationChanged();
                 if (ProgressBar.Value < ProgressBar.Maximum)
                 {
                     ProgressBar.Value++;
@@ -5605,7 +5608,7 @@ namespace UoFiddler.Controls.Forms
 
                 FramesListView.TileSize = new Size(width + 5, height + 5);
                 FramesTrackBar.Maximum = i;
-                Options.ChangedUltimaClass["Animations"] = true;
+                MarkAnimationChanged();
                 if (ProgressBar.Value < ProgressBar.Maximum)
                 {
                     ProgressBar.Value++;
@@ -6067,7 +6070,7 @@ namespace UoFiddler.Controls.Forms
 
                 FramesListView.TileSize = new Size(width + 5, height + 5);
                 FramesTrackBar.Maximum = i;
-                Options.ChangedUltimaClass["Animations"] = true;
+                MarkAnimationChanged();
                 if (ProgressBar.Value < ProgressBar.Maximum)
                 {
                     ProgressBar.Value++;
@@ -6117,7 +6120,7 @@ namespace UoFiddler.Controls.Forms
 
                 FramesListView.TileSize = new Size(width + 5, height + 5);
                 FramesTrackBar.Maximum = i;
-                Options.ChangedUltimaClass["Animations"] = true;
+                MarkAnimationChanged();
                 if (ProgressBar.Value < ProgressBar.Maximum)
                 {
                     ProgressBar.Value++;
@@ -6167,7 +6170,7 @@ namespace UoFiddler.Controls.Forms
 
                 FramesListView.TileSize = new Size(width + 5, height + 5);
                 FramesTrackBar.Maximum = i;
-                Options.ChangedUltimaClass["Animations"] = true;
+                MarkAnimationChanged();
                 if (ProgressBar.Value < ProgressBar.Maximum)
                 {
                     ProgressBar.Value++;
@@ -6217,7 +6220,7 @@ namespace UoFiddler.Controls.Forms
 
                 FramesListView.TileSize = new Size(width + 5, height + 5);
                 FramesTrackBar.Maximum = i;
-                Options.ChangedUltimaClass["Animations"] = true;
+                MarkAnimationChanged();
                 if (ProgressBar.Value < ProgressBar.Maximum)
                 {
                     ProgressBar.Value++;
@@ -6267,7 +6270,7 @@ namespace UoFiddler.Controls.Forms
 
                 FramesListView.TileSize = new Size(width + 5, height + 5);
                 FramesTrackBar.Maximum = i;
-                Options.ChangedUltimaClass["Animations"] = true;
+                MarkAnimationChanged();
                 if (ProgressBar.Value < ProgressBar.Maximum)
                 {
                     ProgressBar.Value++;
@@ -6713,7 +6716,7 @@ namespace UoFiddler.Controls.Forms
 
                 SetPaletteBox();
                 FramesListView.Invalidate();
-                Options.ChangedUltimaClass["Animations"] = true;
+                MarkAnimationChanged();
                 SetPaletteBox();
                 if (DirectionTrackBar.Value != DirectionTrackBar.Maximum)
                 {
@@ -6767,7 +6770,7 @@ namespace UoFiddler.Controls.Forms
                 PaletteReducer((int)numericUpDown6.Value, (int)numericUpDown7.Value, (int)numericUpDown8.Value, edit);
                 SetPaletteBox();
                 FramesListView.Invalidate();
-                Options.ChangedUltimaClass["Animations"] = true;
+                MarkAnimationChanged();
                 SetPaletteBox();
                 if (DirectionTrackBar.Value != DirectionTrackBar.Maximum)
                 {
@@ -6788,7 +6791,7 @@ namespace UoFiddler.Controls.Forms
                 PaletteConverter(selector, edit);
                 SetPaletteBox();
                 FramesListView.Invalidate();
-                Options.ChangedUltimaClass["Animations"] = true;
+                MarkAnimationChanged();
                 SetPaletteBox();
                 if (DirectionTrackBar.Value != DirectionTrackBar.Maximum)
                 {
@@ -7485,7 +7488,7 @@ namespace UoFiddler.Controls.Forms
                                     "Save Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                                 _uopManager.ClearCache();
                                 LoadUopAnimations();
-                                Options.ChangedUltimaClass["Animations"] = true;
+                                MarkAnimationChanged();
                             }
 
                             if (lastBody != -1)
@@ -7541,7 +7544,7 @@ namespace UoFiddler.Controls.Forms
 
                 if (successCount > 0)
                 {
-                    Options.ChangedUltimaClass["Animations"] = true;
+                    MarkAnimationChanged();
                     LoadMulAnimations();
 
                     if (lastBody != -1)
@@ -7717,7 +7720,7 @@ namespace UoFiddler.Controls.Forms
                                 MessageBox.Show("❌ Import successful but save failed. Check logs.",
                                     "Save Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                                 LoadUopAnimations();
-                                Options.ChangedUltimaClass["Animations"] = true;
+                                MarkAnimationChanged();
                             }
 
                             if (lastBody != -1)
@@ -7778,7 +7781,7 @@ namespace UoFiddler.Controls.Forms
 
                 if (successCount > 0)
                 {
-                    Options.ChangedUltimaClass["Animations"] = true;
+                    MarkAnimationChanged();
                     LoadMulAnimations();
 
                     if (lastBody != -1)
@@ -7984,7 +7987,7 @@ namespace UoFiddler.Controls.Forms
             // STEP 2: Update the directory tree WITHOUT clearing the cache
             if (_fileType == 6) // UOP
             {
-                Options.ChangedUltimaClass["Animations"] = true;
+                MarkAnimationChanged();
 
                 // NO LoadUopAnimations() here! We're just updating the nodes manually.
                 AnimationListTreeView.BeginUpdate();
@@ -8217,7 +8220,7 @@ namespace UoFiddler.Controls.Forms
                 FramesListView.Items[frameIndex].ImageIndex = frameIndex;
                 FramesListView.Invalidate();
 
-                Options.ChangedUltimaClass["Animations"] = true;
+                MarkAnimationChanged();
 
                 MessageBox.Show("Frame image imported from clipboard");
             }
@@ -8276,7 +8279,7 @@ namespace UoFiddler.Controls.Forms
                 FramesListView.Items[frameIndex].Selected = true;
                 FramesListView.Select();
 
-                Options.ChangedUltimaClass["Animations"] = true;
+                MarkAnimationChanged();
 
                 MessageBox.Show("Frame mirrored");
             }
@@ -8306,7 +8309,7 @@ namespace UoFiddler.Controls.Forms
                 FramesListView.Invalidate();
             }
             // Mark change
-            Options.ChangedUltimaClass["Animations"] = true;
+            MarkAnimationChanged();
         }
         #endregion
 
@@ -8490,6 +8493,7 @@ namespace UoFiddler.Controls.Forms
 
             MessageBox.Show($"AnimationFile saved to {Options.OutputPath}", "Saved", MessageBoxButtons.OK,
                 MessageBoxIcon.Information, MessageBoxDefaultButton.Button1);
+            OfferEditedAnimationsForList();
         }
         #endregion
 

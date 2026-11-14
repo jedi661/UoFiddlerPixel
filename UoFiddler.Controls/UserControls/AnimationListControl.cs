@@ -35,10 +35,14 @@ namespace UoFiddler.Controls.UserControls
             InitializeComponent();
 
             SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer | ControlStyles.UserPaint, true);
+            InitAnimationListExtensions();
         }
 
         #region [ GetActionNames ]
-        public string[][] GetActionNames { get; } = {
+        public string[][] GetActionNames => ActionNames;
+
+        /// <summary>Action names per type (0 Monster, 1 Sea, 2 Animal, 3 Human/Equipment) – also used by other windows</summary>
+        public static readonly string[][] ActionNames = {
             // Monster
             new[]
             {
@@ -262,48 +266,31 @@ namespace UoFiddler.Controls.UserControls
         /// <param name="name"></param>
         public void AddGraphic(int graphic, int type, string name)
         {
-            TreeViewMobs.BeginUpdate();
-            TreeViewMobs.TreeViewNodeSorter = null;
-            TreeNode nodeParent = new TreeNode(name)
+            var entry = new AnimationListEntry
             {
-                Tag = new[] { graphic, type },
-                ToolTipText = Animations.GetFileName(graphic)
+                Body = graphic,
+                IsEquipment = type == 4,
+                Type = AnimationListStore.NormalizeType(type),
+                Name = AnimationListStore.CleanName(name)
             };
 
-            if (type == 4)
+            AddEntryNode(entry, true);
+
+            // the entry is written into Animationlist.xml at once (before, it was lost unless "Rewrite xml" was used)
+            try
             {
-                TreeViewMobs.Nodes[1].Nodes.Add(nodeParent);
-                type = 3;
+                _suppressStoreEvent = true;
+                AnimationListStore.AddOrUpdate(entry);
             }
-            else
+            catch (Exception ex)
             {
-                TreeViewMobs.Nodes[0].Nodes.Add(nodeParent);
+                MessageBox.Show($"The entry could not be saved in {AnimationListStore.FilePath}:\n{ex.Message}", "Animation list",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
-
-            for (int i = 0; i < GetActionNames[type].GetLength(0); ++i)
+            finally
             {
-                if (!Animations.IsActionDefined(graphic, i, 0))
-                {
-                    continue;
-                }
-
-                TreeNode node = new TreeNode($"{i} {GetActionNames[type][i]}")
-                {
-                    Tag = i
-                };
-
-                nodeParent.Nodes.Add(node);
+                _suppressStoreEvent = false;
             }
-
-            TreeViewMobs.TreeViewNodeSorter = !_sortAlpha
-                ? new GraphicSorter()
-                : (IComparer)new AlphaSorter();
-
-            TreeViewMobs.Sort();
-            TreeViewMobs.EndUpdate();
-            LoadListView();
-            TreeViewMobs.SelectedNode = nodeParent;
-            nodeParent.EnsureVisible();
         }
         #endregion
 
@@ -624,9 +611,13 @@ namespace UoFiddler.Controls.UserControls
                 }
 
                 XmlElement xMobs = dom["Graphics"];
+                if (xMobs == null)
+                {
+                    MessageBox.Show("Animationlist.xml has no <Graphics> element.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return false;
+                }
+
                 List<TreeNode> nodes = new List<TreeNode>();
-                TreeNode node;
-                TreeNode typeNode;
 
                 TreeNode rootNode = new TreeNode("Mobs")
                 {
@@ -637,28 +628,9 @@ namespace UoFiddler.Controls.UserControls
 
                 foreach (XmlElement xMob in xMobs.SelectNodes("Mob"))
                 {
-                    string name = xMob.GetAttribute("name");
-                    int value = int.Parse(xMob.GetAttribute("body"));
-                    int type = int.Parse(xMob.GetAttribute("type"));
-                    node = new TreeNode($"{name} (0x{value:X})")
+                    if (TryReadEntry(xMob, false, out AnimationListEntry entry))
                     {
-                        Tag = new[] { value, type },
-                        ToolTipText = Animations.GetFileName(value)
-                    };
-                    rootNode.Nodes.Add(node);
-
-                    for (int i = 0; i < GetActionNames[type].GetLength(0); ++i)
-                    {
-                        if (!Animations.IsActionDefined(value, i, 0))
-                        {
-                            continue;
-                        }
-
-                        typeNode = new TreeNode($"{i} {GetActionNames[type][i]}")
-                        {
-                            Tag = i
-                        };
-                        node.Nodes.Add(typeNode);
+                        rootNode.Nodes.Add(CreateEntryNode(entry));
                     }
                 }
 
@@ -671,28 +643,9 @@ namespace UoFiddler.Controls.UserControls
 
                 foreach (XmlElement xMob in xMobs.SelectNodes("Equip"))
                 {
-                    string name = xMob.GetAttribute("name");
-                    int value = int.Parse(xMob.GetAttribute("body"));
-                    int type = int.Parse(xMob.GetAttribute("type"));
-                    node = new TreeNode(name)
+                    if (TryReadEntry(xMob, true, out AnimationListEntry entry))
                     {
-                        Tag = new[] { value, type },
-                        ToolTipText = Animations.GetFileName(value)
-                    };
-                    rootNode.Nodes.Add(node);
-
-                    for (int i = 0; i < GetActionNames[type].GetLength(0); ++i)
-                    {
-                        if (!Animations.IsActionDefined(value, i, 0))
-                        {
-                            continue;
-                        }
-
-                        typeNode = new TreeNode($"{i} {GetActionNames[type][i]}")
-                        {
-                            Tag = i
-                        };
-                        node.Nodes.Add(typeNode);
+                        rootNode.Nodes.Add(CreateEntryNode(entry));
                     }
                 }
                 TreeViewMobs.Nodes.AddRange(nodes.ToArray());
@@ -953,8 +906,32 @@ namespace UoFiddler.Controls.UserControls
                 node = node.Parent;
             }
 
+            int body = ((int[])node.Tag)[0];
+            bool equipment = node.Parent.Name == "Equipment";
+            if (MessageBox.Show($"Remove \"{EntryName(node)}\" ({body}) from the animation list?\n\n" +
+                                "The entry is also removed from Animationlist.xml (backup: Animationlist.xml.bak).\n" +
+                                "The animation files are not changed.",
+                    "Remove", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
+            {
+                return;
+            }
+
             node.Remove();
             LoadListView();
+
+            try
+            {
+                _suppressStoreEvent = true;
+                AnimationListStore.Remove(body, equipment);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Animationlist.xml could not be written:\n{ex.Message}", "Remove", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+            finally
+            {
+                _suppressStoreEvent = false;
+            }
         }
         #endregion
 
@@ -1023,7 +1000,7 @@ namespace UoFiddler.Controls.UserControls
             foreach (TreeNode node in TreeViewMobs.Nodes[0].Nodes)
             {
                 elem = dom.CreateElement("Mob");
-                elem.SetAttribute("name", node.Text);
+                elem.SetAttribute("name", EntryName(node)); // without the " (0x..)" of the tree (was added again on every save)
                 elem.SetAttribute("body", ((int[])node.Tag)[0].ToString());
                 elem.SetAttribute("type", ((int[])node.Tag)[1].ToString());
 
@@ -1033,7 +1010,7 @@ namespace UoFiddler.Controls.UserControls
             foreach (TreeNode node in TreeViewMobs.Nodes[1].Nodes)
             {
                 elem = dom.CreateElement("Equip");
-                elem.SetAttribute("name", node.Text);
+                elem.SetAttribute("name", EntryName(node));
                 elem.SetAttribute("body", ((int[])node.Tag)[0].ToString());
                 elem.SetAttribute("type", ((int[])node.Tag)[1].ToString());
                 sr.AppendChild(elem);
@@ -1093,7 +1070,7 @@ namespace UoFiddler.Controls.UserControls
             XmlElement elem;
             foreach (TreeNode node in TreeViewMobs.Nodes[0].Nodes)
             {
-                string nodeNameCleaned = CleanNodeName(node.Text);
+                string nodeNameCleaned = CleanNodeName(EntryName(node));
                 int nodeId = ((int[])node.Tag)[0]; // Assuming the ID is stored in the first element of the node.Tag array
                 elem = dom.CreateElement("Mob");
                 elem.SetAttribute("name", $"{nodeNameCleaned}");
@@ -1105,10 +1082,11 @@ namespace UoFiddler.Controls.UserControls
 
             foreach (TreeNode node in TreeViewMobs.Nodes[1].Nodes)
             {
-                string nodeNameCleaned = CleanNodeName(node.Text);
+                string nodeNameCleaned = CleanNodeName(EntryName(node));
                 int nodeId = ((int[])node.Tag)[0]; // Assuming the ID is stored in the first element of the node.Tag array
                 elem = dom.CreateElement("Equip");
-                elem.SetAttribute("name", $"{nodeNameCleaned} ({nodeId})");
+                // append the id only once (before: " (id)" was added again on every rewrite)
+                elem.SetAttribute("name", nodeNameCleaned.EndsWith($"({nodeId})") ? nodeNameCleaned : $"{nodeNameCleaned} ({nodeId})");
                 elem.SetAttribute("body", nodeId.ToString());
                 elem.SetAttribute("type", ((int[])node.Tag)[1].ToString());
                 sr.AppendChild(elem);
@@ -1661,6 +1639,7 @@ namespace UoFiddler.Controls.UserControls
                 // ── Open step-by-step form ─────────────────────
                 var form = new AnimationListMissingForm(missing, dom, root, sourcePath);
                 form.ShowDialog(this);
+                ReloadList(); // the entries may have been saved into the active list
             }
             else
             {
@@ -1692,6 +1671,7 @@ namespace UoFiddler.Controls.UserControls
                     if (dlg.ShowDialog() == DialogResult.OK)
                     {
                         dom.Save(dlg.FileName);
+                        ReloadList();
                         MessageBox.Show(
                             $"Saved: {mobCount}x <Mob>  +  {equipCount}x <Equip>\n\n{dlg.FileName}",
                             "Saved", MessageBoxButtons.OK, MessageBoxIcon.Information);
