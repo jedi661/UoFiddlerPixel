@@ -6,6 +6,22 @@ UOFiddler based on Ultima SDK it's a tool to view and alter almost every UO 2D c
 This is an extended version of UoFiddler that has more maps and more tools, as well as Map Edit, and will be expanded over time to support the Ultima standard 
 version more than the original version. Also, some source codes from older and New projects that are no longer supported have been integrated.
 
+Version 4.12.27
+
+What's New
+
+- AnimationList tab (right-click in the list or Settings menu)
+- Add animation…: Enter the Body ID; an animated preview with action and direction appears. A name and type are suggested; "Free id" searches for an unused ID. The entry is immediately saved to Animationlist.xml; a .bak file is created beforehand.
+- Rename / change type… modifies an existing entry.
+- ServUO script & setup… opens the new ServUO window (see below).
+- Reload list reloads the list.
+- Remove now permanently removes the entry from the XML after confirmation. Previously, it was only removed until the next load.
+- AnimationEditForm
+- This window remembers which animations you have changed in the session.
+- After saving (mul and UOP), you are offered the option to add the changed animations that are not yet in the list. The Add dialog then displays them on the left as a list for review.
+- New menu items in the "Misc" menu and in the tree's right-click menu: "Add to animation list…", "Edited animations → animation list…", and "ServUO script & setup…".
+- If an animation in anim2–5 doesn't yet have a Bodyconv.def entry, this will be detected. You then select the body ID, and the corresponding Bodyconv line will be generated.
+
 Version 4.12.26
 
 Visual designer for **ServUO / RunUO / ModernUO gumps** inside UoFiddlerPixel.
