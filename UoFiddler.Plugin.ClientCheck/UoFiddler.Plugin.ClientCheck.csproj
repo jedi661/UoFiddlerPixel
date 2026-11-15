@@ -1,0 +1,61 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<AssemblyName>ClientCheckPlugin</AssemblyName>
+		<TargetFramework>net8.0-windows7.0</TargetFramework>
+		<UseWindowsForms>true</UseWindowsForms>
+		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+		<AssemblyTitle>ClientCheckPlugin</AssemblyTitle>
+		<Product>ClientCheckPlugin</Product>
+		<Copyright>Copyright © 2026</Copyright>
+		<AssemblyVersion>1.0.0.0</AssemblyVersion>
+		<FileVersion>1.0.0.0</FileVersion>
+	</PropertyGroup>
+	<PropertyGroup>
+		<EnableNETAnalyzers>true</EnableNETAnalyzers>
+	</PropertyGroup>
+	<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+		<DebugType>portable</DebugType>
+		<OutputPath>..\UoFiddler\bin\$(Configuration)\plugins\</OutputPath>
+	</PropertyGroup>
+	<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+		<DebugType>none</DebugType>
+		<OutputPath>..\UoFiddler\bin\$(Configuration)\plugins\</OutputPath>
+		<GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
+	</PropertyGroup>
+	<ItemGroup>
+		<PackageReference Include="Microsoft.Web.WebView2" Version="1.0.3800.47" />
+		<PackageReference Include="Serilog" Version="4.3.1" />
+		<PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
+		<PackageReference Include="System.Drawing.Common" Version="10.0.5" />
+		<PackageReference Include="System.Resources.Extensions" Version="10.0.5" />
+		<PackageReference Include="System.Text.Json" Version="10.0.5" />
+	</ItemGroup>
+	<ItemGroup>
+		<Compile Update="UserControls\ClientCheckControl.cs">
+			<SubType>UserControl</SubType>
+		</Compile>
+		<Compile Update="Forms\ClientCheckHelpForm.cs">
+			<SubType>Form</SubType>
+		</Compile>
+	</ItemGroup>
+	<ItemGroup>
+		<!-- help texts: shown in the help window and copied next to the plugin (plugins\ClientCheckHelp\) -->
+		<EmbeddedResource Include="Help\ClientCheck_Help.de.md" LogicalName="ClientCheck.Help.de.md" WithCulture="false" />
+		<EmbeddedResource Include="Help\ClientCheck_Help.en.md" LogicalName="ClientCheck.Help.en.md" WithCulture="false" />
+		<EmbeddedResource Include="Help\ClientCheck_Help.fr.md" LogicalName="ClientCheck.Help.fr.md" WithCulture="false" />
+		<None Update="Help\*.md">
+			<Link>ClientCheckHelp\%(Filename)%(Extension)</Link>
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\Ultima\Ultima.csproj">
+			<Private>false</Private>
+			<ExcludeAssets>runtime</ExcludeAssets>
+		</ProjectReference>
+		<ProjectReference Include="..\UoFiddler.Controls\UoFiddler.Controls.csproj">
+			<Private>false</Private>
+			<ExcludeAssets>runtime</ExcludeAssets>
+		</ProjectReference>
+	</ItemGroup>
+</Project>
