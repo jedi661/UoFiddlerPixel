@@ -259,8 +259,13 @@ namespace UoFiddler.Plugin.Compare.UserControls
             ControlEvents.HueChangeEvent += OnHueChangeEvent;
             ControlEvents.FilePathChangeEvent += OnFilePathChangeEvent;
             HueHistory.Main.Changed += OnHistoryChanged;
+            HueUsageIndex.Built += OnUsageBuilt;
             _loaded = true;
             Recompute();
+            if (!HueUsageIndex.IsBuilt && !HueUsageIndex.IsBuilding)
+            {
+                HueUsageIndex.BuildAsync();
+            }
         }
 
         private void DisposeExtras()
@@ -270,6 +275,7 @@ namespace UoFiddler.Plugin.Compare.UserControls
                 ControlEvents.HueChangeEvent -= OnHueChangeEvent;
                 ControlEvents.FilePathChangeEvent -= OnFilePathChangeEvent;
                 HueHistory.Main.Changed -= OnHistoryChanged;
+                HueUsageIndex.Built -= OnUsageBuilt;
             }
 
             _tip.Dispose();
@@ -292,6 +298,14 @@ namespace UoFiddler.Plugin.Compare.UserControls
         }
 
         private void OnHistoryChanged(object sender, EventArgs e) => UpdateUndoButtons();
+
+        private void OnUsageBuilt(object sender, EventArgs e)
+        {
+            if (!IsDisposed && IsHandleCreated)
+            {
+                BeginInvoke(new Action(UpdateDetail));
+            }
+        }
 
         private void BrowseFolder()
         {
@@ -794,9 +808,30 @@ namespace UoFiddler.Plugin.Compare.UserControls
                 sb.AppendLine($"({SelectedIndices.Count} hues selected)");
             }
 
+            // what the hue is used for in the loaded client files (statics of the maps, body/corpse/gump/equipconv.def)
+            HueUsageEntry first = null;
+            if (HueUsageIndex.IsBuilt)
+            {
+                IReadOnlyList<HueUsageEntry> usage = HueUsageIndex.Get(_selected);
+                first = usage.FirstOrDefault();
+                sb.AppendLine(usage.Count == 0 ? "Used: not in the client files" : $"Used ({usage.Count}): {usage[0].Text}" + (usage.Count > 1 ? " …" : string.Empty));
+            }
+            else
+            {
+                sb.AppendLine(HueUsageIndex.IsBuilding ? "Used: scanning …" : string.Empty);
+            }
+
             _detailText.Text = sb.ToString();
             _detail.Invalidate();
             _preview.SetHues(a.Colors, b?.Colors, $"Hues 1 – {number}", b == null ? null : $"Hues 2 – {number}");
+            if (first != null)
+            {
+                _preview.ShowGraphic(first.PreviewKind, first.PreviewId);
+            }
+            else
+            {
+                _preview.ShowOwnGraphic();
+            }
         }
 
         private static string DescribeKind(DiffKind d)

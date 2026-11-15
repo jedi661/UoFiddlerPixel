@@ -16,6 +16,7 @@ using System.Drawing.Drawing2D;
 using System.Globalization;
 using System.Windows.Forms;
 using Ultima;
+using UoFiddler.Controls.Classes;
 
 namespace UoFiddler.Controls.UserControls
 {
@@ -28,7 +29,7 @@ namespace UoFiddler.Controls.UserControls
             Gump
         }
 
-        // settings are shared by all previews (hues tab, compare, dialogs)
+        // the own test graphic: shared by all previews (hues tab, compare, dialogs)
         private static Source _source = Source.Item;
         private static int _itemId = 0x1F03;
         private static int _animId = 0x190;
@@ -44,6 +45,7 @@ namespace UoFiddler.Controls.UserControls
         private readonly CheckBox _chkAnimate;
         private readonly NumericUpDown _numDir;
         private readonly CheckBox _chkDark;
+        private readonly LinkLabel _lnkOwn;
         private readonly PictureBox _box;
         private readonly Timer _timer = new Timer { Interval = 150 };
 
@@ -56,6 +58,12 @@ namespace UoFiddler.Controls.UserControls
         private ushort[] _secondColors;
         private bool _loading;
 
+        // what is shown now: the own test graphic or a graphic chosen by the program (e.g. the usage of a hue)
+        private Source _curSource;
+        private int _curId;
+        private bool _overridden;
+        private bool _effectivePartial;
+
         public HuePreviewPanel()
         {
             var bar = new FlowLayoutPanel { Dock = DockStyle.Top, AutoSize = true, WrapContents = true, Padding = new Padding(0, 2, 0, 2) };
@@ -67,16 +75,18 @@ namespace UoFiddler.Controls.UserControls
             _chkAnimate = new CheckBox { Text = "Animate", AutoSize = true, Margin = new Padding(3, 5, 3, 0) };
             _numDir = new NumericUpDown { Minimum = 0, Maximum = 7, Width = 38 };
             _chkDark = new CheckBox { Text = "Dark", AutoSize = true, Margin = new Padding(3, 5, 3, 0) };
+            _lnkOwn = new LinkLabel { Text = "← own test graphic", AutoSize = true, Margin = new Padding(6, 6, 3, 0), Visible = false };
+            _lnkOwn.LinkClicked += (s, e) => ShowOwnGraphic();
 
             var tip = new ToolTip();
             tip.SetToolTip(_txtId, "Id (decimal or 0x..), Enter = show");
-            tip.SetToolTip(_chkPartial, "Only grey pixels are coloured (like items with the \"partial hue\" flag)");
+            tip.SetToolTip(_chkPartial, "Only grey pixels are coloured. Items: taken from the tiledata flag \"PartialHue\" (as in the game).");
             tip.SetToolTip(_numDir, "Direction of the animation");
 
             bar.Controls.AddRange(new Control[]
             {
                 _cmbSource, _txtId, _chkPartial, _chkAnimate,
-                new Label { Text = "Dir", AutoSize = true, Margin = new Padding(3, 6, 0, 0) }, _numDir, _chkDark
+                new Label { Text = "Dir", AutoSize = true, Margin = new Padding(3, 6, 0, 0) }, _numDir, _chkDark, _lnkOwn
             });
 
             _box = new PictureBox { Dock = DockStyle.Fill };
@@ -86,13 +96,15 @@ namespace UoFiddler.Controls.UserControls
             Controls.Add(_box);
             Controls.Add(bar);
 
+            _curSource = _source;
+            _curId = UserId(_source);
             _loading = true;
             _cmbSource.SelectedIndex = (int)_source;
             _chkPartial.Checked = _partial;
             _chkAnimate.Checked = _animate;
             _numDir.Value = _direction;
             _chkDark.Checked = _darkBack;
-            _txtId.Text = $"0x{CurrentId:X}";
+            _txtId.Text = $"0x{_curId:X}";
             _loading = false;
 
             _cmbSource.SelectedIndexChanged += (s, e) =>
@@ -102,8 +114,12 @@ namespace UoFiddler.Controls.UserControls
                     return;
                 }
 
+                // the user chooses: this becomes the own test graphic again
                 _source = (Source)_cmbSource.SelectedIndex;
-                _txtId.Text = $"0x{CurrentId:X}";
+                _overridden = false;
+                _curSource = _source;
+                _curId = UserId(_source);
+                _txtId.Text = $"0x{_curId:X}";
                 LoadSource();
             };
             _txtId.KeyDown += (s, e) =>
@@ -115,9 +131,19 @@ namespace UoFiddler.Controls.UserControls
                 }
             };
             _txtId.Leave += (s, e) => ApplyId();
-            _chkPartial.CheckedChanged += (s, e) => { _partial = _chkPartial.Checked; Rehue(); };
+            _chkPartial.CheckedChanged += (s, e) =>
+            {
+                if (_loading || _curSource == Source.Item)
+                {
+                    return;
+                }
+
+                _partial = _chkPartial.Checked;
+                _effectivePartial = _partial;
+                Rehue();
+            };
             _chkAnimate.CheckedChanged += (s, e) => { _animate = _chkAnimate.Checked; UpdateTimer(); };
-            _numDir.ValueChanged += (s, e) => { _direction = (int)_numDir.Value; if (_source == Source.Animation) { LoadSource(); } };
+            _numDir.ValueChanged += (s, e) => { _direction = (int)_numDir.Value; if (_curSource == Source.Animation) { LoadSource(); } };
             _chkDark.CheckedChanged += (s, e) => { _darkBack = _chkDark.Checked; _box.Invalidate(); };
             _timer.Tick += (s, e) =>
             {
@@ -176,24 +202,58 @@ namespace UoFiddler.Controls.UserControls
 
         private bool IsDesign() => LicenseManager.UsageMode == LicenseUsageMode.Designtime;
 
-        private int CurrentId
+        private static int UserId(Source source) => source switch
         {
-            get => _source switch
+            Source.Animation => _animId,
+            Source.Gump => _gumpId,
+            _ => _itemId
+        };
+
+        private static void SetUserId(Source source, int value)
+        {
+            switch (source)
             {
-                Source.Animation => _animId,
-                Source.Gump => _gumpId,
-                _ => _itemId
-            };
-            set
-            {
-                switch (_source)
-                {
-                    case Source.Animation: _animId = value; break;
-                    case Source.Gump: _gumpId = value; break;
-                    default: _itemId = value; break;
-                }
+                case Source.Animation: _animId = value; break;
+                case Source.Gump: _gumpId = value; break;
+                default: _itemId = value; break;
             }
         }
+
+        /// <summary>
+        /// Shows a certain graphic (e.g. the item that uses the hue). The own test graphic is kept and comes back with
+        /// <see cref="ShowOwnGraphic"/> or the link in the bar.
+        /// </summary>
+        public void ShowGraphic(HuePreviewKind kind, int id)
+        {
+            var source = (Source)(int)kind;
+            if (_overridden && source == _curSource && id == _curId)
+            {
+                return;
+            }
+
+            _overridden = true;
+            _curSource = source;
+            _curId = id;
+            LoadSource();
+        }
+
+        /// <summary>Back to the own test graphic</summary>
+        public void ShowOwnGraphic()
+        {
+            if (!_overridden)
+            {
+                return;
+            }
+
+            _overridden = false;
+            _curSource = _source;
+            _curId = UserId(_source);
+            LoadSource();
+        }
+
+        /// <summary>true while a graphic chosen by the program is shown</summary>
+        [Browsable(false)]
+        public bool ShowsOtherGraphic => _overridden;
 
         private void ApplyId()
         {
@@ -208,12 +268,16 @@ namespace UoFiddler.Controls.UserControls
             }
 
             _txtId.ForeColor = SystemColors.WindowText;
-            if (id == CurrentId && _frames.Length > 0)
+            if (id == _curId && _frames.Length > 0)
             {
                 return;
             }
 
-            CurrentId = id;
+            // typed by the user: becomes the own test graphic
+            _source = _curSource;
+            SetUserId(_curSource, id);
+            _overridden = false;
+            _curId = id;
             LoadSource();
         }
 
@@ -226,12 +290,12 @@ namespace UoFiddler.Controls.UserControls
 
             try
             {
-                switch (_source)
+                switch (_curSource)
                 {
                     case Source.Item:
-                        if (Art.IsValidStatic(_itemId))
+                        if (Art.IsValidStatic(_curId))
                         {
-                            Bitmap bmp = Art.GetStatic(_itemId);
+                            Bitmap bmp = Art.GetStatic(_curId);
                             if (bmp != null)
                             {
                                 _frames = new[] { bmp };
@@ -241,9 +305,9 @@ namespace UoFiddler.Controls.UserControls
 
                         break;
                     case Source.Gump:
-                        if (Gumps.IsValidIndex(_gumpId))
+                        if (Gumps.IsValidIndex(_curId))
                         {
-                            Bitmap bmp = Gumps.GetGump(_gumpId);
+                            Bitmap bmp = Gumps.GetGump(_curId);
                             if (bmp != null)
                             {
                                 _frames = new[] { bmp };
@@ -254,7 +318,7 @@ namespace UoFiddler.Controls.UserControls
                         break;
                     case Source.Animation:
                         int hue = 0;
-                        AnimationFrame[] frames = Animations.GetAnimation(_animId, 0, _direction, ref hue, false, false);
+                        AnimationFrame[] frames = Animations.GetAnimation(_curId, 0, _direction, ref hue, false, false);
                         if (frames != null)
                         {
                             int count = 0;
@@ -288,7 +352,45 @@ namespace UoFiddler.Controls.UserControls
                 _frames = Array.Empty<Bitmap>();
             }
 
+            // update the bar (without events)
+            _loading = true;
+            _cmbSource.SelectedIndex = (int)_curSource;
+            _txtId.Text = $"0x{_curId:X}";
+            _loading = false;
+            _lnkOwn.Visible = _overridden;
             _txtId.ForeColor = _frames.Length > 0 ? SystemColors.WindowText : Color.Red;
+
+            // items: "partial hue" comes from the tiledata flag (as in the game), otherwise from the check box
+            if (_curSource == Source.Item)
+            {
+                bool flag = false;
+                try
+                {
+                    flag = TileData.ItemTable != null && _curId < TileData.ItemTable.Length &&
+                           (TileData.ItemTable[_curId].Flags & TileFlag.PartialHue) != 0;
+                }
+                catch (Exception)
+                {
+                    // ignored
+                }
+
+                _effectivePartial = flag;
+                _loading = true;
+                _chkPartial.Checked = flag;
+                _chkPartial.Enabled = false;
+                _chkPartial.Text = "Only grey (tiledata)";
+                _loading = false;
+            }
+            else
+            {
+                _effectivePartial = _partial;
+                _loading = true;
+                _chkPartial.Checked = _partial;
+                _chkPartial.Enabled = true;
+                _chkPartial.Text = "Only grey (partial hue)";
+                _loading = false;
+            }
+
             Rehue();
             UpdateTimer();
         }
@@ -323,7 +425,7 @@ namespace UoFiddler.Controls.UserControls
                 {
                     try
                     {
-                        Hues.ApplyTo(bmp, colors, _partial);
+                        Hues.ApplyTo(bmp, colors, _effectivePartial);
                     }
                     catch (Exception)
                     {
@@ -394,7 +496,7 @@ namespace UoFiddler.Controls.UserControls
             float scale = Math.Min(1f, Math.Min(inner.Width / (float)Math.Max(1, bmp.Width), inner.Height / (float)Math.Max(1, bmp.Height)));
             int w = (int)(bmp.Width * scale), h = (int)(bmp.Height * scale);
             int x, y;
-            if (_source == Source.Animation)
+            if (_curSource == Source.Animation)
             {
                 x = inner.X + (inner.Width / 2) - (int)(center.X * scale);
                 y = inner.Y + (inner.Height * 3 / 4) - (int)((center.Y + bmp.Height) * scale);
