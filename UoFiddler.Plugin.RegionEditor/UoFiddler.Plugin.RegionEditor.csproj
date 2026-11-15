@@ -1,0 +1,93 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<AssemblyName>RegionEditorPlugin</AssemblyName>
+		<TargetFramework>net8.0-windows7.0</TargetFramework>
+		<UseWindowsForms>true</UseWindowsForms>
+		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+		<AssemblyTitle>RegionEditorPlugin</AssemblyTitle>
+		<Product>RegionEditorPlugin</Product>
+		<Copyright>Copyright © 2026</Copyright>
+		<AssemblyVersion>1.0.0.0</AssemblyVersion>
+		<FileVersion>1.0.0.0</FileVersion>
+	</PropertyGroup>
+	<PropertyGroup>
+		<EnableNETAnalyzers>true</EnableNETAnalyzers>
+	</PropertyGroup>
+	<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+		<DebugType>portable</DebugType>
+		<OutputPath>..\UoFiddler\bin\$(Configuration)\plugins\</OutputPath>
+	</PropertyGroup>
+	<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+		<DebugType>none</DebugType>
+		<OutputPath>..\UoFiddler\bin\$(Configuration)\plugins\</OutputPath>
+		<GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
+	</PropertyGroup>
+	<ItemGroup>
+		<PackageReference Include="Microsoft.Web.WebView2" Version="1.0.3800.47" />
+		<PackageReference Include="Serilog" Version="4.3.1" />
+		<PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
+		<PackageReference Include="System.Drawing.Common" Version="10.0.5" />
+		<PackageReference Include="System.Resources.Extensions" Version="10.0.5" />
+		<PackageReference Include="System.Text.Json" Version="10.0.5" />
+	</ItemGroup>
+	<ItemGroup>
+		<Compile Update="UserControls\RegionEditorControl.cs">
+			<SubType>UserControl</SubType>
+		</Compile>
+		<Compile Update="UserControls\RegionEditorControl.Designer.cs">
+			<DependentUpon>RegionEditorControl.cs</DependentUpon>
+		</Compile>
+		<!-- code of the editor split into several files (no designer for these) -->
+		<Compile Update="UserControls\RegionEditorControl.Check.cs;UserControls\RegionEditorControl.Files.cs;UserControls\RegionEditorControl.Language.cs;UserControls\RegionEditorControl.Map.cs;UserControls\RegionEditorControl.Properties.cs;UserControls\RegionEditorControl.Tree.cs">
+			<DependentUpon>RegionEditorControl.cs</DependentUpon>
+			<SubType>Code</SubType>
+		</Compile>
+		<Compile Update="UserControls\RegionMapView.cs">
+			<SubType>Code</SubType>
+		</Compile>
+		<Compile Update="Forms\RegionSettingsForm.cs">
+			<SubType>Form</SubType>
+		</Compile>
+		<Compile Update="Forms\RegionSettingsForm.Designer.cs">
+			<DependentUpon>RegionSettingsForm.cs</DependentUpon>
+		</Compile>
+		<Compile Update="Forms\RegionHelpForm.cs">
+			<SubType>Form</SubType>
+		</Compile>
+		<Compile Update="Forms\RegionHelpForm.Designer.cs">
+			<DependentUpon>RegionHelpForm.cs</DependentUpon>
+		</Compile>
+		<Compile Update="Classes\Loc.Texts.cs">
+			<DependentUpon>Loc.cs</DependentUpon>
+		</Compile>
+		<EmbeddedResource Update="UserControls\RegionEditorControl.resx">
+			<DependentUpon>RegionEditorControl.cs</DependentUpon>
+		</EmbeddedResource>
+		<EmbeddedResource Update="Forms\RegionSettingsForm.resx">
+			<DependentUpon>RegionSettingsForm.cs</DependentUpon>
+		</EmbeddedResource>
+		<EmbeddedResource Update="Forms\RegionHelpForm.resx">
+			<DependentUpon>RegionHelpForm.cs</DependentUpon>
+		</EmbeddedResource>
+	</ItemGroup>
+	<ItemGroup>
+		<!-- help texts: shown in the help window and copied next to the plugin (plugins\RegionEditorHelp\) -->
+		<EmbeddedResource Include="Help\RegionEditor_Help.de.md" LogicalName="RegionEditor.Help.de.md" WithCulture="false" />
+		<EmbeddedResource Include="Help\RegionEditor_Help.en.md" LogicalName="RegionEditor.Help.en.md" WithCulture="false" />
+		<EmbeddedResource Include="Help\RegionEditor_Help.fr.md" LogicalName="RegionEditor.Help.fr.md" WithCulture="false" />
+		<None Update="Help\*.md">
+			<Link>RegionEditorHelp\%(Filename)%(Extension)</Link>
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\Ultima\Ultima.csproj">
+			<Private>false</Private>
+			<ExcludeAssets>runtime</ExcludeAssets>
+		</ProjectReference>
+		<ProjectReference Include="..\UoFiddler.Controls\UoFiddler.Controls.csproj">
+			<Private>false</Private>
+			<ExcludeAssets>runtime</ExcludeAssets>
+		</ProjectReference>
+	</ItemGroup>
+</Project>

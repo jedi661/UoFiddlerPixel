@@ -49,6 +49,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UoFiddler.Plugin.Enhanced",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UoFiddler.Plugin.ClientCheck", "UoFiddler.Plugin.ClientCheck\UoFiddler.Plugin.ClientCheck.csproj", "{B2261735-8FE7-DBE8-6D4F-8A400E3F1214}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UoFiddler.Plugin.RegionEditor", "UoFiddler.Plugin.RegionEditor\UoFiddler.Plugin.RegionEditor.csproj", "{931A511B-035A-B325-C4D6-571E8EC96AE1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -275,6 +277,18 @@ Global
 		{B2261735-8FE7-DBE8-6D4F-8A400E3F1214}.Release|x64.Build.0 = Release|Any CPU
 		{B2261735-8FE7-DBE8-6D4F-8A400E3F1214}.Release|x86.ActiveCfg = Release|Any CPU
 		{B2261735-8FE7-DBE8-6D4F-8A400E3F1214}.Release|x86.Build.0 = Release|Any CPU
+		{931A511B-035A-B325-C4D6-571E8EC96AE1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{931A511B-035A-B325-C4D6-571E8EC96AE1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{931A511B-035A-B325-C4D6-571E8EC96AE1}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{931A511B-035A-B325-C4D6-571E8EC96AE1}.Debug|x64.Build.0 = Debug|Any CPU
+		{931A511B-035A-B325-C4D6-571E8EC96AE1}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{931A511B-035A-B325-C4D6-571E8EC96AE1}.Debug|x86.Build.0 = Debug|Any CPU
+		{931A511B-035A-B325-C4D6-571E8EC96AE1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{931A511B-035A-B325-C4D6-571E8EC96AE1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{931A511B-035A-B325-C4D6-571E8EC96AE1}.Release|x64.ActiveCfg = Release|Any CPU
+		{931A511B-035A-B325-C4D6-571E8EC96AE1}.Release|x64.Build.0 = Release|Any CPU
+		{931A511B-035A-B325-C4D6-571E8EC96AE1}.Release|x86.ActiveCfg = Release|Any CPU
+		{931A511B-035A-B325-C4D6-571E8EC96AE1}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
