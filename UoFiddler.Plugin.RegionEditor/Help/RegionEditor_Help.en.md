@@ -94,6 +94,10 @@ In **⚙ Settings**:
 - **POL regions folder** – the folder with `regions.cfg` (and `justice.cfg`, `music.cfg` if used).
 - **Export folder** – target of "Everything into the export folder". Empty: `<AppData>\RegionExport`.
 
+The settings are saved in `<AppData>\UoFiddler\RegionEditor.json` as soon as you click **OK** and are loaded again on the next start. Below the paths you see whether the file was found and how many regions it contains. **Load** next to a path saves the settings and loads the regions of that server at once: they appear on the map and in the tree, and the first region is shown with its properties and areas. With **Load on start** the editor opens the last project or the regions of ServUO, Sphere or POL automatically.
+
+The **⇅ Server** menu in the top bar shows which servers are set and loads or saves with one click.
+
 Then:
 
 - **File → Load from server** reads the regions directly from the configured server.

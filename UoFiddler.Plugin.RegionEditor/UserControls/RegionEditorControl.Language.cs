@@ -122,6 +122,8 @@ namespace UoFiddler.Plugin.RegionEditor.UserControls
             T(_miLoadPol, "server.pol");
             T(_miSavePol, "server.pol");
             T(_miSettings, "menu.settings");
+            T(_ddServer, "btn.server", "tip.server");
+            OnServerMenuOpening(this, EventArgs.Empty);
             T(_btnUndo, "btn.undo");
             T(_btnRedo, "btn.redo");
             T(_lblMap, "lbl.map");

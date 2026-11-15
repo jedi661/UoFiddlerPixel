@@ -27,6 +27,24 @@ namespace UoFiddler.Plugin.RegionEditor.Classes
         Dark
     }
 
+    /// <summary>what the editor opens when it is shown the first time</summary>
+    public enum StartupSource
+    {
+        LastProject,
+        ServUo,
+        Sphere,
+        Pol,
+        Nothing
+    }
+
+    /// <summary>the servers whose folders can be set</summary>
+    public enum ServerKind
+    {
+        ServUo,
+        Sphere,
+        Pol
+    }
+
     public sealed class RegionEditorSettings
     {
         private static RegionEditorSettings _current;
@@ -56,6 +74,9 @@ namespace UoFiddler.Plugin.RegionEditor.Classes
         public bool PolGuardTexts { get; set; } = true;
         public string SphereEvents { get; set; } = "r_default";
 
+        /// <summary>opened when the editor starts</summary>
+        public StartupSource Startup { get; set; } = StartupSource.LastProject;
+
         // ── editor ──
         public string Language { get; set; }
         public EditorTheme Theme { get; set; } = EditorTheme.Light;
@@ -71,11 +92,13 @@ namespace UoFiddler.Plugin.RegionEditor.Classes
         public List<string> RecentFiles { get; set; } = new List<string>();
 
         /// <summary>Regions.xml of the configured ServUO folder</summary>
+        [System.Text.Json.Serialization.JsonIgnore]
         public string ServUoRegionsFile => string.IsNullOrWhiteSpace(ServUoDir) ? null : ServUoRegionsPath(ServUoDir);
 
         /// <summary>accepts the server folder, its Data folder or the file itself</summary>
         public static string ServUoRegionsPath(string dir)
         {
+            dir = dir.Trim().Trim('"');
             if (dir.EndsWith(".xml", StringComparison.OrdinalIgnoreCase))
             {
                 return dir;
@@ -86,11 +109,27 @@ namespace UoFiddler.Plugin.RegionEditor.Classes
                 : Path.Combine(dir, "Data", "Regions.xml");
         }
 
+        [System.Text.Json.Serialization.JsonIgnore]
         public string EffectiveExportDir => string.IsNullOrWhiteSpace(ExportDir)
             ? Path.Combine(Options.AppDataPath ?? Path.GetTempPath(), "RegionExport")
             : ExportDir;
 
-        private static string FileName => Path.Combine(Options.AppDataPath ?? string.Empty, "RegionEditor.json");
+        /// <summary>file of the settings (<AppData>\UoFiddler\RegionEditor.json)</summary>
+        public static string FileName => Path.Combine(
+            string.IsNullOrEmpty(Options.AppDataPath)
+                ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "UoFiddler")
+                : Options.AppDataPath,
+            "RegionEditor.json");
+
+        private static readonly JsonSerializerOptions _json = new JsonSerializerOptions
+        {
+            WriteIndented = true,
+            Converters = { new System.Text.Json.Serialization.JsonStringEnumConverter() }
+        };
+
+        /// <summary>last error of <see cref="Save"/> (null = saved)</summary>
+        [System.Text.Json.Serialization.JsonIgnore]
+        public string LastError { get; private set; }
 
         public static RegionEditorSettings Load()
         {
@@ -98,7 +137,9 @@ namespace UoFiddler.Plugin.RegionEditor.Classes
             {
                 if (File.Exists(FileName))
                 {
-                    return JsonSerializer.Deserialize<RegionEditorSettings>(File.ReadAllText(FileName)) ?? new RegionEditorSettings();
+                    RegionEditorSettings s = JsonSerializer.Deserialize<RegionEditorSettings>(File.ReadAllText(FileName), _json) ?? new RegionEditorSettings();
+                    s.RecentFiles = s.RecentFiles ?? new List<string>();
+                    return s;
                 }
             }
             catch (Exception)
@@ -109,18 +150,70 @@ namespace UoFiddler.Plugin.RegionEditor.Classes
             return new RegionEditorSettings();
         }
 
-        public void Save()
+        /// <summary>writes the settings, returns false (and <see cref="LastError"/>) when that was not possible</summary>
+        public bool Save()
         {
             try
             {
-                File.WriteAllText(FileName, JsonSerializer.Serialize(this, new JsonSerializerOptions { WriteIndented = true }));
+                Directory.CreateDirectory(Path.GetDirectoryName(FileName));
+                string temp = FileName + ".tmp";
+                File.WriteAllText(temp, JsonSerializer.Serialize(this, _json));
+                if (File.Exists(FileName))
+                {
+                    File.Replace(temp, FileName, null);
+                }
+                else
+                {
+                    File.Move(temp, FileName);
+                }
+
+                LastError = null;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                // ignored
+                LastError = ex.Message;
             }
 
             Changed?.Invoke(this, EventArgs.Empty);
+            return LastError == null;
+        }
+
+        /// <summary>file or folder of a server ("" = not set)</summary>
+        public string ServerPath(ServerKind kind)
+        {
+            switch (kind)
+            {
+                case ServerKind.ServUo: return string.IsNullOrWhiteSpace(ServUoDir) ? string.Empty : ServUoRegionsPath(ServUoDir.Trim());
+                case ServerKind.Sphere: return (SphereFile ?? string.Empty).Trim();
+                default: return (PolDir ?? string.Empty).Trim();
+            }
+        }
+
+        /// <summary>true when the regions file/folder of the server exists</summary>
+        public static bool ServerExists(ServerKind kind, string path)
+        {
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                return false;
+            }
+
+            return kind == ServerKind.Pol
+                ? File.Exists(Path.Combine(path, "regions.cfg")) || File.Exists(Path.Combine(path, "justice.cfg")) || File.Exists(path)
+                : File.Exists(path);
+        }
+
+        /// <summary>reads the regions of a server (folder/file of the settings)</summary>
+        public static RegionProject LoadServer(ServerKind kind, string path)
+        {
+            switch (kind)
+            {
+                case ServerKind.ServUo:
+                    return ServUoFormat.Load(path);
+                case ServerKind.Sphere:
+                    return SphereFormat.Load(path);
+                default:
+                    return Directory.Exists(path) ? PolFormat.LoadFolder(path) : PolFormat.Load(path);
+            }
         }
 
         public void AddRecent(string file)

@@ -35,16 +35,21 @@
             this._lblServUo = new System.Windows.Forms.Label();
             this._txtServUo = new System.Windows.Forms.TextBox();
             this._btnBrowseServUo = new System.Windows.Forms.Button();
+            this._btnLoadServUo = new System.Windows.Forms.Button();
             this._lblSphere = new System.Windows.Forms.Label();
             this._txtSphere = new System.Windows.Forms.TextBox();
             this._btnBrowseSphere = new System.Windows.Forms.Button();
+            this._btnLoadSphere = new System.Windows.Forms.Button();
             this._lblPol = new System.Windows.Forms.Label();
             this._txtPol = new System.Windows.Forms.TextBox();
             this._btnBrowsePol = new System.Windows.Forms.Button();
+            this._btnLoadPol = new System.Windows.Forms.Button();
             this._lblExport = new System.Windows.Forms.Label();
             this._txtExport = new System.Windows.Forms.TextBox();
             this._btnBrowseExport = new System.Windows.Forms.Button();
             this._lblServerState = new System.Windows.Forms.Label();
+            this._lblStartup = new System.Windows.Forms.Label();
+            this._cmbStartup = new System.Windows.Forms.ComboBox();
             this._lblHeadExport = new System.Windows.Forms.Label();
             this._lblMerge = new System.Windows.Forms.Label();
             this._cmbMerge = new System.Windows.Forms.ComboBox();
@@ -81,37 +86,45 @@
             this._grid.Controls.Add(this._lblServUo, 0, 1);
             this._grid.Controls.Add(this._txtServUo, 1, 1);
             this._grid.Controls.Add(this._btnBrowseServUo, 2, 1);
+            this._grid.Controls.Add(this._btnLoadServUo, 3, 1);
             this._grid.Controls.Add(this._lblSphere, 0, 2);
             this._grid.Controls.Add(this._txtSphere, 1, 2);
             this._grid.Controls.Add(this._btnBrowseSphere, 2, 2);
+            this._grid.Controls.Add(this._btnLoadSphere, 3, 2);
             this._grid.Controls.Add(this._lblPol, 0, 3);
             this._grid.Controls.Add(this._txtPol, 1, 3);
             this._grid.Controls.Add(this._btnBrowsePol, 2, 3);
+            this._grid.Controls.Add(this._btnLoadPol, 3, 3);
             this._grid.Controls.Add(this._lblExport, 0, 4);
             this._grid.Controls.Add(this._txtExport, 1, 4);
             this._grid.Controls.Add(this._btnBrowseExport, 2, 4);
             this._grid.Controls.Add(this._lblServerState, 1, 5);
-            this._grid.Controls.Add(this._lblHeadExport, 0, 6);
-            this._grid.Controls.Add(this._lblMerge, 0, 7);
-            this._grid.Controls.Add(this._cmbMerge, 1, 7);
-            this._grid.Controls.Add(this._lblRectFormat, 0, 8);
-            this._grid.Controls.Add(this._cmbRectFormat, 1, 8);
-            this._grid.Controls.Add(this._lblSphereEvents, 0, 9);
-            this._grid.Controls.Add(this._txtSphereEvents, 1, 9);
-            this._grid.Controls.Add(this._chkSkipHidden, 1, 10);
-            this._grid.Controls.Add(this._chkPolTexts, 1, 11);
-            this._grid.Controls.Add(this._lblHeadEditor, 0, 12);
-            this._grid.Controls.Add(this._lblLanguage, 0, 13);
-            this._grid.Controls.Add(this._cmbLanguage, 1, 13);
-            this._grid.Controls.Add(this._lblTheme, 0, 14);
-            this._grid.Controls.Add(this._cmbTheme, 1, 14);
-            this._grid.Controls.Add(this._lblPriority, 0, 15);
-            this._grid.Controls.Add(this._numPriority, 1, 15);
-            this._grid.Controls.Add(this._lblAlpha, 0, 16);
-            this._grid.Controls.Add(this._numAlpha, 1, 16);
+            this._grid.Controls.Add(this._lblStartup, 0, 6);
+            this._grid.Controls.Add(this._cmbStartup, 1, 6);
+            this._grid.Controls.Add(this._lblHeadExport, 0, 7);
+            this._grid.Controls.Add(this._lblMerge, 0, 8);
+            this._grid.Controls.Add(this._cmbMerge, 1, 8);
+            this._grid.Controls.Add(this._lblRectFormat, 0, 9);
+            this._grid.Controls.Add(this._cmbRectFormat, 1, 9);
+            this._grid.Controls.Add(this._lblSphereEvents, 0, 10);
+            this._grid.Controls.Add(this._txtSphereEvents, 1, 10);
+            this._grid.Controls.Add(this._chkSkipHidden, 1, 11);
+            this._grid.Controls.Add(this._chkPolTexts, 1, 12);
+            this._grid.Controls.Add(this._lblHeadEditor, 0, 13);
+            this._grid.Controls.Add(this._lblLanguage, 0, 14);
+            this._grid.Controls.Add(this._cmbLanguage, 1, 14);
+            this._grid.Controls.Add(this._lblTheme, 0, 15);
+            this._grid.Controls.Add(this._cmbTheme, 1, 15);
+            this._grid.Controls.Add(this._lblPriority, 0, 16);
+            this._grid.Controls.Add(this._numPriority, 1, 16);
+            this._grid.Controls.Add(this._lblAlpha, 0, 17);
+            this._grid.Controls.Add(this._numAlpha, 1, 17);
             this._grid.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.AutoSize));
             this._grid.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this._grid.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.AutoSize));
+            this._grid.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.AutoSize));
+            this._grid.RowStyles.Add(new System.Windows.Forms.RowStyle());
+            this._grid.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this._grid.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this._grid.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this._grid.RowStyles.Add(new System.Windows.Forms.RowStyle());
@@ -130,16 +143,16 @@
             this._grid.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this._grid.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this._grid.AutoSize = true;
-            this._grid.ColumnCount = 3;
+            this._grid.ColumnCount = 4;
             this._grid.Dock = System.Windows.Forms.DockStyle.Top;
             this._grid.Name = "_grid";
             this._grid.Padding = new System.Windows.Forms.Padding(10);
-            this._grid.RowCount = 17;
+            this._grid.RowCount = 19;
             this._grid.TabIndex = 0;
             // 
             // _lblHeadServer
             // 
-            this._grid.SetColumnSpan(this._lblHeadServer, 3);
+            this._grid.SetColumnSpan(this._lblHeadServer, 4);
             this._lblHeadServer.Anchor = System.Windows.Forms.AnchorStyles.Left;
             this._lblHeadServer.AutoSize = true;
             this._lblHeadServer.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Bold);
@@ -173,6 +186,15 @@
             this._btnBrowseServUo.UseVisualStyleBackColor = true;
             this._btnBrowseServUo.Click += new System.EventHandler(this.OnClickBrowse);
             // 
+            // _btnLoadServUo
+            // 
+            this._btnLoadServUo.AutoSize = true;
+            this._btnLoadServUo.Name = "_btnLoadServUo";
+            this._btnLoadServUo.TabIndex = 3;
+            this._btnLoadServUo.Text = "Load";
+            this._btnLoadServUo.UseVisualStyleBackColor = true;
+            this._btnLoadServUo.Click += new System.EventHandler(this.OnClickLoadNow);
+            // 
             // _lblSphere
             // 
             this._lblSphere.Anchor = System.Windows.Forms.AnchorStyles.Left;
@@ -187,17 +209,26 @@
             this._txtSphere.Name = "_txtSphere";
             this._txtSphere.PlaceholderText = "e.g. C:\\Sphere\\scripts\\maps\\map0\\map0_areas.scp";
             this._txtSphere.Size = new System.Drawing.Size(380, 23);
-            this._txtSphere.TabIndex = 3;
+            this._txtSphere.TabIndex = 4;
             this._txtSphere.TextChanged += new System.EventHandler(this.OnPathChanged);
             // 
             // _btnBrowseSphere
             // 
             this._btnBrowseSphere.AutoSize = true;
             this._btnBrowseSphere.Name = "_btnBrowseSphere";
-            this._btnBrowseSphere.TabIndex = 4;
+            this._btnBrowseSphere.TabIndex = 5;
             this._btnBrowseSphere.Text = "…";
             this._btnBrowseSphere.UseVisualStyleBackColor = true;
             this._btnBrowseSphere.Click += new System.EventHandler(this.OnClickBrowse);
+            // 
+            // _btnLoadSphere
+            // 
+            this._btnLoadSphere.AutoSize = true;
+            this._btnLoadSphere.Name = "_btnLoadSphere";
+            this._btnLoadSphere.TabIndex = 6;
+            this._btnLoadSphere.Text = "Load";
+            this._btnLoadSphere.UseVisualStyleBackColor = true;
+            this._btnLoadSphere.Click += new System.EventHandler(this.OnClickLoadNow);
             // 
             // _lblPol
             // 
@@ -213,17 +244,26 @@
             this._txtPol.Name = "_txtPol";
             this._txtPol.PlaceholderText = "e.g. C:\\pol\\regions";
             this._txtPol.Size = new System.Drawing.Size(380, 23);
-            this._txtPol.TabIndex = 5;
+            this._txtPol.TabIndex = 7;
             this._txtPol.TextChanged += new System.EventHandler(this.OnPathChanged);
             // 
             // _btnBrowsePol
             // 
             this._btnBrowsePol.AutoSize = true;
             this._btnBrowsePol.Name = "_btnBrowsePol";
-            this._btnBrowsePol.TabIndex = 6;
+            this._btnBrowsePol.TabIndex = 8;
             this._btnBrowsePol.Text = "…";
             this._btnBrowsePol.UseVisualStyleBackColor = true;
             this._btnBrowsePol.Click += new System.EventHandler(this.OnClickBrowse);
+            // 
+            // _btnLoadPol
+            // 
+            this._btnLoadPol.AutoSize = true;
+            this._btnLoadPol.Name = "_btnLoadPol";
+            this._btnLoadPol.TabIndex = 9;
+            this._btnLoadPol.Text = "Load";
+            this._btnLoadPol.UseVisualStyleBackColor = true;
+            this._btnLoadPol.Click += new System.EventHandler(this.OnClickLoadNow);
             // 
             // _lblExport
             // 
@@ -239,28 +279,44 @@
             this._txtExport.Name = "_txtExport";
             this._txtExport.PlaceholderText = "copy the files from here to your server";
             this._txtExport.Size = new System.Drawing.Size(380, 23);
-            this._txtExport.TabIndex = 7;
+            this._txtExport.TabIndex = 10;
             this._txtExport.TextChanged += new System.EventHandler(this.OnPathChanged);
             // 
             // _btnBrowseExport
             // 
             this._btnBrowseExport.AutoSize = true;
             this._btnBrowseExport.Name = "_btnBrowseExport";
-            this._btnBrowseExport.TabIndex = 8;
+            this._btnBrowseExport.TabIndex = 11;
             this._btnBrowseExport.Text = "…";
             this._btnBrowseExport.UseVisualStyleBackColor = true;
             this._btnBrowseExport.Click += new System.EventHandler(this.OnClickBrowse);
             // 
             // _lblServerState
             // 
+            this._grid.SetColumnSpan(this._lblServerState, 3);
             this._lblServerState.AutoSize = true;
             this._lblServerState.ForeColor = System.Drawing.SystemColors.GrayText;
             this._lblServerState.Name = "_lblServerState";
             this._lblServerState.Text = "-";
             // 
+            // _lblStartup
+            // 
+            this._lblStartup.Anchor = System.Windows.Forms.AnchorStyles.Left;
+            this._lblStartup.AutoSize = true;
+            this._lblStartup.Margin = new System.Windows.Forms.Padding(3, 6, 3, 3);
+            this._lblStartup.Name = "_lblStartup";
+            this._lblStartup.Text = "On start:";
+            // 
+            // _cmbStartup
+            // 
+            this._cmbStartup.Dock = System.Windows.Forms.DockStyle.Fill;
+            this._cmbStartup.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this._cmbStartup.Name = "_cmbStartup";
+            this._cmbStartup.TabIndex = 12;
+            // 
             // _lblHeadExport
             // 
-            this._grid.SetColumnSpan(this._lblHeadExport, 3);
+            this._grid.SetColumnSpan(this._lblHeadExport, 4);
             this._lblHeadExport.Anchor = System.Windows.Forms.AnchorStyles.Left;
             this._lblHeadExport.AutoSize = true;
             this._lblHeadExport.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Bold);
@@ -282,7 +338,7 @@
             this._cmbMerge.Dock = System.Windows.Forms.DockStyle.Fill;
             this._cmbMerge.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this._cmbMerge.Name = "_cmbMerge";
-            this._cmbMerge.TabIndex = 9;
+            this._cmbMerge.TabIndex = 13;
             // 
             // _lblRectFormat
             // 
@@ -300,7 +356,7 @@
             this._cmbRectFormat.Dock = System.Windows.Forms.DockStyle.Fill;
             this._cmbRectFormat.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this._cmbRectFormat.Name = "_cmbRectFormat";
-            this._cmbRectFormat.TabIndex = 10;
+            this._cmbRectFormat.TabIndex = 14;
             // 
             // _lblSphereEvents
             // 
@@ -314,13 +370,13 @@
             // 
             this._txtSphereEvents.Dock = System.Windows.Forms.DockStyle.Fill;
             this._txtSphereEvents.Name = "_txtSphereEvents";
-            this._txtSphereEvents.TabIndex = 11;
+            this._txtSphereEvents.TabIndex = 15;
             // 
             // _chkSkipHidden
             // 
             this._chkSkipHidden.AutoSize = true;
             this._chkSkipHidden.Name = "_chkSkipHidden";
-            this._chkSkipHidden.TabIndex = 12;
+            this._chkSkipHidden.TabIndex = 16;
             this._chkSkipHidden.Text = "Leave out hidden regions";
             this._chkSkipHidden.UseVisualStyleBackColor = true;
             // 
@@ -328,13 +384,13 @@
             // 
             this._chkPolTexts.AutoSize = true;
             this._chkPolTexts.Name = "_chkPolTexts";
-            this._chkPolTexts.TabIndex = 13;
+            this._chkPolTexts.TabIndex = 17;
             this._chkPolTexts.Text = "POL: guard texts (EnterText/LeaveText)";
             this._chkPolTexts.UseVisualStyleBackColor = true;
             // 
             // _lblHeadEditor
             // 
-            this._grid.SetColumnSpan(this._lblHeadEditor, 3);
+            this._grid.SetColumnSpan(this._lblHeadEditor, 4);
             this._lblHeadEditor.Anchor = System.Windows.Forms.AnchorStyles.Left;
             this._lblHeadEditor.AutoSize = true;
             this._lblHeadEditor.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Bold);
@@ -360,7 +416,7 @@
             this._cmbLanguage.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this._cmbLanguage.Name = "_cmbLanguage";
             this._cmbLanguage.Size = new System.Drawing.Size(160, 23);
-            this._cmbLanguage.TabIndex = 14;
+            this._cmbLanguage.TabIndex = 18;
             // 
             // _lblTheme
             // 
@@ -375,7 +431,7 @@
             this._cmbTheme.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this._cmbTheme.Name = "_cmbTheme";
             this._cmbTheme.Size = new System.Drawing.Size(160, 23);
-            this._cmbTheme.TabIndex = 15;
+            this._cmbTheme.TabIndex = 19;
             // 
             // _lblPriority
             // 
@@ -391,7 +447,7 @@
             this._numPriority.Minimum = new decimal(new int[] { 0, 0, 0, 0});
             this._numPriority.Name = "_numPriority";
             this._numPriority.Size = new System.Drawing.Size(80, 23);
-            this._numPriority.TabIndex = 16;
+            this._numPriority.TabIndex = 20;
             this._numPriority.Value = new decimal(new int[] { 50, 0, 0, 0});
             // 
             // _lblAlpha
@@ -408,7 +464,7 @@
             this._numAlpha.Minimum = new decimal(new int[] { 0, 0, 0, 0});
             this._numAlpha.Name = "_numAlpha";
             this._numAlpha.Size = new System.Drawing.Size(80, 23);
-            this._numAlpha.TabIndex = 17;
+            this._numAlpha.TabIndex = 21;
             this._numAlpha.Value = new decimal(new int[] { 70, 0, 0, 0});
             // 
             // _bottom
@@ -421,7 +477,7 @@
             this._bottom.FlowDirection = System.Windows.Forms.FlowDirection.RightToLeft;
             this._bottom.Name = "_bottom";
             this._bottom.Padding = new System.Windows.Forms.Padding(8);
-            this._bottom.TabIndex = 18;
+            this._bottom.TabIndex = 22;
             // 
             // _btnCancel
             // 
@@ -429,7 +485,7 @@
             this._btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this._btnCancel.Name = "_btnCancel";
             this._btnCancel.Size = new System.Drawing.Size(90, 27);
-            this._btnCancel.TabIndex = 19;
+            this._btnCancel.TabIndex = 23;
             this._btnCancel.Text = "Cancel";
             this._btnCancel.UseVisualStyleBackColor = true;
             // 
@@ -438,7 +494,7 @@
             this._btnOk.AutoSize = true;
             this._btnOk.Name = "_btnOk";
             this._btnOk.Size = new System.Drawing.Size(90, 27);
-            this._btnOk.TabIndex = 20;
+            this._btnOk.TabIndex = 24;
             this._btnOk.Text = "OK";
             this._btnOk.UseVisualStyleBackColor = true;
             this._btnOk.Click += new System.EventHandler(this.OnClickOk);
@@ -447,7 +503,7 @@
             // 
             this._btnOpenExport.AutoSize = true;
             this._btnOpenExport.Name = "_btnOpenExport";
-            this._btnOpenExport.TabIndex = 21;
+            this._btnOpenExport.TabIndex = 25;
             this._btnOpenExport.Text = "Open export folder";
             this._btnOpenExport.UseVisualStyleBackColor = true;
             this._btnOpenExport.Click += new System.EventHandler(this.OnClickOpenExport);
@@ -466,7 +522,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this._btnCancel;
-            this.ClientSize = new System.Drawing.Size(640, 560);
+            this.ClientSize = new System.Drawing.Size(700, 620);
             this.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
             this.MaximizeBox = false;
@@ -494,16 +550,21 @@
         private System.Windows.Forms.Label _lblServUo;
         private System.Windows.Forms.TextBox _txtServUo;
         private System.Windows.Forms.Button _btnBrowseServUo;
+        private System.Windows.Forms.Button _btnLoadServUo;
         private System.Windows.Forms.Label _lblSphere;
         private System.Windows.Forms.TextBox _txtSphere;
         private System.Windows.Forms.Button _btnBrowseSphere;
+        private System.Windows.Forms.Button _btnLoadSphere;
         private System.Windows.Forms.Label _lblPol;
         private System.Windows.Forms.TextBox _txtPol;
         private System.Windows.Forms.Button _btnBrowsePol;
+        private System.Windows.Forms.Button _btnLoadPol;
         private System.Windows.Forms.Label _lblExport;
         private System.Windows.Forms.TextBox _txtExport;
         private System.Windows.Forms.Button _btnBrowseExport;
         private System.Windows.Forms.Label _lblServerState;
+        private System.Windows.Forms.Label _lblStartup;
+        private System.Windows.Forms.ComboBox _cmbStartup;
         private System.Windows.Forms.Label _lblHeadExport;
         private System.Windows.Forms.Label _lblMerge;
         private System.Windows.Forms.ComboBox _cmbMerge;

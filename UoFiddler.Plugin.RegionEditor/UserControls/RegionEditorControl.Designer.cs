@@ -230,6 +230,17 @@
             this._lblMap = new System.Windows.Forms.ToolStripLabel();
             this._cmbMap = new System.Windows.Forms.ToolStripComboBox();
             this._sepMain2 = new System.Windows.Forms.ToolStripSeparator();
+            this._ddServer = new System.Windows.Forms.ToolStripDropDownButton();
+            this._miSrvLoadServUo = new System.Windows.Forms.ToolStripMenuItem();
+            this._miSrvLoadSphere = new System.Windows.Forms.ToolStripMenuItem();
+            this._miSrvLoadPol = new System.Windows.Forms.ToolStripMenuItem();
+            this._sepSrv1 = new System.Windows.Forms.ToolStripSeparator();
+            this._miSrvSaveServUo = new System.Windows.Forms.ToolStripMenuItem();
+            this._miSrvSaveSphere = new System.Windows.Forms.ToolStripMenuItem();
+            this._miSrvSavePol = new System.Windows.Forms.ToolStripMenuItem();
+            this._sepSrv2 = new System.Windows.Forms.ToolStripSeparator();
+            this._miSrvSettings = new System.Windows.Forms.ToolStripMenuItem();
+            this._sepMain3 = new System.Windows.Forms.ToolStripSeparator();
             this._btnCheck = new System.Windows.Forms.ToolStripButton();
             this._btnSettings = new System.Windows.Forms.ToolStripButton();
             this._btnHelp = new System.Windows.Forms.ToolStripButton();
@@ -1731,6 +1742,8 @@
             this._lblMap,
             this._cmbMap,
             this._sepMain2,
+            this._ddServer,
+            this._sepMain3,
             this._btnCheck,
             this._btnSettings,
             this._btnHelp,
@@ -2050,6 +2063,78 @@
             // _sepMain2
             // 
             this._sepMain2.Name = "_sepMain2";
+            // 
+            // _ddServer
+            // 
+            this._ddServer.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this._miSrvLoadServUo,
+            this._miSrvLoadSphere,
+            this._miSrvLoadPol,
+            this._sepSrv1,
+            this._miSrvSaveServUo,
+            this._miSrvSaveSphere,
+            this._miSrvSavePol,
+            this._sepSrv2,
+            this._miSrvSettings});
+            this._ddServer.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this._ddServer.Name = "_ddServer";
+            this._ddServer.Text = "⇅ Server";
+            this._ddServer.ToolTipText = "Load the regions of your server or save them into it";
+            this._ddServer.DropDownOpening += new System.EventHandler(this.OnServerMenuOpening);
+            // 
+            // _miSrvLoadServUo
+            // 
+            this._miSrvLoadServUo.Name = "_miSrvLoadServUo";
+            this._miSrvLoadServUo.Text = "Load from ServUO";
+            this._miSrvLoadServUo.Click += new System.EventHandler(this.OnClickLoadServer);
+            // 
+            // _miSrvLoadSphere
+            // 
+            this._miSrvLoadSphere.Name = "_miSrvLoadSphere";
+            this._miSrvLoadSphere.Text = "Load from Sphere";
+            this._miSrvLoadSphere.Click += new System.EventHandler(this.OnClickLoadServer);
+            // 
+            // _miSrvLoadPol
+            // 
+            this._miSrvLoadPol.Name = "_miSrvLoadPol";
+            this._miSrvLoadPol.Text = "Load from POL";
+            this._miSrvLoadPol.Click += new System.EventHandler(this.OnClickLoadServer);
+            // 
+            // _sepSrv1
+            // 
+            this._sepSrv1.Name = "_sepSrv1";
+            // 
+            // _miSrvSaveServUo
+            // 
+            this._miSrvSaveServUo.Name = "_miSrvSaveServUo";
+            this._miSrvSaveServUo.Text = "Save into ServUO";
+            this._miSrvSaveServUo.Click += new System.EventHandler(this.OnClickSaveServer);
+            // 
+            // _miSrvSaveSphere
+            // 
+            this._miSrvSaveSphere.Name = "_miSrvSaveSphere";
+            this._miSrvSaveSphere.Text = "Save into Sphere";
+            this._miSrvSaveSphere.Click += new System.EventHandler(this.OnClickSaveServer);
+            // 
+            // _miSrvSavePol
+            // 
+            this._miSrvSavePol.Name = "_miSrvSavePol";
+            this._miSrvSavePol.Text = "Save into POL";
+            this._miSrvSavePol.Click += new System.EventHandler(this.OnClickSaveServer);
+            // 
+            // _sepSrv2
+            // 
+            this._sepSrv2.Name = "_sepSrv2";
+            // 
+            // _miSrvSettings
+            // 
+            this._miSrvSettings.Name = "_miSrvSettings";
+            this._miSrvSettings.Text = "Server folders…";
+            this._miSrvSettings.Click += new System.EventHandler(this.OnClickSettings);
+            // 
+            // _sepMain3
+            // 
+            this._sepMain3.Name = "_sepMain3";
             // 
             // _btnCheck
             // 
@@ -2562,6 +2647,17 @@
         private System.Windows.Forms.ToolStripLabel _lblMap;
         private System.Windows.Forms.ToolStripComboBox _cmbMap;
         private System.Windows.Forms.ToolStripSeparator _sepMain2;
+        private System.Windows.Forms.ToolStripDropDownButton _ddServer;
+        private System.Windows.Forms.ToolStripMenuItem _miSrvLoadServUo;
+        private System.Windows.Forms.ToolStripMenuItem _miSrvLoadSphere;
+        private System.Windows.Forms.ToolStripMenuItem _miSrvLoadPol;
+        private System.Windows.Forms.ToolStripSeparator _sepSrv1;
+        private System.Windows.Forms.ToolStripMenuItem _miSrvSaveServUo;
+        private System.Windows.Forms.ToolStripMenuItem _miSrvSaveSphere;
+        private System.Windows.Forms.ToolStripMenuItem _miSrvSavePol;
+        private System.Windows.Forms.ToolStripSeparator _sepSrv2;
+        private System.Windows.Forms.ToolStripMenuItem _miSrvSettings;
+        private System.Windows.Forms.ToolStripSeparator _sepMain3;
         private System.Windows.Forms.ToolStripButton _btnCheck;
         private System.Windows.Forms.ToolStripButton _btnSettings;
         private System.Windows.Forms.ToolStripButton _btnHelp;

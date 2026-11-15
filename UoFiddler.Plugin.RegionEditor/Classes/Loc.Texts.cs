@@ -392,9 +392,9 @@ namespace UoFiddler.Plugin.RegionEditor.Classes
             ["ask.openexport"] = new[] { "{0} Dateien wurden nach\n{1}\nexportiert. Ordner öffnen?", "{0} files were exported into\n{1}\nOpen the folder?", "{0} fichiers ont été exportés dans\n{1}\nOuvrir le dossier ?" },
             ["ask.noserver"] = new[]
             {
-                "Für diesen Server ist noch kein Ordner eingestellt. Jetzt die Einstellungen öffnen?",
-                "No folder is set for this server yet. Open the settings now?",
-                "Aucun dossier n'est encore défini pour ce serveur. Ouvrir les paramètres ?"
+                "Für {0} ist noch kein Ordner eingestellt. Jetzt die Einstellungen öffnen?",
+                "No folder is set for {0} yet. Open the settings now?",
+                "Aucun dossier n'est encore défini pour {0}. Ouvrir les paramètres ?"
             },
             ["ask.servermissing"] = new[] { "Nicht gefunden:\n{0}\n\nEinstellungen öffnen?", "Not found:\n{0}\n\nOpen the settings?", "Introuvable :\n{0}\n\nOuvrir les paramètres ?" },
             ["ask.saveservuo"] = new[]
@@ -410,6 +410,43 @@ namespace UoFiddler.Plugin.RegionEditor.Classes
                 "Écrire les régions dans\n{0} ? Une sauvegarde (.bak) est créée avant."
             },
             ["ask.clearhistory"] = new[] { "Den Verlauf leeren? Danach ist kein Rückgängig mehr möglich.", "Clear the history? Undo is not possible afterwards.", "Vider l'historique ? Plus aucune annulation possible ensuite." },
+
+            // ── server menu / loading ───────────────────────────────
+            ["btn.server"] = new[] { "⇅ Server", "⇅ Server", "⇅ Serveur" },
+            ["tip.server"] = new[]
+            {
+                "Regionen des eingestellten Servers laden oder in ihn speichern",
+                "Load the regions of the configured server or save them into it",
+                "Charger les régions du serveur configuré ou les y enregistrer"
+            },
+            ["server.load"] = new[] { "Von {0} laden", "Load from {0}", "Charger depuis {0}" },
+            ["server.save"] = new[] { "In {0} speichern", "Save into {0}", "Enregistrer dans {0}" },
+            ["server.folders"] = new[] { "Server-Ordner festlegen…", "Set server folders…", "Définir les dossiers du serveur…" },
+            ["msg.serverloaded"] = new[]
+            {
+                "{0}: {1} Regionen auf {2} Karte(n) geladen aus {3}",
+                "{0}: loaded {1} regions on {2} map(s) from {3}",
+                "{0} : {1} régions chargées sur {2} carte(s) depuis {3}"
+            },
+            ["msg.serverfailed"] = new[] { "{0} konnte nicht geladen werden: {1}", "{0} could not be loaded: {1}", "{0} n'a pas pu être chargé : {1}" },
+            ["msg.settingssaved"] = new[] { "Einstellungen gespeichert: {0}", "Settings saved: {0}", "Paramètres enregistrés : {0}" },
+            ["settings.startup"] = new[] { "Beim Start laden:", "Load on start:", "Charger au démarrage :" },
+            ["settings.loadnow"] = new[] { "Laden", "Load", "Charger" },
+            ["settings.notset"] = new[] { "– nicht eingestellt", "– not set", "– non défini" },
+            ["settings.notfound"] = new[] { "✖ nicht gefunden: {0}", "✖ not found: {0}", "✖ introuvable : {0}" },
+            ["settings.found"] = new[] { "{0} Regionen auf {1} Karte(n)", "{0} regions on {1} map(s)", "{0} régions sur {1} carte(s)" },
+            ["settings.unreadable"] = new[] { "nicht lesbar: {0}", "can not be read: {0}", "illisible : {0}" },
+            ["settings.saveerror"] = new[]
+            {
+                "Die Einstellungen konnten nicht gespeichert werden:\n{0}\n\n{1}",
+                "The settings could not be saved:\n{0}\n\n{1}",
+                "Les paramètres n'ont pas pu être enregistrés :\n{0}\n\n{1}"
+            },
+            ["startup.LastProject"] = new[] { "zuletzt geöffnetes Projekt", "last opened project", "dernier projet ouvert" },
+            ["startup.ServUo"] = new[] { "Regionen vom ServUO-Server", "regions of the ServUO server", "régions du serveur ServUO" },
+            ["startup.Sphere"] = new[] { "Regionen vom Sphere-Server", "regions of the Sphere server", "régions du serveur Sphere" },
+            ["startup.Pol"] = new[] { "Regionen vom POL-Server", "regions of the POL server", "régions du serveur POL" },
+            ["startup.Nothing"] = new[] { "nichts (leeres Projekt)", "nothing (empty project)", "rien (projet vide)" },
 
             // ── settings ────────────────────────────────────────────
             ["settings.title"] = new[] { "Regionen – Einstellungen", "Regions – settings", "Régions – paramètres" },
