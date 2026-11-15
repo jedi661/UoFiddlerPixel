@@ -1,4 +1,4 @@
-/***************************************************************************
+﻿/***************************************************************************
  *
  * "THE BEER-WARE LICENSE"
  * As long as you retain this notice you can do whatever you want with
@@ -39,30 +39,16 @@ namespace UoFiddler.Controls.Forms
             }
         }
 
+        /// <summary>The menu items are in the designer</summary>
         private void InitAnimationListIntegration()
         {
-            var addItem = new ToolStripMenuItem("Add to animation list…", null, (s, e) => ShowAnimationListAdd(new[] { CurrentCandidate() }))
-            {
-                ToolTipText = "Add the selected animation with name and type to Animationlist.xml (AnimationList tab)"
-            };
-            var addEditedItem = new ToolStripMenuItem("Edited animations → animation list…", null, (s, e) => OfferEditedAnimationsForList(true))
-            {
-                ToolTipText = "All animations changed in this session that are not in the animation list yet"
-            };
-            var servUoItem = new ToolStripMenuItem("ServUO script & setup…", null, (s, e) => ShowServUoSetup())
-            {
-                ToolTipText = "Create a ServUO script and check Bodyconv.def, mobtypes.txt and bodyTable.cfg for the selected animation"
-            };
-
-            MiscToolStripButton.DropDownItems.Add(new ToolStripSeparator());
-            MiscToolStripButton.DropDownItems.Add(addItem);
-            MiscToolStripButton.DropDownItems.Add(addEditedItem);
-            MiscToolStripButton.DropDownItems.Add(servUoItem);
-
-            ContextMenuStripTreeView.Items.Add(new ToolStripSeparator());
-            ContextMenuStripTreeView.Items.Add(new ToolStripMenuItem("Add to animation list…", null, (s, e) => ShowAnimationListAdd(new[] { CurrentCandidate() })));
-            ContextMenuStripTreeView.Items.Add(new ToolStripMenuItem("ServUO script & setup…", null, (s, e) => ShowServUoSetup()));
         }
+
+        private void OnClickAddToAnimationList(object sender, EventArgs e) => ShowAnimationListAdd(new[] { CurrentCandidate() });
+
+        private void OnClickEditedToAnimationList(object sender, EventArgs e) => OfferEditedAnimationsForList(true);
+
+        private void OnClickServUoSetup(object sender, EventArgs e) => ShowServUoSetup();
 
         /// <summary>Real body id of an animation of a file (-1 = anim2..anim5 index without Bodyconv.def entry)</summary>
         private static int TrueBody(int fileType, int index)

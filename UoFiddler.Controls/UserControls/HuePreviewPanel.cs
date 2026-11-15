@@ -20,7 +20,7 @@ using UoFiddler.Controls.Classes;
 
 namespace UoFiddler.Controls.UserControls
 {
-    public sealed class HuePreviewPanel : UserControl
+    public sealed partial class HuePreviewPanel : UserControl
     {
         private enum Source
         {
@@ -39,16 +39,6 @@ namespace UoFiddler.Controls.UserControls
         private static int _direction = 1;
         private static bool _darkBack = true;
 
-        private readonly ComboBox _cmbSource;
-        private readonly TextBox _txtId;
-        private readonly CheckBox _chkPartial;
-        private readonly CheckBox _chkAnimate;
-        private readonly NumericUpDown _numDir;
-        private readonly CheckBox _chkDark;
-        private readonly LinkLabel _lnkOwn;
-        private readonly PictureBox _box;
-        private readonly Timer _timer = new Timer { Interval = 150 };
-
         private Bitmap[] _frames = Array.Empty<Bitmap>();
         private Point[] _centers = Array.Empty<Point>();
         private Bitmap[] _hued1;
@@ -66,35 +56,7 @@ namespace UoFiddler.Controls.UserControls
 
         public HuePreviewPanel()
         {
-            var bar = new FlowLayoutPanel { Dock = DockStyle.Top, AutoSize = true, WrapContents = true, Padding = new Padding(0, 2, 0, 2) };
-
-            _cmbSource = new ComboBox { DropDownStyle = ComboBoxStyle.DropDownList, Width = 90 };
-            _cmbSource.Items.AddRange(new object[] { "Item (art)", "Animation", "Gump" });
-            _txtId = new TextBox { Width = 64 };
-            _chkPartial = new CheckBox { Text = "Only grey (partial hue)", AutoSize = true, Margin = new Padding(3, 5, 3, 0) };
-            _chkAnimate = new CheckBox { Text = "Animate", AutoSize = true, Margin = new Padding(3, 5, 3, 0) };
-            _numDir = new NumericUpDown { Minimum = 0, Maximum = 7, Width = 38 };
-            _chkDark = new CheckBox { Text = "Dark", AutoSize = true, Margin = new Padding(3, 5, 3, 0) };
-            _lnkOwn = new LinkLabel { Text = "← own test graphic", AutoSize = true, Margin = new Padding(6, 6, 3, 0), Visible = false };
-            _lnkOwn.LinkClicked += (s, e) => ShowOwnGraphic();
-
-            var tip = new ToolTip();
-            tip.SetToolTip(_txtId, "Id (decimal or 0x..), Enter = show");
-            tip.SetToolTip(_chkPartial, "Only grey pixels are coloured. Items: taken from the tiledata flag \"PartialHue\" (as in the game).");
-            tip.SetToolTip(_numDir, "Direction of the animation");
-
-            bar.Controls.AddRange(new Control[]
-            {
-                _cmbSource, _txtId, _chkPartial, _chkAnimate,
-                new Label { Text = "Dir", AutoSize = true, Margin = new Padding(3, 6, 0, 0) }, _numDir, _chkDark, _lnkOwn
-            });
-
-            _box = new PictureBox { Dock = DockStyle.Fill };
-            _box.Paint += OnPaintBox;
-            _box.Resize += (s, e) => _box.Invalidate();
-
-            Controls.Add(_box);
-            Controls.Add(bar);
+            InitializeComponent();
 
             _curSource = _source;
             _curId = UserId(_source);
@@ -107,58 +69,103 @@ namespace UoFiddler.Controls.UserControls
             _txtId.Text = $"0x{_curId:X}";
             _loading = false;
 
-            _cmbSource.SelectedIndexChanged += (s, e) =>
-            {
-                if (_loading)
-                {
-                    return;
-                }
-
-                // the user chooses: this becomes the own test graphic again
-                _source = (Source)_cmbSource.SelectedIndex;
-                _overridden = false;
-                _curSource = _source;
-                _curId = UserId(_source);
-                _txtId.Text = $"0x{_curId:X}";
-                LoadSource();
-            };
-            _txtId.KeyDown += (s, e) =>
-            {
-                if (e.KeyCode == Keys.Enter)
-                {
-                    e.SuppressKeyPress = true;
-                    ApplyId();
-                }
-            };
-            _txtId.Leave += (s, e) => ApplyId();
-            _chkPartial.CheckedChanged += (s, e) =>
-            {
-                if (_loading || _curSource == Source.Item)
-                {
-                    return;
-                }
-
-                _partial = _chkPartial.Checked;
-                _effectivePartial = _partial;
-                Rehue();
-            };
-            _chkAnimate.CheckedChanged += (s, e) => { _animate = _chkAnimate.Checked; UpdateTimer(); };
-            _numDir.ValueChanged += (s, e) => { _direction = (int)_numDir.Value; if (_curSource == Source.Animation) { LoadSource(); } };
-            _chkDark.CheckedChanged += (s, e) => { _darkBack = _chkDark.Checked; _box.Invalidate(); };
-            _timer.Tick += (s, e) =>
-            {
-                if (_frames.Length > 1)
-                {
-                    _frame = (_frame + 1) % _frames.Length;
-                    _box.Invalidate();
-                }
-            };
-
             if (!IsDesign())
             {
                 LoadSource();
             }
         }
+
+        #region Designer events
+
+        private void OnSourceChanged(object sender, EventArgs e)
+        {
+            if (_loading)
+            {
+                return;
+            }
+
+            // the user chooses: this becomes the own test graphic again
+            _source = (Source)_cmbSource.SelectedIndex;
+            _overridden = false;
+            _curSource = _source;
+            _curId = UserId(_source);
+            _txtId.Text = $"0x{_curId:X}";
+            LoadSource();
+        }
+
+        private void OnIdKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                e.SuppressKeyPress = true;
+                ApplyId();
+            }
+        }
+
+        private void OnIdLeave(object sender, EventArgs e) => ApplyId();
+
+        private void OnPartialChanged(object sender, EventArgs e)
+        {
+            if (_loading || _curSource == Source.Item)
+            {
+                return;
+            }
+
+            _partial = _chkPartial.Checked;
+            _effectivePartial = _partial;
+            Rehue();
+        }
+
+        private void OnAnimateChanged(object sender, EventArgs e)
+        {
+            if (_loading)
+            {
+                return;
+            }
+
+            _animate = _chkAnimate.Checked;
+            UpdateTimer();
+        }
+
+        private void OnDirectionChanged(object sender, EventArgs e)
+        {
+            if (_loading)
+            {
+                return;
+            }
+
+            _direction = (int)_numDir.Value;
+            if (_curSource == Source.Animation)
+            {
+                LoadSource();
+            }
+        }
+
+        private void OnDarkChanged(object sender, EventArgs e)
+        {
+            if (_loading)
+            {
+                return;
+            }
+
+            _darkBack = _chkDark.Checked;
+            _box.Invalidate();
+        }
+
+        private void OnOwnGraphicClicked(object sender, LinkLabelLinkClickedEventArgs e) => ShowOwnGraphic();
+
+        private void OnTimerTick(object sender, EventArgs e)
+        {
+            if (_frames.Length > 1)
+            {
+                _frame = (_frame + 1) % _frames.Length;
+                _box.Invalidate();
+            }
+        }
+
+        private void OnBoxResize(object sender, EventArgs e) => _box.Invalidate();
+
+        #endregion
 
         /// <summary>Hue colours of the first (or only) preview</summary>
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
@@ -523,15 +530,5 @@ namespace UoFiddler.Controls.UserControls
             UpdateTimer();
         }
 
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                _timer.Dispose();
-                DisposeHued();
-            }
-
-            base.Dispose(disposing);
-        }
     }
 }

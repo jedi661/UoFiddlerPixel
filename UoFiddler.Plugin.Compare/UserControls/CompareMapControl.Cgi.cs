@@ -38,62 +38,33 @@ namespace UoFiddler.Plugin.Compare.UserControls
         private RegionEditSession _editSession2;
         private CompareCgiForm _cgiForm;
 
-        private ToolStripSeparator _toolStripSeparatorCgi;
-        private ToolStripButton _toolStripButtonSelectArea;
-        private ToolStripButton _toolStripButtonCgi;
-        private ToolStripSeparator _contextSeparatorCgi;
-        private ToolStripMenuItem _cgiSelectionMenuItem;
-        private ToolStripMenuItem _cgiHereMenuItem;
-        private ToolStripMenuItem _clearSelectionMenuItem;
 
         // ─────────────────────────────────────────────────────────────────
         // UI
         // ─────────────────────────────────────────────────────────────────
+        /// <summary>The buttons and menu items are in the designer; here only what has to happen at runtime</summary>
         private void InitCgiCompare()
         {
-            _toolStripSeparatorCgi = new ToolStripSeparator();
-
-            _toolStripButtonSelectArea = new ToolStripButton
-            {
-                Text = "▭ Bereich markieren",
-                DisplayStyle = ToolStripItemDisplayStyle.Text,
-                CheckOnClick = true,
-                ForeColor = Color.White,
-                ToolTipText = "Linke Maustaste zieht einen Bereich auf (auch ohne diesen Schalter: Shift + Ziehen)"
-            };
-            _toolStripButtonSelectArea.CheckedChanged += (s, e) =>
-                pictureBox.Cursor = _toolStripButtonSelectArea.Checked ? Cursors.Cross : Cursors.Default;
-
-            _toolStripButtonCgi = new ToolStripButton
-            {
-                Text = "CGI-Vergleich…",
-                DisplayStyle = ToolStripItemDisplayStyle.Text,
-                Enabled = false,
-                ForeColor = Color.White,
-                ToolTipText = "Markierten Bereich von Map1 und Map2 nebeneinander in der Client-Ansicht öffnen (Statics, kopieren)"
-            };
-            _toolStripButtonCgi.Click += (s, e) => OpenCgiCompareForSelection();
-
-            int index = toolStripNav.Items.IndexOf(toolStripProgressBar);
-            toolStripNav.Items.Insert(index, _toolStripButtonCgi);
-            toolStripNav.Items.Insert(index, _toolStripButtonSelectArea);
-            toolStripNav.Items.Insert(index, _toolStripSeparatorCgi);
-
-            _contextSeparatorCgi = new ToolStripSeparator();
-            _cgiSelectionMenuItem = new ToolStripMenuItem("CGI-Vergleich der Markierung…", null, (s, e) => OpenCgiCompareForSelection());
-            _cgiHereMenuItem = new ToolStripMenuItem($"CGI-Vergleich hier ({QuickAreaSize} × {QuickAreaSize})…", null, (s, e) => OpenCgiCompareHere());
-            _clearSelectionMenuItem = new ToolStripMenuItem("Markierung aufheben", null, (s, e) => ClearSelection());
-            contextMenuStrip1.Items.AddRange(new ToolStripItem[]
-            {
-                _contextSeparatorCgi, _cgiSelectionMenuItem, _cgiHereMenuItem, _clearSelectionMenuItem
-            });
-            contextMenuStrip1.Opening += (s, e) =>
-            {
-                _contextWorld = ScreenToWorld(pictureBox.PointToClient(MousePosition));
-                _cgiSelectionMenuItem.Enabled = _selection.HasValue;
-                _clearSelectionMenuItem.Enabled = _selection.HasValue;
-            };
+            contextMenuStrip1.Opening += OnOpeningContextCgi;
         }
+
+        private void OnOpeningContextCgi(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            _contextWorld = ScreenToWorld(pictureBox.PointToClient(MousePosition));
+            _cgiSelectionMenuItem.Enabled = _selection.HasValue;
+            _clearSelectionMenuItem.Enabled = _selection.HasValue;
+        }
+
+        private void OnSelectAreaCheckedChanged(object sender, EventArgs e)
+        {
+            pictureBox.Cursor = _toolStripButtonSelectArea.Checked ? Cursors.Cross : Cursors.Default;
+        }
+
+        private void OnClickCgiSelection(object sender, EventArgs e) => OpenCgiCompareForSelection();
+
+        private void OnClickCgiHere(object sender, EventArgs e) => OpenCgiCompareHere();
+
+        private void OnClickClearSelection(object sender, EventArgs e) => ClearSelection();
 
         // ─────────────────────────────────────────────────────────────────
         // Coordinates

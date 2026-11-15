@@ -130,6 +130,7 @@ namespace UoFiddler.Controls.UserControls
             {
                 pictureBox.MouseDoubleClick -= OnMouseDoubleClick;
                 pictureBox.ContextMenuStrip = new ContextMenuStrip();
+                HideEditExtensions();
             }
             else if (!_loaded)
             {

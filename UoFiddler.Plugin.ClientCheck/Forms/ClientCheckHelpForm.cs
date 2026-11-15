@@ -11,6 +11,7 @@
  ***************************************************************************/
 
 using System;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
@@ -22,14 +23,10 @@ using UoFiddler.Plugin.ClientCheck.Classes;
 
 namespace UoFiddler.Plugin.ClientCheck.Forms
 {
-    public class ClientCheckHelpForm : Form
+    public partial class ClientCheckHelpForm : Form
     {
         private static ClientCheckHelpForm _instance;
-
-        private readonly RichTextBox _text;
-        private readonly ComboBox _cmbLang;
-        private readonly Button _btnFolder;
-        private readonly Button _btnClose;
+        private bool _loading;
 
         public static void ShowHelp(IWin32Window owner)
         {
@@ -47,41 +44,36 @@ namespace UoFiddler.Plugin.ClientCheck.Forms
 
         public ClientCheckHelpForm()
         {
-            Icon = Options.GetFiddlerIcon();
-            Size = new Size(820, 720);
-            MinimumSize = new Size(500, 400);
-            StartPosition = FormStartPosition.CenterParent;
-            Font = new Font("Segoe UI", 9.5f);
-
-            _text = new RichTextBox
+            InitializeComponent();
+            if (LicenseManager.UsageMode == LicenseUsageMode.Designtime)
             {
-                Dock = DockStyle.Fill,
-                ReadOnly = true,
-                BorderStyle = BorderStyle.None,
-                BackColor = Color.White,
-                DetectUrls = false,
-                Padding = new Padding(10)
-            };
+                return;
+            }
 
-            var bar = new FlowLayoutPanel { Dock = DockStyle.Bottom, AutoSize = true, FlowDirection = FlowDirection.RightToLeft, Padding = new Padding(6) };
-            _btnClose = new Button { AutoSize = true };
-            _btnClose.Click += (s, e) => Close();
-            _btnFolder = new Button { AutoSize = true, Text = "📁" };
-            _btnFolder.Click += (s, e) => OpenFolder();
-            _cmbLang = new ComboBox { DropDownStyle = ComboBoxStyle.DropDownList, Width = 110 };
-            _cmbLang.Items.AddRange(Loc.LanguageNames.Cast<object>().ToArray());
+            Icon = Options.GetFiddlerIcon();
+            _loading = true;
             _cmbLang.SelectedIndex = Math.Max(0, Array.IndexOf(Loc.Languages, Loc.Language));
-            _cmbLang.SelectedIndexChanged += (s, e) => Loc.Language = Loc.Languages[Math.Max(0, _cmbLang.SelectedIndex)];
-            bar.Controls.AddRange(new Control[] { _btnClose, _btnFolder, _cmbLang });
-
-            var host = new Panel { Dock = DockStyle.Fill, Padding = new Padding(14, 10, 8, 4), BackColor = Color.White };
-            host.Controls.Add(_text);
-            Controls.Add(host);
-            Controls.Add(bar);
+            _loading = false;
 
             Loc.LanguageChanged += OnLanguageChanged;
-            FormClosed += (s, e) => Loc.LanguageChanged -= OnLanguageChanged;
             LoadText();
+        }
+
+        private void OnClickClose(object sender, EventArgs e) => Close();
+
+        private void OnClickFolder(object sender, EventArgs e) => OpenFolder();
+
+        private void OnLanguageSelected(object sender, EventArgs e)
+        {
+            if (!_loading && _cmbLang.SelectedIndex >= 0)
+            {
+                Loc.Language = Loc.Languages[_cmbLang.SelectedIndex];
+            }
+        }
+
+        private void OnFormClosedHelp(object sender, FormClosedEventArgs e)
+        {
+            Loc.LanguageChanged -= OnLanguageChanged;
         }
 
         private void OnLanguageChanged(object sender, EventArgs e)
@@ -89,7 +81,9 @@ namespace UoFiddler.Plugin.ClientCheck.Forms
             int index = Array.IndexOf(Loc.Languages, Loc.Language);
             if (_cmbLang.SelectedIndex != index)
             {
+                _loading = true;
                 _cmbLang.SelectedIndex = index;
+                _loading = false;
             }
 
             LoadText();
@@ -116,7 +110,6 @@ namespace UoFiddler.Plugin.ClientCheck.Forms
         private void LoadText()
         {
             Text = $"{Loc.T("tab.title")} – {Loc.T("btn.help").TrimStart('?', ' ')}";
-            _btnClose.Text = "OK";
             RenderMarkdown(ReadHelp(Loc.Language));
         }
 

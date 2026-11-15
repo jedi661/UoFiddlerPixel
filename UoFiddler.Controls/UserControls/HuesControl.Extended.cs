@@ -41,57 +41,41 @@ namespace UoFiddler.Controls.UserControls
         // clipboard for copy/paste of hues (inside UoFiddler)
         private static List<HueState> _clipboard = new List<HueState>();
 
-        private readonly ToolTip _toolTip = new ToolTip();
-        private ToolStripComboBox _filterBox;
-        private ToolStripButton _gridButton;
-        private ToolStripLabel _countLabel;
-        private ToolStripButton _undoButton;
-        private ToolStripButton _redoButton;
 
         private HueState[] _baseline = Array.Empty<HueState>();
 
         // side panel
-        private PictureBox _strip;
-        private Label _info;
-        private HuePreviewPanel _preview;
-        private ListBox _results;
-        private Label _resultsTitle;
-        private TextBox _colorText;
         private int _stripStep = -1;
 
         // usage
-        private ListBox _usage;
-        private Label _usageTitle;
-        private CheckBox _chkFollowUsage;
 
         #region Toolbar
 
+        /// <summary>The toolbar items are in the designer (also used by the hue pop ups: filter and grid)</summary>
         private void InitToolbarExtensions()
         {
-            _filterBox = new ToolStripComboBox { DropDownStyle = ComboBoxStyle.DropDownList, AutoSize = false, Width = 150, ToolTipText = "Show only some hues" };
-            _filterBox.Items.AddRange(_filterNames.Cast<object>().ToArray());
             _filterBox.SelectedIndex = 0;
-            _filterBox.SelectedIndexChanged += (s, e) => ApplyFilter(true);
+        }
 
-            _gridButton = new ToolStripButton("Grid") { CheckOnClick = true, ToolTipText = "Grid view (all hues as small tiles) / list view" };
-            _gridButton.CheckedChanged += (s, e) =>
+        private void OnFilterChanged(object sender, EventArgs e)
+        {
+            if (_loaded)
             {
-                _grid = _gridButton.Checked;
-                UpdateScrollBar();
-                EnsureVisible(_selected);
-                pictureBox.Invalidate();
-            };
+                ApplyFilter(true);
+            }
+        }
 
-            _countLabel = new ToolStripLabel { ForeColor = Color.DimGray };
+        private void OnGridChanged(object sender, EventArgs e)
+        {
+            _grid = _gridButton.Checked;
+            if (!_loaded)
+            {
+                return;
+            }
 
-            HueIndexToolStripLabel.Text = "Hue:";
-            HueIndexToolStripTextBox.ToolTipText = "Hue number as used in the game/server (decimal or 0x..)";
-
-            HuesTopMenuToolStrip.Items.Add(new ToolStripSeparator());
-            HuesTopMenuToolStrip.Items.Add(new ToolStripLabel("Filter:"));
-            HuesTopMenuToolStrip.Items.Add(_filterBox);
-            HuesTopMenuToolStrip.Items.Add(_gridButton);
-            HuesTopMenuToolStrip.Items.Add(_countLabel);
+            UpdateScrollBar();
+            EnsureVisible(_selected);
+            pictureBox.Invalidate();
         }
 
         private void UpdateUndoButtons()
@@ -175,22 +159,13 @@ namespace UoFiddler.Controls.UserControls
 
         #region Edit extensions (only in the hues tab, not in the hue pop ups)
 
+        /// <summary>The controls are in the designer; here the events of the program are connected</summary>
         private void InitEditExtensions()
         {
-            // toolbar: undo / redo
-            _undoButton = new ToolStripButton("↶ Undo") { Enabled = false };
-            _undoButton.Click += (s, e) => DoUndo();
-            _redoButton = new ToolStripButton("↷ Redo") { Enabled = false };
-            _redoButton.Click += (s, e) => DoRedo();
-            HuesTopMenuToolStrip.Items.Add(new ToolStripSeparator());
-            HuesTopMenuToolStrip.Items.Add(_undoButton);
-            HuesTopMenuToolStrip.Items.Add(_redoButton);
             HueHistory.Main.Changed += OnHistoryChanged;
             UpdateUndoButtons();
             Disposed += (s, e) => HueHistory.Main.Changed -= OnHistoryChanged;
 
-            BuildContextMenu();
-            BuildSidePanel();
             SelectedChanged += (s, e) => UpdateSidePanel();
 
             HueUsageIndex.Built += OnUsageBuilt;
@@ -198,6 +173,16 @@ namespace UoFiddler.Controls.UserControls
             ControlEvents.FilePathChangeEvent += OnFilesChangedForUsage;
             Disposed += (s, e) => ControlEvents.FilePathChangeEvent -= OnFilesChangedForUsage;
             StartUsageScan();
+        }
+
+        /// <summary>Hue pop ups (choosing a hue): no side panel and no editing</summary>
+        private void HideEditExtensions()
+        {
+            sidePanel.Visible = false;
+            splitterSide.Visible = false;
+            toolStripSeparatorUndo.Visible = false;
+            _undoButton.Visible = false;
+            _redoButton.Visible = false;
         }
 
         #region Usage (which hue is used for what in the client files)
@@ -320,43 +305,45 @@ namespace UoFiddler.Controls.UserControls
             UpdateUndoButtons();
         }
 
-        private void BuildContextMenu()
-        {
-            ToolStripItemCollection items = contextMenuStrip1.Items;
-            items.Insert(0, new ToolStripSeparator());
-            items.Insert(0, Item("Rename… (F2)", (s, e) => RenameSelected()));
-            items.Insert(0, Item("Edit… (Enter)", (s, e) => OpenEditor(_selected)));
+        // ── menu / button events (the items are in the designer) ──
 
-            items.Add(new ToolStripSeparator());
-            items.Add(Item("Copy (Ctrl+C)", (s, e) => CopySelected()));
-            items.Add(Item("Paste (Ctrl+V)", (s, e) => PasteToSelected()));
-            items.Add(Item("Clear / set empty (Del)", (s, e) => ClearSelected()));
-            items.Add(Item("Copy to hue…", (s, e) => CopyToHue()));
-            items.Add(Item("Swap with hue…", (s, e) => SwapWithHue()));
-            items.Add(Item("Revert to loaded state", (s, e) => RevertSelected()));
-            items.Add(new ToolStripSeparator());
-            items.Add(Item("New from gradient…", (s, e) => CreateFromGradient()));
-            items.Add(Item("New from image…", (s, e) => CreateFromImage()));
-            items.Add(new ToolStripSeparator());
-            items.Add(Item("Find similar hues", (s, e) => FindSimilar()));
-            items.Add(Item("Copy for ServUO (Hue = 0x…)", (s, e) => CopyServUO()));
-            items.Add(new ToolStripSeparator());
-            items.Add(Item("Export selection (hue range)…", (s, e) => ExportRange()));
-            items.Add(Item("Import hue range…", (s, e) => ImportRange()));
-            var palette = new ToolStripMenuItem("Export palette of the selection");
-            palette.DropDownItems.Add(Item("PNG image…", (s, e) => ExportPalette("png")));
-            palette.DropDownItems.Add(Item("GIMP palette (.gpl)…", (s, e) => ExportPalette("gpl")));
-            palette.DropDownItems.Add(Item("Adobe colour table (.act, max. 8 hues)…", (s, e) => ExportPalette("act")));
-            items.Add(palette);
-            items.Add(new ToolStripSeparator());
-            items.Add(Item("Undo (Ctrl+Z)", (s, e) => DoUndo()));
-            items.Add(Item("Redo (Ctrl+Y)", (s, e) => DoRedo()));
+        private void OnClickEdit(object sender, EventArgs e) => OpenEditor(_selected);
 
-            replaceToolStripMenuItem.Text = "Replace with hue…";
-            replaceToolStripMenuItem.ToolTipText = "Enter the hue number and press Enter (applies to all selected hues)";
-        }
+        private void OnClickRename(object sender, EventArgs e) => RenameSelected();
 
-        private static ToolStripMenuItem Item(string text, EventHandler click) => new ToolStripMenuItem(text, null, click);
+        private void OnClickCopy(object sender, EventArgs e) => CopySelected();
+
+        private void OnClickPaste(object sender, EventArgs e) => PasteToSelected();
+
+        private void OnClickClear(object sender, EventArgs e) => ClearSelected();
+
+        private void OnClickCopyTo(object sender, EventArgs e) => CopyToHue();
+
+        private void OnClickSwap(object sender, EventArgs e) => SwapWithHue();
+
+        private void OnClickRevert(object sender, EventArgs e) => RevertSelected();
+
+        private void OnClickGradient(object sender, EventArgs e) => CreateFromGradient();
+
+        private void OnClickFromImage(object sender, EventArgs e) => CreateFromImage();
+
+        private void OnClickSimilar(object sender, EventArgs e) => FindSimilar();
+
+        private void OnClickServUO(object sender, EventArgs e) => CopyServUO();
+
+        private void OnClickExportRange(object sender, EventArgs e) => ExportRange();
+
+        private void OnClickImportRange(object sender, EventArgs e) => ImportRange();
+
+        private void OnClickPalettePng(object sender, EventArgs e) => ExportPalette("png");
+
+        private void OnClickPaletteGpl(object sender, EventArgs e) => ExportPalette("gpl");
+
+        private void OnClickPaletteAct(object sender, EventArgs e) => ExportPalette("act");
+
+        private void OnClickUndo(object sender, EventArgs e) => DoUndo();
+
+        private void OnClickRedo(object sender, EventArgs e) => DoRedo();
 
         private bool HandleEditKey(Keys keyData)
         {
@@ -389,141 +376,63 @@ namespace UoFiddler.Controls.UserControls
 
         #region Side panel
 
-        private void BuildSidePanel()
+        private void OnPaintStrip(object sender, PaintEventArgs e)
         {
-            var side = new Panel { Dock = DockStyle.Right, Width = 340 };
-            var splitter = new Splitter { Dock = DockStyle.Right, Width = 4, MinExtra = 250, MinSize = 220 };
-
-            var tabs = new TabControl { Dock = DockStyle.Fill };
-
-            // ── info + preview ───────────────────────────────────────
-            var infoPage = new TabPage("Info / preview");
-            _strip = new PictureBox { Dock = DockStyle.Top, Height = 38, Cursor = Cursors.Hand };
-            _strip.Paint += (s, e) =>
-            {
-                Hue hue = SelectedHue;
-                HueAnalysis.DrawStrip(e.Graphics, new Rectangle(4, 4, _strip.Width - 8, _strip.Height - 8), hue?.Colors,
-                    _stripStep >= 0 ? new[] { _stripStep } : null);
-            };
-            _strip.MouseClick += (s, e) =>
-            {
-                _stripStep = Math.Max(0, Math.Min(31, (int)((e.X - 4) / ((_strip.Width - 8) / 32f))));
-                UpdateSidePanel();
-            };
-            _toolTip.SetToolTip(_strip, "Click a colour step to see its value");
-
-            _info = new Label { Dock = DockStyle.Top, Height = 146, Font = new Font("Consolas", 8.5f), Padding = new Padding(4) };
-
-            var buttons = new FlowLayoutPanel { Dock = DockStyle.Top, AutoSize = true, Padding = new Padding(2) };
-            buttons.Controls.Add(SideButton("Edit…", (s, e) => OpenEditor(_selected)));
-            buttons.Controls.Add(SideButton("Copy for ServUO", (s, e) => CopyServUO()));
-            buttons.Controls.Add(SideButton("Revert", (s, e) => RevertSelected()));
-            buttons.Controls.Add(SideButton("Gradient…", (s, e) => CreateFromGradient()));
-            buttons.Controls.Add(SideButton("From image…", (s, e) => CreateFromImage()));
-
-            _preview = new HuePreviewPanel { Dock = DockStyle.Fill };
-
-            infoPage.Controls.Add(_preview);
-            infoPage.Controls.Add(buttons);
-            infoPage.Controls.Add(_info);
-            infoPage.Controls.Add(_strip);
-
-            // ── find ─────────────────────────────────────────────────
-            var findPage = new TabPage("Find");
-            var findTop = new FlowLayoutPanel { Dock = DockStyle.Top, AutoSize = true, Padding = new Padding(2) };
-            findTop.Controls.Add(SideButton("Similar to selected", (s, e) => FindSimilar()));
-            findTop.Controls.Add(new Label { Text = "Colour:", AutoSize = true, Margin = new Padding(3, 7, 0, 0) });
-            _colorText = new TextBox { Width = 80, Text = "#A03030" };
-            _toolTip.SetToolTip(_colorText, "#RRGGBB or R,G,B");
-            _colorText.KeyDown += (s, e) =>
-            {
-                if (e.KeyCode == Keys.Enter)
-                {
-                    e.SuppressKeyPress = true;
-                    FindByColor();
-                }
-            };
-            findTop.Controls.Add(_colorText);
-            findTop.Controls.Add(SideButton("…", (s, e) => PickColor()));
-            findTop.Controls.Add(SideButton("Find hues with this colour", (s, e) => FindByColor()));
-
-            _resultsTitle = new Label { Dock = DockStyle.Top, Height = 20, Padding = new Padding(4, 3, 0, 0), ForeColor = Color.DimGray };
-            _results = new ListBox
-            {
-                Dock = DockStyle.Fill,
-                DrawMode = DrawMode.OwnerDrawFixed,
-                ItemHeight = 34,
-                IntegralHeight = false
-            };
-            _results.DrawItem += OnDrawResult;
-            _results.DoubleClick += (s, e) => { if (_results.SelectedItem is ResultItem r) { ShowHue(r.Index); } };
-            _results.KeyDown += (s, e) => { if (e.KeyCode == Keys.Enter && _results.SelectedItem is ResultItem r) { ShowHue(r.Index); } };
-
-            findPage.Controls.Add(_results);
-            findPage.Controls.Add(_resultsTitle);
-            findPage.Controls.Add(findTop);
-            findPage.Controls.Add(new Label
-            {
-                Text = "Double click a result to select it.",
-                Dock = DockStyle.Bottom,
-                Height = 20,
-                ForeColor = Color.DimGray,
-                Padding = new Padding(4, 3, 0, 0)
-            });
-
-            // ── used by ──────────────────────────────────────────────
-            var usagePage = new TabPage("Used by");
-            var usageTop = new FlowLayoutPanel { Dock = DockStyle.Top, AutoSize = true, Padding = new Padding(2) };
-            _chkFollowUsage = new CheckBox { Text = "Preview follows the usage", Checked = true, AutoSize = true, Margin = new Padding(3, 6, 3, 3) };
-            _toolTip.SetToolTip(_chkFollowUsage, "When a hue is selected, the preview shows the graphic that uses it (the most used one). Without a usage your own test graphic is shown.");
-            _chkFollowUsage.CheckedChanged += (s, e) => UpdateSidePanel();
-            usageTop.Controls.Add(_chkFollowUsage);
-            usageTop.Controls.Add(SideButton("Scan again", (s, e) => { HueUsageIndex.Invalidate(); StartUsageScan(); }));
-
-            _usageTitle = new Label { Dock = DockStyle.Top, Height = 34, Padding = new Padding(4, 3, 0, 0) };
-            _usage = new ListBox { Dock = DockStyle.Fill, IntegralHeight = false, HorizontalScrollbar = true };
-            _usage.SelectedIndexChanged += (s, e) =>
-            {
-                if (_usage.SelectedItem is HueUsageEntry entry)
-                {
-                    _preview.ShowGraphic(entry.PreviewKind, entry.PreviewId);
-                }
-            };
-
-            usagePage.Controls.Add(_usage);
-            usagePage.Controls.Add(_usageTitle);
-            usagePage.Controls.Add(usageTop);
-            usagePage.Controls.Add(new Label
-            {
-                Text = "Read from statics*.mul (maps), body.def, corpse.def, gump.def and equipconv.def. " +
-                       "Land tiles and textures are never hued by the client.",
-                Dock = DockStyle.Bottom,
-                Height = 46,
-                ForeColor = Color.DimGray,
-                Padding = new Padding(4, 3, 0, 0)
-            });
-
-            tabs.TabPages.Add(infoPage);
-            tabs.TabPages.Add(usagePage);
-            tabs.TabPages.Add(findPage);
-            side.Controls.Add(tabs);
-
-            // dock order: side panel right-most, then splitter, scroll bar, list (fill)
-            Control.ControlCollection content = toolStripContainer.ContentPanel.Controls;
-            content.Add(splitter);
-            content.Add(side);
-            content.SetChildIndex(side, content.Count - 1);
-            content.SetChildIndex(splitter, content.Count - 2);
-            content.SetChildIndex(vScrollBar, content.Count - 3);
-            pictureBox.BringToFront();
+            Hue hue = SelectedHue;
+            HueAnalysis.DrawStrip(e.Graphics, new Rectangle(4, 4, _strip.Width - 8, _strip.Height - 8), hue?.Colors,
+                _stripStep >= 0 ? new[] { _stripStep } : null);
         }
 
-        private static Button SideButton(string text, EventHandler click)
+        private void OnStripClick(object sender, MouseEventArgs e)
         {
-            var b = new Button { Text = text, AutoSize = true, Margin = new Padding(2) };
-            b.Click += click;
-            return b;
+            _stripStep = Math.Max(0, Math.Min(31, (int)((e.X - 4) / ((_strip.Width - 8) / 32f))));
+            UpdateSidePanel();
         }
+
+        private void OnUsageSelected(object sender, EventArgs e)
+        {
+            if (_usage.SelectedItem is HueUsageEntry entry)
+            {
+                _preview.ShowGraphic(entry.PreviewKind, entry.PreviewId);
+            }
+        }
+
+        private void OnFollowUsageChanged(object sender, EventArgs e) => UpdateSidePanel();
+
+        private void OnClickScanAgain(object sender, EventArgs e)
+        {
+            HueUsageIndex.Invalidate();
+            StartUsageScan();
+        }
+
+        private void OnResultDoubleClick(object sender, EventArgs e)
+        {
+            if (_results.SelectedItem is ResultItem r)
+            {
+                ShowHue(r.Index);
+            }
+        }
+
+        private void OnResultKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter && _results.SelectedItem is ResultItem r)
+            {
+                ShowHue(r.Index);
+            }
+        }
+
+        private void OnColorTextKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                e.SuppressKeyPress = true;
+                FindByColor();
+            }
+        }
+
+        private void OnClickPickColor(object sender, EventArgs e) => PickColor();
+
+        private void OnClickFindColor(object sender, EventArgs e) => FindByColor();
 
         private Hue SelectedHue => _selected >= 0 && _selected < Hues.List.Length ? Hues.List[_selected] : null;
 

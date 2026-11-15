@@ -96,6 +96,13 @@ namespace UoFiddler.Plugin.Compare.UserControls
             this.toolStripButtonDiffList = new System.Windows.Forms.ToolStripButton();
             this.toolStripProgressBar = new System.Windows.Forms.ToolStripProgressBar();
             this.toolStripLabelProgress = new System.Windows.Forms.ToolStripLabel();
+            this._toolStripSeparatorCgi = new System.Windows.Forms.ToolStripSeparator();
+            this._toolStripButtonSelectArea = new System.Windows.Forms.ToolStripButton();
+            this._toolStripButtonCgi = new System.Windows.Forms.ToolStripButton();
+            this._contextSeparatorCgi = new System.Windows.Forms.ToolStripSeparator();
+            this._cgiSelectionMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this._cgiHereMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this._clearSelectionMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox)).BeginInit();
             this.contextMenuStrip1.SuspendLayout();
@@ -146,7 +153,11 @@ namespace UoFiddler.Plugin.Compare.UserControls
             // ──────────────────────────────────────────────
             this.contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
                 this.zoomToolStripMenuItem,
-                this.zoomToolStripMenuItem1 });
+                this.zoomToolStripMenuItem1,
+                this._contextSeparatorCgi,
+                this._cgiSelectionMenuItem,
+                this._cgiHereMenuItem,
+                this._clearSelectionMenuItem });
             this.contextMenuStrip1.Name = "contextMenuStrip1";
             this.contextMenuStrip1.Size = new System.Drawing.Size(115, 48);
             this.contextMenuStrip1.Opening += new System.ComponentModel.CancelEventHandler(this.OnOpeningContext);
@@ -158,6 +169,20 @@ namespace UoFiddler.Plugin.Compare.UserControls
             this.zoomToolStripMenuItem1.Name = "zoomToolStripMenuItem1";
             this.zoomToolStripMenuItem1.Text = "Zoom -";
             this.zoomToolStripMenuItem1.Click += new System.EventHandler(this.OnZoomMinus);
+
+            this._contextSeparatorCgi.Name = "_contextSeparatorCgi";
+
+            this._cgiSelectionMenuItem.Name = "_cgiSelectionMenuItem";
+            this._cgiSelectionMenuItem.Text = "CGI-Vergleich der Markierung…";
+            this._cgiSelectionMenuItem.Click += new System.EventHandler(this.OnClickCgiSelection);
+
+            this._cgiHereMenuItem.Name = "_cgiHereMenuItem";
+            this._cgiHereMenuItem.Text = "CGI-Vergleich hier (64 × 64)…";
+            this._cgiHereMenuItem.Click += new System.EventHandler(this.OnClickCgiHere);
+
+            this._clearSelectionMenuItem.Name = "_clearSelectionMenuItem";
+            this._clearSelectionMenuItem.Text = "Markierung aufheben";
+            this._clearSelectionMenuItem.Click += new System.EventHandler(this.OnClickClearSelection);
 
             // ──────────────────────────────────────────────
             // toolTip1
@@ -179,6 +204,9 @@ namespace UoFiddler.Plugin.Compare.UserControls
                 this.toolStripButtonPrevDiff,
                 this.toolStripButtonNextDiff,
                 this.toolStripButtonDiffList,
+                this._toolStripSeparatorCgi,
+                this._toolStripButtonSelectArea,
+                this._toolStripButtonCgi,
                 this.toolStripProgressBar,
                 this.toolStripLabelProgress });
             this.toolStripNav.Location = new System.Drawing.Point(0, 0);
@@ -210,6 +238,24 @@ namespace UoFiddler.Plugin.Compare.UserControls
             this.toolStripButtonDiffList.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             this.toolStripButtonDiffList.ToolTipText = "Show all diff coordinates – click to jump, copy to clipboard";
             this.toolStripButtonDiffList.Click += new System.EventHandler(this.OnClickDiffList);
+
+            this._toolStripSeparatorCgi.Name = "_toolStripSeparatorCgi";
+
+            this._toolStripButtonSelectArea.CheckOnClick = true;
+            this._toolStripButtonSelectArea.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this._toolStripButtonSelectArea.ForeColor = System.Drawing.Color.White;
+            this._toolStripButtonSelectArea.Name = "_toolStripButtonSelectArea";
+            this._toolStripButtonSelectArea.Text = "▭ Bereich markieren";
+            this._toolStripButtonSelectArea.ToolTipText = "Linke Maustaste zieht einen Bereich auf (auch ohne diesen Schalter: Shift + Ziehen)";
+            this._toolStripButtonSelectArea.CheckedChanged += new System.EventHandler(this.OnSelectAreaCheckedChanged);
+
+            this._toolStripButtonCgi.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this._toolStripButtonCgi.Enabled = false;
+            this._toolStripButtonCgi.ForeColor = System.Drawing.Color.White;
+            this._toolStripButtonCgi.Name = "_toolStripButtonCgi";
+            this._toolStripButtonCgi.Text = "CGI-Vergleich…";
+            this._toolStripButtonCgi.ToolTipText = "Markierten Bereich von Map1 und Map2 nebeneinander in der Client-Ansicht öffnen (Statics, kopieren)";
+            this._toolStripButtonCgi.Click += new System.EventHandler(this.OnClickCgiSelection);
 
             this.toolStripProgressBar.Name = "toolStripProgressBar";
             this.toolStripProgressBar.Size = new System.Drawing.Size(120, 16);
@@ -435,5 +481,13 @@ namespace UoFiddler.Plugin.Compare.UserControls
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
         private System.Windows.Forms.ToolStripMenuItem exportDiffToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem screenshotToolStripMenuItem;
+        // ── CGI compare ──
+        private System.Windows.Forms.ToolStripSeparator _toolStripSeparatorCgi;
+        private System.Windows.Forms.ToolStripButton _toolStripButtonSelectArea;
+        private System.Windows.Forms.ToolStripButton _toolStripButtonCgi;
+        private System.Windows.Forms.ToolStripSeparator _contextSeparatorCgi;
+        private System.Windows.Forms.ToolStripMenuItem _cgiSelectionMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem _cgiHereMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem _clearSelectionMenuItem;
     }
 }

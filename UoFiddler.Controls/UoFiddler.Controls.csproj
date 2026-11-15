@@ -218,6 +218,36 @@
 		<Compile Update="UserControls\AnimationListControl.Designer.cs">
 			<DependentUpon>AnimationListControl.cs</DependentUpon>
 		</Compile>
+		<Compile Update="UserControls\HuePreviewPanel.cs">
+			<SubType>UserControl</SubType>
+		</Compile>
+		<Compile Update="UserControls\HuePreviewPanel.Designer.cs">
+			<DependentUpon>HuePreviewPanel.cs</DependentUpon>
+		</Compile>
+		<Compile Update="Forms\HueGradientForm.cs">
+			<SubType>Form</SubType>
+		</Compile>
+		<Compile Update="Forms\HueGradientForm.Designer.cs">
+			<DependentUpon>HueGradientForm.cs</DependentUpon>
+		</Compile>
+		<Compile Update="Forms\HueFromImageForm.cs">
+			<SubType>Form</SubType>
+		</Compile>
+		<Compile Update="Forms\HueFromImageForm.Designer.cs">
+			<DependentUpon>HueFromImageForm.cs</DependentUpon>
+		</Compile>
+		<Compile Update="Forms\AnimationListAddForm.cs">
+			<SubType>Form</SubType>
+		</Compile>
+		<Compile Update="Forms\AnimationListAddForm.Designer.cs">
+			<DependentUpon>AnimationListAddForm.cs</DependentUpon>
+		</Compile>
+		<Compile Update="Forms\ServUOSetupForm.cs">
+			<SubType>Form</SubType>
+		</Compile>
+		<Compile Update="Forms\ServUOSetupForm.Designer.cs">
+			<DependentUpon>ServUOSetupForm.cs</DependentUpon>
+		</Compile>
 		<Compile Update="UserControls\AnimationListControl.Extensions.cs">
 			<DependentUpon>AnimationListControl.cs</DependentUpon>
 		</Compile>
@@ -308,6 +338,21 @@
 		<ProjectReference Include="..\Ultima\Ultima.csproj" />
 	</ItemGroup>
 	<ItemGroup>
+		<EmbeddedResource Update="UserControls\HuePreviewPanel.resx">
+			<DependentUpon>HuePreviewPanel.cs</DependentUpon>
+		</EmbeddedResource>
+		<EmbeddedResource Update="Forms\HueGradientForm.resx">
+			<DependentUpon>HueGradientForm.cs</DependentUpon>
+		</EmbeddedResource>
+		<EmbeddedResource Update="Forms\HueFromImageForm.resx">
+			<DependentUpon>HueFromImageForm.cs</DependentUpon>
+		</EmbeddedResource>
+		<EmbeddedResource Update="Forms\AnimationListAddForm.resx">
+			<DependentUpon>AnimationListAddForm.cs</DependentUpon>
+		</EmbeddedResource>
+		<EmbeddedResource Update="Forms\ServUOSetupForm.resx">
+			<DependentUpon>ServUOSetupForm.cs</DependentUpon>
+		</EmbeddedResource>
 		<EmbeddedResource Update="Forms\AnimationEditForm.resx">
 			<DependentUpon>AnimationEditForm.cs</DependentUpon>
 		</EmbeddedResource>

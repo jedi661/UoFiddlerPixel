@@ -37,6 +37,18 @@
 		<Compile Update="Forms\ClientCheckHelpForm.cs">
 			<SubType>Form</SubType>
 		</Compile>
+		<Compile Update="UserControls\ClientCheckControl.Designer.cs">
+			<DependentUpon>ClientCheckControl.cs</DependentUpon>
+		</Compile>
+		<Compile Update="Forms\ClientCheckHelpForm.Designer.cs">
+			<DependentUpon>ClientCheckHelpForm.cs</DependentUpon>
+		</Compile>
+		<EmbeddedResource Update="UserControls\ClientCheckControl.resx">
+			<DependentUpon>ClientCheckControl.cs</DependentUpon>
+		</EmbeddedResource>
+		<EmbeddedResource Update="Forms\ClientCheckHelpForm.resx">
+			<DependentUpon>ClientCheckHelpForm.cs</DependentUpon>
+		</EmbeddedResource>
 	</ItemGroup>
 	<ItemGroup>
 		<!-- help texts: shown in the help window and copied next to the plugin (plugins\ClientCheckHelp\) -->

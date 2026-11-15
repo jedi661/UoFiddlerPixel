@@ -1,4 +1,4 @@
-/***************************************************************************
+﻿/***************************************************************************
  *
  * "THE BEER-WARE LICENSE"
  * As long as you retain this notice you can do whatever you want with
@@ -28,43 +28,27 @@ namespace UoFiddler.Controls.UserControls
         private AnimationListAddForm _addForm;
         private ServUOSetupForm _servUoForm;
 
+        /// <summary>The menu items are in the designer; here only the events of the program</summary>
         private void InitAnimationListExtensions()
         {
-            var addItem = new ToolStripMenuItem("Add animation…", null, (s, e) => ShowAddForm(null))
-            {
-                ToolTipText = "Add an animation (body id) with name and type to the list"
-            };
-            var editItem = new ToolStripMenuItem("Rename / change type…", null, (s, e) => ShowAddForm(SelectedEntry()));
-            var servUoItem = new ToolStripMenuItem("ServUO script & setup…", null, (s, e) => ShowServUoForm(SelectedEntry()))
-            {
-                ToolTipText = "Create a ServUO script for the selected animation and check which client/server files need entries"
-            };
-            var reloadItem = new ToolStripMenuItem("Reload list", null, (s, e) => ReloadList());
-
-            contextMenuStrip2.Items.Insert(0, new ToolStripSeparator());
-            contextMenuStrip2.Items.Insert(0, servUoItem);
-            contextMenuStrip2.Items.Insert(0, editItem);
-            contextMenuStrip2.Items.Insert(0, addItem);
-            contextMenuStrip2.Opening += (s, e) =>
-            {
-                bool selected = SelectedEntry() != null;
-                editItem.Enabled = selected;
-                servUoItem.Enabled = selected;
-            };
-
-            int index = SettingsButton.DropDownItems.IndexOf(tryToFindNewGraphicsToolStripMenuItem);
-            if (index < 0)
-            {
-                index = SettingsButton.DropDownItems.Count;
-            }
-
-            SettingsButton.DropDownItems.Insert(index, reloadItem);
-            SettingsButton.DropDownItems.Insert(index, new ToolStripMenuItem("ServUO script & setup…", null, (s, e) => ShowServUoForm(SelectedEntry())));
-            SettingsButton.DropDownItems.Insert(index, new ToolStripMenuItem("Add animation…", null, (s, e) => ShowAddForm(null)));
-
             AnimationListStore.Changed += OnStoreChanged;
             Disposed += (s, e) => AnimationListStore.Changed -= OnStoreChanged;
         }
+
+        private void OnContextMenuListOpening(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            bool selected = SelectedEntry() != null;
+            renameAnimationToolStripMenuItem.Enabled = selected;
+            servUoToolStripMenuItem.Enabled = selected;
+        }
+
+        private void OnClickAddAnimation(object sender, EventArgs e) => ShowAddForm(null);
+
+        private void OnClickRenameAnimation(object sender, EventArgs e) => ShowAddForm(SelectedEntry());
+
+        private void OnClickServUo(object sender, EventArgs e) => ShowServUoForm(SelectedEntry());
+
+        private void OnClickReloadList(object sender, EventArgs e) => ReloadList();
 
         #region Nodes
 

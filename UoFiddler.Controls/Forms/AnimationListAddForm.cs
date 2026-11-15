@@ -44,21 +44,10 @@ namespace UoFiddler.Controls.Forms
         }
     }
 
-    public sealed class AnimationListAddForm : Form
+    public sealed partial class AnimationListAddForm : Form
     {
         private readonly string[][] _actionNames;
         private readonly List<AnimationCandidate> _candidates;
-
-        private ListBox _listCandidates;
-        private NumericUpDown _numBody;
-        private Label _lblInfo;
-        private TextBox _txtName;
-        private ComboBox _cmbType;
-        private ComboBox _cmbAction;
-        private TrackBar _trackDirection;
-        private PictureBox _preview;
-        private Label _lblStatus;
-        private readonly Timer _timer = new Timer { Interval = 150 };
 
         private AnimationFrame[] _frames;
         private int _frameIndex;
@@ -68,144 +57,85 @@ namespace UoFiddler.Controls.Forms
         /// <param name="actionNames">action names per type (AnimationListControl.GetActionNames)</param>
         /// <param name="candidates">edited animations to work through (or null)</param>
         /// <param name="entry">entry to show/edit (or null)</param>
+        /// <summary>Only for the designer</summary>
+        public AnimationListAddForm()
+            : this(new[] { new string[0], new string[0], new string[0], new string[0] }, null, null)
+        {
+        }
+
+        /// <param name="actionNames">action names per type (AnimationListControl.GetActionNames)</param>
+        /// <param name="candidates">edited animations to work through (or null)</param>
+        /// <param name="entry">entry to show/edit (or null)</param>
         public AnimationListAddForm(string[][] actionNames, IEnumerable<AnimationCandidate> candidates, AnimationListEntry entry)
         {
             _actionNames = actionNames;
             _candidates = candidates?.ToList() ?? new List<AnimationCandidate>();
 
-            BuildUi();
+            InitializeComponent();
+            if (System.ComponentModel.LicenseManager.UsageMode == System.ComponentModel.LicenseUsageMode.Designtime)
+            {
+                return;
+            }
 
-            _timer.Tick += (s, e) => NextFrame();
+            Icon = Options.GetFiddlerIcon();
+            _cmbType.SelectedIndex = 0;
 
+            // the list of edited animations is only shown when there are some
             if (_candidates.Count > 0)
             {
+                _listCandidates.Items.AddRange(_candidates.Cast<object>().ToArray());
                 _listCandidates.SelectedIndex = 0;
             }
-            else if (entry != null)
-            {
-                ShowEntry(entry);
-            }
             else
+            {
+                leftPanel.Visible = false;
+                Width -= leftPanel.Width;
+                if (entry != null)
+                {
+                    ShowEntry(entry);
+                }
+                else
+                {
+                    OnBodyChanged();
+                }
+            }
+        }
+
+        #region Designer events
+
+        private void OnBodyValueChanged(object sender, EventArgs e)
+        {
+            if (!_filling)
             {
                 OnBodyChanged();
             }
         }
 
-        #region UI
+        private void OnClickFreeId(object sender, EventArgs e) => _numBody.Value = FindFreeBody((int)_numBody.Value);
 
-        private void BuildUi()
+        private void OnClickSuggest(object sender, EventArgs e) => Suggest();
+
+        private void OnTypeChanged(object sender, EventArgs e)
         {
-            Text = "Add animation to the list";
-            Icon = Options.GetFiddlerIcon();
-            Size = new Size(_candidates.Count > 0 ? 820 : 560, 560);
-            MinimumSize = new Size(520, 480);
-            StartPosition = FormStartPosition.CenterParent;
-            Font = new Font("Segoe UI", 9f);
-
-            var grid = new TableLayoutPanel
+            if (!_filling)
             {
-                Dock = DockStyle.Top,
-                AutoSize = true,
-                ColumnCount = 3,
-                Padding = new Padding(8)
-            };
-            grid.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
-            grid.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
-            grid.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
-
-            _numBody = new NumericUpDown { Minimum = 0, Maximum = 65535, Width = 90 };
-            _numBody.ValueChanged += (s, e) => { if (!_filling) { OnBodyChanged(); } };
-            var btnFree = new Button { Text = "Free id", AutoSize = true };
-            btnFree.Click += (s, e) => _numBody.Value = FindFreeBody((int)_numBody.Value);
-            new ToolTip().SetToolTip(btnFree, "Next body id that is not used by a client animation, Bodyconv.def or the list");
-            AddRow(grid, "Body id:", _numBody, btnFree);
-
-            _lblInfo = new Label { AutoSize = true, MaximumSize = new Size(480, 0), ForeColor = Color.DimGray };
-            grid.Controls.Add(_lblInfo, 1, grid.RowCount);
-            grid.SetColumnSpan(_lblInfo, 2);
-            grid.RowCount++;
-
-            _txtName = new TextBox { Dock = DockStyle.Fill };
-            var btnSuggest = new Button { Text = "Suggest", AutoSize = true };
-            btnSuggest.Click += (s, e) => Suggest();
-            AddRow(grid, "Name:", _txtName, btnSuggest);
-
-            _cmbType = new ComboBox { DropDownStyle = ComboBoxStyle.DropDownList, Width = 160 };
-            _cmbType.Items.AddRange(new object[] { "Monster", "Sea", "Animal", "Human", "Equipment (paperdoll)" });
-            _cmbType.SelectedIndex = 0;
-            _cmbType.SelectedIndexChanged += (s, e) => { if (!_filling) { FillActions(); } };
-            AddRow(grid, "Type:", _cmbType, null);
-
-            _cmbAction = new ComboBox { DropDownStyle = ComboBoxStyle.DropDownList, Width = 220 };
-            _cmbAction.SelectedIndexChanged += (s, e) => LoadPreview();
-            _trackDirection = new TrackBar { Minimum = 0, Maximum = 7, Value = 1, Width = 140, TickStyle = TickStyle.None, AutoSize = false, Height = 26 };
-            _trackDirection.ValueChanged += (s, e) => LoadPreview();
-            var actionPanel = new FlowLayoutPanel { AutoSize = true, WrapContents = false, Margin = Padding.Empty };
-            actionPanel.Controls.Add(_cmbAction);
-            actionPanel.Controls.Add(new Label { Text = "Direction:", AutoSize = true, Margin = new Padding(8, 6, 0, 0) });
-            actionPanel.Controls.Add(_trackDirection);
-            AddRow(grid, "Preview:", actionPanel, null);
-
-            _preview = new PictureBox { Dock = DockStyle.Fill, BackColor = Color.FromArgb(40, 40, 44), BorderStyle = BorderStyle.FixedSingle };
-            _preview.Paint += OnPaintPreview;
-
-            var buttons = new FlowLayoutPanel { Dock = DockStyle.Bottom, AutoSize = true, FlowDirection = FlowDirection.RightToLeft, Padding = new Padding(6) };
-            var btnClose = new Button { Text = "Close", AutoSize = true };
-            btnClose.Click += (s, e) => Close();
-            var btnServUo = new Button { Text = "ServUO script && setup…", AutoSize = true };
-            btnServUo.Click += (s, e) => OpenServUo();
-            var btnAdd = new Button { Text = "Add to list", AutoSize = true, Font = new Font(Font, FontStyle.Bold) };
-            btnAdd.Click += (s, e) => AddToList();
-            buttons.Controls.Add(btnClose);
-            buttons.Controls.Add(btnServUo);
-            buttons.Controls.Add(btnAdd);
-            AcceptButton = btnAdd;
-
-            _lblStatus = new Label { Dock = DockStyle.Bottom, Height = 22, Padding = new Padding(8, 3, 0, 0), ForeColor = Color.DarkGreen };
-
-            var right = new Panel { Dock = DockStyle.Fill };
-            var previewHost = new Panel { Dock = DockStyle.Fill, Padding = new Padding(8, 0, 8, 4) };
-            previewHost.Controls.Add(_preview);
-            right.Controls.Add(previewHost);
-            right.Controls.Add(grid);
-
-            if (_candidates.Count > 0)
-            {
-                var left = new Panel { Dock = DockStyle.Left, Width = 260, Padding = new Padding(8, 8, 0, 8) };
-                _listCandidates = new ListBox { Dock = DockStyle.Fill, IntegralHeight = false, Font = new Font("Consolas", 9f) };
-                _listCandidates.Items.AddRange(_candidates.Cast<object>().ToArray());
-                _listCandidates.SelectedIndexChanged += (s, e) => ShowCandidate(_listCandidates.SelectedItem as AnimationCandidate);
-                left.Controls.Add(_listCandidates);
-                left.Controls.Add(new Label
-                {
-                    Text = "Edited animations that are not in the list:",
-                    Dock = DockStyle.Top,
-                    Height = 34
-                });
-                Controls.Add(right);
-                Controls.Add(left);
+                FillActions();
             }
-            else
-            {
-                Controls.Add(right);
-            }
-
-            Controls.Add(_lblStatus);
-            Controls.Add(buttons);
         }
 
-        private static void AddRow(TableLayoutPanel grid, string label, Control control, Control extra)
-        {
-            int row = grid.RowCount;
-            grid.Controls.Add(new Label { Text = label, AutoSize = true, Margin = new Padding(3, 7, 3, 3) }, 0, row);
-            grid.Controls.Add(control, 1, row);
-            if (extra != null)
-            {
-                grid.Controls.Add(extra, 2, row);
-            }
+        private void OnPreviewSettingChanged(object sender, EventArgs e) => LoadPreview();
 
-            grid.RowCount++;
-        }
+        private void OnCandidateSelected(object sender, EventArgs e) => ShowCandidate(_listCandidates.SelectedItem as AnimationCandidate);
+
+        private void OnClickClose(object sender, EventArgs e) => Close();
+
+        private void OnClickServUo(object sender, EventArgs e) => OpenServUo();
+
+        private void OnClickAdd(object sender, EventArgs e) => AddToList();
+
+        private void OnTimerTick(object sender, EventArgs e) => NextFrame();
+
+        private void OnFormClosedAdd(object sender, FormClosedEventArgs e) => _timer.Stop();
 
         #endregion
 
@@ -538,12 +468,6 @@ namespace UoFiddler.Controls.Forms
             form.Show(this);
         }
 
-        protected override void OnFormClosed(FormClosedEventArgs e)
-        {
-            _timer.Stop();
-            _timer.Dispose();
-            base.OnFormClosed(e);
-        }
 
         #endregion
     }

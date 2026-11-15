@@ -13,6 +13,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
@@ -26,7 +27,7 @@ using UoFiddler.Plugin.ClientCheck.Forms;
 
 namespace UoFiddler.Plugin.ClientCheck.UserControls
 {
-    public class ClientCheckControl : UserControl
+    public partial class ClientCheckControl : UserControl
     {
         private static readonly CheckCategory[] _categories =
         {
@@ -38,243 +39,138 @@ namespace UoFiddler.Plugin.ClientCheck.UserControls
         private List<CheckIssue> _view = new List<CheckIssue>();
         private CancellationTokenSource _cts;
         private bool _running;
+        private bool _loadingSettings;
         private int _sortColumn = -1;
-        private readonly Font _boldFont = new Font("Segoe UI", 9f, FontStyle.Bold);
         private bool _sortDescending;
-
-        // toolbar 1
-        private ToolStripButton _btnStart;
-        private ToolStripButton _btnCancel;
-        private ToolStripDropDownButton _ddChecks;
+        private readonly Font _boldFont = new Font("Segoe UI", 9f, FontStyle.Bold);
         private readonly Dictionary<CheckCategory, ToolStripMenuItem> _checkItems = new Dictionary<CheckCategory, ToolStripMenuItem>();
-        private ToolStripMenuItem _checkAll;
-        private ToolStripMenuItem _checkNone;
-        private ToolStripLabel _lblLang;
-        private ToolStripComboBox _cmbLang;
-        private ToolStripButton _btnHelp;
-
-        // toolbar 2
-        private ToolStripLabel _lblShow;
-        private ToolStripComboBox _cmbSeverity;
-        private ToolStripComboBox _cmbCategory;
-        private ToolStripLabel _lblSearch;
-        private ToolStripTextBox _txtSearch;
-        private ToolStripButton _btnHideFixed;
-        private ToolStripButton _btnFixAll;
-        private ToolStripDropDownButton _ddExport;
-        private ToolStripMenuItem _exportHtml;
-        private ToolStripMenuItem _exportCsv;
-        private ToolStripMenuItem _exportTxt;
-        private ToolStripButton _btnSaveRadar;
-
-        // list + details
-        private Label _summary;
-        private ListView _list;
-        private Label _detailTitle;
-        private Label _detailMessage;
-        private Label _detailHintTitle;
-        private Label _detailHint;
-        private Label _detailFix;
-        private PictureBox _preview;
-        private Button _btnFix;
-        private Button _btnCopyId;
-        private Button _btnCopyLine;
-
-        // status
-        private ToolStripProgressBar _progress;
-        private ToolStripStatusLabel _status;
-        private ToolStripStatusLabel _shown;
 
         public ClientCheckControl()
         {
-            Dock = DockStyle.Fill;
-            Font = new Font("Segoe UI", 9f);
-            BuildUi();
-            ApplyTexts();
-            Loc.LanguageChanged += OnLanguageChanged;
-            Disposed += (s, e) =>
+            InitializeComponent();
+
+            // the designer shows the German texts; at runtime the chosen language is used
+            if (IsDesignTime())
             {
-                Loc.LanguageChanged -= OnLanguageChanged;
-                _cts?.Cancel();
-            };
-        }
-
-        #region UI
-
-        private void BuildUi()
-        {
-            // ── toolbar 1: run, checks, language, help ─────────────────
-            var bar1 = new ToolStrip { GripStyle = ToolStripGripStyle.Hidden, Padding = new Padding(4, 2, 4, 2), RenderMode = ToolStripRenderMode.System };
-            _btnStart = new ToolStripButton { Font = new Font(Font, FontStyle.Bold) };
-            _btnStart.Click += (s, e) => StartCheck();
-            _btnCancel = new ToolStripButton { Enabled = false };
-            _btnCancel.Click += (s, e) => _cts?.Cancel();
-
-            _ddChecks = new ToolStripDropDownButton();
-            CheckCategory saved = LoadSelectedCategories();
-            foreach (CheckCategory c in _categories)
-            {
-                var item = new ToolStripMenuItem { CheckOnClick = true, Checked = (saved & c) != 0 };
-                item.CheckedChanged += (s, e) => SaveSelectedCategories();
-                _ddChecks.DropDownItems.Add(item);
-                _checkItems[c] = item;
+                return;
             }
 
-            _ddChecks.DropDownItems.Add(new ToolStripSeparator());
-            _checkAll = new ToolStripMenuItem();
-            _checkAll.Click += (s, e) => { foreach (ToolStripMenuItem i in _checkItems.Values) { i.Checked = true; } };
-            _checkNone = new ToolStripMenuItem();
-            _checkNone.Click += (s, e) => { foreach (ToolStripMenuItem i in _checkItems.Values) { i.Checked = false; } };
-            _ddChecks.DropDownItems.Add(_checkAll);
-            _ddChecks.DropDownItems.Add(_checkNone);
-            _ddChecks.DropDown.Closing += (s, e) =>
-            {
-                // keep the menu open while ticking several checks
-                if (e.CloseReason == ToolStripDropDownCloseReason.ItemClicked)
-                {
-                    e.Cancel = true;
-                }
-            };
+            _checkItems[CheckCategory.ArtTileData] = checkArtTileDataMenuItem;
+            _checkItems[CheckCategory.LandTiles] = checkLandTilesMenuItem;
+            _checkItems[CheckCategory.Equipment] = checkEquipmentMenuItem;
+            _checkItems[CheckCategory.Bodies] = checkBodiesMenuItem;
+            _checkItems[CheckCategory.RadarCol] = checkRadarColMenuItem;
+            _checkItems[CheckCategory.Multis] = checkMultisMenuItem;
+            _checkItems[CheckCategory.Statics] = checkStaticsMenuItem;
+            _checkItems[CheckCategory.Cliloc] = checkClilocMenuItem;
 
-            _lblLang = new ToolStripLabel { Alignment = ToolStripItemAlignment.Right };
-            _cmbLang = new ToolStripComboBox { DropDownStyle = ComboBoxStyle.DropDownList, AutoSize = false, Width = 95, Alignment = ToolStripItemAlignment.Right };
-            _cmbLang.Items.AddRange(Loc.LanguageNames.Cast<object>().ToArray());
+            _loadingSettings = true;
+            CheckCategory saved = LoadSelectedCategories();
+            foreach (KeyValuePair<CheckCategory, ToolStripMenuItem> pair in _checkItems)
+            {
+                pair.Value.Checked = (saved & pair.Key) != 0;
+            }
+
             _cmbLang.SelectedIndex = Math.Max(0, Array.IndexOf(Loc.Languages, Loc.Language));
-            _cmbLang.SelectedIndexChanged += (s, e) => Loc.Language = Loc.Languages[Math.Max(0, _cmbLang.SelectedIndex)];
-            _btnHelp = new ToolStripButton { Alignment = ToolStripItemAlignment.Right };
-            _btnHelp.Click += (s, e) => ClientCheckHelpForm.ShowHelp(FindForm());
+            _loadingSettings = false;
 
-            bar1.Items.AddRange(new ToolStripItem[] { _btnStart, _btnCancel, new ToolStripSeparator(), _ddChecks, _btnHelp, _cmbLang, _lblLang });
+            // keep the menu open while ticking several checks
+            _ddChecks.DropDown.Closing += OnChecksDropDownClosing;
 
-            // ── toolbar 2: filter, fix, export ─────────────────────────
-            var bar2 = new ToolStrip { GripStyle = ToolStripGripStyle.Hidden, Padding = new Padding(4, 2, 4, 2), RenderMode = ToolStripRenderMode.System };
-            _lblShow = new ToolStripLabel();
-            _cmbSeverity = new ToolStripComboBox { DropDownStyle = ComboBoxStyle.DropDownList, AutoSize = false, Width = 120 };
-            _cmbSeverity.SelectedIndexChanged += (s, e) => ApplyFilter();
-            _cmbCategory = new ToolStripComboBox { DropDownStyle = ComboBoxStyle.DropDownList, AutoSize = false, Width = 170 };
-            _cmbCategory.SelectedIndexChanged += (s, e) => ApplyFilter();
-            _lblSearch = new ToolStripLabel();
-            _txtSearch = new ToolStripTextBox { AutoSize = false, Width = 160 };
-            _txtSearch.TextChanged += (s, e) => ApplyFilter();
-            _btnHideFixed = new ToolStripButton { CheckOnClick = true };
-            _btnHideFixed.CheckedChanged += (s, e) => ApplyFilter();
-            _btnFixAll = new ToolStripButton();
-            _btnFixAll.Click += (s, e) => FixAll();
-            _ddExport = new ToolStripDropDownButton();
-            _exportHtml = new ToolStripMenuItem();
-            _exportHtml.Click += (s, e) => Export("html");
-            _exportCsv = new ToolStripMenuItem();
-            _exportCsv.Click += (s, e) => Export("csv");
-            _exportTxt = new ToolStripMenuItem();
-            _exportTxt.Click += (s, e) => Export("txt");
-            _ddExport.DropDownItems.AddRange(new ToolStripItem[] { _exportHtml, _exportCsv, _exportTxt });
-            _btnSaveRadar = new ToolStripButton { Enabled = false };
-            _btnSaveRadar.Click += (s, e) => SaveRadar();
-
-            bar2.Items.AddRange(new ToolStripItem[]
-            {
-                _lblShow, _cmbSeverity, _cmbCategory, _lblSearch, _txtSearch, _btnHideFixed,
-                new ToolStripSeparator(), _btnFixAll, _btnSaveRadar, new ToolStripSeparator(), _ddExport
-            });
-
-            // ── summary ────────────────────────────────────────────────
-            _summary = new Label
-            {
-                Dock = DockStyle.Top,
-                Height = 26,
-                Padding = new Padding(8, 5, 0, 0),
-                Font = new Font(Font, FontStyle.Bold),
-                BackColor = Color.FromArgb(245, 245, 248)
-            };
-
-            // ── list ───────────────────────────────────────────────────
-            _list = new ListView
-            {
-                Dock = DockStyle.Fill,
-                View = View.Details,
-                FullRowSelect = true,
-                HideSelection = false,
-                VirtualMode = true,
-                MultiSelect = true,
-                GridLines = false
-            };
-            _list.Columns.Add(string.Empty, 90);
-            _list.Columns.Add(string.Empty, 170);
-            _list.Columns.Add(string.Empty, 90);
-            _list.Columns.Add(string.Empty, 700);
-            _list.RetrieveVirtualItem += OnRetrieveItem;
-            _list.SelectedIndexChanged += (s, e) => ShowDetails();
-            _list.ColumnClick += OnColumnClick;
-            _list.KeyDown += (s, e) =>
-            {
-                if (e.Control && e.KeyCode == Keys.C)
-                {
-                    CopySelectedLines();
-                    e.Handled = true;
-                }
-            };
-
-            // ── details ────────────────────────────────────────────────
-            var details = new Panel { Dock = DockStyle.Fill, Padding = new Padding(10), AutoScroll = true, BackColor = Color.White };
-            _detailTitle = new Label { Dock = DockStyle.Top, AutoSize = false, Height = 28, Font = new Font("Segoe UI", 11f, FontStyle.Bold) };
-            _detailMessage = new Label { Dock = DockStyle.Top, AutoSize = true, MaximumSize = new Size(380, 0), Padding = new Padding(0, 0, 0, 10) };
-            _detailHintTitle = new Label { Dock = DockStyle.Top, AutoSize = true, Font = new Font(Font, FontStyle.Bold), Padding = new Padding(0, 4, 0, 2) };
-            _detailHint = new Label { Dock = DockStyle.Top, AutoSize = true, MaximumSize = new Size(380, 0), ForeColor = Color.FromArgb(40, 70, 120), Padding = new Padding(0, 0, 0, 10) };
-            _detailFix = new Label { Dock = DockStyle.Top, AutoSize = true, MaximumSize = new Size(380, 0), ForeColor = Color.DarkGreen, Padding = new Padding(0, 0, 0, 8) };
-            var buttons = new FlowLayoutPanel { Dock = DockStyle.Top, AutoSize = true };
-            _btnFix = new Button { AutoSize = true };
-            _btnFix.Click += (s, e) => FixSelected();
-            _btnCopyId = new Button { AutoSize = true };
-            _btnCopyId.Click += (s, e) => CopyText(SelectedIssue?.IdText);
-            _btnCopyLine = new Button { AutoSize = true };
-            _btnCopyLine.Click += (s, e) => CopySelectedLines();
-            buttons.Controls.AddRange(new Control[] { _btnFix, _btnCopyId, _btnCopyLine });
-            _preview = new PictureBox { Dock = DockStyle.Top, Height = 220, BackColor = Color.FromArgb(40, 40, 44), SizeMode = PictureBoxSizeMode.CenterImage };
-
-            // docked top: added in reverse order
-            details.Controls.Add(_preview);
-            details.Controls.Add(buttons);
-            details.Controls.Add(_detailFix);
-            details.Controls.Add(_detailHint);
-            details.Controls.Add(_detailHintTitle);
-            details.Controls.Add(_detailMessage);
-            details.Controls.Add(_detailTitle);
-            details.Resize += (s, e) =>
-            {
-                int w = Math.Max(150, details.ClientSize.Width - 30);
-                _detailMessage.MaximumSize = new Size(w, 0);
-                _detailHint.MaximumSize = new Size(w, 0);
-                _detailFix.MaximumSize = new Size(w, 0);
-            };
-
-            var split = new SplitContainer { Dock = DockStyle.Fill, Orientation = Orientation.Vertical, SplitterWidth = 5 };
-            split.Panel1.Controls.Add(_list);
-            split.Panel2.Controls.Add(details);
-            HandleCreated += (s, e) =>
-            {
-                try
-                {
-                    split.SplitterDistance = Math.Max(300, Width - 430);
-                }
-                catch (InvalidOperationException)
-                {
-                    // ignored
-                }
-            };
-
-            // ── status ─────────────────────────────────────────────────
-            var status = new StatusStrip { SizingGrip = false };
-            _progress = new ToolStripProgressBar { Width = 180, Visible = false };
-            _status = new ToolStripStatusLabel { Spring = true, TextAlign = ContentAlignment.MiddleLeft };
-            _shown = new ToolStripStatusLabel { ForeColor = Color.DimGray };
-            status.Items.AddRange(new ToolStripItem[] { _progress, _status, _shown });
-
-            Controls.Add(split);
-            Controls.Add(_summary);
-            Controls.Add(status);
-            Controls.Add(bar2);
-            Controls.Add(bar1);
+            ApplyTexts();
+            Loc.LanguageChanged += OnLanguageChanged;
         }
+
+        private bool IsDesignTime() => LicenseManager.UsageMode == LicenseUsageMode.Designtime || (Site?.DesignMode ?? false);
+
+        #region UI events
+
+        private void OnClickStart(object sender, EventArgs e) => StartCheck();
+
+        private void OnClickCancel(object sender, EventArgs e) => _cts?.Cancel();
+
+        private void OnClickHelp(object sender, EventArgs e) => ClientCheckHelpForm.ShowHelp(FindForm());
+
+        private void OnLanguageSelected(object sender, EventArgs e)
+        {
+            if (!_loadingSettings && _cmbLang.SelectedIndex >= 0)
+            {
+                Loc.Language = Loc.Languages[_cmbLang.SelectedIndex];
+            }
+        }
+
+        private void OnCheckItemChanged(object sender, EventArgs e)
+        {
+            if (!_loadingSettings)
+            {
+                SaveSelectedCategories();
+            }
+        }
+
+        private void OnClickCheckAll(object sender, EventArgs e)
+        {
+            foreach (ToolStripMenuItem item in _checkItems.Values)
+            {
+                item.Checked = true;
+            }
+        }
+
+        private void OnClickCheckNone(object sender, EventArgs e)
+        {
+            foreach (ToolStripMenuItem item in _checkItems.Values)
+            {
+                item.Checked = false;
+            }
+        }
+
+        private void OnChecksDropDownClosing(object sender, ToolStripDropDownClosingEventArgs e)
+        {
+            if (e.CloseReason == ToolStripDropDownCloseReason.ItemClicked)
+            {
+                e.Cancel = true;
+            }
+        }
+
+        private void OnFilterChanged(object sender, EventArgs e) => ApplyFilter();
+
+        private void OnClickFixAll(object sender, EventArgs e) => FixAll();
+
+        private void OnClickSaveRadar(object sender, EventArgs e) => SaveRadar();
+
+        private void OnClickExportHtml(object sender, EventArgs e) => Export("html");
+
+        private void OnClickExportCsv(object sender, EventArgs e) => Export("csv");
+
+        private void OnClickExportTxt(object sender, EventArgs e) => Export("txt");
+
+        private void OnListSelectionChanged(object sender, EventArgs e) => ShowDetails();
+
+        private void OnListKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Control && e.KeyCode == Keys.C)
+            {
+                CopySelectedLines();
+                e.Handled = true;
+            }
+        }
+
+        private void OnClickFix(object sender, EventArgs e) => FixSelected();
+
+        private void OnClickCopyId(object sender, EventArgs e) => CopyText(SelectedIssue?.IdText);
+
+        private void OnClickCopyLine(object sender, EventArgs e) => CopySelectedLines();
+
+        private void OnDetailsResize(object sender, EventArgs e)
+        {
+            int w = Math.Max(150, detailsPanel.ClientSize.Width - 30);
+            _detailMessage.MaximumSize = new Size(w, 0);
+            _detailHint.MaximumSize = new Size(w, 0);
+            _detailFix.MaximumSize = new Size(w, 0);
+        }
+
+        #endregion
+
+        #region Texts
 
         private void OnLanguageChanged(object sender, EventArgs e)
         {
@@ -315,11 +211,12 @@ namespace UoFiddler.Plugin.ClientCheck.UserControls
             _btnCopyLine.Text = Loc.T("btn.copyline");
             _detailHintTitle.Text = Loc.T("detail.hint");
 
-            _list.Columns[0].Text = Loc.T("col.severity");
-            _list.Columns[1].Text = Loc.T("col.category");
-            _list.Columns[2].Text = Loc.T("col.id");
-            _list.Columns[3].Text = Loc.T("col.message");
+            columnSeverity.Text = Loc.T("col.severity");
+            columnCategory.Text = Loc.T("col.category");
+            columnId.Text = Loc.T("col.id");
+            columnMessage.Text = Loc.T("col.message");
 
+            _loadingSettings = true;
             int sev = Math.Max(0, _cmbSeverity.SelectedIndex);
             _cmbSeverity.Items.Clear();
             _cmbSeverity.Items.AddRange(new object[] { Loc.T("sev.all"), Loc.T("sev.Error"), Loc.T("sev.Warning"), Loc.T("sev.Info") });
@@ -334,6 +231,7 @@ namespace UoFiddler.Plugin.ClientCheck.UserControls
             }
 
             _cmbCategory.SelectedIndex = cat;
+            _loadingSettings = false;
 
             if (Parent is TabPage page)
             {
@@ -486,7 +384,7 @@ namespace UoFiddler.Plugin.ClientCheck.UserControls
 
         private void ApplyFilter()
         {
-            if (_cmbSeverity == null || _cmbCategory == null)
+            if (_loadingSettings || _cmbSeverity.SelectedIndex < 0 || _cmbCategory.SelectedIndex < 0)
             {
                 return;
             }

@@ -62,6 +62,12 @@
 		<Compile Update="UserControls\CompareMapControl.Designer.cs">
 			<DependentUpon>CompareMapControl.cs</DependentUpon>
 		</Compile>
+		<Compile Update="Forms\CompareCgiForm.cs">
+			<SubType>Form</SubType>
+		</Compile>
+		<Compile Update="Forms\CompareCgiForm.Designer.cs">
+			<DependentUpon>CompareCgiForm.cs</DependentUpon>
+		</Compile>
 		<Compile Update="UserControls\CompareMapControl.Cgi.cs">
 			<DependentUpon>CompareMapControl.cs</DependentUpon>
 		</Compile>
@@ -99,6 +105,9 @@
 		</EmbeddedResource>
 		<EmbeddedResource Update="UserControls\CompareLandControl.resx">
 			<DependentUpon>CompareLandControl.cs</DependentUpon>
+		</EmbeddedResource>
+		<EmbeddedResource Update="Forms\CompareCgiForm.resx">
+			<DependentUpon>CompareCgiForm.cs</DependentUpon>
 		</EmbeddedResource>
 		<EmbeddedResource Update="UserControls\CompareMapControl.resx">
 			<DependentUpon>CompareMapControl.cs</DependentUpon>

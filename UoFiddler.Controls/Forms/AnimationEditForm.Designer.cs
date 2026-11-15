@@ -215,6 +215,13 @@
             ShowOnlyValidToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             ExportAllToVDToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             editUoBodyconvAndMobtypesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            miscSeparatorAnimationList = new System.Windows.Forms.ToolStripSeparator();
+            addToAnimationListToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            editedToAnimationListToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            servUoSetupToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            treeSeparatorAnimationList = new System.Windows.Forms.ToolStripSeparator();
+            treeAddToAnimationListToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            treeServUoSetupToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             toolStripStatusLabelVDAminInfo = new System.Windows.Forms.ToolStripStatusLabel();
             toolStripStatusDisplayLabelAnimation = new System.Windows.Forms.ToolStripStatusLabel();
             toolStripStatusLabelFrameSize = new System.Windows.Forms.ToolStripStatusLabel();
@@ -310,7 +317,7 @@
             // ContextMenuStripTreeView
             // 
             ContextMenuStripTreeView.ImageScalingSize = new System.Drawing.Size(20, 20);
-            ContextMenuStripTreeView.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { addToolStripMenuItem, removeToolStripMenuItem, extractImagesToolStripMenuItem1, importToolStripMenuItem1, exportToolStripMenuItem1, toolStripSeparator8, exportToSpritesheetToolStripMenuItem, importFromSpritesheetToolStripMenuItem, exportFramesXmlToolStripMenuItem, exportAllFramesXmlToolStripMenuItem, importFramesXmlToolStripMenuItem, toolStripSeparator9, findToolStripMenuItem, showToolStripMenuItem, listsAllIDsToolStripMenuItem, toolStripSeparator11, saveToolStripMenuItem1 });
+            ContextMenuStripTreeView.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { addToolStripMenuItem, removeToolStripMenuItem, extractImagesToolStripMenuItem1, importToolStripMenuItem1, exportToolStripMenuItem1, toolStripSeparator8, exportToSpritesheetToolStripMenuItem, importFromSpritesheetToolStripMenuItem, exportFramesXmlToolStripMenuItem, exportAllFramesXmlToolStripMenuItem, importFramesXmlToolStripMenuItem, toolStripSeparator9, findToolStripMenuItem, showToolStripMenuItem, listsAllIDsToolStripMenuItem, toolStripSeparator11, saveToolStripMenuItem1, treeSeparatorAnimationList, treeAddToAnimationListToolStripMenuItem, treeServUoSetupToolStripMenuItem });
             ContextMenuStripTreeView.Name = "contextMenuStrip2";
             ContextMenuStripTreeView.Size = new System.Drawing.Size(266, 386);
             // 
@@ -2155,7 +2162,7 @@
             // MiscToolStripButton
             // 
             MiscToolStripButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            MiscToolStripButton.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { SaveToolStripMenuItem, ShowOnlyValidToolStripMenuItem, ExportAllToVDToolStripMenuItem, editUoBodyconvAndMobtypesToolStripMenuItem });
+            MiscToolStripButton.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { SaveToolStripMenuItem, ShowOnlyValidToolStripMenuItem, ExportAllToVDToolStripMenuItem, editUoBodyconvAndMobtypesToolStripMenuItem, miscSeparatorAnimationList, addToAnimationListToolStripMenuItem, editedToAnimationListToolStripMenuItem, servUoSetupToolStripMenuItem });
             MiscToolStripButton.ImageTransparentColor = System.Drawing.Color.Magenta;
             MiscToolStripButton.Name = "MiscToolStripButton";
             MiscToolStripButton.Size = new System.Drawing.Size(45, 20);
@@ -2194,6 +2201,54 @@
             editUoBodyconvAndMobtypesToolStripMenuItem.Text = "Edit Uo Bodyconv + mobtypes";
             editUoBodyconvAndMobtypesToolStripMenuItem.ToolTipText = "Edit Uo Bodyconv and mobtypes";
             editUoBodyconvAndMobtypesToolStripMenuItem.Click += editUoBodyconvAndMobtypesToolStripMenuItem_Click;
+            // 
+            // miscSeparatorAnimationList
+            // 
+            miscSeparatorAnimationList.Name = "miscSeparatorAnimationList";
+            miscSeparatorAnimationList.Size = new System.Drawing.Size(232, 6);
+            // 
+            // addToAnimationListToolStripMenuItem
+            // 
+            addToAnimationListToolStripMenuItem.Name = "addToAnimationListToolStripMenuItem";
+            addToAnimationListToolStripMenuItem.Size = new System.Drawing.Size(235, 22);
+            addToAnimationListToolStripMenuItem.Text = "Add to animation list…";
+            addToAnimationListToolStripMenuItem.ToolTipText = "Add the selected animation with name and type to Animationlist.xml (AnimationList tab)";
+            addToAnimationListToolStripMenuItem.Click += OnClickAddToAnimationList;
+            // 
+            // editedToAnimationListToolStripMenuItem
+            // 
+            editedToAnimationListToolStripMenuItem.Name = "editedToAnimationListToolStripMenuItem";
+            editedToAnimationListToolStripMenuItem.Size = new System.Drawing.Size(235, 22);
+            editedToAnimationListToolStripMenuItem.Text = "Edited animations → animation list…";
+            editedToAnimationListToolStripMenuItem.ToolTipText = "All animations changed in this session that are not in the animation list yet";
+            editedToAnimationListToolStripMenuItem.Click += OnClickEditedToAnimationList;
+            // 
+            // servUoSetupToolStripMenuItem
+            // 
+            servUoSetupToolStripMenuItem.Name = "servUoSetupToolStripMenuItem";
+            servUoSetupToolStripMenuItem.Size = new System.Drawing.Size(235, 22);
+            servUoSetupToolStripMenuItem.Text = "ServUO script & setup…";
+            servUoSetupToolStripMenuItem.ToolTipText = "Create a ServUO script and check Bodyconv.def, mobtypes.txt and bodyTable.cfg for the selected animation";
+            servUoSetupToolStripMenuItem.Click += OnClickServUoSetup;
+            // 
+            // treeSeparatorAnimationList
+            // 
+            treeSeparatorAnimationList.Name = "treeSeparatorAnimationList";
+            treeSeparatorAnimationList.Size = new System.Drawing.Size(232, 6);
+            // 
+            // treeAddToAnimationListToolStripMenuItem
+            // 
+            treeAddToAnimationListToolStripMenuItem.Name = "treeAddToAnimationListToolStripMenuItem";
+            treeAddToAnimationListToolStripMenuItem.Size = new System.Drawing.Size(235, 22);
+            treeAddToAnimationListToolStripMenuItem.Text = "Add to animation list…";
+            treeAddToAnimationListToolStripMenuItem.Click += OnClickAddToAnimationList;
+            // 
+            // treeServUoSetupToolStripMenuItem
+            // 
+            treeServUoSetupToolStripMenuItem.Name = "treeServUoSetupToolStripMenuItem";
+            treeServUoSetupToolStripMenuItem.Size = new System.Drawing.Size(235, 22);
+            treeServUoSetupToolStripMenuItem.Text = "ServUO script & setup…";
+            treeServUoSetupToolStripMenuItem.Click += OnClickServUoSetup;
             // 
             // toolStripStatusLabelVDAminInfo
             // 
@@ -2471,6 +2526,13 @@
         private System.Windows.Forms.Button _btnSyncMainMisc;
         private System.Windows.Forms.Timer _sequenceTimer;
         private System.Windows.Forms.ToolStripMenuItem editUoBodyconvAndMobtypesToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator miscSeparatorAnimationList;
+        private System.Windows.Forms.ToolStripMenuItem addToAnimationListToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem editedToAnimationListToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem servUoSetupToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator treeSeparatorAnimationList;
+        private System.Windows.Forms.ToolStripMenuItem treeAddToAnimationListToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem treeServUoSetupToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
