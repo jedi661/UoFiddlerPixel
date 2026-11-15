@@ -879,15 +879,7 @@ namespace UoFiddler.Controls.UserControls
                     }
 
                     // Set flags
-                    item.Flags = TileFlag.None;
-                    Array enumValues = Enum.GetValues(typeof(TileFlag));
-                    for (int i = 0; i < checkedListBox1.Items.Count; ++i)
-                    {
-                        if (checkedListBox1.GetItemChecked(i))
-                        {
-                            item.Flags |= (TileFlag)enumValues.GetValue(i + 1);
-                        }
-                    }
+                    item.Flags = FlagsFromList(checkedListBox1, item.Flags);
 
                     TileData.ItemTable[index] = item;
                     node.ForeColor = Color.Red; // Set the node to "changed"
@@ -936,15 +928,7 @@ namespace UoFiddler.Controls.UserControls
                     land.TextureId = shortRes;
                 }
 
-                land.Flags = TileFlag.None;
-                Array enumValues = Enum.GetValues(typeof(TileFlag));
-                for (int i = 0; i < checkedListBox2.Items.Count; ++i)
-                {
-                    if (checkedListBox2.GetItemChecked(i))
-                    {
-                        land.Flags |= (TileFlag)enumValues.GetValue(i + 1);
-                    }
-                }
+                land.Flags = FlagsFromList(checkedListBox2, land.Flags);
 
                 TileData.LandTable[index] = land;
                 Options.ChangedUltimaClass["TileData"] = true;
@@ -1476,6 +1460,36 @@ namespace UoFiddler.Controls.UserControls
         }
         #endregion
 
+        #region [ FlagOfListIndex / FlagsFromList ]
+        /// <summary>flag of an entry of checkedListBox1 / checkedListBox2 (both list the flags in enum order without None)</summary>
+        private static TileFlag FlagOfListIndex(int listIndex)
+        {
+            Array enumValues = Enum.GetValues(typeof(TileFlag));
+            return listIndex >= 0 && listIndex + 1 < enumValues.Length ? (TileFlag)enumValues.GetValue(listIndex + 1) : TileFlag.None;
+        }
+
+        /// <summary>
+        /// Flags of a checked list box. Flags that are not shown in the list (upper 32 flags of
+        /// old clients) are taken from <paramref name="keep"/> so they are not lost.
+        /// </summary>
+        private static TileFlag FlagsFromList(CheckedListBox list, TileFlag keep)
+        {
+            TileFlag shown = TileFlag.None;
+            TileFlag result = TileFlag.None;
+            for (int i = 0; i < list.Items.Count; ++i)
+            {
+                TileFlag flag = FlagOfListIndex(i);
+                shown |= flag;
+                if (list.GetItemChecked(i))
+                {
+                    result |= flag;
+                }
+            }
+
+            return result | (keep & ~shown);
+        }
+        #endregion
+
         #region [ OnFlagItemCheckItems ]
         private void OnFlagItemCheckItems(object sender, ItemCheckEventArgs e)
         {
@@ -1501,9 +1515,12 @@ namespace UoFiddler.Controls.UserControls
 
             int index = (int)treeViewItem.SelectedNode.Tag;
             ItemData item = TileData.ItemTable[index];
-            Array enumValues = Enum.GetValues(typeof(TileFlag));
 
-            TileFlag changeFlag = (TileFlag)enumValues.GetValue(e.Index + 1);
+            TileFlag changeFlag = FlagOfListIndex(e.Index);
+            if (changeFlag == TileFlag.None)
+            {
+                return;
+            }
 
             if ((item.Flags & changeFlag) != 0) // better double check
             {
@@ -1559,32 +1576,13 @@ namespace UoFiddler.Controls.UserControls
 
             int index = (int)treeViewLand.SelectedNode.Tag;
             LandData land = TileData.LandTable[index];
-            TileFlag changeFlag;
-            switch (e.Index)
+
+            // the list shows all flags in the order of the enum (like the item list),
+            // the old fixed mapping of 5 flags set wrong flags (e.g. Background -> Damaging)
+            TileFlag changeFlag = FlagOfListIndex(e.Index);
+            if (changeFlag == TileFlag.None)
             {
-                case 0:
-                    changeFlag = TileFlag.Damaging;
-                    break;
-
-                case 1:
-                    changeFlag = TileFlag.Wet;
-                    break;
-
-                case 2:
-                    changeFlag = TileFlag.Impassable;
-                    break;
-
-                case 3:
-                    changeFlag = TileFlag.Wall;
-                    break;
-
-                case 4:
-                    changeFlag = TileFlag.NoDiagonal;
-                    break;
-
-                default:
-                    changeFlag = TileFlag.None;
-                    break;
+                return;
             }
 
             if ((land.Flags & changeFlag) != 0)
@@ -1983,15 +1981,14 @@ namespace UoFiddler.Controls.UserControls
         #region [ ToolStripComboBox1_SelectedIndexChanged ]
         private void ToolStripComboBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
-            // Set all elements to unchecked
-            for (int i = 0; i < checkedListBox1.Items.Count; i++)
+            // Only the list the preset is for is reset: "LandTile …" presets change the land flags,
+            // all others the item flags. Before both lists were cleared, so choosing an item preset
+            // also removed the flags of the selected land tile (with "save directly on changes").
+            bool landPreset = toolStripComboBox1.SelectedItem?.ToString().StartsWith("LandTile", StringComparison.Ordinal) == true;
+            CheckedListBox target = landPreset ? checkedListBox2 : checkedListBox1;
+            for (int i = 0; i < target.Items.Count; i++)
             {
-                checkedListBox1.SetItemChecked(i, false);
-            }
-
-            for (int i = 0; i < checkedListBox2.Items.Count; i++)
-            {
-                checkedListBox2.SetItemChecked(i, false);
+                target.SetItemChecked(i, false);
             }
             // Update the Checked items and the Weight and Height values ​​based on the selected preset
             if (toolStripComboBox1.SelectedItem != null)
@@ -2254,46 +2251,6 @@ namespace UoFiddler.Controls.UserControls
                         textBoxValue.Text = "";
                         textBoxUnk2.Text = "";
                         textBoxAnim.Text = "";
-                        checkedListBox2.SetItemChecked(checkedListBox2.Items.IndexOf("Background"), false);
-                        checkedListBox2.SetItemChecked(checkedListBox2.Items.IndexOf("Weapon"), false);
-                        checkedListBox2.SetItemChecked(checkedListBox2.Items.IndexOf("Transparent"), false);
-                        checkedListBox2.SetItemChecked(checkedListBox2.Items.IndexOf("Translucent"), false);
-                        checkedListBox2.SetItemChecked(checkedListBox2.Items.IndexOf("Wall"), false);
-                        checkedListBox2.SetItemChecked(checkedListBox2.Items.IndexOf("Damaging"), false);
-                        checkedListBox1.SetItemChecked(checkedListBox1.Items.IndexOf("Impassable"), false);
-                        checkedListBox2.SetItemChecked(checkedListBox2.Items.IndexOf("Wet"), false);
-                        checkedListBox2.SetItemChecked(checkedListBox2.Items.IndexOf("Unknown1"), false);
-                        checkedListBox2.SetItemChecked(checkedListBox2.Items.IndexOf("Surface"), false);
-                        checkedListBox2.SetItemChecked(checkedListBox2.Items.IndexOf("Bridge"), false);
-                        checkedListBox2.SetItemChecked(checkedListBox2.Items.IndexOf("Generic"), false);
-                        checkedListBox2.SetItemChecked(checkedListBox2.Items.IndexOf("Window"), false);
-                        checkedListBox2.SetItemChecked(checkedListBox2.Items.IndexOf("NoShoot"), false);
-                        checkedListBox2.SetItemChecked(checkedListBox2.Items.IndexOf("ArticleA"), false);
-                        checkedListBox1.SetItemChecked(checkedListBox1.Items.IndexOf("ArticleAn"), false);
-                        checkedListBox2.SetItemChecked(checkedListBox2.Items.IndexOf("ArticleThe"), false);
-                        checkedListBox2.SetItemChecked(checkedListBox2.Items.IndexOf("Foliage"), false);
-                        checkedListBox2.SetItemChecked(checkedListBox2.Items.IndexOf("PartialHue"), false);
-                        checkedListBox2.SetItemChecked(checkedListBox2.Items.IndexOf("NoHouse"), false);
-                        checkedListBox2.SetItemChecked(checkedListBox2.Items.IndexOf("Map"), false);
-                        checkedListBox2.SetItemChecked(checkedListBox2.Items.IndexOf("Container"), false);
-                        checkedListBox2.SetItemChecked(checkedListBox2.Items.IndexOf("Wearable"), false);
-                        checkedListBox2.SetItemChecked(checkedListBox2.Items.IndexOf("LightSource"), false);
-                        checkedListBox2.SetItemChecked(checkedListBox2.Items.IndexOf("Animation"), false);
-                        checkedListBox2.SetItemChecked(checkedListBox2.Items.IndexOf("HoverOver"), false);
-                        checkedListBox1.SetItemChecked(checkedListBox1.Items.IndexOf("NoDiagonal"), false);
-                        checkedListBox2.SetItemChecked(checkedListBox2.Items.IndexOf("Armor"), false);
-                        checkedListBox2.SetItemChecked(checkedListBox2.Items.IndexOf("Roof"), false);
-                        checkedListBox2.SetItemChecked(checkedListBox2.Items.IndexOf("Door"), false);
-                        checkedListBox2.SetItemChecked(checkedListBox2.Items.IndexOf("StairBack"), false);
-                        checkedListBox2.SetItemChecked(checkedListBox2.Items.IndexOf("StairRight"), false);
-                        checkedListBox2.SetItemChecked(checkedListBox2.Items.IndexOf("AlphaBlend"), false);
-                        checkedListBox2.SetItemChecked(checkedListBox2.Items.IndexOf("UseNewArt"), false);
-                        checkedListBox2.SetItemChecked(checkedListBox2.Items.IndexOf("ArtUsed"), false);
-                        checkedListBox2.SetItemChecked(checkedListBox2.Items.IndexOf("Unused8"), false);
-                        checkedListBox2.SetItemChecked(checkedListBox2.Items.IndexOf("NoShadow"), false);
-                        checkedListBox2.SetItemChecked(checkedListBox2.Items.IndexOf("PixelBleed"), false);
-                        checkedListBox2.SetItemChecked(checkedListBox2.Items.IndexOf("PlayAnimOnce"), false);
-                        checkedListBox2.SetItemChecked(checkedListBox2.Items.IndexOf("MultiMovable"), false);
                         break;
                         // Add more presets here
                 }
@@ -2492,79 +2449,35 @@ namespace UoFiddler.Controls.UserControls
         #region Delete Button
         private void ToolStripButton8Clear_Click(object sender, EventArgs e)
         {
-            // Set the text of all TextBoxes to an empty string
-            textBoxName.Text = "";
-            textBoxWeight.Text = "";
-            textBoxHeigth.Text = "";
-            textBoxHue.Text = "";
-            textBoxUnk3.Text = "";
-            textBoxQuality.Text = "";
-            textBoxStackOff.Text = "";
-            textBoxUnk1.Text = "";
-            textBoxQuantity.Text = "";
-            textBoxValue.Text = "";
-            textBoxUnk2.Text = "";
-            textBoxAnim.Text = "";
-
-            // Make a list of the checkboxes you want to uncheck
-            List<string> itemsToUncheck = new List<string>
+            if (tabcontrol.SelectedIndex != 0)
             {
-                "Background",
-                "Weapon",
-                "Transparent",
-                "Translucent",
-                "Wall",
-                "Damaging",
-                "Impassable",
-                "Wet",
-                "Unknown1",
-                "Surface",
-                "Bridge",
-                "Generic",
-                "Window",
-                "NoShoot",
-                "ArticleA",
-                "ArticleAn",
-                "ArticleThe",
-                "Foliage",
-                "PartialHue",
-                "NoHouse",
-                "Map",
-                "Container",
-                "Wearable",
-                "LightSource",
-                "Animation",
-                "HoverOver",
-                "NoDiagonal",
-                "Armor",
-                "Roof",
-                "Door",
-                "StairBack",
-                "StairRight",
-                "AlphaBlend",
-                "UseNewArt",
-                "ArtUsed",
-                "Unused8",
-                "NoShadow",
-                "PixelBleed",
-                "PlayAnimOnce",
-                "MultiMovable"
-            };
-
-            // Uncheck all checkboxes in the list
-            foreach (string item in itemsToUncheck)
-            {
-                int index = checkedListBox2.Items.IndexOf(item);
-                if (index != -1)
+                // land tab: only the land flags (the text boxes belong to the items)
+                for (int i = 0; i < checkedListBox2.Items.Count; i++)
                 {
-                    checkedListBox2.SetItemChecked(index, false);
+                    checkedListBox2.SetItemChecked(i, false);
                 }
             }
-
-            // Uncheck all checkboxes in checkedListBox1
-            for (int i = 0; i < checkedListBox1.Items.Count; i++)
+            else
             {
-                checkedListBox1.SetItemChecked(i, false);
+                // Set the text of all TextBoxes to an empty string
+                textBoxName.Text = "";
+                textBoxWeight.Text = "";
+                textBoxHeigth.Text = "";
+                textBoxHue.Text = "";
+                textBoxUnk3.Text = "";
+                textBoxQuality.Text = "";
+                textBoxStackOff.Text = "";
+                textBoxUnk1.Text = "";
+                textBoxQuantity.Text = "";
+                textBoxValue.Text = "";
+                textBoxUnk2.Text = "";
+                textBoxAnim.Text = "";
+
+                // Uncheck all item flags (before the land flags were cleared as well)
+                for (int i = 0; i < checkedListBox1.Items.Count; i++)
+                {
+                    checkedListBox1.SetItemChecked(i, false);
+                }
             }
 
             // Play a sound when playCustomSound is set to true
@@ -2929,7 +2842,7 @@ namespace UoFiddler.Controls.UserControls
             textBoxUnk3.Text = _copiedSettings.Unk3;
 
             // Restore the state of the CheckedListBox1 from the copied settings
-            for (int i = 0; i < checkedListBox1.Items.Count; i++)
+            for (int i = 0; i < checkedListBox1.Items.Count && i < _copiedSettings.CheckedList.Count; i++)
             {
                 checkedListBox1.SetItemChecked(i, _copiedSettings.CheckedList[i]);
             }
@@ -2973,17 +2886,10 @@ namespace UoFiddler.Controls.UserControls
                 TextureId = ushort.TryParse(textBoxTexID.Text, out ushort texId) ? texId : (ushort)0
             };
 
-            // Save the state of CheckedListBox2
-            foreach (int index in checkedListBox2.CheckedIndices)
-            {
-                _copiedLandSettings.CheckedList.Add(true);
-            }
+            // Save the state of CheckedListBox2 (one entry per flag, in list order)
             for (int i = 0; i < checkedListBox2.Items.Count; i++)
             {
-                if (!checkedListBox2.CheckedIndices.Contains(i))
-                {
-                    _copiedLandSettings.CheckedList.Add(false);
-                }
+                _copiedLandSettings.CheckedList.Add(checkedListBox2.GetItemChecked(i));
             }
             
             SoundPlayer player = new SoundPlayer();
@@ -3016,11 +2922,23 @@ namespace UoFiddler.Controls.UserControls
             land.Name = _copiedLandSettings.Name;
             land.TextureId = _copiedLandSettings.TextureId;
 
-            // Reset the state of the CheckedListBox2
-            for (int i = 0; i < checkedListBox2.Items.Count; i++)
+            // Show the copied flags (without the direct-save handler) and write them into the land tile
+            _changingIndex = true;
+            try
             {
-                checkedListBox2.SetItemChecked(i, _copiedLandSettings.CheckedList[i]);
+                for (int i = 0; i < checkedListBox2.Items.Count && i < _copiedLandSettings.CheckedList.Count; i++)
+                {
+                    checkedListBox2.SetItemChecked(i, _copiedLandSettings.CheckedList[i]);
+                }
             }
+            finally
+            {
+                _changingIndex = false;
+            }
+
+            land.Flags = FlagsFromList(checkedListBox2, land.Flags);
+            textBoxNameLand.Text = land.Name;
+            textBoxTexID.Text = land.TextureId.ToString();
 
             // Visual update of the node
             selectedNode.Text = $"0x{index:X4} {land.Name}";

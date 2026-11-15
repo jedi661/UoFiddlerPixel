@@ -1574,7 +1574,8 @@ namespace Ultima
                 return;
             }
 
-            using (var sr = new StreamReader(fileName))
+            // same encoding as ExportItemDataToCsv (names with ä, ö, é … stay correct)
+            using (var sr = new StreamReader(fileName, Encoding.GetEncoding(1252)))
             {
                 while (sr.ReadLine() is { } line)
                 {
