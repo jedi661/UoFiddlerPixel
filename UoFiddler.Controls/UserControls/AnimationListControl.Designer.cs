@@ -88,6 +88,13 @@ namespace UoFiddler.Controls.UserControls
             xMLEditorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
             tryToFindNewGraphicsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            addAnimationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            renameAnimationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            servUoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            contextSeparatorList = new System.Windows.Forms.ToolStripSeparator();
+            settingsAddAnimationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            settingsServUoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            reloadListToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
             animationEditToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             saveMissingXMLToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -148,7 +155,8 @@ namespace UoFiddler.Controls.UserControls
             // 
             // contextMenuStrip2
             // 
-            contextMenuStrip2.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { removeToolStripMenuItem, animationlistEditToolStripMenuItem });
+            contextMenuStrip2.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { addAnimationToolStripMenuItem, renameAnimationToolStripMenuItem, servUoToolStripMenuItem, contextSeparatorList, removeToolStripMenuItem, animationlistEditToolStripMenuItem });
+            contextMenuStrip2.Opening += OnContextMenuListOpening;
             contextMenuStrip2.Name = "contextMenuStrip2";
             contextMenuStrip2.Size = new System.Drawing.Size(169, 48);
             // 
@@ -169,6 +177,55 @@ namespace UoFiddler.Controls.UserControls
             animationlistEditToolStripMenuItem.Text = "Animationlist Edit";
             animationlistEditToolStripMenuItem.ToolTipText = "Open Animationlist Edit Form";
             animationlistEditToolStripMenuItem.Click += AnimationlistEditToolStripMenuItem_Click;
+            // 
+            // addAnimationToolStripMenuItem
+            // 
+            addAnimationToolStripMenuItem.Name = "addAnimationToolStripMenuItem";
+            addAnimationToolStripMenuItem.Size = new System.Drawing.Size(220, 22);
+            addAnimationToolStripMenuItem.Text = "Add animation…";
+            addAnimationToolStripMenuItem.ToolTipText = "Add an animation (body id) with name and type to the list";
+            addAnimationToolStripMenuItem.Click += OnClickAddAnimation;
+            // 
+            // renameAnimationToolStripMenuItem
+            // 
+            renameAnimationToolStripMenuItem.Name = "renameAnimationToolStripMenuItem";
+            renameAnimationToolStripMenuItem.Size = new System.Drawing.Size(220, 22);
+            renameAnimationToolStripMenuItem.Text = "Rename / change type…";
+            renameAnimationToolStripMenuItem.Click += OnClickRenameAnimation;
+            // 
+            // servUoToolStripMenuItem
+            // 
+            servUoToolStripMenuItem.Name = "servUoToolStripMenuItem";
+            servUoToolStripMenuItem.Size = new System.Drawing.Size(220, 22);
+            servUoToolStripMenuItem.Text = "ServUO script & setup…";
+            servUoToolStripMenuItem.ToolTipText = "Create a ServUO script for the selected animation and check which client/server files need entries";
+            servUoToolStripMenuItem.Click += OnClickServUo;
+            // 
+            // contextSeparatorList
+            // 
+            contextSeparatorList.Name = "contextSeparatorList";
+            contextSeparatorList.Size = new System.Drawing.Size(217, 6);
+            // 
+            // settingsAddAnimationToolStripMenuItem
+            // 
+            settingsAddAnimationToolStripMenuItem.Name = "settingsAddAnimationToolStripMenuItem";
+            settingsAddAnimationToolStripMenuItem.Size = new System.Drawing.Size(220, 22);
+            settingsAddAnimationToolStripMenuItem.Text = "Add animation…";
+            settingsAddAnimationToolStripMenuItem.Click += OnClickAddAnimation;
+            // 
+            // settingsServUoToolStripMenuItem
+            // 
+            settingsServUoToolStripMenuItem.Name = "settingsServUoToolStripMenuItem";
+            settingsServUoToolStripMenuItem.Size = new System.Drawing.Size(220, 22);
+            settingsServUoToolStripMenuItem.Text = "ServUO script & setup…";
+            settingsServUoToolStripMenuItem.Click += OnClickServUo;
+            // 
+            // reloadListToolStripMenuItem
+            // 
+            reloadListToolStripMenuItem.Name = "reloadListToolStripMenuItem";
+            reloadListToolStripMenuItem.Size = new System.Drawing.Size(220, 22);
+            reloadListToolStripMenuItem.Text = "Reload list";
+            reloadListToolStripMenuItem.Click += OnClickReloadList;
             // 
             // FacingBar
             // 
@@ -484,7 +541,7 @@ namespace UoFiddler.Controls.UserControls
             // SettingsButton
             // 
             SettingsButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            SettingsButton.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { sortAlphaToolStripMenuItem, hueToolStripMenuItem, animateToolStripMenuItem, toolStripSeparator1, rewriteXmlToolStripMenuItem, rewriteXml2ToolStripMenuItem, xMLEditorToolStripMenuItem, saveMissingXMLToolStripMenuItem, toolStripSeparator3, tryToFindNewGraphicsToolStripMenuItem, toolStripSeparator4, animationEditToolStripMenuItem });
+            SettingsButton.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { sortAlphaToolStripMenuItem, hueToolStripMenuItem, animateToolStripMenuItem, toolStripSeparator1, rewriteXmlToolStripMenuItem, rewriteXml2ToolStripMenuItem, xMLEditorToolStripMenuItem, saveMissingXMLToolStripMenuItem, toolStripSeparator3, settingsAddAnimationToolStripMenuItem, settingsServUoToolStripMenuItem, reloadListToolStripMenuItem, tryToFindNewGraphicsToolStripMenuItem, toolStripSeparator4, animationEditToolStripMenuItem });
             SettingsButton.ImageTransparentColor = System.Drawing.Color.Magenta;
             SettingsButton.Name = "SettingsButton";
             SettingsButton.Size = new System.Drawing.Size(62, 20);
@@ -684,6 +741,13 @@ namespace UoFiddler.Controls.UserControls
         private System.Windows.Forms.ToolStripMenuItem rewriteXmlToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem rewriteXml2ToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem tryToFindNewGraphicsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem addAnimationToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem renameAnimationToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem servUoToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator contextSeparatorList;
+        private System.Windows.Forms.ToolStripMenuItem settingsAddAnimationToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem settingsServUoToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem reloadListToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem animationEditToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem animationlistEditToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem xMLEditorToolStripMenuItem;

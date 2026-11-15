@@ -31,13 +31,10 @@ namespace UoFiddler.Plugin.Compare.Forms
     /// Two isometric views (Map1 left, Map2 right) of the same map area with difference markers,
     /// synchronized scrolling/zoom and copying of land / statics between the maps.
     /// </summary>
-    public sealed class CompareCgiForm : Form
+    public sealed partial class CompareCgiForm : Form
     {
         /// <summary>largest area (cells per side) that is opened</summary>
         public const int MaxAreaSize = 512;
-
-        private static readonly Color BarBack = Color.FromArgb(45, 45, 48);
-        private static readonly Color InputBack = Color.FromArgb(62, 62, 66);
 
         private sealed class Side
         {
@@ -70,41 +67,6 @@ namespace UoFiddler.Plugin.Compare.Forms
         private bool _settingTarget;
         private bool _closeSilently;
 
-        private readonly ToolTip _tip = new ToolTip();
-
-        // view bar
-        private CheckBox _chkStatics;
-        private CheckBox _chkDiff;
-        private CheckBox _chkGrid;
-        private CheckBox _chkSync;
-        private NumericUpDown _numMaxZ;
-        private Button _btnNextDiff;
-
-        // copy bar
-        private ComboBox _cmbDirection;
-        private CheckBox _chkLand;
-        private CheckBox _chkCopyStatics;
-        private ComboBox _cmbExisting;
-        private CheckBox _chkSelect;
-
-        // target bar
-        private RadioButton _rbSame;
-        private RadioButton _rbOther;
-        private NumericUpDown _numX;
-        private NumericUpDown _numY;
-        private CheckBox _chkPick;
-        private NumericUpDown _numZ;
-        private CheckBox _chkAdjust;
-        private CheckBox _chkConfirm;
-        private Button _btnCopy;
-        private Button _btnUndo;
-        private Button _btnRedo;
-        private Button _btnSave1;
-        private Button _btnSave2;
-
-        private ToolStripStatusLabel _lblStatus;
-        private ToolStripStatusLabel _lblChanges;
-
         /// <param name="map1">Map1 (original)</param>
         /// <param name="session1">edit session of Map1 (kept by the caller, so changes survive closing the window)</param>
         /// <param name="map2">Map2 (custom)</param>
@@ -119,264 +81,121 @@ namespace UoFiddler.Plugin.Compare.Forms
             _right = new Side { Map = map2, Name = name2, Session = session2 ?? new RegionEditSession(map2) };
             _mapsChanged = mapsChanged;
 
-            BuildUi();
+            InitializeComponent();
+            Icon = Options.GetFiddlerIcon();
+
+            // the controls of both sides come from the designer
+            _left.View = viewLeft;
+            _left.Header = headerLeft;
+            _left.Info = infoLeft;
+            _right.View = viewRight;
+            _right.Header = headerRight;
+            _right.Info = infoRight;
+
+            _numX.Maximum = Math.Max(1, Math.Max(_left.Map.Width, _right.Map.Width) - 1);
+            _numY.Maximum = Math.Max(1, Math.Max(_left.Map.Height, _right.Map.Height) - 1);
+            _cmbDirection.Items.AddRange(new object[] { $"{_left.Name}  →  {_right.Name}", $"{_right.Name}  →  {_left.Name}" });
+            _cmbDirection.SelectedIndex = 0;
+            _cmbExisting.SelectedIndex = 0;
+
+            UpdateDirectionNames();
             LoadArea(area);
         }
 
-        #region UI
+        #region Designer events
 
-        private void BuildUi()
+        private void OnFormShown(object sender, EventArgs e)
         {
-            Text = "CGI-Vergleich";
-            Icon = Options.GetFiddlerIcon();
-            Size = new Size(1400, 860);
-            MinimumSize = new Size(900, 520);
-            StartPosition = FormStartPosition.CenterParent;
-            BackColor = Color.FromArgb(30, 30, 30);
-            ForeColor = Color.White;
-            Font = new Font("Segoe UI", 9f);
-            KeyPreview = true;
+            splitViews.SplitterDistance = splitViews.Width / 2;
+            FitBoth();
+        }
 
-            // ── view bar ──────────────────────────────────────────────
-            FlowLayoutPanel barView = Bar();
-            _chkStatics = Check("Statics", true, "Statics in beiden Ansichten ein-/ausblenden");
-            _chkStatics.CheckedChanged += (s, e) => { _settings.ShowStatics = _chkStatics.Checked; RefreshViews(); };
-            _chkDiff = Check("Unterschiede markieren", true, "Zellen, die sich zwischen Map1 und Map2 unterscheiden, rot markieren");
-            _chkDiff.CheckedChanged += (s, e) => ApplyOverlays();
-            _chkGrid = Check("Raster", false, "Raster über den Zellen anzeigen");
-            _chkGrid.CheckedChanged += (s, e) =>
+        private void OnStaticsChanged(object sender, EventArgs e)
+        {
+            _settings.ShowStatics = _chkStatics.Checked;
+            RefreshViews();
+        }
+
+        private void OnDiffChanged(object sender, EventArgs e) => ApplyOverlays();
+
+        private void OnGridChanged(object sender, EventArgs e)
+        {
+            viewLeft.ShowGrid = viewRight.ShowGrid = _chkGrid.Checked;
+            viewLeft.Invalidate();
+            viewRight.Invalidate();
+        }
+
+        private void OnSyncChanged(object sender, EventArgs e)
+        {
+            if (_chkSync.Checked)
             {
-                _left.View.ShowGrid = _right.View.ShowGrid = _chkGrid.Checked;
-                _left.View.Invalidate();
-                _right.View.Invalidate();
-            };
-            _chkSync = Check("Ansichten synchron", true, "Verschieben und Zoomen in einer Ansicht bewegt die andere mit");
-            _chkSync.CheckedChanged += (s, e) => { if (_chkSync.Checked) { SyncFrom(_left); } };
-            _numMaxZ = Num(-128, 127, 127, 55);
-            _tip.SetToolTip(_numMaxZ, "Statics über dieser Höhe ausblenden (z. B. um unter Dächer zu schauen)");
-            _numMaxZ.ValueChanged += (s, e) => { _settings.MaxZ = (int)_numMaxZ.Value; RefreshViews(); };
-            _btnNextDiff = Btn("Nächster Unterschied ►", (s, e) => JumpToNextDiff(), "Zur nächsten unterschiedlichen Zelle springen");
+                SyncFrom(_left);
+            }
+        }
 
-            barView.Controls.AddRange(new Control[]
-            {
-                _chkStatics, _chkDiff, _chkGrid, _chkSync, Lbl("Max. Z:"), _numMaxZ, Gap(),
-                Btn("Zoom −", (s, e) => ZoomBoth(false), null),
-                Btn("Zoom +", (s, e) => ZoomBoth(true), null),
-                Btn("Einpassen", (s, e) => FitBoth(), "Ganzen Bereich anzeigen"),
-                Gap(), _btnNextDiff
-            });
+        private void OnMaxZChanged(object sender, EventArgs e)
+        {
+            _settings.MaxZ = (int)_numMaxZ.Value;
+            RefreshViews();
+        }
 
-            // ── copy bar ──────────────────────────────────────────────
-            FlowLayoutPanel barCopy = Bar();
-            _cmbDirection = Combo(220);
-            _cmbDirection.Items.AddRange(new object[] { $"{_left.Name}  →  {_right.Name}", $"{_right.Name}  →  {_left.Name}" });
-            _cmbDirection.SelectedIndex = 0;
-            _cmbDirection.SelectedIndexChanged += (s, e) => { UpdateDirectionNames(); ApplyOverlays(); };
-            _chkLand = Check("Land (Boden)", true, "Land-Tiles (ID und Höhe) kopieren");
-            _chkCopyStatics = Check("Statics mitkopieren", true, "Statics des Bereichs mitkopieren");
-            _chkCopyStatics.CheckedChanged += (s, e) => _cmbExisting.Enabled = _chkCopyStatics.Checked;
-            _cmbExisting = Combo(230);
-            _cmbExisting.Items.AddRange(new object[]
-            {
-                "Ziel-Statics im Bereich ersetzen",
-                "nur Pflanzen im Ziel entfernen",
-                "Ziel-Statics behalten (hinzufügen)"
-            });
-            _cmbExisting.SelectedIndex = 0;
-            _tip.SetToolTip(_cmbExisting, "Was mit den vorhandenen Statics im Zielbereich passiert, wenn Statics mitkopiert werden");
-            _chkSelect = Check("Teilbereich wählen", false, "Mit der linken Maustaste in einer Ansicht einen Teilbereich aufziehen (verschieben dann mit der mittleren Maustaste)");
-            _chkSelect.Appearance = Appearance.Button;
-            _chkSelect.FlatStyle = FlatStyle.Flat;
-            _chkSelect.BackColor = InputBack;
-            _chkSelect.CheckedChanged += (s, e) => UpdateMouseModes();
+        private void OnClickNextDiff(object sender, EventArgs e) => JumpToNextDiff();
 
-            barCopy.Controls.AddRange(new Control[]
-            {
-                Lbl("Kopieren:"), _cmbDirection, _chkLand, _chkCopyStatics, _cmbExisting, Gap(),
-                _chkSelect,
-                Btn("Ganzer Bereich", (s, e) => { _subArea = null; ApplyOverlays(); }, "Teilauswahl aufheben – der ganze geöffnete Bereich wird kopiert")
-            });
+        private void OnClickZoomOut(object sender, EventArgs e) => ZoomBoth(false);
 
-            // ── target bar ────────────────────────────────────────────
-            FlowLayoutPanel barTarget = Bar();
-            _rbSame = new RadioButton { Text = "gleiche Position", Checked = true, AutoSize = true, Margin = new Padding(3, 6, 3, 3) };
-            _rbOther = new RadioButton { Text = "andere Position:", AutoSize = true, Margin = new Padding(3, 6, 3, 3) };
-            _rbSame.CheckedChanged += (s, e) => ApplyOverlays();
-            int maxW = Math.Max(_left.Map.Width, _right.Map.Width);
-            int maxH = Math.Max(_left.Map.Height, _right.Map.Height);
-            _numX = Num(0, maxW - 1, 0, 65);
-            _numY = Num(0, maxH - 1, 0, 65);
-            _numX.ValueChanged += (s, e) => OnTargetValueChanged();
-            _numY.ValueChanged += (s, e) => OnTargetValueChanged();
-            _chkPick = Check("Ziel anklicken", false, "Danach in der Ziel-Ansicht auf die Zelle klicken, an der die linke obere Ecke landen soll");
-            _chkPick.Appearance = Appearance.Button;
-            _chkPick.FlatStyle = FlatStyle.Flat;
-            _chkPick.BackColor = InputBack;
-            _chkPick.CheckedChanged += (s, e) => UpdateMouseModes();
-            _numZ = Num(-127, 127, 0, 50);
-            _tip.SetToolTip(_numZ, "Zusätzlicher Höhenversatz für Land und Statics");
-            _chkAdjust = Check("Höhe an Ziel anpassen", false, "Höhe an den Rand des Zielbereichs anpassen (mit weichem Übergang). Statics folgen dem Boden.");
-            _chkConfirm = Check("Nachfragen", true, "Vor dem Kopieren eine Zusammenfassung anzeigen");
-            _btnCopy = Btn("Kopieren ▶", (s, e) => DoCopy(), "Ausgewählten Bereich in die Zielkarte kopieren (nur im Speicher, Strg+Z = rückgängig)");
-            _btnCopy.BackColor = Color.FromArgb(0, 122, 204);
-            _btnCopy.Font = new Font(Font, FontStyle.Bold);
-            _btnUndo = Btn("↶ Rückgängig", (s, e) => DoUndo(), "Letzten Kopiervorgang rückgängig machen (Strg+Z)");
-            _btnRedo = Btn("↷ Wiederholen", (s, e) => DoRedo(), "Wiederholen (Strg+Y)");
-            _btnSave1 = Btn("Map1 speichern…", (s, e) => SaveSide(_left), "Änderungen an Map1 in Dateien schreiben");
-            _btnSave2 = Btn("Map2 speichern…", (s, e) => SaveSide(_right), "Änderungen an Map2 in Dateien schreiben");
+        private void OnClickZoomIn(object sender, EventArgs e) => ZoomBoth(true);
 
-            barTarget.Controls.AddRange(new Control[]
-            {
-                Lbl("Ziel:"), _rbSame, _rbOther, Lbl("X"), _numX, Lbl("Y"), _numY, _chkPick,
-                Btn("Ansicht zum Ziel", (s, e) => GoToTarget(), "Den Zielbereich in beiden Ansichten öffnen"),
-                Gap(), Lbl("Z ±"), _numZ, _chkAdjust, Gap(), _chkConfirm, _btnCopy, _btnUndo, _btnRedo, Gap(), _btnSave1, _btnSave2
-            });
+        private void OnClickFit(object sender, EventArgs e) => FitBoth();
 
-            // ── views ─────────────────────────────────────────────────
-            var split = new SplitContainer
-            {
-                Dock = DockStyle.Fill,
-                Orientation = Orientation.Vertical,
-                BackColor = Color.FromArgb(60, 60, 64),
-                SplitterWidth = 5
-            };
-            BuildSide(_left, split.Panel1);
-            BuildSide(_right, split.Panel2);
-            split.SplitterMoved += (s, e) => SyncFrom(_left);
-            Shown += (s, e) =>
-            {
-                split.SplitterDistance = split.Width / 2;
-                FitBoth();
-            };
-
-            // ── status ────────────────────────────────────────────────
-            var status = new StatusStrip { BackColor = BarBack, ForeColor = Color.White, SizingGrip = true };
-            _lblStatus = new ToolStripStatusLabel { Spring = true, TextAlign = ContentAlignment.MiddleLeft, ForeColor = Color.LightGray };
-            _lblChanges = new ToolStripStatusLabel { ForeColor = Color.FromArgb(255, 180, 60) };
-            status.Items.Add(_lblStatus);
-            status.Items.Add(_lblChanges);
-
-            // dock order: the control added last is docked first (top-most)
-            Controls.Add(split);
-            Controls.Add(status);
-            Controls.Add(barTarget);
-            Controls.Add(barCopy);
-            Controls.Add(barView);
-
+        private void OnDirectionChanged(object sender, EventArgs e)
+        {
             UpdateDirectionNames();
+            ApplyOverlays();
         }
 
-        private void BuildSide(Side side, Control parent)
+        private void OnCopyStaticsChanged(object sender, EventArgs e) => _cmbExisting.Enabled = _chkCopyStatics.Checked;
+
+        private void OnMouseModeChanged(object sender, EventArgs e) => UpdateMouseModes();
+
+        private void OnClickWholeArea(object sender, EventArgs e)
         {
-            side.View = new IsoViewControl { Dock = DockStyle.Fill };
-            side.Header = new Label
-            {
-                Dock = DockStyle.Top,
-                Height = 24,
-                TextAlign = ContentAlignment.MiddleLeft,
-                Padding = new Padding(6, 0, 0, 0),
-                BackColor = side == _left ? Color.FromArgb(40, 70, 110) : Color.FromArgb(110, 70, 40),
-                ForeColor = Color.White,
-                Font = new Font("Segoe UI", 9.5f, FontStyle.Bold),
-                AutoEllipsis = true
-            };
-            side.Info = new Label
-            {
-                Dock = DockStyle.Bottom,
-                Height = 40,
-                Padding = new Padding(6, 2, 2, 2),
-                BackColor = Color.FromArgb(36, 36, 40),
-                ForeColor = Color.Gainsboro,
-                Font = new Font("Consolas", 8.5f),
-                AutoEllipsis = true
-            };
-
-            side.View.ViewChanged += (s, e) => SyncFrom(side);
-            side.View.HoverChanged += (s, e) => OnHover(side);
-            side.View.AreaSelected += (s, e) => OnAreaSelected(side);
-            side.View.CellClicked += (s, e) => OnCellClicked(side, e.Cell);
-
-            parent.Controls.Add(side.View);
-            parent.Controls.Add(side.Info);
-            parent.Controls.Add(side.Header);
+            _subArea = null;
+            ApplyOverlays();
         }
 
-        private static FlowLayoutPanel Bar() => new FlowLayoutPanel
-        {
-            Dock = DockStyle.Top,
-            AutoSize = true,
-            AutoSizeMode = AutoSizeMode.GrowAndShrink,
-            WrapContents = true,
-            BackColor = BarBack,
-            ForeColor = Color.White,
-            Padding = new Padding(3, 2, 3, 2)
-        };
+        private void OnTargetModeChanged(object sender, EventArgs e) => ApplyOverlays();
 
-        private CheckBox Check(string text, bool on, string tip)
-        {
-            var c = new CheckBox { Text = text, Checked = on, AutoSize = true, Margin = new Padding(4, 6, 4, 3), ForeColor = Color.White };
-            if (tip != null)
-            {
-                _tip.SetToolTip(c, tip);
-            }
+        private void OnTargetNumberChanged(object sender, EventArgs e) => OnTargetValueChanged();
 
-            return c;
-        }
+        private void OnClickGoTarget(object sender, EventArgs e) => GoToTarget();
 
-        private Button Btn(string text, EventHandler click, string tip)
-        {
-            var b = new Button
-            {
-                Text = text,
-                AutoSize = true,
-                AutoSizeMode = AutoSizeMode.GrowAndShrink,
-                Height = 26,
-                BackColor = InputBack,
-                ForeColor = Color.White,
-                FlatStyle = FlatStyle.Flat,
-                Margin = new Padding(3, 2, 3, 2),
-                Padding = new Padding(4, 0, 4, 0)
-            };
-            b.FlatAppearance.BorderColor = Color.FromArgb(90, 90, 96);
-            b.Click += click;
-            if (tip != null)
-            {
-                _tip.SetToolTip(b, tip);
-            }
+        private void OnClickCopy(object sender, EventArgs e) => DoCopy();
 
-            return b;
-        }
+        private void OnClickUndo(object sender, EventArgs e) => DoUndo();
 
-        private static Label Lbl(string text) => new Label
-        {
-            Text = text,
-            AutoSize = true,
-            Margin = new Padding(6, 7, 2, 3),
-            ForeColor = Color.LightGray
-        };
+        private void OnClickRedo(object sender, EventArgs e) => DoRedo();
 
-        private static Control Gap() => new Label { Width = 1, Height = 22, BackColor = Color.FromArgb(80, 80, 86), Margin = new Padding(6, 3, 6, 3) };
+        private void OnClickSave1(object sender, EventArgs e) => SaveSide(_left);
 
-        private static ComboBox Combo(int width) => new ComboBox
-        {
-            DropDownStyle = ComboBoxStyle.DropDownList,
-            Width = width,
-            FlatStyle = FlatStyle.Flat,
-            BackColor = InputBack,
-            ForeColor = Color.White,
-            Margin = new Padding(3, 3, 3, 3)
-        };
+        private void OnClickSave2(object sender, EventArgs e) => SaveSide(_right);
 
-        private static NumericUpDown Num(int min, int max, int value, int width) => new NumericUpDown
-        {
-            Minimum = min,
-            Maximum = Math.Max(min, max),
-            Value = Math.Max(min, Math.Min(Math.Max(min, max), value)),
-            Width = width,
-            BackColor = InputBack,
-            ForeColor = Color.White,
-            Margin = new Padding(3, 3, 3, 3)
-        };
+        private void OnSplitterMoved(object sender, SplitterEventArgs e) => SyncFrom(_left);
+
+        private void OnViewChangedLeft(object sender, EventArgs e) => SyncFrom(_left);
+
+        private void OnViewChangedRight(object sender, EventArgs e) => SyncFrom(_right);
+
+        private void OnHoverLeft(object sender, EventArgs e) => OnHover(_left);
+
+        private void OnHoverRight(object sender, EventArgs e) => OnHover(_right);
+
+        private void OnAreaSelectedLeft(object sender, EventArgs e) => OnAreaSelected(_left);
+
+        private void OnAreaSelectedRight(object sender, EventArgs e) => OnAreaSelected(_right);
+
+        private void OnCellClickedLeft(object sender, IsoCellEventArgs e) => OnCellClicked(_left, e.Cell);
+
+        private void OnCellClickedRight(object sender, IsoCellEventArgs e) => OnCellClicked(_right, e.Cell);
 
         #endregion
 
@@ -1190,15 +1009,6 @@ namespace UoFiddler.Plugin.Compare.Forms
             _art.Clear();
         }
 
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                _tip.Dispose();
-            }
-
-            base.Dispose(disposing);
-        }
 
         #endregion
     }

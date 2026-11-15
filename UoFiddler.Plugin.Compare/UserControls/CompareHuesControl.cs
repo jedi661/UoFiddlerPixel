@@ -78,165 +78,101 @@ namespace UoFiddler.Plugin.Compare.UserControls
         private readonly List<HueHistory> _undoOrder = new List<HueHistory>();
         private readonly List<HueHistory> _redoOrder = new List<HueHistory>();
 
-        // controls
-        private ToolStripTextBox _txtPath;
-        private ToolStripComboBox _cmbFilter;
-        private ToolStripLabel _lblCount;
-        private ToolStripButton _btnUndo;
-        private ToolStripButton _btnRedo;
-        private PictureBox _list;
-        private VScrollBar _scroll;
-        private PictureBox _detail;
-        private Label _detailText;
-        private HuePreviewPanel _preview;
-        private readonly ToolTip _tip = new ToolTip();
-
         public CompareHuesControl()
         {
             InitializeComponent();
             SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer | ControlStyles.UserPaint, true);
-            BuildUi();
-        }
 
-        #region UI
-
-        private void BuildUi()
-        {
-            // ── file / navigation ─────────────────────────────────────
-            var bar1 = new ToolStrip { GripStyle = ToolStripGripStyle.Hidden, RenderMode = ToolStripRenderMode.System, Padding = new Padding(2) };
-            _txtPath = new ToolStripTextBox { AutoSize = false, Width = 260, ToolTipText = "Folder with hues.mul or a hues.mul file (e.g. a backup)" };
-            _txtPath.KeyDown += (s, e) =>
-            {
-                if (e.KeyCode == Keys.Enter)
-                {
-                    e.SuppressKeyPress = true;
-                    LoadSecond();
-                }
-            };
-            _cmbFilter = new ToolStripComboBox { DropDownStyle = ComboBoxStyle.DropDownList, AutoSize = false, Width = 150 };
-            _cmbFilter.Items.AddRange(_filterNames.Cast<object>().ToArray());
             _cmbFilter.SelectedIndex = 0;
-            _cmbFilter.SelectedIndexChanged += (s, e) => ApplyFilter();
-            _lblCount = new ToolStripLabel { ForeColor = Color.DarkRed, Font = new Font(Font, FontStyle.Bold) };
-
-            bar1.Items.Add(new ToolStripLabel("Hues 2:"));
-            bar1.Items.Add(_txtPath);
-            bar1.Items.Add(Button("Folder…", (s, e) => BrowseFolder(), "Folder that contains hues.mul"));
-            bar1.Items.Add(Button("File…", (s, e) => BrowseFile(), "Any hues.mul file"));
-            bar1.Items.Add(Button("Load", (s, e) => LoadSecond(), null));
-            bar1.Items.Add(new ToolStripSeparator());
-            bar1.Items.Add(new ToolStripLabel("Show:"));
-            bar1.Items.Add(_cmbFilter);
-            bar1.Items.Add(Button("◄ Prev", (s, e) => JumpDiff(-1), "Previous difference (Shift+F3)"));
-            bar1.Items.Add(Button("Next ►", (s, e) => JumpDiff(1), "Next difference (F3)"));
-            bar1.Items.Add(_lblCount);
-
-            // ── apply / save ──────────────────────────────────────────
-            var bar2 = new ToolStrip { GripStyle = ToolStripGripStyle.Hidden, RenderMode = ToolStripRenderMode.System, Padding = new Padding(2) };
-            var apply21 = new ToolStripSplitButton("Apply 2 → 1") { ToolTipText = "Copy the selected hues of Hues 2 into Hues 1 (colours, name and table values)" };
-            apply21.ButtonClick += (s, e) => Apply(true, Parts.All, SelectedIndices);
-            apply21.DropDownItems.Add("only colours", null, (s, e) => Apply(true, Parts.Colors | Parts.Table, SelectedIndices));
-            apply21.DropDownItems.Add("only name", null, (s, e) => Apply(true, Parts.Name, SelectedIndices));
-            apply21.DropDownItems.Add("all differences (shown filter)", null, (s, e) => Apply(true, Parts.All, DiffIndicesInView()));
-
-            var apply12 = new ToolStripSplitButton("Apply 1 → 2") { ToolTipText = "Copy the selected hues of Hues 1 into Hues 2" };
-            apply12.ButtonClick += (s, e) => Apply(false, Parts.All, SelectedIndices);
-            apply12.DropDownItems.Add("only colours", null, (s, e) => Apply(false, Parts.Colors | Parts.Table, SelectedIndices));
-            apply12.DropDownItems.Add("only name", null, (s, e) => Apply(false, Parts.Name, SelectedIndices));
-            apply12.DropDownItems.Add("all differences (shown filter)", null, (s, e) => Apply(false, Parts.All, DiffIndicesInView()));
-
-            _btnUndo = Button("↶ Undo", (s, e) => DoUndo(), "Undo (Ctrl+Z)");
-            _btnRedo = Button("↷ Redo", (s, e) => DoRedo(), "Redo (Ctrl+Y)");
-
-            bar2.Items.Add(apply21);
-            bar2.Items.Add(apply12);
-            bar2.Items.Add(_btnUndo);
-            bar2.Items.Add(_btnRedo);
-            bar2.Items.Add(new ToolStripSeparator());
-            bar2.Items.Add(Button("Save Hues 1", (s, e) => SaveFirst(), "Write the loaded hues (Hues 1) into the output folder"));
-            bar2.Items.Add(Button("Save Hues 2…", (s, e) => SaveSecond(), "Write Hues 2 into a hues.mul (backup .bak)"));
-            bar2.Items.Add(Button("Export differences…", (s, e) => ExportDiff(), "List of all differences as CSV"));
-
-            // ── list ──────────────────────────────────────────────────
-            _list = new PictureBox { Dock = DockStyle.Fill, BackColor = Color.White };
-            _list.Paint += OnPaintList;
-            _list.Resize += (s, e) => { UpdateScroll(); _list.Invalidate(); };
-            _list.MouseDown += OnListMouseDown;
-            _list.MouseWheel += (s, e) => ScrollTo(_scroll.Value + (e.Delta < 0 ? 3 : -3));
-            _scroll = new VScrollBar { Dock = DockStyle.Right };
-            _scroll.Scroll += (s, e) => _list.Invalidate();
-            _list.ContextMenuStrip = BuildContextMenu();
-
-            var listPanel = new Panel { Dock = DockStyle.Fill };
-            listPanel.Controls.Add(_list);
-            listPanel.Controls.Add(_scroll);
-
-            // ── detail ────────────────────────────────────────────────
-            _detail = new PictureBox { Dock = DockStyle.Top, Height = 74 };
-            _detail.Paint += OnPaintDetail;
-            _detail.Resize += (s, e) => _detail.Invalidate();
-            _detailText = new Label { Dock = DockStyle.Fill, Font = new Font("Consolas", 8.5f), Padding = new Padding(6, 2, 2, 2) };
-            var detailLeft = new Panel { Dock = DockStyle.Fill };
-            detailLeft.Controls.Add(_detailText);
-            detailLeft.Controls.Add(_detail);
-
-            _preview = new HuePreviewPanel { Dock = DockStyle.Right, Width = 420 };
-
-            var split = new SplitContainer { Dock = DockStyle.Fill, Orientation = Orientation.Horizontal, SplitterWidth = 5 };
-            split.Panel1.Controls.Add(listPanel);
-            split.Panel2.Controls.Add(detailLeft);
-            split.Panel2.Controls.Add(_preview);
-            HandleCreated += (s, e) =>
-            {
-                try
-                {
-                    split.SplitterDistance = Math.Max(150, Height - 300);
-                }
-                catch (InvalidOperationException)
-                {
-                    // ignored (control too small)
-                }
-            };
-
-            Controls.Add(split);
-            Controls.Add(bar2);
-            Controls.Add(bar1);
+            _list.MouseWheel += OnListMouseWheel;
+            HandleCreated += OnHandleCreatedSetSplitter;
             UpdateUndoButtons();
         }
 
-        private ToolStripButton Button(string text, EventHandler click, string tip)
+        #region Designer events
+
+        private void OnHandleCreatedSetSplitter(object sender, EventArgs e)
         {
-            var b = new ToolStripButton(text) { DisplayStyle = ToolStripItemDisplayStyle.Text, ToolTipText = tip };
-            b.Click += click;
-            return b;
+            try
+            {
+                splitContainer.SplitterDistance = Math.Max(150, Height - 300);
+            }
+            catch (InvalidOperationException)
+            {
+                // ignored (control too small)
+            }
         }
 
-        private ContextMenuStrip BuildContextMenu()
+        private void OnPathKeyDown(object sender, KeyEventArgs e)
         {
-            var menu = new ContextMenuStrip();
-            menu.Items.Add("Apply 2 → 1 (everything)", null, (s, e) => Apply(true, Parts.All, SelectedIndices));
-            menu.Items.Add("Apply 2 → 1 (only colours)", null, (s, e) => Apply(true, Parts.Colors | Parts.Table, SelectedIndices));
-            menu.Items.Add("Apply 2 → 1 (only name)", null, (s, e) => Apply(true, Parts.Name, SelectedIndices));
-            menu.Items.Add(new ToolStripSeparator());
-            menu.Items.Add("Apply 1 → 2 (everything)", null, (s, e) => Apply(false, Parts.All, SelectedIndices));
-            menu.Items.Add("Apply 1 → 2 (only colours)", null, (s, e) => Apply(false, Parts.Colors | Parts.Table, SelectedIndices));
-            menu.Items.Add("Apply 1 → 2 (only name)", null, (s, e) => Apply(false, Parts.Name, SelectedIndices));
-            menu.Items.Add(new ToolStripSeparator());
-            menu.Items.Add("Copy hue number", null, (s, e) => CopyText($"{_selected + 1} (0x{_selected + 1:X})"));
-            menu.Items.Add("Copy for ServUO (Hue = 0x…)", null, (s, e) => CopyText(HueFiles.ServUOText(Hues.List[_selected])));
-            menu.Items.Add(new ToolStripSeparator());
-            menu.Items.Add("Undo (Ctrl+Z)", null, (s, e) => DoUndo());
-            menu.Items.Add("Redo (Ctrl+Y)", null, (s, e) => DoRedo());
-            menu.Opening += (s, e) =>
+            if (e.KeyCode == Keys.Enter)
             {
-                bool ok = _hue2Loaded;
-                for (int i = 0; i < 7; i++)
-                {
-                    menu.Items[i].Enabled = ok;
-                }
-            };
-            return menu;
+                e.SuppressKeyPress = true;
+                LoadSecond();
+            }
         }
+
+        private void OnClickBrowseFolder(object sender, EventArgs e) => BrowseFolder();
+
+        private void OnClickBrowseFile(object sender, EventArgs e) => BrowseFile();
+
+        private void OnClickLoad(object sender, EventArgs e) => LoadSecond();
+
+        private void OnFilterChanged(object sender, EventArgs e) => ApplyFilter();
+
+        private void OnClickPrev(object sender, EventArgs e) => JumpDiff(-1);
+
+        private void OnClickNext(object sender, EventArgs e) => JumpDiff(1);
+
+        private void OnClickApply21(object sender, EventArgs e) => Apply(true, Parts.All, SelectedIndices);
+
+        private void OnClickApply21Colors(object sender, EventArgs e) => Apply(true, Parts.Colors | Parts.Table, SelectedIndices);
+
+        private void OnClickApply21Name(object sender, EventArgs e) => Apply(true, Parts.Name, SelectedIndices);
+
+        private void OnClickApply21All(object sender, EventArgs e) => Apply(true, Parts.All, DiffIndicesInView());
+
+        private void OnClickApply12(object sender, EventArgs e) => Apply(false, Parts.All, SelectedIndices);
+
+        private void OnClickApply12Colors(object sender, EventArgs e) => Apply(false, Parts.Colors | Parts.Table, SelectedIndices);
+
+        private void OnClickApply12Name(object sender, EventArgs e) => Apply(false, Parts.Name, SelectedIndices);
+
+        private void OnClickApply12All(object sender, EventArgs e) => Apply(false, Parts.All, DiffIndicesInView());
+
+        private void OnClickUndo(object sender, EventArgs e) => DoUndo();
+
+        private void OnClickRedo(object sender, EventArgs e) => DoRedo();
+
+        private void OnClickSaveFirst(object sender, EventArgs e) => SaveFirst();
+
+        private void OnClickSaveSecond(object sender, EventArgs e) => SaveSecond();
+
+        private void OnClickExportDiff(object sender, EventArgs e) => ExportDiff();
+
+        private void OnClickCopyNumber(object sender, EventArgs e) => CopyText($"{_selected + 1} (0x{_selected + 1:X})");
+
+        private void OnClickCopyServUO(object sender, EventArgs e) => CopyText(HueFiles.ServUOText(Hues.List[_selected]));
+
+        private void OnListMenuOpening(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            foreach (ToolStripItem item in new ToolStripItem[] { menuApply21All, menuApply21Colors, menuApply21Name, menuApply12All, menuApply12Colors, menuApply12Name })
+            {
+                item.Enabled = _hue2Loaded;
+            }
+        }
+
+        private void OnListResize(object sender, EventArgs e)
+        {
+            UpdateScroll();
+            _list.Invalidate();
+        }
+
+        private void OnListMouseWheel(object sender, MouseEventArgs e) => ScrollTo(_scroll.Value + (e.Delta < 0 ? 3 : -3));
+
+        private void OnScroll(object sender, ScrollEventArgs e) => _list.Invalidate();
+
+        private void OnDetailResize(object sender, EventArgs e) => _detail.Invalidate();
 
         #endregion
 
@@ -278,7 +214,6 @@ namespace UoFiddler.Plugin.Compare.UserControls
                 HueUsageIndex.Built -= OnUsageBuilt;
             }
 
-            _tip.Dispose();
         }
 
         private void OnHueChangeEvent()
