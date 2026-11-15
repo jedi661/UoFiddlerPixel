@@ -31,8 +31,12 @@ namespace UoFiddler.Controls.UserControls
         private static readonly string[] _filterNames =
         {
             "All", "Named", "Unnamed", "Empty (black)", "Not empty", "Changed", "Selected",
-            "Red", "Orange", "Yellow", "Green", "Cyan", "Blue", "Purple", "Pink", "Gray / white / black"
+            "Red", "Orange", "Yellow", "Green", "Cyan", "Blue", "Purple", "Pink", "Gray / white / black",
+            "Used in the client files", "Not used (free)"
         };
+
+        private const int FilterUsed = 16;
+        private const int FilterUnused = 17;
 
         // clipboard for copy/paste of hues (inside UoFiddler)
         private static List<HueState> _clipboard = new List<HueState>();
@@ -54,6 +58,11 @@ namespace UoFiddler.Controls.UserControls
         private Label _resultsTitle;
         private TextBox _colorText;
         private int _stripStep = -1;
+
+        // usage
+        private ListBox _usage;
+        private Label _usageTitle;
+        private CheckBox _chkFollowUsage;
 
         #region Toolbar
 
@@ -113,7 +122,8 @@ namespace UoFiddler.Controls.UserControls
         }
 
         /// <summary>true if the filter result can change when hues are edited</summary>
-        private bool FilterDependsOnContent => _filterBox != null && _filterBox.SelectedIndex > 0 && _filterBox.SelectedIndex != 6;
+        private bool FilterDependsOnContent => _filterBox != null && _filterBox.SelectedIndex > 0 && _filterBox.SelectedIndex != 6 &&
+                                               _filterBox.SelectedIndex != FilterUsed && _filterBox.SelectedIndex != FilterUnused;
 
         private void ResetFilter()
         {
@@ -133,6 +143,8 @@ namespace UoFiddler.Controls.UserControls
                 case 4: return !HueAnalysis.IsEmpty(hue);
                 case 5: return IsModified(hue.Index);
                 case 6: return hue.Index == _selected || _multi.Contains(hue.Index);
+                case FilterUsed: return HueUsageIndex.IsUsed(hue.Index);
+                case FilterUnused: return HueUsageIndex.IsBuilt && !HueUsageIndex.IsUsed(hue.Index);
                 case 0: return true;
                 default:
                     var family = (HueFamily)(filter - 6); // 7 = Red … 15 = Gray
@@ -180,7 +192,122 @@ namespace UoFiddler.Controls.UserControls
             BuildContextMenu();
             BuildSidePanel();
             SelectedChanged += (s, e) => UpdateSidePanel();
+
+            HueUsageIndex.Built += OnUsageBuilt;
+            Disposed += (s, e) => HueUsageIndex.Built -= OnUsageBuilt;
+            ControlEvents.FilePathChangeEvent += OnFilesChangedForUsage;
+            Disposed += (s, e) => ControlEvents.FilePathChangeEvent -= OnFilesChangedForUsage;
+            StartUsageScan();
         }
+
+        #region Usage (which hue is used for what in the client files)
+
+        private void StartUsageScan()
+        {
+            if (HueUsageIndex.IsBuilt || HueUsageIndex.IsBuilding)
+            {
+                return;
+            }
+
+            try
+            {
+                HueUsageIndex.BuildAsync();
+            }
+            catch (Exception ex)
+            {
+                if (_usageTitle != null)
+                {
+                    _usageTitle.Text = $"Scan failed: {ex.Message}";
+                }
+            }
+
+            UpdateSidePanel();
+        }
+
+        private void OnFilesChangedForUsage()
+        {
+            HueUsageIndex.Invalidate();
+            StartUsageScan();
+        }
+
+        private void OnUsageBuilt(object sender, EventArgs e)
+        {
+            if (IsDisposed || !IsHandleCreated)
+            {
+                return;
+            }
+
+            BeginInvoke(new Action(() =>
+            {
+                if (_filterBox != null && (_filterBox.SelectedIndex == FilterUsed || _filterBox.SelectedIndex == FilterUnused))
+                {
+                    ApplyFilter(true);
+                }
+
+                UpdateSidePanel();
+            }));
+        }
+
+        private void FillUsage(Hue hue)
+        {
+            if (_usage == null)
+            {
+                return;
+            }
+
+            _usage.BeginUpdate();
+            _usage.Items.Clear();
+            if (!HueUsageIndex.IsBuilt)
+            {
+                _usageTitle.Text = HueUsageIndex.IsBuilding ? "Scanning the maps and .def files …" : HueUsageIndex.Summary;
+            }
+            else
+            {
+                IReadOnlyList<HueUsageEntry> list = HueUsageIndex.Get(hue.Index);
+                _usageTitle.Text = list.Count == 0
+                    ? $"Hue {hue.Index + 1} is not used in the client files."
+                    : $"Hue {hue.Index + 1} is used {list.Count}× – click an entry to see it:";
+                foreach (HueUsageEntry entry in list)
+                {
+                    _usage.Items.Add(entry);
+                }
+            }
+
+            _usage.EndUpdate();
+            _toolTip.SetToolTip(_usage, HueUsageIndex.Summary + (HueUsageIndex.LastError != null ? "\n" + HueUsageIndex.LastError : string.Empty));
+        }
+
+        private static string UsageLine(Hue hue)
+        {
+            if (!HueUsageIndex.IsBuilt)
+            {
+                return HueUsageIndex.IsBuilding ? "scanning …" : "not scanned";
+            }
+
+            IReadOnlyList<HueUsageEntry> list = HueUsageIndex.Get(hue.Index);
+            if (list.Count == 0)
+            {
+                return "not used in the client files (free)";
+            }
+
+            int statics = list.Where(u => u.Kind == HueUsageKind.Static).Sum(u => u.Count);
+            int ids = list.Count(u => u.Kind == HueUsageKind.Static);
+            int defs = list.Count(u => u.Kind != HueUsageKind.Static);
+            var parts = new List<string>();
+            if (statics > 0)
+            {
+                parts.Add($"{statics}× on the maps ({ids} item id{(ids == 1 ? string.Empty : "s")})");
+            }
+
+            if (defs > 0)
+            {
+                parts.Add($"{defs} .def entr{(defs == 1 ? "y" : "ies")}");
+            }
+
+            return string.Join(", ", parts);
+        }
+
+        #endregion
 
         private void OnHistoryChanged(object sender, EventArgs e)
         {
@@ -285,7 +412,7 @@ namespace UoFiddler.Controls.UserControls
             };
             _toolTip.SetToolTip(_strip, "Click a colour step to see its value");
 
-            _info = new Label { Dock = DockStyle.Top, Height = 132, Font = new Font("Consolas", 8.5f), Padding = new Padding(4) };
+            _info = new Label { Dock = DockStyle.Top, Height = 146, Font = new Font("Consolas", 8.5f), Padding = new Padding(4) };
 
             var buttons = new FlowLayoutPanel { Dock = DockStyle.Top, AutoSize = true, Padding = new Padding(2) };
             buttons.Controls.Add(SideButton("Edit…", (s, e) => OpenEditor(_selected)));
@@ -344,7 +471,40 @@ namespace UoFiddler.Controls.UserControls
                 Padding = new Padding(4, 3, 0, 0)
             });
 
+            // ── used by ──────────────────────────────────────────────
+            var usagePage = new TabPage("Used by");
+            var usageTop = new FlowLayoutPanel { Dock = DockStyle.Top, AutoSize = true, Padding = new Padding(2) };
+            _chkFollowUsage = new CheckBox { Text = "Preview follows the usage", Checked = true, AutoSize = true, Margin = new Padding(3, 6, 3, 3) };
+            _toolTip.SetToolTip(_chkFollowUsage, "When a hue is selected, the preview shows the graphic that uses it (the most used one). Without a usage your own test graphic is shown.");
+            _chkFollowUsage.CheckedChanged += (s, e) => UpdateSidePanel();
+            usageTop.Controls.Add(_chkFollowUsage);
+            usageTop.Controls.Add(SideButton("Scan again", (s, e) => { HueUsageIndex.Invalidate(); StartUsageScan(); }));
+
+            _usageTitle = new Label { Dock = DockStyle.Top, Height = 34, Padding = new Padding(4, 3, 0, 0) };
+            _usage = new ListBox { Dock = DockStyle.Fill, IntegralHeight = false, HorizontalScrollbar = true };
+            _usage.SelectedIndexChanged += (s, e) =>
+            {
+                if (_usage.SelectedItem is HueUsageEntry entry)
+                {
+                    _preview.ShowGraphic(entry.PreviewKind, entry.PreviewId);
+                }
+            };
+
+            usagePage.Controls.Add(_usage);
+            usagePage.Controls.Add(_usageTitle);
+            usagePage.Controls.Add(usageTop);
+            usagePage.Controls.Add(new Label
+            {
+                Text = "Read from statics*.mul (maps), body.def, corpse.def, gump.def and equipconv.def. " +
+                       "Land tiles and textures are never hued by the client.",
+                Dock = DockStyle.Bottom,
+                Height = 46,
+                ForeColor = Color.DimGray,
+                Padding = new Padding(4, 3, 0, 0)
+            });
+
             tabs.TabPages.Add(infoPage);
+            tabs.TabPages.Add(usagePage);
             tabs.TabPages.Add(findPage);
             side.Controls.Add(tabs);
 
@@ -401,10 +561,26 @@ namespace UoFiddler.Controls.UserControls
                 (HueAnalysis.IsEmpty(hue) ? "   – EMPTY (free)" : string.Empty) +
                 (IsModified(hue.Index) ? "   – CHANGED" : string.Empty) +
                 (count > 1 ? $"\nSelected:    {count} hues" : string.Empty) +
+                $"\nUsed:        {UsageLine(hue)}" +
                 step;
 
             _strip.Invalidate();
             _preview.SetHues(hue.Colors, null);
+            FillUsage(hue);
+
+            // the preview shows what the hue is used for (or the own test graphic if it is not used)
+            if (_chkFollowUsage == null || _chkFollowUsage.Checked)
+            {
+                HueUsageEntry first = HueUsageIndex.IsBuilt ? HueUsageIndex.Get(hue.Index).FirstOrDefault() : null;
+                if (first != null)
+                {
+                    _preview.ShowGraphic(first.PreviewKind, first.PreviewId);
+                }
+                else
+                {
+                    _preview.ShowOwnGraphic();
+                }
+            }
         }
 
         #endregion
