@@ -6,6 +6,42 @@ UOFiddler based on Ultima SDK it's a tool to view and alter almost every UO 2D c
 This is an extended version of UoFiddler that has more maps and more tools, as well as Map Edit, and will be expanded over time to support the Ultima standard 
 version more than the original version. Also, some source codes from older and New projects that are no longer supported have been integrated.
 
+Version 4.12.29
+
+## New plugin: Region Editor
+
+Draw, check, import and export server regions directly on the client maps, for **ServUO/RunUO**, **Sphere** and **POL**.
+
+### Map & tools
+- Uses the same map list as the Map tab (MapRegistry, also custom maps), with statics, grid, region names, minimap and client position (go to / follow / send char)
+- Tools: select/move/resize, pan, rectangle, polygon, circle, fill (connected land of the same kind), go location, entrance
+- Shift = add to the selected region, Alt = cut out, snap 1–16
+
+### Editing
+- Region tree with search, nesting by drag & drop, duplicate, hide, lock, "copy as ServUO XML"
+- Properties: type, priority, music, z range, go, entrance, guards, rune, smartNoHousing, logoutDelay, colour, notes, Sphere/POL keys
+- Areas tab for rectangles and polygons, rectangle optimizer
+- Undo/redo for every change (Ctrl+Z / Ctrl+Y) with a history list
+- Validator with automatic fixes (outside the map, overlaps with equal priority, child outside parent, go/entrance in water, duplicate names, …)
+
+### Formats
+- ServUO/RunUO `Data\Regions.xml`: keeps unknown elements and comments; replace the file, replace only the facets, or merge by region name
+- Sphere `AREADEF` / `ROOMDEF`
+- POL `regions.cfg`, `justice.cfg`, `music.cfg`
+- Project file (`.uoregions`) and CSV (read and write)
+- Text, HTML overview, PNG map image and C# classes for custom region types (export only)
+
+### Server folders
+- Set the ServUO, Sphere and POL folders plus an export folder in the settings. Settings are saved to `%AppData%\UoFiddler\RegionEditor.json`
+- The settings show whether each server file was found and how many regions it contains
+- Load regions straight from the server, or save them back. A `.bak` backup is made before any server file is overwritten
+- "Load on start" option and a **⇅ Server** menu in the toolbar
+- "Everything into the export folder" writes all formats, ready to copy to any server
+
+### UI
+- Light/dark theme, German/English/French, built-in help in all three languages
+- All forms and the user control can be edited in the Visual Studio designer
+
 Version 4.12.28
 
 ### Compare – maps in the CGI view
