@@ -6,6 +6,33 @@ UOFiddler based on Ultima SDK it's a tool to view and alter almost every UO 2D c
 This is an extended version of UoFiddler that has more maps and more tools, as well as Map Edit, and will be expanded over time to support the Ultima standard 
 version more than the original version. Also, some source codes from older and New projects that are no longer supported have been integrated.
 
+Version 4.12.28
+
+### Compare – maps in the CGI view
+- Mark an area on the compare map (Shift + drag) and open Map1/Map2 side by side in the client view
+- Synchronized scrolling/zoom, differences highlighted, statics can be shown or hidden
+- Copy land and/or statics from one map to the other – at the same or a different position, with undo/redo and saving (with backup)
+
+### Animation list & ServUO
+- Add animations to the list with name and type (with preview); new animations from the animation editor are offered after saving
+- ServUO script generator (monster, animal, mount, sea creature, NPC, equipment)
+- Setup check: Bodyconv.def, mobtypes.txt, body.def, tiledata, paperdoll gumps and ServUO bodyTable.cfg – missing lines can be written directly
+- Fixed: names grew longer with every save, type 4 crashed the list
+
+### Hues
+- List and grid view, filters (named, empty, changed, colour family, free), multi selection, undo/redo
+- Preview on an item, animation or gump – automatically shows what the hue is used for in the client files (map statics, body.def, gump.def, equipconv.def, corpse.def)
+- Find similar hues, find hues containing a colour, create a hue from a gradient or an image
+- Export/import of hue ranges, palette as PNG/GPL/ACT, copy text for ServUO
+- Compare Hues: kind of difference, detail comparison with preview, apply in both directions, CSV export
+- Several bugs fixed (wrong row on click, outdated comparison, "Replace" linked two hues)
+
+### New plugin: Client Check
+- Checks all client files against each other: art ↔ tiledata, land/textures, equipment, bodies, radarcol, multis, statics on maps, cliloc
+- Results with levels, filters, preview and how to fix; automatic fixes for radar colours and mobtypes.txt
+- Report as HTML, CSV or text
+- UI and help in German, English and French
+
 Version 4.12.27
 
 What's New
