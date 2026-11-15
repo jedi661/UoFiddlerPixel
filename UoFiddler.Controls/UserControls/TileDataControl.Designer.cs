@@ -83,6 +83,37 @@ namespace UoFiddler.Controls.UserControls
             toolStripButton7 = new System.Windows.Forms.ToolStripButton();
             toolStripPushMarkedButton8 = new System.Windows.Forms.ToolStripButton();
             toolStripButton8Clear = new System.Windows.Forms.ToolStripButton();
+            _sepTdHistory = new System.Windows.Forms.ToolStripSeparator();
+            _btnTdUndo = new System.Windows.Forms.ToolStripButton();
+            _btnTdRedo = new System.Windows.Forms.ToolStripButton();
+            _sepTdTools = new System.Windows.Forms.ToolStripSeparator();
+            _btnTdBatch = new System.Windows.Forms.ToolStripButton();
+            _btnTdChanges = new System.Windows.Forms.ToolStripButton();
+            _btnTdHelp = new System.Windows.Forms.ToolStripButton();
+            _sepItemsMulti = new System.Windows.Forms.ToolStripSeparator();
+            _miItemsBatch = new System.Windows.Forms.ToolStripMenuItem();
+            _miItemsSelectRange = new System.Windows.Forms.ToolStripMenuItem();
+            _miItemsClearSelection = new System.Windows.Forms.ToolStripMenuItem();
+            _miItemsRevert = new System.Windows.Forms.ToolStripMenuItem();
+            _sepItemsCuo = new System.Windows.Forms.ToolStripSeparator();
+            _miItemsAddCuo = new System.Windows.Forms.ToolStripMenuItem();
+            _miCuoChair = new System.Windows.Forms.ToolStripMenuItem();
+            _miCuoCave = new System.Windows.Forms.ToolStripMenuItem();
+            _miCuoVegetation = new System.Windows.Forms.ToolStripMenuItem();
+            _miCuoTree = new System.Windows.Forms.ToolStripMenuItem();
+            _miCuoSeasons = new System.Windows.Forms.ToolStripMenuItem();
+            _miCuoLights = new System.Windows.Forms.ToolStripMenuItem();
+            _sepLandMulti = new System.Windows.Forms.ToolStripSeparator();
+            _miLandBatch = new System.Windows.Forms.ToolStripMenuItem();
+            _miLandSelectRange = new System.Windows.Forms.ToolStripMenuItem();
+            _miLandClearSelection = new System.Windows.Forms.ToolStripMenuItem();
+            _miLandRevert = new System.Windows.Forms.ToolStripMenuItem();
+            _miLandAddSeasons = new System.Windows.Forms.ToolStripMenuItem();
+            _btnCuoAddSelected = new System.Windows.Forms.Button();
+            _btnCuoCheck = new System.Windows.Forms.Button();
+            _btnCuoReload = new System.Windows.Forms.Button();
+            _btnCuoOpenFolder = new System.Windows.Forms.Button();
+            _lblCuoStatus = new System.Windows.Forms.Label();
             tabPageLand = new System.Windows.Forms.TabPage();
             splitContainer5 = new System.Windows.Forms.SplitContainer();
             splitContainer6 = new System.Windows.Forms.SplitContainer();
@@ -209,7 +240,7 @@ namespace UoFiddler.Controls.UserControls
             // 
             // ItemsContextMenuStrip
             // 
-            ItemsContextMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { selectInItemsToolStripMenuItem, selectRadarColorToolStripMenuItem, toolStripSeparator3, selectInGumpsTabMaleToolStripMenuItem, selectInGumpsTabFemaleToolStripMenuItem, toolStripSeparator8, copySettingsToolStripMenuItem, insertSettingsToolStripMenuItem });
+            ItemsContextMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { selectInItemsToolStripMenuItem, selectRadarColorToolStripMenuItem, toolStripSeparator3, selectInGumpsTabMaleToolStripMenuItem, selectInGumpsTabFemaleToolStripMenuItem, toolStripSeparator8, copySettingsToolStripMenuItem, insertSettingsToolStripMenuItem, _sepItemsMulti, _miItemsBatch, _miItemsSelectRange, _miItemsClearSelection, _miItemsRevert, _sepItemsCuo, _miItemsAddCuo });
             ItemsContextMenuStrip.Name = "contextMenuStrip1";
             ItemsContextMenuStrip.Size = new System.Drawing.Size(201, 148);
             ItemsContextMenuStrip.Opening += ItemsContextMenuStrip_Opening;
@@ -274,9 +305,96 @@ namespace UoFiddler.Controls.UserControls
             insertSettingsToolStripMenuItem.ToolTipText = "Insert all Settings";
             insertSettingsToolStripMenuItem.Click += InsertSettingsToolStripMenuItem_Click;
             // 
+            // _sepItemsMulti
+            // 
+            _sepItemsMulti.Name = "_sepItemsMulti";
+            _sepItemsMulti.Size = new System.Drawing.Size(220, 6);
+            // 
+            // _miItemsBatch
+            // 
+            _miItemsBatch.Name = "_miItemsBatch";
+            _miItemsBatch.Size = new System.Drawing.Size(220, 22);
+            _miItemsBatch.Text = "Batch edit selected…";
+            _miItemsBatch.Click += OnClickTdBatch;
+            // 
+            // _miItemsSelectRange
+            // 
+            _miItemsSelectRange.Name = "_miItemsSelectRange";
+            _miItemsSelectRange.Size = new System.Drawing.Size(220, 22);
+            _miItemsSelectRange.Text = "Select ID range…";
+            _miItemsSelectRange.Click += OnClickSelectRange;
+            // 
+            // _miItemsClearSelection
+            // 
+            _miItemsClearSelection.Name = "_miItemsClearSelection";
+            _miItemsClearSelection.Size = new System.Drawing.Size(220, 22);
+            _miItemsClearSelection.Text = "Clear selection";
+            _miItemsClearSelection.Click += OnClickClearSelection;
+            // 
+            // _miItemsRevert
+            // 
+            _miItemsRevert.Name = "_miItemsRevert";
+            _miItemsRevert.Size = new System.Drawing.Size(220, 22);
+            _miItemsRevert.Text = "Revert to file state";
+            _miItemsRevert.Click += OnClickRevertSelected;
+            // 
+            // _sepItemsCuo
+            // 
+            _sepItemsCuo.Name = "_sepItemsCuo";
+            _sepItemsCuo.Size = new System.Drawing.Size(220, 6);
+            // 
+            // _miItemsAddCuo
+            // 
+            _miItemsAddCuo.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { _miCuoChair, _miCuoCave, _miCuoVegetation, _miCuoTree, _miCuoSeasons, _miCuoLights });
+            _miItemsAddCuo.Name = "_miItemsAddCuo";
+            _miItemsAddCuo.Size = new System.Drawing.Size(220, 22);
+            _miItemsAddCuo.Text = "Add to ClassicUO file";
+            // 
+            // _miCuoChair
+            // 
+            _miCuoChair.Name = "_miCuoChair";
+            _miCuoChair.Size = new System.Drawing.Size(160, 22);
+            _miCuoChair.Text = "chair.txt";
+            _miCuoChair.Click += OnClickAddToCuoFile;
+            // 
+            // _miCuoCave
+            // 
+            _miCuoCave.Name = "_miCuoCave";
+            _miCuoCave.Size = new System.Drawing.Size(160, 22);
+            _miCuoCave.Text = "cave.txt";
+            _miCuoCave.Click += OnClickAddToCuoFile;
+            // 
+            // _miCuoVegetation
+            // 
+            _miCuoVegetation.Name = "_miCuoVegetation";
+            _miCuoVegetation.Size = new System.Drawing.Size(160, 22);
+            _miCuoVegetation.Text = "vegetation.txt";
+            _miCuoVegetation.Click += OnClickAddToCuoFile;
+            // 
+            // _miCuoTree
+            // 
+            _miCuoTree.Name = "_miCuoTree";
+            _miCuoTree.Size = new System.Drawing.Size(160, 22);
+            _miCuoTree.Text = "tree.txt";
+            _miCuoTree.Click += OnClickAddToCuoFile;
+            // 
+            // _miCuoSeasons
+            // 
+            _miCuoSeasons.Name = "_miCuoSeasons";
+            _miCuoSeasons.Size = new System.Drawing.Size(160, 22);
+            _miCuoSeasons.Text = "seasons.txt";
+            _miCuoSeasons.Click += OnClickAddToCuoFile;
+            // 
+            // _miCuoLights
+            // 
+            _miCuoLights.Name = "_miCuoLights";
+            _miCuoLights.Size = new System.Drawing.Size(160, 22);
+            _miCuoLights.Text = "lights.txt";
+            _miCuoLights.Click += OnClickAddToCuoFile;
+            // 
             // LandTilesContextMenuStrip
             // 
-            LandTilesContextMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { selectInLandtilesToolStripMenuItem, selToolStripMenuItem, toolStripSeparator9, copySettingsLandToolStripMenuItem, insertSettingsLandToolStripMenuItem });
+            LandTilesContextMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { selectInLandtilesToolStripMenuItem, selToolStripMenuItem, toolStripSeparator9, copySettingsLandToolStripMenuItem, insertSettingsLandToolStripMenuItem, _sepLandMulti, _miLandBatch, _miLandSelectRange, _miLandClearSelection, _miLandRevert, _miLandAddSeasons });
             LandTilesContextMenuStrip.Name = "contextMenuStrip2";
             LandTilesContextMenuStrip.Size = new System.Drawing.Size(201, 98);
             // 
@@ -319,10 +437,50 @@ namespace UoFiddler.Controls.UserControls
             insertSettingsLandToolStripMenuItem.ToolTipText = "Insert all Settings";
             insertSettingsLandToolStripMenuItem.Click += InsertSettingsLandToolStripMenuItem_Click;
             // 
+            // _sepLandMulti
+            // 
+            _sepLandMulti.Name = "_sepLandMulti";
+            _sepLandMulti.Size = new System.Drawing.Size(220, 6);
+            // 
+            // _miLandBatch
+            // 
+            _miLandBatch.Name = "_miLandBatch";
+            _miLandBatch.Size = new System.Drawing.Size(220, 22);
+            _miLandBatch.Text = "Batch edit selected…";
+            _miLandBatch.Click += OnClickTdBatch;
+            // 
+            // _miLandSelectRange
+            // 
+            _miLandSelectRange.Name = "_miLandSelectRange";
+            _miLandSelectRange.Size = new System.Drawing.Size(220, 22);
+            _miLandSelectRange.Text = "Select ID range…";
+            _miLandSelectRange.Click += OnClickSelectRange;
+            // 
+            // _miLandClearSelection
+            // 
+            _miLandClearSelection.Name = "_miLandClearSelection";
+            _miLandClearSelection.Size = new System.Drawing.Size(220, 22);
+            _miLandClearSelection.Text = "Clear selection";
+            _miLandClearSelection.Click += OnClickClearSelection;
+            // 
+            // _miLandRevert
+            // 
+            _miLandRevert.Name = "_miLandRevert";
+            _miLandRevert.Size = new System.Drawing.Size(220, 22);
+            _miLandRevert.Text = "Revert to file state";
+            _miLandRevert.Click += OnClickRevertSelected;
+            // 
+            // _miLandAddSeasons
+            // 
+            _miLandAddSeasons.Name = "_miLandAddSeasons";
+            _miLandAddSeasons.Size = new System.Drawing.Size(220, 22);
+            _miLandAddSeasons.Text = "Add to seasons.txt";
+            _miLandAddSeasons.Click += OnClickAddToCuoFile;
+            // 
             // MainToolStrip
             // 
             MainToolStrip.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
-            MainToolStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { toolStripLabel1, searchByIdToolStripTextBox, toolStripLabelName, searchByNameToolStripTextBox, searchByNameToolStripButton, toolStripButton2, toolStripSeparator5, toolStripDropDownButton1, toolStripSeparator1, toolStripButton1, toolStripButton5, toolStripSeparator2, toolStripButton4, toolStripButton3, toolStripSeparator6, toolStripComboBox1, toolStripButton6, toolStripButton7, toolStripPushMarkedButton8, toolStripButton8Clear });
+            MainToolStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { toolStripLabel1, searchByIdToolStripTextBox, toolStripLabelName, searchByNameToolStripTextBox, searchByNameToolStripButton, toolStripButton2, toolStripSeparator5, toolStripDropDownButton1, toolStripSeparator1, toolStripButton1, toolStripButton5, toolStripSeparator2, toolStripButton4, toolStripButton3, toolStripSeparator6, toolStripComboBox1, toolStripButton6, toolStripButton7, toolStripPushMarkedButton8, toolStripButton8Clear, _sepTdHistory, _btnTdUndo, _btnTdRedo, _sepTdTools, _btnTdBatch, _btnTdChanges, _btnTdHelp });
             MainToolStrip.Location = new System.Drawing.Point(0, 0);
             MainToolStrip.Name = "MainToolStrip";
             MainToolStrip.RenderMode = System.Windows.Forms.ToolStripRenderMode.System;
@@ -532,6 +690,61 @@ namespace UoFiddler.Controls.UserControls
             toolStripButton8Clear.Size = new System.Drawing.Size(23, 22);
             toolStripButton8Clear.ToolTipText = "deletes input";
             toolStripButton8Clear.Click += ToolStripButton8Clear_Click;
+            // 
+            // _sepTdHistory
+            // 
+            _sepTdHistory.Name = "_sepTdHistory";
+            _sepTdHistory.Size = new System.Drawing.Size(6, 25);
+            // 
+            // _btnTdUndo
+            // 
+            _btnTdUndo.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            _btnTdUndo.Name = "_btnTdUndo";
+            _btnTdUndo.Size = new System.Drawing.Size(60, 22);
+            _btnTdUndo.Text = "↶ Undo";
+            _btnTdUndo.ToolTipText = "Undo the last TileData change (Ctrl+Z)";
+            _btnTdUndo.Click += OnClickTdUndo;
+            // 
+            // _btnTdRedo
+            // 
+            _btnTdRedo.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            _btnTdRedo.Name = "_btnTdRedo";
+            _btnTdRedo.Size = new System.Drawing.Size(60, 22);
+            _btnTdRedo.Text = "↷ Redo";
+            _btnTdRedo.ToolTipText = "Redo (Ctrl+Y)";
+            _btnTdRedo.Click += OnClickTdRedo;
+            // 
+            // _sepTdTools
+            // 
+            _sepTdTools.Name = "_sepTdTools";
+            _sepTdTools.Size = new System.Drawing.Size(6, 25);
+            // 
+            // _btnTdBatch
+            // 
+            _btnTdBatch.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            _btnTdBatch.Name = "_btnTdBatch";
+            _btnTdBatch.Size = new System.Drawing.Size(60, 22);
+            _btnTdBatch.Text = "Batch edit…";
+            _btnTdBatch.ToolTipText = "Change several items or land tiles at once (selection, ID ranges, filters)";
+            _btnTdBatch.Click += OnClickTdBatch;
+            // 
+            // _btnTdChanges
+            // 
+            _btnTdChanges.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            _btnTdChanges.Name = "_btnTdChanges";
+            _btnTdChanges.Size = new System.Drawing.Size(60, 22);
+            _btnTdChanges.Text = "Changes…";
+            _btnTdChanges.ToolTipText = "All tiles changed since loading – show, compare, revert";
+            _btnTdChanges.Click += OnClickTdChanges;
+            // 
+            // _btnTdHelp
+            // 
+            _btnTdHelp.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            _btnTdHelp.Name = "_btnTdHelp";
+            _btnTdHelp.Size = new System.Drawing.Size(60, 22);
+            _btnTdHelp.Text = "? Help";
+            _btnTdHelp.ToolTipText = "Help for the TileData tab";
+            _btnTdHelp.Click += OnClickTdHelp;
             // 
             // tabPageLand
             // 
@@ -1303,6 +1516,10 @@ namespace UoFiddler.Controls.UserControls
             richTextBoxEdit.Size = new System.Drawing.Size(392, 482);
             richTextBoxEdit.TabIndex = 2;
             richTextBoxEdit.Text = "";
+            richTextBoxEdit.WordWrap = false;
+            richTextBoxEdit.Font = new System.Drawing.Font("Consolas", 9.75F);
+            richTextBoxEdit.SelectionChanged += OnCuoSelectionChanged;
+            richTextBoxEdit.TextChanged += OnCuoTextChanged;
             // 
             // contextMenuStripCou
             // 
@@ -1346,10 +1563,15 @@ namespace UoFiddler.Controls.UserControls
             panel1.Controls.Add(lbcomboBoxLoadText);
             panel1.Controls.Add(lbChairInfo);
             panel1.Controls.Add(tbClassicUOPfad);
+            panel1.Controls.Add(_btnCuoAddSelected);
+            panel1.Controls.Add(_btnCuoCheck);
+            panel1.Controls.Add(_btnCuoReload);
+            panel1.Controls.Add(_btnCuoOpenFolder);
+            panel1.Controls.Add(_lblCuoStatus);
             panel1.Dock = System.Windows.Forms.DockStyle.Top;
             panel1.Location = new System.Drawing.Point(0, 0);
             panel1.Name = "panel1";
-            panel1.Size = new System.Drawing.Size(349, 119);
+            panel1.Size = new System.Drawing.Size(349, 170);
             panel1.TabIndex = 28;
             // 
             // lbpathtosetCuotext
@@ -1360,7 +1582,7 @@ namespace UoFiddler.Controls.UserControls
             lbpathtosetCuotext.Name = "lbpathtosetCuotext";
             lbpathtosetCuotext.Size = new System.Drawing.Size(234, 15);
             lbpathtosetCuotext.TabIndex = 6;
-            lbpathtosetCuotext.Text = "Set the path to the Cuo directory (Data) :";
+            lbpathtosetCuotext.Text = "ClassicUO folder (or Data\\Client):";
             // 
             // btSaveTxtCuo
             // 
@@ -1413,6 +1635,60 @@ namespace UoFiddler.Controls.UserControls
             lbChairInfo.TabIndex = 7;
             lbChairInfo.Text = "Chair";
             lbChairInfo.Click += LbChairInfo_Click;
+            // 
+            // _btnCuoAddSelected
+            // 
+            _btnCuoAddSelected.Location = new System.Drawing.Point(22, 92);
+            _btnCuoAddSelected.Name = "_btnCuoAddSelected";
+            _btnCuoAddSelected.Size = new System.Drawing.Size(130, 23);
+            _btnCuoAddSelected.TabIndex = 30;
+            _btnCuoAddSelected.Text = "Add selected tiles";
+            _btnCuoAddSelected.UseVisualStyleBackColor = true;
+            _btnCuoAddSelected.Click += OnClickCuoAddSelected;
+            toolTipComponent.SetToolTip(_btnCuoAddSelected, "Adds the tiles selected in the Items / Land tab to this file");
+            // 
+            // _btnCuoCheck
+            // 
+            _btnCuoCheck.Location = new System.Drawing.Point(158, 92);
+            _btnCuoCheck.Name = "_btnCuoCheck";
+            _btnCuoCheck.Size = new System.Drawing.Size(70, 23);
+            _btnCuoCheck.TabIndex = 31;
+            _btnCuoCheck.Text = "Check";
+            _btnCuoCheck.UseVisualStyleBackColor = true;
+            _btnCuoCheck.Click += OnClickCuoCheck;
+            toolTipComponent.SetToolTip(_btnCuoCheck, "Checks the file: format, unknown graphics, duplicates");
+            // 
+            // _btnCuoReload
+            // 
+            _btnCuoReload.Location = new System.Drawing.Point(233, 92);
+            _btnCuoReload.Name = "_btnCuoReload";
+            _btnCuoReload.Size = new System.Drawing.Size(75, 23);
+            _btnCuoReload.TabIndex = 32;
+            _btnCuoReload.Text = "Reload";
+            _btnCuoReload.UseVisualStyleBackColor = true;
+            _btnCuoReload.Click += OnClickCuoReload;
+            toolTipComponent.SetToolTip(_btnCuoReload, "Load the file again (discard changes)");
+            // 
+            // _btnCuoOpenFolder
+            // 
+            _btnCuoOpenFolder.Location = new System.Drawing.Point(22, 121);
+            _btnCuoOpenFolder.Name = "_btnCuoOpenFolder";
+            _btnCuoOpenFolder.Size = new System.Drawing.Size(130, 23);
+            _btnCuoOpenFolder.TabIndex = 33;
+            _btnCuoOpenFolder.Text = "Open folder";
+            _btnCuoOpenFolder.UseVisualStyleBackColor = true;
+            _btnCuoOpenFolder.Click += OnClickCuoOpenFolder;
+            toolTipComponent.SetToolTip(_btnCuoOpenFolder, "Opens the folder with the txt files");
+            // 
+            // _lblCuoStatus
+            // 
+            _lblCuoStatus.AutoEllipsis = true;
+            _lblCuoStatus.ForeColor = System.Drawing.SystemColors.GrayText;
+            _lblCuoStatus.Location = new System.Drawing.Point(158, 125);
+            _lblCuoStatus.Name = "_lblCuoStatus";
+            _lblCuoStatus.Size = new System.Drawing.Size(185, 40);
+            _lblCuoStatus.TabIndex = 34;
+            _lblCuoStatus.Text = "";
             // 
             // tbClassicUOPfad
             // 
@@ -1617,5 +1893,36 @@ namespace UoFiddler.Controls.UserControls
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator9;
         private System.Windows.Forms.Label weightLabel;
         private System.Windows.Forms.ToolTip toolTipComponent;
+        private System.Windows.Forms.ToolStripSeparator _sepTdHistory;
+        private System.Windows.Forms.ToolStripButton _btnTdUndo;
+        private System.Windows.Forms.ToolStripButton _btnTdRedo;
+        private System.Windows.Forms.ToolStripSeparator _sepTdTools;
+        private System.Windows.Forms.ToolStripButton _btnTdBatch;
+        private System.Windows.Forms.ToolStripButton _btnTdChanges;
+        private System.Windows.Forms.ToolStripButton _btnTdHelp;
+        private System.Windows.Forms.ToolStripSeparator _sepItemsMulti;
+        private System.Windows.Forms.ToolStripMenuItem _miItemsBatch;
+        private System.Windows.Forms.ToolStripMenuItem _miItemsSelectRange;
+        private System.Windows.Forms.ToolStripMenuItem _miItemsClearSelection;
+        private System.Windows.Forms.ToolStripMenuItem _miItemsRevert;
+        private System.Windows.Forms.ToolStripSeparator _sepItemsCuo;
+        private System.Windows.Forms.ToolStripMenuItem _miItemsAddCuo;
+        private System.Windows.Forms.ToolStripMenuItem _miCuoChair;
+        private System.Windows.Forms.ToolStripMenuItem _miCuoCave;
+        private System.Windows.Forms.ToolStripMenuItem _miCuoVegetation;
+        private System.Windows.Forms.ToolStripMenuItem _miCuoTree;
+        private System.Windows.Forms.ToolStripMenuItem _miCuoSeasons;
+        private System.Windows.Forms.ToolStripMenuItem _miCuoLights;
+        private System.Windows.Forms.ToolStripSeparator _sepLandMulti;
+        private System.Windows.Forms.ToolStripMenuItem _miLandBatch;
+        private System.Windows.Forms.ToolStripMenuItem _miLandSelectRange;
+        private System.Windows.Forms.ToolStripMenuItem _miLandClearSelection;
+        private System.Windows.Forms.ToolStripMenuItem _miLandRevert;
+        private System.Windows.Forms.ToolStripMenuItem _miLandAddSeasons;
+        private System.Windows.Forms.Button _btnCuoAddSelected;
+        private System.Windows.Forms.Button _btnCuoCheck;
+        private System.Windows.Forms.Button _btnCuoReload;
+        private System.Windows.Forms.Button _btnCuoOpenFolder;
+        private System.Windows.Forms.Label _lblCuoStatus;
     }
 }

@@ -59,6 +59,8 @@ namespace UoFiddler.Controls.UserControls
             LabelDecimalAdress.Text = "";
 
             tbClassicUOPfad.Text = Properties.Settings.Default.CUOTestPath; // Load Settings path
+
+            InitEditing();
         }
         #endregion
 
@@ -539,6 +541,14 @@ namespace UoFiddler.Controls.UserControls
             }
             treeViewLand.EndUpdate();
 
+            // the lists were built again: old selections and undo steps do not fit any more
+            _selectedNodes.Clear();
+            _selectedLandNodes.Clear();
+            _itemAnchor = null;
+            _landAnchor = null;
+            TileDataHistory.Clear();
+            TileDataHistory.SetBaseline();
+
             IsLoaded = true;
             Cursor.Current = Cursors.Default;
         }
@@ -630,38 +640,16 @@ namespace UoFiddler.Controls.UserControls
                 return;
             }
 
-            // Check whether the Ctrl key is pressed
-            bool isCtrlPressed = (Control.ModifierKeys & Keys.Control) == Keys.Control;
-
-            if (isCtrlPressed)
+            // Ctrl = add/remove, Shift = range, otherwise single selection (TileDataControl.Editing.cs);
+            // a refresh from code (e.g. a change in another tab) keeps the selection
+            if (sender == treeViewItem)
             {
-                // Multi-select: Add or remove nodes from the list
-                if (_selectedNodes.Contains(e.Node))
-                {
-                    // Remove the node if it is already selected
-                    _selectedNodes.Remove(e.Node);
-                    e.Node.BackColor = treeViewItem.BackColor;  // Deselect
-                }
-                else
-                {
-                    // Adding the node if it is not already selected
-                    _selectedNodes.Add(e.Node);
-                    e.Node.BackColor = Color.LightBlue;  // Visual highlighting
-                }
-            }
-            else
-            {
-                // Normal selection without Ctrl: Delete previous selection
-                ClearPreviousSelection();
-                _selectedNodes.Add(e.Node);
-                e.Node.BackColor = Color.LightBlue;  // Visual highlighting
+                HandleItemSelection(e.Node);
             }
 
-            // Apply logic to all selected nodes
-            foreach (var node in _selectedNodes)
-            {
-                ApplySettingsToNode(node);
-            }
+            // show the values of the clicked item; changed fields are remembered from here on
+            ApplySettingsToNode(e.Node);
+            ResetItemEdits();
         }
         #endregion
 
@@ -742,6 +730,12 @@ namespace UoFiddler.Controls.UserControls
                 return;
             }
 
+            if (!_suppressLandSelection && sender == treeViewLand)
+            {
+                // Ctrl = add/remove, Shift = range, otherwise single selection (TileDataControl.Editing.cs)
+                HandleLandSelection(e.Node);
+            }
+
             int index = (int)e.Node.Tag;
 
             LabelDecimalAdress.Text = index.ToString();
@@ -777,6 +771,7 @@ namespace UoFiddler.Controls.UserControls
             }
 
             _changingIndex = false;
+            ResetLandEdits();
         }
         #endregion
 
@@ -789,167 +784,26 @@ namespace UoFiddler.Controls.UserControls
             MessageBox.Show($"TileData saved to {fileName}", "Saved", MessageBoxButtons.OK, MessageBoxIcon.Information,
                 MessageBoxDefaultButton.Button1);
             Options.ChangedUltimaClass["TileData"] = false;
+
+            // the saved state is the new "state of the file" (changes list, red entries)
+            TileDataHistory.SetBaseline();
+            foreach (TreeNode node in ItemNodes())
+            {
+                node.ForeColor = treeViewItem.ForeColor;
+            }
+
+            foreach (TreeNode node in LandNodes())
+            {
+                node.ForeColor = treeViewLand.ForeColor;
+            }
         }
         #endregion
 
         #region [ OnClickSaveChanges ] 
         private void OnClickSaveChanges(object sender, EventArgs e)
         {
-            if (tabcontrol.SelectedIndex == 0) // items
-            {
-                // Check whether nodes have been marked
-                if (_selectedNodes.Count == 0)
-                {
-                    MessageBox.Show("No nodes selected.");
-                    return;
-                }
-
-                // Save changes for each selected node
-                foreach (TreeNode node in _selectedNodes)
-                {
-                    if (node?.Tag == null)
-                    {
-                        continue;
-                    }
-
-                    int index = (int)node.Tag;
-                    ItemData item = TileData.ItemTable[index];
-                    string name = textBoxName.Text;
-                    if (name.Length > 20)
-                    {
-                        name = name.Substring(0, 20);
-                    }
-
-                    item.Name = name;
-                    node.Text = string.Format("0x{0:X4} ({0}) {1}", index, name);
-
-                    if (short.TryParse(textBoxAnim.Text, out short shortRes))
-                    {
-                        item.Animation = shortRes;
-                    }
-
-                    if (byte.TryParse(textBoxWeight.Text, out byte byteRes))
-                    {
-                        item.Weight = byteRes;
-                    }
-
-                    if (byte.TryParse(textBoxQuality.Text, out byteRes))
-                    {
-                        item.Quality = byteRes;
-                    }
-
-                    if (byte.TryParse(textBoxQuantity.Text, out byteRes))
-                    {
-                        item.Quantity = byteRes;
-                    }
-
-                    if (byte.TryParse(textBoxHue.Text, out byteRes))
-                    {
-                        item.Hue = byteRes;
-                    }
-
-                    if (byte.TryParse(textBoxStackOff.Text, out byteRes))
-                    {
-                        item.StackingOffset = byteRes;
-                    }
-
-                    if (byte.TryParse(textBoxValue.Text, out byteRes))
-                    {
-                        item.Value = byteRes;
-                    }
-
-                    if (byte.TryParse(textBoxHeigth.Text, out byteRes))
-                    {
-                        item.Height = byteRes;
-                    }
-
-                    if (short.TryParse(textBoxUnk1.Text, out shortRes))
-                    {
-                        item.MiscData = shortRes;
-                    }
-
-                    if (byte.TryParse(textBoxUnk2.Text, out byteRes))
-                    {
-                        item.Unk2 = byteRes;
-                    }
-
-                    if (byte.TryParse(textBoxUnk3.Text, out byteRes))
-                    {
-                        item.Unk3 = byteRes;
-                    }
-
-                    // Set flags
-                    item.Flags = FlagsFromList(checkedListBox1, item.Flags);
-
-                    TileData.ItemTable[index] = item;
-                    node.ForeColor = Color.Red; // Set the node to "changed"
-
-                    // Trigger events and option changes
-                    Options.ChangedUltimaClass["TileData"] = true;
-                    ControlEvents.FireTileDataChangeEvent(this, index + 0x4000);
-                }
-
-                // Save note
-                if (_toolStripButton7IsActive && memorySaveWarningToolStripMenuItem.Checked)
-                {
-                    if (_playCustomSound) // If Sound instead of MessageBox
-                    {
-                        SoundPlayer player = new SoundPlayer();
-                        player.SoundLocation = "sound.wav";
-                        player.Play();
-                    }
-                    else
-                    {
-                        // Note about saving
-                        MessageBox.Show("Changes saved to memory. Click 'Save Tiledata' to write to file.", "Saved",
-                            MessageBoxButtons.OK, MessageBoxIcon.Information, MessageBoxDefaultButton.Button1);
-                    }
-                }
-            }
-            else // land
-            {
-                if (treeViewLand.SelectedNode == null)
-                {
-                    return;
-                }
-
-                int index = (int)treeViewLand.SelectedNode.Tag;
-                LandData land = TileData.LandTable[index];
-                string name = textBoxNameLand.Text;
-                if (name.Length > 20)
-                {
-                    name = name.Substring(0, 20);
-                }
-
-                land.Name = name;
-                treeViewLand.SelectedNode.Text = $"0x{index:X4} {name}";
-                if (ushort.TryParse(textBoxTexID.Text, out ushort shortRes))
-                {
-                    land.TextureId = shortRes;
-                }
-
-                land.Flags = FlagsFromList(checkedListBox2, land.Flags);
-
-                TileData.LandTable[index] = land;
-                Options.ChangedUltimaClass["TileData"] = true;
-                ControlEvents.FireTileDataChangeEvent(this, index);
-                treeViewLand.SelectedNode.ForeColor = Color.Red;
-
-                if (_toolStripButton7IsActive && memorySaveWarningToolStripMenuItem.Checked)
-                {
-                    if (_playCustomSound)
-                    {
-                        SoundPlayer player = new SoundPlayer();
-                        player.SoundLocation = "sound.wav";
-                        player.Play();
-                    }
-                    else
-                    {
-                        MessageBox.Show("Changes saved to memory. Click 'Save Tiledata' to write to file.", "Saved",
-                            MessageBoxButtons.OK, MessageBoxIcon.Information, MessageBoxDefaultButton.Button1);
-                    }
-                }
-            }
+            // one tile: all values of the fields; several tiles: only the changed values/flags (TileDataControl.Editing.cs)
+            SaveChanges(false);
         }
         #endregion
 
@@ -963,73 +817,16 @@ namespace UoFiddler.Controls.UserControls
         #region [ OnTextChangedItemAnim ]
         private void OnTextChangedItemAnim(object sender, EventArgs e)
         {
-            if (!saveDirectlyOnChangesToolStripMenuItem.Checked)
-            {
-                return;
-            }
-
-            if (_changingIndex)
-            {
-                return;
-            }
-
-            if (treeViewItem.SelectedNode?.Tag == null)
-            {
-                return;
-            }
-
-            if (!short.TryParse(textBoxAnim.Text, out short shortRes))
-            {
-                return;
-            }
-
-            int index = (int)treeViewItem.SelectedNode.Tag;
-            ItemData item = TileData.ItemTable[index];
-            item.Animation = shortRes;
-            TileData.ItemTable[index] = item;
-            treeViewItem.SelectedNode.ForeColor = Color.Red;
-            Options.ChangedUltimaClass["TileData"] = true;
-            ControlEvents.FireTileDataChangeEvent(this, index + 0x4000);
+            // remembers the change; with "save directly" it is applied to all selected items at once
+            OnItemFieldEdited(TileField.Animation);
         }
         #endregion
 
         #region [ OnTextChangedItemName ]
         private void OnTextChangedItemName(object sender, EventArgs e)
         {
-            if (!saveDirectlyOnChangesToolStripMenuItem.Checked)
-            {
-                return;
-            }
-
-            if (_changingIndex)
-            {
-                return;
-            }
-
-            if (treeViewItem.SelectedNode?.Tag == null)
-            {
-                return;
-            }
-
-            int index = (int)treeViewItem.SelectedNode.Tag;
-            ItemData item = TileData.ItemTable[index];
-            string name = textBoxName.Text;
-            if (name.Length == 0)
-            {
-                return;
-            }
-
-            if (name.Length > 20)
-            {
-                name = name.Substring(0, 20);
-            }
-
-            item.Name = name;
-
-            TileData.ItemTable[index] = item;
-            treeViewItem.SelectedNode.ForeColor = Color.Red;
-            Options.ChangedUltimaClass["TileData"] = true;
-            ControlEvents.FireTileDataChangeEvent(this, index + 0x4000);
+            // remembers the change; with "save directly" it is applied to all selected items at once
+            OnItemFieldEdited(TileField.Name);
         }
         #endregion
 
@@ -1060,403 +857,94 @@ namespace UoFiddler.Controls.UserControls
         #region [ OnTextChangedItemWeight ]
         private void OnTextChangedItemWeight(object sender, EventArgs e)
         {
-            if (!saveDirectlyOnChangesToolStripMenuItem.Checked)
-            {
-                return;
-            }
-
-            if (_changingIndex)
-            {
-                return;
-            }
-
-            if (treeViewItem.SelectedNode?.Tag == null)
-            {
-                return;
-            }
-
-            if (!byte.TryParse(textBoxWeight.Text, out byte byteRes))
-            {
-                return;
-            }
-
-            int index = (int)treeViewItem.SelectedNode.Tag;
-            ItemData item = TileData.ItemTable[index];
-            item.Weight = byteRes;
-            TileData.ItemTable[index] = item;
-            treeViewItem.SelectedNode.ForeColor = Color.Red;
-            Options.ChangedUltimaClass["TileData"] = true;
-            ControlEvents.FireTileDataChangeEvent(this, index + 0x4000);
+            // remembers the change; with "save directly" it is applied to all selected items at once
+            OnItemFieldEdited(TileField.Weight);
         }
         #endregion
 
         #region [ OnTextChangedItemQuality ]
         private void OnTextChangedItemQuality(object sender, EventArgs e)
         {
-            if (!saveDirectlyOnChangesToolStripMenuItem.Checked)
-            {
-                return;
-            }
-
-            if (_changingIndex)
-            {
-                return;
-            }
-
-            if (treeViewItem.SelectedNode?.Tag == null)
-            {
-                return;
-            }
-
-            if (!byte.TryParse(textBoxQuality.Text, out byte byteRes))
-            {
-                return;
-            }
-
-            int index = (int)treeViewItem.SelectedNode.Tag;
-            ItemData item = TileData.ItemTable[index];
-            item.Quality = byteRes;
-            TileData.ItemTable[index] = item;
-            treeViewItem.SelectedNode.ForeColor = Color.Red;
-            Options.ChangedUltimaClass["TileData"] = true;
-            ControlEvents.FireTileDataChangeEvent(this, index + 0x4000);
+            // remembers the change; with "save directly" it is applied to all selected items at once
+            OnItemFieldEdited(TileField.Quality);
         }
         #endregion
 
         #region [ OnTextChangedItemQuantity ]
         private void OnTextChangedItemQuantity(object sender, EventArgs e)
         {
-            if (!saveDirectlyOnChangesToolStripMenuItem.Checked)
-            {
-                return;
-            }
-
-            if (_changingIndex)
-            {
-                return;
-            }
-
-            if (treeViewItem.SelectedNode?.Tag == null)
-            {
-                return;
-            }
-
-            if (!byte.TryParse(textBoxQuantity.Text, out byte byteRes))
-            {
-                return;
-            }
-
-            int index = (int)treeViewItem.SelectedNode.Tag;
-            ItemData item = TileData.ItemTable[index];
-            item.Quantity = byteRes;
-            TileData.ItemTable[index] = item;
-            treeViewItem.SelectedNode.ForeColor = Color.Red;
-            Options.ChangedUltimaClass["TileData"] = true;
-            ControlEvents.FireTileDataChangeEvent(this, index + 0x4000);
+            // remembers the change; with "save directly" it is applied to all selected items at once
+            OnItemFieldEdited(TileField.Quantity);
         }
         #endregion
 
         #region [ OnTextChangedItemHue ]
         private void OnTextChangedItemHue(object sender, EventArgs e)
         {
-            if (!saveDirectlyOnChangesToolStripMenuItem.Checked)
-            {
-                return;
-            }
-
-            if (_changingIndex)
-            {
-                return;
-            }
-
-            if (treeViewItem.SelectedNode?.Tag == null)
-            {
-                return;
-            }
-
-            if (!byte.TryParse(textBoxHue.Text, out byte byteRes))
-            {
-                return;
-            }
-
-            int index = (int)treeViewItem.SelectedNode.Tag;
-            ItemData item = TileData.ItemTable[index];
-            item.Hue = byteRes;
-            TileData.ItemTable[index] = item;
-            treeViewItem.SelectedNode.ForeColor = Color.Red;
-            Options.ChangedUltimaClass["TileData"] = true;
-            ControlEvents.FireTileDataChangeEvent(this, index + 0x4000);
+            // remembers the change; with "save directly" it is applied to all selected items at once
+            OnItemFieldEdited(TileField.Hue);
         }
         #endregion
 
         #region [ OnTextChangedItemStackOff ]
         private void OnTextChangedItemStackOff(object sender, EventArgs e)
         {
-            if (!saveDirectlyOnChangesToolStripMenuItem.Checked)
-            {
-                return;
-            }
-
-            if (_changingIndex)
-            {
-                return;
-            }
-
-            if (treeViewItem.SelectedNode?.Tag == null)
-            {
-                return;
-            }
-
-            if (!byte.TryParse(textBoxStackOff.Text, out byte byteRes))
-            {
-                return;
-            }
-
-            int index = (int)treeViewItem.SelectedNode.Tag;
-            ItemData item = TileData.ItemTable[index];
-            item.StackingOffset = byteRes;
-            TileData.ItemTable[index] = item;
-            treeViewItem.SelectedNode.ForeColor = Color.Red;
-            Options.ChangedUltimaClass["TileData"] = true;
-            ControlEvents.FireTileDataChangeEvent(this, index + 0x4000);
+            // remembers the change; with "save directly" it is applied to all selected items at once
+            OnItemFieldEdited(TileField.StackingOffset);
         }
         #endregion
 
         #region [ OnTextChangedItemValue ]
         private void OnTextChangedItemValue(object sender, EventArgs e)
         {
-            if (!saveDirectlyOnChangesToolStripMenuItem.Checked)
-            {
-                return;
-            }
-
-            if (_changingIndex)
-            {
-                return;
-            }
-
-            if (treeViewItem.SelectedNode?.Tag == null)
-            {
-                return;
-            }
-
-            if (!byte.TryParse(textBoxValue.Text, out byte byteRes))
-            {
-                return;
-            }
-
-            int index = (int)treeViewItem.SelectedNode.Tag;
-            ItemData item = TileData.ItemTable[index];
-            item.Value = byteRes;
-            TileData.ItemTable[index] = item;
-            treeViewItem.SelectedNode.ForeColor = Color.Red;
-            Options.ChangedUltimaClass["TileData"] = true;
-            ControlEvents.FireTileDataChangeEvent(this, index + 0x4000);
+            // remembers the change; with "save directly" it is applied to all selected items at once
+            OnItemFieldEdited(TileField.Value);
         }
         #endregion
 
         #region [ OnTextChangedItemHeight ]
         private void OnTextChangedItemHeight(object sender, EventArgs e)
         {
-            if (!saveDirectlyOnChangesToolStripMenuItem.Checked)
-            {
-                return;
-            }
-
-            if (_changingIndex)
-            {
-                return;
-            }
-
-            if (treeViewItem.SelectedNode?.Tag == null)
-            {
-                return;
-            }
-
-            if (!byte.TryParse(textBoxHeigth.Text, out byte byteRes))
-            {
-                return;
-            }
-
-            int index = (int)treeViewItem.SelectedNode.Tag;
-            ItemData item = TileData.ItemTable[index];
-            item.Height = byteRes;
-            TileData.ItemTable[index] = item;
-            treeViewItem.SelectedNode.ForeColor = Color.Red;
-            Options.ChangedUltimaClass["TileData"] = true;
-            ControlEvents.FireTileDataChangeEvent(this, index + 0x4000);
+            // remembers the change; with "save directly" it is applied to all selected items at once
+            OnItemFieldEdited(TileField.Height);
         }
         #endregion
 
         #region [ OnTextChangedItemMiscData ]
         private void OnTextChangedItemMiscData(object sender, EventArgs e)
         {
-            if (!saveDirectlyOnChangesToolStripMenuItem.Checked)
-            {
-                return;
-            }
-
-            if (_changingIndex)
-            {
-                return;
-            }
-
-            if (treeViewItem.SelectedNode?.Tag == null)
-            {
-                return;
-            }
-
-            if (!short.TryParse(textBoxUnk1.Text, out short shortRes))
-            {
-                return;
-            }
-
-            int index = (int)treeViewItem.SelectedNode.Tag;
-            ItemData item = TileData.ItemTable[index];
-            item.MiscData = shortRes;
-            TileData.ItemTable[index] = item;
-            treeViewItem.SelectedNode.ForeColor = Color.Red;
-            Options.ChangedUltimaClass["TileData"] = true;
-            ControlEvents.FireTileDataChangeEvent(this, index + 0x4000);
+            // remembers the change; with "save directly" it is applied to all selected items at once
+            OnItemFieldEdited(TileField.MiscData);
         }
         #endregion
 
         #region [ OnTextChangedItemUnk2 ]
         private void OnTextChangedItemUnk2(object sender, EventArgs e)
         {
-            if (!saveDirectlyOnChangesToolStripMenuItem.Checked)
-            {
-                return;
-            }
-
-            if (_changingIndex)
-            {
-                return;
-            }
-
-            if (treeViewItem.SelectedNode?.Tag == null)
-            {
-                return;
-            }
-
-            if (!byte.TryParse(textBoxUnk2.Text, out byte byteRes))
-            {
-                return;
-            }
-
-            int index = (int)treeViewItem.SelectedNode.Tag;
-            ItemData item = TileData.ItemTable[index];
-            item.Unk2 = byteRes;
-            TileData.ItemTable[index] = item;
-            treeViewItem.SelectedNode.ForeColor = Color.Red;
-            Options.ChangedUltimaClass["TileData"] = true;
-            ControlEvents.FireTileDataChangeEvent(this, index + 0x4000);
+            // remembers the change; with "save directly" it is applied to all selected items at once
+            OnItemFieldEdited(TileField.Unk2);
         }
         #endregion
 
         #region [ OnTextChangedItemUnk3 ]
         private void OnTextChangedItemUnk3(object sender, EventArgs e)
         {
-            if (!saveDirectlyOnChangesToolStripMenuItem.Checked)
-            {
-                return;
-            }
-
-            if (_changingIndex)
-            {
-                return;
-            }
-
-            if (treeViewItem.SelectedNode?.Tag == null)
-            {
-                return;
-            }
-
-            if (!byte.TryParse(textBoxUnk3.Text, out byte byteRes))
-            {
-                return;
-            }
-
-            int index = (int)treeViewItem.SelectedNode.Tag;
-            ItemData item = TileData.ItemTable[index];
-            item.Unk3 = byteRes;
-            TileData.ItemTable[index] = item;
-            treeViewItem.SelectedNode.ForeColor = Color.Red;
-            Options.ChangedUltimaClass["TileData"] = true;
-            ControlEvents.FireTileDataChangeEvent(this, index + 0x4000);
+            // remembers the change; with "save directly" it is applied to all selected items at once
+            OnItemFieldEdited(TileField.Unk3);
         }
         #endregion
 
         #region [ OnTextChangedLandName ]
         private void OnTextChangedLandName(object sender, EventArgs e)
         {
-            if (!saveDirectlyOnChangesToolStripMenuItem.Checked)
-            {
-                return;
-            }
-
-            if (_changingIndex)
-            {
-                return;
-            }
-
-            if (treeViewLand.SelectedNode?.Tag == null)
-            {
-                return;
-            }
-
-            int index = (int)treeViewLand.SelectedNode.Tag;
-            LandData land = TileData.LandTable[index];
-            string name = textBoxNameLand.Text;
-            if (name.Length == 0)
-            {
-                return;
-            }
-
-            if (name.Length > 20)
-            {
-                name = name.Substring(0, 20);
-            }
-
-            land.Name = name;
-            treeViewLand.SelectedNode.Text = string.Format("0x{0:X4} ({0}) {1}", index, name);
-            TileData.LandTable[index] = land;
-            treeViewLand.SelectedNode.ForeColor = Color.Red;
-            Options.ChangedUltimaClass["TileData"] = true;
-            ControlEvents.FireTileDataChangeEvent(this, index);
+            OnLandFieldEdited(TileField.Name);
         }
         #endregion
 
         #region OnTextChangedLandTexID
         private void OnTextChangedLandTexID(object sender, EventArgs e)
         {
-            if (!saveDirectlyOnChangesToolStripMenuItem.Checked)
-            {
-                return;
-            }
-
-            if (_changingIndex)
-            {
-                return;
-            }
-
-            if (treeViewLand.SelectedNode == null)
-            {
-                return;
-            }
-
-            if (!ushort.TryParse(textBoxTexID.Text, out ushort shortRes))
-            {
-                return;
-            }
-
-            int index = (int)treeViewLand.SelectedNode.Tag;
-            LandData land = TileData.LandTable[index];
-            land.TextureId = shortRes;
-            TileData.LandTable[index] = land;
-            treeViewLand.SelectedNode.ForeColor = Color.Red;
-            Options.ChangedUltimaClass["TileData"] = true;
-            ControlEvents.FireTileDataChangeEvent(this, index);
+            OnLandFieldEdited(TileField.TextureId);
         }
         #endregion
 
@@ -1493,124 +981,15 @@ namespace UoFiddler.Controls.UserControls
         #region [ OnFlagItemCheckItems ]
         private void OnFlagItemCheckItems(object sender, ItemCheckEventArgs e)
         {
-            if (!saveDirectlyOnChangesToolStripMenuItem.Checked)
-            {
-                return;
-            }
-
-            if (_changingIndex)
-            {
-                return;
-            }
-
-            if (e.CurrentValue == e.NewValue)
-            {
-                return;
-            }
-
-            if (treeViewItem.SelectedNode?.Tag == null)
-            {
-                return;
-            }
-
-            int index = (int)treeViewItem.SelectedNode.Tag;
-            ItemData item = TileData.ItemTable[index];
-
-            TileFlag changeFlag = FlagOfListIndex(e.Index);
-            if (changeFlag == TileFlag.None)
-            {
-                return;
-            }
-
-            if ((item.Flags & changeFlag) != 0) // better double check
-            {
-                if (e.NewValue != CheckState.Unchecked)
-                {
-                    return;
-                }
-
-                item.Flags ^= changeFlag;
-                TileData.ItemTable[index] = item;
-                treeViewItem.SelectedNode.ForeColor = Color.Red;
-                Options.ChangedUltimaClass["TileData"] = true;
-                ControlEvents.FireTileDataChangeEvent(this, index + 0x4000);
-            }
-            else if ((item.Flags & changeFlag) == 0)
-            {
-                if (e.NewValue != CheckState.Checked)
-                {
-                    return;
-                }
-
-                item.Flags |= changeFlag;
-                TileData.ItemTable[index] = item;
-                treeViewItem.SelectedNode.ForeColor = Color.Red;
-                Options.ChangedUltimaClass["TileData"] = true;
-                ControlEvents.FireTileDataChangeEvent(this, index + 0x4000);
-            }
+            // remembers the flag; with "save directly" it is set/removed on all selected items at once
+            OnItemFlagEdited(e);
         }
         #endregion
 
         #region [ OnFlagItemCheckLandTiles ]
         private void OnFlagItemCheckLandTiles(object sender, ItemCheckEventArgs e)
         {
-            if (!saveDirectlyOnChangesToolStripMenuItem.Checked)
-            {
-                return;
-            }
-
-            if (_changingIndex)
-            {
-                return;
-            }
-
-            if (e.CurrentValue == e.NewValue)
-            {
-                return;
-            }
-
-            if (treeViewLand.SelectedNode == null)
-            {
-                return;
-            }
-
-            int index = (int)treeViewLand.SelectedNode.Tag;
-            LandData land = TileData.LandTable[index];
-
-            // the list shows all flags in the order of the enum (like the item list),
-            // the old fixed mapping of 5 flags set wrong flags (e.g. Background -> Damaging)
-            TileFlag changeFlag = FlagOfListIndex(e.Index);
-            if (changeFlag == TileFlag.None)
-            {
-                return;
-            }
-
-            if ((land.Flags & changeFlag) != 0)
-            {
-                if (e.NewValue != CheckState.Unchecked)
-                {
-                    return;
-                }
-
-                land.Flags ^= changeFlag;
-                TileData.LandTable[index] = land;
-                treeViewLand.SelectedNode.ForeColor = Color.Red;
-                Options.ChangedUltimaClass["TileData"] = true;
-                ControlEvents.FireTileDataChangeEvent(this, index);
-            }
-            else if ((land.Flags & changeFlag) == 0)
-            {
-                if (e.NewValue != CheckState.Checked)
-                {
-                    return;
-                }
-
-                land.Flags |= changeFlag;
-                TileData.LandTable[index] = land;
-                treeViewLand.SelectedNode.ForeColor = Color.Red;
-                Options.ChangedUltimaClass["TileData"] = true;
-                ControlEvents.FireTileDataChangeEvent(this, index);
-            }
+            OnLandFlagEdited(e);
         }
         #endregion
 
@@ -1743,14 +1122,20 @@ namespace UoFiddler.Controls.UserControls
                 Options.ChangedUltimaClass["TileData"] = true;
                 if (tabcontrol.SelectedIndex == 0) // items
                 {
+                    var before = (ItemData[])TileData.ItemTable.Clone();
+                    TileDataHistory.Record($"CSV import {Path.GetFileName(dialog.FileName)}", Enumerable.Range(0, before.Length), null);
                     TileData.ImportItemDataFromCsv(dialog.FileName);
-                    AfterSelectTreeViewItem(this, new TreeViewEventArgs(treeViewItem.SelectedNode));
+                    MarkItemsChanged(Enumerable.Range(0, before.Length).Where(i => !TileDataHistory.SameItem(before[i], TileData.ItemTable[i])).ToList());
                 }
                 else
                 {
+                    var before = (LandData[])TileData.LandTable.Clone();
+                    TileDataHistory.Record($"CSV import {Path.GetFileName(dialog.FileName)}", null, Enumerable.Range(0, before.Length));
                     TileData.ImportLandDataFromCsv(dialog.FileName);
-                    AfterSelectTreeViewLand(this, new TreeViewEventArgs(treeViewLand.SelectedNode));
+                    MarkLandsChanged(Enumerable.Range(0, before.Length).Where(i => !TileDataHistory.SameLand(before[i], TileData.LandTable[i])).ToList());
                 }
+
+                RefreshShownTiles();
             }
             dialog.Dispose();
         }
@@ -1911,6 +1296,9 @@ namespace UoFiddler.Controls.UserControls
             {
                 return;
             }
+
+            TileDataHistory.Record("Set texture ids",
+                null, Enumerable.Range(0, TileData.LandTable.Length).Where(i => Textures.TestTexture(i) && TileData.LandTable[i].TextureId == 0));
 
             var updated = 0;
             for (int i = 0; i < TileData.LandTable.Length; ++i)
@@ -2360,8 +1748,8 @@ namespace UoFiddler.Controls.UserControls
                     pair.Key.Text = pair.Value;
                 }
 
-                // Saving the changes (without MessageBox).
-                OnClickSaveChanges(null, EventArgs.Empty);
+                // Saving the changes: all transferred values, also on several selected items
+                SaveChanges(true);
             }
         }
         #endregion
@@ -2644,67 +2032,38 @@ namespace UoFiddler.Controls.UserControls
         #region [ buttonLoadTxt ]
         private void ButtonLoadTxt_Click(object sender, EventArgs e)
         {
-            FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog();
-            if (folderBrowserDialog.ShowDialog() == DialogResult.OK)
+            using (var folderBrowserDialog = new FolderBrowserDialog { Description = "ClassicUO folder (the folder of ClassicUO.exe) or its Data\\Client folder" })
             {
-                // Set the text of tbClassicUOPfad to the selected path
-                tbClassicUOPfad.Text = folderBrowserDialog.SelectedPath;
+                if (Directory.Exists(tbClassicUOPfad.Text))
+                {
+                    folderBrowserDialog.SelectedPath = tbClassicUOPfad.Text;
+                }
 
-                // Save the path in Settings
+                if (folderBrowserDialog.ShowDialog() != DialogResult.OK)
+                {
+                    return;
+                }
+
+                // Set the text of tbClassicUOPfad to the selected path and save it in the settings
+                tbClassicUOPfad.Text = folderBrowserDialog.SelectedPath;
                 Properties.Settings.Default.CUOTestPath = folderBrowserDialog.SelectedPath;
                 Properties.Settings.Default.Save();
+            }
+
+            UpdateCuoStatus();
+            if (comboBoxLoadText.SelectedItem != null)
+            {
+                LoadCuoFile();
             }
         }
         #endregion
 
-        #region [ Dictionary ]
-        Dictionary<string, string> _infoTexts = new Dictionary<string, string>()
-        {
-            { "chair", "2865,0,0,0,0,0,0,4 = 2865 is the article number of the chair.\n\nThe first four zeros in this line tell your character, \nno matter which direction you come from, you will always look north, \nwhen you sit in this chair.\n\nNorth-chair = 2865,0,0,0,0,\n\nEast-chair = 2863,2,2,2,2,6,6 \nThe first four numbers 2 always point east.\n\nSouth-chair = 2862,4,4,4,4,0,0 \nThe first four 4s are always to the southwest.\n\nDirected chair = 2864,6,6,6,6,-8,8 \n\nThe first four 6s will always face you \nWest stool.= 2910,0,2,4,6,-8,-8 \n\nStools are multidirectional.\nThat means, by adding \nAll 4 directions = ,0,2,4,6, \n\nThe last two numbers have to do with the positioning of the character." },
-            { "seasons", "Enter information text here" },
-            { "lights", "Enter information text here" },
-            { "lightshaders", "Enter information text here" },
-            { "tree", "Enter information text here" },
-            { "vegetation", "Enter information text here" },
-            { "cave", "Enter information text here" },
-            { "containers", "Enter information text here" }
-        };
-        #endregion
 
         #region [ comboBoxLoadText_SelectedIndexChanged ]
         private void ComboBoxLoadText_SelectedIndexChanged(object sender, EventArgs e)
         {
-            // Get path from tbClassicUOPath
-            string path = tbClassicUOPfad.Text;
-
-            // Get selected file from comboBoxLoadText
-            string selectedFile = comboBoxLoadText.SelectedItem.ToString();
-
-            // Create full path to selected file
-            string fullPath = Path.Combine(path, selectedFile + ".txt");
-
-            // Check if the file exists
-            if (File.Exists(fullPath))
-            {
-                // Load file content into richTextBoxEdit
-                richTextBoxEdit.Text = File.ReadAllText(fullPath);
-
-                // Check if there is an info text for the selected file
-                if (_infoTexts.TryGetValue(selectedFile, out string infoText))
-                {
-                    // Display the info text in textBoxInfoCuo
-                    richTextInfoCuo.Text = infoText;
-                }
-                else
-                {
-                    // Clear textBoxInfoCuo if there is no info text for the selected file
-                    richTextInfoCuo.Text = "";
-                }
-            }
-            else
-            {
-                MessageBox.Show("The file does not exist.");
-            }
+            // TileDataControl.Cuo.cs: folder detection, description, check, backup
+            LoadCuoFile();
         }
 
         #endregion
@@ -2712,25 +2071,7 @@ namespace UoFiddler.Controls.UserControls
         #region [ btSaveTxtCuo ]
         private void BtSaveTxtCuo_Click(object sender, EventArgs e)
         {
-            // Get path from tbClassicUOPath
-            string path = tbClassicUOPfad.Text;
-
-            // Get selected file from comboBoxLoadText
-            string selectedFile = comboBoxLoadText.SelectedItem.ToString();
-
-            // Create full path to selected file
-            string fullPath = Path.Combine(path, selectedFile + ".txt");
-
-            // Get text from the richTextBoxEdit
-            string textToSave = richTextBoxEdit.Text;
-
-            // Write text to the file
-            File.WriteAllText(fullPath, textToSave);
-
-            // Sound Effekt
-            SoundPlayer player = new SoundPlayer();
-            player.SoundLocation = "sound.wav";
-            player.Play();
+            SaveCuoFile();
         }
         #endregion
 
@@ -2943,7 +2284,8 @@ namespace UoFiddler.Controls.UserControls
             // Visual update of the node
             selectedNode.Text = $"0x{index:X4} {land.Name}";
 
-            // Save the changes
+            // Save the changes (can be undone)
+            TileDataHistory.Record($"Insert settings on land 0x{index:X4}", null, new[] { index });
             TileData.LandTable[index] = land;
 
             // Optional: Mark the node as changed and update the event
