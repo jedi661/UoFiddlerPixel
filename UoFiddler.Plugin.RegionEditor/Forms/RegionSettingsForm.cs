@@ -14,6 +14,7 @@ using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Windows.Forms;
 using UoFiddler.Controls.Classes;
 using UoFiddler.Plugin.RegionEditor.Classes;
@@ -24,6 +25,14 @@ namespace UoFiddler.Plugin.RegionEditor.Forms
     public partial class RegionSettingsForm : Form
     {
         private static readonly MergeMode[] _mergeModes = { MergeMode.ReplaceFile, MergeMode.ReplaceFacets, MergeMode.MergeByName };
+
+        private static readonly StartupSource[] _startups =
+            { StartupSource.LastProject, StartupSource.ServUo, StartupSource.Sphere, StartupSource.Pol, StartupSource.Nothing };
+
+        private readonly System.Collections.Generic.Dictionary<string, string> _countCache = new System.Collections.Generic.Dictionary<string, string>();
+
+        /// <summary>a "Load" button was clicked: the editor loads the regions of this server after the dialog</summary>
+        public ServerKind? LoadRequest { get; private set; }
 
         public RegionSettingsForm()
         {
@@ -64,6 +73,14 @@ namespace UoFiddler.Plugin.RegionEditor.Forms
             _lblAlpha.Text = Loc.T("settings.alpha");
             _btnCancel.Text = Loc.T("btn.cancel");
             _btnOpenExport.Text = Loc.T("menu.export.open");
+            _lblStartup.Text = Loc.T("settings.startup");
+            _btnLoadServUo.Text = _btnLoadSphere.Text = _btnLoadPol.Text = Loc.T("settings.loadnow");
+
+            _cmbStartup.Items.Clear();
+            foreach (StartupSource st in _startups)
+            {
+                _cmbStartup.Items.Add(Loc.T("startup." + st));
+            }
 
             _cmbMerge.Items.Clear();
             foreach (MergeMode m in _mergeModes)
@@ -92,25 +109,74 @@ namespace UoFiddler.Plugin.RegionEditor.Forms
             _cmbTheme.SelectedIndex = s.Theme == EditorTheme.Dark ? 1 : 0;
             _numPriority.Value = Math.Max(0, Math.Min(255, s.DefaultPriority));
             _numAlpha.Value = Math.Max(0, Math.Min(255, s.FillAlpha));
+            _cmbStartup.SelectedIndex = Math.Max(0, Array.IndexOf(_startups, s.Startup));
             UpdateServerState();
         }
 
         private void OnPathChanged(object sender, EventArgs e) => UpdateServerState();
 
-        /// <summary>shows which server files were found</summary>
+        /// <summary>shows which server files were found and how many regions they have</summary>
         private void UpdateServerState()
         {
             string servuo = _txtServUo.Text.Trim();
-            string sphere = _txtSphere.Text.Trim();
-            string pol = _txtPol.Text.Trim();
-            string State(bool configured, bool found) => !configured ? "–" : found ? "✔" : "✖";
-
             string servuoFile = servuo.Length > 0 ? RegionEditorSettings.ServUoRegionsPath(servuo) : string.Empty;
+            string sphere = _txtSphere.Text.Trim().Trim('"');
+            string pol = _txtPol.Text.Trim().Trim('"');
+
             _lblServerState.Text =
-                $"ServUO {State(servuo.Length > 0, File.Exists(servuoFile))} {(servuo.Length > 0 ? servuoFile : string.Empty)}\n" +
-                $"Sphere {State(sphere.Length > 0, File.Exists(sphere))}    " +
-                $"POL {State(pol.Length > 0, File.Exists(Path.Combine(pol, "regions.cfg")) || File.Exists(Path.Combine(pol, "justice.cfg")))}\n" +
+                $"ServUO: {State(ServerKind.ServUo, servuoFile)}\n" +
+                $"Sphere: {State(ServerKind.Sphere, sphere)}\n" +
+                $"POL: {State(ServerKind.Pol, pol)}\n" +
                 Loc.F("settings.exportto", string.IsNullOrWhiteSpace(_txtExport.Text) ? RegionEditorSettings.Current.EffectiveExportDir : _txtExport.Text.Trim());
+
+            _btnLoadServUo.Enabled = RegionEditorSettings.ServerExists(ServerKind.ServUo, servuoFile);
+            _btnLoadSphere.Enabled = RegionEditorSettings.ServerExists(ServerKind.Sphere, sphere);
+            _btnLoadPol.Enabled = RegionEditorSettings.ServerExists(ServerKind.Pol, pol);
+        }
+
+        /// <summary>"not set" / "not found" / "found – 123 regions"</summary>
+        private string State(ServerKind kind, string path)
+        {
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                return Loc.T("settings.notset");
+            }
+
+            if (!RegionEditorSettings.ServerExists(kind, path))
+            {
+                return Loc.F("settings.notfound", path);
+            }
+
+            string key = kind + "|" + path;
+            if (!_countCache.TryGetValue(key, out string text))
+            {
+                try
+                {
+                    RegionProject p = RegionEditorSettings.LoadServer(kind, path);
+                    text = Loc.F("settings.found", p.AllRegions().Count(), p.Facets.Count);
+                }
+                catch (Exception ex)
+                {
+                    text = Loc.F("settings.unreadable", ex.Message);
+                }
+
+                _countCache[key] = text;
+            }
+
+            return $"✔ {path} – {text}";
+        }
+
+        /// <summary>"Load": stores the settings and lets the editor load this server</summary>
+        private void OnClickLoadNow(object sender, EventArgs e)
+        {
+            if (!StoreValues())
+            {
+                return;
+            }
+
+            LoadRequest = sender == _btnLoadSphere ? ServerKind.Sphere : sender == _btnLoadPol ? ServerKind.Pol : ServerKind.ServUo;
+            DialogResult = DialogResult.OK;
+            Close();
         }
 
         private void OnClickBrowse(object sender, EventArgs e)
@@ -158,11 +224,23 @@ namespace UoFiddler.Plugin.RegionEditor.Forms
 
         private void OnClickOk(object sender, EventArgs e)
         {
+            if (!StoreValues())
+            {
+                return;
+            }
+
+            DialogResult = DialogResult.OK;
+            Close();
+        }
+
+        /// <summary>takes the values and writes RegionEditor.json</summary>
+        private bool StoreValues()
+        {
             RegionEditorSettings s = RegionEditorSettings.Current;
-            s.ServUoDir = _txtServUo.Text.Trim();
-            s.SphereFile = _txtSphere.Text.Trim();
-            s.PolDir = _txtPol.Text.Trim();
-            s.ExportDir = _txtExport.Text.Trim();
+            s.ServUoDir = _txtServUo.Text.Trim().Trim('"');
+            s.SphereFile = _txtSphere.Text.Trim().Trim('"');
+            s.PolDir = _txtPol.Text.Trim().Trim('"');
+            s.ExportDir = _txtExport.Text.Trim().Trim('"');
             s.Merge = _mergeModes[Math.Max(0, _cmbMerge.SelectedIndex)];
             s.WidthHeight = _cmbRectFormat.SelectedIndex != 1;
             s.SphereEvents = _txtSphereEvents.Text.Trim();
@@ -171,15 +249,24 @@ namespace UoFiddler.Plugin.RegionEditor.Forms
             s.Theme = _cmbTheme.SelectedIndex == 1 ? EditorTheme.Dark : EditorTheme.Light;
             s.DefaultPriority = (int)_numPriority.Value;
             s.FillAlpha = (int)_numAlpha.Value;
-            s.Save();
+            s.Startup = _startups[Math.Max(0, _cmbStartup.SelectedIndex)];
+            if (_cmbLanguage.SelectedIndex >= 0)
+            {
+                s.Language = Loc.Languages[_cmbLanguage.SelectedIndex];
+            }
+
+            if (!s.Save())
+            {
+                MessageBox.Show(this, Loc.F("settings.saveerror", RegionEditorSettings.FileName, s.LastError), Text, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return false;
+            }
 
             if (_cmbLanguage.SelectedIndex >= 0)
             {
                 Loc.Language = Loc.Languages[_cmbLanguage.SelectedIndex];
             }
 
-            DialogResult = DialogResult.OK;
-            Close();
+            return true;
         }
     }
 }

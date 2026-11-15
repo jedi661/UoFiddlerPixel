@@ -103,10 +103,25 @@ namespace UoFiddler.Plugin.RegionEditor.UserControls
             BuildRecentMenu();
             UpdateAll();
 
-            // the last project is opened again
-            if (!string.IsNullOrEmpty(settings.LastProject) && System.IO.File.Exists(settings.LastProject))
+            // start: the last project or the regions of a server (settings)
+            switch (settings.Startup)
             {
-                OpenFile(settings.LastProject, false, true);
+                case StartupSource.ServUo:
+                    LoadFromServer(ServerKind.ServUo, false);
+                    break;
+                case StartupSource.Sphere:
+                    LoadFromServer(ServerKind.Sphere, false);
+                    break;
+                case StartupSource.Pol:
+                    LoadFromServer(ServerKind.Pol, false);
+                    break;
+                case StartupSource.LastProject:
+                    if (!string.IsNullOrEmpty(settings.LastProject) && System.IO.File.Exists(settings.LastProject))
+                    {
+                        OpenFile(settings.LastProject, false, true);
+                    }
+
+                    break;
             }
         }
 

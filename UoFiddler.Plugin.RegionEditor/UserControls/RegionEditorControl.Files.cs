@@ -670,18 +670,31 @@ namespace UoFiddler.Plugin.RegionEditor.UserControls
 
         #region Server folders
 
-        /// <summary>path of the server file, null (and settings are offered) when not configured</summary>
-        private string ServerPath(object sender, bool forWrite)
+        private ServerKind KindOf(object sender)
         {
-            RegionEditorSettings s = RegionEditorSettings.Current;
-            string path = sender == _miLoadServUo || sender == _miSaveServUo ? s.ServUoRegionsFile
-                : sender == _miLoadSphere || sender == _miSaveSphere ? NullIfEmpty(s.SphereFile)
-                : NullIfEmpty(s.PolDir);
-
-            bool exists = path != null && (File.Exists(path) || Directory.Exists(path));
-            if (path == null || (!forWrite && !exists))
+            if (sender == _miLoadSphere || sender == _miSaveSphere || sender == _miSrvLoadSphere || sender == _miSrvSaveSphere)
             {
-                if (MessageBox.Show(this, path == null ? Loc.T("ask.noserver") : Loc.F("ask.servermissing", path), Loc.T("tab.title"),
+                return ServerKind.Sphere;
+            }
+
+            if (sender == _miLoadPol || sender == _miSavePol || sender == _miSrvLoadPol || sender == _miSrvSavePol)
+            {
+                return ServerKind.Pol;
+            }
+
+            return ServerKind.ServUo;
+        }
+
+        private static string ServerName(ServerKind kind) => kind == ServerKind.Sphere ? "Sphere" : kind == ServerKind.Pol ? "POL" : "ServUO";
+
+        /// <summary>path of the server file/folder, null (and the settings are offered) when not set or not found</summary>
+        private string ServerPath(ServerKind kind, bool forWrite)
+        {
+            string path = RegionEditorSettings.Current.ServerPath(kind);
+            bool exists = RegionEditorSettings.ServerExists(kind, path) || (kind == ServerKind.Pol && Directory.Exists(path));
+            if (path.Length == 0 || (!forWrite && !exists))
+            {
+                if (MessageBox.Show(this, path.Length == 0 ? Loc.F("ask.noserver", ServerName(kind)) : Loc.F("ask.servermissing", path), Loc.T("tab.title"),
                         MessageBoxButtons.YesNo, MessageBoxIcon.Information) == DialogResult.Yes)
                 {
                     ShowSettings();
@@ -693,20 +706,104 @@ namespace UoFiddler.Plugin.RegionEditor.UserControls
             return path;
         }
 
-        private void OnClickLoadServer(object sender, EventArgs e)
+        /// <summary>shows in the server menu which servers are set and how the files are called</summary>
+        private void OnServerMenuOpening(object sender, EventArgs e)
         {
-            string path = ServerPath(sender, false);
-            if (path == null || !AskSaveChanges())
+            RegionEditorSettings s = RegionEditorSettings.Current;
+            foreach (var (load, save, kind) in new[]
+                     {
+                         (_miSrvLoadServUo, _miSrvSaveServUo, ServerKind.ServUo), (_miSrvLoadSphere, _miSrvSaveSphere, ServerKind.Sphere),
+                         (_miSrvLoadPol, _miSrvSavePol, ServerKind.Pol)
+                     })
             {
-                return;
+                string path = s.ServerPath(kind);
+                bool exists = RegionEditorSettings.ServerExists(kind, path);
+                load.Text = Loc.F("server.load", ServerName(kind));
+                save.Text = Loc.F("server.save", ServerName(kind));
+                load.ToolTipText = save.ToolTipText = path.Length == 0 ? Loc.T("settings.notset") : path;
+                load.Enabled = exists;
+                save.Enabled = path.Length > 0;
             }
 
-            OpenFile(path, false, false);
+            _miSrvSettings.Text = Loc.T("server.folders");
+        }
+
+        private void OnClickLoadServer(object sender, EventArgs e) => LoadFromServer(KindOf(sender), true);
+
+        /// <summary>loads the regions of a server and shows them (map, tree, properties, areas)</summary>
+        private bool LoadFromServer(ServerKind kind, bool interactive)
+        {
+            string path = interactive ? ServerPath(kind, false) : RegionEditorSettings.Current.ServerPath(kind);
+            if (string.IsNullOrEmpty(path) || !RegionEditorSettings.ServerExists(kind, path) && !(kind == ServerKind.Pol && Directory.Exists(path)))
+            {
+                return false;
+            }
+
+            if (interactive && !AskSaveChanges())
+            {
+                return false;
+            }
+
+            try
+            {
+                Cursor = Cursors.WaitCursor;
+                RegionProject loaded = RegionEditorSettings.LoadServer(kind, path);
+                _projectFile = null;
+                _history.Clear();
+                ReplaceProject(loaded);
+                _history.MarkSaved(_project);
+                RememberFile(path, false);
+
+                // the map with the most regions (or the shown one when it has regions)
+                FacetRegions show = _project.Facets.FirstOrDefault(f => f.MapId == _mapView.MapId && f.Regions.Count > 0) ??
+                                    _project.Facets.Where(f => MapRegistry.GetById(f.MapId) != null).OrderByDescending(f => f.AllRegions().Count()).FirstOrDefault();
+                if (show != null && show.MapId != _mapView.MapId)
+                {
+                    SwitchToMap(show.MapId);
+                }
+                else
+                {
+                    ShowMap(_mapView.MapDefinition);
+                }
+
+                // the first region is selected so its properties and areas are visible at once
+                FacetRegions facet = CurrentFacet(false);
+                if (facet != null && facet.Regions.Count > 0)
+                {
+                    SelectRegion(facet.Regions[0], -1, false);
+                }
+
+                SetMessage(Loc.F("msg.serverloaded", ServerName(kind), loaded.AllRegions().Count(), loaded.Facets.Count, path));
+                if (interactive)
+                {
+                    ReportUnknownFacets(loaded);
+                }
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                if (interactive)
+                {
+                    ShowError(ex);
+                }
+                else
+                {
+                    SetMessage(Loc.F("msg.serverfailed", ServerName(kind), ex.Message), true);
+                }
+
+                return false;
+            }
+            finally
+            {
+                Cursor = Cursors.Default;
+            }
         }
 
         private void OnClickSaveServer(object sender, EventArgs e)
         {
-            string path = ServerPath(sender, true);
+            ServerKind kind = KindOf(sender);
+            string path = ServerPath(kind, true);
             if (path == null || !CheckBeforeExport())
             {
                 return;
@@ -715,7 +812,7 @@ namespace UoFiddler.Plugin.RegionEditor.UserControls
             try
             {
                 string backup;
-                if (sender == _miSaveServUo)
+                if (kind == ServerKind.ServUo)
                 {
                     MergeMode merge = RegionEditorSettings.Current.Merge;
                     if (MessageBox.Show(this, Loc.F("ask.saveservuo", path, Loc.T("merge." + merge)), Loc.T("tab.title"),
@@ -726,7 +823,7 @@ namespace UoFiddler.Plugin.RegionEditor.UserControls
 
                     backup = ServUoFormat.Save(_project, path, ServUoOptions(merge));
                 }
-                else if (sender == _miSaveSphere)
+                else if (kind == ServerKind.Sphere)
                 {
                     int map = SphereFormat.MapFromFileName(path);
                     bool onlyMap = Path.GetFileName(path).StartsWith("map", StringComparison.OrdinalIgnoreCase);
@@ -740,22 +837,24 @@ namespace UoFiddler.Plugin.RegionEditor.UserControls
                 else
                 {
                     // regions.cfg always, justice.cfg / music.cfg when they are used by the server
-                    if (MessageBox.Show(this, Loc.F("ask.saveserver", path), Loc.T("tab.title"), MessageBoxButtons.OKCancel, MessageBoxIcon.Question) != DialogResult.OK)
+                    string dir = File.Exists(path) ? Path.GetDirectoryName(path) : path;
+                    if (MessageBox.Show(this, Loc.F("ask.saveserver", dir), Loc.T("tab.title"), MessageBoxButtons.OKCancel, MessageBoxIcon.Question) != DialogResult.OK)
                     {
                         return;
                     }
 
-                    backup = PolFormat.Save(_project, Path.Combine(path, "regions.cfg"), PolOptions(PolFile.Regions));
-                    foreach (PolFile kind in new[] { PolFile.Justice, PolFile.Music })
+                    backup = PolFormat.Save(_project, Path.Combine(dir, "regions.cfg"), PolOptions(PolFile.Regions));
+                    foreach (PolFile file in new[] { PolFile.Justice, PolFile.Music })
                     {
-                        string file = Path.Combine(path, PolFormat.FileName(kind));
-                        if (File.Exists(file))
+                        string target = Path.Combine(dir, PolFormat.FileName(file));
+                        if (File.Exists(target))
                         {
-                            PolFormat.Save(_project, file, PolOptions(kind));
+                            PolFormat.Save(_project, target, PolOptions(file));
                         }
                     }
                 }
 
+                _history.MarkSaved(_project);
                 Done(path, backup);
                 MessageBox.Show(this, Loc.T("msg.restart"), Loc.T("tab.title"), MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
@@ -769,9 +868,21 @@ namespace UoFiddler.Plugin.RegionEditor.UserControls
 
         private void ShowSettings()
         {
+            ServerKind? load;
             using (var form = new RegionSettingsForm())
             {
-                form.ShowDialog(this);
+                if (form.ShowDialog(this) != DialogResult.OK)
+                {
+                    return;
+                }
+
+                load = form.LoadRequest;
+            }
+
+            SetMessage(Loc.F("msg.settingssaved", RegionEditorSettings.FileName));
+            if (load.HasValue)
+            {
+                LoadFromServer(load.Value, true);
             }
         }
 

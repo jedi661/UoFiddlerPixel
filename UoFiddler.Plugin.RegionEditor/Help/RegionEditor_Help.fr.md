@@ -94,6 +94,10 @@ Dans **⚙ Paramètres** :
 - **Dossier regions de POL** – le dossier contenant `regions.cfg` (et `justice.cfg`, `music.cfg` s'ils sont utilisés).
 - **Dossier d'export** – cible de « Tout dans le dossier d'export ». Vide : `<AppData>\RegionExport`.
 
+Les paramètres sont enregistrés dans `<AppData>\UoFiddler\RegionEditor.json` dès le clic sur **OK** et rechargés au prochain démarrage. Sous les chemins, on voit si le fichier a été trouvé et combien de régions il contient. **Charger** à côté d'un chemin enregistre les paramètres et charge aussitôt les régions de ce serveur : elles apparaissent sur la carte et dans l'arbre, et la première région s'affiche avec ses propriétés et zones. Avec **Charger au démarrage**, l'éditeur ouvre automatiquement le dernier projet ou les régions de ServUO, Sphere ou POL.
+
+Le menu **⇅ Serveur** de la barre supérieure indique les serveurs définis et charge ou enregistre en un clic.
+
 Ensuite :
 
 - **Fichier → Charger depuis le serveur** lit les régions directement dans le serveur configuré.
