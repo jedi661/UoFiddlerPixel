@@ -1,3 +1,42 @@
+Version : 4.12.30 #XG1
+## Light tab: rework, more than 100 lights and a light designer
+
+### Fixes
+- `light.mul` is now read and written the way ClassicUO reads it: one byte per pixel, 0 = no light, 1–31 = brightness, values above 31 are inverted. Changed lights are kept as raw bytes, so saving no longer loses a brightness step.
+- In-game preview: light rows used the height instead of the width, so the light was distorted.
+- The light cache was only used when caching was switched off.
+- "Insert at" put the entry at the wrong list position, which could crash.
+
+### More than 100 lights
+- The number of entries is read from `lightidx.mul` (the original has 100).
+- **Entries … Set** extends or shortens the files. Inserting a light behind the end extends them automatically.
+- ClassicUO reads all entries of `lightidx.mul`.
+- Lights can have names: F2 or right click, stored in `LightNames.json`.
+- The list shows `12 (0x0C) – name`.
+- Search by id, hex, range or name.
+- **Overview**: a picture grid of all lights, land tiles and items (new `TilePickerForm` / `TileGridView`).
+- **Check…** finds duplicate, empty, very dark and very big lights, and lights with inverted values.
+- **Import folder…** loads `Light 12 Candle.png` as light 12 named "Candle"; **Export all** writes every light as PNG.
+- **Copy to ID** / **Move to ID** in the context menu.
+- In-game preview with ground tile, light source item, darkness, light offset and zoom.
+- ◀ ▶ buttons and an overview picker for the ground tile and the light source item (optionally only items with the LightSource flag).
+- Light colour test (like hues in ClassicUO `lights.txt`) and a flicker test.
+- Copy or save the preview.
+- **Templates:** candle, lamp, torch, window, spot, beam, ring.
+- **Parameters:** shape, image size, source position, radius, direction, opening angle, length, opening width, brightness, falloff, soft edge, grain.
+- **Mirror and rotate.** Drag the light source and the guide image with the mouse.
+- **Guide image** (an item such as a window, a land tile or an image file) to fit the light to; it is not saved.
+- **Edit existing lights:** rotate, resize, change brightness, move.
+- **Undo/redo** and a before/after comparison.
+- **Saving:**
+  - put the light into `light.mul`
+  - export PNG
+  - `.uolight` files (design + image)
+  - a clipboard list and a library folder
+- Help window for the light tab (German, English, French).
+- All new windows and the tab have `.Designer.cs` files and can be edited in the Visual Studio designer.
+
+
 Version 4.12.29 #XG1
 
 New plugin: Region Editor
