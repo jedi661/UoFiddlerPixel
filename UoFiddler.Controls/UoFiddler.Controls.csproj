@@ -252,6 +252,21 @@
 			<DependentUpon>TileDataControl.cs</DependentUpon>
 			<SubType>Code</SubType>
 		</Compile>
+		<Compile Update="Forms\TilePickerForm.cs">
+			<SubType>Form</SubType>
+		</Compile>
+		<Compile Update="Forms\TilePickerForm.Designer.cs">
+			<DependentUpon>TilePickerForm.cs</DependentUpon>
+		</Compile>
+		<Compile Update="Forms\LightDesignerForm.cs">
+			<SubType>Form</SubType>
+		</Compile>
+		<Compile Update="Forms\LightDesignerForm.Designer.cs">
+			<DependentUpon>LightDesignerForm.cs</DependentUpon>
+		</Compile>
+		<Compile Update="UserControls\TileGridView.cs">
+			<SubType>Code</SubType>
+		</Compile>
 		<Compile Update="Forms\HueGradientForm.cs">
 			<SubType>Form</SubType>
 		</Compile>
@@ -380,6 +395,12 @@
 		</EmbeddedResource>
 		<EmbeddedResource Update="Forms\TileDataHelpForm.resx">
 			<DependentUpon>TileDataHelpForm.cs</DependentUpon>
+		</EmbeddedResource>
+		<EmbeddedResource Update="Forms\TilePickerForm.resx">
+			<DependentUpon>TilePickerForm.cs</DependentUpon>
+		</EmbeddedResource>
+		<EmbeddedResource Update="Forms\LightDesignerForm.resx">
+			<DependentUpon>LightDesignerForm.cs</DependentUpon>
 		</EmbeddedResource>
 		<EmbeddedResource Update="Forms\HueGradientForm.resx">
 			<DependentUpon>HueGradientForm.cs</DependentUpon>
