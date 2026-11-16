@@ -33,6 +33,9 @@ namespace UoFiddler.Controls.UserControls
         private int _landTile = 0x3;
         private int _lightTile = 0x0B20;
         private bool _renaming;
+        private Color _lightColor = Color.White;
+        private double _flicker = 1;
+        private readonly Random _random = new Random();
 
         public LightControl()
         {
@@ -43,6 +46,7 @@ namespace UoFiddler.Controls.UserControls
         private void UnhookEvents()
         {
             ControlEvents.FilePathChangeEvent -= OnFilePathChangeEvent;
+            _flickerTimer?.Stop();
         }
 
         private int? SelectedLight => treeViewLights.SelectedNode?.Tag is int i ? i : (int?)null;
@@ -202,7 +206,9 @@ namespace UoFiddler.Controls.UserControls
                     ItemId = _lightTile,
                     Darkness = (int)_numDark.Value,
                     LightOffsetX = (int)_numLightX.Value,
-                    LightOffsetY = (int)_numLightY.Value
+                    LightOffsetY = (int)_numLightY.Value,
+                    LightColor = _lightColor,
+                    Flicker = _flickerTimer.Enabled ? _flicker : 1
                 };
                 Size size = pictureBoxPreview.ClientSize;
                 image = LightPreview.RenderScene(new Size(Math.Max(100, size.Width), Math.Max(100, size.Height)), light, options);
@@ -497,6 +503,7 @@ namespace UoFiddler.Controls.UserControls
             }
 
             importToolStripMenuItem.Enabled = Clipboard.ContainsImage();
+            copyToToolStripMenuItem.Enabled = moveToToolStripMenuItem.Enabled = sel;
         }
 
         #endregion
@@ -796,6 +803,184 @@ namespace UoFiddler.Controls.UserControls
 
         #endregion
 
+        #region Colour and flicker
+
+        private void OnClickLightColor(object sender, EventArgs e)
+        {
+            _colorDialog.Color = _lightColor;
+            if (_colorDialog.ShowDialog(this) != DialogResult.OK)
+            {
+                return;
+            }
+
+            _lightColor = _colorDialog.Color;
+            _btnLightColor.BackColor = _lightColor;
+            _btnLightColor.ForeColor = _lightColor.GetBrightness() < 0.5f ? Color.White : Color.Black;
+            _chkIgPreview.Checked = true;
+            UpdatePreview();
+        }
+
+        private void OnFlickerChanged(object sender, EventArgs e)
+        {
+            if (_chkFlicker.Checked)
+            {
+                _chkIgPreview.Checked = true;
+                _flickerTimer.Start();
+            }
+            else
+            {
+                _flickerTimer.Stop();
+                _flicker = 1;
+                UpdatePreview();
+            }
+        }
+
+        /// <summary>flame-like brightness: a small random walk around 0.9</summary>
+        private void OnFlickerTick(object sender, EventArgs e)
+        {
+            if (!Visible || !_chkIgPreview.Checked)
+            {
+                return;
+            }
+
+            _flicker = Math.Max(0.7, Math.Min(1.1, _flicker + ((_random.NextDouble() - 0.5) * 0.18) + ((0.9 - _flicker) * 0.2)));
+            UpdatePreview();
+        }
+
+        #endregion
+
+        #region Check, import folder, copy / move, help
+
+        private void OnClickCheck(object sender, EventArgs e)
+        {
+            var form = new LightCheckForm(id =>
+            {
+                _txtSearch.Text = string.Empty;
+                BuildTree(id);
+            });
+            form.Show(FindForm());
+        }
+
+        /// <summary>"Light 12 Candle.png" → light 12 with the name "Candle"</summary>
+        private void OnClickImportFolder(object sender, EventArgs e)
+        {
+            using (var dialog = new FolderBrowserDialog { SelectedPath = Options.OutputPath, Description = "Folder with light images (\"Light 12 name.png\", \"12.png\", \"0x0C.bmp\")" })
+            {
+                if (dialog.ShowDialog(this) != DialogResult.OK)
+                {
+                    return;
+                }
+
+                var files = new List<(string File, int Id, string Name)>();
+                foreach (string file in Directory.GetFiles(dialog.SelectedPath))
+                {
+                    string ext = Path.GetExtension(file).ToLowerInvariant();
+                    if ((ext == ".png" || ext == ".bmp" || ext == ".tif" || ext == ".tiff") && LightFileName.TryParse(file, out int id, out string name) && id < Light.MaxCount)
+                    {
+                        files.Add((file, id, name));
+                    }
+                }
+
+                if (files.Count == 0)
+                {
+                    MessageBox.Show("No image with an id in its name was found (e.g. \"Light 12 Candle.png\").", "Import folder");
+                    return;
+                }
+
+                int replace = files.Count(f => Light.TestLight(f.Id));
+                if (MessageBox.Show($"Import {files.Count} light(s)?\n{replace} of them replace an existing light." +
+                                    (files.Max(f => f.Id) >= Light.Count ? $"\nThe files are extended to {files.Max(f => f.Id) + 1} entries." : string.Empty),
+                        "Import folder", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
+                {
+                    return;
+                }
+
+                int done = 0;
+                foreach ((string file, int id, string name) in files.OrderBy(f => f.Id))
+                {
+                    try
+                    {
+                        using (Bitmap bmp = LoadImageFile(file))
+                        {
+                            Light.Replace(id, bmp);
+                        }
+
+                        if (name != null)
+                        {
+                            LightNames.Set(id, name);
+                        }
+
+                        done++;
+                    }
+                    catch (Exception)
+                    {
+                        // broken image: skipped
+                    }
+                }
+
+                LightChanged(files[0].Id);
+                MessageBox.Show($"{done} light(s) imported. Write the files with \"Save light.mul\".", "Import folder", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+        }
+
+        private void CopyOrMove(string text, bool move)
+        {
+            if (!SelectedLight.HasValue)
+            {
+                return;
+            }
+
+            int source = SelectedLight.Value;
+            if (!TryReadTargetId(text, out int target) || target == source)
+            {
+                return;
+            }
+
+            treeViewContextMenuStrip.Close();
+            byte[] data = Light.GetRawLight(source, out int w, out int h);
+            if (data == null)
+            {
+                return;
+            }
+
+            Light.ReplaceRaw(target, data, w, h);
+            string name = LightNames.Get(source);
+            if (name != null)
+            {
+                LightNames.Set(target, name);
+            }
+
+            if (move)
+            {
+                Light.Remove(source);
+                LightNames.Set(source, null);
+            }
+
+            LightChanged(target);
+        }
+
+        private void OnKeyDownCopyTo(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                e.SuppressKeyPress = true;
+                CopyOrMove(_txtCopyTo.Text, false);
+            }
+        }
+
+        private void OnKeyDownMoveTo(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                e.SuppressKeyPress = true;
+                CopyOrMove(_txtMoveTo.Text, true);
+            }
+        }
+
+        private void OnClickHelp(object sender, EventArgs e) => TileDataHelpForm.ShowHelp(FindForm(), "Light", "Light – help");
+
+        #endregion
+
         #region Light designer
 
         private int FirstFreeId()
@@ -829,6 +1014,7 @@ namespace UoFiddler.Controls.UserControls
         {
             var form = new LightDesignerForm(image, target, id => LightChanged(id));
             form.SetTestTiles(_landTile, _lightTile);
+            form.SetLightColor(_lightColor);
             form.Show(FindForm());
         }
 

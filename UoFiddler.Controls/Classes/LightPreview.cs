@@ -31,6 +31,12 @@ namespace UoFiddler.Controls.Classes
         public int LightOffsetX { get; set; }
         public int LightOffsetY { get; set; } = 30;
 
+        /// <summary>colour of the light (white = like the original)</summary>
+        public Color LightColor { get; set; } = Color.White;
+
+        /// <summary>brightness factor for flicker tests (1 = normal)</summary>
+        public double Flicker { get; set; } = 1;
+
         /// <summary>guide image (not part of the light), drawn on top</summary>
         public Bitmap Guide { get; set; }
         public int GuideX { get; set; }
@@ -87,6 +93,8 @@ namespace UoFiddler.Controls.Classes
             }
 
             double ambient = 1 - (Math.Max(0, Math.Min(100, options.Darkness)) / 100.0);
+            double flicker = Math.Max(0, options.Flicker);
+            double cr = options.LightColor.R / 255.0, cg = options.LightColor.G / 255.0, cb = options.LightColor.B / 255.0;
             int lightX = itemCenterX + options.LightOffsetX - (light?.Width ?? 0) / 2;
             int lightY = itemCenterY + options.LightOffsetY - (light?.Height ?? 0) / 2;
 
@@ -105,12 +113,13 @@ namespace UoFiddler.Controls.Classes
                             v = Light.DecodeValue(light[lx, ly]) / 31.0;
                         }
 
-                        // the light brightens the darkened scene (a bit more than the original, like the client)
-                        double factor = ambient + ((1 - ambient) * 1.35 * v);
+                        // the light brightens the darkened scene (a bit more than the original, like the client),
+                        // a coloured light brightens each colour channel by its part of the light colour
+                        double light2 = (1 - ambient) * 1.35 * v * flicker;
                         uint c = line[x];
-                        int r = Math.Min(255, (int)(((c >> 16) & 0xFF) * factor));
-                        int gr = Math.Min(255, (int)(((c >> 8) & 0xFF) * factor));
-                        int b = Math.Min(255, (int)((c & 0xFF) * factor));
+                        int r = Math.Min(255, (int)(((c >> 16) & 0xFF) * (ambient + (light2 * cr))));
+                        int gr = Math.Min(255, (int)(((c >> 8) & 0xFF) * (ambient + (light2 * cg))));
+                        int b = Math.Min(255, (int)((c & 0xFF) * (ambient + (light2 * cb))));
                         line[x] = 0xFF000000 | ((uint)r << 16) | ((uint)gr << 8) | (uint)b;
                     }
                 }

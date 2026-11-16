@@ -18,6 +18,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Text.Json.Serialization;
 
 namespace UoFiddler.Controls.Classes
@@ -617,6 +618,93 @@ namespace UoFiddler.Controls.Classes
             const string invalid = "<>:\"/\\|?*";
             string s = new string((name ?? "light").Select(c => c < 32 || invalid.IndexOf(c) >= 0 || Path.GetInvalidFileNameChars().Contains(c) ? '_' : c).ToArray()).Trim();
             return s.Length == 0 ? "light" : s;
+        }
+    }
+
+    public sealed class LightProblem
+    {
+        public int Id { get; set; }
+        public string Kind { get; set; }
+        public string Text { get; set; }
+    }
+
+    /// <summary>check of all lights: duplicates, empty, very dark, very big, inverted values</summary>
+    public static class LightCheck
+    {
+        public const int BigSize = 512;
+        public const int DarkMax = 4;
+
+        public static List<LightProblem> Run(IEnumerable<(int Id, LightImage Image)> lights)
+        {
+            var problems = new List<LightProblem>();
+            var seen = new Dictionary<string, int>();
+            foreach ((int id, LightImage img) in lights)
+            {
+                if (img == null)
+                {
+                    continue;
+                }
+
+                int lit = img.LitPixels;
+                if (lit == 0)
+                {
+                    problems.Add(new LightProblem { Id = id, Kind = "empty", Text = $"{img.Width} × {img.Height}, no pixel with light" });
+                    continue;
+                }
+
+                if (img.MaxValue < DarkMax)
+                {
+                    problems.Add(new LightProblem { Id = id, Kind = "very dark", Text = $"brightest value {img.MaxValue}/31 – hardly visible" });
+                }
+
+                if (img.Width > BigSize || img.Height > BigSize)
+                {
+                    problems.Add(new LightProblem { Id = id, Kind = "very big", Text = $"{img.Width} × {img.Height} – costs memory and speed in the client" });
+                }
+
+                int inverted = img.Data.Count(b => b > 31);
+                if (inverted > 0)
+                {
+                    problems.Add(new LightProblem { Id = id, Kind = "inverted values", Text = $"{inverted} pixel(s) above 31 (\"negative\" light, ClassicUO shows them inverted)" });
+                }
+
+                string key = $"{img.Width}x{img.Height}:{Convert.ToBase64String(System.Security.Cryptography.SHA1.HashData(img.Data))}";
+                if (seen.TryGetValue(key, out int first))
+                {
+                    problems.Add(new LightProblem { Id = id, Kind = "duplicate", Text = $"same image as light {first} (0x{first:X2})" });
+                }
+                else
+                {
+                    seen[key] = id;
+                }
+            }
+
+            return problems;
+        }
+    }
+
+    /// <summary>id and name from file names like "Light 12 Candle.png", "12.png", "0x0C_torch.bmp"</summary>
+    public static class LightFileName
+    {
+        private static readonly Regex _pattern = new Regex(@"^\s*(?:light)?\s*[-_ ]*(0x[0-9a-f]+|\d+)\s*[-_ ]*(.*)$", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
+        public static bool TryParse(string fileName, out int id, out string name)
+        {
+            id = -1;
+            name = null;
+            Match m = _pattern.Match(Path.GetFileNameWithoutExtension(fileName ?? string.Empty));
+            if (!m.Success || !TileDataBatch.TryParseId(m.Groups[1].Value, out id) || id < 0)
+            {
+                return false;
+            }
+
+            name = m.Groups[2].Value.Trim();
+            if (name.Length == 0)
+            {
+                name = null;
+            }
+
+            return true;
         }
     }
 }

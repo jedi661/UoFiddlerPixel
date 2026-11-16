@@ -26,25 +26,38 @@ namespace UoFiddler.Controls.Forms
     {
         private static readonly string[] _languages = { "de", "en", "fr" };
         private static string _language;
-        private static TileDataHelpForm _instance;
+        private static readonly System.Collections.Generic.Dictionary<string, TileDataHelpForm> _instances =
+            new System.Collections.Generic.Dictionary<string, TileDataHelpForm>();
+
+        private readonly string _topic = "TileData";
         private bool _loading;
 
-        public static void ShowHelp(IWin32Window owner)
+        public static void ShowHelp(IWin32Window owner) => ShowHelp(owner, "TileData", "TileData – help");
+
+        /// <summary>help of a topic: the embedded files "&lt;topic&gt;.Help.de/en/fr.md"</summary>
+        public static void ShowHelp(IWin32Window owner, string topic, string title)
         {
-            if (_instance == null || _instance.IsDisposed)
+            if (!_instances.TryGetValue(topic, out TileDataHelpForm form) || form.IsDisposed)
             {
-                _instance = new TileDataHelpForm();
-                _instance.Show(owner);
+                form = new TileDataHelpForm(topic) { Text = title };
+                _instances[topic] = form;
+                form.Show(owner);
             }
             else
             {
-                _instance.WindowState = FormWindowState.Normal;
-                _instance.Activate();
+                form.WindowState = FormWindowState.Normal;
+                form.Activate();
             }
         }
 
         public TileDataHelpForm()
+            : this("TileData")
         {
+        }
+
+        public TileDataHelpForm(string topic)
+        {
+            _topic = topic;
             InitializeComponent();
             if (LicenseManager.UsageMode == LicenseUsageMode.Designtime)
             {
@@ -61,7 +74,7 @@ namespace UoFiddler.Controls.Forms
             _loading = true;
             _cmbLang.SelectedIndex = Math.Max(0, Array.IndexOf(_languages, _language));
             _loading = false;
-            Render(ReadHelp(_language));
+            Render(ReadHelp(_topic, _language));
         }
 
         private void OnLanguageSelected(object sender, EventArgs e)
@@ -72,13 +85,15 @@ namespace UoFiddler.Controls.Forms
             }
 
             _language = _languages[_cmbLang.SelectedIndex];
-            Render(ReadHelp(_language));
+            Render(ReadHelp(_topic, _language));
         }
 
-        public static string ReadHelp(string language)
+        public static string ReadHelp(string language) => ReadHelp("TileData", language);
+
+        public static string ReadHelp(string topic, string language)
         {
             Assembly asm = typeof(TileDataHelpForm).Assembly;
-            using (Stream stream = asm.GetManifestResourceStream($"TileData.Help.{language}.md") ?? asm.GetManifestResourceStream("TileData.Help.en.md"))
+            using (Stream stream = asm.GetManifestResourceStream($"{topic}.Help.{language}.md") ?? asm.GetManifestResourceStream($"{topic}.Help.en.md"))
             {
                 if (stream == null)
                 {

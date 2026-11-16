@@ -59,6 +59,8 @@
             this._numLightY = new System.Windows.Forms.NumericUpDown();
             this._lblZoom = new System.Windows.Forms.Label();
             this._cmbZoom = new System.Windows.Forms.ComboBox();
+            this._btnLightColor = new System.Windows.Forms.Button();
+            this._chkFlicker = new System.Windows.Forms.CheckBox();
             this.toolStripMain = new System.Windows.Forms.ToolStrip();
             this._lblSearch = new System.Windows.Forms.ToolStripLabel();
             this._txtSearch = new System.Windows.Forms.ToolStripTextBox();
@@ -67,11 +69,15 @@
             this._btnNew = new System.Windows.Forms.ToolStripButton();
             this._btnEdit = new System.Windows.Forms.ToolStripButton();
             this._sep2 = new System.Windows.Forms.ToolStripSeparator();
+            this._btnCheck = new System.Windows.Forms.ToolStripButton();
+            this._btnImportFolder = new System.Windows.Forms.ToolStripButton();
+            this._sep4 = new System.Windows.Forms.ToolStripSeparator();
             this._btnSave = new System.Windows.Forms.ToolStripButton();
             this._sep3 = new System.Windows.Forms.ToolStripSeparator();
             this._lblEntries = new System.Windows.Forms.ToolStripLabel();
             this._txtCount = new System.Windows.Forms.ToolStripTextBox();
             this._btnSetCount = new System.Windows.Forms.ToolStripButton();
+            this._btnHelp = new System.Windows.Forms.ToolStripButton();
             this._lblCount = new System.Windows.Forms.ToolStripLabel();
             this.treeViewContextMenuStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.exportImageToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -89,6 +95,10 @@
             this.replaceToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.insertAtToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.InsertText = new System.Windows.Forms.ToolStripTextBox();
+            this.copyToToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this._txtCopyTo = new System.Windows.Forms.ToolStripTextBox();
+            this.moveToToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this._txtMoveTo = new System.Windows.Forms.ToolStripTextBox();
             this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             this.copyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.importToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -105,6 +115,8 @@
             this.toolStripSeparator7 = new System.Windows.Forms.ToolStripSeparator();
             this.copyPreviewToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.savePreviewToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this._flickerTimer = new System.Windows.Forms.Timer(this.components);
+            this._colorDialog = new System.Windows.Forms.ColorDialog();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer)).BeginInit();
             this.splitContainer.Panel1.SuspendLayout();
             this.splitContainer.Panel2.SuspendLayout();
@@ -356,6 +368,8 @@
             this._pnlOptions.Controls.Add(this._numLightY);
             this._pnlOptions.Controls.Add(this._lblZoom);
             this._pnlOptions.Controls.Add(this._cmbZoom);
+            this._pnlOptions.Controls.Add(this._btnLightColor);
+            this._pnlOptions.Controls.Add(this._chkFlicker);
             this._pnlTest.SetColumnSpan(this._pnlOptions, 8);
             this._pnlOptions.AutoSize = true;
             this._pnlOptions.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -433,6 +447,27 @@
             this._cmbZoom.TabIndex = 20;
             this._cmbZoom.SelectedIndexChanged += new System.EventHandler(this.OnPreviewOptionChanged);
             // 
+            // _btnLightColor
+            // 
+            this._btnLightColor.AutoSize = true;
+            this._btnLightColor.BackColor = System.Drawing.Color.White;
+            this._btnLightColor.Margin = new System.Windows.Forms.Padding(12, 3, 3, 3);
+            this._btnLightColor.Name = "_btnLightColor";
+            this._btnLightColor.TabIndex = 21;
+            this._btnLightColor.Text = "Light colour…";
+            this._btnLightColor.UseVisualStyleBackColor = false;
+            this._btnLightColor.Click += new System.EventHandler(this.OnClickLightColor);
+            // 
+            // _chkFlicker
+            // 
+            this._chkFlicker.AutoSize = true;
+            this._chkFlicker.Margin = new System.Windows.Forms.Padding(8, 6, 3, 3);
+            this._chkFlicker.Name = "_chkFlicker";
+            this._chkFlicker.TabIndex = 22;
+            this._chkFlicker.Text = "Flicker";
+            this._chkFlicker.UseVisualStyleBackColor = true;
+            this._chkFlicker.CheckedChanged += new System.EventHandler(this.OnFlickerChanged);
+            // 
             // toolStripMain
             // 
             this.toolStripMain.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -443,17 +478,21 @@
             this._btnNew,
             this._btnEdit,
             this._sep2,
+            this._btnCheck,
+            this._btnImportFolder,
+            this._sep4,
             this._btnSave,
             this._sep3,
             this._lblEntries,
             this._txtCount,
             this._btnSetCount,
+            this._btnHelp,
             this._lblCount});
             this.toolStripMain.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
             this.toolStripMain.Location = new System.Drawing.Point(0, 0);
             this.toolStripMain.Name = "toolStripMain";
             this.toolStripMain.Size = new System.Drawing.Size(900, 25);
-            this.toolStripMain.TabIndex = 21;
+            this.toolStripMain.TabIndex = 23;
             // 
             // _lblSearch
             // 
@@ -499,6 +538,26 @@
             // 
             this._sep2.Name = "_sep2";
             // 
+            // _btnCheck
+            // 
+            this._btnCheck.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this._btnCheck.Name = "_btnCheck";
+            this._btnCheck.Text = "✔ Check…";
+            this._btnCheck.ToolTipText = "Find duplicate, empty, very dark or very big lights";
+            this._btnCheck.Click += new System.EventHandler(this.OnClickCheck);
+            // 
+            // _btnImportFolder
+            // 
+            this._btnImportFolder.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this._btnImportFolder.Name = "_btnImportFolder";
+            this._btnImportFolder.Text = "Import folder…";
+            this._btnImportFolder.ToolTipText = "Images named \"Light 12 name.png\" go to light 12";
+            this._btnImportFolder.Click += new System.EventHandler(this.OnClickImportFolder);
+            // 
+            // _sep4
+            // 
+            this._sep4.Name = "_sep4";
+            // 
             // _btnSave
             // 
             this._btnSave.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
@@ -530,6 +589,14 @@
             this._btnSetCount.ToolTipText = "Extend (or shorten) the light files to this number of entries";
             this._btnSetCount.Click += new System.EventHandler(this.OnClickSetCount);
             // 
+            // _btnHelp
+            // 
+            this._btnHelp.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this._btnHelp.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this._btnHelp.Name = "_btnHelp";
+            this._btnHelp.Text = "? Help";
+            this._btnHelp.Click += new System.EventHandler(this.OnClickHelp);
+            // 
             // _lblCount
             // 
             this._lblCount.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
@@ -547,6 +614,8 @@
             this.removeToolStripMenuItem,
             this.replaceToolStripMenuItem,
             this.insertAtToolStripMenuItem,
+            this.copyToToolStripMenuItem,
+            this.moveToToolStripMenuItem,
             this.toolStripSeparator2,
             this.copyToolStripMenuItem,
             this.importToolStripMenuItem,
@@ -651,6 +720,34 @@
             this.InsertText.KeyDown += new System.Windows.Forms.KeyEventHandler(this.OnKeyDownInsert);
             this.InsertText.TextChanged += new System.EventHandler(this.OnTextChangedInsert);
             // 
+            // copyToToolStripMenuItem
+            // 
+            this.copyToToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this._txtCopyTo});
+            this.copyToToolStripMenuItem.Name = "copyToToolStripMenuItem";
+            this.copyToToolStripMenuItem.Text = "Copy to ID";
+            // 
+            // _txtCopyTo
+            // 
+            this._txtCopyTo.Name = "_txtCopyTo";
+            this._txtCopyTo.Size = new System.Drawing.Size(100, 23);
+            this._txtCopyTo.ToolTipText = "ID, then Enter";
+            this._txtCopyTo.KeyDown += new System.Windows.Forms.KeyEventHandler(this.OnKeyDownCopyTo);
+            // 
+            // moveToToolStripMenuItem
+            // 
+            this.moveToToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this._txtMoveTo});
+            this.moveToToolStripMenuItem.Name = "moveToToolStripMenuItem";
+            this.moveToToolStripMenuItem.Text = "Move to ID";
+            // 
+            // _txtMoveTo
+            // 
+            this._txtMoveTo.Name = "_txtMoveTo";
+            this._txtMoveTo.Size = new System.Drawing.Size(100, 23);
+            this._txtMoveTo.ToolTipText = "ID, then Enter";
+            this._txtMoveTo.KeyDown += new System.Windows.Forms.KeyEventHandler(this.OnKeyDownMoveTo);
+            // 
             // toolStripSeparator2
             // 
             this.toolStripSeparator2.Name = "toolStripSeparator2";
@@ -747,6 +844,15 @@
             this.savePreviewToolStripMenuItem.Text = "Save preview as PNG…";
             this.savePreviewToolStripMenuItem.Click += new System.EventHandler(this.OnClickSavePreview);
             // 
+            // _flickerTimer
+            // 
+            this._flickerTimer.Interval = 90;
+            this._flickerTimer.Tick += new System.EventHandler(this.OnFlickerTick);
+            // 
+            // _colorDialog
+            // 
+            this._colorDialog.FullOpen = true;
+            // 
             // LightControl
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -810,6 +916,8 @@
         private System.Windows.Forms.NumericUpDown _numLightY;
         private System.Windows.Forms.Label _lblZoom;
         private System.Windows.Forms.ComboBox _cmbZoom;
+        private System.Windows.Forms.Button _btnLightColor;
+        private System.Windows.Forms.CheckBox _chkFlicker;
         private System.Windows.Forms.ToolStrip toolStripMain;
         private System.Windows.Forms.ToolStripLabel _lblSearch;
         private System.Windows.Forms.ToolStripTextBox _txtSearch;
@@ -818,11 +926,15 @@
         private System.Windows.Forms.ToolStripButton _btnNew;
         private System.Windows.Forms.ToolStripButton _btnEdit;
         private System.Windows.Forms.ToolStripSeparator _sep2;
+        private System.Windows.Forms.ToolStripButton _btnCheck;
+        private System.Windows.Forms.ToolStripButton _btnImportFolder;
+        private System.Windows.Forms.ToolStripSeparator _sep4;
         private System.Windows.Forms.ToolStripButton _btnSave;
         private System.Windows.Forms.ToolStripSeparator _sep3;
         private System.Windows.Forms.ToolStripLabel _lblEntries;
         private System.Windows.Forms.ToolStripTextBox _txtCount;
         private System.Windows.Forms.ToolStripButton _btnSetCount;
+        private System.Windows.Forms.ToolStripButton _btnHelp;
         private System.Windows.Forms.ToolStripLabel _lblCount;
         private System.Windows.Forms.ContextMenuStrip treeViewContextMenuStrip;
         private System.Windows.Forms.ToolStripMenuItem exportImageToolStripMenuItem;
@@ -840,6 +952,10 @@
         private System.Windows.Forms.ToolStripMenuItem replaceToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem insertAtToolStripMenuItem;
         private System.Windows.Forms.ToolStripTextBox InsertText;
+        private System.Windows.Forms.ToolStripMenuItem copyToToolStripMenuItem;
+        private System.Windows.Forms.ToolStripTextBox _txtCopyTo;
+        private System.Windows.Forms.ToolStripMenuItem moveToToolStripMenuItem;
+        private System.Windows.Forms.ToolStripTextBox _txtMoveTo;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
         private System.Windows.Forms.ToolStripMenuItem copyToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem importToolStripMenuItem;
@@ -856,5 +972,7 @@
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator7;
         private System.Windows.Forms.ToolStripMenuItem copyPreviewToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem savePreviewToolStripMenuItem;
+        private System.Windows.Forms.Timer _flickerTimer;
+        private System.Windows.Forms.ColorDialog _colorDialog;
     }
 }

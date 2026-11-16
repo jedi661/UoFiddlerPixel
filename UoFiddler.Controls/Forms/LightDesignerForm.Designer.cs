@@ -39,6 +39,13 @@
             this._cmbZoom = new System.Windows.Forms.ToolStripComboBox();
             this._chkShowGuide = new System.Windows.Forms.ToolStripButton();
             this._sepView = new System.Windows.Forms.ToolStripSeparator();
+            this._btnUndo = new System.Windows.Forms.ToolStripButton();
+            this._btnRedo = new System.Windows.Forms.ToolStripButton();
+            this._btnCompare = new System.Windows.Forms.ToolStripButton();
+            this._sepView2 = new System.Windows.Forms.ToolStripSeparator();
+            this._btnColor = new System.Windows.Forms.ToolStripButton();
+            this._chkFlicker = new System.Windows.Forms.ToolStripButton();
+            this._sepView3 = new System.Windows.Forms.ToolStripSeparator();
             this._lblInfo = new System.Windows.Forms.ToolStripLabel();
             this._pnlLeft = new System.Windows.Forms.Panel();
             this._grpOrient = new System.Windows.Forms.GroupBox();
@@ -149,6 +156,8 @@
             this._btnImport = new System.Windows.Forms.Button();
             this._btnClose = new System.Windows.Forms.Button();
             this._toolTip = new System.Windows.Forms.ToolTip(this.components);
+            this._flickerTimer = new System.Windows.Forms.Timer(this.components);
+            this._colorDialog = new System.Windows.Forms.ColorDialog();
             this._pnlCenter.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this._preview)).BeginInit();
             this._toolView.SuspendLayout();
@@ -213,12 +222,16 @@
             // 
             // _preview
             // 
+            this._preview.Cursor = System.Windows.Forms.Cursors.SizeAll;
             this._preview.Location = new System.Drawing.Point(0, 0);
             this._preview.Name = "_preview";
             this._preview.Size = new System.Drawing.Size(400, 400);
             this._preview.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
             this._preview.TabIndex = 1;
             this._preview.TabStop = false;
+            this._preview.MouseDown += new System.Windows.Forms.MouseEventHandler(this.OnPreviewMouseDown);
+            this._preview.MouseMove += new System.Windows.Forms.MouseEventHandler(this.OnPreviewMouseMove);
+            this._preview.MouseUp += new System.Windows.Forms.MouseEventHandler(this.OnPreviewMouseUp);
             // 
             // _toolView
             // 
@@ -229,6 +242,13 @@
             this._cmbZoom,
             this._chkShowGuide,
             this._sepView,
+            this._btnUndo,
+            this._btnRedo,
+            this._btnCompare,
+            this._sepView2,
+            this._btnColor,
+            this._chkFlicker,
+            this._sepView3,
             this._lblInfo});
             this._toolView.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
             this._toolView.Name = "_toolView";
@@ -280,6 +300,56 @@
             // _sepView
             // 
             this._sepView.Name = "_sepView";
+            // 
+            // _btnUndo
+            // 
+            this._btnUndo.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this._btnUndo.Name = "_btnUndo";
+            this._btnUndo.Text = "↶";
+            this._btnUndo.ToolTipText = "Undo (Ctrl+Z)";
+            this._btnUndo.Click += new System.EventHandler(this.OnClickUndo);
+            // 
+            // _btnRedo
+            // 
+            this._btnRedo.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this._btnRedo.Name = "_btnRedo";
+            this._btnRedo.Text = "↷";
+            this._btnRedo.ToolTipText = "Redo (Ctrl+Y)";
+            this._btnRedo.Click += new System.EventHandler(this.OnClickRedo);
+            // 
+            // _btnCompare
+            // 
+            this._btnCompare.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this._btnCompare.Name = "_btnCompare";
+            this._btnCompare.Text = "◑ Before";
+            this._btnCompare.ToolTipText = "Hold the mouse button: shows the light as it was when the designer was opened";
+            this._btnCompare.MouseDown += new System.Windows.Forms.MouseEventHandler(this.OnCompareDown);
+            this._btnCompare.MouseUp += new System.Windows.Forms.MouseEventHandler(this.OnCompareUp);
+            // 
+            // _sepView2
+            // 
+            this._sepView2.Name = "_sepView2";
+            // 
+            // _btnColor
+            // 
+            this._btnColor.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this._btnColor.Name = "_btnColor";
+            this._btnColor.Text = "Colour…";
+            this._btnColor.ToolTipText = "Light colour of the in-game view (ClassicUO lights.txt can colour lights with a hue)";
+            this._btnColor.Click += new System.EventHandler(this.OnClickColor);
+            // 
+            // _chkFlicker
+            // 
+            this._chkFlicker.CheckOnClick = true;
+            this._chkFlicker.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this._chkFlicker.Name = "_chkFlicker";
+            this._chkFlicker.Text = "Flicker";
+            this._chkFlicker.ToolTipText = "Test: the brightness changes like a flame";
+            this._chkFlicker.CheckedChanged += new System.EventHandler(this.OnFlickerChanged);
+            // 
+            // _sepView3
+            // 
+            this._sepView3.Name = "_sepView3";
             // 
             // _lblInfo
             // 
@@ -1404,6 +1474,15 @@
             // _toolTip
             // 
             // 
+            // _flickerTimer
+            // 
+            this._flickerTimer.Interval = 90;
+            this._flickerTimer.Tick += new System.EventHandler(this.OnFlickerTick);
+            // 
+            // _colorDialog
+            // 
+            this._colorDialog.FullOpen = true;
+            // 
             // LightDesignerForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -1508,6 +1587,13 @@
         private System.Windows.Forms.ToolStripComboBox _cmbZoom;
         private System.Windows.Forms.ToolStripButton _chkShowGuide;
         private System.Windows.Forms.ToolStripSeparator _sepView;
+        private System.Windows.Forms.ToolStripButton _btnUndo;
+        private System.Windows.Forms.ToolStripButton _btnRedo;
+        private System.Windows.Forms.ToolStripButton _btnCompare;
+        private System.Windows.Forms.ToolStripSeparator _sepView2;
+        private System.Windows.Forms.ToolStripButton _btnColor;
+        private System.Windows.Forms.ToolStripButton _chkFlicker;
+        private System.Windows.Forms.ToolStripSeparator _sepView3;
         private System.Windows.Forms.ToolStripLabel _lblInfo;
         private System.Windows.Forms.Panel _pnlLeft;
         private System.Windows.Forms.GroupBox _grpOrient;
@@ -1618,5 +1704,7 @@
         private System.Windows.Forms.Button _btnImport;
         private System.Windows.Forms.Button _btnClose;
         private System.Windows.Forms.ToolTip _toolTip;
+        private System.Windows.Forms.Timer _flickerTimer;
+        private System.Windows.Forms.ColorDialog _colorDialog;
     }
 }

@@ -267,6 +267,12 @@
 		<Compile Update="UserControls\TileGridView.cs">
 			<SubType>Code</SubType>
 		</Compile>
+		<Compile Update="Forms\LightCheckForm.cs">
+			<SubType>Form</SubType>
+		</Compile>
+		<Compile Update="Forms\LightCheckForm.Designer.cs">
+			<DependentUpon>LightCheckForm.cs</DependentUpon>
+		</Compile>
 		<Compile Update="Forms\HueGradientForm.cs">
 			<SubType>Form</SubType>
 		</Compile>
@@ -401,6 +407,9 @@
 		</EmbeddedResource>
 		<EmbeddedResource Update="Forms\LightDesignerForm.resx">
 			<DependentUpon>LightDesignerForm.cs</DependentUpon>
+		</EmbeddedResource>
+		<EmbeddedResource Update="Forms\LightCheckForm.resx">
+			<DependentUpon>LightCheckForm.cs</DependentUpon>
 		</EmbeddedResource>
 		<EmbeddedResource Update="Forms\HueGradientForm.resx">
 			<DependentUpon>HueGradientForm.cs</DependentUpon>
@@ -586,9 +595,12 @@
 	  </None>
 	</ItemGroup>
 	<ItemGroup>
-		<!-- help of the TileData tab (TileDataHelpForm) -->
+		<!-- help of the TileData and Light tab (TileDataHelpForm) -->
 		<EmbeddedResource Include="Help\TileData_Help.de.md" LogicalName="TileData.Help.de.md" WithCulture="false" />
 		<EmbeddedResource Include="Help\TileData_Help.en.md" LogicalName="TileData.Help.en.md" WithCulture="false" />
 		<EmbeddedResource Include="Help\TileData_Help.fr.md" LogicalName="TileData.Help.fr.md" WithCulture="false" />
+		<EmbeddedResource Include="Help\Light_Help.de.md" LogicalName="Light.Help.de.md" WithCulture="false" />
+		<EmbeddedResource Include="Help\Light_Help.en.md" LogicalName="Light.Help.en.md" WithCulture="false" />
+		<EmbeddedResource Include="Help\Light_Help.fr.md" LogicalName="Light.Help.fr.md" WithCulture="false" />
 	</ItemGroup>
 </Project>

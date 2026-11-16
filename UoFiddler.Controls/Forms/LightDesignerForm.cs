@@ -46,6 +46,33 @@ namespace UoFiddler.Controls.Forms
         private int _lastRotate;
         private string _designName = "New light";
 
+        // undo / redo: design + edited image
+        private sealed class State
+        {
+            public LightDesign Design { get; set; }
+            public LightImage Base { get; set; }
+            public string Name { get; set; }
+        }
+
+        private readonly List<State> _undo = new List<State>();
+        private readonly List<State> _redo = new List<State>();
+        private State _current;
+        private DateTime _lastPush;
+        private bool _restoring;
+
+        // "before": the light as it was when the designer was opened
+        private LightImage _original;
+
+        private Color _lightColor = Color.White;
+        private double _flicker = 1;
+        private readonly Random _random = new Random();
+
+        // dragging on the preview
+        private Point _dragStart;
+        private MouseButtons _dragButton;
+        private int _dragOffsetX, _dragOffsetY, _dragGuideX, _dragGuideY;
+        private LightImage _dragBase;
+
         public LightDesignerForm()
             : this(null, 0, null)
         {
@@ -87,7 +114,14 @@ namespace UoFiddler.Controls.Forms
             }
 
             UpdateResult();
+            _original = _result?.Clone();
             OnTargetChanged(this, EventArgs.Empty);
+        }
+
+        public void SetLightColor(Color color)
+        {
+            _lightColor = color;
+            Render();
         }
 
         public void SetTestTiles(int land, int item)
@@ -226,10 +260,241 @@ namespace UoFiddler.Controls.Forms
                 return;
             }
 
-            _result = _base?.Clone() ?? LightGenerator.Generate(ReadDesign());
+            LightDesign design = ReadDesign();
+            _result = _base?.Clone() ?? LightGenerator.Generate(design);
+            RememberState(design);
             UpdateShapeFields();
             Render();
         }
+
+        #region Undo / redo
+
+        private static bool SameState(State a, State b)
+        {
+            if (a == null || b == null)
+            {
+                return false;
+            }
+
+            string da = System.Text.Json.JsonSerializer.Serialize(a.Design), db = System.Text.Json.JsonSerializer.Serialize(b.Design);
+            bool baseSame = (a.Base == null && b.Base == null) ||
+                            (a.Base != null && b.Base != null && a.Base.Width == b.Base.Width && a.Base.Height == b.Base.Height && a.Base.Data.SequenceEqual(b.Base.Data));
+            return da == db && baseSame;
+        }
+
+        /// <summary>a change becomes an undo step (several small changes within a second are one step)</summary>
+        private void RememberState(LightDesign design)
+        {
+            var state = new State { Design = design.Clone(), Base = _base?.Clone(), Name = _designName };
+            if (_restoring || SameState(state, _current))
+            {
+                _current = _restoring ? state : _current;
+                UpdateUndoButtons();
+                return;
+            }
+
+            if (_current != null)
+            {
+                // typing in a field or dragging with the mouse: one step
+                bool dragging = _dragButton != MouseButtons.None;
+                bool merge = (DateTime.Now - _lastPush).TotalSeconds < 1 && _undo.Count > 0 &&
+                             ((state.Base == null && _current.Base == null) || dragging);
+                if (!merge)
+                {
+                    _undo.Add(_current);
+                    if (_undo.Count > 100)
+                    {
+                        _undo.RemoveAt(0);
+                    }
+                }
+
+                _redo.Clear();
+            }
+
+            _lastPush = DateTime.Now;
+            _current = state;
+            UpdateUndoButtons();
+        }
+
+        private void UpdateUndoButtons()
+        {
+            _btnUndo.Enabled = _undo.Count > 0;
+            _btnRedo.Enabled = _redo.Count > 0;
+        }
+
+        private void Restore(State state)
+        {
+            _restoring = true;
+            try
+            {
+                _base = state.Base?.Clone();
+                ShowDesign(state.Design);
+                _designName = state.Name;
+                UpdateResult();
+            }
+            finally
+            {
+                _restoring = false;
+            }
+        }
+
+        private void OnClickUndo(object sender, EventArgs e)
+        {
+            if (_undo.Count == 0)
+            {
+                return;
+            }
+
+            _redo.Add(_current);
+            State state = _undo[_undo.Count - 1];
+            _undo.RemoveAt(_undo.Count - 1);
+            Restore(state);
+        }
+
+        private void OnClickRedo(object sender, EventArgs e)
+        {
+            if (_redo.Count == 0)
+            {
+                return;
+            }
+
+            _undo.Add(_current);
+            State state = _redo[_redo.Count - 1];
+            _redo.RemoveAt(_redo.Count - 1);
+            Restore(state);
+        }
+
+        protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
+        {
+            if (!(ActiveControl is TextBoxBase) && !(ActiveControl is NumericUpDown))
+            {
+                if (keyData == (Keys.Control | Keys.Z))
+                {
+                    OnClickUndo(this, EventArgs.Empty);
+                    return true;
+                }
+
+                if (keyData == (Keys.Control | Keys.Y) || keyData == (Keys.Control | Keys.Shift | Keys.Z))
+                {
+                    OnClickRedo(this, EventArgs.Empty);
+                    return true;
+                }
+            }
+
+            return base.ProcessCmdKey(ref msg, keyData);
+        }
+
+        #endregion
+
+        #region Before / after, colour, flicker
+
+        private void OnCompareDown(object sender, MouseEventArgs e)
+        {
+            if (_original == null)
+            {
+                return;
+            }
+
+            LightImage now = _result;
+            _result = _original;
+            Render();
+            _result = now;
+        }
+
+        private void OnCompareUp(object sender, MouseEventArgs e) => Render();
+
+        private void OnClickColor(object sender, EventArgs e)
+        {
+            _colorDialog.Color = _lightColor;
+            if (_colorDialog.ShowDialog(this) == DialogResult.OK)
+            {
+                _lightColor = _colorDialog.Color;
+                _cmbView.SelectedIndex = 1;
+                Render();
+            }
+        }
+
+        private void OnFlickerChanged(object sender, EventArgs e)
+        {
+            if (_chkFlicker.Checked)
+            {
+                _cmbView.SelectedIndex = 1;
+                _flickerTimer.Start();
+            }
+            else
+            {
+                _flickerTimer.Stop();
+                _flicker = 1;
+                Render();
+            }
+        }
+
+        private void OnFlickerTick(object sender, EventArgs e)
+        {
+            if (_cmbView.SelectedIndex != 1)
+            {
+                return;
+            }
+
+            _flicker = Math.Max(0.7, Math.Min(1.1, _flicker + ((_random.NextDouble() - 0.5) * 0.18) + ((0.9 - _flicker) * 0.2)));
+            Render();
+        }
+
+        #endregion
+
+        #region Dragging on the preview
+
+        /// <summary>left button: moves the light source (edited image: the image), right button: the guide image</summary>
+        private void OnPreviewMouseDown(object sender, MouseEventArgs e)
+        {
+            _dragStart = e.Location;
+            _dragButton = e.Button;
+            _dragOffsetX = (int)_numOffsetX.Value;
+            _dragOffsetY = (int)_numOffsetY.Value;
+            _dragGuideX = (int)_numGX.Value;
+            _dragGuideY = (int)_numGY.Value;
+            _dragBase = _base?.Clone();
+        }
+
+        private void OnPreviewMouseMove(object sender, MouseEventArgs e)
+        {
+            if (_dragButton == MouseButtons.None || (e.Button & _dragButton) == 0)
+            {
+                return;
+            }
+
+            int dx = (e.X - _dragStart.X) / Zoom, dy = (e.Y - _dragStart.Y) / Zoom;
+            if (_dragButton == MouseButtons.Right)
+            {
+                _loading = true;
+                _numGX.Value = Clamp(_numGX, _dragGuideX + dx);
+                _numGY.Value = Clamp(_numGY, _dragGuideY + dy);
+                _loading = false;
+                Render();
+                return;
+            }
+
+            if (_dragBase != null)
+            {
+                _base = LightGenerator.Shift(_dragBase, dx, dy);
+                UpdateResult();
+                return;
+            }
+
+            _loading = true;
+            _numOffsetX.Value = Clamp(_numOffsetX, _dragOffsetX + dx);
+            _numOffsetY.Value = Clamp(_numOffsetY, _dragOffsetY + dy);
+            _loading = false;
+            UpdateResult();
+        }
+
+        private void OnPreviewMouseUp(object sender, MouseEventArgs e)
+        {
+            _dragButton = MouseButtons.None;
+            _dragBase = null;
+        }
+
+        #endregion
 
         private LightPreviewOptions PreviewOptions() => new LightPreviewOptions
         {
@@ -239,6 +504,8 @@ namespace UoFiddler.Controls.Forms
             LightOffsetX = (int)_numTLightX.Value,
             LightOffsetY = (int)_numTLightY.Value,
             Guide = _chkShowGuide.Checked ? _guide : null,
+            LightColor = _lightColor,
+            Flicker = _flickerTimer.Enabled ? _flicker : 1,
             GuideX = (int)_numGX.Value,
             GuideY = (int)_numGY.Value,
             GuideScale = (int)_numGScale.Value,
@@ -688,6 +955,7 @@ namespace UoFiddler.Controls.Forms
 
         private void OnDesignerClosing(object sender, FormClosingEventArgs e)
         {
+            _flickerTimer.Stop();
             _preview.Image?.Dispose();
             _preview.Image = null;
             _guide?.Dispose();
