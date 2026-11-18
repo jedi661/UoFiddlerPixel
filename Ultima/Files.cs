@@ -60,6 +60,8 @@ namespace Ultima
             "art.mul",
             "artidx.mul",
             "artlegacymul.uop",
+            "artext.mul", // UOFiddler extended art (ids >= 0x10000), see ExtendedFormat.cs
+            "artextidx.mul", // UOFiddler extended art index
             "body.def",
             "bodyconv.def",
             "client.exe",
@@ -168,6 +170,7 @@ namespace Ultima
             "texidx.mul",
             "texmaps.mul",
             "tiledata.mul",
+            "tiledataext.mul", // UOFiddler extended tiledata (ids >= 0x10000)
             "unifont.mul",
             "unifont1.mul",
             "unifont2.mul",
@@ -236,8 +239,8 @@ namespace Ultima
             {
                 string filePath;
 
-                // file was set
-                if (!string.IsNullOrEmpty(MulPath[file]))
+                // file was set (TryGetValue: older settings files may not know newer keys)
+                if (MulPath.TryGetValue(file, out string current) && !string.IsNullOrEmpty(current))
                 {
                     // and was relative like "art.mul"
                     if (string.IsNullOrEmpty(Path.GetDirectoryName(MulPath[file])))
@@ -308,6 +311,58 @@ namespace Ultima
             }
 
             return File.Exists(path) ? path : null;
+        }
+        #endregion
+
+        #region ResolveExtendedFilePaths
+        /// <summary>
+        /// Checks the paths of the extended files (artextidx.mul, artext.mul, tiledataext.mul): a stored path that
+        /// is empty or points to a missing file is replaced by the file in <see cref="RootDir"/> if it exists there.
+        /// </summary>
+        /// <returns>The full paths of the extended files that exist now.</returns>
+        public static List<string> ResolveExtendedFilePaths()
+        {
+            var found = new List<string>();
+            foreach (string name in new[] { ExtendedFormat.ArtIndexFileName, ExtendedFormat.ArtDataFileName, ExtendedFormat.TileDataFileName })
+            {
+                string path = GetFilePathWithRootFallback(name);
+                if (path != null)
+                {
+                    found.Add(path);
+                }
+            }
+
+            return found;
+        }
+        #endregion
+
+        #region GetFilePathWithRootFallback
+        /// <summary>
+        /// Like <see cref="GetFilePath(string)"/>, but if the stored path is empty or wrong it also looks for
+        /// <paramref name="file"/> directly in <see cref="RootDir"/>. Needed for files that were added later
+        /// (e.g. the extended art files): an older profile stores them with an empty path, so they would never
+        /// be found again although they were copied into the Ultima Online directory afterwards.
+        /// </summary>
+        public static string GetFilePathWithRootFallback(string file)
+        {
+            string path = MulPath == null ? null : GetFilePath(file);
+            if (path != null || string.IsNullOrEmpty(RootDir))
+            {
+                return path;
+            }
+
+            string candidate = Path.Combine(RootDir, file);
+            if (!File.Exists(candidate))
+            {
+                return null;
+            }
+
+            if (MulPath != null)
+            {
+                MulPath[file.ToLower()] = candidate; // remember it (saved with the profile)
+            }
+
+            return candidate;
         }
         #endregion
 

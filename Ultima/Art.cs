@@ -1,8 +1,9 @@
-using System;
+ï»¿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
+using System.Linq;
 using Ultima.Helpers;
 
 namespace Ultima
@@ -10,15 +11,20 @@ namespace Ultima
     public static class Art
     {
         // ===================================================================================================
-        // RANGE DEFINITION — the single place that defines how many Land tiles and Static/item art entries
+        // RANGE DEFINITION â€” the single place that defines how many Land tiles and Static/item art entries
         // this class reserves. Static art is stored right after Land art in the same array, offset by
         // LandCount (mirrors the legacy Artidx.mul/Art.mul layout, where static index 0 sits at slot 0x4000).
         //
         // The defaults below reproduce the legacy client layout exactly (16,384 Land + 65,536 Static =
         // 81,920 = 0x14000 total), so every existing artidx.mul/art.mul (ML, Stygian Abyss, High Seas) keeps
-        // loading and saving exactly as before — nothing about legacy behavior changes.
+        // loading and saving exactly as before â€” nothing about legacy behavior changes.
         //
-        // TO EXTEND BEYOND 1,000,000 ENTRIES (this tool's own "Extended" format — not read by a regular
+        // RECOMMENDED WAY TO GET MORE THAN 1,000,000 ITEMS: the side-car extension (ExtendedFormat.cs,
+        // CreateOrResizeExtension/SaveExtension below). It keeps art.mul/artidx.mul 100% client compatible and stores
+        // ids >= 0x10000 in artextidx.mul/artext.mul (64-bit offsets). The constants below are the older,
+        // single-file alternative and are left at the legacy sizes.
+        //
+        // TO EXTEND BEYOND 1,000,000 ENTRIES (this tool's own "Extended" format â€” not read by a regular
         // client, only by tools/servers that understand a bigger artidx.mul/art.mul), just raise the two
         // constants, e.g. for ~1,000,000 total split evenly between Land and Static:
         //
@@ -26,19 +32,19 @@ namespace Ultima
         //      public const int StaticCount = 500_000;
         //
         // Rules when changing them:
-        //   * Never set LandCount below 0x4000 or StaticCount below 0x10000 — that would truncate legacy
+        //   * Never set LandCount below 0x4000 or StaticCount below 0x10000 â€” that would truncate legacy
         //     data on load/save (enforced by ValidateRangeConstants() below, called from the static ctor).
         //   * These constants only size the in-memory capacity and a freshly-saved artidx.mul/art.mul.
-        //     Loading an existing, smaller legacy file always works — unused extra slots simply stay empty.
+        //     Loading an existing, smaller legacy file always works â€” unused extra slots simply stay empty.
         //   * GetMaxItemId()/IsExtended() decide, purely from the *loaded* file's actual entry count
         //     (GetIdxLength()), whether legacy (High Seas/Stygian Abyss/ML) or the Extended item-id range
-        //     applies — see GetMaxItemId() below.
+        //     applies â€” see GetMaxItemId() below.
         //   * Static art above 0xFFFF (65535) can only be reached through GetLegalStaticId()/GetStatic()/
-        //     ReplaceStatic()/RemoveStatic()/IsValidStatic()/GetRawStatic() — NOT through GetLegalItemId(),
+        //     ReplaceStatic()/RemoveStatic()/IsValidStatic()/GetRawStatic() â€” NOT through GetLegalItemId(),
         //     which stays ushort-limited on purpose (see comment there).
         // ===================================================================================================
-        public const int LandCount = 0x4000;   // 16,384 — legacy land-tile range
-        public const int StaticCount = 0x10000; // 65,536 — legacy static/item range
+        public const int LandCount = 0x4000;   // 16,384 â€” legacy land-tile range
+        public const int StaticCount = 0x10000; // 65,536 â€” legacy static/item range
         public const int TotalCount = LandCount + StaticCount;
 
         private static FileIndex _fileIndex = new FileIndex(
@@ -47,6 +53,13 @@ namespace Ultima
         private static bool[] _removed;
         private static readonly Dictionary<int, bool> _patched = new Dictionary<int, bool>();
         public static bool Modified;
+
+        /// <summary>
+        /// True when the classic part (land/static art in art.mul, ids below 0x10000) was changed since loading or the
+        /// last full <see cref="Save(string)"/>. Changes in the extended range do not set it, so after saving only
+        /// the extension files the tool knows whether art.mul still has unsaved changes.
+        /// </summary>
+        public static bool LegacyModified { get; private set; }
 
         private static byte[] _streamBuffer;
         private static readonly byte[] _validBuffer = new byte[4];
@@ -58,15 +71,259 @@ namespace Ultima
             public int Length;
         }
 
-        private static List<ImageData> _landImageData;
-        private static List<ImageData> _staticImageData;
+        // sha256 (hex) -> already written image, so identical images are stored once (O(1) instead of O(n^2))
+        private static Dictionary<string, ImageData> _landImageData;
+        private static Dictionary<string, ImageData> _staticImageData;
+
+        // ===================================================================================================
+        // EXTENDED SIDE-CAR STORAGE (see ExtendedFormat.cs): static items with id >= 0x10000 live in
+        // artextidx.mul / artext.mul. art.mul / artidx.mul keep their exact legacy layout, so the regular client
+        // keeps working. Null _extIndex = no extension loaded/created (pure legacy behaviour).
+        // ===================================================================================================
+        private static ExtendedFormat.ArtIndexEntry[] _extIndex;
+        private static Bitmap[] _extCache;
+        private static bool[] _extRemoved;
+        private static bool[] _extDirty; // changed in memory since load/save
+        private static string _extDataPath;
+        private static FileStream _extStream;
 
         static Art()
         {
             ValidateRangeConstants();
             _cache = new Bitmap[TotalCount];
             _removed = new bool[TotalCount];
+            LoadExtension();
         }
+
+        #region Extended side-car storage
+        /// <summary>True if an extended art storage (ids >= 0x10000) is loaded or was created in this session.</summary>
+        public static bool HasExtension => _extIndex != null;
+
+        /// <summary>Number of extended slots (ids 0x10000 .. 0x10000 + ExtendedCount - 1).</summary>
+        public static int ExtendedCount => _extIndex?.Length ?? 0;
+
+        /// <summary>
+        /// Highest static id including the extension. Without extension identical to <see cref="GetMaxItemId"/>.
+        /// Use this only where ids above 0xFFFF are supported (Items tab, TileData) - everything that writes
+        /// map/statics/multi files must keep using <see cref="GetMaxItemId"/>.
+        /// </summary>
+        public static int GetMaxExtendedItemId()
+        {
+            return HasExtension ? ExtendedFormat.GetMaxId(ExtendedCount) : GetMaxItemId();
+        }
+
+        /// <summary>Folder of the last successful <see cref="SaveExtension"/> in this session (null if none).</summary>
+        public static string LastExtensionSaveFolder { get; private set; }
+
+        /// <summary>Path of the loaded artext.mul (null if the extension only exists in memory).</summary>
+        public static string ExtendedDataPath => _extDataPath;
+
+        /// <summary>
+        /// Loads the extension again from the current paths (<see cref="Files.MulPath"/>), e.g. after the files were
+        /// copied into the client directory or a folder was chosen. Unsaved extended changes are discarded.
+        /// </summary>
+        public static void ReloadExtension()
+        {
+            LoadExtension();
+        }
+
+        private static void LoadExtension()
+        {
+            CloseExtensionStream();
+            _extIndex = null;
+            _extCache = null;
+            _extRemoved = null;
+            _extDirty = null;
+            _extDataPath = null;
+
+            try
+            {
+                string idx = Files.GetFilePathWithRootFallback(ExtendedFormat.ArtIndexFileName);
+                string mul = Files.GetFilePathWithRootFallback(ExtendedFormat.ArtDataFileName);
+                if (idx == null || mul == null)
+                {
+                    return;
+                }
+
+                ExtendedFormat.ArtIndexEntry[] entries = ExtendedFormat.ReadArtIndex(idx);
+                _extIndex = entries;
+                _extCache = new Bitmap[entries.Length];
+                _extRemoved = new bool[entries.Length];
+                _extDirty = new bool[entries.Length];
+                _extDataPath = mul;
+            }
+            catch (Exception)
+            {
+                // corrupt or foreign file: behave like pure legacy, never break loading of art.mul
+                _extIndex = null;
+                _extCache = null;
+                _extRemoved = null;
+                _extDirty = null;
+                _extDataPath = null;
+            }
+        }
+
+        /// <summary>Releases the open artext.mul (e.g. before the file is replaced by a copy).</summary>
+        public static void CloseExtensionFiles()
+        {
+            CloseExtensionStream();
+        }
+
+        private static void CloseExtensionStream()
+        {
+            _extStream?.Dispose();
+            _extStream = null;
+        }
+
+        /// <summary>
+        /// Creates the extended storage in memory or resizes it (files are written on the next <see cref="Save(string)"/>).
+        /// Growing keeps every existing item. Shrinking drops all items above the new size.
+        /// </summary>
+        public static void CreateOrResizeExtension(int slots)
+        {
+            if (slots < 1 || slots > ExtendedFormat.MaxSlots)
+            {
+                throw new ArgumentOutOfRangeException(nameof(slots), slots, $"Must be between 1 and {ExtendedFormat.MaxSlots}.");
+            }
+
+            int old = ExtendedCount;
+            if (_extIndex == null)
+            {
+                _extIndex = new ExtendedFormat.ArtIndexEntry[slots];
+                _extCache = new Bitmap[slots];
+                _extRemoved = new bool[slots];
+                _extDirty = new bool[slots];
+                for (int i = 0; i < slots; ++i)
+                {
+                    _extIndex[i] = ExtendedFormat.ArtIndexEntry.Empty;
+                }
+            }
+            else
+            {
+                Array.Resize(ref _extIndex, slots);
+                Array.Resize(ref _extCache, slots);
+                Array.Resize(ref _extRemoved, slots);
+                Array.Resize(ref _extDirty, slots);
+                for (int i = old; i < slots; ++i)
+                {
+                    _extIndex[i] = ExtendedFormat.ArtIndexEntry.Empty;
+                }
+            }
+
+            Modified = true;
+        }
+
+        /// <summary>All extended ids that currently have an image (in memory, incl. unsaved changes).</summary>
+        public static List<int> GetUsedExtendedIds()
+        {
+            var ids = new List<int>();
+            for (int k = 0; k < ExtendedCount; ++k)
+            {
+                if (IsValidExtended(k))
+                {
+                    ids.Add(ExtendedFormat.BaseId + k);
+                }
+            }
+
+            return ids;
+        }
+
+        /// <summary>Extended ids changed in memory and not written yet (replaced or removed since load/save).</summary>
+        public static List<int> GetUnsavedExtendedIds()
+        {
+            var ids = new List<int>();
+            for (int k = 0; k < ExtendedCount; ++k)
+            {
+                if (_extDirty[k])
+                {
+                    ids.Add(ExtendedFormat.BaseId + k);
+                }
+            }
+
+            return ids;
+        }
+
+        /// <summary>Number of used extended slots (cheap, uses the in-memory index only).</summary>
+        public static int CountUsedExtended()
+        {
+            int n = 0;
+            for (int k = 0; k < ExtendedCount; ++k)
+            {
+                if (IsValidExtended(k))
+                {
+                    ++n;
+                }
+            }
+
+            return n;
+        }
+
+        private static bool IsValidExtended(int k)
+        {
+            if (_extRemoved[k])
+            {
+                return false;
+            }
+
+            return _extCache[k] != null || _extIndex[k].IsValid;
+        }
+
+        private static byte[] ReadExtendedRaw(int k)
+        {
+            ExtendedFormat.ArtIndexEntry e = _extIndex[k];
+            if (!e.IsValid || _extDataPath == null)
+            {
+                return null;
+            }
+
+            if (_extStream == null || !_extStream.CanRead)
+            {
+                if (!File.Exists(_extDataPath))
+                {
+                    return null;
+                }
+
+                _extStream = new FileStream(_extDataPath, FileMode.Open, FileAccess.Read, FileShare.Read);
+            }
+
+            if (e.Offset + e.Length > _extStream.Length)
+            {
+                return null;
+            }
+
+            var buffer = new byte[e.Length];
+            _extStream.Seek(e.Offset, SeekOrigin.Begin);
+            _extStream.ReadExactly(buffer, 0, e.Length);
+            return buffer;
+        }
+
+        private static Bitmap GetExtended(int k)
+        {
+            if (_extRemoved[k])
+            {
+                return null;
+            }
+
+            if (_extCache[k] != null)
+            {
+                return _extCache[k];
+            }
+
+            byte[] raw = ReadExtendedRaw(k);
+            if (raw == null)
+            {
+                return null;
+            }
+
+            Bitmap bmp = LoadStatic(new MemoryStream(raw), raw.Length);
+            if (Files.CacheData)
+            {
+                _extCache[k] = bmp;
+            }
+
+            return bmp;
+        }
+        #endregion
 
         // Guards against LandCount/StaticCount being edited below the legacy minimums, which would silently
         // truncate legacy artidx.mul/art.mul data. Runs once from the static ctor and from Reload().
@@ -82,13 +339,13 @@ namespace Ultima
 
         /// <summary>
         /// Highest legal Static item id for the format that is currently loaded, based on the actual
-        /// entry count found in artidx.mul (GetIdxLength()) — NOT on the LandCount/StaticCount capacity
+        /// entry count found in artidx.mul (GetIdxLength()) â€” NOT on the LandCount/StaticCount capacity
         /// defined above. A newly loaded legacy file (ML/Stygian Abyss/High Seas) always resolves to the
         /// exact same value it always did.
         /// </summary>
         public static int GetMaxItemId()
         {
-            // Extended (this tool's own >1,000,000-capable format — see RANGE DEFINITION above)
+            // Extended (this tool's own >1,000,000-capable format â€” see RANGE DEFINITION above)
             if (GetIdxLength() > 0x13FDC)
             {
                 return StaticCount - 1;
@@ -116,7 +373,7 @@ namespace Ultima
         }
 
         /// <summary>
-        /// True once a loaded artidx.mul has more entries than any regular client format ever produces —
+        /// True once a loaded artidx.mul has more entries than any regular client format ever produces â€”
         /// i.e. it was saved by this tool with LandCount/StaticCount raised above the legacy sizes.
         /// </summary>
         public static bool IsExtended()
@@ -126,7 +383,7 @@ namespace Ultima
 
         // Kept ushort on purpose: this method also legalizes ids for the ushort-based map/statics-placement
         // mul formats (TileMatrix, MultiComponentList, map/statics editors, ...), whose file format itself
-        // stores a UInt16 per tile — those callers cannot use ids above 65535 regardless of what art.mul
+        // stores a UInt16 per tile â€” those callers cannot use ids above 65535 regardless of what art.mul
         // supports. For direct art.mul static-art access above 0xFFFF, use GetLegalStaticId() instead.
         public static ushort GetLegalItemId(int itemId, bool checkMaxId = true)
         {
@@ -155,11 +412,53 @@ namespace Ultima
         /// indices above 0xFFFF work once StaticCount is raised above the legacy 0x10000 (see RANGE
         /// DEFINITION above).
         /// </summary>
+        /// <summary>
+        /// True if <paramref name="itemId"/> is a real static slot: 0 .. GetMaxItemId() (classic art.mul) or
+        /// 0x10000 .. GetMaxExtendedItemId() (extension). The gap between them (e.g. 0xFFDD-0xFFFF with High Seas
+        /// data) is NOT legal - GetLegalStaticId would map those ids to 0 and overwrite item 0.
+        /// </summary>
+        public static bool IsLegalStaticId(int itemId)
+        {
+            if (itemId < 0)
+            {
+                return false;
+            }
+
+            if (itemId <= GetMaxItemId())
+            {
+                return true;
+            }
+
+            return HasExtension && itemId >= ExtendedFormat.BaseId && itemId <= GetMaxExtendedItemId();
+        }
+
+        /// <summary>
+        /// Makes sure the extension is loaded if its files exist (stored path or the Ultima Online directory).
+        /// Safe to call often: does nothing when an extension is already loaded or created.
+        /// </summary>
+        /// <returns>true if it was loaded now.</returns>
+        public static bool EnsureExtensionLoaded()
+        {
+            if (HasExtension)
+            {
+                return false;
+            }
+
+            LoadExtension();
+            return HasExtension;
+        }
+
         public static int GetLegalStaticId(int itemId, bool checkMaxId = true)
         {
             if (itemId < 0)
             {
                 return 0;
+            }
+
+            // extended ids (>= 0x10000) are only legal inside the loaded/created extension
+            if (itemId >= ExtendedFormat.BaseId)
+            {
+                return HasExtension && itemId <= GetMaxExtendedItemId() ? itemId : 0;
             }
 
             if (!checkMaxId)
@@ -201,7 +500,9 @@ namespace Ultima
             _cache = new Bitmap[TotalCount];
             _removed = new bool[TotalCount];
             _patched.Clear();
+            LoadExtension();
             Modified = false;
+            LegacyModified = false;
         }
 
         /// <summary>
@@ -211,8 +512,24 @@ namespace Ultima
         /// <param name="bmp"></param>
         public static void ReplaceStatic(int index, Bitmap bmp)
         {
+            if (!IsLegalStaticId(index))
+            {
+                return; // never let an illegal id fall back to item 0
+            }
+
             index = GetLegalStaticId(index);
+            if (index >= ExtendedFormat.BaseId)
+            {
+                int k = index - ExtendedFormat.BaseId;
+                _extCache[k] = bmp;
+                _extRemoved[k] = bmp == null;
+                _extDirty[k] = true;
+                Modified = true;
+                return;
+            }
+
             index += LandCount;
+            LegacyModified = true;
 
             _cache[index] = bmp;
             _removed[index] = false;
@@ -233,6 +550,7 @@ namespace Ultima
         public static void ReplaceLand(int index, Bitmap bmp)
         {
             index = NormalizeLandIndex(index);
+            LegacyModified = true;
             _cache[index] = bmp;
             _removed[index] = false;
 
@@ -250,11 +568,25 @@ namespace Ultima
         /// <param name="index"></param>
         public static void RemoveStatic(int index)
         {
+            if (!IsLegalStaticId(index))
+            {
+                return; // never let an illegal id fall back to item 0
+            }
+
             index = GetLegalStaticId(index);
+            if (index >= ExtendedFormat.BaseId)
+            {
+                _extRemoved[index - ExtendedFormat.BaseId] = true;
+                _extDirty[index - ExtendedFormat.BaseId] = true;
+                Modified = true;
+                return;
+            }
+
             index += LandCount;
 
             _removed[index] = true;
             Modified = true;
+            LegacyModified = true;
         }
 
         /// <summary>
@@ -266,6 +598,7 @@ namespace Ultima
             index = NormalizeLandIndex(index);
             _removed[index] = true;
             Modified = true;
+            LegacyModified = true;
         }
 
         /// <summary>
@@ -276,6 +609,11 @@ namespace Ultima
         public static bool IsValidStatic(int index)
         {
             index = GetLegalStaticId(index);
+            if (index >= ExtendedFormat.BaseId)
+            {
+                return IsValidExtended(index - ExtendedFormat.BaseId);
+            }
+
             index += LandCount;
 
             if (_removed[index])
@@ -413,6 +751,12 @@ namespace Ultima
         public static Bitmap GetStatic(int index, out bool patched, bool checkMaxId = true)
         {
             index = GetLegalStaticId(index, checkMaxId);
+            if (index >= ExtendedFormat.BaseId)
+            {
+                patched = false;
+                return GetExtended(index - ExtendedFormat.BaseId);
+            }
+
             index += LandCount;
 
             patched = _patched.ContainsKey(index) && _patched[index];
@@ -450,6 +794,11 @@ namespace Ultima
         public static byte[] GetRawStatic(int index)
         {
             index = GetLegalStaticId(index);
+            if (index >= ExtendedFormat.BaseId)
+            {
+                return ReadExtendedRaw(index - ExtendedFormat.BaseId);
+            }
+
             index += LandCount;
 
             Stream stream = _fileIndex.Seek(index, out int length, out int _, out bool _);
@@ -663,7 +1012,7 @@ namespace Ultima
 
         /// <summary>
         /// Saves artidx.mul/art.mul, writing exactly as many entries as are currently loaded
-        /// (GetIdxLength()) — identical to the historical behavior. To force-write the full Extended
+        /// (GetIdxLength()) â€” identical to the historical behavior. To force-write the full Extended
         /// capacity (e.g. when creating a brand new file that uses all of LandCount/StaticCount), use the
         /// <see cref="Save(string, int)"/> overload with entryCount: TotalCount.
         /// </summary>
@@ -676,7 +1025,7 @@ namespace Ultima
         /// <summary>
         /// Saves artidx.mul/art.mul, writing exactly <paramref name="entryCount"/> index slots. Pass
         /// Art.TotalCount (or any custom count up to it, e.g. LandCount + 500_000) to write beyond the
-        /// legacy 0x14000 entries — see RANGE DEFINITION at the top of this class for how to raise
+        /// legacy 0x14000 entries â€” see RANGE DEFINITION at the top of this class for how to raise
         /// LandCount/StaticCount first.
         /// </summary>
         /// <param name="path"></param>
@@ -691,8 +1040,8 @@ namespace Ultima
                     $"Must be between 0 and TotalCount ({TotalCount}). Raise LandCount/StaticCount first if you need to save more entries.");
             }
 
-            _landImageData = new List<ImageData>();
-            _staticImageData = new List<ImageData>();
+            _landImageData = new Dictionary<string, ImageData>();
+            _staticImageData = new Dictionary<string, ImageData>();
 
             string idx = Path.Combine(path, "artidx.mul");
             string mul = Path.Combine(path, "art.mul");
@@ -781,12 +1130,12 @@ namespace Ultima
                             binidx.Write(0);
                             bmp.UnlockBits(bd);
 
-                            _landImageData.Add(new ImageData
+                            _landImageData[Convert.ToHexString(imageData)] = new ImageData
                             {
                                 Position = start,
                                 Length = length,
                                 Data = imageData
-                            });
+                            };
                         }
                         else
                         {
@@ -878,12 +1227,12 @@ namespace Ultima
                             binidx.Write(0);
                             bmp.UnlockBits(bd);
 
-                            _staticImageData.Add(new ImageData
+                            _staticImageData[Convert.ToHexString(imageData)] = new ImageData
                             {
                                 Position = start,
                                 Length = length,
                                 Data = imageData
-                            });
+                            };
                         }
                     }
 
@@ -891,82 +1240,200 @@ namespace Ultima
                     memmul.WriteTo(fsmul);
                 }
             }
+
+            LegacyModified = false;
+
+            // ids >= 0x10000 go to the side-car files, art.mul/artidx.mul stay client compatible
+            SaveExtension(path);
         }
 
-        private static bool CompareSaveImagesLand(IReadOnlyList<byte> newChecksum, out ImageData sum)
+        private static bool CompareSaveImagesLand(byte[] newChecksum, out ImageData sum)
         {
-            sum = new ImageData();
-            for (int i = 0; i < _landImageData.Count; ++i)
-            {
-                byte[] cmp = _landImageData[i].Data;
-                if (cmp == null || newChecksum == null || cmp.Length != newChecksum.Count)
-                {
-                    return false;
-                }
-
-                bool valid = true;
-
-                for (int j = 0; j < cmp.Length; ++j)
-                {
-                    if (cmp[j] == newChecksum[j])
-                    {
-                        continue;
-                    }
-
-                    valid = false;
-                    break;
-                }
-
-                if (!valid)
-                {
-                    continue;
-                }
-
-                sum = _landImageData[i];
-
-                return true;
-            }
-
-            return false;
+            return _landImageData.TryGetValue(Convert.ToHexString(newChecksum), out sum);
         }
 
         private static bool CompareSaveImagesStatic(byte[] imageData, out ImageData resultImageData)
         {
-            resultImageData = new ImageData();
+            return _staticImageData.TryGetValue(Convert.ToHexString(imageData), out resultImageData);
+        }
 
-            for (int i = 0; i < _staticImageData.Count; ++i)
+        #region Extended save
+        /// <summary>
+        /// Encodes a bitmap into the static art.mul format (int32 header, int16 width, int16 height,
+        /// uint16 row lookups, runs of [xOffset, run, pixels...] terminated by 0,0).
+        /// </summary>
+        public static unsafe byte[] EncodeStatic(Bitmap bmp)
+        {
+            using var ms = new MemoryStream();
+            using var bw = new BinaryWriter(ms);
+
+            int width = bmp.Width;
+            int height = bmp.Height;
+            bw.Write(1234); // header (unused by readers)
+            bw.Write((short)width);
+            bw.Write((short)height);
+
+            long lookupPos = ms.Position;
+            for (int i = 0; i < height; ++i)
             {
-                byte[] cmp = _staticImageData[i].Data;
+                bw.Write((ushort)0);
+            }
 
-                if (cmp == null || imageData == null || cmp.Length != imageData.Length)
+            long dataStart = ms.Position;
+            var lookups = new ushort[height];
+
+            BitmapData bd = bmp.LockBits(new Rectangle(0, 0, width, height), ImageLockMode.ReadOnly, PixelFormat.Format16bppArgb1555);
+            try
+            {
+                var line = (ushort*)bd.Scan0;
+                int delta = bd.Stride >> 1;
+                for (int y = 0; y < height; ++y, line += delta)
                 {
-                    return false;
+                    long rel = (ms.Position - dataStart) / 2;
+                    if (rel > ushort.MaxValue)
+                    {
+                        throw new InvalidOperationException("Image too large for the static art format.");
+                    }
+
+                    lookups[y] = (ushort)rel;
+
+                    int x = 0;
+                    while (x < width)
+                    {
+                        int i = x;
+                        while (i < width && line[i] == 0)
+                        {
+                            ++i;
+                        }
+
+                        if (i >= width)
+                        {
+                            break;
+                        }
+
+                        int j = i + 1;
+                        while (j < width && line[j] != 0)
+                        {
+                            ++j;
+                        }
+
+                        bw.Write((short)(i - x));
+                        bw.Write((short)(j - i));
+                        for (int p = i; p < j; ++p)
+                        {
+                            bw.Write((ushort)(line[p] ^ 0x8000));
+                        }
+
+                        x = j;
+                    }
+
+                    bw.Write((short)0);
+                    bw.Write((short)0);
                 }
+            }
+            finally
+            {
+                bmp.UnlockBits(bd);
+            }
 
-                bool valid = true;
+            ms.Position = lookupPos;
+            foreach (ushort l in lookups)
+            {
+                bw.Write(l);
+            }
 
-                for (int j = 0; j < cmp.Length; ++j)
+            return ms.ToArray();
+        }
+
+        /// <summary>
+        /// Writes artextidx.mul / artext.mul into <paramref name="path"/>. Unchanged images are copied raw
+        /// (no decode/encode), identical images are stored once.
+        /// </summary>
+        public static void SaveExtension(string path)
+        {
+            if (!HasExtension)
+            {
+                return;
+            }
+
+            string idxFinal = Path.Combine(path, ExtendedFormat.ArtIndexFileName);
+            string mulFinal = Path.Combine(path, ExtendedFormat.ArtDataFileName);
+            string idxTmp = idxFinal + ".tmp";
+            string mulTmp = mulFinal + ".tmp";
+
+            int count = ExtendedCount;
+            var entries = new ExtendedFormat.ArtIndexEntry[count];
+            var written = new Dictionary<string, ExtendedFormat.ArtIndexEntry>();
+
+            using (var sha = System.Security.Cryptography.SHA256.Create())
+            using (var fsMul = new FileStream(mulTmp, FileMode.Create, FileAccess.Write, FileShare.None))
+            {
+                for (int k = 0; k < count; ++k)
                 {
-                    if (cmp[j] == imageData[j])
+                    Files.FireFileSaveEvent();
+                    entries[k] = ExtendedFormat.ArtIndexEntry.Empty;
+
+                    if (_extRemoved[k])
                     {
                         continue;
                     }
 
-                    valid = false;
-                    break;
+                    byte[] data;
+                    if (_extCache[k] != null)
+                    {
+                        data = EncodeStatic(_extCache[k]);
+                    }
+                    else
+                    {
+                        data = ReadExtendedRaw(k);
+                    }
+
+                    if (data == null || data.Length == 0)
+                    {
+                        continue;
+                    }
+
+                    string key = Convert.ToHexString(sha.ComputeHash(data));
+                    if (written.TryGetValue(key, out ExtendedFormat.ArtIndexEntry existing))
+                    {
+                        entries[k] = existing;
+                        continue;
+                    }
+
+                    var entry = new ExtendedFormat.ArtIndexEntry { Offset = fsMul.Position, Length = data.Length, Extra = 0 };
+                    fsMul.Write(data, 0, data.Length);
+                    entries[k] = entry;
+                    written[key] = entry;
                 }
-
-                if (!valid)
-                {
-                    continue;
-                }
-
-                resultImageData = _staticImageData[i];
-
-                return true;
             }
 
-            return false;
+            using (var fsIdx = new FileStream(idxTmp, FileMode.Create, FileAccess.Write, FileShare.None))
+            {
+                ExtendedFormat.WriteArtIndex(fsIdx, entries);
+            }
+
+            bool sameAsSource = _extDataPath != null &&
+                string.Equals(Path.GetFullPath(_extDataPath), Path.GetFullPath(mulFinal), StringComparison.OrdinalIgnoreCase);
+
+            if (sameAsSource)
+            {
+                // the source file gets replaced; the new index (entries) points into the new file afterwards
+                CloseExtensionStream();
+            }
+
+            File.Move(mulTmp, mulFinal, true);
+            File.Move(idxTmp, idxFinal, true);
+
+            Array.Clear(_extDirty); // everything in memory is on disk now (in this folder)
+            LastExtensionSaveFolder = Path.GetFullPath(path);
+
+            if (sameAsSource || _extDataPath == null)
+            {
+                _extIndex = entries;
+                _extDataPath = mulFinal;
+                Array.Clear(_extRemoved);
+            }
         }
+        #endregion
     }
 }

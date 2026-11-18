@@ -187,8 +187,71 @@ namespace UoFiddler.Controls.UserControls
                         return true;
                     }
                 }
+
+                TreeNode extNode = GetOrCreateExtendedNode(graphic);
+                if (extNode != null)
+                {
+                    _refMarker.tabcontrol.SelectTab(0);
+                    _refMarker.treeViewItem.SelectedNode = extNode;
+                    extNode.EnsureVisible();
+                    return true;
+                }
             }
             return false;
+        }
+        #endregion
+
+        #region [ Extended items ]
+        private const string ExtendedGroupName = "Extended (0x10000+)";
+
+        private static TreeNode CreateExtendedItemNode(int id)
+        {
+            return new TreeNode(string.Format("0x{0:X5} ({0}) {1}", id, TileData.ItemTable[id].Name)) { Tag = id };
+        }
+
+        /// <summary>Finds (or inserts, sorted) the node of an extended item id so it can be edited.</summary>
+        private static TreeNode GetOrCreateExtendedNode(int graphic)
+        {
+            if (!TileData.HasExtension || graphic < Ultima.ExtendedFormat.BaseId || graphic >= TileData.ItemTable.Length)
+            {
+                return null;
+            }
+
+            TreeNode group = null;
+            foreach (TreeNode n in _refMarker.treeViewItem.Nodes)
+            {
+                if (n.Text == ExtendedGroupName)
+                {
+                    group = n;
+                    break;
+                }
+            }
+
+            if (group == null)
+            {
+                group = new TreeNode(ExtendedGroupName);
+                _refMarker.treeViewItem.Nodes.Add(group);
+            }
+
+            int insertAt = group.Nodes.Count;
+            for (int i = 0; i < group.Nodes.Count; ++i)
+            {
+                int tag = (int)group.Nodes[i].Tag;
+                if (tag == graphic)
+                {
+                    return group.Nodes[i];
+                }
+
+                if (tag > graphic)
+                {
+                    insertAt = i;
+                    break;
+                }
+            }
+
+            TreeNode node = CreateExtendedItemNode(graphic);
+            group.Nodes.Insert(insertAt, node);
+            return node;
         }
         #endregion
 
@@ -517,6 +580,22 @@ namespace UoFiddler.Controls.UserControls
                         };
                     }
                     treeViewItem.Nodes.Add(new TreeNode("Adventures High Seas", nodes));
+                }
+
+                // Extended side-car items (ids >= 0x10000, tiledataext.mul): only used slots are listed,
+                // free slots are added on demand by SearchGraphic (a tree with 1M nodes would be unusable)
+                if (TileData.HasExtension)
+                {
+                    var extNodes = new List<TreeNode>();
+                    for (int j = Ultima.ExtendedFormat.BaseId; j < TileData.ItemTable.Length; ++j)
+                    {
+                        if (!string.IsNullOrEmpty(TileData.ItemTable[j].Name) || Art.IsValidStatic(j))
+                        {
+                            extNodes.Add(CreateExtendedItemNode(j));
+                        }
+                    }
+
+                    treeViewItem.Nodes.Add(new TreeNode(ExtendedGroupName, extNodes.ToArray()));
                 }
                 else
                 {

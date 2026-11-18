@@ -1,4 +1,4 @@
-/***************************************************************************
+ï»¿/***************************************************************************
  *
  * $Author: Turley
  * 
@@ -51,7 +51,138 @@ namespace UoFiddler.Controls.UserControls
 
             RefMarker = this;
             DetailTextBox.AddBasicContextMenu();
+
+            InitializeExtraMenus();
         }
+
+        #region [ Extra menus (extended format / direction generator) ]
+        private void InitializeExtraMenus()
+        {
+            var extendedItem = new ToolStripMenuItem("Extended Art Format (1M+ items)...");
+            extendedItem.Click += (s, e) => ShowExtendedFormatForm();
+            MiscToolStripDropDownButton.DropDownItems.Add(new ToolStripSeparator());
+            MiscToolStripDropDownButton.DropDownItems.Add(extendedItem);
+            var checkItem = new ToolStripMenuItem("Check extended files (what is saved)...");
+            checkItem.Click += (s, e) => new ExtendedCheckForm(GoToId, Reload).Show();
+            MiscToolStripDropDownButton.DropDownItems.Add(checkItem);
+
+            var directionsButton = new ToolStripButton("Directions N/E/S/W")
+            {
+                DisplayStyle = ToolStripItemDisplayStyle.Text,
+                ToolTipText = "Generate the other orientations (north/east/south/west) of the selected item"
+            };
+            directionsButton.Click += (s, e) => ShowDirectionForm();
+            ToolStrip.Items.Add(directionsButton);
+
+            // three clear views: items only / items + free slots (the classic "Show Free Slots") / free slots only
+            showFreeSlotsToolStripMenuItem.Text = "Show items + free slots";
+            showFreeSlotsToolStripMenuItem.ToolTipText = "All ids: used items and empty slots in between (red = free)";
+
+            _viewBox = new ToolStripComboBox
+            {
+                DropDownStyle = ComboBoxStyle.DropDownList,
+                ToolTipText = "Items only / items + free slots / free slots only (incl. the extended range 0x10000+)",
+                AutoSize = false,
+                Width = 140
+            };
+            _viewBox.Items.AddRange(new object[] { "Items only", "Items + free slots", "Free slots only" });
+            _viewBox.SelectedIndex = 0;
+            _viewBox.SelectedIndexChanged += (s, e) =>
+            {
+                if (_syncingView)
+                {
+                    return;
+                }
+
+                ShowSlots(_viewBox.SelectedIndex > 0, _viewBox.SelectedIndex == 2);
+            };
+            ToolStrip.Items.Add(new ToolStripLabel("View:"));
+            ToolStrip.Items.Add(_viewBox);
+
+            _onlyFreeMenuItem = new ToolStripMenuItem("Show only free slots");
+            _onlyFreeMenuItem.Click += (s, e) => ShowSlots(!_showOnlyFree, !_showOnlyFree);
+            var gotoExtended = new ToolStripMenuItem("Go to extended range (0x10000)");
+            gotoExtended.Click += (s, e) => GoToExtendedRange();
+            int freeIndex = TileViewContextMenuStrip.Items.IndexOf(showFreeSlotsToolStripMenuItem);
+            TileViewContextMenuStrip.Items.Insert(freeIndex + 1, _onlyFreeMenuItem);
+            TileViewContextMenuStrip.Items.Insert(freeIndex + 2, gotoExtended);
+
+            var directionsMenu = new ToolStripMenuItem("Generate directions (N/E/S/W)...");
+            directionsMenu.Click += (s, e) => ShowDirectionForm();
+            int mirrorIndex = TileViewContextMenuStrip.Items.IndexOf(mirrorToolStripMenuItem);
+            TileViewContextMenuStrip.Items.Insert(mirrorIndex + 1, directionsMenu);
+        }
+
+        private ExtendedArtFormatForm _extendedFormatForm;
+
+        private void ShowExtendedFormatForm()
+        {
+            if (_extendedFormatForm == null || _extendedFormatForm.IsDisposed)
+            {
+                _extendedFormatForm = new ExtendedArtFormatForm(Reload, GoToId);
+                _extendedFormatForm.Show();
+            }
+            else
+            {
+                _extendedFormatForm.Activate();
+            }
+        }
+
+        private ArtDirectionForm _directionForm;
+
+        private void ShowDirectionForm()
+        {
+            if (_directionForm == null || _directionForm.IsDisposed)
+            {
+                _directionForm = new ArtDirectionForm(InsertGeneratedItem);
+                _directionForm.Show();
+            }
+            else
+            {
+                _directionForm.Activate();
+            }
+
+            if (_selectedGraphicId >= 0 && Art.IsValidStatic(_selectedGraphicId))
+            {
+                _directionForm.LoadSource(Art.GetStatic(_selectedGraphicId), _selectedGraphicId);
+            }
+        }
+
+        /// <summary>Callback of the direction generator: writes a generated image into art (and the list).</summary>
+        private void InsertGeneratedItem(int id, Bitmap bitmap)
+        {
+            if (bitmap == null || !Art.IsLegalStaticId(id))
+            {
+                MessageBox.Show($"0x{id:X} is not a valid item id (0x0000-0x{Art.GetMaxItemId():X4}" +
+                                (Art.HasExtension ? $", 0x{ExtendedFormat.BaseId:X}-0x{Art.GetMaxExtendedItemId():X})" : ")"),
+                    "Insert", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            Art.ReplaceStatic(id, bitmap);
+            ControlEvents.FireItemChangeEvent(this, id);
+            Options.ChangedUltimaClass["Art"] = true;
+
+            InsertIntoItemList(id);
+            ItemsTileView.VirtualListSize = _itemList.Count;
+            ItemsTileView.Invalidate();
+            SelectedGraphicId = id;
+        }
+
+        /// <summary>Inserts an id sorted into _itemList (no duplicates).</summary>
+        private void InsertIntoItemList(int id)
+        {
+            int pos = _itemList.BinarySearch(id);
+            if (pos < 0)
+            {
+                _itemList.Insert(~pos, id);
+            }
+        }
+
+        private static bool HasTileData(int id) => TileData.ItemTable != null && id >= 0 && id < TileData.ItemTable.Length;
+
+        private static string GetItemName(int id) => HasTileData(id) ? TileData.ItemTable[id].Name ?? string.Empty : string.Empty;
+        #endregion
 
         private List<int> _itemList = new List<int>();
         private bool _showFreeSlots;
@@ -172,7 +303,7 @@ namespace UoFiddler.Controls.UserControls
 
             for (int i = index; i < RefMarker._itemList.Count; ++i)
             {
-                var searchResult = searchMethod(name, TileData.ItemTable[RefMarker._itemList[i]].Name);
+                var searchResult = searchMethod(name, GetItemName(RefMarker._itemList[i]));
                 if (searchResult.HasErrors)
                 {
                     break;
@@ -221,14 +352,33 @@ namespace UoFiddler.Controls.UserControls
             UpdateTileView();
 
             _showFreeSlots = false;
+            _showOnlyFree = false;
             showFreeSlotsToolStripMenuItem.Checked = false;
+            if (_onlyFreeMenuItem != null)
+            {
+                _onlyFreeMenuItem.Checked = false;
+            }
+
+            SyncViewBox();
 
             var prevSelected = SelectedGraphicId;
 
-            int staticLength = Art.GetMaxItemId();
-            _itemList = new List<int>(staticLength);
+            // the extension may exist although Art was initialised before the paths were final
+            if (Art.EnsureExtensionLoaded())
+            {
+                TileData.ReloadExtension();
+            }
+
+            int staticLength = Art.GetMaxExtendedItemId(); // includes the extended side-car range if present
+            _itemList = new List<int>(Math.Min(staticLength + 1, 0x20000));
             for (int i = 0; i <= staticLength; ++i)
             {
+                if (i > Art.GetMaxItemId() && i < ExtendedFormat.BaseId)
+                {
+                    i = ExtendedFormat.BaseId - 1; // skip the gap between art.mul and the extension
+                    continue;
+                }
+
                 if (Art.IsValidStatic(i))
                 {
                     _itemList.Add(i);
@@ -320,29 +470,7 @@ namespace UoFiddler.Controls.UserControls
 
             if (Art.IsValidStatic(index))
             {
-                bool done = false;
-                for (int i = 0; i < _itemList.Count; ++i)
-                {
-                    if (index < _itemList[i])
-                    {
-                        _itemList.Insert(i, index);
-                        done = true;
-                        break;
-                    }
-
-                    if (index != _itemList[i])
-                    {
-                        continue;
-                    }
-
-                    done = true;
-                    break;
-                }
-
-                if (!done)
-                {
-                    _itemList.Add(index);
-                }
+                InsertIntoItemList(index);
             }
             else
             {
@@ -400,7 +528,7 @@ namespace UoFiddler.Controls.UserControls
                 return;
             }
 
-            ItemData item = TileData.ItemTable[graphic];
+            ItemData item = HasTileData(graphic) ? TileData.ItemTable[graphic] : default;
             Bitmap bit = Art.GetStatic(graphic);
 
             int xMin = 0;
@@ -418,8 +546,9 @@ namespace UoFiddler.Controls.UserControls
                     newGraph.Clear(_backgroundDetailColor);
                 }
 
-                DetailPictureBox.Image?.Dispose();
-                DetailPictureBox.Image = newBit;
+                Image oldDetail = DetailPictureBox.Image;
+                DetailPictureBox.Image = newBit; // set the new image first, then free the old one
+                oldDetail?.Dispose();
             }
             else
             {
@@ -433,15 +562,16 @@ namespace UoFiddler.Controls.UserControls
                     newGraph.DrawImage(bit, (DetailPictureBox.Size.Width - bit.Width) / 2, 5);
                 }
 
-                DetailPictureBox.Image?.Dispose();
-                DetailPictureBox.Image = newBit;
+                Image oldDetail = DetailPictureBox.Image;
+                DetailPictureBox.Image = newBit; // set the new image first, then free the old one
+                oldDetail?.Dispose();
 
                 Art.Measure(bit, out xMin, out yMin, out xMax, out yMax);
             }
 
             var sb = new StringBuilder();
             sb.AppendLine($"Name: {item.Name}");
-            sb.AppendLine($"Graphic: 0x{graphic:X4}");
+            sb.AppendLine($"Graphic: 0x{graphic:X4}{(graphic >= ExtendedFormat.BaseId ? " (extended)" : string.Empty)}");
             sb.AppendLine($"Height/Capacity: {item.Height}");
             sb.AppendLine($"Weight: {item.Weight}");
             sb.AppendLine($"Animation: {item.Animation}");
@@ -610,9 +740,16 @@ namespace UoFiddler.Controls.UserControls
                 // Create a list of indexes to remove
                 var indicesToRemove = ItemsTileView.SelectedIndices.Cast<int>().OrderByDescending(i => i).ToList();
 
+                int firstIndex = indicesToRemove.Last();
+
                 // Iterate through all selected indexes and remove artworks
                 foreach (int selectedIndex in indicesToRemove)
                 {
+                    if (selectedIndex < 0 || selectedIndex >= _itemList.Count)
+                    {
+                        continue;
+                    }
+
                     int graphicId = _itemList[selectedIndex];
                     if (Art.IsValidStatic(graphicId))
                     {
@@ -620,13 +757,20 @@ namespace UoFiddler.Controls.UserControls
                         ControlEvents.FireItemChangeEvent(this, graphicId);
                     }
 
-                    // Remove from list
-                    _itemList.RemoveAt(selectedIndex);
+                    // in "show free slots" mode the slot stays visible (now empty)
+                    if (!_showFreeSlots)
+                    {
+                        _itemList.RemoveAt(selectedIndex);
+                    }
                 }
 
-                // Update UI
+                // Update UI: keep the position instead of jumping to the very first item
                 ItemsTileView.VirtualListSize = _itemList.Count;
-                SelectedGraphicId = _itemList.Count > 0 ? _itemList[0] : 0; // No selection if list empty
+                if (_itemList.Count > 0)
+                {
+                    SelectedGraphicId = _itemList[Math.Clamp(firstIndex - 1, 0, _itemList.Count - 1)];
+                }
+
                 ItemsTileView.Invalidate();
             }
             else
@@ -648,10 +792,14 @@ namespace UoFiddler.Controls.UserControls
 
                 if (!_showFreeSlots)
                 {
+                    // select the previous entry of the list (the old code selected id-1, which is often not in the list)
+                    int listIndex = _itemList.IndexOf(_selectedGraphicId);
                     _itemList.Remove(_selectedGraphicId);
                     ItemsTileView.VirtualListSize = _itemList.Count;
-                    var moveToIndex = --_selectedGraphicId;
-                    SelectedGraphicId = moveToIndex <= 0 ? 0 : _selectedGraphicId; // TODO: last visible index instead of just curr -1
+                    if (_itemList.Count > 0)
+                    {
+                        SelectedGraphicId = _itemList[Math.Clamp(listIndex - 1, 0, _itemList.Count - 1)];
+                    }
                 }
                 ItemsTileView.Invalidate();
             }
@@ -663,7 +811,7 @@ namespace UoFiddler.Controls.UserControls
         #region [ OnTextChangedInsert ]
         private void OnTextChangedInsert(object sender, EventArgs e)
         {
-            if (Utils.ConvertStringToInt(InsertText.Text, out int index, 0, Art.GetMaxItemId()))
+            if (Utils.ConvertStringToInt(InsertText.Text, out int index, 0, Art.GetMaxExtendedItemId()) && Art.IsLegalStaticId(index))
             {
                 InsertText.ForeColor = Art.IsValidStatic(index) ? Color.Red : Color.Black;
             }
@@ -682,7 +830,7 @@ namespace UoFiddler.Controls.UserControls
                 return;
             }
 
-            if (!Utils.ConvertStringToInt(InsertText.Text, out int index, 0, Art.GetMaxItemId()))
+            if (!Utils.ConvertStringToInt(InsertText.Text, out int index, 0, Art.GetMaxExtendedItemId()) || !Art.IsLegalStaticId(index))
             {
                 return;
             }
@@ -729,7 +877,7 @@ namespace UoFiddler.Controls.UserControls
                 return;
             }
 
-            NameLabel.Text = !Art.IsValidStatic(graphic) ? "Name: FREE" : $"Name: {TileData.ItemTable[graphic].Name}";
+            NameLabel.Text = !Art.IsValidStatic(graphic) ? "Name: FREE" : $"Name: {GetItemName(graphic)}";
             GraphicLabel.Text = $"Graphic Hex: 0x{graphic:X4} ";
             toolStripStatusLabelGraficDecimal.Text = $"Graphic Decimal: {graphic}";
         }
@@ -766,37 +914,44 @@ namespace UoFiddler.Controls.UserControls
                 return;
             }
 
+            // Runs on the UI thread on purpose: Art.Save reads the same cached GDI bitmaps the tile view draws,
+            // and the progress dialog listens to Files.FileSaveEvent - both must not be touched from a worker
+            // thread (the former Task.Run version caused cross-thread exceptions and "object in use" errors).
             Cursor.Current = Cursors.WaitCursor;
-
-            int totalItems = Art.GetIdxLength();
-            var progressBarDialog = new ProgressBarDialog(totalItems, "Saving Art...");
-            bool isCancelled = false;
-
-            progressBarDialog.CancelClicked += () => isCancelled = true;
-
-            progressBarDialog.Show();
-
-            Task.Run(() =>
+            int totalItems = Art.GetIdxLength() + Art.ExtendedCount;
+            try
             {
-                try
+                using (new ProgressBarDialog(totalItems, "Saving Art..."))
                 {
-                    Art.Save(Options.OutputPath); // Original speichern
+                    Art.Save(Options.OutputPath);
+                }
 
-                    if (!isCancelled)
+                Options.ChangedUltimaClass["Art"] = false;
+                string ext = string.Empty;
+                bool ok = true;
+                if (Art.HasExtension)
+                {
+                    // read the written files back from disk and compare with memory
+                    ok = ExtendedCheck.VerifySaved(Options.OutputPath, out string check);
+                    ext = $"\n+ {ExtendedFormat.ArtIndexFileName} / {ExtendedFormat.ArtDataFileName} ({Art.ExtendedCount:N0} extended slots)\n\n{check}";
+
+                    string loadedDir = Art.ExtendedDataPath != null ? Path.GetDirectoryName(Path.GetFullPath(Art.ExtendedDataPath)) : null;
+                    if (loadedDir != null && !string.Equals(loadedDir.TrimEnd('\\'), Path.GetFullPath(Options.OutputPath).TrimEnd('\\'), StringComparison.OrdinalIgnoreCase))
                     {
-                        progressBarDialog.Invoke((Action)progressBarDialog.Close);
-                        Options.ChangedUltimaClass["Art"] = false; // Änderungen als gespeichert markieren
+                        ext += $"\n\nNote: the extension is loaded from\n{loadedDir}\nAfter a restart UOFiddler shows the files from there - copy the saved files or use 'Load extension from folder'.";
                     }
                 }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"Error: {ex.Message}", "Save Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
-                finally
-                {
-                    Cursor.Current = Cursors.Default;
-                }
-            });
+
+                MessageBox.Show($"Saved to {Options.OutputPath}{ext}", "Save", MessageBoxButtons.OK, ok ? MessageBoxIcon.Information : MessageBoxIcon.Warning);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error: {ex.Message}", "Save Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            finally
+            {
+                Cursor.Current = Cursors.Default;
+            }
         }
         #endregion
 
@@ -805,50 +960,144 @@ namespace UoFiddler.Controls.UserControls
 
         private void OnClickShowFreeSlots(object sender, EventArgs e)
         {
-            // Toggle the value of the _showFreeSlots variable
-            _showFreeSlots = !_showFreeSlots;
-            // If _showFreeSlots is true
-            if (_showFreeSlots)
+            // toggle: all slots (used + free) <-> only used items
+            ShowSlots(!_showFreeSlots || _showOnlyFree, false);
+        }
+
+        private bool _showOnlyFree;
+        private ToolStripMenuItem _onlyFreeMenuItem;
+        private ToolStripComboBox _viewBox;
+        private bool _syncingView;
+
+        /// <summary>Keeps the toolbar view box in line with the current view without re-triggering it.</summary>
+        private void SyncViewBox()
+        {
+            if (_viewBox == null)
             {
-                // Loop through all possible item IDs up to the maximum item ID
-                for (int j = 0; j <= Art.GetMaxItemId(); ++j)
+                return;
+            }
+
+            _syncingView = true;
+            _viewBox.SelectedIndex = !_showFreeSlots ? 0 : _showOnlyFree ? 2 : 1;
+            _syncingView = false;
+        }
+
+        /// <summary>
+        /// showSlots=false: normal view (only used items). showSlots=true: every id from 0 to the highest id
+        /// (incl. the extended range 0x10000+); with onlyFree only the free ids are listed. In both slot views
+        /// a selected free slot can be filled with Replace, Ctrl+V or the Directions window.
+        /// </summary>
+        private void ShowSlots(bool showSlots, bool onlyFree)
+        {
+            if (!showSlots)
+            {
+                _showFreeSlots = false;
+                _showOnlyFree = false;
+                Reload(); // resets the menu checks too
+                return;
+            }
+
+            Cursor.Current = Cursors.WaitCursor;
+            _showFreeSlots = true; // "slot mode": inserting/removing never changes the list
+            _showOnlyFree = onlyFree;
+            showFreeSlotsToolStripMenuItem.Checked = !onlyFree;
+            if (_onlyFreeMenuItem != null)
+            {
+                _onlyFreeMenuItem.Checked = onlyFree;
+            }
+
+            var prevSelected = SelectedGraphicId;
+
+            // built in one go (the old insert-loop was O(n^2) and unusable for the 1M+ extended range)
+            int max = Art.GetMaxExtendedItemId();
+            _itemList = new List<int>(onlyFree ? 0x10000 : max + 1);
+            int used = 0, free = 0;
+            for (int j = 0; j <= max; ++j)
+            {
+                if (!Art.IsLegalStaticId(j))
                 {
-                    // Check if the item is already in the _itemList
-                    if (_itemList.Count > j)
-                    {
-                        // If the item is not in the _itemList, insert it at the current position
-                        if (_itemList[j] != j)
-                        {
-                            _itemList.Insert(j, j);
-                        }
-                    }
-                    else
-                    {
-                        // If the item is not in the _itemList, insert it at the current position
-                        _itemList.Insert(j, j);
-                    }
+                    continue; // gap between art.mul and the extension (would write to item 0)
                 }
 
-                // Store the previously selected item ID
-                var prevSelected = SelectedGraphicId;
-
-                // Update the VirtualListSize property of the ItemsTileView control to reflect the new number of items
-                ItemsTileView.VirtualListSize = _itemList.Count;
-
-                // If there was a previously selected item, try to reselect it
-                if (prevSelected >= 0)
+                bool isUsed = Art.IsValidStatic(j);
+                if (isUsed)
                 {
-                    SelectedGraphicId = prevSelected;
+                    ++used;
+                }
+                else
+                {
+                    ++free;
                 }
 
-                // Force the ItemsTileView control to redraw
-                ItemsTileView.Invalidate();
+                if (!onlyFree || !isUsed)
+                {
+                    _itemList.Add(j);
+                }
             }
-            else
+
+            ItemsTileView.VirtualListSize = _itemList.Count;
+            if (prevSelected >= 0 && _itemList.Count > 0)
             {
-                // If _showFreeSlots is false, call the Reload method
-                Reload();
+                int pos = _itemList.BinarySearch(prevSelected);
+                SelectedGraphicId = _itemList[Math.Min(pos < 0 ? ~pos : pos, _itemList.Count - 1)];
             }
+
+            ItemsTileView.Invalidate();
+            Cursor.Current = Cursors.Default;
+
+            toolStripStatusLabelItemHowMuch.Text = onlyFree
+                ? $"Free slots: {free:N0} (0x0000 - 0x{max:X})"
+                : $"Items: {used:N0}  free: {free:N0}  (0x0000 - 0x{max:X})";
+            SyncViewBox();
+        }
+
+        /// <summary>Selects any id in the Items tab; switches to the slot view if the id is not in the current list.</summary>
+        private void GoToId(int id)
+        {
+            if (!IsLoaded)
+            {
+                OnLoad(this, EventArgs.Empty);
+            }
+
+            if (!SearchGraphic(id))
+            {
+                ShowSlots(true, false);
+                SearchGraphic(id);
+            }
+
+            FindForm()?.Activate();
+        }
+
+        /// <summary>Jumps to the first id of the extended range (switches to the slot view if it is empty).</summary>
+        private void GoToExtendedRange()
+        {
+            if (!Art.HasExtension)
+            {
+                MessageBox.Show(
+                    "No extended range is loaded." + Environment.NewLine + Environment.NewLine +
+                    $"The files {ExtendedFormat.ArtIndexFileName}, {ExtendedFormat.ArtDataFileName} and {ExtendedFormat.TileDataFileName} " +
+                    $"are searched in the Ultima Online folder:{Environment.NewLine}{Files.RootDir}" + Environment.NewLine + Environment.NewLine +
+                    "Copy them there (they are saved into the output folder), or open Misc -> Extended Art Format " +
+                    "and use 'Load extension from folder...' (or create a new one there).",
+                    "Extended range", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            int target = ExtendedFormat.BaseId;
+            int pos = _itemList.BinarySearch(target);
+            if (pos < 0 && ~pos >= _itemList.Count)
+            {
+                ShowSlots(true, _showOnlyFree);
+                pos = _itemList.BinarySearch(target);
+            }
+
+            if (_itemList.Count == 0)
+            {
+                return;
+            }
+
+            ItemsTileView.FocusIndex = -1;
+            SelectedGraphicId = _itemList[Math.Min(pos < 0 ? ~pos : pos, _itemList.Count - 1)];
         }
         #endregion
 
@@ -983,7 +1232,8 @@ namespace UoFiddler.Controls.UserControls
         #region [ OnClickSelectRadarCol ]
         private void OnClickSelectRadarCol(object sender, EventArgs e)
         {
-            if (_selectedGraphicId >= 0)
+            // radarcol.mul only has entries for the legacy id range
+            if (_selectedGraphicId >= 0 && _selectedGraphicId < ExtendedFormat.BaseId)
             {
                 RadarColorControl.Select(_selectedGraphicId, false);
             }
@@ -1167,6 +1417,15 @@ namespace UoFiddler.Controls.UserControls
                 rect.Height -= 10;
 
                 e.Graphics.FillRectangle(Brushes.Red, rect);
+
+                // in the slot views write the id into the free slot, so gaps can be found at a glance
+                if (_showFreeSlots && rect.Width >= 30)
+                {
+                    using var font = new Font(FontFamily.GenericSansSerif, rect.Width >= 60 ? 8f : 6.5f);
+                    using var format = new StringFormat { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Center };
+                    e.Graphics.DrawString($"{_itemList[e.Index]:X}", font, Brushes.White, rect, format);
+                }
+
                 e.Graphics.Clip = previousClip;
             }
             else
@@ -1243,7 +1502,7 @@ namespace UoFiddler.Controls.UserControls
                 return;
             }
 
-            SelectedGraphicId = itemIndex < 0 || itemIndex > _itemList.Count
+            SelectedGraphicId = itemIndex < 0 || itemIndex >= _itemList.Count
                 ? _itemList[0]
                 : _itemList[itemIndex];
         }
@@ -1324,6 +1583,11 @@ namespace UoFiddler.Controls.UserControls
 
         private static void SelectInGumpsTab(int graphicId, bool female = false)
         {
+            if (!HasTileData(graphicId))
+            {
+                return;
+            }
+
             int gumpOffset = female ? _femaleGumpOffset : _maleGumpOffset;
             var itemData = TileData.ItemTable[graphicId];
 
@@ -1358,7 +1622,7 @@ namespace UoFiddler.Controls.UserControls
         #region [ TileViewContextMenuStrip ]
         private void TileViewContextMenuStrip_Opening(object sender, CancelEventArgs e)
         {
-            if (SelectedGraphicId <= 0)
+            if (SelectedGraphicId <= 0 || !HasTileData(SelectedGraphicId))
             {
                 selectInGumpsTabMaleToolStripMenuItem.Enabled = false;
                 selectInGumpsTabFemaleToolStripMenuItem.Enabled = false;
@@ -1392,7 +1656,7 @@ namespace UoFiddler.Controls.UserControls
                 return;
             }
 
-            if (!Utils.ConvertStringToInt(ReplaceStartingFromText.Text, out int index, 0, Art.GetMaxItemId()))
+            if (!Utils.ConvertStringToInt(ReplaceStartingFromText.Text, out int index, 0, Art.GetMaxExtendedItemId()))
             {
                 return;
             }
@@ -1465,26 +1729,8 @@ namespace UoFiddler.Controls.UserControls
                 }
                 else
                 {
-                    bool done = false;
-
-                    for (int i = 0; i < _itemList.Count; ++i)
-                    {
-                        if (index > _itemList[i])
-                        {
-                            continue;
-                        }
-
-                        _itemList[i] = index;
-
-                        done = true;
-
-                        break;
-                    }
-
-                    if (!done)
-                    {
-                        _itemList.Add(index);
-                    }
+                    // insert sorted (the old code overwrote the next list entry, which hid that item)
+                    InsertIntoItemList(index);
 
                     ItemsTileView.VirtualListSize = _itemList.Count;
                     ItemsTileView.Invalidate();
@@ -1506,7 +1752,7 @@ namespace UoFiddler.Controls.UserControls
         /// 
         private static bool IsIndexValid(int index)
         {
-            return index >= 0 && index <= Art.GetMaxItemId();
+            return Art.IsLegalStaticId(index);
         }
         #endregion
 
@@ -1523,10 +1769,14 @@ namespace UoFiddler.Controls.UserControls
             foreach (int selectedIndex in ItemsTileView.SelectedIndices)
             {
                 // Get the graphic for the selected item
-                Bitmap bitmap = Art.GetStatic(_itemList[selectedIndex]);
+                int graphicId = _itemList[selectedIndex];
+                Bitmap source = Art.GetStatic(graphicId);
                 // Check if the graphic exists
-                if (bitmap != null)
+                if (source != null)
                 {
+                    // work on a copy - the old code changed the cached art image itself
+                    using var bitmap = new Bitmap(source);
+
                     // Change the color #D3D3D3 to #FFFFFF
                     for (int x = 0; x < bitmap.Width; x++)
                     {
@@ -1549,12 +1799,11 @@ namespace UoFiddler.Controls.UserControls
 
                     // Copy the graphic to the clipboard
                     Clipboard.SetImage(bmp16bit);
-                    MessageBox.Show($"The image {selectedIndex} has been copied to the clipboard!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    MessageBox.Show($"The image 0x{graphicId:X4} has been copied to the clipboard!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
                 else
                 {
-                    // Show a MessageBox to inform the user that the image was successfully copied
-                    MessageBox.Show($"No image to copy for index {selectedIndex}!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show($"No image to copy for 0x{graphicId:X4}!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
         }
@@ -1577,7 +1826,7 @@ namespace UoFiddler.Controls.UserControls
                 {   // Get the selected index from the ItemsTileView
                     int index = SelectedGraphicId;
 
-                    if (index >= 0 && index < Art.GetMaxItemId())
+                    if (index >= 0 && index <= Art.GetMaxExtendedItemId())
                     {   // Create a new bitmap with the same size as the image from the clipboard
                         Bitmap newBmp = new Bitmap(bmp.Width, bmp.Height);
                         // Set the resolution of the new bitmap to 96 DPI
@@ -1632,11 +1881,7 @@ namespace UoFiddler.Controls.UserControls
 
                             ControlEvents.FireItemChangeEvent(this, index);
 
-                            if (!_itemList.Contains(index))
-                            {
-                                _itemList.Add(index);
-                                _itemList.Sort();
-                            }
+                            InsertIntoItemList(index);
                             ItemsTileView.VirtualListSize = _itemList.Count;
                             ItemsTileView.Invalidate();
                             SelectedGraphicId = index;
@@ -1669,16 +1914,20 @@ namespace UoFiddler.Controls.UserControls
             foreach (int selectedIndex in ItemsTileView.SelectedIndices)
             {
                 // Getting the image for the selected item.
-                Bitmap bitmap = Art.GetStatic(_itemList[selectedIndex]);
+                int graphicId = _itemList[selectedIndex];
+                Bitmap source = Art.GetStatic(graphicId);
 
                 // Checking if the image is available.
-                if (bitmap != null)
+                if (source != null)
                 {
-                    // Mirroring the image horizontally.
+                    // Mirroring a copy horizontally.
+                    var bitmap = new Bitmap(source);
                     bitmap.RotateFlip(RotateFlipType.RotateNoneFlipX);
 
                     // Replacing the original image with the mirrored image.
-                    Art.ReplaceStatic(_itemList[selectedIndex], bitmap);
+                    Art.ReplaceStatic(graphicId, bitmap);
+                    ControlEvents.FireItemChangeEvent(this, graphicId);
+                    Options.ChangedUltimaClass["Art"] = true;
                 }
             }
 
@@ -1698,7 +1947,7 @@ namespace UoFiddler.Controls.UserControls
                 return;
             }
 
-            var maximumIndex = Art.GetMaxItemId();
+            var maximumIndex = Art.GetMaxExtendedItemId();
 
             if (indexValue < 0)
             {
@@ -1750,18 +1999,20 @@ namespace UoFiddler.Controls.UserControls
                 return;
             }
 
-            // Get the Selected Indices
-            int index1 = ItemsTileView.SelectedIndices[0];
-            int index2 = ItemsTileView.SelectedIndices[1];
+            int id1 = _itemList[ItemsTileView.SelectedIndices[0]];
+            int id2 = _itemList[ItemsTileView.SelectedIndices[1]];
 
-            // Save the graphics temporarily
-            Bitmap ArtTempImage1 = Art.GetStatic(_itemList[index1]);
-            Bitmap ArtTempImage2 = Art.GetStatic(_itemList[index2]);
+            // copies, so both slots never share (and later dispose/modify) one bitmap
+            Bitmap source1 = Art.GetStatic(id1);
+            Bitmap source2 = Art.GetStatic(id2);
+            Bitmap image1 = source1 == null ? null : new Bitmap(source1);
+            Bitmap image2 = source2 == null ? null : new Bitmap(source2);
 
-            // Swap the graphics
-            ReplaceStaticSwap(_itemList[index1], ArtTempImage1, _itemList[index2], ArtTempImage2);
+            // the old code did ReplaceStatic(id, null) for an empty slot, which made the original file
+            // image re-appear, and it changed _selectedGraphicId behind the selection
+            SwapSet(id1, image2);
+            SwapSet(id2, image1);
 
-            // Update the view and labels
             ItemsTileView.Invalidate();
             UpdateToolStripLabels(_selectedGraphicId);
             UpdateDetail(_selectedGraphicId);
@@ -1769,22 +2020,18 @@ namespace UoFiddler.Controls.UserControls
             Options.ChangedUltimaClass["Art"] = true;
         }
 
-        private void ReplaceStaticSwap(int index1, Bitmap newGraphic1, int index2, Bitmap newGraphic2)
+        private void SwapSet(int id, Bitmap bitmap)
         {
-            // Replace the graph at 'index1' with 'newGraphic2'
-            _selectedGraphicId = index1;
-            OnClickReplace(newGraphic2);
+            if (bitmap == null)
+            {
+                Art.RemoveStatic(id);
+            }
+            else
+            {
+                Art.ReplaceStatic(id, bitmap);
+            }
 
-            // Replace the graphic at 'index2' with 'newGraphic1'
-            _selectedGraphicId = index2;
-            OnClickReplace(newGraphic1);
-
-        }
-
-        private void OnClickReplace(Bitmap bitmap)
-        {
-            Art.ReplaceStatic(_selectedGraphicId, bitmap);
-            ControlEvents.FireItemChangeEvent(this, _selectedGraphicId);
+            ControlEvents.FireItemChangeEvent(this, id);
         }
         #endregion
 
@@ -1814,7 +2061,7 @@ namespace UoFiddler.Controls.UserControls
                 var item = _itemList[i];
 
                 // Check whether the name of the item contains the name you are looking for (partial match)
-                if (TileData.ItemTable[item].Name.Contains(name, StringComparison.OrdinalIgnoreCase))
+                if (GetItemName(item).Contains(name, StringComparison.OrdinalIgnoreCase))
                 {
                     // If yes, set SelectedGraphicId to the index of the found item and terminate the loop
                     SelectedGraphicId = item;
@@ -1846,37 +2093,11 @@ namespace UoFiddler.Controls.UserControls
         private void ParticleGraylToolStripMenuItem_Click(object sender, EventArgs e)
         {
 
-            // Überprüfen, ob ein Bild vorhanden ist
+            // ÃœberprÃ¼fen, ob ein Bild vorhanden ist
             if (DetailPictureBox.Image != null)
             {
                 // Get the selected image from DetailPictureBox
                 Bitmap bmp = new Bitmap(DetailPictureBox.Image);
-
-                // List of colors to change
-                List<string> colorsToChange = new List<string>
-                {
-                    // Add any other colors here...
-                    "030303", "040404", "050505", "060606", "070707", "080808", "090909", "0A0A0A", "0B0B0B", "0C0C0C", "0D0D0D", "0E0E0E", "0F0F0F",
-                    "101010", "111111", "121212", "131313", "141414", "151515", "161616", "171717", "181818", "191919", "1A1A1A", "1B1B1B", "1C1C1C",
-                    "1D1D1D", "1E1E1E", "1F1F1F", "202020", "212121", "222222", "232323", "242424", "252525", "262626", "272727", "282828", "292929",
-                    "2A2A2A", "2B2B2B", "2C2C2C", "2D2D2D", "2E2E2E", "2F2F2F", "303030", "313131", "323232", "333333", "343434", "353535", "363636",
-                    "373737", "383838", "393939", "3A3A3A", "3B3B3B", "3C3C3C", "3D3D3D", "3E3E3E", "3F3F3F", "404040", "414141", "424242", "434343",
-                    "444444", "454545", "464646", "474747", "484848", "494949", "4A4A4A", "4B4B4B", "4C4C4C", "4D4D4D", "4E4E4E", "4F4F4F", "505050",
-                    "515151", "525252", "535353", "545454", "555555", "565656", "575757", "585858", "595959", "5A5A5A", "5B5B5B", "5C5C5C", "5D5D5D",
-                    "5E5E5E", "5F5F5F", "606060", "616161", "626262", "636363", "646464", "656565", "666666", "676767", "686868", "696969", "6A6A6A",
-                    "6B6B6B", "6C6C6C", "6D6D6D", "6E6E6E", "6F6F6F", "707070", "717171", "727272", "737373", "747474", "757575", "767676", "777777",
-                    "787878", "797979", "7A7A7A", "7B7B7B", "7C7C7C", "7D7D7D", "7E7E7E", "7F7F7F", "808080", "818181", "828282", "838383", "848484",
-                    "858585", "868686", "878787", "888888", "898989", "8A8A8A", "8B8B8B", "8C8C8C", "8D8D8D", "8E8E8E", "8F8F8F", "909090", "919191",
-                    "929292", "939393", "949494", "959595", "969696", "979797", "989898", "999999", "9A9A9A", "9B9B9B", "9C9C9C", "9D9D9D", "9E9E9E",
-                    "9F9F9F", "A0A0A0", "A1A1A1", "A2A2A2", "A3A3A3", "A4A4A4", "A5A5A5", "A6A6A6", "A7A7A7", "A8A8A8", "A9A9A9", "AAAAAA", "ABABAB",
-                    "ACACAC", "ADADAD", "AEAEAE", "AFAFAF", "B0B0B0", "B1B1B1", "B2B2B2", "B3B3B3", "B4B4B4", "B5B5B5", "B6B6B6", "B7B7B7", "B8B8B8",
-                    "B9B9B9", "BABABA", "BBBBBB", "BCBCBC", "BDBDBD", "BEBEBE", "BFBFBF", "C0C0C0", "C1C1C1", "C2C2C2", "C3C3C3", "C4C4C4", "C5C5C5",
-                    "C6C6C6", "C7C7C7", "C8C8C8", "C9C9C9", "CACACA", "CBCBCB", "CCCCCC", "CDCDCD", "CECECE", "CFCFCF", "D0D0D0", "D1D1D1", "D2D2D2",
-                    "D3D3D3", "D4D4D4", "D5D5D5", "D6D6D6", "D7D7D7", "D8D8D8", "D9D9D9", "DADADA", "DBDBDB", "DCDCDC", "DDDDDD", "DEDEDE", "DFDFDF",
-                    "E0E0E0", "E1E1E1", "E2E2E2", "E3E3E3", "E4E4E4", "E5E5E5", "E6E6E6", "E7E7E7", "E8E8E8", "E9E9E9", "EAEAEA", "EBEBEB", "ECECEC",
-                    "EDEDED", "EEEEEE", "EFEFEF", "F0F0F0", "F1F1F1", "F2F2F2", "F3F3F3", "F4F4F4", "F5F5F5", "F6F6F6", "F7F7F7", "F8F8F8", "F9F9F9",
-                    "FAFAFA", "FBFBFB"
-                };
 
                 // New color
                 // Color newColor = Color.Blue;
@@ -1892,9 +2113,8 @@ namespace UoFiddler.Controls.UserControls
                         // Get the pixel color at coordinate
                         Color oldColor = bmp.GetPixel(x, y);
 
-                        // Check if its one of the colors to change
-                        string colorHex = oldColor.R.ToString("X2") + oldColor.G.ToString("X2") + oldColor.B.ToString("X2");
-                        if (colorsToChange.Contains(colorHex))
+                        // pure greys #030303..#FBFBFB are changed (same set as the former 249-entry string list)
+                        if (oldColor.R == oldColor.G && oldColor.G == oldColor.B && oldColor.R >= 0x03 && oldColor.R <= 0xFB)
                         {
                             // Get the brightness of the original color (0-1)
                             float brightness = oldColor.GetBrightness();
@@ -2048,8 +2268,18 @@ namespace UoFiddler.Controls.UserControls
         #region [ ShowImageWithBackground ]
         private void ShowImageWithBackground(int imageIndex)
         {
+            if (imageIndex < 0 || imageIndex >= _itemList.Count)
+            {
+                return;
+            }
+
             // Load the image you want to display
             Image foregroundImage = Art.GetStatic(_itemList[imageIndex]);
+            if (foregroundImage == null)
+            {
+                MessageBox.Show("The selected slot has no image.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
 
             // Download the wallpaper from resources
             Image backgroundImage = Properties.Resources.rasterpink_png;
@@ -2194,7 +2424,10 @@ namespace UoFiddler.Controls.UserControls
             colorGrid.Rows.Clear();
 
             // Get the selected image
-            Bitmap selectedImage = (Bitmap)DetailPictureBox.Image;
+            if (DetailPictureBox.Image is not Bitmap selectedImage)
+            {
+                return;
+            }
 
             // Create a HashSet to store unique colors
             HashSet<string> uniqueColors = new HashSet<string>();
@@ -2457,7 +2690,7 @@ namespace UoFiddler.Controls.UserControls
                 return;
             }
 
-            // Pfad zum temporären Verzeichnis abrufen
+            // Pfad zum temporÃ¤ren Verzeichnis abrufen
             string programDirectory = Application.StartupPath;
             string tempDirectory = Path.Combine(programDirectory, "tempGrafic");
 
@@ -2474,7 +2707,6 @@ namespace UoFiddler.Controls.UserControls
             foreach (int selectedIndex in ItemsTileView.SelectedIndices)
             {
                 int graphicId = _itemList[selectedIndex];
-                ItemData itemData = TileData.ItemTable[graphicId];
 
                 // Get graphics and details
                 Bitmap bitmap = Art.GetStatic(graphicId);
@@ -2485,8 +2717,13 @@ namespace UoFiddler.Controls.UserControls
                 }
 
                 string hexAddress = $"0x{graphicId:X}";
-                string imageName = itemData.Name;
-                string fileName = $"{hexAddress}_{imageName}.bmp";
+                string imageName = GetItemName(graphicId).Trim();
+                foreach (char c in Path.GetInvalidFileNameChars())
+                {
+                    imageName = imageName.Replace(c, '_');
+                }
+
+                string fileName = string.IsNullOrEmpty(imageName) ? $"{hexAddress}.bmp" : $"{hexAddress}_{imageName}.bmp";
 
                 // Save graphic
                 string filePath = Path.Combine(tempDirectory, fileName);
@@ -2502,10 +2739,6 @@ namespace UoFiddler.Controls.UserControls
                 {
                     player.Play();
                 }
-            }
-            else
-            {
-                MessageBox.Show("Sound file not found.");
             }
 
             // Show MessageBox with the storage locations
@@ -2621,6 +2854,7 @@ namespace UoFiddler.Controls.UserControls
             // Free zoomedImage when form closes
             colorForm.FormClosed += (s, ev) =>
             {
+                pictureBox.Image = null; // detach before disposing
                 zoomedImage.Dispose();
                 imageCopy.Dispose();
             };
@@ -2802,9 +3036,13 @@ namespace UoFiddler.Controls.UserControls
         {
             ToggleRhombusDrawing();
 
-            SoundPlayer player = new SoundPlayer();
-            player.SoundLocation = "sound.wav";
-            player.Play();
+            // optional click sound - the old code threw FileNotFoundException when sound.wav was missing
+            string soundPath = Path.Combine(Application.StartupPath, "sound.wav");
+            if (File.Exists(soundPath))
+            {
+                using var player = new SoundPlayer(soundPath);
+                player.Play();
+            }
         }
         #endregion
 
@@ -2909,38 +3147,54 @@ namespace UoFiddler.Controls.UserControls
                 imageForm.Controls.Add(imagePictureBox);
                 imageForm.Show(); // Show the form as a non-modal window
 
-                // Add a selection change event to dynamically update the image when selection changes
-                ItemsTileView.ItemSelectionChanged += (s, ev) =>
+                // subscribe only once (the old code added one more handler for every newly opened window)
+                if (!_enlargedViewHooked)
                 {
-                    // Only update if a new item is selected and form is open
-                    if (ev.IsSelected && imageForm != null && !imageForm.IsDisposed)
+                    _enlargedViewHooked = true;
+                    ItemsTileView.ItemSelectionChanged += (s, ev) =>
                     {
-                        UpdateImageInForm();
-                    }
-                };
-            }
-
-            // Method to update the image in the PictureBox
-            void UpdateImageInForm()
-            {
-                int selectedIndex = ItemsTileView.SelectedIndices[0];
-                var bitmap = Art.GetStatic(_itemList[selectedIndex]);
-
-                if (bitmap != null)
-                {
-                    // Reset zoom factor on new image load
-                    zoomFactor = 1.0f;
-                    imagePictureBox.Image = bitmap;
-                    AdjustZoom();
-                }
-                else
-                {
-                    MessageBox.Show("The selected image could not be loaded.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        // Only update if a new item is selected and form is open
+                        if (ev.IsSelected && imageForm != null && !imageForm.IsDisposed)
+                        {
+                            UpdateImageInForm(false);
+                        }
+                    };
                 }
             }
 
             // Initial image load
-            UpdateImageInForm();
+            UpdateImageInForm(true);
+        }
+
+        private bool _enlargedViewHooked;
+
+        // Method to update the image in the PictureBox
+        private void UpdateImageInForm(bool showError)
+        {
+            if (ItemsTileView.SelectedIndices.Count == 0 || imagePictureBox == null)
+            {
+                return;
+            }
+
+            int selectedIndex = ItemsTileView.SelectedIndices[0];
+            if (selectedIndex < 0 || selectedIndex >= _itemList.Count)
+            {
+                return;
+            }
+
+            var bitmap = Art.GetStatic(_itemList[selectedIndex]);
+
+            if (bitmap != null)
+            {
+                // Reset zoom factor on new image load
+                zoomFactor = 1.0f;
+                imagePictureBox.Image = bitmap;
+                AdjustZoom();
+            }
+            else if (showError)
+            {
+                MessageBox.Show("The selected image could not be loaded.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
         #endregion
 
@@ -3023,12 +3277,12 @@ namespace UoFiddler.Controls.UserControls
             {
                 artworkGalleryInstance = new ArtworkGallery();
                 artworkGalleryInstance.Show();
-                artworkGalleryInstance.InitializeGallery(_selectedGraphicId); // NEU HINZUFÜGEN
+                artworkGalleryInstance.InitializeGallery(_selectedGraphicId); // NEU HINZUFÃœGEN
             }
             else
             {
                 artworkGalleryInstance.Focus();
-                artworkGalleryInstance.InitializeGallery(_selectedGraphicId); // NEU HINZUFÜGEN
+                artworkGalleryInstance.InitializeGallery(_selectedGraphicId); // NEU HINZUFÃœGEN
             }
         }
         #endregion
