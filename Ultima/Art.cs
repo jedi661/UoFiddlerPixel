@@ -163,6 +163,12 @@ namespace Ultima
             }
         }
 
+        /// <summary>Releases the open artext.mul (e.g. before the file is replaced by a copy).</summary>
+        public static void CloseExtensionFiles()
+        {
+            CloseExtensionStream();
+        }
+
         private static void CloseExtensionStream()
         {
             _extStream?.Dispose();

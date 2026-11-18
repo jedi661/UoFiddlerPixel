@@ -74,7 +74,7 @@ namespace UoFiddler.Controls.Forms
             row.Controls.Add(save);
 
             var check = new Button { Text = "Check what is saved...", AutoSize = true };
-            check.Click += (s, e) => new ExtendedCheckForm(_goTo).Show(this);
+            check.Click += (s, e) => new ExtendedCheckForm(_goTo, () => { _reloadItems?.Invoke(); UpdateStatus(); }).Show(this);
             row.Controls.Add(check);
 
             var load = new Button { Text = "Load extension from folder...", AutoSize = true };

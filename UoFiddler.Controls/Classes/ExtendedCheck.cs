@@ -176,6 +176,86 @@ namespace UoFiddler.Controls.Classes
             return sb.ToString();
         }
 
+        public static readonly string[] FileNames =
+        {
+            ExtendedFormat.ArtIndexFileName, ExtendedFormat.ArtDataFileName, ExtendedFormat.TileDataFileName
+        };
+
+        /// <summary>Points the extended paths to <paramref name="folder"/> and loads the extension from there.</summary>
+        /// <returns>The file names that were found in the folder.</returns>
+        public static List<string> LoadFrom(string folder)
+        {
+            var found = new List<string>();
+            foreach (string name in FileNames)
+            {
+                string path = Path.Combine(folder, name);
+                if (File.Exists(path))
+                {
+                    Files.SetMulPath(path, name);
+                    found.Add(name);
+                }
+            }
+
+            if (found.Count > 0)
+            {
+                Art.ReloadExtension();
+                TileData.ReloadExtension();
+            }
+
+            return found;
+        }
+
+        /// <summary>
+        /// Copies the extended files from <paramref name="sourceFolder"/> (the output folder) into the Ultima Online
+        /// folder - after a dated backup of the files there - and loads them from the Ultima Online folder.
+        /// Only the three extended files are copied, art.mul / tiledata.mul are not touched.
+        /// </summary>
+        public static string CopyToClientFolder(string sourceFolder, out List<string> copied)
+        {
+            copied = new List<string>();
+            string target = Files.RootDir;
+            if (string.IsNullOrEmpty(target) || !Directory.Exists(target))
+            {
+                throw new InvalidOperationException("The Ultima Online folder is not set.");
+            }
+
+            if (string.Equals(Path.GetFullPath(sourceFolder).TrimEnd('\\', '/'), Path.GetFullPath(target).TrimEnd('\\', '/'), StringComparison.OrdinalIgnoreCase))
+            {
+                throw new InvalidOperationException("The output folder is the Ultima Online folder - nothing to copy.");
+            }
+
+            // the backup must contain the files that are in the Ultima Online folder now (not the loaded ones)
+            foreach (string name in FileNames)
+            {
+                string existing = Path.Combine(target, name);
+                if (File.Exists(existing))
+                {
+                    Files.SetMulPath(existing, name);
+                }
+            }
+
+            string backup = UoFileBackup.CreateBackup(Options.OutputPath, out _);
+
+            Art.CloseExtensionFiles(); // artext.mul may be open for reading
+            foreach (string name in FileNames)
+            {
+                string source = Path.Combine(sourceFolder, name);
+                if (!File.Exists(source))
+                {
+                    continue;
+                }
+
+                string dest = Path.Combine(target, name);
+                File.Copy(source, dest, true);
+                Files.SetMulPath(dest, name);
+                copied.Add(name);
+            }
+
+            Art.ReloadExtension();
+            TileData.ReloadExtension();
+            return backup;
+        }
+
         /// <summary>Short check right after saving into <paramref name="folder"/>.</summary>
         /// <returns>true if every extended item in memory is on disk there.</returns>
         public static bool VerifySaved(string folder, out string text)

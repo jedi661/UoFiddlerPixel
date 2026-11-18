@@ -63,7 +63,7 @@ namespace UoFiddler.Controls.UserControls
             MiscToolStripDropDownButton.DropDownItems.Add(new ToolStripSeparator());
             MiscToolStripDropDownButton.DropDownItems.Add(extendedItem);
             var checkItem = new ToolStripMenuItem("Check extended files (what is saved)...");
-            checkItem.Click += (s, e) => new ExtendedCheckForm(GoToId).Show();
+            checkItem.Click += (s, e) => new ExtendedCheckForm(GoToId, Reload).Show();
             MiscToolStripDropDownButton.DropDownItems.Add(checkItem);
 
             var directionsButton = new ToolStripButton("Directions N/E/S/W")

@@ -23,12 +23,14 @@ namespace UoFiddler.Controls.Forms
     public sealed class ExtendedCheckForm : Form
     {
         private readonly Action<int> _goTo;
+        private readonly Action _reloadItems;
         private readonly TextBox _report;
         private readonly ListView _list;
 
-        public ExtendedCheckForm(Action<int> goTo)
+        public ExtendedCheckForm(Action<int> goTo, Action reloadItems = null)
         {
             _goTo = goTo;
+            _reloadItems = reloadItems;
 
             Text = "Extended format - check what is saved";
             ShowIcon = false;
@@ -77,8 +79,15 @@ namespace UoFiddler.Controls.Forms
                     Clipboard.SetText(_report.Text);
                 }
             };
+            var loadOutput = new Button { Text = "Load from output folder", AutoSize = true };
+            loadOutput.Click += (s, e) => LoadFromOutput();
+            var copyToUo = new Button { Text = "Copy output -> Ultima Online folder (with backup)", AutoSize = true };
+            copyToUo.Click += (s, e) => CopyOutputToClient();
+
             buttons.Controls.Add(refresh);
             buttons.Controls.Add(copy);
+            buttons.Controls.Add(loadOutput);
+            buttons.Controls.Add(copyToUo);
             buttons.Controls.Add(new Label
             {
                 AutoSize = true,
@@ -89,6 +98,75 @@ namespace UoFiddler.Controls.Forms
             Controls.Add(buttons);
 
             Shown += (s, e) => RunCheck();
+        }
+
+        private bool ConfirmDiscardUnsaved()
+        {
+            int unsaved = Ultima.Art.HasExtension ? Ultima.Art.GetUnsavedExtendedIds().Count : 0;
+            return unsaved == 0 || MessageBox.Show(this,
+                $"{unsaved} extended item(s) are not saved yet and will be discarded. Continue?",
+                "Extended files", MessageBoxButtons.YesNo, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2) == DialogResult.Yes;
+        }
+
+        private void LoadFromOutput()
+        {
+            if (!ConfirmDiscardUnsaved())
+            {
+                return;
+            }
+
+            List<string> found = ExtendedCheck.LoadFrom(Options.OutputPath);
+            if (found.Count == 0)
+            {
+                MessageBox.Show(this, $"No extended files in the output folder{Environment.NewLine}{Options.OutputPath}", "Load",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            _reloadItems?.Invoke();
+            RunCheck();
+            MessageBox.Show(this,
+                $"Loaded from the output folder:{Environment.NewLine}{Options.OutputPath}{Environment.NewLine}{Environment.NewLine}" +
+                "UOFiddler now loads AND saves the extension there (the path is remembered)." + Environment.NewLine +
+                "Copy the files into the Ultima Online folder when you want them there.",
+                "Load", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
+        private void CopyOutputToClient()
+        {
+            if (MessageBox.Show(this,
+                    $"Copy {string.Join(", ", ExtendedCheck.FileNames)}{Environment.NewLine}from  {Options.OutputPath}{Environment.NewLine}" +
+                    $"to    {Ultima.Files.RootDir}{Environment.NewLine}{Environment.NewLine}" +
+                    "The files there are backed up first (output folder\\UO_Backup\\<date>). art.mul / tiledata.mul are NOT copied. Continue?",
+                    "Copy to Ultima Online folder", MessageBoxButtons.YesNo, MessageBoxIcon.Question, MessageBoxDefaultButton.Button2) != DialogResult.Yes)
+            {
+                return;
+            }
+
+            if (!ConfirmDiscardUnsaved())
+            {
+                return;
+            }
+
+            Cursor.Current = Cursors.WaitCursor;
+            try
+            {
+                string backup = ExtendedCheck.CopyToClientFolder(Options.OutputPath, out List<string> copied);
+                _reloadItems?.Invoke();
+                RunCheck();
+                MessageBox.Show(this,
+                    $"Copied: {string.Join(", ", copied)}{Environment.NewLine}Backup: {backup}{Environment.NewLine}{Environment.NewLine}" +
+                    "The extension is now loaded from the Ultima Online folder.",
+                    "Copy", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(this, $"Copy failed: {ex.Message}", "Copy", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            finally
+            {
+                Cursor.Current = Cursors.Default;
+            }
         }
 
         private void RunCheck()
