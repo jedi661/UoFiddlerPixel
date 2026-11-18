@@ -132,6 +132,9 @@ namespace UoFiddler.Controls.Forms
 
             opt.Controls.Add(MakeLabel("Drawn direction:"));
             _sourceDirectionBox = MakeCombo(new object[] { ArtDirection.South, ArtDirection.East, ArtDirection.North, ArtDirection.West }, 0, 80);
+            new ToolTip().SetToolTip(_sourceDirectionBox,
+                "Where the drawn item points / looks to on screen:" + Environment.NewLine +
+                "South = lower left,  East = lower right,  North = upper right,  West = upper left.");
             opt.Controls.Add(_sourceDirectionBox);
 
             opt.Controls.Add(MakeLabel("Object:"));
@@ -139,8 +142,14 @@ namespace UoFiddler.Controls.Forms
             {
                 "Wall / fence (front = back)",
                 "Flat on the ground",
-                "Solid object (furniture)"
-            }, 0, 170);
+                "Solid object (template)",
+                "Directional (cannon, chair...)"
+            }, 0, 190);
+            new ToolTip().SetToolTip(_kindBox,
+                "Wall / fence: north = south (front and back look the same)." + Environment.NewLine +
+                "Flat: lies on the ground, turned 180°." + Environment.NewLine +
+                "Solid: back side as shaded template to paint over." + Environment.NewLine +
+                "Directional: things that point somewhere (cannon barrel, chair) - turned 180° on the ground.");
             opt.Controls.Add(_kindBox);
 
             _relightCheck = new CheckBox { Text = "Swap face light", AutoSize = true, Checked = true, Margin = new Padding(10, 7, 3, 3) };

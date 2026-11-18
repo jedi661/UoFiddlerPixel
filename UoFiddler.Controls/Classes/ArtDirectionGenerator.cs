@@ -23,7 +23,14 @@ namespace UoFiddler.Controls.Classes
         Flat = 1,
 
         /// <summary>Furniture, statues ...: the back side cannot be computed - a shaded template is created to paint over.</summary>
-        Solid = 2
+        Solid = 2,
+
+        /// <summary>
+        /// Objects that POINT somewhere (cannon, chair, bench, statue facing a way): the opposite direction is a
+        /// 180 degree turn on the ground - the ground line is reversed, the height of every column is kept.
+        /// Pixel based approximation (the back side uses the colours of the front side).
+        /// </summary>
+        Directional = 3
     }
 
     public enum ArtShadowMode
@@ -190,49 +197,62 @@ namespace UoFiddler.Controls.Classes
                 shadowColor = options.DefaultShadowColor;
             }
 
-            // 2. geometry
+            // 2. geometry. The face classes travel with the pixels; "odd" counts the horizontal flips - after an odd
+            //    number the lit left face is on the right and the face light has to be swapped.
             bool mirror = target == MirrorOf(sourceDirection) || target == MirrorOf(OppositeOf(sourceDirection));
             bool opposite = target == OppositeOf(sourceDirection) || target == MirrorOf(OppositeOf(sourceDirection));
 
             var result = new ArtDirectionResult { Direction = target, IsExact = true };
             ArtPixelImage img = obj;
+            ArtFaceClass[] cls = options.Kind == ArtObjectKind.Flat ? null : Classify(img, out _);
+            bool odd = false;
+            var notes = new List<string>();
 
             if (opposite)
             {
                 switch (options.Kind)
                 {
                     case ArtObjectKind.Symmetric:
-                        result.Note = "Symmetric object: back side = front side.";
+                        notes.Add("Symmetric object: back side = front side.");
                         break;
                     case ArtObjectKind.Flat:
                         img = Rotate180(img);
-                        result.Note = "Flat object: rotated 180°.";
+                        notes.Add("Flat object: rotated 180°.");
+                        break;
+                    case ArtObjectKind.Directional:
+                        int[] map = TurnOnGroundMap(img);
+                        img = ApplyMap(img, map);
+                        cls = ApplyMap(cls, map);
+                        odd = !odd; // the turn contains a horizontal flip
+                        result.IsExact = false; // back side = front colours, round parts get a little sheared
+                        notes.Add("Turned 180° on the ground (points the other way) - approximation, please retouch the details.");
                         break;
                     default:
                         img = BackTemplate(img, options);
+                        cls = Classify(img, out _);
                         result.IsExact = false;
-                        result.Note = "Back side can not be computed - shaded template, please paint the details.";
+                        notes.Add("Back side can not be computed - shaded template, please paint the details.");
                         break;
                 }
             }
 
             if (mirror)
             {
-                ArtFaceClass[] classes = options.Kind == ArtObjectKind.Flat ? null : Classify(img, out _);
-                img = FlipX(img);
-                if (classes != null && options.Relight && options.RelightStrength > 0)
-                {
-                    img = RelightAfterMirror(img, FlipX(classes, img.Width, img.Height), options);
-                }
-
-                result.Note = (result.Note == null ? string.Empty : result.Note + " ") + "Mirrored" +
-                              (options.Relight && options.Kind != ArtObjectKind.Flat ? " and re-lit." : ".");
+                int[] map = FlipXMap(img.Width, img.Height);
+                img = ApplyMap(img, map);
+                cls = ApplyMap(cls, map);
+                odd = !odd;
+                notes.Add("Mirrored.");
             }
 
-            if (!mirror && !opposite)
+            if (odd && cls != null && options.Relight && options.RelightStrength > 0)
             {
-                result.Note = "Source direction.";
+                // RelightAfterMirror expects RightFace = "was the (lit) left face in the source"
+                img = RelightAfterMirror(img, SwapFaces(cls), options);
+                notes.Add("Re-lit.");
             }
+
+            result.Note = notes.Count == 0 ? "Source direction." : string.Join(" ", notes);
 
             // 3. shadow
             if (castShadow)
@@ -589,22 +609,176 @@ namespace UoFiddler.Controls.Classes
             return dst;
         }
 
-        private static ArtFaceClass[] FlipX(ArtFaceClass[] src, int w, int h)
+        #region Pixel maps (dst index -> src index, -1 = transparent)
+        private static int[] FlipXMap(int w, int h)
         {
-            var dst = new ArtFaceClass[src.Length];
+            var map = new int[w * h];
             for (int y = 0; y < h; ++y)
             {
                 for (int x = 0; x < w; ++x)
                 {
-                    ArtFaceClass c = src[(y * w) + x];
-                    // a left face becomes a right face when mirrored
-                    c = c == ArtFaceClass.LeftFace ? ArtFaceClass.RightFace : c == ArtFaceClass.RightFace ? ArtFaceClass.LeftFace : c;
-                    dst[(y * w) + (w - 1 - x)] = c;
+                    map[(y * w) + (w - 1 - x)] = (y * w) + x;
+                }
+            }
+
+            return map;
+        }
+
+        /// <summary>
+        /// 180 degree turn on the ground for objects that point somewhere (cannon, chair ...), as pixel operation:
+        /// every column is moved as a whole - its x is mirrored (x' = minX + maxX - x) and the vertical centre of
+        /// the column is reflected through the centre of the object, the content of the column is NOT changed.
+        /// Column centres that lie on the object's axis stay on that axis (a straight line reflected through one
+        /// of its points is itself), so the object keeps its diagonal and steepness but points the other way:
+        /// a cannon pointing to the upper left points to the lower right, the carriage stays below the barrel.
+        /// The colours of the front side are used for the back. Same image size, the lowest pixel keeps its row.
+        /// </summary>
+        public static int[] TurnOnGroundMap(ArtPixelImage img)
+        {
+            int w = img.Width, h = img.Height;
+            var map = new int[w * h];
+            Array.Fill(map, -1);
+
+            GetBounds(img, out int minX, out int minY, out int maxX, out int maxY);
+            if (maxX < minX)
+            {
+                return map;
+            }
+
+            int c2x = minX + maxX;
+
+            var top = new int[w];
+            var bottom = new int[w];
+            for (int x = minX; x <= maxX; ++x)
+            {
+                top[x] = -1;
+                bottom[x] = -1;
+                for (int y = minY; y <= maxY; ++y)
+                {
+                    if (img.IsOpaque(x, y))
+                    {
+                        if (top[x] < 0)
+                        {
+                            top[x] = y;
+                        }
+
+                        bottom[x] = y;
+                    }
+                }
+            }
+
+            // the axis: robust slope (median of all pair slopes, Theil-Sen) of the upper outline - a stray pixel or
+            // a carriage below the barrel does not disturb it. Every column moves by the same linear amount, so the
+            // outline stays a straight line on the same diagonal and nothing gets jagged.
+            double k = MedianSlope(top, minX, maxX);
+            int Shift(int x) => (int)Math.Round(k * (c2x - (2 * x)), MidpointRounding.AwayFromZero);
+
+            int newMax = int.MinValue;
+            for (int x = minX; x <= maxX; ++x)
+            {
+                if (bottom[x] >= 0)
+                {
+                    newMax = Math.Max(newMax, bottom[x] + Shift(x));
+                }
+            }
+
+            int anchor = maxY - newMax; // keep the lowest pixel on its row (UO anchor)
+            for (int x = minX; x <= maxX; ++x)
+            {
+                if (bottom[x] < 0)
+                {
+                    continue;
+                }
+
+                int nx = c2x - x;
+                int shift = Shift(x) + anchor;
+                for (int y = top[x]; y <= bottom[x]; ++y)
+                {
+                    int ny = y + shift;
+                    if (img.IsOpaque(x, y) && ny >= 0 && ny < h)
+                    {
+                        map[(ny * w) + nx] = (y * w) + x;
+                    }
+                }
+            }
+
+            return map;
+        }
+
+        /// <summary>Theil-Sen slope (median of the slopes of all point pairs at least 3 columns apart).</summary>
+        private static double MedianSlope(int[] values, int from, int to)
+        {
+            var slopes = new List<double>();
+            for (int a = from; a <= to; ++a)
+            {
+                if (values[a] < 0)
+                {
+                    continue;
+                }
+
+                for (int b = a + 3; b <= to; ++b)
+                {
+                    if (values[b] >= 0)
+                    {
+                        slopes.Add((values[b] - values[a]) / (double)(b - a));
+                    }
+                }
+            }
+
+            if (slopes.Count == 0)
+            {
+                return 0;
+            }
+
+            slopes.Sort();
+            return slopes[slopes.Count / 2];
+        }
+
+        private static ArtPixelImage ApplyMap(ArtPixelImage src, int[] map)
+        {
+            var dst = new ArtPixelImage(src.Width, src.Height);
+            for (int i = 0; i < map.Length; ++i)
+            {
+                if (map[i] >= 0)
+                {
+                    dst.Pixels[i] = src.Pixels[map[i]];
                 }
             }
 
             return dst;
         }
+
+        private static ArtFaceClass[] ApplyMap(ArtFaceClass[] src, int[] map)
+        {
+            if (src == null)
+            {
+                return null;
+            }
+
+            var dst = new ArtFaceClass[src.Length];
+            for (int i = 0; i < map.Length; ++i)
+            {
+                if (map[i] >= 0)
+                {
+                    dst[i] = src[map[i]];
+                }
+            }
+
+            return dst;
+        }
+
+        private static ArtFaceClass[] SwapFaces(ArtFaceClass[] src)
+        {
+            var dst = new ArtFaceClass[src.Length];
+            for (int i = 0; i < src.Length; ++i)
+            {
+                ArtFaceClass c = src[i];
+                dst[i] = c == ArtFaceClass.LeftFace ? ArtFaceClass.RightFace : c == ArtFaceClass.RightFace ? ArtFaceClass.LeftFace : c;
+            }
+
+            return dst;
+        }
+        #endregion
 
         public static ArtPixelImage Rotate180(ArtPixelImage src)
         {
