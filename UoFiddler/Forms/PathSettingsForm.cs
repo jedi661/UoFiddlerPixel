@@ -32,7 +32,133 @@ namespace UoFiddler.Forms
 
             pgPaths.SelectedObject = new DictionaryPropertyGridAdapter(Files.MulPath);
             tsTbRootPath.Text = Files.RootDir;
+
+            // extended art format (ids 0x10000+): status + button, detected automatically
+            _tsBtnExtended = new ToolStripButton("Extended files...")
+            {
+                DisplayStyle = ToolStripItemDisplayStyle.Text,
+                ToolTipText = "Find and load artextidx.mul / artext.mul / tiledataext.mul (ids 0x10000+)"
+            };
+            _tsBtnExtended.Click += (s, e) => ChooseExtendedFolder();
+            _tsLblExtended = new ToolStripLabel { ForeColor = System.Drawing.Color.DimGray };
+            tsPathSettingsMenu.Items.Add(new ToolStripSeparator());
+            tsPathSettingsMenu.Items.Add(_tsBtnExtended);
+            tsPathSettingsMenu.Items.Add(_tsLblExtended);
         }
+
+        #region [ Extended art format ]
+        private readonly ToolStripButton _tsBtnExtended;
+        private readonly ToolStripLabel _tsLblExtended;
+
+        protected override void OnShown(EventArgs e)
+        {
+            base.OnShown(e);
+            DetectExtended(true);
+        }
+
+        /// <summary>
+        /// Finds the extended files (stored path or the Ultima Online directory) and, if they are there and not
+        /// loaded yet, loads them right away.
+        /// </summary>
+        private void DetectExtended(bool load)
+        {
+            List<string> found = Files.ResolveExtendedFilePaths();
+            pgPaths.SelectedObject = new DictionaryPropertyGridAdapter(Files.MulPath);
+            pgPaths.Refresh();
+
+            string idx = Files.GetFilePath(ExtendedFormat.ArtIndexFileName);
+            string mul = Files.GetFilePath(ExtendedFormat.ArtDataFileName);
+            bool artFilesThere = idx != null && mul != null;
+            bool alreadyLoaded = Art.HasExtension && Art.ExtendedDataPath != null && mul != null &&
+                                 string.Equals(Path.GetFullPath(Art.ExtendedDataPath), Path.GetFullPath(mul), StringComparison.OrdinalIgnoreCase);
+
+            if (load && found.Count > 0 && !alreadyLoaded)
+            {
+                LoadExtended();
+            }
+
+            UpdateExtendedStatus(found.Count, artFilesThere);
+        }
+
+        private void LoadExtended()
+        {
+            if (Art.HasExtension && Options.ChangedUltimaClass.TryGetValue("Art", out bool changed) && changed &&
+                MessageBox.Show(this, "Load the extended files? Unsaved changes in the extended range (0x10000+) are discarded.",
+                    "Extended files", MessageBoxButtons.YesNo, MessageBoxIcon.Question, MessageBoxDefaultButton.Button2) != DialogResult.Yes)
+            {
+                return;
+            }
+
+            Cursor.Current = Cursors.WaitCursor;
+            try
+            {
+                Art.ReloadExtension();
+                TileData.ReloadExtension();
+                ControlEvents.FireFilePathChangeEvent(); // the Items / TileData tabs reload their lists
+            }
+            finally
+            {
+                Cursor.Current = Cursors.Default;
+            }
+        }
+
+        private void UpdateExtendedStatus(int foundFiles, bool artFilesThere)
+        {
+            if (Art.HasExtension && Art.ExtendedDataPath != null)
+            {
+                _tsLblExtended.Text = $"Extended: loaded, {Art.ExtendedCount:N0} slots (0x10000 - 0x{Art.GetMaxExtendedItemId():X})";
+                _tsLblExtended.ForeColor = System.Drawing.Color.DarkGreen;
+            }
+            else if (foundFiles > 0)
+            {
+                _tsLblExtended.Text = artFilesThere ? "Extended: found, not loaded" : $"Extended: incomplete ({foundFiles}/3 files)";
+                _tsLblExtended.ForeColor = System.Drawing.Color.DarkOrange;
+            }
+            else
+            {
+                _tsLblExtended.Text = "Extended: no files";
+                _tsLblExtended.ForeColor = System.Drawing.Color.DimGray;
+            }
+
+            _tsLblExtended.ToolTipText = $"Searched in: {Files.RootDir}";
+        }
+
+        /// <summary>Lets the user pick the folder of the extended files (e.g. the output folder after saving).</summary>
+        private void ChooseExtendedFolder()
+        {
+            using var dialog = new FolderBrowserDialog
+            {
+                Description = "Folder with artextidx.mul / artext.mul / tiledataext.mul",
+                ShowNewFolderButton = false,
+                SelectedPath = Directory.Exists(Options.OutputPath) ? Options.OutputPath : Files.RootDir
+            };
+            if (dialog.ShowDialog(this) != DialogResult.OK)
+            {
+                return;
+            }
+
+            int count = 0;
+            foreach (string name in new[] { ExtendedFormat.ArtIndexFileName, ExtendedFormat.ArtDataFileName, ExtendedFormat.TileDataFileName })
+            {
+                string path = Path.Combine(dialog.SelectedPath, name);
+                if (File.Exists(path))
+                {
+                    Files.SetMulPath(path, name);
+                    ++count;
+                }
+            }
+
+            if (count == 0)
+            {
+                MessageBox.Show(this, $"No extended files in{Environment.NewLine}{dialog.SelectedPath}", "Extended files",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            LoadExtended();
+            DetectExtended(false);
+        }
+        #endregion
 
         #region [ ReloadPath ]
         private void ReloadPath(object sender, EventArgs e)
@@ -43,6 +169,7 @@ namespace UoFiddler.Forms
             pgPaths.SelectedObject = new DictionaryPropertyGridAdapter(Files.MulPath);
             pgPaths.Refresh();
             tsTbRootPath.Text = Files.RootDir;
+            DetectExtended(true);
         }
         #endregion
 
@@ -63,6 +190,7 @@ namespace UoFiddler.Forms
                 pgPaths.Update();
                 tsTbRootPath.Text = Files.RootDir;
                 MapHelper.CheckForNewMapSize();
+                DetectExtended(true);
             }
         }
         #endregion
@@ -80,6 +208,7 @@ namespace UoFiddler.Forms
             pgPaths.Refresh();
             tsTbRootPath.Text = Files.RootDir;
             MapHelper.CheckForNewMapSize();
+            DetectExtended(true);
         }
         #endregion
 

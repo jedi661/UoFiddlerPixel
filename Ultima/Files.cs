@@ -314,6 +314,28 @@ namespace Ultima
         }
         #endregion
 
+        #region ResolveExtendedFilePaths
+        /// <summary>
+        /// Checks the paths of the extended files (artextidx.mul, artext.mul, tiledataext.mul): a stored path that
+        /// is empty or points to a missing file is replaced by the file in <see cref="RootDir"/> if it exists there.
+        /// </summary>
+        /// <returns>The full paths of the extended files that exist now.</returns>
+        public static List<string> ResolveExtendedFilePaths()
+        {
+            var found = new List<string>();
+            foreach (string name in new[] { ExtendedFormat.ArtIndexFileName, ExtendedFormat.ArtDataFileName, ExtendedFormat.TileDataFileName })
+            {
+                string path = GetFilePathWithRootFallback(name);
+                if (path != null)
+                {
+                    found.Add(path);
+                }
+            }
+
+            return found;
+        }
+        #endregion
+
         #region GetFilePathWithRootFallback
         /// <summary>
         /// Like <see cref="GetFilePath(string)"/>, but if the stored path is empty or wrong it also looks for
