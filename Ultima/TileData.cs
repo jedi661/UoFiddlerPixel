@@ -1296,6 +1296,135 @@ namespace Ultima
         private static int[] _landHeader;
         private static int[] _itemHeader;
 
+        /// <summary>Number of item entries that belong to tiledata.mul (client compatible part).</summary>
+        public static int LegacyItemCount { get; private set; }
+
+        /// <summary>Number of extended item slots (ids 0x10000+) kept in tiledataext.mul. 0 = none.</summary>
+        public static int ExtendedCount { get; private set; }
+
+        public static bool HasExtension => ExtendedCount > 0;
+
+        /// <summary>
+        /// Grows <see cref="ItemTable"/> so it covers ids 0x10000 .. 0x10000 + slots - 1 (never shrinks the legacy part).
+        /// tiledata.mul itself stays untouched - extended entries are saved into tiledataext.mul.
+        /// </summary>
+        public static void EnsureExtendedCapacity(int slots)
+        {
+            if (ItemTable == null || slots <= 0)
+            {
+                return;
+            }
+
+            int newLength = ExtendedFormat.BaseId + slots;
+            int oldLength = ItemTable.Length;
+            if (newLength != oldLength && newLength > LegacyItemCount)
+            {
+                ItemData[] table = ItemTable;
+                int[] heights = HeightTable;
+                Array.Resize(ref table, newLength);
+                Array.Resize(ref heights, newLength);
+                for (int i = oldLength; i < newLength; ++i)
+                {
+                    table[i].Name = string.Empty;
+                }
+
+                ItemTable = table;
+                HeightTable = heights;
+            }
+
+            ExtendedCount = slots;
+        }
+
+        private static void LoadExtension()
+        {
+            ExtendedCount = 0;
+
+            ExtendedFormat.TileRecord[] records = null;
+            try
+            {
+                string path = Files.GetFilePath(ExtendedFormat.TileDataFileName);
+                if (path != null)
+                {
+                    records = ExtendedFormat.ReadTileData(path);
+                }
+            }
+            catch (Exception)
+            {
+                records = null; // corrupt/foreign file: ignore, tiledata.mul stays usable
+            }
+
+            int slots = Math.Max(records?.Length ?? 0, Art.ExtendedCount);
+            if (slots <= 0)
+            {
+                return;
+            }
+
+            EnsureExtendedCapacity(slots);
+
+            if (records == null)
+            {
+                return;
+            }
+
+            for (int k = 0; k < records.Length; ++k)
+            {
+                ExtendedFormat.TileRecord r = records[k];
+                int id = ExtendedFormat.BaseId + k;
+                ItemTable[id] = new ItemData
+                {
+                    Flags = (TileFlag)r.Flags,
+                    Weight = r.Weight,
+                    Quality = r.Quality,
+                    MiscData = r.MiscData,
+                    Unk2 = r.Unk2,
+                    Quantity = r.Quantity,
+                    Animation = r.Animation,
+                    Unk3 = r.Unk3,
+                    Hue = r.Hue,
+                    StackingOffset = r.StackingOffset,
+                    Value = r.Value,
+                    Height = r.Height,
+                    Name = r.Name ?? string.Empty
+                };
+                HeightTable[id] = r.Height;
+            }
+        }
+
+        /// <summary>Writes tiledataext.mul (only if an extension exists).</summary>
+        public static void SaveExtension(string directory)
+        {
+            if (!HasExtension)
+            {
+                return;
+            }
+
+            string file = Path.Combine(directory, ExtendedFormat.TileDataFileName);
+            using var fs = new FileStream(file, FileMode.Create, FileAccess.Write, FileShare.None);
+            using var bw = new BinaryWriter(fs);
+
+            ExtendedFormat.WriteTileDataHeader(bw, ExtendedCount);
+            for (int k = 0; k < ExtendedCount; ++k)
+            {
+                ItemData d = ItemTable[ExtendedFormat.BaseId + k];
+                ExtendedFormat.WriteTileRecord(bw, new ExtendedFormat.TileRecord
+                {
+                    Flags = (ulong)d.Flags,
+                    Weight = d.Weight,
+                    Quality = d.Quality,
+                    MiscData = d.MiscData,
+                    Unk2 = d.Unk2,
+                    Quantity = d.Quantity,
+                    Animation = d.Animation,
+                    Unk3 = d.Unk3,
+                    Hue = d.Hue,
+                    StackingOffset = d.StackingOffset,
+                    Value = d.Value,
+                    Height = d.Height,
+                    Name = d.Name
+                });
+            }
+        }
+
         static TileData()
         {
             Initialize();
@@ -1386,6 +1515,9 @@ namespace Ultima
                     gc.Free();
                 }
             }
+
+            LegacyItemCount = ItemTable?.Length ?? 0;
+            LoadExtension();
         }
 
         /// <summary>
@@ -1433,7 +1565,9 @@ namespace Ultima
 
                 j = 0;
 
-                for (int i = 0; i < ItemTable.Length; ++i)
+                // only the client compatible part goes into tiledata.mul, ids >= 0x10000 go to tiledataext.mul
+                int legacyCount = Math.Min(LegacyItemCount > 0 ? LegacyItemCount : ItemTable.Length, ItemTable.Length);
+                for (int i = 0; i < legacyCount; ++i)
                 {
                     if ((i & 0x1F) == 0)
                     {
@@ -1475,6 +1609,12 @@ namespace Ultima
 
                     bin.Write(b);
                 }
+            }
+
+            string directory = Path.GetDirectoryName(Path.GetFullPath(fileName));
+            if (!string.IsNullOrEmpty(directory))
+            {
+                SaveExtension(directory);
             }
         }
 

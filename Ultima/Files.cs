@@ -60,6 +60,8 @@ namespace Ultima
             "art.mul",
             "artidx.mul",
             "artlegacymul.uop",
+            "artext.mul", // UOFiddler extended art (ids >= 0x10000), see ExtendedFormat.cs
+            "artextidx.mul", // UOFiddler extended art index
             "body.def",
             "bodyconv.def",
             "client.exe",
@@ -168,6 +170,7 @@ namespace Ultima
             "texidx.mul",
             "texmaps.mul",
             "tiledata.mul",
+            "tiledataext.mul", // UOFiddler extended tiledata (ids >= 0x10000)
             "unifont.mul",
             "unifont1.mul",
             "unifont2.mul",
@@ -236,8 +239,8 @@ namespace Ultima
             {
                 string filePath;
 
-                // file was set
-                if (!string.IsNullOrEmpty(MulPath[file]))
+                // file was set (TryGetValue: older settings files may not know newer keys)
+                if (MulPath.TryGetValue(file, out string current) && !string.IsNullOrEmpty(current))
                 {
                     // and was relative like "art.mul"
                     if (string.IsNullOrEmpty(Path.GetDirectoryName(MulPath[file])))
