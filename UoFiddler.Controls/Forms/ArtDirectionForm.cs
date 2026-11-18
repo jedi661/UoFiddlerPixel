@@ -252,8 +252,9 @@ namespace UoFiddler.Controls.Forms
         private Control BuildTargetPanel(ArtDirection d)
         {
             var group = new GroupBox { Text = d.ToString(), Dock = DockStyle.Fill };
-            var layout = new TableLayoutPanel { Dock = DockStyle.Fill, RowCount = 3, ColumnCount = 1 };
+            var layout = new TableLayoutPanel { Dock = DockStyle.Fill, RowCount = 4, ColumnCount = 1 };
             layout.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+            layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
             layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
             layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
 
@@ -275,10 +276,82 @@ namespace UoFiddler.Controls.Forms
             buttons.Controls.Add(MakeButton("Copy", (s, e) => CopyOne(d)));
             buttons.Controls.Add(MakeButton("PNG...", (s, e) => SaveOne(d)));
             layout.Controls.Add(buttons, 0, 2);
+            layout.Controls.Add(BuildManualRow(d), 0, 3);
 
             group.Controls.Add(layout);
             return group;
         }
+
+        #region Manual orientation per direction
+        private sealed class ManualControls
+        {
+            public ComboBox Method;
+            public NumericUpDown Axis;
+            public NumericUpDown Dx;
+            public NumericUpDown Dy;
+        }
+
+        private readonly Dictionary<ArtDirection, ManualControls> _manual = new Dictionary<ArtDirection, ManualControls>();
+
+        /// <summary>
+        /// Manual orientation for one direction: method (copy / mirror / flip / 180 / turn across the cross axis /
+        /// turn by column shift), axis slope for the turns (0 = measured) and a pixel offset.
+        /// </summary>
+        private Control BuildManualRow(ArtDirection d)
+        {
+            var row = new FlowLayoutPanel { AutoSize = true, Dock = DockStyle.Fill, WrapContents = true };
+            var mc = new ManualControls
+            {
+                Method = new ComboBox { DropDownStyle = ComboBoxStyle.DropDownList, Width = 130 },
+                Axis = new NumericUpDown { Minimum = -3, Maximum = 3, DecimalPlaces = 2, Increment = 0.05m, Width = 52 },
+                Dx = new NumericUpDown { Minimum = -200, Maximum = 200, Width = 46 },
+                Dy = new NumericUpDown { Minimum = -200, Maximum = 200, Width = 46 }
+            };
+            mc.Method.Items.AddRange(new object[]
+            {
+                "Auto", "Copy", "Mirror \u2194", "Flip \u2195", "Rotate 180\u00b0", "Turn (cross axis)", "Turn (column shift)"
+            });
+            mc.Method.SelectedIndex = 0;
+
+            var tip = new ToolTip();
+            tip.SetToolTip(mc.Method,
+                "Auto: what the object type does." + Environment.NewLine +
+                "Copy: same as the drawn image.   Mirror: left <-> right." + Environment.NewLine +
+                "Flip: upside down.   Rotate 180: turned in the picture." + Environment.NewLine +
+                "Turn (cross axis): points the other way, round parts stay round." + Environment.NewLine +
+                "Turn (column shift): points the other way, vertical parts stay vertical.");
+            tip.SetToolTip(mc.Axis, "Axis slope for the turns: 0 = measured, 0.5 = \\ diagonal, -0.5 = / diagonal");
+            tip.SetToolTip(mc.Dx, "Move the result left (-) / right (+) in pixels");
+            tip.SetToolTip(mc.Dy, "Move the result up (-) / down (+) in pixels");
+
+            mc.Method.SelectedIndexChanged += (s, e) => Regenerate();
+            mc.Axis.ValueChanged += (s, e) => Regenerate();
+            mc.Dx.ValueChanged += (s, e) => Regenerate();
+            mc.Dy.ValueChanged += (s, e) => Regenerate();
+
+            row.Controls.Add(MakeLabel("Manual:"));
+            row.Controls.Add(mc.Method);
+            row.Controls.Add(MakeLabel("Axis"));
+            row.Controls.Add(mc.Axis);
+            row.Controls.Add(MakeLabel("X"));
+            row.Controls.Add(mc.Dx);
+            row.Controls.Add(MakeLabel("Y"));
+            row.Controls.Add(mc.Dy);
+            row.Controls.Add(MakeButton("Reset", (s, e) =>
+            {
+                _suspendUpdate = true;
+                mc.Method.SelectedIndex = 0;
+                mc.Axis.Value = 0;
+                mc.Dx.Value = 0;
+                mc.Dy.Value = 0;
+                _suspendUpdate = false;
+                Regenerate();
+            }));
+
+            _manual[d] = mc;
+            return row;
+        }
+        #endregion
 
         private static Panel WrapScroll(Control c)
         {
@@ -481,7 +554,23 @@ namespace UoFiddler.Controls.Forms
                     continue;
                 }
 
-                _results[d] = ArtDirectionGenerator.Generate(_source, SourceDirection, d, options);
+                ArtDirectionResult r;
+                if (_manual.TryGetValue(d, out ManualControls mc) && mc.Method.SelectedIndex > 0)
+                {
+                    r = ArtDirectionGenerator.GenerateManual(_source, d, (ArtManualMethod)mc.Method.SelectedIndex, (double)mc.Axis.Value, options);
+                }
+                else
+                {
+                    r = ArtDirectionGenerator.Generate(_source, SourceDirection, d, options);
+                }
+
+                if (mc != null && (mc.Dx.Value != 0 || mc.Dy.Value != 0))
+                {
+                    r.Image = ArtDirectionGenerator.Translate(r.Image, (int)mc.Dx.Value, (int)mc.Dy.Value);
+                    r.Note += $" Moved {mc.Dx.Value:+0;-0;0}/{mc.Dy.Value:+0;-0;0} px.";
+                }
+
+                _results[d] = r;
             }
 
             RefreshPreviews();

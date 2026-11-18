@@ -33,6 +33,18 @@ namespace UoFiddler.Controls.Classes
         Directional = 3
     }
 
+    /// <summary>Manual transformation for one target direction (overrides the automatic one).</summary>
+    public enum ArtManualMethod
+    {
+        Auto = 0,         // what the object type does
+        Copy = 1,         // same as the drawn image
+        Mirror = 2,       // horizontal flip  (south <-> east, north <-> west)
+        FlipVertical = 3, // upside down inside the object's bounds
+        Rotate180 = 4,    // turned 180 degrees in the picture plane
+        TurnCrossAxis = 5,// reflection across the line perpendicular to the object axis (keeps round shapes)
+        TurnShear = 6     // column shift along the axis (keeps vertical parts vertical)
+    }
+
     public enum ArtShadowMode
     {
         /// <summary>Treat dark shadow pixels like the object (they get mirrored with it).</summary>
@@ -222,7 +234,13 @@ namespace UoFiddler.Controls.Classes
                     case ArtObjectKind.Directional:
                         // drawn pointing West/East lies on a "\\" diagonal, North/South on "/"
                         int slope2 = sourceDirection == ArtDirection.West || sourceDirection == ArtDirection.East ? 1 : -1;
-                        int[] map = TurnOnGroundMap(img, slope2);
+                        int[] map = TurnOnGroundMap(img, slope2, 0, out _, out bool axisMismatch);
+                        if (axisMismatch)
+                        {
+                            notes.Add("WARNING: the object lies on the other diagonal - check 'Drawn direction' " +
+                                      "(walls/doors: use 'Wall / fence') or use Manual.");
+                        }
+
                         img = ApplyMap(img, map);
                         cls = ApplyMap(cls, map);
                         odd = !odd; // the turn contains a horizontal flip
@@ -558,6 +576,224 @@ namespace UoFiddler.Controls.Classes
         }
         #endregion
 
+        #region Manual
+        /// <summary>
+        /// One direction with a manually chosen transformation (instead of the automatic one of the object type).
+        /// <paramref name="axisSlope"/>: slope of the object axis on screen for the turn methods (0 = measure,
+        /// e.g. 0.5 = "\" iso diagonal, -0.5 = "/"). Shadow, re-light and repair work like in <see cref="Generate"/>.
+        /// </summary>
+        public static ArtDirectionResult GenerateManual(ArtPixelImage source, ArtDirection target, ArtManualMethod method,
+            double axisSlope, ArtDirectionOptions options)
+        {
+            options ??= new ArtDirectionOptions();
+            SplitShadow(source, options, out ArtPixelImage obj, out ushort shadowColor, out bool hadShadow);
+            bool castShadow = options.Shadow == ArtShadowMode.AlwaysCast || (options.Shadow == ArtShadowMode.Regenerate && hadShadow);
+            if (!hadShadow)
+            {
+                shadowColor = options.DefaultShadowColor;
+            }
+
+            ArtPixelImage img = obj;
+            ArtFaceClass[] cls = Classify(img, out _);
+            int[] map = null;
+            bool odd = false;
+            string note;
+            int slope2 = (axisSlope != 0 ? axisSlope : MeasureTopSlope(img)) < 0 ? -1 : 1;
+
+            switch (method)
+            {
+                case ArtManualMethod.Mirror:
+                    map = FlipXMap(img.Width, img.Height);
+                    odd = true;
+                    note = "Manual: mirrored.";
+                    break;
+                case ArtManualMethod.FlipVertical:
+                    map = FlipYInBoundsMap(img);
+                    note = "Manual: flipped vertically.";
+                    break;
+                case ArtManualMethod.Rotate180:
+                    map = Rotate180Map(img);
+                    odd = true;
+                    note = "Manual: rotated 180°.";
+                    break;
+                case ArtManualMethod.TurnCrossAxis:
+                    map = TurnOnGroundMap(img, slope2, axisSlope != 0 ? axisSlope : MeasureTopSlope(img), out double k1, out _);
+                    odd = true;
+                    note = $"Manual: turned across the cross axis (axis slope {k1:0.00}).";
+                    break;
+                case ArtManualMethod.TurnShear:
+                    double k2 = axisSlope != 0 ? axisSlope : MeasureTopSlope(img);
+                    map = TurnShearMap(img, k2);
+                    odd = true;
+                    note = $"Manual: turned by column shift (axis slope {k2:0.00}).";
+                    break;
+                default:
+                    note = "Manual: copy of the drawn image.";
+                    break;
+            }
+
+            if (map != null)
+            {
+                img = ApplyMap(img, map);
+                cls = ApplyMap(cls, map);
+            }
+
+            if (odd && cls != null && options.Relight && options.RelightStrength > 0)
+            {
+                img = RelightAfterMirror(img, SwapFaces(cls), options);
+                note += " Re-lit.";
+            }
+
+            if (castShadow)
+            {
+                img = CastShadow(img, shadowColor, options);
+            }
+
+            if (options.Repair)
+            {
+                img = Repair(img, options.RepairMaxHole);
+            }
+
+            return new ArtDirectionResult { Direction = target, Image = img, IsExact = method != ArtManualMethod.TurnCrossAxis && method != ArtManualMethod.TurnShear, Note = note };
+        }
+
+        /// <summary>Moves the whole image by dx/dy pixels (same size, pixels leaving the image are cut off).</summary>
+        public static ArtPixelImage Translate(ArtPixelImage src, int dx, int dy)
+        {
+            if (dx == 0 && dy == 0)
+            {
+                return src;
+            }
+
+            var dst = new ArtPixelImage(src.Width, src.Height);
+            for (int y = 0; y < src.Height; ++y)
+            {
+                for (int x = 0; x < src.Width; ++x)
+                {
+                    int nx = x + dx, ny = y + dy;
+                    if (nx >= 0 && ny >= 0 && nx < src.Width && ny < src.Height)
+                    {
+                        dst[nx, ny] = src[x, y];
+                    }
+                }
+            }
+
+            return dst;
+        }
+
+        /// <summary>Robust slope of the upper outline (0 if there is none).</summary>
+        public static double MeasureTopSlope(ArtPixelImage img)
+        {
+            GetBounds(img, out int minX, out int minY, out int maxX, out int maxY);
+            if (maxX < minX)
+            {
+                return 0;
+            }
+
+            var top = new int[img.Width];
+            Array.Fill(top, -1);
+            for (int x = minX; x <= maxX; ++x)
+            {
+                for (int y = minY; y <= maxY; ++y)
+                {
+                    if (img.IsOpaque(x, y))
+                    {
+                        top[x] = y;
+                        break;
+                    }
+                }
+            }
+
+            return MedianSlope(top, minX, maxX);
+        }
+
+        private static int[] FlipYInBoundsMap(ArtPixelImage img)
+        {
+            int w = img.Width, h = img.Height;
+            var map = new int[w * h];
+            Array.Fill(map, -1);
+            GetBounds(img, out _, out int minY, out _, out int maxY);
+            for (int y = 0; y < h; ++y)
+            {
+                for (int x = 0; x < w; ++x)
+                {
+                    if (img.IsOpaque(x, y))
+                    {
+                        map[((minY + maxY - y) * w) + x] = (y * w) + x;
+                    }
+                }
+            }
+
+            return map;
+        }
+
+        private static int[] Rotate180Map(ArtPixelImage img)
+        {
+            int w = img.Width, h = img.Height;
+            var map = new int[w * h];
+            Array.Fill(map, -1);
+            GetBounds(img, out int minX, out int minY, out int maxX, out int maxY);
+            for (int y = 0; y < h; ++y)
+            {
+                for (int x = 0; x < w; ++x)
+                {
+                    if (img.IsOpaque(x, y))
+                    {
+                        map[((minY + maxY - y) * w) + (minX + maxX - x)] = (y * w) + x;
+                    }
+                }
+            }
+
+            return map;
+        }
+
+        /// <summary>
+        /// Turn by column shift: x' = minX + maxX - x, y' = y + k * (minX + maxX - 2x). Keeps vertical parts
+        /// vertical (good for poles, legs), round parts get sheared. Lowest row kept.
+        /// </summary>
+        public static int[] TurnShearMap(ArtPixelImage img, double k)
+        {
+            int w = img.Width, h = img.Height;
+            var map = new int[w * h];
+            Array.Fill(map, -1);
+            GetBounds(img, out int minX, out int minY, out int maxX, out int maxY);
+            if (maxX < minX)
+            {
+                return map;
+            }
+
+            int c2 = minX + maxX;
+            int Shift(int x) => (int)Math.Round(k * (c2 - (2 * x)), MidpointRounding.AwayFromZero);
+
+            int newMax = int.MinValue;
+            for (int y = minY; y <= maxY; ++y)
+            {
+                for (int x = minX; x <= maxX; ++x)
+                {
+                    if (img.IsOpaque(x, y))
+                    {
+                        newMax = Math.Max(newMax, y + Shift(x));
+                    }
+                }
+            }
+
+            int anchor = maxY - newMax;
+            for (int y = minY; y <= maxY; ++y)
+            {
+                for (int x = minX; x <= maxX; ++x)
+                {
+                    int ny = y + Shift(x) + anchor;
+                    if (img.IsOpaque(x, y) && ny >= 0 && ny < h)
+                    {
+                        map[(ny * w) + (c2 - x)] = (y * w) + x;
+                    }
+                }
+            }
+
+            return map;
+        }
+        #endregion
+
         #region Colour helpers
         public static int R5(ushort c) => (c >> 10) & 0x1F;
         public static int G5(ushort c) => (c >> 5) & 0x1F;
@@ -639,6 +875,16 @@ namespace UoFiddler.Controls.Classes
         /// </summary>
         public static int[] TurnOnGroundMap(ArtPixelImage img, int slope2)
         {
+            return TurnOnGroundMap(img, slope2, 0, out _, out _);
+        }
+
+        /// <param name="kOverride">axis slope to use instead of the measured one (0 = measure).</param>
+        /// <param name="usedK">the axis slope that was used.</param>
+        /// <param name="mismatch">true if the measured axis does not lie on the expected diagonal.</param>
+        public static int[] TurnOnGroundMap(ArtPixelImage img, int slope2, double kOverride, out double usedK, out bool mismatch)
+        {
+            usedK = 0.5 * slope2;
+            mismatch = false;
             int w = img.Width, h = img.Height;
             var map = new int[w * h];
             Array.Fill(map, -1);
@@ -664,10 +910,17 @@ namespace UoFiddler.Controls.Classes
             }
 
             double k = MedianSlope(top, minX, maxX);
-            if (Math.Sign(k) != Math.Sign(slope2) || Math.Abs(k) < 0.25 || Math.Abs(k) > 2.5)
+            if (kOverride != 0)
             {
+                k = kOverride;
+            }
+            else if (Math.Sign(k) != Math.Sign(slope2) || Math.Abs(k) < 0.25 || Math.Abs(k) > 2.5)
+            {
+                mismatch = Math.Abs(k) >= 0.25 && Math.Abs(k) <= 2.5; // a clear axis, but on the other diagonal
                 k = 0.5 * slope2;
             }
+
+            usedK = k;
 
             // reflection across the line through (cx, cy) with angle axis + 90 degrees (an involution)
             double cx = (minX + maxX) / 2.0, cy = (minY + maxY) / 2.0;
