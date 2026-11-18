@@ -74,6 +74,31 @@ namespace UoFiddler.Controls.UserControls
             directionsButton.Click += (s, e) => ShowDirectionForm();
             ToolStrip.Items.Add(directionsButton);
 
+            // three clear views: items only / items + free slots (the classic "Show Free Slots") / free slots only
+            showFreeSlotsToolStripMenuItem.Text = "Show items + free slots";
+            showFreeSlotsToolStripMenuItem.ToolTipText = "All ids: used items and empty slots in between (red = free)";
+
+            _viewBox = new ToolStripComboBox
+            {
+                DropDownStyle = ComboBoxStyle.DropDownList,
+                ToolTipText = "Items only / items + free slots / free slots only (incl. the extended range 0x10000+)",
+                AutoSize = false,
+                Width = 140
+            };
+            _viewBox.Items.AddRange(new object[] { "Items only", "Items + free slots", "Free slots only" });
+            _viewBox.SelectedIndex = 0;
+            _viewBox.SelectedIndexChanged += (s, e) =>
+            {
+                if (_syncingView)
+                {
+                    return;
+                }
+
+                ShowSlots(_viewBox.SelectedIndex > 0, _viewBox.SelectedIndex == 2);
+            };
+            ToolStrip.Items.Add(new ToolStripLabel("View:"));
+            ToolStrip.Items.Add(_viewBox);
+
             _onlyFreeMenuItem = new ToolStripMenuItem("Show only free slots");
             _onlyFreeMenuItem.Click += (s, e) => ShowSlots(!_showOnlyFree, !_showOnlyFree);
             var gotoExtended = new ToolStripMenuItem("Go to extended range (0x10000)");
@@ -333,6 +358,8 @@ namespace UoFiddler.Controls.UserControls
             {
                 _onlyFreeMenuItem.Checked = false;
             }
+
+            SyncViewBox();
 
             var prevSelected = SelectedGraphicId;
 
@@ -937,6 +964,21 @@ namespace UoFiddler.Controls.UserControls
 
         private bool _showOnlyFree;
         private ToolStripMenuItem _onlyFreeMenuItem;
+        private ToolStripComboBox _viewBox;
+        private bool _syncingView;
+
+        /// <summary>Keeps the toolbar view box in line with the current view without re-triggering it.</summary>
+        private void SyncViewBox()
+        {
+            if (_viewBox == null)
+            {
+                return;
+            }
+
+            _syncingView = true;
+            _viewBox.SelectedIndex = !_showFreeSlots ? 0 : _showOnlyFree ? 2 : 1;
+            _syncingView = false;
+        }
 
         /// <summary>
         /// showSlots=false: normal view (only used items). showSlots=true: every id from 0 to the highest id
@@ -967,6 +1009,7 @@ namespace UoFiddler.Controls.UserControls
             // built in one go (the old insert-loop was O(n^2) and unusable for the 1M+ extended range)
             int max = Art.GetMaxExtendedItemId();
             _itemList = new List<int>(onlyFree ? 0x10000 : max + 1);
+            int used = 0, free = 0;
             for (int j = 0; j <= max; ++j)
             {
                 if (!Art.IsLegalStaticId(j))
@@ -974,7 +1017,17 @@ namespace UoFiddler.Controls.UserControls
                     continue; // gap between art.mul and the extension (would write to item 0)
                 }
 
-                if (!onlyFree || !Art.IsValidStatic(j))
+                bool isUsed = Art.IsValidStatic(j);
+                if (isUsed)
+                {
+                    ++used;
+                }
+                else
+                {
+                    ++free;
+                }
+
+                if (!onlyFree || !isUsed)
                 {
                     _itemList.Add(j);
                 }
@@ -991,8 +1044,9 @@ namespace UoFiddler.Controls.UserControls
             Cursor.Current = Cursors.Default;
 
             toolStripStatusLabelItemHowMuch.Text = onlyFree
-                ? $"Free slots: {_itemList.Count:N0} (0x0000 - 0x{max:X})"
-                : $"Slots: {_itemList.Count:N0} (0x0000 - 0x{max:X})";
+                ? $"Free slots: {free:N0} (0x0000 - 0x{max:X})"
+                : $"Items: {used:N0}  free: {free:N0}  (0x0000 - 0x{max:X})";
+            SyncViewBox();
         }
 
         /// <summary>Selects any id in the Items tab; switches to the slot view if the id is not in the current list.</summary>
@@ -1361,6 +1415,15 @@ namespace UoFiddler.Controls.UserControls
                 rect.Height -= 10;
 
                 e.Graphics.FillRectangle(Brushes.Red, rect);
+
+                // in the slot views write the id into the free slot, so gaps can be found at a glance
+                if (_showFreeSlots && rect.Width >= 30)
+                {
+                    using var font = new Font(FontFamily.GenericSansSerif, rect.Width >= 60 ? 8f : 6.5f);
+                    using var format = new StringFormat { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Center };
+                    e.Graphics.DrawString($"{_itemList[e.Index]:X}", font, Brushes.White, rect, format);
+                }
+
                 e.Graphics.Clip = previousClip;
             }
             else
