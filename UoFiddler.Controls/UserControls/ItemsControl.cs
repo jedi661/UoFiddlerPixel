@@ -71,6 +71,14 @@ namespace UoFiddler.Controls.UserControls
             directionsButton.Click += (s, e) => ShowDirectionForm();
             ToolStrip.Items.Add(directionsButton);
 
+            _onlyFreeMenuItem = new ToolStripMenuItem("Show only free slots");
+            _onlyFreeMenuItem.Click += (s, e) => ShowSlots(!_showOnlyFree, !_showOnlyFree);
+            var gotoExtended = new ToolStripMenuItem("Go to extended range (0x10000)");
+            gotoExtended.Click += (s, e) => GoToExtendedRange();
+            int freeIndex = TileViewContextMenuStrip.Items.IndexOf(showFreeSlotsToolStripMenuItem);
+            TileViewContextMenuStrip.Items.Insert(freeIndex + 1, _onlyFreeMenuItem);
+            TileViewContextMenuStrip.Items.Insert(freeIndex + 2, gotoExtended);
+
             var directionsMenu = new ToolStripMenuItem("Generate directions (N/E/S/W)...");
             directionsMenu.Click += (s, e) => ShowDirectionForm();
             int mirrorIndex = TileViewContextMenuStrip.Items.IndexOf(mirrorToolStripMenuItem);
@@ -313,7 +321,12 @@ namespace UoFiddler.Controls.UserControls
             UpdateTileView();
 
             _showFreeSlots = false;
+            _showOnlyFree = false;
             showFreeSlotsToolStripMenuItem.Checked = false;
+            if (_onlyFreeMenuItem != null)
+            {
+                _onlyFreeMenuItem.Checked = false;
+            }
 
             var prevSelected = SelectedGraphicId;
 
@@ -888,40 +901,90 @@ namespace UoFiddler.Controls.UserControls
 
         private void OnClickShowFreeSlots(object sender, EventArgs e)
         {
-            // Toggle the value of the _showFreeSlots variable
-            _showFreeSlots = !_showFreeSlots;
-            // If _showFreeSlots is true
-            if (_showFreeSlots)
+            // toggle: all slots (used + free) <-> only used items
+            ShowSlots(!_showFreeSlots || _showOnlyFree, false);
+        }
+
+        private bool _showOnlyFree;
+        private ToolStripMenuItem _onlyFreeMenuItem;
+
+        /// <summary>
+        /// showSlots=false: normal view (only used items). showSlots=true: every id from 0 to the highest id
+        /// (incl. the extended range 0x10000+); with onlyFree only the free ids are listed. In both slot views
+        /// a selected free slot can be filled with Replace, Ctrl+V or the Directions window.
+        /// </summary>
+        private void ShowSlots(bool showSlots, bool onlyFree)
+        {
+            if (!showSlots)
             {
-                // every id from 0 to the highest id (incl. extended range) - built in one go (the old
-                // insert-loop was O(n^2) and unusable for the 1M+ extended range)
-                int max = Art.GetMaxExtendedItemId();
-                _itemList = new List<int>(max + 1);
-                for (int j = 0; j <= max; ++j)
+                _showFreeSlots = false;
+                _showOnlyFree = false;
+                Reload(); // resets the menu checks too
+                return;
+            }
+
+            Cursor.Current = Cursors.WaitCursor;
+            _showFreeSlots = true; // "slot mode": inserting/removing never changes the list
+            _showOnlyFree = onlyFree;
+            showFreeSlotsToolStripMenuItem.Checked = !onlyFree;
+            if (_onlyFreeMenuItem != null)
+            {
+                _onlyFreeMenuItem.Checked = onlyFree;
+            }
+
+            var prevSelected = SelectedGraphicId;
+
+            // built in one go (the old insert-loop was O(n^2) and unusable for the 1M+ extended range)
+            int max = Art.GetMaxExtendedItemId();
+            _itemList = new List<int>(onlyFree ? 0x10000 : max + 1);
+            for (int j = 0; j <= max; ++j)
+            {
+                if (!onlyFree || !Art.IsValidStatic(j))
                 {
                     _itemList.Add(j);
                 }
-
-                // Store the previously selected item ID
-                var prevSelected = SelectedGraphicId;
-
-                // Update the VirtualListSize property of the ItemsTileView control to reflect the new number of items
-                ItemsTileView.VirtualListSize = _itemList.Count;
-
-                // If there was a previously selected item, try to reselect it
-                if (prevSelected >= 0)
-                {
-                    SelectedGraphicId = prevSelected;
-                }
-
-                // Force the ItemsTileView control to redraw
-                ItemsTileView.Invalidate();
             }
-            else
+
+            ItemsTileView.VirtualListSize = _itemList.Count;
+            if (prevSelected >= 0 && _itemList.Count > 0)
             {
-                // If _showFreeSlots is false, call the Reload method
-                Reload();
+                int pos = _itemList.BinarySearch(prevSelected);
+                SelectedGraphicId = _itemList[Math.Min(pos < 0 ? ~pos : pos, _itemList.Count - 1)];
             }
+
+            ItemsTileView.Invalidate();
+            Cursor.Current = Cursors.Default;
+
+            toolStripStatusLabelItemHowMuch.Text = onlyFree
+                ? $"Free slots: {_itemList.Count:N0} (0x0000 - 0x{max:X})"
+                : $"Slots: {_itemList.Count:N0} (0x0000 - 0x{max:X})";
+        }
+
+        /// <summary>Jumps to the first id of the extended range (switches to the slot view if it is empty).</summary>
+        private void GoToExtendedRange()
+        {
+            if (!Art.HasExtension)
+            {
+                MessageBox.Show("There is no extended range yet. Create it under Misc -> Extended Art Format.",
+                    "Extended range", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            int target = ExtendedFormat.BaseId;
+            int pos = _itemList.BinarySearch(target);
+            if (pos < 0 && ~pos >= _itemList.Count)
+            {
+                ShowSlots(true, _showOnlyFree);
+                pos = _itemList.BinarySearch(target);
+            }
+
+            if (_itemList.Count == 0)
+            {
+                return;
+            }
+
+            ItemsTileView.FocusIndex = -1;
+            SelectedGraphicId = _itemList[Math.Min(pos < 0 ? ~pos : pos, _itemList.Count - 1)];
         }
         #endregion
 

@@ -277,6 +277,18 @@ namespace UoFiddler.Controls.Forms
             {
                 Art.SaveExtension(Options.OutputPath);
                 TileData.SaveExtension(Options.OutputPath);
+
+                // the extension is saved now: the "unsaved changes" hint stays only if the classic files
+                // (art.mul / tiledata.mul) really have unsaved changes
+                if (!Art.LegacyModified)
+                {
+                    Options.ChangedUltimaClass["Art"] = false;
+                }
+
+                if (TileData.IsLegacyUnchanged())
+                {
+                    Options.ChangedUltimaClass["TileData"] = false;
+                }
                 MessageBox.Show(this,
                     $"Saved {ExtendedFormat.ArtIndexFileName}, {ExtendedFormat.ArtDataFileName} and {ExtendedFormat.TileDataFileName} to {Options.OutputPath}",
                     "Save", MessageBoxButtons.OK, MessageBoxIcon.Information);

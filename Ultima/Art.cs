@@ -54,6 +54,13 @@ namespace Ultima
         private static readonly Dictionary<int, bool> _patched = new Dictionary<int, bool>();
         public static bool Modified;
 
+        /// <summary>
+        /// True when the classic part (land/static art in art.mul, ids below 0x10000) was changed since loading or the
+        /// last full <see cref="Save(string)"/>. Changes in the extended range do not set it, so after saving only
+        /// the extension files the tool knows whether art.mul still has unsaved changes.
+        /// </summary>
+        public static bool LegacyModified { get; private set; }
+
         private static byte[] _streamBuffer;
         private static readonly byte[] _validBuffer = new byte[4];
 
@@ -405,6 +412,7 @@ namespace Ultima
             _patched.Clear();
             LoadExtension();
             Modified = false;
+            LegacyModified = false;
         }
 
         /// <summary>
@@ -425,6 +433,7 @@ namespace Ultima
             }
 
             index += LandCount;
+            LegacyModified = true;
 
             _cache[index] = bmp;
             _removed[index] = false;
@@ -445,6 +454,7 @@ namespace Ultima
         public static void ReplaceLand(int index, Bitmap bmp)
         {
             index = NormalizeLandIndex(index);
+            LegacyModified = true;
             _cache[index] = bmp;
             _removed[index] = false;
 
@@ -474,6 +484,7 @@ namespace Ultima
 
             _removed[index] = true;
             Modified = true;
+            LegacyModified = true;
         }
 
         /// <summary>
@@ -485,6 +496,7 @@ namespace Ultima
             index = NormalizeLandIndex(index);
             _removed[index] = true;
             Modified = true;
+            LegacyModified = true;
         }
 
         /// <summary>
@@ -1126,6 +1138,8 @@ namespace Ultima
                     memmul.WriteTo(fsmul);
                 }
             }
+
+            LegacyModified = false;
 
             // ids >= 0x10000 go to the side-car files, art.mul/artidx.mul stay client compatible
             SaveExtension(path);

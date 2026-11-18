@@ -1304,6 +1304,48 @@ namespace Ultima
 
         public static bool HasExtension => ExtendedCount > 0;
 
+        private static long _legacyHash;
+
+        /// <summary>
+        /// True if land data and the classic item data (tiledata.mul part, ids below 0x10000) are unchanged since
+        /// loading or the last <see cref="SaveTileData"/> - used to know whether only the extension was changed.
+        /// </summary>
+        public static bool IsLegacyUnchanged() => ComputeLegacyHash() == _legacyHash;
+
+        private static long ComputeLegacyHash()
+        {
+            unchecked
+            {
+                long h = 1469598103934665603L;
+                void Add(long v) => h = (h ^ v) * 1099511628211L;
+
+                if (LandTable != null)
+                {
+                    foreach (LandData l in LandTable)
+                    {
+                        Add((long)l.Flags);
+                        Add(l.TextureId);
+                        Add(l.Name?.GetHashCode() ?? 0);
+                    }
+                }
+
+                if (ItemTable != null)
+                {
+                    int count = Math.Min(LegacyItemCount, ItemTable.Length);
+                    for (int i = 0; i < count; ++i)
+                    {
+                        ItemData d = ItemTable[i];
+                        Add((long)d.Flags);
+                        Add(d.Weight | (d.Quality << 8) | (d.Quantity << 16) | ((long)d.Value << 24) | ((long)d.Hue << 32) | ((long)d.Height << 40));
+                        Add(d.MiscData | (d.Animation << 16) | ((long)d.StackingOffset << 32) | ((long)d.Unk2 << 40) | ((long)d.Unk3 << 48));
+                        Add(d.Name?.GetHashCode() ?? 0);
+                    }
+                }
+
+                return h;
+            }
+        }
+
         /// <summary>
         /// Grows <see cref="ItemTable"/> so it covers ids 0x10000 .. 0x10000 + slots - 1 (never shrinks the legacy part).
         /// tiledata.mul itself stays untouched - extended entries are saved into tiledataext.mul.
@@ -1517,6 +1559,7 @@ namespace Ultima
             }
 
             LegacyItemCount = ItemTable?.Length ?? 0;
+            _legacyHash = ComputeLegacyHash();
             LoadExtension();
         }
 
@@ -1610,6 +1653,8 @@ namespace Ultima
                     bin.Write(b);
                 }
             }
+
+            _legacyHash = ComputeLegacyHash();
 
             string directory = Path.GetDirectoryName(Path.GetFullPath(fileName));
             if (!string.IsNullOrEmpty(directory))
