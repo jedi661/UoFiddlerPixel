@@ -58,6 +58,7 @@ namespace UoFiddler.Controls.Forms
         private readonly Dictionary<ArtDirection, Label> _notes = new Dictionary<ArtDirection, Label>();
         private PictureBox _sourcePreview;
         private Label _sourceLabel;
+        private string _sourceText = string.Empty;
         private Label _statusLabel;
         private bool _suspendUpdate;
 
@@ -150,7 +151,7 @@ namespace UoFiddler.Controls.Forms
             opt.Controls.Add(_relightStrength);
 
             opt.Controls.Add(MakeLabel("Shadow:"));
-            _shadowBox = MakeCombo(new object[] { "Keep as is (mirrored)", "Detect + recast (UO light)", "Always cast", "Remove" }, 1, 170);
+            _shadowBox = MakeCombo(new object[] { "Without shadow", "With shadow (UO light)", "Keep original shadow" }, 0, 160);
             opt.Controls.Add(_shadowBox);
             opt.Controls.Add(MakeLabel("Length"));
             _shadowLength = MakeNumeric(0.1m, 2.0m, 0.5m, 1, 0.1m);
@@ -170,7 +171,7 @@ namespace UoFiddler.Controls.Forms
             opt.Controls.Add(_repairHole);
             opt.Controls.Add(MakeButton("Repair source", (s, e) => RepairSource()));
 
-            _overlayCheck = new CheckBox { Text = "Show faces", AutoSize = true, Margin = new Padding(10, 7, 3, 3) };
+            _overlayCheck = new CheckBox { Text = "Show errors", AutoSize = true, Checked = true, Margin = new Padding(10, 7, 3, 3) };
             _overlayCheck.CheckedChanged += (s, e) => RefreshPreviews();
             opt.Controls.Add(_overlayCheck);
 
@@ -179,13 +180,15 @@ namespace UoFiddler.Controls.Forms
             _zoomBox.SelectedIndexChanged -= OnOptionChanged;
             _zoomBox.SelectedIndexChanged += (s, e) => RefreshPreviews();
             opt.Controls.Add(_zoomBox);
-            opt.Controls.Add(MakeButton("Background...", (s, e) =>
+            opt.Controls.Add(MakeLabel("Background:"));
+            opt.Controls.Add(MakeButton("Black", (s, e) => SetBackground(Color.Black)));
+            opt.Controls.Add(MakeButton("White", (s, e) => SetBackground(Color.White)));
+            opt.Controls.Add(MakeButton("...", (s, e) =>
             {
                 using var dlg = new ColorDialog { Color = _background };
                 if (dlg.ShowDialog(this) == DialogResult.OK)
                 {
-                    _background = dlg.Color;
-                    RefreshPreviews();
+                    SetBackground(dlg.Color);
                 }
             }));
             opt.Controls.Add(MakeLabel("Copy/PNG background:"));
@@ -229,6 +232,7 @@ namespace UoFiddler.Controls.Forms
             layout.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
             layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
             _sourcePreview = MakePreview();
+            _sourcePreview.ContextMenuStrip = BuildImageMenu(() => _source, null);
             layout.Controls.Add(WrapScroll(_sourcePreview), 0, 0);
             _sourceLabel = MakeLabel("-");
             layout.Controls.Add(_sourceLabel, 0, 1);
@@ -245,6 +249,7 @@ namespace UoFiddler.Controls.Forms
             layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
 
             PictureBox pb = MakePreview();
+            pb.ContextMenuStrip = BuildImageMenu(() => _results.TryGetValue(d, out ArtDirectionResult r) ? r.Image : null, d);
             _previews[d] = pb;
             layout.Controls.Add(WrapScroll(pb), 0, 0);
 
@@ -314,7 +319,7 @@ namespace UoFiddler.Controls.Forms
 
             _source = FromBitmap(bitmap, false);
             _sourceId = itemId;
-            _sourceLabel.Text = itemId >= 0
+            _sourceText = itemId >= 0
                 ? $"Item 0x{itemId:X4} ({bitmap.Width}x{bitmap.Height})"
                 : $"{bitmap.Width}x{bitmap.Height}";
             FillFreeIds();
@@ -336,7 +341,7 @@ namespace UoFiddler.Controls.Forms
             using var tmp = new Bitmap(dlg.FileName);
             _source = FromBitmap(tmp, _whiteTransparentCheck.Checked);
             _sourceId = -1;
-            _sourceLabel.Text = $"{Path.GetFileName(dlg.FileName)} ({tmp.Width}x{tmp.Height})";
+            _sourceText = $"{Path.GetFileName(dlg.FileName)} ({tmp.Width}x{tmp.Height})";
             FillFreeIds();
             Regenerate();
         }
@@ -353,7 +358,7 @@ namespace UoFiddler.Controls.Forms
             using var tmp = new Bitmap(img);
             _source = FromBitmap(tmp, _whiteTransparentCheck.Checked);
             _sourceId = -1;
-            _sourceLabel.Text = $"Clipboard ({tmp.Width}x{tmp.Height})";
+            _sourceText = $"Clipboard ({tmp.Width}x{tmp.Height})";
             FillFreeIds();
             Regenerate();
         }
@@ -435,7 +440,12 @@ namespace UoFiddler.Controls.Forms
                 Kind = (ArtObjectKind)Math.Max(0, _kindBox.SelectedIndex),
                 Relight = _relightCheck.Checked,
                 RelightStrength = _relightStrength.Value / 100.0,
-                Shadow = (ArtShadowMode)Math.Max(0, _shadowBox.SelectedIndex),
+                Shadow = _shadowBox.SelectedIndex switch
+                {
+                    1 => ArtShadowMode.AlwaysCast, // with shadow: drawn shadow is replaced, otherwise one is cast
+                    2 => ArtShadowMode.KeepAsIs,
+                    _ => ArtShadowMode.Remove      // without shadow: a drawn shadow is removed
+                },
                 ShadowLength = (double)_shadowLength.Value,
                 ShadowAngle = (double)_shadowAngle.Value,
                 ShadowMaxLuma = (int)_shadowLuma.Value,
@@ -479,27 +489,55 @@ namespace UoFiddler.Controls.Forms
             int zoom = Math.Max(1, _zoomBox.SelectedIndex + 1);
             ArtDirectionOptions options = CurrentOptions();
 
-            SetPreview(_sourcePreview, _source, zoom, _overlayCheck.Checked ? ArtDirectionGenerator.ClassifyForPreview(_source, options) : null);
+            SetPreview(_sourcePreview, _source, zoom);
+            _sourceLabel.Text = _sourceText + Environment.NewLine + ErrorText(_source, out _);
 
             foreach (ArtDirection d in _allDirections)
             {
                 if (_results.TryGetValue(d, out ArtDirectionResult r))
                 {
-                    ArtFaceClass[] overlay = _overlayCheck.Checked ? ArtDirectionGenerator.ClassifyForPreview(r.Image, options) : null;
-                    SetPreview(_previews[d], r.Image, zoom, overlay);
-                    _notes[d].Text = (d == SourceDirection ? "(drawn direction) " : string.Empty) + r.Note;
-                    _notes[d].ForeColor = r.IsExact ? Color.DimGray : Color.DarkOrange;
+                    SetPreview(_previews[d], r.Image, zoom);
+                    string errors = ErrorText(r.Image, out bool hasErrors);
+                    _notes[d].Text = (d == SourceDirection ? "(drawn direction) " : string.Empty) + r.Note + Environment.NewLine + errors;
+                    _notes[d].ForeColor = hasErrors ? Color.Firebrick : r.IsExact ? Color.DimGray : Color.DarkOrange;
                 }
                 else
                 {
-                    SetPreview(_previews[d], null, zoom, null);
+                    SetPreview(_previews[d], null, zoom);
                     _notes[d].Text = _targetChecks[d].Checked ? string.Empty : "(not selected)";
                 }
             }
         }
 
-        private void SetPreview(PictureBox pb, ArtPixelImage img, int zoom, ArtFaceClass[] overlay)
+        private string ErrorText(ArtPixelImage img, out bool hasErrors)
         {
+            ArtDirectionGenerator.FindErrors(img, (int)_repairHole.Value, out int holes, out int strays, out int blacks, out int white);
+            hasErrors = holes + strays + blacks + white > 0;
+            if (!hasErrors)
+            {
+                return $"{img.Width}x{img.Height} - no errors";
+            }
+
+            var parts = new List<string>();
+            if (holes > 0) { parts.Add($"{holes} hole px"); }
+            if (strays > 0) { parts.Add($"{strays} stray"); }
+            if (blacks > 0) { parts.Add($"{blacks} black"); }
+            if (white > 0) { parts.Add($"{white} white edge"); }
+            return $"{img.Width}x{img.Height} - errors: " + string.Join(", ", parts);
+        }
+
+        private void SetBackground(Color color)
+        {
+            _background = color;
+            RefreshPreviews();
+        }
+
+        private void SetPreview(PictureBox pb, ArtPixelImage img, int zoom)
+        {
+            ArtDirectionGenerator.ArtError[] overlay = img != null && _overlayCheck.Checked
+                ? ArtDirectionGenerator.FindErrors(img, (int)_repairHole.Value, out _, out _, out _, out _)
+                : null;
+
             Image old = pb.Image;
             if (img == null)
             {
@@ -523,15 +561,12 @@ namespace UoFiddler.Controls.Forms
                     {
                         for (int x = 0; x < img.Width; ++x)
                         {
-                            Color? tint = overlay[(y * img.Width) + x] switch
-                            {
-                                ArtFaceClass.LeftFace => Color.FromArgb(110, 255, 60, 60),
-                                ArtFaceClass.RightFace => Color.FromArgb(110, 60, 90, 255),
-                                ArtFaceClass.Top => Color.FromArgb(110, 60, 220, 60),
-                                ArtFaceClass.Edge => Color.FromArgb(140, 255, 220, 0),
-                                ArtFaceClass.Shadow => Color.FromArgb(140, 190, 0, 190),
-                                _ => null
-                            };
+                            ArtDirectionGenerator.ArtError e = overlay[(y * img.Width) + x];
+                            Color? tint = e == ArtDirectionGenerator.ArtError.None ? null
+                                : (e & ArtDirectionGenerator.ArtError.Hole) != 0 ? Color.Magenta
+                                : (e & ArtDirectionGenerator.ArtError.Black) != 0 ? Color.Red
+                                : (e & ArtDirectionGenerator.ArtError.Stray) != 0 ? Color.Cyan
+                                : Color.Orange; // white edge
 
                             if (tint.HasValue)
                             {
@@ -675,16 +710,103 @@ namespace UoFiddler.Controls.Forms
         /// <summary>Copy/PNG output: transparent pixels black (UO convention) or real transparency.</summary>
         private Bitmap ToExportBitmap(ArtPixelImage img)
         {
-            using Bitmap art = ToBitmap(img);
             bool black = _exportBackgroundBox == null || _exportBackgroundBox.SelectedIndex == 0;
-            var bmp = new Bitmap(art.Width, art.Height, black ? PixelFormat.Format24bppRgb : PixelFormat.Format32bppArgb);
+            return ToExportBitmap(img, black ? Color.Black : Color.Transparent);
+        }
+
+        /// <summary>Same size as the art image, transparent pixels filled with <paramref name="background"/>.</summary>
+        private static Bitmap ToExportBitmap(ArtPixelImage img, Color background)
+        {
+            using Bitmap art = ToBitmap(img);
+            bool transparent = background.A == 0;
+            var bmp = new Bitmap(art.Width, art.Height, transparent ? PixelFormat.Format32bppArgb : PixelFormat.Format24bppRgb);
             using (Graphics g = Graphics.FromImage(bmp))
             {
-                g.Clear(black ? Color.Black : Color.Transparent);
+                g.Clear(background);
                 g.DrawImageUnscaled(art, 0, 0);
             }
 
             return bmp;
+        }
+
+        /// <summary>Puts the image into the clipboard (bitmap + PNG stream, so transparency survives in paint programs).</summary>
+        private void CopyToClipboard(ArtPixelImage img, Color background, string what)
+        {
+            if (img == null)
+            {
+                SetStatus("No image.");
+                return;
+            }
+
+            using Bitmap bmp = ToExportBitmap(img, background);
+            var data = new DataObject();
+            data.SetData(DataFormats.Bitmap, true, bmp);
+            var png = new MemoryStream();
+            bmp.Save(png, ImageFormat.Png);
+            data.SetData("PNG", false, png);
+            Clipboard.SetDataObject(data, true);
+
+            string bg = background.A == 0 ? "transparent" : background == Color.Black ? "black" : "white";
+            SetStatus($"{what} copied to the clipboard ({img.Width}x{img.Height}, {bg} background).");
+        }
+
+        /// <summary>Right-click menu of a preview image.</summary>
+        private ContextMenuStrip BuildImageMenu(Func<ArtPixelImage> getImage, ArtDirection? direction)
+        {
+            string what = direction?.ToString() ?? "Source";
+            var menu = new ContextMenuStrip();
+            menu.Items.Add("Copy (black background)", null, (s, e) => CopyToClipboard(getImage(), Color.Black, what));
+            menu.Items.Add("Copy (white background)", null, (s, e) => CopyToClipboard(getImage(), Color.White, what));
+            menu.Items.Add("Copy (transparent)", null, (s, e) => CopyToClipboard(getImage(), Color.Transparent, what));
+            menu.Items.Add(new ToolStripSeparator());
+            menu.Items.Add("Save as PNG...", null, (s, e) => SaveImage(getImage(), what));
+            if (direction.HasValue)
+            {
+                menu.Items.Add("Insert into Art", null, (s, e) => InsertOne(direction.Value, true));
+            }
+            else
+            {
+                menu.Items.Add("Repair source", null, (s, e) => RepairSource());
+                menu.Items.Add("Paste as source (Ctrl+V)", null, (s, e) => LoadFromClipboard());
+            }
+
+            menu.Items.Add(new ToolStripSeparator());
+            menu.Items.Add("Background black", null, (s, e) => SetBackground(Color.Black));
+            menu.Items.Add("Background white", null, (s, e) => SetBackground(Color.White));
+            var errors = new ToolStripMenuItem("Show errors") { CheckOnClick = true };
+            errors.Click += (s, e) => _overlayCheck.Checked = errors.Checked;
+            menu.Opening += (s, e) =>
+            {
+                errors.Checked = _overlayCheck.Checked;
+                bool has = getImage() != null;
+                foreach (ToolStripItem item in menu.Items)
+                {
+                    if (item.Text.StartsWith("Copy") || item.Text.StartsWith("Save") || item.Text.StartsWith("Insert") || item.Text.StartsWith("Repair"))
+                    {
+                        item.Enabled = has;
+                    }
+                }
+            };
+            menu.Items.Add(errors);
+            return menu;
+        }
+
+        private void SaveImage(ArtPixelImage img, string what)
+        {
+            if (img == null)
+            {
+                return;
+            }
+
+            using var dlg = new SaveFileDialog { Filter = "PNG (*.png)|*.png|Bitmap (*.bmp)|*.bmp", FileName = $"Item_{what}.png" };
+            if (dlg.ShowDialog(this) != DialogResult.OK)
+            {
+                return;
+            }
+
+            using Bitmap bmp = ToExportBitmap(img);
+            bmp.Save(dlg.FileName, dlg.FilterIndex == 2 ? ImageFormat.Bmp : ImageFormat.Png);
+            SetStatus($"{what} saved to {dlg.FileName} ({img.Width}x{img.Height}).");
         }
 
         private void RepairSource()

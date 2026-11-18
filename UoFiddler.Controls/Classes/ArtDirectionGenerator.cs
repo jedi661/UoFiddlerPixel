@@ -256,6 +256,11 @@ namespace UoFiddler.Controls.Classes
         /// </summary>
         public static ArtPixelImage Repair(ArtPixelImage src, int maxHole = 12)
         {
+            return Repair(src, maxHole, true);
+        }
+
+        private static ArtPixelImage Repair(ArtPixelImage src, int maxHole, bool fixPixels)
+        {
             int w = src.Width, h = src.Height;
             ArtPixelImage img = src.Clone();
 
@@ -367,7 +372,12 @@ namespace UoFiddler.Controls.Classes
                 }
             }
 
-            // 2. stray pixels and 3. colour 0
+            if (!fixPixels)
+            {
+                return img;
+            }
+
+            // 2. stray pixels, 3. colour 0, 4. white halo on the outline (from images on white background)
             ArtPixelImage dst = img.Clone();
             for (int y = 0; y < h; ++y)
             {
@@ -393,7 +403,10 @@ namespace UoFiddler.Controls.Classes
                         }
                     }
 
-                    if (!neighbour)
+                    bool edge = (x == 0 || img[x - 1, y] == 0) || (x == w - 1 || img[x + 1, y] == 0) ||
+                                (y == 0 || img[x, y - 1] == 0) || (y == h - 1 || img[x, y + 1] == 0);
+
+                    if (!neighbour || (edge && IsWhiteEdge(c)))
                     {
                         dst[x, y] = 0;
                     }
@@ -406,6 +419,95 @@ namespace UoFiddler.Controls.Classes
 
             return dst;
         }
+
+        /// <summary>Kinds of problems that show up in the client as dots/holes on black or white ground.</summary>
+        [Flags]
+        public enum ArtError : byte
+        {
+            None = 0,
+            Hole = 1,       // transparent pixel enclosed by the object
+            Stray = 2,      // single pixel without neighbours
+            Black = 4,      // opaque colour 0 -> transparent in the client
+            WhiteEdge = 8   // near-white pixel on the outline (white halo from a white background)
+        }
+
+        /// <summary>Marks every error pixel. <paramref name="maxHole"/>: larger enclosed areas are openings, no error.</summary>
+        public static ArtError[] FindErrors(ArtPixelImage img, int maxHole, out int holes, out int strays, out int blacks, out int whiteEdges)
+        {
+            int w = img.Width, h = img.Height;
+            var errors = new ArtError[w * h];
+            holes = strays = blacks = whiteEdges = 0;
+
+            // holes: compare with the repaired image - every transparent pixel that the repair fills is a hole
+            ArtPixelImage repaired = Repair(img, maxHole, false);
+            for (int i = 0; i < errors.Length; ++i)
+            {
+                if (img.Pixels[i] == 0 && repaired.Pixels[i] != 0)
+                {
+                    errors[i] |= ArtError.Hole;
+                    ++holes;
+                }
+            }
+
+            for (int y = 0; y < h; ++y)
+            {
+                for (int x = 0; x < w; ++x)
+                {
+                    ushort c = img[x, y];
+                    if (c == 0)
+                    {
+                        continue;
+                    }
+
+                    int i = (y * w) + x;
+                    int neighbours = 0;
+                    bool edge = false;
+                    for (int dy = -1; dy <= 1; ++dy)
+                    {
+                        for (int dx = -1; dx <= 1; ++dx)
+                        {
+                            if (dx == 0 && dy == 0)
+                            {
+                                continue;
+                            }
+
+                            int nx = x + dx, ny = y + dy;
+                            bool opaque = nx >= 0 && ny >= 0 && nx < w && ny < h && img[nx, ny] != 0;
+                            if (opaque)
+                            {
+                                ++neighbours;
+                            }
+                            else if (dx == 0 || dy == 0)
+                            {
+                                edge = true;
+                            }
+                        }
+                    }
+
+                    if (neighbours == 0)
+                    {
+                        errors[i] |= ArtError.Stray;
+                        ++strays;
+                    }
+
+                    if ((c & 0x7FFF) == 0)
+                    {
+                        errors[i] |= ArtError.Black;
+                        ++blacks;
+                    }
+
+                    if (edge && IsWhiteEdge(c))
+                    {
+                        errors[i] |= ArtError.WhiteEdge;
+                        ++whiteEdges;
+                    }
+                }
+            }
+
+            return errors;
+        }
+
+        private static bool IsWhiteEdge(ushort c) => Luma(c) >= 235 && Saturation(c) <= 40;
 
         private static void PushIfTransparent(ArtPixelImage img, bool[] outside, Stack<int> stack, int x, int y)
         {
@@ -732,7 +834,7 @@ namespace UoFiddler.Controls.Classes
         /// <summary>
         /// Casts the object silhouette onto the ground: every object pixel at height h above the bottom of its
         /// column throws a shadow point h*length away in the light direction. Drawn only behind the object.
-        /// The canvas grows symmetrically left/right and at the top so the art anchor (bottom center) stays.
+        /// The image keeps its size - parts of the shadow outside are clipped.
         /// </summary>
         public static ArtPixelImage CastShadow(ArtPixelImage obj, ushort shadowColor, ArtDirectionOptions o)
         {
@@ -786,9 +888,10 @@ namespace UoFiddler.Controls.Classes
                 return obj;
             }
 
-            int grow = Math.Max(-minX, maxX - (w - 1));
-            int growTop = Math.Max(0, -minY);
-            var dst = new ArtPixelImage(w + (2 * grow), h + growTop);
+            // the image size never changes (same size as the source, UO anchor bottom center stays):
+            // shadow parts outside the canvas are clipped
+            const int grow = 0, growTop = 0;
+            var dst = new ArtPixelImage(w, h);
             ushort sc = (ushort)(0x8000 | (shadowColor == 0 ? 0x0421 : shadowColor));
 
             // fill every shadow row between its outermost projected points -> solid shadow without gaps/stairs
