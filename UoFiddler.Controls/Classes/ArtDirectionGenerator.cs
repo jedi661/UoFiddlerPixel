@@ -220,7 +220,9 @@ namespace UoFiddler.Controls.Classes
                         notes.Add("Flat object: rotated 180°.");
                         break;
                     case ArtObjectKind.Directional:
-                        int[] map = TurnOnGroundMap(img);
+                        // drawn pointing West/East lies on a "\\" diagonal, North/South on "/"
+                        int slope2 = sourceDirection == ArtDirection.West || sourceDirection == ArtDirection.East ? 1 : -1;
+                        int[] map = TurnOnGroundMap(img, slope2);
                         img = ApplyMap(img, map);
                         cls = ApplyMap(cls, map);
                         odd = !odd; // the turn contains a horizontal flip
@@ -625,15 +627,17 @@ namespace UoFiddler.Controls.Classes
         }
 
         /// <summary>
-        /// 180 degree turn on the ground for objects that point somewhere (cannon, chair ...), as pixel operation:
-        /// every column is moved as a whole - its x is mirrored (x' = minX + maxX - x) and the vertical centre of
-        /// the column is reflected through the centre of the object, the content of the column is NOT changed.
-        /// Column centres that lie on the object's axis stay on that axis (a straight line reflected through one
-        /// of its points is itself), so the object keeps its diagonal and steepness but points the other way:
-        /// a cannon pointing to the upper left points to the lower right, the carriage stays below the barrel.
-        /// The colours of the front side are used for the back. Same image size, the lowest pixel keeps its row.
+        /// 180 degree turn on the ground for objects that point somewhere (cannon, chair ...): the image is
+        /// reflected across the line that runs through the centre of the object PERPENDICULAR to its own axis.
+        /// That reverses the pointing direction (a cannon pointing to the upper left points to the lower right)
+        /// while everything keeps its side of the axis - the highlight stays on top of the barrel, the carriage
+        /// stays below it - and, being a mirror, it does not distort shapes: round muzzles and knobs stay round.
+        /// The axis is the robust (Theil-Sen) slope of the upper outline; if it does not lie on the expected
+        /// diagonal (<paramref name="slope2"/>: +1 = "\" for West/East, -1 = "/" for North/South) the iso slope
+        /// 1/2 is used. Nearest-neighbour sampling (every target pixel takes exactly one source pixel, no holes).
+        /// Same image size, the lowest pixel keeps its row (UO anchor).
         /// </summary>
-        public static int[] TurnOnGroundMap(ArtPixelImage img)
+        public static int[] TurnOnGroundMap(ArtPixelImage img, int slope2)
         {
             int w = img.Width, h = img.Height;
             var map = new int[w * h];
@@ -645,59 +649,61 @@ namespace UoFiddler.Controls.Classes
                 return map;
             }
 
-            int c2x = minX + maxX;
-
             var top = new int[w];
-            var bottom = new int[w];
+            Array.Fill(top, -1);
             for (int x = minX; x <= maxX; ++x)
             {
-                top[x] = -1;
-                bottom[x] = -1;
                 for (int y = minY; y <= maxY; ++y)
                 {
                     if (img.IsOpaque(x, y))
                     {
-                        if (top[x] < 0)
-                        {
-                            top[x] = y;
-                        }
-
-                        bottom[x] = y;
+                        top[x] = y;
+                        break;
                     }
                 }
             }
 
-            // the axis: robust slope (median of all pair slopes, Theil-Sen) of the upper outline - a stray pixel or
-            // a carriage below the barrel does not disturb it. Every column moves by the same linear amount, so the
-            // outline stays a straight line on the same diagonal and nothing gets jagged.
             double k = MedianSlope(top, minX, maxX);
-            int Shift(int x) => (int)Math.Round(k * (c2x - (2 * x)), MidpointRounding.AwayFromZero);
-
-            int newMax = int.MinValue;
-            for (int x = minX; x <= maxX; ++x)
+            if (Math.Sign(k) != Math.Sign(slope2) || Math.Abs(k) < 0.25 || Math.Abs(k) > 2.5)
             {
-                if (bottom[x] >= 0)
+                k = 0.5 * slope2;
+            }
+
+            // reflection across the line through (cx, cy) with angle axis + 90 degrees (an involution)
+            double cx = (minX + maxX) / 2.0, cy = (minY + maxY) / 2.0;
+            double phi = Math.Atan(k) + (Math.PI / 2);
+            double c2 = Math.Cos(2 * phi), s2 = Math.Sin(2 * phi);
+            (double X, double Y) Reflect(double x, double y)
+            {
+                double dx = x - cx, dy = y - cy;
+                return (cx + (c2 * dx) + (s2 * dy), cy + (s2 * dx) - (c2 * dy));
+            }
+
+            // anchor: the lowest reflected pixel goes onto the lowest row of the source
+            double newMax = double.MinValue;
+            for (int y = minY; y <= maxY; ++y)
+            {
+                for (int x = minX; x <= maxX; ++x)
                 {
-                    newMax = Math.Max(newMax, bottom[x] + Shift(x));
+                    if (img.IsOpaque(x, y))
+                    {
+                        newMax = Math.Max(newMax, Reflect(x, y).Y);
+                    }
                 }
             }
 
-            int anchor = maxY - newMax; // keep the lowest pixel on its row (UO anchor)
-            for (int x = minX; x <= maxX; ++x)
-            {
-                if (bottom[x] < 0)
-                {
-                    continue;
-                }
+            int shift = maxY - (int)Math.Round(newMax, MidpointRounding.AwayFromZero);
 
-                int nx = c2x - x;
-                int shift = Shift(x) + anchor;
-                for (int y = top[x]; y <= bottom[x]; ++y)
+            for (int y = 0; y < h; ++y)
+            {
+                for (int x = 0; x < w; ++x)
                 {
-                    int ny = y + shift;
-                    if (img.IsOpaque(x, y) && ny >= 0 && ny < h)
+                    (double sx, double sy) = Reflect(x, y - shift);
+                    int ix = (int)Math.Round(sx, MidpointRounding.AwayFromZero);
+                    int iy = (int)Math.Round(sy, MidpointRounding.AwayFromZero);
+                    if (ix >= 0 && iy >= 0 && ix < w && iy < h && img.IsOpaque(ix, iy))
                     {
-                        map[(ny * w) + nx] = (y * w) + x;
+                        map[(y * w) + x] = (iy * w) + ix;
                     }
                 }
             }
