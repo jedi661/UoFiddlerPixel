@@ -30,6 +30,13 @@ namespace UoFiddler.Controls.Forms
 
         private readonly Action<int, Bitmap> _insertCallback;
 
+        // learning
+        private readonly ArtDirectionRuleStore _rules =
+            new ArtDirectionRuleStore(Path.Combine(Options.AppDataPath ?? Path.GetTempPath(), "ArtDirectionRules.json"));
+        private CheckBox _autoDetectCheck;
+        private CheckBox _learnOnInsertCheck;
+        private Label _learnLabel;
+
         private ArtPixelImage _source;
         private int _sourceId = -1;
         private readonly Dictionary<ArtDirection, ArtDirectionResult> _results = new Dictionary<ArtDirection, ArtDirectionResult>();
@@ -204,6 +211,26 @@ namespace UoFiddler.Controls.Forms
             _exportBackgroundBox = MakeCombo(new object[] { "Black (UO)", "Transparent" }, 0, 100);
             _exportBackgroundBox.SelectedIndexChanged -= OnOptionChanged;
             opt.Controls.Add(_exportBackgroundBox);
+
+            // --- learning: auto detect, remembered corrections, similar existing items
+            _autoDetectCheck = new CheckBox { Text = "Auto detect / learned", AutoSize = true, Checked = true, Margin = new Padding(10, 7, 3, 3) };
+            new ToolTip().SetToolTip(_autoDetectCheck,
+                "When an image is loaded: use a remembered correction for similar items, otherwise detect object type and" + Environment.NewLine +
+                "drawn direction from the TileData flags (wall, door, surface ...) and the shape.");
+            opt.Controls.Add(_autoDetectCheck);
+            opt.Controls.Add(MakeButton("Detect now", (s, e) =>
+            {
+                AutoConfigure(true);
+                FillFreeIds();
+                Regenerate();
+            }));
+            opt.Controls.Add(MakeButton("Remember settings", (s, e) => RememberCurrent(false)));
+            _learnOnInsertCheck = new CheckBox { Text = "Learn from inserts", AutoSize = true, Checked = true, Margin = new Padding(6, 7, 3, 3) };
+            new ToolTip().SetToolTip(_learnOnInsertCheck, "Inserting into Art also remembers the current settings for similar items.");
+            opt.Controls.Add(_learnOnInsertCheck);
+            opt.Controls.Add(MakeButton("Similar existing items...", (s, e) => ShowSimilar()));
+            _learnLabel = new Label { AutoSize = true, ForeColor = Color.DarkSlateBlue, Margin = new Padding(10, 8, 3, 3) };
+            opt.Controls.Add(_learnLabel);
             root.Controls.Add(opt, 0, 1);
 
             // --- row 3: previews
@@ -404,6 +431,7 @@ namespace UoFiddler.Controls.Forms
             _sourceText = itemId >= 0
                 ? $"Item 0x{itemId:X4} ({bitmap.Width}x{bitmap.Height})"
                 : $"{bitmap.Width}x{bitmap.Height}";
+            AutoConfigure();
             FillFreeIds();
             Regenerate();
         }
@@ -424,6 +452,7 @@ namespace UoFiddler.Controls.Forms
             _source = FromBitmap(tmp, _whiteTransparentCheck.Checked);
             _sourceId = -1;
             _sourceText = $"{Path.GetFileName(dlg.FileName)} ({tmp.Width}x{tmp.Height})";
+            AutoConfigure();
             FillFreeIds();
             Regenerate();
         }
@@ -441,6 +470,7 @@ namespace UoFiddler.Controls.Forms
             _source = FromBitmap(tmp, _whiteTransparentCheck.Checked);
             _sourceId = -1;
             _sourceText = $"Clipboard ({tmp.Width}x{tmp.Height})";
+            AutoConfigure();
             FillFreeIds();
             Regenerate();
         }
@@ -489,7 +519,7 @@ namespace UoFiddler.Controls.Forms
             return img;
         }
 
-        private static unsafe Bitmap ToBitmap(ArtPixelImage img)
+        internal static unsafe Bitmap ToBitmap(ArtPixelImage img)
         {
             var bmp = new Bitmap(Math.Max(1, img.Width), Math.Max(1, img.Height), PixelFormat.Format16bppArgb1555);
             BitmapData bd = bmp.LockBits(new Rectangle(0, 0, bmp.Width, bmp.Height), ImageLockMode.WriteOnly, PixelFormat.Format16bppArgb1555);
@@ -511,6 +541,146 @@ namespace UoFiddler.Controls.Forms
             }
 
             return bmp;
+        }
+        #endregion
+
+        #region Learning
+        /// <summary>
+        /// Sets object type, drawn direction and the manual rows for the loaded source: a remembered rule of a
+        /// similar item wins, otherwise TileData flags + shape (<see cref="ArtDirectionLearning.Suggest"/>).
+        /// </summary>
+        private void AutoConfigure(bool force = false)
+        {
+            if (_source == null || (!force && (_autoDetectCheck == null || !_autoDetectCheck.Checked)))
+            {
+                return;
+            }
+
+            bool old = _suspendUpdate;
+            _suspendUpdate = true;
+            try
+            {
+                ArtFeatures features = ArtFeatures.Compute(_source, _sourceId);
+                ArtDirectionRule rule = _rules.Match(features, _sourceId, out double distance);
+                if (rule != null)
+                {
+                    _kindBox.SelectedIndex = Math.Clamp(rule.Kind, 0, _kindBox.Items.Count - 1);
+                    _sourceDirectionBox.SelectedItem = (ArtDirection)rule.Direction;
+                    foreach (ArtDirection d in _allDirections)
+                    {
+                        if (_manual.TryGetValue(d, out ManualControls mc))
+                        {
+                            int i = (int)d;
+                            mc.Method.SelectedIndex = Math.Clamp(rule.Method[i], 0, mc.Method.Items.Count - 1);
+                            mc.Axis.Value = Math.Clamp((decimal)rule.Axis[i], mc.Axis.Minimum, mc.Axis.Maximum);
+                            mc.Dx.Value = Math.Clamp(rule.Dx[i], (int)mc.Dx.Minimum, (int)mc.Dx.Maximum);
+                            mc.Dy.Value = Math.Clamp(rule.Dy[i], (int)mc.Dy.Minimum, (int)mc.Dy.Maximum);
+                        }
+                    }
+
+                    rule.Uses++;
+                    _rules.Save();
+                    _learnLabel.Text = $"Learned: settings of '{rule.Name}' applied ({ArtFeatures.Similarity(distance)}% similar).";
+                    return;
+                }
+
+                bool has = _sourceId >= 0 && TileData.ItemTable != null && _sourceId < TileData.ItemTable.Length;
+                ItemData data = has ? TileData.ItemTable[_sourceId] : default;
+                ArtSuggestion s = ArtDirectionLearning.Suggest(_source, has,
+                    has && (data.Flags & TileFlag.Wall) != 0, has && (data.Flags & TileFlag.Door) != 0,
+                    has && (data.Flags & TileFlag.Window) != 0, has && (data.Flags & TileFlag.Surface) != 0,
+                    has && (data.Flags & TileFlag.Foliage) != 0, has ? data.Height : 1);
+
+                _kindBox.SelectedIndex = (int)s.Kind;
+                _sourceDirectionBox.SelectedItem = s.Direction;
+                ResetManualRows();
+                _learnLabel.Text = $"Auto: {_kindBox.SelectedItem}, drawn {s.Direction} ({s.Reason}, {s.Confidence:P0}).";
+            }
+            finally
+            {
+                _suspendUpdate = old;
+            }
+        }
+
+        private void ResetManualRows()
+        {
+            foreach (ManualControls mc in _manual.Values)
+            {
+                mc.Method.SelectedIndex = 0;
+                mc.Axis.Value = 0;
+                mc.Dx.Value = 0;
+                mc.Dy.Value = 0;
+            }
+        }
+
+        /// <summary>Stores the current settings as a rule for this and similar items.</summary>
+        private void RememberCurrent(bool silent)
+        {
+            if (_source == null)
+            {
+                return;
+            }
+
+            var rule = new ArtDirectionRule
+            {
+                Name = !string.IsNullOrWhiteSpace(_sourceText) ? _sourceText : "image",
+                SourceId = _sourceId,
+                Kind = _kindBox.SelectedIndex,
+                Direction = (int)SourceDirection
+            };
+            foreach (ArtDirection d in _allDirections)
+            {
+                if (_manual.TryGetValue(d, out ManualControls mc))
+                {
+                    int i = (int)d;
+                    rule.Method[i] = mc.Method.SelectedIndex;
+                    rule.Axis[i] = (double)mc.Axis.Value;
+                    rule.Dx[i] = (int)mc.Dx.Value;
+                    rule.Dy[i] = (int)mc.Dy.Value;
+                }
+            }
+
+            rule.SetFeatures(ArtFeatures.Compute(_source, _sourceId));
+            try
+            {
+                _rules.Remember(rule);
+                _learnLabel.Text = $"Remembered for similar items ({_rules.Rules.Count} rules learned).";
+                if (!silent)
+                {
+                    SetStatus("Settings remembered - similar items get them automatically.");
+                }
+            }
+            catch (Exception ex)
+            {
+                SetStatus($"Could not save the learned rules: {ex.Message}");
+            }
+        }
+
+        private void ShowSimilar()
+        {
+            if (_source == null)
+            {
+                SetStatus("Load an image first.");
+                return;
+            }
+
+            new ArtSimilarItemsForm(_source, _sourceId,
+                (kind, why) =>
+                {
+                    _suspendUpdate = true;
+                    _kindBox.SelectedIndex = (int)kind;
+                    _suspendUpdate = false;
+                    _learnLabel.Text = $"Object type {_kindBox.SelectedItem} {why}.";
+                    Regenerate();
+                },
+                id =>
+                {
+                    if (Art.IsValidStatic(id))
+                    {
+                        LoadSource(Art.GetStatic(id), id);
+                        Activate();
+                    }
+                }).Show(this);
         }
         #endregion
 
@@ -741,6 +911,11 @@ namespace UoFiddler.Controls.Forms
             }
 
             _insertCallback?.Invoke(id, ToBitmap(r.Image));
+            if (showMessage && _learnOnInsertCheck != null && _learnOnInsertCheck.Checked)
+            {
+                RememberCurrent(true);
+            }
+
             SetStatus($"{d} inserted as 0x{id:X4}. Save the Art (and TileData) to write the files.");
             return true;
         }
@@ -772,6 +947,11 @@ namespace UoFiddler.Controls.Forms
                 {
                     ++count;
                 }
+            }
+
+            if (count > 0 && _learnOnInsertCheck != null && _learnOnInsertCheck.Checked)
+            {
+                RememberCurrent(true);
             }
 
             SetStatus($"{count} item(s) inserted. Save the Art (and TileData) to write the files.");
