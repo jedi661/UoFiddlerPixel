@@ -69,6 +69,10 @@ namespace UoFiddler.Controls.Forms
             var save = new Button { Text = "Save extension files to output path", AutoSize = true };
             save.Click += (s, e) => SaveExtension();
             row.Controls.Add(save);
+
+            var load = new Button { Text = "Load extension from folder...", AutoSize = true };
+            load.Click += (s, e) => LoadFromFolder();
+            row.Controls.Add(load);
             layout.Controls.Add(row, 0, 1);
 
             var hint = new Label
@@ -193,13 +197,85 @@ namespace UoFiddler.Controls.Forms
             }
         }
 
+        /// <summary>
+        /// Loads artextidx.mul / artext.mul / tiledataext.mul from any folder (e.g. the output folder after saving).
+        /// The chosen paths are stored in the path settings, so they are found again after a restart.
+        /// </summary>
+        private void LoadFromFolder()
+        {
+            using var dlg = new FolderBrowserDialog
+            {
+                Description = "Folder with artextidx.mul / artext.mul / tiledataext.mul",
+                SelectedPath = Art.ExtendedDataPath != null ? System.IO.Path.GetDirectoryName(Art.ExtendedDataPath) : Options.OutputPath
+            };
+            if (dlg.ShowDialog(this) != DialogResult.OK)
+            {
+                return;
+            }
+
+            string dir = dlg.SelectedPath;
+            string[] names = { ExtendedFormat.ArtIndexFileName, ExtendedFormat.ArtDataFileName, ExtendedFormat.TileDataFileName };
+            var found = new System.Collections.Generic.List<string>();
+            foreach (string name in names)
+            {
+                if (System.IO.File.Exists(System.IO.Path.Combine(dir, name)))
+                {
+                    found.Add(name);
+                }
+            }
+
+            bool artOk = found.Contains(ExtendedFormat.ArtIndexFileName) && found.Contains(ExtendedFormat.ArtDataFileName);
+            if (!artOk && !found.Contains(ExtendedFormat.TileDataFileName))
+            {
+                MessageBox.Show(this, $"No extended files found in{Environment.NewLine}{dir}", "Load extension",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            if (Art.HasExtension && Options.ChangedUltimaClass.TryGetValue("Art", out bool changed) && changed &&
+                MessageBox.Show(this, "Unsaved changes in the extended range will be discarded. Continue?", "Load extension",
+                    MessageBoxButtons.YesNo, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2) != DialogResult.Yes)
+            {
+                return;
+            }
+
+            foreach (string name in found)
+            {
+                Files.SetMulPath(System.IO.Path.Combine(dir, name), name);
+            }
+
+            Cursor.Current = Cursors.WaitCursor;
+            try
+            {
+                Art.ReloadExtension();
+                TileData.ReloadExtension();
+                _reloadItems?.Invoke();
+            }
+            finally
+            {
+                Cursor.Current = Cursors.Default;
+            }
+
+            if (Art.HasExtension)
+            {
+                _slots.Value = Math.Clamp(Art.ExtendedCount, (int)_slots.Minimum, (int)_slots.Maximum);
+            }
+
+            UpdateStatus();
+            MessageBox.Show(this,
+                Art.HasExtension || TileData.HasExtension
+                    ? $"Extension loaded from{Environment.NewLine}{dir}{Environment.NewLine}{Environment.NewLine}{string.Join(Environment.NewLine, found)}{Environment.NewLine}{Environment.NewLine}The path is remembered in the path settings."
+                    : "The files were found but could not be read (damaged or unknown format).",
+                "Load extension", MessageBoxButtons.OK, Art.HasExtension || TileData.HasExtension ? MessageBoxIcon.Information : MessageBoxIcon.Warning);
+        }
+
         private void UpdateStatus()
         {
             int legacyMax = Art.GetMaxItemId();
             string legacyName = Art.GetIdxLength() >= 0x13FDC ? "High Seas" : Art.GetIdxLength() == 0xC000 ? "Stygian Abyss" : "ML or older";
             string extState = Art.HasExtension
                 ? (Art.ExtendedDataPath != null ? $"loaded ({Art.ExtendedDataPath})" : "created in memory - not saved yet")
-                : "none";
+                : $"none - searched in the Ultima Online folder: {Files.RootDir}";
             int slots = (int)_slots.Value;
 
             _status.Text =

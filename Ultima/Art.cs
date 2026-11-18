@@ -114,6 +114,15 @@ namespace Ultima
         /// <summary>Path of the loaded artext.mul (null if the extension only exists in memory).</summary>
         public static string ExtendedDataPath => _extDataPath;
 
+        /// <summary>
+        /// Loads the extension again from the current paths (<see cref="Files.MulPath"/>), e.g. after the files were
+        /// copied into the client directory or a folder was chosen. Unsaved extended changes are discarded.
+        /// </summary>
+        public static void ReloadExtension()
+        {
+            LoadExtension();
+        }
+
         private static void LoadExtension()
         {
             CloseExtensionStream();
@@ -124,8 +133,8 @@ namespace Ultima
 
             try
             {
-                string idx = Files.GetFilePath(ExtendedFormat.ArtIndexFileName);
-                string mul = Files.GetFilePath(ExtendedFormat.ArtDataFileName);
+                string idx = Files.GetFilePathWithRootFallback(ExtendedFormat.ArtIndexFileName);
+                string mul = Files.GetFilePathWithRootFallback(ExtendedFormat.ArtDataFileName);
                 if (idx == null || mul == null)
                 {
                     return;

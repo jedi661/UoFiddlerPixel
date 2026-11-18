@@ -1377,6 +1377,12 @@ namespace Ultima
             ExtendedCount = slots;
         }
 
+        /// <summary>Loads tiledataext.mul again from the current paths (see <see cref="Art.ReloadExtension"/>).</summary>
+        public static void ReloadExtension()
+        {
+            LoadExtension();
+        }
+
         private static void LoadExtension()
         {
             ExtendedCount = 0;
@@ -1384,7 +1390,7 @@ namespace Ultima
             ExtendedFormat.TileRecord[] records = null;
             try
             {
-                string path = Files.GetFilePath(ExtendedFormat.TileDataFileName);
+                string path = Files.GetFilePathWithRootFallback(ExtendedFormat.TileDataFileName);
                 if (path != null)
                 {
                     records = ExtendedFormat.ReadTileData(path);

@@ -314,6 +314,36 @@ namespace Ultima
         }
         #endregion
 
+        #region GetFilePathWithRootFallback
+        /// <summary>
+        /// Like <see cref="GetFilePath(string)"/>, but if the stored path is empty or wrong it also looks for
+        /// <paramref name="file"/> directly in <see cref="RootDir"/>. Needed for files that were added later
+        /// (e.g. the extended art files): an older profile stores them with an empty path, so they would never
+        /// be found again although they were copied into the Ultima Online directory afterwards.
+        /// </summary>
+        public static string GetFilePathWithRootFallback(string file)
+        {
+            string path = MulPath == null ? null : GetFilePath(file);
+            if (path != null || string.IsNullOrEmpty(RootDir))
+            {
+                return path;
+            }
+
+            string candidate = Path.Combine(RootDir, file);
+            if (!File.Exists(candidate))
+            {
+                return null;
+            }
+
+            if (MulPath != null)
+            {
+                MulPath[file.ToLower()] = candidate; // remember it (saved with the profile)
+            }
+
+            return candidate;
+        }
+        #endregion
+
         #region GetFilePath
         internal static string GetFilePath(string format, params object[] args)
         {

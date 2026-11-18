@@ -965,7 +965,12 @@ namespace UoFiddler.Controls.UserControls
         {
             if (!Art.HasExtension)
             {
-                MessageBox.Show("There is no extended range yet. Create it under Misc -> Extended Art Format.",
+                MessageBox.Show(
+                    "No extended range is loaded." + Environment.NewLine + Environment.NewLine +
+                    $"The files {ExtendedFormat.ArtIndexFileName}, {ExtendedFormat.ArtDataFileName} and {ExtendedFormat.TileDataFileName} " +
+                    $"are searched in the Ultima Online folder:{Environment.NewLine}{Files.RootDir}" + Environment.NewLine + Environment.NewLine +
+                    "Copy them there (they are saved into the output folder), or open Misc -> Extended Art Format " +
+                    "and use 'Load extension from folder...' (or create a new one there).",
                     "Extended range", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
