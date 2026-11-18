@@ -27,9 +27,12 @@ namespace UoFiddler.Controls.Forms
         private readonly CheckBox _autoBackup;
         private readonly Label _backupLabel;
 
-        public ExtendedArtFormatForm(Action reloadItems)
+        private readonly Action<int> _goTo;
+
+        public ExtendedArtFormatForm(Action reloadItems, Action<int> goTo = null)
         {
             _reloadItems = reloadItems;
+            _goTo = goTo;
 
             Text = "Extended Art Format (1M+ items)";
             ShowIcon = false;
@@ -69,6 +72,10 @@ namespace UoFiddler.Controls.Forms
             var save = new Button { Text = "Save extension files to output path", AutoSize = true };
             save.Click += (s, e) => SaveExtension();
             row.Controls.Add(save);
+
+            var check = new Button { Text = "Check what is saved...", AutoSize = true };
+            check.Click += (s, e) => new ExtendedCheckForm(_goTo).Show(this);
+            row.Controls.Add(check);
 
             var load = new Button { Text = "Load extension from folder...", AutoSize = true };
             load.Click += (s, e) => LoadFromFolder();
@@ -365,9 +372,11 @@ namespace UoFiddler.Controls.Forms
                 {
                     Options.ChangedUltimaClass["TileData"] = false;
                 }
+                bool ok = ExtendedCheck.VerifySaved(Options.OutputPath, out string checkText);
                 MessageBox.Show(this,
-                    $"Saved {ExtendedFormat.ArtIndexFileName}, {ExtendedFormat.ArtDataFileName} and {ExtendedFormat.TileDataFileName} to {Options.OutputPath}",
-                    "Save", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    $"Saved {ExtendedFormat.ArtIndexFileName}, {ExtendedFormat.ArtDataFileName} and {ExtendedFormat.TileDataFileName} to {Options.OutputPath}" +
+                    Environment.NewLine + Environment.NewLine + checkText,
+                    "Save", MessageBoxButtons.OK, ok ? MessageBoxIcon.Information : MessageBoxIcon.Warning);
             }
             catch (Exception ex)
             {

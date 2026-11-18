@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
@@ -269,6 +270,133 @@ namespace Ultima
             }
 
             bw.Write(b);
+        }
+        #endregion
+
+        #region Inspection (check what is really on disk)
+        /// <summary>Result of <see cref="Inspect"/>: what the extended files in one folder really contain.</summary>
+        public sealed class FolderReport
+        {
+            public string Folder;
+            public bool IndexExists, DataExists, TileDataExists;
+            public long IndexSize, DataSize, TileDataSize;
+            public DateTime IndexTime, DataTime, TileDataTime;
+            public int Slots = -1;            // -1 = index not readable
+            public int TileSlots = -1;
+            public readonly List<int> UsedIds = new List<int>();       // valid image entries
+            public readonly List<int> BrokenIds = new List<int>();     // entry points outside artext.mul or bad image header
+            public readonly List<int> NamedTileIds = new List<int>();  // tiledata records with a name or flags
+            public string Error;
+
+            public bool HasFiles => IndexExists || DataExists || TileDataExists;
+        }
+
+        /// <summary>
+        /// Reads artextidx.mul / artext.mul / tiledataext.mul in <paramref name="folder"/> directly from disk
+        /// (independent of what is loaded) and checks every used entry: inside artext.mul and a sane image header.
+        /// </summary>
+        public static FolderReport Inspect(string folder)
+        {
+            var r = new FolderReport { Folder = folder };
+            if (string.IsNullOrEmpty(folder) || !Directory.Exists(folder))
+            {
+                r.Error = "folder does not exist";
+                return r;
+            }
+
+            string idx = Path.Combine(folder, ArtIndexFileName);
+            string mul = Path.Combine(folder, ArtDataFileName);
+            string tile = Path.Combine(folder, TileDataFileName);
+
+            FileInfo fi;
+            if ((fi = new FileInfo(idx)).Exists) { r.IndexExists = true; r.IndexSize = fi.Length; r.IndexTime = fi.LastWriteTime; }
+            if ((fi = new FileInfo(mul)).Exists) { r.DataExists = true; r.DataSize = fi.Length; r.DataTime = fi.LastWriteTime; }
+            if ((fi = new FileInfo(tile)).Exists) { r.TileDataExists = true; r.TileDataSize = fi.Length; r.TileDataTime = fi.LastWriteTime; }
+
+            try
+            {
+                if (r.IndexExists)
+                {
+                    ArtIndexEntry[] entries = ReadArtIndex(idx);
+                    r.Slots = entries.Length;
+
+                    using FileStream data = r.DataExists ? new FileStream(mul, FileMode.Open, FileAccess.Read, FileShare.ReadWrite) : null;
+                    var header = new byte[8];
+                    for (int k = 0; k < entries.Length; ++k)
+                    {
+                        ArtIndexEntry e = entries[k];
+                        if (!e.IsValid)
+                        {
+                            continue;
+                        }
+
+                        int id = BaseId + k;
+                        if (data == null || e.Offset + e.Length > data.Length || e.Length < 8)
+                        {
+                            r.BrokenIds.Add(id);
+                            continue;
+                        }
+
+                        data.Seek(e.Offset, SeekOrigin.Begin);
+                        data.ReadExactly(header, 0, 8);
+                        int width = BitConverter.ToUInt16(header, 4);
+                        int height = BitConverter.ToUInt16(header, 6);
+                        if (width < 1 || height < 1 || width > 4096 || height > 4096 || e.Length < 8 + (height * 2))
+                        {
+                            r.BrokenIds.Add(id);
+                            continue;
+                        }
+
+                        r.UsedIds.Add(id);
+                    }
+                }
+
+                if (r.TileDataExists)
+                {
+                    TileRecord[] records = ReadTileData(tile);
+                    r.TileSlots = records.Length;
+                    for (int k = 0; k < records.Length; ++k)
+                    {
+                        if (!string.IsNullOrEmpty(records[k].Name) || records[k].Flags != 0)
+                        {
+                            r.NamedTileIds.Add(BaseId + k);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                r.Error = ex.Message;
+            }
+
+            return r;
+        }
+
+        /// <summary>Short list like "0x10000, 0x10001 ... (+12 more)".</summary>
+        public static string FormatIds(IReadOnlyList<int> ids, int max = 40)
+        {
+            if (ids == null || ids.Count == 0)
+            {
+                return "-";
+            }
+
+            var sb = new StringBuilder();
+            for (int i = 0; i < ids.Count && i < max; ++i)
+            {
+                if (i > 0)
+                {
+                    sb.Append(", ");
+                }
+
+                sb.Append("0x").Append(ids[i].ToString("X"));
+            }
+
+            if (ids.Count > max)
+            {
+                sb.Append($" ... (+{ids.Count - max} more)");
+            }
+
+            return sb.ToString();
         }
         #endregion
 

@@ -83,6 +83,7 @@ namespace Ultima
         private static ExtendedFormat.ArtIndexEntry[] _extIndex;
         private static Bitmap[] _extCache;
         private static bool[] _extRemoved;
+        private static bool[] _extDirty; // changed in memory since load/save
         private static string _extDataPath;
         private static FileStream _extStream;
 
@@ -111,6 +112,9 @@ namespace Ultima
             return HasExtension ? ExtendedFormat.GetMaxId(ExtendedCount) : GetMaxItemId();
         }
 
+        /// <summary>Folder of the last successful <see cref="SaveExtension"/> in this session (null if none).</summary>
+        public static string LastExtensionSaveFolder { get; private set; }
+
         /// <summary>Path of the loaded artext.mul (null if the extension only exists in memory).</summary>
         public static string ExtendedDataPath => _extDataPath;
 
@@ -129,6 +133,7 @@ namespace Ultima
             _extIndex = null;
             _extCache = null;
             _extRemoved = null;
+            _extDirty = null;
             _extDataPath = null;
 
             try
@@ -144,6 +149,7 @@ namespace Ultima
                 _extIndex = entries;
                 _extCache = new Bitmap[entries.Length];
                 _extRemoved = new bool[entries.Length];
+                _extDirty = new bool[entries.Length];
                 _extDataPath = mul;
             }
             catch (Exception)
@@ -152,6 +158,7 @@ namespace Ultima
                 _extIndex = null;
                 _extCache = null;
                 _extRemoved = null;
+                _extDirty = null;
                 _extDataPath = null;
             }
         }
@@ -179,6 +186,7 @@ namespace Ultima
                 _extIndex = new ExtendedFormat.ArtIndexEntry[slots];
                 _extCache = new Bitmap[slots];
                 _extRemoved = new bool[slots];
+                _extDirty = new bool[slots];
                 for (int i = 0; i < slots; ++i)
                 {
                     _extIndex[i] = ExtendedFormat.ArtIndexEntry.Empty;
@@ -189,6 +197,7 @@ namespace Ultima
                 Array.Resize(ref _extIndex, slots);
                 Array.Resize(ref _extCache, slots);
                 Array.Resize(ref _extRemoved, slots);
+                Array.Resize(ref _extDirty, slots);
                 for (int i = old; i < slots; ++i)
                 {
                     _extIndex[i] = ExtendedFormat.ArtIndexEntry.Empty;
@@ -196,6 +205,36 @@ namespace Ultima
             }
 
             Modified = true;
+        }
+
+        /// <summary>All extended ids that currently have an image (in memory, incl. unsaved changes).</summary>
+        public static List<int> GetUsedExtendedIds()
+        {
+            var ids = new List<int>();
+            for (int k = 0; k < ExtendedCount; ++k)
+            {
+                if (IsValidExtended(k))
+                {
+                    ids.Add(ExtendedFormat.BaseId + k);
+                }
+            }
+
+            return ids;
+        }
+
+        /// <summary>Extended ids changed in memory and not written yet (replaced or removed since load/save).</summary>
+        public static List<int> GetUnsavedExtendedIds()
+        {
+            var ids = new List<int>();
+            for (int k = 0; k < ExtendedCount; ++k)
+            {
+                if (_extDirty[k])
+                {
+                    ids.Add(ExtendedFormat.BaseId + k);
+                }
+            }
+
+            return ids;
         }
 
         /// <summary>Number of used extended slots (cheap, uses the in-memory index only).</summary>
@@ -367,6 +406,42 @@ namespace Ultima
         /// indices above 0xFFFF work once StaticCount is raised above the legacy 0x10000 (see RANGE
         /// DEFINITION above).
         /// </summary>
+        /// <summary>
+        /// True if <paramref name="itemId"/> is a real static slot: 0 .. GetMaxItemId() (classic art.mul) or
+        /// 0x10000 .. GetMaxExtendedItemId() (extension). The gap between them (e.g. 0xFFDD-0xFFFF with High Seas
+        /// data) is NOT legal - GetLegalStaticId would map those ids to 0 and overwrite item 0.
+        /// </summary>
+        public static bool IsLegalStaticId(int itemId)
+        {
+            if (itemId < 0)
+            {
+                return false;
+            }
+
+            if (itemId <= GetMaxItemId())
+            {
+                return true;
+            }
+
+            return HasExtension && itemId >= ExtendedFormat.BaseId && itemId <= GetMaxExtendedItemId();
+        }
+
+        /// <summary>
+        /// Makes sure the extension is loaded if its files exist (stored path or the Ultima Online directory).
+        /// Safe to call often: does nothing when an extension is already loaded or created.
+        /// </summary>
+        /// <returns>true if it was loaded now.</returns>
+        public static bool EnsureExtensionLoaded()
+        {
+            if (HasExtension)
+            {
+                return false;
+            }
+
+            LoadExtension();
+            return HasExtension;
+        }
+
         public static int GetLegalStaticId(int itemId, bool checkMaxId = true)
         {
             if (itemId < 0)
@@ -431,12 +506,18 @@ namespace Ultima
         /// <param name="bmp"></param>
         public static void ReplaceStatic(int index, Bitmap bmp)
         {
+            if (!IsLegalStaticId(index))
+            {
+                return; // never let an illegal id fall back to item 0
+            }
+
             index = GetLegalStaticId(index);
             if (index >= ExtendedFormat.BaseId)
             {
                 int k = index - ExtendedFormat.BaseId;
                 _extCache[k] = bmp;
                 _extRemoved[k] = bmp == null;
+                _extDirty[k] = true;
                 Modified = true;
                 return;
             }
@@ -481,10 +562,16 @@ namespace Ultima
         /// <param name="index"></param>
         public static void RemoveStatic(int index)
         {
+            if (!IsLegalStaticId(index))
+            {
+                return; // never let an illegal id fall back to item 0
+            }
+
             index = GetLegalStaticId(index);
             if (index >= ExtendedFormat.BaseId)
             {
                 _extRemoved[index - ExtendedFormat.BaseId] = true;
+                _extDirty[index - ExtendedFormat.BaseId] = true;
                 Modified = true;
                 return;
             }
@@ -1330,6 +1417,9 @@ namespace Ultima
 
             File.Move(mulTmp, mulFinal, true);
             File.Move(idxTmp, idxFinal, true);
+
+            Array.Clear(_extDirty); // everything in memory is on disk now (in this folder)
+            LastExtensionSaveFolder = Path.GetFullPath(path);
 
             if (sameAsSource || _extDataPath == null)
             {

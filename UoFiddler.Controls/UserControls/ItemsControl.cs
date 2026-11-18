@@ -62,6 +62,9 @@ namespace UoFiddler.Controls.UserControls
             extendedItem.Click += (s, e) => ShowExtendedFormatForm();
             MiscToolStripDropDownButton.DropDownItems.Add(new ToolStripSeparator());
             MiscToolStripDropDownButton.DropDownItems.Add(extendedItem);
+            var checkItem = new ToolStripMenuItem("Check extended files (what is saved)...");
+            checkItem.Click += (s, e) => new ExtendedCheckForm(GoToId).Show();
+            MiscToolStripDropDownButton.DropDownItems.Add(checkItem);
 
             var directionsButton = new ToolStripButton("Directions N/E/S/W")
             {
@@ -91,7 +94,7 @@ namespace UoFiddler.Controls.UserControls
         {
             if (_extendedFormatForm == null || _extendedFormatForm.IsDisposed)
             {
-                _extendedFormatForm = new ExtendedArtFormatForm(Reload);
+                _extendedFormatForm = new ExtendedArtFormatForm(Reload, GoToId);
                 _extendedFormatForm.Show();
             }
             else
@@ -123,8 +126,11 @@ namespace UoFiddler.Controls.UserControls
         /// <summary>Callback of the direction generator: writes a generated image into art (and the list).</summary>
         private void InsertGeneratedItem(int id, Bitmap bitmap)
         {
-            if (bitmap == null || id < 0 || id > Art.GetMaxExtendedItemId())
+            if (bitmap == null || !Art.IsLegalStaticId(id))
             {
+                MessageBox.Show($"0x{id:X} is not a valid item id (0x0000-0x{Art.GetMaxItemId():X4}" +
+                                (Art.HasExtension ? $", 0x{ExtendedFormat.BaseId:X}-0x{Art.GetMaxExtendedItemId():X})" : ")"),
+                    "Insert", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
@@ -330,10 +336,22 @@ namespace UoFiddler.Controls.UserControls
 
             var prevSelected = SelectedGraphicId;
 
+            // the extension may exist although Art was initialised before the paths were final
+            if (Art.EnsureExtensionLoaded())
+            {
+                TileData.ReloadExtension();
+            }
+
             int staticLength = Art.GetMaxExtendedItemId(); // includes the extended side-car range if present
             _itemList = new List<int>(Math.Min(staticLength + 1, 0x20000));
             for (int i = 0; i <= staticLength; ++i)
             {
+                if (i > Art.GetMaxItemId() && i < ExtendedFormat.BaseId)
+                {
+                    i = ExtendedFormat.BaseId - 1; // skip the gap between art.mul and the extension
+                    continue;
+                }
+
                 if (Art.IsValidStatic(i))
                 {
                     _itemList.Add(i);
@@ -764,7 +782,7 @@ namespace UoFiddler.Controls.UserControls
         #region [ OnTextChangedInsert ]
         private void OnTextChangedInsert(object sender, EventArgs e)
         {
-            if (Utils.ConvertStringToInt(InsertText.Text, out int index, 0, Art.GetMaxExtendedItemId()))
+            if (Utils.ConvertStringToInt(InsertText.Text, out int index, 0, Art.GetMaxExtendedItemId()) && Art.IsLegalStaticId(index))
             {
                 InsertText.ForeColor = Art.IsValidStatic(index) ? Color.Red : Color.Black;
             }
@@ -783,7 +801,7 @@ namespace UoFiddler.Controls.UserControls
                 return;
             }
 
-            if (!Utils.ConvertStringToInt(InsertText.Text, out int index, 0, Art.GetMaxExtendedItemId()))
+            if (!Utils.ConvertStringToInt(InsertText.Text, out int index, 0, Art.GetMaxExtendedItemId()) || !Art.IsLegalStaticId(index))
             {
                 return;
             }
@@ -880,10 +898,22 @@ namespace UoFiddler.Controls.UserControls
                 }
 
                 Options.ChangedUltimaClass["Art"] = false;
-                string ext = Art.HasExtension
-                    ? $"\n+ {ExtendedFormat.ArtIndexFileName} / {ExtendedFormat.ArtDataFileName} ({Art.ExtendedCount:N0} extended slots)"
-                    : string.Empty;
-                MessageBox.Show($"Saved to {Options.OutputPath}{ext}", "Save", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                string ext = string.Empty;
+                bool ok = true;
+                if (Art.HasExtension)
+                {
+                    // read the written files back from disk and compare with memory
+                    ok = ExtendedCheck.VerifySaved(Options.OutputPath, out string check);
+                    ext = $"\n+ {ExtendedFormat.ArtIndexFileName} / {ExtendedFormat.ArtDataFileName} ({Art.ExtendedCount:N0} extended slots)\n\n{check}";
+
+                    string loadedDir = Art.ExtendedDataPath != null ? Path.GetDirectoryName(Path.GetFullPath(Art.ExtendedDataPath)) : null;
+                    if (loadedDir != null && !string.Equals(loadedDir.TrimEnd('\\'), Path.GetFullPath(Options.OutputPath).TrimEnd('\\'), StringComparison.OrdinalIgnoreCase))
+                    {
+                        ext += $"\n\nNote: the extension is loaded from\n{loadedDir}\nAfter a restart UOFiddler shows the files from there - copy the saved files or use 'Load extension from folder'.";
+                    }
+                }
+
+                MessageBox.Show($"Saved to {Options.OutputPath}{ext}", "Save", MessageBoxButtons.OK, ok ? MessageBoxIcon.Information : MessageBoxIcon.Warning);
             }
             catch (Exception ex)
             {
@@ -939,6 +969,11 @@ namespace UoFiddler.Controls.UserControls
             _itemList = new List<int>(onlyFree ? 0x10000 : max + 1);
             for (int j = 0; j <= max; ++j)
             {
+                if (!Art.IsLegalStaticId(j))
+                {
+                    continue; // gap between art.mul and the extension (would write to item 0)
+                }
+
                 if (!onlyFree || !Art.IsValidStatic(j))
                 {
                     _itemList.Add(j);
@@ -958,6 +993,23 @@ namespace UoFiddler.Controls.UserControls
             toolStripStatusLabelItemHowMuch.Text = onlyFree
                 ? $"Free slots: {_itemList.Count:N0} (0x0000 - 0x{max:X})"
                 : $"Slots: {_itemList.Count:N0} (0x0000 - 0x{max:X})";
+        }
+
+        /// <summary>Selects any id in the Items tab; switches to the slot view if the id is not in the current list.</summary>
+        private void GoToId(int id)
+        {
+            if (!IsLoaded)
+            {
+                OnLoad(this, EventArgs.Empty);
+            }
+
+            if (!SearchGraphic(id))
+            {
+                ShowSlots(true, false);
+                SearchGraphic(id);
+            }
+
+            FindForm()?.Activate();
         }
 
         /// <summary>Jumps to the first id of the extended range (switches to the slot view if it is empty).</summary>
@@ -1635,7 +1687,7 @@ namespace UoFiddler.Controls.UserControls
         /// 
         private static bool IsIndexValid(int index)
         {
-            return index >= 0 && index <= Art.GetMaxExtendedItemId();
+            return Art.IsLegalStaticId(index);
         }
         #endregion
 

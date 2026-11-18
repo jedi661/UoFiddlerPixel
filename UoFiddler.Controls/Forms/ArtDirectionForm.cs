@@ -600,7 +600,7 @@ namespace UoFiddler.Controls.Forms
                     continue;
                 }
 
-                while (next <= max && Art.IsValidStatic(next))
+                while (next <= max && (!Art.IsLegalStaticId(next) || Art.IsValidStatic(next)))
                 {
                     ++next;
                 }
@@ -622,7 +622,7 @@ namespace UoFiddler.Controls.Forms
                 return false;
             }
 
-            if (!Utils.ConvertStringToInt(_idBoxes[d].Text, out int id, 0, Art.GetMaxExtendedItemId()))
+            if (!Utils.ConvertStringToInt(_idBoxes[d].Text, out int id, 0, Art.GetMaxExtendedItemId()) || !Art.IsLegalStaticId(id))
             {
                 SetStatus($"{d}: invalid ID '{_idBoxes[d].Text}' (max 0x{Art.GetMaxExtendedItemId():X}).");
                 return false;
