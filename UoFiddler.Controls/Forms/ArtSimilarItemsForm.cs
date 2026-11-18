@@ -141,12 +141,16 @@ namespace UoFiddler.Controls.Forms
 
         private void ShowGroup()
         {
-            foreach (Control c in _groupPanel.Controls)
-            {
-                (c as PictureBox)?.Image?.Dispose();
-            }
-
+            // detach the images before disposing them (a PictureBox showing a disposed image crashes on WM_SHOWWINDOW)
+            var old = _groupPanel.Controls.OfType<PictureBox>().ToList();
             _groupPanel.Controls.Clear();
+            foreach (PictureBox pb in old)
+            {
+                Image img = pb.Image;
+                pb.Image = null;
+                img?.Dispose();
+                pb.Dispose();
+            }
             _learnedKind = null;
             if (_list.SelectedItems.Count == 0 || _list.SelectedItems[0].Tag is not int id)
             {

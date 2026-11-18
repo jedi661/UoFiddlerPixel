@@ -1114,9 +1114,18 @@ namespace UoFiddler.Controls.Forms
 
         protected override void OnFormClosed(FormClosedEventArgs e)
         {
+            // detach first, then dispose: a PictureBox that still shows a disposed image throws
+            // "Parameter is not valid" (ImageAnimator.CanAnimate) when the window is hidden/shown
             foreach (PictureBox pb in _previews.Values.Append(_sourcePreview))
             {
-                pb?.Image?.Dispose();
+                if (pb == null)
+                {
+                    continue;
+                }
+
+                Image img = pb.Image;
+                pb.Image = null;
+                img?.Dispose();
             }
 
             base.OnFormClosed(e);

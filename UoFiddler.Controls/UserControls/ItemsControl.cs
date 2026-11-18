@@ -546,8 +546,9 @@ namespace UoFiddler.Controls.UserControls
                     newGraph.Clear(_backgroundDetailColor);
                 }
 
-                DetailPictureBox.Image?.Dispose();
-                DetailPictureBox.Image = newBit;
+                Image oldDetail = DetailPictureBox.Image;
+                DetailPictureBox.Image = newBit; // set the new image first, then free the old one
+                oldDetail?.Dispose();
             }
             else
             {
@@ -561,8 +562,9 @@ namespace UoFiddler.Controls.UserControls
                     newGraph.DrawImage(bit, (DetailPictureBox.Size.Width - bit.Width) / 2, 5);
                 }
 
-                DetailPictureBox.Image?.Dispose();
-                DetailPictureBox.Image = newBit;
+                Image oldDetail = DetailPictureBox.Image;
+                DetailPictureBox.Image = newBit; // set the new image first, then free the old one
+                oldDetail?.Dispose();
 
                 Art.Measure(bit, out xMin, out yMin, out xMax, out yMax);
             }
@@ -2852,6 +2854,7 @@ namespace UoFiddler.Controls.UserControls
             // Free zoomedImage when form closes
             colorForm.FormClosed += (s, ev) =>
             {
+                pictureBox.Image = null; // detach before disposing
                 zoomedImage.Dispose();
                 imageCopy.Dispose();
             };
