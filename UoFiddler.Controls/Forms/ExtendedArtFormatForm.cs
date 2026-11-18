@@ -24,6 +24,8 @@ namespace UoFiddler.Controls.Forms
         private readonly Action _reloadItems;
         private readonly Label _status;
         private readonly NumericUpDown _slots;
+        private readonly CheckBox _autoBackup;
+        private readonly Label _backupLabel;
 
         public ExtendedArtFormatForm(Action reloadItems)
         {
@@ -32,10 +34,11 @@ namespace UoFiddler.Controls.Forms
             Text = "Extended Art Format (1M+ items)";
             ShowIcon = false;
             StartPosition = FormStartPosition.CenterScreen;
-            Size = new Size(720, 560);
+            Size = new Size(820, 640);
             MinimumSize = new Size(600, 480);
 
-            var layout = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 1, RowCount = 4, Padding = new Padding(8) };
+            var layout = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 1, RowCount = 5, Padding = new Padding(8) };
+            layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
             layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
             layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
             layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
@@ -76,6 +79,34 @@ namespace UoFiddler.Controls.Forms
             };
             layout.Controls.Add(hint, 0, 2);
 
+            // --- backup of the original client files + folder buttons
+            var backupGroup = new GroupBox { Text = "Backup / folders", Dock = DockStyle.Fill, AutoSize = true };
+            var backupLayout = new FlowLayoutPanel { Dock = DockStyle.Fill, AutoSize = true, WrapContents = true };
+            _autoBackup = new CheckBox
+            {
+                Text = "Automatic backup before create / save",
+                AutoSize = true,
+                Checked = true,
+                Margin = new Padding(3, 7, 10, 3)
+            };
+            backupLayout.Controls.Add(_autoBackup);
+            backupLayout.Controls.Add(MakeButton("Backup now", (s, e) => DoBackup(true)));
+            backupLayout.Controls.Add(MakeButton("Open backup folder", (s, e) =>
+                OpenFolder(UoFileBackup.LastBackupFolder ?? UoFileBackup.GetBackupRoot(Options.OutputPath))));
+            backupLayout.Controls.Add(MakeButton("Open Ultima Online folder", (s, e) => OpenFolder(Files.RootDir)));
+            backupLayout.Controls.Add(MakeButton("Open output folder", (s, e) => OpenFolder(Options.OutputPath)));
+            _backupLabel = new Label
+            {
+                AutoSize = true,
+                ForeColor = Color.DimGray,
+                Margin = new Padding(3, 6, 3, 3),
+                Text = $"Backups go to {UoFileBackup.GetBackupRoot(Options.OutputPath ?? string.Empty)}\\<date_time>\\ - your client files are only copied, never changed."
+            };
+            backupLayout.Controls.Add(_backupLabel);
+            backupLayout.SetFlowBreak(backupLayout.Controls[backupLayout.Controls.Count - 2], true); // label on its own line
+            backupGroup.Controls.Add(backupLayout);
+            layout.Controls.Add(backupGroup, 0, 3);
+
             var info = new TextBox
             {
                 Multiline = true,
@@ -97,9 +128,69 @@ namespace UoFiddler.Controls.Forms
                     "in the TileData tab in the group 'Extended (0x10000+)'." + Environment.NewLine + Environment.NewLine +
                     "Note: maps, statics and multis store 16-bit ids - extended items can not be placed there until a client/server supports it."
             };
-            layout.Controls.Add(info, 0, 3);
+            layout.Controls.Add(info, 0, 4);
 
             UpdateStatus();
+        }
+
+        private static Button MakeButton(string text, EventHandler click)
+        {
+            var b = new Button { Text = text, AutoSize = true };
+            b.Click += click;
+            return b;
+        }
+
+        private void OpenFolder(string path)
+        {
+            try
+            {
+                UoFileBackup.OpenFolder(path);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(this, $"Can not open the folder:{Environment.NewLine}{path}{Environment.NewLine}{ex.Message}",
+                    "Open folder", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+        }
+
+        /// <summary>One automatic backup per session before the first create/save (if the checkbox is on).</summary>
+        private bool AutoBackup()
+        {
+            if (!_autoBackup.Checked || UoFileBackup.LastBackupFolder != null)
+            {
+                return true;
+            }
+
+            return DoBackup(false);
+        }
+
+        /// <returns>false if the backup failed and the user does not want to continue.</returns>
+        private bool DoBackup(bool showResult)
+        {
+            Cursor.Current = Cursors.WaitCursor;
+            try
+            {
+                string folder = UoFileBackup.CreateBackup(Options.OutputPath, out var copied);
+                _backupLabel.Text = $"Last backup: {folder} ({copied.Count} file(s))";
+                if (showResult)
+                {
+                    MessageBox.Show(this,
+                        $"Backup created:{Environment.NewLine}{folder}{Environment.NewLine}{Environment.NewLine}{string.Join(Environment.NewLine, copied)}",
+                        "Backup", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                return MessageBox.Show(this,
+                    $"The backup failed:{Environment.NewLine}{ex.Message}{Environment.NewLine}{Environment.NewLine}Continue without backup?",
+                    "Backup", MessageBoxButtons.YesNo, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2) == DialogResult.Yes;
+            }
+            finally
+            {
+                Cursor.Current = Cursors.Default;
+            }
         }
 
         private void UpdateStatus()
@@ -142,6 +233,11 @@ namespace UoFiddler.Controls.Forms
                 }
             }
 
+            if (!AutoBackup())
+            {
+                return;
+            }
+
             Cursor.Current = Cursors.WaitCursor;
             try
             {
@@ -168,6 +264,11 @@ namespace UoFiddler.Controls.Forms
             if (!Art.HasExtension && !TileData.HasExtension)
             {
                 MessageBox.Show(this, "There is no extension yet - create it first.", "Save", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            if (!AutoBackup())
+            {
                 return;
             }
 
