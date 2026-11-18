@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace UoFiddler.Controls.Classes
 {
@@ -100,7 +101,7 @@ namespace UoFiddler.Controls.Classes
         public ArtShadowMode Shadow { get; set; } = ArtShadowMode.Regenerate;
 
         /// <summary>Max. brightness (0..255) of a pixel to count as shadow.</summary>
-        public int ShadowMaxLuma { get; set; } = 70;
+        public int ShadowMaxLuma { get; set; } = 50;
 
         /// <summary>Max. colour saturation (0..255, max-min channel) of a shadow pixel.</summary>
         public int ShadowMaxSaturation { get; set; } = 24;
@@ -110,6 +111,15 @@ namespace UoFiddler.Controls.Classes
 
         /// <summary>Angle of the cast shadow in degrees: 0 = straight to the right, positive = upwards.</summary>
         public double ShadowAngle { get; set; } = 14;
+
+        /// <summary>
+        /// Automatic repair of every result: fills small enclosed holes, removes single stray pixels and
+        /// replaces colour 0 inside the object (would be transparent in the client).
+        /// </summary>
+        public bool Repair { get; set; } = true;
+
+        /// <summary>Largest enclosed transparent area (pixels) that is treated as a hole and filled.</summary>
+        public int RepairMaxHole { get; set; } = 12;
 
         /// <summary>Colour used for a cast shadow when none was detected (ARGB1555 without alpha bit).</summary>
         public ushort DefaultShadowColor { get; set; } = 0x0C63; // dark grey (3,3,3)
@@ -230,8 +240,181 @@ namespace UoFiddler.Controls.Classes
                 img = CastShadow(img, shadowColor, options);
             }
 
+            if (options.Repair)
+            {
+                img = Repair(img, options.RepairMaxHole);
+            }
+
             result.Image = img;
             return result;
+        }
+
+        /// <summary>
+        /// Automatic repair: 1. small transparent areas enclosed by the object (holes, they show as black dots in
+        /// the client) are filled with the average of their neighbours, 2. single stray pixels without any
+        /// neighbour are removed, 3. opaque colour 0 (shown transparent by the client) becomes the darkest grey.
+        /// </summary>
+        public static ArtPixelImage Repair(ArtPixelImage src, int maxHole = 12)
+        {
+            int w = src.Width, h = src.Height;
+            ArtPixelImage img = src.Clone();
+
+            // 1. holes: transparent areas not connected to the image border
+            var outside = new bool[w * h];
+            var stack = new Stack<int>();
+            for (int x = 0; x < w; ++x)
+            {
+                PushIfTransparent(img, outside, stack, x, 0);
+                PushIfTransparent(img, outside, stack, x, h - 1);
+            }
+
+            for (int y = 0; y < h; ++y)
+            {
+                PushIfTransparent(img, outside, stack, 0, y);
+                PushIfTransparent(img, outside, stack, w - 1, y);
+            }
+
+            while (stack.Count > 0)
+            {
+                int p = stack.Pop();
+                int px = p % w, py = p / w;
+                if (px > 0) { PushIfTransparent(img, outside, stack, px - 1, py); }
+                if (px < w - 1) { PushIfTransparent(img, outside, stack, px + 1, py); }
+                if (py > 0) { PushIfTransparent(img, outside, stack, px, py - 1); }
+                if (py < h - 1) { PushIfTransparent(img, outside, stack, px, py + 1); }
+            }
+
+            var seen = new bool[w * h];
+            var hole = new List<int>();
+            for (int i = 0; i < w * h; ++i)
+            {
+                if (img.Pixels[i] != 0 || outside[i] || seen[i])
+                {
+                    continue;
+                }
+
+                hole.Clear();
+                stack.Push(i);
+                seen[i] = true;
+                while (stack.Count > 0)
+                {
+                    int p = stack.Pop();
+                    hole.Add(p);
+                    int px = p % w, py = p / w;
+                    foreach (int n in new[] { px > 0 ? p - 1 : -1, px < w - 1 ? p + 1 : -1, py > 0 ? p - w : -1, py < h - 1 ? p + w : -1 })
+                    {
+                        if (n >= 0 && !seen[n] && img.Pixels[n] == 0 && !outside[n])
+                        {
+                            seen[n] = true;
+                            stack.Push(n);
+                        }
+                    }
+                }
+
+                if (hole.Count > maxHole)
+                {
+                    continue; // a real opening (window, gap) - keep it
+                }
+
+                // fill from the edge inwards with the average of the already opaque neighbours
+                var remaining = new HashSet<int>(hole);
+                while (remaining.Count > 0)
+                {
+                    var filled = new List<(int P, ushort C)>();
+                    foreach (int p in remaining)
+                    {
+                        int px = p % w, py = p / w;
+                        int r = 0, g = 0, b = 0, n = 0;
+                        for (int dy = -1; dy <= 1; ++dy)
+                        {
+                            for (int dx = -1; dx <= 1; ++dx)
+                            {
+                                int nx = px + dx, ny = py + dy;
+                                if ((dx == 0 && dy == 0) || nx < 0 || ny < 0 || nx >= w || ny >= h)
+                                {
+                                    continue;
+                                }
+
+                                ushort c = img[nx, ny];
+                                if (c == 0)
+                                {
+                                    continue;
+                                }
+
+                                r += R5(c);
+                                g += G5(c);
+                                b += B5(c);
+                                ++n;
+                            }
+                        }
+
+                        if (n > 0)
+                        {
+                            filled.Add((p, Pack(r / n, g / n, b / n)));
+                        }
+                    }
+
+                    if (filled.Count == 0)
+                    {
+                        break;
+                    }
+
+                    foreach ((int P, ushort C) f in filled)
+                    {
+                        img.Pixels[f.P] = f.C;
+                        remaining.Remove(f.P);
+                    }
+                }
+            }
+
+            // 2. stray pixels and 3. colour 0
+            ArtPixelImage dst = img.Clone();
+            for (int y = 0; y < h; ++y)
+            {
+                for (int x = 0; x < w; ++x)
+                {
+                    ushort c = img[x, y];
+                    if (c == 0)
+                    {
+                        continue;
+                    }
+
+                    bool neighbour = false;
+                    for (int dy = -1; dy <= 1 && !neighbour; ++dy)
+                    {
+                        for (int dx = -1; dx <= 1; ++dx)
+                        {
+                            int nx = x + dx, ny = y + dy;
+                            if ((dx != 0 || dy != 0) && nx >= 0 && ny >= 0 && nx < w && ny < h && img[nx, ny] != 0)
+                            {
+                                neighbour = true;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (!neighbour)
+                    {
+                        dst[x, y] = 0;
+                    }
+                    else if ((c & 0x7FFF) == 0)
+                    {
+                        dst[x, y] = 0x8421;
+                    }
+                }
+            }
+
+            return dst;
+        }
+
+        private static void PushIfTransparent(ArtPixelImage img, bool[] outside, Stack<int> stack, int x, int y)
+        {
+            int i = (y * img.Width) + x;
+            if (img.Pixels[i] == 0 && !outside[i])
+            {
+                outside[i] = true;
+                stack.Push(i);
+            }
         }
 
         /// <summary>Face classification of an image (for the overlay preview).</summary>
@@ -455,6 +638,7 @@ namespace UoFiddler.Controls.Classes
                 }
 
                 // 3. core + its dark rim (8 neighbours)
+                var region = new HashSet<int>();
                 foreach (int p in component)
                 {
                     int px = p % w, py = p / w;
@@ -465,10 +649,23 @@ namespace UoFiddler.Controls.Classes
                             int nx = px + dx, ny = py + dy;
                             if (nx >= 0 && ny >= 0 && nx < w && ny < h && candidate[(ny * w) + nx])
                             {
-                                shadow[(ny * w) + nx] = true;
+                                region.Add((ny * w) + nx);
                             }
                         }
                     }
+                }
+
+                // 4. a drawn shadow is flat (1-2 colours, maybe dithered) and lies on the ground NEXT to the
+                //    object, so it borders the transparent background. Dark stone/wood texture inside the object
+                //    has many different shades and is surrounded by the object -> not a shadow.
+                if (!LooksLikeShadow(src, region, w, h))
+                {
+                    continue;
+                }
+
+                foreach (int p in region)
+                {
+                    shadow[p] = true;
                 }
             }
 
@@ -493,6 +690,43 @@ namespace UoFiddler.Controls.Classes
             {
                 shadowColor = (ushort)(Pack((int)(sr / sn), (int)(sg / sn), (int)(sb / sn)) & 0x7FFF);
             }
+        }
+
+        private static bool LooksLikeShadow(ArtPixelImage src, HashSet<int> region, int w, int h)
+        {
+            if (region.Count < 8)
+            {
+                return false;
+            }
+
+            var colours = new Dictionary<ushort, int>();
+            double sum = 0, sumSq = 0;
+            int border = 0;
+            foreach (int p in region)
+            {
+                ushort c = (ushort)(src.Pixels[p] & 0x7FFF);
+                colours[c] = colours.TryGetValue(c, out int n) ? n + 1 : 1;
+                int l = Luma(c);
+                sum += l;
+                sumSq += l * l;
+
+                int px = p % w, py = p / w;
+                bool touches = px == 0 || py == 0 || px == w - 1 || py == h - 1 ||
+                               src.Pixels[p - 1] == 0 || src.Pixels[p + 1] == 0 ||
+                               src.Pixels[p - w] == 0 || src.Pixels[p + w] == 0;
+                if (touches)
+                {
+                    ++border;
+                }
+            }
+
+            double mean = sum / region.Count;
+            double std = Math.Sqrt(Math.Max(0, (sumSq / region.Count) - (mean * mean)));
+
+            // the two most used colours must cover nearly the whole area (flat or 2-colour dither)
+            int top2 = colours.Values.OrderByDescending(v => v).Take(2).Sum();
+
+            return std <= 8 && top2 * 100 >= region.Count * 85 && border * 100 >= region.Count * 12;
         }
 
         /// <summary>
@@ -557,17 +791,26 @@ namespace UoFiddler.Controls.Classes
             var dst = new ArtPixelImage(w + (2 * grow), h + growTop);
             ushort sc = (ushort)(0x8000 | (shadowColor == 0 ? 0x0421 : shadowColor));
 
+            // fill every shadow row between its outermost projected points -> solid shadow without gaps/stairs
+            var rowMin = new Dictionary<int, int>();
+            var rowMax = new Dictionary<int, int>();
             foreach ((int X, int Y) p in points)
             {
                 int x = p.X + grow, y = p.Y + growTop;
-                if (x >= 0 && y >= 0 && x < dst.Width && y < dst.Height)
+                rowMin[y] = rowMin.TryGetValue(y, out int mn) ? Math.Min(mn, x) : x;
+                rowMax[y] = rowMax.TryGetValue(y, out int mx) ? Math.Max(mx, x) : x;
+            }
+
+            foreach (int y in rowMin.Keys)
+            {
+                if (y < 0 || y >= dst.Height)
+                {
+                    continue;
+                }
+
+                for (int x = Math.Max(0, rowMin[y]); x <= Math.Min(dst.Width - 1, rowMax[y]); ++x)
                 {
                     dst[x, y] = sc;
-                    // close gaps of the projection (1 px dilation to the left)
-                    if (x > 0 && dst[x - 1, y] == 0)
-                    {
-                        dst[x - 1, y] = sc;
-                    }
                 }
             }
 

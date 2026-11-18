@@ -46,7 +46,10 @@ namespace UoFiddler.Controls.Forms
         private CheckBox _overlayCheck;
         private CheckBox _whiteTransparentCheck;
         private ComboBox _zoomBox;
-        private Color _background = Color.FromArgb(255, 200, 200, 200);
+        private Color _background = Color.Black; // UO: black = transparent
+        private CheckBox _repairCheck;
+        private NumericUpDown _repairHole;
+        private ComboBox _exportBackgroundBox;
 
         // targets / preview
         private readonly Dictionary<ArtDirection, CheckBox> _targetChecks = new Dictionary<ArtDirection, CheckBox>();
@@ -156,8 +159,16 @@ namespace UoFiddler.Controls.Forms
             _shadowAngle = MakeNumeric(-45, 75, 14, 0, 1);
             opt.Controls.Add(_shadowAngle);
             opt.Controls.Add(MakeLabel("Shadow ≤ brightness"));
-            _shadowLuma = MakeNumeric(10, 160, 70, 0, 5);
+            _shadowLuma = MakeNumeric(10, 160, 50, 0, 5);
             opt.Controls.Add(_shadowLuma);
+
+            _repairCheck = new CheckBox { Text = "Auto repair", AutoSize = true, Checked = true, Margin = new Padding(10, 7, 3, 3) };
+            _repairCheck.CheckedChanged += (s, e) => Regenerate();
+            opt.Controls.Add(_repairCheck);
+            opt.Controls.Add(MakeLabel("holes ≤"));
+            _repairHole = MakeNumeric(1, 200, 12, 0, 1);
+            opt.Controls.Add(_repairHole);
+            opt.Controls.Add(MakeButton("Repair source", (s, e) => RepairSource()));
 
             _overlayCheck = new CheckBox { Text = "Show faces", AutoSize = true, Margin = new Padding(10, 7, 3, 3) };
             _overlayCheck.CheckedChanged += (s, e) => RefreshPreviews();
@@ -177,6 +188,10 @@ namespace UoFiddler.Controls.Forms
                     RefreshPreviews();
                 }
             }));
+            opt.Controls.Add(MakeLabel("Copy/PNG background:"));
+            _exportBackgroundBox = MakeCombo(new object[] { "Black (UO)", "Transparent" }, 0, 100);
+            _exportBackgroundBox.SelectedIndexChanged -= OnOptionChanged;
+            opt.Controls.Add(_exportBackgroundBox);
             root.Controls.Add(opt, 0, 1);
 
             // --- row 3: previews
@@ -423,7 +438,9 @@ namespace UoFiddler.Controls.Forms
                 Shadow = (ArtShadowMode)Math.Max(0, _shadowBox.SelectedIndex),
                 ShadowLength = (double)_shadowLength.Value,
                 ShadowAngle = (double)_shadowAngle.Value,
-                ShadowMaxLuma = (int)_shadowLuma.Value
+                ShadowMaxLuma = (int)_shadowLuma.Value,
+                Repair = _repairCheck.Checked,
+                RepairMaxHole = (int)_repairHole.Value
             };
         }
 
@@ -526,7 +543,7 @@ namespace UoFiddler.Controls.Forms
                 }
 
                 // UO anchor: bottom center
-                using var pen = new Pen(Color.FromArgb(120, Color.Black)) { DashStyle = DashStyle.Dot };
+                using var pen = new Pen(Color.FromArgb(160, _background.GetBrightness() < 0.5f ? Color.White : Color.Black)) { DashStyle = DashStyle.Dot };
                 g.DrawLine(pen, view.Width / 2, view.Height - (4 * zoom), view.Width / 2, view.Height - 1);
             }
 
@@ -631,7 +648,7 @@ namespace UoFiddler.Controls.Forms
         {
             if (_results.TryGetValue(d, out ArtDirectionResult r))
             {
-                using Bitmap bmp = ToBitmap(r.Image);
+                using Bitmap bmp = ToExportBitmap(r.Image);
                 Clipboard.SetImage(bmp);
                 SetStatus($"{d} copied to the clipboard.");
             }
@@ -650,9 +667,40 @@ namespace UoFiddler.Controls.Forms
                 return;
             }
 
-            using Bitmap bmp = ToBitmap(r.Image);
+            using Bitmap bmp = ToExportBitmap(r.Image);
             bmp.Save(dlg.FileName, dlg.FilterIndex == 2 ? ImageFormat.Bmp : ImageFormat.Png);
             SetStatus($"{d} saved to {dlg.FileName}.");
+        }
+
+        /// <summary>Copy/PNG output: transparent pixels black (UO convention) or real transparency.</summary>
+        private Bitmap ToExportBitmap(ArtPixelImage img)
+        {
+            using Bitmap art = ToBitmap(img);
+            bool black = _exportBackgroundBox == null || _exportBackgroundBox.SelectedIndex == 0;
+            var bmp = new Bitmap(art.Width, art.Height, black ? PixelFormat.Format24bppRgb : PixelFormat.Format32bppArgb);
+            using (Graphics g = Graphics.FromImage(bmp))
+            {
+                g.Clear(black ? Color.Black : Color.Transparent);
+                g.DrawImageUnscaled(art, 0, 0);
+            }
+
+            return bmp;
+        }
+
+        private void RepairSource()
+        {
+            if (_source == null)
+            {
+                return;
+            }
+
+            ArtPixelImage repaired = ArtDirectionGenerator.Repair(_source, (int)_repairHole.Value);
+            int changed = repaired.Pixels.Where((p, i) => p != _source.Pixels[i]).Count();
+            _source = repaired;
+            Regenerate();
+            SetStatus(changed == 0
+                ? "Source checked: nothing to repair."
+                : $"Source repaired: {changed} pixel(s) changed. Insert the drawn direction to write it back.");
         }
 
         private void SetStatus(string text)
