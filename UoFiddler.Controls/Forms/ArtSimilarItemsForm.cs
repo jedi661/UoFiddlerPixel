@@ -26,7 +26,7 @@ namespace UoFiddler.Controls.Forms
     {
         private readonly ArtFeatures _query;
         private readonly int _excludeId;
-        private readonly Action<ArtObjectKind, string> _applyKind;
+        private readonly Action<ArtObjectKind, double, string> _applyKind; // kind, learned light swap (-1 = unknown), text
         private readonly Action<int> _loadAsSource;
 
         private readonly ListView _list;
@@ -35,9 +35,10 @@ namespace UoFiddler.Controls.Forms
         private readonly Label _status;
         private readonly Label _groupInfo;
         private ArtObjectKind? _learnedKind;
+        private double _learnedRelight = -1;
         private string _learnedText;
 
-        public ArtSimilarItemsForm(ArtPixelImage source, int sourceId, Action<ArtObjectKind, string> applyKind, Action<int> loadAsSource)
+        public ArtSimilarItemsForm(ArtPixelImage source, int sourceId, Action<ArtObjectKind, double, string> applyKind, Action<int> loadAsSource)
         {
             _query = ArtFeatures.Compute(source, sourceId);
             _excludeId = sourceId;
@@ -68,12 +69,12 @@ namespace UoFiddler.Controls.Forms
             right.Controls.Add(_groupPanel, 0, 1);
 
             var buttons = new FlowLayoutPanel { AutoSize = true, Dock = DockStyle.Fill };
-            var apply = new Button { Text = "Use the learned object type", AutoSize = true };
+            var apply = new Button { Text = "Use the learned settings", AutoSize = true };
             apply.Click += (s, e) =>
             {
                 if (_learnedKind.HasValue)
                 {
-                    _applyKind?.Invoke(_learnedKind.Value, _learnedText);
+                    _applyKind?.Invoke(_learnedKind.Value, _learnedRelight, _learnedText);
                 }
             };
             var load = new Button { Text = "Load selected as source", AutoSize = true };
@@ -151,7 +152,9 @@ namespace UoFiddler.Controls.Forms
                 img?.Dispose();
                 pb.Dispose();
             }
+
             _learnedKind = null;
+            _learnedRelight = -1;
             if (_list.SelectedItems.Count == 0 || _list.SelectedItems[0].Tag is not int id)
             {
                 return;
@@ -195,10 +198,26 @@ namespace UoFiddler.Controls.Forms
 
             if (group.Count > 1)
             {
-                _learnedKind = ArtDirectionLearning.KindFromRelations(relations);
+                // wall or box? the TileData of the group (wall / door / window flag) or a slim upright shape decides
+                ArtSuggestion firstKind = Suggest(group[0], first);
+                bool wallLike = firstKind.Kind == ArtObjectKind.Symmetric;
+                _learnedKind = ArtDirectionLearning.KindFromRelations(relations, wallLike);
+
+                // light: how did the artist light the mirrored variant? (learned from the first mirror pair)
+                string lightText = string.Empty;
+                int mirrorIndex = relations.FindIndex(r => r == ArtVariantRelation.Mirror);
+                if (mirrorIndex >= 0 && first != null)
+                {
+                    int partner = group.Where(g => g != group[0]).ElementAt(mirrorIndex);
+                    _learnedRelight = ArtDirectionLearning.LearnRelightStrength(first, images[partner], _learnedKind.Value, out double diff);
+                    if (_learnedRelight >= 0)
+                    {
+                        lightText = $"{Environment.NewLine}Learned light swap: {_learnedRelight:P0} (closest to 0x{partner:X4}, brightness difference {diff:0.0})";
+                    }
+                }
                 _learnedText = $"learned from the group 0x{group[0]:X4}-0x{group[^1]:X4}";
                 _groupInfo.Text = $"Direction group ({group.Count} items, same name):{Environment.NewLine}{string.Join(Environment.NewLine, lines)}" +
-                                  $"{Environment.NewLine}{Environment.NewLine}Learned object type: {KindText(_learnedKind.Value)}";
+                                  $"{Environment.NewLine}{Environment.NewLine}Learned object type: {KindText(_learnedKind.Value)}{lightText}";
             }
             else
             {
@@ -216,7 +235,8 @@ namespace UoFiddler.Controls.Forms
             ItemData d = has ? TileData.ItemTable[id] : default;
             return ArtDirectionLearning.Suggest(img ?? new ArtPixelImage(1, 1), has,
                 has && (d.Flags & TileFlag.Wall) != 0, has && (d.Flags & TileFlag.Door) != 0, has && (d.Flags & TileFlag.Window) != 0,
-                has && (d.Flags & TileFlag.Surface) != 0, has && (d.Flags & TileFlag.Foliage) != 0, has ? d.Height : 1);
+                has && (d.Flags & TileFlag.Surface) != 0, has && (d.Flags & TileFlag.Foliage) != 0, has ? d.Height : 1,
+                has && (d.Flags & TileFlag.Container) != 0);
         }
 
         private static string KindText(ArtObjectKind k) => k switch
@@ -224,6 +244,7 @@ namespace UoFiddler.Controls.Forms
             ArtObjectKind.Symmetric => "Wall / fence (front = back)",
             ArtObjectKind.Flat => "Flat on the ground",
             ArtObjectKind.Directional => "Directional (points somewhere)",
+            ArtObjectKind.Box => "Box / furniture (same footprint)",
             _ => "Solid object"
         };
 

@@ -30,7 +30,14 @@ namespace UoFiddler.Controls.Classes
         /// 180 degree turn on the ground - the ground line is reversed, the height of every column is kept.
         /// Pixel based approximation (the back side uses the colours of the front side).
         /// </summary>
-        Directional = 3
+        Directional = 3,
+
+        /// <summary>
+        /// Boxes and furniture standing in the middle of their tile (chest, crate, table, barrel ...): turned by
+        /// 180 degrees the box covers the SAME footprint - north = south and west = east in the same place.
+        /// The geometry is exact; front details (lock, handles) are then on the back and may need removing.
+        /// </summary>
+        Box = 4
     }
 
     /// <summary>Manual transformation for one target direction (overrides the automatic one).</summary>
@@ -138,7 +145,7 @@ namespace UoFiddler.Controls.Classes
         public bool Repair { get; set; } = true;
 
         /// <summary>Largest enclosed transparent area (pixels) that is treated as a hole and filled.</summary>
-        public int RepairMaxHole { get; set; } = 12;
+        public int RepairMaxHole { get; set; } = 4;
 
         /// <summary>Colour used for a cast shadow when none was detected (ARGB1555 without alpha bit).</summary>
         public ushort DefaultShadowColor { get; set; } = 0x0C63; // dark grey (3,3,3)
@@ -225,15 +232,46 @@ namespace UoFiddler.Controls.Classes
                 switch (options.Kind)
                 {
                     case ArtObjectKind.Symmetric:
-                        notes.Add("Symmetric object: back side = front side.");
+                    {
+                        // walls / doors: same picture on the opposite (back) edge of the tile. North and West sit on
+                        // the upper edges, 22 px higher - the frame grows instead of cutting the graphic off.
+                        (int dx, int dy) = UoTile.OppositeEdgeShift((int)sourceDirection);
+                        (int nw, int nh, int[] smap) = UoTile.ShiftInFieldMap(img, dx, dy);
+                        var shifted = new ArtPixelImage(nw, nh);
+                        for (int i = 0; i < smap.Length; ++i)
+                        {
+                            if (smap[i] >= 0)
+                            {
+                                shifted.Pixels[i] = img.Pixels[smap[i]];
+                            }
+                        }
+
+                        img = shifted;
+                        cls = ApplyMap(cls, smap);
+                        notes.Add($"Wall/door: moved to the opposite edge of the tile ({dx:+0;-0}/{dy:+0;-0} px, frame {nw}x{nh}).");
                         break;
+                    }
                     case ArtObjectKind.Flat:
                         img = Rotate180(img);
                         notes.Add("Flat object: rotated 180°.");
                         break;
+                    case ArtObjectKind.Box:
+                        // same picture, same place in the field - only the side we look at is the back now
+                        result.IsExact = false;
+                        notes.Add("Box/furniture: same footprint (north = south, west = east). Remove front details (lock, handles) " +
+                                  "if the back looks different; chairs/benches need a drawn back view - template: 'Similar existing items'.");
+                        break;
                     case ArtObjectKind.Directional:
                         // drawn pointing West/East lies on a "\\" diagonal, North/South on "/"
                         int slope2 = sourceDirection == ArtDirection.West || sourceDirection == ArtDirection.East ? 1 : -1;
+                        // turn on a padded frame, then cut the frame to the content again (keeping the fix point
+                        // and the ground row): the turned object may need more room than the drawn one
+                        int pad = Math.Max(img.Width, img.Height);
+                        int origW = img.Width, origH = img.Height;
+                        int[] padMap = PadMap(origW, origH, pad, pad, out int pw, out int ph);
+                        img = ApplyMap(img, padMap, pw, ph);
+                        cls = ApplyMap(cls, padMap);
+
                         int[] map = TurnOnGroundMap(img, slope2, 0, out _, out bool axisMismatch);
                         if (axisMismatch)
                         {
@@ -243,6 +281,14 @@ namespace UoFiddler.Controls.Classes
 
                         img = ApplyMap(img, map);
                         cls = ApplyMap(cls, map);
+
+                        int[] cropMap = CropMap(img, origW, origH, out int cw, out int ch);
+                        img = ApplyMap(img, cropMap, cw, ch);
+                        cls = ApplyMap(cls, cropMap);
+                        if (cw != origW || ch != origH)
+                        {
+                            notes.Add($"Frame grown to {cw}x{ch} so nothing is cut off.");
+                        }
                         odd = !odd; // the turn contains a horizontal flip
                         result.IsExact = false; // back side = front colours, round parts get a little sheared
                         notes.Add("Turned 180° on the ground (points the other way) - approximation, please retouch the details.");
@@ -282,7 +328,10 @@ namespace UoFiddler.Controls.Classes
 
             if (options.Repair)
             {
-                img = Repair(img, options.RepairMaxHole);
+                // see-through pixels that are already in the source (glass, gaps between spindles) are wanted:
+                // then only stray pixels and colour 0 are repaired, no holes are filled
+                FindErrors(source, options.RepairMaxHole, out int sourceHoles, out _, out _, out _);
+                img = Repair(img, sourceHoles > 0 ? 0 : options.RepairMaxHole);
             }
 
             result.Image = img;
@@ -580,7 +629,7 @@ namespace UoFiddler.Controls.Classes
         /// <summary>
         /// One direction with a manually chosen transformation (instead of the automatic one of the object type).
         /// <paramref name="axisSlope"/>: slope of the object axis on screen for the turn methods (0 = measure,
-        /// e.g. 0.5 = "\" iso diagonal, -0.5 = "/"). Shadow, re-light and repair work like in <see cref="Generate"/>.
+        /// e.g. 1 = "\" UO tile diagonal (45 degrees), -1 = "/"). Shadow, re-light and repair work like in <see cref="Generate"/>.
         /// </summary>
         public static ArtDirectionResult GenerateManual(ArtPixelImage source, ArtDirection target, ArtManualMethod method,
             double axisSlope, ArtDirectionOptions options)
@@ -651,7 +700,10 @@ namespace UoFiddler.Controls.Classes
 
             if (options.Repair)
             {
-                img = Repair(img, options.RepairMaxHole);
+                // see-through pixels that are already in the source (glass, gaps between spindles) are wanted:
+                // then only stray pixels and colour 0 are repaired, no holes are filled
+                FindErrors(source, options.RepairMaxHole, out int sourceHoles, out _, out _, out _);
+                img = Repair(img, sourceHoles > 0 ? 0 : options.RepairMaxHole);
             }
 
             return new ArtDirectionResult { Direction = target, Image = img, IsExact = method != ArtManualMethod.TurnCrossAxis && method != ArtManualMethod.TurnShear, Note = note };
@@ -869,8 +921,8 @@ namespace UoFiddler.Controls.Classes
         /// while everything keeps its side of the axis - the highlight stays on top of the barrel, the carriage
         /// stays below it - and, being a mirror, it does not distort shapes: round muzzles and knobs stay round.
         /// The axis is the robust (Theil-Sen) slope of the upper outline; if it does not lie on the expected
-        /// diagonal (<paramref name="slope2"/>: +1 = "\" for West/East, -1 = "/" for North/South) the iso slope
-        /// 1/2 is used. Nearest-neighbour sampling (every target pixel takes exactly one source pixel, no holes).
+        /// diagonal (<paramref name="slope2"/>: +1 = "\" for West/East, -1 = "/" for North/South) the UO tile
+        /// diagonal (45 degrees, slope 1) is used. Nearest-neighbour sampling (every target pixel takes exactly one source pixel, no holes).
         /// Same image size, the lowest pixel keeps its row (UO anchor).
         /// </summary>
         public static int[] TurnOnGroundMap(ArtPixelImage img, int slope2)
@@ -883,7 +935,7 @@ namespace UoFiddler.Controls.Classes
         /// <param name="mismatch">true if the measured axis does not lie on the expected diagonal.</param>
         public static int[] TurnOnGroundMap(ArtPixelImage img, int slope2, double kOverride, out double usedK, out bool mismatch)
         {
-            usedK = 0.5 * slope2;
+            usedK = slope2; // UO tiles: 45 degree diagonals
             mismatch = false;
             int w = img.Width, h = img.Height;
             var map = new int[w * h];
@@ -917,13 +969,14 @@ namespace UoFiddler.Controls.Classes
             else if (Math.Sign(k) != Math.Sign(slope2) || Math.Abs(k) < 0.25 || Math.Abs(k) > 2.5)
             {
                 mismatch = Math.Abs(k) >= 0.25 && Math.Abs(k) <= 2.5; // a clear axis, but on the other diagonal
-                k = 0.5 * slope2;
+                k = slope2; // UO diagonal (45 degrees)
             }
 
             usedK = k;
 
-            // reflection across the line through (cx, cy) with angle axis + 90 degrees (an involution)
-            double cx = (minX + maxX) / 2.0, cy = (minY + maxY) / 2.0;
+            // reflection across the line through the centre of the object with angle axis + 90 degrees
+            // (an involution). Afterwards the turned object is seated on the ground again (see below).
+            double cx = (minX + maxX + 1) / 2.0, cy = (minY + maxY + 1) / 2.0;
             double phi = Math.Atan(k) + (Math.PI / 2);
             double c2 = Math.Cos(2 * phi), s2 = Math.Sin(2 * phi);
             (double X, double Y) Reflect(double x, double y)
@@ -932,7 +985,9 @@ namespace UoFiddler.Controls.Classes
                 return (cx + (c2 * dx) + (s2 * dy), cy + (s2 * dx) - (c2 * dy));
             }
 
-            // anchor: the lowest reflected pixel goes onto the lowest row of the source
+            // UO: a graphic can never reach below the bottom corner of its tile (drawY = ty + 44 - h), an object
+            // that now points towards the viewer stands on its FRONT tile. So the turned object is seated on the
+            // ground row again: its lowest pixel row keeps the distance to the fix point row it had before.
             double newMax = double.MinValue;
             for (int y = minY; y <= maxY; ++y)
             {
@@ -940,20 +995,19 @@ namespace UoFiddler.Controls.Classes
                 {
                     if (img.IsOpaque(x, y))
                     {
-                        newMax = Math.Max(newMax, Reflect(x, y).Y);
+                        newMax = Math.Max(newMax, Reflect(x + 0.5, y + 0.5).Y);
                     }
                 }
             }
 
-            int shift = maxY - (int)Math.Round(newMax, MidpointRounding.AwayFromZero);
+            int shift = maxY - (int)Math.Floor(newMax);
 
             for (int y = 0; y < h; ++y)
             {
                 for (int x = 0; x < w; ++x)
                 {
-                    (double sx, double sy) = Reflect(x, y - shift);
-                    int ix = (int)Math.Round(sx, MidpointRounding.AwayFromZero);
-                    int iy = (int)Math.Round(sy, MidpointRounding.AwayFromZero);
+                    (double sx, double sy) = Reflect(x + 0.5, y + 0.5 - shift);
+                    int ix = (int)Math.Floor(sx), iy = (int)Math.Floor(sy);
                     if (ix >= 0 && iy >= 0 && ix < w && iy < h && img.IsOpaque(ix, iy))
                     {
                         map[(y * w) + x] = (iy * w) + ix;
@@ -993,6 +1047,67 @@ namespace UoFiddler.Controls.Classes
             return slopes[slopes.Count / 2];
         }
 
+        private static ArtPixelImage ApplyMap(ArtPixelImage src, int[] map, int width, int height)
+        {
+            var dst = new ArtPixelImage(width, height);
+            for (int i = 0; i < map.Length; ++i)
+            {
+                if (map[i] >= 0)
+                {
+                    dst.Pixels[i] = src.Pixels[map[i]];
+                }
+            }
+
+            return dst;
+        }
+
+        /// <summary>Bigger frame: <paramref name="side"/> columns left and right, <paramref name="top"/> rows above (bottom row and fix point stay).</summary>
+        private static int[] PadMap(int w, int h, int side, int top, out int nw, out int nh)
+        {
+            nw = w + (2 * side);
+            nh = h + top;
+            var map = new int[nw * nh];
+            Array.Fill(map, -1);
+            for (int y = 0; y < h; ++y)
+            {
+                for (int x = 0; x < w; ++x)
+                {
+                    map[((y + top) * nw) + x + side] = (y * w) + x;
+                }
+            }
+
+            return map;
+        }
+
+        /// <summary>
+        /// Smallest frame (at least <paramref name="minW"/> x <paramref name="minH"/>) around the content that keeps
+        /// the fix point column (floor(w/2)) and the bottom row.
+        /// </summary>
+        private static int[] CropMap(ArtPixelImage img, int minW, int minH, out int nw, out int nh)
+        {
+            int w = img.Width, h = img.Height, c = w / 2;
+            GetBounds(img, out int minX, out int minY, out int maxX, out _);
+            int half = maxX < minX ? 0 : Math.Max(c - minX, maxX - c + 1);
+            nw = Math.Max(minW, 2 * half);
+            nh = Math.Max(minH, maxX < minX ? 0 : h - minY);
+            var map = new int[nw * nh];
+            Array.Fill(map, -1);
+            int ox = c - (nw / 2), oy = h - nh;
+            for (int y = 0; y < nh; ++y)
+            {
+                for (int x = 0; x < nw; ++x)
+                {
+                    int sx = x + ox, sy = y + oy;
+                    if (sx >= 0 && sy >= 0 && sx < w && sy < h)
+                    {
+                        map[(y * nw) + x] = (sy * w) + sx;
+                    }
+                }
+            }
+
+            return map;
+        }
+
         private static ArtPixelImage ApplyMap(ArtPixelImage src, int[] map)
         {
             var dst = new ArtPixelImage(src.Width, src.Height);
@@ -1014,7 +1129,7 @@ namespace UoFiddler.Controls.Classes
                 return null;
             }
 
-            var dst = new ArtFaceClass[src.Length];
+            var dst = new ArtFaceClass[map.Length]; // the map may describe a bigger frame (shift in the field)
             for (int i = 0; i < map.Length; ++i)
             {
                 if (map[i] >= 0)
@@ -1039,21 +1154,25 @@ namespace UoFiddler.Controls.Classes
         }
         #endregion
 
+        /// <summary>
+        /// 180 degree turn of a flat object around the centre of its UO tile. The tile of a w x h graphic is the
+        /// 44x44 diamond whose bottom corner is the fix point (middle pixel of the lowest row), so its centre is
+        /// the pixel corner (floor(w/2), h - 22). Turning around a pixel corner is an exact permutation; a 44x44
+        /// floor tile is turned onto itself.
+        /// </summary>
         public static ArtPixelImage Rotate180(ArtPixelImage src)
         {
-            // rotate inside the opaque bounding box, so the object stays on the ground (bottom anchor) and centered
-            GetBounds(src, out int minX, out int minY, out int maxX, out int maxY);
+            int cx = src.Width / 2, cy = src.Height - UoTile.Half;
             var dst = new ArtPixelImage(src.Width, src.Height);
-            if (maxX < minX)
+            for (int y = 0; y < src.Height; ++y)
             {
-                return dst;
-            }
-
-            for (int y = minY; y <= maxY; ++y)
-            {
-                for (int x = minX; x <= maxX; ++x)
+                for (int x = 0; x < src.Width; ++x)
                 {
-                    dst[minX + maxX - x, minY + maxY - y] = src[x, y];
+                    int sx = (2 * cx) - x - 1, sy = (2 * cy) - y - 1;
+                    if (sx >= 0 && sy >= 0 && sx < src.Width && sy < src.Height)
+                    {
+                        dst[x, y] = src[sx, sy];
+                    }
                 }
             }
 

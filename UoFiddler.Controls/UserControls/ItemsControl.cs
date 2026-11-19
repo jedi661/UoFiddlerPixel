@@ -62,14 +62,24 @@ namespace UoFiddler.Controls.UserControls
             extendedItem.Click += (s, e) => ShowExtendedFormatForm();
             MiscToolStripDropDownButton.DropDownItems.Add(new ToolStripSeparator());
             MiscToolStripDropDownButton.DropDownItems.Add(extendedItem);
+            var sheetsItem = new ToolStripMenuItem("Sprite sheets (export / import a range)...");
+            sheetsItem.Click += (s, e) =>
+            {
+                IReadOnlyList<int> sel = GetSelectedGraphicIds();
+                new SpriteSheetBatchForm(BatchInsert, BatchEnd, sel.Count > 1 ? sel[0] : 0, sel.Count > 1 ? sel[^1] : Art.GetMaxExtendedItemId()).Show();
+            };
+            MiscToolStripDropDownButton.DropDownItems.Add(sheetsItem);
+
             var checkItem = new ToolStripMenuItem("Check extended files (what is saved)...");
             checkItem.Click += (s, e) => new ExtendedCheckForm(GoToId, Reload).Show();
             MiscToolStripDropDownButton.DropDownItems.Add(checkItem);
 
-            var directionsButton = new ToolStripButton("Directions N/E/S/W")
+            var directionsButton = new ToolStripButton("Directions N/E/S/W", ToolIcons.Directions())
             {
-                DisplayStyle = ToolStripItemDisplayStyle.Text,
-                ToolTipText = "Generate the other orientations (north/east/south/west) of the selected item"
+                DisplayStyle = ToolStripItemDisplayStyle.ImageAndText,
+                ToolTipText = "Directions N/E/S/W" + Environment.NewLine +
+                              "Generates the other facings of the selected item (mirror, turn, light, shadow)." + Environment.NewLine +
+                              "Shows the UO field: the middle pixel of the lowest row is the fix point on the tile."
             };
             directionsButton.Click += (s, e) => ShowDirectionForm();
             ToolStrip.Items.Add(directionsButton);
@@ -107,10 +117,24 @@ namespace UoFiddler.Controls.UserControls
             TileViewContextMenuStrip.Items.Insert(freeIndex + 1, _onlyFreeMenuItem);
             TileViewContextMenuStrip.Items.Insert(freeIndex + 2, gotoExtended);
 
+            var transformButton = new ToolStripButton("Transform", ToolIcons.Transform())
+            {
+                DisplayStyle = ToolStripItemDisplayStyle.ImageAndText,
+                ToolTipText = "Transform (pixel exact)" + Environment.NewLine +
+                              "Flip, rotate, skew, scale, distort, warp and move every grid dot - colours stay identical." + Environment.NewLine +
+                              "UO field grid, position in the field (8 arrows), undo/redo; remembered per item."
+            };
+            transformButton.Click += (s, e) => ShowTransformForm();
+            ToolStrip.Items.Add(transformButton);
+
+            var transformMenu = new ToolStripMenuItem("Transform (skew / distort / warp)...");
+            transformMenu.Click += (s, e) => ShowTransformForm();
+
             var directionsMenu = new ToolStripMenuItem("Generate directions (N/E/S/W)...");
             directionsMenu.Click += (s, e) => ShowDirectionForm();
             int mirrorIndex = TileViewContextMenuStrip.Items.IndexOf(mirrorToolStripMenuItem);
             TileViewContextMenuStrip.Items.Insert(mirrorIndex + 1, directionsMenu);
+            TileViewContextMenuStrip.Items.Insert(mirrorIndex + 2, transformMenu);
         }
 
         private ExtendedArtFormatForm _extendedFormatForm;
@@ -129,6 +153,25 @@ namespace UoFiddler.Controls.UserControls
         }
 
         private ArtDirectionForm _directionForm;
+        private ArtTransformForm _transformForm;
+
+        private void ShowTransformForm()
+        {
+            if (_transformForm == null || _transformForm.IsDisposed)
+            {
+                _transformForm = new ArtTransformForm(InsertGeneratedItem);
+                _transformForm.Show();
+            }
+            else
+            {
+                _transformForm.Activate();
+            }
+
+            if (_selectedGraphicId >= 0 && Art.IsValidStatic(_selectedGraphicId))
+            {
+                _transformForm.LoadSource(Art.GetStatic(_selectedGraphicId), _selectedGraphicId);
+            }
+        }
 
         private void ShowDirectionForm()
         {
@@ -1049,6 +1092,50 @@ namespace UoFiddler.Controls.UserControls
                 ? $"Free slots: {free:N0} (0x0000 - 0x{max:X})"
                 : $"Items: {used:N0}  free: {free:N0}  (0x0000 - 0x{max:X})";
             SyncViewBox();
+        }
+
+        /// <summary>Inserts one graphic during a batch import (no redraw - call <see cref="BatchEnd"/> at the end).</summary>
+        public void BatchInsert(int id, Bitmap bitmap)
+        {
+            if (bitmap == null || !Art.IsLegalStaticId(id))
+            {
+                return;
+            }
+
+            Art.ReplaceStatic(id, bitmap);
+            ControlEvents.FireItemChangeEvent(this, id);
+            Options.ChangedUltimaClass["Art"] = true;
+            InsertIntoItemList(id);
+        }
+
+        /// <summary>Redraws the Items tab once after a batch import.</summary>
+        public void BatchEnd()
+        {
+            ItemsTileView.VirtualListSize = _itemList.Count;
+            ItemsTileView.Invalidate();
+        }
+
+        /// <summary>Ids of the slots selected in the Items tab (sorted), e.g. as targets for imported graphics.</summary>
+        public static IReadOnlyList<int> GetSelectedGraphicIds()
+        {
+            ItemsControl m = RefMarker;
+            if (m == null || !m.IsLoaded)
+            {
+                return Array.Empty<int>();
+            }
+
+            return m.ItemsTileView.SelectedIndices.Cast<int>()
+                .Where(i => i >= 0 && i < m._itemList.Count)
+                .Select(i => m._itemList[i])
+                .Distinct()
+                .OrderBy(id => id)
+                .ToList();
+        }
+
+        /// <summary>Shows an id in the Items tab (free slots too: switches to the slot view if needed).</summary>
+        public static void ShowGraphic(int id)
+        {
+            RefMarker?.GoToId(id);
         }
 
         /// <summary>Selects any id in the Items tab; switches to the slot view if the id is not in the current list.</summary>

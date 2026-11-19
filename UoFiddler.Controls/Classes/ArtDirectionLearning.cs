@@ -181,7 +181,7 @@ namespace UoFiddler.Controls.Classes
         /// for pointing objects the lighter half along the axis is the front (cannon muzzle, chair seat).
         /// </summary>
         public static ArtSuggestion Suggest(ArtPixelImage img, bool hasFlags, bool isWall, bool isDoor, bool isWindow,
-            bool isSurface, bool isFoliage, int height)
+            bool isSurface, bool isFoliage, int height, bool isContainer = false)
         {
             double k = ArtDirectionGenerator.MeasureTopSlope(img);
             bool backslash = k > 0.15;  // "\" (y grows with x)
@@ -195,17 +195,34 @@ namespace UoFiddler.Controls.Classes
                 s.Confidence = 0.9;
                 why.Add(isDoor ? "TileData: door" : isWindow ? "TileData: window" : "TileData: wall");
             }
-            else if (hasFlags && (isSurface || height == 0) && !isFoliage)
+            else if (hasFlags && isContainer)
             {
+                s.Kind = ArtObjectKind.Box;
+                s.Confidence = 0.85;
+                why.Add("TileData: container");
+            }
+            else if (hasFlags && (isSurface || height == 0) && !isFoliage && BoundsHeight(img) <= 48)
+            {
+                // really flat: lies inside its tile (rug, floor decal) - not a table or chair with the surface flag
                 s.Kind = ArtObjectKind.Flat;
                 s.Confidence = 0.75;
-                why.Add(isSurface ? "TileData: surface" : "TileData: height 0");
+                why.Add(isSurface ? "TileData: surface, low" : "TileData: height 0");
+            }
+            else if (hasFlags && isSurface)
+            {
+                // tables, chairs, benches: something to sit / put things on, standing on its footprint
+                s.Kind = ArtObjectKind.Box;
+                s.Confidence = 0.7;
+                why.Add("TileData: surface (furniture)");
             }
             else
             {
                 GetBounds(img, out int minX, out int minY, out int maxX, out int maxY);
                 int w = maxX - minX + 1, h = maxY - minY + 1;
-                bool tallThin = w > 0 && h > w * 1.6 && (backslash || slash) && FillRatio(img) > 0.35;
+                double fill = FillRatio(img);
+                bool tallThin = w > 0 && h > w * 1.6 && (backslash || slash) && fill > 0.6;
+                bool big = w > 110 || h > 130;
+                bool lowLong = w > 0 && h <= w * 1.3;
                 if (tallThin)
                 {
                     // narrow upright slab on a diagonal: looks like a wall piece
@@ -213,11 +230,26 @@ namespace UoFiddler.Controls.Classes
                     s.Confidence = 0.6;
                     why.Add("shape: upright slab on a diagonal");
                 }
-                else if (backslash || slash)
+                else if (big)
                 {
+                    // multi-tile objects (wagon, ship parts): turning them by pixels gives no usable result
+                    s.Kind = ArtObjectKind.Box;
+                    s.Confidence = 0.5;
+                    why.Add("shape: big object (several tiles)");
+                }
+                else if ((backslash || slash) && fill < 0.5 && lowLong)
+                {
+                    // low, elongated, open shape (cannon): points somewhere
                     s.Kind = ArtObjectKind.Directional;
                     s.Confidence = hasFlags ? 0.65 : 0.55;
-                    why.Add("shape: object along a diagonal");
+                    why.Add("shape: low slim object along a diagonal");
+                }
+                else if (backslash || slash)
+                {
+                    // block or furniture (chest, crate, table, chair): stands on its footprint
+                    s.Kind = ArtObjectKind.Box;
+                    s.Confidence = 0.55;
+                    why.Add(fill >= 0.5 ? "shape: compact block on a diagonal" : "shape: furniture on a diagonal");
                 }
                 else
                 {
@@ -283,6 +315,12 @@ namespace UoFiddler.Controls.Classes
             }
 
             return left < right;
+        }
+
+        private static int BoundsHeight(ArtPixelImage img)
+        {
+            GetBounds(img, out _, out int minY, out _, out int maxY);
+            return maxY < minY ? 0 : maxY - minY + 1;
         }
 
         private static double FillRatio(ArtPixelImage img)
@@ -384,10 +422,11 @@ namespace UoFiddler.Controls.Classes
         }
 
         /// <summary>
-        /// Object type learned from an existing group of variants: copies and mirrors only -> wall-like
-        /// (symmetric), at least one real new drawing -> pointing object (directional).
+        /// Object type learned from an existing group of variants: copies and mirrors only -> the object looks the
+        /// same from both sides: a wall/door piece (on the tile edge) if <paramref name="wallLike"/>, otherwise a
+        /// box / furniture (same footprint); at least one real new drawing -> pointing object (directional).
         /// </summary>
-        public static ArtObjectKind KindFromRelations(IEnumerable<ArtVariantRelation> relations)
+        public static ArtObjectKind KindFromRelations(IEnumerable<ArtVariantRelation> relations, bool wallLike = false)
         {
             var list = relations.ToList();
             if (list.Count == 0)
@@ -395,7 +434,71 @@ namespace UoFiddler.Controls.Classes
                 return ArtObjectKind.Directional;
             }
 
-            return list.Any(r => r == ArtVariantRelation.HandDrawn) ? ArtObjectKind.Directional : ArtObjectKind.Symmetric;
+            if (list.Any(r => r == ArtVariantRelation.HandDrawn))
+            {
+                return ArtObjectKind.Directional;
+            }
+
+            return wallLike ? ArtObjectKind.Symmetric : ArtObjectKind.Box;
+        }
+
+        /// <summary>
+        /// Learns how strong the face light has to be swapped: <paramref name="mirrored"/> is a real, hand made
+        /// mirror variant of <paramref name="source"/> (e.g. the East chest of a South chest in art.mul). The mirror
+        /// is generated with 0, 25, 50, 75 and 100 % light swap; the strength whose result is closest to the real
+        /// variant (mean brightness difference on common pixels) wins.
+        /// </summary>
+        /// <returns>Strength 0..1, or -1 if the two images can not be compared.</returns>
+        public static double LearnRelightStrength(ArtPixelImage source, ArtPixelImage mirrored, ArtObjectKind kind, out double bestDiff)
+        {
+            bestDiff = double.MaxValue;
+            double best = -1;
+            if (source == null || mirrored == null || source.Width != mirrored.Width || source.Height != mirrored.Height)
+            {
+                return best;
+            }
+
+            foreach (double strength in new[] { 0.0, 0.25, 0.5, 0.75, 1.0 })
+            {
+                var o = new ArtDirectionOptions
+                {
+                    Kind = kind,
+                    Shadow = ArtShadowMode.KeepAsIs,
+                    Repair = false,
+                    Relight = strength > 0,
+                    RelightStrength = strength
+                };
+                ArtPixelImage gen = ArtDirectionGenerator.Generate(source, ArtDirection.South, ArtDirection.East, o).Image;
+                if (gen.Width != mirrored.Width || gen.Height != mirrored.Height)
+                {
+                    continue;
+                }
+
+                double d = 0;
+                int n = 0;
+                for (int i = 0; i < gen.Pixels.Length; ++i)
+                {
+                    if (gen.Pixels[i] != 0 && mirrored.Pixels[i] != 0)
+                    {
+                        d += Math.Abs(ArtDirectionGenerator.Luma(gen.Pixels[i]) - ArtDirectionGenerator.Luma(mirrored.Pixels[i]));
+                        ++n;
+                    }
+                }
+
+                if (n == 0)
+                {
+                    continue;
+                }
+
+                d /= n;
+                if (d < bestDiff - 0.05)
+                {
+                    bestDiff = d;
+                    best = strength;
+                }
+            }
+
+            return best;
         }
 
         /// <summary>Decodes raw static art (art.mul / artext.mul encoding) without GDI.</summary>
@@ -455,6 +558,9 @@ namespace UoFiddler.Controls.Classes
 
         public int Kind { get; set; }
         public int Direction { get; set; }
+
+        /// <summary>Light swap strength 0..100 (-1 = not stored, older rules).</summary>
+        public int RelightStrength { get; set; } = -1;
 
         // per target direction (index = ArtDirection): manual method, axis, offset
         public int[] Method { get; set; } = new int[4];
