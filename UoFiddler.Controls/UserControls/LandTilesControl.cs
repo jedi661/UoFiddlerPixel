@@ -78,6 +78,60 @@ namespace UoFiddler.Controls.UserControls
             MiscToolStripDropDownButton.DropDownItems.Add(extItem);
             MiscToolStripDropDownButton.DropDownItems.Add(gotoExt);
 
+            // view: tiles / tiles + free slots / free slots / extended range (the old "Show free slots" switch)
+            _viewBox = new ToolStripComboBox
+            {
+                DropDownStyle = ComboBoxStyle.DropDownList,
+                AutoSize = false,
+                Width = 150,
+                ToolTipText = "Land tiles only / land tiles + free slots / free slots only / extended range (0x4000+)"
+            };
+            _viewBox.Items.AddRange(new object[] { "Land tiles only", "Land tiles + free slots", "Free slots only", "Extended range (0x4000+)" });
+            _viewBox.SelectedIndex = 0;
+            _viewBox.SelectedIndexChanged += (s, e) =>
+            {
+                if (!_syncingView)
+                {
+                    SetViewMode(_viewBox.SelectedIndex);
+                }
+            };
+            LandTilesToolStrip.Items.Add(new ToolStripSeparator());
+            LandTilesToolStrip.Items.Add(new ToolStripLabel("View:"));
+            LandTilesToolStrip.Items.Add(_viewBox);
+
+            var studio = new ToolStripButton("Land + texture studio")
+            {
+                ToolTipText = "Make a land tile AND its texture from one image (client orientation), check it on a map preview,\n" +
+                              "patch both into their slots and link them in the tiledata."
+            };
+            studio.Click += (s, e) => LandTextureStudioForm.ShowStudio(_selectedGraphicId >= 0 && Art.IsValidLand(_selectedGraphicId) ? _selectedGraphicId : -1);
+            var check = new ToolStripButton("Check...")
+            {
+                ToolTipText = "Find empty / one colour placeholder land tiles and textures (and delete them),\n" +
+                              "check the link land tile <-> texture (missing texture, wrong orientation)."
+            };
+            check.Click += (s, e) => TerrainCheckForm.ShowCheck();
+            LandTilesToolStrip.Items.Add(new ToolStripSeparator());
+            LandTilesToolStrip.Items.Add(studio);
+            LandTilesToolStrip.Items.Add(check);
+
+            // direct jumps for the selected land tile: its tiledata entry and its texture
+            var tileDataButton = new ToolStripButton("Show in TileData") { ToolTipText = "Shows the tiledata entry of the selected land tile (name, flags, texture id)" };
+            tileDataButton.Click += (s, e) => OnClickSelectTiledata(s, e);
+            var textureButton = new ToolStripButton("Show texture") { ToolTipText = "Shows the texture the tiledata of the selected land tile points to" };
+            textureButton.Click += (s, e) => ShowTextureOfSelected();
+            LandTilesToolStrip.Items.Add(new ToolStripSeparator());
+            LandTilesToolStrip.Items.Add(tileDataButton);
+            LandTilesToolStrip.Items.Add(textureButton);
+
+            var studioMenu = new ToolStripMenuItem("Open in land + texture studio");
+            studioMenu.Click += (s, e) => LandTextureStudioForm.ShowStudio(_selectedGraphicId);
+            var textureMenu = new ToolStripMenuItem("Show its texture (Textures tab)");
+            textureMenu.Click += (s, e) => ShowTextureOfSelected();
+            LandTilesContextMenuStrip.Items.Insert(0, textureMenu);
+            LandTilesContextMenuStrip.Items.Insert(0, studioMenu);
+            LandTilesContextMenuStrip.Items.Insert(2, new ToolStripSeparator());
+
             UoExtensions.Changed += kind =>
             {
                 if (kind == null || kind == UoExtensionKind.LandTiles)
@@ -92,6 +146,82 @@ namespace UoFiddler.Controls.UserControls
         private int _selectedGraphicId = -1;
         private readonly List<int> _tileList = new List<int>();
         private bool _showFreeSlots;
+
+        private void ShowTextureOfSelected()
+        {
+            int tex = _selectedGraphicId >= 0 && TileData.LandTable != null && _selectedGraphicId < TileData.LandTable.Length
+                ? TileData.LandTable[_selectedGraphicId].TextureId
+                : 0;
+            if (_selectedGraphicId < 0)
+            {
+                return;
+            }
+
+            if (tex <= 0 || !Textures.TestTexture(tex))
+            {
+                MessageBox.Show(tex <= 0
+                        ? $"Land tile 0x{_selectedGraphicId:X} has no texture id in the tiledata (flat only)."
+                        : $"The tiledata of land tile 0x{_selectedGraphicId:X} points to texture 0x{tex:X}, but that texture does not exist.",
+                    "Texture", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            TexturesControl.SelectInTab(tex);
+        }
+        private int _viewMode;              // 0 tiles, 1 tiles + free, 2 free only, 3 extended range
+        private ToolStripComboBox _viewBox;
+        private bool _syncingView;
+
+        /// <summary>Fills the list for the current view (incl. the land extension).</summary>
+        private void BuildList()
+        {
+            _tileList.Clear();
+            int max = LandTileMax;
+            for (int id = 0; id < max; ++id)
+            {
+                bool valid = Art.IsValidLand(id);
+                bool show = _viewMode switch
+                {
+                    1 => true,
+                    2 => !valid,
+                    3 => id >= ExtendedFormat.LandBaseId,
+                    _ => valid
+                };
+                if (show)
+                {
+                    _tileList.Add(id);
+                }
+            }
+        }
+
+        private void SetViewMode(int mode)
+        {
+            int previous = _selectedGraphicId;
+            _viewMode = mode;
+            _showFreeSlots = mode != 0;
+            showFreeSlotsToolStripMenuItem.Checked = _showFreeSlots;
+            if (_viewBox != null && _viewBox.SelectedIndex != mode)
+            {
+                _syncingView = true;
+                _viewBox.SelectedIndex = mode;
+                _syncingView = false;
+            }
+
+            if (!IsLoaded)
+            {
+                return;
+            }
+
+            BuildList();
+            LandTilesTileView.VirtualListSize = _tileList.Count;
+            if (previous >= 0 && _tileList.Contains(previous))
+            {
+                LandTilesTileView.FocusIndex = -1;
+                SelectedGraphicId = previous;
+            }
+
+            LandTilesTileView.Invalidate();
+        }
 
         public int SelectedGraphicId
         {
@@ -116,9 +246,19 @@ namespace UoFiddler.Controls.UserControls
                 _refMarker.OnLoad(_refMarker, EventArgs.Empty);
             }
 
-            if (_refMarker._tileList.All(t => t != graphic))
+            if (!_refMarker._tileList.Contains(graphic))
             {
-                return false;
+                if (!Art.IsLegalLandId(graphic))
+                {
+                    return false;
+                }
+
+                // e.g. a free slot or the extended range: show all ids so it can be selected
+                _refMarker.SetViewMode(1);
+                if (!_refMarker._tileList.Contains(graphic))
+                {
+                    return false;
+                }
             }
 
             // we have to invalidate focus so it will scroll to item
@@ -208,17 +348,9 @@ namespace UoFiddler.Controls.UserControls
             Options.LoadedUltimaClass["TileData"] = true;
             Options.LoadedUltimaClass["Art"] = true;
 
-            _showFreeSlots = false;
-            showFreeSlotsToolStripMenuItem.Checked = false;
-
-            int max = LandTileMax;
-            for (int i = 0; i < max; ++i)
-            {
-                if (Art.IsValidLand(i))
-                {
-                    _tileList.Add(i);
-                }
-            }
+            _showFreeSlots = _viewMode != 0;
+            showFreeSlotsToolStripMenuItem.Checked = _showFreeSlots;
+            BuildList();
 
             LandTilesTileView.VirtualListSize = _tileList.Count;
             UpdateTileView();
@@ -821,46 +953,53 @@ namespace UoFiddler.Controls.UserControls
         #region [ LandTilesTileView_DrawItem ]
         private void LandTilesTileView_DrawItem(object sender, TileView.TileViewControl.DrawTileListItemEventArgs e)
         {
-            if (IsAncestorSiteInDesignMode || FormsDesignerHelper.IsInDesignMode())
+            if (IsAncestorSiteInDesignMode || FormsDesignerHelper.IsInDesignMode() || e.Index < 0 || e.Index >= _tileList.Count)
             {
                 return;
             }
 
+            int id = _tileList[e.Index];
             Point itemPoint = new Point(e.Bounds.X + LandTilesTileView.TilePadding.Left, e.Bounds.Y + LandTilesTileView.TilePadding.Top);
             const int fixedTileSize = 44;
-            Size itemSize = new Size(fixedTileSize, fixedTileSize);
-            Rectangle itemRec = new Rectangle(itemPoint, itemSize);
+            Rectangle itemRec = new Rectangle(itemPoint, new Size(fixedTileSize, fixedTileSize));
 
-            var previousClip = e.Graphics.Clip;
-
-            e.Graphics.Clip = new Region(itemRec);
-
-            Bitmap bitmap = Art.GetLand(_tileList[e.Index], out bool patched);
-
-            if (bitmap == null)
+            // Save/Restore instead of "new Region" per tile (the old code leaked a Region for every drawn tile)
+            System.Drawing.Drawing2D.GraphicsState state = e.Graphics.Save();
+            try
             {
-                e.Graphics.Clip = new Region(itemRec);
-
-                itemRec.X += 5;
-                itemRec.Y += 5;
-
-                itemRec.Width -= 10;
-                itemRec.Height -= 10;
-
-                e.Graphics.FillRectangle(Brushes.Red, itemRec);
-                e.Graphics.Clip = previousClip;
-            }
-            else
-            {
-                if (patched)
+                e.Graphics.SetClip(itemRec);
+                if (id >= ExtendedFormat.LandBaseId)
                 {
-                    // different background for verdata patched tiles
-                    e.Graphics.FillRectangle(Brushes.LightCoral, itemRec);
+                    using var ext = new SolidBrush(Color.FromArgb(232, 240, 255)); // extended range: light blue background
+                    e.Graphics.FillRectangle(ext, itemRec);
                 }
 
-                e.Graphics.DrawImage(bitmap, itemRec);
+                Bitmap bitmap = Art.GetLand(id, out bool patched);
+                if (bitmap == null)
+                {
+                    // free slot: dashed diamond outline instead of a red square
+                    Point[] diamond =
+                    {
+                        new Point(itemRec.X + 21, itemRec.Y + 1), new Point(itemRec.X + 42, itemRec.Y + 21),
+                        new Point(itemRec.X + 21, itemRec.Y + 42), new Point(itemRec.X + 1, itemRec.Y + 21)
+                    };
+                    using var pen = new Pen(Color.IndianRed) { DashStyle = System.Drawing.Drawing2D.DashStyle.Dash };
+                    e.Graphics.DrawPolygon(pen, diamond);
+                }
+                else
+                {
+                    if (patched)
+                    {
+                        // different background for verdata patched tiles
+                        e.Graphics.FillRectangle(Brushes.LightCoral, itemRec);
+                    }
 
-                e.Graphics.Clip = previousClip;
+                    e.Graphics.DrawImage(bitmap, itemRec);
+                }
+            }
+            finally
+            {
+                e.Graphics.Restore(state);
             }
         }
         #endregion
@@ -989,33 +1128,8 @@ namespace UoFiddler.Controls.UserControls
 
         private void ShowFreeSlotsToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            _showFreeSlots = !_showFreeSlots;
-
-            if (_showFreeSlots)
-            {
-                // every id 0 .. max (incl. the land extension), used and free
-                _tileList.Clear();
-                int max = LandTileMax;
-                for (int j = 0; j < max; ++j)
-                {
-                    _tileList.Add(j);
-                }
-
-                var prevSelected = SelectedGraphicId;
-
-                LandTilesTileView.VirtualListSize = _tileList.Count;
-
-                if (prevSelected >= 0)
-                {
-                    SelectedGraphicId = prevSelected;
-                }
-
-                LandTilesTileView.Invalidate();
-            }
-            else
-            {
-                Reload();
-            }
+            // the old switch: land tiles <-> land tiles + free slots (more views in the "View" box)
+            SetViewMode(_viewMode == 0 ? 1 : 0);
         }
 
         #region new Search Tab ´Landtiles

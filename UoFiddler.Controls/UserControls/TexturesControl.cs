@@ -105,6 +105,87 @@ namespace UoFiddler.Controls.UserControls
             }
         }
 
+        /// <summary>
+        /// Land tiles whose tiledata texture id is <paramref name="textureId"/> (the land tile with the same id first),
+        /// plus the land tile with the same id if it is not linked yet.
+        /// </summary>
+        private static List<(int Id, bool Linked)> LandUsers(int textureId)
+        {
+            var result = new List<(int Id, bool Linked)>();
+            if (TileData.LandTable == null || textureId <= 0)
+            {
+                return result;
+            }
+
+            for (int i = 0; i < TileData.LandTable.Length; ++i)
+            {
+                if (TileData.LandTable[i].TextureId == textureId)
+                {
+                    result.Add((i, true));
+                }
+            }
+
+            int same = result.FindIndex(r => r.Id == textureId);
+            if (same > 0)
+            {
+                (int Id, bool Linked) s = result[same];
+                result.RemoveAt(same);
+                result.Insert(0, s);
+            }
+            else if (same < 0 && textureId < TileData.LandTable.Length && Art.IsValidLand(textureId))
+            {
+                result.Insert(0, (textureId, false)); // same id, but its tiledata does not point here
+            }
+
+            return result;
+        }
+
+        private void FillLandUsers(ToolStripItemCollection items, bool tileData)
+        {
+            items.Clear();
+            int tex = _selectedTextureId;
+            List<(int Id, bool Linked)> users = LandUsers(tex);
+            if (tex < 0 || users.Count == 0)
+            {
+                items.Add(new ToolStripMenuItem(tex < 0 ? "(select a texture)" : $"no land tile uses texture 0x{tex:X}") { Enabled = false });
+                return;
+            }
+
+            foreach ((int id, bool linked) in users.Take(60))
+            {
+                string name = TileData.LandTable[id].Name;
+                var item = new ToolStripMenuItem($"0x{id:X4}  {name}" + (linked ? string.Empty : "   (same id - NOT linked in tiledata)"));
+                if (!linked)
+                {
+                    item.ForeColor = Color.DarkOrange;
+                }
+
+                item.Click += (s, e) => ShowLand(id, tileData);
+                items.Add(item);
+            }
+
+            if (users.Count > 60)
+            {
+                items.Add(new ToolStripMenuItem($"... {users.Count - 60} more") { Enabled = false });
+            }
+        }
+
+        private static void ShowLand(int landId, bool tileData)
+        {
+            if (tileData)
+            {
+                TileDataControl.ActivateTab(); // first the tab, then the selection (the list scrolls to it)
+                TileDataControl.Select(landId, true);
+                return;
+            }
+
+            LandTilesControl.ActivateTab();
+            if (!LandTilesControl.SearchGraphic(landId))
+            {
+                MessageBox.Show($"Land tile 0x{landId:X} has no graphic.", "Show in LandTiles", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+        }
+
         private static bool IsTextureIdLegal(int id) => (id >= 0 && id < Math.Min(Textures.GetIdxLength(), Textures.LegacyCount)) || Textures.Extension.Contains(id);
 
         private void InitializeExtensionMenus()
@@ -141,6 +222,44 @@ namespace UoFiddler.Controls.UserControls
             MiscToolStripDropDownButton.DropDownItems.Add(new ToolStripSeparator());
             MiscToolStripDropDownButton.DropDownItems.Add(extItem);
             MiscToolStripDropDownButton.DropDownItems.Add(gotoExt);
+
+            var studio = new ToolStripMenuItem("Land + texture studio...")
+            {
+                ToolTipText = "Make a land tile and its texture from one image and link them in the tiledata"
+            };
+            studio.Click += (s, e) => LandTextureStudioForm.ShowStudio();
+            var check = new ToolStripMenuItem("Check land tiles / textures (empty, placeholder, link)...");
+            check.Click += (s, e) => TerrainCheckForm.ShowCheck();
+            MiscToolStripDropDownButton.DropDownItems.Add(new ToolStripSeparator());
+            MiscToolStripDropDownButton.DropDownItems.Add(studio);
+            MiscToolStripDropDownButton.DropDownItems.Add(check);
+
+            // texture -> land tiles that use it (texture id in the land tiledata): LandTiles tab / TileData tab
+            var landButton = new ToolStripDropDownButton("Show in LandTiles")
+            {
+                ToolTipText = "Land tiles whose tiledata points to this texture - click one to show it in the LandTiles tab"
+            };
+            landButton.DropDownOpening += (s, e) => FillLandUsers(landButton.DropDownItems, false);
+            var tileDataButton = new ToolStripDropDownButton("Show in TileData")
+            {
+                ToolTipText = "The land tiledata entries that point to this texture - click one to show it in the TileData tab"
+            };
+            tileDataButton.DropDownOpening += (s, e) => FillLandUsers(tileDataButton.DropDownItems, true);
+            landButton.DropDownItems.Add("(select a texture)");
+            tileDataButton.DropDownItems.Add("(select a texture)");
+            toolStrip.Items.Add(new ToolStripSeparator());
+            toolStrip.Items.Add(landButton);
+            toolStrip.Items.Add(tileDataButton);
+
+            var landMenu = new ToolStripMenuItem("Show in LandTiles");
+            var tileDataMenu = new ToolStripMenuItem("Show in TileData");
+            landMenu.DropDownItems.Add("(select a texture)");
+            tileDataMenu.DropDownItems.Add("(select a texture)");
+            landMenu.DropDownOpening += (s, e) => FillLandUsers(landMenu.DropDownItems, false);
+            tileDataMenu.DropDownOpening += (s, e) => FillLandUsers(tileDataMenu.DropDownItems, true);
+            contextMenuStrip.Items.Insert(0, new ToolStripSeparator());
+            contextMenuStrip.Items.Insert(0, tileDataMenu);
+            contextMenuStrip.Items.Insert(0, landMenu);
 
             UoExtensions.Changed += kind =>
             {
