@@ -115,20 +115,19 @@ namespace UoFiddler.Controls.UserControls
             LandTilesToolStrip.Items.Add(studio);
             LandTilesToolStrip.Items.Add(check);
 
+            // direct jumps for the selected land tile: its tiledata entry and its texture
+            var tileDataButton = new ToolStripButton("Show in TileData") { ToolTipText = "Shows the tiledata entry of the selected land tile (name, flags, texture id)" };
+            tileDataButton.Click += (s, e) => OnClickSelectTiledata(s, e);
+            var textureButton = new ToolStripButton("Show texture") { ToolTipText = "Shows the texture the tiledata of the selected land tile points to" };
+            textureButton.Click += (s, e) => ShowTextureOfSelected();
+            LandTilesToolStrip.Items.Add(new ToolStripSeparator());
+            LandTilesToolStrip.Items.Add(tileDataButton);
+            LandTilesToolStrip.Items.Add(textureButton);
+
             var studioMenu = new ToolStripMenuItem("Open in land + texture studio");
             studioMenu.Click += (s, e) => LandTextureStudioForm.ShowStudio(_selectedGraphicId);
             var textureMenu = new ToolStripMenuItem("Show its texture (Textures tab)");
-            textureMenu.Click += (s, e) =>
-            {
-                int tex = _selectedGraphicId >= 0 && TileData.LandTable != null && _selectedGraphicId < TileData.LandTable.Length
-                    ? TileData.LandTable[_selectedGraphicId].TextureId
-                    : 0;
-                if (tex <= 0 || !TexturesControl.SelectInTab(tex))
-                {
-                    MessageBox.Show(tex <= 0 ? "This land tile has no texture id in the tiledata." : $"Texture 0x{tex:X} does not exist.", "Texture",
-                        MessageBoxButtons.OK, MessageBoxIcon.Information);
-                }
-            };
+            textureMenu.Click += (s, e) => ShowTextureOfSelected();
             LandTilesContextMenuStrip.Items.Insert(0, textureMenu);
             LandTilesContextMenuStrip.Items.Insert(0, studioMenu);
             LandTilesContextMenuStrip.Items.Insert(2, new ToolStripSeparator());
@@ -147,6 +146,28 @@ namespace UoFiddler.Controls.UserControls
         private int _selectedGraphicId = -1;
         private readonly List<int> _tileList = new List<int>();
         private bool _showFreeSlots;
+
+        private void ShowTextureOfSelected()
+        {
+            int tex = _selectedGraphicId >= 0 && TileData.LandTable != null && _selectedGraphicId < TileData.LandTable.Length
+                ? TileData.LandTable[_selectedGraphicId].TextureId
+                : 0;
+            if (_selectedGraphicId < 0)
+            {
+                return;
+            }
+
+            if (tex <= 0 || !Textures.TestTexture(tex))
+            {
+                MessageBox.Show(tex <= 0
+                        ? $"Land tile 0x{_selectedGraphicId:X} has no texture id in the tiledata (flat only)."
+                        : $"The tiledata of land tile 0x{_selectedGraphicId:X} points to texture 0x{tex:X}, but that texture does not exist.",
+                    "Texture", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            TexturesControl.SelectInTab(tex);
+        }
         private int _viewMode;              // 0 tiles, 1 tiles + free, 2 free only, 3 extended range
         private ToolStripComboBox _viewBox;
         private bool _syncingView;
