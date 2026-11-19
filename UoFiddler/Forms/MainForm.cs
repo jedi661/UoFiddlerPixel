@@ -332,6 +332,26 @@ namespace UoFiddler.Forms
         #endregion
 
         #region [ Reload Files ]
+        /// <summary>Reloads every loaded file from the current paths (used by the path settings).</summary>
+        public void ReloadAllFiles()
+        {
+            ReloadFiles(this, EventArgs.Empty);
+        }
+
+        /// <summary>Brings a tab to the front by its name (e.g. "ExtendedTab"); false if it is not there.</summary>
+        public bool SelectTabByName(string name)
+        {
+            TabPage page = TabPanel.TabPages[name];
+            if (page == null)
+            {
+                return false;
+            }
+
+            TabPanel.SelectedTab = page;
+            Activate();
+            return true;
+        }
+
         private void ReloadFiles(object sender, EventArgs e)
         {
             Cursor.Current = Cursors.WaitCursor;
@@ -1561,11 +1581,10 @@ namespace UoFiddler.Forms
         #endregion
 
         #region [ ultimaOnlineDirToolStripMenuItem ]
-        private PathSettingsForm pathSettingsForm = new PathSettingsForm(); // Creates an instance of PathSettingsForm for use in this class.
         private void ultimaOnlineDirToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            // Accessing tsTbRootPath from pathSettingsForm
-            string path = pathSettingsForm.tsTbRootPath.Text;
+            // the current Ultima Online folder (the old code created a second, hidden path settings window for this)
+            string path = Files.RootDir;
 
             // Check if the path exists
             if (Directory.Exists(path))
