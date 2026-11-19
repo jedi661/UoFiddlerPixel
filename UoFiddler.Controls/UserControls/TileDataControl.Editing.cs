@@ -165,7 +165,7 @@ namespace UoFiddler.Controls.UserControls
                 Options.ChangedUltimaClass["TileData"] = true;
                 if (++fired <= MaxChangeEvents)
                 {
-                    ControlEvents.FireTileDataChangeEvent(this, index + 0x4000);
+                    ControlEvents.FireTileDataChangeEvent(this, ControlEvents.TileDataItemEventId(index));
                 }
             }
         }
@@ -193,7 +193,7 @@ namespace UoFiddler.Controls.UserControls
                 Options.ChangedUltimaClass["TileData"] = true;
                 if (++fired <= MaxChangeEvents)
                 {
-                    ControlEvents.FireTileDataChangeEvent(this, index);
+                    ControlEvents.FireTileDataChangeEvent(this, ControlEvents.TileDataLandEventId(index));
                 }
             }
         }

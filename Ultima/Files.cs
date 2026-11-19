@@ -62,6 +62,8 @@ namespace Ultima
             "artlegacymul.uop",
             "artext.mul", // UOFiddler extended art (ids >= 0x10000), see ExtendedFormat.cs
             "artextidx.mul", // UOFiddler extended art index
+            "artlandext.mul", // UOFiddler extended land tiles (ids >= 0x4000)
+            "artlandextidx.mul", // UOFiddler extended land tile index
             "body.def",
             "bodyconv.def",
             "client.exe",
@@ -171,6 +173,12 @@ namespace Ultima
             "texmaps.mul",
             "tiledata.mul",
             "tiledataext.mul", // UOFiddler extended tiledata (ids >= 0x10000)
+            "tiledatalandext.mul", // UOFiddler extended land tiledata (ids >= 0x4000)
+            "texextidx.mul", // UOFiddler extended texture index (ids >= 0x4000)
+            "texmapsext.mul", // UOFiddler extended textures
+            "huesext.mul", // UOFiddler extended hues (hue numbers > 3000)
+            "radarcolext.mul", // UOFiddler extended radar colours of items (ids >= 0x10000)
+            "radarcollandext.mul", // UOFiddler extended radar colours of land tiles (ids >= 0x4000)
             "unifont.mul",
             "unifont1.mul",
             "unifont2.mul",
@@ -323,7 +331,7 @@ namespace Ultima
         public static List<string> ResolveExtendedFilePaths()
         {
             var found = new List<string>();
-            foreach (string name in new[] { ExtendedFormat.ArtIndexFileName, ExtendedFormat.ArtDataFileName, ExtendedFormat.TileDataFileName })
+            foreach (string name in ExtendedFormat.AllFileNames)
             {
                 string path = GetFilePathWithRootFallback(name);
                 if (path != null)

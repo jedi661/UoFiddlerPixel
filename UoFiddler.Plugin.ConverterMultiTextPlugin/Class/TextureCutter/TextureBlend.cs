@@ -204,7 +204,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Class.TextureCutter
             {
                 lock (SdkSync.Lock)
                 {
-                    Hue hue = Hues.GetHue(index);
+                    // index = hue NUMBER (1 based) -> list index number - 1 (was off by one)
+                    Hue hue = index >= 1 ? Hues.GetHue(index - 1) : null;
                     if (hue?.Colors == null)
                     {
                         return null;

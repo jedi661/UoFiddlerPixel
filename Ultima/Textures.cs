@@ -13,6 +13,153 @@ namespace Ultima
         private static bool[] _removed = new bool[0x4000];
         private static readonly Dictionary<int, bool> _patched = new Dictionary<int, bool>();
 
+        // ===================================================================================================
+        // TEXTURE EXTENSION (ids 0x4000..0xFFFF): texextidx.mul / texmapsext.mul, same raw encoding as
+        // texmaps.mul (64x64 or 128x128 pixels, colour ^ 0x8000, extra 0 = 64, 1 = 128). texidx.mul / texmaps.mul
+        // keep their client layout.
+        // ===================================================================================================
+        public static readonly ExtendedBlobStore Extension = new ExtendedBlobStore(
+            ExtendedFormat.TextureIndexFileName, ExtendedFormat.TextureDataFileName, ExtendedFormat.TextureIndexMagic,
+            ExtendedFormat.TextureBaseId, ExtendedFormat.TextureMaxSlots);
+
+        private static readonly Dictionary<int, Bitmap> _extCache = new Dictionary<int, Bitmap>();
+
+        public static bool HasExtension => Extension.Exists;
+
+        /// <summary>Number of classic texture slots (0x4000).</summary>
+        public const int LegacyCount = 0x4000;
+
+        /// <summary>Highest texture id incl. the extension (0x3FFF without).</summary>
+        public static int GetMaxTextureId() => Extension.Exists ? Extension.MaxId : LegacyCount - 1;
+
+        public static bool IsLegalTextureId(int id) => (id >= 0 && id < LegacyCount) || Extension.Contains(id);
+
+        public static void CreateOrResizeExtension(int slots)
+        {
+            Extension.CreateOrResize(slots);
+            foreach (int id in new List<int>(_extCache.Keys))
+            {
+                if (!Extension.Contains(id))
+                {
+                    _extCache.Remove(id);
+                }
+            }
+        }
+
+        public static void ReloadExtension()
+        {
+            _extCache.Clear();
+            Extension.Load();
+        }
+
+        public static void SaveExtension(string path)
+        {
+            Extension.Save(path);
+        }
+
+        /// <summary>Encodes a 64x64 or 128x128 texture (other sizes are drawn into 64x64 / 128x128).</summary>
+        public static unsafe byte[] EncodeTexture(Bitmap source, out int extra)
+        {
+            int size = source.Width > 64 || source.Height > 64 ? 128 : 64;
+            extra = size == 128 ? 1 : 0;
+            Bitmap bmp = source;
+            bool own = false;
+            if (bmp.Width != size || bmp.Height != size)
+            {
+                bmp = new Bitmap(size, size, PixelFormat.Format16bppArgb1555);
+                using (Graphics g = Graphics.FromImage(bmp))
+                {
+                    g.DrawImageUnscaled(source, 0, 0);
+                }
+
+                own = true;
+            }
+
+            try
+            {
+                var result = new byte[size * size * 2];
+                BitmapData bd = bmp.LockBits(new Rectangle(0, 0, size, size), ImageLockMode.ReadOnly, PixelFormat.Format16bppArgb1555);
+                try
+                {
+                    var line = (ushort*)bd.Scan0;
+                    int delta = bd.Stride >> 1;
+                    int o = 0;
+                    for (int y = 0; y < size; ++y, line += delta)
+                    {
+                        for (int x = 0; x < size; ++x)
+                        {
+                            ushort v = (ushort)(line[x] ^ 0x8000);
+                            result[o++] = (byte)v;
+                            result[o++] = (byte)(v >> 8);
+                        }
+                    }
+                }
+                finally
+                {
+                    bmp.UnlockBits(bd);
+                }
+
+                return result;
+            }
+            finally
+            {
+                if (own)
+                {
+                    bmp.Dispose();
+                }
+            }
+        }
+
+        private static unsafe Bitmap DecodeTexture(byte[] data, int extra)
+        {
+            int size = extra == 0 && data.Length < 0x8000 ? 64 : 128;
+            if (data.Length < size * size * 2)
+            {
+                return null;
+            }
+
+            var bmp = new Bitmap(size, size, PixelFormat.Format16bppArgb1555);
+            BitmapData bd = bmp.LockBits(new Rectangle(0, 0, size, size), ImageLockMode.WriteOnly, PixelFormat.Format16bppArgb1555);
+            var line = (ushort*)bd.Scan0;
+            int delta = bd.Stride >> 1;
+            fixed (byte* p = data)
+            {
+                var src = (ushort*)p;
+                for (int y = 0; y < size; ++y, line += delta)
+                {
+                    for (int x = 0; x < size; ++x)
+                    {
+                        line[x] = (ushort)(*src++ ^ 0x8000);
+                    }
+                }
+            }
+
+            bmp.UnlockBits(bd);
+            return bmp;
+        }
+
+        private static Bitmap GetExtended(int id)
+        {
+            if (_extCache.TryGetValue(id, out Bitmap cached))
+            {
+                return cached;
+            }
+
+            byte[] raw = Extension.Read(id, out int extra);
+            if (raw == null)
+            {
+                return null;
+            }
+
+            Bitmap bmp = DecodeTexture(raw, extra);
+            if (bmp != null && Files.CacheData)
+            {
+                _extCache[id] = bmp;
+            }
+
+            return bmp;
+        }
+
         private struct Checksums
         {
             public byte[] Checksum;
@@ -30,6 +177,12 @@ namespace Ultima
             _cache = new Bitmap[0x4000];
             _removed = new bool[0x4000];
             _patched.Clear();
+            ReloadExtension();
+        }
+
+        static Textures()
+        {
+            ReloadExtension();
         }
 
         public static int GetIdxLength()
@@ -43,6 +196,13 @@ namespace Ultima
         /// <param name="index"></param>
         public static void Remove(int index)
         {
+            if (Extension.Contains(index))
+            {
+                Extension.Remove(index);
+                _extCache.Remove(index);
+                return;
+            }
+
             _removed[index] = true;
         }
 
@@ -53,6 +213,19 @@ namespace Ultima
         /// <param name="bmp"></param>
         public static void Replace(int index, Bitmap bmp)
         {
+            if (Extension.Contains(index))
+            {
+                if (bmp == null)
+                {
+                    Remove(index);
+                    return;
+                }
+
+                Extension.Set(index, EncodeTexture(bmp, out int extra), extra);
+                _extCache[index] = bmp;
+                return;
+            }
+
             _cache[index] = bmp;
             _removed[index] = false;
             if (_patched.ContainsKey(index))
@@ -68,6 +241,11 @@ namespace Ultima
         /// <returns></returns>
         public static bool TestTexture(int index)
         {
+            if (Extension.Contains(index))
+            {
+                return Extension.IsValid(index);
+            }
+
             index &= 0x3FFF;
 
             if (_removed[index])
@@ -103,6 +281,13 @@ namespace Ultima
         /// <returns></returns>
         public static unsafe Bitmap GetTexture(int index, out bool patched)
         {
+            if (Extension.Contains(index))
+            {
+                patched = false;
+                return GetExtended(index);
+            }
+
+            index &= 0x3FFF;
             patched = _patched.ContainsKey(index) && _patched[index];
 
             if (_removed[index])
@@ -262,6 +447,9 @@ namespace Ultima
             }
 
             memIdx.Dispose();
+
+            // ids >= 0x4000 go to the side-car files, texidx.mul/texmaps.mul stay client compatible
+            SaveExtension(path);
         }
 
         private static int GetExtraFlag(int length)

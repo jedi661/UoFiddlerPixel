@@ -1727,7 +1727,7 @@
             // numHue
             // 
             this.numHue.Maximum = new decimal(new int[] {
-            3000,
+            16383,
             0,
             0, 0});
             this.numHue.Minimum = new decimal(new int[] {

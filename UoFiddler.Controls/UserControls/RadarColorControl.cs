@@ -1,135 +1,422 @@
 ﻿/***************************************************************************
  *
  * $Author: Turley
- * 
+ *
  * "THE BEER-WARE LICENSE"
- * As long as you retain this notice you can do whatever you want with 
+ * As long as you retain this notice you can do whatever you want with
  * this stuff. If we meet some day, and you think this stuff is worth it,
  * you can buy me a beer in return.
+ *
+ * Rewritten: virtual list instead of two tree views with 80,000+ nodes (the tab opened slowly and every colour
+ * change searched all nodes), extended ids (land 0x4000+, items 0x10000+), filters, eyedropper, undo per entry,
+ * batch averages with progress / cancel. Fixed: the background worker handlers were added again on every reload,
+ * "RadarCol" vs. "RadarColor" change flag (unsaved changes were not reported), the last item was missing,
+ * division by zero for empty graphics, leaked preview bitmaps, a new timer per key press in the filter.
  *
  ***************************************************************************/
 
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
-using System.Windows.Forms.VisualStyles;
 using Ultima;
 using Ultima.Helpers;
 using UoFiddler.Controls.Classes;
+using UoFiddler.Controls.Forms;
 using UoFiddler.Controls.Helpers;
 
 namespace UoFiddler.Controls.UserControls
 {
     public partial class RadarColorControl : UserControl
     {
+        private const string ChangeKey = "RadarColor"; // same key as in Options (was "RadarCol" -> never reported)
+
+        private static RadarColorControl _refMarker;
+
+        // ---- data
+        private bool _land;                       // false = items, true = land tiles
+        private int[] _ids = Array.Empty<int>();   // ids shown in the list (filtered, sorted)
+        private readonly Dictionary<int, ushort> _originalItems = new Dictionary<int, ushort>();
+        private readonly Dictionary<int, ushort> _originalLand = new Dictionary<int, ushort>();
+        private int _selectedId = -1;
+        private ushort _currentColor;
+        private bool _updating;
+
+        // ---- preview
+        private Bitmap _previewImage;     // owned (drawn), disposed on change
+        private Bitmap _previewSource;    // NOT owned (Art cache)
+        private RectangleF _previewRect;  // where the source is drawn inside the picture box
+
+        // ---- batch job
+        private Timer _jobTimer;
+        private IEnumerator<int> _job;
+        private int _jobTotal, _jobDone;
+        private bool _jobCancel;
+        private string _jobName;
+
+        // ---- controls
+        private ToolStripButton _itemsButton, _landButton;
+        private ToolStripTextBox _searchBox;
+        private ToolStripComboBox _filterBox;
+        private ToolStripLabel _countLabel;
+        private ListView _list;
+        private PictureBox _preview, _swatchCurrent, _swatchFile;
+        private Label _titleLabel, _infoLabel, _statusLabel;
+        private NumericUpDown _r, _g, _b;
+        private TextBox _hexBox, _htmlBox, _fromBox, _toBox;
+        private CheckBox _autoApply, _copyHexOnSelect;
+        private RadioButton _useSelection, _useRange;
+        private Button _applyButton, _revertButton, _revertAllButton;
+        private ProgressBar _progress;
+        private Button _cancelJobButton;
+        private readonly Timer _searchTimer = new Timer { Interval = 300 };
+        private readonly ToolTip _tips = new ToolTip();
+
         public RadarColorControl()
         {
             InitializeComponent();
-
-            SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer | ControlStyles.UserPaint, true);
+            SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer, true);
             _refMarker = this;
-
-            // Link the event method to the AfterSelect event.
-            treeViewItem.AfterSelect += treeViewItem_AfterSelect;
-            treeViewLand.AfterSelect += treeViewLand_AfterSelect;
-
-            //this.treeViewLand = new UoFiddler.Controls.UserControls.RadarColorControl.ColorTreeView();
-
-            // Label Colorcode
-            LabelColorCode.Text = "";
+            BuildLayout();
+            _searchTimer.Tick += (s, e) =>
+            {
+                _searchTimer.Stop();
+                RebuildList(true);
+            };
         }
-
-        private int _selectedIndex = -1;
-        private ushort _currentColor;
-        private static RadarColorControl _refMarker;
-        private bool _updating;
-        private readonly Dictionary<int, ushort> _originalItemColors = [];
-        private readonly Dictionary<int, ushort> _originalLandColors = [];
-        private Timer _debounceTimer;
-        private const int _debounceTimeout = 500;
-        private readonly HashSet<int> _selectedItems = [];
-        private readonly HashSet<int> _selectedLand = [];
-        private BackgroundWorker _worker = new BackgroundWorker(); // Onload
 
         public bool IsLoaded { get; private set; }
 
-        [Browsable(false),
-        DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-
-        #region [ CurrentColor ]
+        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public ushort CurrentColor
         {
             get => _currentColor;
             set
             {
-                if (_currentColor == value)
-                {
-                    return;
-                }
-
-                _currentColor = value;
-                _updating = true;
-                numericUpDownShortCol.Value = _currentColor;
-                Color color = HueHelpers.HueToColor(_currentColor);
-                pictureBoxColor.BackColor = color;
-                numericUpDownR.Value = color.R;
-                numericUpDownG.Value = color.G;
-                numericUpDownB.Value = color.B;
-                _updating = false;
+                _currentColor = (ushort)(value & 0x7FFF);
+                ShowCurrentColor();
             }
         }
-        #endregion
 
-        #region [ Select ]
+        #region Public API (used by Items, LandTiles, TileData)
+
+        /// <summary>Selects an item (land = false) or a land tile in the list.</summary>
         public static void Select(int graphic, bool land)
         {
+            if (_refMarker == null)
+            {
+                return;
+            }
+
             if (!_refMarker.IsLoaded)
             {
                 _refMarker.OnLoad(_refMarker, EventArgs.Empty);
             }
 
-            const int index = 0;
-            if (land)
-            {
-                for (int i = index; i < _refMarker.treeViewLand.Nodes.Count; ++i)
-                {
-                    TreeNode node = _refMarker.treeViewLand.Nodes[i];
-                    if ((int)node.Tag != graphic)
-                    {
-                        continue;
-                    }
-
-                    _refMarker.tabControl2.SelectTab(1);
-                    _refMarker.treeViewLand.SelectedNode = node;
-                    node.EnsureVisible();
-                    break;
-                }
-            }
-            else
-            {
-                for (int i = index; i < _refMarker.treeViewItem.Nodes.Count; ++i)
-                {
-                    TreeNode node = _refMarker.treeViewItem.Nodes[i];
-                    if ((int)node.Tag != graphic)
-                    {
-                        continue;
-                    }
-
-                    _refMarker.tabControl2.SelectTab(0);
-                    _refMarker.treeViewItem.SelectedNode = node;
-                    node.EnsureVisible();
-                    break;
-                }
-            }
+            _refMarker.SelectId(graphic, land);
         }
+
+        /// <summary>Brings the RadarColor tab to the front.</summary>
+        public static void ActivateTab()
+        {
+            TabNavigation.BringToFront(_refMarker);
+        }
+
         #endregion
 
-        #region [ Reload ]
+        #region Layout
+
+        private void BuildLayout()
+        {
+            // --- tool strip
+            var strip = new ToolStrip { GripStyle = ToolStripGripStyle.Hidden, Dock = DockStyle.Top };
+            _itemsButton = new ToolStripButton("Items") { Checked = true, CheckOnClick = false, ToolTipText = "Radar colours of the items (statics)" };
+            _landButton = new ToolStripButton("Land tiles") { ToolTipText = "Radar colours of the land tiles" };
+            _itemsButton.Click += (s, e) => SetMode(false);
+            _landButton.Click += (s, e) => SetMode(true);
+            _searchBox = new ToolStripTextBox { AutoSize = false, Width = 160, ToolTipText = "Search: id (0x1F00 or 7936) or part of the name" };
+            _searchBox.TextChanged += (s, e) =>
+            {
+                _searchTimer.Stop();
+                _searchTimer.Start();
+            };
+            _searchBox.KeyDown += (s, e) =>
+            {
+                if (e.KeyCode == Keys.Enter)
+                {
+                    e.SuppressKeyPress = true;
+                    _searchTimer.Stop();
+                    JumpToSearch();
+                }
+            };
+            _filterBox = new ToolStripComboBox { DropDownStyle = ComboBoxStyle.DropDownList, AutoSize = false, Width = 190, ToolTipText = "Which entries are listed" };
+            _filterBox.Items.AddRange(new object[]
+            {
+                "All ids", "With graphic", "Changed (not saved)", "Black / missing colour", "Black with graphic", "Extended ids only"
+            });
+            _filterBox.SelectedIndex = 0;
+            _filterBox.SelectedIndexChanged += (s, e) => RebuildList(true);
+            _countLabel = new ToolStripLabel { ForeColor = Color.DimGray };
+
+            var save = new ToolStripButton("Save") { ToolTipText = "Writes radarcol.mul (and radarcolext.mul / radarcollandext.mul for extended ids) into the output folder" };
+            save.Click += (s, e) => SaveFile();
+            var misc = new ToolStripDropDownButton("Misc");
+            misc.DropDownItems.Add("Export CSV (output folder)", null, (s, e) => ExportCsv());
+            misc.DropDownItems.Add("Import CSV...", null, (s, e) => ImportCsv());
+            misc.DropDownItems.Add(new ToolStripSeparator());
+            misc.DropDownItems.Add("Fill black / missing colours from the graphics (all)...", null, (s, e) => FillAllBlack());
+            misc.DropDownItems.Add(new ToolStripSeparator());
+            misc.DropDownItems.Add("Extended formats (items / land tiles)...", null,
+                (s, e) => ExtendedArtFormatForm.ShowFor(_land ? UoExtensionKind.LandTiles : UoExtensionKind.Items));
+
+            strip.Items.AddRange(new ToolStripItem[]
+            {
+                _itemsButton, _landButton, new ToolStripSeparator(),
+                new ToolStripLabel("Search:"), _searchBox, new ToolStripLabel("Show:"), _filterBox, new ToolStripSeparator(),
+                save, misc, new ToolStripSeparator(), _countLabel
+            });
+
+            // --- list (virtual: only visible rows exist)
+            _list = new ListView
+            {
+                Dock = DockStyle.Fill,
+                View = View.Details,
+                VirtualMode = true,
+                FullRowSelect = true,
+                HideSelection = false,
+                MultiSelect = true,
+                OwnerDraw = true,
+                GridLines = false,
+                HeaderStyle = ColumnHeaderStyle.Nonclickable
+            };
+            _list.Columns.Add("Colour", 56);
+            _list.Columns.Add("ID", 120);
+            _list.Columns.Add("Name", 190);
+            _list.Columns.Add("Value", 70);
+            _list.Columns.Add("RGB", 90);
+            _list.RetrieveVirtualItem += OnRetrieveVirtualItem;
+            _list.DrawColumnHeader += (s, e) => e.DrawDefault = true;
+            _list.DrawSubItem += OnDrawSubItem;
+            _list.SelectedIndexChanged += (s, e) => OnListSelectionChanged();
+            _list.VirtualItemsSelectionRangeChanged += (s, e) => OnListSelectionChanged();
+            _list.KeyDown += OnListKeyDown;
+            _list.ContextMenuStrip = BuildListMenu();
+            typeof(Control).GetProperty("DoubleBuffered", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)?.SetValue(_list, true);
+
+            // --- right side
+            var right = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 1, Padding = new Padding(6), AutoScroll = true };
+            right.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+            right.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+            right.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+            right.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+            right.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+
+            var head = new Panel { Dock = DockStyle.Top, Height = 42 };
+            _titleLabel = new Label { AutoSize = true, Font = new Font(Font.FontFamily, 10f, FontStyle.Bold), Location = new Point(0, 0) };
+            _infoLabel = new Label { AutoSize = true, ForeColor = Color.DimGray, Location = new Point(0, 22) };
+            head.Controls.Add(_titleLabel);
+            head.Controls.Add(_infoLabel);
+            right.Controls.Add(head, 0, 0);
+
+            _preview = new PictureBox { Dock = DockStyle.Fill, MinimumSize = new Size(120, 120), BackColor = Color.FromArgb(40, 40, 40), Cursor = Cursors.Cross };
+            _preview.Resize += (s, e) => RenderPreview();
+            _preview.MouseClick += OnPreviewClick;
+            _tips.SetToolTip(_preview, "Click on a pixel to take its colour (eyedropper).");
+            right.Controls.Add(_preview, 0, 1);
+
+            right.Controls.Add(BuildColorGroup(), 0, 2);
+            right.Controls.Add(BuildBatchGroup(), 0, 3);
+
+            _statusLabel = new Label { AutoSize = true, ForeColor = Color.DimGray, Margin = new Padding(3, 6, 3, 3) };
+            right.Controls.Add(_statusLabel, 0, 4);
+
+            var split = new SplitContainer { Dock = DockStyle.Fill, FixedPanel = FixedPanel.None };
+            split.Panel1.Controls.Add(_list);
+            split.Panel2.Controls.Add(right);
+
+            Controls.Add(split);
+            Controls.Add(strip);
+            HandleCreated += (s, e) =>
+            {
+                try
+                {
+                    split.SplitterDistance = Math.Max(200, Math.Min(560, Width / 2));
+                }
+                catch (InvalidOperationException)
+                {
+                    // too small yet
+                }
+            };
+        }
+
+        private GroupBox BuildColorGroup()
+        {
+            var group = new GroupBox { Text = "Colour", Dock = DockStyle.Top, AutoSize = true, AutoSizeMode = AutoSizeMode.GrowAndShrink };
+            var grid = new TableLayoutPanel { Dock = DockStyle.Fill, AutoSize = true, ColumnCount = 6 };
+
+            _swatchCurrent = new PictureBox { Size = new Size(64, 40), BorderStyle = BorderStyle.FixedSingle, Cursor = Cursors.Hand };
+            _swatchCurrent.Click += (s, e) => PickWithDialog();
+            _tips.SetToolTip(_swatchCurrent, "New colour - click to choose with the colour dialog");
+            _swatchFile = new PictureBox { Size = new Size(32, 40), BorderStyle = BorderStyle.FixedSingle, Cursor = Cursors.Hand };
+            _swatchFile.Click += (s, e) => RevertSelected();
+            _tips.SetToolTip(_swatchFile, "Colour in the loaded file - click to go back to it");
+
+            _r = MakeNumber();
+            _g = MakeNumber();
+            _b = MakeNumber();
+            _hexBox = new TextBox { Width = 70, Font = new Font(FontFamily.GenericMonospace, 9f) };
+            _hexBox.KeyDown += (s, e) =>
+            {
+                if (e.KeyCode == Keys.Enter)
+                {
+                    e.SuppressKeyPress = true;
+                    ParseHex();
+                }
+            };
+            _hexBox.Leave += (s, e) => ParseHex();
+            _tips.SetToolTip(_hexBox, "Radar colour value (15 bit, 0x0000 - 0x7FFF)");
+            _htmlBox = new TextBox { Width = 70, Font = new Font(FontFamily.GenericMonospace, 9f) };
+            _htmlBox.KeyDown += (s, e) =>
+            {
+                if (e.KeyCode == Keys.Enter)
+                {
+                    e.SuppressKeyPress = true;
+                    ParseHtml();
+                }
+            };
+            _htmlBox.Leave += (s, e) => ParseHtml();
+            _tips.SetToolTip(_htmlBox, "#RRGGBB (as in image programs) - double click copies it");
+            _htmlBox.DoubleClick += (s, e) => CopyText(_htmlBox.Text);
+
+            grid.Controls.Add(_swatchCurrent, 0, 0);
+            grid.SetRowSpan(_swatchCurrent, 2);
+            grid.Controls.Add(_swatchFile, 1, 0);
+            grid.SetRowSpan(_swatchFile, 2);
+            grid.Controls.Add(Pair("R", _r), 2, 0);
+            grid.Controls.Add(Pair("G", _g), 3, 0);
+            grid.Controls.Add(Pair("B", _b), 4, 0);
+            grid.Controls.Add(Pair("Value", _hexBox), 2, 1);
+            grid.Controls.Add(Pair("HTML", _htmlBox), 3, 1);
+            grid.SetColumnSpan(grid.GetControlFromPosition(3, 1), 2);
+
+            var buttons = new FlowLayoutPanel { AutoSize = true, Dock = DockStyle.Fill, WrapContents = true };
+            _applyButton = MakeButton("Apply (Enter)", (s, e) => ApplyToSelection());
+            _tips.SetToolTip(_applyButton, "Sets the colour for all selected entries");
+            buttons.Controls.Add(_applyButton);
+            buttons.Controls.Add(MakeButton("Average of graphic", (s, e) => AverageOfCurrent()));
+            _revertButton = MakeButton("Revert", (s, e) => RevertSelected());
+            _revertAllButton = MakeButton("Revert all", (s, e) => RevertAll());
+            buttons.Controls.Add(_revertButton);
+            buttons.Controls.Add(_revertAllButton);
+            _autoApply = new CheckBox { Text = "Apply while editing", AutoSize = true, Checked = true, Margin = new Padding(8, 7, 3, 3) };
+            _tips.SetToolTip(_autoApply, "Every change of R/G/B, value, eyedropper ... is written to the selected entry at once");
+            buttons.Controls.Add(_autoApply);
+            _copyHexOnSelect = new CheckBox { Text = "Copy value on select", AutoSize = true, Margin = new Padding(8, 7, 3, 3) };
+            buttons.Controls.Add(_copyHexOnSelect);
+
+            var jump = new FlowLayoutPanel { AutoSize = true, Dock = DockStyle.Fill, WrapContents = true };
+            jump.Controls.Add(new Label { Text = "Show in:", AutoSize = true, Margin = new Padding(3, 8, 3, 3) });
+            jump.Controls.Add(MakeButton("Items / LandTiles", (s, e) => ShowInArtTab()));
+            jump.Controls.Add(MakeButton("TileData", (s, e) => ShowInTileData()));
+
+            var outer = new TableLayoutPanel { Dock = DockStyle.Fill, AutoSize = true, ColumnCount = 1 };
+            outer.Controls.Add(grid, 0, 0);
+            outer.Controls.Add(buttons, 0, 1);
+            outer.Controls.Add(jump, 0, 2);
+            group.Controls.Add(outer);
+            return group;
+        }
+
+        private GroupBox BuildBatchGroup()
+        {
+            var group = new GroupBox { Text = "Averages for several entries", Dock = DockStyle.Top, AutoSize = true, AutoSizeMode = AutoSizeMode.GrowAndShrink };
+            var flow = new FlowLayoutPanel { Dock = DockStyle.Fill, AutoSize = true, WrapContents = true };
+            _useSelection = new RadioButton { Text = "Selected rows", AutoSize = true, Checked = true, Margin = new Padding(3, 6, 3, 3) };
+            _useRange = new RadioButton { Text = "Range", AutoSize = true, Margin = new Padding(3, 6, 3, 3) };
+            _fromBox = new TextBox { Width = 80 };
+            _toBox = new TextBox { Width = 80 };
+            _tips.SetToolTip(_fromBox, "First id (0x... or decimal) - or right click a row: 'Set as range from'");
+            _tips.SetToolTip(_toBox, "Last id (included)");
+            _fromBox.TextChanged += (s, e) => _useRange.Checked = true;
+            _toBox.TextChanged += (s, e) => _useRange.Checked = true;
+            flow.Controls.Add(_useSelection);
+            flow.Controls.Add(_useRange);
+            flow.Controls.Add(_fromBox);
+            flow.Controls.Add(new Label { Text = "to", AutoSize = true, Margin = new Padding(3, 7, 3, 3) });
+            flow.Controls.Add(_toBox);
+            flow.SetFlowBreak(_toBox, true);
+            flow.Controls.Add(MakeButton("Current = their average", (s, e) => CurrentToGroupAverage()));
+            flow.Controls.Add(MakeButton("All = one common average", (s, e) => GroupToCommonAverage()));
+            flow.Controls.Add(MakeButton("Each = its own average", (s, e) => GroupToOwnAverage()));
+            _progress = new ProgressBar { Width = 220, Height = 18, Visible = false, Margin = new Padding(3, 8, 3, 3) };
+            _cancelJobButton = MakeButton("Cancel", (s, e) => _jobCancel = true);
+            _cancelJobButton.Visible = false;
+            flow.SetFlowBreak(flow.Controls[flow.Controls.Count - 1], true);
+            flow.Controls.Add(_progress);
+            flow.Controls.Add(_cancelJobButton);
+            group.Controls.Add(flow);
+            return group;
+        }
+
+        private ContextMenuStrip BuildListMenu()
+        {
+            var menu = new ContextMenuStrip();
+            menu.Items.Add("Show in Items / LandTiles tab", null, (s, e) => ShowInArtTab());
+            menu.Items.Add("Show in TileData tab", null, (s, e) => ShowInTileData());
+            menu.Items.Add(new ToolStripSeparator());
+            menu.Items.Add("Copy id (hex)", null, (s, e) => CopyText(_selectedId >= 0 ? $"0x{_selectedId:X4}" : string.Empty));
+            menu.Items.Add("Copy colour value", null, (s, e) => CopyText($"0x{CurrentColor:X4}"));
+            menu.Items.Add("Copy colour as #RRGGBB", null, (s, e) => CopyText(_htmlBox.Text));
+            menu.Items.Add(new ToolStripSeparator());
+            menu.Items.Add("Set as range from", null, (s, e) => _fromBox.Text = _selectedId >= 0 ? $"0x{_selectedId:X}" : string.Empty);
+            menu.Items.Add("Set as range to", null, (s, e) => _toBox.Text = _selectedId >= 0 ? $"0x{_selectedId:X}" : string.Empty);
+            menu.Items.Add(new ToolStripSeparator());
+            menu.Items.Add("Each selected = its own average", null, (s, e) => { _useSelection.Checked = true; GroupToOwnAverage(); });
+            menu.Items.Add("Revert selected", null, (s, e) => RevertSelected());
+            return menu;
+        }
+
+        private NumericUpDown MakeNumber()
+        {
+            var n = new NumericUpDown { Minimum = 0, Maximum = 255, Width = 52 };
+            n.ValueChanged += (s, e) =>
+            {
+                if (_updating)
+                {
+                    return;
+                }
+
+                SetColorFromEditor(HueHelpers.ColorToHue(Color.FromArgb((int)_r.Value, (int)_g.Value, (int)_b.Value)));
+            };
+            return n;
+        }
+
+        private static Control Pair(string label, Control control)
+        {
+            var p = new FlowLayoutPanel { AutoSize = true, WrapContents = false, Margin = new Padding(0) };
+            p.Controls.Add(new Label { Text = label, AutoSize = true, Margin = new Padding(3, 6, 0, 3) });
+            p.Controls.Add(control);
+            return p;
+        }
+
+        private static Button MakeButton(string text, EventHandler click)
+        {
+            var b = new Button { Text = text, AutoSize = true };
+            b.Click += click;
+            return b;
+        }
+
+        #endregion
+
+        #region Load / list
+
         private void Reload()
         {
             if (IsLoaded)
@@ -137,9 +424,7 @@ namespace UoFiddler.Controls.UserControls
                 OnLoad(this, new MyEventArgs(MyEventArgs.Types.ForceReload));
             }
         }
-        #endregion
 
-        #region [ Onload ] 
         public void OnLoad(object sender, EventArgs e)
         {
             if (IsAncestorSiteInDesignMode || FormsDesignerHelper.IsInDesignMode())
@@ -152,1512 +437,1178 @@ namespace UoFiddler.Controls.UserControls
                 return;
             }
 
-            Cursor.Current = Cursors.WaitCursor;
-
-            // Configure the background worker.
-            _worker.DoWork += Worker_DoWork;
-            _worker.RunWorkerCompleted += Worker_RunWorkerCompleted;
-
-            // Start the background worker.
-            _worker.RunWorkerAsync();
-        }
-        #endregion
-
-        #region [ Worker_DoWork ]
-        private void Worker_DoWork(object sender, DoWorkEventArgs e)
-        {
-            // Load the data here.
             Options.LoadedUltimaClass["TileData"] = true;
             Options.LoadedUltimaClass["Art"] = true;
             Options.LoadedUltimaClass["RadarColor"] = true;
 
-            _selectedItems.Clear();
-            _selectedLand.Clear();
-            _originalItemColors.Clear();
-            _originalLandColors.Clear();
-        }
-        #endregion
-
-        #region [ Worker_RunWorkerCompleted ]
-        private void Worker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
-        {
-            // Update the user control here.
-            treeViewItem.BeginUpdate();
-            try
+            if (IsLoaded)
             {
-                treeViewItem.Nodes.Clear();
-                if (TileData.ItemTable != null)
-                {
-                    TreeNode[] nodes = new TreeNode[Art.GetMaxItemId()];
-                    for (int i = 0; i < Art.GetMaxItemId(); ++i)
-                    {
-                        ushort color = RadarCol.GetItemColor(i);
-                        Color foreColor = HueHelpers.HueToColor(color);
-                        nodes[i] = new TreeNode(string.Format("0x{0:X4} ({0}) {1}", i, TileData.ItemTable[i].Name))
-                        {
-                            Tag = i,
-                            ForeColor = foreColor
-                        };
-                    }
-                    treeViewItem.Nodes.AddRange(nodes);
-                }
+                // reload (file paths changed): the colours in memory come from the new files
+                _originalItems.Clear();
+                _originalLand.Clear();
             }
-            finally
-            {
-                treeViewItem.EndUpdate();
-            }
-
-            // Load treeViewLand when the control is loaded
-            treeViewLand.BeginUpdate();
-            try
-            {
-                treeViewLand.Nodes.Clear();
-                if (TileData.LandTable != null)
-                {
-                    TreeNode[] nodes = new TreeNode[TileData.LandTable.Length];
-                    for (int i = 0; i < TileData.LandTable.Length; ++i)
-                    {
-                        ushort color = RadarCol.GetLandColor(i);
-                        Color foreColor = HueHelpers.HueToColor(color);
-                        nodes[i] = new TreeNode(string.Format("0x{0:X4} ({0}) {1}", i, TileData.LandTable[i].Name))
-                        {
-                            Tag = i,
-                            ForeColor = foreColor
-                        };
-                    }
-                    treeViewLand.Nodes.AddRange(nodes);
-                }
-            }
-            finally
-            {
-                treeViewLand.EndUpdate();
-            }
-
-            if (!IsLoaded)
+            else
             {
                 ControlEvents.FilePathChangeEvent += OnFilePathChangeEvent;
+                UoExtensions.Changed += OnExtensionChanged;
+                Disposed += (s, ev) =>
+                {
+                    ControlEvents.FilePathChangeEvent -= OnFilePathChangeEvent;
+                    UoExtensions.Changed -= OnExtensionChanged;
+                };
             }
 
             IsLoaded = true;
-            Cursor.Current = Cursors.Default;
+            RebuildList(false);
+            UpdateButtons();
         }
-        #endregion
 
-        #region [ UpdateTreeViewItem ]
-        //Update TreeViewItems
-        private void UpdateTreeViewItem()
-        {
-            treeViewItem.BeginUpdate();
-            try
-            {
-                treeViewItem.Nodes.Clear();
-                if (TileData.ItemTable != null)
-                {
-                    TreeNode[] nodes = new TreeNode[Art.GetMaxItemId()];
-                    for (int i = 0; i < Art.GetMaxItemId(); ++i)
-                    {
-                        ushort color = RadarCol.GetItemColor(i);
-                        Color foreColor = HueHelpers.HueToColor(color);
-                        nodes[i] = new TreeNode(string.Format("0x{0:X4} ({0}) {1}", i, TileData.ItemTable[i].Name))
-                        {
-                            Tag = i,
-                            ForeColor = foreColor
-                        };
-                    }
-                    treeViewItem.Nodes.AddRange(nodes);
-                }
-            }
-            finally
-            {
-                treeViewItem.EndUpdate();
-            }
-        }
-        #endregion
-
-        #region [ OnFilePathChangeEvent ]
         private void OnFilePathChangeEvent()
         {
             Reload();
         }
-        #endregion
 
-        #region [ btupdateTreeView_Click ]
-        private void btupdateTreeView_Click(object sender, EventArgs e)
+        private void OnExtensionChanged(UoExtensionKind? kind)
         {
-            // Update the treeViewItem data.
-            UpdateTreeViewItem();
-        }
-        #endregion
-
-        #region  [ class ColorTreeView ] // Creates graphic bars checkbox Hex ID Text
-        public class ColorTreeView : TreeView
-        {
-            public ColorTreeView()
-            {
-                DrawMode = TreeViewDrawMode.OwnerDrawText;
-            }
-
-            protected override void OnDrawNode(DrawTreeNodeEventArgs e)
-            {
-                // Draw the default background
-                e.DrawDefault = true;
-
-                // Dimensions for the colored bar
-                int colorBoxWidth = 16;
-                int colorBoxHeight = 16;
-
-                // Define the rectangle for the colored bar
-                Rectangle colorBoxRect = new Rectangle(e.Bounds.X + 2, e.Bounds.Y + (e.Bounds.Height - colorBoxHeight) / 2, colorBoxWidth, colorBoxHeight);
-
-                // Draw the colored bar
-                Color color = e.Node.ForeColor; // Use the predefined foreground color of the node
-                using (SolidBrush brush = new SolidBrush(color))
-                {
-                    e.Graphics.FillRectangle(brush, colorBoxRect);
-                }
-
-                // Reserve space for the checkbox (13x13 pixels)
-                int checkboxWidth = this.CheckBoxes ? 13 : 0;
-
-                // Offset for the text after the checkbox
-                int textOffset = colorBoxRect.Right + checkboxWidth + 4; // 2 pixels space after the color box, plus checkbox width, plus 2 pixels space after the checkbox
-
-                // Define the rectangle for the text
-                Rectangle textRect = new Rectangle(textOffset, e.Bounds.Y, e.Bounds.Width - textOffset, e.Bounds.Height);
-
-                // Draw the node text
-                TextRenderer.DrawText(e.Graphics, e.Node.Text, this.Font, textRect, this.ForeColor, TextFormatFlags.GlyphOverhangPadding);
-            }
-        }
-        #endregion
-
-        #region [ Click farbcode ]
-        private void treeViewItem_AfterSelect(object sender, TreeViewEventArgs e)
-        {
-            if (!checkBoxHexCode.Checked)
+            if (!IsLoaded || (kind != null && kind != UoExtensionKind.Items && kind != UoExtensionKind.LandTiles))
             {
                 return;
             }
 
-            // Get the selected element.
-            TreeNode selectedNode = e.Node;
-
-            // Get the color code of the selected element.
-            ushort color = RadarCol.GetItemColor((int)selectedNode.Tag);
-            string colorCode = $"0x{color:X4}";
-
-            // Copy the color code to the clipboard.
-            Clipboard.SetText(colorCode);
+            RadarCol.SyncExtensionSizes();
+            RebuildList(true);
         }
-        #endregion 
 
-        #region [ treeViewLand_AfterSelect ]
-        private void treeViewLand_AfterSelect(object sender, TreeViewEventArgs e)
+        private int MaxId => _land ? Art.GetMaxLandId() : Art.GetMaxExtendedItemId();
+
+        private int ExtendedBase => _land ? ExtendedFormat.LandBaseId : ExtendedFormat.BaseId;
+
+        private Dictionary<int, ushort> Originals => _land ? _originalLand : _originalItems;
+
+        private static bool IsLegal(int id, bool land) => land ? Art.IsLegalLandId(id) : Art.IsLegalStaticId(id);
+
+        private static bool HasGraphic(int id, bool land) => land ? Art.IsValidLand(id) : Art.IsValidStatic(id);
+
+        private static ushort GetColor(int id, bool land) => land ? RadarCol.GetLandColor(id) : RadarCol.GetItemColor(id);
+
+        private static string GetName(int id, bool land)
         {
-            if (!checkBoxHexCode.Checked) //Checkbox checkBoxHexCode
+            if (land)
+            {
+                return TileData.LandTable != null && id < TileData.LandTable.Length ? TileData.LandTable[id].Name : string.Empty;
+            }
+
+            return TileData.ItemTable != null && id < TileData.ItemTable.Length ? TileData.ItemTable[id].Name : string.Empty;
+        }
+
+        /// <summary>Builds the id list for the current mode, filter and search (fast: ints only, no tree nodes).</summary>
+        private void RebuildList(bool keepSelection)
+        {
+            if (!IsLoaded)
             {
                 return;
             }
 
-            // Get the selected element.
-            TreeNode selectedNode = e.Node;
-
-            // Get the color code of the selected element.
-            ushort color = RadarCol.GetLandColor((int)selectedNode.Tag);
-            string colorCode = $"0x{color:X4}";
-
-            // Copy the color code to the clipboard.
-            Clipboard.SetText(colorCode);
-        }
-        #endregion
-
-        #region [ AfterSelectTreeViewItem ]
-        private void AfterSelectTreeViewItem(object sender, TreeViewEventArgs e)
-        {
-            SaveColor();
-
-            _selectedIndex = (int)e.Node.Tag;
-
-            if (Art.IsValidStatic(_selectedIndex))
+            int keep = keepSelection ? _selectedId : -1;
+            Cursor.Current = Cursors.WaitCursor;
+            try
             {
-                Bitmap bitmap = Art.GetStatic(_selectedIndex);
-                Bitmap newBitmap = new Bitmap(pictureBoxArt.Size.Width, pictureBoxArt.Size.Height);
-                using (Graphics newGraphic = Graphics.FromImage(newBitmap))
+                int filter = _filterBox.SelectedIndex;
+                string search = _searchBox.Text.Trim();
+                bool searchIsId = TryParseId(search, out int searchId);
+                Dictionary<int, ushort> originals = Originals;
+                int max = MaxId;
+                var ids = new List<int>(max + 1);
+                for (int id = 0; id <= max; ++id)
                 {
-                    newGraphic.Clear(Color.FromArgb(-1));
-                    newGraphic.DrawImage(bitmap, (pictureBoxArt.Size.Width - bitmap.Width) / 2, 1);
-                }
-
-                pictureBoxArt.Image = newBitmap;
-            }
-            else
-            {
-                pictureBoxArt.Image = new Bitmap(pictureBoxArt.Width, pictureBoxArt.Height);
-            }
-
-            CurrentColor = RadarCol.GetItemColor(_selectedIndex);
-            // Update the LabelTildataNameItemsLand label with the name of the selected item.
-            LabelTildataNameItemsLand.Text = TileData.ItemTable[_selectedIndex].Name;
-
-            buttonRevert.Enabled = _originalItemColors.ContainsKey(_selectedIndex);
-            buttonRevertAll.Enabled = _originalLandColors.Count > 0 || _originalItemColors.Count > 0;
-
-        }
-        #endregion
-
-        #region [ AfterSelectTreeViewLand ]
-        private void AfterSelectTreeViewLand(object sender, TreeViewEventArgs e)
-        {
-            SaveColor();
-
-            _selectedIndex = (int)e.Node.Tag;
-
-            if (Art.IsValidLand(_selectedIndex))
-            {
-                Bitmap bitmap = Art.GetLand(_selectedIndex);
-                Bitmap newBitmap = new Bitmap(pictureBoxArt.Size.Width, pictureBoxArt.Size.Height);
-                using (Graphics newGraphic = Graphics.FromImage(newBitmap))
-                {
-                    newGraphic.Clear(Color.FromArgb(-1));
-                    newGraphic.DrawImage(bitmap, (pictureBoxArt.Size.Width - bitmap.Width) / 2, 1);
-                }
-
-                pictureBoxArt.Image = newBitmap;
-            }
-            else
-            {
-                pictureBoxArt.Image = new Bitmap(pictureBoxArt.Width, pictureBoxArt.Height);
-            }
-
-            CurrentColor = RadarCol.GetLandColor(_selectedIndex);
-            // Update the LabelTildataNameItemsLand label with the name of the selected item.
-            LabelTildataNameItemsLand.Text = TileData.LandTable[_selectedIndex].Name;
-
-            buttonRevert.Enabled = _originalLandColors.ContainsKey(_selectedIndex);
-            buttonRevertAll.Enabled = _originalLandColors.Count > 0 || _originalItemColors.Count > 0;
-        }
-        #endregion
-
-        #region [ OnClickMeanColor ]
-        private void OnClickMeanColor(object sender, EventArgs e)
-        {
-            Bitmap image = tabControl2.SelectedIndex == 0 ? Art.GetStatic(_selectedIndex) : Art.GetLand(_selectedIndex);
-            if (image == null)
-            {
-                return;
-            }
-
-            CurrentColor = HueHelpers.ColorToHue(AverageColorFrom(image));
-        }
-        #endregion
-
-        #region [ OnClickSaveFile ]
-        private void OnClickSaveFile(object sender, EventArgs e)
-        {
-            string path = Options.OutputPath;
-            string fileName = Path.Combine(path, "radarcol.mul");
-            RadarCol.Save(fileName);
-
-            _originalItemColors.Clear();
-            _originalLandColors.Clear();
-
-            foreach (TreeNode node in treeViewItem.Nodes)
-            {
-                node.ForeColor = SystemColors.WindowText;
-            }
-
-            foreach (TreeNode node in treeViewLand.Nodes)
-            {
-                node.ForeColor = SystemColors.WindowText;
-            }
-
-            MessageBox.Show($"RadarCol saved to {fileName}", "Saved", MessageBoxButtons.OK, MessageBoxIcon.Information,
-                MessageBoxDefaultButton.Button1);
-            Options.ChangedUltimaClass["RadarCol"] = false;
-        }
-        #endregion
-
-        #region [ SaveColor ]
-        private void SaveColor()
-        {
-            SaveColor(_selectedIndex, CurrentColor, tabControl2.SelectedIndex == 0);
-        }
-        #endregion
-
-        #region [ SaveColor ]
-        private void SaveColor(int index, ushort color, bool isItemTile)
-        {
-            if (index < 0)
-            {
-                return;
-            }
-
-            if (isItemTile)
-            {
-                var datafileColor = RadarCol.GetItemColor(index);
-                if (color != datafileColor)
-                {
-                    if (_originalItemColors.TryAdd(index, datafileColor))
+                    if (!IsLegal(id, _land))
                     {
-                        var previousNode = treeViewItem.Nodes.OfType<TreeNode>()
-                                .FirstOrDefault(node => node.Tag.Equals(index));
-
-                        if (previousNode != null)
-                            previousNode.ForeColor = Color.Blue;
+                        continue; // gap before the item extension (0xFFDD..0xFFFF with High Seas)
                     }
-                }
-                RadarCol.SetItemColor(index, color);
-            }
-            else
-            {
-                var datafileColor = RadarCol.GetLandColor(index);
-                if (color != datafileColor)
-                {
-                    if (_originalLandColors.TryAdd(index, datafileColor))
+
+                    switch (filter)
                     {
-                        var previousNode = treeViewLand.Nodes.OfType<TreeNode>()
-                                .FirstOrDefault(node => node.Tag.Equals(index));
-
-                        if (previousNode != null)
-                            previousNode.ForeColor = Color.Blue;
+                        case 1 when !HasGraphic(id, _land):
+                        case 2 when !originals.ContainsKey(id):
+                        case 3 when GetColor(id, _land) != 0:
+                        case 4 when GetColor(id, _land) != 0 || !HasGraphic(id, _land):
+                        case 5 when id < ExtendedBase:
+                            continue;
                     }
-                }
-                RadarCol.SetLandColor(index, color);
-            }
-        }
-        #endregion
 
-        #region [ OnClickRevertAll ]
-        private void OnClickRevertAll(object sender, EventArgs e)
-        {
-            DialogResult result = MessageBox.Show(
-                "Do you want to revert all changes to items and land tiles?",
-                "Revert All",
-                MessageBoxButtons.YesNo
-                );
-
-            if (result != DialogResult.Yes)
-            {
-                return;
-            }
-
-            foreach (var (index, color) in _originalItemColors)
-            {
-                RadarCol.SetItemColor(index, color);
-                if (index == _selectedIndex && tabControl2.SelectedIndex == 0)
-                {
-                    CurrentColor = color;
-                }
-            }
-
-            foreach (var (index, color) in _originalLandColors)
-            {
-                RadarCol.SetLandColor(index, color);
-                if (index == _selectedIndex && tabControl2.SelectedIndex == 1)
-                {
-                    CurrentColor = color;
-                }
-            }
-
-            Options.ChangedUltimaClass["RadarCol"] = false;
-            buttonRevertAll.Enabled = false;
-            buttonRevert.Enabled = false;
-
-            _originalItemColors.Clear();
-            _originalLandColors.Clear();
-
-            foreach (TreeNode node in treeViewItem.Nodes)
-            {
-                node.ForeColor = SystemColors.WindowText;
-            }
-
-            foreach (TreeNode node in treeViewLand.Nodes)
-            {
-                node.ForeColor = SystemColors.WindowText;
-            }
-        }
-        #endregion
-
-        #region [ OnClickRevert ]
-        private void OnClickRevert(object sender, EventArgs e)
-        {
-            if (_selectedIndex > -1)
-            {
-                if (tabControl2.SelectedIndex == 0)
-                {
-                    if (_originalItemColors.TryGetValue(_selectedIndex, out var color))
+                    if (search.Length > 0 && !searchIsId)
                     {
-                        CurrentColor = color;
-                        RadarCol.SetItemColor(_selectedIndex, color);
-
-                        var node = treeViewItem.Nodes.OfType<TreeNode>()
-                            .FirstOrDefault(node => node.Tag.Equals(_selectedIndex));
-
-                        if (node != null)
-                            node.ForeColor = SystemColors.WindowText;
-
-                        _originalItemColors.Remove(_selectedIndex);
+                        string name = GetName(id, _land);
+                        if (name == null || name.IndexOf(search, StringComparison.OrdinalIgnoreCase) < 0)
+                        {
+                            continue;
+                        }
                     }
+
+                    ids.Add(id);
                 }
-                else if (_originalLandColors.TryGetValue(_selectedIndex, out var color))
+
+                _ids = ids.ToArray();
+                _list.VirtualListSize = _ids.Length;
+                _list.Invalidate();
+                _countLabel.Text = $"{_ids.Length:N0} {(_land ? "land tiles" : "items")}" +
+                                   (originals.Count > 0 ? $"  |  {originals.Count:N0} changed" : string.Empty) +
+                                   (_land ? $"  |  max 0x{max:X4}" : $"  |  max 0x{max:X}");
+
+                if (searchIsId && search.Length > 0)
                 {
-                    CurrentColor = color;
-                    RadarCol.SetLandColor(_selectedIndex, color);
-
-                    var node = treeViewLand.Nodes.OfType<TreeNode>()
-                        .FirstOrDefault(node => node.Tag.Equals(_selectedIndex));
-
-                    if (node != null)
-                        node.ForeColor = SystemColors.WindowText;
-
-                    _originalLandColors.Remove(_selectedIndex);
+                    keep = searchId;
                 }
-            }
 
-            buttonRevert.Enabled = false;
-
-            if (_originalItemColors.Count == 0 && _originalLandColors.Count == 0)
-            {
-                Options.ChangedUltimaClass["RadarCol"] = false;
-                buttonRevertAll.Enabled = false;
-            }
-        }
-        #endregion
-
-        #region [ OnClickSaveColor ]
-        private void OnClickSaveColor(object sender, EventArgs e)
-        {
-            // Check if _selectedIndex is greater than or equal to 0.
-            if (_selectedIndex < 0)
-            {
-                return;
-            }
-
-            // Save the current color.
-            SaveColor();
-
-            // Check whether an element or landscape part is selected.
-            bool isItemTile = tabControl2.SelectedIndex == 0;
-
-            // Set the color of the selected feature or landscape part to the current color.
-            if (isItemTile)
-            {
-                RadarCol.SetItemColor(_selectedIndex, CurrentColor);
-                if (treeViewItem.SelectedNode != null) // Color the index directly
+                // keep the selection only if it is in the new list (never reset the filter the user just chose)
+                int keepRow = keep >= 0 ? Array.BinarySearch(_ids, keep) : -1;
+                if (keepRow >= 0)
                 {
-                    treeViewItem.SelectedNode.ForeColor = HueHelpers.HueToColor(CurrentColor);
+                    SelectRow(keepRow);
                 }
-            }
-            else
-            {
-                RadarCol.SetLandColor(_selectedIndex, CurrentColor);
-                if (treeViewLand.SelectedNode != null) // Color the index directly
+                else if (_ids.Length > 0)
                 {
-                    treeViewLand.SelectedNode.ForeColor = HueHelpers.HueToColor(CurrentColor);
-                }
-            }
-
-            //Update the LabelColorCode label's text with the selected index and hexadecimal code of the current color.
-            LabelColorCode.Text = $"Index {_selectedIndex}, Color Code: 0x{CurrentColor:X4}"; // LabelColorCode
-
-            // Check whether the selected index is present in the original colors.
-            if (isItemTile ? _originalItemColors.ContainsKey(_selectedIndex) : _originalLandColors.ContainsKey(_selectedIndex))
-            {
-                buttonRevert.Enabled = true;
-                buttonRevertAll.Enabled = true;
-                Options.ChangedUltimaClass["RadarCol"] = true;
-            }
-
-            // Set the ChangedUltimaClass["RadarCol"] option to true.
-            Options.ChangedUltimaClass["RadarCol"] = true;
-        }
-        #endregion
-
-        #region [ OnClickSetRangeFrom ]
-        private void OnClickSetRangeFrom(object sender, EventArgs e)
-        {
-            var node = ((TreeView)((ContextMenuStrip)((ToolStripItem)sender).Owner).SourceControl).SelectedNode;
-
-            if (node != null)
-            {
-                textBoxMeanFrom.Text = node.Tag.ToString();
-            }
-        }
-        #endregion
-
-        #region [ OnClickSetRangeTo ]
-        private void OnClickSetRangeTo(object sender, EventArgs e)
-        {
-            var node = ((TreeView)((ContextMenuStrip)((ToolStripItem)sender).Owner).SourceControl).SelectedNode;
-
-            if (node != null)
-            {
-                textBoxMeanTo.Text = node.Tag.ToString();
-            }
-        }
-        #endregion
-
-        #region OnChangeR
-        private void OnChangeR(object sender, EventArgs e)
-        {
-            if (_updating)
-            {
-                return;
-            }
-
-            Color col = Color.FromArgb((int)numericUpDownR.Value, (int)numericUpDownG.Value, (int)numericUpDownB.Value);
-            CurrentColor = HueHelpers.ColorToHue(col);
-        }
-        #endregion
-
-        #region [ OnChangeG ]
-        private void OnChangeG(object sender, EventArgs e)
-        {
-            if (_updating)
-            {
-                return;
-            }
-
-            Color col = Color.FromArgb((int)numericUpDownR.Value, (int)numericUpDownG.Value, (int)numericUpDownB.Value);
-            CurrentColor = HueHelpers.ColorToHue(col);
-        }
-        #endregion
-
-        #region OnChangeB
-        private void OnChangeB(object sender, EventArgs e)
-        {
-            if (_updating)
-            {
-                return;
-            }
-
-            Color col = Color.FromArgb((int)numericUpDownR.Value, (int)numericUpDownG.Value, (int)numericUpDownB.Value);
-            CurrentColor = HueHelpers.ColorToHue(col);
-        }
-        #endregion
-
-        #region [ OnNumericShortColChanged ] 
-        private void OnNumericShortColChanged(object sender, EventArgs e)
-        {
-            if (!_updating)
-            {
-                CurrentColor = (ushort)numericUpDownShortCol.Value;
-
-                int value = (int)numericUpDownShortCol.Value;
-                string hexValue = value.ToString("X4");
-                textBoxHexCode.Text = hexValue;
-            }
-        }
-        #endregion
-
-        #region [ class HexNumericUpDown ]
-        public class HexNumericUpDown : NumericUpDown
-        {
-            public HexNumericUpDown()
-            {
-                // Set the minimum and maximum values to meaningful values for hexadecimal values.
-                Minimum = 0;
-                Maximum = ushort.MaxValue;
-            }
-
-            protected override void UpdateEditText()
-            {
-                // Display the current value in hexadecimal format.
-                Text = ((int)Value).ToString("X4");
-            }
-
-            protected override void ValidateEditText()
-            {
-                // Try to interpret the text as a hexadecimal value.
-                if (int.TryParse(Text, System.Globalization.NumberStyles.HexNumber, null, out int value))
-                {
-                    // Ensure that the value is within the allowable range.
-                    value = Math.Max((int)Minimum, Math.Min((int)Maximum, value));
-
-                    // Set the value.
-                    Value = value;
+                    SelectRow(0);
                 }
                 else
                 {
-                    // If the text does not represent a valid hexadecimal value, reset it to the current value.
-                    UpdateEditText();
+                    ShowEntry(-1);
                 }
             }
+            finally
+            {
+                Cursor.Current = Cursors.Default;
+            }
         }
-        #endregion
 
-        #region [ OnClickMeanColorFromTo ] // Old version -> textBoxMeanFrom  -> textBoxMeanTo
-        private void OnClickMeanColorFromTo(object sender, EventArgs e)
+        private void JumpToSearch()
         {
-            if (!Utils.ConvertStringToInt(textBoxMeanFrom.Text, out int from, 0, 0x4000) ||
-                !Utils.ConvertStringToInt(textBoxMeanTo.Text, out int to, 0, 0x4000))
+            if (TryParseId(_searchBox.Text.Trim(), out int id))
+            {
+                SelectId(id, _land);
+                return;
+            }
+
+            // next name match after the current row
+            string search = _searchBox.Text.Trim();
+            if (search.Length == 0 || _ids.Length == 0)
             {
                 return;
             }
 
-            if (to < from)
+            int start = Math.Max(0, Array.BinarySearch(_ids, _selectedId) + 1);
+            for (int k = 0; k < _ids.Length; ++k)
             {
-                int temp = from;
-                from = to;
-                to = temp;
-            }
-
-            int gmeanr = 0;
-            int gmeang = 0;
-            int gmeanb = 0;
-
-            for (int i = from; i < to; ++i)
-            {
-                Bitmap image = tabControl2.SelectedIndex == 0 ? Art.GetStatic(i) : Art.GetLand(i);
-                if (image == null)
+                int row = (start + k) % _ids.Length;
+                string name = GetName(_ids[row], _land);
+                if (name != null && name.IndexOf(search, StringComparison.OrdinalIgnoreCase) >= 0)
                 {
-                    continue;
-                }
-
-                unsafe
-                {
-                    BitmapData bd = image.LockBits(new Rectangle(0, 0, image.Width, image.Height), ImageLockMode.ReadOnly, PixelFormat.Format16bppArgb1555);
-                    ushort* line = (ushort*)bd.Scan0;
-                    int delta = bd.Stride >> 1;
-                    ushort* cur = line;
-
-                    int meanr = 0;
-                    int meang = 0;
-                    int meanb = 0;
-
-                    int count = 0;
-                    for (int y = 0; y < image.Height; ++y, line += delta)
-                    {
-                        cur = line;
-                        for (int x = 0; x < image.Width; ++x)
-                        {
-                            if (cur[x] != 0)
-                            {
-                                meanr += HueHelpers.HueToColorR(cur[x]);
-                                meang += HueHelpers.HueToColorG(cur[x]);
-                                meanb += HueHelpers.HueToColorB(cur[x]);
-                                ++count;
-                            }
-                        }
-                    }
-                    image.UnlockBits(bd);
-
-                    meanr /= count;
-                    meang /= count;
-                    meanb /= count;
-
-                    gmeanr += meanr;
-                    gmeang += meang;
-                    gmeanb += meanb;
+                    SelectRow(row);
+                    return;
                 }
             }
-
-            gmeanr /= to - from;
-            gmeang /= to - from;
-            gmeanb /= to - from;
-
-            Color col = Color.FromArgb(gmeanr, gmeang, gmeanb);
-            CurrentColor = HueHelpers.ColorToHue(col);
         }
+
+        private static bool TryParseId(string text, out int id)
+        {
+            id = -1;
+            if (string.IsNullOrEmpty(text))
+            {
+                return false;
+            }
+
+            if (text.StartsWith("0x", StringComparison.OrdinalIgnoreCase))
+            {
+                return int.TryParse(text.Substring(2), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out id) && id >= 0;
+            }
+
+            return text.All(char.IsDigit) && int.TryParse(text, out id);
+        }
+
+        private void SetMode(bool land)
+        {
+            if (_land == land && IsLoaded)
+            {
+                return;
+            }
+
+            _land = land;
+            _itemsButton.Checked = !land;
+            _landButton.Checked = land;
+            _selectedId = -1;
+            RebuildList(false);
+        }
+
+        private void SelectId(int id, bool land)
+        {
+            if (_land != land)
+            {
+                _land = land;
+                _itemsButton.Checked = !land;
+                _landButton.Checked = land;
+                _selectedId = id;
+                RebuildList(true);
+            }
+
+            int row = Array.BinarySearch(_ids, id);
+            if (row < 0 && (_filterBox.SelectedIndex != 0 || _searchBox.Text.Length > 0) && IsLegal(id, land) && id <= MaxId)
+            {
+                // not in the filtered list: show everything again
+                _searchBox.Text = string.Empty;
+                _searchTimer.Stop();
+                _filterBox.SelectedIndex = 0; // rebuilds
+                row = Array.BinarySearch(_ids, id);
+            }
+
+            if (row >= 0)
+            {
+                SelectRow(row);
+            }
+        }
+
+        private void SelectRow(int row)
+        {
+            if (row < 0 || row >= _ids.Length)
+            {
+                return;
+            }
+
+            _list.SelectedIndices.Clear();
+            _list.SelectedIndices.Add(row);
+            _list.FocusedItem = _list.Items[row];
+            _list.EnsureVisible(row);
+            ShowEntry(_ids[row]);
+        }
+
+        private void OnRetrieveVirtualItem(object sender, RetrieveVirtualItemEventArgs e)
+        {
+            int id = e.ItemIndex >= 0 && e.ItemIndex < _ids.Length ? _ids[e.ItemIndex] : 0;
+            ushort c = GetColor(id, _land);
+            Color rgb = HueHelpers.HueToColor(c);
+            var item = new ListViewItem(string.Empty) { Tag = id };
+            item.SubItems.Add(_land || id < 0x10000 ? $"0x{id:X4} ({id})" : $"0x{id:X5} ({id})");
+            item.SubItems.Add(GetName(id, _land));
+            item.SubItems.Add($"0x{c:X4}");
+            item.SubItems.Add($"{rgb.R},{rgb.G},{rgb.B}");
+            e.Item = item;
+        }
+
+        private void OnDrawSubItem(object sender, DrawListViewSubItemEventArgs e)
+        {
+            int id = e.ItemIndex >= 0 && e.ItemIndex < _ids.Length ? _ids[e.ItemIndex] : 0;
+            bool selected = e.Item.Selected;
+            Color back = selected ? SystemColors.Highlight : (e.ItemIndex % 2 == 0 ? _list.BackColor : Color.FromArgb(246, 247, 249));
+            Color fore = selected ? SystemColors.HighlightText : _list.ForeColor;
+            if (!selected && Originals.ContainsKey(id))
+            {
+                fore = Color.MediumBlue; // changed, not saved
+            }
+
+            using (var brush = new SolidBrush(back))
+            {
+                e.Graphics.FillRectangle(brush, e.Bounds);
+            }
+
+            if (e.ColumnIndex == 0)
+            {
+                Rectangle r = Rectangle.Inflate(e.Bounds, -4, -3);
+                using (var brush = new SolidBrush(HueHelpers.HueToColor(GetColor(id, _land))))
+                {
+                    e.Graphics.FillRectangle(brush, r);
+                }
+
+                e.Graphics.DrawRectangle(Pens.Gray, r);
+                return;
+            }
+
+            Font font = e.ColumnIndex == 1 && Originals.ContainsKey(id) ? new Font(_list.Font, FontStyle.Bold) : _list.Font;
+            try
+            {
+                TextRenderer.DrawText(e.Graphics, e.SubItem.Text, font, e.Bounds, fore,
+                    TextFormatFlags.VerticalCenter | TextFormatFlags.Left | TextFormatFlags.EndEllipsis | TextFormatFlags.NoPrefix);
+            }
+            finally
+            {
+                if (!ReferenceEquals(font, _list.Font))
+                {
+                    font.Dispose();
+                }
+            }
+        }
+
+        private void OnListSelectionChanged()
+        {
+            if (_list.FocusedItem != null && _list.SelectedIndices.Contains(_list.FocusedItem.Index))
+            {
+                ShowEntry(_ids[_list.FocusedItem.Index]);
+            }
+            else if (_list.SelectedIndices.Count > 0)
+            {
+                ShowEntry(_ids[_list.SelectedIndices[0]]);
+            }
+
+            UpdateButtons();
+        }
+
+        private void OnListKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                e.SuppressKeyPress = true;
+                ApplyToSelection();
+            }
+            else if (e.Control && e.KeyCode == Keys.C)
+            {
+                e.SuppressKeyPress = true;
+                CopyText($"0x{CurrentColor:X4}");
+            }
+            else if (e.Control && e.KeyCode == Keys.Z)
+            {
+                e.SuppressKeyPress = true;
+                RevertSelected();
+            }
+        }
+
+        /// <summary>The ids of all selected rows (sorted).</summary>
+        private List<int> SelectedIds()
+        {
+            var result = new List<int>(_list.SelectedIndices.Count);
+            foreach (int row in _list.SelectedIndices)
+            {
+                if (row >= 0 && row < _ids.Length)
+                {
+                    result.Add(_ids[row]);
+                }
+            }
+
+            result.Sort();
+            return result;
+        }
+
+        private void RedrawId(int id)
+        {
+            int row = Array.BinarySearch(_ids, id);
+            if (row >= 0)
+            {
+                _list.RedrawItems(row, row, true);
+            }
+        }
+
         #endregion
 
-        private unsafe Color AverageColorFrom(Bitmap image)
+        #region Detail panel
+
+        private void ShowEntry(int id)
         {
+            _selectedId = id;
+            if (id < 0)
+            {
+                _titleLabel.Text = "-";
+                _infoLabel.Text = string.Empty;
+                _previewSource = null;
+                RenderPreview();
+                return;
+            }
+
+            bool extended = id >= ExtendedBase;
+            _titleLabel.Text = (_land ? "Land tile " : "Item ") + (id < 0x10000 ? $"0x{id:X4}" : $"0x{id:X5}") + $" ({id})  {GetName(id, _land)}";
+            ushort fileColor = Originals.TryGetValue(id, out ushort original) ? original : GetColor(id, _land);
+            _infoLabel.Text = (extended ? (_land ? "extended land tile - colour in radarcollandext.mul" : "extended item - colour in radarcolext.mul") : "radarcol.mul") +
+                              (Originals.ContainsKey(id) ? $"   |   changed (file: 0x{original:X4})" : string.Empty);
+
+            _swatchFile.BackColor = HueHelpers.HueToColor(fileColor);
+            _previewSource = _land ? Art.GetLand(id) : Art.GetStatic(id);
+            RenderPreview();
+
+            _updating = true;
+            try
+            {
+                CurrentColor = GetColor(id, _land);
+            }
+            finally
+            {
+                _updating = false;
+            }
+
+            if (_copyHexOnSelect.Checked)
+            {
+                CopyText($"0x{CurrentColor:X4}");
+            }
+
+            UpdateButtons();
+        }
+
+        private void ShowCurrentColor()
+        {
+            Color c = HueHelpers.HueToColor(_currentColor);
+            bool old = _updating;
+            _updating = true;
+            try
+            {
+                _swatchCurrent.BackColor = c;
+                _r.Value = c.R;
+                _g.Value = c.G;
+                _b.Value = c.B;
+                _hexBox.Text = $"0x{_currentColor:X4}";
+                _htmlBox.Text = $"#{c.R:X2}{c.G:X2}{c.B:X2}";
+            }
+            finally
+            {
+                _updating = old;
+            }
+        }
+
+        /// <summary>A colour edit (R/G/B, value, HTML, eyedropper, dialog): show it and - if wanted - apply it.</summary>
+        private void SetColorFromEditor(ushort color)
+        {
+            CurrentColor = color;
+            if (_autoApply.Checked)
+            {
+                ApplyToSelection();
+            }
+        }
+
+        private void ParseHex()
+        {
+            if (_updating)
+            {
+                return;
+            }
+
+            string t = _hexBox.Text.Trim();
+            if (t.StartsWith("0x", StringComparison.OrdinalIgnoreCase))
+            {
+                t = t.Substring(2);
+            }
+
+            if (int.TryParse(t, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out int v) && v >= 0 && v <= 0xFFFF)
+            {
+                if ((ushort)(v & 0x7FFF) != _currentColor)
+                {
+                    SetColorFromEditor((ushort)v);
+                }
+            }
+            else
+            {
+                ShowCurrentColor(); // invalid: show the current value again
+            }
+        }
+
+        private void ParseHtml()
+        {
+            if (_updating)
+            {
+                return;
+            }
+
+            string t = _htmlBox.Text.Trim().TrimStart('#');
+            if (t.Length == 6 && int.TryParse(t, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out int rgb))
+            {
+                ushort v = HueHelpers.ColorToHue(Color.FromArgb((rgb >> 16) & 0xFF, (rgb >> 8) & 0xFF, rgb & 0xFF));
+                if (v != _currentColor)
+                {
+                    SetColorFromEditor(v);
+                }
+            }
+            else
+            {
+                ShowCurrentColor();
+            }
+        }
+
+        private void PickWithDialog()
+        {
+            using var dlg = new ColorDialog { Color = HueHelpers.HueToColor(_currentColor), FullOpen = true };
+            if (dlg.ShowDialog(this) == DialogResult.OK)
+            {
+                SetColorFromEditor(HueHelpers.ColorToHue(dlg.Color));
+            }
+        }
+
+        private void DisposeOwnedImages()
+        {
+            if (_preview != null)
+            {
+                _preview.Image = null; // detach before dispose (never dispose an image a PictureBox still shows)
+            }
+
+            _previewImage?.Dispose();
+            _previewImage = null;
+        }
+
+        /// <summary>Draws the graphic centred and (if needed) scaled down pixel exact; the Art bitmap itself is cached and not disposed.</summary>
+        private void RenderPreview()
+        {
+            if (_preview == null || _preview.Width < 4 || _preview.Height < 4)
+            {
+                return;
+            }
+
+            Bitmap old = _previewImage;
+            var img = new Bitmap(_preview.Width, _preview.Height);
+            using (Graphics g = Graphics.FromImage(img))
+            {
+                g.Clear(_preview.BackColor);
+                Bitmap src = _previewSource;
+                if (src != null)
+                {
+                    float scale = Math.Min(1f, Math.Min((img.Width - 8f) / src.Width, (img.Height - 8f) / src.Height));
+                    if (scale <= 0)
+                    {
+                        scale = 1f;
+                    }
+
+                    // small graphics: enlarge by whole numbers (pixel exact)
+                    if (scale >= 1f)
+                    {
+                        scale = Math.Max(1, Math.Min(4, (int)Math.Min((img.Width - 8f) / src.Width, (img.Height - 8f) / src.Height)));
+                    }
+
+                    float w = src.Width * scale;
+                    float h = src.Height * scale;
+                    _previewRect = new RectangleF((img.Width - w) / 2f, (img.Height - h) / 2f, w, h);
+                    g.InterpolationMode = InterpolationMode.NearestNeighbor;
+                    g.PixelOffsetMode = PixelOffsetMode.Half;
+                    g.DrawImage(src, _previewRect);
+                }
+                else
+                {
+                    _previewRect = RectangleF.Empty;
+                    TextRenderer.DrawText(g, _selectedId >= 0 ? "no graphic" : string.Empty, Font, new Rectangle(Point.Empty, img.Size), Color.Silver,
+                        TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
+                }
+            }
+
+            _preview.Image = img;
+            _previewImage = img;
+            old?.Dispose();
+        }
+
+        /// <summary>Eyedropper: takes the colour of the clicked pixel of the graphic.</summary>
+        private void OnPreviewClick(object sender, MouseEventArgs e)
+        {
+            Bitmap src = _previewSource;
+            if (src == null || _previewRect.IsEmpty || !_previewRect.Contains(e.Location))
+            {
+                return;
+            }
+
+            int x = (int)((e.X - _previewRect.X) * src.Width / _previewRect.Width);
+            int y = (int)((e.Y - _previewRect.Y) * src.Height / _previewRect.Height);
+            if (x < 0 || y < 0 || x >= src.Width || y >= src.Height)
+            {
+                return;
+            }
+
+            Color c = src.GetPixel(x, y);
+            if (c.A == 0)
+            {
+                _statusLabel.Text = "Transparent pixel - nothing taken.";
+                return;
+            }
+
+            SetColorFromEditor(HueHelpers.ColorToHue(c));
+            _statusLabel.Text = $"Colour taken from pixel {x},{y}.";
+        }
+
+        private void UpdateButtons()
+        {
+            if (_revertButton == null)
+            {
+                return;
+            }
+
+            _revertButton.Enabled = SelectedIds().Any(id => Originals.ContainsKey(id));
+            _revertAllButton.Enabled = _originalItems.Count > 0 || _originalLand.Count > 0;
+            _applyButton.Enabled = _list.SelectedIndices.Count > 0;
+        }
+
+        #endregion
+
+        #region Changing colours
+
+        /// <summary>Sets one colour and remembers the colour of the file for revert.</summary>
+        private void SetColor(int id, ushort color, bool land)
+        {
+            ushort now = GetColor(id, land);
+            if (now == color)
+            {
+                return;
+            }
+
+            Dictionary<int, ushort> originals = land ? _originalLand : _originalItems;
+            if (!originals.TryGetValue(id, out ushort original))
+            {
+                originals[id] = now;
+            }
+            else if (original == color)
+            {
+                originals.Remove(id); // back to the value in the file
+            }
+
+            if (land)
+            {
+                RadarCol.SetLandColor(id, color);
+            }
+            else
+            {
+                RadarCol.SetItemColor(id, color);
+            }
+
+            Options.ChangedUltimaClass[ChangeKey] = _originalItems.Count > 0 || _originalLand.Count > 0;
+        }
+
+        private void ApplyToSelection()
+        {
+            List<int> ids = SelectedIds();
+            if (ids.Count == 0)
+            {
+                return;
+            }
+
+            foreach (int id in ids)
+            {
+                SetColor(id, _currentColor, _land);
+            }
+
+            AfterChange(ids);
+        }
+
+        private void AfterChange(IReadOnlyCollection<int> ids)
+        {
+            if (ids.Count <= 64)
+            {
+                foreach (int id in ids)
+                {
+                    RedrawId(id);
+                }
+            }
+            else
+            {
+                _list.Invalidate();
+            }
+
+            if (_selectedId >= 0 && ids.Contains(_selectedId))
+            {
+                ushort fileColor = Originals.TryGetValue(_selectedId, out ushort o) ? o : GetColor(_selectedId, _land);
+                _swatchFile.BackColor = HueHelpers.HueToColor(fileColor);
+                _infoLabel.Text = (_selectedId >= ExtendedBase ? "extended - colour in the side-car file" : "radarcol.mul") +
+                                  (Originals.ContainsKey(_selectedId) ? $"   |   changed (file: 0x{o:X4})" : string.Empty);
+            }
+
+            int changed = _originalItems.Count + _originalLand.Count;
+            _countLabel.Text = $"{_ids.Length:N0} {(_land ? "land tiles" : "items")}" + (changed > 0 ? $"  |  {Originals.Count:N0} changed" : string.Empty);
+            UpdateButtons();
+        }
+
+        private void RevertSelected()
+        {
+            List<int> ids = SelectedIds().Where(id => Originals.ContainsKey(id)).ToList();
+            foreach (int id in ids)
+            {
+                SetColor(id, Originals[id], _land);
+            }
+
+            if (_selectedId >= 0)
+            {
+                _updating = true;
+                try
+                {
+                    CurrentColor = GetColor(_selectedId, _land);
+                }
+                finally
+                {
+                    _updating = false;
+                }
+            }
+
+            AfterChange(ids);
+        }
+
+        private void RevertAll()
+        {
+            if (MessageBox.Show(this, "Revert all changed radar colours (items and land tiles) to the values of the loaded files?", "Revert all",
+                    MessageBoxButtons.YesNo, MessageBoxIcon.Question, MessageBoxDefaultButton.Button2) != DialogResult.Yes)
+            {
+                return;
+            }
+
+            foreach (KeyValuePair<int, ushort> p in _originalItems.ToList())
+            {
+                RadarCol.SetItemColor(p.Key, p.Value);
+            }
+
+            foreach (KeyValuePair<int, ushort> p in _originalLand.ToList())
+            {
+                RadarCol.SetLandColor(p.Key, p.Value);
+            }
+
+            _originalItems.Clear();
+            _originalLand.Clear();
+            Options.ChangedUltimaClass[ChangeKey] = false;
+            _list.Invalidate();
+            ShowEntry(_selectedId);
+            AfterChange(Array.Empty<int>());
+        }
+
+        private void AverageOfCurrent()
+        {
+            if (_selectedId < 0)
+            {
+                return;
+            }
+
+            if (!TryAverage(_land ? Art.GetLand(_selectedId) : Art.GetStatic(_selectedId), out Color c))
+            {
+                _statusLabel.Text = "No graphic (or only transparent pixels) - no average.";
+                return;
+            }
+
+            SetColorFromEditor(HueHelpers.ColorToHue(c));
+        }
+
+        /// <summary>Average of all visible pixels (colour 0 = transparent is ignored). False for empty graphics.</summary>
+        private static unsafe bool TryAverage(Bitmap image, out Color color)
+        {
+            color = Color.Black;
+            if (image == null)
+            {
+                return false;
+            }
+
             BitmapData bd = image.LockBits(new Rectangle(0, 0, image.Width, image.Height), ImageLockMode.ReadOnly, PixelFormat.Format16bppArgb1555);
-            ushort* line = (ushort*)bd.Scan0;
-            int delta = bd.Stride >> 1;
-            ushort* cur = line;
-
-            int meanR = 0;
-            int meanG = 0;
-            int meanB = 0;
-
-            int count = 0;
-            for (int y = 0; y < image.Height; ++y, line += delta)
+            long r = 0, g = 0, b = 0, count = 0;
+            try
             {
-                cur = line;
-                for (int x = 0; x < image.Width; ++x)
+                var line = (ushort*)bd.Scan0;
+                int delta = bd.Stride >> 1;
+                for (int y = 0; y < image.Height; ++y, line += delta)
                 {
-                    if (cur[x] == 0)
+                    for (int x = 0; x < image.Width; ++x)
                     {
-                        continue;
-                    }
-
-                    meanR += HueHelpers.HueToColorR(cur[x]);
-                    meanG += HueHelpers.HueToColorG(cur[x]);
-                    meanB += HueHelpers.HueToColorB(cur[x]);
-                    ++count;
-                }
-            }
-            image.UnlockBits(bd);
-
-            if (count > 0)
-            {
-                meanR /= count;
-                meanG /= count;
-                meanB /= count;
-            }
-
-            return Color.FromArgb(meanR, meanG, meanB);
-        }
-
-        #region Hex and Photoshop
-        private void textBoxHexCode_TextChanged(object sender, EventArgs e)
-        {
-
-            string hexValue = textBoxHexCode.Text;
-
-            // Check if the entered value is a valid hexadecimal value.
-
-
-            if (int.TryParse(hexValue, System.Globalization.NumberStyles.HexNumber, null, out int value))
-            {
-                // Ensure that the value stays within the valid range of numericUpDownShortCol.
-                value = Math.Max((int)numericUpDownShortCol.Minimum, value);
-                value = Math.Min((int)numericUpDownShortCol.Maximum, value);
-
-                // Update numericUpDownShortCol.
-                numericUpDownShortCol.Value = value;
-
-                // Update the color code for Photoshop.
-                UpdatePhotoshopCode();
-            }
-            else
-            {
-                // If the value is invalid, reset textBoxHexCode to the current value of numericUpDownShortCol.
-                int currentValue = (int)numericUpDownShortCol.Value;
-                string currentHexValue = currentValue.ToString("X4");
-                textBoxHexCode.Text = currentHexValue;
-            }
-        }
-        private void textBoxHexCode_KeyPress(object sender, KeyPressEventArgs e)
-        {
-            // Allow control characters (e.g., Backspace).
-            if (char.IsControl(e.KeyChar))
-            {
-                return;
-            }
-
-            // Allow only hexadecimal characters (0-9, a-f, A-F).
-            if (!Uri.IsHexDigit(e.KeyChar))
-            {
-                e.Handled = true;
-            }
-        }
-
-        private string ConvertToHexColor(int value)
-        {
-            // Ensure that the value stays within the valid range of 0 to 32767.
-            value = Math.Max(0, value);
-            value = Math.Min(32767, value);
-
-            // Extract the intensities of the red, green, and blue color channels.
-            int red = (value >> 10) & 0x1F;
-            int green = (value >> 5) & 0x1F;
-            int blue = value & 0x1F;
-
-            // Scale the intensities to the range of 0 to 255.
-            red = (red * 255) / 31;
-            green = (green * 255) / 31;
-            blue = (blue * 255) / 31;
-
-            // Convert the intensities to a hexadecimal value.
-            string hexValue = string.Format("{0:X2}{1:X2}{2:X2}", red, green, blue);
-
-            return hexValue;
-        }
-        private void UpdatePhotoshopCode()
-        {
-            // Get the current value from numericUpDownShortCol.
-            int value = (int)numericUpDownShortCol.Value;
-
-            // Convert the value to a valid 6-digit hexadecimal color code.
-            string hexValue = ConvertToHexColor(value);
-
-            // Display the calculated color code in the textBoxPhotoshopCode.
-            textBoxPhotoshopCode.Text = hexValue;
-        }
-
-        private void textBoxPhotoshopCode_Click(object sender, EventArgs e)
-        {
-            // Create a new ToolTip control.
-            ToolTip toolTip = new ToolTip();
-
-            // Get the text from the textBoxPhotoshopCode.
-            string text = textBoxPhotoshopCode.Text;
-
-            // Check if the text is not empty.
-            if (!string.IsNullOrEmpty(text))
-            {
-                // Copy the text from the textBoxPhotoshopCode to the clipboard.
-                Clipboard.SetText(text);
-
-                // Display a message using the ToolTip control.
-                toolTip.Show($"Copied '{text}' to clipboard", textBoxPhotoshopCode);
-            }
-        }
-        #endregion
-
-        #region [ IEnumerable ]
-        private IEnumerable<int> GetValidSequence()
-        {
-            var isItem = tabControl2.SelectedIndex == 0;
-
-            if (radioUseRange.Checked)
-            {
-                var maxIndex = isItem ? Art.GetMaxItemId() : 0x3FFF;
-
-                if (!Utils.ConvertStringToInt(textBoxMeanFrom.Text, out int from, 0, maxIndex) ||
-                    !Utils.ConvertStringToInt(textBoxMeanTo.Text, out int to, 0, maxIndex))
-                {
-                    MessageBox.Show($"Invalid parameters. Expected [to, from] between [0, {maxIndex} (0x{maxIndex:X4})]", "Error", MessageBoxButtons.OK);
-                    return null;
-                }
-
-                if (from > to)
-                {
-                    (from, to) = (to, from);
-                }
-
-                return Enumerable.Range(from, to - from + 1);
-            }
-            else
-            {
-                var sequence = isItem ? _selectedItems : _selectedLand;
-                if (sequence.Count == 0)
-                {
-                    MessageBox.Show("Invalid parameters. No tiles selected/checked.", "Error", MessageBoxButtons.OK);
-                    return null;
-                }
-                return sequence;
-            }
-        }
-        #endregion
-
-        #region [ GetSequenceAverage ]
-        private ushort GetSequenceAverage(IEnumerable<int> sequence)
-        {
-            int gmeanr = 0;
-            int gmeang = 0;
-            int gmeanb = 0;
-
-            foreach (int i in sequence)
-            {
-                Bitmap image = tabControl2.SelectedIndex == 0 ? Art.GetStatic(i) : Art.GetLand(i);
-                if (image == null)
-                {
-                    continue;
-                }
-
-                unsafe
-                {
-                    BitmapData bd = image.LockBits(new Rectangle(0, 0, image.Width, image.Height), ImageLockMode.ReadOnly, PixelFormat.Format16bppArgb1555);
-                    ushort* line = (ushort*)bd.Scan0;
-                    int delta = bd.Stride >> 1;
-                    ushort* cur = line;
-
-                    int meanr = 0;
-                    int meang = 0;
-                    int meanb = 0;
-
-                    int count = 0;
-                    for (int y = 0; y < image.Height; ++y, line += delta)
-                    {
-                        cur = line;
-                        for (int x = 0; x < image.Width; ++x)
+                        ushort p = line[x];
+                        if ((p & 0x7FFF) == 0)
                         {
-                            if (cur[x] != 0)
-                            {
-                                meanr += HueHelpers.HueToColorR(cur[x]);
-                                meang += HueHelpers.HueToColorG(cur[x]);
-                                meanb += HueHelpers.HueToColorB(cur[x]);
-                                ++count;
-                            }
+                            continue;
                         }
+
+                        r += HueHelpers.HueToColorR(p);
+                        g += HueHelpers.HueToColorG(p);
+                        b += HueHelpers.HueToColorB(p);
+                        ++count;
                     }
-                    image.UnlockBits(bd);
-
-                    meanr /= count;
-                    meang /= count;
-                    meanb /= count;
-
-                    gmeanr += meanr;
-                    gmeang += meang;
-                    gmeanb += meanb;
                 }
             }
-
-            var diff = sequence.Count();
-
-            if (diff > 0)
+            finally
             {
-
-                gmeanr /= diff;
-                gmeang /= diff;
-                gmeanb /= diff;
+                image.UnlockBits(bd);
             }
 
-            Color col = Color.FromArgb(gmeanr, gmeang, gmeanb);
-            return HueHelpers.ColorToHue(col);
+            if (count == 0)
+            {
+                return false;
+            }
+
+            color = Color.FromArgb((int)(r / count), (int)(g / count), (int)(b / count));
+            return true;
         }
-        #endregion
 
-        #region [ OnClickCurrentToRangeAverage ]
-        private void OnClickCurrentToRangeAverage(object sender, EventArgs e)
+        /// <summary>The ids for the batch buttons: selected rows or the range (only legal ids).</summary>
+        private List<int> GroupIds()
         {
-            var sequence = GetValidSequence();
-
-            if (sequence == null)
+            if (_useSelection.Checked)
             {
-                return;
-            }
-
-            CurrentColor = GetSequenceAverage(sequence);
-            SaveColor();
-
-            var isItemTile = tabControl2.SelectedIndex == 0;
-            var enableRevert = isItemTile ? _originalItemColors.ContainsKey(_selectedIndex) : _originalLandColors.ContainsKey(_selectedIndex);
-
-            buttonRevert.Enabled = enableRevert;
-            buttonRevertAll.Enabled |= enableRevert;
-
-            // Verify that the 'RadarCol' key exists
-            if (!Options.ChangedUltimaClass.ContainsKey("RadarCol"))
-            {
-                Options.ChangedUltimaClass.Add("RadarCol", false);
-            }
-
-            Options.ChangedUltimaClass["RadarCol"] |= enableRevert;
-        }
-        #endregion
-
-        #region [ OnClickRangeToRangeAverage ]
-        private void OnClickRangeToRangeAverage(object sender, EventArgs e)
-        {
-            var sequence = GetValidSequence();
-
-            if (sequence == null)
-            {
-                return;
-            }
-
-            var color = GetSequenceAverage(sequence);
-            var isItemTile = tabControl2.SelectedIndex == 0;
-            bool enableRevertAll = false;
-
-            foreach (int i in sequence)
-            {
-                SaveColor(i, color, isItemTile);
-
-                var enableRevert = isItemTile ? _originalItemColors.ContainsKey(i) : _originalLandColors.ContainsKey(i);
-
-                if (i == _selectedIndex)
+                List<int> sel = SelectedIds();
+                if (sel.Count == 0)
                 {
-                    CurrentColor = color;
-                    buttonRevert.Enabled = enableRevert;
+                    MessageBox.Show(this, "No rows selected (Shift / Ctrl + click selects several).", "Radar colours", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return null;
                 }
 
-                enableRevertAll |= enableRevert;
+                return sel;
             }
 
-            if (enableRevertAll)
+            int max = MaxId;
+            if (!Utils.ConvertStringToInt(_fromBox.Text.Trim(), out int from, 0, max) || !Utils.ConvertStringToInt(_toBox.Text.Trim(), out int to, 0, max))
             {
-                buttonRevertAll.Enabled = true;
+                MessageBox.Show(this, $"Range: enter two ids between 0 and 0x{max:X} (hex with 0x or decimal).", "Radar colours",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return null;
+            }
 
-                if (!Options.ChangedUltimaClass.ContainsKey("RadarCol")) // Verify that the 'RadarCol' key exists
+            if (from > to)
+            {
+                (from, to) = (to, from);
+            }
+
+            var ids = new List<int>(to - from + 1);
+            for (int id = from; id <= to; ++id)
+            {
+                if (IsLegal(id, _land))
                 {
-                    Options.ChangedUltimaClass.Add("RadarCol", false);
+                    ids.Add(id);
                 }
-                Options.ChangedUltimaClass["RadarCol"] = true;
             }
+
+            return ids;
         }
-        #endregion
 
-        #region [ OnClickRangeToIndividualAverage ]
-        private void OnClickRangeToIndividualAverage(object sender, EventArgs e)
+        /// <summary>Average over the graphics (each graphic counts the same, empty ones are skipped).</summary>
+        private bool GroupAverage(IEnumerable<int> ids, out ushort color, out int used)
         {
-            var sequence = GetValidSequence();
-
-            if (sequence == null)
+            long r = 0, g = 0, b = 0;
+            used = 0;
+            foreach (int id in ids)
             {
-                return;
-            }
-
-            var isItemTile = tabControl2.SelectedIndex == 0;
-            bool enableRevertAll = false;
-
-            foreach (int i in sequence)
-            {
-                Bitmap image = isItemTile ? Art.GetStatic(i) : Art.GetLand(i);
-                if (image == null)
+                if (TryAverage(_land ? Art.GetLand(id) : Art.GetStatic(id), out Color c))
                 {
-                    continue;
+                    r += c.R;
+                    g += c.G;
+                    b += c.B;
+                    ++used;
                 }
+            }
 
-                var color = HueHelpers.ColorToHue(AverageColorFrom(image));
+            color = used > 0 ? HueHelpers.ColorToHue(Color.FromArgb((int)(r / used), (int)(g / used), (int)(b / used))) : (ushort)0;
+            return used > 0;
+        }
 
-                SaveColor(i, color, isItemTile);
+        private void CurrentToGroupAverage()
+        {
+            List<int> ids = GroupIds();
+            if (ids == null)
+            {
+                return;
+            }
 
-                var enableRevert = isItemTile ? _originalItemColors.ContainsKey(i) : _originalLandColors.ContainsKey(i);
+            if (!GroupAverage(ids, out ushort color, out int used))
+            {
+                _statusLabel.Text = "None of these entries has a graphic.";
+                return;
+            }
 
-                if (i == _selectedIndex)
+            SetColorFromEditor(color);
+            _statusLabel.Text = $"Average of {used:N0} graphic(s).";
+        }
+
+        private void GroupToCommonAverage()
+        {
+            List<int> ids = GroupIds();
+            if (ids == null)
+            {
+                return;
+            }
+
+            if (!GroupAverage(ids, out ushort color, out int used))
+            {
+                _statusLabel.Text = "None of these entries has a graphic.";
+                return;
+            }
+
+            foreach (int id in ids)
+            {
+                SetColor(id, color, _land);
+            }
+
+            _statusLabel.Text = $"{ids.Count:N0} entr(y/ies) set to 0x{color:X4} (average of {used:N0} graphics).";
+            AfterChange(ids);
+            ShowEntry(_selectedId);
+        }
+
+        private void GroupToOwnAverage()
+        {
+            List<int> ids = GroupIds();
+            if (ids == null)
+            {
+                return;
+            }
+
+            bool land = _land;
+            StartJob($"Own average ({ids.Count:N0})", ids.Count, IterateOwnAverage(ids, land, false));
+        }
+
+        private void FillAllBlack()
+        {
+            if (MessageBox.Show(this,
+                    "Calculate the radar colour from the graphic for every item AND land tile whose colour is black (0) or missing?" +
+                    Environment.NewLine + "Entries with a colour are not changed. You can cancel at any time.",
+                    "Fill black colours", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
+            {
+                return;
+            }
+
+            var land = Enumerable.Range(0, Art.GetMaxLandId() + 1).Where(Art.IsLegalLandId).ToList();
+            var items = Enumerable.Range(0, Art.GetMaxExtendedItemId() + 1).Where(Art.IsLegalStaticId).ToList();
+            StartJob("Fill black colours", land.Count + items.Count,
+                IterateOwnAverage(land, true, true).Concat(IterateOwnAverage(items, false, true)));
+        }
+
+        /// <summary>Sets every id to the average of its own graphic; yields the number of changed entries so far.</summary>
+        private IEnumerable<int> IterateOwnAverage(List<int> ids, bool land, bool onlyBlack)
+        {
+            Dictionary<int, ushort> originals = land ? _originalLand : _originalItems;
+            foreach (int id in ids)
+            {
+                if (!onlyBlack || GetColor(id, land) == 0)
                 {
-                    CurrentColor = color;
-                    buttonRevert.Enabled = enableRevert;
+                    if (HasGraphic(id, land) && TryAverage(land ? Art.GetLand(id) : Art.GetStatic(id), out Color c))
+                    {
+                        SetColor(id, HueHelpers.ColorToHue(c), land);
+                    }
                 }
 
-                enableRevertAll |= enableRevert;
+                yield return originals.Count;
+            }
+        }
+
+        /// <summary>Runs a long job in small time slices on the UI thread (Art is not thread safe) with progress and cancel.</summary>
+        private void StartJob(string name, int total, IEnumerable<int> steps)
+        {
+            if (_job != null)
+            {
+                MessageBox.Show(this, "A job is still running.", "Radar colours", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
             }
 
-            if (enableRevertAll)
-            {
-                buttonRevertAll.Enabled = true;
+            _jobName = name;
+            _jobTotal = Math.Max(1, total);
+            _jobDone = 0;
+            _jobCancel = false;
+            _job = steps.GetEnumerator();
+            _progress.Maximum = _jobTotal;
+            _progress.Value = 0;
+            _progress.Visible = true;
+            _cancelJobButton.Visible = true;
+            _jobTimer ??= new Timer { Interval = 15 };
+            _jobTimer.Tick -= OnJobTick;
+            _jobTimer.Tick += OnJobTick;
+            _jobTimer.Start();
+        }
 
-                if (!Options.ChangedUltimaClass.ContainsKey("RadarCol")) // Verify that the 'RadarCol' key exists
+        private void OnJobTick(object sender, EventArgs e)
+        {
+            var sw = Stopwatch.StartNew();
+            bool finished = false;
+            while (sw.ElapsedMilliseconds < 60)
+            {
+                if (_jobCancel || !_job.MoveNext())
                 {
-                    Options.ChangedUltimaClass.Add("RadarCol", false);
+                    finished = true;
+                    break;
                 }
-                Options.ChangedUltimaClass["RadarCol"] = true;
-            }
-        }
-        #endregion
 
-        #region [ OnClickSelectItemsTab ]
-        private void OnClickSelectItemsTab(object sender, EventArgs e)
-        {
-            if (treeViewItem.SelectedNode == null)
+                ++_jobDone;
+            }
+
+            _progress.Value = Math.Min(_progress.Maximum, _jobDone);
+            _statusLabel.Text = $"{_jobName}: {_jobDone:N0} / {_jobTotal:N0}";
+            if (!finished)
             {
                 return;
             }
 
-            int index = (int)treeViewItem.SelectedNode.Tag;
-            var found = ItemsControl.SearchGraphic(index);
-            if (!found)
-            {
-                MessageBox.Show("You need to load Items tab first.", "Information");
-            }
+            _jobTimer.Stop();
+            _job.Dispose();
+            _job = null;
+            _progress.Visible = false;
+            _cancelJobButton.Visible = false;
+            _statusLabel.Text = $"{_jobName}: {(_jobCancel ? "cancelled" : "done")} after {_jobDone:N0} entries. Changed now: {_originalItems.Count + _originalLand.Count:N0}.";
+            _list.Invalidate();
+            ShowEntry(_selectedId);
+            AfterChange(Array.Empty<int>());
         }
+
         #endregion
 
-        #region [ OnClickSelectItemTiledataTab ]
-        private void OnClickSelectItemTiledataTab(object sender, EventArgs e)
+        #region Files
+
+        private void SaveFile()
         {
-            if (treeViewItem.SelectedNode == null)
+            string path = Options.OutputPath;
+            if (string.IsNullOrEmpty(path) || !Directory.Exists(path))
             {
+                MessageBox.Show(this, "The output folder is not set or does not exist (Options).", "Save", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            int index = (int)treeViewItem.SelectedNode.Tag;
-            TileDataControl.Select(index, false);
-        }
-        #endregion
-
-        #region [ OnClickSelectLandTilesTab ]
-        private void OnClickSelectLandTilesTab(object sender, EventArgs e)
-        {
-            if (treeViewLand.SelectedNode == null)
+            string fileName = Path.Combine(path, "radarcol.mul");
+            try
             {
+                Cursor.Current = Cursors.WaitCursor;
+                RadarCol.Save(fileName);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(this, $"Saving failed: {ex.Message}", "Save", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
-
-            int index = (int)treeViewLand.SelectedNode.Tag;
-            var found = LandTilesControl.SearchGraphic(index);
-            if (!found)
+            finally
             {
-                MessageBox.Show("You need to load LandTiles tab first.", "Information");
-            }
-        }
-        #endregion
-
-        #region [ OnClickSelectLandTiledataTab ]
-        private void OnClickSelectLandTiledataTab(object sender, EventArgs e)
-        {
-            if (treeViewLand.SelectedNode == null)
-            {
-                return;
+                Cursor.Current = Cursors.Default;
             }
 
-            int index = (int)treeViewLand.SelectedNode.Tag;
-            TileDataControl.Select(index, true);
-        }
-        #endregion
+            _originalItems.Clear();
+            _originalLand.Clear();
+            Options.ChangedUltimaClass[ChangeKey] = false;
+            _list.Invalidate();
+            AfterChange(Array.Empty<int>());
 
-        #region [ OnClickImport ]
-        private void OnClickImport(object sender, EventArgs e)
+            string ext = string.Empty;
+            if (RadarCol.LandExtendedCount > 0)
+            {
+                ext += Environment.NewLine + Path.Combine(path, ExtendedFormat.RadarLandFileName) + $" ({RadarCol.LandExtendedCount:N0} land tiles)";
+            }
+
+            if (RadarCol.ItemExtendedCount > 0)
+            {
+                ext += Environment.NewLine + Path.Combine(path, ExtendedFormat.RadarItemFileName) + $" ({RadarCol.ItemExtendedCount:N0} items)";
+            }
+
+            MessageBox.Show(this, $"Saved:{Environment.NewLine}{fileName}{ext}", "Saved", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
+        private void ExportCsv()
         {
-            OpenFileDialog dialog = new OpenFileDialog
+            string fileName = Path.Combine(Options.OutputPath, "RadarColor.csv");
+            try
+            {
+                RadarCol.ExportToCSV(fileName);
+                MessageBox.Show(this, $"Exported to {fileName}", "Export", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(this, $"Export failed: {ex.Message}", "Export", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void ImportCsv()
+        {
+            using var dialog = new OpenFileDialog
             {
                 Multiselect = false,
                 Title = "Choose csv file to import",
                 CheckFileExists = true,
                 Filter = "csv files (*.csv)|*.csv"
             };
-
-            if (dialog.ShowDialog() == DialogResult.OK)
-            {
-                Options.ChangedUltimaClass["RadarCol"] = true;
-                RadarCol.ImportFromCSV(dialog.FileName);
-                if (tabControl2.SelectedTab == tabControl2.TabPages[0])
-                {
-                    if (treeViewItem.SelectedNode != null)
-                    {
-                        AfterSelectTreeViewItem(this, new TreeViewEventArgs(treeViewItem.SelectedNode));
-                    }
-                }
-                else
-                {
-                    if (treeViewLand.SelectedNode != null)
-                    {
-                        AfterSelectTreeViewLand(this, new TreeViewEventArgs(treeViewLand.SelectedNode));
-                    }
-                }
-            }
-            dialog.Dispose();
-        }
-        #endregion
-
-        #region [ OnClickExport ]
-        private void OnClickExport(object sender, EventArgs e)
-        {
-            string path = Options.OutputPath;
-            string fileName = Path.Combine(path, "RadarColor.csv");
-            RadarCol.ExportToCSV(fileName);
-            MessageBox.Show($"RadarColor saved to {fileName}", "Saved", MessageBoxButtons.OK,
-                MessageBoxIcon.Information, MessageBoxDefaultButton.Button1);
-        }
-        #endregion
-
-        #region [ OnClickMeanColorAll ]
-        private void OnClickMeanColorAll(object sender, EventArgs e)
-        {
-            DialogResult result = MessageBox.Show(
-                "Do you want to calculate and set new radar color values for all items and land tiles entries where current color is black or missing?",
-                "Average All",
-                MessageBoxButtons.YesNo
-                );
-
-            if (result != DialogResult.Yes)
+            if (dialog.ShowDialog(this) != DialogResult.OK)
             {
                 return;
             }
 
-            if (TileData.ItemTable != null)
-            {
-                int itemsLength = Art.GetMaxItemId();
-                progressBar1.Maximum = itemsLength;
-
-                for (int i = 0; i < itemsLength; ++i)
-                {
-                    progressBar1.Value++;
-                    if (!Art.IsValidStatic(i))
-                    {
-                        continue;
-                    }
-
-                    if (RadarCol.GetItemColor(i) != 0)
-                    {
-                        continue;
-                    }
-
-                    Bitmap image = Art.GetStatic(i);
-                    if (image == null)
-                    {
-                        continue;
-                    }
-
-                    var currentColor = HueHelpers.ColorToHue(AverageColorFrom(image));
-                    RadarCol.SetItemColor(i, currentColor);
-                    Options.ChangedUltimaClass["RadarCol"] = true;
-                }
-            }
-
-            if (TileData.LandTable != null)
-            {
-                int landLength = TileData.LandTable.Length;
-                progressBar2.Maximum = landLength;
-                for (int i = 0; i < landLength; ++i)
-                {
-                    progressBar2.Value++;
-                    if (!Art.IsValidLand(i))
-                    {
-                        continue;
-                    }
-
-                    if (RadarCol.GetLandColor(i) != 0)
-                    {
-                        continue;
-                    }
-
-                    Bitmap image = Art.GetLand(i);
-                    if (image == null)
-                    {
-                        continue;
-                    }
-
-                    var currentColor = HueHelpers.ColorToHue(AverageColorFrom(image));
-                    RadarCol.SetLandColor(i, currentColor);
-                    Options.ChangedUltimaClass["RadarCol"] = true;
-                }
-            }
-
-            MessageBox.Show("Done!", "Average All");
-
-            progressBar1.Value = 0;
-            progressBar2.Value = 0;
-        }
-        #endregion
-
-        #region [ FilterChange ]
-        private void FilterChange(TextBox control, Action<string> filterCallback)
-        {
-            if (_debounceTimer != null)
-            {
-                _debounceTimer.Stop();
-            }
-
-            _debounceTimer = new Timer
-            {
-                Interval = _debounceTimeout
-            };
-
-            _debounceTimer.Tick += delegate (object sender, EventArgs args)
-            {
-                Invoke(() =>
-                {
-                    filterCallback(control.Text);
-                });
-                _debounceTimer.Stop();
-            };
-
-            _debounceTimer.Start();
-        }
-        #endregion
-
-        #region [ OnTextChangedFilterLand ]
-        private void OnTextChangedFilterLand(object sender, EventArgs e)
-        {
-            FilterChange(textFilterLand, FilterLand);
-        }
-        #endregion
-
-        #region [ OnTextChangedFilterItems ]
-        private void OnTextChangedFilterItems(object sender, EventArgs e)
-        {
-            FilterChange(textFilterItems, FilterItems);
-        }
-        #endregion
-
-        #region [ ApplyFilter ]
-        private void ApplyFilter(TreeView control, string filterText)
-        {
-            object table;
-            int max;
-            Dictionary<int, ushort> originalColors;
-            HashSet<int> selected;
-            Func<int, string> getName;
-
-            if (control == treeViewItem)
-            {
-                table = TileData.ItemTable;
-                max = Art.GetMaxItemId();
-                originalColors = _originalItemColors;
-                getName = (int index) => TileData.ItemTable[index].Name;
-                selected = _selectedItems;
-            }
-            else
-            {
-                table = TileData.LandTable;
-                max = 0x3FFF;
-                originalColors = _originalLandColors;
-                getName = (int index) => TileData.LandTable[index].Name;
-                selected = _selectedLand;
-            }
-
-            Cursor.Current = Cursors.WaitCursor;
-            control.BeginUpdate();
+            // remember the file values for revert: snapshot of the current colours before the import
+            ushort[] beforeLegacy = (ushort[])RadarCol.Colors.Clone();
+            var beforeLand = Enumerable.Range(ExtendedFormat.LandBaseId, RadarCol.LandExtendedCount).ToDictionary(id => id, RadarCol.GetLandColor);
+            var beforeItems = Enumerable.Range(ExtendedFormat.BaseId, RadarCol.ItemExtendedCount).ToDictionary(id => id, RadarCol.GetItemColor);
             try
             {
-                if (table == null)
+                RadarCol.ImportFromCSV(dialog.FileName);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(this, $"Import failed: {ex.Message}", "Import", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            int changed = 0;
+            void Track(int id, bool land, ushort before)
+            {
+                if (GetColor(id, land) == before)
                 {
                     return;
                 }
 
-                control.Nodes.Clear();
+                Dictionary<int, ushort> originals = land ? _originalLand : _originalItems;
+                originals.TryAdd(id, before);
+                ++changed;
+            }
 
-                List<TreeNode> nodes = [];
-                for (int i = 0; i < max; ++i)
+            for (int i = 0; i < beforeLegacy.Length; ++i)
+            {
+                if (i < RadarCol.LandCount)
                 {
-                    var name = getName(i);
-                    if (!name.ContainsCaseInsensitive(filterText))
-                    {
-                        continue;
-                    }
-
-                    var node = new TreeNode(string.Format("0x{0:X4} ({0}) {1}", i, name))
-                    {
-                        Tag = i,
-                        Checked = selected.Contains(i)
-                    };
-
-                    if (originalColors.ContainsKey(i))
-                    {
-                        node.ForeColor = Color.Blue;
-                    }
-
-                    nodes.Add(node);
+                    Track(i, true, beforeLegacy[i]);
                 }
-
-                control.Nodes.AddRange(nodes.ToArray());
+                else
+                {
+                    Track(i - RadarCol.LandCount, false, beforeLegacy[i]);
+                }
             }
-            finally
+
+            foreach (KeyValuePair<int, ushort> p in beforeLand)
             {
-                control.EndUpdate();
-                Cursor.Current = Cursors.Default;
+                Track(p.Key, true, p.Value);
             }
-        }
-        #endregion
 
-        #region [ FilterLand ]
-        private void FilterLand(string filterText)
-        {
-            ApplyFilter(treeViewLand, filterText);
-        }
-        #endregion
-
-        #region [ FilterItems ]
-        private void FilterItems(string filterText)
-        {
-            ApplyFilter(treeViewItem, filterText);
-        }
-        #endregion
-
-        #region [ AfterCheckTreeViewItem ]
-        private void AfterCheckTreeViewItem(object sender, TreeViewEventArgs e)
-        {
-            var index = (int)e.Node.Tag;
-            if (e.Node.Checked)
+            foreach (KeyValuePair<int, ushort> p in beforeItems)
             {
-                _selectedItems.Add(index);
+                Track(p.Key, false, p.Value);
+            }
+
+            Options.ChangedUltimaClass[ChangeKey] = _originalItems.Count > 0 || _originalLand.Count > 0;
+            _list.Invalidate();
+            ShowEntry(_selectedId);
+            AfterChange(Array.Empty<int>());
+            _statusLabel.Text = $"Import: {changed:N0} colour(s) changed.";
+        }
+
+        #endregion
+
+        #region Navigation to other tabs
+
+        private void ShowInArtTab()
+        {
+            if (_selectedId < 0)
+            {
+                return;
+            }
+
+            bool found = _land ? LandTilesControl.SearchGraphic(_selectedId) : ItemsControl.SearchGraphic(_selectedId);
+            if (!found)
+            {
+                MessageBox.Show(this, $"0x{_selectedId:X} has no graphic (or the {(_land ? "LandTiles" : "Items")} tab is not loaded yet).", "Show",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            if (_land)
+            {
+                LandTilesControl.ActivateTab();
             }
             else
             {
-                _selectedItems.Remove(index);
+                ItemsControl.ActivateTab();
             }
         }
-        #endregion
 
-        #region [ AfterCheckTreeViewLand ]
-        private void AfterCheckTreeViewLand(object sender, TreeViewEventArgs e)
+        private void ShowInTileData()
         {
-            var index = (int)e.Node.Tag;
-            if (e.Node.Checked)
+            if (_selectedId < 0)
             {
-                _selectedLand.Add(index);
+                return;
             }
-            else
-            {
-                _selectedLand.Remove(index);
-            }
+
+            TileDataControl.Select(_selectedId, _land);
+            TileDataControl.ActivateTab();
         }
-        #endregion
 
-        #region [ SetAllCheckedStatus ]
-        private static void SetAllCheckedStatus(TreeView treeView, bool isChecked)
+        private void CopyText(string text)
         {
-            treeView.BeginUpdate();
+            if (string.IsNullOrEmpty(text))
+            {
+                return;
+            }
+
             try
             {
-                Cursor.Current = Cursors.WaitCursor;
-
-                foreach (TreeNode node in treeView.Nodes)
-                {
-                    node.Checked = isChecked;
-                }
+                Clipboard.SetText(text);
+                _statusLabel.Text = $"Copied {text}";
             }
-            finally
+            catch (Exception)
             {
-                treeView.EndUpdate();
-                Cursor.Current = Cursors.Default;
-            }
-        }
-        #endregion
-
-        #region [ OnClickSelectAllItems ]
-        private void OnClickSelectAllItems(object sender, EventArgs e)
-        {
-            SetAllCheckedStatus(treeViewItem, true);
-        }
-        #endregion
-
-        #region [ OnClickSelectNoneItems ]
-        private void OnClickSelectNoneItems(object sender, EventArgs e)
-        {
-            SetAllCheckedStatus(treeViewItem, false);
-        }
-        #endregion
-
-        #region [ OnCheckedChangeUseSelection ]
-        private void OnCheckedChangeUseSelection(object sender, EventArgs e)
-        {
-            textBoxMeanFrom.Enabled = false;
-            textBoxMeanTo.Enabled = false;
-            buttonRangeToRangeAverage.Text = "Selected tiles to selection average";
-            buttonRangeToIndividualAverage.Text = "Selected tiles to individual average";
-            buttonCurrentToRangeAverage.Text = "Current tile to selection average";
-        }
-        #endregion
-
-        #region [ OnCheckedChangeUseRange ]
-        private void OnCheckedChangeUseRange(object sender, EventArgs e)
-        {
-            textBoxMeanFrom.Enabled = true;
-            textBoxMeanTo.Enabled = true;
-            buttonRangeToRangeAverage.Text = "Range tiles to range average";
-            buttonRangeToIndividualAverage.Text = "Range tiles to individual average";
-            buttonCurrentToRangeAverage.Text = "Current tile to range average";
-        }
-        #endregion
-
-        #region [ OnClickSelectAllLand ]
-        private void OnClickSelectAllLand(object sender, EventArgs e)
-        {
-            SetAllCheckedStatus(treeViewLand, true);
-        }
-        #endregion
-
-        #region [ OnClickSelectAllLand ]
-        private void OnClickSelectNoneLand(object sender, EventArgs e)
-        {
-            SetAllCheckedStatus(treeViewLand, false);
-        }
-        #endregion
-
-        private void copyHexadressToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            TreeNode selectedNode = null;
-
-            if (tabControl2.SelectedIndex == 0) // Assuming 0 is for item tree
-            {
-                selectedNode = treeViewItem.SelectedNode;
-            }
-            else if (tabControl2.SelectedIndex == 1) // Assuming 1 is for land tree
-            {
-                selectedNode = treeViewLand.SelectedNode;
-            }
-
-            if (selectedNode != null)
-            {
-                int id = (int)selectedNode.Tag; // Assuming the ID is stored in the Tag property
-                string hexAddress = id.ToString("X"); // Convert ID to Hex string
-
-                // Copy the hex address to clipboard
-                Clipboard.SetText(hexAddress);
-            }
-            else
-            {
-                MessageBox.Show("Please select an item or land first.");
+                // clipboard busy - ignore
             }
         }
 
+        #endregion
     }
 }

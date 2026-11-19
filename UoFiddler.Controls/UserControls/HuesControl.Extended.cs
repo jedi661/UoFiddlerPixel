@@ -162,6 +162,32 @@ namespace UoFiddler.Controls.UserControls
         /// <summary>The controls are in the designer; here the events of the program are connected</summary>
         private void InitEditExtensions()
         {
+            // extended hues (hue numbers 3001 .. 0x3FFF, huesext.mul)
+            var extItem = new ToolStripMenuItem("Extended hues (3001+)...")
+            {
+                ToolTipText = "Create / resize / save / load huesext.mul - more hues than the 3000 of hues.mul."
+            };
+            extItem.Click += (s, e) => ExtendedArtFormatForm.ShowFor(UoExtensionKind.Hues);
+            var gotoExt = new ToolStripMenuItem("Go to extended hues (3001)");
+            gotoExt.Click += (s, e) =>
+            {
+                if (!Hues.HasExtension)
+                {
+                    MessageBox.Show(this, "There are no extended hues yet. Create them with 'Extended hues (3001+)...'.", "Hues",
+                        MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
+                }
+
+                ResetFilter();
+                _selected = Hues.LegacyCount;
+                EnsureVisible(_selected);
+                pictureBox.Invalidate();
+                SelectedChanged?.Invoke(this, EventArgs.Empty);
+            };
+            contextMenuStrip1.Items.Add(new ToolStripSeparator());
+            contextMenuStrip1.Items.Add(extItem);
+            contextMenuStrip1.Items.Add(gotoExt);
+
             HueHistory.Main.Changed += OnHistoryChanged;
             UpdateUndoButtons();
             Disposed += (s, e) => HueHistory.Main.Changed -= OnHistoryChanged;

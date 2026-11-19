@@ -54,6 +54,14 @@ namespace UoFiddler.Controls.UserControls
             saveDirectlyOnChangesToolStripMenuItem.CheckedChanged += SaveDirectlyOnChangesToolStripMenuItemOnCheckedChanged;
 
             ControlEvents.FilePathChangeEvent += OnFilePathChangeEvent;
+            UoExtensions.Changed += kind =>
+            {
+                // item and land tile extensions change the size of the tiledata tables
+                if (kind == null || kind == UoExtensionKind.Items || kind == UoExtensionKind.LandTiles)
+                {
+                    Reload();
+                }
+            };
             ControlEvents.TileDataChangeEvent += OnTileDataChangeEvent;
 
             LabelDecimalAdress.Text = "";
@@ -148,6 +156,12 @@ namespace UoFiddler.Controls.UserControls
             SearchGraphic(graphic, land);
         }
         #endregion
+
+        /// <summary>Brings the TileData tab to the front (after <see cref="Select"/>).</summary>
+        public static void ActivateTab()
+        {
+            TabNavigation.BringToFront(_refMarker);
+        }
 
         #region [ SearchGraphic ]
         public static bool SearchGraphic(int graphic, bool land)
@@ -653,8 +667,10 @@ namespace UoFiddler.Controls.UserControls
                 return;
             }
 
-            if (index > 0x3FFF) // items
+            ControlEvents.DecodeTileDataEventId(index, out int decodedId, out bool isLand);
+            if (!isLand) // items
             {
+                index = decodedId;
                 if (treeViewItem.SelectedNode == null)
                 {
                     return;
@@ -684,6 +700,7 @@ namespace UoFiddler.Controls.UserControls
             }
             else
             {
+                index = decodedId;
                 if (treeViewLand.SelectedNode == null)
                 {
                     return;
@@ -2370,7 +2387,7 @@ namespace UoFiddler.Controls.UserControls
             // Optional: Mark the node as changed and update the event
             selectedNode.ForeColor = Color.Red;
             Options.ChangedUltimaClass["TileData"] = true;
-            ControlEvents.FireTileDataChangeEvent(this, index);
+            ControlEvents.FireTileDataChangeEvent(this, ControlEvents.TileDataLandEventId(index));
             
             SoundPlayer player = new SoundPlayer();
             player.SoundLocation = "sound.wav";

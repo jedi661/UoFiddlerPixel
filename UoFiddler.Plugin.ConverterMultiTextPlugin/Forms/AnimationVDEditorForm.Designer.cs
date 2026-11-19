@@ -574,7 +574,7 @@
             nudHue.Location = new System.Drawing.Point(105, 139);
             nudHue.Name = "nudHue";
             nudHue.Size = new System.Drawing.Size(70, 23);
-            nudHue.Maximum = new decimal(new int[] { 3000, 0, 0, 0 });
+            nudHue.Maximum = new decimal(new int[] { 16383, 0, 0, 0 });
             nudHue.ValueChanged += ViewOption_Changed;
             toolTip.SetToolTip(nudHue, "0 = keine Farbe. Nur Vorschau, die Frames werden nicht verändert.");
             // 

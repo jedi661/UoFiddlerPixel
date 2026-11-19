@@ -146,6 +146,24 @@ namespace UoFiddler.Controls.Classes
             }
 
             sb.AppendLine();
+            sb.AppendLine("=== ALL EXTENSIONS IN MEMORY ===");
+            sb.Append(UoExtensions.MemorySummary());
+            foreach ((string label, string folder) in GetFolders())
+            {
+                sb.AppendLine();
+                sb.AppendLine($"=== ALL SIDE-CAR FILES: {label} ===");
+                sb.AppendLine(folder);
+                if (Directory.Exists(folder))
+                {
+                    sb.Append(UoExtensions.DiskSummary(folder));
+                }
+                else
+                {
+                    sb.AppendLine("  folder does not exist");
+                }
+            }
+
+            sb.AppendLine();
             sb.AppendLine("=== HINT ===");
             sb.AppendLine("Save writes into the output folder. UOFiddler loads from the 'loaded from' folder.");
             sb.AppendLine("If they differ, copy the files or use 'Load extension from folder...'.");
@@ -176,10 +194,8 @@ namespace UoFiddler.Controls.Classes
             return sb.ToString();
         }
 
-        public static readonly string[] FileNames =
-        {
-            ExtendedFormat.ArtIndexFileName, ExtendedFormat.ArtDataFileName, ExtendedFormat.TileDataFileName
-        };
+        /// <summary>All side-car files (items, land tiles, textures, hues, radar colours).</summary>
+        public static readonly string[] FileNames = ExtendedFormat.AllFileNames;
 
         /// <summary>Points the extended paths to <paramref name="folder"/> and loads the extension from there.</summary>
         /// <returns>The file names that were found in the folder.</returns>
@@ -198,8 +214,7 @@ namespace UoFiddler.Controls.Classes
 
             if (found.Count > 0)
             {
-                Art.ReloadExtension();
-                TileData.ReloadExtension();
+                UoExtensions.ReloadAll();
             }
 
             return found;
@@ -208,7 +223,8 @@ namespace UoFiddler.Controls.Classes
         /// <summary>
         /// Copies the extended files from <paramref name="sourceFolder"/> (the output folder) into the Ultima Online
         /// folder - after a dated backup of the files there - and loads them from the Ultima Online folder.
-        /// Only the three extended files are copied, art.mul / tiledata.mul are not touched.
+        /// Only the extended side-car files are copied, art.mul / tiledata.mul / texmaps.mul / hues.mul / radarcol.mul
+        /// are not touched.
         /// </summary>
         public static string CopyToClientFolder(string sourceFolder, out List<string> copied)
         {
@@ -236,7 +252,7 @@ namespace UoFiddler.Controls.Classes
 
             string backup = UoFileBackup.CreateBackup(Options.OutputPath, out _);
 
-            Art.CloseExtensionFiles(); // artext.mul may be open for reading
+            UoExtensions.CloseAll(); // artext.mul / artlandext.mul / texmapsext.mul may be open for reading
             foreach (string name in FileNames)
             {
                 string source = Path.Combine(sourceFolder, name);
@@ -251,8 +267,7 @@ namespace UoFiddler.Controls.Classes
                 copied.Add(name);
             }
 
-            Art.ReloadExtension();
-            TileData.ReloadExtension();
+            UoExtensions.ReloadAll();
             return backup;
         }
 

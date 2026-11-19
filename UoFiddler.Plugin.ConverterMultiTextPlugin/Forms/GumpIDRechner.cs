@@ -440,7 +440,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             _pvFemale = Preview(200, 260, (s, e) => PaintGumpPreview(e.Graphics, 2));
             _chkOnBody = Chk("On body (gump 0x0C / 0x0D)", true);
             _chkOnBody.CheckedChanged += (s, e) => InvalidateGumpPreviews();
-            _numGumpHue = Num(0, 3000, 0, 60);
+            _numGumpHue = Num(0, 0x3FFF, 0, 60); // hue numbers incl. extended hues (huesext.mul)
             _numGumpHue.ValueChanged += (s, e) => InvalidateGumpPreviews();
             _chkGumpPartial = Chk("only gray (partial hue)", true);
             _chkGumpPartial.CheckedChanged += (s, e) => InvalidateGumpPreviews();
@@ -1007,7 +1007,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             _bodyAction.ValueChanged += (s, e) => CalcBody();
             _bodyDir = Combo(150, UoCalc.DirectionNames);
             _bodyDir.SelectedIndexChanged += (s, e) => CalcBody();
-            _bodyHue = Num(0, 3000, 0, 60);
+            _bodyHue = Num(0, 0x3FFF, 0, 60);
             _bodyHue.ValueChanged += (s, e) => _pvBody.Invalidate();
             _bFile = Out(190); _bConverted = Out(90); _bGroup = Out(250); _bIndexHex = Out(90); _bIndexDec = Out(80); _bActions = Out(50);
             _bodyMounts = new ListBox { Width = 330, Height = 80, IntegralHeight = false };
@@ -1305,7 +1305,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 
         private void StepHue(int delta)
         {
-            int n = Math.Max(1, Math.Min(3000, (_hueValue < 0 ? 0 : _hueValue) + delta));
+            int n = Math.Max(1, Math.Min(Math.Max(1, Ultima.Hues.List?.Length ?? 3000), (_hueValue < 0 ? 0 : _hueValue) + delta));
             _hueInput.Text = n.ToString();
         }
 

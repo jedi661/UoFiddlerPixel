@@ -7,7 +7,8 @@ using Ultima;
 namespace UoFiddler.Controls.Classes
 {
     /// <summary>
-    /// Copies the original client files that the extended format touches (art + tiledata, legacy and extended)
+    /// Copies the original client files that the extended formats touch (art, tiledata, textures, hues, radarcol -
+    /// classic and extended)
     /// into  &lt;OutputPath&gt;\UO_Backup\yyyy-MM-dd_HH-mm-ss\  before anything is created or saved.
     /// Only copies - the files in the client directory are never changed or moved.
     /// </summary>
@@ -23,9 +24,21 @@ namespace UoFiddler.Controls.Classes
             "artlegacymul.uop",
             "tiledata.mul",
             "verdata.mul",
+            "texidx.mul",
+            "texmaps.mul",
+            "hues.mul",
+            "radarcol.mul",
             ExtendedFormat.ArtIndexFileName,
             ExtendedFormat.ArtDataFileName,
-            ExtendedFormat.TileDataFileName
+            ExtendedFormat.TileDataFileName,
+            ExtendedFormat.LandIndexFileName,
+            ExtendedFormat.LandDataFileName,
+            ExtendedFormat.LandTileDataFileName,
+            ExtendedFormat.TextureIndexFileName,
+            ExtendedFormat.TextureDataFileName,
+            ExtendedFormat.HueFileName,
+            ExtendedFormat.RadarItemFileName,
+            ExtendedFormat.RadarLandFileName
         };
 
         /// <summary>Folder of the last backup made in this session (null if none yet).</summary>

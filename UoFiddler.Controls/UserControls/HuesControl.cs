@@ -146,10 +146,12 @@ namespace UoFiddler.Controls.UserControls
             {
                 ControlEvents.FilePathChangeEvent += OnFilePathChangeEvent;
                 ControlEvents.HueChangeEvent += OnHueChangeEvent;
+                UoExtensions.Changed += OnExtensionChanged;
                 Disposed += (s, ev) =>
                 {
                     ControlEvents.FilePathChangeEvent -= OnFilePathChangeEvent;
                     ControlEvents.HueChangeEvent -= OnHueChangeEvent;
+                    UoExtensions.Changed -= OnExtensionChanged;
                 };
             }
 
@@ -160,6 +162,15 @@ namespace UoFiddler.Controls.UserControls
         private void OnFilePathChangeEvent()
         {
             Reload();
+        }
+
+        /// <summary>Extended hues created / resized / loaded: the list has a new length.</summary>
+        private void OnExtensionChanged(UoExtensionKind? kind)
+        {
+            if (kind == null || kind == UoExtensionKind.Hues)
+            {
+                Reload();
+            }
         }
 
         private void OnHueChangeEvent()
