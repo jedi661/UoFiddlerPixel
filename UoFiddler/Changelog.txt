@@ -1,3 +1,68 @@
+Version : 4.12.31 #XG1
+
+Version 4.12.31
+
+## Extended mul formats (up to 16,777,216 entries), new "Extended" tab, land tile + texture studio
+
+### Extended formats – the classic files stay client compatible
+The classic files (art.mul, artidx.mul, tiledata.mul, texmaps.mul, hues.mul, radarcol.mul) keep their exact layout,
+so the current client keeps working. Every extension starts where the classic file ends and is stored in its own
+side-car files (32-byte header, 64-bit offsets, up to 16,777,216 entries) for a future client:
+
+| Extension | Starts at | Files |
+|---|---|---|
+| Items (art + tiledata) | 0x10000 | `artextidx.mul`, `artext.mul`, `tiledataext.mul` |
+| Land tiles (art + tiledata) | 0x4000 | `artlandextidx.mul`, `artlandext.mul`, `tiledatalandext.mul` |
+| Textures | 0x4000 | `texextidx.mul`, `texmapsext.mul` |
+| Hues | hue 3001 | `huesext.mul` |
+| Radar colours | land 0x4000 / items 0x10000 | `radarcollandext.mul`, `radarcolext.mul` (follow the sizes automatically) |
+
+- Land tiles, textures and hues up to 0xFFFF / 16,383 still fit the classic fields; everything above is for the new client.
+- The texture id of the land tiledata is now 32 bit (tiledatalandext.mul); tiledata.mul still stores 16 bit.
+- Every tab shows and edits the extended ids (Items, LandTiles, Textures, Hues, TileData, RadarColor); all hue pickers accept the extended hues.
+- Path settings find and load the extension files automatically (also after a restart).
+- Dated backup of the client files before creating / saving (`<output>\UO_Backup\<date>`), copy to the Ultima Online folder with backup.
+- Specification for client / server developers: `Docs/ExtendedFormat_Client_Spezifikation.md`.
+
+### New tab "Extended"
+- **Sizes:** one table for items, land tiles, textures and hues – one size for all or each its own, presets (old-client limits, 65,536, 1,048,576, 16,777,216), id ranges, old/new client split and a memory estimate.
+- **One click:** backup, create / resize all checked extensions (incl. tiledata and radar colours) and save them. Save all, load from a folder, copy to the Ultima Online folder.
+- **Error search:** checks the files on disk (headers, index without data, every entry, image / tile / texture sizes, sizes of art vs. tiledata vs. radar colours, missing textures) and the loaded data (unsaved changes, graphics without name, missing radar colours …). Jump to the id, repair (sync sizes, remove broken entries, save, radar colour from the graphic), report to copy or save.
+- **Patch test:** copies a real classic entry into the first and the last free slot of every extension, writes a test copy, reads it back from disk and compares byte by byte. Everything is logged in `patchtest.log`. One click marks the entry in all its tabs, double click opens the tab; the test entries can be removed again.
+- The tab has a `.Designer.cs` file and can be edited in the Visual Studio designer.
+
+### Land tile + texture studio
+- Load an image (file, clipboard, land tile or texture) and get the 44x44 land tile AND the 64x64 / 128x128 texture in the orientation the client uses (texture top left = top corner of the diamond, top right = right corner, bottom left = left corner).
+- Turn / mirror, auto align the texture to an existing land tile (tries all 8 orientations), previews: texture, land tile x4, 3x3 map to check for seams.
+- Patch into the land and texture slots (next free slot, also in the extended range) and link them in the tiledata: texture id, name, flags, radar colour. Save all files.
+
+### Land tiles / textures check
+- Find empty, one colour (placeholder) and few colour land tiles and textures (incl. extensions) with thumbnails and users – delete the checked ones, optionally clear the links of land tiles that point to a deleted texture.
+- Land tile ↔ texture: missing texture, not linked although a texture with the same id exists, texture does not fit the art, texture turned wrong (best orientation shown). Fix the link, turn the texture or open it in the studio.
+
+### LandTiles and Textures tabs
+- LandTiles: view box (land tiles / + free slots / free slots only / extended range), free slots drawn as a dashed diamond, extended range tinted; buttons "Land + texture studio", "Check…", "Show in TileData", "Show texture".
+- Textures: "Show in LandTiles" and "Show in TileData" list the land tiles whose tiledata points to the texture (not linked land tiles with the same id in orange).
+
+### RadarColor tab – rewritten
+- Virtual list instead of 80,000+ tree nodes: opens instantly, also with more than 1,000,000 items.
+- Items / land tiles, search by id or name, filters (with graphic, changed, black, extended), eyedropper on the preview, R/G/B, value and #RRGGBB, revert per entry, averages for selection or range with progress and cancel, fill all black colours from the graphics, CSV import / export incl. extended ids.
+
+### Items tab
+- **Directions N/E/S/W:** generates the other facings pixel exact with the UO light direction and shadow; object types (symmetric, flat, solid, directional, box / furniture), walls on the tile edges, auto repair, error view, manual orientation, learning from corrections and similar items.
+- **Art Transform:** pixel exact flip, rotate, skew, scale, distort, warp and movable grid dots with the UO field grid (44x44 diamond, fix point = middle pixel of the lowest row), undo / redo, remembered per item.
+- **Sprite sheets:** export / import single items or whole id ranges, automatic split into several sheets, time estimate, pause and cancel, JSON + AI prompt (`Docs/SpriteSheet_Spezifikation_fuer_KI.md`).
+- **Placement window** for imported graphics: from an address, next free slots, free blocks, Items selection.
+- View: items only / items + free slots / free slots only, jump to the extended range.
+
+### Fixes
+- "Select in TileData" from the Items tab selected in a hidden second TileData control – it now selects in the TileData tab and switches to it; "Select in Items / LandTiles / RadarColor" from the TileData tab switch to the tab as well. All jumps show the tab first, so the list scrolls to the entry.
+- RadarColor: unsaved changes were not reported, the last item was missing, crash for ids beyond a short radarcol.mul, division by zero for empty graphics, leaked bitmaps.
+- LandTiles / Textures: importing several files overwrote another list entry; LandTiles leaked a Region per drawn tile; 256x256 textures (not storable) are rejected.
+- TileData: the land filter compared the item names.
+- Texture Cutter: "palette from hue" used the hue next to the chosen one.
+- "Parameter is not valid" crash (a PictureBox showed a disposed image).
+
 Version : 4.12.30 #XG1
 ## Light tab: rework, more than 100 lights and a light designer
 
