@@ -75,8 +75,19 @@ namespace UoFiddler.Forms
                 }
             }
 
+            // "Extended" tab: create / size / check all extended mul files (built in code, Tag 100 = no view option)
+            var extendedTab = new TabPage("Extended")
+            {
+                Name = "ExtendedTab",
+                Tag = 100,
+                UseVisualStyleBackColor = true,
+                ToolTipText = "Extended mul files (items, land tiles, textures, hues, radar colours): sizes, create with one click, error search"
+            };
+            extendedTab.Controls.Add(new UoFiddler.Controls.UserControls.ExtendedControl { Dock = DockStyle.Fill });
+            TabPanel.TabPages.Add(extendedTab);
+
             // Please define the desired order of the tabs.
-            string[] tabOrder = new string[] { "StartTab", "ItemsTab", "GumpsTab", "DressTab", "TileDataTab", "LandTilesTab", "TextureTab", "MapTab", "MultiMapTab", "MultisTab", "RadarColTab", "HuesTab", "AnimationTab", "AnimDataTab", "LightTab", "SoundsTab", "SkillsTab", "SkillGrpTab", "SpeechTab", "ClilocTab", "FontsTab", };
+            string[] tabOrder = new string[] { "StartTab", "ItemsTab", "GumpsTab", "DressTab", "TileDataTab", "LandTilesTab", "TextureTab", "MapTab", "MultiMapTab", "MultisTab", "RadarColTab", "HuesTab", "ExtendedTab", "AnimationTab", "AnimDataTab", "LightTab", "SoundsTab", "SkillsTab", "SkillGrpTab", "SpeechTab", "ClilocTab", "FontsTab", };
 
             // Create a new list of TabPages.
             List<TabPage> orderedPages = new List<TabPage>();
@@ -257,6 +268,7 @@ namespace UoFiddler.Forms
                 case "MultisTab":
                 case "RadarColTab":
                 case "HuesTab":
+                case "ExtendedTab":
                     backColor = Color.Orange;
                     break;
                 case "AnimationTab":
