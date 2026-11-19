@@ -36,11 +36,57 @@ namespace UoFiddler.Controls.UserControls
             SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer | ControlStyles.UserPaint, true);
 
             _refMarker = this;
+            InitializeExtensionMenus();
         }
 
         public bool IsLoaded { get; private set; }
 
-        private const int _landTileMax = 0x4000;
+        /// <summary>Number of land ids incl. the land extension (0x4000 without).</summary>
+        private static int LandTileMax => Art.GetMaxLandId() + 1;
+
+        #region [ Extension (land ids 0x4000+) ]
+        private void InitializeExtensionMenus()
+        {
+            var extItem = new ToolStripMenuItem("Extended land tiles (0x4000+)...");
+            extItem.ToolTipText = "Create / resize / save / load the land tile extension (artlandext*, tiledatalandext, radarcollandext).";
+            extItem.Click += (s, e) => ExtendedArtFormatForm.ShowFor(UoExtensionKind.LandTiles);
+            var gotoExt = new ToolStripMenuItem("Go to extended range (0x4000)");
+            gotoExt.Click += (s, e) =>
+            {
+                if (!Art.HasLandExtension)
+                {
+                    MessageBox.Show("There is no land tile extension yet. Create it with Misc -> Extended land tiles.", "Land tiles",
+                        MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
+                }
+
+                int target = _tileList.FirstOrDefault(t => t >= ExtendedFormat.LandBaseId, -1);
+                if (target < 0)
+                {
+                    if (!_showFreeSlots)
+                    {
+                        ShowFreeSlotsToolStripMenuItem_Click(this, EventArgs.Empty);
+                    }
+
+                    target = ExtendedFormat.LandBaseId;
+                }
+
+                LandTilesTileView.FocusIndex = -1;
+                SelectedGraphicId = target;
+            };
+            MiscToolStripDropDownButton.DropDownItems.Add(new ToolStripSeparator());
+            MiscToolStripDropDownButton.DropDownItems.Add(extItem);
+            MiscToolStripDropDownButton.DropDownItems.Add(gotoExt);
+
+            UoExtensions.Changed += kind =>
+            {
+                if (kind == null || kind == UoExtensionKind.LandTiles)
+                {
+                    Reload();
+                }
+            };
+        }
+        #endregion
 
         private static LandTilesControl _refMarker;
         private int _selectedGraphicId = -1;
@@ -80,6 +126,12 @@ namespace UoFiddler.Controls.UserControls
             _refMarker.SelectedGraphicId = graphic;
 
             return true;
+        }
+
+        /// <summary>Brings the LandTiles tab to the front.</summary>
+        public static void ActivateTab()
+        {
+            TabNavigation.BringToFront(_refMarker);
         }
 
         /// <summary>
@@ -159,7 +211,8 @@ namespace UoFiddler.Controls.UserControls
             _showFreeSlots = false;
             showFreeSlotsToolStripMenuItem.Checked = false;
 
-            for (int i = 0; i < _landTileMax; ++i)
+            int max = LandTileMax;
+            for (int i = 0; i < max; ++i)
             {
                 if (Art.IsValidLand(i))
                 {
@@ -193,9 +246,10 @@ namespace UoFiddler.Controls.UserControls
                 return;
             }
 
-            NameLabel.Text = $"Name: {TileData.LandTable[graphic].Name}";
-            GraphicLabel.Text = string.Format("ID: 0x{0:X4} ({0})", graphic);
-            FlagsLabel.Text = $"Flags: {TileData.LandTable[graphic].Flags}";
+            bool hasData = TileData.LandTable != null && graphic >= 0 && graphic < TileData.LandTable.Length;
+            NameLabel.Text = $"Name: {(hasData ? TileData.LandTable[graphic].Name : string.Empty)}";
+            GraphicLabel.Text = string.Format("ID: 0x{0:X4} ({0})", graphic) + (graphic >= ExtendedFormat.LandBaseId ? "  [extended]" : string.Empty);
+            FlagsLabel.Text = $"Flags: {(hasData ? TileData.LandTable[graphic].Flags : 0)}";
         }
 
         private void OnTileDataChangeEvent(object sender, int id)
@@ -210,7 +264,8 @@ namespace UoFiddler.Controls.UserControls
                 return;
             }
 
-            if (id < 0 || id > 0x3FFF)
+            ControlEvents.DecodeTileDataEventId(id, out id, out bool land);
+            if (!land)
             {
                 return;
             }
@@ -397,7 +452,7 @@ namespace UoFiddler.Controls.UserControls
 
         private void OnTextChangedInsert(object sender, EventArgs e)
         {
-            if (Utils.ConvertStringToInt(InsertText.Text, out int index, 0, 0x3FFF))
+            if (Utils.ConvertStringToInt(InsertText.Text, out int index, 0, Art.GetMaxLandId()))
             {
                 InsertText.ForeColor = Art.IsValidLand(index) ? Color.Red : Color.Black;
             }
@@ -415,7 +470,7 @@ namespace UoFiddler.Controls.UserControls
             }
 
             const int graphicIdMin = 0;
-            const int graphicIdMax = 0x3FFF;
+            int graphicIdMax = Art.GetMaxLandId();
 
             if (!Utils.ConvertStringToInt(InsertText.Text, out int index, graphicIdMin, graphicIdMax))
             {
@@ -632,6 +687,7 @@ namespace UoFiddler.Controls.UserControls
             if (_selectedGraphicId >= 0)
             {
                 TileDataControl.Select(_selectedGraphicId, true);
+                TileDataControl.ActivateTab();
             }
         }
         #endregion
@@ -642,6 +698,7 @@ namespace UoFiddler.Controls.UserControls
             if (_selectedGraphicId >= 0)
             {
                 RadarColorControl.Select(_selectedGraphicId, true);
+                RadarColorControl.ActivateTab();
             }
         }
         #endregion
@@ -835,7 +892,7 @@ namespace UoFiddler.Controls.UserControls
             }
 
             const int graphicIdMin = 0;
-            const int graphicIdMax = 0x3FFF;
+            int graphicIdMax = Art.GetMaxLandId();
 
             if (!Utils.ConvertStringToInt(ReplaceStartingFromTb.Text, out int index, graphicIdMin, graphicIdMax))
             {
@@ -875,12 +932,12 @@ namespace UoFiddler.Controls.UserControls
         }
 
         /// <summary>
-        /// Check if it's valid index for land tile. Land tiles has fixed size 0x4000.
+        /// Check if it's valid index for land tile: 0x0000-0x3FFF plus the land extension (0x4000+).
         /// </summary>
         /// <param name="index">Starting Index</param>
         private static bool IsIndexValid(int index)
         {
-            return index < 0x4000;
+            return Art.IsLegalLandId(index);
         }
 
         /// <summary>
@@ -903,23 +960,11 @@ namespace UoFiddler.Controls.UserControls
 
                 ControlEvents.FireLandTileChangeEvent(this, index);
 
-                bool done = false;
-
-                for (int i = 0; i < _tileList.Count; ++i)
+                // keep the list sorted and without duplicates (the old code overwrote the next entry)
+                int pos = _tileList.BinarySearch(index);
+                if (pos < 0)
                 {
-                    if (index > _tileList[i])
-                    {
-                        continue;
-                    }
-
-                    _tileList[i] = index;
-                    done = true;
-                    break;
-                }
-
-                if (!done)
-                {
-                    _tileList.Add(index);
+                    _tileList.Insert(~pos, index);
                 }
             }
         }
@@ -948,19 +993,12 @@ namespace UoFiddler.Controls.UserControls
 
             if (_showFreeSlots)
             {
-                for (int j = 0; j < _landTileMax; ++j)
+                // every id 0 .. max (incl. the land extension), used and free
+                _tileList.Clear();
+                int max = LandTileMax;
+                for (int j = 0; j < max; ++j)
                 {
-                    if (_tileList.Count > j)
-                    {
-                        if (_tileList[j] != j)
-                        {
-                            _tileList.Insert(j, j);
-                        }
-                    }
-                    else
-                    {
-                        _tileList.Insert(j, j);
-                    }
+                    _tileList.Add(j);
                 }
 
                 var prevSelected = SelectedGraphicId;
@@ -999,7 +1037,7 @@ namespace UoFiddler.Controls.UserControls
                 return;
             }
 
-            const int maximumIndex = 0x3FFF;
+            int maximumIndex = Art.GetMaxLandId();
 
             if (indexValue < 0)
             {

@@ -93,7 +93,142 @@ namespace Ultima
             _cache = new Bitmap[TotalCount];
             _removed = new bool[TotalCount];
             LoadExtension();
+            ReloadLandExtension();
         }
+
+        #region Land tile extension (ids 0x4000 .. up to 0x1003FFF)
+        /// <summary>
+        /// Land tiles above 0x3FFF: artlandextidx.mul / artlandext.mul (same raw land encoding as art.mul).
+        /// art.mul keeps exactly 0x4000 land entries, so the client layout does not change.
+        /// </summary>
+        public static readonly ExtendedBlobStore LandExtension = new ExtendedBlobStore(
+            ExtendedFormat.LandIndexFileName, ExtendedFormat.LandDataFileName, ExtendedFormat.LandIndexMagic,
+            ExtendedFormat.LandBaseId, ExtendedFormat.LandMaxSlots);
+
+        private static readonly Dictionary<int, Bitmap> _landExtCache = new Dictionary<int, Bitmap>();
+
+        public static bool HasLandExtension => LandExtension.Exists;
+
+        /// <summary>Highest land id incl. the extension (0x3FFF without).</summary>
+        public static int GetMaxLandId() => LandExtension.Exists ? LandExtension.MaxId : LandCount - 1;
+
+        /// <summary>True for land ids that can hold a graphic (0..0x3FFF and the land extension).</summary>
+        public static bool IsLegalLandId(int id) => (id >= 0 && id < LandCount) || LandExtension.Contains(id);
+
+        /// <summary>Creates or resizes the land extension (written by the next <see cref="Save(string)"/>).</summary>
+        public static void CreateOrResizeLandExtension(int slots)
+        {
+            int oldMax = GetMaxLandId();
+            LandExtension.CreateOrResize(slots);
+            for (int id = GetMaxLandId() + 1; id <= oldMax; ++id)
+            {
+                _landExtCache.Remove(id);
+            }
+
+            Modified = true;
+        }
+
+        public static void ReloadLandExtension()
+        {
+            _landExtCache.Clear();
+            LandExtension.Load();
+        }
+
+        public static void SaveLandExtension(string path)
+        {
+            LandExtension.Save(path);
+        }
+
+        private static Bitmap GetLandExtended(int id)
+        {
+            if (_landExtCache.TryGetValue(id, out Bitmap cached))
+            {
+                return cached;
+            }
+
+            byte[] raw = LandExtension.Read(id, out _);
+            if (raw == null || raw.Length < LandRawLength)
+            {
+                return null;
+            }
+
+            Bitmap bmp = LoadLand(new MemoryStream(raw), raw.Length);
+            if (Files.CacheData)
+            {
+                _landExtCache[id] = bmp;
+            }
+
+            return bmp;
+        }
+
+        /// <summary>Bytes of one encoded land tile (1012 pixels * 2).</summary>
+        public const int LandRawLength = 2024;
+
+        /// <summary>Encodes a 44x44 land tile in the art.mul land layout (diamond rows, colour ^ 0x8000).</summary>
+        public static unsafe byte[] EncodeLand(Bitmap source)
+        {
+            Bitmap bmp = source;
+            bool own = false;
+            if (bmp.Width != 44 || bmp.Height != 44)
+            {
+                bmp = new Bitmap(44, 44, PixelFormat.Format16bppArgb1555);
+                using (Graphics g = Graphics.FromImage(bmp))
+                {
+                    g.DrawImageUnscaled(source, 0, 0);
+                }
+
+                own = true;
+            }
+
+            try
+            {
+                var result = new byte[LandRawLength];
+                BitmapData bd = bmp.LockBits(new Rectangle(0, 0, 44, 44), ImageLockMode.ReadOnly, PixelFormat.Format16bppArgb1555);
+                try
+                {
+                    var line = (ushort*)bd.Scan0;
+                    int delta = bd.Stride >> 1;
+                    int o = 0;
+                    int xOffset = 21;
+                    int xRun = 2;
+                    for (int y = 0; y < 22; ++y, --xOffset, xRun += 2, line += delta)
+                    {
+                        for (int n = 0; n < xRun; ++n)
+                        {
+                            ushort v = (ushort)(line[xOffset + n] ^ 0x8000);
+                            result[o++] = (byte)v;
+                            result[o++] = (byte)(v >> 8);
+                        }
+                    }
+
+                    xOffset = 0;
+                    xRun = 44;
+                    for (int y = 0; y < 22; ++y, ++xOffset, xRun -= 2, line += delta)
+                    {
+                        for (int n = 0; n < xRun; ++n)
+                        {
+                            ushort v = (ushort)(line[xOffset + n] ^ 0x8000);
+                            result[o++] = (byte)v;
+                            result[o++] = (byte)(v >> 8);
+                        }
+                    }
+                }
+                finally
+                {
+                    bmp.UnlockBits(bd);
+                }
+
+                return result;
+            }
+            finally
+            {
+                if (own)
+                {
+                    bmp.Dispose();
+                }
+            }
+        }
+        #endregion
 
         #region Extended side-car storage
         /// <summary>True if an extended art storage (ids >= 0x10000) is loaded or was created in this session.</summary>
@@ -501,6 +636,7 @@ namespace Ultima
             _removed = new bool[TotalCount];
             _patched.Clear();
             LoadExtension();
+            ReloadLandExtension();
             Modified = false;
             LegacyModified = false;
         }
@@ -549,6 +685,20 @@ namespace Ultima
         /// <param name="bmp"></param>
         public static void ReplaceLand(int index, Bitmap bmp)
         {
+            if (LandExtension.Contains(index))
+            {
+                if (bmp == null)
+                {
+                    RemoveLand(index);
+                    return;
+                }
+
+                LandExtension.Set(index, EncodeLand(bmp), 0);
+                _landExtCache[index] = bmp;
+                Modified = true;
+                return;
+            }
+
             index = NormalizeLandIndex(index);
             LegacyModified = true;
             _cache[index] = bmp;
@@ -595,6 +745,14 @@ namespace Ultima
         /// <param name="index"></param>
         public static void RemoveLand(int index)
         {
+            if (LandExtension.Contains(index))
+            {
+                LandExtension.Remove(index);
+                _landExtCache.Remove(index);
+                Modified = true;
+                return;
+            }
+
             index = NormalizeLandIndex(index);
             _removed[index] = true;
             Modified = true;
@@ -649,6 +807,11 @@ namespace Ultima
         /// <returns></returns>
         public static bool IsValidLand(int index)
         {
+            if (LandExtension.Contains(index))
+            {
+                return LandExtension.IsValid(index);
+            }
+
             index = NormalizeLandIndex(index);
             if (_removed[index])
             {
@@ -681,6 +844,12 @@ namespace Ultima
         /// <returns></returns>
         public static Bitmap GetLand(int index, out bool patched)
         {
+            if (LandExtension.Contains(index))
+            {
+                patched = false;
+                return GetLandExtended(index);
+            }
+
             index = NormalizeLandIndex(index);
             patched = _patched.ContainsKey(index) && _patched[index];
 
@@ -716,6 +885,11 @@ namespace Ultima
         // ReSharper disable once UnusedMember.Global
         public static byte[] GetRawLand(int index)
         {
+            if (LandExtension.Contains(index))
+            {
+                return LandExtension.Read(index, out _);
+            }
+
             index = NormalizeLandIndex(index);
 
             Stream stream = _fileIndex.Seek(index, out int length, out int _, out bool _);
@@ -1245,6 +1419,7 @@ namespace Ultima
 
             // ids >= 0x10000 go to the side-car files, art.mul/artidx.mul stay client compatible
             SaveExtension(path);
+            SaveLandExtension(path);
         }
 
         private static bool CompareSaveImagesLand(byte[] newChecksum, out ImageData sum)

@@ -83,7 +83,7 @@ namespace UoFiddler.Forms.Notepad
     {
         private readonly ComboBox _kind = new() { DropDownStyle = ComboBoxStyle.DropDownList };
         private readonly TextBox _id = new() { PlaceholderText = "0x1234 or 4660" };
-        private readonly NumericUpDown _hue = new() { Maximum = 3000 };
+        private readonly NumericUpDown _hue = new() { Maximum = 16780216 }; // incl. extended hues (3000 + 16,777,216)
         private readonly ComboBox _scale = new() { DropDownStyle = ComboBoxStyle.DropDownList };
         private readonly CheckBox _caption = new() { Text = "Add id and name as caption", AutoSize = true, Checked = true };
         private readonly PictureBox _preview = new() { BorderStyle = BorderStyle.FixedSingle, BackColor = Color.FromArgb(40, 42, 48), SizeMode = PictureBoxSizeMode.Zoom };

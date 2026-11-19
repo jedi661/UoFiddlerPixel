@@ -626,7 +626,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // 
             numHue.Location = new System.Drawing.Point(50, 102);
             numHue.Size = new System.Drawing.Size(70, 23);
-            numHue.Maximum = new decimal(new int[] { 3000, 0, 0, 0 });
+            numHue.Maximum = new decimal(new int[] { 16780216, 0, 0, 0 }); // hue numbers incl. extended hues (3000 + 16,777,216)
             numHue.Minimum = new decimal(new int[] { 0, 0, 0, 0 });
             numHue.Value = new decimal(new int[] { 0, 0, 0, 0 });
             numHue.Name = "numHue";

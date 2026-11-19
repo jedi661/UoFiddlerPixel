@@ -400,6 +400,293 @@ namespace Ultima
         }
         #endregion
 
+        #region Further extensions (land tiles, textures, hues, radar colours)
+        // Same idea as for the items: the classic files keep their exact client layout, everything above the
+        // classic range lives in side-car files with the same 32-byte header (magic, version, baseId, count,
+        // recordSize, 3x reserved). Index files use the 16-byte entry of artextidx.mul (int64 offset, int32 length,
+        // int32 extra), record files store <count> fixed-size records directly after the header.
+
+        /// <summary>First land tile id of the land extension (art.mul holds 0x0000..0x3FFF).</summary>
+        public const int LandBaseId = 0x4000;
+
+        // SIZES: like the items, every extension can have up to MaxSlots (16,777,216) entries and starts where the
+        // classic file ends. The classic files and clients keep working unchanged; ids above the classic 16-bit /
+        // 14-bit fields (see the *ClassicLimit constants) are meant for a new client that reads the side-car files.
+
+        /// <summary>Up to 16,777,216 extended land tiles (ids 0x4000 .. 0x1003FFF).</summary>
+        public const int LandMaxSlots = MaxSlots;
+
+        /// <summary>Highest land id a classic map*.mul can store (16 bit). Higher ids need a new map format / client.</summary>
+        public const int LandClassicLimit = 0xFFFF;
+
+        /// <summary>First texture id of the texture extension (texmaps.mul holds 0x0000..0x3FFF).</summary>
+        public const int TextureBaseId = 0x4000;
+
+        /// <summary>Up to 16,777,216 extended textures (ids 0x4000 .. 0x1003FFF).</summary>
+        public const int TextureMaxSlots = MaxSlots;
+
+        /// <summary>
+        /// Highest texture id tiledata.mul can store (16 bit). tiledatalandext.mul stores int32, so extended land tiles
+        /// can use every extended texture.
+        /// </summary>
+        public const int TextureClassicLimit = 0xFFFF;
+
+        /// <summary>First hue index of the hue extension (hues.mul holds the indices 0..2999 = hue numbers 1..3000).</summary>
+        public const int HueBaseId = 3000;
+
+        /// <summary>
+        /// Highest hue NUMBER the classic client can use: it takes (hue &amp; 0x3FFF), bit 0x8000 = partial hue.
+        /// Higher hue numbers need a new client (and 32-bit hue fields).
+        /// </summary>
+        public const int HueClassicLimit = 0x3FFF;
+
+        /// <summary>Up to 16,777,216 extended hues (hue numbers 3001 .. 16,780,216).</summary>
+        public const int HueMaxSlots = MaxSlots;
+
+        public const int LandTileRecordSize = 32; // uint64 flags, int32 texture id, char[20] name
+        public const int HueRecordSize = 88;      // ushort[32] colours, ushort tableStart, ushort tableEnd, char[20] name
+        public const int RadarRecordSize = 2;     // ushort colour
+
+        public const string LandIndexFileName = "artlandextidx.mul";
+        public const string LandDataFileName = "artlandext.mul";
+        public const string LandTileDataFileName = "tiledatalandext.mul";
+        public const string TextureIndexFileName = "texextidx.mul";
+        public const string TextureDataFileName = "texmapsext.mul";
+        public const string HueFileName = "huesext.mul";
+        public const string RadarItemFileName = "radarcolext.mul";
+        public const string RadarLandFileName = "radarcollandext.mul";
+
+        public const string LandIndexMagic = "UOLA";
+        public const string LandTileMagic = "UOLT";
+        public const string TextureIndexMagic = "UOXT";
+        public const string HueMagic = "UOHX";
+        public const string RadarItemMagic = "UORI";
+        public const string RadarLandMagic = "UORL";
+
+        /// <summary>All side-car files of the tool (for backups, path settings and checks).</summary>
+        public static readonly string[] AllFileNames =
+        {
+            ArtIndexFileName, ArtDataFileName, TileDataFileName,
+            LandIndexFileName, LandDataFileName, LandTileDataFileName,
+            TextureIndexFileName, TextureDataFileName,
+            HueFileName, RadarItemFileName, RadarLandFileName
+        };
+
+        public static void WriteHeader(BinaryWriter bw, string magic, int baseId, int count, int recordSize)
+        {
+            WriteHeader(bw, Encoding.ASCII.GetBytes(magic), baseId, count, recordSize);
+        }
+
+        /// <summary>Reads and checks a side-car header; returns the slot count.</summary>
+        public static int ReadHeader(BinaryReader br, string magic, int recordSize, int expectedBaseId)
+        {
+            byte[] m = br.ReadBytes(4);
+            if (m.Length != 4 || Encoding.ASCII.GetString(m) != magic)
+            {
+                throw new InvalidDataException($"Not a UOFiddler extended file (expected magic {magic}).");
+            }
+
+            int version = br.ReadInt32();
+            if (version < 1 || version > Version)
+            {
+                throw new InvalidDataException($"Unsupported extended file version {version}.");
+            }
+
+            int baseId = br.ReadInt32();
+            int count = br.ReadInt32();
+            int size = br.ReadInt32();
+            br.ReadInt32();
+            br.ReadInt32();
+            br.ReadInt32();
+
+            if (size != recordSize)
+            {
+                throw new InvalidDataException($"Unexpected record size {size} (expected {recordSize}).");
+            }
+
+            if (baseId != expectedBaseId)
+            {
+                throw new InvalidDataException($"Unsupported base id 0x{baseId:X} (expected 0x{expectedBaseId:X}).");
+            }
+
+            if (count < 0 || count > MaxSlots)
+            {
+                throw new InvalidDataException($"Invalid slot count {count}.");
+            }
+
+            return count;
+        }
+
+        /// <summary>Reads an index file (16-byte entries) with the given magic and base id.</summary>
+        public static ArtIndexEntry[] ReadIndex(string path, string magic, int baseId)
+        {
+            using var fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
+            using var br = new BinaryReader(fs, Encoding.ASCII, true);
+            int count = ReadHeader(br, magic, ArtIndexRecordSize, baseId);
+            long available = (fs.Length - HeaderSize) / ArtIndexRecordSize;
+            var entries = new ArtIndexEntry[count];
+            for (int i = 0; i < count; ++i)
+            {
+                if (i >= available)
+                {
+                    entries[i] = ArtIndexEntry.Empty;
+                    continue;
+                }
+
+                entries[i].Offset = br.ReadInt64();
+                entries[i].Length = br.ReadInt32();
+                entries[i].Extra = br.ReadInt32();
+            }
+
+            return entries;
+        }
+
+        public static void WriteIndex(Stream stream, string magic, int baseId, ArtIndexEntry[] entries)
+        {
+            using var bw = new BinaryWriter(stream, Encoding.ASCII, true);
+            WriteHeader(bw, magic, baseId, entries.Length, ArtIndexRecordSize);
+            foreach (ArtIndexEntry e in entries)
+            {
+                bw.Write(e.IsValid ? e.Offset : -1L);
+                bw.Write(e.IsValid ? e.Length : 0);
+                bw.Write(e.Extra);
+            }
+        }
+
+        /// <summary>
+        /// Reads a record file: returns the raw records (count * recordSize bytes, missing tail = zero) and the count.
+        /// </summary>
+        public static byte[] ReadRecords(string path, string magic, int baseId, int recordSize, out int count)
+        {
+            using var fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
+            using var br = new BinaryReader(fs, Encoding.ASCII, true);
+            count = ReadHeader(br, magic, recordSize, baseId);
+            var data = new byte[(long)count * recordSize];
+            int read = 0;
+            while (read < data.Length)
+            {
+                int n = fs.Read(data, read, data.Length - read);
+                if (n <= 0)
+                {
+                    break; // shorter file: the rest stays empty
+                }
+
+                read += n;
+            }
+
+            return data;
+        }
+
+        /// <summary>Writes a record file safely (temp file, then replace).</summary>
+        public static void WriteRecords(string path, string magic, int baseId, int recordSize, int count, Action<BinaryWriter, int> writeRecord)
+        {
+            string tmp = path + ".tmp";
+            try
+            {
+                // records are small (max. a few MB): build in memory, then write at once
+                using (var ms = new MemoryStream(HeaderSize + (int)Math.Min(int.MaxValue - HeaderSize, (long)count * recordSize)))
+                using (var bw = new BinaryWriter(ms, Encoding.ASCII, true))
+                {
+                    WriteHeader(bw, magic, baseId, count, recordSize);
+                    for (int i = 0; i < count; ++i)
+                    {
+                        long before = ms.Position;
+                        writeRecord(bw, i);
+                        long written = ms.Position - before;
+                        if (written != recordSize)
+                        {
+                            throw new InvalidOperationException($"Record {i} has {written} bytes, expected {recordSize}.");
+                        }
+                    }
+
+                    using var fs = new FileStream(tmp, FileMode.Create, FileAccess.Write, FileShare.None);
+                    ms.WriteTo(fs);
+                }
+
+                File.Move(tmp, path, true);
+            }
+            catch
+            {
+                try
+                {
+                    File.Delete(tmp);
+                }
+                catch (IOException)
+                {
+                    // ignore, the original file is untouched anyway
+                }
+
+                throw;
+            }
+        }
+
+        /// <summary>Reads only the 32-byte header of any side-car file (for checks). False if unreadable.</summary>
+        public static bool TryReadHeader(string path, out string magic, out int baseId, out int count, out int recordSize, out string error)
+        {
+            magic = null;
+            baseId = count = recordSize = 0;
+            error = null;
+            try
+            {
+                using var fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+                using var br = new BinaryReader(fs, Encoding.ASCII, true);
+                if (fs.Length < HeaderSize)
+                {
+                    error = "file shorter than the header";
+                    return false;
+                }
+
+                magic = Encoding.ASCII.GetString(br.ReadBytes(4));
+                int version = br.ReadInt32();
+                baseId = br.ReadInt32();
+                count = br.ReadInt32();
+                recordSize = br.ReadInt32();
+                if (version < 1 || version > Version || count < 0 || count > MaxSlots || recordSize <= 0)
+                {
+                    error = "invalid header";
+                    return false;
+                }
+
+                long expected = HeaderSize + ((long)count * recordSize);
+                if (fs.Length < expected)
+                {
+                    error = $"file too short ({fs.Length:N0} of {expected:N0} bytes, missing entries count as empty)";
+                }
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                error = ex.Message;
+                return false;
+            }
+        }
+
+        /// <summary>Writes a fixed length ASCII name (padded with 0, cut to <paramref name="length"/>).</summary>
+        public static void WriteName(BinaryWriter bw, string name, int length = 20)
+        {
+            var b = new byte[length];
+            if (!string.IsNullOrEmpty(name))
+            {
+                byte[] bb = Encoding.ASCII.GetBytes(name);
+                Array.Copy(bb, b, Math.Min(length, bb.Length));
+            }
+
+            bw.Write(b);
+        }
+
+        public static string ReadName(byte[] data, int offset, int length = 20)
+        {
+            int len = 0;
+            while (len < length && data[offset + len] != 0)
+            {
+                ++len;
+            }
+
+            return Encoding.ASCII.GetString(data, offset, len);
+        }
+        #endregion
+
         /// <summary>Highest item id reachable with <paramref name="slots"/> extended slots.</summary>
         public static int GetMaxId(int slots) => slots <= 0 ? BaseId - 1 : BaseId + slots - 1;
 

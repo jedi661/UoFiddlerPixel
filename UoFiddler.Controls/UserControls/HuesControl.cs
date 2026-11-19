@@ -137,7 +137,11 @@ namespace UoFiddler.Controls.UserControls
                 InitEditExtensions();
             }
 
-            CaptureBaseline();
+            if (HuesEditable)
+            {
+                CaptureBaseline(); // only the Hues tab marks changed hues; pickers skip it (can be millions of hues)
+            }
+
             ApplyFilter(false);
             EnsureVisible(_selected);
 
@@ -146,10 +150,12 @@ namespace UoFiddler.Controls.UserControls
             {
                 ControlEvents.FilePathChangeEvent += OnFilePathChangeEvent;
                 ControlEvents.HueChangeEvent += OnHueChangeEvent;
+                UoExtensions.Changed += OnExtensionChanged;
                 Disposed += (s, ev) =>
                 {
                     ControlEvents.FilePathChangeEvent -= OnFilePathChangeEvent;
                     ControlEvents.HueChangeEvent -= OnHueChangeEvent;
+                    UoExtensions.Changed -= OnExtensionChanged;
                 };
             }
 
@@ -160,6 +166,15 @@ namespace UoFiddler.Controls.UserControls
         private void OnFilePathChangeEvent()
         {
             Reload();
+        }
+
+        /// <summary>Extended hues created / resized / loaded: the list has a new length.</summary>
+        private void OnExtensionChanged(UoExtensionKind? kind)
+        {
+            if (kind == null || kind == UoExtensionKind.Hues)
+            {
+                Reload();
+            }
         }
 
         private void OnHueChangeEvent()

@@ -136,7 +136,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Class.ScriptCreator
             try
             {
                 Ultima.Hue[] list = Ultima.Hues.List;
-                int n = number & 0x3FFF;
+                // classic hue values carry flags (& 0x3FFF); with extended hues (more than 0x3FFF) the number is used as is
+                int n = list != null && list.Length > 0x3FFF && number <= list.Length ? number : number & 0x3FFF;
                 if (list == null || n < 1 || n > list.Length)
                 {
                     return null;

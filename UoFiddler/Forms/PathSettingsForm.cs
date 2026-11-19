@@ -69,8 +69,18 @@ namespace UoFiddler.Forms
             string idx = Files.GetFilePath(ExtendedFormat.ArtIndexFileName);
             string mul = Files.GetFilePath(ExtendedFormat.ArtDataFileName);
             bool artFilesThere = idx != null && mul != null;
-            bool alreadyLoaded = Art.HasExtension && Art.ExtendedDataPath != null && mul != null &&
-                                 string.Equals(Path.GetFullPath(Art.ExtendedDataPath), Path.GetFullPath(mul), StringComparison.OrdinalIgnoreCase);
+
+            // loaded = every data file that is there is the one in memory (items, land tiles, textures, hues)
+            bool Same(string loaded, string name)
+            {
+                string onDisk = Files.GetFilePath(name);
+                return onDisk == null || (loaded != null && string.Equals(Path.GetFullPath(loaded), Path.GetFullPath(onDisk), StringComparison.OrdinalIgnoreCase));
+            }
+
+            bool alreadyLoaded = Same(Art.ExtendedDataPath, ExtendedFormat.ArtDataFileName) &&
+                                 Same(Art.LandExtension.DataPath, ExtendedFormat.LandDataFileName) &&
+                                 Same(Textures.Extension.DataPath, ExtendedFormat.TextureDataFileName) &&
+                                 Same(Hues.ExtensionPath, ExtendedFormat.HueFileName);
 
             if (load && found.Count > 0 && !alreadyLoaded)
             {
@@ -82,8 +92,8 @@ namespace UoFiddler.Forms
 
         private void LoadExtended()
         {
-            if (Art.HasExtension && Options.ChangedUltimaClass.TryGetValue("Art", out bool changed) && changed &&
-                MessageBox.Show(this, "Load the extended files? Unsaved changes in the extended range (0x10000+) are discarded.",
+            if (Options.ChangedUltimaClass.Any(p => p.Value) &&
+                MessageBox.Show(this, "Load the extended files? Unsaved changes in the extended ranges (items, land tiles, textures, hues, radar colours) are discarded.",
                     "Extended files", MessageBoxButtons.YesNo, MessageBoxIcon.Question, MessageBoxDefaultButton.Button2) != DialogResult.Yes)
             {
                 return;
@@ -92,9 +102,9 @@ namespace UoFiddler.Forms
             Cursor.Current = Cursors.WaitCursor;
             try
             {
-                Art.ReloadExtension();
-                TileData.ReloadExtension();
-                ControlEvents.FireFilePathChangeEvent(); // the Items / TileData tabs reload their lists
+                UoExtensions.ReloadAll();
+                ControlEvents.FireFilePathChangeEvent(); // the tabs reload their lists
+                UoExtensions.RaiseChanged(null);
             }
             finally
             {
@@ -104,14 +114,35 @@ namespace UoFiddler.Forms
 
         private void UpdateExtendedStatus(int foundFiles, bool artFilesThere)
         {
+            var parts = new List<string>();
             if (Art.HasExtension && Art.ExtendedDataPath != null)
             {
-                _tsLblExtended.Text = $"Extended: loaded, {Art.ExtendedCount:N0} slots (0x10000 - 0x{Art.GetMaxExtendedItemId():X})";
+                parts.Add($"items {Art.ExtendedCount:N0}");
+            }
+
+            if (Art.LandExtension.DataPath != null)
+            {
+                parts.Add($"land {Art.LandExtension.Count:N0}");
+            }
+
+            if (Textures.Extension.DataPath != null)
+            {
+                parts.Add($"textures {Textures.Extension.Count:N0}");
+            }
+
+            if (Hues.ExtensionPath != null)
+            {
+                parts.Add($"hues {Hues.ExtendedCount:N0}");
+            }
+
+            if (parts.Count > 0)
+            {
+                _tsLblExtended.Text = "Extended: loaded (" + string.Join(", ", parts) + ")";
                 _tsLblExtended.ForeColor = System.Drawing.Color.DarkGreen;
             }
             else if (foundFiles > 0)
             {
-                _tsLblExtended.Text = artFilesThere ? "Extended: found, not loaded" : $"Extended: incomplete ({foundFiles}/3 files)";
+                _tsLblExtended.Text = artFilesThere ? "Extended: found, not loaded" : $"Extended: {foundFiles} file(s) found";
                 _tsLblExtended.ForeColor = System.Drawing.Color.DarkOrange;
             }
             else
@@ -128,7 +159,7 @@ namespace UoFiddler.Forms
         {
             using var dialog = new FolderBrowserDialog
             {
-                Description = "Folder with artextidx.mul / artext.mul / tiledataext.mul",
+                Description = "Folder with the extension files (artext*, artlandext*, tiledata*ext, texmapsext, huesext, radarcol*ext)",
                 ShowNewFolderButton = false,
                 SelectedPath = Directory.Exists(Options.OutputPath) ? Options.OutputPath : Files.RootDir
             };
@@ -138,7 +169,7 @@ namespace UoFiddler.Forms
             }
 
             int count = 0;
-            foreach (string name in new[] { ExtendedFormat.ArtIndexFileName, ExtendedFormat.ArtDataFileName, ExtendedFormat.TileDataFileName })
+            foreach (string name in ExtendedFormat.AllFileNames)
             {
                 string path = Path.Combine(dialog.SelectedPath, name);
                 if (File.Exists(path))

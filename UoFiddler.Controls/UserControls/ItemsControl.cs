@@ -35,7 +35,6 @@ namespace UoFiddler.Controls.UserControls
 {
     public partial class ItemsControl : UserControl
     {
-        private TileDataControl tileDataControl = new TileDataControl(); //Refesh image pictureBoxItem TiledataControl
 
         private int occupiedItemCount = 0; // items counter
         private bool isDrawingRhombusActive = false; // DrawRhombus
@@ -53,12 +52,21 @@ namespace UoFiddler.Controls.UserControls
             DetailTextBox.AddBasicContextMenu();
 
             InitializeExtraMenus();
+
+            // the extension window (opened from any tab) tells every tab when an extension changed
+            UoExtensions.Changed += kind =>
+            {
+                if ((kind == null || kind == UoExtensionKind.Items) && IsLoaded)
+                {
+                    Reload();
+                }
+            };
         }
 
         #region [ Extra menus (extended format / direction generator) ]
         private void InitializeExtraMenus()
         {
-            var extendedItem = new ToolStripMenuItem("Extended Art Format (1M+ items)...");
+            var extendedItem = new ToolStripMenuItem("Extended formats (items 1M+, land tiles, textures, hues)...");
             extendedItem.Click += (s, e) => ShowExtendedFormatForm();
             MiscToolStripDropDownButton.DropDownItems.Add(new ToolStripSeparator());
             MiscToolStripDropDownButton.DropDownItems.Add(extendedItem);
@@ -71,7 +79,7 @@ namespace UoFiddler.Controls.UserControls
             MiscToolStripDropDownButton.DropDownItems.Add(sheetsItem);
 
             var checkItem = new ToolStripMenuItem("Check extended files (what is saved)...");
-            checkItem.Click += (s, e) => new ExtendedCheckForm(GoToId, Reload).Show();
+            checkItem.Click += (s, e) => new ExtendedCheckForm(GoToId, () => UoExtensions.RaiseChanged(null)).Show();
             MiscToolStripDropDownButton.DropDownItems.Add(checkItem);
 
             var directionsButton = new ToolStripButton("Directions N/E/S/W", ToolIcons.Directions())
@@ -137,19 +145,10 @@ namespace UoFiddler.Controls.UserControls
             TileViewContextMenuStrip.Items.Insert(mirrorIndex + 2, transformMenu);
         }
 
-        private ExtendedArtFormatForm _extendedFormatForm;
 
         private void ShowExtendedFormatForm()
         {
-            if (_extendedFormatForm == null || _extendedFormatForm.IsDisposed)
-            {
-                _extendedFormatForm = new ExtendedArtFormatForm(Reload, GoToId);
-                _extendedFormatForm.Show();
-            }
-            else
-            {
-                _extendedFormatForm.Activate();
-            }
+            ExtendedArtFormatForm.ShowFor(UoExtensionKind.Items, GoToId);
         }
 
         private ArtDirectionForm _directionForm;
@@ -249,6 +248,12 @@ namespace UoFiddler.Controls.UserControls
 
         public IReadOnlyList<int> ItemList { get => _itemList.AsReadOnly(); }
         public static ItemsControl RefMarker { get; private set; }
+
+        /// <summary>Brings the Items tab to the front.</summary>
+        public static void ActivateTab()
+        {
+            TabNavigation.BringToFront(RefMarker);
+        }
         public static TileViewControl TileView => RefMarker.ItemsTileView;
         public bool IsLoaded { get; private set; }
 
@@ -1303,15 +1308,12 @@ namespace UoFiddler.Controls.UserControls
         #region [ OnClickSelectTiledata ]
         private void OnClickSelectTiledata(object sender, EventArgs e)
         {
-            if (_selectedGraphicId == -1)
-            {
-                tileDataControl.RefreshPictureBoxItem(); // Refresh the picture box
-            }
-
+            // (the old code created a hidden second TileDataControl here; it took over the static reference of the
+            // TileData tab, so "Select in TileData" selected the item in an invisible control)
             if (_selectedGraphicId >= 0)
             {
                 TileDataControl.Select(_selectedGraphicId, false);
-                //tileDataControl.RefreshPictureBoxItem(); //Select pictureBoxItem TileDataControl
+                TileDataControl.ActivateTab();
             }
         }
         #endregion
@@ -1319,10 +1321,11 @@ namespace UoFiddler.Controls.UserControls
         #region [ OnClickSelectRadarCol ]
         private void OnClickSelectRadarCol(object sender, EventArgs e)
         {
-            // radarcol.mul only has entries for the legacy id range
-            if (_selectedGraphicId >= 0 && _selectedGraphicId < ExtendedFormat.BaseId)
+            // ids 0x10000+ have their colours in radarcolext.mul
+            if (_selectedGraphicId >= 0)
             {
                 RadarColorControl.Select(_selectedGraphicId, false);
+                RadarColorControl.ActivateTab();
             }
         }
         #endregion

@@ -159,6 +159,35 @@ namespace UoFiddler.Controls.Classes
             TileDataChangeEvent?.Invoke(sender, id);
         }
 
+        // TileDataChangeEvent ids: land tiles 0x0000..0x3FFF as they are, items as 0x4000 + id (historical),
+        // extended land tiles (0x4000+) as the NEGATIVE id - so they never collide with items.
+
+        /// <summary>Event id for a land tile (legacy or extended).</summary>
+        public static int TileDataLandEventId(int landId) => landId < 0x4000 ? landId : -landId;
+
+        /// <summary>Event id for an item.</summary>
+        public static int TileDataItemEventId(int itemId) => itemId + 0x4000;
+
+        /// <summary>Decodes a TileDataChangeEvent id.</summary>
+        public static void DecodeTileDataEventId(int eventId, out int id, out bool land)
+        {
+            if (eventId < 0)
+            {
+                id = -eventId;
+                land = true;
+            }
+            else if (eventId < 0x4000)
+            {
+                id = eventId;
+                land = true;
+            }
+            else
+            {
+                id = eventId - 0x4000;
+                land = false;
+            }
+        }
+
         public static void FireAlwaysOnTopChangeEvent(bool value)
         {
             AlwaysOnTopChangeEvent?.Invoke(value);

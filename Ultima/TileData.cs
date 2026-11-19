@@ -35,9 +35,10 @@ namespace Ultima
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets the texture id of this land tile.
+        /// Gets the texture id of this land tile. int (not ushort): extended land tiles (tiledatalandext.mul) can point
+        /// to extended textures above 0xFFFF. tiledata.mul itself stores 16 bit (see <see cref="TileData.SaveTileData"/>).
         /// </summary>
-        public ushort TextureId { get; set; }
+        public int TextureId { get; set; }
 
         /// <summary>
         /// Gets a bitfield representing the 32 individual flags of this land tile.
@@ -48,7 +49,7 @@ namespace Ultima
         {
             int i = 1;
             Name = split[i++];
-            TextureId = (ushort)TileDataHelpers.ConvertStringToInt(split[i++]);
+            TextureId = Math.Max(0, TileDataHelpers.ConvertStringToInt(split[i++]));
 
             Flags = 0;
             int temp = Convert.ToByte(split[i++]);
@@ -1321,8 +1322,9 @@ namespace Ultima
 
                 if (LandTable != null)
                 {
-                    foreach (LandData l in LandTable)
+                    for (int li = 0; li < Math.Min(LegacyLandCount, LandTable.Length); ++li)
                     {
+                        LandData l = LandTable[li];
                         Add((long)l.Flags);
                         Add(l.TextureId);
                         Add(l.Name?.GetHashCode() ?? 0);
@@ -1376,6 +1378,105 @@ namespace Ultima
 
             ExtendedCount = slots;
         }
+
+        #region Land extension (ids 0x4000 .. up to 0x1003FFF) - tiledatalandext.mul
+        /// <summary>Number of land entries in tiledata.mul (always 0x4000).</summary>
+        public const int LegacyLandCount = 0x4000;
+
+        /// <summary>Number of extended land slots (ids 0x4000+) kept in tiledatalandext.mul. 0 = none.</summary>
+        public static int LandExtendedCount { get; private set; }
+
+        public static bool HasLandExtension => LandExtendedCount > 0;
+
+        /// <summary>Grows / shrinks <see cref="LandTable"/> to 0x4000 + slots entries (never below 0x4000).</summary>
+        public static void EnsureLandExtendedCapacity(int slots)
+        {
+            if (LandTable == null)
+            {
+                return;
+            }
+
+            slots = Math.Max(0, slots);
+            int newLength = LegacyLandCount + slots;
+            if (newLength != LandTable.Length)
+            {
+                LandData[] table = LandTable;
+                int old = table.Length;
+                Array.Resize(ref table, newLength);
+                for (int i = old; i < newLength; ++i)
+                {
+                    table[i].Name = string.Empty;
+                }
+
+                LandTable = table;
+            }
+
+            LandExtendedCount = slots;
+        }
+
+        public static void ReloadLandExtension()
+        {
+            LoadLandExtension();
+        }
+
+        private static void LoadLandExtension()
+        {
+            byte[] data = null;
+            int count = 0;
+            try
+            {
+                string path = Files.GetFilePathWithRootFallback(ExtendedFormat.LandTileDataFileName);
+                if (path != null)
+                {
+                    data = ExtendedFormat.ReadRecords(path, ExtendedFormat.LandTileMagic, ExtendedFormat.LandBaseId,
+                        ExtendedFormat.LandTileRecordSize, out count);
+                }
+            }
+            catch (Exception)
+            {
+                data = null; // corrupt/foreign file: ignore, tiledata.mul stays usable
+                count = 0;
+            }
+
+            int slots = Math.Max(count, Art.LandExtension.Count);
+            EnsureLandExtendedCapacity(slots);
+            if (data == null)
+            {
+                return;
+            }
+
+            const int r = ExtendedFormat.LandTileRecordSize;
+            for (int k = 0; k < count; ++k)
+            {
+                int o = k * r;
+                int tex = BitConverter.ToInt32(data, o + 8);
+                LandTable[LegacyLandCount + k] = new LandData
+                {
+                    Flags = (TileFlag)BitConverter.ToUInt64(data, o),
+                    TextureId = Math.Max(0, tex),
+                    Name = ExtendedFormat.ReadName(data, o + 12)
+                };
+            }
+        }
+
+        /// <summary>Writes tiledatalandext.mul (only if a land extension exists).</summary>
+        public static void SaveLandExtension(string directory)
+        {
+            if (!HasLandExtension)
+            {
+                return;
+            }
+
+            ExtendedFormat.WriteRecords(Path.Combine(directory, ExtendedFormat.LandTileDataFileName), ExtendedFormat.LandTileMagic,
+                ExtendedFormat.LandBaseId, ExtendedFormat.LandTileRecordSize, LandExtendedCount, (bw, k) =>
+                {
+                    LandData d = LandTable[LegacyLandCount + k];
+                    bw.Write((ulong)d.Flags);
+                    bw.Write(d.TextureId);
+                    ExtendedFormat.WriteName(bw, d.Name);
+                });
+        }
+        #endregion
 
         /// <summary>Loads tiledataext.mul again from the current paths (see <see cref="Art.ReloadExtension"/>).</summary>
         public static void ReloadExtension()
@@ -1565,6 +1666,7 @@ namespace Ultima
             }
 
             LegacyItemCount = ItemTable?.Length ?? 0;
+            LoadLandExtension();
             _legacyHash = ComputeLegacyHash();
             LoadExtension();
         }
@@ -1596,7 +1698,7 @@ namespace Ultima
                         bin.Write((uint)LandTable[i].Flags);
                     }
 
-                    bin.Write(LandTable[i].TextureId);
+                    bin.Write((ushort)Math.Clamp(LandTable[i].TextureId, 0, ushort.MaxValue)); // classic file: 16 bit
                     var b = new byte[20];
                     if (LandTable[i].Name != null)
                     {
@@ -1666,6 +1768,7 @@ namespace Ultima
             if (!string.IsNullOrEmpty(directory))
             {
                 SaveExtension(directory);
+                SaveLandExtension(directory);
             }
         }
 

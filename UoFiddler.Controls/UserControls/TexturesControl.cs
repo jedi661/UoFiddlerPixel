@@ -45,7 +45,75 @@ namespace UoFiddler.Controls.UserControls
             _textures = new Textures(); // TextureWindowForm
 
             _textureColorForm = new TextureColorForm(); // TextureColorForm
+
+            InitializeExtensionMenus();
         }
+
+        #region Extension (texture ids 0x4000+)
+        /// <summary>Every texture id that can exist: texidx.mul entries plus the texture extension.</summary>
+        private static IEnumerable<int> AllTextureIds()
+        {
+            int legacy = Math.Min(Textures.GetIdxLength(), Textures.LegacyCount);
+            for (int i = 0; i < legacy; ++i)
+            {
+                yield return i;
+            }
+
+            if (Textures.HasExtension)
+            {
+                for (int i = Textures.Extension.BaseId; i <= Textures.Extension.MaxId; ++i)
+                {
+                    yield return i;
+                }
+            }
+        }
+
+        private static bool IsTextureIdLegal(int id) => (id >= 0 && id < Math.Min(Textures.GetIdxLength(), Textures.LegacyCount)) || Textures.Extension.Contains(id);
+
+        private void InitializeExtensionMenus()
+        {
+            var extItem = new ToolStripMenuItem("Extended textures (0x4000+)...")
+            {
+                ToolTipText = "Create / resize / save / load the texture extension (texextidx.mul / texmapsext.mul)."
+            };
+            extItem.Click += (s, e) => ExtendedArtFormatForm.ShowFor(UoExtensionKind.Textures);
+            var gotoExt = new ToolStripMenuItem("Go to extended range (0x4000)");
+            gotoExt.Click += (s, e) =>
+            {
+                if (!Textures.HasExtension)
+                {
+                    MessageBox.Show("There is no texture extension yet. Create it with Misc -> Extended textures.", "Textures",
+                        MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
+                }
+
+                int target = _textureList.FirstOrDefault(t => t >= Textures.Extension.BaseId, -1);
+                if (target < 0)
+                {
+                    if (!_showFreeSlots)
+                    {
+                        ShowFreeSlotsToolStripMenuItem_Click(this, EventArgs.Empty);
+                    }
+
+                    target = Textures.Extension.BaseId;
+                }
+
+                TextureTileView.FocusIndex = -1;
+                SelectedTextureId = target;
+            };
+            MiscToolStripDropDownButton.DropDownItems.Add(new ToolStripSeparator());
+            MiscToolStripDropDownButton.DropDownItems.Add(extItem);
+            MiscToolStripDropDownButton.DropDownItems.Add(gotoExt);
+
+            UoExtensions.Changed += kind =>
+            {
+                if (kind == null || kind == UoExtensionKind.Textures)
+                {
+                    Reload();
+                }
+            };
+        }
+        #endregion
 
         private List<int> _textureList = new List<int>();
         private bool _showFreeSlots;
@@ -111,7 +179,7 @@ namespace UoFiddler.Controls.UserControls
             Cursor.Current = Cursors.WaitCursor;
             Options.LoadedUltimaClass["Texture"] = true;
 
-            for (int i = 0; i < Textures.GetIdxLength(); ++i)
+            foreach (int i in AllTextureIds())
             {
                 if (Textures.TestTexture(i))
                 {
@@ -360,7 +428,7 @@ namespace UoFiddler.Controls.UserControls
         #region OnTextChangedInsert
         private void OnTextChangedInsert(object sender, EventArgs e)
         {
-            if (Utils.ConvertStringToInt(InsertText.Text, out int index, 0, 0x3FFF))
+            if (Utils.ConvertStringToInt(InsertText.Text, out int index, 0, Textures.GetMaxTextureId()) && IsTextureIdLegal(index))
             {
                 InsertText.ForeColor = Textures.TestTexture(index) ? Color.Red : Color.Black;
             }
@@ -379,7 +447,7 @@ namespace UoFiddler.Controls.UserControls
                 return;
             }
 
-            if (!Utils.ConvertStringToInt(InsertText.Text, out int index, 0, 0x3FFF))
+            if (!Utils.ConvertStringToInt(InsertText.Text, out int index, 0, Textures.GetMaxTextureId()) || !IsTextureIdLegal(index))
             {
                 return;
             }
@@ -742,7 +810,7 @@ namespace UoFiddler.Controls.UserControls
             }
 
             const int graphicIdMin = 0;
-            const int graphicIdMax = 0x3FFF;
+            int graphicIdMax = Textures.GetMaxTextureId();
 
             if (!Utils.ConvertStringToInt(ReplaceStartingFromTb.Text, out int index, graphicIdMin, graphicIdMax))
             {
@@ -793,12 +861,12 @@ namespace UoFiddler.Controls.UserControls
 
         #region IsIndexValid
         /// <summary>
-        /// Check if it's valid index for texture. Textures has fixed size 0x4000.
+        /// Check if it's valid index for texture: texidx.mul range plus the texture extension (0x4000+).
         /// </summary>
         /// <param name="index">Starting Index</param>
         private static bool IsIndexValid(int index)
         {
-            return index < 0x4000;
+            return IsTextureIdLegal(index);
         }
         #endregion
 
@@ -825,24 +893,11 @@ namespace UoFiddler.Controls.UserControls
 
                     ControlEvents.FireTextureChangeEvent(this, index);
 
-                    bool done = false;
-
-                    for (int i = 0; i < _textureList.Count; ++i)
+                    // keep the list sorted and without duplicates (the old code overwrote the next entry)
+                    int pos = _textureList.BinarySearch(index);
+                    if (pos < 0)
                     {
-                        if (index > _textureList[i])
-                        {
-                            continue;
-                        }
-
-                        _textureList[i] = index;
-
-                        done = true;
-                        break;
-                    }
-
-                    if (!done)
-                    {
-                        _textureList.Add(index);
+                        _textureList.Insert(~pos, index);
                     }
                 }
                 else
@@ -881,20 +936,8 @@ namespace UoFiddler.Controls.UserControls
 
             if (_showFreeSlots)
             {
-                for (int j = 0; j < Textures.GetIdxLength(); ++j)
-                {
-                    if (_textureList.Count > j)
-                    {
-                        if (_textureList[j] != j)
-                        {
-                            _textureList.Insert(j, j);
-                        }
-                    }
-                    else
-                    {
-                        _textureList.Insert(j, j);
-                    }
-                }
+                // every id (used and free) incl. the texture extension
+                _textureList = AllTextureIds().ToList();
 
                 var prevSelected = SelectedTextureId;
 
@@ -960,12 +1003,12 @@ namespace UoFiddler.Controls.UserControls
                 using (Bitmap bmp = new Bitmap(Clipboard.GetImage()))
                 {
                     // Check if the image has a valid size
-                    if ((bmp.Width == 64 && bmp.Height == 64) || (bmp.Width == 128 && bmp.Height == 128) || (bmp.Width == 256 && bmp.Height == 256))
+                    if ((bmp.Width == 64 && bmp.Height == 64) || (bmp.Width == 128 && bmp.Height == 128))
                     {
                         // Get the selected index from the TextureTileView
                         int index = SelectedTextureId;
 
-                        if (index >= 0 && index < Textures.GetIdxLength())
+                        if (IsTextureIdLegal(index))
                         {
                             // Create a new bitmap with the same size as the image from the clipboard
                             Bitmap newBmp = new Bitmap(bmp.Width, bmp.Height);
@@ -1008,7 +1051,7 @@ namespace UoFiddler.Controls.UserControls
                     }
                     else
                     {
-                        MessageBox.Show("Invalid image size. The image must be 64x64, 128x128, or 256x256.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        MessageBox.Show("Invalid image size. The image must be 64x64 or 128x128 (texmaps.mul only stores these two sizes).", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
                 }
             }
@@ -1066,7 +1109,7 @@ namespace UoFiddler.Controls.UserControls
                     }
                     else
                     {
-                        MessageBox.Show("The image must have a size of 64x64, 128x128, or 256x256", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        MessageBox.Show("The image must have a size of 64x64 or 128x128 (texmaps.mul only stores these two sizes)", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
                 }
             }
@@ -1262,7 +1305,7 @@ namespace UoFiddler.Controls.UserControls
                 return;
             }
 
-            var maximumIndex = Textures.GetIdxLength();
+            var maximumIndex = Textures.GetMaxTextureId();
 
             if (indexValue < 0)
             {
@@ -1457,7 +1500,7 @@ namespace UoFiddler.Controls.UserControls
 
             // Get the selected texture
             Bitmap selectedTexture = null;
-            if (selectedId >= 0 && selectedId < Textures.GetIdxLength())
+            if (IsTextureIdLegal(selectedId))
             {
                 selectedTexture = Textures.GetTexture(selectedId);
             }

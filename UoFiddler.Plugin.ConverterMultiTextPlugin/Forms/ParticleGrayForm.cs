@@ -1089,7 +1089,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
 
         private void BuildHueTab()
         {
-            _numHue = Num(1, 3000, 1, 70);
+            _numHue = Num(1, 16780216, 1, 70);
             _numHue.ValueChanged += (s, e) => LoadHue((int)_numHue.Value);
             _lblHue = new Label { AutoSize = true, Margin = new Padding(3, 7, 3, 0) };
             _panelHueStrip = new Panel { Width = 320, Height = 24, Margin = new Padding(3) };

@@ -76,11 +76,130 @@ namespace Ultima
             {
                 List[index] = new Hue(index);
             }
+
+            LoadExtension();
         }
+
+        #region Extension (hue numbers 3001 .. 16,780,216) - huesext.mul
+        /// <summary>Number of hues in hues.mul (375 blocks of 8).</summary>
+        public const int LegacyCount = ExtendedFormat.HueBaseId;
+
+        /// <summary>Number of extended hues (indices 3000+). 0 = none.</summary>
+        public static int ExtendedCount => List == null ? 0 : Math.Max(0, List.Length - LegacyCount);
+
+        public static bool HasExtension => ExtendedCount > 0;
+
+        /// <summary>Path of the loaded huesext.mul (null if none / only in memory).</summary>
+        public static string ExtensionPath { get; private set; }
+
+        /// <summary>Highest hue NUMBER (1 based, as used in the client and by servers).</summary>
+        public static int MaxHueNumber => List?.Length ?? LegacyCount;
+
+        /// <summary>Loads huesext.mul again (unsaved extended hues are discarded).</summary>
+        public static void ReloadExtension()
+        {
+            if (List != null && List.Length > LegacyCount)
+            {
+                List = List[..LegacyCount];
+            }
+
+            LoadExtension();
+        }
+
+        private static void LoadExtension()
+        {
+            ExtensionPath = null;
+            try
+            {
+                string path = Files.GetFilePathWithRootFallback(ExtendedFormat.HueFileName);
+                if (path == null)
+                {
+                    return;
+                }
+
+                byte[] data = ExtendedFormat.ReadRecords(path, ExtendedFormat.HueMagic, ExtendedFormat.HueBaseId,
+                    ExtendedFormat.HueRecordSize, out int count);
+                count = Math.Min(count, ExtendedFormat.HueMaxSlots);
+                Hue[] list = List;
+                Array.Resize(ref list, LegacyCount + count);
+                using (var br = new BinaryReader(new MemoryStream(data)))
+                {
+                    for (int k = 0; k < count; ++k)
+                    {
+                        list[LegacyCount + k] = new Hue(LegacyCount + k, br);
+                    }
+                }
+
+                List = list;
+                ExtensionPath = path;
+            }
+            catch (Exception)
+            {
+                // corrupt/foreign file: hues.mul stays usable
+                if (List.Length > LegacyCount)
+                {
+                    List = List[..LegacyCount];
+                }
+            }
+        }
+
+        /// <summary>
+        /// Creates / resizes the extension to <paramref name="slots"/> extra hues (0 removes it in memory).
+        /// Growing adds empty hues, shrinking drops the hues above the new size.
+        /// </summary>
+        public static void CreateOrResizeExtension(int slots)
+        {
+            if (slots < 0 || slots > ExtendedFormat.HueMaxSlots)
+            {
+                throw new ArgumentOutOfRangeException(nameof(slots), slots, $"Must be between 0 and {ExtendedFormat.HueMaxSlots}.");
+            }
+
+            Hue[] list = List;
+            int old = list.Length;
+            Array.Resize(ref list, LegacyCount + slots);
+            for (int i = old; i < list.Length; ++i)
+            {
+                list[i] = new Hue(i);
+            }
+
+            List = list;
+        }
+
+        /// <summary>Writes huesext.mul (only if there are extended hues).</summary>
+        public static void SaveExtension(string path)
+        {
+            if (!HasExtension)
+            {
+                return;
+            }
+
+            string file = Path.Combine(path, ExtendedFormat.HueFileName);
+            ExtendedFormat.WriteRecords(file, ExtendedFormat.HueMagic, ExtendedFormat.HueBaseId, ExtendedFormat.HueRecordSize,
+                ExtendedCount, (bw, k) => WriteHue(bw, List[LegacyCount + k]));
+            ExtensionPath = file;
+        }
+
+        private static void WriteHue(BinaryWriter bw, Hue hue)
+        {
+            for (int colorIndex = 0; colorIndex < 32; ++colorIndex)
+            {
+                bw.Write(hue.Colors[colorIndex]);
+            }
+
+            bw.Write(hue.TableStart);
+            bw.Write(hue.TableEnd);
+            ExtendedFormat.WriteName(bw, hue.Name);
+        }
+        #endregion
 
         public static void Save(string path)
         {
             string mul = Path.Combine(path, "hues.mul");
+            if (_header == null || _header.Length == 0)
+            {
+                _header = new int[LegacyCount / 8]; // no hues.mul loaded: write all 375 blocks
+            }
+
             using (var fsMul = new FileStream(mul, FileMode.Create, FileAccess.Write, FileShare.Write))
             using (var binMul = new BinaryWriter(fsMul))
             {
@@ -114,6 +233,9 @@ namespace Ultima
                     }
                 }
             }
+
+            // hues 3001+ go to huesext.mul, hues.mul keeps its client layout
+            SaveExtension(path);
         }
 
         /// <summary>
@@ -139,9 +261,14 @@ namespace Ultima
         /// <returns></returns>
         public static Hue GetHue(int index)
         {
-            index &= 0x3FFF;
+            // classic hue values carry flags (0x8000 = partial hue): 14-bit index. With more than 0x3FFF hues
+            // (extension for a new client) indices inside the list are used as they are.
+            if (index < 0 || index >= List.Length || List.Length <= ExtendedFormat.HueClassicLimit)
+            {
+                index &= 0x3FFF;
+            }
 
-            if (index >= 0 && index < 3000)
+            if (index >= 0 && index < List.Length)
             {
                 return List[index];
             }
