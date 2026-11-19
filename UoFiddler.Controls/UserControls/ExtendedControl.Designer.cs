@@ -1071,7 +1071,7 @@ namespace UoFiddler.Controls.UserControls
             // _patchHint
             // 
             this._patchHint.AutoSize = true;
-            this._patchHint.Text = "Double click: show the patched entry in its tab.";
+            this._patchHint.Text = "Click: the entry is marked in its tabs (graphic / hue, TileData, RadarColor). Double click: open the tab.";
             this._patchHint.Name = "_patchHint";
             this._patchHint.Margin = new System.Windows.Forms.Padding(3, 7, 12, 3);
             this._patchHint.ForeColor = System.Drawing.Color.DimGray;
@@ -1328,6 +1328,8 @@ namespace UoFiddler.Controls.UserControls
             this._patchTop.Controls.Add(this._patchCopyLogButton);
             this._patchTop.Controls.Add(this._patchStatus);
             this._patchTop.SetFlowBreak(this._patchInfo, true);
+            this._patchList.SelectedIndexChanged += new System.EventHandler(this.OnPatchSelectionChanged);
+            this._patchList.MultiSelect = false;
             this._patchBottom.Controls.Add(this._patchGoGraphic);
             this._patchBottom.Controls.Add(this._patchGoTileData);
             this._patchBottom.Controls.Add(this._patchGoRadar);

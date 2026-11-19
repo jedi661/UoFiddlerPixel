@@ -203,7 +203,9 @@ namespace UoFiddler.Controls.Classes
             {
                 var e = new PatchTestEntry { Kind = kind, SourceId = source, TargetId = target };
                 result.Entries.Add(e);
-                Log($"{kind}: patch 0x{source:X} -> 0x{target:X}");
+                Log(kind == UoExtensionKind.Hues
+                    ? $"{kind}: patch hue {source + 1} -> hue {target + 1} (index 0x{source:X} -> 0x{target:X})"
+                    : $"{kind}: patch 0x{source:X} -> 0x{target:X}");
                 try
                 {
                     PatchOne(e);
@@ -245,6 +247,24 @@ namespace UoFiddler.Controls.Classes
 
                     return -1;
                 case UoExtensionKind.Textures:
+                {
+                    // a real picture, not a one-colour placeholder (texture 0x1 is often a pink square):
+                    // first the texture of the land tile used above, then the first texture with many colours
+                    var candidates = new List<int>();
+                    if (TileData.LandTable != null && TileData.LandTable.Length > 3)
+                    {
+                        candidates.Add(TileData.LandTable[3].TextureId);
+                    }
+
+                    candidates.AddRange(Enumerable.Range(1, Textures.LegacyCount - 1));
+                    foreach (int id in candidates)
+                    {
+                        if (id > 0 && id < Textures.LegacyCount && Textures.TestTexture(id) && ColourCount(Textures.GetTexture(id)) >= 16)
+                        {
+                            return id;
+                        }
+                    }
+
                     for (int id = 1; id < Textures.LegacyCount; ++id)
                     {
                         if (Textures.TestTexture(id))
@@ -254,6 +274,7 @@ namespace UoFiddler.Controls.Classes
                     }
 
                     return -1;
+                }
                 default:
                     for (int i = 1; i < Hues.LegacyCount; ++i)
                     {
@@ -265,6 +286,24 @@ namespace UoFiddler.Controls.Classes
 
                     return -1;
             }
+        }
+
+        /// <summary>Number of different colours (stops counting at 64).</summary>
+        private static int ColourCount(Bitmap bmp)
+        {
+            if (bmp == null)
+            {
+                return 0;
+            }
+
+            byte[] raw = Textures.EncodeTexture(Copy1555(bmp), out _);
+            var colours = new HashSet<ushort>();
+            for (int i = 0; i + 1 < raw.Length && colours.Count < 64; i += 2)
+            {
+                colours.Add(BitConverter.ToUInt16(raw, i));
+            }
+
+            return colours.Count;
         }
 
         private static bool IsUsed(UoExtensionKind kind, int id) => kind switch

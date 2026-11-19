@@ -725,14 +725,14 @@ namespace UoFiddler.Controls.UserControls
                     LandTilesControl.ActivateTab();
                     break;
                 case ExtIssueArea.RadarColors:
+                    RadarColorControl.ActivateTab(); // show the tab first, then select (so the list scrolls to the entry)
                     RadarColorControl.Select(issue.Id, land);
-                    RadarColorControl.ActivateTab();
                     break;
                 case ExtIssueArea.Items:
                 case ExtIssueArea.LandTiles:
                     // no graphic (or broken): show the tiledata entry
+                    TileDataControl.ActivateTab(); // show the tab first, then select (so the list scrolls to the entry)
                     TileDataControl.Select(issue.Id, land);
-                    TileDataControl.ActivateTab();
                     break;
                 default:
                     CopyText($"0x{issue.Id:X}");
@@ -921,31 +921,97 @@ namespace UoFiddler.Controls.UserControls
         private void OnPatchGoGraphicClick(object sender, EventArgs e)
         {
             PatchTestEntry entry = SelectedPatchEntry();
-            if (entry == null)
+            if (entry != null)
             {
+                ShowPatchEntry(entry, true);
+            }
+        }
+
+        /// <summary>Single click: mark the entry in all its tabs (graphic tab, TileData, RadarColor) without switching.</summary>
+        private void OnPatchSelectionChanged(object sender, EventArgs e)
+        {
+            PatchTestEntry entry = SelectedPatchEntry();
+            if (entry != null && entry.Patched)
+            {
+                ShowPatchEntry(entry, false);
+            }
+        }
+
+        /// <summary>
+        /// Marks the patched entry in every tab it belongs to (graphic / hue, TileData, RadarColor).
+        /// <paramref name="open"/> = true brings the graphic tab to the front (first the tab, then the selection, so the
+        /// view scrolls to the entry).
+        /// </summary>
+        private void ShowPatchEntry(PatchTestEntry entry, bool open)
+        {
+            int t = entry.TargetId;
+            bool found;
+            Cursor.Current = Cursors.WaitCursor;
+            try
+            {
+                switch (entry.Kind)
+                {
+                    case UoExtensionKind.Items:
+                        if (open)
+                        {
+                            ItemsControl.ActivateTab();
+                        }
+
+                        found = ItemsControl.SearchGraphic(t);
+                        TileDataControl.Select(t, false);
+                        RadarColorControl.Select(t, false);
+                        if (open)
+                        {
+                            ItemsControl.ActivateTab(); // TileData / RadarColor may have loaded in between
+                        }
+
+                        break;
+                    case UoExtensionKind.LandTiles:
+                        if (open)
+                        {
+                            LandTilesControl.ActivateTab();
+                        }
+
+                        found = LandTilesControl.SearchGraphic(t);
+                        TileDataControl.Select(t, true);
+                        RadarColorControl.Select(t, true);
+                        if (open)
+                        {
+                            LandTilesControl.ActivateTab();
+                        }
+
+                        break;
+                    case UoExtensionKind.Textures:
+                        found = TexturesControl.SelectInTab(t, open);
+                        break;
+                    default:
+                        found = HuesControl.SelectInTab(t, open);
+                        break;
+                }
+            }
+            finally
+            {
+                Cursor.Current = Cursors.Default;
+            }
+
+            string name = entry.Kind == UoExtensionKind.Hues ? $"hue {t + 1}" : $"0x{t:X}";
+            if (!found)
+            {
+                _patchStatus.Text = entry.Patched
+                    ? $"{name} not found in its tab - is the tab loaded / the view filtered?"
+                    : $"{name}: the test entry was removed again.";
+                _patchStatus.ForeColor = Color.DarkOrange;
                 return;
             }
 
-            bool found = entry.Kind switch
+            _patchStatus.ForeColor = Color.DarkGreen;
+            _patchStatus.Text = entry.Kind switch
             {
-                UoExtensionKind.Items => ItemsControl.SearchGraphic(entry.TargetId),
-                UoExtensionKind.LandTiles => LandTilesControl.SearchGraphic(entry.TargetId),
-                UoExtensionKind.Textures => TexturesControl.SelectInTab(entry.TargetId),
-                _ => HuesControl.SelectInTab(entry.TargetId)
+                UoExtensionKind.Items => $"{name} marked in Items, TileData and RadarColor" + (open ? string.Empty : " - double click opens the Items tab"),
+                UoExtensionKind.LandTiles => $"{name} marked in LandTiles, TileData and RadarColor" + (open ? string.Empty : " - double click opens the LandTiles tab"),
+                UoExtensionKind.Textures => $"{name} marked in Textures" + (open ? string.Empty : " - double click opens the Textures tab"),
+                _ => $"{name} marked in Hues" + (open ? string.Empty : " - double click opens the Hues tab")
             };
-
-            if (found && entry.Kind == UoExtensionKind.Items)
-            {
-                ItemsControl.ActivateTab();
-            }
-            else if (found && entry.Kind == UoExtensionKind.LandTiles)
-            {
-                LandTilesControl.ActivateTab();
-            }
-            else if (!found)
-            {
-                _patchStatus.Text = $"0x{entry.TargetId:X} not found in its tab (removed again, or the tab is not loaded).";
-            }
         }
 
         private void OnPatchGoTileDataClick(object sender, EventArgs e)
@@ -957,8 +1023,8 @@ namespace UoFiddler.Controls.UserControls
                 return;
             }
 
+            TileDataControl.ActivateTab(); // show the tab first, then select (so the list scrolls to the entry)
             TileDataControl.Select(entry.TargetId, entry.Kind == UoExtensionKind.LandTiles);
-            TileDataControl.ActivateTab();
         }
 
         private void OnPatchGoRadarClick(object sender, EventArgs e)
@@ -970,8 +1036,8 @@ namespace UoFiddler.Controls.UserControls
                 return;
             }
 
+            RadarColorControl.ActivateTab(); // show the tab first, then select (so the list scrolls to the entry)
             RadarColorControl.Select(entry.TargetId, entry.Kind == UoExtensionKind.LandTiles);
-            RadarColorControl.ActivateTab();
         }
 
         #endregion

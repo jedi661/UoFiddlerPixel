@@ -53,7 +53,7 @@ namespace UoFiddler.Controls.UserControls
         private static TexturesControl _refMarker;
 
         /// <summary>Selects a texture id (also a free slot) in the Textures tab and brings the tab to the front.</summary>
-        public static bool SelectInTab(int id)
+        public static bool SelectInTab(int id, bool activate = true)
         {
             TexturesControl c = _refMarker;
             if (c == null)
@@ -76,9 +76,13 @@ namespace UoFiddler.Controls.UserControls
                 return false;
             }
 
+            if (activate)
+            {
+                TabNavigation.BringToFront(c); // show the tab first, then select (scrolls to the texture)
+            }
+
             c.TextureTileView.FocusIndex = -1;
             c.SelectedTextureId = id;
-            TabNavigation.BringToFront(c);
             return true;
         }
 

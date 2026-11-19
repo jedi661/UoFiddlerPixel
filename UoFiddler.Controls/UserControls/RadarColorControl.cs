@@ -85,6 +85,15 @@ namespace UoFiddler.Controls.UserControls
             SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer, true);
             _refMarker = this;
             BuildLayout();
+            // an entry selected while the tab was hidden: scroll to it when the tab is shown
+            VisibleChanged += (s, e) =>
+            {
+                int row = Visible && _selectedId >= 0 ? Array.BinarySearch(_ids, _selectedId) : -1;
+                if (row >= 0)
+                {
+                    _list.EnsureVisible(row);
+                }
+            };
             _searchTimer.Tick += (s, e) =>
             {
                 _searchTimer.Stop();
@@ -1562,14 +1571,7 @@ namespace UoFiddler.Controls.UserControls
                 return;
             }
 
-            bool found = _land ? LandTilesControl.SearchGraphic(_selectedId) : ItemsControl.SearchGraphic(_selectedId);
-            if (!found)
-            {
-                MessageBox.Show(this, $"0x{_selectedId:X} has no graphic (or the {(_land ? "LandTiles" : "Items")} tab is not loaded yet).", "Show",
-                    MessageBoxButtons.OK, MessageBoxIcon.Information);
-                return;
-            }
-
+            // show the tab first, then select (the view scrolls to the entry)
             if (_land)
             {
                 LandTilesControl.ActivateTab();
@@ -1577,6 +1579,14 @@ namespace UoFiddler.Controls.UserControls
             else
             {
                 ItemsControl.ActivateTab();
+            }
+
+            bool found = _land ? LandTilesControl.SearchGraphic(_selectedId) : ItemsControl.SearchGraphic(_selectedId);
+            if (!found)
+            {
+                ActivateTab();
+                MessageBox.Show(this, $"0x{_selectedId:X} has no graphic (or it is not in the current {(_land ? "LandTiles" : "Items")} view).", "Show",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         }
 
@@ -1587,8 +1597,8 @@ namespace UoFiddler.Controls.UserControls
                 return;
             }
 
+            TileDataControl.ActivateTab(); // show the tab first, then select (so the list scrolls to the entry)
             TileDataControl.Select(_selectedId, _land);
-            TileDataControl.ActivateTab();
         }
 
         private void CopyText(string text)
