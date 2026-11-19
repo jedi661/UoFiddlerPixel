@@ -107,10 +107,22 @@ namespace UoFiddler.Controls.UserControls
             TileViewContextMenuStrip.Items.Insert(freeIndex + 1, _onlyFreeMenuItem);
             TileViewContextMenuStrip.Items.Insert(freeIndex + 2, gotoExtended);
 
+            var transformButton = new ToolStripButton("Transform")
+            {
+                DisplayStyle = ToolStripItemDisplayStyle.Text,
+                ToolTipText = "Skew / distort / warp / flip the selected item pixel exactly (undo, grid, remembered)"
+            };
+            transformButton.Click += (s, e) => ShowTransformForm();
+            ToolStrip.Items.Add(transformButton);
+
+            var transformMenu = new ToolStripMenuItem("Transform (skew / distort / warp)...");
+            transformMenu.Click += (s, e) => ShowTransformForm();
+
             var directionsMenu = new ToolStripMenuItem("Generate directions (N/E/S/W)...");
             directionsMenu.Click += (s, e) => ShowDirectionForm();
             int mirrorIndex = TileViewContextMenuStrip.Items.IndexOf(mirrorToolStripMenuItem);
             TileViewContextMenuStrip.Items.Insert(mirrorIndex + 1, directionsMenu);
+            TileViewContextMenuStrip.Items.Insert(mirrorIndex + 2, transformMenu);
         }
 
         private ExtendedArtFormatForm _extendedFormatForm;
@@ -129,6 +141,25 @@ namespace UoFiddler.Controls.UserControls
         }
 
         private ArtDirectionForm _directionForm;
+        private ArtTransformForm _transformForm;
+
+        private void ShowTransformForm()
+        {
+            if (_transformForm == null || _transformForm.IsDisposed)
+            {
+                _transformForm = new ArtTransformForm(InsertGeneratedItem);
+                _transformForm.Show();
+            }
+            else
+            {
+                _transformForm.Activate();
+            }
+
+            if (_selectedGraphicId >= 0 && Art.IsValidStatic(_selectedGraphicId))
+            {
+                _transformForm.LoadSource(Art.GetStatic(_selectedGraphicId), _selectedGraphicId);
+            }
+        }
 
         private void ShowDirectionForm()
         {

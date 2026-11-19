@@ -492,7 +492,7 @@ namespace UoFiddler.Controls.Forms
         }
 
         /// <summary>Converts a bitmap to art pixels. Transparent: no alpha, pure black (UO) and optionally white.</summary>
-        private static unsafe ArtPixelImage FromBitmap(Bitmap bmp, bool whiteTransparent)
+        internal static unsafe ArtPixelImage FromBitmap(Bitmap bmp, bool whiteTransparent)
         {
             var img = new ArtPixelImage(bmp.Width, bmp.Height);
             using Bitmap copy = bmp.Clone(new Rectangle(0, 0, bmp.Width, bmp.Height), PixelFormat.Format16bppArgb1555);
@@ -1038,6 +1038,19 @@ namespace UoFiddler.Controls.Forms
             menu.Items.Add("Copy (transparent)", null, (s, e) => CopyToClipboard(getImage(), Color.Transparent, what));
             menu.Items.Add(new ToolStripSeparator());
             menu.Items.Add("Save as PNG...", null, (s, e) => SaveImage(getImage(), what));
+            menu.Items.Add("Open in Transform window (skew / distort)...", null, (s, e) =>
+            {
+                ArtPixelImage img = getImage();
+                if (img == null)
+                {
+                    return;
+                }
+
+                var form = new ArtTransformForm(_insertCallback);
+                form.Show(this);
+                form.LoadSource(img.Clone(), direction == null ? _sourceId : -1,
+                    direction == null ? _sourceText : $"{direction} of {_sourceText}");
+            });
             if (direction.HasValue)
             {
                 menu.Items.Add("Insert into Art", null, (s, e) => InsertOne(direction.Value, true));
