@@ -234,6 +234,7 @@ namespace UoFiddler.Controls.Forms
         private void AfterReload(UoExtensionKind? kind)
         {
             // every tab (Items, LandTiles, Textures, Hues, TileData, RadarColor) listens to this event
+            _usedCache = -1;
             UoExtensions.RaiseChanged(kind);
             UpdateStatus();
         }
@@ -330,12 +331,54 @@ namespace UoFiddler.Controls.Forms
             _status.Text =
                 $"Classic        : {classic}" + Environment.NewLine +
                 $"Extension      : {state}" + Environment.NewLine +
-                $"Slots now      : {current:N0}   used: {(current > 0 ? UoExtensions.CountUsed(kind) : 0):N0}   " +
+                $"Slots now      : {current:N0}   used: {UsedCount(kind, current):N0}   " +
                 (current > 0 ? UoExtensions.RangeText(kind, b, b + current - 1) : "-") + Environment.NewLine +
                 $"With {slots:N0} slots: {UoExtensions.RangeText(kind, b, b + slots - 1)}" + Environment.NewLine +
+                $"Classic fields : {ClassicText(kind, slots)}" + Environment.NewLine +
+                $"Memory approx. : {FormatBytes((long)slots * UoExtensions.EstimatedBytesPerSlot(kind))} while loaded" + Environment.NewLine +
                 $"Files          : {string.Join(", ", UoExtensions.FileNames(kind))}";
 
             _slotsInfo.Text = $"max {UoExtensions.MaxSlots(kind):N0}";
+        }
+
+        // counting used hues / slots walks the whole extension (up to 16M) - only when the extension changed
+        private int _usedCache = -1;
+        private UoExtensionKind _usedKind;
+        private int _usedSlots = -1;
+
+        private int UsedCount(UoExtensionKind kind, int current)
+        {
+            if (current <= 0)
+            {
+                return 0;
+            }
+
+            if (_usedCache < 0 || _usedKind != kind || _usedSlots != current)
+            {
+                _usedCache = UoExtensions.CountUsed(kind);
+                _usedKind = kind;
+                _usedSlots = current;
+            }
+
+            return _usedCache;
+        }
+
+        private static string ClassicText(UoExtensionKind kind, int slots)
+        {
+            int classic = UoExtensions.ClassicLimitSlots(kind);
+            if (kind == UoExtensionKind.Items)
+            {
+                return "item ids above 0xFFFF are only for the new client (old client: unchanged art.mul)";
+            }
+
+            return slots <= classic
+                ? "all slots still fit the classic 16/14-bit fields"
+                : $"slots 1 - {classic:N0} fit the classic fields, {slots - classic:N0} more only for the new client";
+        }
+
+        private static string FormatBytes(long bytes)
+        {
+            return bytes >= 1L << 30 ? $"{bytes / (double)(1L << 30):0.0} GB" : $"{bytes / (double)(1L << 20):0.0} MB";
         }
 
         private void CreateOrResize()
@@ -510,23 +553,27 @@ namespace UoFiddler.Controls.Forms
                            $"  {ExtendedFormat.LandDataFileName}     44x44 land tiles, same encoding as art.mul" + nl +
                            $"  {ExtendedFormat.LandTileDataFileName} land tiledata (32 bytes: uint64 flags, int32 texture id, char[20] name)" + nl +
                            $"  {ExtendedFormat.RadarLandFileName} radar colours of these land tiles" + nl + nl +
-                           "LIMIT: map*.mul stores the land id as 16 bit, so land tiles end at 0xFFFF (49,152 extra slots). " +
-                           "A client must read the side-car files to show land ids 0x4000+." + common;
+                           "SIZE: up to 16,777,216 extra land tiles (ids 0x4000 - 0x1003FFF), starting where art.mul ends." + nl +
+                           "Ids up to 0xFFFF still fit the classic map*.mul (16-bit land id); higher ids are for your new client / map format. " +
+                           "The old client simply ignores the side-car files." + common;
                 case UoExtensionKind.Textures:
                     return "TEXTURES" + nl +
                            "texidx.mul / texmaps.mul keep the ids 0x0000-0x3FFF unchanged." + nl +
                            "Texture ids from 0x4000 upwards are stored in:" + nl +
                            $"  {ExtendedFormat.TextureIndexFileName}   index (16-byte entries, extra 0 = 64x64, 1 = 128x128)" + nl +
                            $"  {ExtendedFormat.TextureDataFileName}  textures, same encoding as texmaps.mul" + nl + nl +
-                           "LIMIT: the texture id in the land tiledata is 16 bit, so textures end at 0xFFFF (49,152 extra slots)." + common;
+                           "SIZE: up to 16,777,216 extra textures (ids 0x4000 - 0x1003FFF), starting where texmaps.mul ends." + nl +
+                           "tiledata.mul stores the texture id with 16 bit (up to 0xFFFF); tiledatalandext.mul stores 32 bit, " +
+                           "so extended land tiles can use every extended texture." + common;
                 default:
                     return "HUES" + nl +
                            "hues.mul keeps its 375 blocks = hue numbers 1-3000 unchanged." + nl +
                            "Hue numbers from 3001 upwards are stored in:" + nl +
                            $"  {ExtendedFormat.HueFileName}  88-byte records (32 colours, table start/end, char[20] name), no block headers" + nl + nl +
-                           "LIMIT: the client uses (hue & 0x3FFF), so hue numbers end at 0x3FFF = 16,383 (13,383 extra hues). " +
-                           "The new hues appear in every hue picker of the tool (items, land, animations, gumps, dress ...). " +
-                           "A client must read huesext.mul to show them." + common;
+                           "SIZE: up to 16,777,216 extra hues (hue numbers 3001 - 16,780,216), starting where hues.mul ends." + nl +
+                           "The classic client uses (hue & 0x3FFF): hue numbers up to 16,383 fit it, higher numbers need your new client " +
+                           "(32-bit hue). The new hues appear in every hue picker of the tool (items, land, animations, gumps, dress ...)." + nl +
+                           "Memory: every hue is an object in memory - millions of hues need a lot of RAM (see the estimate above)." + common;
             }
         }
     }

@@ -96,7 +96,7 @@ namespace Ultima
             ReloadLandExtension();
         }
 
-        #region Land tile extension (ids 0x4000..0xFFFF)
+        #region Land tile extension (ids 0x4000 .. up to 0x1003FFF)
         /// <summary>
         /// Land tiles above 0x3FFF: artlandextidx.mul / artlandext.mul (same raw land encoding as art.mul).
         /// art.mul keeps exactly 0x4000 land entries, so the client layout does not change.

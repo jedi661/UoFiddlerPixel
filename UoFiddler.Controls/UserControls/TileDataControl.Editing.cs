@@ -71,7 +71,7 @@ namespace UoFiddler.Controls.UserControls
 
         private static string ItemNodeText(int index) => string.Format("0x{0:X4} ({0}) {1}", index, TileData.ItemTable[index].Name);
 
-        private static string LandNodeText(int index) => string.Format("0x{0:X4} ({0}) {1}", index, TileData.LandTable[index].Name);
+        private static string LandNodeText(int index) => string.Format(index < 0x10000 ? "0x{0:X4} ({0}) {1}" : "0x{0:X5} ({0}) {1}", index, TileData.LandTable[index].Name);
 
         /// <summary>all item nodes (the list has group nodes "AOS - ML", "Stygian Abyss" …)</summary>
         private IEnumerable<TreeNode> ItemNodes()
@@ -533,7 +533,9 @@ namespace UoFiddler.Controls.UserControls
                 return true;
             }
 
-            if (!ushort.TryParse(textBoxTexID.Text, NumberStyles.Integer, CultureInfo.InvariantCulture, out ushort tex))
+            // int: extended land tiles can use extended textures above 0xFFFF (tiledata.mul itself stores 16 bit)
+            // (tiledata.mul stores 16 bit - values above 0xFFFF only make sense for extended land tiles / your new client)
+            if (!int.TryParse(textBoxTexID.Text, NumberStyles.Integer, CultureInfo.InvariantCulture, out int tex) || tex < 0)
             {
                 return false;
             }

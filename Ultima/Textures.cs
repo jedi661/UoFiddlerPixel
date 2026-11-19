@@ -14,7 +14,7 @@ namespace Ultima
         private static readonly Dictionary<int, bool> _patched = new Dictionary<int, bool>();
 
         // ===================================================================================================
-        // TEXTURE EXTENSION (ids 0x4000..0xFFFF): texextidx.mul / texmapsext.mul, same raw encoding as
+        // TEXTURE EXTENSION (ids 0x4000 .. up to 0x1003FFF): texextidx.mul / texmapsext.mul, same raw encoding as
         // texmaps.mul (64x64 or 128x128 pixels, colour ^ 0x8000, extra 0 = 64, 1 = 128). texidx.mul / texmaps.mul
         // keep their client layout.
         // ===================================================================================================

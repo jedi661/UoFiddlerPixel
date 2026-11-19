@@ -409,28 +409,39 @@ namespace Ultima
         /// <summary>First land tile id of the land extension (art.mul holds 0x0000..0x3FFF).</summary>
         public const int LandBaseId = 0x4000;
 
-        /// <summary>
-        /// Land ids are 16 bit in map*.mul / statics / multis, so the land extension ends at 0xFFFF (49,152 slots).
-        /// The file format itself could hold more (int32 count, 64-bit offsets).
-        /// </summary>
-        public const int LandMaxSlots = 0x10000 - LandBaseId;
+        // SIZES: like the items, every extension can have up to MaxSlots (16,777,216) entries and starts where the
+        // classic file ends. The classic files and clients keep working unchanged; ids above the classic 16-bit /
+        // 14-bit fields (see the *ClassicLimit constants) are meant for a new client that reads the side-car files.
+
+        /// <summary>Up to 16,777,216 extended land tiles (ids 0x4000 .. 0x1003FFF).</summary>
+        public const int LandMaxSlots = MaxSlots;
+
+        /// <summary>Highest land id a classic map*.mul can store (16 bit). Higher ids need a new map format / client.</summary>
+        public const int LandClassicLimit = 0xFFFF;
 
         /// <summary>First texture id of the texture extension (texmaps.mul holds 0x0000..0x3FFF).</summary>
         public const int TextureBaseId = 0x4000;
 
-        /// <summary>The texture id in the land tiledata is 16 bit, so textures end at 0xFFFF.</summary>
-        public const int TextureMaxSlots = 0x10000 - TextureBaseId;
+        /// <summary>Up to 16,777,216 extended textures (ids 0x4000 .. 0x1003FFF).</summary>
+        public const int TextureMaxSlots = MaxSlots;
+
+        /// <summary>
+        /// Highest texture id tiledata.mul can store (16 bit). tiledatalandext.mul stores int32, so extended land tiles
+        /// can use every extended texture.
+        /// </summary>
+        public const int TextureClassicLimit = 0xFFFF;
 
         /// <summary>First hue index of the hue extension (hues.mul holds the indices 0..2999 = hue numbers 1..3000).</summary>
         public const int HueBaseId = 3000;
 
         /// <summary>
-        /// Highest number of hues: the client uses (hue &amp; 0x3FFF) - 1 as index, so hue numbers end at 0x3FFF
-        /// (indices 0..0x3FFE).
+        /// Highest hue NUMBER the classic client can use: it takes (hue &amp; 0x3FFF), bit 0x8000 = partial hue.
+        /// Higher hue numbers need a new client (and 32-bit hue fields).
         /// </summary>
-        public const int HueMaxTotal = 0x3FFF;
+        public const int HueClassicLimit = 0x3FFF;
 
-        public const int HueMaxSlots = HueMaxTotal - HueBaseId;
+        /// <summary>Up to 16,777,216 extended hues (hue numbers 3001 .. 16,780,216).</summary>
+        public const int HueMaxSlots = MaxSlots;
 
         public const int LandTileRecordSize = 32; // uint64 flags, int32 texture id, char[20] name
         public const int HueRecordSize = 88;      // ushort[32] colours, ushort tableStart, ushort tableEnd, char[20] name

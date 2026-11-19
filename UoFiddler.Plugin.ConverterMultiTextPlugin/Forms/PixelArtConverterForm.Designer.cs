@@ -393,7 +393,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
             // 
             numHuePreview.Location = new System.Drawing.Point(90, 76);
             numHuePreview.Size = new System.Drawing.Size(60, 23);
-            numHuePreview.Maximum = new decimal(new int[] { 16383, 0, 0, 0 });
+            numHuePreview.Maximum = new decimal(new int[] { 16780216, 0, 0, 0 }); // hue numbers incl. extended hues (3000 + 16,777,216)
             numHuePreview.Minimum = new decimal(new int[] { 0, 0, 0, 0 });
             numHuePreview.Value = new decimal(new int[] { 0, 0, 0, 0 });
             numHuePreview.Name = "numHuePreview";

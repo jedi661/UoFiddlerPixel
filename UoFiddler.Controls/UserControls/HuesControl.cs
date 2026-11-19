@@ -137,7 +137,11 @@ namespace UoFiddler.Controls.UserControls
                 InitEditExtensions();
             }
 
-            CaptureBaseline();
+            if (HuesEditable)
+            {
+                CaptureBaseline(); // only the Hues tab marks changed hues; pickers skip it (can be millions of hues)
+            }
+
             ApplyFilter(false);
             EnsureVisible(_selected);
 

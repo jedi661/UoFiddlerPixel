@@ -177,7 +177,7 @@ namespace UoFiddler.Controls.TerrainLibrary.Helpers
             LandData data = TileData.LandTable[landId];
             name = data.Name ?? string.Empty;
             flags = (ulong)data.Flags;
-            textureId = data.TextureId;
+            textureId = (ushort)Math.Clamp(data.TextureId, 0, ushort.MaxValue); // the terrain library stores 16-bit texture ids
             return true;
         }
 

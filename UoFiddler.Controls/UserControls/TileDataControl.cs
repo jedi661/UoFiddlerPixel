@@ -182,6 +182,15 @@ namespace UoFiddler.Controls.UserControls
                     node.EnsureVisible();
                     return true;
                 }
+
+                TreeNode extLand = GetOrCreateExtendedLandNode(graphic);
+                if (extLand != null)
+                {
+                    _refMarker.tabcontrol.SelectTab(1);
+                    _refMarker.treeViewLand.SelectedNode = extLand;
+                    extLand.EnsureVisible();
+                    return true;
+                }
             }
             else
             {
@@ -212,6 +221,54 @@ namespace UoFiddler.Controls.UserControls
                 }
             }
             return false;
+        }
+        #endregion
+
+        #region [ Extended land tiles ]
+        private static TreeNode CreateLandNode(int id)
+        {
+            return new TreeNode(string.Format(id < 0x10000 ? "0x{0:X4} ({0}) {1}" : "0x{0:X5} ({0}) {1}", id, TileData.LandTable[id].Name)) { Tag = id };
+        }
+
+        private static bool IsUsedExtendedLand(int id)
+        {
+            LandData d = TileData.LandTable[id];
+            return !string.IsNullOrEmpty(d.Name) || d.Flags != 0 || d.TextureId != 0 || Art.IsValidLand(id);
+        }
+
+        /// <summary>Finds (or inserts, sorted) the node of an extended land tile so it can be edited.</summary>
+        private static TreeNode GetOrCreateExtendedLandNode(int graphic)
+        {
+            if (graphic < TileData.LegacyLandCount || TileData.LandTable == null || graphic >= TileData.LandTable.Length)
+            {
+                return null;
+            }
+
+            TreeNodeCollection list = _refMarker.treeViewLand.Nodes;
+            int insertAt = list.Count;
+            for (int i = list.Count - 1; i >= 0; --i)
+            {
+                if (list[i].Tag is not int tag)
+                {
+                    continue;
+                }
+
+                if (tag == graphic)
+                {
+                    return list[i];
+                }
+
+                if (tag < graphic)
+                {
+                    break;
+                }
+
+                insertAt = i;
+            }
+
+            TreeNode node = CreateLandNode(graphic);
+            list.Insert(insertAt, node);
+            return node;
         }
         #endregion
 
@@ -486,7 +543,8 @@ namespace UoFiddler.Controls.UserControls
             var nodes = new List<TreeNode>();
             for (int i = 0; i < TileData.LandTable.Length; ++i)
             {
-                if (!string.IsNullOrEmpty(land.Name) && TileData.ItemTable[i].Name.IndexOf(land.Name, StringComparison.OrdinalIgnoreCase) < 0)
+                // (was ItemTable[i].Name: the land filter compared the names of the ITEMS)
+                if (!string.IsNullOrEmpty(land.Name) && (TileData.LandTable[i].Name ?? string.Empty).IndexOf(land.Name, StringComparison.OrdinalIgnoreCase) < 0)
                 {
                     continue;
                 }
@@ -501,11 +559,12 @@ namespace UoFiddler.Controls.UserControls
                     continue;
                 }
 
-                TreeNode node = new TreeNode(string.Format("0x{0:X4} ({0}) {1}", i, TileData.LandTable[i].Name))
+                if (i >= TileData.LegacyLandCount && string.IsNullOrEmpty(land.Name) && land.TextureId == 0 && land.Flags == 0 && !IsUsedExtendedLand(i))
                 {
-                    Tag = i
-                };
-                nodes.Add(node);
+                    continue; // empty extended slots are not listed (up to 16M)
+                }
+
+                nodes.Add(CreateLandNode(i));
             }
 
             _refMarker.treeViewLand.Nodes.AddRange(nodes.ToArray());
@@ -622,15 +681,20 @@ namespace UoFiddler.Controls.UserControls
             treeViewLand.Nodes.Clear();
             if (TileData.LandTable != null)
             {
-                var nodes = new TreeNode[TileData.LandTable.Length];
+                // classic land tiles: all; extended land tiles (0x4000+, up to 16M): only used slots,
+                // free ones are added on demand by SearchGraphic
+                var nodes = new List<TreeNode>(TileData.LegacyLandCount);
                 for (int i = 0; i < TileData.LandTable.Length; ++i)
                 {
-                    nodes[i] = new TreeNode(string.Format("0x{0:X4} ({0}) {1}", i, TileData.LandTable[i].Name))
+                    if (i >= TileData.LegacyLandCount && !IsUsedExtendedLand(i))
                     {
-                        Tag = i
-                    };
+                        continue;
+                    }
+
+                    nodes.Add(CreateLandNode(i));
                 }
-                treeViewLand.Nodes.AddRange(nodes);
+
+                treeViewLand.Nodes.AddRange(nodes.ToArray());
             }
             treeViewLand.EndUpdate();
 
@@ -2320,7 +2384,7 @@ namespace UoFiddler.Controls.UserControls
             {
                 Name = textBoxNameLand.Text,
                 CheckedList = new List<bool>(),
-                TextureId = ushort.TryParse(textBoxTexID.Text, out ushort texId) ? texId : (ushort)0
+                TextureId = int.TryParse(textBoxTexID.Text, out int texId) && texId >= 0 ? texId : 0
             };
 
             // Save the state of CheckedListBox2 (one entry per flag, in list order)
@@ -2399,7 +2463,7 @@ namespace UoFiddler.Controls.UserControls
         public class LandSettings
         {
             public string Name { get; set; }
-            public ushort TextureId { get; set; }
+            public int TextureId { get; set; }
             public List<bool> CheckedList { get; set; } // Stores the CheckedListBox values
         }
         #endregion

@@ -62,7 +62,30 @@ namespace UoFiddler.Controls.Classes
         public static int DefaultSlots(UoExtensionKind kind) => kind switch
         {
             UoExtensionKind.Items => ExtendedFormat.DefaultSlots,
-            _ => MaxSlots(kind) // up to the 16-bit / 14-bit limit
+            UoExtensionKind.Hues => ClassicLimitSlots(kind),
+            _ => ClassicLimitSlots(kind)
+        };
+
+        /// <summary>
+        /// Slots that still fit the classic 16-bit / 14-bit fields (land ids in maps, texture ids in tiledata.mul,
+        /// hue numbers in the classic client). Everything above is for the new client - the tool supports up to
+        /// <see cref="MaxSlots"/> (16,777,216) like for the items.
+        /// </summary>
+        public static int ClassicLimitSlots(UoExtensionKind kind) => kind switch
+        {
+            UoExtensionKind.Items => 0, // item ids above 0xFFFF never fit the classic protocol
+            UoExtensionKind.LandTiles => ExtendedFormat.LandClassicLimit - ExtendedFormat.LandBaseId + 1,
+            UoExtensionKind.Textures => ExtendedFormat.TextureClassicLimit - ExtendedFormat.TextureBaseId + 1,
+            _ => ExtendedFormat.HueClassicLimit - ExtendedFormat.HueBaseId
+        };
+
+        /// <summary>Rough memory need per slot while loaded (index, caches, tiledata / hue objects, radar colour).</summary>
+        public static int EstimatedBytesPerSlot(UoExtensionKind kind) => kind switch
+        {
+            UoExtensionKind.Items => 16 + 8 + 2 + 48 + 8 + 2,
+            UoExtensionKind.LandTiles => 16 + 8 + 4 + 2 + 32 + 2,
+            UoExtensionKind.Textures => 16 + 8 + 4 + 2,
+            _ => 8 + 24 + 88 + 40 + 40
         };
 
         public static int Increment(UoExtensionKind kind) => kind == UoExtensionKind.Items ? 0x10000 : kind == UoExtensionKind.Hues ? 1000 : 0x1000;

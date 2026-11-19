@@ -268,7 +268,9 @@ Implementiert in `UoFiddler.Controls/Classes/ArtTransform.cs` (`UoTile`) und von
 ## 13. Weitere Erweiterungen: Land-Tiles, Texturen, Hues, Radarfarben (verbindlich, implementiert)
 
 Gleiches Prinzip wie bei den Items: **die Original-Dateien bleiben exakt im Client-Layout**, alles darüber steht in
-Zusatzdateien im selben Ordner. Alle Zusatzdateien haben den **32-Byte-Header aus Kapitel 2** (magic, version 1,
+Zusatzdateien im selben Ordner. **Jede Erweiterung fasst – wie die Items – bis zu 16.777.216 Einträge** (`count` ≤ 0x1000000)
+und **beginnt genau dort, wo die Original-Datei aufhört**. Alte Clients lesen weiter nur die Originale; der neue Client
+liest zusätzlich die Zusatzdateien und muss dafür die betroffenen Felder auf 32 Bit erweitern (13.6). Alle Zusatzdateien haben den **32-Byte-Header aus Kapitel 2** (magic, version 1,
 baseId, count, recordSize, 3 × reserved). Prüfregeln wie in Kapitel 2, nur mit der jeweiligen magic / baseId /
 recordSize. Fehlt eine Datei oder ist sie ungültig → so tun, als gäbe es keine Erweiterung (nie abbrechen).
 
@@ -287,7 +289,8 @@ recordSize. Fehlt eine Datei oder ist sie ungültig → so tun, als gäbe es kei
 
 ### 13.1 Land-Tiles (`artlandextidx.mul` / `artlandext.mul`)
 - `art.mul` behält genau 0x4000 Land-Einträge (0x0000–0x3FFF). Land-IDs ab **0x4000** stehen nur hier.
-- **Grenze:** `map*.mul` speichert die Land-ID als 16 Bit → Land endet bei **0xFFFF** (max. 49.152 Zusatz-Slots).
+- **Größe:** bis 16.777.216 Land-Tiles (IDs `0x4000` – `0x1003FFF`). IDs bis 0xFFFF passen noch in die klassische
+  `map*.mul` (16-Bit-Land-ID); höhere IDs braucht ein neues Kartenformat im neuen Client.
 - Kodierung je Tile: 1.012 Pixel × `uint16` = **2.024 Byte**, Farbe `^ 0x8000` (wie in art.mul):
   22 Zeilen mit Start-X 21,20,…,0 und Länge 2,4,…,44, danach 22 Zeilen mit Start-X 0,1,…,21 und Länge 44,42,…,2.
 - Client: im Land-Lookup `id >= 0x4000` → Zusatzdatei statt `id & 0x3FFF` (das alte Maskieren würde auf ein
@@ -303,15 +306,16 @@ Keine Gruppen-Header. `tiledata.mul` behält seine 512 Land-Gruppen unverändert
 
 ### 13.3 Texturen (`texextidx.mul` / `texmapsext.mul`)
 - `texidx.mul` / `texmaps.mul` behalten die IDs 0x0000–0x3FFF. Texturen ab **0x4000** stehen hier.
-- **Grenze:** die Textur-ID im Land-TileData ist (klassisch) 16 Bit → Texturen enden bei **0xFFFF**.
+- **Größe:** bis 16.777.216 Texturen (IDs `0x4000` – `0x1003FFF`). `tiledata.mul` speichert die Textur-ID mit 16 Bit
+  (bis 0xFFFF), `tiledatalandext.mul` mit **32 Bit** – erweiterte Land-Tiles können also jede erweiterte Textur benutzen.
 - Kodierung: Größe² × `uint16`, zeilenweise, Farbe `^ 0x8000`; 64×64 = 8.192 Byte (`extra` 0), 128×128 = 32.768 Byte (`extra` 1).
 
 ### 13.4 Hues (`huesext.mul`, 88 Byte pro Satz)
 - `hues.mul` behält seine 375 Blöcke = Hue-Nummern **1–3000** (Index 0–2999).
 - `huesext.mul` Satz k = Index `3000 + k` = **Hue-Nummer `3001 + k`**. Satz: `uint16[32]` Farben, `uint16` tableStart,
   `uint16` tableEnd, `char[20]` Name – genau wie ein Eintrag in `hues.mul`, aber **ohne** die 4-Byte-Block-Header.
-- **Grenze:** der Client nimmt `hue & 0x3FFF` → Hue-Nummern bis **0x3FFF = 16.383** (max. 13.383 Zusatz-Hues).
-  Bit 0x8000 bleibt „Partial Hue".
+- **Größe:** bis 16.777.216 Zusatz-Hues (Hue-Nummern 3001 – 16.780.216). Der klassische Client nimmt `hue & 0x3FFF`
+  (bis 16.383, Bit 0x8000 = „Partial Hue"); höhere Nummern braucht der neue Client mit 32-Bit-Hue-Feld.
 - Client: Hue-Tabelle/-Textur auf `3000 + count` Einträge vergrößern (z. B. ClassicUO: Hue-Textur-Atlas).
 
 ### 13.5 Radarfarben (`radarcollandext.mul` / `radarcolext.mul`, je 2 Byte)
@@ -319,8 +323,15 @@ Keine Gruppen-Header. `tiledata.mul` behält seine 512 Land-Gruppen unverändert
 - Land-IDs ab 0x4000 → `radarcollandext.mul`, Item-IDs ab 0x10000 → `radarcolext.mul`. Farbe = 15-Bit-RGB (wie radarcol.mul).
 - UOFiddler hält beide Dateien automatisch so groß wie die Land- bzw. Item-Erweiterung.
 
-### 13.6 Abnahmetests
+### 13.6 Was der neue Client zusätzlich braucht (über die klassischen Grenzen hinaus)
+- Land-ID, Textur-ID und Hue-Nummer intern als `int`/`uint` führen (nicht `ushort`).
+- Karten mit Land-IDs > 0xFFFF: eigenes Kartenformat (z. B. 32-Bit-Land-ID je Zelle) – noch festzulegen.
+- Hues > 16.383: Hue-Feld in Paketen/Statics auf 32 Bit; Flag „Partial Hue" separat übertragen.
+- Arrays/Atlanten dynamisch nach `count` der Zusatzdateien anlegen, Inhalte lazy laden.
+
+### 13.7 Abnahmetests
 - [ ] Ohne die Dateien aus Kapitel 13 verhält sich alles wie vorher.
 - [ ] Land 0x4000 wird aus `artlandext.mul` gezeichnet; Name/Flags/Textur aus `tiledatalandext.mul`; Textur-ID ≥ 0x4000 wird aus `texmapsext.mul` geladen.
 - [ ] Hue-Nummer 3001 färbt mit Satz 0 aus `huesext.mul`.
 - [ ] Radarkarte zeigt Land ≥ 0x4000 und Items ≥ 0x10000 mit den Farben aus den Ext-Dateien.
+- [ ] Land-Tile 0x10000 (über der alten 16-Bit-Grenze) und Textur 0x10000 werden geladen (count > 0xC000).

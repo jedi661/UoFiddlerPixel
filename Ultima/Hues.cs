@@ -80,7 +80,7 @@ namespace Ultima
             LoadExtension();
         }
 
-        #region Extension (hue numbers 3001 .. 0x3FFF) - huesext.mul
+        #region Extension (hue numbers 3001 .. 16,780,216) - huesext.mul
         /// <summary>Number of hues in hues.mul (375 blocks of 8).</summary>
         public const int LegacyCount = ExtendedFormat.HueBaseId;
 
@@ -261,7 +261,12 @@ namespace Ultima
         /// <returns></returns>
         public static Hue GetHue(int index)
         {
-            index &= 0x3FFF;
+            // classic hue values carry flags (0x8000 = partial hue): 14-bit index. With more than 0x3FFF hues
+            // (extension for a new client) indices inside the list are used as they are.
+            if (index < 0 || index >= List.Length || List.Length <= ExtendedFormat.HueClassicLimit)
+            {
+                index &= 0x3FFF;
+            }
 
             if (index >= 0 && index < List.Length)
             {

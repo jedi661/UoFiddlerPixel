@@ -1056,7 +1056,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.Forms
         {
             _paletteFlow = new FlowLayoutPanel { Width = 330, Height = 66, AutoScroll = true, BorderStyle = BorderStyle.FixedSingle, Margin = new Padding(3) };
             _lblPalette = new Label { AutoSize = true, Margin = new Padding(3, 7, 3, 0) };
-            _numHue = Num(1, 0x3FFF, 1, 60);
+            _numHue = Num(1, 16780216, 1, 60);
             toolTip1.SetToolTip(_numHue, Tip("UO hue number from hues.mul (32 colors each).", "UO-Hue-Nummer aus hues.mul (je 32 Farben)."));
             return Group("Palette",
                 _paletteFlow,

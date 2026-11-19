@@ -35,9 +35,10 @@ namespace Ultima
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets the texture id of this land tile.
+        /// Gets the texture id of this land tile. int (not ushort): extended land tiles (tiledatalandext.mul) can point
+        /// to extended textures above 0xFFFF. tiledata.mul itself stores 16 bit (see <see cref="TileData.SaveTileData"/>).
         /// </summary>
-        public ushort TextureId { get; set; }
+        public int TextureId { get; set; }
 
         /// <summary>
         /// Gets a bitfield representing the 32 individual flags of this land tile.
@@ -48,7 +49,7 @@ namespace Ultima
         {
             int i = 1;
             Name = split[i++];
-            TextureId = (ushort)TileDataHelpers.ConvertStringToInt(split[i++]);
+            TextureId = Math.Max(0, TileDataHelpers.ConvertStringToInt(split[i++]));
 
             Flags = 0;
             int temp = Convert.ToByte(split[i++]);
@@ -1378,7 +1379,7 @@ namespace Ultima
             ExtendedCount = slots;
         }
 
-        #region Land extension (ids 0x4000..0xFFFF) - tiledatalandext.mul
+        #region Land extension (ids 0x4000 .. up to 0x1003FFF) - tiledatalandext.mul
         /// <summary>Number of land entries in tiledata.mul (always 0x4000).</summary>
         public const int LegacyLandCount = 0x4000;
 
@@ -1452,7 +1453,7 @@ namespace Ultima
                 LandTable[LegacyLandCount + k] = new LandData
                 {
                     Flags = (TileFlag)BitConverter.ToUInt64(data, o),
-                    TextureId = (ushort)Math.Clamp(tex, 0, ushort.MaxValue),
+                    TextureId = Math.Max(0, tex),
                     Name = ExtendedFormat.ReadName(data, o + 12)
                 };
             }
@@ -1471,7 +1472,7 @@ namespace Ultima
                 {
                     LandData d = LandTable[LegacyLandCount + k];
                     bw.Write((ulong)d.Flags);
-                    bw.Write((int)d.TextureId);
+                    bw.Write(d.TextureId);
                     ExtendedFormat.WriteName(bw, d.Name);
                 });
         }
@@ -1697,7 +1698,7 @@ namespace Ultima
                         bin.Write((uint)LandTable[i].Flags);
                     }
 
-                    bin.Write(LandTable[i].TextureId);
+                    bin.Write((ushort)Math.Clamp(LandTable[i].TextureId, 0, ushort.MaxValue)); // classic file: 16 bit
                     var b = new byte[20];
                     if (LandTable[i].Name != null)
                     {
