@@ -301,6 +301,13 @@ namespace UoFiddler.Controls.Classes
                     continue;
                 }
 
+                if (name == ExtendedFormat.ArtDataFileName || name == ExtendedFormat.LandDataFileName || name == ExtendedFormat.TextureDataFileName)
+                {
+                    // data files have no header (like art.mul) - 0 bytes simply means: no entries yet
+                    sb.AppendLine($"  {name,-20} {fi.Length,14:N0} bytes  {fi.LastWriteTime:yyyy-MM-dd HH:mm}  data (no header){(fi.Length == 0 ? " - still empty" : string.Empty)}");
+                    continue;
+                }
+
                 string state = ExtendedFormat.TryReadHeader(path, out string magic, out int baseId, out int count, out int _, out string error)
                     ? $"{magic}, base 0x{baseId:X}, {count:N0} slots" + (error != null ? $"  WARNING: {error}" : string.Empty)
                     : $"UNREADABLE: {error}";

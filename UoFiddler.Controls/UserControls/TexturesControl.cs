@@ -47,6 +47,39 @@ namespace UoFiddler.Controls.UserControls
             _textureColorForm = new TextureColorForm(); // TextureColorForm
 
             InitializeExtensionMenus();
+            _refMarker = this;
+        }
+
+        private static TexturesControl _refMarker;
+
+        /// <summary>Selects a texture id (also a free slot) in the Textures tab and brings the tab to the front.</summary>
+        public static bool SelectInTab(int id)
+        {
+            TexturesControl c = _refMarker;
+            if (c == null)
+            {
+                return false;
+            }
+
+            if (!c._loaded)
+            {
+                c.OnLoad(c, EventArgs.Empty);
+            }
+
+            if (!c._textureList.Contains(id) && !c._showFreeSlots)
+            {
+                c.ShowFreeSlotsToolStripMenuItem_Click(c, EventArgs.Empty); // free slot: show all ids
+            }
+
+            if (!c._textureList.Contains(id))
+            {
+                return false;
+            }
+
+            c.TextureTileView.FocusIndex = -1;
+            c.SelectedTextureId = id;
+            TabNavigation.BringToFront(c);
+            return true;
         }
 
         #region Extension (texture ids 0x4000+)

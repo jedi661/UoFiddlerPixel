@@ -27,33 +27,47 @@ using UoFiddler.Controls.Helpers;
 
 namespace UoFiddler.Controls.UserControls
 {
-    public class ExtendedControl : UserControl
+    public partial class ExtendedControl : UserControl
     {
         private static readonly UoExtensionKind[] _kinds = (UoExtensionKind[])Enum.GetValues(typeof(UoExtensionKind));
 
+        // the controls are in ExtendedControl.Designer.cs (one row per kind); these maps make the code per kind
         private readonly Dictionary<UoExtensionKind, CheckBox> _use = new Dictionary<UoExtensionKind, CheckBox>();
         private readonly Dictionary<UoExtensionKind, NumericUpDown> _size = new Dictionary<UoExtensionKind, NumericUpDown>();
         private readonly Dictionary<UoExtensionKind, Label> _now = new Dictionary<UoExtensionKind, Label>();
         private readonly Dictionary<UoExtensionKind, Label> _range = new Dictionary<UoExtensionKind, Label>();
         private readonly Dictionary<UoExtensionKind, Label> _classic = new Dictionary<UoExtensionKind, Label>();
         private readonly Dictionary<UoExtensionKind, Label> _memory = new Dictionary<UoExtensionKind, Label>();
+        private readonly Dictionary<UoExtensionKind, CheckBox> _patchUse = new Dictionary<UoExtensionKind, CheckBox>();
+        private readonly Dictionary<object, UoExtensionKind> _maxOf = new Dictionary<object, UoExtensionKind>();
 
-        private NumericUpDown _common;
-        private Label _totalLabel, _statusLabel, _checkStatus;
-        private CheckBox _saveRightAway, _backupFirst;
-        private ComboBox _checkWhere, _severityFilter;
-        private ListView _issuesList;
-        private Button _runButton, _cancelButton;
         private List<ExtIssue> _issues = new List<ExtIssue>();
         private bool _cancel;
         private bool _running;
         private bool _loaded;
-        private readonly ToolTip _tips = new ToolTip { AutoPopDelay = 20000 };
+        private PatchTestResult _patchResult;
 
         public ExtendedControl()
         {
-            Dock = DockStyle.Fill;
-            BuildLayout();
+            InitializeComponent();
+
+            Map(UoExtensionKind.Items, _useItems, _sizeItems, _nowItems, _rangeItems, _classicItems, _memoryItems, _maxItems, _patchItems);
+            Map(UoExtensionKind.LandTiles, _useLand, _sizeLand, _nowLand, _rangeLand, _classicLand, _memoryLand, _maxLand, _patchLand);
+            Map(UoExtensionKind.Textures, _useTextures, _sizeTextures, _nowTextures, _rangeTextures, _classicTextures, _memoryTextures, _maxTextures, _patchTextures);
+            Map(UoExtensionKind.Hues, _useHues, _sizeHues, _nowHues, _rangeHues, _classicHues, _memoryHues, _maxHues, _patchHues);
+
+            _severityFilter.SelectedIndex = 0;
+            _tips.AutoPopDelay = 20000;
+            _tips.SetToolTip(_createButton, "Backup of the client files, then create or resize every checked extension (items incl. tiledata + radar colours, " +
+                                            "land tiles incl. tiledata + radar colours, textures, hues) and - if checked - save the files to the output folder.");
+            _tips.SetToolTip(_presetClassic, "Land / textures up to 0xFFFF, hues up to 16,383 (fit the classic 16/14-bit fields), items 1,048,576");
+            _tips.SetToolTip(_presetMax, "Maximum for everything - needs a lot of memory, see the column 'Memory'");
+            _tips.SetToolTip(_saveAllButton, "Writes every existing extension into the output folder");
+            _tips.SetToolTip(_copyToClientButton, "Copies the side-car files from the output folder into the client folder (dated backup first) and loads them from there");
+            _tips.SetToolTip(_patchRunButton, "Copies a classic entry into a free slot (and the last slot) of every checked extension, writes a test copy and reads it back. " +
+                                              "The loaded files are not changed.");
+            _tips.SetToolTip(_patchUndoButton, "Removes the test entries from the loaded data again (the state before the test)");
+
             VisibleChanged += (s, e) =>
             {
                 if (Visible)
@@ -61,6 +75,21 @@ namespace UoFiddler.Controls.UserControls
                     OnShownFirstTime();
                 }
             };
+        }
+
+        private void Map(UoExtensionKind kind, CheckBox use, NumericUpDown size, Label now, Label range, Label classic, Label memory, Button max, CheckBox patch)
+        {
+            _use[kind] = use;
+            _size[kind] = size;
+            _now[kind] = now;
+            _range[kind] = range;
+            _classic[kind] = classic;
+            _memory[kind] = memory;
+            _patchUse[kind] = patch;
+            _maxOf[size] = kind;
+            _maxOf[max] = kind;
+            size.Maximum = UoExtensions.MaxSlots(kind);
+            size.Increment = UoExtensions.Increment(kind);
         }
 
         private void OnShownFirstTime()
@@ -101,213 +130,78 @@ namespace UoFiddler.Controls.UserControls
             }
         }
 
-        #region Layout
+        #region Designer event handlers
 
-        private void BuildLayout()
+        private void OnUseChanged(object sender, EventArgs e) => UpdateTotal();
+
+        private void OnSizeChanged(object sender, EventArgs e)
         {
-            var root = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 1, RowCount = 4, Padding = new Padding(8), AutoScroll = true };
-            root.RowStyles.Add(new RowStyle(SizeType.AutoSize));
-            root.RowStyles.Add(new RowStyle(SizeType.AutoSize));
-            root.RowStyles.Add(new RowStyle(SizeType.AutoSize));
-            root.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
-            Controls.Add(root);
-
-            root.Controls.Add(new Label
+            if (_maxOf.TryGetValue(sender, out UoExtensionKind kind))
             {
-                AutoSize = true,
-                MaximumSize = new Size(1200, 0),
-                Text = "Extended mul files: the classic files (art.mul, tiledata.mul, texmaps.mul, hues.mul, radarcol.mul) stay unchanged for the old client. " +
-                       "Each extension starts where the classic file ends and holds up to 16,777,216 entries for the new client. " +
-                       "Choose the sizes, create everything with one click and check the files for errors.",
-                Margin = new Padding(3, 3, 3, 8)
-            }, 0, 0);
-
-            root.Controls.Add(BuildSizeGroup(), 0, 1);
-            root.Controls.Add(BuildActionGroup(), 0, 2);
-            root.Controls.Add(BuildCheckGroup(), 0, 3);
-        }
-
-        private GroupBox BuildSizeGroup()
-        {
-            var group = new GroupBox { Text = "1. Sizes", Dock = DockStyle.Top, AutoSize = true, AutoSizeMode = AutoSizeMode.GrowAndShrink };
-            var grid = new TableLayoutPanel { Dock = DockStyle.Top, AutoSize = true, ColumnCount = 8 };
-            string[] heads = { "Use", "Extension", "New size (slots)", "Now", "Ids with the new size", "Old client / new client", "Memory", string.Empty };
-            for (int c = 0; c < heads.Length; ++c)
-            {
-                grid.Controls.Add(new Label { Text = heads[c], AutoSize = true, Font = new Font(Font, FontStyle.Bold), Margin = new Padding(3, 3, 12, 3) }, c, 0);
+                UpdateRow(kind);
             }
+        }
 
-            int row = 1;
-            foreach (UoExtensionKind kind in _kinds)
+        private void OnMaxClick(object sender, EventArgs e)
+        {
+            if (_maxOf.TryGetValue(sender, out UoExtensionKind kind))
             {
-                var use = new CheckBox { AutoSize = true, Checked = true, Margin = new Padding(6, 5, 3, 3) };
-                var size = new NumericUpDown
-                {
-                    Minimum = 1,
-                    Maximum = UoExtensions.MaxSlots(kind),
-                    Increment = UoExtensions.Increment(kind),
-                    ThousandsSeparator = true,
-                    Width = 120,
-                    Value = UoExtensions.DefaultSlots(kind)
-                };
-                UoExtensionKind k = kind;
-                size.ValueChanged += (s, e) => UpdateRow(k);
-                use.CheckedChanged += (s, e) => UpdateTotal();
-                _use[kind] = use;
-                _size[kind] = size;
-                _now[kind] = MakeInfo();
-                _range[kind] = MakeInfo();
-                _classic[kind] = MakeInfo();
-                _memory[kind] = MakeInfo();
-
-                grid.Controls.Add(use, 0, row);
-                grid.Controls.Add(new Label { Text = UoExtensions.Title(kind), AutoSize = true, Margin = new Padding(3, 6, 12, 3) }, 1, row);
-                grid.Controls.Add(size, 2, row);
-                grid.Controls.Add(_now[kind], 3, row);
-                grid.Controls.Add(_range[kind], 4, row);
-                grid.Controls.Add(_classic[kind], 5, row);
-                grid.Controls.Add(_memory[kind], 6, row);
-                var max = new Button { Text = "Max", AutoSize = true };
-                max.Click += (s, e) => _size[k].Value = _size[k].Maximum;
-                grid.Controls.Add(max, 7, row);
-                ++row;
+                _size[kind].Value = _size[kind].Maximum;
             }
-
-            var common = new FlowLayoutPanel { AutoSize = true, Dock = DockStyle.Top, WrapContents = true, Margin = new Padding(3, 8, 3, 3) };
-            common.Controls.Add(new Label { Text = "Same size for all checked:", AutoSize = true, Margin = new Padding(3, 7, 3, 3) });
-            _common = new NumericUpDown { Minimum = 1, Maximum = ExtendedFormat.MaxSlots, Increment = 0x10000, ThousandsSeparator = true, Width = 120, Value = ExtendedFormat.DefaultSlots };
-            common.Controls.Add(_common);
-            common.Controls.Add(MakeButton("Apply", (s, e) => SetAll(k => (int)_common.Value)));
-            common.Controls.Add(new Label { Text = "Presets:", AutoSize = true, Margin = new Padding(16, 7, 3, 3) });
-            common.Controls.Add(MakeButton("Old-client limits", (s, e) => SetAll(k => k == UoExtensionKind.Items ? ExtendedFormat.DefaultSlots : UoExtensions.ClassicLimitSlots(k)),
-                "Land / textures up to 0xFFFF, hues up to 16,383 (fit the classic 16/14-bit fields), items 1,048,576"));
-            common.Controls.Add(MakeButton("65,536", (s, e) => SetAll(k => 0x10000)));
-            common.Controls.Add(MakeButton("1,048,576", (s, e) => SetAll(k => 0x100000)));
-            common.Controls.Add(MakeButton("16,777,216 (max)", (s, e) => SetAll(k => ExtendedFormat.MaxSlots), "Maximum for everything - needs a lot of memory, see the column 'Memory'"));
-            common.Controls.Add(MakeButton("Current sizes", (s, e) => SetAll(k => UoExtensions.CurrentSlots(k) > 0 ? UoExtensions.CurrentSlots(k) : (int)_size[k].Value)));
-            _totalLabel = new Label { AutoSize = true, Margin = new Padding(16, 7, 3, 3), Font = new Font(Font, FontStyle.Bold) };
-            common.Controls.Add(_totalLabel);
-
-            var outer = new TableLayoutPanel { Dock = DockStyle.Top, AutoSize = true, ColumnCount = 1 };
-            outer.Controls.Add(grid, 0, 0);
-            outer.Controls.Add(common, 0, 1);
-            group.Controls.Add(outer);
-            return group;
         }
 
-        private GroupBox BuildActionGroup()
-        {
-            var group = new GroupBox { Text = "2. Create / save / load", Dock = DockStyle.Top, AutoSize = true, AutoSizeMode = AutoSizeMode.GrowAndShrink };
-            var flow = new FlowLayoutPanel { Dock = DockStyle.Top, AutoSize = true, WrapContents = true };
-            var create = new Button
-            {
-                Text = "Create / resize checked  (one click)",
-                AutoSize = true,
-                Font = new Font(Font, FontStyle.Bold),
-                BackColor = Color.FromArgb(220, 240, 220),
-                Padding = new Padding(6, 2, 6, 2)
-            };
-            create.Click += (s, e) => CreateChecked();
-            _tips.SetToolTip(create, "Backup of the client files, then create or resize every checked extension (items incl. tiledata + radar colours, " +
-                                     "land tiles incl. tiledata + radar colours, textures, hues) and - if checked - save the files to the output folder.");
-            flow.Controls.Add(create);
-            _backupFirst = new CheckBox { Text = "Backup first", AutoSize = true, Checked = true, Margin = new Padding(8, 8, 3, 3) };
-            _saveRightAway = new CheckBox { Text = "Save the files right away", AutoSize = true, Checked = true, Margin = new Padding(8, 8, 3, 3) };
-            flow.Controls.Add(_backupFirst);
-            flow.Controls.Add(_saveRightAway);
-            flow.SetFlowBreak(_saveRightAway, true);
+        private void OnApplyCommon(object sender, EventArgs e) => SetAll(k => (int)_common.Value);
 
-            flow.Controls.Add(MakeButton("Save all extensions", (s, e) => SaveAll(), "Writes every existing extension into the output folder"));
-            flow.Controls.Add(MakeButton("Load from folder...", (s, e) => LoadFromFolder()));
-            flow.Controls.Add(MakeButton("Load from output folder", (s, e) => LoadFrom(Options.OutputPath)));
-            flow.Controls.Add(MakeButton("Copy output -> Ultima Online folder", (s, e) => CopyToClient(),
-                "Copies the side-car files from the output folder into the client folder (dated backup first) and loads them from there"));
-            flow.Controls.Add(MakeButton("Backup now", (s, e) => Backup(true)));
-            flow.Controls.Add(MakeButton("Open output folder", (s, e) => OpenFolder(Options.OutputPath)));
-            flow.Controls.Add(MakeButton("Open UO folder", (s, e) => OpenFolder(Files.RootDir)));
-            flow.Controls.Add(MakeButton("Open backup folder", (s, e) => OpenFolder(UoFileBackup.LastBackupFolder ?? UoFileBackup.GetBackupRoot(Options.OutputPath))));
-            flow.Controls.Add(MakeButton("Details window...", (s, e) => ExtendedArtFormatForm.ShowFor(UoExtensionKind.Items)));
-            _statusLabel = new Label { AutoSize = true, ForeColor = Color.DimGray, Margin = new Padding(3, 8, 3, 3), MaximumSize = new Size(1200, 0) };
-            flow.SetFlowBreak(flow.Controls[flow.Controls.Count - 1], true);
-            flow.Controls.Add(_statusLabel);
-            group.Controls.Add(flow);
-            return group;
-        }
+        private void OnPresetClassic(object sender, EventArgs e) =>
+            SetAll(k => k == UoExtensionKind.Items ? ExtendedFormat.DefaultSlots : UoExtensions.ClassicLimitSlots(k));
 
-        private GroupBox BuildCheckGroup()
-        {
-            var group = new GroupBox { Text = "3. Error search", Dock = DockStyle.Fill, MinimumSize = new Size(0, 260) };
-            var layout = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 1, RowCount = 3 };
-            layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
-            layout.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
-            layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+        private void OnPreset64k(object sender, EventArgs e) => SetAll(k => 0x10000);
 
-            var top = new FlowLayoutPanel { AutoSize = true, Dock = DockStyle.Top, WrapContents = true };
-            top.Controls.Add(new Label { Text = "Check:", AutoSize = true, Margin = new Padding(3, 7, 3, 3) });
-            _checkWhere = new ComboBox { DropDownStyle = ComboBoxStyle.DropDownList, Width = 420 };
-            top.Controls.Add(_checkWhere);
-            _runButton = MakeButton("Run check", (s, e) => RunCheck());
-            _runButton.Font = new Font(Font, FontStyle.Bold);
-            top.Controls.Add(_runButton);
-            _cancelButton = MakeButton("Cancel", (s, e) => _cancel = true);
-            _cancelButton.Enabled = false;
-            top.Controls.Add(_cancelButton);
-            top.Controls.Add(new Label { Text = "Show:", AutoSize = true, Margin = new Padding(12, 7, 3, 3) });
-            _severityFilter = new ComboBox { DropDownStyle = ComboBoxStyle.DropDownList, Width = 140 };
-            _severityFilter.Items.AddRange(new object[] { "Everything", "Warnings + errors", "Errors only", "Repairable only" });
-            _severityFilter.SelectedIndex = 0;
-            _severityFilter.SelectedIndexChanged += (s, e) => FillIssues();
-            top.Controls.Add(_severityFilter);
-            _checkStatus = new Label { AutoSize = true, Margin = new Padding(12, 7, 3, 3) };
-            top.Controls.Add(_checkStatus);
-            layout.Controls.Add(top, 0, 0);
+        private void OnPreset1m(object sender, EventArgs e) => SetAll(k => 0x100000);
 
-            _issuesList = new ListView { Dock = DockStyle.Fill, View = View.Details, FullRowSelect = true, HideSelection = false, MultiSelect = true };
-            _issuesList.Columns.Add("Severity", 70);
-            _issuesList.Columns.Add("Area", 85);
-            _issuesList.Columns.Add("Id", 90);
-            _issuesList.Columns.Add("File", 150);
-            _issuesList.Columns.Add("Problem", 620);
-            _issuesList.Columns.Add("Repair", 120);
-            _issuesList.DoubleClick += (s, e) => GoToSelected();
-            var menu = new ContextMenuStrip();
-            menu.Items.Add("Go to (Items / LandTiles / TileData)", null, (s, e) => GoToSelected());
-            menu.Items.Add("Repair selected", null, (s, e) => FixSelected(false));
-            menu.Items.Add("Copy selected lines", null, (s, e) => CopyText(string.Join(Environment.NewLine, SelectedIssues().Select(i => i.ToString()))));
-            _issuesList.ContextMenuStrip = menu;
-            layout.Controls.Add(_issuesList, 0, 1);
+        private void OnPresetMax(object sender, EventArgs e) => SetAll(k => ExtendedFormat.MaxSlots);
 
-            var bottom = new FlowLayoutPanel { AutoSize = true, Dock = DockStyle.Top };
-            bottom.Controls.Add(MakeButton("Repair selected", (s, e) => FixSelected(false)));
-            bottom.Controls.Add(MakeButton("Repair all repairable", (s, e) => FixSelected(true)));
-            bottom.Controls.Add(MakeButton("Go to", (s, e) => GoToSelected()));
-            bottom.Controls.Add(MakeButton("Copy report", (s, e) => CopyText(ExtendedValidator.ToText(_issues, $"UOFiddler extension check {DateTime.Now:yyyy-MM-dd HH:mm}"))));
-            bottom.Controls.Add(MakeButton("Save report...", (s, e) => SaveReport()));
-            bottom.Controls.Add(new Label
-            {
-                AutoSize = true,
-                ForeColor = Color.DimGray,
-                Margin = new Padding(12, 8, 3, 3),
-                Text = "Repairs change the loaded data - save afterwards. Double click a line to jump to the id."
-            });
-            layout.Controls.Add(bottom, 0, 2);
-            group.Controls.Add(layout);
-            return group;
-        }
+        private void OnPresetCurrent(object sender, EventArgs e) =>
+            SetAll(k => UoExtensions.CurrentSlots(k) > 0 ? UoExtensions.CurrentSlots(k) : (int)_size[k].Value);
 
-        private static Label MakeInfo() => new Label { AutoSize = true, ForeColor = Color.DimGray, Margin = new Padding(3, 6, 12, 3) };
+        private void OnCreateClick(object sender, EventArgs e) => CreateChecked();
 
-        private Button MakeButton(string text, EventHandler click, string tip = null)
-        {
-            var b = new Button { Text = text, AutoSize = true };
-            b.Click += click;
-            if (tip != null)
-            {
-                _tips.SetToolTip(b, tip);
-            }
+        private void OnSaveAllClick(object sender, EventArgs e) => SaveAll();
 
-            return b;
-        }
+        private void OnLoadFolderClick(object sender, EventArgs e) => LoadFromFolder();
+
+        private void OnLoadOutputClick(object sender, EventArgs e) => LoadFrom(Options.OutputPath);
+
+        private void OnCopyToClientClick(object sender, EventArgs e) => CopyToClient();
+
+        private void OnBackupClick(object sender, EventArgs e) => Backup(true);
+
+        private void OnOpenOutputClick(object sender, EventArgs e) => OpenFolder(Options.OutputPath);
+
+        private void OnOpenUoClick(object sender, EventArgs e) => OpenFolder(Files.RootDir);
+
+        private void OnOpenBackupClick(object sender, EventArgs e) => OpenFolder(UoFileBackup.LastBackupFolder ?? UoFileBackup.GetBackupRoot(Options.OutputPath));
+
+        private void OnDetailsClick(object sender, EventArgs e) => ExtendedArtFormatForm.ShowFor(UoExtensionKind.Items);
+
+        private void OnRunCheckClick(object sender, EventArgs e) => RunCheck();
+
+        private void OnCancelCheckClick(object sender, EventArgs e) => _cancel = true;
+
+        private void OnSeverityFilterChanged(object sender, EventArgs e) => FillIssues();
+
+        private void OnIssueDoubleClick(object sender, EventArgs e) => GoToSelected();
+
+        private void OnRepairSelectedClick(object sender, EventArgs e) => FixSelected(false);
+
+        private void OnRepairAllClick(object sender, EventArgs e) => FixSelected(true);
+
+        private void OnCopyIssuesClick(object sender, EventArgs e) => CopyText(string.Join(Environment.NewLine, SelectedIssues().Select(i => i.ToString())));
+
+        private void OnCopyReportClick(object sender, EventArgs e) =>
+            CopyText(ExtendedValidator.ToText(_issues, $"UOFiddler extension check {DateTime.Now:yyyy-MM-dd HH:mm}"));
+
+        private void OnSaveReportClick(object sender, EventArgs e) => SaveReport();
 
         #endregion
 
@@ -876,6 +770,208 @@ namespace UoFiddler.Controls.UserControls
             {
                 // clipboard busy
             }
+        }
+
+        #endregion
+
+        #region Patch test
+
+        private void OnPatchRunClick(object sender, EventArgs e)
+        {
+            List<UoExtensionKind> kinds = _kinds.Where(k => _patchUse[k].Checked).ToList();
+            List<UoExtensionKind> missing = kinds.Where(k => !UoExtensions.Exists(k)).ToList();
+            if (kinds.Count == 0 || missing.Count == kinds.Count)
+            {
+                MessageBox.Show(this, "No extension to test - create the extensions first (section 1 + 2).", "Patch test", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            if (string.IsNullOrEmpty(Options.OutputPath) || !Directory.Exists(Options.OutputPath))
+            {
+                MessageBox.Show(this, "The output folder is not set or does not exist (Options).", "Patch test", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            if (_patchResult != null && !_patchResult.Undone && _patchResult.Entries.Any(x => x.Patched))
+            {
+                if (MessageBox.Show(this, "The entries of the last patch test are still in the loaded data. Remove them first?", "Patch test",
+                        MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+                {
+                    ExtendedPatchTest.Undo(_patchResult);
+                }
+            }
+
+            int unsaved = (Art.HasExtension ? Art.GetUnsavedExtendedIds().Count : 0) +
+                          (Art.LandExtension.Exists ? Art.LandExtension.GetUnsavedIds().Count : 0) +
+                          (Textures.Extension.Exists ? Textures.Extension.GetUnsavedIds().Count : 0);
+            if (unsaved > 0 && MessageBox.Show(this,
+                    $"{unsaved:N0} changed extended entries are not saved yet. The test writes only a separate test copy and does not change your files, " +
+                    "but your unsaved entries are included in that copy. Continue?",
+                    "Patch test", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
+            {
+                return;
+            }
+
+            Cursor.Current = Cursors.WaitCursor;
+            _patchRunButton.Enabled = false;
+            try
+            {
+                _patchResult = ExtendedPatchTest.Run(kinds, _patchLastSlot.Checked, Options.OutputPath, p =>
+                {
+                    _patchStatus.Text = p;
+                    _patchStatus.Refresh();
+                });
+            }
+            finally
+            {
+                Cursor.Current = Cursors.Default;
+                _patchRunButton.Enabled = true;
+            }
+
+            FillPatchList();
+            UoExtensions.RaiseChanged(null); // the tabs show the patched entries
+            _patchUndoButton.Enabled = _patchResult.Entries.Any(x => x.Patched);
+            _patchOpenLogButton.Enabled = _patchResult.LogPath != null;
+            _patchCopyLogButton.Enabled = true;
+            int ok = _patchResult.Entries.Count(x => x.Ok);
+            _patchStatus.Text = _patchResult.Entries.Count == 0
+                ? "Nothing tested - see the log."
+                : _patchResult.AllOk ? $"ALL OK ({ok} of {_patchResult.Entries.Count})" : $"ERRORS: {ok} of {_patchResult.Entries.Count} ok - please send the log";
+            _patchStatus.ForeColor = _patchResult.AllOk ? Color.DarkGreen : Color.DarkRed;
+
+            if (!_patchResult.AllOk)
+            {
+                MessageBox.Show(this, $"The patch test found problems.{Environment.NewLine}Log: {_patchResult.LogPath}{Environment.NewLine}{Environment.NewLine}" +
+                                      "Use 'Copy log' and send it.", "Patch test", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+        }
+
+        private void FillPatchList()
+        {
+            _patchList.BeginUpdate();
+            try
+            {
+                _patchList.Items.Clear();
+                if (_patchResult == null)
+                {
+                    return;
+                }
+
+                foreach (PatchTestEntry e in _patchResult.Entries)
+                {
+                    bool hue = e.Kind == UoExtensionKind.Hues;
+                    var item = new ListViewItem(UoExtensions.Title(e.Kind)) { Tag = e };
+                    item.SubItems.Add(hue ? $"hue {e.SourceId + 1}" : $"0x{e.SourceId:X}");
+                    item.SubItems.Add(hue ? $"hue {e.TargetId + 1} (0x{e.TargetId + 1:X})" : $"0x{e.TargetId:X}");
+                    item.SubItems.Add(e.MemoryOk ? "ok" : "FAIL");
+                    item.SubItems.Add(e.DiskOk ? "ok" : "FAIL");
+                    item.SubItems.Add(e.ReloadOk ? "ok" : "FAIL");
+                    item.SubItems.Add(_patchResult.Undone ? e.Result + " (test entry removed again)" : e.Result);
+                    item.ForeColor = e.Ok ? Color.DarkGreen : Color.DarkRed;
+                    _patchList.Items.Add(item);
+                }
+            }
+            finally
+            {
+                _patchList.EndUpdate();
+            }
+        }
+
+        private void OnPatchUndoClick(object sender, EventArgs e)
+        {
+            if (_patchResult == null)
+            {
+                return;
+            }
+
+            int n = ExtendedPatchTest.Undo(_patchResult);
+            UoExtensions.RaiseChanged(null);
+            FillPatchList();
+            _patchUndoButton.Enabled = false;
+            _patchStatus.Text = $"{n} test entr(y/ies) removed from the loaded data.";
+            _patchStatus.ForeColor = Color.Black;
+        }
+
+        private void OnPatchOpenLogClick(object sender, EventArgs e)
+        {
+            if (_patchResult?.LogPath == null || !File.Exists(_patchResult.LogPath))
+            {
+                return;
+            }
+
+            try
+            {
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(_patchResult.LogPath) { UseShellExecute = true });
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(this, ex.Message, "Open log", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+        }
+
+        private void OnPatchCopyLogClick(object sender, EventArgs e)
+        {
+            CopyText(_patchResult?.Log);
+            _patchStatus.Text = "Log copied to the clipboard.";
+        }
+
+        private PatchTestEntry SelectedPatchEntry() =>
+            _patchList.SelectedItems.Count > 0 ? (PatchTestEntry)_patchList.SelectedItems[0].Tag : null;
+
+        private void OnPatchGoGraphicClick(object sender, EventArgs e)
+        {
+            PatchTestEntry entry = SelectedPatchEntry();
+            if (entry == null)
+            {
+                return;
+            }
+
+            bool found = entry.Kind switch
+            {
+                UoExtensionKind.Items => ItemsControl.SearchGraphic(entry.TargetId),
+                UoExtensionKind.LandTiles => LandTilesControl.SearchGraphic(entry.TargetId),
+                UoExtensionKind.Textures => TexturesControl.SelectInTab(entry.TargetId),
+                _ => HuesControl.SelectInTab(entry.TargetId)
+            };
+
+            if (found && entry.Kind == UoExtensionKind.Items)
+            {
+                ItemsControl.ActivateTab();
+            }
+            else if (found && entry.Kind == UoExtensionKind.LandTiles)
+            {
+                LandTilesControl.ActivateTab();
+            }
+            else if (!found)
+            {
+                _patchStatus.Text = $"0x{entry.TargetId:X} not found in its tab (removed again, or the tab is not loaded).";
+            }
+        }
+
+        private void OnPatchGoTileDataClick(object sender, EventArgs e)
+        {
+            PatchTestEntry entry = SelectedPatchEntry();
+            if (entry == null || (entry.Kind != UoExtensionKind.Items && entry.Kind != UoExtensionKind.LandTiles))
+            {
+                _patchStatus.Text = "TileData exists for items and land tiles only.";
+                return;
+            }
+
+            TileDataControl.Select(entry.TargetId, entry.Kind == UoExtensionKind.LandTiles);
+            TileDataControl.ActivateTab();
+        }
+
+        private void OnPatchGoRadarClick(object sender, EventArgs e)
+        {
+            PatchTestEntry entry = SelectedPatchEntry();
+            if (entry == null || (entry.Kind != UoExtensionKind.Items && entry.Kind != UoExtensionKind.LandTiles))
+            {
+                _patchStatus.Text = "Radar colours exist for items and land tiles only.";
+                return;
+            }
+
+            RadarColorControl.Select(entry.TargetId, entry.Kind == UoExtensionKind.LandTiles);
+            RadarColorControl.ActivateTab();
         }
 
         #endregion

@@ -297,6 +297,17 @@ namespace Ultima
         /// </summary>
         public void Save(string folder)
         {
+            Save(folder, false);
+        }
+
+        /// <summary>Writes the files into <paramref name="folder"/> without switching to them (e.g. for a test).</summary>
+        public void SaveCopy(string folder)
+        {
+            Save(folder, true);
+        }
+
+        private void Save(string folder, bool asCopy)
+        {
             if (!Exists)
             {
                 return;
@@ -341,6 +352,15 @@ namespace Ultima
             using (var fsIdx = new FileStream(idxTmp, FileMode.Create, FileAccess.Write, FileShare.None))
             {
                 ExtendedFormat.WriteIndex(fsIdx, Magic, BaseId, entries);
+            }
+
+            bool sameAsSource = _dataPath != null &&
+                string.Equals(Path.GetFullPath(_dataPath), Path.GetFullPath(mulFinal), StringComparison.OrdinalIgnoreCase);
+            if (asCopy && !sameAsSource)
+            {
+                File.Move(mulTmp, mulFinal, true);
+                File.Move(idxTmp, idxFinal, true);
+                return; // keep reading from the loaded files, unsaved marks stay
             }
 
             Close(); // the source may be the file that gets replaced

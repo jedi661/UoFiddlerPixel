@@ -57,6 +57,29 @@ namespace UoFiddler.Controls.UserControls
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public bool HuesEditable { get; set; } = true;
 
+        /// <summary>The editable hue list of the Hues tab (not the hue pickers).</summary>
+        public static HuesControl MainInstance { get; private set; }
+
+        /// <summary>Selects a hue (file index = hue number - 1) in the Hues tab and brings the tab to the front.</summary>
+        public static bool SelectInTab(int index)
+        {
+            HuesControl c = MainInstance;
+            if (c == null || index < 0 || index >= Hues.List.Length)
+            {
+                return false;
+            }
+
+            if (!c._loaded)
+            {
+                c.OnLoad(c, EventArgs.Empty);
+            }
+
+            c.ResetFilter();
+            c.Selected = index;
+            TabNavigation.BringToFront(c);
+            return true;
+        }
+
         /// <summary>Raised when the selected hue changed</summary>
         public event EventHandler SelectedChanged;
 
@@ -139,6 +162,7 @@ namespace UoFiddler.Controls.UserControls
 
             if (HuesEditable)
             {
+                MainInstance ??= this;
                 CaptureBaseline(); // only the Hues tab marks changed hues; pickers skip it (can be millions of hues)
             }
 
